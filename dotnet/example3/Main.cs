@@ -1,0 +1,48 @@
+using System;
+using IEC61850.Client;
+using System.Collections.Generic;
+
+namespace example3
+{
+	class MainClass
+    {
+        public static void Main (string[] args)
+        {
+            IedConnection con = new IedConnection ();
+
+            string hostname;
+
+            if (args.Length > 0)
+                hostname = args[0];
+            else
+                hostname = "localhost";
+
+            Console.WriteLine("Connect to " + hostname);
+
+
+            try
+            {
+				IsoConnectionParameters parameters = con.GetConnectionParameters();
+
+				parameters.SetRemoteAddresses(1,1, new byte[] {0x00, 0x01, 0x02, 0x03});
+
+				con.ConnectTimeout = 10000;
+
+                con.Connect(hostname, 102);
+
+                List<string> serverDirectory = con.GetServerDirectory(false);
+
+                foreach (string entry in serverDirectory)
+                {
+                    Console.WriteLine("LD: " + entry);
+                }
+
+				con.Release();
+            }
+            catch (IedConnectionException e)
+            {
+				Console.WriteLine(e.Message);
+            }
+        }
+    }
+}

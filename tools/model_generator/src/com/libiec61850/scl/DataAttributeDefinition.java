@@ -23,11 +23,17 @@ package com.libiec61850.scl;
  *  See COPYING file for the complete license text.
  */
 
+import java.util.LinkedList;
+
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import com.libiec61850.scl.model.AttributeType;
+import com.libiec61850.scl.model.DataModelValue;
 import com.libiec61850.scl.model.FunctionalConstraint;
 import com.libiec61850.scl.model.TriggerOptions;
+import com.libiec61850.scl.types.IllegalValueException;
+import com.libiec61850.scl.types.SclType;
 
 public class DataAttributeDefinition {
 
@@ -38,8 +44,9 @@ public class DataAttributeDefinition {
     private FunctionalConstraint fc = null;
     private AttributeType attributeType = null;
     private TriggerOptions triggerOptions = null;
+    private DataModelValue value = null;
 
-    public DataAttributeDefinition(Node node) throws SclParserException {
+	public DataAttributeDefinition(Node node) throws SclParserException {
         this.name = ParserUtils.parseAttribute(node, "name");
         this.bType = ParserUtils.parseAttribute(node, "bType");
         this.type = ParserUtils.parseAttribute(node, "type");
@@ -89,6 +96,31 @@ public class DataAttributeDefinition {
         if (countStr != null)
             count = new Integer(countStr);
 
+        
+        if (this.bType != null) {
+        
+        NodeList elementNodes = node.getChildNodes();
+		
+			if (elementNodes != null) {
+	
+				for (int i = 0; i < elementNodes.getLength(); i++) {
+					Node elementNode = elementNodes.item(i);
+					if (elementNode.getNodeName().equals("Val")) {
+						
+						String value = elementNode.getTextContent();
+						
+						if (attributeType != AttributeType.ENUMERATED)
+							try {
+								this.value = new DataModelValue(attributeType, null, value);
+							} catch (IllegalValueException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+					}
+	
+				}
+			}
+        }   
     }
 
     public String getName() {
@@ -115,6 +147,10 @@ public class DataAttributeDefinition {
         return count;
     }
 
+    public DataModelValue getValue() {
+    	return value;
+    }
+    
     public TriggerOptions getTriggerOptions() {
         return this.triggerOptions;
     }

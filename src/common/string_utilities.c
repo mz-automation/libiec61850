@@ -28,7 +28,7 @@ copySubString(char* startPos, char* endPos)
 {
 	int newStringLength = endPos - startPos;
 
-	char* newString = (char*) malloc(newStringLength) + 1;
+	char* newString = (char*) GLOBAL_MALLOC(newStringLength) + 1;
 
 	memcpy(newString, startPos, newStringLength);
 
@@ -42,7 +42,7 @@ copyString(const char* string)
 {
 	int newStringLength = strlen(string) + 1;
 
-	char* newString = (char*) malloc(newStringLength);
+	char* newString = (char*) GLOBAL_MALLOC(newStringLength);
 
 	memcpy(newString, string, newStringLength);
 
@@ -50,7 +50,7 @@ copyString(const char* string)
 }
 
 char*
-copyStringToBuffer(char* string, char* buffer)
+copyStringToBuffer(const char* string, char* buffer)
 {
     int newStringLength = strlen(string) + 1;
 
@@ -63,7 +63,7 @@ copyStringToBuffer(char* string, char* buffer)
 char*
 createStringFromBuffer(uint8_t* buf, int size)
 {
-	char* newStr = (char*) malloc(size + 1);
+	char* newStr = (char*) GLOBAL_MALLOC(size + 1);
 
 	memcpy(newStr, buf, size);
 	newStr[size] = 0;
@@ -110,7 +110,7 @@ createString(int count, ...)
 	}
 	va_end(ap);
 
-	newStr = (char*) malloc(newStringLength + 1);
+	newStr = (char*) GLOBAL_MALLOC(newStringLength + 1);
 	currentPos = newStr;
 
 

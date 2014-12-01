@@ -26,7 +26,9 @@
 #include <semaphore.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "thread.h"
+#include "hal_thread.h"
+
+#include "libiec61850_platform_includes.h"
 
 struct sThread {
 	ThreadExecutionFunction function;
@@ -39,7 +41,7 @@ struct sThread {
 Semaphore
 Semaphore_create(int initialValue)
 {
-    Semaphore self = malloc(sizeof(sem_t));
+    Semaphore self = GLOBAL_MALLOC(sizeof(sem_t));
 
     sem_init((sem_t*) self, 0, initialValue);
 
@@ -63,18 +65,20 @@ void
 Semaphore_destroy(Semaphore self)
 {
     sem_destroy((sem_t*) self);
-    free(self);
+    GLOBAL_FREEMEM(self);
 }
 
 Thread
 Thread_create(ThreadExecutionFunction function, void* parameter, bool autodestroy)
 {
-	Thread thread = malloc(sizeof(struct sThread));
+	Thread thread = (Thread) GLOBAL_MALLOC(sizeof(struct sThread));
 
-	thread->parameter = parameter;
-	thread->function = function;
-	thread->state = 0;
-	thread->autodestroy = autodestroy;
+	if (thread != NULL) {
+        thread->parameter = parameter;
+        thread->function = function;
+        thread->state = 0;
+        thread->autodestroy = autodestroy;
+	}
 
 	return thread;
 }
@@ -86,9 +90,9 @@ destroyAutomaticThread(void* parameter)
 
 	thread->function(thread->parameter);
 
-	free(thread);
+	GLOBAL_FREEMEM(thread);
 
-	return NULL;
+	pthread_exit(NULL);
 }
 
 void
@@ -111,7 +115,7 @@ Thread_destroy(Thread thread)
 		pthread_join(thread->pthread, NULL);
 	}
 
-	free(thread);
+	GLOBAL_FREEMEM(thread);
 }
 
 void

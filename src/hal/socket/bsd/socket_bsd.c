@@ -1,7 +1,7 @@
 /*
  *  socket_bsd.c
  *
- *  Copyright 2013 Michael Zillgith, contributed to the project by Michael Clausen (School of engineering Valais).
+ *  Copyright 2013, 2014 Michael Zillgith, contributions by Michael Clausen (School of engineering Valais).
  *
  *  This file is part of libIEC61850.
  *
@@ -21,7 +21,7 @@
  *  See COPYING file for the complete license text.
  */
 
-#include "socket.h"
+#include "hal_socket.h"
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <arpa/inet.h>
@@ -38,7 +38,7 @@
 
 #include <netinet/tcp.h> // required for TCP keepalive
 
-#include "thread.h"
+#include "hal_thread.h"
 
 #include "libiec61850_platform_includes.h"
 
@@ -48,12 +48,65 @@
 
 struct sSocket {
     int fd;
+    uint32_t connectTimeout;
 };
 
 struct sServerSocket {
     int fd;
     int backLog;
 };
+
+struct sHandleSet {
+   fd_set handles;
+   int maxHandle;
+};
+
+HandleSet
+Handleset_new(void)
+{
+   HandleSet result = (HandleSet) GLOBAL_MALLOC(sizeof(struct sHandleSet));
+
+   if (result != NULL) {
+       FD_ZERO(&result->handles);
+       result->maxHandle = -1;
+   }
+   return result;
+}
+
+void
+Handleset_addSocket(HandleSet self, const Socket sock)
+{
+   if (self != NULL && sock != NULL && sock->fd != -1) {
+       FD_SET(sock->fd, &self->handles);
+       if (sock->fd > self->maxHandle) {
+           self->maxHandle = sock->fd;
+       }
+   }
+}
+
+int
+Handleset_waitReady(HandleSet self, unsigned int timeoutMs)
+{
+   int result;
+
+   if (self != NULL && self->maxHandle >= 0) {
+       struct timeval timeout;
+
+       timeout.tv_sec = timeoutMs / 1000;
+       timeout.tv_usec = (timeoutMs % 1000) * 1000;
+       result = select(self->maxHandle + 1, &self->handles, NULL, NULL, &timeout);
+   } else {
+       result = -1;
+   }
+
+   return result;
+}
+
+void
+Handleset_destroy(HandleSet self)
+{
+   GLOBAL_FREEMEM(self);
+}
 
 static void
 activateKeepAlive(int sd)
@@ -79,7 +132,7 @@ activateKeepAlive(int sd)
 }
 
 static bool
-prepareServerAddress(char* address, int port, struct sockaddr_in* sockaddr)
+prepareServerAddress(const char* address, int port, struct sockaddr_in* sockaddr)
 {
 
 	memset((char *) sockaddr , 0, sizeof(struct sockaddr_in));
@@ -101,17 +154,15 @@ prepareServerAddress(char* address, int port, struct sockaddr_in* sockaddr)
     return true;
 }
 
-#if 0
 static void
 setSocketNonBlocking(Socket self)
 {
     int flags = fcntl(self->fd, F_GETFL, 0);
     fcntl(self->fd, F_SETFL, flags | O_NONBLOCK);
 }
-#endif
 
 ServerSocket
-TcpServerSocket_create(char* address, int port)
+TcpServerSocket_create(const char* address, int port)
 {
     ServerSocket serverSocket = NULL;
 
@@ -129,7 +180,7 @@ TcpServerSocket_create(char* address, int port)
         setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (char *) &optionReuseAddr, sizeof(int));
 
         if (bind(fd, (struct sockaddr *) &serverAddress, sizeof(serverAddress)) >= 0) {
-            serverSocket = malloc(sizeof(struct sServerSocket));
+            serverSocket = GLOBAL_MALLOC(sizeof(struct sServerSocket));
             serverSocket->fd = fd;
             serverSocket->backLog = 0;
         }
@@ -141,6 +192,8 @@ TcpServerSocket_create(char* address, int port)
 #if CONFIG_ACTIVATE_TCP_KEEPALIVE == 1
         activateKeepAlive(fd);
 #endif
+
+        setSocketNonBlocking((Socket) serverSocket);
     }
 
     return serverSocket;
@@ -201,21 +254,28 @@ ServerSocket_destroy(ServerSocket self)
 
     Thread_sleep(10);
 
-    free(self);
+    GLOBAL_FREEMEM(self);
 }
 
 Socket
 TcpSocket_create()
 {
-    Socket self = malloc(sizeof(struct sSocket));
+    Socket self = GLOBAL_MALLOC(sizeof(struct sSocket));
 
     self->fd = -1;
 
     return self;
 }
 
-int
-Socket_connect(Socket self, char* address, int port)
+void
+Socket_setConnectTimeout(Socket self, uint32_t timeoutInMs)
+{
+    self->connectTimeout = timeoutInMs;
+}
+
+
+bool
+Socket_connect(Socket self, const char* address, int port)
 {
     struct sockaddr_in serverAddress;
 
@@ -223,7 +283,7 @@ Socket_connect(Socket self, char* address, int port)
         printf("Socket_connect: %s:%i\n", address, port);
 
     if (!prepareServerAddress(address, port, &serverAddress))
-        return 0;
+        return false;
 
     self->fd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -231,10 +291,25 @@ Socket_connect(Socket self, char* address, int port)
     activateKeepAlive(self->fd);
 #endif
 
-    if (connect(self->fd, (struct sockaddr *) &serverAddress, sizeof(serverAddress)) < 0)
-        return 0;
+    fd_set fdSet;
+    FD_ZERO(&fdSet);
+    FD_SET(self->fd, &fdSet);
+
+    fcntl(self->fd, F_SETFL, O_NONBLOCK);
+
+    if (connect(self->fd, (struct sockaddr *) &serverAddress, sizeof(serverAddress)) < 0) {
+        if (errno != EINPROGRESS)
+            return false;
+    }
+
+    struct timeval timeout;
+    timeout.tv_sec = self->connectTimeout / 1000;
+    timeout.tv_usec = (self->connectTimeout % 1000) * 1000;
+
+    if (select(self->fd + 1, NULL, &fdSet, NULL, &timeout) < 0)
+        return false;
     else
-        return 1;
+        return true;
 }
 
 char*
@@ -265,7 +340,7 @@ Socket_getPeerAddress(Socket self)
     else
         return NULL ;
 
-    char* clientConnection = malloc(strlen(addrString) + 9);
+    char* clientConnection = GLOBAL_MALLOC(strlen(addrString) + 9);
 
 
     if (isIPv6)
@@ -284,7 +359,10 @@ Socket_read(Socket self, uint8_t* buf, int size)
     if (self->fd == -1)
         return -1;
 
-    int read_bytes = read(self->fd, buf, size);
+    int read_bytes = recv(self->fd, buf, size, MSG_DONTWAIT);
+
+    if (read_bytes == 0)
+        return -1;
 
     if (read_bytes == -1) {
         int error = errno;
@@ -300,9 +378,8 @@ Socket_read(Socket self, uint8_t* buf, int size)
                 return -1;
         }
     }
-    else  {
-        return read_bytes;
-    }
+
+    return read_bytes;
 }
 
 int
@@ -326,5 +403,5 @@ Socket_destroy(Socket self)
 
     Thread_sleep(10);
 
-    free(self);
+    GLOBAL_FREEMEM(self);
 }

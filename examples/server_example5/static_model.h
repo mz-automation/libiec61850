@@ -8,7 +8,7 @@
 #define STATIC_MODEL_H_
 
 #include <stdlib.h>
-#include "model.h"
+#include "iec61850_model.h"
 
 extern IedModel iedModel;
 extern LogicalDevice iedModel_GenericIO;

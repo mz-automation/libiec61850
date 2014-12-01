@@ -23,12 +23,16 @@
 
 #include "stack_config.h"
 
-#if CONFIG_INCLUDE_ETHERNET_WINDOWS == 1
-
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+
+#include "hal_ethernet.h"
+
+#if (CONFIG_INCLUDE_ETHERNET_WINDOWS == 1)
+
+
 #include <malloc.h>
 
 #include <winsock2.h>
@@ -37,8 +41,6 @@
 #ifndef __GNUC__
 #pragma comment (lib, "IPHLPAPI.lib")
 #endif
-
-#include "ethernet.h"
 
 #define HAVE_REMOTE
 
@@ -89,7 +91,7 @@ static pgetadaptersaddresses GetAdaptersAddresses;
 static bool dllLoaded = false;
 
 static void
-loadDLLs()
+loadDLLs(void)
 {
 	HINSTANCE hDll = LoadLibrary("iphlpapi.dll");
 
@@ -103,7 +105,7 @@ loadDLLs()
 			"GetAdaptersAddresses");
 
 	if (GetAdaptersAddresses == NULL)
-			printf("Error loading GetAdaptersAddresses from iphlpapi.dll (%d)\n", GetLastError());
+			printf("Error loading GetAdaptersAddresses from iphlpapi.dll (%d)\n", (int) GetLastError());
 }
 
 #endif /* __MINGW64_VERSION_MAJOR */
@@ -155,7 +157,7 @@ getInterfaceName(int interfaceIndex)
     return interfaceName;
 }
 
-void
+static void
 getAdapterMacAddress(char* pcapAdapterName, uint8_t* macAddress)
 {
 	PIP_ADAPTER_ADDRESSES pAddresses = NULL;
@@ -224,7 +226,7 @@ Ethernet_getInterfaceMACAddress(char* interfaceId, uint8_t* addr)
 
     long interfaceIndex = strtol(interfaceId, &endPtr, 10);
 
-    if (*endPtr != NULL) {
+    if (endPtr != NULL) {
     	printf("Ethernet_getInterfaceMACAddress: invalid interface number %s\n", interfaceId);
     	return;
     }
@@ -315,4 +317,50 @@ Ethernet_receivePacket(EthernetSocket self, uint8_t* buffer, int bufferSize)
 	}
 }
 
-#endif
+bool
+Ethernet_isSupported()
+{
+    return true;
+}
+
+#else
+
+bool
+Ethernet_isSupported()
+{
+    return false;
+}
+
+void
+Ethernet_getInterfaceMACAddress(char* interfaceId, uint8_t* addr)
+{
+}
+
+EthernetSocket
+Ethernet_createSocket(char* interfaceId, uint8_t* destAddress)
+{
+    return NULL;
+}
+
+void
+Ethernet_destroySocket(EthernetSocket ethSocket)
+{
+}
+
+void
+Ethernet_sendPacket(EthernetSocket ethSocket, uint8_t* buffer, int packetSize)
+{
+}
+
+void
+Ethernet_setProtocolFilter(EthernetSocket ethSocket, uint16_t etherType)
+{
+}
+
+int
+Ethernet_receivePacket(EthernetSocket self, uint8_t* buffer, int bufferSize)
+{
+    return 0;
+}
+
+#endif /* (CONFIG_INCLUDE_ETHERNET_WINDOWS == 1) */

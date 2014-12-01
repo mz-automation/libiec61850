@@ -19,6 +19,7 @@
 #cmakedefine01 DEBUG
 
 /* print debugging information with printf if set to 1 */
+#cmakedefine01 DEBUG_SOCKET
 #cmakedefine01 DEBUG_COTP
 #cmakedefine01 DEBUG_ISO_SERVER
 #cmakedefine01 DEBUG_ISO_CLIENT
@@ -26,6 +27,17 @@
 #cmakedefine01 DEBUG_IED_CLIENT
 #cmakedefine01 DEBUG_MMS_CLIENT
 #cmakedefine01 DEBUG_MMS_SERVER
+#cmakedefine01 DEBUG_GOOSE_SUBSCRIBER
+#cmakedefine01 DEBUG_GOOSE_PUBLISHER
+
+/* 1 ==> server runs in single threaded mode (one dedicated thread for the server)
+ * 0 ==> server runs in multi threaded mode (one thread for each connection and
+ * one server background thread )
+ */
+#cmakedefine01 CONFIG_MMS_SINGLE_THREADED
+
+/* Optimize stack for threadless operation - don't use semaphores */
+#cmakedefine01 CONFIG_MMS_THREADLESS_STACK
 
 /* Maximum MMS PDU SIZE - default is 65000 */
 #cmakedefine CONFIG_MMS_MAXIMUM_PDU_SIZE @CONFIG_MMS_MAXIMUM_PDU_SIZE@
@@ -52,9 +64,9 @@
 #define CONFIG_TCP_READ_TIMEOUT_MS 1000
 
 /* Ethernet interface ID for GOOSE and SV */
-//#define CONFIG_ETHERNET_INTERFACE_ID "eth0"
+#define CONFIG_ETHERNET_INTERFACE_ID "eth0"
 //#define CONFIG_ETHERNET_INTERFACE_ID "vboxnet0"
-#define CONFIG_ETHERNET_INTERFACE_ID "en0"  // OS X uses enX in place of ethX as ethernet NIC names.
+//#define CONFIG_ETHERNET_INTERFACE_ID "en0"  // OS X uses enX in place of ethX as ethernet NIC names.
 
 /* Set to 1 to include GOOSE support in the build. Otherwise set to 0 */
 #cmakedefine01 CONFIG_INCLUDE_GOOSE_SUPPORT
@@ -108,6 +120,12 @@
 /* The default buffer size of buffered RCBs in bytes */
 #cmakedefine CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE @CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE@
 
+/* include support for setting groups */
+#cmakedefine01 CONFIG_IEC61850_SETTING_GROUPS
+
+/* default reservation time of a setting group control block in s */
+#define CONFIG_IEC61850_SG_RESVTMS 100
+
 /* default results for MMS identify service */
 #define CONFIG_DEFAULT_MMS_VENDOR_NAME "libiec61850.com"
 #define CONFIG_DEFAULT_MMS_MODEL_NAME "LIBIEC61850"
@@ -124,6 +142,12 @@
 
 /* Maximum number of open file per MMS connection (for MMS file read service) */
 #define CONFIG_MMS_MAX_NUMBER_OF_OPEN_FILES_PER_CONNECTION 5
+
+#define CONFIG_MMS_MAX_NUMBER_OF_DOMAIN_SPECIFIC_DATA_SETS 10
+
+#define CONFIG_MMS_MAX_NUMBER_OF_ASSOCIATION_SPECIFIC_DATA_SETS 10
+
+#define CONFIG_MMS_MAX_NUMBER_OF_VMD_SPECIFIC_DATA_SETS 10
 
 /* Definition of supported services */
 #define MMS_DEFAULT_PROFILE 1

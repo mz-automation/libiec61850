@@ -150,15 +150,12 @@ extern DataAttribute iedModel_GenericIO_GGIO1_Ind4_stVal;
 extern DataAttribute iedModel_GenericIO_GGIO1_Ind4_q;
 extern DataAttribute iedModel_GenericIO_GGIO1_Ind4_t;
 
-extern DataSet ds_GenericIO_LLN0_Events;
+static DataSetEntry ds_GenericIO_LLN0_Events_fcda0;
+static DataSetEntry ds_GenericIO_LLN0_Events_fcda1;
+static DataSetEntry ds_GenericIO_LLN0_Events_fcda2;
+static DataSetEntry ds_GenericIO_LLN0_Events_fcda3;
 
-
-extern DataSetEntry ds_GenericIO_LLN0_Events_fcda0;
-extern DataSetEntry ds_GenericIO_LLN0_Events_fcda1;
-extern DataSetEntry ds_GenericIO_LLN0_Events_fcda2;
-extern DataSetEntry ds_GenericIO_LLN0_Events_fcda3;
-
-DataSetEntry ds_GenericIO_LLN0_Events_fcda0 = {
+static DataSetEntry ds_GenericIO_LLN0_Events_fcda0 = {
   "beagleGenericIO",
   "GGIO1$ST$SPCSO1$stVal",
   -1,
@@ -167,7 +164,7 @@ DataSetEntry ds_GenericIO_LLN0_Events_fcda0 = {
   &ds_GenericIO_LLN0_Events_fcda1
 };
 
-DataSetEntry ds_GenericIO_LLN0_Events_fcda1 = {
+static DataSetEntry ds_GenericIO_LLN0_Events_fcda1 = {
   "beagleGenericIO",
   "GGIO1$ST$SPCSO2$stVal",
   -1,
@@ -176,7 +173,7 @@ DataSetEntry ds_GenericIO_LLN0_Events_fcda1 = {
   &ds_GenericIO_LLN0_Events_fcda2
 };
 
-DataSetEntry ds_GenericIO_LLN0_Events_fcda2 = {
+static DataSetEntry ds_GenericIO_LLN0_Events_fcda2 = {
   "beagleGenericIO",
   "GGIO1$ST$SPCSO3$stVal",
   -1,
@@ -185,7 +182,7 @@ DataSetEntry ds_GenericIO_LLN0_Events_fcda2 = {
   &ds_GenericIO_LLN0_Events_fcda3
 };
 
-DataSetEntry ds_GenericIO_LLN0_Events_fcda3 = {
+static DataSetEntry ds_GenericIO_LLN0_Events_fcda3 = {
   "beagleGenericIO",
   "GGIO1$ST$DPCSO1$stVal",
   -1,
@@ -194,12 +191,11 @@ DataSetEntry ds_GenericIO_LLN0_Events_fcda3 = {
   NULL
 };
 
-DataSet ds_GenericIO_LLN0_Events = {
+static DataSet ds_GenericIO_LLN0_Events = {
   "beagleGenericIO",
   "LLN0$Events",
   4,
-  &ds_GenericIO_LLN0_Events_fcda0,
-  NULL
+  &ds_GenericIO_LLN0_Events_fcda0
 };
 
 LogicalDevice iedModel_GenericIO = {
@@ -1923,11 +1919,22 @@ DataAttribute iedModel_GenericIO_GGIO1_Ind4_t = {
     NULL,
     0};
 
-extern ReportControlBlock iedModel_GenericIO_LLN0_report0;
-extern ReportControlBlock iedModel_GenericIO_LLN0_report1;
 
-ReportControlBlock iedModel_GenericIO_LLN0_report0 = {&iedModel_GenericIO_LLN0, "EventsRCB01", "Events1", false, "Events", 1, 8, 111, 50, 1000, &iedModel_GenericIO_LLN0_report1};
-ReportControlBlock iedModel_GenericIO_LLN0_report1 = {&iedModel_GenericIO_LLN0, "EventsRCB201", "Events2", false, "Events", 1, 8, 111, 50, 1000, NULL};
+static ReportControlBlock iedModel_GenericIO_LLN0_report0;
+static ReportControlBlock iedModel_GenericIO_LLN0_report1;
+
+static ReportControlBlock iedModel_GenericIO_LLN0_report0 = {&iedModel_GenericIO_LLN0, "EventsRCB", "Events1", false, "Events", 1, 16, 111, 50, 1000, &iedModel_GenericIO_LLN0_report1};
+static ReportControlBlock iedModel_GenericIO_LLN0_report1 = {&iedModel_GenericIO_LLN0, "EventsRCB2", "Events2", false, "Events", 1, 16, 111, 50, 1000, NULL};
+
+
+
+
+
+
+
+
+
+
 
 
 

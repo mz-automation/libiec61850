@@ -38,12 +38,12 @@
 
 void
 mmsServer_writeMmsRejectPdu(uint32_t* invokeId, int reason, ByteBuffer* response) {
-	MmsPdu_t* mmsPdu = (MmsPdu_t*) calloc(1, sizeof(MmsPdu_t));
+	MmsPdu_t* mmsPdu = (MmsPdu_t*) GLOBAL_CALLOC(1, sizeof(MmsPdu_t));
 
 	mmsPdu->present = MmsPdu_PR_rejectPDU;
 
 	if (invokeId != NULL) {
-		mmsPdu->choice.rejectPDU.originalInvokeID = (Unsigned32_t*) calloc(1, sizeof(Unsigned32_t));
+		mmsPdu->choice.rejectPDU.originalInvokeID = (Unsigned32_t*) GLOBAL_CALLOC(1, sizeof(Unsigned32_t));
 		asn_long2INTEGER(mmsPdu->choice.rejectPDU.originalInvokeID, *invokeId);
 	}
 
@@ -291,7 +291,7 @@ MmsServerConnection_init(MmsServerConnection* connection, MmsServer server, IsoC
 	MmsServerConnection* self;
 
 	if (connection == NULL)
-		self = (MmsServerConnection*) calloc(1, sizeof(MmsServerConnection));
+		self = (MmsServerConnection*) GLOBAL_CALLOC(1, sizeof(MmsServerConnection));
 	else
 		self = connection;
 
@@ -321,7 +321,7 @@ MmsServerConnection_destroy(MmsServerConnection* self)
 #endif
 
 	LinkedList_destroyDeep(self->namedVariableLists, (LinkedListValueDeleteFunction) MmsNamedVariableList_destroy);
-	free(self);
+	GLOBAL_FREEMEM(self);
 }
 
 bool

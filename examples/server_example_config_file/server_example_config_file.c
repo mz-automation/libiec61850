@@ -15,13 +15,13 @@
  */
 
 #include "iec61850_server.h"
-#include "thread.h"
+#include "hal_thread.h"
 #include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "filesystem.h"
-#include "config_file_parser.h"
+#include "hal_filesystem.h"
+#include "iec61850_config_file_parser.h"
 
 static int running = 0;
 

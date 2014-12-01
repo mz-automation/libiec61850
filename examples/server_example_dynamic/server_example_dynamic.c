@@ -6,7 +6,7 @@
  */
 
 #include "iec61850_server.h"
-#include "thread.h"
+#include "hal_thread.h"
 #include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -39,6 +39,8 @@ int main(int argc, char** argv) {
 
     DataObject* lln0_mod = CDC_ENS_create("Mod", (ModelNode*) lln0, 0);
     DataObject* lln0_health = CDC_ENS_create("Health", (ModelNode*) lln0, 0);
+
+    SettingGroupControlBlock_create(lln0, 1, 1);
 
     /* Add a temperature sensor LN */
     LogicalNode* ttmp1 = LogicalNode_create("TTMP1", lDevice1);

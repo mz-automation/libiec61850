@@ -14,6 +14,23 @@
 #include <time.h>
 #endif	/* __CYGWIN__ */
 
+#ifdef __IAR_SYSTEMS_ICC__
+
+static struct tm *localtime_r(const time_t *tloc, struct tm *result) {
+    struct tm *tm;
+    if((tm = localtime(tloc)))
+        return memcpy(result, tm, sizeof(struct tm));
+    return 0;
+}
+
+static struct tm *gmtime_r(const time_t *tloc, struct tm *result) {
+    struct tm *tm;
+    if((tm = gmtime(tloc)))
+        return memcpy(result, tm, sizeof(struct tm));
+    return 0;
+}
+#endif /* __IAR_SYSTEMS_ICC__ */
+
 #if	defined(WIN32)
 #pragma message( "PLEASE STOP AND READ!")
 #pragma message( "  localtime_r is implemented via localtime(), which may be not thread-safe.")

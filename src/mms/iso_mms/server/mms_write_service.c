@@ -47,13 +47,13 @@ mmsServer_createMmsWriteResponse(MmsServerConnection* connection,
 
 	writeResponse->list.count = numberOfItems;
 	writeResponse->list.size = numberOfItems;
-	writeResponse->list.array = (struct WriteResponse__Member**) calloc(numberOfItems,
+	writeResponse->list.array = (struct WriteResponse__Member**) GLOBAL_CALLOC(numberOfItems,
 	        sizeof(struct WriteResponse__Member*));
 
 	int i;
 
 	for (i = 0; i < numberOfItems; i++) {
-	    writeResponse->list.array[i] =  (struct WriteResponse__Member*) calloc(1, sizeof(struct WriteResponse__Member));
+	    writeResponse->list.array[i] =  (struct WriteResponse__Member*) GLOBAL_CALLOC(1, sizeof(struct WriteResponse__Member));
 
 	    if (accessResults[i] == DATA_ACCESS_ERROR_SUCCESS)
 	        writeResponse->list.array[i]->present = WriteResponse__Member_PR_success;
@@ -72,13 +72,13 @@ mmsServer_createMmsWriteResponse(MmsServerConnection* connection,
 
 
 void
-MmsServerConnection_sendWriteResponse(MmsServerConnection* self, uint32_t invokeId, MmsDataAccessError indication)
+MmsServerConnection_sendWriteResponse(MmsServerConnection* self, uint32_t invokeId, MmsDataAccessError indication, bool handlerMode)
 {
     ByteBuffer* response = ByteBuffer_create(NULL, self->maxPduSize);
 
     mmsServer_createMmsWriteResponse(self, invokeId, response, 1, &indication);
 
-    IsoConnection_sendMessage(self->isoConnection, response, false);
+    IsoConnection_sendMessage(self->isoConnection, response, handlerMode);
 
     ByteBuffer_destroy(response);
 }
@@ -151,7 +151,7 @@ mmsServer_handleWriteRequest(
 
             domain = MmsDevice_getDomain(device, domainIdStr);
 
-            free(domainIdStr);
+            GLOBAL_FREEMEM(domainIdStr);
 
             if (domain == NULL) {
                 accessResults[i] = DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT;
@@ -180,7 +180,7 @@ mmsServer_handleWriteRequest(
         }
 
         if (variable == NULL) {
-            free(nameIdStr);
+            GLOBAL_FREEMEM(nameIdStr);
             accessResults[i] = DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT;
             continue;
         }
@@ -189,13 +189,13 @@ mmsServer_handleWriteRequest(
 
         if (alternateAccess != NULL) {
             if (variable->type != MMS_ARRAY) {
-                free(nameIdStr);
+                GLOBAL_FREEMEM(nameIdStr);
                 accessResults[i] = DATA_ACCESS_ERROR_OBJECT_ATTRIBUTE_INCONSISTENT;
                 continue;
             }
 
             if (!mmsServer_isIndexAccess(alternateAccess)) {
-                free(nameIdStr);
+                GLOBAL_FREEMEM(nameIdStr);
                 accessResults[i] = DATA_ACCESS_ERROR_OBJECT_ACCESS_UNSUPPORTED;
                 continue;
             }
@@ -206,7 +206,7 @@ mmsServer_handleWriteRequest(
         MmsValue* value = mmsMsg_parseDataElement(dataElement);
 
         if (value == NULL) {
-            free(nameIdStr);
+            GLOBAL_FREEMEM(nameIdStr);
             accessResults[i] = DATA_ACCESS_ERROR_OBJECT_ATTRIBUTE_INCONSISTENT;
             continue;
         }
@@ -219,7 +219,7 @@ mmsServer_handleWriteRequest(
             MmsValue* cachedArray = MmsServer_getValueFromCache(connection->server, domain, nameIdStr);
 
             if (cachedArray == NULL) {
-                free(nameIdStr);
+                GLOBAL_FREEMEM(nameIdStr);
                 MmsValue_delete(value);
                 accessResults[i] = DATA_ACCESS_ERROR_OBJECT_ATTRIBUTE_INCONSISTENT;
                 continue;
@@ -230,20 +230,20 @@ mmsServer_handleWriteRequest(
             MmsValue* elementValue = MmsValue_getElement(cachedArray, index);
 
             if (elementValue == NULL) {
-                free(nameIdStr);
+                GLOBAL_FREEMEM(nameIdStr);
                 MmsValue_delete(value);
                 accessResults[i] = DATA_ACCESS_ERROR_OBJECT_ATTRIBUTE_INCONSISTENT;
                 continue;
             }
 
             if (MmsValue_update(elementValue, value) == false) {
-                free(nameIdStr);
+                GLOBAL_FREEMEM(nameIdStr);
                 MmsValue_delete(value);
                 accessResults[i] = DATA_ACCESS_ERROR_TYPE_INCONSISTENT;
                 continue;
             }
 
-            free(nameIdStr);
+            GLOBAL_FREEMEM(nameIdStr);
             MmsValue_delete(value);
             accessResults[i] = DATA_ACCESS_ERROR_SUCCESS;
             continue;
@@ -260,7 +260,7 @@ mmsServer_handleWriteRequest(
 
         MmsValue_delete(value);
 
-        free(nameIdStr);
+        GLOBAL_FREEMEM(nameIdStr);
 	}
 
 	if (sendResponse) {

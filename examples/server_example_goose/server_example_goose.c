@@ -7,7 +7,7 @@
  */
 
 #include "iec61850_server.h"
-#include "thread.h" /* for Thread_sleep() */
+#include "hal_thread.h" /* for Thread_sleep() */
 #include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>

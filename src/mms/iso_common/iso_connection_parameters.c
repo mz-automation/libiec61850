@@ -35,7 +35,7 @@ AcseAuthenticationParameter
 AcseAuthenticationParameter_create()
 {
     AcseAuthenticationParameter self = (AcseAuthenticationParameter)
-            calloc(1, sizeof(struct sAcseAuthenticationParameter));
+        GLOBAL_CALLOC(1, sizeof(struct sAcseAuthenticationParameter));
 
     return self;
 }
@@ -45,9 +45,9 @@ AcseAuthenticationParameter_destroy(AcseAuthenticationParameter self)
 {
     if (self->mechanism == ACSE_AUTH_PASSWORD)
         if (self->value.password.octetString != NULL)
-            free(self->value.password.octetString);
+            GLOBAL_FREEMEM(self->value.password.octetString);
 
-    free(self);
+    GLOBAL_FREEMEM(self);
 }
 
 void
@@ -67,7 +67,7 @@ AcseAuthenticationParameter_setAuthMechanism(AcseAuthenticationParameter self, A
 IsoConnectionParameters
 IsoConnectionParameters_create()
 {
-    IsoConnectionParameters self = (IsoConnectionParameters) calloc(1, sizeof(struct sIsoConnectionParameters));
+    IsoConnectionParameters self = (IsoConnectionParameters) GLOBAL_CALLOC(1, sizeof(struct sIsoConnectionParameters));
 
     return self;
 }
@@ -75,7 +75,7 @@ IsoConnectionParameters_create()
 void
 IsoConnectionParameters_destroy(IsoConnectionParameters self)
 {
-    free(self);
+    GLOBAL_FREEMEM(self);
 }
 
 void
@@ -86,14 +86,14 @@ IsoConnectionParameters_setAcseAuthenticationParameter(IsoConnectionParameters s
 }
 
 void
-IsoConnectionParameters_setTcpParameters(IsoConnectionParameters self, char* hostname, int tcpPort)
+IsoConnectionParameters_setTcpParameters(IsoConnectionParameters self, const char* hostname, int tcpPort)
 {
     self->hostname = hostname;
     self->tcpPort = tcpPort;
 }
 
 void
-IsoConnectionParameters_setRemoteApTitle(IsoConnectionParameters self, char* apTitle, int aeQualifier)
+IsoConnectionParameters_setRemoteApTitle(IsoConnectionParameters self, const char* apTitle, int aeQualifier)
 {
     if (apTitle == NULL)
         self->remoteApTitleLen = 0;
@@ -104,7 +104,7 @@ IsoConnectionParameters_setRemoteApTitle(IsoConnectionParameters self, char* apT
 }
 
 void
-IsoConnectionParameters_setRemoteAddresses(IsoConnectionParameters self, uint32_t pSelector, uint16_t sSelector, uint16_t tSelector)
+IsoConnectionParameters_setRemoteAddresses(IsoConnectionParameters self, uint32_t pSelector, uint16_t sSelector, TSelector tSelector)
 {
     self->remotePSelector = pSelector;
     self->remoteSSelector = sSelector;
@@ -124,7 +124,7 @@ IsoConnectionParameters_setLocalApTitle(IsoConnectionParameters self, char* apTi
 }
 
 void
-IsoConnectionParameters_setLocalAddresses(IsoConnectionParameters self, uint32_t pSelector, uint16_t sSelector, uint16_t tSelector)
+IsoConnectionParameters_setLocalAddresses(IsoConnectionParameters self, uint32_t pSelector, uint16_t sSelector, TSelector tSelector)
 {
     self->localPSelector = pSelector;
     self->localSSelector = sSelector;

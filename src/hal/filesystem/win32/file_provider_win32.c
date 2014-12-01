@@ -30,8 +30,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include "filesystem.h"
+#include "hal_filesystem.h"
 
+#include "libiec61850_platform_includes.h"
 #include "stack_config.h"
 
 #include <malloc.h>
@@ -131,7 +132,7 @@ FileSystem_openDirectory(char* directoryName)
 
     createFullPathFromFileName(fullPath, directoryName);
 
-    DirectoryHandle dirHandle = (DirectoryHandle) calloc(1, sizeof(struct sDirectoryHandle));
+    DirectoryHandle dirHandle = (DirectoryHandle) GLOBAL_CALLOC(1, sizeof(struct sDirectoryHandle));
 
     strcat(fullPath, "\\*");
 
@@ -141,7 +142,7 @@ FileSystem_openDirectory(char* directoryName)
         dirHandle->available = true;
 
     if (dirHandle->handle == INVALID_HANDLE_VALUE) {
-        free(dirHandle);
+        GLOBAL_FREEMEM(dirHandle);
         return NULL;
     }
     else
@@ -226,27 +227,6 @@ void
 FileSystem_closeDirectory(DirectoryHandle directory)
 {
     FindClose(directory->handle);
-    free(directory);
+    GLOBAL_FREEMEM(directory);
 }
 
-#if 0
-int
-main(int argc, char** argv)
-{
-    DirectoryHandle directory = FileSystem_openDirectory("/");
-
-    if (directory != NULL) {
-        char* fileName = FileSystem_readDirectory(directory);
-
-
-        while (fileName != NULL) {
-            printf("FILE: (%s)\n", fileName);
-            fileName = FileSystem_readDirectory(directory);
-        }
-
-        FileSystem_closeDirectory(directory);
-    }
-    else
-        printf("Error opening directory!\n");
-}
-#endif

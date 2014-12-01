@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 
 using IEC61850.Client;
+using IEC61850.Common;
 
 namespace datasets
 {
@@ -16,7 +17,7 @@ namespace datasets
             if (args.Length > 0)
                 hostname = args[0];
             else
-                hostname = "10.0.2.2";
+                hostname = "localhost";
 
             Console.WriteLine("Connect to " + hostname);
 
@@ -30,7 +31,6 @@ namespace datasets
                 {
                     Console.WriteLine("LD: " + entry);
                 }
-
 
 				// create a new data set
 
@@ -48,7 +48,6 @@ namespace datasets
                 {
                     Console.WriteLine("DS element: " + entry);
                 }
-
 
 				// read the values of the newly created data set
                 DataSet dataSet = con.ReadDataSetValues("IEDM1CPUBHKW/LLN0.ds1", null);

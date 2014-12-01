@@ -49,7 +49,7 @@ createValueCaches(MmsDevice* device)
 MmsServer
 MmsServer_create(IsoServer isoServer, MmsDevice* device)
 {
-    MmsServer self = (MmsServer) malloc(sizeof(struct sMmsServer));
+    MmsServer self = (MmsServer) GLOBAL_MALLOC(sizeof(struct sMmsServer));
 
     memset(self, 0, sizeof(struct sMmsServer));
 
@@ -58,9 +58,12 @@ MmsServer_create(IsoServer isoServer, MmsDevice* device)
     self->openConnections = Map_create();
     self->valueCaches = createValueCaches(device);
     self->isLocked = false;
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
     self->modelMutex = Semaphore_create(1);
 
     IsoServer_setUserLock(isoServer, self->modelMutex);
+#endif
 
     return self;
 }
@@ -68,24 +71,35 @@ MmsServer_create(IsoServer isoServer, MmsDevice* device)
 void
 MmsServer_lockModel(MmsServer self)
 {
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_wait(self->modelMutex);
+#endif
 }
 
 void
 MmsServer_unlockModel(MmsServer self)
 {
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_post(self->modelMutex);
+#endif
 }
 
 void
-MmsServer_installReadHandler(MmsServer self, ReadVariableHandler readHandler, void* parameter)
+MmsServer_installReadHandler(MmsServer self, MmsReadVariableHandler readHandler, void* parameter)
 {
     self->readHandler = readHandler;
     self->readHandlerParameter = parameter;
 }
 
 void
-MmsServer_installWriteHandler(MmsServer self, WriteVariableHandler writeHandler, void* parameter)
+MmsServer_installReadAccessHandler(MmsServer self, MmsReadAccessHandler readAccessHandler, void* parameter)
+{
+    self->readAccessHandler = readAccessHandler;
+    self->readAccessHandlerParameter = parameter;
+}
+
+void
+MmsServer_installWriteHandler(MmsServer self, MmsWriteVariableHandler writeHandler, void* parameter)
 {
     self->writeHandler = writeHandler;
     self->writeHandlerParameter = parameter;
@@ -124,8 +138,12 @@ MmsServer_destroy(MmsServer self)
 {
     Map_deleteDeep(self->openConnections, false, closeConnection);
     Map_deleteDeep(self->valueCaches, false, (void (*) (void*)) deleteSingleCache);
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_destroy(self->modelMutex);
-    free(self);
+#endif
+
+    GLOBAL_FREEMEM(self);
 }
 
 MmsValue*
@@ -177,10 +195,19 @@ mmsServer_setValue(MmsServer self, MmsDomain* domain, char* itemId, MmsValue* va
     return indication;
 }
 
+
 MmsValue*
 mmsServer_getValue(MmsServer self, MmsDomain* domain, char* itemId, MmsServerConnection* connection)
 {
     MmsValue* value = NULL;
+
+    if (self->readAccessHandler != NULL) {
+        MmsDataAccessError accessError =
+                self->readAccessHandler(self->readAccessHandlerParameter, domain, itemId, connection);
+
+        if (accessError != DATA_ACCESS_ERROR_SUCCESS)
+            return NULL;
+    }
 
     value = MmsServer_getValueFromCache(self, domain, itemId);
 
@@ -233,6 +260,7 @@ isoConnectionIndicationHandler(IsoConnectionIndication indication,
     }
 }
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
 void
 MmsServer_startListening(MmsServer server, int tcpPort)
 {
@@ -246,3 +274,31 @@ MmsServer_stopListening(MmsServer server)
 {
     IsoServer_stopListening(server->isoServer);
 }
+#endif /* (CONFIG_MMS_THREADLESS_STACK != 1)*/
+
+void
+MmsServer_startListeningThreadless(MmsServer self, int tcpPort)
+{
+    IsoServer_setConnectionHandler(self->isoServer, isoConnectionIndicationHandler, (void*) self);
+    IsoServer_setTcpPort(self->isoServer, tcpPort);
+    IsoServer_startListeningThreadless(self->isoServer);
+}
+
+int
+MmsServer_waitReady(MmsServer self, unsigned int timeoutMs)
+{
+   return IsoServer_waitReady(self->isoServer, timeoutMs);
+}
+
+void
+MmsServer_handleIncomingMessages(MmsServer self)
+{
+    IsoServer_processIncomingMessages(self->isoServer);
+}
+
+void
+MmsServer_stopListeningThreadless(MmsServer self)
+{
+    IsoServer_stopListeningThreadless(self->isoServer);
+}
+

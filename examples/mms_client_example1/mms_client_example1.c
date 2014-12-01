@@ -27,7 +27,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "mms_client_connection.h"
-#include "thread.h"
+#include "hal_thread.h"
 
 int main(int argc, char** argv) {
 

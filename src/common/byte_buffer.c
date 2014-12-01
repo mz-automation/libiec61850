@@ -28,10 +28,10 @@ ByteBuffer*
 ByteBuffer_create(ByteBuffer* self, int maxSize)
 {
 	if (self == NULL) {
-		self = (ByteBuffer*) calloc(1, sizeof(ByteBuffer));
+		self = (ByteBuffer*) GLOBAL_CALLOC(1, sizeof(ByteBuffer));
 	}
 
-	self->buffer = (uint8_t*) calloc(maxSize, sizeof(uint8_t));
+	self->buffer = (uint8_t*) GLOBAL_CALLOC(maxSize, sizeof(uint8_t));
 	self->maxSize = maxSize;
 	self->size = 0;
 
@@ -41,8 +41,8 @@ ByteBuffer_create(ByteBuffer* self, int maxSize)
 void
 ByteBuffer_destroy(ByteBuffer* self)
 {
-	free(self->buffer);
-	free(self);
+	GLOBAL_FREEMEM(self->buffer);
+	GLOBAL_FREEMEM(self);
 }
 
 void
@@ -105,6 +105,7 @@ ByteBuffer_setSize(ByteBuffer* self, int size)
 	return self->size;
 }
 
+#if 0
 void
 ByteBuffer_print(ByteBuffer* self, char* message)
 {
@@ -119,3 +120,4 @@ ByteBuffer_print(ByteBuffer* self, char* message)
     }
     printf("\n");
 }
+#endif

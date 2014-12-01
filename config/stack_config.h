@@ -10,9 +10,10 @@
 #define STACK_CONFIG_H_
 
 /* include asserts if set to 1 */
-#define DEBUG 0
+#define DEBUG 1
 
 /* print debugging information with printf if set to 1 */
+#define DEBUG_SOCKET 0
 #define DEBUG_COTP 0
 #define DEBUG_ISO_SERVER 0
 #define DEBUG_ISO_CLIENT 0
@@ -20,9 +21,27 @@
 #define DEBUG_IED_CLIENT 0
 #define DEBUG_MMS_CLIENT 0
 #define DEBUG_MMS_SERVER 0
+#define DEBUG_GOOSE_SUBSCRIBER 0
+#define DEBUG_GOOSE_PUBLISHER 0
 
 /* Maximum MMS PDU SIZE - default is 65000 */
 #define CONFIG_MMS_MAXIMUM_PDU_SIZE 65000
+
+/*
+ * Enable single threaded mode
+ *
+ * 1 ==> server runs in single threaded mode (a single thread for the server and all client connections)
+ * 0 ==> server runs in multi-threaded mode (one thread for each connection and
+ * one server background thread )
+ */
+#define CONFIG_MMS_SINGLE_THREADED 1
+
+/*
+ * Optimize stack for threadless operation - don't use semaphores
+ *
+ * WARNING: If set to 1 normal single- and multi-threaded server are no longer working!
+ */
+#define CONFIG_MMS_THREADLESS_STACK 0
 
 /* number of concurrent MMS client connections the server accepts, -1 for no limit */
 #define CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS 5
@@ -48,6 +67,7 @@
 /* Ethernet interface ID for GOOSE and SV */
 #define CONFIG_ETHERNET_INTERFACE_ID "eth0"
 //#define CONFIG_ETHERNET_INTERFACE_ID "vboxnet0"
+//#define CONFIG_ETHERNET_INTERFACE_ID "eth-f"
 //#define CONFIG_ETHERNET_INTERFACE_ID "en0"  // OS X uses enX in place of ethX as ethernet NIC names.
 
 /* Set to 1 to include GOOSE support in the build. Otherwise set to 0 */
@@ -102,16 +122,28 @@
 /* The default buffer size of buffered RCBs in bytes */
 #define CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE 65536
 
+/* include support for setting groups */
+#define CONFIG_IEC61850_SETTING_GROUPS 1
+
+/* default reservation time of a setting group control block in s */
+#define CONFIG_IEC61850_SG_RESVTMS 10
+
 /* default results for MMS identify service */
 #define CONFIG_DEFAULT_MMS_VENDOR_NAME "libiec61850.com"
 #define CONFIG_DEFAULT_MMS_MODEL_NAME "LIBIEC61850"
-#define CONFIG_DEFAULT_MMS_REVISION "0.7.8"
+#define CONFIG_DEFAULT_MMS_REVISION "0.8.2"
 
 /* MMS virtual file store base path - where file services are looking for files */
 #define CONFIG_VIRTUAL_FILESTORE_BASEPATH "./vmd-filestore/"
 
 /* Maximum number of open file per MMS connection (for MMS file read service) */
 #define CONFIG_MMS_MAX_NUMBER_OF_OPEN_FILES_PER_CONNECTION 5
+
+#define CONFIG_MMS_MAX_NUMBER_OF_DOMAIN_SPECIFIC_DATA_SETS 10
+
+#define CONFIG_MMS_MAX_NUMBER_OF_ASSOCIATION_SPECIFIC_DATA_SETS 10
+
+#define CONFIG_MMS_MAX_NUMBER_OF_VMD_SPECIFIC_DATA_SETS 10
 
 /* Definition of supported services */
 #define MMS_DEFAULT_PROFILE 1
@@ -139,5 +171,7 @@
 
 /* VMD scope named variables are not used by IEC 61850 */
 #define CONFIG_MMS_SUPPORT_VMD_SCOPE_NAMED_VARIABLES 0
+
+#define CONFIG_INCLUDE_PLATFORM_SPECIFIC_HEADERS 0
 
 #endif /* STACK_CONFIG_H_ */

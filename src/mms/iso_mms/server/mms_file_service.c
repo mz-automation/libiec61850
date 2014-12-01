@@ -25,7 +25,7 @@
 
 #if (MMS_FILE_SERVICE == 1)
 
-#include "filesystem.h"
+#include "hal_filesystem.h"
 #include "conversions.h"
 
 #define CONFIG_MMS_FILE_SERVICE_MAX_FILENAME_LENGTH 256

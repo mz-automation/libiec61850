@@ -33,7 +33,7 @@ mmsMsg_createFloatData(MmsValue* value, int* size, uint8_t** buf)
 {
     if (value->value.floatingPoint.formatWidth == 64) {
         *size = 9;
-        *buf = (uint8_t*) malloc(9);
+        *buf = (uint8_t*) GLOBAL_MALLOC(9);
         (*buf)[0] = 11;
 #if (ORDER_LITTLE_ENDIAN == 1)
         memcpyReverseByteOrder((*buf) + 1, value->value.floatingPoint.buf, 8);
@@ -42,7 +42,7 @@ mmsMsg_createFloatData(MmsValue* value, int* size, uint8_t** buf)
 #endif
     } else {
         *size = 5;
-        *buf = (uint8_t*) malloc(5);
+        *buf = (uint8_t*) GLOBAL_MALLOC(5);
         (*buf)[0] = 8;
 #if (ORDER_LITTLE_ENDIAN == 1)
         memcpyReverseByteOrder((*buf) + 1, value->value.floatingPoint.buf, 4);
@@ -55,17 +55,17 @@ mmsMsg_createFloatData(MmsValue* value, int* size, uint8_t** buf)
 Data_t*
 mmsMsg_createBasicDataElement(MmsValue* value)
 {
-    Data_t* dataElement = (Data_t*) calloc(1, sizeof(Data_t));
+    Data_t* dataElement = (Data_t*) GLOBAL_CALLOC(1, sizeof(Data_t));
 
     switch (value->type) {
     case MMS_ARRAY:
         {
             int size = MmsValue_getArraySize(value);
             dataElement->present = Data_PR_array;
-            dataElement->choice.array = (DataSequence_t*) calloc(1, sizeof(DataSequence_t));
+            dataElement->choice.array = (DataSequence_t*) GLOBAL_CALLOC(1, sizeof(DataSequence_t));
             dataElement->choice.array->list.count = size;
             dataElement->choice.array->list.size = size;
-            dataElement->choice.array->list.array = (Data_t**) calloc(size, sizeof(Data_t*));
+            dataElement->choice.array->list.array = (Data_t**) GLOBAL_CALLOC(size, sizeof(Data_t*));
             int i;
             for (i = 0; i < size; i++) {
                 dataElement->choice.array->list.array[i] =
@@ -79,10 +79,10 @@ mmsMsg_createBasicDataElement(MmsValue* value)
             int size = value->value.structure.size;
 
             dataElement->present = Data_PR_structure;
-            dataElement->choice.structure = (DataSequence_t*) calloc(1, sizeof(DataSequence_t));
+            dataElement->choice.structure = (DataSequence_t*) GLOBAL_CALLOC(1, sizeof(DataSequence_t));
             dataElement->choice.structure->list.count = size;
             dataElement->choice.structure->list.size = size;
-            dataElement->choice.structure->list.array = (Data_t**) calloc(size, sizeof(Data_t*));
+            dataElement->choice.structure->list.array = (Data_t**) GLOBAL_CALLOC(size, sizeof(Data_t*));
             int i;
             for (i = 0; i < size; i++) {
                 dataElement->choice.structure->list.array[i] = mmsMsg_createBasicDataElement(
@@ -117,7 +117,7 @@ mmsMsg_createBasicDataElement(MmsValue* value)
     case MMS_UTC_TIME:
         dataElement->present = Data_PR_utctime;
 
-        dataElement->choice.utctime.buf = (uint8_t*) malloc(8);
+        dataElement->choice.utctime.buf = (uint8_t*) GLOBAL_MALLOC(8);
         memcpy(dataElement->choice.utctime.buf, value->value.utcTime, 8);
         dataElement->choice.utctime.size = 8;
         break;
@@ -174,7 +174,7 @@ mmsMsg_createBasicDataElement(MmsValue* value)
 
     default:
         dataElement->present = Data_PR_NOTHING;
-        printf("MMS read: unknown value type %i in result\n", value->type);
+
         break;
     }
 
@@ -187,13 +187,13 @@ mmsMsg_parseDataElement(Data_t* dataElement)
     MmsValue* value = NULL;
 
     if (dataElement->present == Data_PR_structure) {
-        value = (MmsValue*) calloc(1, sizeof(MmsValue));
+        value = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
 
         int componentCount = dataElement->choice.structure->list.count;
 
         value->type = MMS_STRUCTURE;
         value->value.structure.size = componentCount;
-        value->value.structure.components = (MmsValue**) calloc(componentCount, sizeof(MmsValue*));
+        value->value.structure.components = (MmsValue**) GLOBAL_CALLOC(componentCount, sizeof(MmsValue*));
 
         int i;
 
@@ -203,13 +203,13 @@ mmsMsg_parseDataElement(Data_t* dataElement)
         }
     }
     else if (dataElement->present == Data_PR_array) {
-        value = (MmsValue*) calloc(1, sizeof(MmsValue));
+        value = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
 
         int componentCount = dataElement->choice.array->list.count;
 
         value->type = MMS_ARRAY;
         value->value.structure.size = componentCount;
-        value->value.structure.components = (MmsValue**) calloc(componentCount, sizeof(MmsValue*));
+        value->value.structure.components = (MmsValue**) GLOBAL_CALLOC(componentCount, sizeof(MmsValue*));
 
         int i;
 
@@ -240,7 +240,7 @@ mmsMsg_parseDataElement(Data_t* dataElement)
                     dataElement->choice.mMSString.size);
         }
         else if (dataElement->present == Data_PR_bitstring) {
-            value = (MmsValue*) calloc(1, sizeof(MmsValue));
+            value = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
 
             value->type = MMS_BIT_STRING;
             int size = dataElement->choice.bitstring.size;
@@ -248,13 +248,13 @@ mmsMsg_parseDataElement(Data_t* dataElement)
             value->value.bitString.size = (size * 8)
                     - dataElement->choice.bitstring.bits_unused;
 
-            value->value.bitString.buf = (uint8_t*) malloc(size);
+            value->value.bitString.buf = (uint8_t*) GLOBAL_MALLOC(size);
             memcpy(value->value.bitString.buf,
                     dataElement->choice.bitstring.buf, size);
 
         }
         else if (dataElement->present == Data_PR_floatingpoint) {
-            value = (MmsValue*) calloc(1, sizeof(MmsValue));
+            value = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
             int size = dataElement->choice.floatingpoint.size;
 
             value->type = MMS_FLOAT;
@@ -265,7 +265,7 @@ mmsMsg_parseDataElement(Data_t* dataElement)
 
                 uint8_t* floatBuf = (dataElement->choice.floatingpoint.buf + 1);
 
-                value->value.floatingPoint.buf = (uint8_t*) malloc(4);
+                value->value.floatingPoint.buf = (uint8_t*) GLOBAL_MALLOC(4);
 #if (ORDER_LITTLE_ENDIAN == 1)
                 memcpyReverseByteOrder(value->value.floatingPoint.buf, floatBuf, 4);
 #else
@@ -279,7 +279,7 @@ mmsMsg_parseDataElement(Data_t* dataElement)
 
                 uint8_t* floatBuf = (dataElement->choice.floatingpoint.buf + 1);
 
-                value->value.floatingPoint.buf = (uint8_t*) malloc(8);
+                value->value.floatingPoint.buf = (uint8_t*) GLOBAL_MALLOC(8);
 #if (ORDER_LITTLE_ENDIAN == 1)
                 memcpyReverseByteOrder(value->value.floatingPoint.buf, floatBuf, 8);
 #else
@@ -288,24 +288,24 @@ mmsMsg_parseDataElement(Data_t* dataElement)
             }
         }
         else if (dataElement->present == Data_PR_utctime) {
-            value = (MmsValue*) calloc(1, sizeof(MmsValue));
+            value = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
             value->type = MMS_UTC_TIME;
             memcpy(value->value.utcTime, dataElement->choice.utctime.buf, 8);
         }
         else if (dataElement->present == Data_PR_octetstring) {
-            value = (MmsValue*) calloc(1, sizeof(MmsValue));
+            value = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
             value->type = MMS_OCTET_STRING;
             int size = dataElement->choice.octetstring.size;
             value->value.octetString.size = size;
             value->value.octetString.maxSize = size;
-            value->value.octetString.buf = (uint8_t*) malloc(size);
+            value->value.octetString.buf = (uint8_t*) GLOBAL_MALLOC(size);
             memcpy(value->value.octetString.buf, dataElement->choice.octetstring.buf, size);
         }
         else if (dataElement->present == Data_PR_binarytime) {
             int size = dataElement->choice.binarytime.size;
 
             if (size <= 6) {
-                value = (MmsValue*) calloc(1, sizeof(MmsValue));
+                value = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
                 value->type = MMS_BINARY_TIME;
                 value->value.binaryTime.size = size;
                 memcpy(value->value.binaryTime.buf, dataElement->choice.binarytime.buf, size);
@@ -324,18 +324,18 @@ Data_t*
 mmsMsg_createDataElement(MmsValue* value)
 {
     if (value->type == MMS_STRUCTURE) {
-        Data_t* dataElement = (Data_t*) calloc(1, sizeof(Data_t));
+        Data_t* dataElement = (Data_t*) GLOBAL_CALLOC(1, sizeof(Data_t));
 
         dataElement->present = Data_PR_structure;
 
         int elementCount = value->value.structure.size;
 
-        dataElement->choice.structure = (DataSequence_t*) calloc(1, sizeof(DataSequence_t));
+        dataElement->choice.structure = (DataSequence_t*) GLOBAL_CALLOC(1, sizeof(DataSequence_t));
 
         dataElement->choice.structure->list.size = elementCount;
         dataElement->choice.structure->list.count = elementCount;
 
-        dataElement->choice.structure->list.array = (Data_t**) calloc(elementCount, sizeof(Data_t*));
+        dataElement->choice.structure->list.array = (Data_t**) GLOBAL_CALLOC(elementCount, sizeof(Data_t*));
 
         int i;
 
@@ -370,7 +370,7 @@ mmsMsg_addResultToResultList(AccessResult_t* accessResult, MmsValue* value)
             accessResult->present = AccessResult_PR_array;
             accessResult->choice.array.list.count = size;
             accessResult->choice.array.list.size = size;
-            accessResult->choice.array.list.array = (Data_t**) calloc(size, sizeof(Data_t*));
+            accessResult->choice.array.list.array = (Data_t**) GLOBAL_CALLOC(size, sizeof(Data_t*));
             int i;
             for (i = 0; i < size; i++) {
                 accessResult->choice.array.list.array[i] =
@@ -384,7 +384,7 @@ mmsMsg_addResultToResultList(AccessResult_t* accessResult, MmsValue* value)
             accessResult->present = AccessResult_PR_structure;
             accessResult->choice.structure.list.count = size;
             accessResult->choice.structure.list.size = size;
-            accessResult->choice.structure.list.array = (Data_t**) calloc(size, sizeof(Data_t*));
+            accessResult->choice.structure.list.array = (Data_t**) GLOBAL_CALLOC(size, sizeof(Data_t*));
             int i;
             for (i = 0; i < size; i++) {
                 accessResult->choice.structure.list.array[i] =
@@ -416,7 +416,7 @@ mmsMsg_addResultToResultList(AccessResult_t* accessResult, MmsValue* value)
             break;
         case MMS_UTC_TIME:
             accessResult->present = AccessResult_PR_utctime;
-            accessResult->choice.utctime.buf = (uint8_t*) malloc(8);
+            accessResult->choice.utctime.buf = (uint8_t*) GLOBAL_MALLOC(8);
             memcpy(accessResult->choice.utctime.buf, value->value.utcTime, 8);
             accessResult->choice.utctime.size = 8;
             break;
@@ -470,8 +470,8 @@ mmsMsg_addResultToResultList(AccessResult_t* accessResult, MmsValue* value)
 
             asn_long2INTEGER(&accessResult->choice.failure, DataAccessError_typeinconsistent);
 
-            if (1)
-                printf("MMS read: unknown value type %i in result\n", value->type);
+
+
             break;
         }
     }
@@ -485,12 +485,12 @@ mmsMsg_createAccessResultsList(MmsPdu_t* mmsPdu, int resultsCount)
 
     readResponse->listOfAccessResult.list.size = resultsCount;
     readResponse->listOfAccessResult.list.count = resultsCount;
-    readResponse->listOfAccessResult.list.array = (AccessResult_t**) calloc(resultsCount, sizeof(AccessResult_t*));
+    readResponse->listOfAccessResult.list.array = (AccessResult_t**) GLOBAL_CALLOC(resultsCount, sizeof(AccessResult_t*));
 
     int i;
 
     for (i = 0; i < resultsCount; i++) {
-        readResponse->listOfAccessResult.list.array[i] = (AccessResult_t*) calloc(1, sizeof(AccessResult_t));
+        readResponse->listOfAccessResult.list.array[i] = (AccessResult_t*) GLOBAL_CALLOC(1, sizeof(AccessResult_t));
     }
 
     AccessResult_t** accessResultList = readResponse->listOfAccessResult.list.array;
@@ -514,8 +514,8 @@ deleteDataElement(Data_t* dataElement)
             deleteDataElement(dataElement->choice.structure->list.array[i]);
         }
 
-        free(dataElement->choice.structure->list.array);
-        free(dataElement->choice.structure);
+        GLOBAL_FREEMEM(dataElement->choice.structure->list.array);
+        GLOBAL_FREEMEM(dataElement->choice.structure);
     }
     else if (dataElement->present == Data_PR_array) {
         int elementCount = dataElement->choice.array->list.count;
@@ -525,17 +525,17 @@ deleteDataElement(Data_t* dataElement)
             deleteDataElement(dataElement->choice.array->list.array[i]);
         }
 
-        free(dataElement->choice.array->list.array);
-        free(dataElement->choice.array);
+        GLOBAL_FREEMEM(dataElement->choice.array->list.array);
+        GLOBAL_FREEMEM(dataElement->choice.array);
     }
     else if (dataElement->present == Data_PR_floatingpoint) {
-        free(dataElement->choice.floatingpoint.buf);
+        GLOBAL_FREEMEM(dataElement->choice.floatingpoint.buf);
     }
     else if (dataElement->present == Data_PR_utctime) {
-        free(dataElement->choice.utctime.buf);
+        GLOBAL_FREEMEM(dataElement->choice.utctime.buf);
     }
 
-    free(dataElement);
+    GLOBAL_FREEMEM(dataElement);
 }
 
 void
@@ -554,7 +554,7 @@ mmsMsg_deleteAccessResultList(AccessResult_t** accessResult, int variableCount)
                 deleteDataElement(accessResult[i]->choice.structure.list.array[j]);
             }
 
-            free(accessResult[i]->choice.structure.list.array);
+            GLOBAL_FREEMEM(accessResult[i]->choice.structure.list.array);
         }
         else if (accessResult[i]->present == AccessResult_PR_array) {
             int elementCount = accessResult[i]->choice.array.list.count;
@@ -565,23 +565,23 @@ mmsMsg_deleteAccessResultList(AccessResult_t** accessResult, int variableCount)
                 deleteDataElement(accessResult[i]->choice.array.list.array[j]);
             }
 
-            free(accessResult[i]->choice.array.list.array);
+            GLOBAL_FREEMEM(accessResult[i]->choice.array.list.array);
         }
         else if (accessResult[i]->present == AccessResult_PR_integer)
-            free(accessResult[i]->choice.integer.buf);
+            GLOBAL_FREEMEM(accessResult[i]->choice.integer.buf);
         else if (accessResult[i]->present == AccessResult_PR_unsigned)
-            free(accessResult[i]->choice.Unsigned.buf);
+            GLOBAL_FREEMEM(accessResult[i]->choice.Unsigned.buf);
         else if (accessResult[i]->present == AccessResult_PR_floatingpoint)
-            free(accessResult[i]->choice.floatingpoint.buf);
+            GLOBAL_FREEMEM(accessResult[i]->choice.floatingpoint.buf);
         else if (accessResult[i]->present == AccessResult_PR_utctime)
-            free(accessResult[i]->choice.utctime.buf);
+            GLOBAL_FREEMEM(accessResult[i]->choice.utctime.buf);
         else if (accessResult[i]->present == AccessResult_PR_failure)
-            free(accessResult[i]->choice.failure.buf);
+            GLOBAL_FREEMEM(accessResult[i]->choice.failure.buf);
 
-        free(accessResult[i]);
+        GLOBAL_FREEMEM(accessResult[i]);
     }
 
-    free(accessResult);
+    GLOBAL_FREEMEM(accessResult);
 }
 
 

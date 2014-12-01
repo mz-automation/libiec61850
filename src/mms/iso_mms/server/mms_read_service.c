@@ -78,7 +78,7 @@ addNamedVariableValue(MmsVariableSpecification* namedVariable, MmsServerConnecti
 
                 MmsValue_setElement(value, i, element);
 
-                free(newNameIdStr);
+                GLOBAL_FREEMEM(newNameIdStr);
             }
         }
     }

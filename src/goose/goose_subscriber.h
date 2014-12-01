@@ -1,7 +1,7 @@
 /*
  *  goose_subscriber.h
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013, 2014 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -70,6 +70,9 @@ typedef void (*GooseListener)(GooseSubscriber subscriber, void* parameter);
 GooseSubscriber
 GooseSubscriber_create(char* goCbRef, MmsValue* dataSetValues);
 
+//char*
+//GooseSubscriber_getGoCbRef(GooseSubscriber self);
+
 /**
  * \brief set the APPID used by the subscriber to filter relevant messages.
  *
@@ -82,30 +85,23 @@ void
 GooseSubscriber_setAppId(GooseSubscriber self, uint16_t appId);
 
 /**
- * \brief set the ethernet interface that should be used.
+ * \brief Check if subscriber state is valid
  *
- * \param self GooseSubscriber instance to operate on.
- * \param interfaceId the id of the interface (e.g. a network device name like eth0
- *        for linux or a numerical index for windows)
+ * A GOOSE subscriber is valid if TimeAllowedToLive timeout is not elapsed and GOOSE
+ * message were received with correct state and sequence ID.
+ *
  */
-void
-GooseSubscriber_setInterfaceId(GooseSubscriber self, char* interfaceId);
+bool
+GooseSubscriber_isValid(GooseSubscriber self);
 
-/**
- * \brief Start listening to GOOSE messages
- *
- * \param self GooseSubscriber instance to operate on.
- */
-void
-GooseSubscriber_subscribe(GooseSubscriber self);
+//uint16_t
+//GooseSubscriber_getAppId(GooseSubscriber self);
 
-/**
- * \brief Stop listening to GOOSE messages
- *
- * \param self GooseSubscriber instance to operate on.
- */
 void
-GooseSubscriber_unsubscribe(GooseSubscriber self);
+GooseSubscriber_setGoId(GooseSubscriber self, const char* goId);
+
+//char*
+//GooseSubscriber_getGoId(GooseSubscriber self);
 
 void
 GooseSubscriber_destroy(GooseSubscriber self);
@@ -138,6 +134,17 @@ GooseSubscriber_getTimeAllowedToLive(GooseSubscriber self);
 uint64_t
 GooseSubscriber_getTimestamp(GooseSubscriber self);
 
+/**
+ * \brief get the data set values received with the last report
+ *
+ * Note: To prevent data corruption. The MmsValue instance received should
+ * only be used inside of the callback function, when the GOOSE receiver is
+ * running in a separate thread.
+ *
+ * \param self GooseSubscriber instance to operate on.
+ *
+ * \return MmsValue instance of the report data set
+ */
 MmsValue*
 GooseSubscriber_getDataSetValues(GooseSubscriber self);
 

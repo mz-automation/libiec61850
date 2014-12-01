@@ -33,7 +33,7 @@
 static MmsVariableSpecification*
 createTypeSpecification(TypeSpecification_t* asnTypeSpec) {
 	MmsVariableSpecification* typeSpec = (MmsVariableSpecification*) 
-						calloc(1, sizeof(MmsVariableSpecification));
+        GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
 
 	switch (asnTypeSpec->present) {
 	case TypeSpecification_PR_structure:
@@ -44,7 +44,7 @@ createTypeSpecification(TypeSpecification_t* asnTypeSpec) {
 			typeSpec->typeSpec.structure.elementCount = elementCount;
 
 			typeSpec->typeSpec.structure.elements = (MmsVariableSpecification**)
-					calloc(elementCount, sizeof(MmsVariableSpecification*));
+                GLOBAL_CALLOC(elementCount, sizeof(MmsVariableSpecification*));
 
 			int i;
 
@@ -164,7 +164,7 @@ mmsClient_parseGetVariableAccessAttributesResponse(ByteBuffer* message, uint32_t
 int
 mmsClient_createGetVariableAccessAttributesRequest(
         uint32_t invokeId,
-		char* domainId, char* itemId,
+		const char* domainId, const char* itemId,
 		ByteBuffer* writeBuffer)
 {
 	MmsPdu_t* mmsPdu = mmsClient_createConfirmedRequestPdu(invokeId);

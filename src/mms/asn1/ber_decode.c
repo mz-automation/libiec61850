@@ -62,7 +62,7 @@ BerDecoder_decodeLength(uint8_t* buffer, int* length, int bufPos, int maxBufPos)
 char*
 BerDecoder_decodeString(uint8_t* buffer, int strlen, int bufPos, int maxBufPos)
 {
-    char* string = (char*) malloc(strlen + 1);
+    char* string = (char*) GLOBAL_MALLOC(strlen + 1);
     memcpy(string, buffer + bufPos, strlen);
     string[strlen] = 0;
 

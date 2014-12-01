@@ -23,7 +23,8 @@
 
 #include <windows.h>
 #include <stdlib.h>
-#include "thread.h"
+#include "libiec61850_platform_includes.h"
+#include "hal_thread.h"
 
 struct sThread {
 	ThreadExecutionFunction function;
@@ -59,7 +60,7 @@ Thread
 Thread_create(ThreadExecutionFunction function, void* parameter, bool autodestroy)
 {
 	DWORD threadId;
-	Thread thread = (Thread) malloc(sizeof(struct sThread));
+	Thread thread = (Thread) GLOBAL_MALLOC(sizeof(struct sThread));
 
 	thread->parameter = parameter;
 	thread->function = function;
@@ -89,7 +90,7 @@ Thread_destroy(Thread thread)
 
 	CloseHandle(thread->handle);
 
-	free(thread);
+	GLOBAL_FREEMEM(thread);
 }
 
 void

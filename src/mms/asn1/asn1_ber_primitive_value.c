@@ -28,11 +28,11 @@
 Asn1PrimitiveValue*
 Asn1PrimitiveValue_create(int size)
 {
-	Asn1PrimitiveValue* self = (Asn1PrimitiveValue*) malloc(sizeof(Asn1PrimitiveValue));
+	Asn1PrimitiveValue* self = (Asn1PrimitiveValue*) GLOBAL_MALLOC(sizeof(Asn1PrimitiveValue));
 
 	self->size = size;
 	self->maxSize = size;
-	self->octets = (uint8_t*) calloc(1, size);
+	self->octets = (uint8_t*) GLOBAL_CALLOC(1, size);
 
 	return self;
 }
@@ -40,22 +40,22 @@ Asn1PrimitiveValue_create(int size)
 //Asn1PrimitiveValue*
 //Asn1PrimitiveValue_createFromBuffer(uint8_t buffer, int bufferSize)
 //{
-//    Asn1PrimitiveValue* self = malloc(sizeof(Asn1PrimitiveValue));
+//    Asn1PrimitiveValue* self = GLOBAL_MALLOC(sizeof(Asn1PrimitiveValue));
 //    self->size = bufferSize;
 //    self->maxSize = bufferSize;
-//    self->octets = malloc(1, bufferSize);
+//    self->octets = GLOBAL_MALLOC(1, bufferSize);
 //
 //}
 
 Asn1PrimitiveValue*
 Asn1PrimitiveValue_clone(Asn1PrimitiveValue* self)
 {
-	Asn1PrimitiveValue* clone = (Asn1PrimitiveValue*) malloc(sizeof(Asn1PrimitiveValue));
+	Asn1PrimitiveValue* clone = (Asn1PrimitiveValue*) GLOBAL_MALLOC(sizeof(Asn1PrimitiveValue));
 
 	clone->size = self->size;
 	clone->maxSize = self->maxSize;
 
-	clone->octets = (uint8_t*) malloc(self->maxSize);
+	clone->octets = (uint8_t*) GLOBAL_MALLOC(self->maxSize);
 
 	memcpy(clone->octets, self->octets, clone->maxSize);
 
@@ -90,6 +90,6 @@ Asn1PrimitiveValue_getMaxSize(Asn1PrimitiveValue* self)
 void
 Asn1PrimitiveValue_destroy(Asn1PrimitiveValue* self)
 {
-	free(self->octets);
-	free(self);
+    GLOBAL_FREEMEM(self->octets);
+    GLOBAL_FREEMEM(self);
 }

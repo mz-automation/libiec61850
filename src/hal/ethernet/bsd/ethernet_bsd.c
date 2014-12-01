@@ -36,7 +36,8 @@
 #include <stdio.h>
 #include <fcntl.h>
 
-#include "ethernet.h"
+#include "libiec61850_platform_includes.h"
+#include "hal_ethernet.h"
 
 struct sEthernetSocket {
     int bpf;                        // BPF device handle.
@@ -181,7 +182,7 @@ EthernetSocket Ethernet_createSocket(char* interfaceId, uint8_t* destAddress)
          */
     };
 
-    EthernetSocket self = calloc(1, sizeof(struct sEthernetSocket));
+    EthernetSocket self = GLOBAL_CALLOC(1, sizeof(struct sEthernetSocket));
     if (!self)
     {
         printf("Could not allocate socket descriptor!\n");
@@ -189,7 +190,7 @@ EthernetSocket Ethernet_createSocket(char* interfaceId, uint8_t* destAddress)
     }
 
     // Copy default BPF filter program into descriptor.
-    self->bpfProgram.bf_insns = calloc(1, sizeof(destAddrFiltCode));
+    self->bpfProgram.bf_insns = GLOBAL_CALLOC(1, sizeof(destAddrFiltCode));
     if (!self->bpfProgram.bf_insns)
     {
         printf("Could not allocate memory for BPF filter program!\n");
@@ -212,8 +213,8 @@ EthernetSocket Ethernet_createSocket(char* interfaceId, uint8_t* destAddress)
     if (self->bpf == -1)
     {
         printf("Error opening BPF file handle!\n");
-        free(self->bpfProgram.bf_insns);
-        free(self);
+        GLOBAL_FREEMEM(self->bpfProgram.bf_insns);
+        GLOBAL_FREEMEM(self);
         return NULL;
     }
 
@@ -223,8 +224,8 @@ EthernetSocket Ethernet_createSocket(char* interfaceId, uint8_t* destAddress)
     if (fcntl(self->bpf, F_SETFL, &optval) == -1)
     {
         printf("Unable to change to non-blocking mode!\n");
-        free(self->bpfProgram.bf_insns);
-        free(self);
+        GLOBAL_FREEMEM(self->bpfProgram.bf_insns);
+        GLOBAL_FREEMEM(self);
         return NULL;
     }
 
@@ -233,8 +234,8 @@ EthernetSocket Ethernet_createSocket(char* interfaceId, uint8_t* destAddress)
     if (ioctl(self->bpf, BIOCSETIF, &ifr))
     {
         printf("Unable to select interface %s!\n", interfaceId);
-        free(self->bpfProgram.bf_insns);
-        free(self);
+        GLOBAL_FREEMEM(self->bpfProgram.bf_insns);
+        GLOBAL_FREEMEM(self);
         return NULL;
     }
 
@@ -242,8 +243,8 @@ EthernetSocket Ethernet_createSocket(char* interfaceId, uint8_t* destAddress)
     if (ioctl(self->bpf, BIOCIMMEDIATE, &self->bpfBufferSize) == -1)
     {
         printf("Unable to activate immediate mode!\n");
-        free(self->bpfProgram.bf_insns);
-        free(self);
+        GLOBAL_FREEMEM(self->bpfProgram.bf_insns);
+        GLOBAL_FREEMEM(self);
         return NULL;
     }
 
@@ -251,18 +252,18 @@ EthernetSocket Ethernet_createSocket(char* interfaceId, uint8_t* destAddress)
     if (ioctl(self->bpf, BIOCGBLEN, &self->bpfBufferSize) == -1)
     {
         printf("Unable to get BPF buffer lenght!\n");
-        free(self->bpfProgram.bf_insns);
-        free(self);
+        GLOBAL_FREEMEM(self->bpfProgram.bf_insns);
+        GLOBAL_FREEMEM(self);
         return NULL;
     }
 
     // Allocate a buffer for the message reception.
-    self->bpfBuffer = calloc(1, self->bpfBufferSize);
+    self->bpfBuffer = GLOBAL_CALLOC(1, self->bpfBufferSize);
     if (!self->bpfBuffer)
     {
         printf("Unable to allocate BPF RX buffer!\n");
-        free(self->bpfProgram.bf_insns);
-        free(self);
+        GLOBAL_FREEMEM(self->bpfProgram.bf_insns);
+        GLOBAL_FREEMEM(self);
         return NULL;
     }
     self->bpfPositon = self->bpfBuffer;
@@ -273,9 +274,9 @@ EthernetSocket Ethernet_createSocket(char* interfaceId, uint8_t* destAddress)
     if (ioctl(self->bpf, BIOCPROMISC, &optval) == -1)
     {
         printf("Unable to activate promiscous mode!\n");
-        free(self->bpfProgram.bf_insns);
-        free(self->bpfBuffer);
-        free(self);
+        GLOBAL_FREEMEM(self->bpfProgram.bf_insns);
+        GLOBAL_FREEMEM(self->bpfBuffer);
+        GLOBAL_FREEMEM(self);
         return NULL;
     }
 
@@ -313,7 +314,7 @@ int Ethernet_receivePacket(EthernetSocket self, uint8_t* buffer, int bufferSize)
         struct bpf_hdr *header = (struct bpf_hdr *)(self->bpfPositon);
 
         // Check if the target buffer is big enough to hold the received ethernet frame.
-        if (bufferSize >= header->bh_caplen)
+        if ((unsigned int) bufferSize >= header->bh_caplen)
         {
             // Copy the frame to the target buffer.
             memcpy(buffer, self->bpfPositon + header->bh_hdrlen, header->bh_caplen);
@@ -346,7 +347,14 @@ void Ethernet_destroySocket(EthernetSocket self)
     close(self->bpf);
 
     // Free all dynamic resources used by the ethernet socket.
-    free(self->bpfBuffer);
-    free(self->bpfProgram.bf_insns);
-    free(self);
+    GLOBAL_FREEMEM(self->bpfBuffer);
+    GLOBAL_FREEMEM(self->bpfProgram.bf_insns);
+    GLOBAL_FREEMEM(self);
 }
+
+bool
+Ethernet_isSupported()
+{
+    return true;
+}
+

@@ -84,7 +84,7 @@ appendMmsSubVariable(char* name, char* child)
 
     int newSize = nameLen + childLen + 2;
 
-    char* newName = (char*) malloc(newSize);
+    char* newName = (char*) GLOBAL_MALLOC(newSize);
 
     int bufPos = 0;
     int i;

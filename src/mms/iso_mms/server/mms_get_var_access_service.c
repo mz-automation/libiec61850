@@ -42,7 +42,7 @@ createTypeSpecification (
 				(long) namedVariable->typeSpec.array.elementCount);
 
 		typeSpec->choice.array.packed = NULL;
-		typeSpec->choice.array.elementType = (TypeSpecification_t*) calloc(1, sizeof(TypeSpecification_t));
+		typeSpec->choice.array.elementType = (TypeSpecification_t*) GLOBAL_CALLOC(1, sizeof(TypeSpecification_t));
 
 		createTypeSpecification(namedVariable->typeSpec.array.elementTypeSpec,
 				typeSpec->choice.array.elementType);
@@ -57,17 +57,17 @@ createTypeSpecification (
 		typeSpec->choice.structure.components.list.size = componentCount;
 
 		typeSpec->choice.structure.components.list.array
-			= (StructComponent_t**) calloc(componentCount, sizeof(StructComponent_t*));
+			= (StructComponent_t**) GLOBAL_CALLOC(componentCount, sizeof(StructComponent_t*));
 
 		int i;
 
 		for (i = 0; i < componentCount; i++) {
 
 			typeSpec->choice.structure.components.list.array[i] = 
-					(StructComponent_t*) calloc(1, sizeof(StructComponent_t));
+					(StructComponent_t*) GLOBAL_CALLOC(1, sizeof(StructComponent_t));
 
 			typeSpec->choice.structure.components.list.array[i]->componentName =
-					(Identifier_t*) calloc(1, sizeof(Identifier_t));
+					(Identifier_t*) GLOBAL_CALLOC(1, sizeof(Identifier_t));
 
 			typeSpec->choice.structure.components.list.array[i]->componentName->buf =
 			        (uint8_t*) copyString(namedVariable->typeSpec.structure.elements[i]->name);
@@ -76,7 +76,7 @@ createTypeSpecification (
 					strlen(namedVariable->typeSpec.structure.elements[i]->name);
 
 			typeSpec->choice.structure.components.list.array[i]->componentType =
-					(TypeSpecification_t*) calloc(1, sizeof(TypeSpecification_t));
+					(TypeSpecification_t*) GLOBAL_CALLOC(1, sizeof(TypeSpecification_t));
 
 			createTypeSpecification(namedVariable->typeSpec.structure.elements[i],
 					typeSpec->choice.structure.components.list.array[i]->componentType);
@@ -151,19 +151,19 @@ freeTypeSpecRecursive(TypeSpecification_t* typeSpec) {
 		int i;
 
 		for (i = 0; i < elementCount; i++) {
-		    free(typeSpec->choice.structure.components.list.array[i]->componentName->buf);
-			free(typeSpec->choice.structure.components.list.array[i]->componentName);
+		    GLOBAL_FREEMEM(typeSpec->choice.structure.components.list.array[i]->componentName->buf);
+			GLOBAL_FREEMEM(typeSpec->choice.structure.components.list.array[i]->componentName);
 			freeTypeSpecRecursive(typeSpec->choice.structure.components.list.array[i]->componentType);
-			free(typeSpec->choice.structure.components.list.array[i]->componentType);
-			free(typeSpec->choice.structure.components.list.array[i]);
+			GLOBAL_FREEMEM(typeSpec->choice.structure.components.list.array[i]->componentType);
+			GLOBAL_FREEMEM(typeSpec->choice.structure.components.list.array[i]);
 		}
 
-		free(typeSpec->choice.structure.components.list.array);
+		GLOBAL_FREEMEM(typeSpec->choice.structure.components.list.array);
 	}
 	else if (typeSpec->present == TypeSpecification_PR_array) {
-		free(typeSpec->choice.array.numberOfElements.buf);
+		GLOBAL_FREEMEM(typeSpec->choice.array.numberOfElements.buf);
 		freeTypeSpecRecursive(typeSpec->choice.array.elementType);
-		free(typeSpec->choice.array.elementType);
+		GLOBAL_FREEMEM(typeSpec->choice.array.elementType);
 	}
 }
 
@@ -176,27 +176,27 @@ deleteVariableAccessAttributesResponse(
 
 		int i;
 		for (i = 0; i < count; i++) {
-		    free(getVarAccessAttr->typeSpecification.choice.structure.components.list.array[i]->componentName->buf);
-			free(getVarAccessAttr->typeSpecification.choice.structure.components.list.array[i]->componentName);
+		    GLOBAL_FREEMEM(getVarAccessAttr->typeSpecification.choice.structure.components.list.array[i]->componentName->buf);
+			GLOBAL_FREEMEM(getVarAccessAttr->typeSpecification.choice.structure.components.list.array[i]->componentName);
 			TypeSpecification_t* typeSpec =
 					getVarAccessAttr->typeSpecification.choice.structure.components.list.array[i]->componentType;
 			freeTypeSpecRecursive(typeSpec);
-			free(typeSpec);
-			free(getVarAccessAttr->typeSpecification.choice.structure.components.list.array[i]);
+			GLOBAL_FREEMEM(typeSpec);
+			GLOBAL_FREEMEM(getVarAccessAttr->typeSpecification.choice.structure.components.list.array[i]);
 		}
 
-		free(getVarAccessAttr->typeSpecification.choice.structure.components.list.array);
+		GLOBAL_FREEMEM(getVarAccessAttr->typeSpecification.choice.structure.components.list.array);
 
 		getVarAccessAttr->typeSpecification.choice.structure.components.list.array = NULL;
 		getVarAccessAttr->typeSpecification.choice.structure.components.list.count = 0;
 		getVarAccessAttr->typeSpecification.choice.structure.components.list.size =	0;
 	} else if (getVarAccessAttr->typeSpecification.present == TypeSpecification_PR_array) {
-		free(getVarAccessAttr->typeSpecification.choice.array.numberOfElements.buf);
+		GLOBAL_FREEMEM(getVarAccessAttr->typeSpecification.choice.array.numberOfElements.buf);
 		getVarAccessAttr->typeSpecification.choice.array.numberOfElements.buf = NULL;
 		getVarAccessAttr->typeSpecification.choice.array.numberOfElements.size = 0;
 		freeTypeSpecRecursive(getVarAccessAttr->typeSpecification.choice.array.elementType);
 
-		free(getVarAccessAttr->typeSpecification.choice.array.elementType);
+		GLOBAL_FREEMEM(getVarAccessAttr->typeSpecification.choice.array.elementType);
 
 		getVarAccessAttr->typeSpecification.choice.array.elementType = NULL;
 	}
@@ -301,8 +301,8 @@ mmsServer_handleGetVariableAccessAttributesRequest(
 
 				createVariableAccessAttributesResponse(connection, domainIdStr, nameIdStr, invokeId, response);
 
-				free(domainIdStr);
-				free(nameIdStr);
+				GLOBAL_FREEMEM(domainIdStr);
+				GLOBAL_FREEMEM(nameIdStr);
 			}
 #if (CONFIG_MMS_SUPPORT_VMD_SCOPE_NAMED_VARIABLES == 1)
 			else if (request->choice.name.present == ObjectName_PR_vmdspecific) {
@@ -314,7 +314,7 @@ mmsServer_handleGetVariableAccessAttributesRequest(
 
 			    createVariableAccessAttributesResponse(connection, NULL, nameIdStr, invokeId, response);
 
-			    free(nameIdStr);
+			    GLOBAL_FREEMEM(nameIdStr);
 			}
 #endif /* (CONFIG_MMS_SUPPORT_VMD_SCOPE_NAMED_VARIABLES == 1) */
 			else {

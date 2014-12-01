@@ -70,7 +70,7 @@ BerEncoder_encodeBoolean(uint8_t tag, bool value, uint8_t* buffer, int bufPos)
 }
 
 int
-BerEncoder_encodeStringWithTag(uint8_t tag, char* string, uint8_t* buffer, int bufPos)
+BerEncoder_encodeStringWithTag(uint8_t tag, const char* string, uint8_t* buffer, int bufPos)
 {
     buffer[bufPos++] = tag;
 
@@ -341,7 +341,7 @@ BerEncoder_determineLengthSize(uint32_t length)
 }
 
 int
-BerEncoder_determineEncodedStringSize(char* string)
+BerEncoder_determineEncodedStringSize(const char* string)
 {
     if (string != NULL) {
         int size = 1;
@@ -359,13 +359,13 @@ BerEncoder_determineEncodedStringSize(char* string)
 }
 
 int
-BerEncoder_encodeOIDToBuffer(char* oidString, uint8_t* buffer, int maxBufLen)
+BerEncoder_encodeOIDToBuffer(const char* oidString, uint8_t* buffer, int maxBufLen)
 {
     int encodedBytes = 0;
 
     int x = atoi(oidString);
 
-    char* separator = strchr(oidString, '.');
+    const char* separator = strchr(oidString, '.');
 
     if (separator == NULL) return 0;
 

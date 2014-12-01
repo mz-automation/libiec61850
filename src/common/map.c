@@ -42,7 +42,7 @@ comparePointerKeys(void* key1, void* key2)
 Map
 Map_create()
 {
-    Map map = (Map) calloc(1, sizeof(struct sMap));
+    Map map = (Map) GLOBAL_CALLOC(1, sizeof(struct sMap));
     map->entries = LinkedList_create();
     map->compareKeys = comparePointerKeys;
     return map;
@@ -57,7 +57,7 @@ Map_size(Map map)
 void*
 Map_addEntry(Map map, void* key, void* value)
 {
-    MapEntry* entry = (MapEntry*) malloc(sizeof(MapEntry));
+    MapEntry* entry = (MapEntry*) GLOBAL_MALLOC(sizeof(MapEntry));
     entry->key = key;
     entry->value = value;
     LinkedList_add(map->entries, entry);
@@ -81,9 +81,9 @@ Map_removeEntry(Map map, void* key, bool deleteKey)
             value = entry->value;
 
             if (deleteKey == true)
-                free(entry->key);
-            free(entry);
-            free(element);
+                GLOBAL_FREEMEM(entry->key);
+            GLOBAL_FREEMEM(entry);
+            GLOBAL_FREEMEM(element);
 
             break;
         }
@@ -117,12 +117,12 @@ Map_delete(Map map, bool deleteKey)
     while ((element = LinkedList_getNext(element)) != NULL) {
         MapEntry* entry = (MapEntry*) element->data;
         if (deleteKey == true)
-            free(entry->key);
-        free(entry->value);
+            GLOBAL_FREEMEM(entry->key);
+        GLOBAL_FREEMEM(entry->value);
     }
 
     LinkedList_destroy(map->entries);
-    free(map);
+    GLOBAL_FREEMEM(map);
 }
 
 void
@@ -133,12 +133,12 @@ Map_deleteStatic(Map map, bool deleteKey)
     if (deleteKey == true) {
         while ((element = LinkedList_getNext(element)) != NULL) {
             MapEntry* entry = (MapEntry*) element->data;
-            free(entry->key);
+            GLOBAL_FREEMEM(entry->key);
         }
     }
 
     LinkedList_destroy(map->entries);
-    free(map);
+    GLOBAL_FREEMEM(map);
 }
 
 void
@@ -150,10 +150,10 @@ Map_deleteDeep(Map map, bool deleteKey, void
     while ((element = LinkedList_getNext(element)) != NULL) {
         MapEntry* entry = (MapEntry*) element->data;
         if (deleteKey == true)
-            free(entry->key);
+            GLOBAL_FREEMEM(entry->key);
         valueDeleteFunction(entry->value);
     }
 
     LinkedList_destroy(map->entries);
-    free(map);
+    GLOBAL_FREEMEM(map);
 }

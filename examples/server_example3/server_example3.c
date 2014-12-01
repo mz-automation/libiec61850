@@ -6,7 +6,7 @@
  */
 
 #include "iec61850_server.h"
-#include "thread.h"
+#include "hal_thread.h"
 #include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -66,6 +66,16 @@ controlHandlerForBinaryOutput(void* parameter, MmsValue* value, bool test)
     return true;
 }
 
+
+static void
+connectionHandler (IedServer self, ClientConnection connection, bool connected, void* parameter)
+{
+    if (connected)
+        printf("Connection opened\n");
+    else
+        printf("Connection closed\n");
+}
+
 int
 main(int argc, char** argv)
 {
@@ -88,6 +98,8 @@ main(int argc, char** argv)
     IedServer_setControlHandler(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO4,
             (ControlHandler) controlHandlerForBinaryOutput,
             IEDMODEL_GenericIO_GGIO1_SPCSO4);
+
+    IedServer_setConnectionIndicationHandler(iedServer, (IedConnectionIndicationHandler) connectionHandler, NULL);
 
     /* MMS server will be instructed to start listening to client connections. */
     IedServer_start(iedServer, 102);
@@ -135,4 +147,5 @@ main(int argc, char** argv)
 
     /* Cleanup - free all resources */
     IedServer_destroy(iedServer);
+
 } /* main() */

@@ -4,7 +4,7 @@
  * automatically generated from simpleIO_direct_control.icd
  */
 #include <stdlib.h>
-#include "model.h"
+#include "iec61850_model.h"
 
 extern IedModel iedModel;
 static void initializeValues();
@@ -160,7 +160,7 @@ extern DataSetEntry ds_GenericIO_LLN0_Events_fcda2;
 extern DataSetEntry ds_GenericIO_LLN0_Events_fcda3;
 
 DataSetEntry ds_GenericIO_LLN0_Events_fcda0 = {
-  "simpleIOGenericIO",
+  "GenericIO",
   "GGIO1$ST$SPCSO1$stVal",
   -1,
   NULL,
@@ -169,7 +169,7 @@ DataSetEntry ds_GenericIO_LLN0_Events_fcda0 = {
 };
 
 DataSetEntry ds_GenericIO_LLN0_Events_fcda1 = {
-  "simpleIOGenericIO",
+  "GenericIO",
   "GGIO1$ST$SPCSO2$stVal",
   -1,
   NULL,
@@ -178,7 +178,7 @@ DataSetEntry ds_GenericIO_LLN0_Events_fcda1 = {
 };
 
 DataSetEntry ds_GenericIO_LLN0_Events_fcda2 = {
-  "simpleIOGenericIO",
+  "GenericIO",
   "GGIO1$ST$SPCSO3$stVal",
   -1,
   NULL,
@@ -187,7 +187,7 @@ DataSetEntry ds_GenericIO_LLN0_Events_fcda2 = {
 };
 
 DataSetEntry ds_GenericIO_LLN0_Events_fcda3 = {
-  "simpleIOGenericIO",
+  "GenericIO",
   "GGIO1$ST$SPCSO4$stVal",
   -1,
   NULL,
@@ -196,7 +196,7 @@ DataSetEntry ds_GenericIO_LLN0_Events_fcda3 = {
 };
 
 DataSet ds_GenericIO_LLN0_Events = {
-  "simpleIOGenericIO",
+  "GenericIO",
   "LLN0$Events",
   4,
   &ds_GenericIO_LLN0_Events_fcda0,
@@ -209,7 +209,7 @@ extern DataSetEntry ds_GenericIO_LLN0_Events2_fcda2;
 extern DataSetEntry ds_GenericIO_LLN0_Events2_fcda3;
 
 DataSetEntry ds_GenericIO_LLN0_Events2_fcda0 = {
-  "simpleIOGenericIO",
+  "GenericIO",
   "GGIO1$ST$SPCSO1",
   -1,
   NULL,
@@ -218,7 +218,7 @@ DataSetEntry ds_GenericIO_LLN0_Events2_fcda0 = {
 };
 
 DataSetEntry ds_GenericIO_LLN0_Events2_fcda1 = {
-  "simpleIOGenericIO",
+  "GenericIO",
   "GGIO1$ST$SPCSO2",
   -1,
   NULL,
@@ -227,7 +227,7 @@ DataSetEntry ds_GenericIO_LLN0_Events2_fcda1 = {
 };
 
 DataSetEntry ds_GenericIO_LLN0_Events2_fcda2 = {
-  "simpleIOGenericIO",
+  "GenericIO",
   "GGIO1$ST$SPCSO3",
   -1,
   NULL,
@@ -236,7 +236,7 @@ DataSetEntry ds_GenericIO_LLN0_Events2_fcda2 = {
 };
 
 DataSetEntry ds_GenericIO_LLN0_Events2_fcda3 = {
-  "simpleIOGenericIO",
+  "GenericIO",
   "GGIO1$ST$SPCSO4",
   -1,
   NULL,
@@ -245,7 +245,7 @@ DataSetEntry ds_GenericIO_LLN0_Events2_fcda3 = {
 };
 
 DataSet ds_GenericIO_LLN0_Events2 = {
-  "simpleIOGenericIO",
+  "GenericIO",
   "LLN0$Events2",
   4,
   &ds_GenericIO_LLN0_Events2_fcda0,
@@ -254,7 +254,7 @@ DataSet ds_GenericIO_LLN0_Events2 = {
 
 LogicalDevice iedModel_GenericIO = {
     LogicalDeviceModelType,
-    "simpleIOGenericIO",
+    "GenericIO",
     (ModelNode*) &iedModel,
     NULL,
     (ModelNode*) &iedModel_GenericIO_LLN0
@@ -1973,25 +1973,15 @@ DataAttribute iedModel_GenericIO_GGIO1_Ind4_t = {
     NULL,
     0};
 
-
 extern ReportControlBlock iedModel_GenericIO_LLN0_report0;
 extern ReportControlBlock iedModel_GenericIO_LLN0_report1;
 extern ReportControlBlock iedModel_GenericIO_LLN0_report2;
 extern ReportControlBlock iedModel_GenericIO_LLN0_report3;
 
-ReportControlBlock iedModel_GenericIO_LLN0_report0 = {&iedModel_GenericIO_LLN0, "EventsRCB", "Events1", false, "Events", 1, 8, 111, 50, 1000, &iedModel_GenericIO_LLN0_report1};
+ReportControlBlock iedModel_GenericIO_LLN0_report0 = {&iedModel_GenericIO_LLN0, "EventsRCB01", "Events1", false, "Events", 1, 8, 111, 50, 1000, &iedModel_GenericIO_LLN0_report1};
 ReportControlBlock iedModel_GenericIO_LLN0_report1 = {&iedModel_GenericIO_LLN0, "EventsIndexed01", "Events2", false, "Events", 1, 8, 111, 50, 1000, &iedModel_GenericIO_LLN0_report2};
 ReportControlBlock iedModel_GenericIO_LLN0_report2 = {&iedModel_GenericIO_LLN0, "EventsIndexed02", "Events2", false, "Events", 1, 8, 111, 50, 1000, &iedModel_GenericIO_LLN0_report3};
 ReportControlBlock iedModel_GenericIO_LLN0_report3 = {&iedModel_GenericIO_LLN0, "EventsIndexed03", "Events2", false, "Events", 1, 8, 111, 50, 1000, NULL};
-
-
-
-
-
-
-
-
-
 
 
 
@@ -2001,6 +1991,7 @@ IedModel iedModel = {
     &iedModel_GenericIO,
     &ds_GenericIO_LLN0_Events,
     &iedModel_GenericIO_LLN0_report0,
+    NULL,
     NULL,
     initializeValues
 };

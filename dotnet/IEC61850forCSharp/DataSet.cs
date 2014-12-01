@@ -24,10 +24,16 @@ using System;
 
 using System.Runtime.InteropServices;
 
+using IEC61850.Common;
+
 namespace IEC61850
 {
 	namespace Client
 	{
+        /// <summary>
+        /// This class is used to represent a data set. It is used to store the values
+        /// of a data set.
+        /// </summary>
 		public class DataSet
 		{
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
@@ -51,6 +57,12 @@ namespace IEC61850
 				this.nativeObject = nativeObject;
 			}
 
+            /// <summary>
+            /// Gets the object reference of the data set
+            /// </summary>
+            /// <returns>
+            /// object reference.
+            /// </returns>
 			public string GetReference ()
 			{
 				if (reference == null) {
@@ -62,6 +74,15 @@ namespace IEC61850
 				return reference;
 			}
 
+            /// <summary>
+            /// Gets the values associated with the data set object
+            /// </summary>
+            /// <description>This function will return the locally stored values associated with the data set.
+            /// These are the values received by the last request to the server. A call to this method doesn't
+            /// invoke a request to the server! </description>
+            /// <returns>
+            /// The locally stored values of the data set (as MmsValue instance of type MMS_ARRAY)
+            /// </returns>
 			public MmsValue GetValues ()
 			{
 				if (values == null) {
@@ -73,6 +94,13 @@ namespace IEC61850
 				return values;
 			}
 
+
+            /// <summary>
+            /// Gets the number of elements of the data set
+            /// </summary>
+            /// <returns>
+            /// the number of elementes (data set members)
+            /// </returns>
 			public int GetSize ()
 			{
 				return ClientDataSet_getDataSetSize (nativeObject);

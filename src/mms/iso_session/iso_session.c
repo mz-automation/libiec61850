@@ -127,12 +127,13 @@ parseSessionHeaderParameters(IsoSession* session, ByteBuffer* message, int param
         case 1: /* Connection Identifier */
             if (DEBUG_SESSION)
                 printf("SESSION: PGI - connection identifier\n");
-            printf("TODO: PGI not implemented!");
+
             offset += parameterLength;
             break;
         case 5: /* Connection/Accept Item */
             if (DEBUG_SESSION)
                 printf("SESSION: PGI - Connection/Accept Item\n");
+
             int connectAcceptLen;
 
             connectAcceptLen = parseAcceptParameters(session, message, offset, parameterLength);

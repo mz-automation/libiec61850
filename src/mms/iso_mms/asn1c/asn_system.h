@@ -15,9 +15,18 @@
 #include <stdio.h>	/* For snprintf(3) */
 #include <stdlib.h>	/* For *alloc(3) */
 #include <string.h>	/* For memcpy(3) */
+
+#include "stack_config.h"
+#if CONFIG_INCLUDE_PLATFORM_SPECIFIC_HEADERS
+#include "libiec61850_platform_specific.h"
+#else
 #include <sys/types.h>	/* For size_t */
+#endif
+
 #include <stdarg.h>	/* For va_start */
 #include <stddef.h>	/* for offsetof and ptrdiff_t */
+
+
 
 #ifdef _WIN32
 #ifndef WIN32

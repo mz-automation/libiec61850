@@ -172,9 +172,9 @@ mmsClient_parseWriteResponse(ByteBuffer* message, int32_t bufPos, MmsError* mmsE
 }
 
 static VariableSpecification_t*
-createNewDomainVariableSpecification(char* domainId, char* itemId)
+createNewDomainVariableSpecification(const char* domainId, const char* itemId)
 {
-	VariableSpecification_t* varSpec = (VariableSpecification_t*) calloc(1, sizeof(ListOfVariableSeq_t));
+	VariableSpecification_t* varSpec = (VariableSpecification_t*) GLOBAL_CALLOC(1, sizeof(ListOfVariableSeq_t));
 
 	//VariableSpecification_t* varSpec = (VariableSpecification_t*) calloc(1, sizeof(VariableSpecification_t));
 
@@ -204,8 +204,8 @@ deleteDataElement(Data_t* dataElement)
             deleteDataElement(dataElement->choice.structure->list.array[i]);
         }
 
-        free(dataElement->choice.structure->list.array);
-        free(dataElement->choice.structure);
+        GLOBAL_FREEMEM(dataElement->choice.structure->list.array);
+        GLOBAL_FREEMEM(dataElement->choice.structure);
     }
     else if (dataElement->present == Data_PR_array) {
         int elementCount = dataElement->choice.array->list.count;
@@ -215,21 +215,21 @@ deleteDataElement(Data_t* dataElement)
             deleteDataElement(dataElement->choice.array->list.array[i]);
         }
 
-        free(dataElement->choice.array->list.array);
-        free(dataElement->choice.array);
+        GLOBAL_FREEMEM(dataElement->choice.array->list.array);
+        GLOBAL_FREEMEM(dataElement->choice.array);
     }
     else if (dataElement->present == Data_PR_floatingpoint) {
-        free(dataElement->choice.floatingpoint.buf);
+        GLOBAL_FREEMEM(dataElement->choice.floatingpoint.buf);
     }
     else if (dataElement->present == Data_PR_utctime) {
-        free(dataElement->choice.utctime.buf);
+        GLOBAL_FREEMEM(dataElement->choice.utctime.buf);
     }
 
-    free(dataElement);
+    GLOBAL_FREEMEM(dataElement);
 }
 
 int
-mmsClient_createWriteMultipleItemsRequest(uint32_t invokeId, char* domainId, LinkedList itemIds, LinkedList values,
+mmsClient_createWriteMultipleItemsRequest(uint32_t invokeId, const char* domainId, LinkedList itemIds, LinkedList values,
         ByteBuffer* writeBuffer)
 {
     MmsPdu_t* mmsPdu = mmsClient_createConfirmedRequestPdu(invokeId);
@@ -246,12 +246,12 @@ mmsClient_createWriteMultipleItemsRequest(uint32_t invokeId, char* domainId, Lin
     request->variableAccessSpecification.choice.listOfVariable.list.count = numberOfItems;
     request->variableAccessSpecification.choice.listOfVariable.list.size = numberOfItems;
     request->variableAccessSpecification.choice.listOfVariable.list.array =
-            (ListOfVariableSeq_t**) calloc(numberOfItems, sizeof(ListOfVariableSeq_t*));
+            (ListOfVariableSeq_t**) GLOBAL_CALLOC(numberOfItems, sizeof(ListOfVariableSeq_t*));
 
     /* Create list of data values */
     request->listOfData.list.count = numberOfItems;
     request->listOfData.list.size = numberOfItems;
-    request->listOfData.list.array = (Data_t**) calloc(numberOfItems, sizeof(struct Data*));
+    request->listOfData.list.array = (Data_t**) GLOBAL_CALLOC(numberOfItems, sizeof(struct Data*));
 
     int i;
 
@@ -283,16 +283,16 @@ mmsClient_createWriteMultipleItemsRequest(uint32_t invokeId, char* domainId, Lin
     request->variableAccessSpecification.choice.listOfVariable.list.count = 0;
 
     for (i = 0; i < numberOfItems; i++) {
-        free(request->variableAccessSpecification.choice.listOfVariable.list.array[i]);
+        GLOBAL_FREEMEM(request->variableAccessSpecification.choice.listOfVariable.list.array[i]);
         deleteDataElement(request->listOfData.list.array[i]);
 
     }
 
-    free(request->variableAccessSpecification.choice.listOfVariable.list.array);
+    GLOBAL_FREEMEM(request->variableAccessSpecification.choice.listOfVariable.list.array);
     request->variableAccessSpecification.choice.listOfVariable.list.array = 0;
 
     request->listOfData.list.count = 0;
-    free(request->listOfData.list.array);
+    GLOBAL_FREEMEM(request->listOfData.list.array);
     request->listOfData.list.array = 0;
 
     asn_DEF_MmsPdu.free_struct(&asn_DEF_MmsPdu, mmsPdu, 0);
@@ -302,7 +302,7 @@ mmsClient_createWriteMultipleItemsRequest(uint32_t invokeId, char* domainId, Lin
 }
 
 int
-mmsClient_createWriteRequest(uint32_t invokeId, char* domainId, char* itemId, MmsValue* value,
+mmsClient_createWriteRequest(uint32_t invokeId, const char* domainId, const char* itemId, MmsValue* value,
 		ByteBuffer* writeBuffer)
 {
 	MmsPdu_t* mmsPdu = mmsClient_createConfirmedRequestPdu(invokeId);
@@ -317,14 +317,14 @@ mmsClient_createWriteRequest(uint32_t invokeId, char* domainId, char* itemId, Mm
 	request->variableAccessSpecification.choice.listOfVariable.list.count = 1;
 	request->variableAccessSpecification.choice.listOfVariable.list.size = 1;
 	request->variableAccessSpecification.choice.listOfVariable.list.array =
-			(ListOfVariableSeq_t**) calloc(1, sizeof(ListOfVariableSeq_t*));
+			(ListOfVariableSeq_t**) GLOBAL_CALLOC(1, sizeof(ListOfVariableSeq_t*));
 	request->variableAccessSpecification.choice.listOfVariable.list.array[0] = (ListOfVariableSeq_t*)
 			createNewDomainVariableSpecification(domainId, itemId);
 
 	/* Create list of typed data values */
 	request->listOfData.list.count = 1;
 	request->listOfData.list.size = 1;
-	request->listOfData.list.array = (Data_t**) calloc(1, sizeof(struct Data*));
+	request->listOfData.list.array = (Data_t**) GLOBAL_CALLOC(1, sizeof(struct Data*));
 	request->listOfData.list.array[0] = mmsMsg_createBasicDataElement(value);
 
 	asn_enc_rval_t rval;
@@ -335,15 +335,15 @@ mmsClient_createWriteRequest(uint32_t invokeId, char* domainId, char* itemId, Mm
 	/* Free ASN structure */
 	request->variableAccessSpecification.choice.listOfVariable.list.count = 0;
 
-	free(request->variableAccessSpecification.choice.listOfVariable.list.array[0]);
-	free(request->variableAccessSpecification.choice.listOfVariable.list.array);
+	GLOBAL_FREEMEM(request->variableAccessSpecification.choice.listOfVariable.list.array[0]);
+	GLOBAL_FREEMEM(request->variableAccessSpecification.choice.listOfVariable.list.array);
 	request->variableAccessSpecification.choice.listOfVariable.list.array = 0;
 
 	request->listOfData.list.count = 0;
 
 	deleteDataElement(request->listOfData.list.array[0]);
 
-	free(request->listOfData.list.array);
+	GLOBAL_FREEMEM(request->listOfData.list.array);
 	request->listOfData.list.array = 0;
 
 	asn_DEF_MmsPdu.free_struct(&asn_DEF_MmsPdu, mmsPdu, 0);

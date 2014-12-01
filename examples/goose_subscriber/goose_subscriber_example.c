@@ -6,8 +6,8 @@
  * Has to be started as root in Linux.
  */
 
-#include "goose_subscriber.h"
-#include "thread.h"
+#include "goose_receiver.h"
+#include "hal_thread.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -28,7 +28,7 @@ gooseListener(GooseSubscriber subscriber, void* parameter)
     printf("  stNum: %u sqNum: %u\n", GooseSubscriber_getStNum(subscriber),
             GooseSubscriber_getSqNum(subscriber));
     printf("  timeToLive: %u\n", GooseSubscriber_getTimeAllowedToLive(subscriber));
-    printf("  timestamp: %"PRIu64"\n", GooseSubscriber_getTimestamp(subscriber));
+    printf("  timestamp: %llu\n", GooseSubscriber_getTimestamp(subscriber));
 
     MmsValue* values = GooseSubscriber_getDataSetValues(subscriber);
 
@@ -50,20 +50,26 @@ main(int argc, char** argv)
         MmsValue_setElement(dataSetValues, i, dataSetEntry);
     }
 
- //   GooseSubscriber subscriber = GooseSubscriber_create("simpleIOGenericIO/LLN0$GO$gcbEvents", dataSetValues);
+    GooseReceiver receiver = GooseReceiver_create();
+
+     if (argc > 1) {
+         printf("Set interface id: %s\n", argv[1]);
+         GooseReceiver_setInterfaceId(receiver, argv[1]);
+     }
+     else {
+         printf("Using interface eth0\n");
+         GooseReceiver_setInterfaceId(receiver, "eth0");
+     }
 
     GooseSubscriber subscriber = GooseSubscriber_create("simpleIOGenericIO/LLN0$GO$gcbAnalogValues", NULL);
-
-    if (argc > 1) {
-    	printf("Set interface id: %s\n", argv[1]);
-    	GooseSubscriber_setInterfaceId(subscriber, argv[1]);
-    }
 
     GooseSubscriber_setAppId(subscriber, 1000);
 
     GooseSubscriber_setListener(subscriber, gooseListener, NULL);
 
-    GooseSubscriber_subscribe(subscriber);
+    GooseReceiver_addSubscriber(receiver, subscriber);
+
+    GooseReceiver_start(receiver);
 
     signal(SIGINT, sigint_handler);
 

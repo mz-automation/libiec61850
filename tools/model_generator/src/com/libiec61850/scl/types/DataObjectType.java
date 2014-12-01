@@ -75,12 +75,22 @@ public class DataObjectType extends SclType {
 				
 				if (elementNode.getNodeName().equals("DA")) {
 					DataAttributeDefinition dad = new DataAttributeDefinition(elementNode);
+						
+					DataAttributeDefinition otherDefinition = getDataAttributeByName(dad.getName());				
 					
-					if ((getDataAttributeByName(dad.getName()) != null) || 
-						(getDataObjectByName(dad.getName()) != null))
+					if (otherDefinition != null) {
+						
+						if (otherDefinition.getFc() == dad.getFc())
+							throw new SclParserException(xmlNode, 
+									"DO type definition contains multiple elements of name \"" + 
+											dad.getName() + "\"");
+					}
+					
+					if (getDataObjectByName(dad.getName()) != null) {
 						throw new SclParserException(xmlNode, 
 								"DO type definition contains multiple elements of name \"" + 
 										dad.getName() + "\"");
+					}
 						
 					
 					dataAttributes.add(dad);

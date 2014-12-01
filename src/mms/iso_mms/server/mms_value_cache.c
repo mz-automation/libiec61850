@@ -40,7 +40,7 @@ typedef struct sMmsValueCacheEntry {
 MmsValueCache
 MmsValueCache_create(MmsDomain* domain)
 {
-	MmsValueCache self = (MmsValueCache) calloc(1, sizeof(struct sMmsValueCache));
+	MmsValueCache self = (MmsValueCache) GLOBAL_CALLOC(1, sizeof(struct sMmsValueCache));
 
 	self->domain = domain;
 
@@ -55,7 +55,7 @@ MmsValueCache_insertValue(MmsValueCache self, char* itemId, MmsValue* value)
 	MmsVariableSpecification* typeSpec = MmsDomain_getNamedVariable(self->domain, itemId);
 
 	if (typeSpec != NULL) {
-		MmsValueCacheEntry* cacheEntry = (MmsValueCacheEntry*) malloc(sizeof(MmsValueCacheEntry));
+		MmsValueCacheEntry* cacheEntry = (MmsValueCacheEntry*) GLOBAL_MALLOC(sizeof(MmsValueCacheEntry));
 
 		cacheEntry->value = value;
 		cacheEntry->typeSpec = typeSpec;
@@ -135,7 +135,7 @@ MmsValueCache_lookupValue(MmsValueCache self, char* itemId)
 			value = searchCacheForValue(self, itemId, parentItemId);
 		}
 
-		free(itemIdCopy);
+		GLOBAL_FREEMEM(itemIdCopy);
 	}
 
 	if (cacheEntry != NULL)
@@ -149,7 +149,7 @@ cacheEntryDelete(MmsValueCacheEntry* entry)
 {
 	if (entry != NULL) {
 		MmsValue_delete(entry->value);
-		free(entry);
+		GLOBAL_FREEMEM(entry);
 	}
 }
 
@@ -157,5 +157,5 @@ void
 MmsValueCache_destroy(MmsValueCache self)
 {
 	Map_deleteDeep(self->map, true, (void (*) (void*)) cacheEntryDelete);
-	free(self);
+	GLOBAL_FREEMEM(self);
 }

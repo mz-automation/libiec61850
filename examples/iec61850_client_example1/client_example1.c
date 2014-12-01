@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "thread.h"
+#include "hal_thread.h"
 
 void
 reportCallbackFunction(void* parameter, ClientReport report)

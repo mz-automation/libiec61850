@@ -51,6 +51,27 @@ namespace model_browsing
 
 						foreach (string dataObject in dataObjects) {
 							Console.WriteLine("    DO: " + dataObject);
+
+							List<string> dataDirectory = con.GetDataDirectoryFC(logicalNodeReference + "." + dataObject);
+
+							foreach (string dataDirectoryElement in dataDirectory) {
+
+								string daReference = logicalNodeReference + "." + dataObject + "." + ObjectReference.getElementName(dataDirectoryElement);
+
+								// get the type specification of a variable
+								MmsVariableSpecification specification = con.GetVariableSpecification(daReference,  ObjectReference.getFC(dataDirectoryElement));
+
+								Console.WriteLine ("      DA/SDO: [" + ObjectReference.getFC(dataDirectoryElement) + "] " +
+								                   ObjectReference.getElementName(dataDirectoryElement) + " : " + specification.GetType()
+								                   + "(" + specification.Size() + ")");
+
+								if (specification.GetType() == MmsType.MMS_STRUCTURE) {
+									foreach (MmsVariableSpecification elementSpec in specification) {
+										Console.WriteLine("           " + elementSpec.GetName() + " : " + elementSpec.GetType());
+									}
+								}
+							}
+
 						}
 
 						// discover data sets

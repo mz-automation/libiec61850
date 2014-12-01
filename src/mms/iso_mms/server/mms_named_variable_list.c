@@ -28,7 +28,7 @@
 MmsNamedVariableListEntry
 MmsNamedVariableListEntry_create(MmsAccessSpecifier accessSpecifier)
 {
-	MmsNamedVariableListEntry listEntry = (MmsNamedVariableListEntry) malloc(sizeof(MmsAccessSpecifier));
+	MmsNamedVariableListEntry listEntry = (MmsNamedVariableListEntry) GLOBAL_MALLOC(sizeof(MmsAccessSpecifier));
 
 	listEntry->domain = accessSpecifier.domain;
 	listEntry->variableName = copyString(accessSpecifier.variableName);
@@ -45,8 +45,8 @@ MmsNamedVariableListEntry_create(MmsAccessSpecifier accessSpecifier)
 void
 MmsNamedVariableListEntry_destroy(MmsNamedVariableListEntry self)
 {
-	free(self->variableName);
-	free(self);
+	GLOBAL_FREEMEM(self->variableName);
+	GLOBAL_FREEMEM(self);
 }
 
 
@@ -64,7 +64,7 @@ MmsNamedVariableListEntry_getVariableName(MmsNamedVariableListEntry self) {
 MmsNamedVariableList
 MmsNamedVariableList_create(char* name, bool deletable)
 {
-	MmsNamedVariableList self = (MmsNamedVariableList) malloc(sizeof(struct sMmsNamedVariableList));
+	MmsNamedVariableList self = (MmsNamedVariableList) GLOBAL_MALLOC(sizeof(struct sMmsNamedVariableList));
 
 	self->deletable = deletable;
 	self->name = copyString(name);
@@ -108,8 +108,8 @@ void
 MmsNamedVariableList_destroy(MmsNamedVariableList self)
 {
 	LinkedList_destroyDeep(self->listOfVariables, deleteVariableListEntry);
-	free(self->name);
-	free(self);
+	GLOBAL_FREEMEM(self->name);
+	GLOBAL_FREEMEM(self);
 }
 
 

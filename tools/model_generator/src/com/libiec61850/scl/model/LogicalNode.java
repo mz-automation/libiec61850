@@ -51,7 +51,7 @@ public class LogicalNode implements DataModelNode {
 	private List<Log> logs;
 	private List<SettingControl> settingGroupControlBlocks;
 	
-    private LogicalDevice parentLogicalDevice;
+	private LogicalDevice parentLogicalDevice;
 
 
     public LogicalNode(Node lnNode, TypeDeclarations typeDeclarations, LogicalDevice parent) throws SclParserException {
@@ -132,6 +132,9 @@ public class LogicalNode implements DataModelNode {
         settingGroupControlBlocks = new LinkedList<SettingControl>();
         
         List<Node> sgNodes = ParserUtils.getChildNodesWithTag(lnNode, "SettingControl");
+        
+        if ((this.lnClass.equals("LLN0") == false) && (sgNodes.size() > 0))
+        	throw new SclParserException(lnNode, "LN other than LN0 is not allowed to contain SettingControl");
         
         if (sgNodes.size() > 1)
         	throw new SclParserException(lnNode, "LN contains more then one SettingControl");
@@ -257,6 +260,10 @@ public class LogicalNode implements DataModelNode {
     public List<GSEControl> getGSEControlBlocks() {
         return gseControlBlocks;
     }
+    
+    public List<SettingControl> getSettingGroupControlBlocks() {
+		return settingGroupControlBlocks;
+	}
 
     @Override
     public DataModelNode getChildByName(String childName) {

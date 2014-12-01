@@ -66,6 +66,7 @@ public class DataAttributeType extends SclType {
 					
 					subDataAttributes.add(dad);
 				}
+				
 			}
 		}
 	}

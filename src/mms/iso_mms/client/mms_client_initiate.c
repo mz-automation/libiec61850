@@ -38,18 +38,18 @@ createInitiateRequestPdu(MmsConnection self)
 {
     InitiateRequestPdu_t request;
 
-    request.localDetailCalling = (Integer32_t*) calloc(1, sizeof(Integer32_t));
+    request.localDetailCalling = (Integer32_t*) GLOBAL_CALLOC(1, sizeof(Integer32_t));
     *(request.localDetailCalling) = self->parameters.maxPduSize;
 
     request.proposedMaxServOutstandingCalled = DEFAULT_MAX_SERV_OUTSTANDING_CALLED;
     request.proposedMaxServOutstandingCalling = DEFAULT_MAX_SERV_OUTSTANDING_CALLING;
 
-    request.proposedDataStructureNestingLevel = (Integer8_t*) calloc(1, sizeof(Integer8_t));
+    request.proposedDataStructureNestingLevel = (Integer8_t*) GLOBAL_CALLOC(1, sizeof(Integer8_t));
     *(request.proposedDataStructureNestingLevel) = DEFAULT_DATA_STRUCTURE_NESTING_LEVEL;
 
     request.mmsInitRequestDetail.proposedParameterCBB.size = 2;
     request.mmsInitRequestDetail.proposedParameterCBB.bits_unused = 5;
-    request.mmsInitRequestDetail.proposedParameterCBB.buf = (uint8_t*) calloc(2, sizeof(uint8_t));
+    request.mmsInitRequestDetail.proposedParameterCBB.buf = (uint8_t*) GLOBAL_CALLOC(2, sizeof(uint8_t));
     request.mmsInitRequestDetail.proposedParameterCBB.buf[0] = 0xf1;
     request.mmsInitRequestDetail.proposedParameterCBB.buf[1] = 0x00;
 
@@ -66,15 +66,15 @@ createInitiateRequestPdu(MmsConnection self)
 static void
 freeInitiateRequestPdu(InitiateRequestPdu_t request)
 {
-    free(request.localDetailCalling);
-    free(request.proposedDataStructureNestingLevel);
-    free(request.mmsInitRequestDetail.proposedParameterCBB.buf);
+    GLOBAL_FREEMEM(request.localDetailCalling);
+    GLOBAL_FREEMEM(request.proposedDataStructureNestingLevel);
+    GLOBAL_FREEMEM(request.mmsInitRequestDetail.proposedParameterCBB.buf);
 }
 
 int
 mmsClient_createInitiateRequest(MmsConnection self, ByteBuffer* message)
 {
-    MmsPdu_t* mmsPdu = (MmsPdu_t*) calloc(1, sizeof(MmsPdu_t));
+    MmsPdu_t* mmsPdu = (MmsPdu_t*) GLOBAL_CALLOC(1, sizeof(MmsPdu_t));
 
     mmsPdu->present = MmsPdu_PR_initiateRequestPdu;
 
@@ -84,7 +84,7 @@ mmsClient_createInitiateRequest(MmsConnection self, ByteBuffer* message)
             (asn_app_consume_bytes_f*) mmsClient_write_out, (void*) message);
 
     freeInitiateRequestPdu(mmsPdu->choice.initiateRequestPdu);
-    free(mmsPdu);
+    GLOBAL_FREEMEM(mmsPdu);
 
     return rval.encoded;
 }

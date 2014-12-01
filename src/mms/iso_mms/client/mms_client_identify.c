@@ -101,7 +101,7 @@ mmsClient_parseIdentifyResponse(MmsConnection self)
         }
     }
 
-    identityInfo = (MmsServerIdentity*) malloc(sizeof(MmsServerIdentity));
+    identityInfo = (MmsServerIdentity*) GLOBAL_MALLOC(sizeof(MmsServerIdentity));
 
     identityInfo->vendorName = vendorName;
     identityInfo->modelName = modelName;

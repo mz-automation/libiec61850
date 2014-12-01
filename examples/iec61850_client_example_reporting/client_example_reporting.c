@@ -11,7 +11,7 @@
 #include <signal.h>
 #include <time.h>
 
-#include "thread.h"
+#include "hal_thread.h"
 
 static int running = 0;
 
@@ -105,7 +105,7 @@ int main(int argc, char** argv) {
 
         /* Read RCB values */
         ClientReportControlBlock rcb =
-                IedConnection_getRCBValues(con, &error, "simpleIOGenericIO/LLN0.RP.EventsRCB", NULL);
+                IedConnection_getRCBValues(con, &error, "simpleIOGenericIO/LLN0.RP.EventsRCB01", NULL);
 
         if (error != IED_ERROR_OK) {
             printf("getRCBValues service error!\n");
@@ -131,7 +131,7 @@ int main(int argc, char** argv) {
 
         Thread_sleep(1000);
 
-        IedConnection_triggerGIReport(con, &error, "simpleIOGenericIO/LLN0.RP.EventsRCB");
+        IedConnection_triggerGIReport(con, &error, "simpleIOGenericIO/LLN0.RP.EventsRCB01");
 
         if (error != IED_ERROR_OK) {
             printf("Error triggering a GI report (code: %i)\n", error);

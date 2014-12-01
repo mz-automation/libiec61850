@@ -80,20 +80,18 @@ der_write_tags(asn_TYPE_descriptor_t *sd,
 		ber_tlv_tag_t tag,	/* EXPLICIT or IMPLICIT tag */
 		asn_app_consume_bytes_f *cb,
 		void *app_key) {
-	ber_tlv_tag_t *tags;	/* Copy of tags stream */
+	ber_tlv_tag_t tag_mem[5];	/* Copy of tags stream */
+	ber_tlv_tag_t* tags;
 	int tags_count;		/* Number of tags */
 	size_t overall_length;
-	ssize_t *lens;
+	ssize_t lens[5];
 	int i;
 
-	ASN_DEBUG("Writing tags (%s, tm=%d, tc=%d, tag=%s, mtc=%d)",
-		sd->name, tag_mode, sd->tags_count,
-		ber_tlv_tag_string(tag),
-		tag_mode
-			?(sd->tags_count+1
-				-((tag_mode == -1) && sd->tags_count))
-			:sd->tags_count
-	);
+	if (sd->tags_count > 4) {
+	    printf("TO MUCH TAGS");
+	    errno = ENOMEM;
+	    return -1;
+	}
 
 	if(tag_mode) {
 		/*
@@ -102,11 +100,9 @@ der_write_tags(asn_TYPE_descriptor_t *sd,
 		 * and initialize it appropriately.
 		 */
 		int stag_offset;
-		tags = (ber_tlv_tag_t *)alloca((sd->tags_count + 1) * sizeof(ber_tlv_tag_t));
-		if(!tags) {	/* Can fail on !x86 */
-			errno = ENOMEM;
-			return -1;
-		}
+
+		tags = tag_mem;
+
 		tags_count = sd->tags_count
 			+ 1	/* EXPLICIT or IMPLICIT tag is given */
 			- ((tag_mode == -1) && sd->tags_count);
@@ -123,12 +119,6 @@ der_write_tags(asn_TYPE_descriptor_t *sd,
 	/* No tags to write */
 	if(tags_count == 0)
 		return 0;
-
-	lens = (ssize_t *)alloca(tags_count * sizeof(lens[0]));
-	if(!lens) {
-		errno = ENOMEM;
-		return -1;
-	}
 
 	/*
 	 * Array of tags is initialized.

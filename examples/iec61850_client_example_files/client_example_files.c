@@ -15,7 +15,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "thread.h"
+#include "hal_thread.h"
 
 #define MAX_BUFFER_SIZE 2000000
 

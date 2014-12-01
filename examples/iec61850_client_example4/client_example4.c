@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "thread.h"
+#include "hal_thread.h"
 
 static void
 printDataSetValues(MmsValue* dataSet)

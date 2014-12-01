@@ -4,7 +4,7 @@
  * automatically generated from simpleIO_control_tests.icd
  */
 #include <stdlib.h>
-#include "model.h"
+#include "iec61850_model.h"
 
 extern IedModel iedModel;
 static void initializeValues();
@@ -277,6 +277,28 @@ extern DataAttribute iedModel_GenericIO_GGIO1_SPCSO8_stVal;
 extern DataAttribute iedModel_GenericIO_GGIO1_SPCSO8_q;
 extern DataAttribute iedModel_GenericIO_GGIO1_SPCSO8_t;
 extern DataAttribute iedModel_GenericIO_GGIO1_SPCSO8_ctlModel;
+extern DataObject    iedModel_GenericIO_GGIO1_SPCSO9;
+extern DataAttribute iedModel_GenericIO_GGIO1_SPCSO9_Oper;
+extern DataAttribute iedModel_GenericIO_GGIO1_SPCSO9_Oper_ctlVal;
+extern DataAttribute iedModel_GenericIO_GGIO1_SPCSO9_Oper_origin;
+extern DataAttribute iedModel_GenericIO_GGIO1_SPCSO9_Oper_origin_orCat;
+extern DataAttribute iedModel_GenericIO_GGIO1_SPCSO9_Oper_origin_orIdent;
+extern DataAttribute iedModel_GenericIO_GGIO1_SPCSO9_Oper_ctlNum;
+extern DataAttribute iedModel_GenericIO_GGIO1_SPCSO9_Oper_T;
+extern DataAttribute iedModel_GenericIO_GGIO1_SPCSO9_Oper_Test;
+extern DataAttribute iedModel_GenericIO_GGIO1_SPCSO9_Oper_Check;
+extern DataAttribute iedModel_GenericIO_GGIO1_SPCSO9_Cancel;
+extern DataAttribute iedModel_GenericIO_GGIO1_SPCSO9_Cancel_ctlVal;
+extern DataAttribute iedModel_GenericIO_GGIO1_SPCSO9_Cancel_origin;
+extern DataAttribute iedModel_GenericIO_GGIO1_SPCSO9_Cancel_origin_orCat;
+extern DataAttribute iedModel_GenericIO_GGIO1_SPCSO9_Cancel_origin_orIdent;
+extern DataAttribute iedModel_GenericIO_GGIO1_SPCSO9_Cancel_ctlNum;
+extern DataAttribute iedModel_GenericIO_GGIO1_SPCSO9_Cancel_T;
+extern DataAttribute iedModel_GenericIO_GGIO1_SPCSO9_Cancel_Test;
+extern DataAttribute iedModel_GenericIO_GGIO1_SPCSO9_stVal;
+extern DataAttribute iedModel_GenericIO_GGIO1_SPCSO9_q;
+extern DataAttribute iedModel_GenericIO_GGIO1_SPCSO9_t;
+extern DataAttribute iedModel_GenericIO_GGIO1_SPCSO9_ctlModel;
 extern DataObject    iedModel_GenericIO_GGIO1_Ind1;
 extern DataAttribute iedModel_GenericIO_GGIO1_Ind1_stVal;
 extern DataAttribute iedModel_GenericIO_GGIO1_Ind1_q;
@@ -298,7 +320,7 @@ extern DataAttribute iedModel_GenericIO_GGIO1_Ind4_t;
 
 LogicalDevice iedModel_GenericIO = {
     LogicalDeviceModelType,
-    "simpleIOGenericIO",
+    "GenericIO",
     (ModelNode*) &iedModel,
     NULL,
     (ModelNode*) &iedModel_GenericIO_LLN0
@@ -3195,7 +3217,7 @@ DataObject iedModel_GenericIO_GGIO1_SPCSO8 = {
     DataObjectModelType,
     "SPCSO8",
     (ModelNode*) &iedModel_GenericIO_GGIO1,
-    (ModelNode*) &iedModel_GenericIO_GGIO1_Ind1,
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9,
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO8_SBOw,
     0
 };
@@ -3681,6 +3703,288 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO8_ctlModel = {
     NULL,
     0};
 
+DataObject iedModel_GenericIO_GGIO1_SPCSO9 = {
+    DataObjectModelType,
+    "SPCSO9",
+    (ModelNode*) &iedModel_GenericIO_GGIO1,
+    (ModelNode*) &iedModel_GenericIO_GGIO1_Ind1,
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9_Oper,
+    0
+};
+
+DataAttribute iedModel_GenericIO_GGIO1_SPCSO9_Oper = {
+    DataAttributeModelType,
+    "Oper",
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9,
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9_Cancel,
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9_Oper_ctlVal,
+    0,
+    CO,
+    CONSTRUCTED,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_GGIO1_SPCSO9_Oper_ctlVal = {
+    DataAttributeModelType,
+    "ctlVal",
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9_Oper,
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9_Oper_origin,
+    NULL,
+    0,
+    CO,
+    BOOLEAN,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_GGIO1_SPCSO9_Oper_origin = {
+    DataAttributeModelType,
+    "origin",
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9_Oper,
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9_Oper_ctlNum,
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9_Oper_origin_orCat,
+    0,
+    CO,
+    CONSTRUCTED,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_GGIO1_SPCSO9_Oper_origin_orCat = {
+    DataAttributeModelType,
+    "orCat",
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9_Oper_origin,
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9_Oper_origin_orIdent,
+    NULL,
+    0,
+    CO,
+    ENUMERATED,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_GGIO1_SPCSO9_Oper_origin_orIdent = {
+    DataAttributeModelType,
+    "orIdent",
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9_Oper_origin,
+    NULL,
+    NULL,
+    0,
+    CO,
+    OCTET_STRING_64,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_GGIO1_SPCSO9_Oper_ctlNum = {
+    DataAttributeModelType,
+    "ctlNum",
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9_Oper,
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9_Oper_T,
+    NULL,
+    0,
+    CO,
+    INT8U,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_GGIO1_SPCSO9_Oper_T = {
+    DataAttributeModelType,
+    "T",
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9_Oper,
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9_Oper_Test,
+    NULL,
+    0,
+    CO,
+    TIMESTAMP,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_GGIO1_SPCSO9_Oper_Test = {
+    DataAttributeModelType,
+    "Test",
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9_Oper,
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9_Oper_Check,
+    NULL,
+    0,
+    CO,
+    BOOLEAN,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_GGIO1_SPCSO9_Oper_Check = {
+    DataAttributeModelType,
+    "Check",
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9_Oper,
+    NULL,
+    NULL,
+    0,
+    CO,
+    CHECK,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_GGIO1_SPCSO9_Cancel = {
+    DataAttributeModelType,
+    "Cancel",
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9,
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9_stVal,
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9_Cancel_ctlVal,
+    0,
+    CO,
+    CONSTRUCTED,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_GGIO1_SPCSO9_Cancel_ctlVal = {
+    DataAttributeModelType,
+    "ctlVal",
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9_Cancel,
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9_Cancel_origin,
+    NULL,
+    0,
+    CO,
+    BOOLEAN,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_GGIO1_SPCSO9_Cancel_origin = {
+    DataAttributeModelType,
+    "origin",
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9_Cancel,
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9_Cancel_ctlNum,
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9_Cancel_origin_orCat,
+    0,
+    CO,
+    CONSTRUCTED,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_GGIO1_SPCSO9_Cancel_origin_orCat = {
+    DataAttributeModelType,
+    "orCat",
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9_Cancel_origin,
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9_Cancel_origin_orIdent,
+    NULL,
+    0,
+    CO,
+    ENUMERATED,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_GGIO1_SPCSO9_Cancel_origin_orIdent = {
+    DataAttributeModelType,
+    "orIdent",
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9_Cancel_origin,
+    NULL,
+    NULL,
+    0,
+    CO,
+    OCTET_STRING_64,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_GGIO1_SPCSO9_Cancel_ctlNum = {
+    DataAttributeModelType,
+    "ctlNum",
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9_Cancel,
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9_Cancel_T,
+    NULL,
+    0,
+    CO,
+    INT8U,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_GGIO1_SPCSO9_Cancel_T = {
+    DataAttributeModelType,
+    "T",
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9_Cancel,
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9_Cancel_Test,
+    NULL,
+    0,
+    CO,
+    TIMESTAMP,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_GGIO1_SPCSO9_Cancel_Test = {
+    DataAttributeModelType,
+    "Test",
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9_Cancel,
+    NULL,
+    NULL,
+    0,
+    CO,
+    BOOLEAN,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_GGIO1_SPCSO9_stVal = {
+    DataAttributeModelType,
+    "stVal",
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9,
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9_q,
+    NULL,
+    0,
+    ST,
+    BOOLEAN,
+    0 + TRG_OPT_DATA_CHANGED,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_GGIO1_SPCSO9_q = {
+    DataAttributeModelType,
+    "q",
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9,
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9_t,
+    NULL,
+    0,
+    ST,
+    QUALITY,
+    0 + TRG_OPT_QUALITY_CHANGED,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_GGIO1_SPCSO9_t = {
+    DataAttributeModelType,
+    "t",
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9,
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9_ctlModel,
+    NULL,
+    0,
+    ST,
+    TIMESTAMP,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_GGIO1_SPCSO9_ctlModel = {
+    DataAttributeModelType,
+    "ctlModel",
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO9,
+    NULL,
+    NULL,
+    0,
+    CF,
+    ENUMERATED,
+    0,
+    NULL,
+    0};
+
 DataObject iedModel_GenericIO_GGIO1_Ind1 = {
     DataObjectModelType,
     "Ind1",
@@ -3878,19 +4182,10 @@ DataAttribute iedModel_GenericIO_GGIO1_Ind4_t = {
 
 
 
-
-
-
-
-
-
-
-
-
-
 IedModel iedModel = {
     "simpleIO",
     &iedModel_GenericIO,
+    NULL,
     NULL,
     NULL,
     NULL,
@@ -3920,4 +4215,6 @@ iedModel_GenericIO_GGIO1_SPCSO6_ctlModel.mmsValue = MmsValue_newIntegerFromInt32
 iedModel_GenericIO_GGIO1_SPCSO7_ctlModel.mmsValue = MmsValue_newIntegerFromInt32(3);
 
 iedModel_GenericIO_GGIO1_SPCSO8_ctlModel.mmsValue = MmsValue_newIntegerFromInt32(4);
+
+iedModel_GenericIO_GGIO1_SPCSO9_ctlModel.mmsValue = MmsValue_newIntegerFromInt32(3);
 }

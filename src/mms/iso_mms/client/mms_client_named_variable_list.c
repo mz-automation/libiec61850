@@ -35,7 +35,7 @@
 
 void
 mmsClient_createDeleteNamedVariableListRequest(long invokeId, ByteBuffer* writeBuffer,
-		char* domainId, char* listNameId)
+		const char* domainId, const char* listNameId)
 {
 	MmsPdu_t* mmsPdu = mmsClient_createConfirmedRequestPdu(invokeId);
 
@@ -45,14 +45,14 @@ mmsClient_createDeleteNamedVariableListRequest(long invokeId, ByteBuffer* writeB
 	DeleteNamedVariableListRequest_t* request =
 			&(mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.choice.deleteNamedVariableList);
 
-	request->listOfVariableListName = (struct DeleteNamedVariableListRequest__listOfVariableListName*) calloc(1,
+	request->listOfVariableListName = (struct DeleteNamedVariableListRequest__listOfVariableListName*) GLOBAL_CALLOC(1,
 			sizeof(struct DeleteNamedVariableListRequest__listOfVariableListName));
 
 	request->listOfVariableListName->list.count = 1;
 	request->listOfVariableListName->list.size = 1;
 
-	request->listOfVariableListName->list.array = (ObjectName_t**) calloc(1, sizeof(ObjectName_t*));
-	request->listOfVariableListName->list.array[0] = (ObjectName_t*) calloc(1, sizeof(ObjectName_t));
+	request->listOfVariableListName->list.array = (ObjectName_t**) GLOBAL_CALLOC(1, sizeof(ObjectName_t*));
+	request->listOfVariableListName->list.array[0] = (ObjectName_t*) GLOBAL_CALLOC(1, sizeof(ObjectName_t));
 
 	request->listOfVariableListName->list.array[0]->present = ObjectName_PR_domainspecific;
 	request->listOfVariableListName->list.array[0]->choice.domainspecific.domainId.size = strlen(domainId);
@@ -60,7 +60,7 @@ mmsClient_createDeleteNamedVariableListRequest(long invokeId, ByteBuffer* writeB
 	request->listOfVariableListName->list.array[0]->choice.domainspecific.itemId.size = strlen(listNameId);
 	request->listOfVariableListName->list.array[0]->choice.domainspecific.itemId.buf = (uint8_t*) copyString(listNameId);
 
-	request->scopeOfDelete = (INTEGER_t*) calloc(1, sizeof(INTEGER_t));
+	request->scopeOfDelete = (INTEGER_t*) GLOBAL_CALLOC(1, sizeof(INTEGER_t));
 	asn_long2INTEGER(request->scopeOfDelete, DeleteNamedVariableListRequest__scopeOfDelete_specific);
 
     der_encode(&asn_DEF_MmsPdu, mmsPdu,
@@ -73,7 +73,7 @@ void
 mmsClient_createDeleteAssociationSpecificNamedVariableListRequest(
 		long invokeId,
 		ByteBuffer* writeBuffer,
-		char* listNameId)
+		const char* listNameId)
 {
 	MmsPdu_t* mmsPdu = mmsClient_createConfirmedRequestPdu(invokeId);
 
@@ -83,21 +83,21 @@ mmsClient_createDeleteAssociationSpecificNamedVariableListRequest(
 	DeleteNamedVariableListRequest_t* request =
 			&(mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.choice.deleteNamedVariableList);
 
-	request->listOfVariableListName = (struct DeleteNamedVariableListRequest__listOfVariableListName*) calloc(1,
+	request->listOfVariableListName = (struct DeleteNamedVariableListRequest__listOfVariableListName*) GLOBAL_CALLOC(1,
 			sizeof(struct DeleteNamedVariableListRequest__listOfVariableListName));
 
 	request->listOfVariableListName->list.count = 1;
 	request->listOfVariableListName->list.size = 1;
 
-	request->listOfVariableListName->list.array = (ObjectName_t**) calloc(1, sizeof(ObjectName_t*));
-	request->listOfVariableListName->list.array[0] = (ObjectName_t*) calloc(1, sizeof(ObjectName_t));
+	request->listOfVariableListName->list.array = (ObjectName_t**) GLOBAL_CALLOC(1, sizeof(ObjectName_t*));
+	request->listOfVariableListName->list.array[0] = (ObjectName_t*) GLOBAL_CALLOC(1, sizeof(ObjectName_t));
 
 	request->listOfVariableListName->list.array[0]->present = ObjectName_PR_aaspecific;
 
 	request->listOfVariableListName->list.array[0]->choice.aaspecific.size = strlen(listNameId);
 	request->listOfVariableListName->list.array[0]->choice.aaspecific.buf = (uint8_t*) copyString(listNameId);
 
-	request->scopeOfDelete = (INTEGER_t*) calloc(1, sizeof(INTEGER_t));
+	request->scopeOfDelete = (INTEGER_t*) GLOBAL_CALLOC(1, sizeof(INTEGER_t));
 	asn_long2INTEGER(request->scopeOfDelete, DeleteNamedVariableListRequest__scopeOfDelete_specific);
 
 	der_encode(&asn_DEF_MmsPdu, mmsPdu,
@@ -146,7 +146,7 @@ mmsClient_parseDeleteNamedVariableListResponse(ByteBuffer* message, uint32_t* in
 
 void
 mmsClient_createGetNamedVariableListAttributesRequest(uint32_t invokeId, ByteBuffer* writeBuffer,
-		char* domainId, char* listNameId)
+		const char* domainId, const char* listNameId)
 {
 	MmsPdu_t* mmsPdu = mmsClient_createConfirmedRequestPdu(invokeId);
 
@@ -172,7 +172,7 @@ mmsClient_createGetNamedVariableListAttributesRequest(uint32_t invokeId, ByteBuf
 
 void
 mmsClient_createGetNamedVariableListAttributesRequestAssociationSpecific(uint32_t invokeId,
-        ByteBuffer* writeBuffer, char* listNameId)
+        ByteBuffer* writeBuffer, const char* listNameId)
 {
     MmsPdu_t* mmsPdu = mmsClient_createConfirmedRequestPdu(invokeId);
 
@@ -257,8 +257,8 @@ void
 mmsClient_createDefineNamedVariableListRequest(
 		uint32_t invokeId,
 		ByteBuffer* writeBuffer,
-		char* domainId,
-		char* listNameId,
+		const char* domainId,
+		const char* listNameId,
 		LinkedList /*<MmsVariableSpecification*>*/ listOfVariables,
 		bool associationSpecific)
 {
@@ -292,7 +292,7 @@ mmsClient_createDefineNamedVariableListRequest(
 	request->listOfVariable.list.size = listSize;
 
 	request->listOfVariable.list.array = 
-		(struct DefineNamedVariableListRequest__listOfVariable__Member**) calloc(listSize, sizeof(void*));
+		(struct DefineNamedVariableListRequest__listOfVariable__Member**) GLOBAL_CALLOC(listSize, sizeof(void*));
 
 	int i = 0;
 	LinkedList element = LinkedList_getNext(listOfVariables);
@@ -301,7 +301,7 @@ mmsClient_createDefineNamedVariableListRequest(
 		MmsVariableAccessSpecification* variableSpec = (MmsVariableAccessSpecification*) element->data;
 
 		request->listOfVariable.list.array[i] = (struct DefineNamedVariableListRequest__listOfVariable__Member*)
-				calloc(1, sizeof(struct DefineNamedVariableListRequest__listOfVariable__Member));
+                GLOBAL_CALLOC(1, sizeof(struct DefineNamedVariableListRequest__listOfVariable__Member));
 
 		request->listOfVariable.list.array[i]->variableSpecification.present =
 				VariableSpecification_PR_name;
@@ -324,13 +324,13 @@ mmsClient_createDefineNamedVariableListRequest(
 		//TODO add alternate access
 		if (variableSpec->arrayIndex != -1) {
 
-			AlternateAccess_t* alternateAccess = (AlternateAccess_t*) calloc(1, sizeof(AlternateAccess_t));
+			AlternateAccess_t* alternateAccess = (AlternateAccess_t*) GLOBAL_CALLOC(1, sizeof(AlternateAccess_t));
 			alternateAccess->list.count = 1;
-			alternateAccess->list.array = (struct AlternateAccess__Member**) calloc(1, sizeof(struct AlternateAccess__Member*));
-			alternateAccess->list.array[0] = (struct AlternateAccess__Member*) calloc(1, sizeof(struct AlternateAccess__Member));
+			alternateAccess->list.array = (struct AlternateAccess__Member**) GLOBAL_CALLOC(1, sizeof(struct AlternateAccess__Member*));
+			alternateAccess->list.array[0] = (struct AlternateAccess__Member*) GLOBAL_CALLOC(1, sizeof(struct AlternateAccess__Member));
 
 			alternateAccess->list.array[0]->present = AlternateAccess__Member_PR_unnamed;
-			alternateAccess->list.array[0]->choice.unnamed = (AlternateAccessSelection_t*) calloc(1, sizeof(AlternateAccessSelection_t));
+			alternateAccess->list.array[0]->choice.unnamed = (AlternateAccessSelection_t*) GLOBAL_CALLOC(1, sizeof(AlternateAccessSelection_t));
 
 			alternateAccess->list.array[0]->choice.unnamed->present =
 					AlternateAccessSelection_PR_selectAlternateAccess;
@@ -343,14 +343,14 @@ mmsClient_createDefineNamedVariableListRequest(
 
 			if (variableSpec->componentName != NULL) {
 
-				AlternateAccess_t* componentAccess = (AlternateAccess_t*) calloc(1, sizeof(AlternateAccess_t));
+				AlternateAccess_t* componentAccess = (AlternateAccess_t*) GLOBAL_CALLOC(1, sizeof(AlternateAccess_t));
 
 				componentAccess->list.count = 1;
-				componentAccess->list.array = (struct AlternateAccess__Member**) calloc(1, sizeof(struct AlternateAccess__Member*));
-				componentAccess->list.array[0] = (struct AlternateAccess__Member*) calloc(1, sizeof(struct AlternateAccess__Member));
+				componentAccess->list.array = (struct AlternateAccess__Member**) GLOBAL_CALLOC(1, sizeof(struct AlternateAccess__Member*));
+				componentAccess->list.array[0] = (struct AlternateAccess__Member*) GLOBAL_CALLOC(1, sizeof(struct AlternateAccess__Member));
 
 				componentAccess->list.array[0]->present = AlternateAccess__Member_PR_unnamed;
-				componentAccess->list.array[0]->choice.unnamed = (AlternateAccessSelection_t*) calloc(1, sizeof(AlternateAccessSelection_t));
+				componentAccess->list.array[0]->choice.unnamed = (AlternateAccessSelection_t*) GLOBAL_CALLOC(1, sizeof(AlternateAccessSelection_t));
 
 
 				componentAccess->list.array[0]->choice.unnamed->present = AlternateAccessSelection_PR_selectAccess;

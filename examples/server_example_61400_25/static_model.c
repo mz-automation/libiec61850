@@ -4,7 +4,7 @@
  * automatically generated from wtur.icd
  */
 #include <stdlib.h>
-#include "model.h"
+#include "iec61850_model.h"
 
 extern IedModel iedModel;
 static void initializeValues();
@@ -344,7 +344,7 @@ extern DataAttribute iedModel_WTG_WTUR1_SetTurOp_cmAcs;
 
 LogicalDevice iedModel_WTG = {
     LogicalDeviceModelType,
-    "WINDWTG",
+    "WTG",
     (ModelNode*) &iedModel,
     NULL,
     (ModelNode*) &iedModel_WTG_LLN0
@@ -4466,19 +4466,10 @@ DataAttribute iedModel_WTG_WTUR1_SetTurOp_cmAcs = {
 
 
 
-
-
-
-
-
-
-
-
-
-
 IedModel iedModel = {
     "WIND",
     &iedModel_WTG,
+    NULL,
     NULL,
     NULL,
     NULL,

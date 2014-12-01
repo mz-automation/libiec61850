@@ -1,10 +1,10 @@
 /*
  * static_model.c
  *
- * automatically generated from complexModel.scd
+ * automatically generated from complexModel.icd
  */
 #include <stdlib.h>
-#include "model.h"
+#include "iec61850_model.h"
 
 extern IedModel iedModel;
 static void initializeValues();
@@ -314,7 +314,7 @@ extern DataSetEntry ds_Inverter_LLN0_dataset1_fcda3;
 extern DataSetEntry ds_Inverter_LLN0_dataset1_fcda4;
 
 DataSetEntry ds_Inverter_LLN0_dataset1_fcda0 = {
-  "ied1Inverter",
+  "Inverter",
   "LLN0$ST$Mod$q",
   -1,
   NULL,
@@ -323,7 +323,7 @@ DataSetEntry ds_Inverter_LLN0_dataset1_fcda0 = {
 };
 
 DataSetEntry ds_Inverter_LLN0_dataset1_fcda1 = {
-  "ied1Battery",
+  "Battery",
   "LLN0$ST$Mod$q",
   -1,
   NULL,
@@ -332,7 +332,7 @@ DataSetEntry ds_Inverter_LLN0_dataset1_fcda1 = {
 };
 
 DataSetEntry ds_Inverter_LLN0_dataset1_fcda2 = {
-  "ied1Inverter",
+  "Inverter",
   "MMXU1$ST$Mod$q",
   -1,
   NULL,
@@ -341,7 +341,7 @@ DataSetEntry ds_Inverter_LLN0_dataset1_fcda2 = {
 };
 
 DataSetEntry ds_Inverter_LLN0_dataset1_fcda3 = {
-  "ied1Inverter",
+  "Inverter",
   "MMXU1$CF$Mod$ctlModel",
   -1,
   NULL,
@@ -350,7 +350,7 @@ DataSetEntry ds_Inverter_LLN0_dataset1_fcda3 = {
 };
 
 DataSetEntry ds_Inverter_LLN0_dataset1_fcda4 = {
-  "ied1Inverter",
+  "Inverter",
   "MMXU1$MX$TotW$mag",
   -1,
   NULL,
@@ -359,7 +359,7 @@ DataSetEntry ds_Inverter_LLN0_dataset1_fcda4 = {
 };
 
 DataSet ds_Inverter_LLN0_dataset1 = {
-  "ied1Inverter",
+  "Inverter",
   "LLN0$dataset1",
   5,
   &ds_Inverter_LLN0_dataset1_fcda0,
@@ -368,7 +368,7 @@ DataSet ds_Inverter_LLN0_dataset1 = {
 
 LogicalDevice iedModel_Inverter = {
     LogicalDeviceModelType,
-    "ied1Inverter",
+    "Inverter",
     (ModelNode*) &iedModel,
     (ModelNode*) &iedModel_Battery,
     (ModelNode*) &iedModel_Inverter_LLN0
@@ -2480,7 +2480,7 @@ DataAttribute iedModel_Inverter_MMXU1_W_phsC_t = {
 
 LogicalDevice iedModel_Battery = {
     LogicalDeviceModelType,
-    "ied1Battery",
+    "Battery",
     (ModelNode*) &iedModel,
     (ModelNode*) &iedModel_Physical_Measurements,
     (ModelNode*) &iedModel_Battery_LLN0
@@ -3512,7 +3512,7 @@ DataAttribute iedModel_Battery_ZBTC1_ChaA_t = {
 
 LogicalDevice iedModel_Physical_Measurements = {
     LogicalDeviceModelType,
-    "ied1Physical_Measurements",
+    "Physical_Measurements",
     (ModelNode*) &iedModel,
     NULL,
     (ModelNode*) &iedModel_Physical_Measurements_LLN0
@@ -3870,47 +3870,9 @@ DataAttribute iedModel_Physical_Measurements_LPHD1_Proxy_t = {
     NULL,
     0};
 
-
 extern ReportControlBlock iedModel_Inverter_LLN0_report0;
 
-ReportControlBlock iedModel_Inverter_LLN0_report0 = {&iedModel_Inverter_LLN0, "rcb1", "ID", false, "dataset1", 0, 3, 32, 0, 0, NULL};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+ReportControlBlock iedModel_Inverter_LLN0_report0 = {&iedModel_Inverter_LLN0, "rcb101", "ID", false, "dataset1", 0, 3, 32, 0, 0, NULL};
 
 
 
@@ -3920,6 +3882,7 @@ IedModel iedModel = {
     &iedModel_Inverter,
     &ds_Inverter_LLN0_dataset1,
     &iedModel_Inverter_LLN0_report0,
+    NULL,
     NULL,
     initializeValues
 };

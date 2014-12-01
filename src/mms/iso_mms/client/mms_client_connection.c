@@ -1,7 +1,7 @@
 /*
  *  mms_client_connection.c
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013, 2014 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -36,6 +36,7 @@
 #include <assert.h>
 
 #define CONFIG_MMS_CONNECTION_DEFAULT_TIMEOUT 5000
+#define CONFIG_MMS_CONNECTION_DEFAULT_CONNECT_TIMEOUT 10000
 #define OUTSTANDING_CALLS 10
 
 static void
@@ -45,7 +46,7 @@ handleUnconfirmedMmsPdu(MmsConnection self, ByteBuffer* message)
         MmsPdu_t* mmsPdu = 0; /* allow asn1c to allocate structure */
 
         if (DEBUG_MMS_CLIENT)
-            printf("MMS_CLIENT: report handler revd size:%i\n", ByteBuffer_getSize(message));
+            printf("MMS_CLIENT: report handler rcvd size:%i\n", ByteBuffer_getSize(message));
 
         asn_dec_rval_t  rval = ber_decode(NULL, &asn_DEF_MmsPdu,
                 (void**) &mmsPdu, ByteBuffer_getBuffer(message), ByteBuffer_getSize(message));
@@ -58,7 +59,7 @@ handleUnconfirmedMmsPdu(MmsConnection self, ByteBuffer* message)
 
                 if (mmsPdu->choice.unconfirmedPDU.unconfirmedService.present ==
                         UnconfirmedService_PR_informationReport)
-                        {
+                {
                     char* domainId = NULL;
 
                     InformationReport_t* report =
@@ -84,18 +85,15 @@ handleUnconfirmedMmsPdu(MmsConnection self, ByteBuffer* message)
 
                             self->reportHandler(self->reportHandlerParameter, domainId, variableListName, values, true);
 
-                            free(variableListName);
+                            GLOBAL_FREEMEM(variableListName);
                         }
                         else {
                             // Ignore domain and association specific information reports (not used by IEC 61850)
                         }
 
                     }
-                    else if (report->variableAccessSpecification.present ==
-                            VariableAccessSpecification_PR_listOfVariable)
-                            {
-                        //TODO add code to handle reports with more than one variable
-
+                    else if (report->variableAccessSpecification.present == VariableAccessSpecification_PR_listOfVariable)
+                    {
                         int listSize = report->listOfAccessResult.list.count;
                         int variableSpecSize = report->variableAccessSpecification.choice.listOfVariable.list.count;
 
@@ -111,12 +109,11 @@ handleUnconfirmedMmsPdu(MmsConnection self, ByteBuffer* message)
                         int i;
                         for (i = 0; i < variableSpecSize; i++) {
                             if (report->variableAccessSpecification.choice.listOfVariable.list.array[i]->variableSpecification.present
-                                    ==
-                                    VariableSpecification_PR_name)
-                                    {
+                                    == VariableSpecification_PR_name)
+                            {
                                 if (report->variableAccessSpecification.choice.listOfVariable.list.array[i]
-                                        ->variableSpecification.choice.name.present == ObjectName_PR_vmdspecific) {
-
+                                        ->variableSpecification.choice.name.present == ObjectName_PR_vmdspecific)
+                                {
                                     int nameSize =
                                             report->variableAccessSpecification.choice.listOfVariable.list.array[i]
                                                     ->variableSpecification.choice.name.choice.vmdspecific.size;
@@ -130,14 +127,20 @@ handleUnconfirmedMmsPdu(MmsConnection self, ByteBuffer* message)
                                         memcpy(variableListName, buffer, nameSize);
                                         variableListName[nameSize] = 0;
 
+                                        MmsValue* value = values;
+
+                                        if (variableSpecSize != 1)
+                                            value = MmsValue_getElement(values, i);
+
                                         self->reportHandler(self->reportHandlerParameter, domainId, variableListName,
-                                                values, false);
+                                                value, false);
 
                                         // report handler should have deleted the MmsValue!
-                                        values = NULL;
+                                        if (variableSpecSize != 1)
+                                            MmsValue_setElement(values, i, NULL);
+                                        else
+                                            values = NULL;
                                     }
-                                    else
-                                        MmsValue_delete(values);
                                 }
                                 else if (report->variableAccessSpecification.choice.listOfVariable.list.array[i]
                                         ->variableSpecification.choice.name.present == ObjectName_PR_domainspecific) {
@@ -167,21 +170,24 @@ handleUnconfirmedMmsPdu(MmsConnection self, ByteBuffer* message)
                                         memcpy(itemNameStr, itemNamebuffer, itemNameSize);
                                         itemNameStr[itemNameSize] = 0;
 
+                                        MmsValue* value = values;
+
+                                        if (variableSpecSize != 1)
+                                           value = MmsValue_getElement(values, i);
+
                                         self->reportHandler(self->reportHandlerParameter, domainNameStr, itemNameStr,
-                                                values, false);
+                                                value, false);
 
                                         // report handler should have deleted the MmsValue!
-                                        values = NULL;
+                                        if (variableSpecSize != 1)
+                                            MmsValue_setElement(values, i, NULL);
+                                        else
+                                            values = NULL;
+
                                     }
-                                    else
-                                        MmsValue_delete(values);
                                 }
-
                             }
-
                         }
-
-                        //TODO handle CommandTermination request!
 
                         if (values != NULL)
                             MmsValue_delete(values);
@@ -615,7 +621,7 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
         }
         self->lastResponse = payload;
 
-        return;
+        IsoClientConnection_releaseReceiveBuffer(self->isoClient);
     }
     else if (tag == 0xa3) { /* unconfirmed PDU */
         handleUnconfirmedMmsPdu(self, payload);
@@ -627,7 +633,8 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
 
         self->concludeState = CONCLUDE_STATE_REQUESTED;
 
-        /* block all new user requests */
+        /* TODO block all new user requests */
+
         IsoClientConnection_releaseReceiveBuffer(self->isoClient);
     }
     else if (tag == 0x8c) { /* conclude response PDU */
@@ -742,7 +749,7 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
 MmsConnection
 MmsConnection_create()
 {
-    MmsConnection self = (MmsConnection) calloc(1, sizeof(struct sMmsConnection));
+    MmsConnection self = (MmsConnection) GLOBAL_CALLOC(1, sizeof(struct sMmsConnection));
 
     self->parameters.dataStructureNestingLevel = -1;
     self->parameters.maxServOutstandingCalled = -1;
@@ -759,15 +766,22 @@ MmsConnection_create()
 
     self->lastResponseError = MMS_ERROR_NONE;
 
-    self->outstandingCalls = (uint32_t*) calloc(OUTSTANDING_CALLS, sizeof(uint32_t));
+    self->outstandingCalls = (uint32_t*) GLOBAL_CALLOC(OUTSTANDING_CALLS, sizeof(uint32_t));
 
     self->isoParameters = IsoConnectionParameters_create();
 
     /* Load default values for connection parameters */
-    IsoConnectionParameters_setLocalAddresses(self->isoParameters, 1, 1, 1);
+	TSelector selector1 = { 2, { 0, 0 } };
+	TSelector selector2 = { 2, { 0, 0 } };
+
+    IsoConnectionParameters_setLocalAddresses(self->isoParameters, 1, 1, selector1);
     IsoConnectionParameters_setLocalApTitle(self->isoParameters, "1.1.1.999", 12);
-    IsoConnectionParameters_setRemoteAddresses(self->isoParameters, 1, 1, 1);
+    IsoConnectionParameters_setRemoteAddresses(self->isoParameters, 1, 1, selector2);
     IsoConnectionParameters_setRemoteApTitle(self->isoParameters, "1.1.1.999.1", 12);
+
+    self->connectTimeout = CONFIG_MMS_CONNECTION_DEFAULT_CONNECT_TIMEOUT;
+
+    self->isoClient = IsoClientConnection_create((IsoIndicationCallback) mmsIsoCallback, (void*) self);
 
     return self;
 }
@@ -785,9 +799,9 @@ MmsConnection_destroy(MmsConnection self)
     Semaphore_destroy(self->lastResponseLock);
     Semaphore_destroy(self->outstandingCallsLock);
 
-    free(self->outstandingCalls);
+    GLOBAL_FREEMEM(self->outstandingCalls);
 
-    free(self);
+    GLOBAL_FREEMEM(self);
 }
 
 void
@@ -801,6 +815,12 @@ void
 MmsConnection_setRequestTimeout(MmsConnection self, uint32_t timeoutInMs)
 {
     self->requestTimeout = timeoutInMs;
+}
+
+void
+MmsConnection_setConnectTimeout(MmsConnection self, uint32_t timeoutInMs)
+{
+    self->connectTimeout = timeoutInMs;
 }
 
 void
@@ -842,10 +862,8 @@ waitForConnectResponse(MmsConnection self)
 }
 
 bool
-MmsConnection_connect(MmsConnection self, MmsError* mmsError, char* serverName, int serverPort)
+MmsConnection_connect(MmsConnection self, MmsError* mmsError, const char* serverName, int serverPort)
 {
-    self->isoClient = IsoClientConnection_create((IsoIndicationCallback) mmsIsoCallback, (void*) self);
-
     IsoConnectionParameters_setTcpParameters(self->isoParameters, serverName, serverPort);
 
     if (self->parameters.maxPduSize == -1)
@@ -857,7 +875,8 @@ MmsConnection_connect(MmsConnection self, MmsError* mmsError, char* serverName, 
 
     self->connectionState = MMS_CON_WAITING;
 
-    IsoClientConnection_associate(self->isoClient, self->isoParameters, payload);
+    IsoClientConnection_associate(self->isoClient, self->isoParameters, payload,
+            self->connectTimeout);
 
     waitForConnectResponse(self);
 
@@ -891,11 +910,25 @@ MmsConnection_connect(MmsConnection self, MmsError* mmsError, char* serverName, 
 }
 
 void
+MmsConnection_close(MmsConnection self)
+{
+    self->connectionLostHandler = NULL;
+
+    if (self->associationState == MMS_STATE_CONNECTED)
+        IsoClientConnection_close(self->isoClient);
+}
+
+void
 MmsConnection_abort(MmsConnection self, MmsError* mmsError)
 {
     *mmsError = MMS_ERROR_NONE;
 
-    IsoClientConnection_abort(self->isoClient);
+    self->connectionLostHandler = NULL;
+
+    if (self->associationState == MMS_STATE_CONNECTED)
+        IsoClientConnection_abort(self->isoClient);
+
+    //TODO wait for connection to be closed
 }
 
 static void
@@ -960,6 +993,8 @@ MmsConnection_conclude(MmsConnection self, MmsError* mmsError)
         if (self->concludeState == CONCLUDE_STATE_REJECTED)
             *mmsError = MMS_ERROR_CONCLUDE_REJECTED;
     }
+
+    self->connectionLostHandler = NULL;
 }
 
 void
@@ -975,10 +1010,10 @@ mmsClient_getNameListSingleRequest(
         LinkedList* nameList,
         MmsConnection self,
         MmsError* mmsError,
-        char* domainId,
+        const char* domainId,
         MmsObjectClass objectClass,
         bool associationSpecific,
-        char* continueAfter)
+        const char* continueAfter)
 {
     *mmsError = MMS_ERROR_NONE;
 
@@ -1016,7 +1051,7 @@ mmsClient_getNameListSingleRequest(
 
 static LinkedList /* <char*> */
 mmsClient_getNameList(MmsConnection self, MmsError *mmsError,
-        char* domainId,
+        const char* domainId,
         MmsObjectClass objectClass,
         bool associationSpecific)
 {
@@ -1055,13 +1090,13 @@ MmsConnection_getDomainNames(MmsConnection self, MmsError* mmsError)
 }
 
 LinkedList /* <char*> */
-MmsConnection_getDomainVariableNames(MmsConnection self, MmsError* mmsError, char* domainId)
+MmsConnection_getDomainVariableNames(MmsConnection self, MmsError* mmsError, const char* domainId)
 {
     return mmsClient_getNameList(self, mmsError, domainId, MMS_NAMED_VARIABLE, false);
 }
 
 LinkedList /* <char*> */
-MmsConnection_getDomainVariableListNames(MmsConnection self, MmsError* mmsError, char* domainId)
+MmsConnection_getDomainVariableListNames(MmsConnection self, MmsError* mmsError, const char* domainId)
 {
     return mmsClient_getNameList(self, mmsError, domainId, MMS_NAMED_VARIABLE_LIST, false);
 }
@@ -1074,7 +1109,7 @@ MmsConnection_getVariableListNamesAssociationSpecific(MmsConnection self, MmsErr
 
 MmsValue*
 MmsConnection_readVariable(MmsConnection self, MmsError* mmsError,
-        char* domainId, char* itemId)
+        const char* domainId, const char* itemId)
 {
     ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
@@ -1103,7 +1138,7 @@ MmsConnection_readVariable(MmsConnection self, MmsError* mmsError,
 
 MmsValue*
 MmsConnection_readArrayElements(MmsConnection self, MmsError* mmsError,
-        char* domainId, char* itemId,
+        const char* domainId, const char* itemId,
         uint32_t startIndex, uint32_t numberOfElements)
 {
     ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
@@ -1134,7 +1169,7 @@ MmsConnection_readArrayElements(MmsConnection self, MmsError* mmsError,
 
 MmsValue*
 MmsConnection_readMultipleVariables(MmsConnection self, MmsError* mmsError,
-        char* domainId, LinkedList /*<char*>*/items)
+        const char* domainId, LinkedList /*<char*>*/items)
 {
     ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
@@ -1163,7 +1198,7 @@ MmsConnection_readMultipleVariables(MmsConnection self, MmsError* mmsError,
 
 MmsValue*
 MmsConnection_readNamedVariableListValues(MmsConnection self, MmsError* mmsError,
-        char* domainId, char* listName,
+        const char* domainId, const char* listName,
         bool specWithResult)
 {
     ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
@@ -1197,7 +1232,7 @@ MmsConnection_readNamedVariableListValues(MmsConnection self, MmsError* mmsError
 MmsValue*
 MmsConnection_readNamedVariableListValuesAssociationSpecific(
         MmsConnection self, MmsError* mmsError,
-        char* listName,
+        const char* listName,
         bool specWithResult)
 {
     ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
@@ -1228,7 +1263,7 @@ MmsConnection_readNamedVariableListValuesAssociationSpecific(
 
 LinkedList /* <MmsVariableAccessSpecification*> */
 MmsConnection_readNamedVariableListDirectory(MmsConnection self, MmsError* mmsError,
-        char* domainId, char* listName, bool* deletable)
+        const char* domainId, const char* listName, bool* deletable)
 {
     ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
@@ -1259,7 +1294,7 @@ MmsConnection_readNamedVariableListDirectory(MmsConnection self, MmsError* mmsEr
 
 LinkedList /* <MmsVariableAccessSpecification*> */
 MmsConnection_readNamedVariableListDirectoryAssociationSpecific(MmsConnection self, MmsError* mmsError,
-        char* listName, bool* deletable)
+        const char* listName, bool* deletable)
 {
     ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
@@ -1290,7 +1325,7 @@ MmsConnection_readNamedVariableListDirectoryAssociationSpecific(MmsConnection se
 
 void
 MmsConnection_defineNamedVariableList(MmsConnection self, MmsError* mmsError,
-        char* domainId, char* listName, LinkedList variableSpecs)
+        const char* domainId, const char* listName, LinkedList variableSpecs)
 {
     ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
@@ -1317,7 +1352,7 @@ MmsConnection_defineNamedVariableList(MmsConnection self, MmsError* mmsError,
 
 void
 MmsConnection_defineNamedVariableListAssociationSpecific(MmsConnection self,
-        MmsError* mmsError, char* listName, LinkedList variableSpecs)
+        MmsError* mmsError, const char* listName, LinkedList variableSpecs)
 {
     ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
@@ -1344,7 +1379,7 @@ MmsConnection_defineNamedVariableListAssociationSpecific(MmsConnection self,
 
 void
 MmsConnection_deleteNamedVariableList(MmsConnection self, MmsError* mmsError,
-        char* domainId, char* listName)
+        const char* domainId, const char* listName)
 {
     ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
@@ -1370,7 +1405,7 @@ MmsConnection_deleteNamedVariableList(MmsConnection self, MmsError* mmsError,
 
 void
 MmsConnection_deleteAssociationSpecificNamedVariableList(MmsConnection self,
-        MmsError* mmsError, char* listName)
+        MmsError* mmsError, const char* listName)
 {
     ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
@@ -1397,7 +1432,7 @@ MmsConnection_deleteAssociationSpecificNamedVariableList(MmsConnection self,
 
 MmsVariableSpecification*
 MmsConnection_getVariableAccessAttributes(MmsConnection self, MmsError* mmsError,
-        char* domainId, char* itemId)
+        const char* domainId, const char* itemId)
 {
     ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
@@ -1483,7 +1518,7 @@ MmsConnection_getServerStatus(MmsConnection self, MmsError* mmsError, int* vmdLo
 
 
 int32_t
-MmsConnection_fileOpen(MmsConnection self, MmsError* mmsError, char* filename, uint32_t initialPosition,
+MmsConnection_fileOpen(MmsConnection self, MmsError* mmsError, const char* filename, uint32_t initialPosition,
         uint32_t* fileSize, uint64_t* lastModified)
 {
     ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
@@ -1538,7 +1573,7 @@ MmsConnection_fileClose(MmsConnection self, MmsError* mmsError, int32_t frsmId)
 }
 
 void
-MmsConnection_fileDelete(MmsConnection self, MmsError* mmsError, char* fileName)
+MmsConnection_fileDelete(MmsConnection self, MmsError* mmsError, const char* fileName)
 {
     ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
@@ -1594,7 +1629,7 @@ MmsConnection_fileRead(MmsConnection self, MmsError* mmsError, int32_t frsmId, M
 
 
 bool
-MmsConnection_getFileDirectory(MmsConnection self, MmsError* mmsError, char* fileSpecification, char* continueAfter,
+MmsConnection_getFileDirectory(MmsConnection self, MmsError* mmsError, const char* fileSpecification, const char* continueAfter,
         MmsFileDirectoryHandler handler, void* handlerParameter)
 {
     ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
@@ -1625,7 +1660,7 @@ MmsConnection_getFileDirectory(MmsConnection self, MmsError* mmsError, char* fil
 }
 
 void
-MmsConnection_fileRename(MmsConnection self, MmsError* mmsError, char* currentFileName, char* newFileName)
+MmsConnection_fileRename(MmsConnection self, MmsError* mmsError, const char* currentFileName, const char* newFileName)
 {
     ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
@@ -1651,7 +1686,7 @@ MmsConnection_fileRename(MmsConnection self, MmsError* mmsError, char* currentFi
 
 void
 MmsConnection_writeVariable(MmsConnection self, MmsError* mmsError,
-        char* domainId, char* itemId,
+        const char* domainId, const char* itemId,
         MmsValue* value)
 {
     ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
@@ -1676,7 +1711,7 @@ MmsConnection_writeVariable(MmsConnection self, MmsError* mmsError,
 }
 
 void
-MmsConnection_writeMultipleVariables(MmsConnection self, MmsError* mmsError, char* domainId,
+MmsConnection_writeMultipleVariables(MmsConnection self, MmsError* mmsError, const char* domainId,
         LinkedList /*<char*>*/items,
         LinkedList /* <MmsValue*> */values,
         /* OUTPUT */LinkedList* /* <MmsValue*> */accessResults)
@@ -1711,22 +1746,22 @@ void
 MmsServerIdentity_destroy(MmsServerIdentity* self)
 {
     if (self->modelName != NULL)
-        free(self->modelName);
+        GLOBAL_FREEMEM(self->modelName);
 
     if (self->vendorName != NULL)
-        free(self->vendorName);
+        GLOBAL_FREEMEM(self->vendorName);
 
     if (self->revision != NULL)
-        free(self->revision);
+        GLOBAL_FREEMEM(self->revision);
 
-    free(self);
+    GLOBAL_FREEMEM(self);
 }
 
 MmsVariableAccessSpecification*
 MmsVariableAccessSpecification_create(char* domainId, char* itemId)
 {
     MmsVariableAccessSpecification* self = (MmsVariableAccessSpecification*)
-            malloc(sizeof(MmsVariableAccessSpecification));
+            GLOBAL_MALLOC(sizeof(MmsVariableAccessSpecification));
 
     self->domainId = domainId;
     self->itemId = itemId;
@@ -1741,7 +1776,7 @@ MmsVariableAccessSpecification_createAlternateAccess(char* domainId, char* itemI
         char* componentName)
 {
     MmsVariableAccessSpecification* self = (MmsVariableAccessSpecification*)
-            malloc(sizeof(MmsVariableAccessSpecification));
+            GLOBAL_MALLOC(sizeof(MmsVariableAccessSpecification));
 
     self->domainId = domainId;
     self->itemId = itemId;
@@ -1755,14 +1790,14 @@ void
 MmsVariableAccessSpecification_destroy(MmsVariableAccessSpecification* self)
 {
     if (self->domainId != NULL)
-        free(self->domainId);
+        GLOBAL_FREEMEM((void*) self->domainId);
 
     if (self->itemId != NULL)
-        free(self->itemId);
+        GLOBAL_FREEMEM((void*) self->itemId);
 
     if (self->componentName != NULL)
-        free(self->componentName);
+        GLOBAL_FREEMEM((void*) self->componentName);
 
-    free(self);
+    GLOBAL_FREEMEM(self);
 }
 

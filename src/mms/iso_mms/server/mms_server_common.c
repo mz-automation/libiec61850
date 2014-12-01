@@ -34,7 +34,7 @@ mmsServer_write_out(const void *buffer, size_t size, void *app_key)
 MmsPdu_t*
 mmsServer_createConfirmedResponse(uint32_t invokeId)
 {
-	MmsPdu_t* mmsPdu = (MmsPdu_t*) calloc(1, sizeof(MmsPdu_t));
+	MmsPdu_t* mmsPdu = (MmsPdu_t*) GLOBAL_CALLOC(1, sizeof(MmsPdu_t));
 
 	mmsPdu->present = MmsPdu_PR_confirmedResponsePdu;
 
@@ -48,7 +48,7 @@ mmsServer_createConfirmedResponse(uint32_t invokeId)
 void
 mmsServer_createConfirmedErrorPdu(uint32_t invokeId, ByteBuffer* response, MmsError errorType)
 {
-	MmsPdu_t* mmsPdu = (MmsPdu_t*) calloc(1, sizeof(MmsPdu_t));
+	MmsPdu_t* mmsPdu = (MmsPdu_t*) GLOBAL_CALLOC(1, sizeof(MmsPdu_t));
 	mmsPdu->present = MmsPdu_PR_confirmedErrorPDU;
 
 	asn_long2INTEGER(&(mmsPdu->choice.confirmedErrorPDU.invokeID),
@@ -87,6 +87,18 @@ mmsServer_createConfirmedErrorPdu(uint32_t invokeId, ByteBuffer* response, MmsEr
         asn_long2INTEGER(&mmsPdu->choice.confirmedErrorPDU.serviceError.errorClass.choice.access,
                         ServiceError__errorClass__definition_objectexists);
 	}
+	else if (errorType == MMS_ERROR_DEFINITION_OBJECT_UNDEFINED) {
+        mmsPdu->choice.confirmedErrorPDU.serviceError.errorClass.present =
+                        ServiceError__errorClass_PR_definition;
+        asn_long2INTEGER(&mmsPdu->choice.confirmedErrorPDU.serviceError.errorClass.choice.access,
+                        ServiceError__errorClass__definition_objectundefined);
+	}
+	else if (errorType == MMS_ERROR_DEFINITION_TYPE_UNSUPPORTED) {
+        mmsPdu->choice.confirmedErrorPDU.serviceError.errorClass.present =
+                        ServiceError__errorClass_PR_definition;
+        asn_long2INTEGER(&mmsPdu->choice.confirmedErrorPDU.serviceError.errorClass.choice.access,
+                        ServiceError__errorClass__definition_typeunsupported);
+    }
 	else if (errorType == MMS_ERROR_FILE_FILE_NON_EXISTENT) {
         mmsPdu->choice.confirmedErrorPDU.serviceError.errorClass.present =
                         ServiceError__errorClass_PR_file;
@@ -104,6 +116,12 @@ mmsServer_createConfirmedErrorPdu(uint32_t invokeId, ByteBuffer* response, MmsEr
                         ServiceError__errorClass_PR_resource;
         asn_long2INTEGER(&mmsPdu->choice.confirmedErrorPDU.serviceError.errorClass.choice.access,
                         ServiceError__errorClass__resource_other);
+    }
+    else if (errorType == MMS_ERROR_RESOURCE_CAPABILITY_UNAVAILABLE) {
+        mmsPdu->choice.confirmedErrorPDU.serviceError.errorClass.present =
+                        ServiceError__errorClass_PR_resource;
+        asn_long2INTEGER(&mmsPdu->choice.confirmedErrorPDU.serviceError.errorClass.choice.access,
+                        ServiceError__errorClass__resource_capabilityunavailable);
     }
 
 	der_encode(&asn_DEF_MmsPdu, mmsPdu,
@@ -188,7 +206,7 @@ mmsServer_deleteVariableList(LinkedList namedVariableLists, char* variableListNa
 		if (strcmp(MmsNamedVariableList_getName(varList), variableListName)
 				== 0) {
 			previousElement->next = element->next;
-			free(element);
+			GLOBAL_FREEMEM(element);
 			MmsNamedVariableList_destroy(varList);
 
 			break;

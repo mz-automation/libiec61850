@@ -6,7 +6,7 @@
 #include <asn_internal.h>
 #include <INTEGER.h>
 #include <asn_codecs_prim.h>	/* Encoder and decoder of a primitive type */
-#include <errno.h>
+//#include <errno.h>
 
 /*
  * INTEGER basic type description.
@@ -94,8 +94,6 @@ INTEGER_encode_der(asn_TYPE_descriptor_t *td, void *sptr,
 
 	return der_encode_primitive(td, sptr, tag_mode, tag, cb, app_key);
 }
-
-static const asn_INTEGER_enum_map_t *INTEGER_map_enum2value(asn_INTEGER_specifics_t *specs, const char *lstart, const char *lstop);
 
 #if 0
 /*
@@ -220,6 +218,7 @@ INTEGER_print(asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
 }
 #endif
 
+#if 0
 struct e2v_key {
 	const char *start;
 	const char *stop;
@@ -244,6 +243,7 @@ INTEGER__compar_enum2value(const void *kp, const void *am) {
 	}
 	return name[0] ? -1 : 0;
 }
+
 
 static const asn_INTEGER_enum_map_t *
 INTEGER_map_enum2value(asn_INTEGER_specifics_t *specs, const char *lstart, const char *lstop) {
@@ -282,7 +282,9 @@ INTEGER_map_enum2value(asn_INTEGER_specifics_t *specs, const char *lstart, const
 	}
 	return el_found;
 }
+#endif
 
+#if 0
 static int
 INTEGER__compar_value2enum(const void *kp, const void *am) {
 	long a = *(const long *)kp;
@@ -301,7 +303,9 @@ INTEGER_map_value2enum(asn_INTEGER_specifics_t *specs, long value) {
 		count, sizeof(specs->value2enum[0]),
 		INTEGER__compar_value2enum);
 }
+#endif
 
+#if 0
 static int
 INTEGER_st_prealloc(INTEGER_t *st, int min_size) {
 	void *p = MALLOC(min_size + 1);
@@ -315,6 +319,7 @@ INTEGER_st_prealloc(INTEGER_t *st, int min_size) {
 		return -1;
 	}
 }
+#endif
 
 #if 0
 /*
@@ -737,7 +742,7 @@ asn_INTEGER2long(const INTEGER_t *iptr, long *lptr) {
 
 	/* Sanity checking */
 	if(!iptr || !iptr->buf || !lptr) {
-		errno = EINVAL;
+		//errno = EINVAL;
 		return -1;
 	}
 
@@ -766,7 +771,7 @@ asn_INTEGER2long(const INTEGER_t *iptr, long *lptr) {
 		size = end - b;
 		if(size > sizeof(long)) {
 			/* Still cannot fit the long */
-			errno = ERANGE;
+			//errno = ERANGE;
 			return -1;
 		}
 	}
@@ -799,7 +804,7 @@ asn_long2INTEGER(INTEGER_t *st, long value) {
 	int add;
 
 	if(!st) {
-		errno = EINVAL;
+		//errno = EINVAL;
 		return -1;
 	}
 

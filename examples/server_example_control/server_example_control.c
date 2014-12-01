@@ -5,7 +5,7 @@
  */
 
 #include "iec61850_server.h"
-#include "thread.h"
+#include "hal_thread.h"
 #include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -44,23 +44,31 @@ checkHandler(void* parameter, MmsValue* ctlVal, bool test, bool interlockCheck, 
     if (parameter == IEDMODEL_GenericIO_GGIO1_SPCSO4)
         return CONTROL_ACCEPTED;
 
+    if (parameter == IEDMODEL_GenericIO_GGIO1_SPCSO9)
+        return CONTROL_ACCEPTED;
+
     return CONTROL_OBJECT_UNDEFINED;
 }
 
-void
+static ControlHandlerResult
 controlHandlerForBinaryOutput(void* parameter, MmsValue* value, bool test)
 {
     if (parameter == IEDMODEL_GenericIO_GGIO1_SPCSO1)
         IedServer_updateAttributeValue(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO1_stVal, value);
 
-    if (parameter == IEDMODEL_GenericIO_GGIO1_SPCSO2)
+    else if (parameter == IEDMODEL_GenericIO_GGIO1_SPCSO2)
         IedServer_updateAttributeValue(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO2_stVal, value);
 
-    if (parameter == IEDMODEL_GenericIO_GGIO1_SPCSO3)
+    else if (parameter == IEDMODEL_GenericIO_GGIO1_SPCSO3)
         IedServer_updateAttributeValue(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO3_stVal, value);
 
-    if (parameter == IEDMODEL_GenericIO_GGIO1_SPCSO4)
+    else if (parameter == IEDMODEL_GenericIO_GGIO1_SPCSO4)
         IedServer_updateAttributeValue(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO4_stVal, value);
+
+    else
+        return CONTROL_RESULT_FAILED;
+
+    return CONTROL_RESULT_OK;
 }
 
 int
@@ -91,7 +99,16 @@ main(int argc, char** argv)
 
     /* this is optional - performs operative checks */
     IedServer_setPerformCheckHandler(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO4, checkHandler,
-    IEDMODEL_GenericIO_GGIO1_SPCSO4);
+            IEDMODEL_GenericIO_GGIO1_SPCSO4);
+
+
+    IedServer_setControlHandler(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO9,
+            (ControlHandler) controlHandlerForBinaryOutput,
+            IEDMODEL_GenericIO_GGIO1_SPCSO9);
+
+    /* this is optional - performs operative checks */
+    IedServer_setPerformCheckHandler(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO9, checkHandler,
+            IEDMODEL_GenericIO_GGIO1_SPCSO9);
 
     /* MMS server will be instructed to start listening to client connections. */
     IedServer_start(iedServer, 102);

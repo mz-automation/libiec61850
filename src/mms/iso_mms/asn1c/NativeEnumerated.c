@@ -27,7 +27,8 @@ asn_TYPE_descriptor_t asn_DEF_NativeEnumerated = {
 	NativeInteger_decode_ber,
 	NativeInteger_encode_der,
 	NULL,
-	NativeEnumerated_encode_xer,
+        NULL,
+	//NativeEnumerated_encode_xer,
 	NativeEnumerated_decode_uper,
 	NativeEnumerated_encode_uper,
 	0, /* Use generic outmost tag fetcher */
@@ -40,6 +41,7 @@ asn_TYPE_descriptor_t asn_DEF_NativeEnumerated = {
 	0	/* No specifics */
 };
 
+#if 0
 asn_enc_rval_t
 NativeEnumerated_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
         int ilevel, enum xer_encoder_flags_e flags,
@@ -69,6 +71,7 @@ NativeEnumerated_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
 		_ASN_ENCODE_FAILED;
 	}
 }
+#endif
 
 asn_dec_rval_t
 NativeEnumerated_decode_uper(asn_codec_ctx_t *opt_codec_ctx,

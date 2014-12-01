@@ -35,7 +35,8 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#include "ethernet.h"
+#include "libiec61850_platform_includes.h"
+#include "hal_ethernet.h"
 
 struct sEthernetSocket {
     int rawSocket;
@@ -101,13 +102,13 @@ Ethernet_getInterfaceMACAddress(char* interfaceId, uint8_t* addr)
 EthernetSocket
 Ethernet_createSocket(char* interfaceId, uint8_t* destAddress)
 {
-    EthernetSocket ethernetSocket = calloc(1, sizeof(struct sEthernetSocket));
+    EthernetSocket ethernetSocket = GLOBAL_CALLOC(1, sizeof(struct sEthernetSocket));
 
     ethernetSocket->rawSocket = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
 
     if (ethernetSocket->rawSocket == -1) {
         printf("Error creating raw socket!\n");
-        free(ethernetSocket);
+        GLOBAL_FREEMEM(ethernetSocket);
         return NULL;
     }
 
@@ -163,6 +164,12 @@ void
 Ethernet_destroySocket(EthernetSocket ethSocket)
 {
     close(ethSocket->rawSocket);
-    free(ethSocket);
+    GLOBAL_FREEMEM(ethSocket);
+}
+
+bool
+Ethernet_isSupported()
+{
+    return true;
 }
 

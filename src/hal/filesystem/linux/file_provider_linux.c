@@ -32,7 +32,9 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "filesystem.h"
+#include "libiec61850_platform_includes.h"
+
+#include "hal_filesystem.h"
 
 #include "stack_config.h"
 
@@ -154,7 +156,7 @@ FileSystem_openDirectory(char* directoryName)
     DirectoryHandle handle = NULL;
 
     if (dirHandle != NULL) {
-        handle = malloc(sizeof(struct sDirectoryHandle));
+        handle = GLOBAL_MALLOC(sizeof(struct sDirectoryHandle));
         handle->handle = dirHandle;
     }
 
@@ -190,7 +192,7 @@ void
 FileSystem_closeDirectory(DirectoryHandle directory)
 {
     closedir(directory->handle);
-    free(directory);
+    GLOBAL_FREEMEM(directory);
 }
 
 #if 0

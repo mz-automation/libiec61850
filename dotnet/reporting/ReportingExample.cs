@@ -27,6 +27,10 @@ namespace reporting
 				}
 			}
 
+			ReportControlBlock rcb = (ReportControlBlock) parameter;
+
+			Console.WriteLine("Buffered: " + rcb.IsBuffered());
+
 		}
 
 
@@ -48,13 +52,14 @@ namespace reporting
 			try {
 				con.Connect (hostname, 102);
 
-				string rcbReference = "simpleIOGenericIO/LLN0.RP.EventsRCB";
+				string rcbReference = "simpleIOGenericIO/LLN0.RP.EventsRCB01";
 
-				ReportControlBlock rcb = con.getReportControlBlock(rcbReference);
+				ReportControlBlock rcb = con.GetReportControlBlock(rcbReference);
 
 				rcb.GetRCBValues();
 
-				rcb.InstallReportHandler(reportHandler, null);
+				// note: the second parameter is not required!
+				rcb.InstallReportHandler(reportHandler, rcb);
 
 				if (rcb.IsBuffered())
 					Console.WriteLine ("RCB: " + rcbReference + " is buffered");

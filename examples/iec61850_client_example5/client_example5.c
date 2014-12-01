@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "thread.h"
+#include "hal_thread.h"
 
 
 int main(int argc, char** argv) {
@@ -47,9 +47,12 @@ int main(int argc, char** argv) {
 //    IsoConnectionParameters_setRemoteApTitle(parameters, NULL, 0);
 //    IsoConnectionParameters_setLocalApTitle(parameters, NULL, 0);
 
+	TSelector localTSelector = { 3, { 0x00, 0x01, 0x02 } };
+	TSelector remoteTSelector = { 2, { 0x00, 0x01 } };
+
     /* change parameters for presentation, session and transport layers */
-    IsoConnectionParameters_setRemoteAddresses(parameters, 0x12345678, 12 , 13);
-    IsoConnectionParameters_setLocalAddresses(parameters, 0x87654321, 1234 , 2345);
+	IsoConnectionParameters_setRemoteAddresses(parameters, 0x12345678, 12, localTSelector);
+    IsoConnectionParameters_setLocalAddresses(parameters, 0x87654321, 1234 , remoteTSelector);
 
     char* password = "top secret";
 
@@ -60,6 +63,8 @@ int main(int argc, char** argv) {
     auth->value.password.passwordLength = strlen(password);
 
     IsoConnectionParameters_setAcseAuthenticationParameter(parameters, auth);
+
+    IedConnection_setConnectTimeout(con, 10000);
 
     /* call connect when all parameters are set */
     IedConnection_connect(con, &error, hostname, tcpPort);

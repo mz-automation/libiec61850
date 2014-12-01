@@ -30,7 +30,7 @@ void
 MmsVariableSpecification_destroy(MmsVariableSpecification* typeSpec)
 {
     if (typeSpec->name != NULL)
-        free(typeSpec->name);
+        GLOBAL_FREEMEM(typeSpec->name);
 
     if (typeSpec->type == MMS_STRUCTURE) {
         int elementCount = typeSpec->typeSpec.structure.elementCount;
@@ -39,17 +39,17 @@ MmsVariableSpecification_destroy(MmsVariableSpecification* typeSpec)
             MmsVariableSpecification_destroy(typeSpec->typeSpec.structure.elements[i]);
         }
 
-        free(typeSpec->typeSpec.structure.elements);
+        GLOBAL_FREEMEM(typeSpec->typeSpec.structure.elements);
     }
     else if (typeSpec->type == MMS_ARRAY) {
         MmsVariableSpecification_destroy(typeSpec->typeSpec.array.elementTypeSpec);
     }
 
-    free(typeSpec);
+    GLOBAL_FREEMEM(typeSpec);
 }
 
 static size_t
-directChildStrLen(char* childId)
+directChildStrLen(const char* childId)
 {
     size_t i = 0;
     size_t childIdLen = strlen(childId);
@@ -63,7 +63,7 @@ directChildStrLen(char* childId)
 }
 
 MmsValue*
-MmsVariableSpecification_getChildValue(MmsVariableSpecification* typeSpec, MmsValue* value, char* childId)
+MmsVariableSpecification_getChildValue(MmsVariableSpecification* typeSpec, MmsValue* value, const char* childId)
 {
     if (typeSpec->type == MMS_STRUCTURE) {
         size_t childLen = directChildStrLen(childId);
@@ -95,7 +95,7 @@ MmsVariableSpecification_getType(MmsVariableSpecification* self)
     return self->type;
 }
 
-char*
+const char*
 MmsVariableSpecification_getName(MmsVariableSpecification* self)
 {
     return self->name;
@@ -120,9 +120,9 @@ MmsVariableSpecification_getStructureElements(MmsVariableSpecification* self)
 }
 
 MmsVariableSpecification*
-MmsVariableSpecification_getNamedVariableRecursive(MmsVariableSpecification* variable, char* nameId)
+MmsVariableSpecification_getNamedVariableRecursive(MmsVariableSpecification* variable, const char* nameId)
 {
-    char* separator = strchr(nameId, '$');
+    const char* separator = strchr(nameId, '$');
 
     int i;
 

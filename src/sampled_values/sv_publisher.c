@@ -95,7 +95,7 @@ preparePacketBuffer(SampledValuesPublisher self, CommParameters* parameters, cha
     else
         self->ethernetSocket = Ethernet_createSocket(CONFIG_ETHERNET_INTERFACE_ID, dstAddr);
 
-    self->buffer = (uint8_t*) malloc(SV_MAX_MESSAGE_SIZE);
+    self->buffer = (uint8_t*) GLOBAL_MALLOC(SV_MAX_MESSAGE_SIZE);
 
     memcpy(self->buffer, dstAddr, 6);
     memcpy(self->buffer + 6, srcAddr, 6);

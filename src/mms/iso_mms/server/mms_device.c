@@ -21,13 +21,14 @@
  *  See COPYING file for the complete license text.
  */
 
+#include "mms_server_internal.h"
 #include "mms_device_model.h"
 #include "stack_config.h"
 
 MmsDevice*
 MmsDevice_create(char* deviceName)
 {
-    MmsDevice* self = (MmsDevice*) calloc(1, sizeof(MmsDevice));
+    MmsDevice* self = (MmsDevice*) GLOBAL_CALLOC(1, sizeof(MmsDevice));
     self->deviceName = deviceName;
 
     self->namedVariableLists = LinkedList_create();
@@ -56,8 +57,8 @@ MmsDevice_destroy(MmsDevice* self)
 
     LinkedList_destroyDeep(self->namedVariableLists, (LinkedListValueDeleteFunction) MmsNamedVariableList_destroy);
 
-    free(self->domains);
-    free(self);
+    GLOBAL_FREEMEM(self->domains);
+    GLOBAL_FREEMEM(self);
 }
 
 MmsDomain*

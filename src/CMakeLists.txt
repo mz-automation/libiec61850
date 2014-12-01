@@ -5,12 +5,12 @@ set (lib_common_SRCS
 ./common/map.c
 ./common/linked_list.c
 ./common/byte_buffer.c
+./common/lib_memory.c
 ./common/string_utilities.c
 ./common/buffer_chain.c
 ./common/conversions.c
 ./common/mem_alloc_linked_list.c
 ./common/simple_allocator.c
-./common/byte_stream.c
 ./mms/iso_server/iso_connection.c
 ./mms/iso_server/iso_server.c
 ./mms/iso_acse/acse.c
@@ -52,24 +52,25 @@ set (lib_common_SRCS
 ./mms/asn1/asn1_ber_primitive_value.c
 ./mms/asn1/ber_encoder.c
 ./mms/asn1/ber_integer.c
-./mms/iso_client/impl/iso_client_connection.c
+./mms/iso_client/iso_client_connection.c
 ./mms/iso_common/iso_connection_parameters.c
 ./mms/iso_session/iso_session.c
-./iedclient/impl/client_control.c
-./iedclient/impl/client_report_control.c
-./iedclient/impl/client_report.c
-./iedclient/impl/ied_connection.c
-./iedcommon/iec61850_common.c
-./iedserver/impl/ied_server.c
-./iedserver/impl/client_connection.c
-./iedserver/model/model.c
-./iedserver/model/dynamic_model.c
-./iedserver/model/cdc.c
-./iedserver/model/config_file_parser.c
-./iedserver/mms_mapping/control.c
-./iedserver/mms_mapping/mms_mapping.c
-./iedserver/mms_mapping/reporting.c
-./iedserver/mms_mapping/mms_goose.c
+./iec61850/client/client_control.c
+./iec61850/client/client_report_control.c
+./iec61850/client/client_goose_control.c
+./iec61850/client/client_report.c
+./iec61850/client/ied_connection.c
+./iec61850/common/iec61850_common.c
+./iec61850/server/impl/ied_server.c
+./iec61850/server/impl/client_connection.c
+./iec61850/server/model/model.c
+./iec61850/server/model/dynamic_model.c
+./iec61850/server/model/cdc.c
+./iec61850/server/model/config_file_parser.c
+./iec61850/server/mms_mapping/control.c
+./iec61850/server/mms_mapping/mms_mapping.c
+./iec61850/server/mms_mapping/reporting.c
+./iec61850/server/mms_mapping/mms_goose.c
 
 )
 
@@ -168,6 +169,7 @@ set (lib_asn1c_SRCS
 
 set (lib_goose_SRCS
 ./goose/goose_subscriber.c
+./goose/goose_receiver.c
 ./goose/goose_publisher.c
 )
 
@@ -274,8 +276,6 @@ set_target_properties(iec61850-shared PROPERTIES
 )
 
 
-
-
 GENERATE_EXPORT_HEADER(iec61850-shared
 			BASE_NAME iec61850-shared
 			EXPORT_MACRO_NAME iec61850-shared_EXPORT
@@ -286,11 +286,20 @@ GENERATE_EXPORT_HEADER(iec61850-shared
 add_library (iec61850 STATIC ${library_SRCS})
 
 IF(UNIX)
-target_link_libraries (iec61850
-    -lpthread
-    -lm
-)
+  IF (CONFIG_SYSTEM_HAS_CLOCK_GETTIME)
+     target_link_libraries (iec61850
+         -lpthread
+         -lm
+         -lrt
+     )
+  ELSE ()
+     target_link_libraries (iec61850
+         -lpthread
+         -lm
+     )
+  ENDIF (CONFIG_SYSTEM_HAS_CLOCK_GETTIME)
 ENDIF(UNIX)
+
 
 iF(WITH_WPCAP)
 target_link_libraries(iec61850
@@ -317,6 +326,8 @@ if(MSVC)
        	)
 endif()
 ENDIF(WITH_WPCAP)
+
+
 
 install (TARGETS iec61850 iec61850-shared
 	RUNTIME DESTINATION bin

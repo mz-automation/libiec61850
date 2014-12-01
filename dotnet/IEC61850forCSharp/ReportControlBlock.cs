@@ -31,8 +31,19 @@ namespace IEC61850
 	namespace Client
 	{
 
+        /// <summary>
+        /// Report handler.
+        /// </summary>
 		public delegate void ReportHandler (Report report, object parameter);
 
+        /// <summary>
+        /// Report control block (RCB) representation.
+        /// </summary>
+        /// <description>
+        /// This class is used as a client side representation (copy) of a report control block (RCB).
+        /// Values from the server will only be read when the GetRCBValues method is called.
+        /// Values at the server are only affected when the SetRCBValues method is called.
+        /// </description>
 		public class ReportControlBlock
 		{
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
@@ -135,9 +146,8 @@ namespace IEC61850
 			static extern void IedConnection_installReportHandler (IntPtr connection, string rcbReference, string rptId, InternalReportHandler handler,
         		IntPtr handlerParameter);
 
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 			private delegate void InternalReportHandler (IntPtr parameter, IntPtr report);
-
-
 
 			private IntPtr self;
 			private IntPtr connection;
@@ -183,8 +193,6 @@ namespace IEC61850
 
 			private void internalReportHandler (IntPtr parameter, IntPtr report)
 			{
-				Console.WriteLine ("internalReportHandler called " + this);
-
 				try {
 
 					if (this.report == null)
@@ -207,20 +215,42 @@ namespace IEC61850
 				this.objectReference = objectReference;
 			}
 		
+            /// <summary>
+            /// Installs the report handler.
+            /// </summary>
+            /// <description>
+            /// This will install a callback handler (delegate) that is invoked whenever a report
+            /// related this RCB is received. Any call of this method will replace an previously registered
+            /// handler!
+            /// </description>
+            /// <param name='reportHandler'>
+            /// report handler
+            /// </param>
+            /// <param name='parameter'>
+            /// parameter is passed to the handler when the handler is invoked.
+            /// </param>
 			public void InstallReportHandler (ReportHandler reportHandler, object parameter)
 			{
 				this.reportHandler = new ReportHandler(reportHandler);
 
-				Console.WriteLine("Installed report handler " + this.reportHandler);
-
 				this.reportHandlerParameter = parameter;
 
 				if (reportHandlerInstalled == false) {
-					IedConnection_installReportHandler (this.connection, objectReference, this.GetRptId (), new InternalReportHandler(internalReportHandler), IntPtr.Zero);
+
+                    string reportId = this.GetRptId ();
+
+//                        if ((GetRptId() == null) || (GetRptId().Length == 0))
+//                            reportId = 
+
+					IedConnection_installReportHandler (this.connection, objectReference, reportId, new InternalReportHandler(internalReportHandler), IntPtr.Zero);
 					reportHandlerInstalled = true;
 				}
 			}
 
+            /// <summary>
+            /// Read all RCB values from the server
+            /// </summary>
+            /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
 			public void GetRCBValues ()
 			{
 				int error;
@@ -231,84 +261,142 @@ namespace IEC61850
 					throw new IedConnectionException ("getRCBValues service failed", error);
 			}
 
+            /// <summary>
+            /// Write changed RCB values to the server.
+            /// </summary>
+            /// <description>
+            /// This function will only write the RCB values that were set by one of the setter methods.
+            /// The RCB values are sent by a single MMS write request.
+            /// </description>
+            /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
 			public void SetRCBValues ()
 			{
 				SetRCBValues (true);
 			}
 
+            /// <summary>
+            /// Write changed RCB values to the server.
+            /// </summary>
+            /// <description>
+            /// This function will only write the RCB values that were set by one of the setter methods.
+            /// </description>
+            /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
+            /// <param name='singleRequest'>
+            /// If true the values are sent by single MMS write request. Otherwise the values are all sent by their own MMS write requests.
+            /// </param>
 			public void SetRCBValues (bool singleRequest)
-			{
-				UInt32 parametersMask = 0;
+            {
+                UInt32 parametersMask = 0;
 
-				if (flagRptId)
-					parametersMask += 1;
+                if (flagRptId)
+                    parametersMask += 1;
 
-				if (flagRptEna)
-					parametersMask += 2;
+                if (flagRptEna)
+                    parametersMask += 2;
 
-				if (flagResv)
-					parametersMask += 4;
+                if (flagResv)
+                    parametersMask += 4;
 
-				if (flagDataSetReference)
-					parametersMask += 8;
+                if (flagDataSetReference)
+                    parametersMask += 8;
 
-				if (flagConfRev)
-					parametersMask += 16;
+                if (flagConfRev)
+                    parametersMask += 16;
 
-				if (flagOptFlds)
-					parametersMask += 32;
+                if (flagOptFlds)
+                    parametersMask += 32;
 
-				if (flagBufTm)
-					parametersMask += 64;
+                if (flagBufTm)
+                    parametersMask += 64;
 
-				if (flagSqNum)
-					parametersMask += 128;
+                if (flagSqNum)
+                    parametersMask += 128;
 
-				if (flagTrgOps)
-					parametersMask += 256;
+                if (flagTrgOps)
+                    parametersMask += 256;
 
-				if (flagIntgPd)
-					parametersMask += 512;
+                if (flagIntgPd)
+                    parametersMask += 512;
 
-				if (flagGI)
-					parametersMask += 1024;
+                if (flagGI)
+                    parametersMask += 1024;
 
-				if (flagPurgeBuf)
-					parametersMask += 2048;
+                if (flagPurgeBuf)
+                    parametersMask += 2048;
 
-				if (flagEntryId)
-					parametersMask += 4096;
+                if (flagEntryId)
+                    parametersMask += 4096;
 
-				if (flagResvTms)
-					parametersMask += 16384;
+                if (flagResvTms)
+                    parametersMask += 16384;
 
-				int error;
+                int error;
 
-				IedConnection_setRCBValues (connection, out error, self, parametersMask, singleRequest);
+                IedConnection_setRCBValues (connection, out error, self, parametersMask, singleRequest);
 
-				if (error != 0)
-					throw new IedConnectionException ("setRCBValues service failed", error);
+                if (error != 0)
+                    throw new IedConnectionException ("setRCBValues service failed", error);
+
+                if (flagRptId) {
+
+                    if (reportHandlerInstalled) {
+                        reportHandlerInstalled = false;
+                        InstallReportHandler(this.reportHandler, this.reportHandlerParameter);
+                    }
+                }
+
+                resetSendFlags();
 			}
 
+            /// <summary>
+            /// Determines whether this instance is a buffered or unbuffered RCB.
+            /// </summary>
+            /// <returns>
+            /// <c>true</c> if this instance is a buffered RCB; otherwise, <c>false</c>.
+            /// </returns>
 			public bool IsBuffered ()
 			{
 				return ClientReportControlBlock_isBuffered (self);
 			}
 
-			public UInt64 getEntryTime ()
+            /// <summary>
+            /// Gets the entry time of the RCB as ms time
+            /// </summary>
+            /// <description>
+            /// The entry time is the timestamp of the last report sent.
+            /// </description>
+            /// <returns>
+            /// The entry time as ms timestamp
+            /// </returns>
+			public UInt64 GetEntryTime ()
 			{
 				return ClientReportControlBlock_getEntryTime (self);
 			}
 
+            /// <summary>
+            /// Gets the entry time of the RCB as DateTimeOffset
+            /// </summary>
+            /// <description>
+            /// The entry time is the timestamp of the last report sent.
+            /// </description>
+            /// <returns>
+            /// The entry time as DataTimeOffset
+            /// </returns>
 			public DateTimeOffset GetEntryTimeAsDateTimeOffset ()
 			{
-				UInt64 entryTime = getEntryTime ();
+				UInt64 entryTime = GetEntryTime ();
 
 				DateTimeOffset retVal = new DateTimeOffset (1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
 				return retVal.AddMilliseconds (entryTime);
 			}
 
+            /// <summary>
+            /// Gets the data set reference of the associated data set
+            /// </summary>
+            /// <returns>
+            /// The data set reference.
+            /// </returns>
 			public string GetDataSetReference ()
 			{
 				IntPtr dataSetRefPtr = ClientReportControlBlock_getDataSetReference (self);
@@ -316,6 +404,12 @@ namespace IEC61850
 				return Marshal.PtrToStringAnsi (dataSetRefPtr);
 			}
 
+            /// <summary>
+            /// Sets the data set reference. Use this method to select the associated data set for the RCB
+            /// </summary>
+            /// <returns>
+            /// The data set reference.
+            /// </returns>
 			public void SetDataSetReference (string dataSetReference) 
 			{
 				ClientReportControlBlock_setDataSetReference (self, dataSetReference);
@@ -323,6 +417,12 @@ namespace IEC61850
 				flagDataSetReference = true;
 			}
 
+            /// <summary>
+            /// Gets the report identifier.
+            /// </summary>
+            /// <returns>
+            /// The report identifier.
+            /// </returns>
 			public string GetRptId ()
 			{
 				IntPtr rptIdPtr = ClientReportControlBlock_getRptId (self);
@@ -330,22 +430,58 @@ namespace IEC61850
 				return Marshal.PtrToStringAnsi (rptIdPtr);
 			}
 
+            /// <summary>
+            /// Sets the RptId (report ID) of the RCB
+            /// </summary>
+            /// <param name='rptId'>
+            /// The new RptId
+            /// </param>
+            public void SetRptId (string rptId)
+            {
+                ClientReportControlBlock_setRptId(self, rptId);
+                flagRptId = true;
+            }
+
+            /// <summary>
+            /// Check if reporting is currently enabled
+            /// </summary>
+            /// <returns>
+            /// true, if reporting is enabled, false otherwise
+            /// </returns>
 			public bool GetRptEna ()
 			{
 				return ClientReportControlBlock_getRptEna (self);
 			}
 
+            /// <summary>
+            /// Sets report enable flag. Use this to enable reporting
+            /// </summary>
+            /// <param name='rptEna'>
+            /// true to enable reporting, false to disable
+            /// </param>
 			public void SetRptEna (bool rptEna)
 			{
 				ClientReportControlBlock_setRptEna (self, rptEna);
 				flagRptEna = true;
 			}
 
+            /// <summary>
+            /// Gets the buffer time.
+            /// </summary>
+            /// <returns>
+            /// The buffer time in ms.
+            /// </returns>
 			public UInt32 GetBufTm() 
 			{
 				return ClientReportControlBlock_getBufTm (self);
 			}
 
+            /// <summary>
+            /// Sets the buffer time.
+            /// </summary>
+            /// <param name='bufTm'>
+            /// Buffer time is ms.
+            /// </param>
 			public void SetBufTm (UInt32 bufTm)
 			{
 				ClientReportControlBlock_setBufTm (self, bufTm);
@@ -353,33 +489,80 @@ namespace IEC61850
 				flagBufTm = true;
 			}
 
+            /// <summary>
+            /// Gets the GI flag
+            /// </summary>
+            /// <returns>
+            /// true, if GI flag is set
+            /// </returns>
 			public bool GetGI ()
 			{
 				return ClientReportControlBlock_getGI (self);
 			}
 
+            /// <summary>
+            /// Sets the GI flag. Use this to trigger a GI (general interrogation) command.
+            /// </summary>
+            /// <param name='GI'>
+            /// request general interrogation of true
+            /// </param>
 			public void SetGI (bool GI)
 			{
 				ClientReportControlBlock_setGI (self, GI);
 				flagGI = true;
 			}
 
+            /// <summary>
+            /// Check if RCB is reserved by a client
+            /// </summary>
+            /// <returns>
+            /// true, the RCB is reserver by a client
+            /// </returns>
 			public bool GetResv ()
 			{
 				return ClientReportControlBlock_getResv (self);
 			}
 
+            /// <summary>
+            /// Gets the configuration revision of the RCB
+            /// </summary>
+            /// <returns>
+            /// The conf rev.
+            /// </returns>
+            public UInt32 GetConfRev ()
+            {
+                return ClientReportControlBlock_getConfRev (self);
+            }
+
+            /// <summary>
+            /// Sets RESV flag. Use this to reserve (allocate) this RCB.
+            /// </summary>
+            /// <param name='resv'>
+            /// true: reserver this RCB for exclusive use
+            /// </param>
 			public void SetResv (bool resv)
 			{
 				ClientReportControlBlock_setResv (self, resv);
 				flagResv = true;
 			}
 
+            /// <summary>
+            /// Gets the trigger options of the RCB
+            /// </summary>
+            /// <returns>
+            /// trigger options
+            /// </returns>
 			public TriggerOptions GetTrgOps()
 			{
 				return (TriggerOptions) ClientReportControlBlock_getTrgOps (self);
 			}
 
+            /// <summary>
+            /// Sets the trigger options of the RCB.
+            /// </summary>
+            /// <param name='trgOps'>
+            /// trigger options
+            /// </param>
 			public void SetTrgOps(TriggerOptions trgOps)
 			{
 				ClientReportControlBlock_setTrgOps (self, (int) trgOps);
@@ -387,22 +570,46 @@ namespace IEC61850
 				flagTrgOps = true;
 			}
 
+            /// <summary>
+            /// Gets the integrity period
+            /// </summary>
+            /// <returns>
+            /// integrity period in ms
+            /// </returns>
 			public UInt32 GetIntgPd ()
 			{
 				return ClientReportControlBlock_getIntgPd (self);
 			}
 
+            /// <summary>
+            /// Sets the integrity period
+            /// </summary>
+            /// <param name='intgPd'>
+            /// integrity period in ms
+            /// </param>
 			public void SetIntgPd (UInt32 intgPd)
 			{
 				ClientReportControlBlock_setIntgPd (self, intgPd);
 				flagIntgPd = true;
 			}
 
+            /// <summary>
+            /// Gets the option fields. 
+            /// </summary>
+            /// <returns>
+            /// The option fields
+            /// </returns>
 			public ReportOptions GetOptFlds()
 			{
 				return (ReportOptions) ClientReportControlBlock_getOptFlds (self);
 			}
 
+            /// <summary>
+            /// Sets the option field. Used to enable or disable optional report elements
+            /// </summary>
+            /// <param name='optFlds'>
+            /// Option field.
+            /// </param>
 			public void SetOptFlds(ReportOptions optFlds)
 			{
 				ClientReportControlBlock_setOptFlds (self, (int)optFlds);

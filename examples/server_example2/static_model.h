@@ -1,14 +1,14 @@
 /*
  * static_model.h
  *
- * automatically generated from complexModel.scd
+ * automatically generated from complexModel.icd
  */
 
 #ifndef STATIC_MODEL_H_
 #define STATIC_MODEL_H_
 
 #include <stdlib.h>
-#include "model.h"
+#include "iec61850_model.h"
 
 extern IedModel iedModel;
 extern LogicalDevice iedModel_Inverter;

@@ -47,6 +47,8 @@ public class DataAttribute implements DataModelNode {
     private SclType sclType = null;
 
     private TriggerOptions triggerOptions = null;
+    
+    private DataAttributeDefinition definition = null;
 
     public DataAttribute(DataAttributeDefinition daDefinition, TypeDeclarations typeDeclarations, FunctionalConstraint fc,
             DataModelNode parent) throws SclParserException {
@@ -55,6 +57,7 @@ public class DataAttribute implements DataModelNode {
         this.type = daDefinition.getAttributeType();
         this.count = daDefinition.getCount();
         this.parent = parent;
+        this.definition = daDefinition;
 
         if (this.fc == null)
             this.fc = fc;
@@ -162,6 +165,10 @@ public class DataAttribute implements DataModelNode {
 
     public TriggerOptions getTriggerOptions() {
         return this.triggerOptions;
+    }
+    
+    public DataAttributeDefinition getDefinition() {
+    	return this.definition;
     }
 
     @Override

@@ -24,10 +24,14 @@
 #include "libiec61850_platform_includes.h"
 #include "stack_config.h"
 #include "goose_publisher.h"
-#include "ethernet.h"
+#include "hal_ethernet.h"
 #include "ber_encoder.h"
 #include "mms_server_internal.h"
 #include "mms_value_internal.h"
+
+#ifndef DEBUG_GOOSE_PUBLISHER
+#define DEBUG_GOOSE_PUBLISHER 0
+#endif
 
 #define GOOSE_MAX_MESSAGE_SIZE 1518
 
@@ -36,7 +40,7 @@ prepareGooseBuffer(GoosePublisher self, CommParameters* parameters, char* interf
 
 struct sGoosePublisher {
     uint8_t* buffer;
-    uint16_t appId;
+    //uint16_t appId;
     EthernetSocket ethernetSocket;
     int lengthField;
     int payloadStart;
@@ -45,9 +49,9 @@ struct sGoosePublisher {
     char* goCBRef;
     char* dataSetRef;
 
-    uint16_t minTime;
-    uint16_t maxTime;
-    bool fixedOffs;
+    //uint16_t minTime;
+    //uint16_t maxTime;
+    //bool fixedOffs;
 
     uint32_t confRev;
     uint32_t stNum;
@@ -63,7 +67,7 @@ struct sGoosePublisher {
 GoosePublisher
 GoosePublisher_create(CommParameters* parameters, char* interfaceID)
 {
-    GoosePublisher self = (GoosePublisher) calloc(1, sizeof(struct sGoosePublisher));
+    GoosePublisher self = (GoosePublisher) GLOBAL_CALLOC(1, sizeof(struct sGoosePublisher));
 
     prepareGooseBuffer(self, parameters, interfaceID);
 
@@ -82,16 +86,16 @@ GoosePublisher_destroy(GoosePublisher self)
     MmsValue_delete(self->timestamp);
 
     if (self->goID != NULL)
-        free(self->goID);
+        GLOBAL_FREEMEM(self->goID);
 
     if (self->goCBRef != NULL)
-        free(self->goCBRef);
+        GLOBAL_FREEMEM(self->goCBRef);
 
     if (self->dataSetRef != NULL)
-        free(self->dataSetRef);
+        GLOBAL_FREEMEM(self->dataSetRef);
 
-    free(self->buffer);
-    free(self);
+    GLOBAL_FREEMEM(self->buffer);
+    GLOBAL_FREEMEM(self);
 }
 
 void
@@ -190,7 +194,7 @@ prepareGooseBuffer(GoosePublisher self, CommParameters* parameters, char* interf
     else
         self->ethernetSocket = Ethernet_createSocket(CONFIG_ETHERNET_INTERFACE_ID, dstAddr);
 
-    self->buffer = (uint8_t*) malloc(GOOSE_MAX_MESSAGE_SIZE);
+    self->buffer = (uint8_t*) GLOBAL_MALLOC(GOOSE_MAX_MESSAGE_SIZE);
 
     memcpy(self->buffer, dstAddr, 6);
     memcpy(self->buffer + 6, srcAddr, 6);
@@ -246,6 +250,8 @@ createGoosePayload(GoosePublisher self, LinkedList dataSetValues, uint8_t* buffe
 
     if (self->goID != NULL)
         goosePduLength += BerEncoder_determineEncodedStringSize(self->goID);
+    else
+        goosePduLength += BerEncoder_determineEncodedStringSize(self->goCBRef);
 
     uint32_t timeAllowedToLive = self->timeAllowedToLive;
 
@@ -303,6 +309,8 @@ createGoosePayload(GoosePublisher self, LinkedList dataSetValues, uint8_t* buffe
     /* Encode goID */
     if (self->goID != NULL)
         bufPos = BerEncoder_encodeStringWithTag(0x83, self->goID, buffer, bufPos);
+    else
+        bufPos = BerEncoder_encodeStringWithTag(0x83, self->goCBRef, buffer, bufPos);
 
     /* Encode t */
     bufPos = BerEncoder_encodeOctetString(0x84, self->timestamp->value.utcTime, 8, buffer, bufPos);
@@ -362,6 +370,9 @@ GoosePublisher_publish(GoosePublisher self, LinkedList dataSet)
 
     self->buffer[lengthIndex] = gooseLength / 256;
     self->buffer[lengthIndex + 1] = gooseLength & 0xff;
+
+    if (DEBUG_GOOSE_PUBLISHER)
+        printf("GOOSE_PUBLISHER: send GOOSE message\n");
 
     Ethernet_sendPacket(self->ethernetSocket, self->buffer, self->payloadStart + payloadLength);
 

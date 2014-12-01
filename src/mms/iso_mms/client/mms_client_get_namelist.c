@@ -33,7 +33,7 @@
 
 int
 mmsClient_createMmsGetNameListRequestVMDspecific(long invokeId, ByteBuffer* writeBuffer,
-		char* continueAfter)
+		const char* continueAfter)
 {
 	MmsPdu_t* mmsPdu = mmsClient_createConfirmedRequestPdu(invokeId);
 
@@ -45,7 +45,7 @@ mmsClient_createMmsGetNameListRequestVMDspecific(long invokeId, ByteBuffer* writ
 	request = &(mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.choice.getNameList);
 
 	if (continueAfter != NULL) {
-		request->continueAfter = (Identifier_t*) calloc(1, sizeof(Identifier_t));
+		request->continueAfter = (Identifier_t*) GLOBAL_CALLOC(1, sizeof(Identifier_t));
 		request->continueAfter->buf = (uint8_t*) copyString(continueAfter);
 		request->continueAfter->size = strlen(continueAfter);
 	}
@@ -70,7 +70,7 @@ mmsClient_createMmsGetNameListRequestVMDspecific(long invokeId, ByteBuffer* writ
 
 int
 mmsClient_createMmsGetNameListRequestAssociationSpecific(long invokeId, ByteBuffer* writeBuffer,
-		char* continueAfter)
+		const char* continueAfter)
 {
 	MmsPdu_t* mmsPdu = mmsClient_createConfirmedRequestPdu(invokeId);
 
@@ -83,7 +83,7 @@ mmsClient_createMmsGetNameListRequestAssociationSpecific(long invokeId, ByteBuff
 
 
 	if (continueAfter != NULL) {
-		request->continueAfter = (Identifier_t*) calloc(1, sizeof(Identifier_t));
+		request->continueAfter = (Identifier_t*) GLOBAL_CALLOC(1, sizeof(Identifier_t));
 		request->continueAfter->buf = (uint8_t*) copyString(continueAfter);
 		request->continueAfter->size = strlen(continueAfter);
 	}
@@ -197,8 +197,8 @@ exit_error:
 }
 
 int
-mmsClient_createGetNameListRequestDomainOrVMDSpecific(long invokeId, char* domainName,
-		ByteBuffer* writeBuffer, MmsObjectClass objectClass, char* continueAfter)
+mmsClient_createGetNameListRequestDomainOrVMDSpecific(long invokeId, const char* domainName,
+		ByteBuffer* writeBuffer, MmsObjectClass objectClass, const char* continueAfter)
 {
 	MmsPdu_t* mmsPdu = mmsClient_createConfirmedRequestPdu(invokeId);
 
@@ -210,7 +210,7 @@ mmsClient_createGetNameListRequestDomainOrVMDSpecific(long invokeId, char* domai
 	request = &(mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.choice.getNameList);
 
 	if (continueAfter != NULL) {
-		request->continueAfter = (Identifier_t*) calloc(1, sizeof(Identifier_t));
+		request->continueAfter = (Identifier_t*) GLOBAL_CALLOC(1, sizeof(Identifier_t));
 		request->continueAfter->buf = (uint8_t*) copyString(continueAfter);
 		request->continueAfter->size = strlen(continueAfter);
 	}

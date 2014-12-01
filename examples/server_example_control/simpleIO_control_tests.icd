@@ -93,6 +93,11 @@
                 <Val>sbo-with-enhanced-security</Val>
               </DAI>
             </DOI>
+            <DOI name="SPCSO9">
+              <DAI name="ctlModel">
+                <Val>direct-with-enhanced-security</Val>
+              </DAI>
+            </DOI>
           </LN>
         </LDevice>
       </Server>
@@ -127,6 +132,7 @@
       <DO name="SPCSO6" type="SPC_1_SPCSO6" />
       <DO name="SPCSO7" type="SPC_1_SPCSO7" />
       <DO name="SPCSO8" type="SPC_1_SPCSO8" />
+      <DO name="SPCSO9" type="SPC_1_SPCSO3" />
       <DO name="Ind1" type="SPS_1_Proxy" />
       <DO name="Ind2" type="SPS_1_Proxy" />
       <DO name="Ind3" type="SPS_1_Proxy" />

@@ -4,7 +4,7 @@ MIPSEL_TOOLCHAIN_PREFIX=mipsel-openwrt-linux-
 # ARM_TOOLCHAIN_PREFIX=arm-linux-gnueabihf-
 #ARM_TOOLCHAIN_PREFIX=arm-linux-gnueabi-
 #ARM_TOOLCHAIN_PREFIX=arm-poky-linux-gnueabi-
-ARM_TOOLCHAIN_PREFIX=arm-linux-
+ARM_TOOLCHAIN_PREFIX=arm-linux-gnueabi-
 UCLINUX_ARM_TOOLCHAIN_PREFIX=arm-uclinux-elf-
 MINGW_TOOLCHAIN_PREFIX=i586-mingw32msvc-
 #MINGW_TOOLCHAIN_PREFIX=x86_64-w64-mingw32-
@@ -126,7 +126,7 @@ LIB_OBJS_DIR = $(LIBIEC_HOME)/build
 endif
 
 CFLAGS += -g 
-CFLAGS += -Os
+#CFLAGS += -Os
 
 DYNLIB_LDFLAGS=-lpthread
 endif

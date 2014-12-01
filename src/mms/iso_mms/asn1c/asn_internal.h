@@ -11,6 +11,9 @@
 
 #include "asn_application.h"	/* Application-visible API */
 
+//#include "libiec61850_platform_includes.h"
+#include "lib_memory.h"
+
 #ifndef	__NO_ASSERT_H__		/* Include assert.h only for internal use. */
 #include <assert.h>		/* for assert() macro */
 #endif
@@ -23,10 +26,23 @@ extern "C" {
 #define	ASN1C_ENVIRONMENT_VERSION	920	/* Compile-time version */
 int get_asn1c_environment_version(void);	/* Run-time version */
 
+#if 0
+#ifndef CALLOC
 #define	CALLOC(nmemb, size)	calloc(nmemb, size)
+#endif
+
+#ifndef MALLOC
 #define	MALLOC(size)		malloc(size)
+#endif
+
+#ifndef REALLOC
 #define	REALLOC(oldptr, size)	realloc(oldptr, size)
+#endif
+
+#ifndef FREEMEM
 #define	FREEMEM(ptr)		free(ptr)
+#endif
+#endif
 
 /*
  * A macro for debugging the ASN.1 internals.

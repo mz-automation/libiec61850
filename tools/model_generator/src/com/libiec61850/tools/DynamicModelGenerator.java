@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.List;
 
+import com.libiec61850.scl.DataAttributeDefinition;
 import com.libiec61850.scl.SclParser;
 import com.libiec61850.scl.SclParserException;
 import com.libiec61850.scl.communication.ConnectedAP;
@@ -46,6 +47,7 @@ import com.libiec61850.scl.model.IED;
 import com.libiec61850.scl.model.LogicalDevice;
 import com.libiec61850.scl.model.LogicalNode;
 import com.libiec61850.scl.model.ReportControlBlock;
+import com.libiec61850.scl.model.SettingControl;
 
 public class DynamicModelGenerator {
 
@@ -82,7 +84,7 @@ public class DynamicModelGenerator {
         output.println("MODEL(" + ied.getName() + "){");
         for (LogicalDevice logicalDevice : logicalDevices) {
             output.print("LD(");
-            output.print(ied.getName() + logicalDevice.getInst() + "){\n");
+            output.print(logicalDevice.getInst() + "){\n");
 
             exportLogicalNodes(output, logicalDevice);
 
@@ -106,6 +108,11 @@ public class DynamicModelGenerator {
     }
 
     private void exportLogicalNode(PrintStream output, LogicalNode logicalNode) {
+    	
+    	for (SettingControl sgcb : logicalNode.getSettingGroupControlBlocks()) {
+    		output.print("SG(" + sgcb.getActSG() + " " + sgcb.getNumOfSGs() + ")\n");
+    	}
+    	
         for (DataObject dataObject : logicalNode.getDataObjects()) {
             output.print("DO(" + dataObject.getName() + " " + dataObject.getCount() + "){\n");
 
@@ -274,8 +281,12 @@ public class DynamicModelGenerator {
         output.print(")"); 
                 
         if (dataAttribute.isBasicAttribute()) {
-            DataModelValue value = dataAttribute.getValue();
-            
+           DataModelValue value = dataAttribute.getValue();
+           
+           /* if no value is given use default value for type if present */
+           if (value == null)
+        	   value = dataAttribute.getDefinition().getValue();
+           
            if (value != null) {
                
                switch (dataAttribute.getType()) {

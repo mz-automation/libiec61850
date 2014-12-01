@@ -1,3 +1,39 @@
+Changes to version 0.8.2
+------------------------
+- Client: Added adjustable timeout to connect functions
+- Client: Support for T selectors with different size than two bytes
+- GOOSE publisher: added support for explicit GoID
+- GOOSE subscriber: refactored subscriber 
+- Server: Added support for setting groups
+- Server: Added support for data references in reports
+- SCL parser: support for "Val" attributes in DA type definitions
+- Server: Added function to disable all GOOSE publishing
+- Client/Server: added helper functions for Dbpos
+- C# API: more features and improved stability
+
+Changes to version 0.8.1
+------------------------
+- IEC 61850/MMS client: IedConnection and MmsConnection objects can now be reused
+- reorganization of library header files
+- C# API provides support for bit string and octet string data type
+- IEC 61850 client/server: Added support for CommandTermination-
+- C# API added handler for CommandTermination messages
+- IEC 61850 server: IED name for static device model can now be configured at runtime
+- Client/server: Fixed problem with association specific data sets
+- GOOSE: fixed triggering GOOSE reports for data set members without trigger condition set
+- Linux/Windows/BSD: added support for select based socket read (reduces CPU load)
+- C# API added support for file services
+- a lot of small bug fixes
+
+Changes to version 0.8
+-----------------------
+- HAL: socket layer. Some changes. read and accept are now non-blocking. Changes the standard implementations (Linux/POSIX, WIN32, BSD) accordingly
+- server stack: added single-threaded and threadless operation modes to better fit to resource constraint devices (added new configuration option CONFIG_MMS_SINGLE_THREADED)
+- some small changes in server side control model handling (ControlHandler return values and behaviour) to enable threadless and single-threaded operation.
+- C# client API extended and XML documentation completed
+- some smaller bug fixes and extensions
+
+
 Changes to version 0.7.8
 ------------------------
 - IED client: added client side support for Ed.1 compliant control (client side automatically detects if a control is ed1 or ed2 compliant)

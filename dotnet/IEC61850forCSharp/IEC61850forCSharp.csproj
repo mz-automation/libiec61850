@@ -40,6 +40,7 @@
     <Compile Include="Reporting.cs" />
     <Compile Include="Control.cs" />
     <Compile Include="IsoConnectionParameters.cs" />
+    <Compile Include="MmsVariableSpecification.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

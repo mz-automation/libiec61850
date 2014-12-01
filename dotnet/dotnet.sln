@@ -19,6 +19,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "authenticate", "authenticat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tests", "tests\tests.csproj", "{FBDFE530-DBEB-474B-BA54-9AB287DD57B3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "files", "files\files.csproj", "{77127456-19B9-4D1A-AEF9-40F8D1C5695E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "example3", "example3\example3.csproj", "{5E5D0FE0-DF44-48D8-A10E-1FB07D34DEA2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,6 +41,14 @@ Global
 		{59B85486-F48D-4978-BD35-8F5C3A8288D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{59B85486-F48D-4978-BD35-8F5C3A8288D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{59B85486-F48D-4978-BD35-8F5C3A8288D4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5E5D0FE0-DF44-48D8-A10E-1FB07D34DEA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5E5D0FE0-DF44-48D8-A10E-1FB07D34DEA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5E5D0FE0-DF44-48D8-A10E-1FB07D34DEA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5E5D0FE0-DF44-48D8-A10E-1FB07D34DEA2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{77127456-19B9-4D1A-AEF9-40F8D1C5695E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77127456-19B9-4D1A-AEF9-40F8D1C5695E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77127456-19B9-4D1A-AEF9-40F8D1C5695E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77127456-19B9-4D1A-AEF9-40F8D1C5695E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9E29B4CE-EE5F-4CA6-85F6-5D1FF8B27BF8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9E29B4CE-EE5F-4CA6-85F6-5D1FF8B27BF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9E29B4CE-EE5F-4CA6-85F6-5D1FF8B27BF8}.Release|Any CPU.ActiveCfg = Release|Any CPU

@@ -97,19 +97,18 @@ MmsServerConnection_sendInformationReportListOfVariables(
 
         uint32_t varSpecSize = BerEncoder_determineEncodedStringSize(spec->itemId);
 
-        if (spec->domainId != NULL) {
+        if (spec->domainId != NULL)
             varSpecSize += BerEncoder_determineEncodedStringSize(spec->domainId);
-            varSpecSize += BerEncoder_determineLengthSize(varSpecSize) + 1;
-        }
 
-        listOfVarSpecSize += varSpecSize;
+        uint32_t sequenceSize = (varSpecSize + 1 + BerEncoder_determineLengthSize(varSpecSize));
+
+        listOfVarSpecSize += (1 + BerEncoder_determineLengthSize(sequenceSize) + sequenceSize);
 
         i++;
         specElement = LinkedList_getNext(specElement);
     }
 
-    uint32_t sequenceSize = 1 + BerEncoder_determineLengthSize(listOfVarSpecSize) + listOfVarSpecSize;
-    uint32_t listOfVariableSize = 1 + BerEncoder_determineLengthSize(sequenceSize) + sequenceSize;
+    uint32_t listOfVariableSize = 1 + BerEncoder_determineLengthSize(listOfVarSpecSize) + listOfVarSpecSize;
 
 
     uint32_t accessResultSize = 0;
@@ -146,7 +145,7 @@ MmsServerConnection_sendInformationReportListOfVariables(
     /* encode list of variable access specifications */
     bufPos = BerEncoder_encodeTL(0xa0, listOfVariableSize, buffer, bufPos);
 
-    bufPos = BerEncoder_encodeTL(0x30, sequenceSize, buffer, bufPos);
+
 
     specElement = LinkedList_getNext(variableAccessDeclarations);
     i = 0;
@@ -160,13 +159,17 @@ MmsServerConnection_sendInformationReportListOfVariables(
 
             varSpecSize += BerEncoder_determineEncodedStringSize(spec->domainId);
             uint32_t varSpecSizeComplete =   varSpecSize + BerEncoder_determineLengthSize(varSpecSize) + 1;
+            uint32_t sequenceSize = varSpecSizeComplete + BerEncoder_determineLengthSize(varSpecSizeComplete) + 1;
 
+            bufPos = BerEncoder_encodeTL(0x30, sequenceSize, buffer, bufPos);
             bufPos = BerEncoder_encodeTL(0xa0, varSpecSizeComplete, buffer, bufPos); /* domain-specific */
             bufPos = BerEncoder_encodeTL(0xa1, varSpecSize, buffer, bufPos);
             bufPos = BerEncoder_encodeStringWithTag(0x1a, spec->domainId, buffer, bufPos);
             bufPos = BerEncoder_encodeStringWithTag(0x1a, spec->itemId, buffer, bufPos);
         }
         else {
+            uint32_t sequenceSize = varSpecSize + BerEncoder_determineLengthSize(varSpecSize) + 1;
+            bufPos = BerEncoder_encodeTL(0x30, sequenceSize, buffer, bufPos);
             bufPos = BerEncoder_encodeTL(0xa0, varSpecSize, buffer, bufPos); /* vmd-specific */
             bufPos = BerEncoder_encodeStringWithTag(0x80, spec->itemId, buffer, bufPos);
         }

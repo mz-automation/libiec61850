@@ -4,7 +4,7 @@
  * automatically generated from simpleIO_direct_control_goose.icd
  */
 #include <stdlib.h>
-#include "model.h"
+#include "iec61850_model.h"
 
 extern IedModel iedModel;
 static void initializeValues();
@@ -159,7 +159,7 @@ extern DataSetEntry ds_GenericIO_LLN0_Events_fcda2;
 extern DataSetEntry ds_GenericIO_LLN0_Events_fcda3;
 
 DataSetEntry ds_GenericIO_LLN0_Events_fcda0 = {
-  "simpleIOGenericIO",
+  "GenericIO",
   "GGIO1$ST$SPCSO1$stVal",
   -1,
   NULL,
@@ -168,7 +168,7 @@ DataSetEntry ds_GenericIO_LLN0_Events_fcda0 = {
 };
 
 DataSetEntry ds_GenericIO_LLN0_Events_fcda1 = {
-  "simpleIOGenericIO",
+  "GenericIO",
   "GGIO1$ST$SPCSO2$stVal",
   -1,
   NULL,
@@ -177,7 +177,7 @@ DataSetEntry ds_GenericIO_LLN0_Events_fcda1 = {
 };
 
 DataSetEntry ds_GenericIO_LLN0_Events_fcda2 = {
-  "simpleIOGenericIO",
+  "GenericIO",
   "GGIO1$ST$SPCSO3$stVal",
   -1,
   NULL,
@@ -186,7 +186,7 @@ DataSetEntry ds_GenericIO_LLN0_Events_fcda2 = {
 };
 
 DataSetEntry ds_GenericIO_LLN0_Events_fcda3 = {
-  "simpleIOGenericIO",
+  "GenericIO",
   "GGIO1$ST$SPCSO4$stVal",
   -1,
   NULL,
@@ -195,7 +195,7 @@ DataSetEntry ds_GenericIO_LLN0_Events_fcda3 = {
 };
 
 DataSet ds_GenericIO_LLN0_Events = {
-  "simpleIOGenericIO",
+  "GenericIO",
   "LLN0$Events",
   4,
   &ds_GenericIO_LLN0_Events_fcda0,
@@ -208,7 +208,7 @@ extern DataSetEntry ds_GenericIO_LLN0_AnalogValues_fcda2;
 extern DataSetEntry ds_GenericIO_LLN0_AnalogValues_fcda3;
 
 DataSetEntry ds_GenericIO_LLN0_AnalogValues_fcda0 = {
-  "simpleIOGenericIO",
+  "GenericIO",
   "GGIO1$MX$AnIn1",
   -1,
   NULL,
@@ -217,7 +217,7 @@ DataSetEntry ds_GenericIO_LLN0_AnalogValues_fcda0 = {
 };
 
 DataSetEntry ds_GenericIO_LLN0_AnalogValues_fcda1 = {
-  "simpleIOGenericIO",
+  "GenericIO",
   "GGIO1$MX$AnIn2",
   -1,
   NULL,
@@ -226,7 +226,7 @@ DataSetEntry ds_GenericIO_LLN0_AnalogValues_fcda1 = {
 };
 
 DataSetEntry ds_GenericIO_LLN0_AnalogValues_fcda2 = {
-  "simpleIOGenericIO",
+  "GenericIO",
   "GGIO1$MX$AnIn3",
   -1,
   NULL,
@@ -235,7 +235,7 @@ DataSetEntry ds_GenericIO_LLN0_AnalogValues_fcda2 = {
 };
 
 DataSetEntry ds_GenericIO_LLN0_AnalogValues_fcda3 = {
-  "simpleIOGenericIO",
+  "GenericIO",
   "GGIO1$MX$AnIn4",
   -1,
   NULL,
@@ -244,7 +244,7 @@ DataSetEntry ds_GenericIO_LLN0_AnalogValues_fcda3 = {
 };
 
 DataSet ds_GenericIO_LLN0_AnalogValues = {
-  "simpleIOGenericIO",
+  "GenericIO",
   "LLN0$AnalogValues",
   4,
   &ds_GenericIO_LLN0_AnalogValues_fcda0,
@@ -253,7 +253,7 @@ DataSet ds_GenericIO_LLN0_AnalogValues = {
 
 LogicalDevice iedModel_GenericIO = {
     LogicalDeviceModelType,
-    "simpleIOGenericIO",
+    "GenericIO",
     (ModelNode*) &iedModel,
     NULL,
     (ModelNode*) &iedModel_GenericIO_LLN0
@@ -1970,7 +1970,7 @@ extern GSEControlBlock iedModel_GenericIO_LLN0_gse1;
 
 static PhyComAddress iedModel_GenericIO_LLN0_gse0_address = {
   4,
-  111,
+  1,
   1000,
   {0x1, 0xc, 0xcd, 0x1, 0x0, 0x1}
 };
@@ -1979,12 +1979,13 @@ GSEControlBlock iedModel_GenericIO_LLN0_gse0 = {&iedModel_GenericIO_LLN0, "gcbEv
 
 static PhyComAddress iedModel_GenericIO_LLN0_gse1_address = {
   4,
-  111,
+  1,
   1000,
   {0x1, 0xc, 0xcd, 0x1, 0x0, 0x1}
 };
 
 GSEControlBlock iedModel_GenericIO_LLN0_gse1 = {&iedModel_GenericIO_LLN0, "gcbAnalogValues", "analog", "AnalogValues", 2, false,&iedModel_GenericIO_LLN0_gse1_address, NULL};
+
 
 
 IedModel iedModel = {
@@ -1993,6 +1994,7 @@ IedModel iedModel = {
     &ds_GenericIO_LLN0_Events,
     &iedModel_GenericIO_LLN0_report0,
     &iedModel_GenericIO_LLN0_gse0,
+    NULL,
     initializeValues
 };
 

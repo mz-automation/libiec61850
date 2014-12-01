@@ -42,7 +42,7 @@ BufferChain_destroy(BufferChain self)
 
     while (currentChainElement != NULL) {
         BufferChain nextChainElement = currentChainElement->nextPart;
-        free(currentChainElement);
+        GLOBAL_FREEMEM(currentChainElement);
         currentChainElement = nextChainElement;
     }
 }

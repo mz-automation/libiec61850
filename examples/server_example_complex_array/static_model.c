@@ -4,7 +4,7 @@
  * automatically generated from mhai_array.icd
  */
 #include <stdlib.h>
-#include "model.h"
+#include "iec61850_model.h"
 
 extern IedModel iedModel;
 static void initializeValues();
@@ -58,7 +58,7 @@ extern DataAttribute iedModel_ComplexArray_MHAI1_HA_frequency;
 
 LogicalDevice iedModel_ComplexArray = {
     LogicalDeviceModelType,
-    "testComplexArray",
+    "ComplexArray",
     (ModelNode*) &iedModel,
     NULL,
     (ModelNode*) &iedModel_ComplexArray_LLN0
@@ -589,9 +589,11 @@ DataAttribute iedModel_ComplexArray_MHAI1_HA_frequency = {
 
 
 
+
 IedModel iedModel = {
     "test",
     &iedModel_ComplexArray,
+    NULL,
     NULL,
     NULL,
     NULL,

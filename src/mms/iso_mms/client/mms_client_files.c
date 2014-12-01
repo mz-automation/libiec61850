@@ -33,7 +33,7 @@
 #include "conversions.h"
 
 void
-mmsClient_createFileOpenRequest(uint32_t invokeId, ByteBuffer* request, char* fileName, uint32_t initialPosition)
+mmsClient_createFileOpenRequest(uint32_t invokeId, ByteBuffer* request, const char* fileName, uint32_t initialPosition)
 {
     uint32_t invokeIdSize = BerEncoder_UInt32determineEncodedSize(invokeId);
 
@@ -66,7 +66,7 @@ mmsClient_createFileOpenRequest(uint32_t invokeId, ByteBuffer* request, char* fi
 }
 
 void
-mmsClient_createFileDeleteRequest(uint32_t invokeId, ByteBuffer* request, char* fileName)
+mmsClient_createFileDeleteRequest(uint32_t invokeId, ByteBuffer* request, const char* fileName)
 {
     uint32_t invokeIdSize = BerEncoder_UInt32determineEncodedSize(invokeId);
 
@@ -122,7 +122,7 @@ mmsClient_createFileReadRequest(uint32_t invokeId, ByteBuffer* request, int32_t 
 }
 
 static int
-encodeFileSpecification(uint8_t tag, char* fileSpecification, uint8_t* buffer, int bufPos)
+encodeFileSpecification(uint8_t tag, const char* fileSpecification, uint8_t* buffer, int bufPos)
 {
     uint32_t fileNameStringSize = strlen(fileSpecification);
     uint32_t fileNameSeqSize = 1 + BerEncoder_determineLengthSize(fileNameStringSize) + fileNameStringSize;
@@ -140,7 +140,7 @@ encodeFileSpecification(uint8_t tag, char* fileSpecification, uint8_t* buffer, i
 }
 
 void
-mmsClient_createFileDirectoryRequest(uint32_t invokeId, ByteBuffer* request, char* fileSpecification, char* continueAfter)
+mmsClient_createFileDirectoryRequest(uint32_t invokeId, ByteBuffer* request, const char* fileSpecification, const char* continueAfter)
 {
     uint32_t invokeIdSize = BerEncoder_UInt32determineEncodedSize(invokeId);
 
@@ -179,7 +179,7 @@ mmsClient_createFileDirectoryRequest(uint32_t invokeId, ByteBuffer* request, cha
 
 
 void
-mmsClient_createFileRenameRequest(uint32_t invokeId, ByteBuffer* request, char* currentFileName, char* newFileName)
+mmsClient_createFileRenameRequest(uint32_t invokeId, ByteBuffer* request, const char* currentFileName, const char* newFileName)
 {
     uint32_t invokeIdSize = BerEncoder_UInt32determineEncodedSize(invokeId);
 
@@ -313,8 +313,6 @@ parseListOfDirectoryEntries(uint8_t* buffer, int bufPos, int maxBufPos,
     if (bufPos < 0) return false;
 
     int endPos = bufPos + length;
-
- //   printf("bufPos: %i, length: %i, maxBufPos: %i\n", bufPos, length, maxBufPos);
 
     if (endPos > maxBufPos) {
          if (DEBUG_MMS_CLIENT)

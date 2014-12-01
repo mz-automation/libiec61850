@@ -4,7 +4,7 @@
  * automatically generated from sampleModel_with_dataset.icd
  */
 #include <stdlib.h>
-#include "model.h"
+#include "iec61850_model.h"
 
 extern IedModel iedModel;
 static void initializeValues();
@@ -148,7 +148,7 @@ extern DataSetEntry ds_Device1_LLN0_dataset1_fcda1;
 extern DataSetEntry ds_Device1_LLN0_dataset1_fcda2;
 
 DataSetEntry ds_Device1_LLN0_dataset1_fcda0 = {
-  "SampleIEDDevice1",
+  "Device1",
   "LLN0$ST$Mod$q",
   -1,
   NULL,
@@ -157,7 +157,7 @@ DataSetEntry ds_Device1_LLN0_dataset1_fcda0 = {
 };
 
 DataSetEntry ds_Device1_LLN0_dataset1_fcda1 = {
-  "SampleIEDDevice1",
+  "Device1",
   "MMXU1$ST$Mod$q",
   -1,
   NULL,
@@ -166,7 +166,7 @@ DataSetEntry ds_Device1_LLN0_dataset1_fcda1 = {
 };
 
 DataSetEntry ds_Device1_LLN0_dataset1_fcda2 = {
-  "SampleIEDDevice1",
+  "Device1",
   "MMXU1$CF$Mod$ctlModel",
   -1,
   NULL,
@@ -175,7 +175,7 @@ DataSetEntry ds_Device1_LLN0_dataset1_fcda2 = {
 };
 
 DataSet ds_Device1_LLN0_dataset1 = {
-  "SampleIEDDevice1",
+  "Device1",
   "LLN0$dataset1",
   3,
   &ds_Device1_LLN0_dataset1_fcda0,
@@ -184,7 +184,7 @@ DataSet ds_Device1_LLN0_dataset1 = {
 
 LogicalDevice iedModel_Device1 = {
     LogicalDeviceModelType,
-    "SampleIEDDevice1",
+    "Device1",
     (ModelNode*) &iedModel,
     NULL,
     (ModelNode*) &iedModel_Device1_LLN0
@@ -1718,31 +1718,9 @@ DataAttribute iedModel_Device1_MMXU2_TotW_t = {
     NULL,
     0};
 
-
 extern ReportControlBlock iedModel_Device1_LLN0_report0;
 
-ReportControlBlock iedModel_Device1_LLN0_report0 = {&iedModel_Device1_LLN0, "LLN0_Events_BuffRep", "LLN0$RP$brcbEV1", true, "dataset1", 1, 9, 239, 50, 900000, NULL};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+ReportControlBlock iedModel_Device1_LLN0_report0 = {&iedModel_Device1_LLN0, "LLN0_Events_BuffRep01", "LLN0$RP$brcbEV1", true, "dataset1", 1, 9, 239, 50, 900000, NULL};
 
 
 
@@ -1752,6 +1730,7 @@ IedModel iedModel = {
     &iedModel_Device1,
     &ds_Device1_LLN0_dataset1,
     &iedModel_Device1_LLN0_report0,
+    NULL,
     NULL,
     initializeValues
 };

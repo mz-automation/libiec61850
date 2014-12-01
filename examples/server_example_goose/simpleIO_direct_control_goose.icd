@@ -17,7 +17,7 @@
         </Address>
         <GSE ldInst="GenericIO" cbName="gcbEvents">
            <Address>
-                <P type="VLAN-ID">111</P>
+                <P type="VLAN-ID">1</P>
                 <P type="VLAN-PRIORITY">4</P>
                 <P type="MAC-Address">01-0c-cd-01-00-01</P>
                 <P type="APPID">1000</P>
@@ -25,7 +25,7 @@
 	    </GSE>
         <GSE ldInst="GenericIO" cbName="gcbAnalogValues">
            <Address>
-                <P type="VLAN-ID">111</P>
+                <P type="VLAN-ID">1</P>
                 <P type="VLAN-PRIORITY">4</P>
                 <P type="MAC-Address">01-0c-cd-01-00-01</P>
                 <P type="APPID">1000</P>

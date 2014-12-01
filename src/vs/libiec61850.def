@@ -91,8 +91,9 @@ EXPORTS
     ControlObjectClient_getObjectReference @218
     ControlObjectClient_operate @219
     ControlObjectClient_select @220
-    ControlObjectClient_selectWithValue @221
+    ControlObjectClient_selectWithValue @221MmsConnection_setConnectTimeout
     ControlObjectClient_setLastApplError @222
+    ControlObjectClient_setCommandTerminationHandler
     DataAttribute_create @273
     DataObject_create @274
     DataObject_hasFCData @275
@@ -138,10 +139,7 @@ EXPORTS
     GooseSubscriber_isTest @347
     GooseSubscriber_needsCommission @348
     GooseSubscriber_setAppId @349
-    GooseSubscriber_setInterfaceId @350
     GooseSubscriber_setListener @351
-    GooseSubscriber_subscribe @352
-    GooseSubscriber_unsubscribe @353
     Hal_getTimeInMs @354
     IedConnection_abort @366
     IedConnection_close @367
@@ -405,6 +403,8 @@ EXPORTS
     MmsValue_toUint32 @774
     MmsValue_toUnixTimestamp @775
     MmsValue_update @776
+    MmsValue_getBitStringAsIntegerBigEndian
+    MmsValue_setBitStringFromIntegerBigEndian
     MmsVariableAccessSpecification_create @777
     MmsVariableAccessSpecification_createAlternateAccess @778
     MmsVariableAccessSpecification_destroy @779
@@ -417,6 +417,7 @@ EXPORTS
     MmsVariableSpecification_getSize @786
     MmsVariableSpecification_getStructureElements @787
     MmsVariableSpecification_getType @788
+    MmsVariableSpecification_getNamedVariableRecursive
     ModelNode_getChild @789
     ModelNode_getChildCount @790
     ModelNode_getObjectReference @791
@@ -465,5 +466,32 @@ EXPORTS
     AcseAuthenticationParameter_destroy
     AcseAuthenticationParameter_setAuthMechanism
     AcseAuthenticationParameter_setPassword
-
-
+    IedServer_startThreadless
+    IedServer_processIncomingData
+    IedServer_performPeriodicTasks
+    IedServer_stopThreadless
+    Dbpos_fromMmsValue
+    Dbpos_toMmsValue
+    SettingGroupControlBlock_create
+    MmsConnection_setConnectTimeout
+    IedConnection_setConnectTimeout
+	MmsValue_newVisibleStringWithSize
+	MmsValue_newMmsStringWithSize
+    MmsValue_setInt8
+    MmsValue_setInt16
+    LogicalDevice_getSettingGroupControlBlock
+    IedServer_changeActiveSettingGroup
+    IedServer_setActiveSettingGroupChangedHandler
+    IedServer_disableGoosePublishing
+    IedServer_setEditSettingGroupChangedHandler
+    IedServer_setEditSettingGroupConfirmationHandler
+    IedConnection_getDataDirectoryByFC
+    IedServer_getActiveSettingGroup
+    ClientReport_hasSeqNum
+    ClientReport_getSeqNum
+    ClientReport_hasDataSetName
+    ClientReport_hasReasonForInclusion
+    ClientReport_hasConfRev
+    ClientReport_getConfRev
+    ClientReport_hasBufOvfl
+    ClientReport_hasDataReference
