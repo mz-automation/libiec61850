@@ -1,3 +1,8 @@
+Changes to version 0.8.3
+------------------------
+- client: better support for optional report elements
+- server: fixed some minor problems with reporting
+
 Changes to version 0.8.2
 ------------------------
 - Client: Added adjustable timeout to connect functions
