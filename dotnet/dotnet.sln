@@ -1,0 +1,105 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IEC61850forCSharp", "IEC61850forCSharp\IEC61850forCSharp.csproj", "{C35D624E-5506-4560-8074-1728F1FA1A4D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "example1", "example1\example1.csproj", "{C616A6DF-831E-443C-9310-3F343A6E3D1A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "model_browsing", "model_browsing\model_browsing.csproj", "{59B85486-F48D-4978-BD35-8F5C3A8288D4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "datasets", "datasets\datasets.csproj", "{D5C7DD38-032A-49B6-B74F-FFD9724A8AE4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "control", "control\control.csproj", "{C351CFA4-E54E-49A1-86CE-69643535541A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "reporting", "reporting\reporting.csproj", "{9E29B4CE-EE5F-4CA6-85F6-5D1FF8B27BF8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "example2", "example2\example2.csproj", "{2A226B6D-1D1F-4BFE-B8CC-158116F71270}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "authenticate", "authenticate\authenticate.csproj", "{0BECEC77-2315-4B95-AFF9-E6007E644BBF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tests", "tests\tests.csproj", "{FBDFE530-DBEB-474B-BA54-9AB287DD57B3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0BECEC77-2315-4B95-AFF9-E6007E644BBF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0BECEC77-2315-4B95-AFF9-E6007E644BBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0BECEC77-2315-4B95-AFF9-E6007E644BBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0BECEC77-2315-4B95-AFF9-E6007E644BBF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2A226B6D-1D1F-4BFE-B8CC-158116F71270}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A226B6D-1D1F-4BFE-B8CC-158116F71270}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A226B6D-1D1F-4BFE-B8CC-158116F71270}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A226B6D-1D1F-4BFE-B8CC-158116F71270}.Release|Any CPU.Build.0 = Release|Any CPU
+		{59B85486-F48D-4978-BD35-8F5C3A8288D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{59B85486-F48D-4978-BD35-8F5C3A8288D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{59B85486-F48D-4978-BD35-8F5C3A8288D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{59B85486-F48D-4978-BD35-8F5C3A8288D4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9E29B4CE-EE5F-4CA6-85F6-5D1FF8B27BF8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9E29B4CE-EE5F-4CA6-85F6-5D1FF8B27BF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9E29B4CE-EE5F-4CA6-85F6-5D1FF8B27BF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9E29B4CE-EE5F-4CA6-85F6-5D1FF8B27BF8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C351CFA4-E54E-49A1-86CE-69643535541A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C351CFA4-E54E-49A1-86CE-69643535541A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C351CFA4-E54E-49A1-86CE-69643535541A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C351CFA4-E54E-49A1-86CE-69643535541A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C35D624E-5506-4560-8074-1728F1FA1A4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C35D624E-5506-4560-8074-1728F1FA1A4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C35D624E-5506-4560-8074-1728F1FA1A4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C35D624E-5506-4560-8074-1728F1FA1A4D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C616A6DF-831E-443C-9310-3F343A6E3D1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C616A6DF-831E-443C-9310-3F343A6E3D1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C616A6DF-831E-443C-9310-3F343A6E3D1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C616A6DF-831E-443C-9310-3F343A6E3D1A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D5C7DD38-032A-49B6-B74F-FFD9724A8AE4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5C7DD38-032A-49B6-B74F-FFD9724A8AE4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5C7DD38-032A-49B6-B74F-FFD9724A8AE4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D5C7DD38-032A-49B6-B74F-FFD9724A8AE4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FBDFE530-DBEB-474B-BA54-9AB287DD57B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FBDFE530-DBEB-474B-BA54-9AB287DD57B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FBDFE530-DBEB-474B-BA54-9AB287DD57B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FBDFE530-DBEB-474B-BA54-9AB287DD57B3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{740DC107-F506-416C-B145-F71649A4A5A0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{740DC107-F506-416C-B145-F71649A4A5A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{740DC107-F506-416C-B145-F71649A4A5A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{740DC107-F506-416C-B145-F71649A4A5A0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EDC263E3-0419-4B23-91A4-250EF0A6DD62}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EDC263E3-0419-4B23-91A4-250EF0A6DD62}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EDC263E3-0419-4B23-91A4-250EF0A6DD62}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EDC263E3-0419-4B23-91A4-250EF0A6DD62}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = IEC61850forCSharp\IEC61850forCSharp.csproj
+		Policies = $0
+		$0.DotNetNamingPolicy = $1
+		$1.DirectoryNamespaceAssociation = None
+		$1.ResourceNamePolicy = FileFormatDefault
+		$0.TextStylePolicy = $2
+		$2.FileWidth = 120
+		$2.TabsToSpaces = False
+		$2.inheritsSet = VisualStudio
+		$2.inheritsScope = text/plain
+		$2.scope = text/plain
+		$0.TextStylePolicy = $3
+		$3.inheritsSet = null
+		$3.scope = text/microsoft-resx
+		$0.XmlFormattingPolicy = $4
+		$4.inheritsSet = null
+		$4.scope = text/microsoft-resx
+		$0.TextStylePolicy = $5
+		$5.inheritsSet = null
+		$5.scope = application/xml
+		$0.XmlFormattingPolicy = $6
+		$6.inheritsSet = Mono
+		$6.inheritsScope = application/xml
+		$6.scope = application/xml
+		$0.StandardHeader = $7
+		$7.Text = 
+		$7.IncludeInNewFiles = True
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

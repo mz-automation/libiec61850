@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SCL xmlns="http://www.iec.ch/61850/2003/SCL">
+  <Header id=""  />
+  <IED name="Inverter3Ph">
+    <Services>
+      <DynAssociation />
+      <GetDirectory />
+      <GetDataObjectDefinition />
+      <GetDataSetValue />
+      <DataSetDirectory />
+      <ReadWrite />
+      <GetCBValues />
+      <ConfLNs fixPrefix="true" fixLnInst="true" />
+    </Services>
+    <AccessPoint name="accessPoint1">
+      <Server>
+        <Authentication password="true" />
+        <LDevice inst="inverter">
+          <LN0 lnClass="LLN0" lnType="LLN01" inst="">
+            <DOI name="Mod">
+              <DAI name="ctlModel">
+                <Val>status-only</Val>
+              </DAI>
+            </DOI>
+          </LN0>
+          <LN lnClass="LPHD" lnType="LPHD1" inst="1" prefix="" />
+          <LN lnClass="ZINV" lnType="ZINV1" inst="1" prefix="">
+            <DOI name="Mod">
+              <DAI name="ctlModel">
+                <Val>status-only</Val>
+              </DAI>
+            </DOI>
+            <DOI name="ACTyp">
+              <DAI name="setVal">
+                <Val>3</Val>
+              </DAI>
+            </DOI>
+          </LN>
+          <LN lnClass="MMXU" lnType="MMXU1" inst="1" prefix="">
+            <DOI name="Mod">
+              <DAI name="ctlModel">
+                <Val>status-only</Val>
+              </DAI>
+            </DOI>
+          </LN>
+          <LN lnClass="MMXN" lnType="MMXN1" inst="1" prefix="">
+            <DOI name="Mod">
+              <DAI name="ctlModel">
+                <Val>status-only</Val>
+              </DAI>
+            </DOI>
+          </LN>
+        </LDevice>
+      </Server>
+    </AccessPoint>
+  </IED>
+  <DataTypeTemplates>
+    <LNodeType id="LLN01" lnClass="LLN0" desc="Logical node zero">
+      <DO name="Mod" type="INC_1_Mod" />
+      <DO name="Beh" type="INS_1_Beh" />
+      <DO name="Health" type="INS_1_Beh" />
+      <DO name="NamPlt" type="LPL_1_NamPlt" />
+    </LNodeType>
+    <LNodeType id="LPHD1" lnClass="LPHD" desc="Physical device information">
+      <DO name="PhyNam" type="DPL_1_PhyNam" />
+      <DO name="PhyHealth" type="INS_1_Beh" />
+      <DO name="Proxy" type="SPS_1_Proxy" />
+    </LNodeType>
+    <LNodeType id="ZINV1" lnClass="ZINV" desc="Inverter">
+      <DO name="Mod" type="ENC_1_Mod" />
+      <DO name="Beh" type="ENS_1_Beh" />
+      <DO name="Health" type="ENS_1_Beh" />
+      <DO name="NamPlt" type="LPL_2_NamPlt" />
+      <DO name="WRtg" type="ASG_1_WRtg" />
+      <DO name="VarRtg" type="ASG_1_VarRtg" />
+      <DO name="GridModSt" type="ENS_1_Beh" />
+      <DO name="Stdby" type="SPS_1_Proxy" />
+      <DO name="CurLev" type="SPS_1_Proxy" />
+      <DO name="ACTyp" type="ENG_1_ACTyp" />
+      <DO name="OutWSet" type="ASG_1_VarRtg" />
+      <DO name="OutVarSet" type="ASG_1_VarRtg" />
+      <DO name="HeatSinkTmp" type="MV_1_HeatSinkTmp" />
+    </LNodeType>
+    <LNodeType id="MMXU1" lnClass="MMXU" desc="Measurement">
+      <DO name="Mod" type="INC_1_Mod" />
+      <DO name="Beh" type="INS_1_Beh" />
+      <DO name="Health" type="INS_1_Beh" />
+      <DO name="NamPlt" type="LPL_2_NamPlt" />
+      <DO name="TotVAr" type="MV_1_HeatSinkTmp" />
+      <DO name="TotVA" type="MV_1_HeatSinkTmp" />
+      <DO name="PhV" type="WYE_1_PhV" />
+      <DO name="A" type="WYE_1_PhV" />
+      <DO name="W" type="WYE_1_PhV" />
+    </LNodeType>
+    <LNodeType id="MMXN1" lnClass="MMXN" desc="Non phase related Measurement">
+      <DO name="Mod" type="INC_1_Mod" />
+      <DO name="Beh" type="INS_1_Beh" />
+      <DO name="Health" type="INS_1_Beh" />
+      <DO name="NamPlt" type="LPL_2_NamPlt" />
+      <DO name="Amp" type="MV_1_HeatSinkTmp" />
+      <DO name="Vol" type="MV_1_HeatSinkTmp" />
+      <DO name="Watt" type="MV_1_HeatSinkTmp" />
+    </LNodeType>
+    <DOType id="INC_1_Mod" cdc="INC">
+      <DA name="q" bType="Quality" fc="ST" qchg="true" />
+      <DA name="t" bType="Timestamp" fc="ST" />
+      <DA name="ctlModel" type="CtlModels" bType="Enum" fc="CF" />
+    </DOType>
+    <DOType id="INS_1_Beh" cdc="INS">
+      <DA name="stVal" bType="INT32" fc="ST" dchg="true" />
+      <DA name="q" bType="Quality" fc="ST" qchg="true" />
+      <DA name="t" bType="Timestamp" fc="ST" />
+    </DOType>
+    <DOType id="LPL_1_NamPlt" cdc="LPL">
+      <DA name="vendor" bType="VisString255" fc="DC" />
+      <DA name="swRev" bType="VisString255" fc="DC" />
+      <DA name="d" bType="VisString255" fc="DC" />
+      <DA name="configRev" bType="VisString255" fc="DC" />
+      <DA name="ldNs" bType="VisString255" fc="EX" />
+    </DOType>
+    <DOType id="DPL_1_PhyNam" cdc="DPL">
+      <DA name="vendor" bType="VisString255" fc="DC" />
+    </DOType>
+    <DOType id="SPS_1_Proxy" cdc="SPS">
+      <DA name="stVal" bType="BOOLEAN" fc="ST" dchg="true" />
+      <DA name="q" bType="Quality" fc="ST" qchg="true" />
+      <DA name="t" bType="Timestamp" fc="ST" />
+    </DOType>
+    <DOType id="ENG_1_ACTyp" cdc="ENG">
+      <DA name="setVal" bType="INT32" fc="SP" />
+    </DOType>
+    <DOType id="LPL_2_NamPlt" cdc="LPL">
+      <DA name="vendor" bType="VisString255" fc="DC" />
+      <DA name="swRev" bType="VisString255" fc="DC" />
+      <DA name="d" bType="VisString255" fc="DC" />
+    </DOType>
+    <DOType id="ASG_1_VarRtg" cdc="ASG">
+      <DA name="setMag" type="AnalogueValue_1" bType="Struct" fc="SP" />
+    </DOType>
+    <DOType id="ENC_1_Mod" cdc="ENC">
+      <DA name="q" bType="Quality" fc="ST" qchg="true" />
+      <DA name="t" bType="Timestamp" fc="ST" />
+      <DA name="ctlModel" type="CtlModels" bType="Enum" fc="CF" />
+    </DOType>
+    <DOType id="ASG_1_WRtg" cdc="ASG" />
+    <DOType id="ENS_1_Beh" cdc="ENS">
+      <DA name="stVal" bType="INT32" fc="ST" dchg="true" />
+      <DA name="q" bType="Quality" fc="ST" qchg="true" />
+      <DA name="t" bType="Timestamp" fc="ST" />
+    </DOType>
+    <DOType id="MV_1_HeatSinkTmp" cdc="MV">
+      <DA name="mag" type="AnalogueValue_1" bType="Struct" fc="MX" dchg="true" />
+      <DA name="q" bType="Quality" fc="MX" qchg="true" />
+      <DA name="t" bType="Timestamp" fc="MX" />
+    </DOType>
+    <DOType id="CMV_1_phsA" cdc="CMV">
+      <DA name="cVal" type="Vector_1" bType="Struct" fc="MX" dchg="true" />
+      <DA name="q" bType="Quality" fc="MX" qchg="true" />
+      <DA name="t" bType="Timestamp" fc="MX" />
+    </DOType>
+    <DOType id="WYE_1_PhV" cdc="WYE">
+      <SDO name="phsA" type="CMV_1_phsA" />
+      <SDO name="phsB" type="CMV_1_phsA" />
+      <SDO name="phsC" type="CMV_1_phsA" />
+      <SDO name="neut" type="CMV_1_phsA" />
+    </DOType>
+    <DAType id="AnalogueValue_1">
+      <BDA name="f" bType="FLOAT32" />
+    </DAType>
+    <DAType id="Vector_1">
+      <BDA name="mag" type="AnalogueValue_1" bType="Struct" />
+    </DAType>
+    <EnumType id="CtlModels">
+      <EnumVal ord="0">status-only</EnumVal>
+      <EnumVal ord="1">direct-with-normal-security</EnumVal>
+      <EnumVal ord="2">sbo-with-normal-security</EnumVal>
+      <EnumVal ord="3">direct-with-enhanced-security</EnumVal>
+      <EnumVal ord="4">sbo-with-enhanced-security</EnumVal>
+    </EnumType>
+  </DataTypeTemplates>
+</SCL>

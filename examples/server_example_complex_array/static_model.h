@@ -1,0 +1,109 @@
+/*
+ * static_model.h
+ *
+ * automatically generated from mhai_array.icd
+ */
+
+#ifndef STATIC_MODEL_H_
+#define STATIC_MODEL_H_
+
+#include <stdlib.h>
+#include "model.h"
+
+extern IedModel iedModel;
+extern LogicalDevice iedModel_ComplexArray;
+extern LogicalNode   iedModel_ComplexArray_LLN0;
+extern DataObject    iedModel_ComplexArray_LLN0_Mod;
+extern DataAttribute iedModel_ComplexArray_LLN0_Mod_q;
+extern DataAttribute iedModel_ComplexArray_LLN0_Mod_t;
+extern DataAttribute iedModel_ComplexArray_LLN0_Mod_ctlModel;
+extern DataObject    iedModel_ComplexArray_LLN0_Beh;
+extern DataAttribute iedModel_ComplexArray_LLN0_Beh_stVal;
+extern DataAttribute iedModel_ComplexArray_LLN0_Beh_q;
+extern DataAttribute iedModel_ComplexArray_LLN0_Beh_t;
+extern DataObject    iedModel_ComplexArray_LLN0_Health;
+extern DataAttribute iedModel_ComplexArray_LLN0_Health_stVal;
+extern DataAttribute iedModel_ComplexArray_LLN0_Health_q;
+extern DataAttribute iedModel_ComplexArray_LLN0_Health_t;
+extern DataObject    iedModel_ComplexArray_LLN0_NamPlt;
+extern DataAttribute iedModel_ComplexArray_LLN0_NamPlt_vendor;
+extern DataAttribute iedModel_ComplexArray_LLN0_NamPlt_swRev;
+extern DataAttribute iedModel_ComplexArray_LLN0_NamPlt_d;
+extern DataAttribute iedModel_ComplexArray_LLN0_NamPlt_configRev;
+extern DataAttribute iedModel_ComplexArray_LLN0_NamPlt_ldNs;
+extern LogicalNode   iedModel_ComplexArray_LPHD1;
+extern DataObject    iedModel_ComplexArray_LPHD1_PhyNam;
+extern DataAttribute iedModel_ComplexArray_LPHD1_PhyNam_vendor;
+extern DataObject    iedModel_ComplexArray_LPHD1_PhyHealth;
+extern DataAttribute iedModel_ComplexArray_LPHD1_PhyHealth_stVal;
+extern DataAttribute iedModel_ComplexArray_LPHD1_PhyHealth_q;
+extern DataAttribute iedModel_ComplexArray_LPHD1_PhyHealth_t;
+extern DataObject    iedModel_ComplexArray_LPHD1_Proxy;
+extern DataAttribute iedModel_ComplexArray_LPHD1_Proxy_stVal;
+extern DataAttribute iedModel_ComplexArray_LPHD1_Proxy_q;
+extern DataAttribute iedModel_ComplexArray_LPHD1_Proxy_t;
+extern LogicalNode   iedModel_ComplexArray_MHAI1;
+extern DataObject    iedModel_ComplexArray_MHAI1_HA;
+extern DataObject    iedModel_ComplexArray_MHAI1_HA_phsAHar;
+extern DataAttribute iedModel_ComplexArray_MHAI1_HA_phsAHar_cVal;
+extern DataAttribute iedModel_ComplexArray_MHAI1_HA_phsAHar_cVal_mag;
+extern DataAttribute iedModel_ComplexArray_MHAI1_HA_phsAHar_cVal_mag_f;
+extern DataAttribute iedModel_ComplexArray_MHAI1_HA_phsAHar_cVal_ang;
+extern DataAttribute iedModel_ComplexArray_MHAI1_HA_phsAHar_cVal_ang_f;
+extern DataAttribute iedModel_ComplexArray_MHAI1_HA_phsAHar_q;
+extern DataAttribute iedModel_ComplexArray_MHAI1_HA_phsAHar_t;
+extern DataAttribute iedModel_ComplexArray_MHAI1_HA_numHar;
+extern DataAttribute iedModel_ComplexArray_MHAI1_HA_numCyc;
+extern DataAttribute iedModel_ComplexArray_MHAI1_HA_evalTm;
+extern DataAttribute iedModel_ComplexArray_MHAI1_HA_frequency;
+
+
+
+#define IEDMODEL_ComplexArray (&iedModel_ComplexArray)
+#define IEDMODEL_ComplexArray_LLN0 (&iedModel_ComplexArray_LLN0)
+#define IEDMODEL_ComplexArray_LLN0_Mod (&iedModel_ComplexArray_LLN0_Mod)
+#define IEDMODEL_ComplexArray_LLN0_Mod_q (&iedModel_ComplexArray_LLN0_Mod_q)
+#define IEDMODEL_ComplexArray_LLN0_Mod_t (&iedModel_ComplexArray_LLN0_Mod_t)
+#define IEDMODEL_ComplexArray_LLN0_Mod_ctlModel (&iedModel_ComplexArray_LLN0_Mod_ctlModel)
+#define IEDMODEL_ComplexArray_LLN0_Beh (&iedModel_ComplexArray_LLN0_Beh)
+#define IEDMODEL_ComplexArray_LLN0_Beh_stVal (&iedModel_ComplexArray_LLN0_Beh_stVal)
+#define IEDMODEL_ComplexArray_LLN0_Beh_q (&iedModel_ComplexArray_LLN0_Beh_q)
+#define IEDMODEL_ComplexArray_LLN0_Beh_t (&iedModel_ComplexArray_LLN0_Beh_t)
+#define IEDMODEL_ComplexArray_LLN0_Health (&iedModel_ComplexArray_LLN0_Health)
+#define IEDMODEL_ComplexArray_LLN0_Health_stVal (&iedModel_ComplexArray_LLN0_Health_stVal)
+#define IEDMODEL_ComplexArray_LLN0_Health_q (&iedModel_ComplexArray_LLN0_Health_q)
+#define IEDMODEL_ComplexArray_LLN0_Health_t (&iedModel_ComplexArray_LLN0_Health_t)
+#define IEDMODEL_ComplexArray_LLN0_NamPlt (&iedModel_ComplexArray_LLN0_NamPlt)
+#define IEDMODEL_ComplexArray_LLN0_NamPlt_vendor (&iedModel_ComplexArray_LLN0_NamPlt_vendor)
+#define IEDMODEL_ComplexArray_LLN0_NamPlt_swRev (&iedModel_ComplexArray_LLN0_NamPlt_swRev)
+#define IEDMODEL_ComplexArray_LLN0_NamPlt_d (&iedModel_ComplexArray_LLN0_NamPlt_d)
+#define IEDMODEL_ComplexArray_LLN0_NamPlt_configRev (&iedModel_ComplexArray_LLN0_NamPlt_configRev)
+#define IEDMODEL_ComplexArray_LLN0_NamPlt_ldNs (&iedModel_ComplexArray_LLN0_NamPlt_ldNs)
+#define IEDMODEL_ComplexArray_LPHD1 (&iedModel_ComplexArray_LPHD1)
+#define IEDMODEL_ComplexArray_LPHD1_PhyNam (&iedModel_ComplexArray_LPHD1_PhyNam)
+#define IEDMODEL_ComplexArray_LPHD1_PhyNam_vendor (&iedModel_ComplexArray_LPHD1_PhyNam_vendor)
+#define IEDMODEL_ComplexArray_LPHD1_PhyHealth (&iedModel_ComplexArray_LPHD1_PhyHealth)
+#define IEDMODEL_ComplexArray_LPHD1_PhyHealth_stVal (&iedModel_ComplexArray_LPHD1_PhyHealth_stVal)
+#define IEDMODEL_ComplexArray_LPHD1_PhyHealth_q (&iedModel_ComplexArray_LPHD1_PhyHealth_q)
+#define IEDMODEL_ComplexArray_LPHD1_PhyHealth_t (&iedModel_ComplexArray_LPHD1_PhyHealth_t)
+#define IEDMODEL_ComplexArray_LPHD1_Proxy (&iedModel_ComplexArray_LPHD1_Proxy)
+#define IEDMODEL_ComplexArray_LPHD1_Proxy_stVal (&iedModel_ComplexArray_LPHD1_Proxy_stVal)
+#define IEDMODEL_ComplexArray_LPHD1_Proxy_q (&iedModel_ComplexArray_LPHD1_Proxy_q)
+#define IEDMODEL_ComplexArray_LPHD1_Proxy_t (&iedModel_ComplexArray_LPHD1_Proxy_t)
+#define IEDMODEL_ComplexArray_MHAI1 (&iedModel_ComplexArray_MHAI1)
+#define IEDMODEL_ComplexArray_MHAI1_HA (&iedModel_ComplexArray_MHAI1_HA)
+#define IEDMODEL_ComplexArray_MHAI1_HA_phsAHar (&iedModel_ComplexArray_MHAI1_HA_phsAHar)
+#define IEDMODEL_ComplexArray_MHAI1_HA_phsAHar_cVal (&iedModel_ComplexArray_MHAI1_HA_phsAHar_cVal)
+#define IEDMODEL_ComplexArray_MHAI1_HA_phsAHar_cVal_mag (&iedModel_ComplexArray_MHAI1_HA_phsAHar_cVal_mag)
+#define IEDMODEL_ComplexArray_MHAI1_HA_phsAHar_cVal_mag_f (&iedModel_ComplexArray_MHAI1_HA_phsAHar_cVal_mag_f)
+#define IEDMODEL_ComplexArray_MHAI1_HA_phsAHar_cVal_ang (&iedModel_ComplexArray_MHAI1_HA_phsAHar_cVal_ang)
+#define IEDMODEL_ComplexArray_MHAI1_HA_phsAHar_cVal_ang_f (&iedModel_ComplexArray_MHAI1_HA_phsAHar_cVal_ang_f)
+#define IEDMODEL_ComplexArray_MHAI1_HA_phsAHar_q (&iedModel_ComplexArray_MHAI1_HA_phsAHar_q)
+#define IEDMODEL_ComplexArray_MHAI1_HA_phsAHar_t (&iedModel_ComplexArray_MHAI1_HA_phsAHar_t)
+#define IEDMODEL_ComplexArray_MHAI1_HA_numHar (&iedModel_ComplexArray_MHAI1_HA_numHar)
+#define IEDMODEL_ComplexArray_MHAI1_HA_numCyc (&iedModel_ComplexArray_MHAI1_HA_numCyc)
+#define IEDMODEL_ComplexArray_MHAI1_HA_evalTm (&iedModel_ComplexArray_MHAI1_HA_evalTm)
+#define IEDMODEL_ComplexArray_MHAI1_HA_frequency (&iedModel_ComplexArray_MHAI1_HA_frequency)
+
+#endif /* STATIC_MODEL_H_ */
+

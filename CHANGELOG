@@ -1,0 +1,270 @@
+Changes to version 0.7.8
+------------------------
+- IED client: added client side support for Ed.1 compliant control (client side automatically detects if a control is ed1 or ed2 compliant)
+- Tools: SCL parser throws exceptions if names are defined multiple times in the same context
+- build support for FreeBSD (gmake and cmake)
+- server: fixed BER encoding problen in file close/delete response messages
+- server: fixed wrong reason-for-inclusion encoding for GI/integrity reports in buffered reporting
+- server: fixed endianess issue with report entry id
+- Configuration tools: fixed bug in static model generator - generator does not create RCBs for all logical devices
+- mms server: added support for vmd-scope named variables
+- mms server: support for standard MMS get-name-list behaviour (no flat address space)
+- common: refactored MmsValue string handling
+- some small extensions to C# client API
+
+Changes to version 0.7.7
+------------------------
+- client: fixed encoding bug in file close service
+- Configuration tools: fixed code generator problem with index report control blocks
+- Configuration tools: fixed problem with multiple data sets in a logical node
+- Configuration tools: configuration file generator can now handle arrays of data objects
+- Configuration toosl: configuration file generator does now properly define predefined unicode strings
+- removed some older functions of client API report setup in favor of ClientReportControlBlock
+- client side report handling does no longer require to read the data set before reports can be received 
+- added preview version of C# client API
+- added support (HAL) for Mac OS X (thanks to Michael Clausen - HES-SO Valais-Wallis)
+- some fixes in server side report handling (data set containing complex data attributes or FCDOs)
+- buffered reporting: fixed problem when buffer can only hold a single entry
+- fixed problem in function MmsValue_cloneToBuffer used by buffered reporting
+- fixed problem in GOOSE publisher (sqNum starts with 1 instead of 0)
+- added convenience methods IedServer_updateInt64AttributeValue and IedServer_updateVisibleStringAttributeValue
+- added conditional extern "C" declaration to header files for use in C++ projects
+- server now closes TCP socket after sending the ACSE release message
+
+Changes to version 0.7.6
+------------------------
+- Server: fixed bug: authenticator will be called and can accept client connection even if no authentication value is provided
+- Tools: SCL parser accepts SCL files without communication section
+- Server: fixed missing support for nested control objects (required to support IEC 61400-25-2)
+- client API: fixed some bugs in client API functions of version 0.7.5
+- client API: added support to receive CommandTermination message of enhanced control models
+- server API: new function to get access to DataAttribute references without knowing the IED name
+- some other small changes...
+
+Changes to version 0.7.5
+------------------------
+- Client API: added convenience functions to avoid direct handling with MmsValue instances
+- Added timestamp handling functions
+- Configuration tools (genmodel/genconfig) allow specification of access point and IED for SCL files containing more then one IED / access point
+- client/server: COTP layer is now more efficient
+- added server example to illustrate using arrays of data objects
+- MMS server: fixed potential dead-lock problem server side
+- IED server: solved problem that client writes didn't trigger a report
+- MMS server: fixed problem in fileDirectory response
+- server: removed optional transfer syntax field in ACSE layer to improve compatibility with some clients
+- some other smaller bug fixes ...
+
+Changes to version 0.7.4
+------------------------
+- Configurations tools: fixed bug with default values and short addresses for sub data objects and sub data attributes
+- DLL build with Visual Studio now exports functions
+- server stack is more configurable (some services can be excluded to reduce binary size)
+- improved doxygen documentation
+- Client API: control service supports originator value (orIdent/orCat)
+- Server: control service checks for valid originator value
+- fixed problem with blocking client abort function
+- Server API: helper functions for dynamic data model creation now contains support for most CDCs of IEC 61850-7-3 (Ed.2)
+- Client API: client report structure now provides access to report timestamp
+- Configuration tool: fixed data set problem with static model generator of 0.7 series
+- fixed some other minor problems ...
+
+Changes to version 0.7.3
+------------------------
+- Server/Client: MMS deleteFile and renameFile services
+- IEC client API: deleteFile ACSI service
+- fixed bug when compiling for big endian systems
+- Client/Server API: added Quality data type and handling functions
+- Server API: added IedServer_updateQuality, IedServer_updateFloatAttributeValue.. convenience functions.
+- extended cmake builder (contains some experimental configuration options)
+- added install target to cmake and make build systems. 
+
+Changes to version 0.7.2
+------------------------
+
+- Server API: added API to create data models at runtime
+- Server: added some helper functions to create common CDCs at runtime
+- Server/ Server API: added configuration file parser
+- Server: Implemented AcseAuthenticator to provide more flexible authentication and access control schemes
+- Server: added windows support for file services (both for Visual Studio and MinGW)
+- Server/Tools: Added access to data attributes by simple integer short addresses ("sAddr" SCL file attribute)
+- Tools: added configuration file generator tool
+- Added examples for using file services and dynamic model features
+- GOOSE publisher: fixed bug - sending wrong confRef field
+
+Changes to version 0.7.1.1
+--------------------------
+
+- Server: fixed long term stack memory leak present in versions 0.7 and 0.7.1
+
+Changes to version 0.7.1
+------------------------
+- Server API: Added IedServer_getFunctionalConstrainedData function to simplify handling of arrays of data objects.
+- Client API: Made connetion parameters for ACSE and lower layers fully configurable (AP-title, AEQualifier, PSel, SSel, TSel) - required to be compatible with some servers
+- MMS server: made number of concurrent TCP connections configurable by CONFIG_MAXIMUM_... define
+- MMS client/server: added MMS status services
+- MMS server: made MMS identify service optional
+- added file access abstraction to HAL
+- MMS client/server: added getFileDirectory, fileOpen, fileRead, fileClose services
+- Client/server: added GetFile ACSI service 
+
+Changes to version 0.7
+-----------------------
+- Server: added support for buffered reporting
+- Server: Bug fix: trigger reasons for reports are taken from SCL file
+- Server/Server API: added callback to perform access control on write accesses
+- Server/Server API: added default access policies to writable FCs
+- Client API: get/setGoCBValues ACSI services - new ClientGooseControlBlock class
+- Client API: added callbacks for connection losses
+- GOOSE Subscriber: API change -> use GoCBReference instead of DataSetReference to identify a GOOSE message
+- GOOSE Subscriber: Bug fix: Linux driver now switches interface to promiscuous mode.
+- MMS Client: improved buffer handling
+- MMS Client/MMS Client API: Added functions to browse and read VMD scope variables
+- Client/Client API/Server: Implemented ABORT and RELEASE services
+- Client API: Allows definition of association specific data sets
+- MMS Client API: Removed all occurances of MmsIndication type in MMS client API
+
+Changes to version 0.6
+------------------------
+- Client API: getDataSetDirectory ACSI service
+- Client API: create and delete data set ACSI services
+- Client API: added getRCBValue/setRCBValues ACSI services to improve client support for reporting
+- client side stack: improved error handling
+- Client API: Methods to allow clients track the connection state
+- Client API: Report handler provides access to reason-for-inclusion
+- Server API: added callbacks for connection events 
+- Server API: new ClientConnection object that will be handed over to some callback functions to allow connection specific reactions on events -> some callback handler signatures have changed! 
+- Added server side support for indexed RCBs
+- more efficient server side buffer handling
+- added BeagleBone LED control demo
+- DEBUG output can be switched on/off for stack components
+- and a lot of small improvements and bug fixes
+
+Changes to version 0.5.3
+------------------------
+- MMS client/server: multiple variables can be written with a single MMS write request
+- changed encoding of boolean to be compatible with buggy server devices
+- added TCP keep alive support to MMS client
+- added IedConnection_triggerGIReport function
+- some enhancements in server side report handling
+- some bug fixes
+
+Changes to version 0.5.2.1
+--------------------------
+- all examples now compile with VC++
+- CMake script supports GOOSE for Windows if winpcap is available
+
+Changes to version 0.5.2
+------------------------
+- fixed problem when compiling with MINGW
+- changed order of FC named variables according to standard
+- fixed some other compatibility problems
+- allows read access to sub-elements of control variables
+- allows write access to GoCB if the control block is not enabled
+- allows dynamically generated datasets to be used with GOOSE
+
+Changes to version 0.5.1
+------------------------
+- made code compatible with Visual Studio C++ (tested with versions 2010/2012)
+- added new build system based on cmake. It is now possible to create solution and project files for different versions ofVisual Studio as well as for other IDEs/toolchains.
+- fixed interoperability problem in ACSE layer
+- added server side support to use dynamically created data sets in reports (addSubscription service according to IEC 61400-25) 
+
+Changes to version 0.5
+----------------------
+- client support for control
+- client support for multiple outstanding requests.
+- full server support for all control models and time avtivated control
+- added client and server support for MMS identify service
+- extended build system to build shared libraries (linux shared objects and DLLs) with "make dynlib"
+- some small bug fixes in model generator tool
+- fixed bug in handling reject messages
+
+Changes to version 0.4.1
+------------------------
+- SCL parser/code generator is more tolerant
+- ubrcb supports resv handling
+- fixed problems in presentation layer
+- fixed problems when running on 64 bit systems 
+
+
+Changes to version 0.4.0.2
+--------------------------
+- removed too strict requirements in accepting session layer accept message client side.
+- fixed memory management bugs in client and server.
+
+
+Changes to version 0.4.0.1
+--------------------------
+- fixed problem in client association request message in new presentation layer code
+- MMS read access to GoCB and control objects is now more flexibel to be compatible with more clients
+
+Changes to version 0.4
+----------------------
+- GOOSE publisher for windows based on winpcap
+- GOOSE subscriber for linux and windows
+- Started to implement a IEC 61850 client API (supported functions yet: read/write variables, simple model discovery functions, support for receiving reports)
+- reimplemented presentation layer and ACSE for more efficient memory handling.
+- changed error handling in MMS client
+
+Changes to version 0.3.3.1
+--------------------------
+- fixed bug in MMS client that causes a segmentation fault when the connection to the server cannot be established.
+
+Changes to version 0.3.3
+------------------------
+- added facility to observe write access to individual data attributes.
+- added experimental GOOSE publisher code for Linux. The server also exposes configuration parameters with the GoCB.
+- Server now respects the "BufTm" parameter as set by the client or SCL file. This allows related events to be accumulated for the period of time specified by "BufTm" and reported in a single report message.
+
+Changes to version 0.3.2
+------------------------
+- added support functions for MMS time types (MMS_BINARY_TIME and MMS_UTC_TIME).
+- improved server side support for reporting. Reports can now contain TimeOfEntry values. The server now
+respects most of the options for reports set by the client.
+- added Semaphore functions to HAL API (thread.h). Semaphores are used by the server stack for internal
+synchonization.
+- fixed bugs in code that is responsible for remote access to report control blocks.
+- fixed bug in COTP code when TPDU size is larger than 1024 bytes. TPDU size can now be as large as 16384 bytes.
+- fixed bug in Hal_getTimeInMs function for Windows. Window filetime value will now be correctly converted.
+- fixed problems with read access to complex array types (arrays of constructed attribute classes).
+
+Changes to version 0.3.1
+------------------------
+- improved support for reporting - more options are possible, reason code can be included in reports
+- basic support for control model (operate) in server and server API
+- added server example for control model (server_example3)
+
+Changes to version 0.3
+----------------------
+- change server API, access to data model via handles
+- SCL file parser supports buffered and unbuffered report control blocks
+- server support for unbuffered reporting (supported triggers are GI, integrity and value update)
+- MMS client support for MMS information reports
+- MMS stack supports fragmented transmission for MMS getNameList service
+- new structure for examples directory -> each example is in its own directory and has its own Makefile
+- server support for additional ACSI types -> better support for IEC 61850 data models
+- server enforces write access restrictions to the IEC 61850 data model based on functional constraints.
+- added support for TCP keepalive
+- and a lot of bug fixes
+
+Changes to version 0.2.1
+------------------------
+- fixed bug in SCL file parser
+- Added doxygen generated documentation to source distribution
+- some bug fixes
+
+
+Changes to version 0.2
+-----------------------
+- Support for association specific data sets (named variable lists)
+- Support for permanent data sets configured in SCL file
+- fixed bug when deleting data sets
+- data sets can now contain variables of different MMS domains (IEC 61850 logical devices)
+- Changed handling of MMS GetNameList service in MMS client API
+
+Changes to version 0.1.1
+-------------------------
+- a template project and makefile to simplify getting started with the library.
+- New implementation of the model generator tool that now contains its own SCL file parser.
+
+

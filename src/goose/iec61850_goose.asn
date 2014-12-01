@@ -1,0 +1,65 @@
+IEC61850 DEFINITIONS ::= BEGIN
+
+IEC61850SpecificProtocol ::= CHOICE {
+	-- gseMngtPdu [APPLICATION 0] IMPLICIT GSEMngtPdu,
+	goosePdu [APPLICATION 1] IMPLICIT IECGoosePdu
+}
+
+IECGoosePdu ::= SEQUENCE {
+	gocbRef 			[0] IMPLICIT VisibleString,
+	timeAllowedtoLive 	[1] IMPLICIT INTEGER,
+	datSet 				[2] IMPLICIT VisibleString,
+	goID 				[3] IMPLICIT VisibleString OPTIONAL,
+	t 					[4]	IMPLICIT UtcTime,
+	stNum 				[5] IMPLICIT INTEGER,
+	sqNum 				[6] IMPLICIT INTEGER,
+	simulation 			[7] IMPLICIT BOOLEAN DEFAULT FALSE,
+	confRev 			[8] IMPLICIT INTEGER,
+	ndsCom 				[9] IMPLICIT BOOLEAN DEFAULT FALSE,
+	numDatSetEntries 	[10] IMPLICIT INTEGER,
+	allData 			[11] IMPLICIT SEQUENCE OF Data
+}
+
+Data ::= CHOICE
+	{
+	-- context tag 0 is reserved for AccessResult
+	array			[1] IMPLICIT DataSequence,
+	structure		[2] IMPLICIT DataSequence,
+	boolean			[3] IMPLICIT BOOLEAN,
+	bitstring		[4] IMPLICIT BIT STRING,
+	integer			[5] IMPLICIT INTEGER,
+	unsigned		[6] IMPLICIT INTEGER, -- shall not be negative
+	floatingpoint		[7] IMPLICIT FloatingPoint,
+	--			[8] is reserved
+	octetstring		[9] IMPLICIT OCTET STRING,
+	visiblestring		[10] IMPLICIT VisibleString,
+	generalizedtime	[11] IMPLICIT GeneralizedTime,
+	binarytime		[12] IMPLICIT TimeOfDay,
+	bcd			[13] IMPLICIT INTEGER,
+	booleanArray		[14] IMPLICIT BIT STRING,
+	--objId			[15] IMPLICIT OBJECT IDENTIFIER
+	mMSString		[16] IMPLICIT MMSString, -- unicode string
+	utctime		[17] IMPLICIT UtcTime   --UTC Time
+	}
+
+DataSequence ::= SEQUENCE OF Data
+
+FloatingPoint ::= OCTET STRING
+
+UtcTime ::= OCTET STRING 
+
+MMSString ::= UTF8String
+
+TimeOfDay ::= OCTET STRING -- (SIZE (4 | 6))
+
+END
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,85 @@
+/*! \mainpage API Reference Manual
+ *
+ * \section intro_sec Introduction
+ *
+ * This is the reference manual of libIEC61850.  
+ * libIEC61850 is an open-source (GPLv3) implementation of an IEC 61850 client and server library. It is implemented 
+ * in C to provide maximum portability. It can be used to implement IEC 61850 
+ * compatible client and server applications on embedded systems and PCs running Linux and Windows. Included 
+ * is a set of simple example applications that can be used as a starting point to implement your own IEC 61850 
+ * compatible devices or to communicate with IEC 61850 devices.
+ * There is also an open-source implementation of IEC 61850 in Java (see http://openmuc.org).
+ *
+ * The library implements the most important parts of IEC 61850 on top of the MMS mapping. It provides the MMS protocol stack 
+ * on top of TCP/IP as well as GOOSE for real-time data transfer inside of substations.
+ *
+ * The API of libIEC61850 can be divided into a client and a server part. Both parts also
+ * share common elements. For both client and server there exist two different APIs. There is a
+ * "low-level" MMS API and the more high-level IEC 61850 API. 
+ *
+ * \section iec_client_api IEC 61850 client API
+ *
+ * The IEC 61850 client API is a high-level API to access IEC 61850 compliant devices. The API provides
+ * access to MMS services that are supported by IEC 61850. It also contains a GOOSE subscriber.
+ *
+ * \section client_api MMS client API
+ * 
+ * This client API is not IEC 61850 specific but is a generic MMS client API that provides
+ * only the features required by the IEC 61850 MMS Mapping. This API can be used if low-level access
+ * to MMS services is required.
+ *
+ * \section server_api IEC 61850 Server API
+ *
+ * Server support for IEC 61850 includes the generation of the MMS device model out of the static IEC 61850
+ * data model and the generation of reports. Also the IEC 61850 server API provides support for the
+ * IEC 61850 control model. The server API is designed to add very low overhead and can be used to create very
+ * small IEC 61850 compliant MMS server applications. The server does not parse the SCD(XML) file
+ * at runtime. The SCD file will be parsed at build time by a tool that generates C code for the
+ * definition of the IEC 61850 data model and other settings of the SCD file. This will free the 
+ * server code from the burden of an XML file parser. Also the target system does not require a
+ * file system to store the SCD file. This design simplifies the usage of the server on very
+ * small embedded systems.
+ *
+ * \section mms_server_api MMS Server API
+ *
+ * The MMS server API provides a generic MMS API. There is no support for IEC 61850 specific
+ * functions in this API. If you want to implement IEC 61850 compliant devices you should use
+ * the IEC 61850 server API instead.
+ *
+ * \section hal Hardware/OS abstraction layer
+ *
+ * libIEC61850 provides a hardware/OS abstraction layer (HAL) to hide the dependencies to the
+ * underlying platform. Currently this layer consists of thread, socket and time abstractions. If 
+ * you want to port the library to a new platform you need to implement the functions defined
+ * by this API. At the moment implementations for POSIX(Linux, Mac OS X ...) and Win32 exists. This API
+ * consists of the three files <code>hal/hal.h</code>, <code>hal/socket/socket.h</code> and
+ * <code>hal/thread/thread.h</code>.
+ *
+ * \section examples Building the library and the examples
+ *
+ * To build the library you can simply execute <code>make</code> in the main folder of the
+ * source distribution. It is assumed that a GCC toolchain and the Make tool is installed.
+ * To cross-compile for another platform you can specify the TARGET variable when executing 
+ * make. To cross-compile for Windows you can call <code>make TARGET=WIN32</code>. To cross-compile
+ * for ARM Linux you can call <code>make TARGET=LINUX-ARM</code>. It is assumed that a proper
+ * GCC cross-compiler toolchain (like MinGW or arm-linux-gcc) is installed. Probably you
+ * need to adjust the toolchain prefix variables at the beginning of the Makefile.
+ *
+ * To build the examples change to the main directory of the source distribution. On the command line type
+ * <br>
+ * <code>make examples</code>
+ *
+ * This will build the examples for the host environment (currently Linux and Windows with MinGW are
+ * supported). You can also cross-compile if the target system is different from the host system.
+ * To test the server examples you can use the <code>mms_client_example</code> binary. You can
+ * also use third-party tools like Omicron IEDScout or the openIEC61850 client example to
+ * test the examples.
+ *
+ * \section Licenses
+ *
+ * libIEC61850 itself is released under the GPLv3. The asn1 code parts contain code of asn1c that is
+ * under a BSD style license (see http://lionet.info/asn1c/blog/). 
+ *
+ * You can contact the author via <a href="mailto:info@libiec61850.com">info@libiec61850.com</a> 
+ */
+
