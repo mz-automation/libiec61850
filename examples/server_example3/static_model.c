@@ -152,6 +152,7 @@ extern DataAttribute iedModel_GenericIO_GGIO1_Ind4_t;
 
 extern DataSet ds_GenericIO_LLN0_Events;
 extern DataSet ds_GenericIO_LLN0_Events2;
+extern DataSet ds_GenericIO_LLN0_Measurements;
 
 
 extern DataSetEntry ds_GenericIO_LLN0_Events_fcda0;
@@ -249,6 +250,95 @@ DataSet ds_GenericIO_LLN0_Events2 = {
   "LLN0$Events2",
   4,
   &ds_GenericIO_LLN0_Events2_fcda0,
+  &ds_GenericIO_LLN0_Measurements
+};
+
+extern DataSetEntry ds_GenericIO_LLN0_Measurements_fcda0;
+extern DataSetEntry ds_GenericIO_LLN0_Measurements_fcda1;
+extern DataSetEntry ds_GenericIO_LLN0_Measurements_fcda2;
+extern DataSetEntry ds_GenericIO_LLN0_Measurements_fcda3;
+extern DataSetEntry ds_GenericIO_LLN0_Measurements_fcda4;
+extern DataSetEntry ds_GenericIO_LLN0_Measurements_fcda5;
+extern DataSetEntry ds_GenericIO_LLN0_Measurements_fcda6;
+extern DataSetEntry ds_GenericIO_LLN0_Measurements_fcda7;
+
+DataSetEntry ds_GenericIO_LLN0_Measurements_fcda0 = {
+  "GenericIO",
+  "GGIO1$MX$AnIn1$mag$f",
+  -1,
+  NULL,
+  NULL,
+  &ds_GenericIO_LLN0_Measurements_fcda1
+};
+
+DataSetEntry ds_GenericIO_LLN0_Measurements_fcda1 = {
+  "GenericIO",
+  "GGIO1$MX$AnIn1$q",
+  -1,
+  NULL,
+  NULL,
+  &ds_GenericIO_LLN0_Measurements_fcda2
+};
+
+DataSetEntry ds_GenericIO_LLN0_Measurements_fcda2 = {
+  "GenericIO",
+  "GGIO1$MX$AnIn2$mag$f",
+  -1,
+  NULL,
+  NULL,
+  &ds_GenericIO_LLN0_Measurements_fcda3
+};
+
+DataSetEntry ds_GenericIO_LLN0_Measurements_fcda3 = {
+  "GenericIO",
+  "GGIO1$MX$AnIn2$q",
+  -1,
+  NULL,
+  NULL,
+  &ds_GenericIO_LLN0_Measurements_fcda4
+};
+
+DataSetEntry ds_GenericIO_LLN0_Measurements_fcda4 = {
+  "GenericIO",
+  "GGIO1$MX$AnIn3$mag$f",
+  -1,
+  NULL,
+  NULL,
+  &ds_GenericIO_LLN0_Measurements_fcda5
+};
+
+DataSetEntry ds_GenericIO_LLN0_Measurements_fcda5 = {
+  "GenericIO",
+  "GGIO1$MX$AnIn3$q",
+  -1,
+  NULL,
+  NULL,
+  &ds_GenericIO_LLN0_Measurements_fcda6
+};
+
+DataSetEntry ds_GenericIO_LLN0_Measurements_fcda6 = {
+  "GenericIO",
+  "GGIO1$MX$AnIn4$mag$f",
+  -1,
+  NULL,
+  NULL,
+  &ds_GenericIO_LLN0_Measurements_fcda7
+};
+
+DataSetEntry ds_GenericIO_LLN0_Measurements_fcda7 = {
+  "GenericIO",
+  "GGIO1$MX$AnIn4$q",
+  -1,
+  NULL,
+  NULL,
+  NULL
+};
+
+DataSet ds_GenericIO_LLN0_Measurements = {
+  "GenericIO",
+  "LLN0$Measurements",
+  8,
+  &ds_GenericIO_LLN0_Measurements_fcda0,
   NULL
 };
 
@@ -1977,11 +2067,17 @@ extern ReportControlBlock iedModel_GenericIO_LLN0_report0;
 extern ReportControlBlock iedModel_GenericIO_LLN0_report1;
 extern ReportControlBlock iedModel_GenericIO_LLN0_report2;
 extern ReportControlBlock iedModel_GenericIO_LLN0_report3;
+extern ReportControlBlock iedModel_GenericIO_LLN0_report4;
+extern ReportControlBlock iedModel_GenericIO_LLN0_report5;
+extern ReportControlBlock iedModel_GenericIO_LLN0_report6;
 
 ReportControlBlock iedModel_GenericIO_LLN0_report0 = {&iedModel_GenericIO_LLN0, "EventsRCB01", "Events1", false, "Events", 1, 8, 111, 50, 1000, &iedModel_GenericIO_LLN0_report1};
 ReportControlBlock iedModel_GenericIO_LLN0_report1 = {&iedModel_GenericIO_LLN0, "EventsIndexed01", "Events2", false, "Events", 1, 8, 111, 50, 1000, &iedModel_GenericIO_LLN0_report2};
 ReportControlBlock iedModel_GenericIO_LLN0_report2 = {&iedModel_GenericIO_LLN0, "EventsIndexed02", "Events2", false, "Events", 1, 8, 111, 50, 1000, &iedModel_GenericIO_LLN0_report3};
-ReportControlBlock iedModel_GenericIO_LLN0_report3 = {&iedModel_GenericIO_LLN0, "EventsIndexed03", "Events2", false, "Events", 1, 8, 111, 50, 1000, NULL};
+ReportControlBlock iedModel_GenericIO_LLN0_report3 = {&iedModel_GenericIO_LLN0, "EventsIndexed03", "Events2", false, "Events", 1, 8, 111, 50, 1000, &iedModel_GenericIO_LLN0_report4};
+ReportControlBlock iedModel_GenericIO_LLN0_report4 = {&iedModel_GenericIO_LLN0, "Measurements01", "Measurements", true, "Measurements", 1, 0, 111, 50, 1000, &iedModel_GenericIO_LLN0_report5};
+ReportControlBlock iedModel_GenericIO_LLN0_report5 = {&iedModel_GenericIO_LLN0, "Measurements02", "Measurements", true, "Measurements", 1, 0, 111, 50, 1000, &iedModel_GenericIO_LLN0_report6};
+ReportControlBlock iedModel_GenericIO_LLN0_report6 = {&iedModel_GenericIO_LLN0, "Measurements03", "Measurements", true, "Measurements", 1, 0, 111, 50, 1000, NULL};
 
 
 

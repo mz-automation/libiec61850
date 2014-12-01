@@ -53,6 +53,7 @@ ReportBuffer_create(void)
     self->memoryBlockSize = CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE;
     self->memoryBlock = (uint8_t*) GLOBAL_MALLOC(self->memoryBlockSize);
     self->reportsCount = 0;
+    self->isOverflow = false;
 
     return self;
 }
@@ -1336,7 +1337,7 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 
             goto exit_function;
         }
-        else if (strcmp(elementName, "ConfRev") == 0) {
+        else if ((strcmp(elementName, "ConfRev") == 0) || (strcmp(elementName, "SqNum") == 0)) {
             retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
             goto exit_function;
         }
@@ -1586,6 +1587,8 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI)
                     printReportId(buffer->oldestReport);
                     printf("\n");
 #endif
+
+                    buffer->isOverflow = true;
 
                     buffer->oldestReport = buffer->oldestReport->next;
 
@@ -1877,7 +1880,10 @@ sendNextReportEntry(ReportControl* self)
 
         bufOvfl->deleteValue = 0;
         bufOvfl->type = MMS_BOOLEAN;
-        bufOvfl->value.boolean = false;
+        bufOvfl->value.boolean = self->reportBuffer->isOverflow;
+
+        if (self->reportBuffer->isOverflow)
+            self->reportBuffer->isOverflow = false;
 
         if (MemAllocLinkedList_add(reportElements, bufOvfl) == NULL)
             goto return_out_of_memory;

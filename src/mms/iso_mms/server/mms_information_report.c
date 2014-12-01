@@ -230,7 +230,7 @@ MmsServerConnection_sendInformationReportVMDSpecific(MmsServerConnection* self, 
 
        accessResultSize += mmsServer_encodeAccessResult(data, NULL, 0, false);
 
-        value = LinkedList_getNext(value);
+       value = LinkedList_getNext(value);
     }
 
     listOfAccessResultSize = accessResultSize +

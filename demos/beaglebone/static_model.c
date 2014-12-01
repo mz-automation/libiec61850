@@ -4,7 +4,7 @@
  * automatically generated from beagle_demo.icd
  */
 #include <stdlib.h>
-#include "model.h"
+#include "iec61850_model.h"
 
 extern IedModel iedModel;
 static void initializeValues();
@@ -150,13 +150,16 @@ extern DataAttribute iedModel_GenericIO_GGIO1_Ind4_stVal;
 extern DataAttribute iedModel_GenericIO_GGIO1_Ind4_q;
 extern DataAttribute iedModel_GenericIO_GGIO1_Ind4_t;
 
-static DataSetEntry ds_GenericIO_LLN0_Events_fcda0;
-static DataSetEntry ds_GenericIO_LLN0_Events_fcda1;
-static DataSetEntry ds_GenericIO_LLN0_Events_fcda2;
-static DataSetEntry ds_GenericIO_LLN0_Events_fcda3;
+extern DataSet ds_GenericIO_LLN0_Events;
 
-static DataSetEntry ds_GenericIO_LLN0_Events_fcda0 = {
-  "beagleGenericIO",
+
+extern DataSetEntry ds_GenericIO_LLN0_Events_fcda0;
+extern DataSetEntry ds_GenericIO_LLN0_Events_fcda1;
+extern DataSetEntry ds_GenericIO_LLN0_Events_fcda2;
+extern DataSetEntry ds_GenericIO_LLN0_Events_fcda3;
+
+DataSetEntry ds_GenericIO_LLN0_Events_fcda0 = {
+  "GenericIO",
   "GGIO1$ST$SPCSO1$stVal",
   -1,
   NULL,
@@ -164,8 +167,8 @@ static DataSetEntry ds_GenericIO_LLN0_Events_fcda0 = {
   &ds_GenericIO_LLN0_Events_fcda1
 };
 
-static DataSetEntry ds_GenericIO_LLN0_Events_fcda1 = {
-  "beagleGenericIO",
+DataSetEntry ds_GenericIO_LLN0_Events_fcda1 = {
+  "GenericIO",
   "GGIO1$ST$SPCSO2$stVal",
   -1,
   NULL,
@@ -173,8 +176,8 @@ static DataSetEntry ds_GenericIO_LLN0_Events_fcda1 = {
   &ds_GenericIO_LLN0_Events_fcda2
 };
 
-static DataSetEntry ds_GenericIO_LLN0_Events_fcda2 = {
-  "beagleGenericIO",
+DataSetEntry ds_GenericIO_LLN0_Events_fcda2 = {
+  "GenericIO",
   "GGIO1$ST$SPCSO3$stVal",
   -1,
   NULL,
@@ -182,8 +185,8 @@ static DataSetEntry ds_GenericIO_LLN0_Events_fcda2 = {
   &ds_GenericIO_LLN0_Events_fcda3
 };
 
-static DataSetEntry ds_GenericIO_LLN0_Events_fcda3 = {
-  "beagleGenericIO",
+DataSetEntry ds_GenericIO_LLN0_Events_fcda3 = {
+  "GenericIO",
   "GGIO1$ST$DPCSO1$stVal",
   -1,
   NULL,
@@ -191,16 +194,17 @@ static DataSetEntry ds_GenericIO_LLN0_Events_fcda3 = {
   NULL
 };
 
-static DataSet ds_GenericIO_LLN0_Events = {
-  "beagleGenericIO",
+DataSet ds_GenericIO_LLN0_Events = {
+  "GenericIO",
   "LLN0$Events",
   4,
-  &ds_GenericIO_LLN0_Events_fcda0
+  &ds_GenericIO_LLN0_Events_fcda0,
+  NULL
 };
 
 LogicalDevice iedModel_GenericIO = {
     LogicalDeviceModelType,
-    "beagleGenericIO",
+    "GenericIO",
     (ModelNode*) &iedModel,
     NULL,
     (ModelNode*) &iedModel_GenericIO_LLN0
@@ -1919,21 +1923,11 @@ DataAttribute iedModel_GenericIO_GGIO1_Ind4_t = {
     NULL,
     0};
 
+extern ReportControlBlock iedModel_GenericIO_LLN0_report0;
+extern ReportControlBlock iedModel_GenericIO_LLN0_report1;
 
-static ReportControlBlock iedModel_GenericIO_LLN0_report0;
-static ReportControlBlock iedModel_GenericIO_LLN0_report1;
-
-static ReportControlBlock iedModel_GenericIO_LLN0_report0 = {&iedModel_GenericIO_LLN0, "EventsRCB", "Events1", false, "Events", 1, 16, 111, 50, 1000, &iedModel_GenericIO_LLN0_report1};
-static ReportControlBlock iedModel_GenericIO_LLN0_report1 = {&iedModel_GenericIO_LLN0, "EventsRCB2", "Events2", false, "Events", 1, 16, 111, 50, 1000, NULL};
-
-
-
-
-
-
-
-
-
+ReportControlBlock iedModel_GenericIO_LLN0_report0 = {&iedModel_GenericIO_LLN0, "EventsRCB01", "Events1", false, "Events", 1, 8, 111, 50, 1000, &iedModel_GenericIO_LLN0_report1};
+ReportControlBlock iedModel_GenericIO_LLN0_report1 = {&iedModel_GenericIO_LLN0, "EventsRCB201", "Events2", false, "Events", 1, 8, 111, 50, 1000, NULL};
 
 
 
@@ -1943,6 +1937,7 @@ IedModel iedModel = {
     &iedModel_GenericIO,
     &ds_GenericIO_LLN0_Events,
     &iedModel_GenericIO_LLN0_report0,
+    NULL,
     NULL,
     initializeValues
 };

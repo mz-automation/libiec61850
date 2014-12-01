@@ -53,6 +53,17 @@
               <FCDA ldInst="GenericIO" lnClass="GGIO" fc="ST" lnInst="1" doName="SPCSO4" />
             </DataSet>
             
+            <DataSet name="Measurements" desc="Events2">
+              <FCDA ldInst="GenericIO" lnClass="GGIO" fc="MX" lnInst="1" doName="AnIn1" daName="mag.f" />
+              <FCDA ldInst="GenericIO" lnClass="GGIO" fc="MX" lnInst="1" doName="AnIn1" daName="q" />
+			  <FCDA ldInst="GenericIO" lnClass="GGIO" fc="MX" lnInst="1" doName="AnIn2" daName="mag.f" />
+              <FCDA ldInst="GenericIO" lnClass="GGIO" fc="MX" lnInst="1" doName="AnIn2" daName="q" />
+              <FCDA ldInst="GenericIO" lnClass="GGIO" fc="MX" lnInst="1" doName="AnIn3" daName="mag.f" />
+              <FCDA ldInst="GenericIO" lnClass="GGIO" fc="MX" lnInst="1" doName="AnIn3" daName="q" />
+              <FCDA ldInst="GenericIO" lnClass="GGIO" fc="MX" lnInst="1" doName="AnIn4" daName="mag.f" />
+              <FCDA ldInst="GenericIO" lnClass="GGIO" fc="MX" lnInst="1" doName="AnIn4" daName="q" />
+            </DataSet>
+            
             <ReportControl name="EventsRCB" confRev="1" datSet="Events" rptID="Events1" buffered="false" intgPd="1000" bufTime="50">
               <TrgOps period="true" />
               <OptFields seqNum="true" timeStamp="true" dataSet="true" reasonCode="true" entryID="true" configRef="true" />
@@ -61,6 +72,12 @@
             
             <ReportControl name="EventsIndexed" indexed="true" confRev="1" datSet="Events" rptID="Events2" buffered="false" intgPd="1000" bufTime="50">
               <TrgOps period="true" />
+              <OptFields seqNum="true" timeStamp="true" dataSet="true" reasonCode="true" entryID="true" configRef="true" />
+              <RptEnabled max="3" />
+            </ReportControl>
+            
+            <ReportControl name="Measurements" indexed="true" confRev="1" datSet="Measurements" rptID="Measurements" buffered="true" intgPd="1000" bufTime="50">
+              <TrgOps period="false" />
               <OptFields seqNum="true" timeStamp="true" dataSet="true" reasonCode="true" entryID="true" configRef="true" />
               <RptEnabled max="3" />
             </ReportControl>

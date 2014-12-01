@@ -40,6 +40,7 @@ typedef struct {
     ReportBufferEntry* oldestReport;
     ReportBufferEntry* lastEnqueuedReport;
     ReportBufferEntry* nextToTransmit;
+    bool isOverflow; /* true if overflow condition is active */
 } ReportBuffer;
 
 typedef struct {
