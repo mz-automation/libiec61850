@@ -362,11 +362,9 @@ sendReport(ReportControl* self, bool isIntegrity, bool isGI)
 
 
     /* add data set value elements */
-
     DataSetEntry* dataSetEntry = self->dataSet->fcdas;
 
     int i = 0;
-
     for (i = 0; i < self->dataSet->elementCount; i++) {
         assert(dataSetEntry->value != NULL);
 
@@ -1809,8 +1807,6 @@ sendNextReportEntry(ReportControl* self)
     MmsValue* entryIdValue = MmsValue_getElement(self->rcbValues, 11);
     MmsValue_setOctetString(entryIdValue, (uint8_t*) report->entryId, 8);
 
-    //LinkedList reportElements = LinkedList_create();
-
     MemAllocLinkedList reportElements = MemAllocLinkedList_create(&ma);
 
     assert(reportElements != NULL);
@@ -1849,9 +1845,6 @@ sendNextReportEntry(ReportControl* self)
     }
 
     uint8_t* valuesInReportBuffer = currentReportBufferPos;
-
-    /* delete option fields for unsupported options */
-    MmsValue_setBitStringBit(optFlds, 5, false); /* data-reference */
 
     MmsValue_setBitStringBit(optFlds, 9, false); /* segmentation */
 
@@ -1913,6 +1906,85 @@ sendNextReportEntry(ReportControl* self)
 
     if (MemAllocLinkedList_add(reportElements, inclusionField) == NULL)
         goto return_out_of_memory;
+
+    /* add data references if selected */
+    if (MmsValue_getBitStringBit(optFlds, 5)) { /* data-reference */
+        DataSetEntry* dataSetEntry = self->dataSet->fcdas;
+
+        LogicalDevice* ld = (LogicalDevice*) self->parentLN->parent;
+
+        IedModel* iedModel = (IedModel*) ld->parent;
+
+        char* iedName = iedModel->name;
+
+        int iedNameLength = strlen(iedName);
+
+        int i = 0;
+
+        for (i = 0; i < self->dataSet->elementCount; i++) {
+          assert(dataSetEntry->value != NULL);
+
+          bool addReferenceForEntry = false;
+
+          if (report->flags > 0)
+             addReferenceForEntry = true;
+          else
+              if (MmsValue_getBitStringBit(inclusionField, i))
+                  addReferenceForEntry = true;
+
+          if (addReferenceForEntry) {
+
+              int ldNameLength =  strlen(dataSetEntry->logicalDeviceName);
+              int variableNameLength = strlen(dataSetEntry->variableName);
+
+              int refLen = iedNameLength
+                      + ldNameLength
+                      + variableNameLength + 1;
+
+              char* dataReference = (char*) MemoryAllocator_allocate(&ma, refLen);
+
+              if (dataReference == NULL) goto return_out_of_memory;
+
+              int currentPos = 0;
+
+              int j;
+
+              for (j = 0; j < iedNameLength; j++) {
+                  dataReference[currentPos++] = iedName[j];
+              }
+
+              for (j = 0; j <  ldNameLength; j++) {
+                  dataReference[currentPos] = dataSetEntry->logicalDeviceName[j];
+                  currentPos++;
+              }
+
+              dataReference[currentPos++] = '/';
+
+              for (j = 0; j < variableNameLength; j++) {
+                  dataReference[currentPos++] = dataSetEntry->variableName[j];
+              }
+
+              dataReference[currentPos] = 0;
+
+              MmsValue* dataRef = (MmsValue*) MemoryAllocator_allocate(&ma, sizeof(MmsValue));
+
+              if (dataRef == NULL) goto return_out_of_memory;
+
+              dataRef->deleteValue = 0;
+              dataRef->type = MMS_VISIBLE_STRING;
+              dataRef->value.visibleString.buf = dataReference;
+              dataRef->value.visibleString.size = refLen;
+
+
+              if (MemAllocLinkedList_add(reportElements, dataRef) == NULL)
+                  goto return_out_of_memory;
+
+          }
+
+          dataSetEntry = dataSetEntry->sibling;
+
+        }
+    }
 
     /* add data set value elements */
     int i = 0;
@@ -2017,7 +2089,6 @@ sendNextReportEntry(ReportControl* self)
     self->sqNum++;
     MmsValue_setUint16(sqNum, self->sqNum);
 
-    //LinkedList_destroyStatic(reportElements);
     assert(self->reportBuffer->nextToTransmit != self->reportBuffer->nextToTransmit->next);
 
     self->reportBuffer->nextToTransmit = self->reportBuffer->nextToTransmit->next;
