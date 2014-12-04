@@ -40,7 +40,7 @@ public class DataModelValue {
     }
     
     public DataModelValue(AttributeType type, SclType sclType, String value) throws IllegalValueException {
-    	
+
         switch (type) {
         case ENUMERATED:
     		EnumerationType enumType = (EnumerationType) sclType;

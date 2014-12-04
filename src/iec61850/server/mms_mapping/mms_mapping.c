@@ -2078,8 +2078,10 @@ MmsMapping_setConnectionIndicationHandler(MmsMapping* self, IedConnectionIndicat
 static bool
 isMemberValueRecursive(MmsValue* container, MmsValue* value)
 {
+    bool isMemberValue = false;
+
     if (container == value)
-        return true;
+        isMemberValue = true;
     else {
         if ((MmsValue_getType(container) == MMS_STRUCTURE) ||
                 (MmsValue_getType(container) == MMS_ARRAY))
@@ -2088,14 +2090,15 @@ isMemberValueRecursive(MmsValue* container, MmsValue* value)
             int compCount = MmsValue_getArraySize(container);
             int i;
             for (i = 0; i < compCount; i++) {
-                if (isMemberValueRecursive(MmsValue_getElement(container, i), value))
-                    return true;
+                if (isMemberValueRecursive(MmsValue_getElement(container, i), value)) {
+                    isMemberValue = true;
+                    break;
+                }
             }
-
         }
     }
 
-    return false;
+    return isMemberValue;
 }
 
 static bool
