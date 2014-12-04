@@ -284,8 +284,13 @@ public class DynamicModelGenerator {
            DataModelValue value = dataAttribute.getValue();
            
            /* if no value is given use default value for type if present */
-           if (value == null)
+           if (value == null) { 
         	   value = dataAttribute.getDefinition().getValue();
+        	   
+        	   if (value != null)
+	        	   if (value.getValue() == null)
+	        		   value.updateEnumOrdValue(ied.getTypeDeclarations());        	   
+           }
            
            if (value != null) {
                

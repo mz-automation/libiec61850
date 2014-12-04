@@ -26,17 +26,26 @@ package com.libiec61850.scl.model;
 import com.libiec61850.scl.types.EnumerationType;
 import com.libiec61850.scl.types.IllegalValueException;
 import com.libiec61850.scl.types.SclType;
+import com.libiec61850.scl.types.TypeDeclarations;
 
 public class DataModelValue {
 
     private Object value = null;
+    private String unknownEnumValue = null;
+    private String enumType = null;
+    
+    public DataModelValue(AttributeType type, String enumType, String value) {
+    	this.unknownEnumValue = value;
+    	this.enumType = enumType;
+    }
     
     public DataModelValue(AttributeType type, SclType sclType, String value) throws IllegalValueException {
     	
         switch (type) {
         case ENUMERATED:
-            EnumerationType enumType = (EnumerationType) sclType;
+    		EnumerationType enumType = (EnumerationType) sclType;
             this.value = (Object) (new Integer(enumType.getOrdByEnumString(value)));
+       	
             break;
         case INT8:
         case INT16:
@@ -93,6 +102,32 @@ public class DataModelValue {
     
     public Object getValue() {
         return value;
+    }
+    
+    public String getUnknownEnumValue() {
+    	return unknownEnumValue;
+    }
+    
+    public void updateEnumOrdValue(TypeDeclarations typeDecls)
+    {
+    	if (enumType != null) {
+    	
+    		System.out.println("Lookup enum type " + enumType);
+    		
+	    	SclType sclType = typeDecls.lookupType(enumType);
+	    	
+	    	if (sclType != null) {
+	        	
+		    	EnumerationType enumType = (EnumerationType) sclType;
+		        try {
+					this.value = (Object) (new Integer(enumType.getOrdByEnumString(unknownEnumValue)));
+				} catch (IllegalValueException e) {
+					e.printStackTrace();
+				}
+	    	}
+	    	else
+	    		System.out.println("  failed!");
+    	}
     }
     
     public long getLongValue() {

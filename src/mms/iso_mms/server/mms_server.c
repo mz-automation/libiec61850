@@ -151,9 +151,8 @@ MmsServer_getValueFromCache(MmsServer self, MmsDomain* domain, char* itemId)
 {
     MmsValueCache cache = (MmsValueCache) Map_getEntry(self->valueCaches, domain);
 
-    if (cache != NULL) {
+    if (cache != NULL)
         return MmsValueCache_lookupValue(cache, itemId);
-    }
 
     return NULL ;
 }
@@ -205,8 +204,11 @@ mmsServer_getValue(MmsServer self, MmsDomain* domain, char* itemId, MmsServerCon
         MmsDataAccessError accessError =
                 self->readAccessHandler(self->readAccessHandlerParameter, domain, itemId, connection);
 
-        if (accessError != DATA_ACCESS_ERROR_SUCCESS)
-            return NULL;
+        if (accessError != DATA_ACCESS_ERROR_SUCCESS) {
+            value = MmsValue_newDataAccessError(accessError);
+            MmsValue_setDeletable(value);
+            goto exit_function;
+        }
     }
 
     value = MmsServer_getValueFromCache(self, domain, itemId);
@@ -216,6 +218,7 @@ mmsServer_getValue(MmsServer self, MmsDomain* domain, char* itemId, MmsServerCon
             value = self->readHandler(self->readHandlerParameter, domain,
                     itemId, connection);
 
+exit_function:
     return value;
 }
 

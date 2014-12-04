@@ -28,9 +28,12 @@
 static int
 encodeArrayAccessResult(MmsValue* value, uint8_t* buffer, int bufPos, bool encode)
 {
-    int elementsSize = 0;
+    if (value == NULL) // TODO report internal error
+        return 0;
 
+    int elementsSize = 0;
     int i;
+    int size;
 
     int arraySize = MmsValue_getArraySize(value);
 
@@ -50,21 +53,24 @@ encodeArrayAccessResult(MmsValue* value, uint8_t* buffer, int bufPos, bool encod
             bufPos = mmsServer_encodeAccessResult(element, buffer, bufPos, true);
         }
 
-        return bufPos;
+        size = bufPos;
     }
     else {
-        int size = 1 + elementsSize + BerEncoder_determineLengthSize(elementsSize);
-
-        return size;
+        size = 1 + elementsSize + BerEncoder_determineLengthSize(elementsSize);
     }
+
+    return size;
 }
 
 static int
 encodeStructuredAccessResult(MmsValue* value, uint8_t* buffer, int bufPos, bool encode)
 {
-    int componentsSize = 0;
+    if (value == NULL) // TODO report internal error
+        return 0;
 
+    int componentsSize = 0;
     int i;
+    int size;
 
     int components = value->value.structure.size;
 
@@ -84,18 +90,21 @@ encodeStructuredAccessResult(MmsValue* value, uint8_t* buffer, int bufPos, bool 
             bufPos = mmsServer_encodeAccessResult(component, buffer, bufPos, true);
         }
 
-        return bufPos;
+        size = bufPos;
     }
     else {
-        int size = 1 + componentsSize + BerEncoder_determineLengthSize(componentsSize);
-
-        return size;
+        size = 1 + componentsSize + BerEncoder_determineLengthSize(componentsSize);
     }
+
+    return size;
 }
 
 int
 mmsServer_encodeAccessResult(MmsValue* value, uint8_t* buffer, int bufPos, bool encode)
 {
+    if (value == NULL) // TODO report internal error
+        return 0;
+
     int size;
 
     switch (value->type) {

@@ -33,6 +33,7 @@ import com.libiec61850.scl.types.TypeDeclarations;
 public class IED {
 	private String name;
 	private List<AccessPoint> accessPoints;
+	private TypeDeclarations typeDeclarations;
 
 	public IED(Node iedNode, TypeDeclarations typeDeclarations)
 			throws SclParserException {
@@ -48,6 +49,12 @@ public class IED {
 		for (Node accessPointNode : accessPointNodes) {
 			this.accessPoints.add(new AccessPoint(accessPointNode, typeDeclarations));
 		}
+		
+		this.typeDeclarations = typeDeclarations;
+	}
+	
+	public TypeDeclarations getTypeDeclarations() {
+		return typeDeclarations;
 	}
 
 	public String getName() {

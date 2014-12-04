@@ -69,16 +69,22 @@ addNamedVariableValue(MmsVariableSpecification* namedVariable, MmsServerConnecti
             int i;
 
             for (i = 0; i < componentCount; i++) {
-                char* newNameIdStr = createString(3, itemId, "$",
+                char newNameIdStr[65];
+
+                createStringInBuffer(newNameIdStr, 3, itemId, "$",
                         namedVariable->typeSpec.structure.elements[i]->name);
 
                 MmsValue* element =
                         addNamedVariableValue(namedVariable->typeSpec.structure.elements[i],
                                 connection, domain, newNameIdStr);
 
-                MmsValue_setElement(value, i, element);
+                if (element == NULL) {
+                    MmsValue_delete(value);
+                    value = NULL;
+                    break;
+                }
 
-                GLOBAL_FREEMEM(newNameIdStr);
+                MmsValue_setElement(value, i, element);
             }
         }
     }

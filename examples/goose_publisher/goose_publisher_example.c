@@ -11,6 +11,7 @@
 
 #include "mms_value.h"
 #include "goose_publisher.h"
+#include "hal_thread.h"
 
 // has to be executed as root!
 int
@@ -44,7 +45,7 @@ main(int argc, char** argv)
 	int i = 0;
 
 	for (i = 0; i < 3; i++) {
-		sleep(1);
+		Thread_sleep(1000);
 
 		if (GoosePublisher_publish(publisher, dataSetValues) == -1) {
 			printf("Error sending message!\n");

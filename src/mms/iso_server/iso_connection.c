@@ -130,21 +130,20 @@ IsoConnection_addHandleSet(const IsoConnection self, HandleSet handles)
 void
 IsoConnection_handleTcpConnection(IsoConnection self)
 {
-    assert(self->msgRcvdHandler != NULL);
-
     TpktState tpktState = CotpConnection_readToTpktBuffer(self->cotpConnection);
 
     if (tpktState == TPKT_ERROR)
         self->state = ISO_CON_STATE_STOPPED;
 
     if (tpktState != TPKT_PACKET_COMPLETE)
-        return;
+        goto exit_function;
 
     CotpIndication cotpIndication = CotpConnection_parseIncomingMessage(self->cotpConnection);
 
     switch (cotpIndication) {
     case COTP_MORE_FRAGMENTS_FOLLOW:
-        return;
+        goto exit_function;
+
     case COTP_CONNECT_INDICATION:
         if (DEBUG_ISO_SERVER)
             printf("ISO_SERVER: COTP connection indication\n");
@@ -418,6 +417,9 @@ IsoConnection_handleTcpConnection(IsoConnection self)
         self->state = ISO_CON_STATE_STOPPED;
         break;
     }
+
+exit_function:
+    return;
 }
 
 #if (CONFIG_MMS_SINGLE_THREADED == 0)
@@ -509,7 +511,7 @@ IsoConnection_sendMessage(IsoConnection self, ByteBuffer* message, bool handlerM
     if (self->state == ISO_CON_STATE_STOPPED) {
         if (DEBUG_ISO_SERVER)
             printf("DEBUG_ISO_SERVER: sendMessage: connection already stopped!\n");
-        return;
+        goto exit_error;
     }
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
@@ -554,6 +556,9 @@ IsoConnection_sendMessage(IsoConnection self, ByteBuffer* message, bool handlerM
     if (self->isInsideCallback == false)
         Semaphore_post(self->conMutex);
 #endif
+
+exit_error:
+    return;
 }
 
 void

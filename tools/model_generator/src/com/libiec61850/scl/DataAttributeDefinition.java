@@ -109,15 +109,10 @@ public class DataAttributeDefinition {
 						
 						String value = elementNode.getTextContent();
 						
-						if (attributeType != AttributeType.ENUMERATED)
-							try {
-								this.value = new DataModelValue(attributeType, null, value);
-							} catch (IllegalValueException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-					}
-	
+						if (attributeType != AttributeType.ENUMERATED) {
+							this.value = new DataModelValue(attributeType, this.type, value);
+						}
+					}	
 				}
 			}
         }   
