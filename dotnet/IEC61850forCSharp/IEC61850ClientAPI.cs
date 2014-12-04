@@ -127,10 +127,10 @@ namespace IEC61850
 			static extern void IedConnection_installConnectionClosedHandler (IntPtr self, InternalConnectionClosedHandler handler, IntPtr parameter);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr IedConnection_readDataSetValues (IntPtr self, out int error, string dataSetReference, IntPtr dataSet);
+			static extern IntPtr IedConnection_readDataSetValues (IntPtr self, out int error, [MarshalAs(UnmanagedType.LPStr)] string dataSetReference, IntPtr dataSet);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr IedConnection_createDataSet (IntPtr self, out int error, string dataSetReference, IntPtr dataSet);
+			static extern IntPtr IedConnection_createDataSet (IntPtr self, out int error, [MarshalAs(UnmanagedType.LPStr)] string dataSetReference, IntPtr dataSet);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern void IedConnection_deleteDataSet (IntPtr self, out int error, string dataSetReference);
@@ -861,7 +861,7 @@ namespace IEC61850
 				IntPtr linkedList = LinkedList_create ();
 
 				foreach (string dataSetElement in dataSetElements) {
-					IntPtr handle = System.Runtime.InteropServices.Marshal.StringToHGlobalAuto (dataSetElement);
+					IntPtr handle = System.Runtime.InteropServices.Marshal.StringToHGlobalAnsi (dataSetElement);
 
 					LinkedList_add (linkedList, handle);
 				}

@@ -46,32 +46,6 @@ public class EnumerationType extends SclType {
 	static List<EnumerationType> getDefaultEnumTypes() {
 		LinkedList<EnumerationType> defaultTypes = new LinkedList<EnumerationType>();
 		
-//		EnumerationType type = new EnumerationType("Tcmd");
-//		type.addEnumValue(new EnumerationValue("stop", 0));
-//		type.addEnumValue(new EnumerationValue("lower", 1));
-//		type.addEnumValue(new EnumerationValue("higher", 2));
-//		type.addEnumValue(new EnumerationValue("reserved", 3));
-//		
-//		defaultTypes.add(type);
-		
-		/*
-        <EnumType id="Dbpos">
-        	<EnumVal ord="0">intermediate-state</EnumVal>
-        	<EnumVal ord="1">off</EnumVal>
-        	<EnumVal ord="2">on</EnumVal>
-        	<EnumVal ord="3">bad-state</EnumVal>
-    	</EnumType>
-		 */
-		
-//		type = new EnumerationType("Dbpos");
-//		type.addEnumValue(new EnumerationValue("intermediate-state", 0));
-//		type.addEnumValue(new EnumerationValue("intermediate", 0)); /* for compatibility with older SCL files */
-//		type.addEnumValue(new EnumerationValue("off", 1));
-//		type.addEnumValue(new EnumerationValue("on", 2));
-//		type.addEnumValue(new EnumerationValue("bad-state", 3));
-//		
-//		defaultTypes.add(type);
-		
 		return defaultTypes;
 	}
 	

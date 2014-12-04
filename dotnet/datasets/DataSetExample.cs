@@ -17,7 +17,8 @@ namespace datasets
             if (args.Length > 0)
                 hostname = args[0];
             else
-                hostname = "localhost";
+                hostname = "10.0.2.2";
+                //hostname = "localhost";
 
             Console.WriteLine("Connect to " + hostname);
 
@@ -36,13 +37,13 @@ namespace datasets
 
 				List<string> dataSetElements = new List<string>();
 
-				dataSetElements.Add("IEDM1CPUBHKW/DRCS1.ModOnConn.stVal[ST]");
-				dataSetElements.Add("IEDM1CPUBHKW/DRCS1.ModOnConn.t[ST]");
+				dataSetElements.Add("simpleIOGenericIO/GGIO1.AnIn1.mag.f[MX]");
+				dataSetElements.Add("simpleIOGenericIO/GGIO1.AnIn2.mag.f[MX]");
 
-				con.CreateDataSet("IEDM1CPUBHKW/LLN0.ds1", dataSetElements);
+				con.CreateDataSet("simpleIOGenericIO/LLN0.ds1", dataSetElements);
 
 				// get the directory of the data set
-				List<string> dataSetDirectory = con.GetDataSetDirectory("IEDM1CPUBHKW/LLN0.ds1");
+				List<string> dataSetDirectory = con.GetDataSetDirectory("simpleIOGenericIO/LLN0.ds1");
 
 				foreach (string entry in dataSetDirectory)
                 {
@@ -50,7 +51,7 @@ namespace datasets
                 }
 
 				// read the values of the newly created data set
-                DataSet dataSet = con.ReadDataSetValues("IEDM1CPUBHKW/LLN0.ds1", null);
+                DataSet dataSet = con.ReadDataSetValues("simpleIOGenericIO/LLN0.ds1", null);
 
 				MmsValue dataSetValues = dataSet.GetValues();
 
@@ -62,7 +63,7 @@ namespace datasets
 
 
 				// delete the data set
-				con.DeleteDataSet("IEDM1CPUBHKW/LLN0.ds1");
+				con.DeleteDataSet("simpleIOGenericIO/LLN0.ds1");
 
                 con.Abort();
             }

@@ -45,7 +45,8 @@ namespace reporting
 			if (args.Length > 0)
 				hostname = args [0];
 			else
-				hostname = "localhost";
+				//hostname = "localhost";
+				hostname = "172.23.44.10";
 
 			Console.WriteLine ("Connect to " + hostname);
 

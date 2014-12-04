@@ -287,9 +287,9 @@ public class DynamicModelGenerator {
            if (value == null) { 
         	   value = dataAttribute.getDefinition().getValue();
         	   
-//        	   if (value != null)
-//	        	   if (value.getValue() == null)
-//	        		   value.updateEnumOrdValue(ied.getTypeDeclarations());        	   
+        	   if (value != null)
+	        	   if (value.getValue() == null)
+	        		   value.updateEnumOrdValue(ied.getTypeDeclarations());        	   
            }
            
            if (value != null) {

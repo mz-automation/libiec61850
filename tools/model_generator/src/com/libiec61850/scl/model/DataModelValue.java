@@ -111,8 +111,6 @@ public class DataModelValue {
     public void updateEnumOrdValue(TypeDeclarations typeDecls)
     {
     	if (enumType != null) {
-    	
-    		System.out.println("Lookup enum type " + enumType);
     		
 	    	SclType sclType = typeDecls.lookupType(enumType);
 	    	
