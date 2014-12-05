@@ -38,8 +38,7 @@ namespace report_new_dataset
             if (args.Length > 0)
                 hostname = args[0];
             else
-                hostname = "10.0.2.2";
-                //hostname = "localhost";
+                hostname = "localhost";
 
             Console.WriteLine("Connect to " + hostname);
 
@@ -96,7 +95,6 @@ namespace report_new_dataset
 
 				while (running) {
 					Thread.Sleep(1000);
-					Console.WriteLine("Total memory: " + GC.GetTotalMemory(false));
 				}
 
 				// delete the data set
