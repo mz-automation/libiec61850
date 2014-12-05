@@ -46,13 +46,6 @@ namespace report_new_dataset
             {
                 con.Connect(hostname, 102);
 
-                List<string> serverDirectory = con.GetServerDirectory(false);
-
-                foreach (string entry in serverDirectory)
-                {
-                    Console.WriteLine("LD: " + entry);
-                }
-
 				// create a new data set
 
 				List<string> dataSetElements = new List<string>();
@@ -62,7 +55,11 @@ namespace report_new_dataset
 				dataSetElements.Add("simpleIOGenericIO/GGIO1.AnIn3.mag.f[MX]");
 				dataSetElements.Add("simpleIOGenericIO/GGIO1.AnIn4.mag.f[MX]");
 
-				string dataSetReference = "simpleIOGenericIO/LLN0.ds1";
+				// permanent (domain specific) data set
+				//string dataSetReference = "simpleIOGenericIO/LLN0.ds1";
+
+				// temporary (association specific) data set
+				string dataSetReference = "@newds";
 
                 // Note: this function will throw an exception when a data set with the same name already exists
 				con.CreateDataSet(dataSetReference, dataSetElements);
@@ -98,7 +95,7 @@ namespace report_new_dataset
 				}
 
 				// delete the data set
-				con.DeleteDataSet("simpleIOGenericIO/LLN0.ds1");
+				con.DeleteDataSet(dataSetReference);
 
                 con.Abort();
             }

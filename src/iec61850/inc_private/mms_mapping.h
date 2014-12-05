@@ -80,6 +80,9 @@ MmsMapping_startEventWorkerThread(MmsMapping* self);
 void
 MmsMapping_stopEventWorkerThread(MmsMapping* self);
 
+DataSet*
+MmsMapping_createDataSetByNamedVariableList(MmsMapping* self, MmsNamedVariableList variableList);
+
 void
 MmsMapping_triggerReportObservers(MmsMapping* self, MmsValue* value, ReportInclusionFlag flag);
 

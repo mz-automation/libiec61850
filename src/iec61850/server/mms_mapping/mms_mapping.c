@@ -2440,8 +2440,8 @@ MmsMapping_stopEventWorkerThread(MmsMapping* self)
 }
 #endif /* (CONFIG_MMS_THREADLESS_STACK != 1) */
 
-static DataSet*
-createDataSetByNamedVariableList(MmsMapping* self, MmsNamedVariableList variableList)
+DataSet*
+MmsMapping_createDataSetByNamedVariableList(MmsMapping* self, MmsNamedVariableList variableList)
 {
     DataSet* dataSet = (DataSet*) GLOBAL_MALLOC(sizeof(DataSet));
 
@@ -2520,7 +2520,7 @@ MmsMapping_getDomainSpecificDataSet(MmsMapping* self, char* dataSetName)
     if (variableList == NULL)
         return NULL;
 
-    return createDataSetByNamedVariableList(self, variableList);
+    return MmsMapping_createDataSetByNamedVariableList(self, variableList);
 }
 
 void

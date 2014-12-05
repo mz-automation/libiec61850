@@ -141,10 +141,12 @@ deleteDataSetValuesShadowBuffer(ReportControl* self)
         }
 
         GLOBAL_FREEMEM(self->bufferedDataSetValues);
-    }
 
-    if (self->valueReferences != NULL)
-        GLOBAL_FREEMEM(self->valueReferences);
+        if (self->valueReferences != NULL)
+            GLOBAL_FREEMEM(self->valueReferences);
+
+        self->bufferedDataSetValues = NULL;
+    }
 }
 
 void
@@ -165,8 +167,11 @@ ReportControl_destroy(ReportControl* self)
     deleteDataSetValuesShadowBuffer(self);
 
     if (self->isDynamicDataSet) {
-        if (self->dataSet != NULL)
+        if (self->dataSet != NULL) {
             MmsMapping_freeDynamicallyCreatedDataSet(self->dataSet);
+            self->isDynamicDataSet = false;
+            self->dataSet = NULL;
+        }
     }
 
     if (self->buffered)
@@ -453,8 +458,10 @@ createDataSetValuesShadowBuffer(ReportControl* rc)
 }
 
 static bool
-updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet)
+updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet, MmsServerConnection* connection)
 {
+    bool success = false;
+
     MmsValue* dataSetValue;
 
     if (newDatSet != NULL)
@@ -465,8 +472,12 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet)
     char* dataSetName = MmsValue_toString(dataSetValue);
 
     if (rc->isDynamicDataSet) {
-        if (rc->dataSet != NULL)
+        if (rc->dataSet != NULL) {
+            deleteDataSetValuesShadowBuffer(rc);
             MmsMapping_freeDynamicallyCreatedDataSet(rc->dataSet);
+            rc->isDynamicDataSet = false;
+            rc->dataSet = NULL;
+        }
     }
 
     if (dataSetValue != NULL) {
@@ -475,8 +486,22 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet)
         if (dataSet == NULL) {
             dataSet = MmsMapping_getDomainSpecificDataSet(mapping, dataSetName);
 
+            if (dataSet == NULL) {
+
+                /* check if association specific data set is requested */
+                if (dataSetName[0] == '@') {
+                    if (connection != NULL) {
+                        MmsNamedVariableList mmsVariableList
+                            = MmsServerConnection_getNamedVariableList(connection, dataSetName + 1);
+
+                        if (mmsVariableList != NULL)
+                            dataSet = MmsMapping_createDataSetByNamedVariableList(mapping, mmsVariableList);
+                    }
+                }
+            }
+
             if (dataSet == NULL)
-                return false;
+                goto exit_function;
 
             rc->isDynamicDataSet = true;
 
@@ -500,10 +525,12 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet)
 
         rc->inclusionFlags = (ReportInclusionFlag*) GLOBAL_CALLOC(dataSet->elementCount, sizeof(ReportInclusionFlag));
 
-        return true;
+        success = true;
+        goto exit_function;
     }
 
-    return false;
+exit_function:
+    return success;
 }
 
 static char*
@@ -1156,7 +1183,7 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
                 printf("Activate report for client %s\n",
                         MmsServerConnection_getClientAddress(connection));
 
-            if (updateReportDataset(self, rc, NULL)) {
+            if (updateReportDataset(self, rc, NULL, connection)) {
 
                 updateOwner(rc, connection);
 
@@ -1254,7 +1281,7 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 
             if (!MmsValue_equals(datSet, value)) {
 
-                if (updateReportDataset(self, rc, value)) {
+                if (updateReportDataset(self, rc, value, connection)) {
 
                     if (rc->buffered)
                         purgeBuf(rc);
@@ -2126,7 +2153,7 @@ Reporting_activateBufferedReports(MmsMapping* self)
         ReportControl* rc = (ReportControl*) element->data;
 
         if (rc->buffered) {
-            if (updateReportDataset(self, rc, NULL))
+            if (updateReportDataset(self, rc, NULL, NULL))
                 rc->isBuffering = true;
             else
                 rc->isBuffering = false;

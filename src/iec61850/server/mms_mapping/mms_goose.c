@@ -103,8 +103,11 @@ MmsGooseControlBlock_destroy(MmsGooseControlBlock self)
         GLOBAL_FREEMEM(self->dataSetRef);
 
     if (self->dataSet != NULL) {
-        if (self->isDynamicDataSet)
+        if (self->isDynamicDataSet) {
             MmsMapping_freeDynamicallyCreatedDataSet(self->dataSet);
+            self->isDynamicDataSet = false;
+            self->dataSet = NULL;
+        }
     }
 
     MmsValue_delete(self->mmsValue);
@@ -168,8 +171,11 @@ MmsGooseControlBlock_enable(MmsGooseControlBlock self)
             GLOBAL_FREEMEM(self->dataSetRef);
 
             if (self->dataSet != NULL)
-                if (self->isDynamicDataSet)
+                if (self->isDynamicDataSet) {
                     MmsMapping_freeDynamicallyCreatedDataSet(self->dataSet);
+                    self->isDynamicDataSet = false;
+                    self->dataSet = NULL;
+                }
 
             if (self->dataSetValues != NULL) {
                 LinkedList_destroyStatic(self->dataSetValues);
