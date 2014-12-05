@@ -447,11 +447,15 @@ MmsValue_getBitStringAsIntegerBigEndian(MmsValue* self)
     uint32_t value = 0;
 
     int bitPos;
+    int i = 0;
 
     for (bitPos = (self->value.bitString.size - 1); bitPos >= 0; bitPos--) {
+
         if (MmsValue_getBitStringBit(self, bitPos)) {
-            value += (1 << bitPos);
+            value += (1 << i);
         }
+
+        i++;
     }
 
     return value;
