@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "files", "files\files.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "example3", "example3\example3.csproj", "{5E5D0FE0-DF44-48D8-A10E-1FB07D34DEA2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "report_new_dataset", "report_new_dataset\report_new_dataset.csproj", "{71485F99-2976-45E6-B73D-4946E594C15C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{5E5D0FE0-DF44-48D8-A10E-1FB07D34DEA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5E5D0FE0-DF44-48D8-A10E-1FB07D34DEA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5E5D0FE0-DF44-48D8-A10E-1FB07D34DEA2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{71485F99-2976-45E6-B73D-4946E594C15C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{71485F99-2976-45E6-B73D-4946E594C15C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{71485F99-2976-45E6-B73D-4946E594C15C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{71485F99-2976-45E6-B73D-4946E594C15C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{77127456-19B9-4D1A-AEF9-40F8D1C5695E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{77127456-19B9-4D1A-AEF9-40F8D1C5695E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{77127456-19B9-4D1A-AEF9-40F8D1C5695E}.Release|Any CPU.ActiveCfg = Release|Any CPU

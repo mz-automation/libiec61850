@@ -1838,14 +1838,14 @@ IedConnection_createDataSet(IedConnection self, IedClientError* error, const cha
 
         if (domainId == NULL) {
             *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
-            return;
+            goto exit_function;
         }
 
         int domainIdLength = strlen(domainId);
 
         if ((strlen(dataSetReference) - domainIdLength - 1) > 32) {
             *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
-            return;
+            goto exit_function;
         }
 
         char* itemIdRef = copyStringToBuffer(dataSetReference + domainIdLength + 1, itemIdBuffer);
@@ -1884,6 +1884,9 @@ IedConnection_createDataSet(IedConnection self, IedClientError* error, const cha
     LinkedList_destroyDeep(dataSetEntries, (LinkedListValueDeleteFunction) MmsVariableAccessSpecification_destroy);
 
     *error = iedConnection_mapMmsErrorToIedError(mmsError);
+
+exit_function:
+    return;
 }
 
 void
@@ -1898,14 +1901,14 @@ IedConnection_deleteDataSet(IedConnection self, IedClientError* error, const cha
     if (dataSetReference[0] != '@') {
         if (MmsMapping_getMmsDomainFromObjectReference(dataSetReference, domainId) == NULL) {
             *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
-            return;
+            goto exit_function;
         }
 
         const char* itemIdString = dataSetReference + strlen(domainId) + 1;
 
         if (strlen(itemIdString) > 32) {
             *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
-            return;
+            goto exit_function;
         }
 
         copyStringToBuffer(itemIdString, itemId);
@@ -1915,7 +1918,7 @@ IedConnection_deleteDataSet(IedConnection self, IedClientError* error, const cha
     else {
         if (dataSetReferenceLength > 33) {
             *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
-            return;
+            goto exit_function;
         }
 
         strcpy(itemId, dataSetReference + 1);
@@ -1931,6 +1934,9 @@ IedConnection_deleteDataSet(IedConnection self, IedClientError* error, const cha
         MmsConnection_deleteNamedVariableList(self->connection, &mmsError, domainId, itemId);
 
     *error = iedConnection_mapMmsErrorToIedError(mmsError);
+
+exit_function:
+    return;
 }
 
 LinkedList /* <char*> */
@@ -2047,7 +2053,7 @@ IedConnection_readDataSetValues(IedConnection self, IedClientError* error, const
         MmsValue_update(dataSetValues, dataSetVal);
     }
 
-    cleanup_and_exit:
+cleanup_and_exit:
     return dataSet;
 }
 

@@ -17,8 +17,7 @@ namespace datasets
             if (args.Length > 0)
                 hostname = args[0];
             else
-                hostname = "10.0.2.2";
-                //hostname = "localhost";
+                hostname = "localhost";
 
             Console.WriteLine("Connect to " + hostname);
 

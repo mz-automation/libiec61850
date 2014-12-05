@@ -170,6 +170,7 @@ namespace IEC61850
 			private event ReportHandler reportHandler = null;
 			private object reportHandlerParameter;
 			private bool reportHandlerInstalled = false;
+            private event InternalReportHandler internalHandler = null;
 
 			private void resetSendFlags ()
 			{
@@ -239,10 +240,12 @@ namespace IEC61850
 
                     string reportId = this.GetRptId ();
 
-//                        if ((GetRptId() == null) || (GetRptId().Length == 0))
-//                            reportId = 
+                    if (internalHandler == null)
+                    {
+                        internalHandler =  new InternalReportHandler(internalReportHandler);
+                    }
 
-					IedConnection_installReportHandler (this.connection, objectReference, reportId, new InternalReportHandler(internalReportHandler), IntPtr.Zero);
+                    IedConnection_installReportHandler(this.connection, objectReference, reportId, internalHandler, IntPtr.Zero);
 					reportHandlerInstalled = true;
 				}
 			}
