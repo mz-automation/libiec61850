@@ -2,6 +2,13 @@ Changes to version 0.8.3
 ------------------------
 - client: better support for optional report elements
 - server: fixed some minor problems with reporting
+- C# API: Fixed report handler and other problems in C# wrapper layer
+- C# API: Fixed problem with data set creation
+- server: support for association specific data sets in reports
+- server: added bufOvl support for buffered reporting
+- server: added support for data-references in reports
+- server: fixed server crash when client tries to read structured SE variables
+- SCL: configuration file creator supports default values from SCL type templates
 
 Changes to version 0.8.2
 ------------------------
