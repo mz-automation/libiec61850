@@ -771,8 +771,8 @@ MmsConnection_create()
     self->isoParameters = IsoConnectionParameters_create();
 
     /* Load default values for connection parameters */
-	TSelector selector1 = { 2, { 0, 0 } };
-	TSelector selector2 = { 2, { 0, 0 } };
+	TSelector selector1 = { 2, { 0, 1 } };
+	TSelector selector2 = { 2, { 0, 1 } };
 
     IsoConnectionParameters_setLocalAddresses(self->isoParameters, 1, 1, selector1);
     IsoConnectionParameters_setLocalApTitle(self->isoParameters, "1.1.1.999", 12);

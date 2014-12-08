@@ -1,7 +1,7 @@
 /*
  *  ied_connection.c
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013, 2014 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -1868,6 +1868,11 @@ IedConnection_createDataSet(IedConnection self, IedClientError* error, const cha
         MmsVariableAccessSpecification* dataSetEntry =
                 MmsMapping_ObjectReferenceToVariableAccessSpec((char*) dataSetElement->data);
 
+        if (dataSetEntry == NULL) {
+            *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
+            goto cleanup_list;
+        }
+
         LinkedList_add(dataSetEntries, (void*) dataSetEntry);
 
         dataSetElement = LinkedList_getNext(dataSetElement);
@@ -1880,10 +1885,11 @@ IedConnection_createDataSet(IedConnection self, IedClientError* error, const cha
         MmsConnection_defineNamedVariableList(self->connection, &mmsError,
                 domainId, itemId, dataSetEntries);
 
+    *error = iedConnection_mapMmsErrorToIedError(mmsError);
+
+cleanup_list:
     /* delete list and all elements */
     LinkedList_destroyDeep(dataSetEntries, (LinkedListValueDeleteFunction) MmsVariableAccessSpecification_destroy);
-
-    *error = iedConnection_mapMmsErrorToIedError(mmsError);
 
 exit_function:
     return;

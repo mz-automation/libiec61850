@@ -60,7 +60,6 @@ namespace datasets
 					Console.WriteLine("  DS value: " + value + " type: " + value.GetType());
 				}
 
-
 				// delete the data set
 				con.DeleteDataSet("simpleIOGenericIO/LLN0.ds1");
 
@@ -68,7 +67,7 @@ namespace datasets
             }
             catch (IedConnectionException e)
             {
-				Console.WriteLine(e.Message);
+				Console.WriteLine(e.Message + " reason: " + e.GetIedClientError().ToString());
            }
 
         }

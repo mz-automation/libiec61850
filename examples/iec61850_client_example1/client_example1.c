@@ -65,8 +65,9 @@ int main(int argc, char** argv) {
 
         if (error != IED_ERROR_OK)
             printf("failed to write simpleIOGenericIO/GGIO1.NamPlt.vendor!\n");
+        else
+            MmsValue_delete(value);
 
-        MmsValue_delete(value);
 
         /* read data set */
         ClientDataSet clientDataSet = IedConnection_readDataSetValues(con, &error, "simpleIOGenericIO/LLN0.Events", NULL);
@@ -76,10 +77,15 @@ int main(int argc, char** argv) {
 
         /* Read RCB values */
         ClientReportControlBlock rcb =
-                IedConnection_getRCBValues(con, &error, "simpleIOGenericIO/LLN0.RP.EventsRCB", NULL);
+                IedConnection_getRCBValues(con, &error, "simpleIOGenericIO/LLN0.RP.EventsRCB01", NULL);
+
+
+        bool rptEna = ClientReportControlBlock_getRptEna(rcb);
+
+        printf("RptEna = %i\n", rptEna);
 
         /* Install handler for reports */
-        IedConnection_installReportHandler(con, "simpleIOGenericIO/LLN0.RP.EventsRCB", ClientReportControlBlock_getRptId(rcb),
+        IedConnection_installReportHandler(con, "simpleIOGenericIO/LLN0.RP.EventsRCB01", ClientReportControlBlock_getRptId(rcb),
                 reportCallbackFunction, NULL);
 
         /* Set trigger options and enable report */
@@ -110,6 +116,8 @@ int main(int argc, char** argv) {
             printf("disable reporting failed (code: %i)\n", error);
 
         ClientDataSet_destroy(clientDataSet);
+
+        close_connection:
 
         IedConnection_close(con);
     }

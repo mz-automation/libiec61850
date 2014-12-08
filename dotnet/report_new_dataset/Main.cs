@@ -101,7 +101,7 @@ namespace report_new_dataset
             }
             catch (IedConnectionException e)
             {
-				Console.WriteLine(e.Message);
+				Console.WriteLine(e.Message + " reason: " + e.GetIedClientError().ToString());
             }
 
         }
