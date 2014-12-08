@@ -495,3 +495,5 @@ EXPORTS
     ClientReport_getConfRev
     ClientReport_hasBufOvfl
     ClientReport_hasDataReference
+    LibIEC61850_getVersionString
+    

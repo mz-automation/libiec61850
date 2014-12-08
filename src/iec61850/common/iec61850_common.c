@@ -343,3 +343,9 @@ Timestamp_getTimeInMs(Timestamp* self)
 
     return (uint64_t) msVal;
 }
+
+char*
+LibIEC61850_getVersionString()
+{
+    return CONFIG_DEFAULT_MMS_REVISION;
+}

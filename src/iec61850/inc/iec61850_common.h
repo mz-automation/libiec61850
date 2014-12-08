@@ -354,6 +354,14 @@ Timestamp_setTimeInSeconds(Timestamp* self, uint32_t secondsSinceEpoch);
 void
 Timestamp_setTimeInMilliseconds(Timestamp* self, uint64_t millisSinceEpoch);
 
+/**
+ * \brief Get the version of the library as string
+ *
+ * \return the version of the library (e.g. "0.8.3")
+ */
+char*
+LibIEC61850_getVersionString(void);
+
 
 /** @} */
 

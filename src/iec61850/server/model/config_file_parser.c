@@ -235,7 +235,9 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
                         indendation = 4;
 
                     }
+#if (CONFIG_IEC61850_SETTING_GROUPS == 1)
                     else if (StringUtils_startsWith((char*) lineBuffer, "SG")) {
+
                         if (strcmp(currentLN->name, "LLN0") != 0)
                             goto exit_error;
 
@@ -249,6 +251,8 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
 
                         SettingGroupControlBlock_create(currentLN, actSG, numOfSGs);
                     }
+#endif /* (CONFIG_IEC61850_SETTING_GROUPS == 1) */
+
                     else
                         goto exit_error;
 

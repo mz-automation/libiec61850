@@ -79,6 +79,7 @@ connectionHandler (IedServer self, ClientConnection connection, bool connected, 
 int
 main(int argc, char** argv)
 {
+    printf("Using libIEC61850 version %s\n", LibIEC61850_getVersionString());
 
     iedServer = IedServer_create(&iedModel);
 
