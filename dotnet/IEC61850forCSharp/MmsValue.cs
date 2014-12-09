@@ -47,6 +47,7 @@ namespace IEC61850
 			static extern double MmsValue_toDouble (IntPtr self);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
 			static extern bool MmsValue_getBoolean (IntPtr self);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
@@ -62,6 +63,7 @@ namespace IEC61850
 			static extern void MmsValue_setBitStringBit(IntPtr self, int bitPos, bool value);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
 			static extern bool MmsValue_getBitStringBit(IntPtr self, int bitPos);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
@@ -131,6 +133,7 @@ namespace IEC61850
 			static extern IntPtr MmsValue_getOctetStringBuffer(IntPtr self);
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
             static extern bool MmsValue_equals(IntPtr self, IntPtr otherValue);
 
 

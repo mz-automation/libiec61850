@@ -56,6 +56,7 @@ namespace IEC61850
 			static extern void IedConnection_setRCBValues (IntPtr connection, out int error, IntPtr rcb, UInt32 parametersMask, bool singleRequest);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
 			static extern bool ClientReportControlBlock_isBuffered (IntPtr self);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
@@ -65,12 +66,14 @@ namespace IEC61850
 			static extern void ClientReportControlBlock_setRptId (IntPtr self, string rptId);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
 			static extern bool ClientReportControlBlock_getRptEna (IntPtr self);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern void ClientReportControlBlock_setRptEna (IntPtr self, bool rptEna);
+            static extern void ClientReportControlBlock_setRptEna(IntPtr self, bool rptEna);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
 			static extern bool ClientReportControlBlock_getResv (IntPtr self);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
@@ -113,12 +116,14 @@ namespace IEC61850
 			static extern void ClientReportControlBlock_setIntgPd (IntPtr self, UInt32 intgPd);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
 			static extern bool ClientReportControlBlock_getGI (IntPtr self);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern void ClientReportControlBlock_setGI (IntPtr self, bool gi);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
 			static extern bool ClientReportControlBlock_getPurgeBuf (IntPtr self);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]

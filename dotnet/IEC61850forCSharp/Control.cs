@@ -100,8 +100,6 @@ namespace IEC61850
         /// </summary>
 		public class ControlObject
 		{
-
-
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			private static extern LastApplErrorInternal ControlObjectClient_getLastApplError(IntPtr self);
 
@@ -115,15 +113,19 @@ namespace IEC61850
 			private static extern int ControlObjectClient_getControlModel(IntPtr self);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
 			private static extern bool ControlObjectClient_operate(IntPtr self, IntPtr ctlVal, UInt64 operTime);
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
             private static extern bool ControlObjectClient_select(IntPtr self);
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
             private static extern bool ControlObjectClient_selectWithValue(IntPtr self, IntPtr ctlVal);
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
             private static extern bool ControlObjectClient_cancel(IntPtr self);
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]

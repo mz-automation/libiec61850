@@ -34,6 +34,7 @@
 #include "mms_value_internal.h"
 
 #define DEFAULT_CONNECTION_TIMEOUT 10000
+#define DATA_SET_MAX_NAME_LENGTH 64 /* is 32 according to standard! */
 
 typedef struct sICLogicalDevice
 {
@@ -1827,7 +1828,7 @@ IedConnection_createDataSet(IedConnection self, IedClientError* error, const cha
 {
 
     char domainIdBuffer[65];
-    char itemIdBuffer[33]; /* maximum data set name = 32 chars */
+    char itemIdBuffer[DATA_SET_MAX_NAME_LENGTH + 1];
 
     const char* domainId;
     const char* itemId;
@@ -1899,7 +1900,7 @@ void
 IedConnection_deleteDataSet(IedConnection self, IedClientError* error, const char* dataSetReference)
 {
     char domainId[65];
-    char itemId[33];
+    char itemId[DATA_SET_MAX_NAME_LENGTH + 1];
     bool isAssociationSpecific = false;
 
     int dataSetReferenceLength = strlen(dataSetReference);
@@ -1912,7 +1913,7 @@ IedConnection_deleteDataSet(IedConnection self, IedClientError* error, const cha
 
         const char* itemIdString = dataSetReference + strlen(domainId) + 1;
 
-        if (strlen(itemIdString) > 32) {
+        if (strlen(itemIdString) > DATA_SET_MAX_NAME_LENGTH) {
             *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
             goto exit_function;
         }
@@ -1953,7 +1954,7 @@ IedConnection_getDataSetDirectory(IedConnection self, IedClientError* error, con
     LinkedList dataSetMembers = NULL;
 
     char domainIdBuffer[65];
-    char itemIdBuffer[129];
+    char itemIdBuffer[DATA_SET_MAX_NAME_LENGTH + 1];
 
     const char* domainId = NULL;
     const char* itemId = NULL;
@@ -1962,9 +1963,22 @@ IedConnection_getDataSetDirectory(IedConnection self, IedClientError* error, con
 
     if (dataSetReference[0] != '@') {
         domainId = MmsMapping_getMmsDomainFromObjectReference(dataSetReference, domainIdBuffer);
-        char* itemIdRef = copyStringToBuffer(dataSetReference + strlen(domainId) + 1, itemIdBuffer);
-        StringUtils_replace(itemIdRef, '.', '$');
-        itemId = itemIdRef;
+
+        if (domainId == NULL) {
+            *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
+            goto exit_function;
+        }
+
+        const char* itemIdRef = dataSetReference + strlen(domainId) + 1;
+
+        if (strlen(itemIdRef) > DATA_SET_MAX_NAME_LENGTH) {
+            *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
+            goto exit_function;
+        }
+
+        char* itemIdRefInBuffer = copyStringToBuffer(itemIdRef, itemIdBuffer);
+        StringUtils_replace(itemIdRefInBuffer, '.', '$');
+        itemId = itemIdRefInBuffer;
     }
     else {
         itemId = dataSetReference + 1;
@@ -2006,6 +2020,7 @@ IedConnection_getDataSetDirectory(IedConnection self, IedClientError* error, con
 
     *error = iedConnection_mapMmsErrorToIedError(mmsError);
 
+exit_function:
     return dataSetMembers;
 }
 
@@ -2014,7 +2029,7 @@ IedConnection_readDataSetValues(IedConnection self, IedClientError* error, const
         ClientDataSet dataSet)
 {
     char domainIdBuffer[65];
-    char itemIdBuffer[129];
+    char itemIdBuffer[DATA_SET_MAX_NAME_LENGTH + 1];
 
     const char* domainId = NULL;
     const char* itemId = NULL;
@@ -2023,7 +2038,21 @@ IedConnection_readDataSetValues(IedConnection self, IedClientError* error, const
 
     if (dataSetReference[0] != '@') {
         domainId = MmsMapping_getMmsDomainFromObjectReference(dataSetReference, domainIdBuffer);
-        char* itemIdRef = copyStringToBuffer(dataSetReference + strlen(domainId) + 1, itemIdBuffer);
+
+        if (domainId == NULL) {
+            *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
+            goto exit_function;
+        }
+
+        const char* itemIdRefOrig = dataSetReference + strlen(domainId) + 1;
+
+        if (strlen(itemIdRefOrig) > DATA_SET_MAX_NAME_LENGTH) {
+            *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
+            goto exit_function;
+        }
+
+        char* itemIdRef = copyStringToBuffer(itemIdRefOrig, itemIdBuffer);
+
         StringUtils_replace(itemIdRef, '.', '$');
         itemId = itemIdRef;
     }
@@ -2045,7 +2074,7 @@ IedConnection_readDataSetValues(IedConnection self, IedClientError* error, const
 
     if (dataSetVal == NULL) {
         *error = iedConnection_mapMmsErrorToIedError(mmsError);
-        goto cleanup_and_exit;
+        goto exit_function;
     }
     else
         *error = IED_ERROR_OK;
@@ -2059,7 +2088,7 @@ IedConnection_readDataSetValues(IedConnection self, IedClientError* error, const
         MmsValue_update(dataSetValues, dataSetVal);
     }
 
-cleanup_and_exit:
+exit_function:
     return dataSet;
 }
 

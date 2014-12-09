@@ -55,6 +55,7 @@ namespace IEC61850
 			static extern float MmsValue_toFloat (IntPtr self);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
 			static extern bool MmsValue_getBoolean (IntPtr self);
 
 			[DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
@@ -136,7 +137,7 @@ namespace IEC61850
 			static extern void IedConnection_deleteDataSet (IntPtr self, out int error, string dataSetReference);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr IedConnection_getDataSetDirectory (IntPtr self, out int error, string dataSetReference, out bool isDeletable);
+            static extern IntPtr IedConnection_getDataSetDirectory(IntPtr self, out int error, string dataSetReference, [MarshalAs(UnmanagedType.I1)] out bool isDeletable);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern IntPtr IedConnection_getMmsConnection (IntPtr self);
@@ -894,11 +895,31 @@ namespace IEC61850
 					throw new IedConnectionException ("Failed to delete data set", error);
 			}
 
+            /// <summary>
+            /// Get the directory of the data set.
+            /// </summary>
+            /// <description>This function returns a list of object references with appended functional constraints (FC) of the data set elemenents.</description>
+            /// <param name="dataSetReference">The object reference of the data set</param>
+            /// <returns>the list of object references</returns>
+            /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
+            public List<string> GetDataSetDirectory(string dataSetReference)
+            {
+                bool isDeletable;
+
+                return GetDataSetDirectory(dataSetReference, out isDeletable);
+            }
+
+            /// <summary>
+            /// Get the directory of the data set.
+            /// </summary>
+            /// <description>This function returns a list of object references with appended functional constraints (FC) of the data set elemenents.</description>
+            /// <param name="dataSetReference">The object reference of the data set</param>
+            /// <param name="isDeletable">Indication if this data set is permanent or deletable.</param>
+            /// <returns>the list of object references</returns>
 			/// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
-			public List<string> GetDataSetDirectory (string dataSetReference)
+			public List<string> GetDataSetDirectory (string dataSetReference, out bool isDeletable)
 			{
 				int error;
-				bool isDeletable;
 
 				IntPtr linkedList = IedConnection_getDataSetDirectory (connection, out error, dataSetReference, out isDeletable);
 
