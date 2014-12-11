@@ -116,6 +116,8 @@ namespace IEC61850
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern IntPtr ClientReport_getRptId(IntPtr self);
 
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr ClientReport_getDataReference(IntPtr self, int elementIndex);
 
 			private IntPtr self;
 
@@ -244,6 +246,25 @@ namespace IEC61850
                 IntPtr rcbRef = ClientReport_getRcbReference(self);
 
                 return Marshal.PtrToStringAnsi (rcbRef);
+            }
+
+            /// <summary>
+            /// Gets the data reference for the specified data set element
+            /// </summary>
+            /// <returns>
+            /// The data reference or null if the data reference is not available
+            /// </returns>
+            /// <param name='index'>
+            /// index of the data set element starting with 0
+            /// </param>
+            public string GetDataReference (int index)
+            {
+                IntPtr dataRef = ClientReport_getDataReference(self, index);
+
+                if (dataRef != IntPtr.Zero)
+                    return Marshal.PtrToStringAnsi(dataRef);
+                else
+                    return null;
             }
 
             public string GetRptId ()

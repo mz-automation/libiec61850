@@ -28,6 +28,7 @@
 #include "iec61850_client.h"
 #include "mms_client_connection.h"
 #include "ied_connection_private.h"
+#include "mms_mapping.h"
 
 #include <stdio.h>
 
@@ -38,9 +39,6 @@
 #ifndef DEBUG_IED_CLIENT
 #define DEBUG_IED_CLIENT 0
 #endif
-
-char*
-MmsMapping_getMmsDomainFromObjectReference(const char* objectReference, char* buffer);
 
 struct sControlObjectClient
 {
@@ -110,11 +108,16 @@ resetLastApplError(ControlObjectClient self)
 ControlObjectClient
 ControlObjectClient_create(char* objectReference, IedConnection connection)
 {
+    ControlObjectClient self = NULL;
+
     /* request control model from server */
     char domainId[65];
-    char itemId[129];
+    char itemId[65];
 
-    MmsMapping_getMmsDomainFromObjectReference(objectReference, domainId);
+    char* domainName = MmsMapping_getMmsDomainFromObjectReference(objectReference, domainId);
+
+    if (domainName == NULL)
+        goto exit_function;
 
     convertToMmsAndInsertFC(itemId, objectReference + strlen(domainId) + 1, "CF");
 
@@ -128,7 +131,8 @@ ControlObjectClient_create(char* objectReference, IedConnection connection)
     if (ctlModel == NULL) {
         if (DEBUG_IED_CLIENT)
             printf("IED_CLIENT: ControlObjectClient_create: failed to get ctlModel from server\n");
-        return NULL;
+
+        goto exit_function;
     }
 
     int ctlModelVal = MmsValue_toUint32(ctlModel);
@@ -143,7 +147,8 @@ ControlObjectClient_create(char* objectReference, IedConnection connection)
     if (dataDirectory == NULL) {
         if (DEBUG_IED_CLIENT)
             printf("IED_CLIENT: ControlObjectClient_create: failed to get data directory of control object\n");
-        return NULL;
+
+        goto exit_function;
     }
 
     /* check what control elements are available */
@@ -165,7 +170,8 @@ ControlObjectClient_create(char* objectReference, IedConnection connection)
     if (hasOper == false) {
         if (DEBUG_IED_CLIENT)
             printf("IED_CLIENT: control is missing required element \"Oper\"\n");
-        return NULL;
+
+        goto exit_function;
     }
 
     /* check for time activated control */
@@ -174,6 +180,9 @@ ControlObjectClient_create(char* objectReference, IedConnection connection)
     strcpy(itemId, objectReference);
     strcat(itemId, ".Oper");
     dataDirectory = IedConnection_getDataDirectory(connection, &error, itemId);
+
+    if (dataDirectory == NULL)
+        goto exit_function;
 
     element = LinkedList_getNext(dataDirectory);
 
@@ -196,11 +205,15 @@ ControlObjectClient_create(char* objectReference, IedConnection connection)
 
     if (oper == NULL) {
         if (DEBUG_IED_CLIENT)
-            printf("reading Oper failed!\n");
-        return NULL;
+            printf("IED_CLIENT: reading \"Oper\" failed!\n");
+
+        goto exit_function;
     }
 
-    ControlObjectClient self = (ControlObjectClient) GLOBAL_CALLOC(1, sizeof(struct sControlObjectClient));
+    self = (ControlObjectClient) GLOBAL_CALLOC(1, sizeof(struct sControlObjectClient));
+
+    if (self == NULL)
+        goto exit_function;
 
     self->objectReference = copyString(objectReference);
     self->connection = connection;
@@ -229,23 +242,27 @@ ControlObjectClient_create(char* objectReference, IedConnection connection)
 
     private_IedConnection_addControlClient(connection, self);
 
+exit_function:
     return self;
 }
 
 void
 ControlObjectClient_destroy(ControlObjectClient self)
 {
-    GLOBAL_FREEMEM(self->objectReference);
+    if (self != NULL)
+    {
+        GLOBAL_FREEMEM(self->objectReference);
 
-    private_IedConnection_removeControlClient(self->connection, self);
+        private_IedConnection_removeControlClient(self->connection, self);
 
-    if (self->ctlVal != NULL)
-        MmsValue_delete(self->ctlVal);
+        if (self->ctlVal != NULL)
+            MmsValue_delete(self->ctlVal);
 
-    if (self->orIdent != NULL)
-        GLOBAL_FREEMEM(self->orIdent);
+        if (self->orIdent != NULL)
+            GLOBAL_FREEMEM(self->orIdent);
 
-    GLOBAL_FREEMEM(self);
+        GLOBAL_FREEMEM(self);
+    }
 }
 
 void
@@ -282,7 +299,15 @@ static MmsValue*
 createOriginValue(ControlObjectClient self)
 {
     MmsValue* origin = MmsValue_createEmptyStructure(2);
+
+    if (origin == NULL)
+        goto exit_function;
+
     MmsValue* orCat = MmsValue_newIntegerFromInt16(self->orCat);
+
+    if (orCat == NULL)
+        goto cleanup_on_error;
+
     MmsValue_setElement(origin, 0, orCat);
 
     MmsValue* orIdent;
@@ -290,19 +315,42 @@ createOriginValue(ControlObjectClient self)
     if (self->orIdent != NULL) {
         int octetStringLen = strlen(self->orIdent);
         orIdent = MmsValue_newOctetString(0, octetStringLen);
+
+        if (orIdent == NULL)
+            goto cleanup_on_error;
+
         MmsValue_setOctetString(orIdent, (uint8_t*) self->orIdent, octetStringLen);
     }
     else
         orIdent = MmsValue_newOctetString(0, 0);
 
+    if (orIdent == NULL)
+        goto cleanup_on_error;
+
     MmsValue_setElement(origin, 1, orIdent);
 
+    goto exit_function;
+
+cleanup_on_error:
+    MmsValue_delete(origin);
+    origin = NULL;
+
+exit_function:
     return origin;
 }
 
 bool
 ControlObjectClient_operate(ControlObjectClient self, MmsValue* ctlVal, uint64_t operTime)
 {
+    bool success = false;
+
+    if (ctlVal == NULL) {
+        if (DEBUG_IED_CLIENT)
+            printf("IED_CLIENT: operate - (ctlVal == NULL)!\n");
+
+        goto exit_function;
+    }
+
     resetLastApplError(self);
 
     MmsValue* operParameters;
@@ -337,6 +385,7 @@ ControlObjectClient_operate(ControlObjectClient self, MmsValue* ctlVal, uint64_t
         ctlTime = MmsValue_newBinaryTime(false);
         MmsValue_setBinaryTime(ctlTime, timestamp);
     }
+
     MmsValue_setElement(operParameters, index++, ctlTime);
 
     MmsValue* ctlTest = MmsValue_newBoolean(self->test);
@@ -348,7 +397,7 @@ ControlObjectClient_operate(ControlObjectClient self, MmsValue* ctlVal, uint64_t
     MmsValue_setElement(operParameters, index++, check);
 
     char domainId[65];
-    char itemId[130];
+    char itemId[65];
 
     MmsMapping_getMmsDomainFromObjectReference(self->objectReference, domainId);
 
@@ -370,10 +419,14 @@ ControlObjectClient_operate(ControlObjectClient self, MmsValue* ctlVal, uint64_t
     if (mmsError != MMS_ERROR_NONE) {
         if (DEBUG_IED_CLIENT)
             printf("IED_CLIENT: operate failed!\n");
-        return false;
+
+        goto exit_function;
     }
 
-    return true;
+    success = true;
+
+exit_function:
+    return success;
 }
 
 bool
@@ -382,13 +435,13 @@ ControlObjectClient_selectWithValue(ControlObjectClient self, MmsValue* ctlVal)
     resetLastApplError(self);
 
     char domainId[65];
-    char itemId[130];
+    char itemId[65];
 
     MmsMapping_getMmsDomainFromObjectReference(self->objectReference, domainId);
 
     convertToMmsAndInsertFC(itemId, self->objectReference + strlen(domainId) + 1, "CO");
 
-    strncat(itemId, "$SBOw", 129);
+    strncat(itemId, "$SBOw", 64);
 
     if (DEBUG_IED_CLIENT)
         printf("IED_CLIENT: select with value: %s/%s\n", domainId, itemId);
@@ -459,13 +512,13 @@ ControlObjectClient_select(ControlObjectClient self)
     resetLastApplError(self);
 
     char domainId[65];
-    char itemId[130];
+    char itemId[65];
 
     MmsMapping_getMmsDomainFromObjectReference(self->objectReference, domainId);
 
     convertToMmsAndInsertFC(itemId, self->objectReference + strlen(domainId) + 1, "CO");
 
-    strncat(itemId, "$SBO", 129);
+    strncat(itemId, "$SBO", 64);
 
     if (DEBUG_IED_CLIENT)
         printf("IED_CLIENT: select: %s/%s\n", domainId, itemId);
@@ -480,7 +533,7 @@ ControlObjectClient_select(ControlObjectClient self)
     if (value == NULL) {
         if (DEBUG_IED_CLIENT)
             printf("IED_CLIENT: select: read SBO failed!\n");
-        return false;
+        goto exit_function;
     }
 
     char sboReference[130];
@@ -509,6 +562,7 @@ ControlObjectClient_select(ControlObjectClient self)
 
     MmsValue_delete(value);
 
+exit_function:
     return selected;
 }
 
@@ -555,13 +609,13 @@ ControlObjectClient_cancel(ControlObjectClient self)
     MmsValue_setElement(cancelParameters, index++, ctlTest);
 
     char domainId[65];
-    char itemId[130];
+    char itemId[65];
 
     MmsMapping_getMmsDomainFromObjectReference(self->objectReference, domainId);
 
     convertToMmsAndInsertFC(itemId, self->objectReference + strlen(domainId) + 1, "CO");
 
-    strncat(itemId, "$Cancel", 129);
+    strncat(itemId, "$Cancel", 64);
 
     if (DEBUG_IED_CLIENT)
         printf("IED_CLIENT: cancel: %s/%s\n", domainId, itemId);
@@ -611,5 +665,5 @@ void
 private_ControlObjectClient_invokeCommandTerminationHandler(ControlObjectClient self)
 {
     if (self->commandTerminationHandler != NULL)
-             self->commandTerminationHandler(self->commandTerminaionHandlerParameter, self);
+        self->commandTerminationHandler(self->commandTerminaionHandlerParameter, self);
 }

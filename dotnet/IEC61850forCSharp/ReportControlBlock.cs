@@ -474,6 +474,26 @@ namespace IEC61850
 			}
 
             /// <summary>
+            /// Get the purgeBuf flag of the report control block
+            /// </summary>
+            /// <returns>the prugeBuf value</returns>
+            public bool GetPurgeBuf ()
+            {
+                return ClientReportControlBlock_getPurgeBuf(self);
+            }
+
+            /// <summary>
+            /// Set the purgeBuf flag of the report control block
+            /// </summary>
+            /// <description>This is only for buffered RCBs. If set to true the report buffer of a buffered RCB will be cleaned.</description>
+            /// <param name="purgeBuf">set to true to flush report buffer</param>
+            public void SetPurgeBuf (bool purgeBuf)
+            {
+                ClientReportControlBlock_setPurgeBuf(self, purgeBuf);
+                flagPurgeBuf = true;
+            }
+
+            /// <summary>
             /// Gets the buffer time.
             /// </summary>
             /// <returns>

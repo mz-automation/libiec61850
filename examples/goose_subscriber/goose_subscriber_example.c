@@ -42,7 +42,7 @@ gooseListener(GooseSubscriber subscriber, void* parameter)
 int
 main(int argc, char** argv)
 {
-    MmsValue* dataSetValues = MmsValue_createEmtpyArray(4);
+    MmsValue* dataSetValues = MmsValue_createEmptyArray(4);
 
     int i;
     for (i = 0; i < 4; i++) {

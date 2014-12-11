@@ -111,8 +111,18 @@ MmsValue_getElement(MmsValue* array, int index);
  * \return a newly created empty array instance
  */
 MmsValue*
-MmsValue_createEmtpyArray(int size);
+MmsValue_createEmptyArray(int size);
 
+/**
+ * \brief Set an element of a complex type
+ *
+ * NOTE: If the element already exists it will simply be replaced by the provided new value.
+ * The caller is responsible to free the replaced value.
+ *
+ * \param complexValue MmsValue instance to operate on. Has to be of a type MMS_STRUCTURE or MMS_ARRAY
+ * \param the index of the element to set/replace
+ * \param elementValue the (new) value of the element
+ */
 void
 MmsValue_setElement(MmsValue* complexValue, int index, MmsValue* elementValue);
 

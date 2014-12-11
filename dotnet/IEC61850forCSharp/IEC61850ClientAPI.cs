@@ -250,7 +250,7 @@ namespace IEC61850
 			/// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
 			public ControlObject CreateControlObject (string objectReference)
 			{
-				ControlObject controlObject = new ControlObject (objectReference, connection);
+				ControlObject controlObject = new ControlObject (objectReference, connection, this);
 
 				return controlObject;
 			}

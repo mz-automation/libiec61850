@@ -431,9 +431,12 @@ IedConnection_getRCBValues(IedConnection self, IedClientError* error, char* rcbR
     ClientReportControlBlock returnRcb = updateRcb;
 
     char domainId[65];
-    char itemId[129];
+    char itemId[65];
 
-    MmsMapping_getMmsDomainFromObjectReference(rcbReference, domainId);
+    char* domainName = MmsMapping_getMmsDomainFromObjectReference(rcbReference, domainId);
+
+    if (domainName == NULL)
+        return NULL;
 
     strcpy(itemId, rcbReference + strlen(domainId) + 1);
 

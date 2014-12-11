@@ -2236,10 +2236,11 @@ char*
 MmsMapping_getMmsDomainFromObjectReference(const char* objectReference, char* buffer)
 {
     int objRefLength = strlen(objectReference);
+    char* domainName = NULL;
 
     /* check for object reference size limit VISIBLESTRING129 */
     if (objRefLength > 129)
-        return NULL;
+        goto exit_function;
 
     /* check if LD name is present */
     int i;
@@ -2251,12 +2252,10 @@ MmsMapping_getMmsDomainFromObjectReference(const char* objectReference, char* bu
 
     /* check for LD name limit (=64 characters) */
     if (i > 64)
-        return NULL;
+        goto exit_function;
 
     if (i == objRefLength)
-        return NULL;
-
-    char* domainName;
+        goto exit_function;
 
     if (buffer == NULL)
         domainName = (char*) GLOBAL_MALLOC(i + 1);
@@ -2270,6 +2269,7 @@ MmsMapping_getMmsDomainFromObjectReference(const char* objectReference, char* bu
 
     domainName[j] = 0;
 
+exit_function:
     return domainName;
 }
 
@@ -2548,6 +2548,9 @@ MmsMapping_ObjectReferenceToVariableAccessSpec(char* objectReference)
         return NULL;
 
     int domainIdLen = domainIdEnd - objectReference;
+
+    if (domainIdLen > 64)
+        return NULL;
 
     char* fcStart = strchr(objectReference, '[');
 

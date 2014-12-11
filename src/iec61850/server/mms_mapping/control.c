@@ -430,18 +430,35 @@ ControlObject_create(IedServer iedServer, MmsDomain* domain, char* lnName, char*
 {
     ControlObject* self = (ControlObject*) GLOBAL_CALLOC(1, sizeof(ControlObject));
 
+    if (self == NULL)
+        goto exit_function;
+
     if (DEBUG_IED_SERVER)
         printf("create control object for LD: %s, LN: %s, name: %s\n", domain->domainName, lnName, name);
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     self->stateLock = Semaphore_create(1);
+
+    if (self->stateLock == NULL) {
+        ControlObject_destroy(self);
+        self = NULL;
+        goto exit_function;
+    }
 #endif
 
     self->name = copyString(name);
+
+    if (self->name == NULL) {
+        ControlObject_destroy(self);
+        self = NULL;
+        goto exit_function;
+    }
+
     self->lnName = lnName;
     self->mmsDomain = domain;
     self->iedServer = iedServer;
 
+exit_function:
     return self;
 }
 
@@ -475,10 +492,12 @@ ControlObject_destroy(ControlObject* self)
     if (self->origin != NULL)
         MmsValue_delete(self->origin);
 
-    free(self->name);
+    if (self->name != NULL)
+        free(self->name);
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
-    Semaphore_destroy(self->stateLock);
+    if (self->stateLock != NULL)
+        Semaphore_destroy(self->stateLock);
 #endif
 
     free(self);
@@ -762,7 +781,8 @@ getCancelParameterOrigin(MmsValue* operParameters)
 static MmsValue*
 getOperParameterTest(MmsValue* operParameters)
 {
-    if (MmsValue_getType(operParameters) == MMS_STRUCTURE) {
+    if (MmsValue_getType(operParameters) == MMS_STRUCTURE)
+    {
         if (MmsValue_getArraySize(operParameters) == 7)
             return MmsValue_getElement(operParameters, 5);
         else if (MmsValue_getArraySize(operParameters) == 6)
@@ -775,7 +795,8 @@ getOperParameterTest(MmsValue* operParameters)
 static MmsValue*
 getOperParameterCheck(MmsValue* operParameters)
 {
-    if (MmsValue_getType(operParameters) == MMS_STRUCTURE) {
+    if (MmsValue_getType(operParameters) == MMS_STRUCTURE)
+    {
         if (MmsValue_getArraySize(operParameters) == 7)
             return MmsValue_getElement(operParameters, 6);
         else if (MmsValue_getArraySize(operParameters) == 6)
@@ -788,7 +809,8 @@ getOperParameterCheck(MmsValue* operParameters)
 static MmsValue*
 getOperParameterOrigin(MmsValue* operParameters)
 {
-    if (MmsValue_getType(operParameters) == MMS_STRUCTURE) {
+    if (MmsValue_getType(operParameters) == MMS_STRUCTURE)
+    {
         if (MmsValue_getArraySize(operParameters) == 7)
             return MmsValue_getElement(operParameters, 2);
         else if (MmsValue_getArraySize(operParameters) == 6)
@@ -803,7 +825,8 @@ getOperParameterTime(MmsValue* operParameters)
 {
     MmsValue* timeParameter = NULL;
 
-    if (MmsValue_getType(operParameters) == MMS_STRUCTURE) {
+    if (MmsValue_getType(operParameters) == MMS_STRUCTURE)
+    {
         if (MmsValue_getArraySize(operParameters) == 7)
             timeParameter = MmsValue_getElement(operParameters, 4);
         else if (MmsValue_getArraySize(operParameters) == 6)
@@ -820,7 +843,7 @@ getOperParameterTime(MmsValue* operParameters)
 void
 ControlObject_sendCommandTerminationPositive(ControlObject* self)
 {
-    char itemId[130];
+    char itemId[68]; /* 64 characters + space for FC + separator + string terminator */
 
     createStringInBuffer(itemId, 4, self->lnName, "$CO$", self->name, "$Oper");
 
@@ -837,13 +860,16 @@ ControlObject_sendCommandTerminationPositive(ControlObject* self)
     LinkedList varSpecList = LinkedList_create();
     LinkedList values = LinkedList_create();
 
-    LinkedList_add(varSpecList, &varSpec);
-    LinkedList_add(values, self->oper);
+    if ((varSpecList != NULL) && (values != NULL))
+    {
+        LinkedList_add(varSpecList, &varSpec);
+        LinkedList_add(values, self->oper);
 
-    MmsServerConnection_sendInformationReportListOfVariables(self->mmsConnection, varSpecList, values, false);
+        MmsServerConnection_sendInformationReportListOfVariables(self->mmsConnection, varSpecList, values, false);
 
-    LinkedList_destroyStatic(varSpecList);
-    LinkedList_destroyStatic(values);
+        LinkedList_destroyStatic(varSpecList);
+        LinkedList_destroyStatic(values);
+    }
 }
 
 void

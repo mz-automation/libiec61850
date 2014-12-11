@@ -35,10 +35,12 @@
 #endif
 
 #if (CONFIG_IEC61850_CONTROL_SERVICE == 1)
-static void
+static bool
 createControlObjects(IedServer self, MmsDomain* domain, char* lnName, MmsVariableSpecification* typeSpec, char* namePrefix)
 {
     MmsMapping* mapping = self->mmsMapping;
+
+    bool success = false;
 
     if (typeSpec->type == MMS_STRUCTURE) {
         int coCount = typeSpec->typeSpec.structure.elementCount;
@@ -98,9 +100,18 @@ createControlObjects(IedServer self, MmsDomain* domain, char* lnName, MmsVariabl
 
                     if (DEBUG_IED_SERVER)
                         printf("IED_SERVER: create control object LN:%s DO:%s\n", lnName, objectName);
+
                     ControlObject* controlObject = ControlObject_create(self, domain, lnName, objectName);
 
+                    if (controlObject == NULL)
+                        goto exit_function;
+
                     MmsValue* structure = MmsValue_newDefaultValue(coSpec);
+
+                    if (structure == NULL) {
+                        ControlObject_destroy(controlObject);
+                        goto exit_function;
+                    }
 
                     ControlObject_setMmsValue(controlObject, structure);
 
@@ -123,18 +134,27 @@ createControlObjects(IedServer self, MmsDomain* domain, char* lnName, MmsVariabl
                 }
                 else {
                     strcat(objectName, coSpec->name);
-                    createControlObjects(self, domain, lnName, coSpec, objectName);
+
+                    if (createControlObjects(self, domain, lnName, coSpec, objectName) == false)
+                        goto exit_function;
                 }
             }
         }
     }
+
+    success = true;
+
+exit_function:
+    return success;
 }
 #endif /* (CONFIG_IEC61850_CONTROL_SERVICE == 1) */
 
-static void
+static bool
 createMmsServerCache(IedServer self)
 {
     assert(self != NULL);
+
+    bool success = false;
 
     int domain = 0;
 
@@ -149,7 +169,7 @@ createMmsServerCache(IedServer self)
             char* lnName = logicalDevice->namedVariables[i]->name;
 
             if (DEBUG_IED_SERVER)
-                printf("ied_server.c: Insert into cache %s - %s\n", logicalDevice->domainName, lnName);
+                printf("IED_SERVER: Insert into cache %s - %s\n", logicalDevice->domainName, lnName);
 
             int fcCount = logicalDevice->namedVariables[i]->typeSpec.structure.elementCount;
             int j;
@@ -168,11 +188,17 @@ createMmsServerCache(IedServer self)
 
                 if ((strcmp(fcName, "BR") != 0) && (strcmp(fcName, "RP") != 0)
                         && (strcmp(fcName, "GO") != 0))
-                        {
-
+                {
                     char* variableName = createString(3, lnName, "$", fcName);
 
+                    if (variableName == NULL) goto exit_function;
+
                     MmsValue* defaultValue = MmsValue_newDefaultValue(fcSpec);
+
+                    if (defaultValue == NULL) {
+                        GLOBAL_FREEMEM(variableName);
+                        goto exit_function;
+                    }
 
                     if (DEBUG_IED_SERVER)
                         printf("ied_server.c: Insert into cache %s - %s\n", logicalDevice->domainName, variableName);
@@ -184,6 +210,11 @@ createMmsServerCache(IedServer self)
             }
         }
     }
+
+    success = true;
+
+exit_function:
+    return success;
 }
 
 static void

@@ -321,7 +321,7 @@ parseAllDataUnknownValue(GooseSubscriber self, uint8_t* buffer, int allDataLengt
     if (isStructure)
         dataSetValues = MmsValue_createEmptyStructure(elementIndex);
     else
-        dataSetValues = MmsValue_createEmtpyArray(elementIndex);
+        dataSetValues = MmsValue_createEmptyArray(elementIndex);
 
     elementIndex = 0;
     bufPos = 0;

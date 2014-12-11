@@ -37,13 +37,19 @@ namespace IEC61850
         /// <summary>
         /// Control model
         /// </summary>
-		public enum ControlModel {
-			CONTROL_MODEL_STATUS_ONLY = 0,
-			CONTROL_MODEL_DIRECT_NORMAL = 1,
-			CONTROL_MODEL_SBO_NORMAL = 2,
-			CONTROL_MODEL_DIRECT_ENHANCED = 3,
-			CONTROL_MODEL_SBO_ENHANCED = 4
-		}
+        public enum ControlModel
+        {
+            /** status only */
+            STATUS_ONLY = 0,
+            /** direct with normal security */
+            DIRECT_NORMAL= 1,
+            /** select before operate (SBO) with normal security */
+            SBO_NORMAL = 2,
+            /** direct with enhanced security */
+            DIRECT_ENHANCED = 3,
+            /** select before operate (SBO) with enhanced security */
+            SBO_ENHANCED = 4
+        }
 
         /// <summary>
         /// Originator category
@@ -146,6 +152,7 @@ namespace IEC61850
 
 			public delegate void CommandTerminationHandler (Object parameter, ControlObject controlObject);
 
+            private IedConnection iedConnection;
 			private IntPtr controlObject;
 
 			private CommandTerminationHandler commandTerminationHandler = null;
@@ -158,8 +165,10 @@ namespace IEC61850
 			}
 
 
-			internal ControlObject (string objectReference, IntPtr connection)
+			internal ControlObject (string objectReference, IntPtr connection, IedConnection iedConnection)
 			{
+                this.iedConnection = iedConnection;
+
 				this.controlObject = ControlObjectClient_create(objectReference, connection);
 
 				if (this.controlObject == System.IntPtr.Zero)

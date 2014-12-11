@@ -215,7 +215,7 @@ alternateArrayAccess(MmsServerConnection* connection,
 			    else
 			        value = MmsValue_getElement(arrayValue, index);
 			else {
-				value = MmsValue_createEmtpyArray(numberOfElements);
+				value = MmsValue_createEmptyArray(numberOfElements);
 
 				MmsValue_setDeletable(value);
 

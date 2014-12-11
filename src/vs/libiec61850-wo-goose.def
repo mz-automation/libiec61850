@@ -303,7 +303,7 @@ EXPORTS
     MmsValue_cloneToBuffer @697
     MmsValue_createArray @698
     MmsValue_createEmptyStructure @699
-    MmsValue_createEmtpyArray @700
+    MmsValue_createEmptyArray @700
     MmsValue_delete @701
     MmsValue_deleteAllBitStringBits @702
     MmsValue_deleteConditional @703
@@ -472,3 +472,13 @@ EXPORTS
     ClientReport_hasBufOvfl
     ClientReport_hasDataReference
     LibIEC61850_getVersionString
+    ClientReport_getDataReference
+    IedServer_getBooleanAttributeValue
+    IedServer_getInt32AttributeValue
+    IedServer_getInt64AttributeValue
+    IedServer_getUInt32AttributeValue
+    IedServer_getFloatAttributeValue
+    IedServer_getUTCTimeAttributeValue
+    IedServer_getBitStringAttributeValue
+    IedServer_getStringAttributeValue
+

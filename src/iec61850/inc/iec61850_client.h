@@ -727,8 +727,31 @@ ClientReport_getConfRev(ClientReport self);
 bool
 ClientReport_hasBufOvfl(ClientReport self);
 
+/**
+ * \brief Indicates if the report contains data references for the reported data set members
+ *
+ * \param self the ClientReport instance
+ *
+ * \returns true if the report contains data-references, false otherwise
+ */
 bool
 ClientReport_hasDataReference(ClientReport self);
+
+/**
+ * \brief get the data-reference of the element of the report data set
+ *
+ * This function will only return a non-NULL value if the received report contains data-references.
+ * This can be determined by the ClientReport_hasDataReference function.
+ * NOTE: The returned string is allocated and hold by the ClientReport instance and is only valid until
+ * the ClientReport instance exists!
+ *
+ * \param self the ClientReport instance
+ * \param elementIndex  index of the data set element (starting with 0)
+ *
+ * \param the data reference as string as provided by the report or NULL if the data reference is not available
+ */
+const char*
+ClientReport_getDataReference(ClientReport self, int elementIndex);
 
 
 /**
@@ -1215,9 +1238,19 @@ typedef enum {
 } ControlModel;
 
 
-
+/**
+ * \brief Create a new client control object
+ *
+ * A client control object is used to handle all client side aspects of a controllable
+ * data object.
+ *
+ * \param objectReference the reference of the controllable data object
+ * \param connection the connection instance where the control object has to be reached
+ *
+ * \return the newly created instance or NULL if the creation failed
+ */
 ControlObjectClient
-ControlObjectClient_create(char* dataAttributeReference, IedConnection connection);
+ControlObjectClient_create(char* objectReference, IedConnection connection);
 
 void
 ControlObjectClient_destroy(ControlObjectClient self);

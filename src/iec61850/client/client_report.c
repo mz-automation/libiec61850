@@ -197,7 +197,23 @@ ClientReport_hasDataReference(ClientReport self)
     return self->hasDataReference;
 }
 
+const char*
+ClientReport_getDataReference(ClientReport self, int elementIndex)
+{
+    char* dataReference = NULL;
 
+    if (self->dataReferences != NULL) {
+        MmsValue* dataRefValue = MmsValue_getElement(self->dataReferences, elementIndex);
+
+        if (dataRefValue != NULL) {
+            if (MmsValue_getType(dataRefValue) == MMS_VISIBLE_STRING) {
+                return MmsValue_toString(dataRefValue);
+            }
+        }
+    }
+
+    return dataReference;
+}
 
 MmsValue*
 ClientReport_getDataSetValues(ClientReport self)
@@ -324,7 +340,7 @@ private_IedConnection_handleReport(IedConnection self, MmsValue* value)
     }
 
     if (matchingReport == NULL)
-        return;
+        goto exit_function;
 
     matchingReport->hasSequenceNumber = false;
     matchingReport->hasTimestamp = false;
@@ -427,19 +443,38 @@ private_IedConnection_handleReport(IedConnection self, MmsValue* value)
                 dataSetSize);
 
     int valueIndex = inclusionIndex + 1;
-    /* skip data-reference fields */
+
+    /* parse data-references if required */
     if (MmsValue_getBitStringBit(optFlds, 5) == true) {
-//        if (matchingReport->dataReferences == NULL)
-//            matchingReport->dataReferences = MmsValue_createEmptyArray(dataSetSize);
+
+        if (matchingReport->dataReferences == NULL)
+            matchingReport->dataReferences = MmsValue_createEmptyArray(dataSetSize);
+
         matchingReport->hasDataReference = true;
 
-        valueIndex += includedElements;
+        int elementIndex;
+
+        for (elementIndex = 0; elementIndex < dataSetSize; elementIndex++) {
+            if (MmsValue_getBitStringBit(inclusion, elementIndex) == true) {
+                MmsValue* dataSetElement = MmsValue_getElement(matchingReport->dataReferences, elementIndex);
+
+                if (dataSetElement == NULL) {
+                    dataSetElement = MmsValue_clone(MmsValue_getElement(value, valueIndex));
+
+                    MmsValue_setElement(matchingReport->dataReferences, elementIndex, dataSetElement);
+                }
+
+                valueIndex += 1;
+            }
+        }
+
+        // valueIndex += includedElements;
     }
 
     int i;
 
     if (matchingReport->dataSetValues == NULL) {
-        matchingReport->dataSetValues = MmsValue_createEmtpyArray(dataSetSize);
+        matchingReport->dataSetValues = MmsValue_createEmptyArray(dataSetSize);
         matchingReport->reasonForInclusion = (ReasonForInclusion*)
                 GLOBAL_MALLOC(sizeof(ReasonForInclusion) * dataSetSize);
 
@@ -498,8 +533,11 @@ private_IedConnection_handleReport(IedConnection self, MmsValue* value)
             matchingReport->reasonForInclusion[i] = REASON_NOT_INCLUDED;
         }
     }
-    if (matchingReport->callback != NULL) {
+
+    if (matchingReport->callback != NULL)
         matchingReport->callback(matchingReport->callbackParameter, matchingReport);
-    }
+
+exit_function:
+    return;
 }
 

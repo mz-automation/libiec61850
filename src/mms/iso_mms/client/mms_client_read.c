@@ -43,7 +43,7 @@ mmsClient_parseListOfAccessResults(AccessResult_t** accessResultList, int listSi
     int elementCount = listSize;
 
     if ((elementCount > 1) || createArray)
-        valueList = MmsValue_createEmtpyArray(elementCount);
+        valueList = MmsValue_createEmptyArray(elementCount);
 
     int i = 0;
 
