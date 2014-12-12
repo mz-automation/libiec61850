@@ -11,7 +11,7 @@ project(libiec61850)
 
 set(LIB_VERSION_MAJOR "0")
 set(LIB_VERSION_MINOR "8")
-set(LIB_VERSION_PATCH "3")
+set(LIB_VERSION_PATCH "4")
 
 # feature checks
 include(CheckLibraryExists)

@@ -328,27 +328,119 @@ IedServer_unlockDataModel(IedServer self);
 MmsValue*
 IedServer_getAttributeValue(IedServer self, DataAttribute* dataAttribute);
 
+/**
+ * \brief Get data attribute value of a boolean data attribute
+ *
+ * Get the value of a data attribute of type MMS_BOOLEAN. If the data attribute
+ * is of a different type the returned value is undefined.
+ *
+ * \param self the instance of IedServer to operate on.
+ * \param dataAttribute the data attribute handle
+ *
+ * \return true or false
+ */
 bool
 IedServer_getBooleanAttributeValue(IedServer self, DataAttribute* dataAttribute);
 
+/**
+ * \brief Get data attribute value of an integer data attribute
+ *
+ * Get the value of a data attribute of type MMS_INTEGER. If the data attribute
+ * is of a different type the returned value is undefined.
+ *
+ * \param self the instance of IedServer to operate on.
+ * \param dataAttribute the data attribute handle
+ *
+ * \return the value as 32 bit integer
+ */
 int32_t
 IedServer_getInt32AttributeValue(IedServer self, DataAttribute* dataAttribute);
 
+/**
+ * \brief Get data attribute value of an integer data attribute
+ *
+ * Get the value of a data attribute of type MMS_INTEGER. If the data attribute
+ * is of a different type the returned value is undefined.
+ *
+ * \param self the instance of IedServer to operate on.
+ * \param dataAttribute the data attribute handle
+ *
+ * \return the value as 64 bit integer
+ */
 int64_t
 IedServer_getInt64AttributeValue(IedServer self, DataAttribute* dataAttribute);
 
+/**
+ * \brief Get data attribute value of an unsigned integer data attribute
+ *
+ * Get the value of a data attribute of type MMS_UNSIGNED. If the data attribute
+ * is of a different type the returned value is undefined.
+ *
+ * \param self the instance of IedServer to operate on.
+ * \param dataAttribute the data attribute handle
+ *
+ * \return the value as 32 bit unsigned integer
+ */
 uint32_t
 IedServer_getUInt32AttributeValue(IedServer self, DataAttribute* dataAttribute);
 
+/**
+ * \brief Get data attribute value of a floating point data attribute
+ *
+ * Get the value of a data attribute of type MMS_FLOAT. If the data attribute
+ * is of a different type the returned value is undefined.
+ *
+ * \param self the instance of IedServer to operate on.
+ * \param dataAttribute the data attribute handle
+ *
+ * \return the value as 32 bit float
+ */
 float
 IedServer_getFloatAttributeValue(IedServer self, DataAttribute* dataAttribute);
 
+/**
+ * \brief Get data attribute value of a UTC time data attribute
+ *
+ * Get the value of a data attribute of type MMS_UTC_TIME. If the data attribute
+ * is of a different type the returned value is undefined.
+ *
+ * \param self the instance of IedServer to operate on.
+ * \param dataAttribute the data attribute handle
+ *
+ * \return the value as 32 bit float
+ */
 uint64_t
 IedServer_getUTCTimeAttributeValue(IedServer self, DataAttribute* dataAttribute);
 
+/**
+ * \brief Get data attribute value of a bit string data attribute as integer value
+ *
+ * Get the value of a data attribute of type MMS_BIT_STRING. If the data attribute
+ * is of a different type the returned value is undefined.
+ * NOTE: The returned integer is determined by calculating the according the follwing
+ * formula: bit0^0 + bit1^1 + ... + bitn^n
+ * It is not specified in the IEC 61850 specifications how a bit string can be interpreted
+ * as an integer. Therefore this function has to be used with care.
+ *
+ * \param self the instance of IedServer to operate on.
+ * \param dataAttribute the data attribute handle
+ *
+ * \return the value a 32 bit integer.
+ */
 uint32_t
 IedServer_getBitStringAttributeValue(IedServer self, DataAttribute* dataAttribute);
 
+/**
+ * \brief Get data attribute value of a string type data attribute
+ *
+ * Get the value of a data attribute of type MMS_STRING or MMS_VISIBLE_STRING. If the data attribute
+ * is of a different type the returned value is undefined.
+ *
+ * \param self the instance of IedServer to operate on.
+ * \param dataAttribute the data attribute handle
+ *
+ * \return the value as a C string (null terminated string)
+ */
 char*
 IedServer_getStringAttributeValue(IedServer self, DataAttribute* dataAttribute);
 
