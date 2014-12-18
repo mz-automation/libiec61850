@@ -328,7 +328,6 @@ sendReport(ReportControl* self, bool isIntegrity, bool isGI)
                 if (self->inclusionFlags[i] != REPORT_CONTROL_NONE)
                     addReferenceForEntry = true;
 
-
             if (addReferenceForEntry) {
 
                 char dataReference[130];
