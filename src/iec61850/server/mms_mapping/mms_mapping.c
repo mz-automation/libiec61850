@@ -1602,9 +1602,14 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
                     if ((val > 0) && (val <= sg->sgcb->numOfSGs)) {
 
                         if (sg->editSgChangedHandler != NULL) {
+
+                            printf("has editSgChangedHandler\n");
+
                             if (sg->editSgChangedHandler(sg->editSgChangedHandlerParameter, sg->sgcb,
                                     (uint8_t) val, (ClientConnection) connection))
                             {
+                                printf("handler returned true\n");
+
                                 sg->sgcb->editSG = val;
                                 sg->editingClient = (ClientConnection) connection;
 

@@ -58,7 +58,6 @@ readLine(FileHandle fileHandle, uint8_t* buffer, int maxSize)
         }
     }
 
-
     if (fileReadResult > 0) {
         while (fileReadResult > 0) {
             fileReadResult = FileSystem_readFile(fileHandle, buffer + bufPos, 1);
@@ -238,8 +237,12 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
 #if (CONFIG_IEC61850_SETTING_GROUPS == 1)
                     else if (StringUtils_startsWith((char*) lineBuffer, "SG")) {
 
-                        if (strcmp(currentLN->name, "LLN0") != 0)
+                        if (strcmp(currentLN->name, "LLN0") != 0) {
+                            if (DEBUG_IED_SERVER)
+                                printf("Setting group control is not defined in LLN0\n");
+
                             goto exit_error;
+                        }
 
                         int actSG;
                         int numOfSGs;
@@ -253,8 +256,12 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
                     }
 #endif /* (CONFIG_IEC61850_SETTING_GROUPS == 1) */
 
-                    else
+                    else {
+                      //  if (DEBUG_IED_SERVER)
+                            printf("IED_SERVER: Unknown identifier (%s)\n", lineBuffer);
+
                         goto exit_error;
+                    }
 
                 }
                 else if (indendation > 3) {
@@ -423,8 +430,8 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
     return model;
 
 exit_error:
-    if (DEBUG_IED_SERVER)
-        printf("error parsing line %i\n", currentLine);
+   // if (DEBUG_IED_SERVER)
+        printf("IED_SERVER: error parsing line %i (indendation level = %i)\n", currentLine, indendation);
     IedModel_destroy(model);
     return NULL;
 }

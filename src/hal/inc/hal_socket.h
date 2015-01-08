@@ -82,7 +82,7 @@ Handleset_addSocket(HandleSet self, const Socket sock);
  * The function shall return -1 if a socket error occures.
  *
  *  \param self the HandleSet instance
- *  \oaram timeout in milliseconds (ms)
+ *  \param timeout in milliseconds (ms)
  */
 int
 Handleset_waitReady(HandleSet self, unsigned int timeoutMs);

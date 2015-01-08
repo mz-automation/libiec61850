@@ -115,7 +115,7 @@ struct sControlObject
 };
 
 void
-ControlObject_sendLastApplError(ControlObject* self, MmsServerConnection* connection, char* ctlVariable, int error,
+ControlObject_sendLastApplError(ControlObject* self, MmsServerConnection* connection, int error,
         ControlAddCause addCause, MmsValue* ctlNum, MmsValue* origin, bool handlerMode);
 
 void
@@ -361,7 +361,7 @@ executeStateMachine:
 
         if (dynamicCheckResult == CONTROL_RESULT_FAILED) {
             if (isTimeActivatedControl) {
-                ControlObject_sendLastApplError(self, self->mmsConnection, "Oper",
+                ControlObject_sendLastApplError(self, self->mmsConnection,
                         CONTROL_ERROR_NO_ERROR, ADD_CAUSE_BLOCKED_BY_SYNCHROCHECK,
                         self->ctlNum, self->origin, false);
             }
@@ -688,7 +688,7 @@ Control_processControlActions(MmsMapping* self, uint64_t currentTimeInMs)
                     executeControlTask(controlObject);
                 }
                 else {
-                    ControlObject_sendLastApplError(controlObject, controlObject->mmsConnection, "Oper",
+                    ControlObject_sendLastApplError(controlObject, controlObject->mmsConnection,
                     CONTROL_ERROR_NO_ERROR, ADD_CAUSE_BLOCKED_BY_INTERLOCKING,
                             controlObject->ctlNum, controlObject->origin, false);
 
@@ -887,16 +887,12 @@ ControlObject_sendCommandTerminationNegative(ControlObject* self)
 
     lastApplError->value.structure.components = componentContainer;
 
-    char ctlObj[130];
-
-    createStringInBuffer(ctlObj, 2, self->ctlObjectName, "$Oper");
-
     MmsValue ctlObjValueMemory;
 
     MmsValue* ctlObjValue = &ctlObjValueMemory;
     ctlObjValue->type = MMS_VISIBLE_STRING;
-    ctlObjValue->value.visibleString.buf = ctlObj;
-    ctlObjValue->value.visibleString.size = sizeof(ctlObj);
+    ctlObjValue->value.visibleString.buf = self->ctlObjectName;
+    ctlObjValue->value.visibleString.size = sizeof(self->ctlObjectName);
 
     MmsValue_setElement(lastApplError, 0, ctlObjValue);
 
@@ -926,7 +922,6 @@ ControlObject_sendCommandTerminationNegative(ControlObject* self)
     operVarSpec.itemId = itemId;
     operVarSpec.domainId = domainId;
 
-
     /* create response */
 
     if (DEBUG_IED_SERVER)
@@ -949,7 +944,7 @@ ControlObject_sendCommandTerminationNegative(ControlObject* self)
 
 
 void
-ControlObject_sendLastApplError(ControlObject* self, MmsServerConnection* connection, char* ctlVariable, int error,
+ControlObject_sendLastApplError(ControlObject* self, MmsServerConnection* connection, int error,
         ControlAddCause addCause, MmsValue* ctlNum, MmsValue* origin, bool handlerMode)
 {
     MmsValue lastApplErrorMemory;
@@ -962,13 +957,9 @@ ControlObject_sendLastApplError(ControlObject* self, MmsServerConnection* connec
 
     lastApplError->value.structure.components =componentContainer;
 
-    char ctlObj[130];
-
-    createStringInBuffer(ctlObj, 3, self->ctlObjectName, "$", ctlVariable);
-
     if (DEBUG_IED_SERVER) {
         printf("IED_SERVER: sendLastApplError:\n");
-        printf("IED_SERVER:    control object: %s\n", ctlObj);
+        printf("IED_SERVER:    control object: %s\n", self->ctlObjectName);
         printf("IED_SERVER:    ctlNum: %u\n", MmsValue_toUint32(ctlNum));
     }
 
@@ -976,8 +967,8 @@ ControlObject_sendLastApplError(ControlObject* self, MmsServerConnection* connec
 
     MmsValue* ctlObjValue = &ctlObjValueMemory;
     ctlObjValue->type = MMS_VISIBLE_STRING;
-    ctlObjValue->value.visibleString.buf = ctlObj;
-    ctlObjValue->value.visibleString.size = sizeof(ctlObj);
+    ctlObjValue->value.visibleString.buf = self->ctlObjectName;
+    ctlObjValue->value.visibleString.size = sizeof(self->ctlObjectName);
 
     MmsValue_setElement(lastApplError, 0, ctlObjValue);
 
@@ -1313,10 +1304,10 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                     indication = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
 
                     if (connection != controlObject->mmsConnection)
-                        ControlObject_sendLastApplError(controlObject, connection, "SBOw", 0,
+                        ControlObject_sendLastApplError(controlObject, connection, 0,
                                 ADD_CAUSE_LOCKED_BY_OTHER_CLIENT, ctlNum, origin, true);
                     else
-                        ControlObject_sendLastApplError(controlObject, connection, "SBOw", 0,
+                        ControlObject_sendLastApplError(controlObject, connection, 0,
                                 ADD_CAUSE_OBJECT_ALREADY_SELECTED, ctlNum, origin, true);
 
                     if (DEBUG_IED_SERVER)
@@ -1353,7 +1344,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                     else {
                         indication = getDataAccessErrorFromCheckHandlerResult(checkResult);
 
-                        ControlObject_sendLastApplError(controlObject, connection, "SBOw", 0,
+                        ControlObject_sendLastApplError(controlObject, connection, 0,
                                 ADD_CAUSE_SELECT_FAILED, ctlNum, origin, true);
 
                         if (DEBUG_IED_SERVER)
@@ -1398,7 +1389,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
         if (state == STATE_WAIT_FOR_ACTICATION_TIME) {
             indication = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
 
-            ControlObject_sendLastApplError(controlObject, connection, "Oper",
+            ControlObject_sendLastApplError(controlObject, connection,
                     CONTROL_ERROR_NO_ERROR, ADD_CAUSE_COMMAND_ALREADY_IN_EXECUTION,
                         ctlNum, origin, true);
 
@@ -1428,7 +1419,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                     {
 
                         indication = DATA_ACCESS_ERROR_TYPE_INCONSISTENT;
-                        ControlObject_sendLastApplError(controlObject, connection, "Oper",
+                        ControlObject_sendLastApplError(controlObject, connection,
                                 CONTROL_ERROR_NO_ERROR, ADD_CAUSE_INCONSISTENT_PARAMETERS,
                                     ctlNum, origin, true);
 
@@ -1508,7 +1499,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                 printf("IED_SERVER: Oper failed - control not selected!\n");
 
             indication = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
-            ControlObject_sendLastApplError(controlObject, connection, "Oper",
+            ControlObject_sendLastApplError(controlObject, connection,
                     CONTROL_ERROR_NO_ERROR, ADD_CAUSE_OBJECT_NOT_SELECTED,
                         ctlNum, origin, true);
 
@@ -1540,7 +1531,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                 }
                 else {
                     indication = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
-                    ControlObject_sendLastApplError(controlObject, connection, "Cancel",
+                    ControlObject_sendLastApplError(controlObject, connection,
                             CONTROL_ERROR_NO_ERROR, ADD_CAUSE_LOCKED_BY_OTHER_CLIENT,
                                 ctlNum, origin, true);
                 }
