@@ -198,9 +198,6 @@ ClientDataSet_getDataSetSize(ClientDataSet self)
 static bool
 doesControlObjectMatch(char* objRef, char* cntrlObj)
 {
-
-    printf("objRef: (%s) cntrlObj: (%s)\n", objRef, cntrlObj);
-
     int objRefLen = strlen(objRef);
 
     char* separator = strchr(cntrlObj, '$');
@@ -225,31 +222,17 @@ doesControlObjectMatch(char* objRef, char* cntrlObj)
     if (separator[3] != '$')
         return false;
 
-    printf("Compare strings: (%s) vs (%s)\n", cntrlObjName, separator +4);
+    char* nextSeparator = strchr(separator + 4, '$');
 
-//    char* nextSeparator = strchr(separator + 4, '$');
-
-//    if (nextSeparator == NULL)
-//        return false;
+    if (nextSeparator == NULL)
+        return false;
 
     int cntrlObjNameLen = strlen(cntrlObjName);
 
-    char* secondCntrlObjName = separator + 4;
-
-    if (cntrlObjNameLen != strlen(secondCntrlObjName))
+    if (cntrlObjNameLen != nextSeparator - (separator + 4))
         return false;
 
-//    if (cntrlObjNameLen != nextSeparator - (separator + 4))
-//        return false;
-
-
-
- //   int i;
- //   for (i = 0; i < cntrlObjNameLen; i++) {
- //       if (controlObjName )
- //   }
-
-    if (memcmp(cntrlObjName, secondCntrlObjName, cntrlObjNameLen) == 0)
+    if (memcmp(cntrlObjName, separator + 4, cntrlObjNameLen) == 0)
         return true;
 
     return false;
