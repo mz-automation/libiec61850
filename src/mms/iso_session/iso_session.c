@@ -338,10 +338,7 @@ IsoSession_createFinishSpdu(IsoSession* self, BufferChain buffer, BufferChain pa
 
     buf[offset++] = 9; /* FINISH-SPDU code */
 
-    buf[offset++] = 5 + payload->length; /* LI */
-    buf[offset++] = 17; /* PI-Code transport-disconnect */
-    buf[offset++] = 1; /* LI = 1 */
-    buf[offset++] = 2; /* transport-connection-released */
+    buf[offset++] = 2 + payload->length; /* LI */
     buf[offset++] = 193; /* PGI-Code user data */
     buf[offset++] = payload->length; /* LI of user data */
 
