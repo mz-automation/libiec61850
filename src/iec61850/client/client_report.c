@@ -328,6 +328,8 @@ private_IedConnection_handleReport(IedConnection self, MmsValue* value)
 
         char* rptId = report->rptId;
 
+        printf("Report ID is null!\n");
+
         if (rptId == NULL)
             rptId = report->rcbReference;
 

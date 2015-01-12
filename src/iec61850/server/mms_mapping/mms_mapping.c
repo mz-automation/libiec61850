@@ -1602,6 +1602,7 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
                     if ((val > 0) && (val <= sg->sgcb->numOfSGs)) {
 
                         if (sg->editSgChangedHandler != NULL) {
+
                             if (sg->editSgChangedHandler(sg->editSgChangedHandlerParameter, sg->sgcb,
                                     (uint8_t) val, (ClientConnection) connection))
                             {

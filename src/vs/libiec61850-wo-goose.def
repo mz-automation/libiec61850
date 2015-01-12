@@ -481,4 +481,5 @@ EXPORTS
     IedServer_getUTCTimeAttributeValue
     IedServer_getBitStringAttributeValue
     IedServer_getStringAttributeValue
+    ModelNode_getChildWithFc
 

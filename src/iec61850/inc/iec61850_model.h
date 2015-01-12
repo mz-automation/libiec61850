@@ -253,36 +253,52 @@ struct sGSEControlBlock {
 /**
  * \brief get the number of direct children of a model node
  *
- * \param node the model node instance
+ * \param self the model node instance
  *
  * \return the number of children of the model node
  * ¸
  */
 int
-ModelNode_getChildCount(ModelNode* modelNode);
+ModelNode_getChildCount(ModelNode* self);
 
 /**
  * \brief return a child model node
  *
- * \param node the model node instance
- * \param the name of the child model node
+ * \param self the model node instance
+ * \param name the name of the child model node
  *
  * \return  the model node instance or NULL if model node does not exist.
  */
 ModelNode*
-ModelNode_getChild(ModelNode* modelNode, const char* name);
+ModelNode_getChild(ModelNode* self, const char* name);
+
+/**
+ * \brief return a child model node with a given functional constraint
+ *
+ * Sometimes the name is not enough to identify a model node. This is the case when
+ * editable setting groups are used. In this case the setting group members have two different
+ * model nodes associated that differ in their FC (SG and SE).
+ *
+ * \param self the model node instance
+ * \param name the name of the child model node
+ * \param fc the functional constraint of the model node
+ *
+ * \return  the model node instance or NULL if model node does not exist.
+ */
+ModelNode*
+ModelNode_getChildWithFc(ModelNode* self, const char* name, FunctionalConstraint fc);
 
 /**
  * \brief Return the IEC 61850 object reference of a model node
  *
- * \param node the model node instance
+ * \param self the model node instance
  * \param objectReference pointer to a buffer where to write the object reference string. If NULL
  *        is given the buffer is allocated by the function.
  *
  * \return the object reference string
  */
 char*
-ModelNode_getObjectReference(ModelNode* node, char* objectReference);
+ModelNode_getObjectReference(ModelNode* self, char* objectReference);
 
 /**
  * \brief Set the name of the IED

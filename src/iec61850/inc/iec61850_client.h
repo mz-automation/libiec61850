@@ -607,13 +607,16 @@ typedef void (*ReportCallbackFunction) (void* parameter, ClientReport report);
 /**
  * \brief Install a report handler function for the specified report control block (RCB)
  *
- * It is important that you provide a ClientDataSet instance that is already populated with an MmsValue object
- * of type MMS_STRUCTURE that contains the data set entries as structure elements. This is required because otherwise
- * the report handler is not able to correctly parse the report message from the server.
+ * This function will replace a report handler set earlier for the specified RCB. The report handler
+ * will be called whenever a report for the specified RCB is received.
+ * Please note that this function should be called whenever the RCB data set is changed or updated.
+ * Otherwise the internal data structures storing the received data set values will not be updated
+ * correctly.
  *
- * This function will replace a formerly set report handler function for the specified RCB.
+ * When replacing a report handler you only have to call this function. There is no separate call to
+ * IedConnection_uninstallReportHandler() required.
  *
- * \param connection the connection object
+ * \param self the connection object
  * \param rcbReference object reference of the report control block
  * \param rptId a string that identifies the report. If the rptId is not available then the
  *        rcbReference is used to identify the report.
@@ -626,6 +629,9 @@ IedConnection_installReportHandler(IedConnection self, char* rcbReference, char*
 
 /**
  * \brief uninstall a report handler function for the specified report control block (RCB)
+ *
+ * \param self the connection object
+ * \param rcbReference object reference of the report control block
  */
 void
 IedConnection_uninstallReportHandler(IedConnection self, char* rcbReference);

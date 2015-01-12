@@ -195,47 +195,70 @@ ClientDataSet_getDataSetSize(ClientDataSet self)
         return 0;
 }
 
-static bool
-doesControlObjectMatch(char* objRef, char* cntrlObj)
+bool
+private_IedConnection_doesControlObjectMatch(char* objRef, char* cntrlObj)
 {
-    int objRefLen = strlen(objRef);
+    int i = 0;
 
-    char* separator = strchr(cntrlObj, '$');
+    while (objRef[i] != '/') {
+        if (objRef[i] != cntrlObj[i])
+            return false;
 
-    if (separator == NULL)
+        i++;
+    }
+
+    if (cntrlObj[i] != '/')
         return false;
 
-    int sepLen = separator - cntrlObj;
+    // --> LD is equal
 
-    if (sepLen >= objRefLen)
+    i++;
+
+    while (objRef[i] != '.') {
+        if (objRef[i] != cntrlObj[i])
+            return false;
+        i++;
+    }
+
+    int j = i;
+
+    if (cntrlObj[j++] != '$')
         return false;
 
-    if (memcmp(objRef, cntrlObj, sepLen) != 0)
+    // --> LN is equal
+
+    if (cntrlObj[j++] != 'C')
+        return false;
+    if (cntrlObj[j++] != 'O')
+        return false;
+    if (cntrlObj[j++] != '$')
         return false;
 
-    char* cntrlObjName = objRef + sepLen + 1;
+    // --> FC is ok
 
-    if (separator[1] != 'C')
-        return false;
-    if (separator[2] != 'O')
-        return false;
-    if (separator[3] != '$')
-        return false;
+    i++;
 
-    char* nextSeparator = strchr(separator + 4, '$');
+    while (objRef[i] != 0) {
+        if (cntrlObj[j] == 0)
+            return false;
 
-    if (nextSeparator == NULL)
-        return false;
+        if (objRef[i] == '.') {
+            if (cntrlObj[j] != '$')
+                return false;
+        }
+        else {
+            if (objRef[i] != cntrlObj[j])
+                return false;
+        }
 
-    int cntrlObjNameLen = strlen(cntrlObjName);
+        i++;
+        j++;
+    }
 
-    if (cntrlObjNameLen != nextSeparator - (separator + 4))
-        return false;
-
-    if (memcmp(cntrlObjName, separator + 4, cntrlObjNameLen) == 0)
+    if ((cntrlObj[j] == 0) || (cntrlObj[j] == '$'))
         return true;
-
-    return false;
+    else
+        return false;
 }
 
 static bool
@@ -357,7 +380,7 @@ handleLastApplErrorMessage(IedConnection self, MmsValue* lastApplError)
 
         char* objectRef = ControlObjectClient_getObjectReference(object);
 
-        if (doesControlObjectMatch(objectRef, MmsValue_toString(cntrlObj))) {
+        if (private_IedConnection_doesControlObjectMatch(objectRef, MmsValue_toString(cntrlObj))) {
             ControlObjectClient_setLastApplError(object, self->lastApplError);
         }
 
@@ -966,9 +989,8 @@ IedConnection_getDeviceModelFromServer(IedConnection self, IedClientError* error
 
         LinkedList_destroy(logicalDeviceNames);
     }
-    else {
+    else
         *error = iedConnection_mapMmsErrorToIedError(mmsError);
-    }
 }
 
 LinkedList /*<char*>*/

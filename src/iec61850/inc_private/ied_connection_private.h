@@ -71,6 +71,9 @@ struct sClientReportControlBlock {
 IedClientError
 private_IedConnection_mapMmsErrorToIedError(MmsError mmsError);
 
+bool
+private_IedConnection_doesControlObjectMatch(char* objRef, char* cntrlObj);
+
 void
 private_IedConnection_addControlClient(IedConnection self, ControlObjectClient control);
 

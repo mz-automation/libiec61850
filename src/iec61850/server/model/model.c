@@ -457,6 +457,56 @@ ModelNode_getChild(ModelNode* self, const char* name)
        return matchingNode;
 }
 
+ModelNode*
+ModelNode_getChildWithFc(ModelNode* self, const char* name, FunctionalConstraint fc)
+{
+    // check for separator
+   const char* separator = strchr(name, '.');
+
+   int nameElementLength = 0;
+
+   if (separator != NULL)
+       nameElementLength = (separator - name);
+   else
+       nameElementLength = strlen(name);
+
+   ModelNode* nextNode = self->firstChild;
+
+   ModelNode* matchingNode = NULL;
+
+   while (nextNode != NULL) {
+       int nodeNameLen = strlen(nextNode->name);
+
+       if (nodeNameLen == nameElementLength) {
+           if (memcmp(nextNode->name, name, nodeNameLen) == 0) {
+
+               if (separator == NULL) {
+                   if (nextNode->modelType == DataAttributeModelType) {
+                       DataAttribute* da = (DataAttribute*) nextNode;
+
+                       if (da->fc == fc) {
+                           matchingNode = nextNode;
+                           break;
+                       }
+                   }
+               }
+               else {
+                   matchingNode = nextNode;
+                   break;
+               }
+           }
+       }
+
+       nextNode = nextNode->sibling;
+   }
+
+   if ((separator != NULL) && (matchingNode != NULL)) {
+       return ModelNode_getChildWithFc(matchingNode, separator + 1, fc);
+   }
+   else
+       return matchingNode;
+}
+
 
 inline
 LogicalNode*

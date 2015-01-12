@@ -56,7 +56,7 @@ struct sServerSocket {
 
 struct sHandleSet {
    fd_set handles;
-   int maxHandle;
+   SOCKET maxHandle;
 };
 
 HandleSet
@@ -66,7 +66,7 @@ Handleset_new(void)
 
    if (result != NULL) {
        FD_ZERO(&result->handles);
-       result->maxHandle = -1;
+       result->maxHandle = INVALID_SOCKET;
    }
    return result;
 }
@@ -74,11 +74,11 @@ Handleset_new(void)
 void
 Handleset_addSocket(HandleSet self, const Socket sock)
 {
-   if (self != NULL && sock != NULL && sock->fd != -1) {
+   if (self != NULL && sock != NULL && sock->fd != INVALID_SOCKET) {
        FD_SET(sock->fd, &self->handles);
-       if (sock->fd > self->maxHandle) {
+
+       if ((sock->fd > self->maxHandle) || (self->maxHandle == INVALID_SOCKET))
            self->maxHandle = sock->fd;
-       }
    }
 }
 
@@ -302,16 +302,6 @@ Socket_connect(Socket self, const char* address, int port)
     FD_ZERO(&fdSet);
     FD_SET(self->fd, &fdSet);
 
-//	if (connect(self->fd, (struct sockaddr *) &serverAddress,sizeof(serverAddress)) < 0) {
-//	    if (DEBUG_SOCKET)
-//	        printf("WIN32_SOCKET: Socket failed connecting!\n");
-//		return false;
-//	}
-//	else {
-//
-//	    return true;
-//	}
-
     if (connect(self->fd, (struct sockaddr *) &serverAddress, sizeof(serverAddress)) == SOCKET_ERROR) {
         if (WSAGetLastError() != WSAEWOULDBLOCK)
             return false;
@@ -321,7 +311,7 @@ Socket_connect(Socket self, const char* address, int port)
     timeout.tv_sec = self->connectTimeout / 1000;
     timeout.tv_usec = (self->connectTimeout % 1000) * 1000;
 
-    if (select(self->fd + 1, NULL, &fdSet, NULL, &timeout) == SOCKET_ERROR)
+    if (select(self->fd + 1, NULL, &fdSet, NULL, &timeout) < 0)
         return false;
     else
         return true;

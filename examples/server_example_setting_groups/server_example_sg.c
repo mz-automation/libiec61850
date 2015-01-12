@@ -85,10 +85,10 @@ editSgConfirmedHandler(void* parameter, SettingGroupControlBlock* sgcb,
 {
     printf("Received edit sg confirm for sg %i\n", editSg);
 
-    ptoc1Settings[editSg - 1].strVal = MmsValue_toFloat(IEDMODEL_PROT_PTOC1_StrVal_setMag_f->mmsValue);
-    ptoc1Settings[editSg - 1].opDlTmms = MmsValue_toInt32(IEDMODEL_PROT_PTOC1_OpDlTmms_setVal->mmsValue);
-    ptoc1Settings[editSg - 1].rsDlTmms = MmsValue_toInt32(IEDMODEL_PROT_PTOC1_RsDlTmms_setVal->mmsValue);
-    ptoc1Settings[editSg - 1].rstTms = MmsValue_toInt32(IEDMODEL_PROT_PTOC1_RstTms_setVal->mmsValue);
+    ptoc1Settings[editSg - 1].strVal = MmsValue_toFloat(IEDMODEL_SE_PROT_PTOC1_StrVal_setMag_f->mmsValue);
+    ptoc1Settings[editSg - 1].opDlTmms = MmsValue_toInt32(IEDMODEL_SE_PROT_PTOC1_OpDlTmms_setVal->mmsValue);
+    ptoc1Settings[editSg - 1].rsDlTmms = MmsValue_toInt32(IEDMODEL_SE_PROT_PTOC1_RsDlTmms_setVal->mmsValue);
+    ptoc1Settings[editSg - 1].rstTms = MmsValue_toInt32(IEDMODEL_SE_PROT_PTOC1_RstTms_setVal->mmsValue);
 
     if (IedServer_getActiveSettingGroup(iedServer, sgcb) == editSg) {
         loadActiveSgValues(editSg);

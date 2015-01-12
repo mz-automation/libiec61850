@@ -89,7 +89,7 @@ Handleset_waitReady(HandleSet self, unsigned int timeoutMs)
 {
    int result;
 
-   if (self != NULL && self->maxHandle >= 0) {
+   if ((self != NULL) && (self->maxHandle >= 0)) {
        struct timeval timeout;
 
        timeout.tv_sec = timeoutMs / 1000;

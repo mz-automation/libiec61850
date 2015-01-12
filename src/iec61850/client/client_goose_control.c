@@ -237,7 +237,7 @@ ClientGooseControlBlock_setDstAddress_vid(ClientGooseControlBlock self, uint16_t
         self->dstAddress = newEmptyPhyCommAddress();
 
     MmsValue* vid = MmsValue_getElement(self->dstAddress, 2);
-    MmsValue_setUint8(vid, vidValue);
+    MmsValue_setUint16(vid, vidValue);
 }
 
 uint16_t
@@ -256,7 +256,7 @@ ClientGooseControlBlock_setDstAddress_appid(ClientGooseControlBlock self, uint16
         self->dstAddress = newEmptyPhyCommAddress();
 
     MmsValue* appid = MmsValue_getElement(self->dstAddress, 3);
-    MmsValue_setUint8(appid, appidValue);
+    MmsValue_setUint16(appid, appidValue);
 }
 
 static void

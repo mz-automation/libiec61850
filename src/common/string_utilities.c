@@ -231,4 +231,3 @@ StringUtils_startsWith(char* string, char* prefix)
     return false;
 }
 
-

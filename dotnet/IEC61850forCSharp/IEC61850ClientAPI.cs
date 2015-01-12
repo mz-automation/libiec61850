@@ -113,6 +113,9 @@ namespace IEC61850
 			[DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
 			static extern IntPtr IedConnection_getServerDirectory (IntPtr self, out int error, bool getFileNames);
 
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedConnection_getDeviceModelFromServer(IntPtr self, out int error);
+
 			[DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
 			static extern IntPtr IedConnection_getLogicalDeviceDirectory (IntPtr self, out int error, string logicalDeviceName);
 
@@ -254,6 +257,16 @@ namespace IEC61850
 
 				return controlObject;
 			}
+
+            public void UpdateDeviceModel()
+            {
+                int error;
+
+                IedConnection_getDeviceModelFromServer(connection, out error);
+
+                if (error != 0)
+                    throw new IedConnectionException("UpdateDeviceModel failed", error);
+            }
 
 			/// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
 			public List<string> GetServerDirectory (bool fileDirectory = false)
