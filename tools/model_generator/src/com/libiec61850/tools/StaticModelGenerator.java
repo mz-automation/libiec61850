@@ -536,17 +536,30 @@ public class StaticModelGenerator {
             cOut.println("};\n");
 
             if (dataAttribute.getSubDataAttributes() != null)
-                printDataAttributeDefinitions(daName, dataAttribute.getSubDataAttributes());
-
-            if (dataAttribute.getValue() != null) {
-                printValue(daName, dataAttribute);
+          
+            	
+            printDataAttributeDefinitions(daName, dataAttribute.getSubDataAttributes());
+            
+            DataModelValue value = dataAttribute.getValue();
+                     
+            /* if no value is given use default value for type if present */
+            if (value == null) { 
+         	   value = dataAttribute.getDefinition().getValue();
+         	   
+         	   if (value != null)
+ 	        	   if (value.getValue() == null)
+ 	        		   value.updateEnumOrdValue(ied.getTypeDeclarations());        	   
             }
+            
+            if (value != null) {
+                printValue(daName, dataAttribute, value);
+            }
+            
         }
 
     }
 
-    private void printValue(String daName, DataAttribute dataAttribute) {
-        DataModelValue value = dataAttribute.getValue();
+    private void printValue(String daName, DataAttribute dataAttribute, DataModelValue value) {
 
         StringBuffer buffer = this.initializerBuffer;
 
