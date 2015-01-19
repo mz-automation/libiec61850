@@ -122,7 +122,7 @@ public class DynamicModelGenerator {
         }
         
         for (DataSet dataSet : logicalNode.getDataSets())
-            exportDataSet(output, dataSet);
+            exportDataSet(output, dataSet, logicalNode);
         
         for (ReportControlBlock rcb : logicalNode.getReportControlBlocks()) {
              
@@ -217,7 +217,7 @@ public class DynamicModelGenerator {
         output.println(");");
     }
 
-    private void exportDataSet(PrintStream output, DataSet dataSet) {
+    private void exportDataSet(PrintStream output, DataSet dataSet, LogicalNode logicalNode) {
         output.print("DS(" + dataSet.getName() + "){\n");
         for (FunctionalConstraintData fcda : dataSet.getFcda()) {
             String mmsVariableName = "";
@@ -237,7 +237,21 @@ public class DynamicModelGenerator {
             if (fcda.getDaName() != null)
                 mmsVariableName += "$" + toMmsString(fcda.getDaName());
             
-            output.print("DE(" + mmsVariableName + ");\n");
+            String logicalDeviceName = null;
+            
+            if (fcda.getLdInstance() != null) {
+            	
+            	if (!fcda.getLdInstance().equals(logicalNode.getParentLogicalDevice().getInst())) {
+            		logicalDeviceName = fcda.getLdInstance();
+            	}
+            }
+            
+            
+            if (logicalDeviceName != null)         
+            	output.print("DE(" + logicalDeviceName + "/" + mmsVariableName + ");\n");
+            else
+            	output.print("DE(" + mmsVariableName + ");\n");
+            
         }
         output.println("}");
     }

@@ -186,6 +186,7 @@ struct sDataAttribute {
 
 typedef struct sDataSetEntry {
 	char* logicalDeviceName;
+	bool isLDNameDynamicallyAllocated;
 	char* variableName;
 	int index;
 	char* componentName;

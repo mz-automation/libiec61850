@@ -238,7 +238,7 @@ DataSetEntry_getNext(DataSetEntry* self);
  * \return the new data set entry instance
  */
 DataSetEntry*
-DataSetEntry_create(DataSet* dataSet, char* variable, int index, char* component);
+DataSetEntry_create(DataSet* dataSet, const char* variable, int index, const char* component);
 
 /**@}*/
 

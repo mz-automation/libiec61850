@@ -514,11 +514,28 @@ DataSet_addEntry(DataSet* self, DataSetEntry* newEntry)
 }
 
 DataSetEntry*
-DataSetEntry_create(DataSet* dataSet, char* variable, int index, char* component)
+DataSetEntry_create(DataSet* dataSet, const char* variable, int index, const char* component)
 {
     DataSetEntry* self = (DataSetEntry*) GLOBAL_MALLOC(sizeof(DataSetEntry));
 
-    self->variableName = copyString(variable);
+    char variableName[130];
+
+    strncpy(variableName, variable, 129);
+
+    char* separator = strchr(variableName, '/');
+
+    if (separator != NULL) {
+        *separator = 0;
+
+        self->variableName = copyString(separator + 1);
+        self->logicalDeviceName = copyString(variableName);
+        self->isLDNameDynamicallyAllocated = true;
+    }
+    else {
+        self->variableName = copyString(variable);
+        self->logicalDeviceName = dataSet->logicalDeviceName;
+        self->isLDNameDynamicallyAllocated = false;
+    }
 
     if (component != NULL)
         self->componentName = copyString(component);
@@ -526,7 +543,7 @@ DataSetEntry_create(DataSet* dataSet, char* variable, int index, char* component
         self->componentName = NULL;
 
     self->index = index;
-    self->logicalDeviceName = dataSet->logicalDeviceName;
+
     self->sibling = NULL;
 
     DataSet_addEntry(dataSet, self);
@@ -621,6 +638,9 @@ IedModel_destroy(IedModel* model)
                 GLOBAL_FREEMEM(dse->componentName);
 
             GLOBAL_FREEMEM(dse->variableName);
+
+            if (dse->isLDNameDynamicallyAllocated)
+                GLOBAL_FREEMEM(dse->logicalDeviceName);
 
             GLOBAL_FREEMEM(dse);
 

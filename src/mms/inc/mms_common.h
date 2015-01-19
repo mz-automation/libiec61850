@@ -42,6 +42,13 @@ typedef enum
     MMS_ERROR, MMS_INITIATE, MMS_CONFIRMED_REQUEST, MMS_OK, MMS_CONCLUDE
 } MmsIndication;
 
+/**
+ * \addtogroup common_api_group
+ */
+/**@{*/
+
+
+
 typedef enum
 {
     /* generic error codes */
@@ -107,21 +114,33 @@ typedef enum
 
 typedef enum ATTRIBUTE_PACKED
 {
+    /*! this represents all MMS array types (arrays contain uniform elements) */
     MMS_ARRAY = 0,
+    /*! this represents all complex MMS types (structures) */
     MMS_STRUCTURE = 1,
+    /*! boolean value */
     MMS_BOOLEAN = 2,
+    /*! bit string */
     MMS_BIT_STRING = 3,
+    /*! represents all signed integer types */
     MMS_INTEGER = 4,
+    /*! represents all unsigned integer types */
     MMS_UNSIGNED = 5,
+    /*! represents all float type (32 and 64 bit) */
     MMS_FLOAT = 6,
+    /*! octet string (unstructured bytes) */
     MMS_OCTET_STRING = 7,
+    /*! MMS visible string */
     MMS_VISIBLE_STRING = 8,
     MMS_GENERALIZED_TIME = 9,
     MMS_BINARY_TIME = 10,
     MMS_BCD = 11,
     MMS_OBJ_ID = 12,
+    /*! MMS unicode string */
     MMS_STRING = 13,
+    /*! MMS UTC time type */
     MMS_UTC_TIME = 14,
+    /*! This represents an error code as returned by MMS read services */
     MMS_DATA_ACCESS_ERROR = 15
 } MmsType;
 
@@ -145,6 +164,9 @@ typedef struct
 
 typedef struct sMmsNamedVariableList* MmsNamedVariableList;
 typedef struct sMmsAccessSpecifier* MmsNamedVariableListEntry;
+
+/**@}*/
+
 
 #ifdef __cplusplus
 }
