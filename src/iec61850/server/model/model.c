@@ -491,8 +491,20 @@ ModelNode_getChildWithFc(ModelNode* self, const char* name, FunctionalConstraint
                    }
                }
                else {
-                   matchingNode = nextNode;
-                   break;
+
+                   if (nextNode->modelType == DataAttributeModelType) {
+                        DataAttribute* da = (DataAttribute*) nextNode;
+
+                        if (da->fc == fc) {
+                          matchingNode = nextNode;
+                          break;
+                        }
+                   }
+                   else {
+                       matchingNode = nextNode;
+                       break;
+                   }
+
                }
            }
        }
