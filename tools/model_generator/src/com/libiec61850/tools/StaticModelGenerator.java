@@ -1007,7 +1007,7 @@ public class StaticModelGenerator {
                             mmsVariableName += "$" + toMmsString(fcda.getDaName());
 
                         // TODO implement index processing!
-
+                        cOut.println("  false,");
                         cOut.println("  \"" + mmsVariableName + "\",");
                         cOut.println("  -1,");
                         cOut.println("  NULL,");
