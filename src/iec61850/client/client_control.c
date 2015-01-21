@@ -423,6 +423,9 @@ ControlObjectClient_operate(ControlObjectClient self, MmsValue* ctlVal, uint64_t
         goto exit_function;
     }
 
+    MmsValue_update(self->ctlVal, ctlVal);
+    self->opertime = operTime;
+
     success = true;
 
 exit_function:
@@ -502,6 +505,8 @@ ControlObjectClient_selectWithValue(ControlObjectClient self, MmsValue* ctlVal)
             printf("IED_CLIENT: select-with-value failed!\n");
         return false;
     }
+
+    MmsValue_update(self->ctlVal, ctlVal);
 
     return true;
 }
