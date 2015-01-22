@@ -299,7 +299,7 @@ IedConnection_getGoCBValues(IedConnection self, IedClientError* error, const cha
 
     const char* itemIdStart = goCBReference + strlen(domainId) + 1;
 
-    char* separator = strchr(itemIdStart, '.');
+    const char* separator = strchr(itemIdStart, '.');
 
     if (separator == NULL) {
         *error = IED_ERROR_OBJECT_REFERENCE_INVALID;

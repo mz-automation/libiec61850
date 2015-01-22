@@ -35,9 +35,9 @@ void
 Conversions_msTimeToGeneralizedTime(uint64_t msTime, uint8_t* buffer);
 
 uint64_t
-Conversions_generalizedTimeToMsTime(char* gtString);
+Conversions_generalizedTimeToMsTime(const char* gtString);
 
 void
-memcpyReverseByteOrder(uint8_t* dst, uint8_t* src, int size);
+memcpyReverseByteOrder(uint8_t* dst, const uint8_t* src, int size);
 
 #endif /* CONVERSIONS_H_ */

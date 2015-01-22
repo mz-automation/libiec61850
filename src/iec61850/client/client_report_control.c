@@ -34,7 +34,7 @@
 static bool
 isBufferedRcb(const char* objectReference)
 {
-    char* separator = strchr(objectReference, '.');
+    const char* separator = strchr(objectReference, '.');
 
     if (separator == NULL)
         return false; //TODO report an error

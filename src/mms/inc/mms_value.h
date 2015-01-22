@@ -132,7 +132,7 @@ MmsValue_setElement(MmsValue* complexValue, int index, MmsValue* elementValue);
  *************************************************************************************/
 
 MmsDataAccessError
-MmsValue_getDataAccessError(MmsValue* self);
+MmsValue_getDataAccessError(const MmsValue* self);
 
 /**
  * \brief Get the int64_t value of a MmsValue object.
@@ -142,7 +142,7 @@ MmsValue_getDataAccessError(MmsValue* self);
  * \return signed 64 bit integer
  */
 int64_t
-MmsValue_toInt64(MmsValue* self);
+MmsValue_toInt64(const MmsValue* self);
 
 /**
  * \brief Get the int32_t value of a MmsValue object.
@@ -152,7 +152,7 @@ MmsValue_toInt64(MmsValue* self);
  * \return signed 32 bit integer
  */
 int32_t
-MmsValue_toInt32(MmsValue* value);
+MmsValue_toInt32(const MmsValue* value);
 
 /**
  * \brief Get the uint32_t value of a MmsValue object.
@@ -162,7 +162,7 @@ MmsValue_toInt32(MmsValue* value);
  * \return unsigned 32 bit integer
  */
 uint32_t
-MmsValue_toUint32(MmsValue* value);
+MmsValue_toUint32(const MmsValue* value);
 
 /**
  * \brief Get the double value of a MmsValue object.
@@ -172,7 +172,7 @@ MmsValue_toUint32(MmsValue* value);
  * \return 64 bit floating point value
  */
 double
-MmsValue_toDouble(MmsValue* self);
+MmsValue_toDouble(const MmsValue* self);
 
 /**
  * \brief Get the float value of a MmsValue object.
@@ -182,7 +182,7 @@ MmsValue_toDouble(MmsValue* self);
  * \return 32 bit floating point value
  */
 float
-MmsValue_toFloat(MmsValue* self);
+MmsValue_toFloat(const MmsValue* self);
 
 /**
  * \brief Get the unix timestamp of a MmsValue object of type MMS_UTCTIME.
@@ -192,7 +192,7 @@ MmsValue_toFloat(MmsValue* self);
  * \return unix timestamp of the MMS_UTCTIME variable.
  */
 uint32_t
-MmsValue_toUnixTimestamp(MmsValue* self);
+MmsValue_toUnixTimestamp(const MmsValue* self);
 
 /**
  * \brief Set the float value of a MmsValue object.
@@ -290,7 +290,7 @@ MmsValue_setBoolean(MmsValue* value, bool boolValue);
  * \return  the MmsValue value as bool value
  */
 bool
-MmsValue_getBoolean(MmsValue* value);
+MmsValue_getBoolean(const MmsValue* value);
 
 char*
 MmsValue_toString(MmsValue* self);
@@ -435,7 +435,7 @@ MmsValue_setUtcTimeMs(MmsValue* self, uint64_t timeval);
  * \param buffer buffer containing the encoded UTCTime.
  */
 void
-MmsValue_setUtcTimeByBuffer(MmsValue* self, uint8_t* buffer);
+MmsValue_setUtcTimeByBuffer(MmsValue* self, const uint8_t* buffer);
 
 /**
  * \brief Get a millisecond time value from an MmsValue object of MMS_UTCTIME type.
@@ -445,7 +445,7 @@ MmsValue_setUtcTimeByBuffer(MmsValue* self, uint8_t* buffer);
  * \return the value in milliseconds since epoch (1970/01/01 00:00 UTC)
  */
 uint64_t
-MmsValue_getUtcTimeInMs(MmsValue* value);
+MmsValue_getUtcTimeInMs(const MmsValue* value);
 
 /**
  * \brief set the TimeQuality byte of the UtcTime
@@ -479,7 +479,7 @@ MmsValue_setUtcTimeQuality(MmsValue* self, uint8_t timeQuality);
  * \return the byte representing the time quality
  */
 uint8_t
-MmsValue_getUtcTimeQuality(MmsValue* self);
+MmsValue_getUtcTimeQuality(const MmsValue* self);
 
 /**
  * \brief Update an MmsValue object of type MMS_BINARYTIME with a millisecond time.
@@ -498,7 +498,7 @@ MmsValue_setBinaryTime(MmsValue* self, uint64_t timestamp);
  * \return the value in milliseconds since epoch (1970/01/01 00:00 UTC)
  */
 uint64_t
-MmsValue_getBinaryTimeAsUtcMs(MmsValue* self);
+MmsValue_getBinaryTimeAsUtcMs(const MmsValue* self);
 
 /**
  * \brief Set the value of an MmsValue object of type MMS_OCTET_STRING.
@@ -522,7 +522,7 @@ MmsValue_setOctetString(MmsValue* self, uint8_t* buf, int size);
  * \return size in bytes
  */
 uint16_t
-MmsValue_getOctetStringSize(MmsValue* self);
+MmsValue_getOctetStringSize(const MmsValue* self);
 
 /**
  * \brief Returns the maximum size in bytes of an MmsValue object of type MMS_OCTET_STRING.
@@ -822,7 +822,7 @@ MmsValue*
 MmsValue_newMmsString(char* string);
 
 void
-MmsValue_setMmsString(MmsValue* value, char* string);
+MmsValue_setMmsString(MmsValue* value, const char* string);
 
 /**
  * \brief Create a new MmsValue instance of type MMS_UTCTIME.

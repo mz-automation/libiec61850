@@ -340,7 +340,7 @@ IedServer_getAttributeValue(IedServer self, DataAttribute* dataAttribute);
  * \return true or false
  */
 bool
-IedServer_getBooleanAttributeValue(IedServer self, DataAttribute* dataAttribute);
+IedServer_getBooleanAttributeValue(IedServer self, const DataAttribute* dataAttribute);
 
 /**
  * \brief Get data attribute value of an integer data attribute
@@ -354,7 +354,7 @@ IedServer_getBooleanAttributeValue(IedServer self, DataAttribute* dataAttribute)
  * \return the value as 32 bit integer
  */
 int32_t
-IedServer_getInt32AttributeValue(IedServer self, DataAttribute* dataAttribute);
+IedServer_getInt32AttributeValue(IedServer self, const DataAttribute* dataAttribute);
 
 /**
  * \brief Get data attribute value of an integer data attribute
@@ -368,7 +368,7 @@ IedServer_getInt32AttributeValue(IedServer self, DataAttribute* dataAttribute);
  * \return the value as 64 bit integer
  */
 int64_t
-IedServer_getInt64AttributeValue(IedServer self, DataAttribute* dataAttribute);
+IedServer_getInt64AttributeValue(IedServer self, const DataAttribute* dataAttribute);
 
 /**
  * \brief Get data attribute value of an unsigned integer data attribute
@@ -382,7 +382,7 @@ IedServer_getInt64AttributeValue(IedServer self, DataAttribute* dataAttribute);
  * \return the value as 32 bit unsigned integer
  */
 uint32_t
-IedServer_getUInt32AttributeValue(IedServer self, DataAttribute* dataAttribute);
+IedServer_getUInt32AttributeValue(IedServer self, const DataAttribute* dataAttribute);
 
 /**
  * \brief Get data attribute value of a floating point data attribute
@@ -396,7 +396,7 @@ IedServer_getUInt32AttributeValue(IedServer self, DataAttribute* dataAttribute);
  * \return the value as 32 bit float
  */
 float
-IedServer_getFloatAttributeValue(IedServer self, DataAttribute* dataAttribute);
+IedServer_getFloatAttributeValue(IedServer self, const DataAttribute* dataAttribute);
 
 /**
  * \brief Get data attribute value of a UTC time data attribute
@@ -410,7 +410,7 @@ IedServer_getFloatAttributeValue(IedServer self, DataAttribute* dataAttribute);
  * \return the value as 32 bit float
  */
 uint64_t
-IedServer_getUTCTimeAttributeValue(IedServer self, DataAttribute* dataAttribute);
+IedServer_getUTCTimeAttributeValue(IedServer self, const DataAttribute* dataAttribute);
 
 /**
  * \brief Get data attribute value of a bit string data attribute as integer value
@@ -428,7 +428,7 @@ IedServer_getUTCTimeAttributeValue(IedServer self, DataAttribute* dataAttribute)
  * \return the value a 32 bit integer.
  */
 uint32_t
-IedServer_getBitStringAttributeValue(IedServer self, DataAttribute* dataAttribute);
+IedServer_getBitStringAttributeValue(IedServer self, const DataAttribute* dataAttribute);
 
 /**
  * \brief Get data attribute value of a string type data attribute
@@ -442,7 +442,7 @@ IedServer_getBitStringAttributeValue(IedServer self, DataAttribute* dataAttribut
  * \return the value as a C string (null terminated string)
  */
 char*
-IedServer_getStringAttributeValue(IedServer self, DataAttribute* dataAttribute);
+IedServer_getStringAttributeValue(IedServer self, const DataAttribute* dataAttribute);
 
 
 /**

@@ -61,7 +61,7 @@ copyStringToBuffer(const char* string, char* buffer)
 
 
 char*
-createStringFromBuffer(uint8_t* buf, int size)
+createStringFromBuffer(const uint8_t* buf, int size)
 {
 	char* newStr = (char*) GLOBAL_MALLOC(size + 1);
 
@@ -159,7 +159,7 @@ StringUtils_digitToInt(char digit)
 }
 
 int
-StringUtils_digitsToInt(char* digits, int count)
+StringUtils_digitsToInt(const char* digits, int count)
 {
 	int i = 0;
 	int value = 0;
