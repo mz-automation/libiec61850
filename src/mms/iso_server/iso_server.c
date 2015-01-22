@@ -526,7 +526,7 @@ IsoServer_waitReady(IsoServer self, unsigned int timeoutMs)
                } else {
                    IsoConnection_destroy(isoConnection);
                    lastConnection->next = openConnection->next;
-                   free(openConnection);
+                   GLOBAL_FREEMEM(openConnection);
                    openConnection = lastConnection->next;
                }
 

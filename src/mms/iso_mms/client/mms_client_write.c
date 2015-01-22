@@ -176,8 +176,6 @@ createNewDomainVariableSpecification(const char* domainId, const char* itemId)
 {
 	VariableSpecification_t* varSpec = (VariableSpecification_t*) GLOBAL_CALLOC(1, sizeof(ListOfVariableSeq_t));
 
-	//VariableSpecification_t* varSpec = (VariableSpecification_t*) calloc(1, sizeof(VariableSpecification_t));
-
 	varSpec->present = VariableSpecification_PR_name;
 	varSpec->choice.name.present = ObjectName_PR_domainspecific;
 	varSpec->choice.name.choice.domainspecific.domainId.buf = (uint8_t*) domainId;
@@ -191,10 +189,8 @@ createNewDomainVariableSpecification(const char* domainId, const char* itemId)
 static void
 deleteDataElement(Data_t* dataElement)
 {
-    if (dataElement == NULL ) {
-        printf("deleteDataElement NULL argument\n");
+    if (dataElement == NULL)
         return;
-    }
 
     if (dataElement->present == Data_PR_structure) {
         int elementCount = dataElement->choice.structure->list.count;

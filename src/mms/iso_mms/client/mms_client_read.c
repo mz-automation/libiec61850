@@ -299,7 +299,7 @@ mmsClient_createReadNamedVariableListRequest(uint32_t invokeId, const char* doma
 	ReadRequest_t* readRequest = createReadRequest(mmsPdu);
 
 	if (specWithResult) {
-		readRequest->specificationWithResult = (BOOLEAN_t*) calloc(1, sizeof(BOOLEAN_t));
+		readRequest->specificationWithResult = (BOOLEAN_t*) GLOBAL_CALLOC(1, sizeof(BOOLEAN_t));
 		(*(readRequest->specificationWithResult)) = true;
 	}
 	else
@@ -339,7 +339,7 @@ mmsClient_createReadAssociationSpecificNamedVariableListRequest(
 	ReadRequest_t* readRequest = createReadRequest(mmsPdu);
 
 	if (specWithResult) {
-		readRequest->specificationWithResult = (BOOLEAN_t*) calloc(1, sizeof(BOOLEAN_t));
+		readRequest->specificationWithResult = (BOOLEAN_t*) GLOBAL_CALLOC(1, sizeof(BOOLEAN_t));
 		(*(readRequest->specificationWithResult)) = true;
 	}
 	else

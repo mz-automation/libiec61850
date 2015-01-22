@@ -197,15 +197,15 @@ initialize(ControlObject* self)
                 printf("No control model found for variable %s\n", ctlModelName);
         }
 
-        free(ctlModelName);
+        GLOBAL_FREEMEM(ctlModelName);
 
         char* sboClassName = createString(4, self->lnName, "$CF$", self->name, "$sboClass");
 
         self->sboClass = MmsServer_getValueFromCache(mmsServer, self->mmsDomain, sboClassName);
 
-        free(sboClassName);
+        GLOBAL_FREEMEM(sboClassName);
 
-        self->ctlObjectName = (char*) malloc(130);
+        self->ctlObjectName = (char*) GLOBAL_MALLOC(130);
 
         createStringInBuffer(self->ctlObjectName, 5, MmsDomain_getName(self->mmsDomain), "/",
                 self->lnName, "$CO$", self->name);
@@ -239,8 +239,8 @@ initialize(ControlObject* self)
                 if (DEBUG_IED_SERVER)
                     printf("timeout for %s is %i\n", sboTimeoutName, self->selectTimeout);
 
-                free(controlObjectReference);
-                free(sboTimeoutName);
+                GLOBAL_FREEMEM(controlObjectReference);
+                GLOBAL_FREEMEM(sboTimeoutName);
             }
             else {
                 self->sbo = MmsValue_newVisibleString(NULL);
@@ -475,7 +475,7 @@ ControlObject_destroy(ControlObject* self)
         MmsValue_delete(self->emptyString);
 
     if (self->ctlObjectName != NULL)
-        free(self->ctlObjectName);
+        GLOBAL_FREEMEM(self->ctlObjectName);
 
     if (self->error != NULL)
         MmsValue_delete(self->error);
@@ -493,14 +493,14 @@ ControlObject_destroy(ControlObject* self)
         MmsValue_delete(self->origin);
 
     if (self->name != NULL)
-        free(self->name);
+        GLOBAL_FREEMEM(self->name);
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     if (self->stateLock != NULL)
         Semaphore_destroy(self->stateLock);
 #endif
 
-    free(self);
+    GLOBAL_FREEMEM(self);
 }
 
 void
@@ -1214,10 +1214,10 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
     if (DEBUG_IED_SERVER)
         printf("IED_SERVER: writeAccessControlObject: %s\n", variableIdOrig);
 
-    char variableId[129];
+    char variableId[65];
 
-    strncpy(variableId, variableIdOrig, 128);
-    variableId[128] = 0;
+    strncpy(variableId, variableIdOrig, 64);
+    variableId[64] = 0;
 
     char* separator = strchr(variableId, '$');
 
