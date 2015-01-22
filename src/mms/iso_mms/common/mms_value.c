@@ -38,20 +38,20 @@
 #include <time.h> /* for ctime_r */
 
 static inline int
-bitStringByteSize(MmsValue* value)
+bitStringByteSize(const MmsValue* value)
 {
 	int bitSize = value->value.bitString.size;
 	return (bitSize / 8) + ((bitSize % 8) > 0);
 }
 
 int
-MmsValue_getBitStringByteSize(MmsValue* self)
+MmsValue_getBitStringByteSize(const MmsValue* self)
 {
    return bitStringByteSize(self);
 }
 
 static void
-updateStructuredComponent(MmsValue* self, MmsValue* update)
+updateStructuredComponent(MmsValue* self, const MmsValue* update)
 {
 	int componentCount;
 	MmsValue** selfValues;
@@ -96,7 +96,7 @@ MmsValue_newUnsignedFromBerInteger(Asn1PrimitiveValue* berInteger)
 }
 
 bool
-MmsValue_equals(MmsValue* self, MmsValue* otherValue)
+MmsValue_equals(const MmsValue* self, const MmsValue* otherValue)
 {
     if (self->type == otherValue->type) {
         switch (self->type) {
@@ -189,7 +189,7 @@ MmsValue_equals(MmsValue* self, MmsValue* otherValue)
 }
 
 bool
-MmsValue_equalTypes(MmsValue* self, MmsValue* otherValue)
+MmsValue_equalTypes(const MmsValue* self, const MmsValue* otherValue)
 {
     if (self->type == otherValue->type) {
         switch (self->type) {
@@ -220,7 +220,7 @@ MmsValue_equalTypes(MmsValue* self, MmsValue* otherValue)
 }
 
 bool
-MmsValue_update(MmsValue* self, MmsValue* update)
+MmsValue_update(MmsValue* self, const MmsValue* update)
 {
 	if (self->type == update->type) {
 		switch (self->type) {
@@ -314,7 +314,7 @@ MmsValue_newBitString(int bitSize)
 }
 
 static int
-getBitStringByteSize(MmsValue* self)
+getBitStringByteSize(const MmsValue* self)
 {
 	int byteSize;
 
@@ -361,13 +361,13 @@ MmsValue_setAllBitStringBits(MmsValue* self)
 }
 
 int
-MmsValue_getBitStringSize(MmsValue* self)
+MmsValue_getBitStringSize(const MmsValue* self)
 {
    return self->value.bitString.size;
 }
 
 int
-MmsValue_getNumberOfSetBits(MmsValue* self)
+MmsValue_getNumberOfSetBits(const MmsValue* self)
 {
     int setBitsCount = 0;
 
@@ -404,7 +404,7 @@ MmsValue_setBitStringBit(MmsValue* self, int bitPos, bool value)
 }
 
 bool
-MmsValue_getBitStringBit(MmsValue* self, int bitPos)
+MmsValue_getBitStringBit(const MmsValue* self, int bitPos)
 {
 	if (bitPos < self->value.bitString.size) {
 		int bytePos = bitPos / 8;
@@ -423,7 +423,7 @@ MmsValue_getBitStringBit(MmsValue* self, int bitPos)
 }
 
 uint32_t
-MmsValue_getBitStringAsInteger(MmsValue* self)
+MmsValue_getBitStringAsInteger(const MmsValue* self)
 {
     uint32_t value = 0;
 
@@ -454,7 +454,7 @@ MmsValue_setBitStringFromInteger(MmsValue* self, uint32_t intValue)
 }
 
 uint32_t
-MmsValue_getBitStringAsIntegerBigEndian(MmsValue* self)
+MmsValue_getBitStringAsIntegerBigEndian(const MmsValue* self)
 {
     uint32_t value = 0;
 
@@ -1435,7 +1435,7 @@ exit_function:
 }
 
 static inline void
-setVisibleStringValue(MmsValue* self, char* string)
+setVisibleStringValue(MmsValue* self, const char* string)
 {
 	if (self->value.visibleString.buf != NULL) {
 	    if (string != NULL) {
@@ -1464,7 +1464,7 @@ exit_function:
 }
 
 static MmsValue*
-MmsValue_newString(char* string, MmsType type)
+MmsValue_newString(const char* string, MmsType type)
 {
     MmsValue* self = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
 
@@ -1497,7 +1497,7 @@ exit_function:
 }
 
 MmsValue*
-MmsValue_newVisibleString(char* string)
+MmsValue_newVisibleString(const char* string)
 {
 	return MmsValue_newString(string, MMS_VISIBLE_STRING);
 }
@@ -1687,7 +1687,7 @@ MmsValue_newMmsStringFromByteArray(uint8_t* byteArray, int size)
 }
 
 void
-MmsValue_setVisibleString(MmsValue* self, char* string)
+MmsValue_setVisibleString(MmsValue* self, const char* string)
 {
 	if (self->type == MMS_VISIBLE_STRING) {
 	    assert(self->value.visibleString.buf != NULL);

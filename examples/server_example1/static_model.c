@@ -149,6 +149,7 @@ extern DataSetEntry ds_Device1_LLN0_dataset1_fcda2;
 
 DataSetEntry ds_Device1_LLN0_dataset1_fcda0 = {
   "Device1",
+  false,
   "LLN0$ST$Mod$q",
   -1,
   NULL,
@@ -158,6 +159,7 @@ DataSetEntry ds_Device1_LLN0_dataset1_fcda0 = {
 
 DataSetEntry ds_Device1_LLN0_dataset1_fcda1 = {
   "Device1",
+  false,
   "MMXU1$ST$Mod$q",
   -1,
   NULL,
@@ -167,6 +169,7 @@ DataSetEntry ds_Device1_LLN0_dataset1_fcda1 = {
 
 DataSetEntry ds_Device1_LLN0_dataset1_fcda2 = {
   "Device1",
+  false,
   "MMXU1$CF$Mod$ctlModel",
   -1,
   NULL,

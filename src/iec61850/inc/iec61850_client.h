@@ -186,7 +186,7 @@ IedConnection_setConnectTimeout(IedConnection self, uint32_t timeoutInMs);
  * \param tcpPort the TCP port number of the server to connect to
  */
 void
-IedConnection_connect(IedConnection self, IedClientError* error, char* hostname, int tcpPort);
+IedConnection_connect(IedConnection self, IedClientError* error, const char* hostname, int tcpPort);
 
 /**
  * \brief Abort the connection
@@ -325,7 +325,7 @@ IedConnection_getMmsConnection(IedConnection self);
  **************************************************/
 
 ClientGooseControlBlock
-ClientGooseControlBlock_create(char* dataAttributeReference);
+ClientGooseControlBlock_create(const char* dataAttributeReference);
 
 void
 ClientGooseControlBlock_destroy(ClientGooseControlBlock self);
@@ -340,13 +340,13 @@ char*
 ClientGooseControlBlock_getGoID(ClientGooseControlBlock self);
 
 void
-ClientGooseControlBlock_setGoID(ClientGooseControlBlock self, char* goID);
+ClientGooseControlBlock_setGoID(ClientGooseControlBlock self, const char* goID);
 
 char*
 ClientGooseControlBlock_getDatSet(ClientGooseControlBlock self);
 
 void
-ClientGooseControlBlock_setDatSet(ClientGooseControlBlock self, char* datSet);
+ClientGooseControlBlock_setDatSet(ClientGooseControlBlock self, const char* datSet);
 
 uint32_t
 ClientGooseControlBlock_getConfRev(ClientGooseControlBlock self);
@@ -420,7 +420,7 @@ ClientGooseControlBlock_setDstAddress_appid(ClientGooseControlBlock self, uint16
  *         the updateRcb parameter.
  */
 ClientGooseControlBlock
-IedConnection_getGoCBValues(IedConnection self, IedClientError* error, char* goCBReference, ClientGooseControlBlock updateGoCB);
+IedConnection_getGoCBValues(IedConnection self, IedClientError* error, const char* goCBReference, ClientGooseControlBlock updateGoCB);
 
 /**
  * \brief Write access to attributes of a GOOSE control block (GoCB) at the connected server
@@ -493,7 +493,7 @@ IedConnection_setGoCBValues(IedConnection self, IedClientError* error, ClientGoo
  *         the updateRcb parameter.
  */
 ClientReportControlBlock
-IedConnection_getRCBValues(IedConnection self, IedClientError* error, char* rcbReference,
+IedConnection_getRCBValues(IedConnection self, IedClientError* error, const char* rcbReference,
         ClientReportControlBlock updateRcb);
 
 /** Describes the reason for the inclusion of the element in the report */
@@ -624,7 +624,7 @@ typedef void (*ReportCallbackFunction) (void* parameter, ClientReport report);
  * \param handlerParameter user provided parameter that will be passed to the callback function
  */
 void
-IedConnection_installReportHandler(IedConnection self, char* rcbReference, char* rptId, ReportCallbackFunction handler,
+IedConnection_installReportHandler(IedConnection self, const char* rcbReference, const char* rptId, ReportCallbackFunction handler,
         void* handlerParameter);
 
 /**
@@ -634,7 +634,7 @@ IedConnection_installReportHandler(IedConnection self, char* rcbReference, char*
  * \param rcbReference object reference of the report control block
  */
 void
-IedConnection_uninstallReportHandler(IedConnection self, char* rcbReference);
+IedConnection_uninstallReportHandler(IedConnection self, const char* rcbReference);
 
 /**
  * \brief Trigger a general interrogation (GI) report for the specified report control block (RCB)
@@ -646,7 +646,7 @@ IedConnection_uninstallReportHandler(IedConnection self, char* rcbReference);
  * \param rcbReference object reference of the report control block
  */
 void
-IedConnection_triggerGIReport(IedConnection self, IedClientError* error, char* rcbReference);
+IedConnection_triggerGIReport(IedConnection self, IedClientError* error, const char* rcbReference);
 
 /****************************************
  * Access to received reports
@@ -788,7 +788,7 @@ ReasonForInclusion_getValueAsString(ReasonForInclusion reasonCode);
  **************************************************/
 
 ClientReportControlBlock
-ClientReportControlBlock_create(char* rcbReference);
+ClientReportControlBlock_create(const char* rcbReference);
 
 void
 ClientReportControlBlock_destroy(ClientReportControlBlock self);
@@ -803,7 +803,7 @@ char*
 ClientReportControlBlock_getRptId(ClientReportControlBlock self);
 
 void
-ClientReportControlBlock_setRptId(ClientReportControlBlock self, char* rptId);
+ClientReportControlBlock_setRptId(ClientReportControlBlock self, const char* rptId);
 
 bool
 ClientReportControlBlock_getRptEna(ClientReportControlBlock self);
@@ -837,7 +837,7 @@ ClientReportControlBlock_getDataSetReference(ClientReportControlBlock self);
  * \param dataSetReference the reference of the data set
  */
 void
-ClientReportControlBlock_setDataSetReference(ClientReportControlBlock self, char* dataSetReference);
+ClientReportControlBlock_setDataSetReference(ClientReportControlBlock self, const char* dataSetReference);
 
 uint32_t
 ClientReportControlBlock_getConfRev(ClientReportControlBlock self);
@@ -1256,7 +1256,7 @@ typedef enum {
  * \return the newly created instance or NULL if the creation failed
  */
 ControlObjectClient
-ControlObjectClient_create(char* objectReference, IedConnection connection);
+ControlObjectClient_create(const char* objectReference, IedConnection connection);
 
 void
 ControlObjectClient_destroy(ControlObjectClient self);

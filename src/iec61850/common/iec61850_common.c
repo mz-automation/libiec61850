@@ -63,13 +63,13 @@ Quality_unsetFlag(Quality* self, int flag)
 
 
 Quality
-Quality_fromMmsValue(MmsValue* mmsValue)
+Quality_fromMmsValue(const MmsValue* mmsValue)
 {
     return (Quality) MmsValue_getBitStringAsInteger(mmsValue);
 }
 
 Dbpos
-Dbpos_fromMmsValue(MmsValue* mmsValue)
+Dbpos_fromMmsValue(const MmsValue* mmsValue)
 {
     return (Dbpos) MmsValue_getBitStringAsIntegerBigEndian(mmsValue);
 }
@@ -131,7 +131,7 @@ FunctionalConstraint_toString(FunctionalConstraint fc) {
 }
 
 FunctionalConstraint
-FunctionalConstraint_fromString(char* fcString)
+FunctionalConstraint_fromString(const char* fcString)
 {
     if (fcString[0] == 'S') {
         if (fcString[1] == 'T')

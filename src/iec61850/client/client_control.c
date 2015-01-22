@@ -65,7 +65,7 @@ struct sControlObjectClient
 };
 
 static void
-convertToMmsAndInsertFC(char* newItemId, char* originalObjectName, char* fc)
+convertToMmsAndInsertFC(char* newItemId, const char* originalObjectName, const char* fc)
 {
     int originalLength = strlen(originalObjectName);
 
@@ -106,7 +106,7 @@ resetLastApplError(ControlObjectClient self)
 }
 
 ControlObjectClient
-ControlObjectClient_create(char* objectReference, IedConnection connection)
+ControlObjectClient_create(const char* objectReference, IedConnection connection)
 {
     ControlObjectClient self = NULL;
 

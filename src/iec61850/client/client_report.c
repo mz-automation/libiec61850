@@ -222,7 +222,7 @@ ClientReport_getDataSetValues(ClientReport self)
 }
 
 static ClientReport
-lookupReportHandler(IedConnection self, char* rcbReference)
+lookupReportHandler(IedConnection self, const char* rcbReference)
 {
     LinkedList element = LinkedList_getNext(self->enabledReports);
 
@@ -239,7 +239,7 @@ lookupReportHandler(IedConnection self, char* rcbReference)
 }
 
 void
-IedConnection_installReportHandler(IedConnection self, char* rcbReference, char* rptId, ReportCallbackFunction handler,
+IedConnection_installReportHandler(IedConnection self, const char* rcbReference, const char* rptId, ReportCallbackFunction handler,
         void* handlerParameter)
 {
     ClientReport report = lookupReportHandler(self, rcbReference);
@@ -268,7 +268,7 @@ IedConnection_installReportHandler(IedConnection self, char* rcbReference, char*
 }
 
 void
-IedConnection_uninstallReportHandler(IedConnection self, char* rcbReference)
+IedConnection_uninstallReportHandler(IedConnection self, const char* rcbReference)
 {
     ClientReport report = lookupReportHandler(self, rcbReference);
 
@@ -279,7 +279,7 @@ IedConnection_uninstallReportHandler(IedConnection self, char* rcbReference)
 }
 
 void
-IedConnection_triggerGIReport(IedConnection self, IedClientError* error, char* rcbReference)
+IedConnection_triggerGIReport(IedConnection self, IedClientError* error, const char* rcbReference)
 {
     char domainId[65];
     char itemId[129];

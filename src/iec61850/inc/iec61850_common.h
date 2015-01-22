@@ -212,7 +212,7 @@ FunctionalConstraint_toString(FunctionalConstraint fc);
  * \brief parse a string treated as a functional constraint representation
  */
 FunctionalConstraint
-FunctionalConstraint_fromString(char* fcString);
+FunctionalConstraint_fromString(const char* fcString);
 
 /** @} */
 
@@ -262,7 +262,7 @@ bool
 Quality_isFlagSet(Quality* self, int flag);
 
 Quality
-Quality_fromMmsValue(MmsValue* mmsValue);
+Quality_fromMmsValue(const MmsValue* mmsValue);
 
 /** @} */
 
@@ -288,7 +288,7 @@ typedef enum {
  * \return the corresponding Dbpos value
  */
 Dbpos
-Dbpos_fromMmsValue(MmsValue* mmsValue);
+Dbpos_fromMmsValue(const MmsValue* mmsValue);
 
 /**
  * \brief conver Dbpos to MMS bit string

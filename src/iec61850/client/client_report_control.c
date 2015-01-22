@@ -32,7 +32,7 @@
 #include "mms_mapping.h"
 
 static bool
-isBufferedRcb(char* objectReference)
+isBufferedRcb(const char* objectReference)
 {
     char* separator = strchr(objectReference, '.');
 
@@ -46,7 +46,7 @@ isBufferedRcb(char* objectReference)
 }
 
 ClientReportControlBlock
-ClientReportControlBlock_create(char* objectReference)
+ClientReportControlBlock_create(const char* objectReference)
 {
     ClientReportControlBlock self = (ClientReportControlBlock) GLOBAL_CALLOC(1, sizeof(struct sClientReportControlBlock));
 
@@ -103,7 +103,7 @@ ClientReportControlBlock_getRptId(ClientReportControlBlock self)
 }
 
 void
-ClientReportControlBlock_setRptId(ClientReportControlBlock self, char* rptId)
+ClientReportControlBlock_setRptId(ClientReportControlBlock self, const char* rptId)
 {
     if (self->rptId == NULL)
         self->rptId = MmsValue_newVisibleString(rptId);
@@ -160,7 +160,7 @@ ClientReportControlBlock_getDataSetReference(ClientReportControlBlock self)
 }
 
 void
-ClientReportControlBlock_setDataSetReference(ClientReportControlBlock self, char* dataSetReference)
+ClientReportControlBlock_setDataSetReference(ClientReportControlBlock self, const char* dataSetReference)
 {
     if (self->datSet == NULL)
         self->datSet = MmsValue_newVisibleString(dataSetReference);
@@ -423,7 +423,7 @@ private_ClientReportControlBlock_updateValues(ClientReportControlBlock self, Mms
 
 
 ClientReportControlBlock
-IedConnection_getRCBValues(IedConnection self, IedClientError* error, char* rcbReference,
+IedConnection_getRCBValues(IedConnection self, IedClientError* error, const char* rcbReference,
         ClientReportControlBlock updateRcb)
 {
     MmsError mmsError = MMS_ERROR_NONE;

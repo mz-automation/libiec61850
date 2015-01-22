@@ -296,7 +296,7 @@ char*
 MmsValue_toString(MmsValue* self);
 
 void
-MmsValue_setVisibleString(MmsValue* self, char* string);
+MmsValue_setVisibleString(MmsValue* self, const char* string);
 
 
 /**
@@ -319,7 +319,7 @@ MmsValue_setBitStringBit(MmsValue* self, int bitPos, bool value);
  * \return the value of the bit (true = 1 / false = 0)
  */
 bool
-MmsValue_getBitStringBit(MmsValue* self, int bitPos);
+MmsValue_getBitStringBit(const MmsValue* self, int bitPos);
 
 /**
  * \brief Delete all bits (set to zero) of an MmsType object of type MMS_BITSTRING
@@ -336,7 +336,7 @@ MmsValue_deleteAllBitStringBits(MmsValue* self);
  * \param self MmsValue instance to operate on. Has to be of a type MMS_BITSTRING.
  */
 int
-MmsValue_getBitStringSize(MmsValue* self);
+MmsValue_getBitStringSize(const MmsValue* self);
 
 /**
  * \brief Get the number of bytes required by this bitString
@@ -344,7 +344,7 @@ MmsValue_getBitStringSize(MmsValue* self);
  * \param self MmsValue instance to operate on. Has to be of a type MMS_BITSTRING.
  */
 int
-MmsValue_getBitStringByteSize(MmsValue* self);
+MmsValue_getBitStringByteSize(const MmsValue* self);
 
 /**
  * \brief Count the number of set bits in a bit string.
@@ -352,7 +352,7 @@ MmsValue_getBitStringByteSize(MmsValue* self);
  * \param self MmsValue instance to operate on. Has to be of a type MMS_BITSTRING.
  */
 int
-MmsValue_getNumberOfSetBits(MmsValue* self);
+MmsValue_getNumberOfSetBits(const MmsValue* self);
 
 /**
  * Set all bits (set to one) of an MmsType object of type MMS_BITSTRING
@@ -371,7 +371,7 @@ MmsValue_setAllBitStringBits(MmsValue* self);
  * \param self MmsValue instance to operate on. Has to be of a type MMS_BITSTRING.
  */
 uint32_t
-MmsValue_getBitStringAsInteger(MmsValue* self);
+MmsValue_getBitStringAsInteger(const MmsValue* self);
 
 /**
  * \brief Convert an unsigned integer to a bit string
@@ -394,7 +394,7 @@ MmsValue_setBitStringFromInteger(MmsValue* self, uint32_t intValue);
  * \param self MmsValue instance to operate on. Has to be of a type MMS_BITSTRING.
  */
 uint32_t
-MmsValue_getBitStringAsIntegerBigEndian(MmsValue* self);
+MmsValue_getBitStringAsIntegerBigEndian(const MmsValue* self);
 
 /**
  * \brief Convert an unsigned integer to a bit string (big endian bit order)
@@ -559,7 +559,7 @@ MmsValue_getOctetStringBuffer(MmsValue* self);
  * \return indicates if the update has been successful (false if not)
  */
 bool
-MmsValue_update(MmsValue* self, MmsValue* source);
+MmsValue_update(MmsValue* self, const MmsValue* source);
 
 /**
  * \brief Check if two instances of MmsValue have the same value.
@@ -573,7 +573,7 @@ MmsValue_update(MmsValue* self, MmsValue* source);
  * \return true if both instances are of the same type and have the same value
  */
 bool
-MmsValue_equals(MmsValue* self, MmsValue* otherValue);
+MmsValue_equals(const MmsValue* self, const MmsValue* otherValue);
 
 /**
  * \brief Check if two (complex) instances of MmsValue have the same type.
@@ -588,7 +588,7 @@ MmsValue_equals(MmsValue* self, MmsValue* otherValue);
  * \return true if both instances and all their children are of the same type.
  */
 bool
-MmsValue_equalTypes(MmsValue* self, MmsValue* otherValue);
+MmsValue_equalTypes(const MmsValue* self, const MmsValue* otherValue);
 
 /*************************************************************************************
  * Constructors and destructors
@@ -745,7 +745,7 @@ MmsValue_deleteIfNotNull(MmsValue* value);
  * \return new MmsValue instance of type MMS_VISIBLE_STRING
  */
 MmsValue*
-MmsValue_newVisibleString(char* string);
+MmsValue_newVisibleString(const char* string);
 
 /**
  * \brief Create a new MmsValue instance of type MMS_VISIBLE_STRING.

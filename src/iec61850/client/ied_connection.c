@@ -501,7 +501,7 @@ connectionLostHandler(MmsConnection connection, void* parameter)
 }
 
 void
-IedConnection_connect(IedConnection self, IedClientError* error, char* hostname, int tcpPort)
+IedConnection_connect(IedConnection self, IedClientError* error, const char* hostname, int tcpPort)
 {
     MmsError mmsError;
 
