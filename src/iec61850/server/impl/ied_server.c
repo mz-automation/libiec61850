@@ -24,6 +24,7 @@
 #include "iec61850_server.h"
 #include "mms_mapping.h"
 #include "mms_mapping_internal.h"
+#include "mms_value_internal.h"
 #include "control.h"
 #include "stack_config.h"
 #include "ied_server_private.h"
@@ -952,6 +953,23 @@ IedServer_updateUTCTimeAttributeValue(IedServer self, DataAttribute* dataAttribu
     }
     else {
         MmsValue_setUtcTimeMs(dataAttribute->mmsValue, value);
+
+        checkForChangedTriggers(self, dataAttribute);
+    }
+}
+
+void
+IedServer_updateTimestampAttributeValue(IedServer self, DataAttribute* dataAttribute, Timestamp* timestamp)
+{
+    assert(MmsValue_getType(dataAttribute->mmsValue) == MMS_UTC_TIME);
+    assert(dataAttribute != NULL);
+    assert(self != NULL);
+
+    if (memcmp(dataAttribute->mmsValue->value.utcTime, timestamp->val, 8) == 0) {
+        checkForUpdateTrigger(self, dataAttribute);
+    }
+    else {
+        MmsValue_setUtcTimeByBuffer(dataAttribute->mmsValue, timestamp->val);
 
         checkForChangedTriggers(self, dataAttribute);
     }

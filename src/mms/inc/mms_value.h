@@ -438,6 +438,18 @@ void
 MmsValue_setUtcTimeByBuffer(MmsValue* self, const uint8_t* buffer);
 
 /**
+ * \brief return the raw buffer containing the UTC time data
+ *
+ * Note: This will return the address of the raw byte buffer. The array length is 8 byte.
+ *
+ * \param self MmsValue instance to operate on. Has to be of a type MMS_UTCTIME.
+ *
+ * \return the buffer containing the raw data
+ */
+uint8_t*
+MmsValue_getUtcTimeBuffer(MmsValue* self);
+
+/**
  * \brief Get a millisecond time value from an MmsValue object of MMS_UTCTIME type.
  *
  * \param self MmsValue instance to operate on. Has to be of a type MMS_UTCTIME.

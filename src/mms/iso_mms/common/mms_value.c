@@ -727,6 +727,12 @@ MmsValue_setUtcTimeByBuffer(MmsValue* self, const uint8_t* buffer)
     }
 }
 
+uint8_t*
+MmsValue_getUtcTimeBuffer(MmsValue* self)
+{
+    return self->value.utcTime;
+}
+
 uint64_t
 MmsValue_getUtcTimeInMs(const MmsValue* self)
 {

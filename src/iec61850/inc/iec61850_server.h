@@ -597,10 +597,25 @@ IedServer_updateVisibleStringAttributeValue(IedServer self, DataAttribute* dataA
  *
  * \param self the instance of IedServer to operate on.
  * \param dataAttribute the data attribute handle
- * \param value the new UTC time value of the data attribute.
+ * \param value the new UTC time value of the data attribute as a ms timestamp
  */
 void
 IedServer_updateUTCTimeAttributeValue(IedServer self, DataAttribute* dataAttribute, uint64_t value);
+
+/**
+ * \brief Update the value of an IEC 61850 UTC time (timestamp) data attribute.
+ *
+ * Update the value of a UTC time data attribute without handling MmsValue instances.
+ *
+ * This function will also check if a trigger condition is satisfied in the case when a report or GOOSE
+ * control block is enabled.
+ *
+ * \param self the instance of IedServer to operate on.
+ * \param dataAttribute the data attribute handle
+ * \param value the new UTC time value of the data attribute as a Timestamp
+ */
+void
+IedServer_updateTimestampAttributeValue(IedServer self, DataAttribute* dataAttribute, Timestamp* timestamp);
 
 /**
  * \brief Update a quality ("q") IEC 61850 data attribute.
