@@ -44,7 +44,7 @@
 
 #define STATE_UNSELECTED 0
 #define STATE_READY 1
-#define STATE_WAIT_FOR_ACTICATION_TIME 2
+#define STATE_WAIT_FOR_ACTIVATION_TIME 2
 #define STATE_PERFORM_TEST 3
 #define STATE_WAIT_FOR_EXECUTION 4
 #define STATE_OPERATE 5
@@ -345,13 +345,13 @@ executeStateMachine:
 
     switch (state) {
 
-    case STATE_WAIT_FOR_ACTICATION_TIME:
+    case STATE_WAIT_FOR_ACTIVATION_TIME:
     case STATE_WAIT_FOR_EXECUTION:
     {
         ControlHandlerResult dynamicCheckResult = CONTROL_RESULT_OK;
         bool isTimeActivatedControl = false;
 
-        if (state == STATE_WAIT_FOR_ACTICATION_TIME)
+        if (state == STATE_WAIT_FOR_ACTIVATION_TIME)
            isTimeActivatedControl = true;
 
         if (self->waitForExecutionHandler != NULL) {
@@ -667,7 +667,7 @@ Control_processControlActions(MmsMapping* self, uint64_t currentTimeInMs)
     while (element != NULL) {
         ControlObject* controlObject = (ControlObject*) element->data;
 
-        if (controlObject->state == STATE_WAIT_FOR_ACTICATION_TIME) {
+        if (controlObject->state == STATE_WAIT_FOR_ACTIVATION_TIME) {
 
             if (controlObject->operateTime <= currentTimeInMs) {
 
@@ -1395,7 +1395,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
 
         int state = getState(controlObject);
 
-        if (state == STATE_WAIT_FOR_ACTICATION_TIME) {
+        if (state == STATE_WAIT_FOR_ACTIVATION_TIME) {
             indication = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
 
             ControlObject_sendLastApplError(controlObject, connection, "Oper",
@@ -1452,7 +1452,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
 
                     initiateControlTask(controlObject);
 
-                    setState(controlObject, STATE_WAIT_FOR_ACTICATION_TIME);
+                    setState(controlObject, STATE_WAIT_FOR_ACTIVATION_TIME);
 
                     if (DEBUG_IED_SERVER)
                         printf("Oper: activate time activated control\n");
