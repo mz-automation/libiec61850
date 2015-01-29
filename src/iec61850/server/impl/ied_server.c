@@ -1058,6 +1058,9 @@ IedServer_setWriteAccessPolicy(IedServer self, FunctionalConstraint fc, AccessPo
 void
 IedServer_handleWriteAccess(IedServer self, DataAttribute* dataAttribute, WriteAccessHandler handler)
 {
+    if (dataAttribute == NULL)
+        *((int*) NULL) = 1;
+
     MmsMapping_installWriteAccessHandler(self->mmsMapping, dataAttribute, handler);
 }
 

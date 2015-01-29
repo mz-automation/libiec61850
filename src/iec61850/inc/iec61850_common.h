@@ -313,6 +313,9 @@ typedef union {
     uint8_t val[8];
 } Timestamp;
 
+void
+Timestamp_clearFlags(Timestamp* self);
+
 uint32_t
 Timestamp_getTimeInSeconds(Timestamp* self);
 
