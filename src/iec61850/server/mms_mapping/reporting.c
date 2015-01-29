@@ -933,6 +933,7 @@ createBufferedReportControlBlock(ReportControlBlock* reportControlBlock,
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
     namedVariable->name = copyString("TimeOfEntry");
     namedVariable->type = MMS_BINARY_TIME;
+    namedVariable->typeSpec.binaryTime = 6;
     rcb->typeSpec.structure.elements[12] = namedVariable;
     mmsValue->value.structure.components[12] = MmsValue_newBinaryTime(false);
 

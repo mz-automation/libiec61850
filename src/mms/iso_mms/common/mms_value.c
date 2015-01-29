@@ -38,20 +38,20 @@
 #include <time.h> /* for ctime_r */
 
 static inline int
-bitStringByteSize(MmsValue* value)
+bitStringByteSize(const MmsValue* value)
 {
 	int bitSize = value->value.bitString.size;
 	return (bitSize / 8) + ((bitSize % 8) > 0);
 }
 
 int
-MmsValue_getBitStringByteSize(MmsValue* self)
+MmsValue_getBitStringByteSize(const MmsValue* self)
 {
    return bitStringByteSize(self);
 }
 
 static void
-updateStructuredComponent(MmsValue* self, MmsValue* update)
+updateStructuredComponent(MmsValue* self, const MmsValue* update)
 {
 	int componentCount;
 	MmsValue** selfValues;
@@ -96,7 +96,7 @@ MmsValue_newUnsignedFromBerInteger(Asn1PrimitiveValue* berInteger)
 }
 
 bool
-MmsValue_equals(MmsValue* self, MmsValue* otherValue)
+MmsValue_equals(const MmsValue* self, const MmsValue* otherValue)
 {
     if (self->type == otherValue->type) {
         switch (self->type) {
@@ -189,7 +189,7 @@ MmsValue_equals(MmsValue* self, MmsValue* otherValue)
 }
 
 bool
-MmsValue_equalTypes(MmsValue* self, MmsValue* otherValue)
+MmsValue_equalTypes(const MmsValue* self, const MmsValue* otherValue)
 {
     if (self->type == otherValue->type) {
         switch (self->type) {
@@ -220,7 +220,7 @@ MmsValue_equalTypes(MmsValue* self, MmsValue* otherValue)
 }
 
 bool
-MmsValue_update(MmsValue* self, MmsValue* update)
+MmsValue_update(MmsValue* self, const MmsValue* update)
 {
 	if (self->type == update->type) {
 		switch (self->type) {
@@ -314,7 +314,7 @@ MmsValue_newBitString(int bitSize)
 }
 
 static int
-getBitStringByteSize(MmsValue* self)
+getBitStringByteSize(const MmsValue* self)
 {
 	int byteSize;
 
@@ -361,13 +361,13 @@ MmsValue_setAllBitStringBits(MmsValue* self)
 }
 
 int
-MmsValue_getBitStringSize(MmsValue* self)
+MmsValue_getBitStringSize(const MmsValue* self)
 {
    return self->value.bitString.size;
 }
 
 int
-MmsValue_getNumberOfSetBits(MmsValue* self)
+MmsValue_getNumberOfSetBits(const MmsValue* self)
 {
     int setBitsCount = 0;
 
@@ -404,7 +404,7 @@ MmsValue_setBitStringBit(MmsValue* self, int bitPos, bool value)
 }
 
 bool
-MmsValue_getBitStringBit(MmsValue* self, int bitPos)
+MmsValue_getBitStringBit(const MmsValue* self, int bitPos)
 {
 	if (bitPos < self->value.bitString.size) {
 		int bytePos = bitPos / 8;
@@ -423,7 +423,7 @@ MmsValue_getBitStringBit(MmsValue* self, int bitPos)
 }
 
 uint32_t
-MmsValue_getBitStringAsInteger(MmsValue* self)
+MmsValue_getBitStringAsInteger(const MmsValue* self)
 {
     uint32_t value = 0;
 
@@ -454,7 +454,7 @@ MmsValue_setBitStringFromInteger(MmsValue* self, uint32_t intValue)
 }
 
 uint32_t
-MmsValue_getBitStringAsIntegerBigEndian(MmsValue* self)
+MmsValue_getBitStringAsIntegerBigEndian(const MmsValue* self)
 {
     uint32_t value = 0;
 
@@ -654,7 +654,7 @@ MmsValue_setBoolean(MmsValue* self, bool boolValue)
 }
 
 bool
-MmsValue_getBoolean(MmsValue* self)
+MmsValue_getBoolean(const MmsValue* self)
 {
     return self->value.boolean;
 }
@@ -711,13 +711,13 @@ MmsValue_setUtcTimeQuality(MmsValue* self, uint8_t timeQuality)
 }
 
 uint8_t
-MmsValue_getUtcTimeQuality(MmsValue* self)
+MmsValue_getUtcTimeQuality(const MmsValue* self)
 {
     return self->value.utcTime[7];
 }
 
 void
-MmsValue_setUtcTimeByBuffer(MmsValue* self, uint8_t* buffer)
+MmsValue_setUtcTimeByBuffer(MmsValue* self, const uint8_t* buffer)
 {
     uint8_t* valueArray = self->value.utcTime;
 
@@ -727,11 +727,17 @@ MmsValue_setUtcTimeByBuffer(MmsValue* self, uint8_t* buffer)
     }
 }
 
+uint8_t*
+MmsValue_getUtcTimeBuffer(MmsValue* self)
+{
+    return self->value.utcTime;
+}
+
 uint64_t
-MmsValue_getUtcTimeInMs(MmsValue* self)
+MmsValue_getUtcTimeInMs(const MmsValue* self)
 {
     uint32_t timeval32;
-    uint8_t* valueArray = self->value.utcTime;
+    const uint8_t* valueArray = self->value.utcTime;
 
 #if (ORDER_LITTLE_ENDIAN == 1)
     memcpyReverseByteOrder((uint8_t*) &timeval32, valueArray, 4);
@@ -800,7 +806,7 @@ MmsValue_newIntegerFromInt64(int64_t integer)
  * Convert signed integer to int32_t
  */
 int32_t
-MmsValue_toInt32(MmsValue* self)
+MmsValue_toInt32(const MmsValue* self)
 {
 	int32_t integerValue = 0;
 
@@ -811,7 +817,7 @@ MmsValue_toInt32(MmsValue* self)
 }
 
 uint32_t
-MmsValue_toUint32(MmsValue* self)
+MmsValue_toUint32(const MmsValue* self)
 {
 	uint32_t integerValue = 0;
 
@@ -825,7 +831,7 @@ MmsValue_toUint32(MmsValue* self)
  * Convert signed integer to int64_t and do sign extension if required
  */
 int64_t
-MmsValue_toInt64(MmsValue* self)
+MmsValue_toInt64(const MmsValue* self)
 {
 	int64_t integerValue = 0;
 
@@ -836,7 +842,7 @@ MmsValue_toInt64(MmsValue* self)
 }
 
 float
-MmsValue_toFloat(MmsValue* self)
+MmsValue_toFloat(const MmsValue* self)
 {
 	if (self->type == MMS_FLOAT) {
 		if (self->value.floatingPoint.formatWidth == 32) {
@@ -858,7 +864,7 @@ MmsValue_toFloat(MmsValue* self)
 }
 
 double
-MmsValue_toDouble(MmsValue* self)
+MmsValue_toDouble(const MmsValue* self)
 {
 	if (self->type == MMS_FLOAT) {
 		double val;
@@ -878,7 +884,7 @@ MmsValue_toDouble(MmsValue* self)
 
 
 uint32_t
-MmsValue_toUnixTimestamp(MmsValue* self)
+MmsValue_toUnixTimestamp(const MmsValue* self)
 {
 	uint32_t timestamp;
 	uint8_t* timeArray = (uint8_t*) &timestamp;
@@ -1289,7 +1295,7 @@ MmsValue_setOctetString(MmsValue* self, uint8_t* buf, int size)
 }
 
 uint16_t
-MmsValue_getOctetStringSize(MmsValue* self)
+MmsValue_getOctetStringSize(const MmsValue* self)
 {
     return self->value.octetString.size;
 }
@@ -1435,7 +1441,7 @@ exit_function:
 }
 
 static inline void
-setVisibleStringValue(MmsValue* self, char* string)
+setVisibleStringValue(MmsValue* self, const char* string)
 {
 	if (self->value.visibleString.buf != NULL) {
 	    if (string != NULL) {
@@ -1464,7 +1470,7 @@ exit_function:
 }
 
 static MmsValue*
-MmsValue_newString(char* string, MmsType type)
+MmsValue_newString(const char* string, MmsType type)
 {
     MmsValue* self = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
 
@@ -1497,7 +1503,7 @@ exit_function:
 }
 
 MmsValue*
-MmsValue_newVisibleString(char* string)
+MmsValue_newVisibleString(const char* string)
 {
 	return MmsValue_newString(string, MMS_VISIBLE_STRING);
 }
@@ -1602,11 +1608,11 @@ MmsValue_setBinaryTime(MmsValue* self, uint64_t timestamp)
 }
 
 uint64_t
-MmsValue_getBinaryTimeAsUtcMs(MmsValue* self)
+MmsValue_getBinaryTimeAsUtcMs(const MmsValue* self)
 {
     uint64_t timestamp = 0;
 
-    uint8_t* binaryTimeBuf = self->value.binaryTime.buf;
+    const uint8_t* binaryTimeBuf = self->value.binaryTime.buf;
 
     if (self->value.binaryTime.size == 6) {
 
@@ -1636,13 +1642,13 @@ MmsValue_getBinaryTimeAsUtcMs(MmsValue* self)
 }
 
 MmsDataAccessError
-MmsValue_getDataAccessError(MmsValue* self)
+MmsValue_getDataAccessError(const MmsValue* self)
 {
     return self->value.dataAccessError;
 }
 
 void
-MmsValue_setMmsString(MmsValue* self, char* string)
+MmsValue_setMmsString(MmsValue* self, const char* string)
 {
 	if (self->type == MMS_STRING) {
 		assert(self->value.visibleString.buf != NULL);
@@ -1652,7 +1658,7 @@ MmsValue_setMmsString(MmsValue* self, char* string)
 }
 
 static MmsValue*
-MmsValue_newStringFromByteArray(uint8_t* byteArray, int size, MmsType type)
+MmsValue_newStringFromByteArray(const uint8_t* byteArray, int size, MmsType type)
 {
     MmsValue* self = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
 
@@ -1687,7 +1693,7 @@ MmsValue_newMmsStringFromByteArray(uint8_t* byteArray, int size)
 }
 
 void
-MmsValue_setVisibleString(MmsValue* self, char* string)
+MmsValue_setVisibleString(MmsValue* self, const char* string)
 {
 	if (self->type == MMS_VISIBLE_STRING) {
 	    assert(self->value.visibleString.buf != NULL);

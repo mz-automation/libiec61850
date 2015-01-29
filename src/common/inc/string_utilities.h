@@ -50,7 +50,7 @@ char*
 createStringInBuffer(char* buffer, int count, ...);
 
 char*
-createStringFromBuffer(uint8_t* buf, int size);
+createStringFromBuffer(const uint8_t* buf, int size);
 
 void
 StringUtils_replace(char* string, char oldChar, char newChar);
@@ -62,7 +62,7 @@ int
 StringUtils_digitToInt(char digit);
 
 int
-StringUtils_digitsToInt(char* digits, int count);
+StringUtils_digitsToInt(const char* digits, int count);
 
 int
 StringUtils_createBufferFromHexString(char* hexString, uint8_t* buffer);

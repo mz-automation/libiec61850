@@ -161,6 +161,7 @@ extern DataSetEntry ds_GenericIO_LLN0_Events_fcda3;
 
 DataSetEntry ds_GenericIO_LLN0_Events_fcda0 = {
   "GenericIO",
+  false,
   "GGIO1$ST$SPCSO1$stVal",
   -1,
   NULL,
@@ -170,6 +171,7 @@ DataSetEntry ds_GenericIO_LLN0_Events_fcda0 = {
 
 DataSetEntry ds_GenericIO_LLN0_Events_fcda1 = {
   "GenericIO",
+  false,
   "GGIO1$ST$SPCSO2$stVal",
   -1,
   NULL,
@@ -179,6 +181,7 @@ DataSetEntry ds_GenericIO_LLN0_Events_fcda1 = {
 
 DataSetEntry ds_GenericIO_LLN0_Events_fcda2 = {
   "GenericIO",
+  false,
   "GGIO1$ST$SPCSO3$stVal",
   -1,
   NULL,
@@ -188,6 +191,7 @@ DataSetEntry ds_GenericIO_LLN0_Events_fcda2 = {
 
 DataSetEntry ds_GenericIO_LLN0_Events_fcda3 = {
   "GenericIO",
+  false,
   "GGIO1$ST$SPCSO4$stVal",
   -1,
   NULL,
@@ -210,6 +214,7 @@ extern DataSetEntry ds_GenericIO_LLN0_Events2_fcda3;
 
 DataSetEntry ds_GenericIO_LLN0_Events2_fcda0 = {
   "GenericIO",
+  false,
   "GGIO1$ST$SPCSO1",
   -1,
   NULL,
@@ -219,6 +224,7 @@ DataSetEntry ds_GenericIO_LLN0_Events2_fcda0 = {
 
 DataSetEntry ds_GenericIO_LLN0_Events2_fcda1 = {
   "GenericIO",
+  false,
   "GGIO1$ST$SPCSO2",
   -1,
   NULL,
@@ -228,6 +234,7 @@ DataSetEntry ds_GenericIO_LLN0_Events2_fcda1 = {
 
 DataSetEntry ds_GenericIO_LLN0_Events2_fcda2 = {
   "GenericIO",
+  false,
   "GGIO1$ST$SPCSO3",
   -1,
   NULL,
@@ -237,6 +244,7 @@ DataSetEntry ds_GenericIO_LLN0_Events2_fcda2 = {
 
 DataSetEntry ds_GenericIO_LLN0_Events2_fcda3 = {
   "GenericIO",
+  false,
   "GGIO1$ST$SPCSO4",
   -1,
   NULL,

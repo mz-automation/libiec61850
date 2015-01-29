@@ -315,6 +315,7 @@ extern DataSetEntry ds_Inverter_LLN0_dataset1_fcda4;
 
 DataSetEntry ds_Inverter_LLN0_dataset1_fcda0 = {
   "Inverter",
+  false,
   "LLN0$ST$Mod$q",
   -1,
   NULL,
@@ -324,6 +325,7 @@ DataSetEntry ds_Inverter_LLN0_dataset1_fcda0 = {
 
 DataSetEntry ds_Inverter_LLN0_dataset1_fcda1 = {
   "Battery",
+  false,
   "LLN0$ST$Mod$q",
   -1,
   NULL,
@@ -333,6 +335,7 @@ DataSetEntry ds_Inverter_LLN0_dataset1_fcda1 = {
 
 DataSetEntry ds_Inverter_LLN0_dataset1_fcda2 = {
   "Inverter",
+  false,
   "MMXU1$ST$Mod$q",
   -1,
   NULL,
@@ -342,6 +345,7 @@ DataSetEntry ds_Inverter_LLN0_dataset1_fcda2 = {
 
 DataSetEntry ds_Inverter_LLN0_dataset1_fcda3 = {
   "Inverter",
+  false,
   "MMXU1$CF$Mod$ctlModel",
   -1,
   NULL,
@@ -351,6 +355,7 @@ DataSetEntry ds_Inverter_LLN0_dataset1_fcda3 = {
 
 DataSetEntry ds_Inverter_LLN0_dataset1_fcda4 = {
   "Inverter",
+  false,
   "MMXU1$MX$TotW$mag",
   -1,
   NULL,

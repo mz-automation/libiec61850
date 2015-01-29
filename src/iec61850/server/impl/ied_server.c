@@ -24,6 +24,7 @@
 #include "iec61850_server.h"
 #include "mms_mapping.h"
 #include "mms_mapping_internal.h"
+#include "mms_value_internal.h"
 #include "control.h"
 #include "stack_config.h"
 #include "ied_server_private.h"
@@ -656,7 +657,7 @@ IedServer_getAttributeValue(IedServer self, DataAttribute* dataAttribute)
 }
 
 bool
-IedServer_getBooleanAttributeValue(IedServer self, DataAttribute* dataAttribute)
+IedServer_getBooleanAttributeValue(IedServer self, const DataAttribute* dataAttribute)
 {
     assert(self != NULL);
     assert(dataAttribute != NULL);
@@ -667,7 +668,7 @@ IedServer_getBooleanAttributeValue(IedServer self, DataAttribute* dataAttribute)
 }
 
 int32_t
-IedServer_getInt32AttributeValue(IedServer self, DataAttribute* dataAttribute)
+IedServer_getInt32AttributeValue(IedServer self, const DataAttribute* dataAttribute)
 {
     assert(self != NULL);
     assert(dataAttribute != NULL);
@@ -679,7 +680,7 @@ IedServer_getInt32AttributeValue(IedServer self, DataAttribute* dataAttribute)
 }
 
 int64_t
-IedServer_getInt64AttributeValue(IedServer self, DataAttribute* dataAttribute)
+IedServer_getInt64AttributeValue(IedServer self, const DataAttribute* dataAttribute)
 {
     assert(self != NULL);
     assert(dataAttribute != NULL);
@@ -691,7 +692,7 @@ IedServer_getInt64AttributeValue(IedServer self, DataAttribute* dataAttribute)
 }
 
 uint32_t
-IedServer_getUInt32AttributeValue(IedServer self, DataAttribute* dataAttribute)
+IedServer_getUInt32AttributeValue(IedServer self, const DataAttribute* dataAttribute)
 {
     assert(self != NULL);
     assert(dataAttribute != NULL);
@@ -703,7 +704,7 @@ IedServer_getUInt32AttributeValue(IedServer self, DataAttribute* dataAttribute)
 }
 
 float
-IedServer_getFloatAttributeValue(IedServer self, DataAttribute* dataAttribute)
+IedServer_getFloatAttributeValue(IedServer self, const DataAttribute* dataAttribute)
 {
     assert(self != NULL);
     assert(dataAttribute != NULL);
@@ -714,7 +715,7 @@ IedServer_getFloatAttributeValue(IedServer self, DataAttribute* dataAttribute)
 }
 
 uint64_t
-IedServer_getUTCTimeAttributeValue(IedServer self, DataAttribute* dataAttribute)
+IedServer_getUTCTimeAttributeValue(IedServer self, const DataAttribute* dataAttribute)
 {
     assert(self != NULL);
     assert(dataAttribute != NULL);
@@ -725,7 +726,7 @@ IedServer_getUTCTimeAttributeValue(IedServer self, DataAttribute* dataAttribute)
 }
 
 uint32_t
-IedServer_getBitStringAttributeValue(IedServer self, DataAttribute* dataAttribute)
+IedServer_getBitStringAttributeValue(IedServer self, const DataAttribute* dataAttribute)
 {
     assert(self != NULL);
     assert(dataAttribute != NULL);
@@ -737,7 +738,7 @@ IedServer_getBitStringAttributeValue(IedServer self, DataAttribute* dataAttribut
 }
 
 char*
-IedServer_getStringAttributeValue(IedServer self, DataAttribute* dataAttribute)
+IedServer_getStringAttributeValue(IedServer self, const DataAttribute* dataAttribute)
 {
     assert(self != NULL);
     assert(dataAttribute != NULL);
@@ -952,6 +953,23 @@ IedServer_updateUTCTimeAttributeValue(IedServer self, DataAttribute* dataAttribu
     }
     else {
         MmsValue_setUtcTimeMs(dataAttribute->mmsValue, value);
+
+        checkForChangedTriggers(self, dataAttribute);
+    }
+}
+
+void
+IedServer_updateTimestampAttributeValue(IedServer self, DataAttribute* dataAttribute, Timestamp* timestamp)
+{
+    assert(MmsValue_getType(dataAttribute->mmsValue) == MMS_UTC_TIME);
+    assert(dataAttribute != NULL);
+    assert(self != NULL);
+
+    if (memcmp(dataAttribute->mmsValue->value.utcTime, timestamp->val, 8) == 0) {
+        checkForUpdateTrigger(self, dataAttribute);
+    }
+    else {
+        MmsValue_setUtcTimeByBuffer(dataAttribute->mmsValue, timestamp->val);
 
         checkForChangedTriggers(self, dataAttribute);
     }

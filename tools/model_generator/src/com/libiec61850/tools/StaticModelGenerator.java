@@ -827,7 +827,7 @@ public class StaticModelGenerator {
     		sgcbString += sgcb.getActSG() + ", " + sgcb.getNumOfSGs() + ", 0, false, 0, 0, ";
     		
     		if (currentSGCBVariableNumber < (sgcbVariableNames.size() - 1))
-    			sgcbString += "&" + sgcbVariableNames.get(currentGseVariableNumber + 1);
+    			sgcbString += "&" + sgcbVariableNames.get(currentSGCBVariableNumber + 1);
     		else
     			sgcbString += "NULL";
     				

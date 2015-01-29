@@ -506,4 +506,5 @@ EXPORTS
     IedServer_getBitStringAttributeValue
     IedServer_getStringAttributeValue
     ModelNode_getChildWithFc
-
+    IedServer_updateTimestampAttributeValue
+    MmsValue_getUtcTimeBuffer

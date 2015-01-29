@@ -315,14 +315,15 @@ exit_reject_invalid_pdu:
 
 
 static void
-createFileReadResponse(uint32_t invokeId, ByteBuffer* response,  MmsFileReadStateMachine* frsm)
+createFileReadResponse(MmsServerConnection* connection, uint32_t invokeId,
+        ByteBuffer* response,  MmsFileReadStateMachine* frsm)
 {
      /* determine remaining bytes in file */
      uint32_t bytesLeft = frsm->fileSize - frsm->readPosition;
 
      uint32_t fileChunkSize = 0;
 
-     uint32_t maxFileChunkSize = CONFIG_MMS_MAXIMUM_PDU_SIZE - 15;
+     uint32_t maxFileChunkSize = connection->maxPduSize - 20;
 
      uint32_t fileReadResponseSize = 1; /* for tag */
 
@@ -384,7 +385,7 @@ mmsServer_handleFileReadRequest(
     MmsFileReadStateMachine* frsm = getFrsm(connection, frsmId);
 
     if (frsm != NULL)
-        createFileReadResponse(invokeId, response, frsm);
+        createFileReadResponse(connection, invokeId, response, frsm);
     else
         mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_FILE_OTHER);
 }
@@ -451,6 +452,11 @@ createFileDirectoryResponse(uint32_t invokeId, ByteBuffer* response, char* direc
     char extendedFileName[300];
 
     DirectoryHandle directory = FileSystem_openDirectory(directoryName);
+
+    if (continueAfterFileName != NULL) {
+        if (strlen(continueAfterFileName) == 0)
+            continueAfterFileName = NULL;
+    }
 
     if (directory != NULL) {
         bool isDirectory;

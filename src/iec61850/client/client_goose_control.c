@@ -45,7 +45,7 @@ struct sClientGooseControlBlock {
 };
 
 ClientGooseControlBlock
-ClientGooseControlBlock_create(char* objectReference)
+ClientGooseControlBlock_create(const char* objectReference)
 {
     ClientGooseControlBlock self = (ClientGooseControlBlock) GLOBAL_CALLOC(1, sizeof(struct sClientGooseControlBlock));
 
@@ -100,7 +100,7 @@ ClientGooseControlBlock_getGoID(ClientGooseControlBlock self)
 }
 
 void
-ClientGooseControlBlock_setGoID(ClientGooseControlBlock self, char* goID)
+ClientGooseControlBlock_setGoID(ClientGooseControlBlock self, const char* goID)
 {
     if (self->goID == NULL)
         self->goID = MmsValue_newVisibleString(goID);
@@ -118,7 +118,7 @@ ClientGooseControlBlock_getDatSet(ClientGooseControlBlock self)
 }
 
 void
-ClientGooseControlBlock_setDatSet(ClientGooseControlBlock self, char* datSet)
+ClientGooseControlBlock_setDatSet(ClientGooseControlBlock self, const char* datSet)
 {
     if (self->datSet == NULL)
         self->datSet = MmsValue_newVisibleString(datSet);
@@ -285,7 +285,7 @@ private_ClientGooseControlBlock_updateValues(ClientGooseControlBlock self, MmsVa
 }
 
 ClientGooseControlBlock
-IedConnection_getGoCBValues(IedConnection self, IedClientError* error, char* goCBReference, ClientGooseControlBlock updateGoCB)
+IedConnection_getGoCBValues(IedConnection self, IedClientError* error, const char* goCBReference, ClientGooseControlBlock updateGoCB)
 {
     MmsError mmsError = MMS_ERROR_NONE;
     *error = IED_ERROR_OK;
@@ -297,9 +297,9 @@ IedConnection_getGoCBValues(IedConnection self, IedClientError* error, char* goC
 
     MmsMapping_getMmsDomainFromObjectReference(goCBReference, domainId);
 
-    char* itemIdStart = goCBReference + strlen(domainId) + 1;
+    const char* itemIdStart = goCBReference + strlen(domainId) + 1;
 
-    char* separator = strchr(itemIdStart, '.');
+    const char* separator = strchr(itemIdStart, '.');
 
     if (separator == NULL) {
         *error = IED_ERROR_OBJECT_REFERENCE_INVALID;

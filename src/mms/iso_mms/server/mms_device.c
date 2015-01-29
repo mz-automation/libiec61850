@@ -51,7 +51,7 @@ MmsDevice_destroy(MmsDevice* self)
             MmsVariableSpecification_destroy(self->namedVariables[i]);
         }
 
-        free (self->namedVariables);
+        GLOBAL_FREEMEM(self->namedVariables);
     }
 #endif /* (CONFIG_MMS_SUPPORT_VMD_SCOPE_NAMED_VARIABLES == 1) */
 
