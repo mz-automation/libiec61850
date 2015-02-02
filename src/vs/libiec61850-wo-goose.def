@@ -484,4 +484,5 @@ EXPORTS
     ModelNode_getChildWithFc
     IedServer_updateTimestampAttributeValue
     MmsValue_getUtcTimeBuffer
+    Timestamp_clearFlags
     

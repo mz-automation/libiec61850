@@ -375,10 +375,12 @@ parseAllDataUnknownValue(GooseSubscriber self, uint8_t* buffer, int allDataLengt
         case 0x85: /* integer */
             value = MmsValue_newInteger(elementLength * 8);
             memcpy(value->value.integer->octets, buffer + bufPos, elementLength);
+            value->value.integer->size = elementLength;
             break;
         case 0x86: /* unsigned integer */
             value = MmsValue_newUnsigned(elementLength * 8);
             memcpy(value->value.integer->octets, buffer + bufPos, elementLength);
+            value->value.integer->size = elementLength;
             break;
         case 0x87: /* Float */
                 if (elementLength == 9)
