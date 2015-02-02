@@ -191,6 +191,12 @@ FunctionalConstraint_fromString(const char* fcString)
     return NONE;
 }
 
+void
+Timestamp_clearFlags(Timestamp* self)
+{
+    self->val[7] = 0;
+}
+
 bool
 Timestamp_isLeapSecondKnown(Timestamp* self)
 {
