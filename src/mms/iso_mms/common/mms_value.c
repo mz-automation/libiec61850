@@ -307,7 +307,7 @@ MmsValue_newBitString(int bitSize)
 	    return NULL;
 
 	self->type = MMS_BIT_STRING;
-	self->value.bitString.size = bitSize;
+	self->value.bitString.size = abs(bitSize);
 	self->value.bitString.buf = (uint8_t*) GLOBAL_CALLOC(bitStringByteSize(self), 1);
 
 	return self;

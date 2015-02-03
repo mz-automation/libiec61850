@@ -427,7 +427,12 @@ sendReport(ReportControl* self, bool isIntegrity, bool isGI)
 
     /* Increase sequence number */
     self->sqNum++;
-    MmsValue_setUint16(sqNum, self->sqNum);
+
+    /* Unbuffered reporting --> sqNum is 8 bit only!!! */
+    if (self->sqNum == 256)
+        self->sqNum = 0;
+
+    MmsValue_setUint8(sqNum, self->sqNum);
 
     LinkedList_destroyDeep(deletableElements, (LinkedListValueDeleteFunction) MmsValue_delete);
     LinkedList_destroyStatic(reportElements);
@@ -549,7 +554,7 @@ createDataSetReferenceForDefaultDataSet(ReportControlBlock* rcb, ReportControl* 
 static MmsValue*
 createOptFlds(ReportControlBlock* reportControlBlock)
 {
-    MmsValue* optFlds = MmsValue_newBitString(10);
+    MmsValue* optFlds = MmsValue_newBitString(-10);
     uint8_t options = reportControlBlock->options;
 
     if (options & RPT_OPT_SEQ_NUM)
@@ -574,7 +579,7 @@ createOptFlds(ReportControlBlock* reportControlBlock)
 
 static MmsValue*
 createTrgOps(ReportControlBlock* reportControlBlock) {
-    MmsValue* trgOps = MmsValue_newBitString(6);
+    MmsValue* trgOps = MmsValue_newBitString(-6);
 
     uint8_t triggerOps = reportControlBlock->trgOps;
 
@@ -752,7 +757,7 @@ createUnbufferedReportControlBlock(ReportControlBlock* reportControlBlock,
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
     namedVariable->name = copyString("OptFlds");
     namedVariable->type = MMS_BIT_STRING;
-    namedVariable->typeSpec.bitString = 10;
+    namedVariable->typeSpec.bitString = -10;
     rcb->typeSpec.structure.elements[5] = namedVariable;
     mmsValue->value.structure.components[5] = createOptFlds(reportControlBlock);
 
@@ -767,14 +772,14 @@ createUnbufferedReportControlBlock(ReportControlBlock* reportControlBlock,
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
     namedVariable->name = copyString("SqNum");
     namedVariable->type = MMS_UNSIGNED;
-    namedVariable->typeSpec.unsignedInteger = 16;
+    namedVariable->typeSpec.unsignedInteger = 8;
     rcb->typeSpec.structure.elements[7] = namedVariable;
-    mmsValue->value.structure.components[7] = MmsValue_newUnsigned(16);
+    mmsValue->value.structure.components[7] = MmsValue_newUnsigned(8);
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
     namedVariable->name = copyString("TrgOps");
     namedVariable->type = MMS_BIT_STRING;
-    namedVariable->typeSpec.bitString = 6;
+    namedVariable->typeSpec.bitString = -6;
     rcb->typeSpec.structure.elements[8] = namedVariable;
     mmsValue->value.structure.components[8] = createTrgOps(reportControlBlock);
 
@@ -877,7 +882,7 @@ createBufferedReportControlBlock(ReportControlBlock* reportControlBlock,
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
     namedVariable->name = copyString("OptFlds");
     namedVariable->type = MMS_BIT_STRING;
-    namedVariable->typeSpec.bitString = 10;
+    namedVariable->typeSpec.bitString = -10;
     rcb->typeSpec.structure.elements[4] = namedVariable;
     mmsValue->value.structure.components[4] = createOptFlds(reportControlBlock);
 
@@ -899,7 +904,7 @@ createBufferedReportControlBlock(ReportControlBlock* reportControlBlock,
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
     namedVariable->name = copyString("TrgOps");
     namedVariable->type = MMS_BIT_STRING;
-    namedVariable->typeSpec.bitString = 6;
+    namedVariable->typeSpec.bitString = -6;
     rcb->typeSpec.structure.elements[7] = namedVariable;
     mmsValue->value.structure.components[7] = createTrgOps(reportControlBlock);
 

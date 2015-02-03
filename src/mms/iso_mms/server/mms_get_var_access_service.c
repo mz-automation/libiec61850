@@ -202,7 +202,7 @@ deleteVariableAccessAttributesResponse(
 	}
 }
 
-static int
+static void
 createVariableAccessAttributesResponse(
 		MmsServerConnection* connection,
 		char* domainId,
@@ -219,7 +219,10 @@ createVariableAccessAttributesResponse(
 
 	    if (domain == NULL) {
 	        if (DEBUG_MMS_SERVER) printf("MMS_SERVER: domain %s not known\n", domainId);
-	        return -1;
+
+	        mmsServer_createConfirmedErrorPdu(invokeId, response,
+	                              MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
+	        goto exit_function;
 	    }
 
 	    namedVariable = MmsDomain_getNamedVariable(domain, nameId);
@@ -232,7 +235,11 @@ createVariableAccessAttributesResponse(
 
 	if (namedVariable == NULL) {
 		if (DEBUG_MMS_SERVER) printf("MMS_SERVER: named variable %s not known\n", nameId);
-		return -1;
+
+		mmsServer_createConfirmedErrorPdu(invokeId, response,
+		                          MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
+
+		goto exit_function;
 	}
 
 	MmsPdu_t* mmsPdu = mmsServer_createConfirmedResponse(invokeId);
@@ -261,14 +268,15 @@ createVariableAccessAttributesResponse(
         mmsServer_createConfirmedErrorPdu(invokeId, response,
                       MMS_ERROR_SERVICE_OTHER);
 
-        return 0;
+        goto exit_function;
 	}
 
 	deleteVariableAccessAttributesResponse(getVarAccessAttr);
 
 	asn_DEF_MmsPdu.free_struct(&asn_DEF_MmsPdu, mmsPdu, 0);
 
-	return 0;
+exit_function:
+	return;
 }
 
 int
