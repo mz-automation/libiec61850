@@ -71,9 +71,18 @@ createStringFromBuffer(const uint8_t* buf, int size)
 	return newStr;
 }
 
+char*
+StringUtils_createStringFromBufferInBuffer(char* newString, const uint8_t* buf, int size)
+{
+    memcpy(newString, buf, size);
+    newString[size] = 0;
+
+    return newString;
+}
+
 
 char*
-createStringInBuffer(char* newStr, int count, ...)
+StringUtils_createStringInBuffer(char* newStr, int count, ...)
 {
     va_list ap;
     char* currentPos = newStr;

@@ -418,7 +418,7 @@ mmsServer_handleDefineNamedVariableListRequest(
 
 static void
 createGetNamedVariableListAttributesResponse(int invokeId, ByteBuffer* response,
-		MmsNamedVariableList variableList, char* domainName)
+		MmsNamedVariableList variableList)
 {
 	MmsPdu_t* mmsPdu = mmsServer_createConfirmedResponse(invokeId);
 
@@ -497,13 +497,20 @@ mmsServer_handleGetNamedVariableListAttributesRequest(
 
 	if (request->present == ObjectName_PR_domainspecific) {
 
-		char* domainName = createStringFromBuffer(
-				request->choice.domainspecific.domainId.buf,
-				request->choice.domainspecific.domainId.size);
+	    char domainName[65];
+	    char itemName[65];
 
-		char* itemName = createStringFromBuffer(
-				request->choice.domainspecific.itemId.buf,
-				request->choice.domainspecific.itemId.size);
+	    if ((request->choice.domainspecific.domainId.size > 64) ||
+	        (request->choice.domainspecific.itemId.size > 64)) {
+	        mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OTHER);
+	        goto exit_function;
+	    }
+
+	    StringUtils_createStringFromBufferInBuffer(domainName, request->choice.domainspecific.domainId.buf,
+	            request->choice.domainspecific.domainId.size);
+
+	    StringUtils_createStringFromBufferInBuffer(itemName, request->choice.domainspecific.itemId.buf,
+                request->choice.domainspecific.itemId.size);
 
 		MmsDevice* mmsDevice = MmsServer_getDevice(connection->server);
 
@@ -514,20 +521,40 @@ mmsServer_handleGetNamedVariableListAttributesRequest(
 					MmsDomain_getNamedVariableList(domain, itemName);
 
 			if (variableList != NULL)
-				createGetNamedVariableListAttributesResponse(invokeId, response, variableList, domainName);
+				createGetNamedVariableListAttributesResponse(invokeId, response, variableList);
 			else
 				mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
 		}
 		else
 			mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
 
+	}
+	else if (request->present == ObjectName_PR_aaspecific) {
 
-		GLOBAL_FREEMEM(domainName);
-		GLOBAL_FREEMEM(itemName);
+	    char listName[65];
+
+        if (request->choice.aaspecific.size > 64) {
+            mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OTHER);
+            goto exit_function;
+        }
+
+	    StringUtils_createStringFromBufferInBuffer(listName, request->choice.aaspecific.buf,
+	            request->choice.aaspecific.size);
+
+	    MmsDevice* mmsDevice = MmsServer_getDevice(connection->server);
+
+	    MmsNamedVariableList varList = MmsServerConnection_getNamedVariableList(connection, listName);
+
+	    if (varList != NULL)
+	        createGetNamedVariableListAttributesResponse(invokeId, response, varList);
+	    else
+	        mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
 	}
 	else {
 		mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_ACCESS_UNSUPPORTED);
 	}
+
+exit_function:
 
 	asn_DEF_GetVariableAccessAttributesRequest.free_struct(&asn_DEF_GetNamedVariableListAttributesRequest,
 			request, 0);

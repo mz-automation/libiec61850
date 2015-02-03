@@ -47,10 +47,13 @@ createString(int count, ...);
  * to concatenate.
  */
 char*
-createStringInBuffer(char* buffer, int count, ...);
+StringUtils_createStringInBuffer(char* buffer, int count, ...);
 
 char*
 createStringFromBuffer(const uint8_t* buf, int size);
+
+char*
+StringUtils_createStringFromBufferInBuffer(char* newString, const uint8_t* buf, int size);
 
 void
 StringUtils_replace(char* string, char oldChar, char newChar);

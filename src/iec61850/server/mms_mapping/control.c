@@ -207,7 +207,7 @@ initialize(ControlObject* self)
 
         self->ctlObjectName = (char*) GLOBAL_MALLOC(130);
 
-        createStringInBuffer(self->ctlObjectName, 5, MmsDomain_getName(self->mmsDomain), "/",
+        StringUtils_createStringInBuffer(self->ctlObjectName, 5, MmsDomain_getName(self->mmsDomain), "/",
                 self->lnName, "$CO$", self->name);
 
         self->error = MmsValue_newIntegerFromInt32(0);
@@ -845,7 +845,7 @@ ControlObject_sendCommandTerminationPositive(ControlObject* self)
 {
     char itemId[68]; /* 64 characters + space for FC + separator + string terminator */
 
-    createStringInBuffer(itemId, 4, self->lnName, "$CO$", self->name, "$Oper");
+    StringUtils_createStringInBuffer(itemId, 4, self->lnName, "$CO$", self->name, "$Oper");
 
     if (DEBUG_IED_SERVER)
         printf("IED_SERVER: send CommandTermination+: %s\n", itemId);
@@ -889,7 +889,7 @@ ControlObject_sendCommandTerminationNegative(ControlObject* self)
 
     char ctlObj[130];
 
-    createStringInBuffer(ctlObj, 2, self->ctlObjectName, "$Oper");
+    StringUtils_createStringInBuffer(ctlObj, 2, self->ctlObjectName, "$Oper");
 
     MmsValue ctlObjValueMemory;
 
@@ -917,7 +917,7 @@ ControlObject_sendCommandTerminationNegative(ControlObject* self)
 
     char itemId[130];
 
-    createStringInBuffer(itemId, 4, self->lnName, "$CO$", self->name, "$Oper");
+    StringUtils_createStringInBuffer(itemId, 4, self->lnName, "$CO$", self->name, "$Oper");
 
     char* domainId = MmsDomain_getName(self->mmsDomain);
 
@@ -964,7 +964,7 @@ ControlObject_sendLastApplError(ControlObject* self, MmsServerConnection* connec
 
     char ctlObj[130];
 
-    createStringInBuffer(ctlObj, 3, self->ctlObjectName, "$", ctlVariable);
+    StringUtils_createStringInBuffer(ctlObj, 3, self->ctlObjectName, "$", ctlVariable);
 
     if (DEBUG_IED_SERVER) {
         printf("IED_SERVER: sendLastApplError:\n");
