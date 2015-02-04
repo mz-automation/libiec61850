@@ -135,24 +135,35 @@ activateKeepAlive(int sd)
 static bool
 prepareServerAddress(const char* address, int port, struct sockaddr_in* sockaddr)
 {
+    bool retVal = true;
 
-	memset((char *) sockaddr , 0, sizeof(struct sockaddr_in));
+    memset((char *) sockaddr, 0, sizeof(struct sockaddr_in));
 
-	if (address != NULL) {
-		struct hostent *server;
-		server = gethostbyname(address);
+    if (address != NULL) {
+        struct addrinfo addr_hints;
+        struct addrinfo *lookup_result;
+        int result;
 
-		if (server == NULL) return false;
+        memset(&addr_hints, 0, sizeof(struct addrinfo));
+        addr_hints.ai_family = AF_INET;
+        result = getaddrinfo(address, NULL, &addr_hints, &lookup_result);
 
-		memcpy((char *) &sockaddr->sin_addr.s_addr, (char *) server->h_addr, server->h_length);
-	}
-	else
-		sockaddr->sin_addr.s_addr = htonl(INADDR_ANY);
+        if (result != 0) {
+            retVal = false;
+            goto exit_function;
+        }
+
+        memcpy(sockaddr, lookup_result->ai_addr, sizeof(struct sockaddr_in));
+        freeaddrinfo(lookup_result);
+    }
+    else
+        sockaddr->sin_addr.s_addr = htonl(INADDR_ANY);
 
     sockaddr->sin_family = AF_INET;
     sockaddr->sin_port = htons(port);
 
-    return true;
+exit_function:
+    return retVal;
 }
 
 static void

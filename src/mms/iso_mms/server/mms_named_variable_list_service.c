@@ -541,8 +541,6 @@ mmsServer_handleGetNamedVariableListAttributesRequest(
 	    StringUtils_createStringFromBufferInBuffer(listName, request->choice.aaspecific.buf,
 	            request->choice.aaspecific.size);
 
-	    MmsDevice* mmsDevice = MmsServer_getDevice(connection->server);
-
 	    MmsNamedVariableList varList = MmsServerConnection_getNamedVariableList(connection, listName);
 
 	    if (varList != NULL)
