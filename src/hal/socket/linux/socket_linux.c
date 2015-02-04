@@ -140,21 +140,21 @@ prepareServerAddress(const char* address, int port, struct sockaddr_in* sockaddr
     memset((char *) sockaddr, 0, sizeof(struct sockaddr_in));
 
     if (address != NULL) {
-        struct addrinfo addr_hints;
-        struct addrinfo *lookup_result;
+        struct addrinfo addressHints;
+        struct addrinfo *lookupResult;
         int result;
 
-        memset(&addr_hints, 0, sizeof(struct addrinfo));
-        addr_hints.ai_family = AF_INET;
-        result = getaddrinfo(address, NULL, &addr_hints, &lookup_result);
+        memset(&addressHints, 0, sizeof(struct addrinfo));
+        addressHints.ai_family = AF_INET;
+        result = getaddrinfo(address, NULL, &addressHints, &lookupResult);
 
         if (result != 0) {
             retVal = false;
             goto exit_function;
         }
 
-        memcpy(sockaddr, lookup_result->ai_addr, sizeof(struct sockaddr_in));
-        freeaddrinfo(lookup_result);
+        memcpy(sockaddr, lookupResult->ai_addr, sizeof(struct sockaddr_in));
+        freeaddrinfo(lookupResult);
     }
     else
         sockaddr->sin_addr.s_addr = htonl(INADDR_ANY);

@@ -81,6 +81,12 @@ mmsServer_createConfirmedErrorPdu(uint32_t invokeId, ByteBuffer* response, MmsEr
         asn_long2INTEGER(&mmsPdu->choice.confirmedErrorPDU.serviceError.errorClass.choice.access,
                         ServiceError__errorClass__service_other);
 	}
+	else if (errorType == MMS_ERROR_DEFINITION_OTHER) {
+	    mmsPdu->choice.confirmedErrorPDU.serviceError.errorClass.present =
+                        ServiceError__errorClass_PR_definition;
+        asn_long2INTEGER(&mmsPdu->choice.confirmedErrorPDU.serviceError.errorClass.choice.access,
+                        ServiceError__errorClass__definition_other);
+	}
 	else if (errorType == MMS_ERROR_DEFINITION_OBJECT_EXISTS) {
 	    mmsPdu->choice.confirmedErrorPDU.serviceError.errorClass.present =
                         ServiceError__errorClass_PR_definition;

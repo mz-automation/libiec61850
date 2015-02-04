@@ -149,6 +149,9 @@
 
 #define CONFIG_MMS_MAX_NUMBER_OF_VMD_SPECIFIC_DATA_SETS 10
 
+/* Maximum number of the members in a data set (named variable list) */
+#define CONFIG_MMS_MAX_NUMBER_OF_DATA_SET_MEMBERS 50
+
 /* Definition of supported services */
 #define MMS_DEFAULT_PROFILE 1
 

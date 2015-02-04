@@ -139,11 +139,17 @@
 /* Maximum number of open file per MMS connection (for MMS file read service) */
 #define CONFIG_MMS_MAX_NUMBER_OF_OPEN_FILES_PER_CONNECTION 5
 
+/* Maximum number of the domain specific data sets - this also includes the static (pre-configured) and dynamic data sets */
 #define CONFIG_MMS_MAX_NUMBER_OF_DOMAIN_SPECIFIC_DATA_SETS 10
 
+/* Maximum number of association specific data sets */
 #define CONFIG_MMS_MAX_NUMBER_OF_ASSOCIATION_SPECIFIC_DATA_SETS 10
 
+/* Maximum number of VMD specific data sets */
 #define CONFIG_MMS_MAX_NUMBER_OF_VMD_SPECIFIC_DATA_SETS 10
+
+/* Maximum number of the members in a data set (named variable list) */
+#define CONFIG_MMS_MAX_NUMBER_OF_DATA_SET_MEMBERS 50
 
 /* Definition of supported services */
 #define MMS_DEFAULT_PROFILE 1
