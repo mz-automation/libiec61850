@@ -32,9 +32,10 @@
 extern "C" {
 #endif
 
+#include "stack_config.h"
+
 #include "mms_device_model.h"
 #include "mms_value.h"
-
 #include "iso_server.h"
 
 typedef enum {
@@ -67,9 +68,11 @@ typedef struct sMmsServerConnection {
 	int maxPduSize; /* local detail */
 	IsoConnection isoConnection;
 	MmsServer server;
-	LinkedList /*<MmsNamedVariableList>*/namedVariableLists; /* aa-specific named variable lists */
-	uint32_t lastInvokeId;
+    uint32_t lastInvokeId;
 
+#if (MMS_DYNAMIC_DATA_SETS == 1)
+	LinkedList /*<MmsNamedVariableList>*/namedVariableLists; /* aa-specific named variable lists */
+#endif
 
 #if (MMS_FILE_SERVICE == 1)
 	int32_t nextFrsmId;
@@ -77,6 +80,12 @@ typedef struct sMmsServerConnection {
 #endif
 
 } MmsServerConnection;
+
+typedef enum {
+    MMS_DOMAIN_SPECIFIC,
+    MMS_ASSOCIATION_SPECIFIC,
+    MMS_VMD_SPECIFIC
+} MmsVariableListType;
 
 typedef MmsValue* (*MmsReadVariableHandler)(void* parameter, MmsDomain* domain,
 		char* variableId, MmsServerConnection* connection);
@@ -126,6 +135,32 @@ MmsServer_getValueFromCache(MmsServer self, MmsDomain* domain, char* itemId);
 
 bool
 MmsServer_isLocked(MmsServer self);
+
+/**
+ * \brief callback handler that is called whenever a named variable list changes
+ *
+ * \param parameter a user provided parameter
+ * \param create if true the the request if a request to create a new variable list, false is a delete request
+ * \param listType the type (scope) of the named variable list (either domain, association or VMD specific)
+ * \param domain the MMS domain the list is belonging to (is NULL for association or VMD specific lists!)
+ * \param listName the name
+ * \param connection client connection that requests the creation of deletion of the variable list
+ *
+ * \return true if operation has to be accepted, false if operation has to be rejected. In case of false an error message
+ *              is returned to the client.
+ */
+typedef bool (*MmsNamedVariableListChangedHandler)(void* parameter, bool create, MmsVariableListType listType, MmsDomain* domain,
+        char* listName, MmsServerConnection* connection);
+
+/**
+ * \brief Install callback handler that is called when a named variable list changes (is created or deleted)
+ *
+ * \param self the MmsServer instance to operate on
+ * \param handler the callback handler function
+ * \param parameter user provided parameter that is passed to the callback handler
+ */
+void
+MmsServer_installVariableListChangedHandler(MmsServer self, MmsNamedVariableListChangedHandler handler, void* parameter);
 
 /**
  * \brief lock the cached server data model

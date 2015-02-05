@@ -1,24 +1,24 @@
 /*
  *  mms_named_variable_list_service.c
  *
- *  Copyright 2013, 2014 Michael Zillgith
+ *  Copyright 2013-2015 Michael Zillgith
  *
  *	This file is part of libIEC61850.
  *
- *	libIEC61850 is free software: you can redistribute it and/or modify
- *	it under the terms of the GNU General Public License as published by
- *	the Free Software Foundation, either version 3 of the License, or
- *	(at your option) any later version.
+ *  libIEC61850 is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
  *
- *	libIEC61850 is distributed in the hope that it will be useful,
- *	but WITHOUT ANY WARRANTY; without even the implied warranty of
- *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *	GNU General Public License for more details.
+ *  libIEC61850 is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
  *
- *	You should have received a copy of the GNU General Public License
- *	along with libIEC61850.  If not, see <http://www.gnu.org/licenses/>.
+ *  You should have received a copy of the GNU General Public License
+ *  along with libIEC61850. If not, see <http://www.gnu.org/licenses/>.
  *
- *	See COPYING file for the complete license text.
+ *  See COPYING file for the complete license text.
  */
 
 #include "mms_server_internal.h"
@@ -46,6 +46,19 @@
 #ifndef CONFIG_MMS_MAX_NUMBER_OF_DATA_SET_MEMBERS
 #define CONFIG_MMS_MAX_NUMBER_OF_DATA_SET_MEMBERS 50
 #endif
+
+bool
+mmsServer_callVariableListChangedHandler(bool create, MmsVariableListType listType, MmsDomain* domain,
+        char* listName, MmsServerConnection* connection)
+{
+    MmsServer self = connection->server;
+
+    if (self->variableListChangedHandler != NULL)
+        return self->variableListChangedHandler(self->variableListChangedHandlerParameter,
+                create, listType, domain, listName, connection);
+    else
+        return true;
+}
 
 static void
 createDeleteNamedVariableListResponse(uint32_t invokeId, ByteBuffer* response,
@@ -117,41 +130,46 @@ mmsServer_handleDeleteNamedVariableListRequest(MmsServerConnection* connection,
 
 		for (i = 0; i < numberItems; i++) {
 			if (request->listOfVariableListName->list.array[i]->present == ObjectName_PR_domainspecific) {
-		        char domainIdStr[65];
-		        char nameIdStr[65];
+		        char domainName[65];
+		        char listName[65];
 
 		        mmsMsg_copyAsn1IdentifierToStringBuffer(request->listOfVariableListName->list.array[i]->choice.domainspecific.domainId,
-		                domainIdStr, 65);
+		                domainName, 65);
 
 		        mmsMsg_copyAsn1IdentifierToStringBuffer(request->listOfVariableListName->list.array[i]->choice.domainspecific.itemId,
-		                nameIdStr, 65);
+		                listName, 65);
 
-		        MmsDomain* domain = MmsDevice_getDomain(device, domainIdStr);
+		        MmsDomain* domain = MmsDevice_getDomain(device, domainName);
 
-				MmsNamedVariableList variableList = MmsDomain_getNamedVariableList(domain, nameIdStr);
+				MmsNamedVariableList variableList = MmsDomain_getNamedVariableList(domain, listName);
 
 				if (variableList != NULL) {
 					numberMatched++;
 
 					if (MmsNamedVariableList_isDeletable(variableList)) {
-						MmsDomain_deleteNamedVariableList(domain, nameIdStr);
-						numberDeleted++;
+
+					    if (mmsServer_callVariableListChangedHandler(false, MMS_DOMAIN_SPECIFIC, domain, listName, connection) == true) {
+					        MmsDomain_deleteNamedVariableList(domain, listName);
+                            numberDeleted++;
+                        }
 					}
 				}
 			}
 			else if (request->listOfVariableListName->list.array[i]->present == ObjectName_PR_aaspecific) {
-			    char itemId[65];
+			    char listName[65];
 
 			    mmsMsg_copyAsn1IdentifierToStringBuffer(request->listOfVariableListName->list.array[i]->choice.aaspecific,
-			            itemId, 65);
+			            listName, 65);
 
-				MmsNamedVariableList variableList = MmsServerConnection_getNamedVariableList(connection, itemId);
+				MmsNamedVariableList variableList = MmsServerConnection_getNamedVariableList(connection, listName);
 
 				if (variableList != NULL) {
 					numberMatched++;
-					numberDeleted++;
 
-					MmsServerConnection_deleteNamedVariableList(connection, itemId);
+					if (mmsServer_callVariableListChangedHandler(false, MMS_ASSOCIATION_SPECIFIC, NULL, listName, connection) == true) {
+					    numberDeleted++;
+					    MmsServerConnection_deleteNamedVariableList(connection, listName);
+					}
 				}
 			}
 		}
@@ -398,8 +416,15 @@ mmsServer_handleDefineNamedVariableListRequest(
                                 request, variableListName, &mmsError);
 
                 if (namedVariableList != NULL) {
-                    MmsDomain_addNamedVariableList(domain, namedVariableList);
-                    createDefineNamedVariableListResponse(invokeId, response);
+
+                    if (mmsServer_callVariableListChangedHandler(true, MMS_DOMAIN_SPECIFIC, domain, variableListName, connection) == true) {
+                        MmsDomain_addNamedVariableList(domain, namedVariableList);
+                        createDefineNamedVariableListResponse(invokeId, response);
+                    }
+                    else {
+                        MmsNamedVariableList_destroy(namedVariableList);
+                        mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_ACCESS_DENIED);
+                    }
                 }
                 else
                     mmsServer_createConfirmedErrorPdu(invokeId, response, mmsError);
@@ -435,8 +460,16 @@ mmsServer_handleDefineNamedVariableListRequest(
                         request, variableListName, &mmsError);
 
                 if (namedVariableList != NULL) {
-                    MmsServerConnection_addNamedVariableList(connection, namedVariableList);
-                    createDefineNamedVariableListResponse(invokeId, response);
+
+                    if (mmsServer_callVariableListChangedHandler(true, MMS_ASSOCIATION_SPECIFIC, NULL, variableListName, connection) == true) {
+                        MmsServerConnection_addNamedVariableList(connection, namedVariableList);
+                        createDefineNamedVariableListResponse(invokeId, response);
+                    }
+                    else {
+                        MmsNamedVariableList_destroy(namedVariableList);
+                        mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_ACCESS_DENIED);
+                    }
+
                 }
                 else
                     mmsServer_createConfirmedErrorPdu(invokeId, response, mmsError);

@@ -74,6 +74,9 @@ struct sMmsServer {
     MmsConnectionHandler connectionHandler;
     void* connectionHandlerParameter;
 
+    MmsNamedVariableListChangedHandler variableListChangedHandler;
+    void* variableListChangedHandlerParameter;
+
     Map openConnections;
     Map valueCaches;
     bool isLocked;
@@ -82,14 +85,14 @@ struct sMmsServer {
     Semaphore modelMutex;
 #endif
 
-#if MMS_STATUS_SERVICE == 1
+#if (MMS_STATUS_SERVICE == 1)
     int vmdLogicalStatus;
     int vmdPhysicalStatus;
     MmsStatusRequestListener statusRequestListener;
     void* statusRequestListenerParameter;
 #endif /* MMS_STATUS_SERVICE == 1 */
 
-#if MMS_IDENTIFY_SERVICE == 1
+#if (MMS_IDENTIFY_SERVICE == 1)
     char* vendorName;
     char* modelName;
     char* revision;
@@ -244,5 +247,9 @@ mmsServer_createMmsWriteResponse(MmsServerConnection* connection,
 
 void
 mmsServer_writeMmsRejectPdu(uint32_t* invokeId, int reason, ByteBuffer* response);
+
+bool
+mmsServer_callVariableListChangedHandler(bool create, MmsVariableListType listType, MmsDomain* domain,
+        char* listName, MmsServerConnection* connection);
 
 #endif /* MMS_SERVER_INTERNAL_H_ */

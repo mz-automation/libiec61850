@@ -113,6 +113,13 @@ MmsServer_installConnectionHandler(MmsServer self, MmsConnectionHandler connecti
 }
 
 void
+MmsServer_installVariableListChangedHandler(MmsServer self, MmsNamedVariableListChangedHandler handler, void* parameter)
+{
+    self->variableListChangedHandler = handler;
+    self->variableListChangedHandlerParameter = parameter;
+}
+
+void
 MmsServer_setClientAuthenticator(MmsServer self, AcseAuthenticator authenticator, void* authenticatorParameter)
 {
     IsoServer_setAuthenticator(self->isoServer, authenticator, authenticatorParameter);
