@@ -67,7 +67,12 @@ IsoClientConnection_sendMessage(IsoClientConnection self, ByteBuffer* payload);
 void
 IsoClientConnection_release(IsoClientConnection self);
 
-void
+/**
+ * \brief Send ACSE abort message and wait until connection is closed by server or timeout occured
+ *
+ * \return true if abort has been successful, false indicates a timeout
+ */
+bool
 IsoClientConnection_abort(IsoClientConnection self);
 
 void

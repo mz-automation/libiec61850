@@ -925,10 +925,15 @@ MmsConnection_abort(MmsConnection self, MmsError* mmsError)
 
     self->connectionLostHandler = NULL;
 
-    if (self->associationState == MMS_STATE_CONNECTED)
-        IsoClientConnection_abort(self->isoClient);
+    bool success = true;
 
-    //TODO wait for connection to be closed
+    if (self->associationState == MMS_STATE_CONNECTED)
+        success = IsoClientConnection_abort(self->isoClient);
+
+    if (success == false) {
+        IsoClientConnection_close(self->isoClient);
+        *mmsError = MMS_ERROR_SERVICE_TIMEOUT;
+    }
 }
 
 static void

@@ -188,10 +188,10 @@ MmsConnection_close(MmsConnection self);
 /**
  * \brief Uses the MMS/ACSE abort service to close the connection to the server
  *
- * This service should be used to abruptly interrupt the connection to the server. The TCP connection will
- * be closed immediately after sending the ACSE abort message to the server. It is not quite clear what the
+ * This service should be used to abruptly interrupt the connection to the server. It is not quite clear what the
  * benefit of this service is (simply closing the TCP connection should do the same). Though it is required by
- * conformance tests.
+ * conformance tests. In case the server doesn't close the connection after the internal timeout interval the
+ * client will close the TCP connection and set mmsError to MMS_ERROR_SERVICE_TIMEOUT.
  *
  * \param self MmsConnection instance to operate on
  * \param mmsError user provided variable to store error code

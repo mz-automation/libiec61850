@@ -498,7 +498,7 @@ IsoClientConnection_destroy(IsoClientConnection self)
     GLOBAL_FREEMEM(self);
 }
 
-void
+bool
 IsoClientConnection_abort(IsoClientConnection self)
 {
     //TODO block other messages from being sent
@@ -535,6 +535,11 @@ IsoClientConnection_abort(IsoClientConnection self)
     uint64_t timeout = Hal_getTimeInMs() + CONFIG_TCP_READ_TIMEOUT_MS;
 
     while ((self->handlingThreadRunning == true) && (Hal_getTimeInMs() < timeout));
+
+    if (self->handlingThreadRunning)
+        return false;
+    else
+        return true;
 }
 
 void
