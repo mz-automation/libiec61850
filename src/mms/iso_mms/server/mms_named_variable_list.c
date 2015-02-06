@@ -62,15 +62,22 @@ MmsNamedVariableListEntry_getVariableName(MmsNamedVariableListEntry self) {
 }
 
 MmsNamedVariableList
-MmsNamedVariableList_create(char* name, bool deletable)
+MmsNamedVariableList_create(MmsDomain* domain, char* name, bool deletable)
 {
 	MmsNamedVariableList self = (MmsNamedVariableList) GLOBAL_MALLOC(sizeof(struct sMmsNamedVariableList));
 
 	self->deletable = deletable;
 	self->name = copyString(name);
 	self->listOfVariables = LinkedList_create();
+	self->domain = domain;
 
 	return self;
+}
+
+MmsDomain*
+MmsNamedVariableList_getDomain(MmsNamedVariableList self)
+{
+    return self->domain;
 }
 
 char*

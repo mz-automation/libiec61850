@@ -468,12 +468,16 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
 
     MmsValue* dataSetValue;
 
-    if (newDatSet != NULL)
-        dataSetValue = newDatSet;
+    if (newDatSet != NULL) {
+        if (strcmp(MmsValue_toString(newDatSet), "") == 0) {
+            success = true;
+            dataSetValue = NULL;
+        }
+        else
+            dataSetValue = newDatSet;
+    }
     else
         dataSetValue = ReportControl_getRCBValue(rc, "DatSet");
-
-    char* dataSetName = MmsValue_toString(dataSetValue);
 
     if (rc->isDynamicDataSet) {
         if (rc->dataSet != NULL) {
@@ -485,6 +489,8 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
     }
 
     if (dataSetValue != NULL) {
+        char* dataSetName = MmsValue_toString(dataSetValue);
+
         DataSet* dataSet = IedModel_lookupDataSet(mapping->model, dataSetName);
 
         if (dataSet == NULL) {
@@ -1084,10 +1090,10 @@ updateOwner(ReportControl* rc, MmsServerConnection* connection)
         if (connection != NULL) {
             char* clientAddressString = MmsServerConnection_getClientAddress(connection);
 
-            if (DEBUG_IED_SERVER) printf("reporting.c: set owner to %s\n", clientAddressString);
+            if (DEBUG_IED_SERVER) printf("IED_SERVER: reporting.c: set owner to %s\n", clientAddressString);
 
             if (strchr(clientAddressString, '.') != NULL) {
-                if (DEBUG_IED_SERVER) printf("reporting.c:   client address is IPv4 address\n");
+                if (DEBUG_IED_SERVER) printf("IED_SERVER: reporting.c:   client address is IPv4 address\n");
                 {
                     uint8_t ipV4Addr[4];
 
@@ -1114,7 +1120,7 @@ updateOwner(ReportControl* rc, MmsServerConnection* connection)
             else {
                 uint8_t ipV6Addr[16];
                 MmsValue_setOctetString(owner, ipV6Addr, 0);
-                if (DEBUG_IED_SERVER) printf("reporting.c:   client address is IPv6 address or unknown\n");
+                if (DEBUG_IED_SERVER) printf("IED_SERVER: reporting.c:   client address is IPv6 address or unknown\n");
             }
         }
         else {
@@ -1219,6 +1225,9 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
             }
         }
         else {
+            if (rc->enabled == false)
+                goto exit_function;
+
             if (((rc->enabled) || (rc->reserved)) && (rc->clientConnection != connection)) {
                 retVal = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
                 goto exit_function;
@@ -1247,7 +1256,10 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 
     if (strcmp(elementName, "GI") == 0) {
         if ((rc->enabled) && (rc->clientConnection == connection)) {
-            rc->gi = true;
+
+            if (MmsValue_getBoolean(value))
+                rc->gi = true;
+
             retVal = DATA_ACCESS_ERROR_SUCCESS;
             goto exit_function;
         }
@@ -1299,7 +1311,6 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
                     retVal = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
                     goto exit_function;
                 }
-
             }
 
             retVal = DATA_ACCESS_ERROR_SUCCESS;
@@ -1379,6 +1390,14 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
             else
                 MmsValue_update(rptId, value);
 
+            goto exit_function;
+        }
+        else if (strcmp(elementName, "SqNum") == 0) {
+            retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+            goto exit_function;
+        }
+        else if (strcmp(elementName, "Owner") == 0) {
+            retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
             goto exit_function;
         }
 

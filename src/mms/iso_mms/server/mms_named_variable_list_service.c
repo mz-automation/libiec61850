@@ -236,7 +236,7 @@ checkIfVariableExists(MmsDevice* device, MmsAccessSpecifier* accessSpecifier)
 
 
 static MmsNamedVariableList
-createNamedVariableList(MmsDevice* device,
+createNamedVariableList(MmsDomain* domain, MmsDevice* device,
 		DefineNamedVariableListRequest_t* request,
 		char* variableListName, MmsError* mmsError)
 {
@@ -249,7 +249,7 @@ createNamedVariableList(MmsDevice* device,
 	    goto exit_function;
 	}
 
-	namedVariableList = MmsNamedVariableList_create(variableListName, true);
+	namedVariableList = MmsNamedVariableList_create(domain, variableListName, true);
 
 	int i;
 	for (i = 0; i < variableCount; i++) {
@@ -315,11 +315,11 @@ createNamedVariableList(MmsDevice* device,
 		            varSpec->choice.name.choice.domainspecific.domainId.buf,
                     varSpec->choice.name.choice.domainspecific.domainId.size);
 
-			MmsDomain* domain = MmsDevice_getDomain(device, domainId);
+			MmsDomain* elementDomain = MmsDevice_getDomain(device, domainId);
 
 			MmsAccessSpecifier accessSpecifier;
 
-			accessSpecifier.domain = domain;
+			accessSpecifier.domain = elementDomain;
 			accessSpecifier.variableName = variableName;
 			accessSpecifier.arrayIndex = arrayIndex;
 			accessSpecifier.componentName = componentName;
@@ -412,7 +412,7 @@ mmsServer_handleDefineNamedVariableListRequest(
             else {
                 MmsError mmsError;
 
-                MmsNamedVariableList namedVariableList = createNamedVariableList(device,
+                MmsNamedVariableList namedVariableList = createNamedVariableList(domain, device,
                                 request, variableListName, &mmsError);
 
                 if (namedVariableList != NULL) {
@@ -456,7 +456,7 @@ mmsServer_handleDefineNamedVariableListRequest(
             else {
                 MmsError mmsError;
 
-                MmsNamedVariableList namedVariableList = createNamedVariableList(device,
+                MmsNamedVariableList namedVariableList = createNamedVariableList(NULL, device,
                         request, variableListName, &mmsError);
 
                 if (namedVariableList != NULL) {

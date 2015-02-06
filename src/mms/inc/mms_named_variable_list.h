@@ -38,6 +38,7 @@ extern "C" {
 
 struct sMmsNamedVariableList {
 	bool deletable;
+	MmsDomain* domain;
 	char* name;
 	LinkedList listOfVariables;
 };
@@ -55,10 +56,13 @@ char*
 MmsNamedVariableListEntry_getVariableName(MmsNamedVariableListEntry self);
 
 MmsNamedVariableList
-MmsNamedVariableList_create(char* name, bool deletable);
+MmsNamedVariableList_create(MmsDomain* domain, char* name, bool deletable);
 
 char*
 MmsNamedVariableList_getName(MmsNamedVariableList self);
+
+MmsDomain*
+MmsNamedVariableList_getDomain(MmsNamedVariableList self);
 
 bool
 MmsNamedVariableList_isDeletable(MmsNamedVariableList self);

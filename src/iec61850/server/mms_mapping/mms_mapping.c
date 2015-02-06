@@ -1048,7 +1048,7 @@ createDataSets(MmsDevice* mmsDevice, IedModel* iedModel)
 
         MmsDomain* dataSetDomain = MmsDevice_getDomain(mmsDevice, domainName);
 
-        MmsNamedVariableList varList = MmsNamedVariableList_create(dataset->name, false);
+        MmsNamedVariableList varList = MmsNamedVariableList_create(dataSetDomain, dataset->name, false);
 
         DataSetEntry* dataSetEntry = dataset->fcdas;
 
@@ -2052,6 +2052,73 @@ mmsReadAccessHandler (void* parameter, MmsDomain* domain, char* variableId, MmsS
     return DATA_ACCESS_ERROR_SUCCESS;
 }
 
+static bool
+variableListChangedHandler (void* parameter, bool create, MmsVariableListType listType, MmsDomain* domain,
+        char* listName, MmsServerConnection* connection)
+{
+    bool allow = true;
+
+#if (DEBUG_IED_SERVER == 1)
+    if (create)
+        printf("create data set ");
+    else
+        printf("delete data set ");
+
+    switch (listType) {
+    case MMS_VMD_SPECIFIC:
+        printf("VMD ");
+        break;
+    case MMS_ASSOCIATION_SPECIFIC:
+        printf("association ");
+        break;
+    case MMS_DOMAIN_SPECIFIC:
+        printf("domain ");
+        break;
+    }
+
+    printf("specific (name=%s)\n", listName);
+#endif /* (DEBUG_IED_SERVER == 1) */
+
+    MmsMapping* self = (MmsMapping*) parameter;
+
+    if (create == false) {
+        /* Check if data set is referenced in a report */
+
+        LinkedList element = self->reportControls;
+
+        while ((element = LinkedList_getNext(element)) != NULL) {
+            ReportControl* rc = (ReportControl*) element->data;
+
+            if (rc->isDynamicDataSet) {
+                if (rc->dataSet != NULL) {
+
+                    if (listType == MMS_DOMAIN_SPECIFIC) {
+                        if (rc->dataSet->logicalDeviceName != NULL) {
+                            if (strcmp(rc->dataSet->name, listName) == 0) {
+                                if (strcmp(rc->dataSet->logicalDeviceName, MmsDomain_getName(domain)) == 0) {
+                                    allow = false;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    else if (listType == MMS_ASSOCIATION_SPECIFIC) {
+                        if (rc->dataSet->logicalDeviceName == NULL) {
+                            if (strcmp(rc->dataSet->name, listName) == 0) {
+                                allow = false;
+                                break;
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
+    }
+
+    return allow;
+}
+
 void
 MmsMapping_installHandlers(MmsMapping* self)
 {
@@ -2059,6 +2126,7 @@ MmsMapping_installHandlers(MmsMapping* self)
     MmsServer_installWriteHandler(self->mmsServer, mmsWriteHandler, (void*) self);
     MmsServer_installReadAccessHandler(self->mmsServer, mmsReadAccessHandler, (void*) self);
     MmsServer_installConnectionHandler(self->mmsServer, mmsConnectionHandler, (void*) self);
+    MmsServer_installVariableListChangedHandler(self->mmsServer, variableListChangedHandler, (void*) self);
 }
 
 void
@@ -2446,7 +2514,10 @@ MmsMapping_createDataSetByNamedVariableList(MmsMapping* self, MmsNamedVariableLi
 {
     DataSet* dataSet = (DataSet*) GLOBAL_MALLOC(sizeof(DataSet));
 
-    dataSet->logicalDeviceName = NULL; /* name is not relevant for dynamically created data set */
+    if (variableList->domain != NULL)
+        dataSet->logicalDeviceName = MmsDomain_getName(variableList->domain);
+    else
+        dataSet->logicalDeviceName = NULL; /* name is not relevant for association specific data sets */
 
     dataSet->name = variableList->name;
     dataSet->elementCount = LinkedList_size(variableList->listOfVariables);
