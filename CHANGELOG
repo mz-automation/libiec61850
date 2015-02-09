@@ -1,3 +1,18 @@
+Changes to version 0.8.4
+------------------------
+- server: implemented all optional report elements for buffered reporting
+- server: fixed bug (server crash) for buffered reporting of integer values
+- client: client closes socket after timeout when sending an ABORT message
+- common: removed wrong transport disconnect parameter from session FINISH message
+- client: LastApplError contrlObj detection is now more robust
+- SCL parser: parser consider default values from "DataTypeTemplates" section
+- server: now sending error message when client sends a getDataDefinition with wrong domain name
+- server: fixed standard deviations in unbuffered reporting
+- server: predefined data sets can contain element of multiple logical devices
+- MMS server: added callbacks for deletion and creation of new data sets (named variable lists)
+- and a lot of small buf fixes
+
+
 Changes to version 0.8.3
 ------------------------
 - client: better support for optional report elements
