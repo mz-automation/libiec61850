@@ -984,6 +984,7 @@ MmsValue_cloneToBuffer(MmsValue* self, uint8_t* destinationAddress)
     case MMS_INTEGER:
     case MMS_UNSIGNED:
         {
+            newValue->value.integer = (Asn1PrimitiveValue*) destinationAddress;
             Asn1PrimitiveValue* newAsn1Value = (Asn1PrimitiveValue*) destinationAddress;
             memcpy(destinationAddress, self->value.integer, sizeof(Asn1PrimitiveValue));
             destinationAddress += sizeof(Asn1PrimitiveValue);

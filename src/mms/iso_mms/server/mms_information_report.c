@@ -204,7 +204,6 @@ void /* send information report for a named variable list */
 MmsServerConnection_sendInformationReportVMDSpecific(MmsServerConnection* self, char* itemId, LinkedList values,
         bool handlerMode)
 {
-
     uint32_t variableAccessSpecSize = 0;
     uint32_t objectNameSize = 0;
 
@@ -226,11 +225,11 @@ MmsServerConnection_sendInformationReportVMDSpecific(MmsServerConnection* self, 
 
     for (i = 0; i < variableCount; i++) {
 
-       MmsValue* data = (MmsValue*) value->data;
+        MmsValue* data = (MmsValue*) value->data;
 
-       accessResultSize += mmsServer_encodeAccessResult(data, NULL, 0, false);
+        accessResultSize += mmsServer_encodeAccessResult(data, NULL, 0, false);
 
-       value = LinkedList_getNext(value);
+        value = LinkedList_getNext(value);
     }
 
     listOfAccessResultSize = accessResultSize +
