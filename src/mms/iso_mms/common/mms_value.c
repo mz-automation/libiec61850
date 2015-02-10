@@ -895,10 +895,10 @@ MmsValue_toUnixTimestamp(const MmsValue* self)
 	timeArray[2] = self->value.utcTime[1];
 	timeArray[3] = self->value.utcTime[0];
 #else
-    timeArray[0] = self->self.utcTime[0];
-    timeArray[1] = self->self.utcTime[1];
-    timeArray[2] = self->self.utcTime[2];
-    timeArray[3] = self->self.utcTime[3];
+    timeArray[0] = self->value.utcTime[0];
+    timeArray[1] = self->value.utcTime[1];
+    timeArray[2] = self->value.utcTime[2];
+    timeArray[3] = self->value.utcTime[3];
 #endif
 
 	return timestamp;
