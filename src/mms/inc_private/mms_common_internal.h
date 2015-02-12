@@ -1,7 +1,7 @@
 /*
  *  mms_common_internal.h
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013, 2014, 2015 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -21,10 +21,23 @@
  *  See COPYING file for the complete license text.
  */
 
+#ifndef MMS_COMMON_INTERNAL_H_
+#define MMS_COMMON_INTERNAL_H_
+
 #include "mms_value.h"
 #include "MmsPdu.h"
 #include "mms_access_result.h"
 #include "conversions.h"
+
+#define DEFAULT_MAX_SERV_OUTSTANDING_CALLING 5
+#define DEFAULT_MAX_SERV_OUTSTANDING_CALLED 5
+#define DEFAULT_DATA_STRUCTURE_NESTING_LEVEL 10
+
+typedef enum
+{
+    MMS_ERROR, MMS_INITIATE, MMS_CONFIRMED_REQUEST, MMS_OK, MMS_CONCLUDE
+} MmsIndication;
+
 
 MmsValue*
 mmsMsg_parseDataElement(Data_t* dataElement);
@@ -52,3 +65,6 @@ mmsMsg_copyAsn1IdentifierToStringBuffer(Identifier_t identifier, char* buffer, i
 
 void
 mmsMsg_deleteAccessResultList(AccessResult_t** accessResult, int variableCount);
+
+#endif /* MMS_COMMON_INTERNAL */
+

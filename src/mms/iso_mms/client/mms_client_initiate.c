@@ -23,6 +23,7 @@
 
 #include <MmsPdu.h>
 #include "mms_common.h"
+#include "mms_common_internal.h"
 #include "mms_client_connection.h"
 #include "byte_buffer.h"
 

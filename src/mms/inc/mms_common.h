@@ -30,24 +30,10 @@
 extern "C" {
 #endif
 
-//TODO move to other file
-#define DEFAULT_MAX_SERV_OUTSTANDING_CALLING 5
-#define DEFAULT_MAX_SERV_OUTSTANDING_CALLED 5
-#define DEFAULT_DATA_STRUCTURE_NESTING_LEVEL 10
-#define DEFAULT_MAX_PDU_SIZE 65000
-
-//TODO move to other file - not required in API
-typedef enum
-{
-    MMS_ERROR, MMS_INITIATE, MMS_CONFIRMED_REQUEST, MMS_OK, MMS_CONCLUDE
-} MmsIndication;
-
 /**
  * \addtogroup common_api_group
  */
 /**@{*/
-
-
 
 typedef enum
 {
