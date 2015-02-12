@@ -301,7 +301,10 @@ MmsServerConnection_init(MmsServerConnection* connection, MmsServer server, IsoC
 	self->dataStructureNestingLevel = 0;
 	self->server = server;
 	self->isoConnection = isoCon;
+
+#if (MMS_DYNAMIC_DATA_SETS == 1)
 	self->namedVariableLists = LinkedList_create();
+#endif
 
 	IsoConnection_installListener(isoCon, messageReceived, (void*) self);
 
@@ -320,10 +323,14 @@ MmsServerConnection_destroy(MmsServerConnection* self)
             FileSystem_closeFile(self->frsms[frsmIndex].fileHandle);
 #endif
 
+#if (MMS_DYNAMIC_DATA_SETS == 1)
 	LinkedList_destroyDeep(self->namedVariableLists, (LinkedListValueDeleteFunction) MmsNamedVariableList_destroy);
+#endif
+
 	GLOBAL_FREEMEM(self);
 }
 
+#if (MMS_DYNAMIC_DATA_SETS == 1)
 bool
 MmsServerConnection_addNamedVariableList(MmsServerConnection* self, MmsNamedVariableList variableList)
 {
@@ -361,6 +368,8 @@ MmsServerConnection_getNamedVariableList(MmsServerConnection* self, char* variab
 
 	return variableList;
 }
+#endif /* (MMS_DYNAMIC_DATA_SETS == 1) */
+
 
 char*
 MmsServerConnection_getClientAddress(MmsServerConnection* self)
@@ -368,11 +377,13 @@ MmsServerConnection_getClientAddress(MmsServerConnection* self)
 	return IsoConnection_getPeerAddress(self->isoConnection);
 }
 
+#if (MMS_DYNAMIC_DATA_SETS == 1)
 LinkedList
 MmsServerConnection_getNamedVariableLists(MmsServerConnection* self)
 {
 	return self->namedVariableLists;
 }
+#endif /* (MMS_DYNAMIC_DATA_SETS == 1) */
 
 uint32_t
 MmsServerConnection_getLastInvokeId(MmsServerConnection* self)

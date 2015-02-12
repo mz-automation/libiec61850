@@ -905,7 +905,7 @@ MmsValue_toUnixTimestamp(const MmsValue* self)
 }
 
 int
-MmsValue_getSizeInMemory(MmsValue* self)
+MmsValue_getSizeInMemory(const MmsValue* self)
 {
     int memorySize = sizeof(MmsValue);
 
@@ -953,7 +953,7 @@ MmsValue_getSizeInMemory(MmsValue* self)
 }
 
 uint8_t*
-MmsValue_cloneToBuffer(MmsValue* self, uint8_t* destinationAddress)
+MmsValue_cloneToBuffer(const MmsValue* self, uint8_t* destinationAddress)
 {
     MmsValue* newValue = (MmsValue*) destinationAddress;
 
@@ -1027,7 +1027,7 @@ MmsValue_cloneToBuffer(MmsValue* self, uint8_t* destinationAddress)
 
 // create a deep clone
 MmsValue*
-MmsValue_clone(MmsValue* self)
+MmsValue_clone(const MmsValue* self)
 {
 	MmsValue* newValue = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
 
@@ -1116,7 +1116,7 @@ exit_function:
 }
 
 uint32_t
-MmsValue_getArraySize(MmsValue* self)
+MmsValue_getArraySize(const MmsValue* self)
 {
 	return self->value.structure.size;
 }
@@ -1314,7 +1314,7 @@ MmsValue_getOctetStringBuffer(MmsValue* self)
 }
 
 MmsValue*
-MmsValue_newStructure(MmsVariableSpecification* typeSpec)
+MmsValue_newStructure(const MmsVariableSpecification* typeSpec)
 {
 	MmsValue* self = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
 
@@ -1336,7 +1336,7 @@ MmsValue_newStructure(MmsVariableSpecification* typeSpec)
 }
 
 MmsValue*
-MmsValue_newDefaultValue(MmsVariableSpecification* typeSpec)
+MmsValue_newDefaultValue(const MmsVariableSpecification* typeSpec)
 {
 	MmsValue* self = NULL;
 

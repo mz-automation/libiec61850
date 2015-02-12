@@ -207,6 +207,7 @@ getnamedVariableListsVMDSpecific(MmsServerConnection* connection)
     return nameList;
 }
 
+#if (MMS_DYNAMIC_DATA_SETS == 1)
 static LinkedList
 getNamedVariableListAssociationSpecific(MmsServerConnection* connection)
 {
@@ -218,7 +219,9 @@ getNamedVariableListAssociationSpecific(MmsServerConnection* connection)
 
 	return nameList;
 }
-#endif
+#endif /* (MMS_DYNAMIC_DATA_SETS == 1) */
+
+#endif /* (MMS_DATA_SET_SERVICE == 1) */
 
 static void
 createNameListResponse(
@@ -493,6 +496,7 @@ mmsServer_handleGetNameListRequest(
 	}
 
 #if (MMS_DATA_SET_SERVICE == 1)
+#if (MMS_DYNAMIC_DATA_SETS == 1)
 	else if (objectScope == OBJECT_SCOPE_ASSOCIATION) { /* association-specific */
 
 		if (objectClass == OBJECT_CLASS_NAMED_VARIABLE_LIST) {
@@ -505,6 +509,7 @@ mmsServer_handleGetNameListRequest(
 		else
 			mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_ACCESS_UNSUPPORTED);
 	}
+#endif /* (MMS_DYNAMIC_DATA_SETS == 1) */
 #endif /* (MMS_DATA_SET_SERVICE == 1) */
 
 	else {

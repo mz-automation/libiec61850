@@ -650,6 +650,7 @@ handleReadNamedVariableListRequest(
 			}
 		}
 	}
+#if (MMS_DYNAMIC_DATA_SETS == 1)
 	else if (read->variableAccessSpecification.choice.variableListName.present ==
 				ObjectName_PR_aaspecific)
 	{
@@ -672,6 +673,7 @@ handleReadNamedVariableListRequest(
 		else
 			createNamedVariableListResponse(connection, namedList, invokeId, response, read, &accessSpec);
 	}
+#endif /* (MMS_DYNAMIC_DATA_SETS == 1) */
 	else
 		mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_ACCESS_UNSUPPORTED);
 }

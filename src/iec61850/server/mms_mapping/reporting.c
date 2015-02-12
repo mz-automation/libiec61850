@@ -493,6 +493,7 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
 
         DataSet* dataSet = IedModel_lookupDataSet(mapping->model, dataSetName);
 
+#if (MMS_DYNAMIC_DATA_SETS == 1)
         if (dataSet == NULL) {
             dataSet = MmsMapping_getDomainSpecificDataSet(mapping, dataSetName);
 
@@ -518,6 +519,12 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
         }
         else
             rc->isDynamicDataSet = false;
+#else
+
+        if (dataSet == NULL)
+            goto exit_function;
+
+#endif /* (MMS_DYNAMIC_DATA_SETS == 1) */
 
         deleteDataSetValuesShadowBuffer(rc);
 

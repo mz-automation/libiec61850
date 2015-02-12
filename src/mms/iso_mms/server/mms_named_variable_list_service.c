@@ -605,6 +605,7 @@ mmsServer_handleGetNamedVariableListAttributesRequest(
 			mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
 
 	}
+#if (MMS_DYNAMIC_DATA_SETS == 1)
 	else if (request->present == ObjectName_PR_aaspecific) {
 
 	    char listName[65];
@@ -624,6 +625,7 @@ mmsServer_handleGetNamedVariableListAttributesRequest(
 	    else
 	        mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
 	}
+#endif /* (MMS_DYNAMIC_DATA_SETS == 1) */
 	else {
 		mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_ACCESS_UNSUPPORTED);
 	}

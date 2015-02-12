@@ -90,7 +90,7 @@ MmsValue_createArray(MmsVariableSpecification* elementType, int size);
  * \return the size of the array
  */
 uint32_t
-MmsValue_getArraySize(MmsValue* self);
+MmsValue_getArraySize(const MmsValue* self);
 
 /**
  * \brief Get an element of an array or structure.
@@ -639,13 +639,13 @@ MmsValue*
 MmsValue_newOctetString(int size, int maxSize);
 
 MmsValue*
-MmsValue_newStructure(MmsVariableSpecification* typeSpec);
+MmsValue_newStructure(const MmsVariableSpecification* typeSpec);
 
 MmsValue*
 MmsValue_createEmptyStructure(int size);
 
 MmsValue*
-MmsValue_newDefaultValue(MmsVariableSpecification* typeSpec);
+MmsValue_newDefaultValue(const MmsVariableSpecification* typeSpec);
 
 MmsValue*
 MmsValue_newIntegerFromInt8(int8_t integer);
@@ -679,7 +679,7 @@ MmsValue_newDouble(double variable);
  * \return an MmsValue instance that is an exact copy of the given instance.
  */
 MmsValue*
-MmsValue_clone(MmsValue* self);
+MmsValue_clone(const MmsValue* self);
 
 /**
  * \brief Create a (deep) copy of an MmsValue instance in a user provided buffer
@@ -692,7 +692,7 @@ MmsValue_clone(MmsValue* self);
  * \return a pointer to the position in the buffer just after the last byte written.
  */
 uint8_t*
-MmsValue_cloneToBuffer(MmsValue* self, uint8_t* destinationAddress);
+MmsValue_cloneToBuffer(const MmsValue* self, uint8_t* destinationAddress);
 
 /**
  * \brief Determine the required amount of bytes by a clone.
@@ -705,7 +705,7 @@ MmsValue_cloneToBuffer(MmsValue* self, uint8_t* destinationAddress);
  * \return the number of bytes required by a clone
  */
 int
-MmsValue_getSizeInMemory(MmsValue* self);
+MmsValue_getSizeInMemory(const MmsValue* self);
 
 /**
  * \brief Delete an MmsValue instance.
