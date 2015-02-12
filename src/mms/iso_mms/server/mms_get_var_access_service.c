@@ -204,7 +204,7 @@ deleteVariableAccessAttributesResponse(
 
 static void
 createVariableAccessAttributesResponse(
-		MmsServerConnection* connection,
+		MmsServerConnection connection,
 		char* domainId,
 		char* nameId,
 		int invokeId,
@@ -281,7 +281,7 @@ exit_function:
 
 int
 mmsServer_handleGetVariableAccessAttributesRequest(
-		MmsServerConnection* connection,
+		MmsServerConnection connection,
 		uint8_t* buffer, int bufPos, int maxBufPos,
 		uint32_t invokeId,
 		ByteBuffer* response)

@@ -27,7 +27,7 @@
 
 void
 mmsServer_handleIdentifyRequest(
-        MmsServerConnection* connection,
+        MmsServerConnection connection,
         int invokeId,
         ByteBuffer* response)
 {

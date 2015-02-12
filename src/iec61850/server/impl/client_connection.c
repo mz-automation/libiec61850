@@ -1,7 +1,7 @@
 /*
  *  client_connection.c
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013, 2014, 2015 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -29,6 +29,7 @@
 #include "hal_thread.h"
 
 #include "ied_server_private.h"
+#include "mms_server.h"
 
 struct sClientConnection {
 
@@ -121,16 +122,16 @@ private_ClientConnection_getServerConnectionHandle(ClientConnection self)
 const char*
 ClientConnection_getPeerAddress(ClientConnection self)
 {
-    MmsServerConnection* mmsConnection = (MmsServerConnection*) self->serverConnectionHandle;
+    MmsServerConnection mmsConnection = (MmsServerConnection) self->serverConnectionHandle;
 
-    return IsoConnection_getPeerAddress(mmsConnection->isoConnection);
+    return IsoConnection_getPeerAddress(MmsServerConnection_getIsoConnection(mmsConnection));
 }
 
 
 void*
 ClientConnection_getSecurityToken(ClientConnection self)
 {
-    MmsServerConnection* mmsConnection = (MmsServerConnection*) self->serverConnectionHandle;
+    MmsServerConnection mmsConnection = (MmsServerConnection) self->serverConnectionHandle;
 
-    return IsoConnection_getSecurityToken(mmsConnection->isoConnection);
+    return IsoConnection_getSecurityToken(MmsServerConnection_getIsoConnection(mmsConnection));
 }

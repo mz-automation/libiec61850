@@ -99,26 +99,63 @@ struct sMmsServer {
 #endif /* MMS_IDENTIFY_SERVICE == 1 */
 };
 
+#if (MMS_FILE_SERVICE == 1)
+
+#ifndef CONFIG_MMS_MAX_NUMBER_OF_OPEN_FILES_PER_CONNECTION
+#define CONFIG_MMS_MAX_NUMBER_OF_OPEN_FILES_PER_CONNECTION 5
+#endif
+
+#include "hal_filesystem.h"
+
+typedef struct {
+        int32_t frsmId;
+        uint32_t readPosition;
+        uint32_t fileSize;
+        FileHandle fileHandle;
+} MmsFileReadStateMachine;
+
+#endif /* (MMS_FILE_SERVICE == 1) */
+
+struct sMmsServerConnection {
+    int maxServOutstandingCalling;
+    int maxServOutstandingCalled;
+    int dataStructureNestingLevel;
+    int maxPduSize; /* local detail */
+    IsoConnection isoConnection;
+    MmsServer server;
+    uint32_t lastInvokeId;
+
+#if (MMS_DYNAMIC_DATA_SETS == 1)
+    LinkedList /*<MmsNamedVariableList>*/namedVariableLists; /* aa-specific named variable lists */
+#endif
+
+#if (MMS_FILE_SERVICE == 1)
+    int32_t nextFrsmId;
+    MmsFileReadStateMachine frsms[CONFIG_MMS_MAX_NUMBER_OF_OPEN_FILES_PER_CONNECTION];
+#endif
+
+};
+
 /* write_out function required for ASN.1 encoding */
 int
 mmsServer_write_out(const void *buffer, size_t size, void *app_key);
 
 void
-mmsServer_handleDeleteNamedVariableListRequest(MmsServerConnection* connection,
+mmsServer_handleDeleteNamedVariableListRequest(MmsServerConnection connection,
         uint8_t* buffer, int bufPos, int maxBufPos,
         uint32_t invokeId,
         ByteBuffer* response);
 
 void
 mmsServer_handleGetNamedVariableListAttributesRequest(
-		MmsServerConnection* connection,
+		MmsServerConnection connection,
 		uint8_t* buffer, int bufPos, int maxBufPos,
 		uint32_t invokeId,
 		ByteBuffer* response);
 
 void
 mmsServer_handleReadRequest(
-		MmsServerConnection* connection,
+		MmsServerConnection connection,
 		uint8_t* buffer, int bufPos, int maxBufPos,
 		uint32_t invokeId,
 		ByteBuffer* response);
@@ -134,47 +171,47 @@ mmsServer_writeConcludeResponsePdu(ByteBuffer* response);
 
 void
 mmsServer_handleInitiateRequest (
-        MmsServerConnection* self,
+        MmsServerConnection self,
         uint8_t* buffer, int bufPos, int maxBufPos,
         ByteBuffer* response);
 
 int
 mmsServer_handleGetVariableAccessAttributesRequest(
-		MmsServerConnection* connection,
+		MmsServerConnection connection,
 		uint8_t* buffer, int bufPos, int maxBufPos,
 		uint32_t invokeId,
 		ByteBuffer* response);
 
 void
 mmsServer_handleDefineNamedVariableListRequest(
-        MmsServerConnection* connection,
+        MmsServerConnection connection,
         uint8_t* buffer, int bufPos, int maxBufPos,
         uint32_t invokeId,
         ByteBuffer* response);
 
 void
 mmsServer_handleGetNameListRequest(
-		MmsServerConnection* connection,
+		MmsServerConnection connection,
 		uint8_t* buffer, int bufPos, int maxBufPos,
 		uint32_t invokeId,
 		ByteBuffer* response);
 
 void
 mmsServer_handleWriteRequest(
-		MmsServerConnection* connection,
+		MmsServerConnection connection,
 		uint8_t* buffer, int bufPos, int maxBufPos,
 		uint32_t invokeId,
 		ByteBuffer* response);
 
 void
 mmsServer_handleIdentifyRequest(
-        MmsServerConnection* connection,
+        MmsServerConnection connection,
         int invokeId,
         ByteBuffer* response);
 
 void
 mmsServer_handleStatusRequest(
-        MmsServerConnection* connection,
+        MmsServerConnection connection,
         uint8_t* requestBuffer,
         int bufPos,
         int invokeId,
@@ -182,42 +219,42 @@ mmsServer_handleStatusRequest(
 
 void
 mmsServer_handleFileDirectoryRequest(
-        MmsServerConnection* connection,
+        MmsServerConnection connection,
         uint8_t* buffer, int bufPos, int maxBufPos,
         uint32_t invokeId,
         ByteBuffer* response);
 
 void
 mmsServer_handleFileOpenRequest(
-        MmsServerConnection* connection,
+        MmsServerConnection connection,
         uint8_t* buffer, int bufPos, int maxBufPos,
         uint32_t invokeId,
         ByteBuffer* response);
 
 void
 mmsServer_handleFileDeleteRequest(
-        MmsServerConnection* connection,
+        MmsServerConnection connection,
         uint8_t* buffer, int bufPos, int maxBufPos,
         uint32_t invokeId,
         ByteBuffer* response);
 
 void
 mmsServer_handleFileRenameRequest(
-        MmsServerConnection* connection,
+        MmsServerConnection connection,
         uint8_t* buffer, int bufPos, int maxBufPos,
         uint32_t invokeId,
         ByteBuffer* response);
 
 void
 mmsServer_handleFileReadRequest(
-        MmsServerConnection* connection,
+        MmsServerConnection connection,
         uint8_t* buffer, int bufPos, int maxBufPos,
         uint32_t invokeId,
         ByteBuffer* response);
 
 void
 mmsServer_handleFileCloseRequest(
-        MmsServerConnection* connection,
+        MmsServerConnection connection,
         uint8_t* buffer, int bufPos, int maxBufPos,
         uint32_t invokeId,
         ByteBuffer* response);
@@ -236,13 +273,13 @@ mmsServer_deleteVariableList(LinkedList namedVariableLists, char* variableListNa
 
 MmsDataAccessError
 mmsServer_setValue(MmsServer self, MmsDomain* domain, char* itemId, MmsValue* value,
-        MmsServerConnection* connection);
+        MmsServerConnection connection);
 
 MmsValue*
-mmsServer_getValue(MmsServer self, MmsDomain* domain, char* itemId, MmsServerConnection* connection);
+mmsServer_getValue(MmsServer self, MmsDomain* domain, char* itemId, MmsServerConnection connection);
 
 int
-mmsServer_createMmsWriteResponse(MmsServerConnection* connection,
+mmsServer_createMmsWriteResponse(MmsServerConnection connection,
         int invokeId, ByteBuffer* response, int numberOfItems, MmsDataAccessError* accessResults);
 
 void
@@ -250,6 +287,6 @@ mmsServer_writeMmsRejectPdu(uint32_t* invokeId, int reason, ByteBuffer* response
 
 bool
 mmsServer_callVariableListChangedHandler(bool create, MmsVariableListType listType, MmsDomain* domain,
-        char* listName, MmsServerConnection* connection);
+        char* listName, MmsServerConnection connection);
 
 #endif /* MMS_SERVER_INTERNAL_H_ */

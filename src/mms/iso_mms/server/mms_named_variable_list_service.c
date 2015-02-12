@@ -49,7 +49,7 @@
 
 bool
 mmsServer_callVariableListChangedHandler(bool create, MmsVariableListType listType, MmsDomain* domain,
-        char* listName, MmsServerConnection* connection)
+        char* listName, MmsServerConnection connection)
 {
     MmsServer self = connection->server;
 
@@ -96,7 +96,7 @@ createDeleteNamedVariableListResponse(uint32_t invokeId, ByteBuffer* response,
 }
 
 void
-mmsServer_handleDeleteNamedVariableListRequest(MmsServerConnection* connection,
+mmsServer_handleDeleteNamedVariableListRequest(MmsServerConnection connection,
 		uint8_t* buffer, int bufPos, int maxBufPos,
 		uint32_t invokeId,
 		ByteBuffer* response)
@@ -354,7 +354,7 @@ exit_function:
 
 void
 mmsServer_handleDefineNamedVariableListRequest(
-		MmsServerConnection* connection,
+		MmsServerConnection connection,
 		uint8_t* buffer, int bufPos, int maxBufPos,
 		uint32_t invokeId,
 		ByteBuffer* response)
@@ -556,7 +556,7 @@ createGetNamedVariableListAttributesResponse(int invokeId, ByteBuffer* response,
 
 void
 mmsServer_handleGetNamedVariableListAttributesRequest(
-		MmsServerConnection* connection,
+		MmsServerConnection connection,
 		uint8_t* buffer, int bufPos, int maxBufPos,
 		uint32_t invokeId,
 		ByteBuffer* response)

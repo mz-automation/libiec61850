@@ -46,7 +46,7 @@ typedef struct sVarAccessSpec {
 } VarAccessSpec;
 
 static MmsValue*
-addNamedVariableValue(MmsVariableSpecification* namedVariable, MmsServerConnection* connection,
+addNamedVariableValue(MmsVariableSpecification* namedVariable, MmsServerConnection connection,
         MmsDomain* domain, char* itemId)
 {
     MmsValue* value = NULL;
@@ -97,7 +97,7 @@ addNamedVariableValue(MmsVariableSpecification* namedVariable, MmsServerConnecti
 
 static void
 addComplexValueToResultList(MmsVariableSpecification* namedVariable,
-                                LinkedList typedValues, MmsServerConnection* connection,
+                                LinkedList typedValues, MmsServerConnection connection,
                                 MmsDomain* domain, char* nameIdStr)
 {
 
@@ -181,7 +181,7 @@ getComponentOfArrayElement(AlternateAccess_t* alternateAccess, MmsVariableSpecif
 }
 
 static void
-alternateArrayAccess(MmsServerConnection* connection,
+alternateArrayAccess(MmsServerConnection connection,
 		AlternateAccess_t* alternateAccess, MmsDomain* domain,
 		char* itemId, LinkedList values,
 		MmsVariableSpecification* namedVariable)
@@ -252,7 +252,7 @@ alternateArrayAccess(MmsServerConnection* connection,
 
 static void
 addNamedVariableToResultList(MmsVariableSpecification* namedVariable, MmsDomain* domain, char* nameIdStr,
-		LinkedList /*<MmsValue>*/ values, MmsServerConnection* connection, AlternateAccess_t* alternateAccess)
+		LinkedList /*<MmsValue>*/ values, MmsServerConnection connection, AlternateAccess_t* alternateAccess)
 {
 	if (namedVariable != NULL) {
 
@@ -371,7 +371,7 @@ encodeVariableAccessSpecification(VarAccessSpec* accessSpec, uint8_t* buffer, in
 }
 
 static void
-encodeReadResponse(MmsServerConnection* connection,
+encodeReadResponse(MmsServerConnection connection,
         uint32_t invokeId, ByteBuffer* response, LinkedList values,
         VarAccessSpec* accessSpec)
 {
@@ -469,7 +469,7 @@ encodeReadResponse(MmsServerConnection* connection,
 
 static void
 handleReadListOfVariablesRequest(
-		MmsServerConnection* connection,
+		MmsServerConnection connection,
 		ReadRequest_t* read,
 		uint32_t invokeId,
 		ByteBuffer* response)
@@ -568,7 +568,7 @@ exit:
 #if (MMS_DATA_SET_SERVICE == 1)
 
 static void
-createNamedVariableListResponse(MmsServerConnection* connection, MmsNamedVariableList namedList,
+createNamedVariableListResponse(MmsServerConnection connection, MmsNamedVariableList namedList,
 		int invokeId, ByteBuffer* response, ReadRequest_t* read, VarAccessSpec* accessSpec)
 {
 
@@ -607,7 +607,7 @@ createNamedVariableListResponse(MmsServerConnection* connection, MmsNamedVariabl
 
 static void
 handleReadNamedVariableListRequest(
-		MmsServerConnection* connection,
+		MmsServerConnection connection,
 		ReadRequest_t* read,
 		int invokeId,
 		ByteBuffer* response)
@@ -682,7 +682,7 @@ handleReadNamedVariableListRequest(
 
 void
 mmsServer_handleReadRequest(
-		MmsServerConnection* connection,
+		MmsServerConnection connection,
 		uint8_t* buffer, int bufPos, int maxBufPos,
 		uint32_t invokeId,
 		ByteBuffer* response)

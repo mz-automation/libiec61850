@@ -143,7 +143,7 @@ MmsMapping_installWriteAccessHandler(MmsMapping* self, DataAttribute* dataAttrib
 
 MmsDataAccessError
 Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* variableIdOrig,
-                         MmsValue* value, MmsServerConnection* connection);
+                         MmsValue* value, MmsServerConnection connection);
 
 ControlObject*
 Control_lookupControlObject(MmsMapping* self, MmsDomain* domain, char* lnName, char* objectName);

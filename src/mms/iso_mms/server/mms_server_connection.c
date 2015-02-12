@@ -79,7 +79,7 @@ mmsServer_writeMmsRejectPdu(uint32_t* invokeId, int reason, ByteBuffer* response
 
 static void
 handleConfirmedRequestPdu(
-		MmsServerConnection* self,
+		MmsServerConnection self,
 		uint8_t* buffer, int bufPos, int maxBufPos,
 		ByteBuffer* response)
 {
@@ -225,7 +225,7 @@ handleConfirmedRequestPdu(
 }
 
 MmsIndication
-MmsServerConnection_parseMessage(MmsServerConnection* self, ByteBuffer* message, ByteBuffer* response)
+MmsServerConnection_parseMessage(MmsServerConnection self, ByteBuffer* message, ByteBuffer* response)
 {
 	MmsIndication retVal;
 
@@ -276,7 +276,7 @@ MmsServerConnection_parseMessage(MmsServerConnection* self, ByteBuffer* message,
 static void /* will be called by IsoConnection */
 messageReceived(void* parameter, ByteBuffer* message, ByteBuffer* response)
 {
-	MmsServerConnection* self = (MmsServerConnection*) parameter;
+	MmsServerConnection self = (MmsServerConnection) parameter;
 
 	MmsServerConnection_parseMessage(self,  message, response);
 }
@@ -285,13 +285,13 @@ messageReceived(void* parameter, ByteBuffer* message, ByteBuffer* response)
  * MMS server connection public API functions
  *********************************************************************************************/
 
-MmsServerConnection*
-MmsServerConnection_init(MmsServerConnection* connection, MmsServer server, IsoConnection isoCon)
+MmsServerConnection
+MmsServerConnection_init(MmsServerConnection connection, MmsServer server, IsoConnection isoCon)
 {
-	MmsServerConnection* self;
+	MmsServerConnection self;
 
 	if (connection == NULL)
-		self = (MmsServerConnection*) GLOBAL_CALLOC(1, sizeof(MmsServerConnection));
+		self = (MmsServerConnection) GLOBAL_CALLOC(1, sizeof(struct sMmsServerConnection));
 	else
 		self = connection;
 
@@ -312,7 +312,7 @@ MmsServerConnection_init(MmsServerConnection* connection, MmsServer server, IsoC
 }
 
 void
-MmsServerConnection_destroy(MmsServerConnection* self)
+MmsServerConnection_destroy(MmsServerConnection self)
 {
 
 #if (MMS_FILE_SERVICE == 1)
@@ -332,7 +332,7 @@ MmsServerConnection_destroy(MmsServerConnection* self)
 
 #if (MMS_DYNAMIC_DATA_SETS == 1)
 bool
-MmsServerConnection_addNamedVariableList(MmsServerConnection* self, MmsNamedVariableList variableList)
+MmsServerConnection_addNamedVariableList(MmsServerConnection self, MmsNamedVariableList variableList)
 {
 	//TODO check if operation is allowed!
 
@@ -342,13 +342,13 @@ MmsServerConnection_addNamedVariableList(MmsServerConnection* self, MmsNamedVari
 }
 
 void
-MmsServerConnection_deleteNamedVariableList(MmsServerConnection* self, char* listName)
+MmsServerConnection_deleteNamedVariableList(MmsServerConnection self, char* listName)
 {
 	mmsServer_deleteVariableList(self->namedVariableLists, listName);
 }
 
 MmsNamedVariableList
-MmsServerConnection_getNamedVariableList(MmsServerConnection* self, char* variableListName)
+MmsServerConnection_getNamedVariableList(MmsServerConnection self, char* variableListName)
 {
 	//TODO remove code duplication - similar to MmsDomain_getNamedVariableList !
 	MmsNamedVariableList variableList = NULL;
@@ -372,21 +372,27 @@ MmsServerConnection_getNamedVariableList(MmsServerConnection* self, char* variab
 
 
 char*
-MmsServerConnection_getClientAddress(MmsServerConnection* self)
+MmsServerConnection_getClientAddress(MmsServerConnection self)
 {
 	return IsoConnection_getPeerAddress(self->isoConnection);
 }
 
+IsoConnection
+MmsServerConnection_getIsoConnection(MmsServerConnection self)
+{
+    return self->isoConnection;
+}
+
 #if (MMS_DYNAMIC_DATA_SETS == 1)
 LinkedList
-MmsServerConnection_getNamedVariableLists(MmsServerConnection* self)
+MmsServerConnection_getNamedVariableLists(MmsServerConnection self)
 {
 	return self->namedVariableLists;
 }
 #endif /* (MMS_DYNAMIC_DATA_SETS == 1) */
 
 uint32_t
-MmsServerConnection_getLastInvokeId(MmsServerConnection* self)
+MmsServerConnection_getLastInvokeId(MmsServerConnection self)
 {
     return self->lastInvokeId;
 }

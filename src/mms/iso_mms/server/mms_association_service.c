@@ -134,7 +134,7 @@ encodeInitResponseDetail(uint8_t* buffer, int bufPos, bool encode)
 
 
 static int
-createInitiateResponse(MmsServerConnection* self, ByteBuffer* writeBuffer)
+createInitiateResponse(MmsServerConnection self, ByteBuffer* writeBuffer)
 {
     uint8_t* buffer = writeBuffer->buffer;
     int bufPos = 0;
@@ -167,7 +167,7 @@ createInitiateResponse(MmsServerConnection* self, ByteBuffer* writeBuffer)
 }
 
 static bool
-parseInitiateRequestPdu(MmsServerConnection* self, uint8_t* buffer, int bufPos, int maxBufPos)
+parseInitiateRequestPdu(MmsServerConnection self, uint8_t* buffer, int bufPos, int maxBufPos)
 {
     self->maxPduSize = CONFIG_MMS_MAXIMUM_PDU_SIZE;
 
@@ -230,7 +230,7 @@ parseInitiateRequestPdu(MmsServerConnection* self, uint8_t* buffer, int bufPos, 
 
 void
 mmsServer_handleInitiateRequest (
-        MmsServerConnection* self,
+        MmsServerConnection self,
         uint8_t* buffer, int bufPos, int maxBufPos,
         ByteBuffer* response)
 {

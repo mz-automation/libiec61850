@@ -34,7 +34,7 @@
  *********************************************************************************************/
 
 int
-mmsServer_createMmsWriteResponse(MmsServerConnection* connection,
+mmsServer_createMmsWriteResponse(MmsServerConnection connection,
 		int invokeId, ByteBuffer* response, int numberOfItems, MmsDataAccessError* accessResults)
 {
 	MmsPdu_t* mmsPdu = mmsServer_createConfirmedResponse(invokeId);
@@ -72,7 +72,7 @@ mmsServer_createMmsWriteResponse(MmsServerConnection* connection,
 
 
 void
-MmsServerConnection_sendWriteResponse(MmsServerConnection* self, uint32_t invokeId, MmsDataAccessError indication, bool handlerMode)
+MmsServerConnection_sendWriteResponse(MmsServerConnection self, uint32_t invokeId, MmsDataAccessError indication, bool handlerMode)
 {
     ByteBuffer* response = ByteBuffer_create(NULL, self->maxPduSize);
 
@@ -85,7 +85,7 @@ MmsServerConnection_sendWriteResponse(MmsServerConnection* self, uint32_t invoke
 
 void
 mmsServer_handleWriteRequest(
-		MmsServerConnection* connection,
+		MmsServerConnection connection,
 		uint8_t* buffer, int bufPos, int maxBufPos,
 		uint32_t invokeId,
 		ByteBuffer* response)

@@ -69,7 +69,7 @@ typedef struct {
     uint32_t bufTm;
     uint64_t nextIntgReportTime;
     uint64_t reservationTimeout;
-    MmsServerConnection* clientConnection;
+    MmsServerConnection clientConnection;
 
     uint64_t lastEntryId;
 
@@ -112,7 +112,7 @@ Reporting_createMmsUnbufferedRCBs(MmsMapping* self, MmsDomain* domain,
 
 MmsDataAccessError
 Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* elementName, MmsValue* value,
-        MmsServerConnection* connection);
+        MmsServerConnection connection);
 
 void
 Reporting_activateBufferedReports(MmsMapping* self);
@@ -121,6 +121,6 @@ void
 Reporting_processReportEvents(MmsMapping* self, uint64_t currentTimeInMs);
 
 void
-Reporting_deactivateReportsForConnection(MmsMapping* self, MmsServerConnection* connection);
+Reporting_deactivateReportsForConnection(MmsMapping* self, MmsServerConnection connection);
 
 #endif /* REPORTING_H_ */

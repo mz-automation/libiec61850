@@ -129,7 +129,7 @@ MmsServer_setClientAuthenticator(MmsServer self, AcseAuthenticator authenticator
 static void
 closeConnection(void* con)
 {
-    MmsServerConnection* connection = (MmsServerConnection*) con;
+    MmsServerConnection connection = (MmsServerConnection) con;
 
     MmsServerConnection_destroy(connection);
 }
@@ -176,7 +176,7 @@ MmsServer_insertIntoCache(MmsServer self, MmsDomain* domain, char* itemId, MmsVa
 
 MmsDataAccessError
 mmsServer_setValue(MmsServer self, MmsDomain* domain, char* itemId, MmsValue* value,
-        MmsServerConnection* connection)
+        MmsServerConnection connection)
 {
     MmsDataAccessError indication;
 
@@ -203,7 +203,7 @@ mmsServer_setValue(MmsServer self, MmsDomain* domain, char* itemId, MmsValue* va
 
 
 MmsValue*
-mmsServer_getValue(MmsServer self, MmsDomain* domain, char* itemId, MmsServerConnection* connection)
+mmsServer_getValue(MmsServer self, MmsDomain* domain, char* itemId, MmsServerConnection connection)
 {
     MmsValue* value = NULL;
 
@@ -249,7 +249,7 @@ isoConnectionIndicationHandler(IsoConnectionIndication indication,
     MmsServer mmsServer = (MmsServer) parameter;
 
     if (indication == ISO_CONNECTION_OPENED) {
-        MmsServerConnection* mmsCon = MmsServerConnection_init(0, mmsServer, connection);
+        MmsServerConnection mmsCon = MmsServerConnection_init(0, mmsServer, connection);
 
         Map_addEntry(mmsServer->openConnections, connection, mmsCon);
 
@@ -258,7 +258,7 @@ isoConnectionIndicationHandler(IsoConnectionIndication indication,
                     mmsCon, MMS_SERVER_NEW_CONNECTION);
     }
     else if (indication == ISO_CONNECTION_CLOSED) {
-        MmsServerConnection* mmsCon = (MmsServerConnection*)
+        MmsServerConnection mmsCon = (MmsServerConnection)
                 Map_removeEntry(mmsServer->openConnections, connection, false);
 
         if (mmsServer->connectionHandler != NULL)

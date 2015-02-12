@@ -462,7 +462,7 @@ createDataSetValuesShadowBuffer(ReportControl* rc)
 }
 
 static bool
-updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet, MmsServerConnection* connection)
+updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet, MmsServerConnection connection)
 {
     bool success = false;
 
@@ -1084,7 +1084,7 @@ Reporting_createMmsUnbufferedRCBs(MmsMapping* self, MmsDomain* domain,
 #define CONFIG_REPORTING_SUPPORTS_OWNER 1
 
 static void
-updateOwner(ReportControl* rc, MmsServerConnection* connection)
+updateOwner(ReportControl* rc, MmsServerConnection connection)
 {
     rc->clientConnection = connection;
 
@@ -1182,7 +1182,7 @@ increaseConfRev(ReportControl* self)
 
 MmsDataAccessError
 Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* elementName, MmsValue* value,
-        MmsServerConnection* connection)
+        MmsServerConnection connection)
 {
     MmsDataAccessError retVal = DATA_ACCESS_ERROR_SUCCESS;
 
@@ -1428,7 +1428,7 @@ exit_function:
 }
 
 void
-Reporting_deactivateReportsForConnection(MmsMapping* self, MmsServerConnection* connection)
+Reporting_deactivateReportsForConnection(MmsMapping* self, MmsServerConnection connection)
 {
     LinkedList reportControl = self->reportControls;
 

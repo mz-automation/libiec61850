@@ -91,7 +91,7 @@ struct sControlObject
     uint64_t operateTime;
 
     bool operateOnce;
-    MmsServerConnection* mmsConnection;
+    MmsServerConnection mmsConnection;
 
     MmsValue* emptyString;
 
@@ -115,7 +115,7 @@ struct sControlObject
 };
 
 void
-ControlObject_sendLastApplError(ControlObject* self, MmsServerConnection* connection, char* ctlVariable, int error,
+ControlObject_sendLastApplError(ControlObject* self, MmsServerConnection connection, char* ctlVariable, int error,
         ControlAddCause addCause, MmsValue* ctlNum, MmsValue* origin, bool handlerMode);
 
 void
@@ -126,7 +126,7 @@ ControlObject_sendCommandTerminationNegative(ControlObject* self);
 
 MmsValue*
 Control_readAccessControlObject(MmsMapping* self, MmsDomain* domain, char* variableIdOrig,
-        MmsServerConnection* connection);
+        MmsServerConnection connection);
 
 static void
 setState(ControlObject* self, int newState)
@@ -600,7 +600,7 @@ ControlObject_getMmsValue(ControlObject* self)
 }
 
 static void
-selectObject(ControlObject* self, uint64_t selectTime, MmsServerConnection* connection)
+selectObject(ControlObject* self, uint64_t selectTime, MmsServerConnection connection)
 {
     updateSboTimeoutValue(self);
     self->selected = true;
@@ -627,7 +627,7 @@ checkSelectTimeout(ControlObject* self, uint64_t currentTime)
 }
 
 bool
-ControlObject_unselect(ControlObject* self, MmsServerConnection* connection)
+ControlObject_unselect(ControlObject* self, MmsServerConnection connection)
 {
     if (self->mmsConnection == connection) {
         abortControlOperation(self);
@@ -949,7 +949,7 @@ ControlObject_sendCommandTerminationNegative(ControlObject* self)
 
 
 void
-ControlObject_sendLastApplError(ControlObject* self, MmsServerConnection* connection, char* ctlVariable, int error,
+ControlObject_sendLastApplError(ControlObject* self, MmsServerConnection connection, char* ctlVariable, int error,
         ControlAddCause addCause, MmsValue* ctlNum, MmsValue* origin, bool handlerMode)
 {
     MmsValue lastApplErrorMemory;
@@ -1033,7 +1033,7 @@ doesElementEquals(char* element, char* name)
 
 MmsValue*
 Control_readAccessControlObject(MmsMapping* self, MmsDomain* domain, char* variableIdOrig,
-        MmsServerConnection* connection)
+        MmsServerConnection connection)
 {
     MmsValue* value = NULL;
 
@@ -1207,7 +1207,7 @@ getDataAccessErrorFromCheckHandlerResult(CheckHandlerResult checkResult)
 
 MmsDataAccessError
 Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* variableIdOrig,
-        MmsValue* value, MmsServerConnection* connection)
+        MmsValue* value, MmsServerConnection connection)
 {
     MmsDataAccessError indication = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
 

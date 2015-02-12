@@ -30,7 +30,7 @@
 #include "ber_encoder.h"
 
 void
-MmsServerConnection_sendInformationReportSingleVariableVMDSpecific(MmsServerConnection* self,
+MmsServerConnection_sendInformationReportSingleVariableVMDSpecific(MmsServerConnection self,
 		char* itemId, MmsValue* value, bool handlerMode)
 {
 	uint32_t itemIdSize = strlen(itemId);
@@ -79,7 +79,7 @@ MmsServerConnection_sendInformationReportSingleVariableVMDSpecific(MmsServerConn
 
 void
 MmsServerConnection_sendInformationReportListOfVariables(
-        MmsServerConnection* self,
+        MmsServerConnection self,
         LinkedList /* MmsVariableAccessSpecification */ variableAccessDeclarations,
         LinkedList /* MmsValue */ values,
         bool handlerMode
@@ -201,7 +201,7 @@ MmsServerConnection_sendInformationReportListOfVariables(
 
 
 void /* send information report for a named variable list */
-MmsServerConnection_sendInformationReportVMDSpecific(MmsServerConnection* self, char* itemId, LinkedList values,
+MmsServerConnection_sendInformationReportVMDSpecific(MmsServerConnection self, char* itemId, LinkedList values,
         bool handlerMode)
 {
     uint32_t variableAccessSpecSize = 0;

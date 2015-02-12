@@ -86,10 +86,10 @@ MmsDomain*
 ControlObject_getDomain(ControlObject* self);
 
 bool
-ControlObject_select(ControlObject* self, MmsServerConnection* connection);
+ControlObject_select(ControlObject* self, MmsServerConnection connection);
 
 bool
-ControlObject_unselect(ControlObject* self, MmsServerConnection* connection);
+ControlObject_unselect(ControlObject* self, MmsServerConnection connection);
 
 void
 ControlObject_installListener(ControlObject* self, ControlHandler listener, void* parameter);

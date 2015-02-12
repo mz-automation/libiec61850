@@ -75,7 +75,7 @@ typedef struct
 #if (CONFIG_IEC61850_CONTROL_SERVICE == 1)
 MmsValue*
 Control_readAccessControlObject(MmsMapping* self, MmsDomain* domain, char* variableIdOrig,
-        MmsServerConnection* connection);
+        MmsServerConnection connection);
 #endif
 
 void /* Create PHYCOMADDR ACSI type instance */
@@ -559,7 +559,7 @@ unselectSettingGroup(SettingGroup* settingGroup)
 }
 
 static void
-unselectAllSettingGroups(MmsMapping* self, MmsServerConnection* serverCon)
+unselectAllSettingGroups(MmsMapping* self, MmsServerConnection serverCon)
 {
     LinkedList settingGroupElement = LinkedList_getNext(self->settingGroups);
 
@@ -1459,7 +1459,7 @@ getAccessPolicyForFC(MmsMapping* self, FunctionalConstraint fc)
 
 static MmsDataAccessError
 mmsWriteHandler(void* parameter, MmsDomain* domain,
-        char* variableId, MmsValue* value, MmsServerConnection* connection)
+        char* variableId, MmsValue* value, MmsServerConnection connection)
 {
     MmsMapping* self = (MmsMapping*) parameter;
 
@@ -1865,9 +1865,11 @@ readAccessGooseControlBlock(MmsMapping* self, MmsDomain* domain, char* variableI
 #endif /* (CONFIG_INCLUDE_GOOSE_SUPPORT == 1) */
 
 static MmsValue*
-mmsReadHandler(void* parameter, MmsDomain* domain, char* variableId, MmsServerConnection* connection)
+mmsReadHandler(void* parameter, MmsDomain* domain, char* variableId, MmsServerConnection connection)
 {
     MmsMapping* self = (MmsMapping*) parameter;
+
+    MmsValue* retValue = NULL;
 
     if (DEBUG_IED_SERVER)
         printf("IED_SERVER: mmsReadHandler: Requested %s\n", variableId);
@@ -1875,21 +1877,23 @@ mmsReadHandler(void* parameter, MmsDomain* domain, char* variableId, MmsServerCo
     char* separator = strchr(variableId, '$');
 
     if (separator == NULL)
-        return NULL;
+        goto exit_function;
 
     int lnNameLength = separator - variableId;
 
 #if (CONFIG_IEC61850_CONTROL_SERVICE == 1)
     /* Controllable objects - CO */
     if (isControllable(separator)) {
-        return Control_readAccessControlObject(self, domain, variableId, connection);
+        retValue = Control_readAccessControlObject(self, domain, variableId, connection);
+        goto exit_function;
     }
 #endif
 
     /* GOOSE control blocks - GO */
 #if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
     if (isGooseControlBlock(separator)) {
-        return readAccessGooseControlBlock(self, domain, variableId);
+        retValue = readAccessGooseControlBlock(self, domain, variableId);
+        goto exit_function;
     }
 #endif
 
@@ -1903,8 +1907,10 @@ mmsReadHandler(void* parameter, MmsDomain* domain, char* variableId, MmsServerCo
 
         char* reportName = MmsMapping_getNextNameElement(separator + 1);
 
-        if (reportName == NULL)
-            return NULL;
+        if (reportName == NULL) {
+            retValue = NULL;
+            goto exit_function;
+        }
 
         separator = strchr(reportName, '$');
 
@@ -1940,7 +1946,9 @@ mmsReadHandler(void* parameter, MmsDomain* domain, char* variableId, MmsServerCo
                         else
                             value = rc->rcbValues;
 
-                        return value;
+                        retValue = value;
+
+                        goto exit_function;
                     }
                 }
 
@@ -1950,7 +1958,8 @@ mmsReadHandler(void* parameter, MmsDomain* domain, char* variableId, MmsServerCo
     }
 #endif /* (CONFIG_IEC61850_REPORT_SERVICE == 1) */
 
-    return NULL;
+exit_function:
+    return retValue;
 }
 
 void
@@ -1961,7 +1970,7 @@ MmsMapping_setMmsServer(MmsMapping* self, MmsServer server)
 
 #if (CONFIG_IEC61850_CONTROL_SERVICE == 1)
 static void
-unselectControlsForConnection(MmsMapping* self, MmsServerConnection* connection)
+unselectControlsForConnection(MmsMapping* self, MmsServerConnection connection)
 {
     LinkedList controlObjectElement = LinkedList_getNext(self->controlObjects);
 
@@ -1977,7 +1986,7 @@ unselectControlsForConnection(MmsMapping* self, MmsServerConnection* connection)
 #endif /* (CONFIG_IEC61850_CONTROL_SERVICE == 1) */
 
 static void /* is called by MMS server layer */
-mmsConnectionHandler(void* parameter, MmsServerConnection* connection, MmsServerEvent event)
+mmsConnectionHandler(void* parameter, MmsServerConnection connection, MmsServerEvent event)
 {
     MmsMapping* self = (MmsMapping*) parameter;
 
@@ -2025,7 +2034,7 @@ mmsConnectionHandler(void* parameter, MmsServerConnection* connection, MmsServer
 }
 
 static MmsDataAccessError
-mmsReadAccessHandler (void* parameter, MmsDomain* domain, char* variableId, MmsServerConnection* connection)
+mmsReadAccessHandler (void* parameter, MmsDomain* domain, char* variableId, MmsServerConnection connection)
 {
     MmsMapping* self = (MmsMapping*) parameter;
 
@@ -2054,7 +2063,7 @@ mmsReadAccessHandler (void* parameter, MmsDomain* domain, char* variableId, MmsS
 
 static bool
 variableListChangedHandler (void* parameter, bool create, MmsVariableListType listType, MmsDomain* domain,
-        char* listName, MmsServerConnection* connection)
+        char* listName, MmsServerConnection connection)
 {
     bool allow = true;
 

@@ -32,8 +32,6 @@
 extern "C" {
 #endif
 
-#include "stack_config.h"
-
 #include "mms_device_model.h"
 #include "mms_value.h"
 #include "iso_server.h"
@@ -44,42 +42,7 @@ typedef enum {
 
 typedef struct sMmsServer* MmsServer;
 
-#if (MMS_FILE_SERVICE == 1)
-
-#ifndef CONFIG_MMS_MAX_NUMBER_OF_OPEN_FILES_PER_CONNECTION
-#define CONFIG_MMS_MAX_NUMBER_OF_OPEN_FILES_PER_CONNECTION 5
-#endif
-
-#include "hal_filesystem.h"
-
-typedef struct {
-        int32_t frsmId;
-        uint32_t readPosition;
-        uint32_t fileSize;
-        FileHandle fileHandle;
-} MmsFileReadStateMachine;
-
-#endif /* (MMS_FILE_SERVICE == 1) */
-
-typedef struct sMmsServerConnection {
-	int maxServOutstandingCalling;
-	int maxServOutstandingCalled;
-	int dataStructureNestingLevel;
-	int maxPduSize; /* local detail */
-	IsoConnection isoConnection;
-	MmsServer server;
-    uint32_t lastInvokeId;
-
-#if (MMS_DYNAMIC_DATA_SETS == 1)
-	LinkedList /*<MmsNamedVariableList>*/namedVariableLists; /* aa-specific named variable lists */
-#endif
-
-#if (MMS_FILE_SERVICE == 1)
-	int32_t nextFrsmId;
-	MmsFileReadStateMachine frsms[CONFIG_MMS_MAX_NUMBER_OF_OPEN_FILES_PER_CONNECTION];
-#endif
-
-} MmsServerConnection;
+typedef struct sMmsServerConnection* MmsServerConnection;
 
 typedef enum {
     MMS_DOMAIN_SPECIFIC,
@@ -88,17 +51,17 @@ typedef enum {
 } MmsVariableListType;
 
 typedef MmsValue* (*MmsReadVariableHandler)(void* parameter, MmsDomain* domain,
-		char* variableId, MmsServerConnection* connection);
+		char* variableId, MmsServerConnection connection);
 
 typedef MmsDataAccessError (*MmsReadAccessHandler) (void* parameter, MmsDomain* domain,
-        char* variableId, MmsServerConnection* connection);
+        char* variableId, MmsServerConnection connection);
 
 typedef MmsDataAccessError (*MmsWriteVariableHandler)(void* parameter,
 		MmsDomain* domain, char* variableId, MmsValue* value,
-		MmsServerConnection* connection);
+		MmsServerConnection connection);
 
 typedef void (*MmsConnectionHandler)(void* parameter,
-		MmsServerConnection* connection, MmsServerEvent event);
+		MmsServerConnection connection, MmsServerEvent event);
 
 MmsServer
 MmsServer_create(IsoServer isoServer, MmsDevice* device);
@@ -150,7 +113,7 @@ MmsServer_isLocked(MmsServer self);
  *              is returned to the client.
  */
 typedef bool (*MmsNamedVariableListChangedHandler)(void* parameter, bool create, MmsVariableListType listType, MmsDomain* domain,
-        char* listName, MmsServerConnection* connection);
+        char* listName, MmsServerConnection connection);
 
 /**
  * \brief Install callback handler that is called when a named variable list changes (is created or deleted)
@@ -326,7 +289,7 @@ MmsServer_getRevision(MmsServer self);
  * \param connection is the MmsServerConnection instance that received the MMS status request
  * \param extendedDerivation indicates if the request contains the extendedDerivation parameter
  */
-typedef void (*MmsStatusRequestListener)(void* parameter, MmsServer mmsServer, MmsServerConnection* connection, bool extendedDerivation);
+typedef void (*MmsStatusRequestListener)(void* parameter, MmsServer mmsServer, MmsServerConnection connection, bool extendedDerivation);
 
 /**
  * \brief set the VMD state values for the VMD status service
@@ -367,6 +330,12 @@ MmsServer_getVMDPhysicalStatus(MmsServer self);
  */
 void
 MmsServer_setStatusRequestListener(MmsServer self, MmsStatusRequestListener listener, void* parameter);
+
+char*
+MmsServerConnection_getClientAddress(MmsServerConnection self);
+
+IsoConnection
+MmsServerConnection_getIsoConnection(MmsServerConnection self);
 
 /**@}*/
 

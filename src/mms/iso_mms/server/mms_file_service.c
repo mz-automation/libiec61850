@@ -53,7 +53,7 @@ createNullResponseExtendedTag(uint32_t invokeId, ByteBuffer* response, uint8_t t
 }
 
 static MmsFileReadStateMachine*
-getFreeFrsm(MmsServerConnection* connection)
+getFreeFrsm(MmsServerConnection connection)
 {
     int i;
 
@@ -71,7 +71,7 @@ getFreeFrsm(MmsServerConnection* connection)
 
 
 static MmsFileReadStateMachine*
-getFrsm(MmsServerConnection* connection, int32_t frsmId)
+getFrsm(MmsServerConnection connection, int32_t frsmId)
 {
     int i;
 
@@ -90,7 +90,7 @@ getFrsm(MmsServerConnection* connection, int32_t frsmId)
 }
 
 static int32_t
-getNextFrsmId(MmsServerConnection* connection)
+getNextFrsmId(MmsServerConnection connection)
 {
     uint32_t nextFrsmId = connection->nextFrsmId;
     connection->nextFrsmId++;
@@ -195,7 +195,7 @@ parseFileName(char* filename, uint8_t* buffer, int* bufPos, int maxBufPos , uint
 
 void
 mmsServer_handleFileDeleteRequest(
-    MmsServerConnection* connection,
+    MmsServerConnection connection,
     uint8_t* buffer, int bufPos, int maxBufPos,
     uint32_t invokeId,
     ByteBuffer* response)
@@ -240,7 +240,7 @@ exit_reject_invalid_pdu:
 
 void
 mmsServer_handleFileOpenRequest(
-    MmsServerConnection* connection,
+    MmsServerConnection connection,
     uint8_t* buffer, int bufPos, int maxBufPos,
     uint32_t invokeId,
     ByteBuffer* response)
@@ -315,7 +315,7 @@ exit_reject_invalid_pdu:
 
 
 static void
-createFileReadResponse(MmsServerConnection* connection, uint32_t invokeId,
+createFileReadResponse(MmsServerConnection connection, uint32_t invokeId,
         ByteBuffer* response,  MmsFileReadStateMachine* frsm)
 {
      /* determine remaining bytes in file */
@@ -372,7 +372,7 @@ createFileReadResponse(MmsServerConnection* connection, uint32_t invokeId,
 
 void
 mmsServer_handleFileReadRequest(
-    MmsServerConnection* connection,
+    MmsServerConnection connection,
     uint8_t* buffer, int bufPos, int maxBufPos,
     uint32_t invokeId,
     ByteBuffer* response)
@@ -399,7 +399,7 @@ createFileCloseResponse(uint32_t invokeId, ByteBuffer* response)
 
 void
 mmsServer_handleFileCloseRequest(
-    MmsServerConnection* connection,
+    MmsServerConnection connection,
     uint8_t* buffer, int bufPos, int maxBufPos,
     uint32_t invokeId,
     ByteBuffer* response)
@@ -582,7 +582,7 @@ createFileDirectoryResponse(uint32_t invokeId, ByteBuffer* response, char* direc
 
 void
 mmsServer_handleFileRenameRequest(
-        MmsServerConnection* connection,
+        MmsServerConnection connection,
         uint8_t* buffer, int bufPos, int maxBufPos,
         uint32_t invokeId,
         ByteBuffer* response)
@@ -648,7 +648,7 @@ mmsServer_handleFileRenameRequest(
 
 void
 mmsServer_handleFileDirectoryRequest(
-    MmsServerConnection* connection,
+    MmsServerConnection connection,
     uint8_t* buffer, int bufPos, int maxBufPos,
     uint32_t invokeId,
     ByteBuffer* response)

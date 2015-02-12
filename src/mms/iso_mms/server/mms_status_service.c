@@ -27,7 +27,7 @@
 
 void
 mmsServer_handleStatusRequest(
-        MmsServerConnection* connection,
+        MmsServerConnection connection,
         uint8_t* requestBuffer,
         int bufPos,
         int invokeId,

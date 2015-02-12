@@ -41,7 +41,7 @@
 #define OBJECT_SCOPE_ASSOCIATION 2
 
 static LinkedList
-getDomainNames(MmsServerConnection* connection)
+getDomainNames(MmsServerConnection connection)
 {
 	MmsDevice* device = MmsServer_getDevice(connection->server);
 
@@ -59,7 +59,7 @@ getDomainNames(MmsServerConnection* connection)
 
 #if (CONFIG_MMS_SUPPORT_VMD_SCOPE_NAMED_VARIABLES == 1)
 static LinkedList
-getNameListVMDSpecific(MmsServerConnection* connection)
+getNameListVMDSpecific(MmsServerConnection connection)
 {
     MmsDevice* device = MmsServer_getDevice(connection->server);
 
@@ -127,7 +127,7 @@ addSubNamedVaribleNamesToList(LinkedList nameList, char* prefix, MmsVariableSpec
 #endif /* (CONFIG_MMS_SUPPORT_FLATTED_NAME_SPACE == 1) */
 
 static LinkedList
-getNameListDomainSpecific(MmsServerConnection* connection, char* domainName) {
+getNameListDomainSpecific(MmsServerConnection connection, char* domainName) {
 	MmsDevice* device = MmsServer_getDevice(connection->server);
 
 	LinkedList nameList = NULL;
@@ -176,7 +176,7 @@ createStringsFromNamedVariableList(LinkedList nameList, LinkedList variableLists
 }
 
 static LinkedList
-getNamedVariableListsDomainSpecific(MmsServerConnection* connection, char* domainName)
+getNamedVariableListsDomainSpecific(MmsServerConnection connection, char* domainName)
 {
 	MmsDevice* device = MmsServer_getDevice(connection->server);
 
@@ -194,7 +194,7 @@ getNamedVariableListsDomainSpecific(MmsServerConnection* connection, char* domai
 }
 
 static LinkedList
-getnamedVariableListsVMDSpecific(MmsServerConnection* connection)
+getnamedVariableListsVMDSpecific(MmsServerConnection connection)
 {
     MmsDevice* device = MmsServer_getDevice(connection->server);
 
@@ -209,7 +209,7 @@ getnamedVariableListsVMDSpecific(MmsServerConnection* connection)
 
 #if (MMS_DYNAMIC_DATA_SETS == 1)
 static LinkedList
-getNamedVariableListAssociationSpecific(MmsServerConnection* connection)
+getNamedVariableListAssociationSpecific(MmsServerConnection connection)
 {
 	LinkedList nameList = NULL;
 
@@ -225,7 +225,7 @@ getNamedVariableListAssociationSpecific(MmsServerConnection* connection)
 
 static void
 createNameListResponse(
-        MmsServerConnection* connection,
+        MmsServerConnection connection,
         int invokeId,
         LinkedList nameList,
         ByteBuffer* response,
@@ -329,7 +329,7 @@ createNameListResponse(
 
 void
 mmsServer_handleGetNameListRequest(
-		MmsServerConnection* connection,
+		MmsServerConnection connection,
 		uint8_t* buffer, int bufPos, int maxBufPos,
 		uint32_t invokeId,
 		ByteBuffer* response)
