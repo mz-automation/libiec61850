@@ -214,7 +214,7 @@ ClientGooseControlBlock_getDstAddress_priority(ClientGooseControlBlock self)
 void
 ClientGooseControlBlock_setDstAddress_priority(ClientGooseControlBlock self, uint8_t priorityValue)
 {
-    if (self->dstAddress != NULL)
+    if (self->dstAddress == NULL)
         self->dstAddress = newEmptyPhyCommAddress();
 
     MmsValue* priority = MmsValue_getElement(self->dstAddress, 1);
@@ -233,7 +233,7 @@ ClientGooseControlBlock_getDstAddress_vid(ClientGooseControlBlock self)
 void
 ClientGooseControlBlock_setDstAddress_vid(ClientGooseControlBlock self, uint16_t vidValue)
 {
-    if (self->dstAddress != NULL)
+    if (self->dstAddress == NULL)
         self->dstAddress = newEmptyPhyCommAddress();
 
     MmsValue* vid = MmsValue_getElement(self->dstAddress, 2);
@@ -252,7 +252,7 @@ ClientGooseControlBlock_getDstAddress_appid(ClientGooseControlBlock self)
 void
 ClientGooseControlBlock_setDstAddress_appid(ClientGooseControlBlock self, uint16_t appidValue)
 {
-    if (self->dstAddress != NULL)
+    if (self->dstAddress == NULL)
         self->dstAddress = newEmptyPhyCommAddress();
 
     MmsValue* appid = MmsValue_getElement(self->dstAddress, 3);

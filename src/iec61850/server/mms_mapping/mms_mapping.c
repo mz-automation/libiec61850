@@ -2399,21 +2399,25 @@ MmsMapping_createMmsVariableNameFromObjectReference(const char* objectReference,
     int sourceIndex = i;
     int destIndex = 0;
 
-    while (objectReference[sourceIndex] != '.')
-        mmsVariableName[destIndex++] = objectReference[sourceIndex++];
-
-    sourceIndex++;
-
-    mmsVariableName[destIndex++] = '$';
-    mmsVariableName[destIndex++] = fcString[0];
-    mmsVariableName[destIndex++] = fcString[1];
-    mmsVariableName[destIndex++] = '$';
+    bool fcAdded = false;
 
     while (sourceIndex < objRefLength) {
+
         if (objectReference[sourceIndex] != '.')
             mmsVariableName[destIndex++] = objectReference[sourceIndex++];
         else {
-            mmsVariableName[destIndex++] = '$';
+
+            if (!fcAdded) {
+                mmsVariableName[destIndex++] = '$';
+                mmsVariableName[destIndex++] = fcString[0];
+                mmsVariableName[destIndex++] = fcString[1];
+                mmsVariableName[destIndex++] = '$';
+
+                fcAdded = true;
+            }
+            else
+                mmsVariableName[destIndex++] = '$';
+
             sourceIndex++;
         }
     }

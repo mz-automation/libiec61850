@@ -311,7 +311,7 @@ Socket_connect(Socket self, const char* address, int port)
     timeout.tv_sec = self->connectTimeout / 1000;
     timeout.tv_usec = (self->connectTimeout % 1000) * 1000;
 
-    if (select(self->fd + 1, NULL, &fdSet, NULL, &timeout) < 0)
+    if (select(self->fd + 1, NULL, &fdSet, NULL, &timeout) <= 0)
         return false;
     else
         return true;

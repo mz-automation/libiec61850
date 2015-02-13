@@ -47,6 +47,7 @@
 
 struct sGooseReceiver {
     bool running;
+    bool stopped;
     char* interfaceId;
     uint8_t* buffer;
     EthernetSocket ethSocket;
@@ -696,16 +697,20 @@ gooseReceiverLoop(void* threadParameter)
 {
     GooseReceiver self = (GooseReceiver) threadParameter;
 
+    self->running = true;
+    self->stopped = false;
+
     GooseReceiver_startThreadless(self);
 
     while (self->running) {
 
-        GooseReceiver_tick(self);
-
-        Thread_sleep(1);
+        if (GooseReceiver_tick(self) == false)
+            Thread_sleep(1);
     }
 
    GooseReceiver_stopThreadless(self);
+
+   self->stopped = true;
 }
 
 
@@ -732,6 +737,9 @@ void
 GooseReceiver_stop(GooseReceiver self)
 {
     self->running = false;
+
+    while (self->stopped == false)
+        Thread_sleep(1);
 }
 
 void
@@ -770,11 +778,15 @@ GooseReceiver_stopThreadless(GooseReceiver self)
 }
 
 // call after reception of ethernet frame and periodically to to house keeping tasks
-void
+bool
 GooseReceiver_tick(GooseReceiver self)
 {
     int packetSize = Ethernet_receivePacket(self->ethSocket, self->buffer, ETH_BUFFER_LENGTH);
 
-    if (packetSize > 0)
+    if (packetSize > 0) {
         parseGooseMessage(self, packetSize);
+        return true;
+    }
+    else
+        return false;
 }

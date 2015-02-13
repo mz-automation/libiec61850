@@ -34,9 +34,27 @@ GooseReceiver_create(void);
 void
 GooseReceiver_setInterfaceId(GooseReceiver self, const char* interfaceId);
 
+/**
+ * \brief Add a subscriber to this receiver instance
+ *
+ * NOTE: Do not call this function while the receiver is running (after GooseReceiver_start
+ * has been called)!
+ *
+ * \param self the GooseReceiver instance
+ * \param subscriber the GooseSubscriber instance to add
+ */
 void
 GooseReceiver_addSubscriber(GooseReceiver self, GooseSubscriber subscriber);
 
+/**
+ * \brief Remove a subscriber from this receiver instance
+ *
+ * NOTE: Do not call this function while the receiver is running (after GooseReceiver_start
+ * has been called)!
+ *
+ * \param self the GooseReceiver instance
+ * \param subscriber the GooseSubscriber instance to remove
+ */
 void
 GooseReceiver_removeSubscriber(GooseReceiver self, GooseSubscriber subscriber);
 
@@ -63,8 +81,16 @@ GooseReceiver_startThreadless(GooseReceiver self);
 void
 GooseReceiver_stopThreadless(GooseReceiver self);
 
-// call after reception of ethernet frame and periodically to to house keeping tasks
-void
+/**
+ * \brief Parse GOOSE messages if they are available
+ *
+ * Call after reception of ethernet frame and periodically to to house keeping tasks
+ *
+ * \param self the receiver object
+ *
+ * \return true if a message was available and has been parsed, false otherwise
+ */
+bool
 GooseReceiver_tick(GooseReceiver self);
 
 #endif /* GOOSE_RECEIVER_H_ */
