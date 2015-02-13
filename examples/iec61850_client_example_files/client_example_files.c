@@ -29,10 +29,10 @@ downloadHandler(void* parameter, uint8_t* buffer, uint32_t bytesRead)
 
     if (bufferPosition + bytesRead < MAX_BUFFER_SIZE) {
         memcpy(downloadBuffer + bufferPosition, buffer, bytesRead);
-        return false;
+        return true;
     }
     else
-        return true;
+        return false;
 }
 
 int main(int argc, char** argv) {

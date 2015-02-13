@@ -167,17 +167,29 @@ sendBuffer(CotpConnection* self)
 
     bool retVal = false;
 
-    if (Socket_write(self->socket, ByteBuffer_getBuffer(self->writeBuffer), writeBufferPosition) == writeBufferPosition)
-        retVal = true;
+    int sentBytes;
+
+    do {
+        sentBytes = Socket_write(self->socket, ByteBuffer_getBuffer(self->writeBuffer), writeBufferPosition);
+
+        if (sentBytes == -1)
+            goto exit_function;
+
+    } while (sentBytes == 0);
+
+    retVal = true;
 
     ByteBuffer_setSize(self->writeBuffer, 0);
 
+exit_function:
     return retVal;
 }
 
 CotpIndication
 CotpConnection_sendDataMessage(CotpConnection* self, BufferChain payload)
 {
+    CotpIndication retValue = COTP_OK;
+
     int fragments = 1;
 
     int fragmentPayloadSize = CotpConnection_getTpduSize(self) - COTP_DATA_HEADER_SIZE;
@@ -227,9 +239,6 @@ CotpConnection_sendDataMessage(CotpConnection* self, BufferChain payload)
                 currentChainIndex = 0;
             }
 
-            if (DEBUG_COTP)
-                printf("%02x ", currentChain->buffer[currentChainIndex]);
-
             buffer[bufPos++] = currentChain->buffer[currentChainIndex];
 
             currentChainIndex++;
@@ -242,13 +251,25 @@ CotpConnection_sendDataMessage(CotpConnection* self, BufferChain payload)
         if (DEBUG_COTP)
             printf("COTP: Send COTP fragment %i bufpos: %i\n", fragments, currentBufPos);
 
-        if (!sendBuffer(self))
-            return COTP_ERROR;
+        if (!sendBuffer(self)) {
+            retValue = COTP_ERROR;
+
+            if (DEBUG_COTP)
+                printf("COTP: sending message failed!\n");
+
+            goto exit_function;
+        }
+
 
         fragments--;
     }
 
-    return COTP_OK;
+exit_function:
+
+    if (DEBUG_COTP)
+        printf("COTP: message transmission finished (fragments=%i, return=%i)\n", fragments, retValue);
+
+    return retValue;
 }
 
 static void
@@ -434,16 +455,6 @@ CotpConnection_init(CotpConnection* self, Socket socket,
     self->readBuffer = readBuffer;
     self->packetSize = 0;
 }
-
-//void
-//CotpConnection_destroy(CotpConnection* self)
-//{
-//    if (self->writeBuffer != NULL)
-//        ByteBuffer_destroy(self->writeBuffer);
-//
-//    if (self->readBuffer != NULL)
-//        ByteBuffer_destroy(self->readBuffer);
-//}
 
 int /* in byte */
 CotpConnection_getTpduSize(CotpConnection* self)

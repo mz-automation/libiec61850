@@ -381,7 +381,18 @@ Socket_read(Socket self, uint8_t* buf, int size)
 int
 Socket_write(Socket self, uint8_t* buf, int size)
 {
-	return send(self->fd, (char*) buf, size, 0);
+    int bytes_sent = send(self->fd, (char*) buf, size, 0);
+
+    if (bytes_sent == SOCKET_ERROR) {
+        int errorCode = WSAGetLastError();
+
+        if (errorCode == WSAEWOULDBLOCK)
+            bytes_sent = 0;
+        else
+            bytes_sent = -1;
+    }
+
+	return bytes_sent;
 }
 
 void
