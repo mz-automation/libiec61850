@@ -1767,6 +1767,9 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI)
     else
         entry->flags = 0;
 
+    if ((bufferEntrySize % sizeof(void*)) > 0)
+       bufferEntrySize  = sizeof(void*) * ((bufferEntrySize  + sizeof(void*) - 1) / sizeof(void*));
+
     entry->entryLength = bufferEntrySize;
 
     entryBufPos += sizeof(ReportBufferEntry);

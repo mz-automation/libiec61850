@@ -37,7 +37,7 @@ static int
 getAlignedSize(int size)
 {
     if ((size % sizeof(void*)) > 0)
-        return sizeof(void*) * ((size + sizeof(void*)) / sizeof(void*));
+        return sizeof(void*) * ((size + sizeof(void*) - 1) / sizeof(void*));
     else
         return size;
 }
