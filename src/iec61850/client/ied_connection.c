@@ -2108,6 +2108,7 @@ IedConnection_readDataSetValues(IedConnection self, IedClientError* error, const
     else {
         MmsValue* dataSetValues = ClientDataSet_getValues(dataSet);
         MmsValue_update(dataSetValues, dataSetVal);
+        MmsValue_delete(dataSetVal);
     }
 
 exit_function:
