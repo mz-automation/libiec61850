@@ -1315,6 +1315,7 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
                     increaseConfRev(rc);
                 }
                 else {
+                    printf("BBBBBB\n");
                     retVal = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
                     goto exit_function;
                 }
@@ -1413,6 +1414,7 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
         if (rcbValue != NULL)
             MmsValue_update(rcbValue, value);
         else {
+            printf("AAAAAA\n");
             retVal = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
             goto exit_function;
         }

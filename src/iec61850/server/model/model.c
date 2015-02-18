@@ -104,11 +104,19 @@ IedModel_lookupDataSet(IedModel* model, const char* dataSetReference  /* e.g. ie
 
 	int ldNameLen = separator - dataSetReference;
 
+	char domainName[65];
+
+	int modelNameLen = strlen(model->name);
+
+	memcpy(domainName, model->name, modelNameLen);
+
 	while (dataSet != NULL) {
 
-	    //TODO use domain name instead of dataSet->logicalDeviceName !?
+	    domainName[modelNameLen] = 0;
 
-		if (strncmp(dataSet->logicalDeviceName, dataSetReference, ldNameLen) == 0) {
+	    strncat(domainName, dataSet->logicalDeviceName, 64);
+
+		if (strncmp(domainName, dataSetReference, ldNameLen) == 0) {
 			if (strcmp(dataSet->name, separator + 1) == 0) {
 				return dataSet;
 			}

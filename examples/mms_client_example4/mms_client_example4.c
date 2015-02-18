@@ -81,33 +81,6 @@ int main(int argc, char** argv) {
 	LinkedList_destroy(nameList);
 	printf("\n");
 
-
-//	MmsValue* value;
-//
-//	MmsConnection_getVariableAccessAttributes(con, "SampleIEDDevice1", "MMXU2$MX$TotW");
-//
-//	value = MmsConnection_readVariable(con, "SampleIEDDevice1", "MMXU2$MX$TotW$mag$f");
-//
-//	printf("Read variable with value: %f\n", MmsValue_toFloat(value));
-//
-//	MmsValue_setFloat(value, 1.234f);
-//
-//	MmsConnection_writeVariable(con, "SampleIEDDevice1", "MMXU2$MX$TotW$mag$f", value);
-//
-//	MmsValue_delete(value);
-//
-//	value = MmsConnection_readVariable(con, "SampleIEDDevice1", "MMXU2$MX$TotW$mag$f");
-//
-//	printf("Read variable with value: %f\n", MmsValue_toFloat(value));
-//
-//	MmsValue_delete(value);
-//
-//	value = MmsConnection_readVariable(con, "SampleIEDDevice1", "DGEN1$ST$Beh$stVal");
-//
-//	printf("Read integer variable with value: %i\n", MmsValue_toInt32(value));
-//
-//	MmsValue_delete(value);
-
 exit:
 	MmsConnection_destroy(con);
 }
