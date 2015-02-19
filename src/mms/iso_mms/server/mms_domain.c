@@ -80,6 +80,9 @@ MmsDomain_getNamedVariableList(MmsDomain* self, char* variableListName)
 {
 	MmsNamedVariableList variableList = NULL;
 
+	if (self == NULL)
+	    goto exit_function;
+
 	LinkedList element = LinkedList_getNext(self->namedVariableLists);
 
 	while (element != NULL) {
@@ -93,6 +96,8 @@ MmsDomain_getNamedVariableList(MmsDomain* self, char* variableListName)
 		element = LinkedList_getNext(element);
 	}
 
+
+exit_function:
 	return variableList;
 }
 

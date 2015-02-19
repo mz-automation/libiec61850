@@ -141,19 +141,22 @@ mmsServer_handleDeleteNamedVariableListRequest(MmsServerConnection connection,
 
 		        MmsDomain* domain = MmsDevice_getDomain(device, domainName);
 
-				MmsNamedVariableList variableList = MmsDomain_getNamedVariableList(domain, listName);
+		        if (domain != NULL) {
 
-				if (variableList != NULL) {
-					numberMatched++;
+                    MmsNamedVariableList variableList = MmsDomain_getNamedVariableList(domain, listName);
 
-					if (MmsNamedVariableList_isDeletable(variableList)) {
+                    if (variableList != NULL) {
+                        numberMatched++;
 
-					    if (mmsServer_callVariableListChangedHandler(false, MMS_DOMAIN_SPECIFIC, domain, listName, connection) == true) {
-					        MmsDomain_deleteNamedVariableList(domain, listName);
-                            numberDeleted++;
+                        if (MmsNamedVariableList_isDeletable(variableList)) {
+
+                            if (mmsServer_callVariableListChangedHandler(false, MMS_DOMAIN_SPECIFIC, domain, listName, connection) == true) {
+                                MmsDomain_deleteNamedVariableList(domain, listName);
+                                numberDeleted++;
+                            }
                         }
-					}
-				}
+                    }
+		        }
 			}
 			else if (request->listOfVariableListName->list.array[i]->present == ObjectName_PR_aaspecific) {
 			    char listName[65];
