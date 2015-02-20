@@ -114,47 +114,28 @@ mmsClient_parseInitiateResponse(MmsConnection self)
             (void**) &mmsPdu, ByteBuffer_getBuffer(self->lastResponse),
             ByteBuffer_getSize(self->lastResponse));
 
-    if (rval.code != RC_OK) goto exit;
+    if (rval.code != RC_OK) goto exit_function;
 
     if (mmsPdu->present == MmsPdu_PR_initiateResponsePdu) {
         InitiateResponsePdu_t* initiateResponse = &(mmsPdu->choice.initiateResponsePdu);
 
-        if (initiateResponse->localDetailCalled != NULL) {
-            long maxPduSize;
+        if (initiateResponse->localDetailCalled != NULL)
+            self->parameters.maxPduSize = *(initiateResponse->localDetailCalled);
 
-            maxPduSize = *(initiateResponse->localDetailCalled);
+        if (initiateResponse->negotiatedDataStructureNestingLevel != NULL)
+            self->parameters.dataStructureNestingLevel = *(initiateResponse->negotiatedDataStructureNestingLevel);;
 
-            self->parameters.maxPduSize = maxPduSize;
-        }
+        self->parameters.maxServOutstandingCalled = initiateResponse->negotiatedMaxServOutstandingCalled;
 
-        if (initiateResponse->negotiatedDataStructureNestingLevel != NULL) {
-            long nestingLevel;
-
-            nestingLevel = *(initiateResponse->negotiatedDataStructureNestingLevel);
-
-            self->parameters.dataStructureNestingLevel = nestingLevel;
-        }
-
-        long maxServerOutstandingCalled;
-
-        maxServerOutstandingCalled = initiateResponse->negotiatedMaxServOutstandingCalled;
-
-        self->parameters.maxServOutstandingCalled = maxServerOutstandingCalled;
-
-        long maxServerOutstandingCalling;
-
-        maxServerOutstandingCalling = initiateResponse->negotiatedMaxServOutstandingCalling;
-
-        self->parameters.maxServOutstandingCalling = maxServerOutstandingCalling;
+        self->parameters.maxServOutstandingCalling = initiateResponse->negotiatedMaxServOutstandingCalling;
 
         result = true;
     }
     else
-        //TODO parse error message
         result = false;
 
-exit:
     asn_DEF_MmsPdu.free_struct(&asn_DEF_MmsPdu, mmsPdu, 0);
 
+exit_function:
     return result;
 }

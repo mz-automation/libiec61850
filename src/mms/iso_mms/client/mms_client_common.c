@@ -20,6 +20,7 @@
  *
  *	See COPYING file for the complete license text.
  */
+
 #include <MmsPdu.h>
 #include "mms_common.h"
 #include "mms_client_connection.h"

@@ -565,7 +565,7 @@ parseConfirmedErrorPDU(ByteBuffer* message, uint32_t* invokeId, MmsServiceError*
 
     return bufPos;
 
-    exit_error:
+exit_error:
     return -1;
 }
 
