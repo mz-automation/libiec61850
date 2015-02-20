@@ -345,36 +345,41 @@ updateDataSetsWithCachedValues(IedServer self)
 {
     DataSet* dataSet = self->model->dataSets;
 
-    while (dataSet != NULL) {
+    int iedNameLength = strlen(self->model->name);
 
-        DataSetEntry* dataSetEntry = dataSet->fcdas;
+    if (iedNameLength <= 64) {
 
-        while (dataSetEntry != NULL) {
+        while (dataSet != NULL) {
 
-            char domainName[65];
+            DataSetEntry* dataSetEntry = dataSet->fcdas;
 
-            strncpy(domainName, self->model->name, 64);
-            strncat(domainName, dataSetEntry->logicalDeviceName, 64);
+            while (dataSetEntry != NULL) {
 
-            MmsDomain* domain = MmsDevice_getDomain(self->mmsDevice, domainName);
+                char domainName[65];
 
-            MmsValue* value = MmsServer_getValueFromCache(self->mmsServer, domain, dataSetEntry->variableName);
+                strncpy(domainName, self->model->name, 64);
+                strncat(domainName, dataSetEntry->logicalDeviceName, 64 - iedNameLength);
 
-            if (value == NULL) {
-                if (DEBUG_IED_SERVER) {
-                    printf("LD: %s dataset: %s : error cannot get value from cache for %s -> %s!\n",
-                            dataSet->logicalDeviceName, dataSet->name,
-                            dataSetEntry->logicalDeviceName,
-                            dataSetEntry->variableName);
+                MmsDomain* domain = MmsDevice_getDomain(self->mmsDevice, domainName);
+
+                MmsValue* value = MmsServer_getValueFromCache(self->mmsServer, domain, dataSetEntry->variableName);
+
+                if (value == NULL) {
+                    if (DEBUG_IED_SERVER) {
+                        printf("LD: %s dataset: %s : error cannot get value from cache for %s -> %s!\n",
+                                dataSet->logicalDeviceName, dataSet->name,
+                                dataSetEntry->logicalDeviceName,
+                                dataSetEntry->variableName);
+                    }
                 }
+                else
+                    dataSetEntry->value = value;
+
+                dataSetEntry = dataSetEntry->sibling;
             }
-            else
-                dataSetEntry->value = value;
 
-            dataSetEntry = dataSetEntry->sibling;
+            dataSet = dataSet->sibling;
         }
-
-        dataSet = dataSet->sibling;
     }
 }
 
@@ -1094,6 +1099,7 @@ IedServer_getFunctionalConstrainedData(IedServer self, DataObject* dataObject, F
     char buffer[128]; /* buffer for variable name string */
     char* currentStart = buffer + 127;
     currentStart[0] = 0;
+    MmsValue* value = NULL;
 
     int nameLen;
 
@@ -1130,13 +1136,20 @@ IedServer_getFunctionalConstrainedData(IedServer self, DataObject* dataObject, F
 
     char domainName[65];
 
+    if ((strlen(self->model->name) + strlen(ld->name)) > 64)
+        goto exit_function; // TODO call exception handler!
+
     strncpy(domainName, self->model->name, 64);
     strncat(domainName, ld->name, 64);
 
     MmsDomain* domain = MmsDevice_getDomain(self->mmsDevice, domainName);
 
-    MmsValue* value = MmsServer_getValueFromCache(self->mmsServer, domain, currentStart);
+    if (domain == NULL)
+        goto exit_function; // TODO call exception handler!
 
+    value = MmsServer_getValueFromCache(self->mmsServer, domain, currentStart);
+
+exit_function:
     return value;
 }
 
@@ -1214,3 +1227,10 @@ private_IedServer_removeClientConnection(IedServer self, ClientConnection client
 }
 
 
+void
+IedServer_setGooseInterfaceId(IedServer self, const char* interfaceId)
+{
+#if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
+    self->mmsMapping->gooseInterfaceId = interfaceId;
+#endif
+}

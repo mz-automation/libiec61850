@@ -282,10 +282,7 @@ IsoClientConnection_associate(IsoClientConnection self, IsoConnectionParameters 
 
     AcseConnection_init(&(self->acseConnection), NULL, NULL);
 
-    AcseAuthenticationParameter authParameter = NULL;
-
-    if (params != NULL)
-        authParameter = params->acseAuthParameter;
+    AcseAuthenticationParameter authParameter = params->acseAuthParameter;
 
     struct sBufferChain sAcseBuffer;
     BufferChain acseBuffer = &sAcseBuffer;

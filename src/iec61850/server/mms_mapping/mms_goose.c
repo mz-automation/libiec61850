@@ -23,7 +23,7 @@
 
 #include "stack_config.h"
 
-#if CONFIG_INCLUDE_GOOSE_SUPPORT == 1
+#if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
 
 #include "libiec61850_platform_includes.h"
 #include "mms_mapping.h"
@@ -221,7 +221,7 @@ MmsGooseControlBlock_enable(MmsGooseControlBlock self)
 
             memcpy(commParameters.dstAddress, MmsValue_getOctetStringBuffer(macAddress), 6);
 
-            self->publisher = GoosePublisher_create(&commParameters, NULL);
+            self->publisher = GoosePublisher_create(&commParameters, self->mmsMapping->gooseInterfaceId);
 
             GoosePublisher_setTimeAllowedToLive(self->publisher, CONFIG_GOOSE_STABLE_STATE_TRANSMISSION_INTERVAL * 3);
 

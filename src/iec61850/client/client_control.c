@@ -28,9 +28,6 @@
 #include "iec61850_client.h"
 #include "mms_client_connection.h"
 #include "ied_connection_private.h"
-#include "mms_mapping.h"
-
-#include <stdio.h>
 
 #if _MSC_VER
 #define snprintf _snprintf
@@ -121,7 +118,9 @@ ControlObjectClient_create(const char* objectReference, IedConnection connection
 
     convertToMmsAndInsertFC(itemId, objectReference + strlen(domainId) + 1, "CF");
 
-    strncat(itemId, "$ctlModel", 128);
+    int controlObjectItemIdLen = strlen(itemId);
+
+    strncat(itemId, "$ctlModel", 64 - controlObjectItemIdLen);
 
     MmsError mmsError;
 
@@ -403,7 +402,9 @@ ControlObjectClient_operate(ControlObjectClient self, MmsValue* ctlVal, uint64_t
 
     convertToMmsAndInsertFC(itemId, self->objectReference + strlen(domainId) + 1, "CO");
 
-    strncat(itemId, "$Oper", 129);
+    int controlObjectItemIdLen = strlen(itemId);
+
+    strncat(itemId, "$Oper", 64 - controlObjectItemIdLen);
 
     if (DEBUG_IED_CLIENT)
         printf("IED_CLIENT: operate: %s/%s\n", domainId, itemId);

@@ -57,7 +57,7 @@ typedef struct sEthernetSocket* EthernetSocket;
  * \param addr pointer to a buffer to store the MAC address
  */
 void
-Ethernet_getInterfaceMACAddress(char* interfaceId, uint8_t* addr);
+Ethernet_getInterfaceMACAddress(const char* interfaceId, uint8_t* addr);
 
 /**
  * \brief Create an Ethernet socket using the specified interface and
@@ -67,7 +67,7 @@ Ethernet_getInterfaceMACAddress(char* interfaceId, uint8_t* addr);
  * \param destAddress byte array that contains the Ethernet MAC address
  */
 EthernetSocket
-Ethernet_createSocket(char* interfaceId, uint8_t* destAddress);
+Ethernet_createSocket(const char* interfaceId, uint8_t* destAddress);
 
 /**
  * \brief destroy the ethernet socket

@@ -96,7 +96,8 @@ int _Ethernet_setBpfEthertypeFilter(EthernetSocket self, uint16_t etherType)
     }
 }
 
-void Ethernet_getInterfaceMACAddress(char* interfaceId, uint8_t* addr)
+void
+Ethernet_getInterfaceMACAddress(const char* interfaceId, uint8_t* addr)
 {
     struct ifaddrs *ifap, *ifc;
     struct sockaddr_dl* link;
@@ -131,7 +132,8 @@ void Ethernet_getInterfaceMACAddress(char* interfaceId, uint8_t* addr)
     freeifaddrs(ifap);
 }
 
-EthernetSocket Ethernet_createSocket(char* interfaceId, uint8_t* destAddress)
+EthernetSocket
+Ethernet_createSocket(const char* interfaceId, uint8_t* destAddress)
 {
     char bpfFileStringBuffer[11] = { 0 };
     int i;

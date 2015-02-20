@@ -41,7 +41,7 @@ typedef struct sCommParameters {
 typedef struct sGoosePublisher* GoosePublisher;
 
 GoosePublisher
-GoosePublisher_create(CommParameters* parameters, char* interfaceID);
+GoosePublisher_create(CommParameters* parameters, const char* interfaceID);
 
 void
 GoosePublisher_destroy(GoosePublisher self);

@@ -25,7 +25,7 @@
 #define MMS_MAPPING_H_
 
 #include "iec61850_model.h"
-#include "mms_server_connection.h"
+//#include "mms_server_connection.h"
 #include "mms_device_model.h"
 #include "control.h"
 

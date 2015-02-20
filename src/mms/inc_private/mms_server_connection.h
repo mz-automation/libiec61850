@@ -31,7 +31,7 @@
 #include "libiec61850_platform_includes.h"
 
 #include "mms_common.h"
-#include "mms_common_internal.h"
+#include "mms_indication.h"
 #include "mms_device_model.h"
 #include "mms_value.h"
 #include "mms_server.h"

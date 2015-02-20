@@ -1,7 +1,7 @@
 /*
  *  mms_mapping_internal.h
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013, 2015 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -24,6 +24,8 @@
 #ifndef MMS_MAPPING_INTERNAL_H_
 #define MMS_MAPPING_INTERNAL_H_
 
+#include "stack_config.h"
+
 #include "hal_thread.h"
 #include "linked_list.h"
 
@@ -32,7 +34,12 @@ struct sMmsMapping {
     MmsDevice* mmsDevice;
     MmsServer mmsServer;
     LinkedList reportControls;
+
+#if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
     LinkedList gseControls;
+    const char* gooseInterfaceId;
+#endif
+
     LinkedList controlObjects;
     LinkedList observedObjects;
     LinkedList attributeAccessHandlers;

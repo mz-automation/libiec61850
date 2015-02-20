@@ -101,4 +101,19 @@ ClientReport_destroy(ClientReport self);
 void
 private_ControlObjectClient_invokeCommandTerminationHandler(ControlObjectClient self);
 
+/* some declarations that are shared with server side ! */
+
+char*
+MmsMapping_getMmsDomainFromObjectReference(const char* objectReference, char* buffer);
+
+char*
+MmsMapping_createMmsVariableNameFromObjectReference(const char* objectReference, FunctionalConstraint fc, char* buffer);
+
+
+char*
+MmsMapping_varAccessSpecToObjectReference(MmsVariableAccessSpecification* varAccessSpec);
+
+MmsVariableAccessSpecification*
+MmsMapping_ObjectReferenceToVariableAccessSpec(char* objectReference);
+
 #endif /* IED_CONNECTION_PRIVATE_H_ */

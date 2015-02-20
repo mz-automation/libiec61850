@@ -36,7 +36,7 @@
 #define GOOSE_MAX_MESSAGE_SIZE 1518
 
 static void
-prepareGooseBuffer(GoosePublisher self, CommParameters* parameters, char* interfaceID);
+prepareGooseBuffer(GoosePublisher self, CommParameters* parameters, const char* interfaceID);
 
 struct sGoosePublisher {
     uint8_t* buffer;
@@ -65,7 +65,7 @@ struct sGoosePublisher {
 
 
 GoosePublisher
-GoosePublisher_create(CommParameters* parameters, char* interfaceID)
+GoosePublisher_create(CommParameters* parameters, const char* interfaceID)
 {
     GoosePublisher self = (GoosePublisher) GLOBAL_CALLOC(1, sizeof(struct sGoosePublisher));
 
@@ -160,7 +160,7 @@ GoosePublisher_setTimeAllowedToLive(GoosePublisher self, uint32_t timeAllowedToL
 }
 
 static void
-prepareGooseBuffer(GoosePublisher self, CommParameters* parameters, char* interfaceID)
+prepareGooseBuffer(GoosePublisher self, CommParameters* parameters, const char* interfaceID)
 {
     uint8_t srcAddr[6];
 

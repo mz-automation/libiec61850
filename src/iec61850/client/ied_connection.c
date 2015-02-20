@@ -28,7 +28,6 @@
 #include "stack_config.h"
 
 #include "mms_client_connection.h"
-#include "mms_mapping.h"
 
 #include "ied_connection_private.h"
 #include "mms_value_internal.h"

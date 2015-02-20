@@ -211,7 +211,7 @@ getAdapterMacAddress(char* pcapAdapterName, uint8_t* macAddress)
 
 
 void
-Ethernet_getInterfaceMACAddress(char* interfaceId, uint8_t* addr)
+Ethernet_getInterfaceMACAddress(const char* interfaceId, uint8_t* addr)
 {
 #ifdef __GNUC__
 #ifndef __MINGW64_VERSION_MAJOR
@@ -238,7 +238,7 @@ Ethernet_getInterfaceMACAddress(char* interfaceId, uint8_t* addr)
 
 
 EthernetSocket
-Ethernet_createSocket(char* interfaceId, uint8_t* destAddress)
+Ethernet_createSocket(const char* interfaceId, uint8_t* destAddress)
 {
     pcap_t *pcapSocket;
     char errbuf[PCAP_ERRBUF_SIZE];
@@ -332,12 +332,12 @@ Ethernet_isSupported()
 }
 
 void
-Ethernet_getInterfaceMACAddress(char* interfaceId, uint8_t* addr)
+Ethernet_getInterfaceMACAddress(const char* interfaceId, uint8_t* addr)
 {
 }
 
 EthernetSocket
-Ethernet_createSocket(char* interfaceId, uint8_t* destAddress)
+Ethernet_createSocket(const char* interfaceId, uint8_t* destAddress)
 {
     return NULL;
 }

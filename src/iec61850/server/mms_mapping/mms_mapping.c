@@ -990,12 +990,21 @@ createNamedVariableFromLogicalNode(MmsMapping* self, MmsDomain* domain,
 static MmsDomain*
 createMmsDomainFromIedDevice(MmsMapping* self, LogicalDevice* logicalDevice)
 {
+    MmsDomain* domain = NULL;
     char domainName[65];
 
-    strncpy(domainName, self->model->name, 64);
-    strncat(domainName, logicalDevice->name, 64);
+    int modelNameLength = strlen(self->model->name);
 
-    MmsDomain* domain = MmsDomain_create(domainName);
+    if (modelNameLength > 64)
+        goto exit_function;
+
+    strncpy(domainName, self->model->name, 64);
+    strncat(domainName, logicalDevice->name, 64 - modelNameLength);
+
+    domain = MmsDomain_create(domainName);
+
+    if (domain == NULL)
+        goto exit_function;
 
     int nodesCount = LogicalDevice_getLogicalNodeCount(logicalDevice);
 
@@ -1014,6 +1023,7 @@ createMmsDomainFromIedDevice(MmsMapping* self, LogicalDevice* logicalDevice)
         i++;
     }
 
+exit_function:
     return domain;
 }
 
@@ -1042,11 +1052,19 @@ createDataSets(MmsDevice* mmsDevice, IedModel* iedModel)
 
     char domainName[65];
 
+    int iedModelNameLength = strlen(iedModel->name);
+
+    if (iedModelNameLength > 64)
+        goto exit_function; //TODO call exception handler!
+
     while (dataset != NULL) {
         strncpy(domainName, iedModel->name, 64);
-        strncat(domainName, dataset->logicalDeviceName, 64);
+        strncat(domainName, dataset->logicalDeviceName, 64 - iedModelNameLength);
 
         MmsDomain* dataSetDomain = MmsDevice_getDomain(mmsDevice, domainName);
+
+        if (dataSetDomain == NULL)
+            goto exit_function; //TODO call exception handler!
 
         MmsNamedVariableList varList = MmsNamedVariableList_create(dataSetDomain, dataset->name, false);
 
@@ -1057,7 +1075,7 @@ createDataSets(MmsDevice* mmsDevice, IedModel* iedModel)
             MmsAccessSpecifier accessSpecifier;
 
             strncpy(domainName, iedModel->name, 64);
-            strncat(domainName, dataSetEntry->logicalDeviceName, 64);
+            strncat(domainName, dataSetEntry->logicalDeviceName, 64 - iedModelNameLength);
 
             accessSpecifier.domain = MmsDevice_getDomain(mmsDevice, domainName);
 
@@ -1077,6 +1095,9 @@ createDataSets(MmsDevice* mmsDevice, IedModel* iedModel)
 
         dataset = dataset->sibling;
     }
+
+exit_function:
+    return;
 }
 
 static MmsDevice*
@@ -1111,6 +1132,7 @@ MmsMapping_create(IedModel* model)
 
 #if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
         self->gseControls = LinkedList_create();
+        self->gooseInterfaceId = NULL;
 #endif
 
 #if (CONFIG_IEC61850_CONTROL_SERVICE == 1)

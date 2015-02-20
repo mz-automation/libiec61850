@@ -207,6 +207,19 @@ IedServer_enableGoosePublishing(IedServer self);
 void
 IedServer_disableGoosePublishing(IedServer self);
 
+/**
+ * \brief Set the ethernet interface to be used by GOOSE publishing
+ *
+ * This function can be used to set the GOOSE interface ID. If not used or set to NULL the
+ * default interface ID from stack_config.h is used. Note the interface ID is operating system
+ * specific!
+ *
+ * \param self the instance of IedServer to operate on.
+ * \param interfaceId the ID of the ethernet interface to be used for GOOSE publishing
+ */
+void
+IedServer_setGooseInterfaceId(IedServer self, const char* interfaceId);
+
 /**@}*/
 
 /**

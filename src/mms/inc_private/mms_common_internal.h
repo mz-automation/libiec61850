@@ -29,14 +29,7 @@
 #include "mms_access_result.h"
 #include "conversions.h"
 
-#define DEFAULT_MAX_SERV_OUTSTANDING_CALLING 5
-#define DEFAULT_MAX_SERV_OUTSTANDING_CALLED 5
-#define DEFAULT_DATA_STRUCTURE_NESTING_LEVEL 10
 
-typedef enum
-{
-    MMS_ERROR, MMS_INITIATE, MMS_CONFIRMED_REQUEST, MMS_OK, MMS_CONCLUDE
-} MmsIndication;
 
 
 MmsValue*

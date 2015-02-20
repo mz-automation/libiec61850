@@ -509,4 +509,4 @@ EXPORTS
     IedServer_updateTimestampAttributeValue
     MmsValue_getUtcTimeBuffer
     Timestamp_clearFlags
-
+    IedServer_setGooseInterfaceId

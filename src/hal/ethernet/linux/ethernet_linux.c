@@ -45,7 +45,7 @@ struct sEthernetSocket {
 };
 
 static int
-getInterfaceIndex(int sock, char* deviceName)
+getInterfaceIndex(int sock, const char* deviceName)
 {
     struct ifreq ifr;
 
@@ -76,7 +76,7 @@ getInterfaceIndex(int sock, char* deviceName)
 
 
 void
-Ethernet_getInterfaceMACAddress(char* interfaceId, uint8_t* addr)
+Ethernet_getInterfaceMACAddress(const char* interfaceId, uint8_t* addr)
 {
     struct ifreq buffer;
 
@@ -100,7 +100,7 @@ Ethernet_getInterfaceMACAddress(char* interfaceId, uint8_t* addr)
 
 
 EthernetSocket
-Ethernet_createSocket(char* interfaceId, uint8_t* destAddress)
+Ethernet_createSocket(const char* interfaceId, uint8_t* destAddress)
 {
     EthernetSocket ethernetSocket = GLOBAL_CALLOC(1, sizeof(struct sEthernetSocket));
 

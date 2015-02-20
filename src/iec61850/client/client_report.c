@@ -29,7 +29,8 @@
 
 #include "ied_connection_private.h"
 
-#include "mms_mapping.h"
+#include "lib_memory.h"
+#include "string_utilities.h"
 
 struct sClientReport
 {
@@ -54,7 +55,6 @@ struct sClientReport
     uint64_t timestamp;
     uint16_t seqNum;
     uint32_t confRev;
-    bool bufOverflow;
 };
 
 char*
@@ -393,7 +393,7 @@ private_IedConnection_handleReport(IedConnection self, MmsValue* value)
 
     /* skip bufOvfl */
     if (MmsValue_getBitStringBit(optFlds, 6) == true) {
-        matchingReport->hasBufOverflow = false;
+        matchingReport->hasBufOverflow = true;
         inclusionIndex++;
     }
 

@@ -29,7 +29,8 @@
 
 #include "ied_connection_private.h"
 
-#include "mms_mapping.h"
+#include "lib_memory.h"
+#include "string_utilities.h"
 
 struct sClientGooseControlBlock {
     char* objectReference;
