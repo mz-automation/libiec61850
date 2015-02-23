@@ -1,7 +1,7 @@
 /*
  *  mms_information_report.c
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013, 2015 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -49,9 +49,18 @@ MmsServerConnection_sendInformationReportSingleVariableVMDSpecific(MmsServerConn
 	uint32_t informationReportSize = 1 + BerEncoder_determineLengthSize(informationReportContentSize) +
 			informationReportContentSize;
 
+    uint32_t completeMessageSize = 1 + informationReportSize + BerEncoder_determineLengthSize(informationReportSize);
+
+    if (completeMessageSize > self->maxPduSize) {
+        if (DEBUG_MMS_SERVER)
+            printf("MMS_SERVER: report message too large %i (max = %i) -> skip message!\n", completeMessageSize, self->maxPduSize);
+
+        goto exit_function;
+    }
+
 	if (DEBUG_MMS_SERVER) printf("MMS_SERVER: sendInfReportSingle variable: %s\n", itemId);
 
-	ByteBuffer* reportBuffer = ByteBuffer_create(NULL, self->maxPduSize);
+	ByteBuffer* reportBuffer = self->server->reportBuffer;
 
 	uint8_t* buffer = reportBuffer->buffer;
 	int bufPos = 0;
@@ -74,7 +83,8 @@ MmsServerConnection_sendInformationReportSingleVariableVMDSpecific(MmsServerConn
 
     IsoConnection_sendMessage(self->isoConnection, reportBuffer, handlerMode);
 
-    ByteBuffer_destroy(reportBuffer);
+exit_function:
+    return;
 }
 
 void
@@ -132,8 +142,17 @@ MmsServerConnection_sendInformationReportListOfVariables(
     uint32_t informationReportSize = 1 + BerEncoder_determineLengthSize(informationReportContentSize) +
             informationReportContentSize;
 
+    uint32_t completeMessageSize = 1 + informationReportSize + BerEncoder_determineLengthSize(informationReportSize);
+
+    if (completeMessageSize > self->maxPduSize) {
+        if (DEBUG_MMS_SERVER)
+            printf("MMS_SERVER: report message too large %i (max = %i) -> skip message!\n", completeMessageSize, self->maxPduSize);
+
+        goto exit_function;
+    }
+
     /* encode message */
-    ByteBuffer* reportBuffer = ByteBuffer_create(NULL, self->maxPduSize);
+    ByteBuffer* reportBuffer = self->server->reportBuffer;
 
     uint8_t* buffer = reportBuffer->buffer;
     int bufPos = 0;
@@ -144,8 +163,6 @@ MmsServerConnection_sendInformationReportListOfVariables(
 
     /* encode list of variable access specifications */
     bufPos = BerEncoder_encodeTL(0xa0, listOfVariableSize, buffer, bufPos);
-
-
 
     specElement = LinkedList_getNext(variableAccessDeclarations);
     i = 0;
@@ -196,7 +213,8 @@ MmsServerConnection_sendInformationReportListOfVariables(
 
     IsoConnection_sendMessage(self->isoConnection, reportBuffer, handlerMode);
 
-    ByteBuffer_destroy(reportBuffer);
+exit_function:
+    return;
 }
 
 
@@ -240,9 +258,18 @@ MmsServerConnection_sendInformationReportVMDSpecific(MmsServerConnection self, c
     informationReportSize = 1 +  informationReportContentSize +
             BerEncoder_determineLengthSize(informationReportContentSize);
 
+    uint32_t completeMessageSize = 1 + informationReportSize + BerEncoder_determineLengthSize(informationReportSize);
+
+    if (completeMessageSize > self->maxPduSize) {
+        if (DEBUG_MMS_SERVER)
+            printf("MMS_SERVER: report message too large %i (max = %i) -> skip message!\n", completeMessageSize, self->maxPduSize);
+
+        goto exit_function;
+    }
+
     if (DEBUG_MMS_SERVER) printf("MMS_SERVER: sendInfReport: %i items\n", variableCount);
 
-    ByteBuffer* reportBuffer = ByteBuffer_create(NULL, self->maxPduSize);
+    ByteBuffer* reportBuffer =  self->server->reportBuffer;
 
     uint8_t* buffer = reportBuffer->buffer;
     int bufPos = 0;
@@ -272,7 +299,8 @@ MmsServerConnection_sendInformationReportVMDSpecific(MmsServerConnection self, c
 
     IsoConnection_sendMessage(self->isoConnection, reportBuffer, false);
 
-    ByteBuffer_destroy(reportBuffer);
+exit_function:
+    return;
 }
 
 

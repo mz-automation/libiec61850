@@ -1,7 +1,7 @@
 /*
  *  mms_server.c
  *
- *  Copyright 2013, 2014 Michael Zillgith
+ *  Copyright 2013, 2014, 2015 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -58,6 +58,8 @@ MmsServer_create(IsoServer isoServer, MmsDevice* device)
     self->openConnections = Map_create();
     self->valueCaches = createValueCaches(device);
     self->isLocked = false;
+
+    self->reportBuffer = ByteBuffer_create(NULL, CONFIG_MMS_MAXIMUM_PDU_SIZE);
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     self->modelMutex = Semaphore_create(1);
@@ -149,6 +151,8 @@ MmsServer_destroy(MmsServer self)
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_destroy(self->modelMutex);
 #endif
+
+    ByteBuffer_destroy(self->reportBuffer);
 
     GLOBAL_FREEMEM(self);
 }

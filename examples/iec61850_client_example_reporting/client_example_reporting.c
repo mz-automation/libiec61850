@@ -33,7 +33,6 @@ reportCallbackFunction(void* parameter, ClientReport report)
     if (ClientReport_hasTimestamp(report)) {
         time_t unixTime = ClientReport_getTimestamp(report) / 1000;
 
-//#ifdef _MSC_VER
 #ifdef WIN32
 		char* timeBuf = ctime(&unixTime);
 #else

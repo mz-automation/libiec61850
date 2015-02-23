@@ -83,6 +83,8 @@ struct sMmsServer {
     Map valueCaches;
     bool isLocked;
 
+    ByteBuffer* reportBuffer; /* global buffer for encoding reports */
+
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore modelMutex;
 #endif
