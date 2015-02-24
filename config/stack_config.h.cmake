@@ -96,6 +96,16 @@
 /* The number of GOOSE retransmissions after an event */
 #define CONFIG_GOOSE_EVENT_RETRANSMISSION_COUNT 2
 
+/* Define if GOOSE control block elements are writable (1) or read-only (0) */
+#define CONFIG_GOOSE_GOID_WRITABLE 1
+#define CONFIG_GOOSE_DATSET_WRITABLE 1
+#define CONFIG_GOOSE_CONFREV_WRITABLE 1
+#define CONFIG_GOOSE_NDSCOM_WRITABLE 1
+#define CONFIG_GOOSE_DSTADDRESS_WRITABLE 1
+#define CONFIG_GOOSE_MINTIME_WRITABLE 1
+#define CONFIG_GOOSE_MAXTIME_WRITABLE 1
+#define CONFIG_GOOSE_FIXEDOFFS_WRITABLE 1
+
 /* The default value for the priority field of the 802.1Q header (allowed range 0-7) */
 #define CONFIG_GOOSE_DEFAULT_PRIORITY 4
 

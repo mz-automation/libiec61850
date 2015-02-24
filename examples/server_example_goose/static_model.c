@@ -1983,7 +1983,7 @@ static PhyComAddress iedModel_GenericIO_LLN0_gse0_address = {
   {0x1, 0xc, 0xcd, 0x1, 0x0, 0x1}
 };
 
-GSEControlBlock iedModel_GenericIO_LLN0_gse0 = {&iedModel_GenericIO_LLN0, "gcbEvents", "events", "Events", 2, false,&iedModel_GenericIO_LLN0_gse0_address, &iedModel_GenericIO_LLN0_gse1};
+GSEControlBlock iedModel_GenericIO_LLN0_gse0 = {&iedModel_GenericIO_LLN0, "gcbEvents", "events", "Events", 2, false, &iedModel_GenericIO_LLN0_gse0_address, 1000, 3000, &iedModel_GenericIO_LLN0_gse1};
 
 static PhyComAddress iedModel_GenericIO_LLN0_gse1_address = {
   4,
@@ -1992,7 +1992,7 @@ static PhyComAddress iedModel_GenericIO_LLN0_gse1_address = {
   {0x1, 0xc, 0xcd, 0x1, 0x0, 0x1}
 };
 
-GSEControlBlock iedModel_GenericIO_LLN0_gse1 = {&iedModel_GenericIO_LLN0, "gcbAnalogValues", "analog", "AnalogValues", 2, false,&iedModel_GenericIO_LLN0_gse1_address, NULL};
+GSEControlBlock iedModel_GenericIO_LLN0_gse1 = {&iedModel_GenericIO_LLN0, "gcbAnalogValues", "analog", "AnalogValues", 2, false, &iedModel_GenericIO_LLN0_gse1_address, -1, -1, NULL};
 
 
 

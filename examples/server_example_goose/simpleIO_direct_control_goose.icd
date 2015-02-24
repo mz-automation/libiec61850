@@ -77,7 +77,7 @@
               <OptFields seqNum="true" timeStamp="true" dataSet="true" reasonCode="true" entryID="true" configRef="true" />
               <RptEnabled max="1" />
             </ReportControl>
-            <GSEControl appID="events" name="gcbEvents" type="GOOSE" datSet="Events" confRev="2"/> 
+            <GSEControl appID="events" name="gcbEvents" type="GOOSE" datSet="Events" confRev="2" minTime="1000" maxTime="3000" /> 
             <GSEControl appID="analog" name="gcbAnalogValues" type="GOOSE" datSet="AnalogValues" confRev="2"/> 
             <DOI name="Mod">
               <DAI name="ctlModel">

@@ -34,6 +34,8 @@ public class GSEControl {
     private int confRev = 1;
     private String appID;
     private boolean fixedOffs = false;
+    private int minTime = -1;
+    private int maxTime = -1;
     
     public GSEControl(Node gseControlNode) throws SclParserException {
 
@@ -52,6 +54,15 @@ public class GSEControl {
        
        if (fixedOffs != null)
            this.fixedOffs = fixedOffs;
+       
+       String minTimeStr = ParserUtils.parseAttribute(gseControlNode, "minTime");
+       String maxTimeStr = ParserUtils.parseAttribute(gseControlNode, "maxTime");
+       
+       if (minTimeStr != null)
+    	   minTime = new Integer(minTimeStr);
+       
+       if (maxTimeStr != null)
+    	   maxTime = new Integer(maxTimeStr);
        
        String typeString = ParserUtils.parseAttribute(gseControlNode, "type");
        
@@ -84,5 +95,13 @@ public class GSEControl {
     public boolean isFixedOffs() {
         return fixedOffs;
     }
+
+	public int getMinTime() {
+		return minTime;
+	}
+
+	public int getMaxTime() {
+		return maxTime;
+	}
     
 }

@@ -1321,6 +1321,38 @@ lookupGCB(MmsMapping* self, MmsDomain* domain, char* lnName, char* objectName)
     return NULL;
 }
 
+#ifndef CONFIG_GOOSE_GOID_WRITABLE
+#define CONFIG_GOOSE_GOID_WRITABLE 0
+#endif
+
+#ifndef CONFIG_GOOSE_DATSET_WRITABLE
+#define CONFIG_GOOSE_DATSET_WRITABLE 0
+#endif
+
+#ifndef CONFIG_GOOSE_CONFREV_WRITABLE
+#define CONFIG_GOOSE_CONFREV_WRITABLE 0
+#endif
+
+#ifndef CONFIG_GOOSE_NDSCOM_WRITABLE
+#define CONFIG_GOOSE_NDSCOM_WRITABLE 0
+#endif
+
+#ifndef CONFIG_GOOSE_DSTADDRESS_WRITABLE
+#define CONFIG_GOOSE_DSTADDRESS_WRITABLE 0
+#endif
+
+#ifndef CONFIG_GOOSE_MINTIME_WRITABLE
+#define CONFIG_GOOSE_MINTIME_WRITABLE 0
+#endif
+
+#ifndef CONFIG_GOOSE_MAXTIME_WRITABLE
+#define CONFIG_GOOSE_MAXTIME_WRITABLE 0
+#endif
+
+#ifndef CONFIG_GOOSE_FIXEDOFFS_WRITABLE
+#define CONFIG_GOOSE_FIXEDOFFS_WRITABLE 0
+#endif
+
 static MmsDataAccessError
 writeAccessGooseControlBlock(MmsMapping* self, MmsDomain* domain, char* variableIdOrig,
         MmsValue* value)
@@ -1370,16 +1402,77 @@ writeAccessGooseControlBlock(MmsMapping* self, MmsDomain* domain, char* variable
         if (MmsGooseControlBlock_isEnabled(mmsGCB))
             return DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
         else {
-            MmsValue* subValue = MmsValue_getSubElement(MmsGooseControlBlock_getMmsValues(mmsGCB),
+            bool allowAccess = false;
+
+#if (CONFIG_GOOSE_GOID_WRITABLE == 1)
+            if (strcmp(varName, "GoID") == 0) {
+                MmsValue_update(MmsValue_getElement(MmsGooseControlBlock_getMmsValues(mmsGCB), 1), value);
+                allowAccess = true;
+            }
+#endif
+
+#if (CONFIG_GOOSE_DATSET_WRITABLE == 1)
+            if (strcmp(varName, "DatSet") == 0) {
+                MmsValue_update(MmsValue_getElement(MmsGooseControlBlock_getMmsValues(mmsGCB), 2), value);
+                allowAccess = true;
+            }
+#endif
+
+#if (CONFIG_GOOSE_CONFREV_WRITABLE == 1)
+            if (strcmp(varName, "ConfRev") == 0) {
+                MmsValue_update(MmsValue_getElement(MmsGooseControlBlock_getMmsValues(mmsGCB), 3), value);
+                allowAccess = true;
+            }
+#endif
+
+#if (CONFIG_GOOSE_NDSCOM_WRITABLE == 1)
+            if (strcmp(varName, "NdsCom") == 0) {
+                MmsValue_update(MmsValue_getElement(MmsGooseControlBlock_getMmsValues(mmsGCB), 4), value);
+                allowAccess = true;
+            }
+#endif
+
+#if (CONFIG_GOOSE_DSTADDRESS_WRITABLE == 1)
+            if (memcmp(varName, "DstAddress", 9) == 0) {
+                MmsValue* subValue = MmsValue_getSubElement(MmsGooseControlBlock_getMmsValues(mmsGCB),
                     MmsGooseControlBlock_getVariableSpecification(mmsGCB), varName);
 
-            if (subValue == NULL)
-                return DATA_ACCESS_ERROR_INVALID_ADDRESS;
+                if (subValue == NULL)
+                    return DATA_ACCESS_ERROR_INVALID_ADDRESS;
 
-            if (MmsValue_update(subValue, value))
+                if (MmsValue_update(subValue, value))
+                    return DATA_ACCESS_ERROR_SUCCESS;
+                else
+                    return DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+            }
+#endif
+
+#if (CONFIG_GOOSE_MINTIME_WRITABLE == 1)
+            if (strcmp(varName, "MinTime") == 0) {
+                MmsValue_update(MmsValue_getElement(MmsGooseControlBlock_getMmsValues(mmsGCB), 6), value);
+                allowAccess = true;
+            }
+#endif
+
+#if (CONFIG_GOOSE_MAXTIME_WRITABLE == 1)
+            if (strcmp(varName, "MaxTime") == 0) {
+                MmsValue_update(MmsValue_getElement(MmsGooseControlBlock_getMmsValues(mmsGCB), 7), value);
+                allowAccess = true;
+            }
+#endif
+
+#if (CONFIG_GOOSE_FIXEDOFFS_WRITABLE == 1)
+            if (strcmp(varName, "FixedOffs") == 0) {
+                MmsValue_update(MmsValue_getElement(MmsGooseControlBlock_getMmsValues(mmsGCB), 8), value);
+                allowAccess = true;
+            }
+#endif
+
+            if (allowAccess)
                 return DATA_ACCESS_ERROR_SUCCESS;
             else
-                return DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+                return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+
         }
     }
 }

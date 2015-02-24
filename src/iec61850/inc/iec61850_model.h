@@ -247,7 +247,8 @@ struct sGSEControlBlock {
     uint32_t confRef;  /* ConfRef - configuration revision */
     bool fixedOffs;    /* fixed offsets */
     PhyComAddress* address; /* GSE communication parameters */
-
+    int minTime; /* optional minTime parameter --> -1 if not present */
+    int maxTime; /* optional maxTime parameter --> -1 if not present */
     GSEControlBlock* sibling; /* next control block in list or NULL if this is the last entry */
 };
 

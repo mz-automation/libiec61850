@@ -221,15 +221,16 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
                     else if (StringUtils_startsWith((char*) lineBuffer, "GC")) {
                         uint32_t confRef;
                         int fixedOffs;
+                        int minTime = -1;
+                        int maxTime = -1;
 
-                        int matchedItems = sscanf((char*) lineBuffer, "GC(%s %s %s %u %i)",
-                                nameString, nameString2, nameString3, &confRef, &fixedOffs);
-
+                        int matchedItems = sscanf((char*) lineBuffer, "GC(%s %s %s %u %i %i %i)",
+                                nameString, nameString2, nameString3, &confRef, &fixedOffs, &minTime, &maxTime);
 
                         if (matchedItems < 5) goto exit_error;
 
                         currentGoCB = GSEControlBlock_create(nameString, currentLN, nameString2,
-                                nameString3, confRef, fixedOffs);
+                                nameString3, confRef, fixedOffs, minTime, maxTime);
 
                         indendation = 4;
 
@@ -257,7 +258,7 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
 #endif /* (CONFIG_IEC61850_SETTING_GROUPS == 1) */
 
                     else {
-                      //  if (DEBUG_IED_SERVER)
+                        if (DEBUG_IED_SERVER)
                             printf("IED_SERVER: Unknown identifier (%s)\n", lineBuffer);
 
                         goto exit_error;
@@ -430,7 +431,7 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
     return model;
 
 exit_error:
-   // if (DEBUG_IED_SERVER)
+    if (DEBUG_IED_SERVER)
         printf("IED_SERVER: error parsing line %i (indendation level = %i)\n", currentLine, indendation);
     IedModel_destroy(model);
     return NULL;

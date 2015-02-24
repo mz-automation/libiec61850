@@ -161,7 +161,12 @@ public class DynamicModelGenerator {
                 output.print('1');
             else
                 output.print('0');
-            
+            output.print(' ');
+            output.print(gcb.getMinTime());
+            output.print(' ');
+            output.print(gcb.getMaxTime());
+            output.print(' ');
+                       
             if (gseAddress == null) {
                 output.println(");");
             }

@@ -754,14 +754,17 @@ public class StaticModelGenerator {
             gseString += gseControlBlock.getConfRev() + ", ";
 
             if (gseControlBlock.isFixedOffs())
-                gseString += "true,";
+                gseString += "true, ";
             else
-                gseString += "false,";
+                gseString += "false, ";
 
             if (gseAddress != null)
                 gseString += "&" + phyComAddrName + ", ";
             else
                 gseString += "NULL, ";
+            
+            gseString += gseControlBlock.getMinTime() + ", ";
+            gseString += gseControlBlock.getMaxTime() + ", ";
 
             currentGseVariableNumber++;
             

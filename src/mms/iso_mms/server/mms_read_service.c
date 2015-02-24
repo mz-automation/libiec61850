@@ -322,27 +322,27 @@ static int
 encodeVariableAccessSpecification(VarAccessSpec* accessSpec, uint8_t* buffer, int bufPos, bool encode)
 {
 	/* determine size */
-	int varAccessSpecSize = 0;
+    uint32_t varAccessSpecSize = 0;
 
-	int itemIdLen = strlen(accessSpec->itemId);
+	uint32_t itemIdLen = strlen(accessSpec->itemId);
 
 	varAccessSpecSize += itemIdLen + BerEncoder_determineLengthSize(itemIdLen) + 1;
 
 	if (accessSpec->domainId != NULL) {
-		int domainIdLen = strlen(accessSpec->domainId);
+	    uint32_t domainIdLen = strlen(accessSpec->domainId);
 
 		varAccessSpecSize += domainIdLen + BerEncoder_determineLengthSize(domainIdLen) + 1;
 	}
 
-	int specificityLength = varAccessSpecSize;
+	uint32_t specificityLength = varAccessSpecSize;
 
 	varAccessSpecSize += 1 + BerEncoder_determineLengthSize(specificityLength);
 
-	int variableListNameLength = varAccessSpecSize;
+	uint32_t variableListNameLength = varAccessSpecSize;
 
 	varAccessSpecSize += 1 + BerEncoder_determineLengthSize(variableListNameLength);
 
-	int varAccessSpecLength = varAccessSpecSize;
+	uint32_t varAccessSpecLength = varAccessSpecSize;
 
 	varAccessSpecSize += 1 + BerEncoder_determineLengthSize(varAccessSpecLength);
 
@@ -389,14 +389,14 @@ encodeReadResponse(MmsServerConnection connection,
 
     int variableCount = LinkedList_size(values);
 
-    int varAccessSpecSize = 0;
+    uint32_t varAccessSpecSize = 0;
 
     if (accessSpec != NULL) {
         varAccessSpecSize = encodeVariableAccessSpecification(accessSpec, NULL, 0, false);
     }
 
     /* determine BER encoded message sizes */
-    int accessResultSize = 0;
+    uint32_t accessResultSize = 0;
 
     /* iterate values list to determine encoded size  */
     LinkedList value = LinkedList_getNext(values);
@@ -410,21 +410,21 @@ encodeReadResponse(MmsServerConnection connection,
         value = LinkedList_getNext(value);
     }
 
-    int listOfAccessResultsLength = 1 +
+    uint32_t listOfAccessResultsLength = 1 +
             BerEncoder_determineLengthSize(accessResultSize) +
             accessResultSize;
 
-    int confirmedServiceResponseContentLength = listOfAccessResultsLength + varAccessSpecSize;
+    uint32_t confirmedServiceResponseContentLength = listOfAccessResultsLength + varAccessSpecSize;
 
-    int confirmedServiceResponseLength = 1 +
+    uint32_t confirmedServiceResponseLength = 1 +
             BerEncoder_determineLengthSize(confirmedServiceResponseContentLength) +
             confirmedServiceResponseContentLength;
 
-    int invokeIdSize = BerEncoder_UInt32determineEncodedSize(invokeId) + 2;
+    uint32_t invokeIdSize = BerEncoder_UInt32determineEncodedSize(invokeId) + 2;
 
-    int confirmedResponseContentSize = confirmedServiceResponseLength + invokeIdSize;
+    uint32_t confirmedResponseContentSize = confirmedServiceResponseLength + invokeIdSize;
 
-    int mmsPduSize = 1 + BerEncoder_determineLengthSize(confirmedResponseContentSize) +
+    uint32_t mmsPduSize = 1 + BerEncoder_determineLengthSize(confirmedResponseContentSize) +
             confirmedResponseContentSize;
 
     /* Check if message would fit in the MMS PDU */

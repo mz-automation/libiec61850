@@ -57,6 +57,9 @@ struct sMmsGooseControlBlock {
     uint64_t nextPublishTime;
     int retransmissionsLeft; /* number of retransmissions left for the last event */
 
+    int minTime;
+    int maxTime;
+
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore publisherMutex;
 #endif
@@ -223,7 +226,10 @@ MmsGooseControlBlock_enable(MmsGooseControlBlock self)
 
             self->publisher = GoosePublisher_create(&commParameters, self->mmsMapping->gooseInterfaceId);
 
-            GoosePublisher_setTimeAllowedToLive(self->publisher, CONFIG_GOOSE_STABLE_STATE_TRANSMISSION_INTERVAL * 3);
+            self->minTime = MmsValue_toUint32(MmsValue_getElement(self->mmsValue, 6));
+            self->maxTime = MmsValue_toUint32(MmsValue_getElement(self->mmsValue, 7));
+
+            GoosePublisher_setTimeAllowedToLive(self->publisher, self->maxTime * 3);
 
             GoosePublisher_setDataSetRef(self->publisher, self->dataSetRef);
 
@@ -554,6 +560,22 @@ GOOSE_createGOOSEControlBlocks(MmsMapping* self, MmsDomain* domain,
 
         mmsGCB->domain = domain;
         mmsGCB->logicalNode = logicalNode;
+
+        if (gooseControlBlock->minTime == -1)
+            mmsGCB->minTime = CONFIG_GOOSE_EVENT_RETRANSMISSION_INTERVAL;
+        else
+            mmsGCB->minTime = gooseControlBlock->minTime;
+
+        if (gooseControlBlock->maxTime == -1)
+            mmsGCB->maxTime = CONFIG_GOOSE_STABLE_STATE_TRANSMISSION_INTERVAL;
+        else
+            mmsGCB->maxTime = gooseControlBlock->maxTime;
+
+        MmsValue* minTime = MmsValue_getElement(gseValues, 6);
+        MmsValue_setUint32(minTime, mmsGCB->minTime);
+
+        MmsValue* maxTime = MmsValue_getElement(gseValues, 7);
+        MmsValue_setUint32(maxTime, mmsGCB->maxTime);
 
         mmsGCB->mmsMapping = self;
 

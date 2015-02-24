@@ -124,7 +124,7 @@ struct sMmsServerConnection {
     int maxServOutstandingCalling;
     int maxServOutstandingCalled;
     int dataStructureNestingLevel;
-    int maxPduSize; /* local detail */
+    uint32_t maxPduSize; /* local detail */
     IsoConnection isoConnection;
     MmsServer server;
     uint32_t lastInvokeId;

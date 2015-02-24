@@ -171,11 +171,14 @@ SettingGroupControlBlock_create(LogicalNode* parent, uint8_t actSG, uint8_t numO
  * \param dataSet the data set reference to be used by the GoCB
  * \param confRef the configuration revision
  * \param fixedOffs indicates if GOOSE publisher shall use fixed offsets (NOT YET SUPPORTED)
+ * \param minTime minimum GOOSE retransmission time (-1 if not specified - uses stack default then)
+ * \param maxTime GOOSE retransmission time in stable state (-1 if not specified - uses stack default then)
  *
  * \return the new GoCB instance
  */
 GSEControlBlock*
-GSEControlBlock_create(const char* name, LogicalNode* parent, char* appId, char* dataSet, uint32_t confRef, bool fixedOffs);
+GSEControlBlock_create(const char* name, LogicalNode* parent, char* appId, char* dataSet, uint32_t confRef,
+        bool fixedOffs, int minTime, int maxTime);
 
 /**
  * \brief create a PhyComAddress object and add it to a GoCB

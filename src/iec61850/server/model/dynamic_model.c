@@ -302,7 +302,8 @@ LogicalNode_addGSEControlBlock(LogicalNode* self, GSEControlBlock* gcb)
 }
 
 GSEControlBlock*
-GSEControlBlock_create(const char* name, LogicalNode* parent, char* appId, char* dataSet, uint32_t confRef, bool fixedOffs)
+GSEControlBlock_create(const char* name, LogicalNode* parent, char* appId, char* dataSet, uint32_t confRef, bool fixedOffs,
+        int minTime, int maxTime)
 {
     GSEControlBlock* self = (GSEControlBlock*) GLOBAL_MALLOC(sizeof(GSEControlBlock));
 
@@ -321,6 +322,8 @@ GSEControlBlock_create(const char* name, LogicalNode* parent, char* appId, char*
 
     self->confRef = confRef;
     self->fixedOffs = fixedOffs;
+    self->minTime = minTime;
+    self->maxTime = maxTime;
 
     self->address = NULL;
 
