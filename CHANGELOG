@@ -1,3 +1,16 @@
+Changes to version 0.8.5
+------------------------
+- server/GOOSE: better support for GOOSE minTime, maxTime
+- server/GOOSE: it is now configurable which GoCB elements are writable
+- server: fixed problem (buffer overflow) with large report data sets
+- server: improved memory handling in report generation module
+- server/GOOSE: added IedServer_setGooseInterfaceId to change ethernet interface for GOOSE at runtime
+- server: fixed bug in delete data set service (server crashed when client sent an unknown LD name)
+- client: fixed memory leak in IedConnection_readDataSetValues function
+- server: fixed memory alignement problem for buffered reporting on ARM platform
+- client: fixed timeout bug in Socket_connect functions
+- windows: fixed problem with non-blocking socket send function on windows (as a consequence COTP fragmentation and file read service didn't work on the windows platform). 
+
 Changes to version 0.8.4
 ------------------------
 - server: implemented all optional report elements for buffered reporting
