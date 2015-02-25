@@ -1,7 +1,7 @@
 /*
  *  ied_server.c
  *
- *  Copyright 2013, 2014 Michael Zillgith
+ *  Copyright 2013, 2014, 2015 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -88,8 +88,6 @@ createControlObjects(IedServer self, MmsDomain* domain, char* lnName, MmsVariabl
                     else if (!(strcmp(coElementSpec->name, "SBO") == 0)) {
                         if (DEBUG_IED_SERVER)
                             printf("IED_SERVER: createControlObjects: Unknown element in CO: %s! --> seems not to be a control object\n", coElementSpec->name);
-
-                        assert(false);
 
                         break;
                     }

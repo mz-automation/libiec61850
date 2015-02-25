@@ -4,7 +4,7 @@ PROJECT_BINARY_NAME = server_example_sg
 PROJECT_SOURCES = server_example_sg.c
 PROJECT_SOURCES += static_model.c
 
-PROJECT_ICD_FILE = complexModel.scd
+PROJECT_ICD_FILE = sg_demo.icd
 
 include $(LIBIEC_HOME)/make/target_system.mk
 include $(LIBIEC_HOME)/make/stack_includes.mk

@@ -1,7 +1,7 @@
 /*
  * static_model.c
  *
- * automatically generated from sg_demo.xml
+ * automatically generated from sg_demo.icd
  */
 #include <stdlib.h>
 #include "iec61850_model.h"
