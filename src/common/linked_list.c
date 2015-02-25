@@ -151,7 +151,7 @@ LinkedList_insertAfter(LinkedList list, void* data)
     return newElement;
 }
 
-LinkedList inline
+LinkedList
 LinkedList_getNext(LinkedList list)
 {
     return list->next;

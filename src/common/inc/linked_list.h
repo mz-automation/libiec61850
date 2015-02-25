@@ -135,7 +135,7 @@ LinkedList_get(LinkedList self, int index);
  * \param self the LinkedList instance
  */
 LinkedList
-LinkedList_getNext(LinkedList listElement);
+LinkedList_getNext(LinkedList self);
 
 /**
  * \brief Get the last element in the list.

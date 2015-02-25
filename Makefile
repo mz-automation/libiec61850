@@ -103,8 +103,12 @@ LIB_OBJS = $(call src_to,.o,$(LIB_SOURCES))
 
 CFLAGS += -std=gnu99
 #CFLAGS += -Wno-error=format 
-CFLAGS += -Wstrict-prototypes 
+CFLAGS += -Wstrict-prototypes
+
+ifneq ($(HAL_IMPL), WIN32)
 CFLAGS += -Wuninitialized 
+endif
+
 CFLAGS += -Wsign-compare 
 CFLAGS += -Wpointer-arith 
 CFLAGS += -Wnested-externs 

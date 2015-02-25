@@ -32,13 +32,8 @@ static struct tm *gmtime_r(const time_t *tloc, struct tm *result) {
 #endif /* __IAR_SYSTEMS_ICC__ */
 
 #if	defined(WIN32)
-#pragma message( "PLEASE STOP AND READ!")
-#pragma message( "  localtime_r is implemented via localtime(), which may be not thread-safe.")
-#pragma message( "  gmtime_r is implemented via gmtime(), which may be not thread-safe.")
-#pragma message( "  ")
-#pragma message( "  You must fix the code by inserting appropriate locking")
-#pragma message( "  if you want to use asn_GT2time() or asn_UT2time().")
-#pragma message( "PLEASE STOP AND READ!")
+
+#ifdef __GNUC__
 
 static struct tm *localtime_r(const time_t *tloc, struct tm *result) {
 	struct tm *tm;
@@ -53,6 +48,36 @@ static struct tm *gmtime_r(const time_t *tloc, struct tm *result) {
 		return memcpy(result, tm, sizeof(struct tm));
 	return 0;
 }
+
+#else
+
+int
+localtime_s(struct tm* _tm, const time_t *time);
+
+int
+gmtime_s(struct tm* _tm, const time_t* time);
+
+
+
+static struct tm*
+localtime_r(const time_t *tloc, struct tm *result)
+{
+
+    if(localtime_s(result, tloc) == 0)
+        return result;
+    else
+        return 0;
+}
+
+static struct tm*
+gmtime_r(const time_t *tloc, struct tm *result)
+{
+    if(gmtime_s(result, tloc) == 0)
+        return result;
+    else
+        return 0;
+}
+#endif /* __GNUC__ */
 
 #define	tzset()	_tzset()
 #define	putenv(c)	_putenv(c)
