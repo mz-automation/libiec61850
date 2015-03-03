@@ -21,7 +21,7 @@
  *  See COPYING file for the complete license text.
  */
 
-
+#include "libiec61850_platform_includes.h"
 #include "mem_alloc_linked_list.h"
 
 struct sMemAllocLinkedList {

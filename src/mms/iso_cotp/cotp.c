@@ -25,6 +25,7 @@
  *  See COPYING file for the complete license text.
  */
 
+#include "libiec61850_platform_includes.h"
 #include "stack_config.h"
 #include "cotp.h"
 #include "byte_buffer.h"

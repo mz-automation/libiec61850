@@ -23,9 +23,7 @@
 
 #include "libiec61850_platform_includes.h"
 #include "mms_common_internal.h"
-#include "platform_endian.h"
 #include "stack_config.h"
-#include "string_utilities.h"
 #include "mms_value_internal.h"
 
 void

@@ -28,9 +28,6 @@
 #include "libiec61850_platform_includes.h"
 #include "stack_config.h"
 
-#include "string_utilities.h"
-#include <stdio.h>
-
 #define READ_BUFFER_MAX_SIZE 1024
 
 static uint8_t lineBuffer[READ_BUFFER_MAX_SIZE];

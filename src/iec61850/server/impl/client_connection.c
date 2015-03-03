@@ -29,7 +29,8 @@
 #include "hal_thread.h"
 
 #include "ied_server_private.h"
-//#include "mms_server.h"
+
+#include "libiec61850_platform_includes.h"
 
 struct sClientConnection {
 

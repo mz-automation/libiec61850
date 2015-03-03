@@ -31,6 +31,8 @@
 #include "hal_thread.h"
 #include "reporting.h"
 
+#include "libiec61850_platform_includes.h"
+
 #ifndef DEBUG_IED_SERVER
 #define DEBUG_IED_SERVER 0
 #endif

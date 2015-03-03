@@ -21,8 +21,8 @@
  *  See COPYING file for the complete license text.
  */
 
+#include "libiec61850_platform_includes.h"
 #include "ber_decode.h"
-#include "platform_endian.h"
 
 int
 BerDecoder_decodeLength(uint8_t* buffer, int* length, int bufPos, int maxBufPos)

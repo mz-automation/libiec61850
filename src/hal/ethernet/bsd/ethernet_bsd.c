@@ -30,10 +30,8 @@
 #include <net/if_dl.h>
 
 #include <stdint.h>
-#include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include <stdio.h>
 #include <fcntl.h>
 
 #include "libiec61850_platform_includes.h"

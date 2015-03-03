@@ -22,7 +22,6 @@
  */
 
 #include <windows.h>
-#include <stdlib.h>
 #include "libiec61850_platform_includes.h"
 #include "hal_thread.h"
 

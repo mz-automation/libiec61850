@@ -25,6 +25,7 @@
 
 #include "iec61850_dynamic_model.h"
 #include "iec61850_cdc.h"
+#include "libiec61850_platform_includes.h"
 
 /************************************************
  * Constructed Attribute Classes

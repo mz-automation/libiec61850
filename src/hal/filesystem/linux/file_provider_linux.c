@@ -21,12 +21,8 @@
  *  See COPYING file for the complete license text.
  */
 
-#include <stdbool.h>
-#include <stdlib.h>
-#include <stdint.h>
 #include <string.h>
 #include <dirent.h>
-#include <stdio.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>

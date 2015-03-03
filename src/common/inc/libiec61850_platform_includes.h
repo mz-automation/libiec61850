@@ -10,6 +10,8 @@
 #include "string_utilities.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
+#include <stdbool.h>
 
 #include "platform_endian.h"
 

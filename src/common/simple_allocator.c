@@ -21,8 +21,7 @@
  *  See COPYING file for the complete license text.
  */
 
-#include <stdlib.h>
-
+#include "libiec61850_platform_includes.h"
 #include "simple_allocator.h"
 
 void

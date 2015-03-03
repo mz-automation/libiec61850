@@ -22,7 +22,6 @@
  */
 
 #include "libiec61850_platform_includes.h"
-#include "platform_endian.h"
 #include "ber_integer.h"
 #include "ber_encoder.h"
 

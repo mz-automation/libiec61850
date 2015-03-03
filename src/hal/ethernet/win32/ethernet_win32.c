@@ -23,12 +23,11 @@
 
 #include "stack_config.h"
 
-#include <stdint.h>
-#include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
 
 #include "hal_ethernet.h"
+
+#include "libiec61850_platform_includes.h"
 
 #if (CONFIG_INCLUDE_ETHERNET_WINDOWS == 1)
 

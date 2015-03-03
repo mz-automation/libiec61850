@@ -23,7 +23,6 @@
 
 #include "libiec61850_platform_includes.h"
 #include "mms_value_cache.h"
-#include "string_utilities.h"
 #include "string_map.h"
 #include "stack_config.h"
 

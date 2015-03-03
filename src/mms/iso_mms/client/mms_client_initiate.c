@@ -21,6 +21,7 @@
  *	See COPYING file for the complete license text.
  */
 
+#include "libiec61850_platform_includes.h"
 #include <MmsPdu.h>
 #include "mms_common.h"
 #include "mms_common_internal.h"

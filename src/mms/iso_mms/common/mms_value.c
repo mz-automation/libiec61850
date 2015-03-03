@@ -26,9 +26,6 @@
 #include "mms_value.h"
 #include "mms_type_spec.h"
 
-#include "string_utilities.h"
-#include "platform_endian.h"
-
 #include "mms_common_internal.h"
 
 #include "mms_value_internal.h"

@@ -29,11 +29,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
-#include <stdint.h>
-#include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
-#include <stdio.h>
 
 #include "libiec61850_platform_includes.h"
 #include "hal_ethernet.h"

@@ -21,9 +21,7 @@
  *  See COPYING file for the complete license text.
  */
 
-
 #include "iec61850_server.h"
-#include "string_utilities.h"
 #include "libiec61850_platform_includes.h"
 #include "stack_config.h"
 

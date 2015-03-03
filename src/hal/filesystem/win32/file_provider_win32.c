@@ -22,10 +22,8 @@
  */
 
 #include <stdbool.h>
-#include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-#include <stdio.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>

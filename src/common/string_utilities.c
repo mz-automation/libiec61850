@@ -21,7 +21,7 @@
  *	See COPYING file for the complete license text.
  */
 
-#include "string_utilities.h"
+#include "libiec61850_platform_includes.h"
 
 char*
 copySubString(char* startPos, char* endPos)

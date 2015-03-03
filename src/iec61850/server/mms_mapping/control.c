@@ -31,6 +31,8 @@
 
 #include "mms_value_internal.h"
 
+#include "libiec61850_platform_includes.h"
+
 #if (CONFIG_IEC61850_CONTROL_SERVICE == 1)
 
 #ifndef DEBUG_IED_SERVER

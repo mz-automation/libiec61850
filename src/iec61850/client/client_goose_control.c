@@ -29,8 +29,7 @@
 
 #include "ied_connection_private.h"
 
-#include "lib_memory.h"
-#include "string_utilities.h"
+#include "libiec61850_platform_includes.h"
 
 struct sClientGooseControlBlock {
     char* objectReference;

@@ -23,8 +23,6 @@
 
 #include "libiec61850_platform_includes.h"
 #include "ber_encoder.h"
-#include "platform_endian.h"
-
 
 int
 BerEncoder_encodeLength(uint32_t length, uint8_t* buffer, int bufPos)

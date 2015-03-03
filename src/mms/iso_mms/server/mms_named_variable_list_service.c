@@ -21,10 +21,10 @@
  *  See COPYING file for the complete license text.
  */
 
+#include "libiec61850_platform_includes.h"
 #include "mms_server_internal.h"
 #include "mms_named_variable_list.h"
 
-#include "string_utilities.h"
 #include "ber_encoder.h"
 
 #if (MMS_DATA_SET_SERVICE == 1)

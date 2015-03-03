@@ -21,7 +21,7 @@
  *  See COPYING file for the complete license text.
  */
 
-#include "lib_memory.h"
+#include "libiec61850_platform_includes.h"
 
 static MemoryExceptionHandler exceptionHandler = NULL;
 static void* exceptionHandlerParameter = NULL;

@@ -28,8 +28,6 @@
 #include "byte_buffer.h"
 #include "stack_config.h"
 
-#include "platform_endian.h"
-
 #include "mms_client_internal.h"
 #include "mms_common_internal.h"
 #include "mms_value_internal.h"

@@ -21,6 +21,7 @@
  *  See COPYING file for the complete license text.
  */
 
+#include "libiec61850_platform_includes.h"
 #include "mms_access_result.h"
 #include "mms_server_internal.h"
 #include "mms_value_internal.h"
