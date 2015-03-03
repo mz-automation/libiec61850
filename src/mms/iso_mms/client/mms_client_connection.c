@@ -1,7 +1,7 @@
 /*
  *  mms_client_connection.c
  *
- *  Copyright 2013, 2014 Michael Zillgith
+ *  Copyright 2013, 2014, 2015 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -958,14 +958,14 @@ sendConcludeRequestAndWaitForResponse(MmsConnection self)
     while (currentTime < waitUntilTime) {
 
         if (self->associationState == MMS_STATE_CLOSED)
-            return;
+            goto exit_function;
 
         if (self->concludeState != CONCLUDE_STATE_REQUESTED) {
             success = true;
             break;
         }
 
-        Thread_sleep(10);
+        Thread_sleep(1);
 
         currentTime = Hal_getTimeInMs();
     }
@@ -976,11 +976,18 @@ sendConcludeRequestAndWaitForResponse(MmsConnection self)
         self->lastResponseError = MMS_ERROR_SERVICE_TIMEOUT;
     }
 
+exit_function:
+    return;
 }
 
 void
 MmsConnection_conclude(MmsConnection self, MmsError* mmsError)
 {
+    if (self->associationState != MMS_STATE_CONNECTED) {
+        *mmsError = MMS_ERROR_CONNECTION_LOST;
+        goto exit_function;
+    }
+
     *mmsError = MMS_ERROR_NONE;
 
     sendConcludeRequestAndWaitForResponse(self);
@@ -1000,6 +1007,9 @@ MmsConnection_conclude(MmsConnection self, MmsError* mmsError)
     }
 
     self->connectionLostHandler = NULL;
+
+exit_function:
+    return;
 }
 
 void
@@ -1020,6 +1030,13 @@ mmsClient_getNameListSingleRequest(
         bool associationSpecific,
         const char* continueAfter)
 {
+    bool moreFollows = false;
+
+    if (self->associationState != MMS_STATE_CONNECTED) {
+        *mmsError = MMS_ERROR_CONNECTION_LOST;
+        goto exit_function;
+    }
+
     *mmsError = MMS_ERROR_NONE;
 
     uint32_t invokeId = getNextInvokeId(self);
@@ -1041,7 +1058,7 @@ mmsClient_getNameListSingleRequest(
 
     ByteBuffer* responseMessage = sendRequestAndWaitForResponse(self, invokeId, payload);
 
-    bool moreFollows = false;
+
 
     if (responseMessage != NULL)
         moreFollows = mmsClient_parseGetNameListResponse(nameList, self->lastResponse, NULL);
@@ -1051,6 +1068,7 @@ mmsClient_getNameListSingleRequest(
     if (self->associationState == MMS_STATE_CLOSED)
         *mmsError = MMS_ERROR_CONNECTION_LOST;
 
+exit_function:
     return moreFollows;
 }
 
@@ -1116,9 +1134,14 @@ MmsValue*
 MmsConnection_readVariable(MmsConnection self, MmsError* mmsError,
         const char* domainId, const char* itemId)
 {
-    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
-
     MmsValue* value = NULL;
+
+    if (self->associationState != MMS_STATE_CONNECTED) {
+        *mmsError = MMS_ERROR_CONNECTION_LOST;
+        goto exit_function;
+    }
+
+    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
     *mmsError = MMS_ERROR_NONE;
 
@@ -1138,6 +1161,7 @@ MmsConnection_readVariable(MmsConnection self, MmsError* mmsError,
     if (self->associationState == MMS_STATE_CLOSED)
         *mmsError = MMS_ERROR_CONNECTION_LOST;
 
+exit_function:
     return value;
 }
 
@@ -1146,9 +1170,14 @@ MmsConnection_readArrayElements(MmsConnection self, MmsError* mmsError,
         const char* domainId, const char* itemId,
         uint32_t startIndex, uint32_t numberOfElements)
 {
-    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
-
     MmsValue* value = NULL;
+
+    if (self->associationState != MMS_STATE_CONNECTED) {
+        *mmsError = MMS_ERROR_CONNECTION_LOST;
+        goto exit_function;
+    }
+
+    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
     *mmsError = MMS_ERROR_NONE;
 
@@ -1169,6 +1198,7 @@ MmsConnection_readArrayElements(MmsConnection self, MmsError* mmsError,
     if (self->associationState == MMS_STATE_CLOSED)
         *mmsError = MMS_ERROR_CONNECTION_LOST;
 
+exit_function:
     return value;
 }
 
@@ -1176,9 +1206,14 @@ MmsValue*
 MmsConnection_readMultipleVariables(MmsConnection self, MmsError* mmsError,
         const char* domainId, LinkedList /*<char*>*/items)
 {
-    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
-
     MmsValue* value = NULL;
+
+    if (self->associationState != MMS_STATE_CONNECTED) {
+        *mmsError = MMS_ERROR_CONNECTION_LOST;
+        goto exit_function;
+    }
+
+    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
     *mmsError = MMS_ERROR_NONE;
 
@@ -1198,6 +1233,7 @@ MmsConnection_readMultipleVariables(MmsConnection self, MmsError* mmsError,
     if (self->associationState == MMS_STATE_CLOSED)
         *mmsError = MMS_ERROR_CONNECTION_LOST;
 
+exit_function:
     return value;
 }
 
@@ -1206,9 +1242,14 @@ MmsConnection_readNamedVariableListValues(MmsConnection self, MmsError* mmsError
         const char* domainId, const char* listName,
         bool specWithResult)
 {
-    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
-
     MmsValue* value = NULL;
+
+    if (self->associationState != MMS_STATE_CONNECTED) {
+        *mmsError = MMS_ERROR_CONNECTION_LOST;
+        goto exit_function;
+    }
+
+    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
     *mmsError = MMS_ERROR_NONE;
 
@@ -1231,6 +1272,7 @@ MmsConnection_readNamedVariableListValues(MmsConnection self, MmsError* mmsError
     if (self->associationState == MMS_STATE_CLOSED)
         *mmsError = MMS_ERROR_CONNECTION_LOST;
 
+exit_function:
     return value;
 }
 
@@ -1240,9 +1282,14 @@ MmsConnection_readNamedVariableListValuesAssociationSpecific(
         const char* listName,
         bool specWithResult)
 {
-    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
-
     MmsValue* value = NULL;
+
+    if (self->associationState != MMS_STATE_CONNECTED) {
+        *mmsError = MMS_ERROR_CONNECTION_LOST;
+        goto exit_function;
+    }
+
+    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
     *mmsError = MMS_ERROR_NONE;
 
@@ -1263,6 +1310,7 @@ MmsConnection_readNamedVariableListValuesAssociationSpecific(
     if (self->associationState == MMS_STATE_CLOSED)
         *mmsError = MMS_ERROR_CONNECTION_LOST;
 
+exit_function:
     return value;
 }
 
@@ -1270,11 +1318,16 @@ LinkedList /* <MmsVariableAccessSpecification*> */
 MmsConnection_readNamedVariableListDirectory(MmsConnection self, MmsError* mmsError,
         const char* domainId, const char* listName, bool* deletable)
 {
+    LinkedList attributes = NULL;
+
+    if (self->associationState != MMS_STATE_CONNECTED) {
+        *mmsError = MMS_ERROR_CONNECTION_LOST;
+        goto exit_function;
+    }
+
     ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
     *mmsError = MMS_ERROR_NONE;
-
-    LinkedList attributes = NULL;
 
     uint32_t invokeId = getNextInvokeId(self);
 
@@ -1294,6 +1347,7 @@ MmsConnection_readNamedVariableListDirectory(MmsConnection self, MmsError* mmsEr
     if (self->associationState == MMS_STATE_CLOSED)
         *mmsError = MMS_ERROR_CONNECTION_LOST;
 
+exit_function:
     return attributes;
 }
 
@@ -1301,11 +1355,16 @@ LinkedList /* <MmsVariableAccessSpecification*> */
 MmsConnection_readNamedVariableListDirectoryAssociationSpecific(MmsConnection self, MmsError* mmsError,
         const char* listName, bool* deletable)
 {
+    LinkedList attributes = NULL;
+
+    if (self->associationState != MMS_STATE_CONNECTED) {
+        *mmsError = MMS_ERROR_CONNECTION_LOST;
+        goto exit_function;
+    }
+
     ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
     *mmsError = MMS_ERROR_NONE;
-
-    LinkedList attributes = NULL;
 
     uint32_t invokeId = getNextInvokeId(self);
 
@@ -1325,6 +1384,7 @@ MmsConnection_readNamedVariableListDirectoryAssociationSpecific(MmsConnection se
     if (self->associationState == MMS_STATE_CLOSED)
         *mmsError = MMS_ERROR_CONNECTION_LOST;
 
+exit_function:
     return attributes;
 }
 
@@ -1332,6 +1392,11 @@ void
 MmsConnection_defineNamedVariableList(MmsConnection self, MmsError* mmsError,
         const char* domainId, const char* listName, LinkedList variableSpecs)
 {
+    if (self->associationState != MMS_STATE_CONNECTED) {
+        *mmsError = MMS_ERROR_CONNECTION_LOST;
+        goto exit_function;
+    }
+
     ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
     *mmsError = MMS_ERROR_NONE;
@@ -1353,12 +1418,20 @@ MmsConnection_defineNamedVariableList(MmsConnection self, MmsError* mmsError,
 
     if (self->associationState == MMS_STATE_CLOSED)
         *mmsError = MMS_ERROR_CONNECTION_LOST;
+
+exit_function:
+    return;
 }
 
 void
 MmsConnection_defineNamedVariableListAssociationSpecific(MmsConnection self,
         MmsError* mmsError, const char* listName, LinkedList variableSpecs)
 {
+    if (self->associationState != MMS_STATE_CONNECTED) {
+        *mmsError = MMS_ERROR_CONNECTION_LOST;
+        goto exit_function;
+    }
+
     ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
     *mmsError = MMS_ERROR_NONE;
@@ -1380,12 +1453,20 @@ MmsConnection_defineNamedVariableListAssociationSpecific(MmsConnection self,
 
     if (self->associationState == MMS_STATE_CLOSED)
         *mmsError = MMS_ERROR_CONNECTION_LOST;
+
+exit_function:
+    return;
 }
 
 void
 MmsConnection_deleteNamedVariableList(MmsConnection self, MmsError* mmsError,
         const char* domainId, const char* listName)
 {
+    if (self->associationState != MMS_STATE_CONNECTED) {
+        *mmsError = MMS_ERROR_CONNECTION_LOST;
+        goto exit_function;
+    }
+
     ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
     *mmsError = MMS_ERROR_NONE;
@@ -1406,12 +1487,20 @@ MmsConnection_deleteNamedVariableList(MmsConnection self, MmsError* mmsError,
 
     if (self->associationState == MMS_STATE_CLOSED)
         *mmsError = MMS_ERROR_CONNECTION_LOST;
+
+exit_function:
+    return;
 }
 
 void
 MmsConnection_deleteAssociationSpecificNamedVariableList(MmsConnection self,
         MmsError* mmsError, const char* listName)
 {
+    if (self->associationState != MMS_STATE_CONNECTED) {
+        *mmsError = MMS_ERROR_CONNECTION_LOST;
+        goto exit_function;
+    }
+
     ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
     *mmsError = MMS_ERROR_NONE;
@@ -1433,15 +1522,23 @@ MmsConnection_deleteAssociationSpecificNamedVariableList(MmsConnection self,
 
     if (self->associationState == MMS_STATE_CLOSED)
         *mmsError = MMS_ERROR_CONNECTION_LOST;
+
+exit_function:
+    return;
 }
 
 MmsVariableSpecification*
 MmsConnection_getVariableAccessAttributes(MmsConnection self, MmsError* mmsError,
         const char* domainId, const char* itemId)
 {
-    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
-
     MmsVariableSpecification* typeSpec = NULL;
+
+    if (self->associationState != MMS_STATE_CONNECTED) {
+        *mmsError = MMS_ERROR_CONNECTION_LOST;
+        goto exit_function;
+    }
+
+    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
     *mmsError = MMS_ERROR_NONE;
 
@@ -1461,15 +1558,21 @@ MmsConnection_getVariableAccessAttributes(MmsConnection self, MmsError* mmsError
     if (self->associationState == MMS_STATE_CLOSED)
         *mmsError = MMS_ERROR_CONNECTION_LOST;
 
+exit_function:
     return typeSpec;
 }
 
 MmsServerIdentity*
 MmsConnection_identify(MmsConnection self, MmsError* mmsError)
 {
-    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
-
     MmsServerIdentity* identity = NULL;
+
+    if (self->associationState != MMS_STATE_CONNECTED) {
+        *mmsError = MMS_ERROR_CONNECTION_LOST;
+        goto exit_function;
+    }
+
+    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
     *mmsError = MMS_ERROR_NONE;
 
@@ -1489,6 +1592,7 @@ MmsConnection_identify(MmsConnection self, MmsError* mmsError)
     if (self->associationState == MMS_STATE_CLOSED)
         *mmsError = MMS_ERROR_CONNECTION_LOST;
 
+exit_function:
     return identity;
 }
 

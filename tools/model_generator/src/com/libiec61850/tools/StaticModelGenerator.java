@@ -498,7 +498,7 @@ public class StaticModelGenerator {
                 cOut.println("    NULL,");
 
             cOut.println("    " + dataAttribute.getCount() + ",");
-            cOut.println("    " + dataAttribute.getFc().toString() + ",");
+            cOut.println("    IEC61850_FC_" + dataAttribute.getFc().toString() + ",");
             cOut.println("    " + dataAttribute.getType() + ",");
 
             /* print trigger options */

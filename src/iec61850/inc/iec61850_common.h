@@ -170,36 +170,55 @@ typedef enum {
  * @{
  */
 
+#if (CONFIG_PROVIDE_OLD_FC_DEFINES == 1)
+#define ST IEC61850_FC_ST
+#define MX IEC61850_FC_MX
+#define SP IEC61850_FC_SP
+#define SV IEC61850_FC_SV
+#define CF IEC61850_FC_CF
+#define DC IEC61850_FC_DC
+#define SG IEC61850_FC_SG
+#define SE IEC61850_FC_SE
+#define SR IEC61850_FC_SR
+#define OR IEC61850_FC_OR
+#define BL IEC61850_FC_BL
+#define EX IEC61850_FC_EX
+#define CO IEC61850_FC_CO
+#define ALL IEC61850_FC_ALL
+#define NONE IEC61850_FC_NONE
+#endif /* (CONFIG_PROVIDE_OLD_FC_DEFINES == 1) */
+
+
 /** FCs (Functional constraints) according to IEC 61850-7-2 */
 typedef enum eFunctionalConstraint {
     /** Status information */
-    ST = 0,
+    IEC61850_FC_ST = 0,
     /** Measurands - analog values */
-    MX = 1,
+    IEC61850_FC_MX = 1,
     /** Setpoint */
-    SP = 2,
+    IEC61850_FC_SP = 2,
     /** Substitution */
-    SV = 3,
+    IEC61850_FC_SV = 3,
     /** Configuration */
-    CF = 4,
+    IEC61850_FC_CF = 4,
     /** Description */
-    DC = 5,
+    IEC61850_FC_DC = 5,
     /** Setting group */
-    SG = 6,
+    IEC61850_FC_SG = 6,
     /** Setting group editable */
-    SE = 7,
+    IEC61850_FC_SE = 7,
     /** Service response / Service tracking */
-    SR = 8,
+    IEC61850_FC_SR = 8,
     /** Operate received */
-    OR = 9,
+    IEC61850_FC_OR = 9,
     /** Blocking */
-    BL = 10,
+    IEC61850_FC_BL = 10,
     /** Extended definition */
-    EX = 11,
+    IEC61850_FC_EX = 11,
     /** Control */
-    CO = 12,
-    ALL = 99,
-    NONE = -1
+    IEC61850_FC_CO = 12,
+    IEC61850_FC_ALL = 99,
+    IEC61850_FC_NONE = -1
 } FunctionalConstraint;
 
 /**extern "C" {

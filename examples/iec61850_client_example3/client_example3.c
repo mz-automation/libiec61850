@@ -70,7 +70,7 @@ int main(int argc, char** argv) {
 
         /* Check if status value has changed */
 
-        MmsValue* stVal = IedConnection_readObject(con, &error, "simpleIOGenericIO/GGIO1.SPCSO1.stVal", ST);
+        MmsValue* stVal = IedConnection_readObject(con, &error, "simpleIOGenericIO/GGIO1.SPCSO1.stVal", IEC61850_FC_ST);
 
         if (error == IED_ERROR_OK) {
             bool state = MmsValue_getBoolean(stVal);
@@ -135,7 +135,7 @@ int main(int argc, char** argv) {
 
         /* Check if status value has changed */
 
-       stVal = IedConnection_readObject(con, &error, "simpleIOGenericIO/GGIO1.SPCSO3.stVal", ST);
+       stVal = IedConnection_readObject(con, &error, "simpleIOGenericIO/GGIO1.SPCSO3.stVal", IEC61850_FC_ST);
 
         if (error == IED_ERROR_OK) {
             bool state = MmsValue_getBoolean(stVal);

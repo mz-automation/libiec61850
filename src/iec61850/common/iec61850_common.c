@@ -99,31 +99,31 @@ Dbpos_toMmsValue(MmsValue* mmsValue, Dbpos dbpos)
 char*
 FunctionalConstraint_toString(FunctionalConstraint fc) {
     switch (fc) {
-    case ST:
+    case IEC61850_FC_ST:
         return "ST";
-    case MX:
+    case IEC61850_FC_MX:
         return "MX";
-    case SP:
+    case IEC61850_FC_SP:
         return "SP";
-    case SV:
+    case IEC61850_FC_SV:
         return "SV";
-    case CF:
+    case IEC61850_FC_CF:
         return "CF";
-    case DC:
+    case IEC61850_FC_DC:
         return "DC";
-    case SG:
+    case IEC61850_FC_SG:
         return "SG";
-    case SE:
+    case IEC61850_FC_SE:
         return "SE";
-    case SR:
+    case IEC61850_FC_SR:
         return "SR";
-    case OR:
+    case IEC61850_FC_OR:
         return "OR";
-    case BL:
+    case IEC61850_FC_BL:
         return "BL";
-    case EX:
+    case IEC61850_FC_EX:
         return "EX";
-    case CO:
+    case IEC61850_FC_CO:
         return "CO";
     default:
         return NULL;
@@ -135,60 +135,60 @@ FunctionalConstraint_fromString(const char* fcString)
 {
     if (fcString[0] == 'S') {
         if (fcString[1] == 'T')
-            return ST;
+            return IEC61850_FC_ST;
         if (fcString[1] == 'P')
-            return SP;
+            return IEC61850_FC_SP;
         if (fcString[1] == 'V')
-            return SV;
+            return IEC61850_FC_SV;
         if (fcString[1] == 'G')
-            return SG;
+            return IEC61850_FC_SG;
         if (fcString[1] == 'E')
-            return SE;
+            return IEC61850_FC_SE;
         if (fcString[1] == 'R')
-            return SR;
+            return IEC61850_FC_SR;
 
-        return NONE;
+        return IEC61850_FC_NONE;
     }
 
     if (fcString[0] == 'M') {
         if (fcString[1] == 'X')
-            return MX;
-        return NONE;
+            return IEC61850_FC_MX;
+        return IEC61850_FC_NONE;
     }
 
     if (fcString[0] == 'C') {
         if (fcString[1] == 'F')
-            return CF;
+            return IEC61850_FC_CF;
         if (fcString[1] == 'O')
-            return CO;
-        return NONE;
+            return IEC61850_FC_CO;
+        return IEC61850_FC_NONE;
     }
 
     if (fcString[0] == 'D') {
         if (fcString[1] == 'C')
-            return DC;
-        return NONE;
+            return IEC61850_FC_DC;
+        return IEC61850_FC_NONE;
     }
 
     if (fcString[0] == 'O') {
         if (fcString[1] == 'R')
-            return OR;
-        return NONE;
+            return IEC61850_FC_OR;
+        return IEC61850_FC_NONE;
     }
 
     if (fcString[0] == 'B') {
         if (fcString[1] == 'L')
-            return BL;
-        return NONE;
+            return IEC61850_FC_BL;
+        return IEC61850_FC_NONE;
     }
 
     if (fcString[0] == 'E') {
         if (fcString[1] == 'X')
-            return EX;
-        return NONE;
+            return IEC61850_FC_EX;
+        return IEC61850_FC_NONE;
     }
 
-    return NONE;
+    return IEC61850_FC_NONE;
 }
 
 void

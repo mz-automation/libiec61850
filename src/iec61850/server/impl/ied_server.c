@@ -1034,19 +1034,19 @@ IedServer_setWriteAccessPolicy(IedServer self, FunctionalConstraint fc, AccessPo
 {
     if (policy == ACCESS_POLICY_ALLOW) {
         switch (fc) {
-        case DC:
+        case IEC61850_FC_DC:
             self->writeAccessPolicies |= ALLOW_WRITE_ACCESS_DC;
             break;
-        case CF:
+        case IEC61850_FC_CF:
             self->writeAccessPolicies |= ALLOW_WRITE_ACCESS_CF;
             break;
-        case SP:
+        case IEC61850_FC_SP:
             self->writeAccessPolicies |= ALLOW_WRITE_ACCESS_SP;
             break;
-        case SV:
+        case IEC61850_FC_SV:
             self->writeAccessPolicies |= ALLOW_WRITE_ACCESS_SV;
             break;
-        case SE:
+        case IEC61850_FC_SE:
             self->writeAccessPolicies |= ALLOW_WRITE_ACCESS_SE;
             break;
         default: /* ignore - request is invalid */
@@ -1055,19 +1055,19 @@ IedServer_setWriteAccessPolicy(IedServer self, FunctionalConstraint fc, AccessPo
     }
     else {
         switch (fc) {
-        case DC:
+        case IEC61850_FC_DC:
             self->writeAccessPolicies &= ~ALLOW_WRITE_ACCESS_DC;
             break;
-        case CF:
+        case IEC61850_FC_CF:
             self->writeAccessPolicies &= ~ALLOW_WRITE_ACCESS_CF;
             break;
-        case SP:
+        case IEC61850_FC_SP:
             self->writeAccessPolicies &= ~ALLOW_WRITE_ACCESS_SP;
             break;
-        case SV:
+        case IEC61850_FC_SV:
             self->writeAccessPolicies &= ~ALLOW_WRITE_ACCESS_SV;
             break;
-        case SE:
+        case IEC61850_FC_SE:
             self->writeAccessPolicies &= ALLOW_WRITE_ACCESS_SE;
             break;
         default: /* ignore - request is invalid */

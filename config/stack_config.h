@@ -17,7 +17,7 @@
 #define DEBUG_COTP 0
 #define DEBUG_ISO_SERVER 0
 #define DEBUG_ISO_CLIENT 0
-#define DEBUG_IED_SERVER 0
+#define DEBUG_IED_SERVER 1
 #define DEBUG_IED_CLIENT 0
 #define DEBUG_MMS_CLIENT 0
 #define DEBUG_MMS_SERVER 0
@@ -141,7 +141,7 @@
 /* default results for MMS identify service */
 #define CONFIG_DEFAULT_MMS_VENDOR_NAME "libiec61850.com"
 #define CONFIG_DEFAULT_MMS_MODEL_NAME "LIBIEC61850"
-#define CONFIG_DEFAULT_MMS_REVISION "0.8.5"
+#define CONFIG_DEFAULT_MMS_REVISION "0.8.6"
 
 /* MMS virtual file store base path - where file services are looking for files */
 #define CONFIG_VIRTUAL_FILESTORE_BASEPATH "./vmd-filestore/"
@@ -189,5 +189,8 @@
 #define CONFIG_MMS_SUPPORT_VMD_SCOPE_NAMED_VARIABLES 0
 
 #define CONFIG_INCLUDE_PLATFORM_SPECIFIC_HEADERS 0
+
+/* use short FC defines as in old API */
+#define CONFIG_PROVIDE_OLD_FC_DEFINES 0
 
 #endif /* STACK_CONFIG_H_ */

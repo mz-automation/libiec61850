@@ -668,6 +668,14 @@ MmsConnection_getFileDirectory(MmsConnection self, MmsError* mmsError, const cha
         MmsFileDirectoryHandler handler, void* handlerParameter);
 
 
+/**
+ * \brief Destroy (free) an MmsServerIdentity object
+ *
+ * \param self the object to destroy
+ */
+void
+MmsServerIdentity_destroy(MmsServerIdentity* self);
+
 /**@}*/
 
 #ifdef __cplusplus

@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
     if (error == IED_ERROR_OK) {
 
         /* read an analog measurement value from server */
-        MmsValue* value = IedConnection_readObject(con, &error, "simpleIOGenericIO/GGIO1.AnIn1.mag.f", MX);
+        MmsValue* value = IedConnection_readObject(con, &error, "simpleIOGenericIO/GGIO1.AnIn1.mag.f", IEC61850_FC_MX);
 
         if (value != NULL) {
             float fval = MmsValue_toFloat(value);
@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
 
         /* write a variable to the server */
         value = MmsValue_newVisibleString("libiec61850.com");
-        IedConnection_writeObject(con, &error, "simpleIOGenericIO/GGIO1.NamPlt.vendor", DC, value);
+        IedConnection_writeObject(con, &error, "simpleIOGenericIO/GGIO1.NamPlt.vendor", IEC61850_FC_DC, value);
 
         if (error != IED_ERROR_OK)
             printf("failed to write simpleIOGenericIO/GGIO1.NamPlt.vendor!\n");

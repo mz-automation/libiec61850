@@ -472,7 +472,7 @@ createFCNamedVariableSPWithSGCB(LogicalNode* logicalNode)
     DataObject* dataObject = (DataObject*) logicalNode->firstChild;
 
     while (dataObject != NULL) {
-        if (DataObject_hasFCData(dataObject, SP))
+        if (DataObject_hasFCData(dataObject, IEC61850_FC_SP))
             dataObjectCount++;
 
         dataObject = (DataObject*) dataObject->sibling;
@@ -489,10 +489,10 @@ createFCNamedVariableSPWithSGCB(LogicalNode* logicalNode)
     dataObject = (DataObject*) logicalNode->firstChild;
 
     while (dataObject != NULL) {
-        if (DataObject_hasFCData(dataObject, SP)) {
+        if (DataObject_hasFCData(dataObject, IEC61850_FC_SP)) {
 
             namedVariable->typeSpec.structure.elements[dataObjectCount] =
-                    createFCNamedVariableFromDataObject(dataObject, SP);
+                    createFCNamedVariableFromDataObject(dataObject, IEC61850_FC_SP);
 
             dataObjectCount++;
         }
@@ -687,43 +687,43 @@ determineLogicalNodeComponentCount(LogicalNode* logicalNode)
 {
     int componentCount = 0;
 
-    if (LogicalNode_hasFCData(logicalNode, ST))
+    if (LogicalNode_hasFCData(logicalNode, IEC61850_FC_ST))
         componentCount++;
 
-    if (LogicalNode_hasFCData(logicalNode, MX))
+    if (LogicalNode_hasFCData(logicalNode, IEC61850_FC_MX))
         componentCount++;
 
-    if (LogicalNode_hasFCData(logicalNode, SP))
+    if (LogicalNode_hasFCData(logicalNode, IEC61850_FC_SP))
         componentCount++;
 
-    if (LogicalNode_hasFCData(logicalNode, SV))
+    if (LogicalNode_hasFCData(logicalNode, IEC61850_FC_SV))
         componentCount++;
 
-    if (LogicalNode_hasFCData(logicalNode, CF))
+    if (LogicalNode_hasFCData(logicalNode, IEC61850_FC_CF))
         componentCount++;
 
-    if (LogicalNode_hasFCData(logicalNode, DC))
+    if (LogicalNode_hasFCData(logicalNode, IEC61850_FC_DC))
         componentCount++;
 
-    if (LogicalNode_hasFCData(logicalNode, SG))
+    if (LogicalNode_hasFCData(logicalNode, IEC61850_FC_SG))
         componentCount++;
 
-    if (LogicalNode_hasFCData(logicalNode, SE))
+    if (LogicalNode_hasFCData(logicalNode, IEC61850_FC_SE))
         componentCount++;
 
-    if (LogicalNode_hasFCData(logicalNode, SR))
+    if (LogicalNode_hasFCData(logicalNode, IEC61850_FC_SR))
         componentCount++;
 
-    if (LogicalNode_hasFCData(logicalNode, OR))
+    if (LogicalNode_hasFCData(logicalNode, IEC61850_FC_OR))
         componentCount++;
 
-    if (LogicalNode_hasFCData(logicalNode, BL))
+    if (LogicalNode_hasFCData(logicalNode, IEC61850_FC_BL))
         componentCount++;
 
-    if (LogicalNode_hasFCData(logicalNode, EX))
+    if (LogicalNode_hasFCData(logicalNode, IEC61850_FC_EX))
         componentCount++;
 
-    if (LogicalNode_hasFCData(logicalNode, CO))
+    if (LogicalNode_hasFCData(logicalNode, IEC61850_FC_CO))
         componentCount++;
 
     return componentCount;
@@ -811,7 +811,7 @@ createNamedVariableFromLogicalNode(MmsMapping* self, MmsDomain* domain,
     sgControlBlock = checkForSgcb(self, logicalNode);
 
     if (sgControlBlock != NULL) {
-        if (LogicalNode_hasFCData(logicalNode, SP) == false)
+        if (LogicalNode_hasFCData(logicalNode, IEC61850_FC_SP) == false)
             componentCount++;
 
         SettingGroup* settingGroup = (SettingGroup*) GLOBAL_CALLOC(1, sizeof(SettingGroup));
@@ -865,33 +865,33 @@ createNamedVariableFromLogicalNode(MmsMapping* self, MmsDomain* domain,
     /* Create a named variable of type structure for each functional constrained */
     int currentComponent = 0;
 
-    if (LogicalNode_hasFCData(logicalNode, MX)) {
+    if (LogicalNode_hasFCData(logicalNode, IEC61850_FC_MX)) {
         namedVariable->typeSpec.structure.elements[currentComponent] =
-                createFCNamedVariable(logicalNode, MX);
+                createFCNamedVariable(logicalNode, IEC61850_FC_MX);
         currentComponent++;
     }
 
-    if (LogicalNode_hasFCData(logicalNode, ST)) {
+    if (LogicalNode_hasFCData(logicalNode, IEC61850_FC_ST)) {
         namedVariable->typeSpec.structure.elements[currentComponent] =
-                createFCNamedVariable(logicalNode, ST);
+                createFCNamedVariable(logicalNode, IEC61850_FC_ST);
         currentComponent++;
     }
 
-    if (LogicalNode_hasFCData(logicalNode, CO)) {
+    if (LogicalNode_hasFCData(logicalNode, IEC61850_FC_CO)) {
         namedVariable->typeSpec.structure.elements[currentComponent] =
-                createFCNamedVariable(logicalNode, CO);
+                createFCNamedVariable(logicalNode, IEC61850_FC_CO);
         currentComponent++;
     }
 
-    if (LogicalNode_hasFCData(logicalNode, CF)) {
+    if (LogicalNode_hasFCData(logicalNode, IEC61850_FC_CF)) {
         namedVariable->typeSpec.structure.elements[currentComponent] =
-                createFCNamedVariable(logicalNode, CF);
+                createFCNamedVariable(logicalNode, IEC61850_FC_CF);
         currentComponent++;
     }
 
-    if (LogicalNode_hasFCData(logicalNode, DC)) {
+    if (LogicalNode_hasFCData(logicalNode, IEC61850_FC_DC)) {
         namedVariable->typeSpec.structure.elements[currentComponent] =
-                createFCNamedVariable(logicalNode, DC);
+                createFCNamedVariable(logicalNode, IEC61850_FC_DC);
         currentComponent++;
     }
 
@@ -903,15 +903,15 @@ createNamedVariableFromLogicalNode(MmsMapping* self, MmsDomain* domain,
     }
     else
 #endif /* (CONFIG_IEC61850_SETTING_GROUPS == 1) */
-    if (LogicalNode_hasFCData(logicalNode, SP)) {
+    if (LogicalNode_hasFCData(logicalNode, IEC61850_FC_SP)) {
         namedVariable->typeSpec.structure.elements[currentComponent] =
-                createFCNamedVariable(logicalNode, SP);
+                createFCNamedVariable(logicalNode, IEC61850_FC_SP);
         currentComponent++;
     }
 
-    if (LogicalNode_hasFCData(logicalNode, SG)) {
+    if (LogicalNode_hasFCData(logicalNode, IEC61850_FC_SG)) {
         namedVariable->typeSpec.structure.elements[currentComponent] =
-                createFCNamedVariable(logicalNode, SG);
+                createFCNamedVariable(logicalNode, IEC61850_FC_SG);
         currentComponent++;
     }
 
@@ -946,39 +946,39 @@ createNamedVariableFromLogicalNode(MmsMapping* self, MmsDomain* domain,
 
 
 
-    if (LogicalNode_hasFCData(logicalNode, SV)) {
+    if (LogicalNode_hasFCData(logicalNode, IEC61850_FC_SV)) {
         namedVariable->typeSpec.structure.elements[currentComponent] =
-                createFCNamedVariable(logicalNode, SV);
+                createFCNamedVariable(logicalNode, IEC61850_FC_SV);
         currentComponent++;
     }
 
-    if (LogicalNode_hasFCData(logicalNode, SE)) {
+    if (LogicalNode_hasFCData(logicalNode, IEC61850_FC_SE)) {
         namedVariable->typeSpec.structure.elements[currentComponent] =
-                createFCNamedVariable(logicalNode, SE);
+                createFCNamedVariable(logicalNode, IEC61850_FC_SE);
         currentComponent++;
     }
 
-    if (LogicalNode_hasFCData(logicalNode, EX)) {
+    if (LogicalNode_hasFCData(logicalNode, IEC61850_FC_EX)) {
         namedVariable->typeSpec.structure.elements[currentComponent] =
-                createFCNamedVariable(logicalNode, EX);
+                createFCNamedVariable(logicalNode, IEC61850_FC_EX);
         currentComponent++;
     }
 
-    if (LogicalNode_hasFCData(logicalNode, SR)) {
+    if (LogicalNode_hasFCData(logicalNode, IEC61850_FC_SR)) {
         namedVariable->typeSpec.structure.elements[currentComponent] =
-                createFCNamedVariable(logicalNode, SR);
+                createFCNamedVariable(logicalNode, IEC61850_FC_SR);
         currentComponent++;
     }
 
-    if (LogicalNode_hasFCData(logicalNode, OR)) {
+    if (LogicalNode_hasFCData(logicalNode, IEC61850_FC_OR)) {
         namedVariable->typeSpec.structure.elements[currentComponent] =
-                createFCNamedVariable(logicalNode, OR);
+                createFCNamedVariable(logicalNode, IEC61850_FC_OR);
         currentComponent++;
     }
 
-    if (LogicalNode_hasFCData(logicalNode, BL)) {
+    if (LogicalNode_hasFCData(logicalNode, IEC61850_FC_BL)) {
         namedVariable->typeSpec.structure.elements[currentComponent] =
-                createFCNamedVariable(logicalNode, BL);
+                createFCNamedVariable(logicalNode, IEC61850_FC_BL);
         currentComponent++;
     }
 
@@ -1518,51 +1518,51 @@ static FunctionalConstraint
 getFunctionalConstraintForWritableNode(MmsMapping* self, char* separator)
 {
     if (isFunctionalConstraintCF(separator))
-        return CF;
+        return IEC61850_FC_CF;
     if (isFunctionalConstraintDC(separator))
-        return DC;
+        return IEC61850_FC_DC;
     if (isFunctionalConstraintSP(separator))
-        return SP;
+        return IEC61850_FC_SP;
     if (isFunctionalConstraintSV(separator))
-        return SV;
+        return IEC61850_FC_SV;
     if (isFunctionalConstraintSE(separator))
-        return SE;
+        return IEC61850_FC_SE;
 
-    return NONE;
+    return IEC61850_FC_NONE;
 }
 
 static AccessPolicy
 getAccessPolicyForFC(MmsMapping* self, FunctionalConstraint fc)
 {
-    if (fc == CF) {
+    if (fc == IEC61850_FC_CF) {
         if (self->iedServer->writeAccessPolicies & ALLOW_WRITE_ACCESS_CF)
             return ACCESS_POLICY_ALLOW;
         else
             return ACCESS_POLICY_DENY;
     }
 
-    if (fc == DC) {
+    if (fc == IEC61850_FC_DC) {
         if (self->iedServer->writeAccessPolicies & ALLOW_WRITE_ACCESS_DC)
             return ACCESS_POLICY_ALLOW;
         else
             return ACCESS_POLICY_DENY;
     }
 
-    if (fc == SP) {
+    if (fc == IEC61850_FC_SP) {
         if (self->iedServer->writeAccessPolicies & ALLOW_WRITE_ACCESS_SP)
             return ACCESS_POLICY_ALLOW;
         else
             return ACCESS_POLICY_DENY;
     }
 
-    if (fc == SV) {
+    if (fc == IEC61850_FC_SV) {
         if (self->iedServer->writeAccessPolicies & ALLOW_WRITE_ACCESS_SV)
             return ACCESS_POLICY_ALLOW;
         else
             return ACCESS_POLICY_DENY;
     }
 
-    if (fc == SE) {
+    if (fc == IEC61850_FC_SE) {
         if (self->iedServer->writeAccessPolicies & ALLOW_WRITE_ACCESS_SE)
             return ACCESS_POLICY_ALLOW;
         else
@@ -1783,7 +1783,7 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
     FunctionalConstraint fc = getFunctionalConstraintForWritableNode(self, separator);
 
     /* writable data model elements - SP, SV, CF, DC */
-    if (fc != NONE) {
+    if (fc != IEC61850_FC_NONE) {
         MmsValue* cachedValue;
 
         cachedValue = MmsServer_getValueFromCache(self->mmsServer, domain, variableId);

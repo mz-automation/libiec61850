@@ -183,4 +183,7 @@
 #define CONFIG_IEC61850_CONTROL_SERVICE 0
 #endif
 
+/* use short FC defines as in old API */
+#define CONFIG_PROVIDE_OLD_FC_DEFINES 0
+
 #endif /* STACK_CONFIG_H_ */

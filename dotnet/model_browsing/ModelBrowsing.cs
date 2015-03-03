@@ -31,6 +31,14 @@ namespace model_browsing
 
 				Console.WriteLine("Connected.");
 
+				MmsConnection mmsCon = con.GetMmsConnection();
+
+				MmsServerIdentity identity = mmsCon.GetServerIdentity();
+
+				Console.WriteLine("Vendor:   " + identity.vendorName);
+				Console.WriteLine("Model:    " + identity.modelName);
+				Console.WriteLine("Revision: " + identity.revision);
+
                 List<string> serverDirectory = con.GetServerDirectory(false);
 
                 foreach (string ldName in serverDirectory)

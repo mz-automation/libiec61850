@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
 	IedServer_start(iedServer, 102);
 
 	/* Don't allow access to SP variables by default */
-	IedServer_setWriteAccessPolicy(iedServer, SP, ACCESS_POLICY_DENY);
+	IedServer_setWriteAccessPolicy(iedServer, IEC61850_FC_SP, ACCESS_POLICY_DENY);
 
 	/* Instruct the server that we will be informed if a clients writes to a
 	 * certain variables we are interested in.

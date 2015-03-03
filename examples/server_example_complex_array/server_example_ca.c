@@ -68,7 +68,7 @@ int main(int argc, char** argv) {
     assert(mhai1_ha_phsAHar != NULL);
 
     /* Get access to the corresponding MMS value data structure - the MX(FC) part of the data object */
-    MmsValue* mhai1_ha_phsAHar_mx = IedServer_getFunctionalConstrainedData(iedServer, mhai1_ha_phsAHar, MX);
+    MmsValue* mhai1_ha_phsAHar_mx = IedServer_getFunctionalConstrainedData(iedServer, mhai1_ha_phsAHar, IEC61850_FC_MX);
 
 
     /* assuming the array has 16 elements */

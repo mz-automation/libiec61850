@@ -39,6 +39,69 @@ namespace IEC61850
 	namespace Client
 	{
 
+		[StructLayout(LayoutKind.Sequential)]
+		public class MmsServerIdentity
+		{
+			public string vendorName;
+			public string modelName;
+			public string revision;
+		}
+
+		public class MmsConnection 
+		{
+
+			[DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
+			private static extern IntPtr MmsConnection_create();
+
+			[DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
+			private static extern void MmsConnection_destroy(IntPtr self);
+
+			[DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
+			private static extern IntPtr MmsConnection_identify(IntPtr self, out int mmsError);
+
+			[DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
+			private static extern void MmsServerIdentity_destroy(IntPtr self);
+
+			private IntPtr self = IntPtr.Zero;
+			private bool selfDestroy = false;
+
+			public MmsConnection() {
+				selfDestroy = true;
+
+				self = MmsConnection_create();
+			}
+
+			internal MmsConnection(IntPtr mmsConnection) {
+				self = mmsConnection;
+			}
+
+			~MmsConnection ()
+            {
+				if (selfDestroy)
+                	if (self != IntPtr.Zero)
+                   		MmsConnection_destroy(self);
+            }
+
+			public MmsServerIdentity GetServerIdentity ()
+			{
+				int mmsError;
+
+				if (self == IntPtr.Zero) {
+					throw new IedConnectionException("Pointer is Zero!");
+				}
+
+				IntPtr identity = MmsConnection_identify(self, out mmsError);
+
+				MmsServerIdentity serverIdentity = (MmsServerIdentity) 
+					Marshal.PtrToStructure(identity, typeof(MmsServerIdentity));
+
+				MmsServerIdentity_destroy(identity);
+
+				return serverIdentity;
+			}
+
+		}
+
 		/// <summary>
 		/// This class acts as the entry point for the IEC 61850 client API. It represents a single
 		/// (MMS) connection to a server.
@@ -228,6 +291,13 @@ namespace IEC61850
 				}
 			}
 
+
+			public MmsConnection GetMmsConnection ()
+			{
+				IntPtr mmsConnectionPtr = IedConnection_getMmsConnection(connection);
+
+				return new MmsConnection(mmsConnectionPtr);
+			}
 
 			/// <summary>Establish an MMS connection to a server</summary>
 			/// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>

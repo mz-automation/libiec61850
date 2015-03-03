@@ -200,7 +200,7 @@ ControlObjectClient_create(const char* objectReference, IedConnection connection
 
     /* get default parameters for Oper control variable */
 
-    MmsValue* oper = IedConnection_readObject(connection, &error, itemId, CO);
+    MmsValue* oper = IedConnection_readObject(connection, &error, itemId, IEC61850_FC_CO);
 
     if (oper == NULL) {
         if (DEBUG_IED_CLIENT)
