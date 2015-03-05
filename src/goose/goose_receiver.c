@@ -93,12 +93,6 @@ GooseReceiver_setInterfaceId(GooseReceiver self, const char* interfaceId)
     self->interfaceId = copyString(interfaceId);
 }
 
-
-void
-GooseReceiver_setBackupListener(GooseReceiver self)
-{
-}
-
 static void
 createNewStringFromBufferElement(MmsValue* value, uint8_t* bufferSrc, int elementLength)
 {

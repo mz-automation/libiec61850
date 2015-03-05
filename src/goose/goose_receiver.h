@@ -26,11 +26,31 @@
 
 #include <goose_subscriber.h>
 
+/**
+ * \addtogroup goose_api_group
+ */
+/**@{*/
+
+
 typedef struct sGooseReceiver* GooseReceiver;
 
+/**
+ * \brief Create a new receiver instance
+ *
+ * A GooseReceiver instance is used to handle all GOOSE messages received on a specific
+ * network interface.
+ *
+ * \return the new GooseReceiver instance
+ */
 GooseReceiver
 GooseReceiver_create(void);
 
+/**
+ * \brief sets the interface for the GOOSE receiver
+ *
+ * \param self the GooseReceiver instance
+ * \param interfaceId
+ */
 void
 GooseReceiver_setInterfaceId(GooseReceiver self, const char* interfaceId);
 
@@ -58,14 +78,21 @@ GooseReceiver_addSubscriber(GooseReceiver self, GooseSubscriber subscriber);
 void
 GooseReceiver_removeSubscriber(GooseReceiver self, GooseSubscriber subscriber);
 
-// call backup listener if message is not handled by a subscriber
-void
-GooseReceiver_setBackupListener(GooseReceiver self);
-
-// start GOOSE receiver in a separate thread
+/**
+ * \brief start the GOOSE receiver in a separate thread
+ *
+ * \param self the GooseReceiver instance
+ */
 void
 GooseReceiver_start(GooseReceiver self);
 
+/**
+ * \brief stop the GOOSE receiver running in a speparate thread
+ *
+ * This function is used to stop the receiver thread started with GooseReceiver_start
+ *
+ * \param self the GooseReceiver instance
+ */
 void
 GooseReceiver_stop(GooseReceiver self);
 
@@ -92,5 +119,7 @@ GooseReceiver_stopThreadless(GooseReceiver self);
  */
 bool
 GooseReceiver_tick(GooseReceiver self);
+
+/**@}*/
 
 #endif /* GOOSE_RECEIVER_H_ */

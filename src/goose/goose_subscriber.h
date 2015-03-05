@@ -61,7 +61,7 @@ typedef void (*GooseListener)(GooseSubscriber subscriber, void* parameter);
  * IedConnection_getDataSet() method before.
  *
  * If NULL is given as dataSetValues it will be created the first time when a appropriate GOOSE message
- * is recevied.
+ * is received.
  *
  * \param goCbRef a string containing the object reference of the GOOSE Control Block (GoCB) in MMS notation the
  *        GOOSE publisher uses.
