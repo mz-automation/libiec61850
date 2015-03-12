@@ -371,7 +371,12 @@ ControlObjectClient_operate(ControlObjectClient self, MmsValue* ctlVal, uint64_t
     MmsValue* origin = createOriginValue(self);
     MmsValue_setElement(operParameters, index++, origin);
 
-    self->ctlNum++;
+    if (!((self->ctlModel == CONTROL_MODEL_SBO_NORMAL) ||
+            (self->ctlModel == CONTROL_MODEL_SBO_ENHANCED)))
+    {
+        self->ctlNum++;
+    }
+
     MmsValue* ctlNum = MmsValue_newUnsignedFromUint32(self->ctlNum);
     MmsValue_setElement(operParameters, index++, ctlNum);
 
@@ -471,7 +476,9 @@ ControlObjectClient_selectWithValue(ControlObjectClient self, MmsValue* ctlVal)
     MmsValue* origin = createOriginValue(self);
     MmsValue_setElement(selValParameters, index++, origin);
 
-    MmsValue* ctlNum = MmsValue_newUnsignedFromUint32(self->ctlNum + 1);
+    self->ctlNum++;
+
+    MmsValue* ctlNum = MmsValue_newUnsignedFromUint32(self->ctlNum);
     MmsValue_setElement(selValParameters, index++, ctlNum);
 
 
@@ -535,6 +542,8 @@ ControlObjectClient_select(ControlObjectClient self)
             &mmsError, domainId, itemId);
 
     bool selected = false;
+
+    self->ctlNum++;
 
     if (value == NULL) {
         if (DEBUG_IED_CLIENT)
