@@ -202,7 +202,7 @@ namespace IEC61850
 				try {
 
 					if (this.report == null)
-							this.report = new Report (report);
+						this.report = new Report (report);
 
 					if (reportHandler != null)
 						reportHandler(this.report, reportHandlerParameter);

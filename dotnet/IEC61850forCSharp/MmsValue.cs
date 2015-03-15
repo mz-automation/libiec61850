@@ -336,7 +336,11 @@ namespace IEC61850
 				if ((type == MmsType.MMS_ARRAY) || (type == MmsType.MMS_STRUCTURE)) {
 					if ((index >= 0) && (index < Size ())) {
 						IntPtr value = MmsValue_getElement (valueReference, index);
-						return new MmsValue (value);
+
+						if (value == IntPtr.Zero)
+							return null;
+						else 
+							return new MmsValue (value);
 					} else
 						throw new MmsValueException ("Index out of bounds");
 				} else
