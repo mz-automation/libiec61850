@@ -14,6 +14,8 @@ namespace reporting
 		{
 			Console.WriteLine ("Received report:\n----------------");
 
+			Console.WriteLine ("  for RCB: " + report.GetRcbReference());
+
 			if (report.HasTimestamp ())
 				Console.WriteLine ("  timestamp: " + MmsValue.MsTimeToDateTimeOffset (report.GetTimestamp ()).ToString ());
 
@@ -29,7 +31,7 @@ namespace reporting
 
 			ReportControlBlock rcb = (ReportControlBlock) parameter;
 
-			Console.WriteLine("Buffered: " + rcb.IsBuffered());
+			Console.WriteLine("  For RCB: " + rcb.GetObjectReference() + " Buffered: " + rcb.IsBuffered());
 
 		}
 
@@ -45,33 +47,45 @@ namespace reporting
 			if (args.Length > 0)
 				hostname = args [0];
 			else
-				//hostname = "localhost";
-				hostname = "172.23.44.10";
+				hostname = "localhost";
+
+            hostname = "10.0.2.2";
 
 			Console.WriteLine ("Connect to " + hostname);
 
 			try {
 				con.Connect (hostname, 102);
 
-				string rcbReference = "simpleIOGenericIO/LLN0.RP.EventsRCB01";
+				string rcbReference1 = "simpleIOGenericIO/LLN0.RP.EventsRCB01";
+				string rcbReference2 = "simpleIOGenericIO/LLN0.RP.EventsIndexed01";
 
-				ReportControlBlock rcb = con.GetReportControlBlock(rcbReference);
+				ReportControlBlock rcb1 = con.GetReportControlBlock(rcbReference1);
+				ReportControlBlock rcb2 = con.GetReportControlBlock(rcbReference2);
 
-				rcb.GetRCBValues();
+				rcb1.GetRCBValues();
 
 				// note: the second parameter is not required!
-				rcb.InstallReportHandler(reportHandler, rcb);
+				rcb1.InstallReportHandler(reportHandler, rcb1);
 
-				if (rcb.IsBuffered())
-					Console.WriteLine ("RCB: " + rcbReference + " is buffered");
+				if (rcb1.IsBuffered())
+					Console.WriteLine ("RCB: " + rcbReference1 + " is buffered");
 
-				Console.WriteLine(rcb.GetDataSetReference());
+				rcb1.SetTrgOps(TriggerOptions.DATA_CHANGED | TriggerOptions.INTEGRITY);				
+				rcb1.SetIntgPd(5000);
+				rcb1.SetRptEna(true);
 
-				rcb.SetTrgOps(TriggerOptions.DATA_CHANGED | TriggerOptions.INTEGRITY);				
-				rcb.SetIntgPd(5000);
-				rcb.SetRptEna(true);
+				rcb1.SetRCBValues();
 
-				rcb.SetRCBValues();
+				rcb2.GetRCBValues();
+
+				rcb2.InstallReportHandler(reportHandler, rcb2);
+
+				rcb2.SetTrgOps(TriggerOptions.DATA_CHANGED | TriggerOptions.INTEGRITY);				
+				rcb2.SetIntgPd(2000);
+				rcb2.SetRptEna(true);
+
+				rcb2.SetRCBValues();
+
 
 				/* run until Ctrl-C is pressed */
 				Console.CancelKeyPress += delegate(object sender, ConsoleCancelEventArgs e) {

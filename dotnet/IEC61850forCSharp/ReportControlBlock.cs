@@ -151,6 +151,9 @@ namespace IEC61850
 			static extern void IedConnection_installReportHandler (IntPtr connection, string rcbReference, string rptId, InternalReportHandler handler,
         		IntPtr handlerParameter);
 
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedConnection_uninstallReportHandler(IntPtr connection, string rcbReference);
+
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 			private delegate void InternalReportHandler (IntPtr parameter, IntPtr report);
 
@@ -219,6 +222,16 @@ namespace IEC61850
 				self = ClientReportControlBlock_create (objectReference);
 				this.connection = connection;
 				this.objectReference = objectReference;
+			}
+
+            ~ReportControlBlock()
+            {
+                IedConnection_uninstallReportHandler(connection, objectReference);
+            }
+
+			public string GetObjectReference ()
+			{
+				return this.objectReference;
 			}
 		
             /// <summary>
