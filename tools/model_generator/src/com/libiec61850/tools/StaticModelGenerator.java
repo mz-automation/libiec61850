@@ -84,8 +84,14 @@ public class StaticModelGenerator {
     private IED ied;
     private AccessPoint accessPoint;
 
+	private String outputFileName;
+	private String hDefineName;
+	private String modelPrefix;
+	private boolean initializeOnce;
+
     public StaticModelGenerator(InputStream stream, String icdFile, PrintStream cOut, PrintStream hOut,
-    		String iedName, String accessPointName) throws SclParserException 
+    		String outputFileName, String iedName, String accessPointName, String modelPrefix,
+			boolean initializeOnce) throws SclParserException 
     {
         this.cOut = cOut;
         this.hOut = hOut;
@@ -99,6 +105,16 @@ public class StaticModelGenerator {
         this.sgcbVariableNames = new LinkedList<String>();
 
         SclParser sclParser = new SclParser(stream);
+
+		this.outputFileName = outputFileName;
+		this.hDefineName = outputFileName.toUpperCase().replace( '.', '_' ).replace( '-', '_' ) + "_H_";
+		this.modelPrefix = modelPrefix;
+		this.initializeOnce = initializeOnce;
+
+		if( hDefineName.lastIndexOf( '/' ) >= 0 )
+		{
+			hDefineName = hDefineName.substring( hDefineName.lastIndexOf( '/' ) + 1 );
+		}
 
         ied = null; 
         
@@ -147,17 +163,18 @@ public class StaticModelGenerator {
 
     public static void main(String[] args) throws FileNotFoundException  {
         if (args.length < 1) {
-            System.out.println("Usage: genmodel <ICD file>  [-ied  <ied-name>] [-ap <access-point-name>]");
+            System.out.println("Usage: genmodel <ICD file>  [-ied  <ied-name>] [-ap <access-point-name>] [-out <output-name>] [-modelprefix <model-prefix>]");
             System.exit(1);
         }
 
         String icdFile = args[0];
 
-        String defaultCFileName = "static_model.c";
-        String defaultHFileName = "static_model.h";
+		String outputFileName = "static_model";
         
         String accessPointName = null;
         String iedName = null;
+		String modelPrefix = "iedModel";
+		boolean initializeOnce = false;
         
         if (args.length > 1) {
         	for (int i = 1; i < args.length; i++) {
@@ -176,6 +193,28 @@ public class StaticModelGenerator {
         			i++;
         			
         		}
+        		else if (args[i].equals("-out")) {
+					outputFileName = args[i+1];
+
+        			System.out.println("Select Output File " + outputFileName);
+
+        			i++;
+        			
+        		}
+        		else if (args[i].equals("-modelprefix")) {
+					modelPrefix = args[i+1];
+
+        			System.out.println("Select Model Prefix " + modelPrefix);
+
+        			i++;
+        			
+        		}
+        		else if (args[i].equals("-initializeonce")) {
+					initializeOnce = true;
+
+        			System.out.println("Select Initialize Once");
+
+        		}
         		else {
         			 System.out.println("Unknown option: \"" + args[i] + "\"");
         		}
@@ -183,13 +222,14 @@ public class StaticModelGenerator {
         	      
         }
 
-        PrintStream cOutStream = new PrintStream(new FileOutputStream(new File(defaultCFileName)));
-        PrintStream hOutStream = new PrintStream(new FileOutputStream(new File(defaultHFileName)));
+        PrintStream cOutStream = new PrintStream(new FileOutputStream(new File(outputFileName + ".c")));
+        PrintStream hOutStream = new PrintStream(new FileOutputStream(new File(outputFileName + ".h")));
 
+		System.out.println("Select ICD File " + icdFile);
         InputStream stream = new FileInputStream(icdFile);
 
         try {
-			new StaticModelGenerator(stream, icdFile, cOutStream, hOutStream, iedName, accessPointName);
+			new StaticModelGenerator(stream, icdFile, cOutStream, hOutStream, outputFileName, iedName, accessPointName, modelPrefix, initializeOnce);
         } catch (SclParserException e) {
 			System.err.println("ERROR: " + e.getMessage());
 		}
@@ -199,8 +239,8 @@ public class StaticModelGenerator {
         hOut.println("\n\n");
 
         for (String variableName : variablesList) {
-            String name = variableName.substring(8);
-            hOut.println("#define IEDMODEL" + name + " (&" + variableName + ")");
+			String name = modelPrefix.toUpperCase() + variableName.substring( modelPrefix.length() );
+            hOut.println("#define " + name + " (&" + variableName + ")");
         }
     }
 
@@ -233,7 +273,7 @@ public class StaticModelGenerator {
 
             LogicalDevice logicalDevice = logicalDevices.get(i);
 
-            String ldName = "iedModel_" + logicalDevice.getInst();
+            String ldName = modelPrefix + "_" + logicalDevice.getInst();
 
             variablesList.add(ldName);
 
@@ -245,10 +285,10 @@ public class StaticModelGenerator {
 
             cOut.println("    \"" + logicalDeviceName + "\",");
 
-            cOut.println("    (ModelNode*) &iedModel,");
+            cOut.println("    (ModelNode*) &" + modelPrefix + ",");
 
             if (i < (logicalDevices.size() - 1))
-                cOut.println("    (ModelNode*) &iedModel_" + logicalDevices.get(i + 1).getInst() + ",");
+                cOut.println("    (ModelNode*) &" + modelPrefix + "_" + logicalDevices.get(i + 1).getInst() + ",");
             else
                 cOut.println("    NULL,");
 
@@ -279,9 +319,9 @@ public class StaticModelGenerator {
         cOut.println(settingGroupControlBlocks);
 
         String firstLogicalDeviceName = logicalDevices.get(0).getInst();
-        cOut.println("\nIedModel iedModel = {");
+        cOut.println("\nIedModel " + modelPrefix + " = {");
         cOut.println("    \"" + ied.getName() + "\",");
-        cOut.println("    &iedModel_" + firstLogicalDeviceName + ",");
+        cOut.println("    &" + modelPrefix + "_" + firstLogicalDeviceName + ",");
 
         if (dataSetNames.size() > 0)
             cOut.println("    &" + dataSetNames.get(0) + ",");
@@ -318,7 +358,7 @@ public class StaticModelGenerator {
 				int gseCount = 0;
 				
 				for (GSEControl gse : goCBs) {
-					String gcbVariableName = "iedModel_" + ldName + "_" + ln.getName() + "_gse" + gseCount;					
+					String gcbVariableName = modelPrefix + "_" + ldName + "_" + ln.getName() + "_gse" + gseCount;					
 					gseVariableNames.add(gcbVariableName);
 					gseCount++;
 				}
@@ -346,7 +386,7 @@ public class StaticModelGenerator {
 						maxInstances = rcb.getRptEna().getMaxInstances();
 								
 					for (int i = 0; i < maxInstances; i++) {
-						String rcbVariableName = "iedModel_" + ldName + "_" + ln.getName() + "_report" + rcbCount;					
+						String rcbVariableName = modelPrefix + "_" + ldName + "_" + ln.getName() + "_report" + rcbCount;					
 						rcbVariableNames.add(rcbVariableName);
 						rcbCount++;
 					}
@@ -367,7 +407,7 @@ public class StaticModelGenerator {
 				
 				for (SettingControl sgcb : sgcbs) {
 					
-					String sgcbVariableName = "iedModel_" + ldName + "_" + ln.getName() + "_sgcb";
+					String sgcbVariableName = modelPrefix + "_" + ldName + "_" + ln.getName() + "_sgcb";
 					
 					sgcbVariableNames.add(sgcbVariableName);
 					
@@ -467,7 +507,7 @@ public class StaticModelGenerator {
             
             if (dataAttribute.getFc() == FunctionalConstraint.SE) {
             	
-            	if (daName.startsWith("iedModel_SE_") == false)
+            	if (daName.startsWith(modelPrefix + "_SE_") == false)
             		daName = daName.substring(0, 9) + "SE_" + daName.substring(9);
 
             }
@@ -484,7 +524,7 @@ public class StaticModelGenerator {
             	String siblingDoName = doName;
             	
             	if (sibling.getFc() == FunctionalConstraint.SE) {
-            		if (siblingDoName.startsWith("iedModel_SE_") == false)
+            		if (siblingDoName.startsWith(modelPrefix + "_SE_") == false)
             			siblingDoName = siblingDoName.substring(0, 9) + "SE_" + siblingDoName.substring(9);
             	}
             	
@@ -564,6 +604,12 @@ public class StaticModelGenerator {
         StringBuffer buffer = this.initializerBuffer;
 
         buffer.append("\n");
+		if( initializeOnce )
+		{
+			buffer.append("if (!");
+			buffer.append(daName);
+			buffer.append(".mmsValue)\n");
+		}
         buffer.append(daName);
         buffer.append(".mmsValue = ");
 
@@ -612,20 +658,17 @@ public class StaticModelGenerator {
 
     private void printForwardDeclarations(Server server) {
 
-        cOut.println("extern IedModel iedModel;");
         cOut.println("static void initializeValues();");
-        hOut.println("extern IedModel iedModel;");
+        hOut.println("extern IedModel " + modelPrefix + ";");
 
         for (LogicalDevice logicalDevice : server.getLogicalDevices()) {
-            String ldName = "iedModel_" + logicalDevice.getInst();
+            String ldName = modelPrefix + "_" + logicalDevice.getInst();
 
-            cOut.println("extern LogicalDevice " + ldName + ";");
             hOut.println("extern LogicalDevice " + ldName + ";");
 
             for (LogicalNode logicalNode : logicalDevice.getLogicalNodes()) {
                 String lnName = ldName + "_" + logicalNode.getName();
 
-                cOut.println("extern LogicalNode   " + lnName + ";");
                 hOut.println("extern LogicalNode   " + lnName + ";");
 
                 printDataObjectForwardDeclarations(lnName, logicalNode.getDataObjects());
@@ -638,7 +681,6 @@ public class StaticModelGenerator {
         for (DataObject dataObject : dataObjects) {
             String doName = prefix + "_" + dataObject.getName();
 
-            cOut.println("extern DataObject    " + doName + ";");
             hOut.println("extern DataObject    " + doName + ";");
 
             if (dataObject.getSubDataObjects() != null) {
@@ -655,11 +697,10 @@ public class StaticModelGenerator {
             
             if (dataAttribute.getFc() == FunctionalConstraint.SE) {
       	
-            	if (daName.startsWith("iedModel_SE_") == false)
+            	if (daName.startsWith(modelPrefix + "_SE_") == false)
             		daName = daName.substring(0, 9) + "SE_" + daName.substring(9);
             }
             	
-            cOut.println("extern DataAttribute " + daName + ";");
             hOut.println("extern DataAttribute " + daName + ";");
 
             if (dataAttribute.getSubDataAttributes() != null)
@@ -669,24 +710,28 @@ public class StaticModelGenerator {
 
     private void printCFileHeader(String filename) {
 
+		String include = outputFileName + ".h\"";
+		if( include.lastIndexOf( '/' ) >= 0 ) {
+			include = include.substring( include.lastIndexOf( '/' ) + 1 );
+		}
+
         cOut.println("/*");
-        cOut.println(" * static_model.c");
+        cOut.println(" * " + outputFileName + ".c");
         cOut.println(" *");
         cOut.println(" * automatically generated from " + filename);
         cOut.println(" */");
-        cOut.println("#include <stdlib.h>");
-        cOut.println("#include \"iec61850_model.h\"");
+        cOut.println("#include \"" + include);
         cOut.println();
     }
 
     private void printHeaderFileHeader(String filename) {
         hOut.println("/*");
-        hOut.println(" * static_model.h");
+        hOut.println(" * " + outputFileName + ".h");
         hOut.println(" *");
         hOut.println(" * automatically generated from " + filename);
         hOut.println(" */\n");
-        hOut.println("#ifndef STATIC_MODEL_H_");
-        hOut.println("#define STATIC_MODEL_H_\n");
+        hOut.println("#ifndef " + hDefineName);
+        hOut.println("#define " + hDefineName + "\n");
         hOut.println("#include <stdlib.h>");
         hOut.println("#include \"iec61850_model.h\"");
         hOut.println();
@@ -694,7 +739,7 @@ public class StaticModelGenerator {
 
     private void printHeaderFileFooter() {
         hOut.println();
-        hOut.println("#endif /* STATIC_MODEL_H_ */\n");
+        hOut.println("#endif /* " + hDefineName + " */\n");
     }
 
     private void printGSEControlBlocks(String ldName, String lnPrefix, LogicalNode logicalNode) {
@@ -940,7 +985,7 @@ public class StaticModelGenerator {
 
                 for (DataSet dataSet : dataSets) {
 
-                    String dataSetVariableName = "ds_" + logicalDevice.getInst() + "_" + logicalNode.getName() + "_" + dataSet.getName();
+                    String dataSetVariableName = modelPrefix + "ds_" + logicalDevice.getInst() + "_" + logicalNode.getName() + "_" + dataSet.getName();
 
                     dataSetNames.add(dataSetVariableName);
                 }
@@ -1033,7 +1078,7 @@ public class StaticModelGenerator {
 
                     cOut.println("DataSet " + dataSetVariableName + " = {");
 
-                    String lnVariableName = "iedModel_" + logicalDevice.getInst() + "_" + logicalNode.getName();
+                    String lnVariableName = modelPrefix + "_" + logicalDevice.getInst() + "_" + logicalNode.getName();
 
                     cOut.println("  \"" + logicalDevice.getInst() + "\",");
                     cOut.println("  \"" + logicalNode.getName() + "$" + dataSet.getName() + "\",");
