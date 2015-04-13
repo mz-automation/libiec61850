@@ -187,6 +187,7 @@ BerEncoder_revertByteOrder(uint8_t* octets, const int size)
 int
 BerEncoder_compressInteger(uint8_t* integer, int originalSize)
 {
+
     uint8_t* integerEnd = integer + originalSize - 1;
     uint8_t* bytePosition;
 

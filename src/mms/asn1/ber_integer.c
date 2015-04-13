@@ -46,7 +46,7 @@ setIntegerValue(Asn1PrimitiveValue* self, uint8_t* valueBuffer, int bufferSize)
 Asn1PrimitiveValue*
 BerInteger_createInt32()
 {
-    return Asn1PrimitiveValue_create(4);
+    return Asn1PrimitiveValue_create(5);
 }
 
 Asn1PrimitiveValue*
@@ -124,7 +124,16 @@ BerInteger_setUint32(Asn1PrimitiveValue* self, uint32_t value)
     uint32_t valueCopy = value;
     uint8_t* valueBuffer = (uint8_t*) &valueCopy;
 
-    return setIntegerValue(self, valueBuffer, sizeof(value));
+    uint8_t byteBuffer[5];
+    byteBuffer[4] = 0;
+
+
+    int i;
+    for (i = 0; i < 4; i++) {
+        byteBuffer[i] = valueBuffer[i];
+    }
+
+    return setIntegerValue(self, byteBuffer, 5);
 }
 
 Asn1PrimitiveValue*
@@ -139,7 +148,7 @@ BerInteger_createFromUint32(uint32_t value)
 Asn1PrimitiveValue*
 BerInteger_createInt64()
 {
-    return Asn1PrimitiveValue_create(64);
+    return Asn1PrimitiveValue_create(9);
 }
 
 int
@@ -184,7 +193,7 @@ BerInteger_toInt32(Asn1PrimitiveValue* self, int32_t* nativeValue)
 int /* 1 - if conversion is possible, 0 - out of range */
 BerInteger_toUint32(Asn1PrimitiveValue* self, uint32_t* nativeValue)
 {
-    if (self->size < 5) {
+    if (self->size < 6) {
         uint8_t* buf = self->octets;
         int i;
 
