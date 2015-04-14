@@ -577,7 +577,13 @@ parseCotpMessage(CotpConnection* self)
     uint8_t tpduType;
 
     len = buffer[0];
-    assert(len <= tpduLength);
+
+    if (len > tpduLength) {
+      if (DEBUG_COTP)
+          printf("COTP: parseCotpMessage: len=%d tpduLength=%d\n", len, tpduLength);
+
+      return COTP_ERROR;
+    }
 
     tpduType = buffer[1];
 

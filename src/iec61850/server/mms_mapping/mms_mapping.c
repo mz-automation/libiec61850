@@ -2156,9 +2156,12 @@ mmsReadAccessHandler (void* parameter, MmsDomain* domain, char* variableId, MmsS
     if (DEBUG_IED_SERVER)
         printf("IED_SERVER: mmsReadAccessHandler: Requested %s\n", variableId);
 
-#if (CONFIG_IEC61850_SETTING_GROUPS == 1)
-
     char* separator = strchr(variableId, '$');
+
+    if (separator == NULL)
+        return DATA_ACCESS_ERROR_SUCCESS;
+
+#if (CONFIG_IEC61850_SETTING_GROUPS == 1)
 
     if (isFunctionalConstraintSE(separator)) {
         SettingGroup* sg = getSettingGroupByMmsDomain(self, domain);
