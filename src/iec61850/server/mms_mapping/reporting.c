@@ -813,7 +813,7 @@ createUnbufferedReportControlBlock(ReportControlBlock* reportControlBlock,
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
     namedVariable->name = copyString("Owner");
     namedVariable->type = MMS_OCTET_STRING;
-    namedVariable->typeSpec.octetString = -128;
+    namedVariable->typeSpec.octetString = -64;
     rcb->typeSpec.structure.elements[11] = namedVariable;
     mmsValue->value.structure.components[11] = MmsValue_newOctetString(0, 128);
 
@@ -967,7 +967,7 @@ createBufferedReportControlBlock(ReportControlBlock* reportControlBlock,
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
     namedVariable->name = copyString("Owner");
     namedVariable->type = MMS_OCTET_STRING;
-    namedVariable->typeSpec.octetString = -128;
+    namedVariable->typeSpec.octetString = -64;
     rcb->typeSpec.structure.elements[14] = namedVariable;
     mmsValue->value.structure.components[14] = MmsValue_newOctetString(0, 4); /* size 4 is enough to store client IPv4 address */
 
