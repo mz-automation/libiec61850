@@ -54,6 +54,7 @@ struct sClientReport
     uint64_t timestamp;
     uint16_t seqNum;
     uint32_t confRev;
+    bool bufOverflow;
 };
 
 char*
@@ -188,6 +189,12 @@ bool
 ClientReport_hasBufOvfl(ClientReport self)
 {
     return self->hasBufOverflow;
+}
+
+bool
+ClientReport_getBufOvfl(ClientReport self)
+{
+    return self->bufOverflow;
 }
 
 bool
@@ -390,9 +397,13 @@ private_IedConnection_handleReport(IedConnection self, MmsValue* value)
     if (DEBUG_IED_CLIENT)
         printf("DEBUG_IED_CLIENT: Found enabled report!\n");
 
-    /* skip bufOvfl */
+    /* check bufOvfl */
     if (MmsValue_getBitStringBit(optFlds, 6) == true) {
+        MmsValue* bufOverflow = MmsValue_getElement(value, inclusionIndex);
+
         matchingReport->hasBufOverflow = true;
+        matchingReport->bufOverflow = MmsValue_getBoolean(bufOverflow);
+
         inclusionIndex++;
     }
 

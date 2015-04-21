@@ -527,8 +527,6 @@ ModelNode_getChildWithFc(ModelNode* self, const char* name, FunctionalConstraint
        return matchingNode;
 }
 
-
-inline
 LogicalNode*
 LogicalDevice_getLogicalNode(LogicalDevice* self, const char* nodeName)
 {

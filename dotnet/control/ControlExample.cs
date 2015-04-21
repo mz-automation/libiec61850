@@ -41,7 +41,7 @@ namespace control
 
 				Console.WriteLine(objectReference + " has control model " + controlModel.ToString());
 
-				if (controlModel != ControlModel.CONTROL_MODEL_STATUS_ONLY)
+				if (controlModel != ControlModel.STATUS_ONLY)
 					control.Operate(true);
 
 				if (!control.Operate(true))
@@ -54,15 +54,13 @@ namespace control
 				controlModel = control.GetControlModel();
 				Console.WriteLine(objectReference + " has control model " + controlModel.ToString());
 
-				if (controlModel == ControlModel.CONTROL_MODEL_DIRECT_ENHANCED) {
+				if (controlModel == ControlModel.DIRECT_ENHANCED) {
 					control.SetCommandTerminationHandler(commandTerminationHandler, null);
 
 					control.Operate(true);
 
 					Thread.Sleep(1000);
 				}
-
-
 
                 con.Abort();
             }

@@ -511,4 +511,5 @@ EXPORTS
     Timestamp_clearFlags
     IedServer_setGooseInterfaceId
     MmsServerIdentity_destroy
-
+    ClientReport_getBufOvfl
+    MmsValue_getUtcTimeInMsWithUs

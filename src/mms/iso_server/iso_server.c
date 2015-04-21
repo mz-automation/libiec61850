@@ -479,7 +479,7 @@ IsoServer_startListening(IsoServer self)
     if (DEBUG_ISO_SERVER)
         printf("ISO_SERVER: new iso server thread started\n");
 }
-#endif
+#endif /* (CONFIG_MMS_THREADLESS_STACK != 1) */
 
 void
 IsoServer_startListeningThreadless(IsoServer self)

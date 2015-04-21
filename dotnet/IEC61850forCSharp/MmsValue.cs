@@ -92,6 +92,9 @@ namespace IEC61850
 			static extern ulong MmsValue_getUtcTimeInMs (IntPtr self);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern ulong MmsValue_getUtcTimeInMsWithUs(IntPtr self, [Out] uint usec);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern UInt32 MmsValue_toUnixTimestamp (IntPtr self);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
@@ -383,6 +386,33 @@ namespace IEC61850
 					return MmsValue_getUtcTimeInMs (valueReference);
 				} else
 					throw new MmsValueException ("Value is not a time type");
+			}
+
+			/// <summary>
+			/// Gets the timestamp value as UTC time in ms and the additional us part.
+			/// </summary>
+			/// <description>
+			/// Return the value as milliseconds since epoch (1.1.1970 UTC) and the additional us part.
+			/// The value has to be of type MMS_UTC_TIME.
+			/// </description>
+			/// <param name='usec'>
+			/// returns the usec part of the time value
+			/// </param>
+			/// <returns>
+			/// The UTC time in ms.
+			/// </returns>
+			/// <exception cref="MmsValueException">This exception is thrown if the value has the wrong type.</exception>
+			public ulong GetUtcTimeInMsWithUs(out int usec)
+			{
+				if (GetType() == MmsType.MMS_UTC_TIME)
+				{
+					uint uusec = 0;
+					var msVal = MmsValue_getUtcTimeInMsWithUs(valueReference, uusec);
+					usec = (int)uusec;
+					return msVal;
+				}
+				else
+					throw new MmsValueException("Value is not a time type");
 			}
 
             /// <summary>

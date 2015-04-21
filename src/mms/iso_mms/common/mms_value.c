@@ -755,6 +755,33 @@ MmsValue_getUtcTimeInMs(const MmsValue* self)
     return msVal;
 }
 
+uint64_t
+MmsValue_getUtcTimeInMsWithUs(const MmsValue* self, uint32_t* usec)
+{
+    uint32_t timeval32;
+    const uint8_t* valueArray = self->value.utcTime;
+
+#if (ORDER_LITTLE_ENDIAN == 1)
+    memcpyReverseByteOrder((uint8_t*) &timeval32, valueArray, 4);
+#else
+    memcpy((uint8_t*)&timeval32, valueArray, 4);
+#endif
+
+    uint64_t fractionOfSecond = 0;
+
+    fractionOfSecond = (valueArray[4] << 16);
+    fractionOfSecond += (valueArray[5] << 8);
+    fractionOfSecond += (valueArray[6]);
+
+    uint64_t remainder = fractionOfSecond * 1000000ULL / 0x1000000ULL; // in usec
+
+    uint64_t msVal = (timeval32 * 1000LL) + (remainder / 1000LL);
+
+    if (usec != NULL)
+        *usec = remainder % 1000LL;
+
+    return msVal;
+}
 
 
 MmsValue*

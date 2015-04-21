@@ -106,6 +106,10 @@ namespace IEC61850
             [return: MarshalAs(UnmanagedType.I1)]
             static extern bool ClientReport_hasBufOvfl(IntPtr self);
 
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
+            static extern bool ClientReport_getBufOvfl(IntPtr self);
+
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.I1)]
             static extern bool ClientReport_hasDataReference(IntPtr self);
@@ -179,6 +183,11 @@ namespace IEC61850
             {
                 return ClientReport_hasBufOvfl(self);
             }
+
+			public bool GetBufOvfl ()
+			{
+				return ClientReport_getBufOvfl(self);
+			}
 
             public bool HasSeqNum ()
             {

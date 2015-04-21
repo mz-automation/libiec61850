@@ -730,8 +730,25 @@ ClientReport_hasConfRev(ClientReport self);
 uint32_t
 ClientReport_getConfRev(ClientReport self);
 
+/**
+ * \brief Indicates if the report contains the bufOvfl (buffer overflow) flag
+ *
+ * \param self the ClientReport instance
+ *
+ * \returns true if the report contains the bufOvfl flag, false otherwise
+ */
 bool
 ClientReport_hasBufOvfl(ClientReport self);
+
+/**
+ * \brief Get the value of the bufOvfl flag
+ *
+ * \param self the ClientReport instance
+ *
+ * \returns true if bufOvfl is set, false otherwise
+ */
+bool
+ClientReport_getBufOvfl(ClientReport self);
 
 /**
  * \brief Indicates if the report contains data references for the reported data set members

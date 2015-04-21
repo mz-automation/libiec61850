@@ -460,6 +460,17 @@ uint64_t
 MmsValue_getUtcTimeInMs(const MmsValue* value);
 
 /**
+ * \brief Get a millisecond time value and optional us part from an MmsValue object of MMS_UTCTIME type.
+ *
+ * \param self MmsValue instance to operate on. Has to be of a type MMS_UTCTIME.
+ * \param usec a pointer to store the us (microsecond) value.
+ *
+ * \return the value in milliseconds since epoch (1970/01/01 00:00 UTC)
+ */
+uint64_t
+MmsValue_getUtcTimeInMsWithUs(const MmsValue* self, uint32_t* usec);
+
+/**
  * \brief set the TimeQuality byte of the UtcTime
  *
  * Meaning of the bits in the timeQuality byte:
