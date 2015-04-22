@@ -41,7 +41,7 @@
  *
  * WARNING: If set to 1 normal single- and multi-threaded server are no longer working!
  */
-#define CONFIG_MMS_THREADLESS_STACK 0
+#define CONFIG_MMS_THREADLESS_STACK 1
 
 /* number of concurrent MMS client connections the server accepts, -1 for no limit */
 #define CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS 5

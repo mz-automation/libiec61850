@@ -1100,29 +1100,33 @@ updateOwner(ReportControl* rc, MmsServerConnection connection)
             if (DEBUG_IED_SERVER) printf("IED_SERVER: reporting.c: set owner to %s\n", clientAddressString);
 
             if (strchr(clientAddressString, '.') != NULL) {
-                if (DEBUG_IED_SERVER) printf("IED_SERVER: reporting.c:   client address is IPv4 address\n");
-                {
-                    uint8_t ipV4Addr[4];
+                if (DEBUG_IED_SERVER)
+                    printf("IED_SERVER: reporting.c:   client address is IPv4 address\n");
 
-                    int addrElementCount = 0;
+                uint8_t ipV4Addr[4];
 
-                    char* separator = clientAddressString;
+                int addrElementCount = 0;
 
-                    while (separator != NULL && addrElementCount < 4) {
-                        int intVal = atoi(separator);
+                char* separator = clientAddressString;
 
-                        separator = strchr(separator, '.');
+                while (separator != NULL && addrElementCount < 4) {
+                    int intVal = atoi(separator);
 
-                        ipV4Addr[addrElementCount] = intVal;
+                    ipV4Addr[addrElementCount] = intVal;
 
-                        addrElementCount ++;
-                    }
+                    separator = strchr(separator, '.');
 
-                    if (addrElementCount == 4)
-                        MmsValue_setOctetString(owner, ipV4Addr, 4);
-                    else
-                        MmsValue_setOctetString(owner, ipV4Addr, 0);
+                    if (separator != NULL)
+                        separator++; // skip '.' character
+
+                    addrElementCount ++;
                 }
+
+                if (addrElementCount == 4)
+                    MmsValue_setOctetString(owner, ipV4Addr, 4);
+                else
+                    MmsValue_setOctetString(owner, ipV4Addr, 0);
+
             }
             else {
                 uint8_t ipV6Addr[16];
@@ -1227,7 +1231,7 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
                 goto exit_function;
             }
             else {
-                retVal = DATA_ACCESS_ERROR_OBJECT_ATTRIBUTE_INCONSISTENT;
+                retVal = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
                 goto exit_function;
             }
         }
