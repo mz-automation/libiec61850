@@ -85,8 +85,8 @@ int main(int argc, char** argv) {
         printf("RptEna = %i\n", rptEna);
 
         /* Install handler for reports */
-        IedConnection_installReportHandler(con, "simpleIOGenericIO/LLN0.RP.EventsRCB01", ClientReportControlBlock_getRptId(rcb),
-                reportCallbackFunction, NULL);
+        IedConnection_installReportHandler(con, "simpleIOGenericIO/LLN0.RP.EventsRCB01",
+                ClientReportControlBlock_getRptId(rcb), reportCallbackFunction, NULL);
 
         /* Set trigger options and enable report */
         ClientReportControlBlock_setTrgOps(rcb, TRG_OPT_DATA_UPDATE | TRG_OPT_INTEGRITY | TRG_OPT_GI);

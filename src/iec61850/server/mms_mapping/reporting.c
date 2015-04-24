@@ -1255,6 +1255,8 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
                 MmsValue* resv = ReportControl_getRCBValue(rc, "Resv");
                 MmsValue_setBoolean(resv, false);
 
+                rc->triggered = false;
+
                 rc->reserved = false;
             }
 
