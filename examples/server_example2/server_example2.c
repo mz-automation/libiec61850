@@ -71,8 +71,8 @@ main(int argc, char** argv)
 
         IedServer_lockDataModel(iedServer);
 
-        IedServer_updateFloatAttributeValue(iedServer, IEDMODEL_Inverter_MMXU1_TotW_mag_f, power);
         IedServer_updateUTCTimeAttributeValue(iedServer, IEDMODEL_Inverter_MMXU1_TotW_t, timeval);
+        IedServer_updateFloatAttributeValue(iedServer, IEDMODEL_Inverter_MMXU1_TotW_mag_f, power);
 
         IedServer_unlockDataModel(iedServer);
 

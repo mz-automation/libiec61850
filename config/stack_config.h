@@ -17,7 +17,7 @@
 #define DEBUG_COTP 0
 #define DEBUG_ISO_SERVER 0
 #define DEBUG_ISO_CLIENT 0
-#define DEBUG_IED_SERVER 0
+#define DEBUG_IED_SERVER 1
 #define DEBUG_IED_CLIENT 0
 #define DEBUG_MMS_CLIENT 0
 #define DEBUG_MMS_SERVER 0
@@ -41,7 +41,7 @@
  *
  * WARNING: If set to 1 normal single- and multi-threaded server are no longer working!
  */
-#define CONFIG_MMS_THREADLESS_STACK 1
+#define CONFIG_MMS_THREADLESS_STACK 0
 
 /* number of concurrent MMS client connections the server accepts, -1 for no limit */
 #define CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS 5

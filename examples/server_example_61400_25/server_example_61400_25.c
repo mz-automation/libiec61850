@@ -53,8 +53,8 @@ controlHandlerForIntegerOutput(void* parameter, MmsValue* value, bool test)
     uint64_t timeStamp = Hal_getTimeInMs();
 
     if (parameter == IEDMODEL_WTG_WTUR1_SetTurOp_actSt) {
-        IedServer_updateAttributeValue(iedServer, IEDMODEL_WTG_WTUR1_SetTurOp_actSt_stVal, value);
         IedServer_updateUTCTimeAttributeValue(iedServer, IEDMODEL_WTG_WTUR1_SetTurOp_actSt_t, timeStamp);
+        IedServer_updateAttributeValue(iedServer, IEDMODEL_WTG_WTUR1_SetTurOp_actSt_stVal, value);
     }
 
     return true;

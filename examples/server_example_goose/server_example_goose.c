@@ -28,17 +28,27 @@ void sigint_handler(int signalId)
 void
 controlHandlerForBinaryOutput(void* parameter, MmsValue* value)
 {
-    if (parameter == IEDMODEL_GenericIO_GGIO1_SPCSO1)
+    uint64_t timestamp = Hal_getTimeInMs();
+
+    if (parameter == IEDMODEL_GenericIO_GGIO1_SPCSO1) {
+        IedServer_updateUTCTimeAttributeValue(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO1_t, timestamp);
         IedServer_updateAttributeValue(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO1_stVal, value);
+    }
 
-    if (parameter == IEDMODEL_GenericIO_GGIO1_SPCSO2)
+    if (parameter == IEDMODEL_GenericIO_GGIO1_SPCSO2) {
+        IedServer_updateUTCTimeAttributeValue(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO2_t, timestamp);
         IedServer_updateAttributeValue(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO2_stVal, value);
+    }
 
-    if (parameter == IEDMODEL_GenericIO_GGIO1_SPCSO3)
+    if (parameter == IEDMODEL_GenericIO_GGIO1_SPCSO3) {
+        IedServer_updateUTCTimeAttributeValue(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO3_t, timestamp);
         IedServer_updateAttributeValue(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO3_stVal, value);
+    }
 
-    if (parameter == IEDMODEL_GenericIO_GGIO1_SPCSO4)
+    if (parameter == IEDMODEL_GenericIO_GGIO1_SPCSO4) {
+        IedServer_updateUTCTimeAttributeValue(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO4_t, timestamp);
         IedServer_updateAttributeValue(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO4_stVal, value);
+    }
 }
 
 int main(int argc, char** argv) {
@@ -78,8 +88,10 @@ int main(int argc, char** argv) {
 	while (running) {
 
 	    IedServer_lockDataModel(iedServer);
+
+        IedServer_updateUTCTimeAttributeValue(iedServer, IEDMODEL_GenericIO_GGIO1_AnIn1_t, Hal_getTimeInMs());
 	    IedServer_updateFloatAttributeValue(iedServer, IEDMODEL_GenericIO_GGIO1_AnIn1_mag_f, anIn1);
-	    IedServer_updateUTCTimeAttributeValue(iedServer, IEDMODEL_GenericIO_GGIO1_AnIn1_t, Hal_getTimeInMs());
+
 	    IedServer_unlockDataModel(iedServer);
 
 	    anIn1 += 0.1;

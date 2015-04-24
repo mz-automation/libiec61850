@@ -2315,8 +2315,7 @@ ReportControl_valueUpdated(ReportControl* self, int dataSetEntryIndex, ReportInc
     if (self->triggered == false) {
         uint64_t currentTime = Hal_getTimeInMs();
 
-        MmsValue* timeOfEntry = self->timeOfEntry;
-        MmsValue_setBinaryTime(timeOfEntry, currentTime);
+        MmsValue_setBinaryTime(self->timeOfEntry, currentTime);
 
         self->reportTime = currentTime + self->bufTm;
     }

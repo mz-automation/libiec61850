@@ -132,7 +132,6 @@ main(int argc, char** argv)
 
         IedServer_lockDataModel(iedServer);
 
-
         IedServer_unlockDataModel(iedServer);
 
         power += 0.1f;

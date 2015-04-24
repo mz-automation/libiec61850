@@ -1607,11 +1607,11 @@ MmsValue_setBinaryTime(MmsValue* self, uint64_t timestamp)
         uint8_t* daysDiffBuf = (uint8_t*) &daysDiff;
 
 #if (ORDER_LITTLE_ENDIAN == 1)
-            binaryTimeBuf[4] = daysDiffBuf[1];
-            binaryTimeBuf[5] = daysDiffBuf[0];
+        binaryTimeBuf[4] = daysDiffBuf[1];
+        binaryTimeBuf[5] = daysDiffBuf[0];
 #else
-            binaryTimeBuf[4] = daysDiffBuf[0];
-            binaryTimeBuf[5] = daysDiffBuf[1];
+        binaryTimeBuf[4] = daysDiffBuf[0];
+        binaryTimeBuf[5] = daysDiffBuf[1];
 #endif
 
     }
@@ -1620,15 +1620,15 @@ MmsValue_setBinaryTime(MmsValue* self, uint64_t timestamp)
     uint8_t* msSinceMidnightBuf = (uint8_t*) &msSinceMidnight;
 
 #if (ORDER_LITTLE_ENDIAN == 1)
-        binaryTimeBuf[0] = msSinceMidnightBuf[3];
-        binaryTimeBuf[1] = msSinceMidnightBuf[2];
-        binaryTimeBuf[2] = msSinceMidnightBuf[1];
-        binaryTimeBuf[3] = msSinceMidnightBuf[0];
+    binaryTimeBuf[0] = msSinceMidnightBuf[3];
+    binaryTimeBuf[1] = msSinceMidnightBuf[2];
+    binaryTimeBuf[2] = msSinceMidnightBuf[1];
+    binaryTimeBuf[3] = msSinceMidnightBuf[0];
 #else
-        binaryTimeBuf[0] = msSinceMidnightBuf[0];
-        binaryTimeBuf[1] = msSinceMidnightBuf[1];
-        binaryTimeBuf[2] = msSinceMidnightBuf[2];
-        binaryTimeBuf[3] = msSinceMidnightBuf[3];
+    binaryTimeBuf[0] = msSinceMidnightBuf[0];
+    binaryTimeBuf[1] = msSinceMidnightBuf[1];
+    binaryTimeBuf[2] = msSinceMidnightBuf[2];
+    binaryTimeBuf[3] = msSinceMidnightBuf[3];
 #endif
 }
 

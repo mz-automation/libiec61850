@@ -53,18 +53,27 @@ checkHandler(void* parameter, MmsValue* ctlVal, bool test, bool interlockCheck, 
 static ControlHandlerResult
 controlHandlerForBinaryOutput(void* parameter, MmsValue* value, bool test)
 {
-    if (parameter == IEDMODEL_GenericIO_GGIO1_SPCSO1)
+    uint64_t timestamp = Hal_getTimeInMs();
+
+    if (parameter == IEDMODEL_GenericIO_GGIO1_SPCSO1) {
+        IedServer_updateUTCTimeAttributeValue(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO1_t, timestamp);
         IedServer_updateAttributeValue(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO1_stVal, value);
+    }
 
-    else if (parameter == IEDMODEL_GenericIO_GGIO1_SPCSO2)
+    else if (parameter == IEDMODEL_GenericIO_GGIO1_SPCSO2) {
+        IedServer_updateUTCTimeAttributeValue(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO2_t, timestamp);
         IedServer_updateAttributeValue(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO2_stVal, value);
+    }
 
-    else if (parameter == IEDMODEL_GenericIO_GGIO1_SPCSO3)
+    else if (parameter == IEDMODEL_GenericIO_GGIO1_SPCSO3) {
+        IedServer_updateUTCTimeAttributeValue(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO3_t, timestamp);
         IedServer_updateAttributeValue(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO3_stVal, value);
+    }
 
-    else if (parameter == IEDMODEL_GenericIO_GGIO1_SPCSO4)
+    else if (parameter == IEDMODEL_GenericIO_GGIO1_SPCSO4) {
+        IedServer_updateUTCTimeAttributeValue(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO4_t, timestamp);
         IedServer_updateAttributeValue(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO4_stVal, value);
-
+    }
     else
         return CONTROL_RESULT_FAILED;
 
