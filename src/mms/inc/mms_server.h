@@ -109,10 +109,9 @@ MmsServer_isLocked(MmsServer self);
  * \param listName the name
  * \param connection client connection that requests the creation of deletion of the variable list
  *
- * \return true if operation has to be accepted, false if operation has to be rejected. In case of false an error message
- *              is returned to the client.
+ * \return MMS_ERROR_NONE if the request is accepted, otherwise the MmsError value that has to be sent back to the client
  */
-typedef bool (*MmsNamedVariableListChangedHandler)(void* parameter, bool create, MmsVariableListType listType, MmsDomain* domain,
+typedef MmsError (*MmsNamedVariableListChangedHandler)(void* parameter, bool create, MmsVariableListType listType, MmsDomain* domain,
         char* listName, MmsServerConnection connection);
 
 /**

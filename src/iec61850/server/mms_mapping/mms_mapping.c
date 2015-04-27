@@ -2179,17 +2179,17 @@ mmsReadAccessHandler (void* parameter, MmsDomain* domain, char* variableId, MmsS
     return DATA_ACCESS_ERROR_SUCCESS;
 }
 
-static bool
+static MmsError
 variableListChangedHandler (void* parameter, bool create, MmsVariableListType listType, MmsDomain* domain,
         char* listName, MmsServerConnection connection)
 {
-    bool allow = true;
+    MmsError allow = MMS_ERROR_NONE;
 
 #if (DEBUG_IED_SERVER == 1)
     if (create)
-        printf("create data set ");
+        printf("IED_SERVER: create data set ");
     else
-        printf("delete data set ");
+        printf("IED_SERVER: delete data set ");
 
     switch (listType) {
     case MMS_VMD_SPECIFIC:
@@ -2208,7 +2208,37 @@ variableListChangedHandler (void* parameter, bool create, MmsVariableListType li
 
     MmsMapping* self = (MmsMapping*) parameter;
 
-    if (create == false) {
+    if (create) {
+        if (listType == MMS_DOMAIN_SPECIFIC) {
+            // check if LN exists - otherwise reject request (to fulfill test case sDsN1c)
+
+            allow = MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT;
+
+            IedModel* model = self->model;
+
+            LogicalDevice* ld = IedModel_getDevice(model, domain->domainName);
+
+            if (ld != NULL) {
+
+                char lnName[129];
+
+                char* separator = strchr(listName, '$');
+
+                if (separator != NULL) {
+                    int lnNameLen = separator - listName;
+
+                    memcpy(lnName, listName, lnNameLen);
+                    lnName[lnNameLen] = 0;
+
+                    if (LogicalDevice_getLogicalNode(ld, lnName) != NULL)
+                        allow = MMS_ERROR_NONE;
+                }
+
+            }
+
+        }
+    }
+    else {
         /* Check if data set is referenced in a report */
 
         LinkedList element = self->reportControls;
@@ -2223,7 +2253,7 @@ variableListChangedHandler (void* parameter, bool create, MmsVariableListType li
                         if (rc->dataSet->logicalDeviceName != NULL) {
                             if (strcmp(rc->dataSet->name, listName) == 0) {
                                 if (strcmp(rc->dataSet->logicalDeviceName, MmsDomain_getName(domain)) == 0) {
-                                    allow = false;
+                                    allow = MMS_ERROR_ACCESS_OBJECT_ACCESS_DENIED;
                                     break;
                                 }
                             }
@@ -2232,7 +2262,7 @@ variableListChangedHandler (void* parameter, bool create, MmsVariableListType li
                     else if (listType == MMS_ASSOCIATION_SPECIFIC) {
                         if (rc->dataSet->logicalDeviceName == NULL) {
                             if (strcmp(rc->dataSet->name, listName) == 0) {
-                                allow = false;
+                                allow = MMS_ERROR_ACCESS_OBJECT_ACCESS_DENIED;
                                 break;
                             }
                         }

@@ -289,7 +289,7 @@ mmsServer_createMmsWriteResponse(MmsServerConnection connection,
 void
 mmsServer_writeMmsRejectPdu(uint32_t* invokeId, int reason, ByteBuffer* response);
 
-bool
+MmsError
 mmsServer_callVariableListChangedHandler(bool create, MmsVariableListType listType, MmsDomain* domain,
         char* listName, MmsServerConnection connection);
 

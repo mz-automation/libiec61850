@@ -36,13 +36,17 @@ namespace datasets
 
 				List<string> dataSetElements = new List<string>();
 
+				string dataSetName = "simpleIOGenericIO/UNKNOWN.ds1";
+
+				//string dataSetName = "simpleIOGenericIO/LLN0.ds1";
+
 				dataSetElements.Add("simpleIOGenericIO/GGIO1.AnIn1.mag.f[MX]");
 				dataSetElements.Add("simpleIOGenericIO/GGIO1.AnIn2.mag.f[MX]");
 
-				con.CreateDataSet("simpleIOGenericIO/LLN0.ds1", dataSetElements);
+				con.CreateDataSet(dataSetName, dataSetElements);
 
 				// get the directory of the data set
-				List<string> dataSetDirectory = con.GetDataSetDirectory("simpleIOGenericIO/LLN0.ds1");
+				List<string> dataSetDirectory = con.GetDataSetDirectory(dataSetName);
 
 				foreach (string entry in dataSetDirectory)
                 {
@@ -50,7 +54,7 @@ namespace datasets
                 }
 
 				// read the values of the newly created data set
-                DataSet dataSet = con.ReadDataSetValues("simpleIOGenericIO/LLN0.ds1", null);
+				DataSet dataSet = con.ReadDataSetValues(dataSetName, null);
 
 				MmsValue dataSetValues = dataSet.GetValues();
 
@@ -61,7 +65,7 @@ namespace datasets
 				}
 
 				// delete the data set
-				con.DeleteDataSet("simpleIOGenericIO/LLN0.ds1");
+				con.DeleteDataSet(dataSetName);
 
                 con.Abort();
             }

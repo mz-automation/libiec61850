@@ -27,12 +27,18 @@ namespace reporting
 				if (report.GetReasonForInclusion(i) != ReasonForInclusion.REASON_NOT_INCLUDED) {
 					Console.WriteLine("    element " + i + " included for reason " + report.GetReasonForInclusion(i).ToString() + " " + values.GetElement(i));
 				}
+
+                if (report.HasDataReference()) {
+                    Console.WriteLine("       data-ref: " + report.GetDataReference(i));
+                }
+                
 			}
 
 			ReportControlBlock rcb = (ReportControlBlock) parameter;
-
-			Console.WriteLine("  For RCB: " + rcb.GetObjectReference() + " Buffered: " + rcb.IsBuffered());
-
+            
+			Console.WriteLine("  For RCB: " + rcb.GetObjectReference() + " Buffered: " + rcb.IsBuffered() +
+			                  " data-set: " + rcb.GetDataSetReference ());
+           
 		}
 
 
@@ -80,6 +86,8 @@ namespace reporting
 
 				rcb2.InstallReportHandler(reportHandler, rcb2);
 
+                rcb2.SetOptFlds(ReportOptions.REASON_FOR_INCLUSION | ReportOptions.SEQ_NUM | ReportOptions.TIME_STAMP |
+                    ReportOptions.CONF_REV | ReportOptions.ENTRY_ID | ReportOptions.DATA_REFERENCE | ReportOptions.DATA_SET);
 				rcb2.SetTrgOps(TriggerOptions.DATA_CHANGED | TriggerOptions.INTEGRITY);				
 				rcb2.SetIntgPd(2000);
 				rcb2.SetRptEna(true);
