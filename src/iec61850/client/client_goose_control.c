@@ -271,15 +271,27 @@ updateOrClone(MmsValue** valuePtr, MmsValue* values, int index)
 static bool
 private_ClientGooseControlBlock_updateValues(ClientGooseControlBlock self, MmsValue* values)
 {
-    updateOrClone(&(self->goEna), values, 0);
-    updateOrClone(&(self->goID), values, 1);
-    updateOrClone(&(self->datSet), values, 2);
-    updateOrClone(&(self->confRev), values, 3);
-    updateOrClone(&(self->ndsCom), values, 4);
-    updateOrClone(&(self->dstAddress), values, 5);
-    updateOrClone(&(self->minTime), values, 6);
-    updateOrClone(&(self->maxTime), values, 7);
-    updateOrClone(&(self->fixedOffs), values, 8);
+    int elementCount = MmsValue_getArraySize(values);
+
+    if (elementCount > 5) {
+        updateOrClone(&(self->goEna), values, 0);
+        updateOrClone(&(self->goID), values, 1);
+        updateOrClone(&(self->datSet), values, 2);
+        updateOrClone(&(self->confRev), values, 3);
+        updateOrClone(&(self->ndsCom), values, 4);
+        updateOrClone(&(self->dstAddress), values, 5);
+    }
+    else
+        return false;
+
+    if (elementCount > 6)
+        updateOrClone(&(self->minTime), values, 6);
+
+    if (elementCount > 7)
+        updateOrClone(&(self->maxTime), values, 7);
+
+    if (elementCount > 8)
+        updateOrClone(&(self->fixedOffs), values, 8);
 
     return true;
 }
@@ -346,11 +358,12 @@ IedConnection_getGoCBValues(IedConnection self, IedClientError* error, const cha
     if (returnGoCB == NULL)
         returnGoCB = ClientGooseControlBlock_create(goCBReference);
 
-    private_ClientGooseControlBlock_updateValues(returnGoCB, goCB);
+    if (private_ClientGooseControlBlock_updateValues(returnGoCB, goCB))
+        *error = IED_ERROR_OK;
+    else
+        *error = IED_ERROR_UNEXPECTED_VALUE_RECEIVED;
 
     MmsValue_delete(goCB);
-
-    *error = IED_ERROR_OK;
 
     return returnGoCB;
 }
