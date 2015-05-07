@@ -26,9 +26,11 @@ sigint_handler(int signalId)
     running = 0;
 }
 
-bool
+static ControlHandlerResult
 controlHandlerForBinaryOutput(void* parameter, MmsValue* value, bool test)
 {
+    if (test)
+        return CONTROL_RESULT_FAILED;
 
     if (MmsValue_getType(value) == MMS_BOOLEAN) {
         printf("received binary control command: ");
@@ -39,7 +41,7 @@ controlHandlerForBinaryOutput(void* parameter, MmsValue* value, bool test)
             printf("off\n");
     }
     else
-        return false;
+        return CONTROL_RESULT_FAILED;
 
     uint64_t timeStamp = Hal_getTimeInMs();
 
@@ -63,7 +65,7 @@ controlHandlerForBinaryOutput(void* parameter, MmsValue* value, bool test)
         IedServer_updateAttributeValue(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO4_stVal, value);
     }
 
-    return true;
+    return CONTROL_RESULT_OK;
 }
 
 

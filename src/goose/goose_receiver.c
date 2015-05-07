@@ -649,7 +649,7 @@ parseGooseMessage(GooseReceiver self, int numbytes)
 
     int apduLength = length - 8;
 
-    if (numbytes != length + headerLength) {
+    if (numbytes < length + headerLength) {
         if (DEBUG)
             printf("GOOSE_SUBSCRIBER: Invalid PDU size\n");
         return;

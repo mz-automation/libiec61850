@@ -173,7 +173,7 @@ mmsServer_handleDeleteNamedVariableListRequest(MmsServerConnection connection,
 				if (variableList != NULL) {
 					numberMatched++;
 
-					if (mmsServer_callVariableListChangedHandler(false, MMS_ASSOCIATION_SPECIFIC, NULL, listName, connection) == true) {
+					if (mmsServer_callVariableListChangedHandler(false, MMS_ASSOCIATION_SPECIFIC, NULL, listName, connection) == MMS_ERROR_NONE) {
 					    numberDeleted++;
 					    MmsServerConnection_deleteNamedVariableList(connection, listName);
 					}
@@ -470,7 +470,7 @@ mmsServer_handleDefineNamedVariableListRequest(
 
                 if (namedVariableList != NULL) {
 
-                    if (mmsServer_callVariableListChangedHandler(true, MMS_ASSOCIATION_SPECIFIC, NULL, variableListName, connection) == true) {
+                    if (mmsServer_callVariableListChangedHandler(true, MMS_ASSOCIATION_SPECIFIC, NULL, variableListName, connection) == MMS_ERROR_NONE) {
                         MmsServerConnection_addNamedVariableList(connection, namedVariableList);
                         createDefineNamedVariableListResponse(invokeId, response);
                     }
