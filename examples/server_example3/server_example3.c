@@ -135,6 +135,7 @@ main(int argc, char** argv)
 
         Timestamp_clearFlags(&iecTimestamp);
         Timestamp_setTimeInMilliseconds(&iecTimestamp, timestamp);
+        Timestamp_setLeapSecondKnown(&iecTimestamp, true);
 
         /* toggle clock-not-synchronized flag in timestamp */
         if (((int) t % 2) == 0)

@@ -266,11 +266,15 @@ handleClientConnections(IsoServer self)
 static bool
 setupIsoServer(IsoServer self)
 {
+    bool success = true;
+
     self->serverSocket = (Socket) TcpServerSocket_create(self->localIpAddress, self->tcpPort);
 
     if (self->serverSocket == NULL) {
         self->state = ISO_SVR_STATE_ERROR;
-        return false;
+        success = false;
+
+        goto exit_function;
     }
 
     ServerSocket_setBacklog((ServerSocket) self->serverSocket, BACKLOG);
@@ -284,7 +288,8 @@ setupIsoServer(IsoServer self)
         printf("ISO_SERVER: server is limited to %i client connections.\n", (int) CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS);
 #endif
 
-    return true;
+exit_function:
+    return success;
 }
 
 
@@ -468,6 +473,15 @@ IsoServer_getAuthenticatorParameter(IsoServer self)
 void
 IsoServer_startListening(IsoServer self)
 {
+    if (self->state == ISO_SVR_STATE_RUNNING) {
+        if (DEBUG_ISO_SERVER)
+                printf("ISO_SERVER: server already in RUNNING state!\n");
+
+        goto exit_function;
+    }
+
+    self->state = ISO_SVR_STATE_IDLE;
+
     self->serverThread = Thread_create((ThreadExecutionFunction) isoServerThread, self, false);
 
     Thread_start(self->serverThread);
@@ -478,6 +492,9 @@ IsoServer_startListening(IsoServer self)
 
     if (DEBUG_ISO_SERVER)
         printf("ISO_SERVER: new iso server thread started\n");
+
+exit_function:
+    return;
 }
 #endif /* (CONFIG_MMS_THREADLESS_STACK != 1) */
 
