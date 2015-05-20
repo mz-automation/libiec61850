@@ -134,7 +134,7 @@ BerInteger_setUint32(Asn1PrimitiveValue* self, uint32_t value)
     for (i = 0; i < 4; i++)
         byteBuffer[i] = valueBuffer[i];
 #else
-    bytebuffer[0] = 0;
+    byteBuffer[0] = 0;
 
     for (i = 0; i < 4; i++)
         byteBuffer[i + 1] = valueBuffer[i];
