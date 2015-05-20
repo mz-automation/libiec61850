@@ -1486,7 +1486,7 @@ IedConnection_getDataDirectoryFC(IedConnection self, IedClientError* error, cons
  * \brief returns the directory of the given data object/data attribute with the given FC
  *
  * Implementation of the GetDataDirectory ACSI service. This will return the list of
- * C strings with all data attributes or sub data objects as elements that have the given FX. The returned
+ * C strings with all data attributes or sub data objects as elements. The returned
  * strings will contain the functional constraint appended in square brackets when appropriate.
  *
  * \param self the connection object

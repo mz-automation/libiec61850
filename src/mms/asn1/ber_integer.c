@@ -125,13 +125,20 @@ BerInteger_setUint32(Asn1PrimitiveValue* self, uint32_t value)
     uint8_t* valueBuffer = (uint8_t*) &valueCopy;
 
     uint8_t byteBuffer[5];
-    byteBuffer[4] = 0;
-
 
     int i;
-    for (i = 0; i < 4; i++) {
+
+#if (ORDER_LITTLE_ENDIAN == 1)
+    byteBuffer[4] = 0;
+
+    for (i = 0; i < 4; i++)
         byteBuffer[i] = valueBuffer[i];
-    }
+#else
+    bytebuffer[0] = 0;
+
+    for (i = 0; i < 4; i++)
+        byteBuffer[i + 1] = valueBuffer[i];
+#endif /* (ORDER_LITTLE_ENDIAN == 1) */
 
     return setIntegerValue(self, byteBuffer, 5);
 }
