@@ -32,6 +32,14 @@
 #if (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
 #define PLATFORM_IS_BIGENDIAN 1
 #endif
+
+#else
+
+/* older versions of GCC have __BYTE_ORDER__ not defined! */
+#ifdef __PPC__
+#define PLATFORM_IS_BIGENDIAN 1
+#endif
+
 #endif /* __BYTE_ORDER__ */
 #endif /* __GNUC__ */
 #endif
