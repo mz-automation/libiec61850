@@ -1143,6 +1143,9 @@ namespace IEC61850
 			/** The server does not support the requested access method */
 			IED_ERROR_OBJECT_ACCESS_UNSUPPORTED = 24,
 
+			/** The server expected an object of another type */
+			IED_ERROR_TYPE_INCONSISTENT = 25,
+
 			/* unknown error */
 			IED_ERROR_UNKNOWN = 99
 		}  

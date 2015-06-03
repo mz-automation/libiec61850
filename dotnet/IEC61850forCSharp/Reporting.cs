@@ -120,6 +120,9 @@ namespace IEC61850
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern IntPtr ClientReport_getRptId(IntPtr self);
 
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr ClientReport_getEntryId(IntPtr self);
+
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern IntPtr ClientReport_getDataReference(IntPtr self, int elementIndex);
 
@@ -285,6 +288,23 @@ namespace IEC61850
                 else
                     return Marshal.PtrToStringAnsi (rptId);
             }
+
+			/// <summary>
+			/// Gets the EntryID of this report.
+			/// </summary>
+			/// <returns>The entryID as a byte array representing an MMS octet string.</returns>
+			public byte[] GetEntryId () 
+			{
+				IntPtr entryIdRef = ClientReport_getEntryId (self);
+
+				if (entryIdRef == IntPtr.Zero)
+					return null;
+				else {
+					MmsValue entryId = new MmsValue (entryIdRef);
+
+					return entryId.getOctetString ();
+				}
+			}
 
 		}
 

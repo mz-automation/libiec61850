@@ -212,6 +212,14 @@ mmsServer_handleWriteRequest(
             continue;
         }
 
+        /* Check for correct type */
+        if (MmsValue_getType(value) != MmsVariableSpecification_getType(variable)) {
+            GLOBAL_FREEMEM(nameIdStr);
+            MmsValue_delete(value);
+            accessResults[i] = DATA_ACCESS_ERROR_TYPE_INCONSISTENT;
+            continue;
+        }
+
         if (alternateAccess != NULL) {
 
             if (domain != NULL)

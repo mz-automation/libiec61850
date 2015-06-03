@@ -76,6 +76,9 @@ iedConnection_mapMmsErrorToIedError(MmsError mmsError)
     case MMS_ERROR_DEFINITION_OBJECT_EXISTS:
         return IED_ERROR_OBJECT_EXISTS;
 
+    case MMS_ERROR_DEFINITION_TYPE_INCONSISTENT:
+        return IED_ERROR_TYPE_INCONSISTENT;
+
     case MMS_ERROR_SERVICE_TIMEOUT:
         return IED_ERROR_TIMEOUT;
 

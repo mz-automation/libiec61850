@@ -4,6 +4,7 @@ using System.Threading;
 
 using IEC61850.Client;
 using IEC61850.Common;
+using System.Runtime.Remoting.Metadata.W3cXsd2001;
 
 namespace reporting
 {
@@ -20,6 +21,14 @@ namespace reporting
 				Console.WriteLine ("  timestamp: " + MmsValue.MsTimeToDateTimeOffset (report.GetTimestamp ()).ToString ());
 
 			MmsValue values = report.GetDataSetValues ();
+
+			byte[] entryId = report.GetEntryId ();
+
+			if (entryId != null) {
+				SoapHexBinary shb = new SoapHexBinary(entryId);
+
+				Console.WriteLine ("  entryID: " + shb.ToString ());
+			}
 
 			Console.WriteLine ("  report dataset contains " + values.Size () + " elements");
 
@@ -55,8 +64,6 @@ namespace reporting
 			else
 				hostname = "localhost";
 
-            hostname = "10.0.2.2";
-
 			Console.WriteLine ("Connect to " + hostname);
 
 			try {
@@ -64,9 +71,11 @@ namespace reporting
 
 				string rcbReference1 = "simpleIOGenericIO/LLN0.RP.EventsRCB01";
 				string rcbReference2 = "simpleIOGenericIO/LLN0.RP.EventsIndexed01";
+				string rcbReference3 = "simpleIOGenericIO/LLN0.BR.Measurements01";
 
 				ReportControlBlock rcb1 = con.GetReportControlBlock(rcbReference1);
 				ReportControlBlock rcb2 = con.GetReportControlBlock(rcbReference2);
+				ReportControlBlock rcb3 = con.GetReportControlBlock(rcbReference3);
 
 				rcb1.GetRCBValues();
 
@@ -84,6 +93,9 @@ namespace reporting
 
 				rcb2.GetRCBValues();
 
+				if (rcb2.IsBuffered())
+					Console.WriteLine ("RCB: " + rcbReference2 + " is buffered");
+
 				rcb2.InstallReportHandler(reportHandler, rcb2);
 
                 rcb2.SetOptFlds(ReportOptions.REASON_FOR_INCLUSION | ReportOptions.SEQ_NUM | ReportOptions.TIME_STAMP |
@@ -93,6 +105,21 @@ namespace reporting
 				rcb2.SetRptEna(true);
 
 				rcb2.SetRCBValues();
+
+				rcb3.GetRCBValues();
+
+				if (rcb3.IsBuffered())
+					Console.WriteLine ("RCB: " + rcbReference3 + " is buffered");
+
+				rcb3.InstallReportHandler(reportHandler, rcb2);
+
+				rcb3.SetOptFlds(ReportOptions.REASON_FOR_INCLUSION | ReportOptions.SEQ_NUM | ReportOptions.TIME_STAMP |
+				                ReportOptions.CONF_REV | ReportOptions.ENTRY_ID | ReportOptions.DATA_REFERENCE | ReportOptions.DATA_SET);
+				rcb3.SetTrgOps(TriggerOptions.DATA_CHANGED | TriggerOptions.INTEGRITY);				
+				rcb3.SetIntgPd(2000);
+				rcb3.SetRptEna(true);
+
+				rcb3.SetRCBValues();
 
 
 				/* run until Ctrl-C is pressed */

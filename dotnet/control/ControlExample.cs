@@ -32,7 +32,7 @@ namespace control
             {
                 con.Connect(hostname, 102);
 
-				/* direct control with normal security */
+				/* direct control with normal security or SBO with normal security */
 				string objectReference = "simpleIOGenericIO/GGIO1.SPCSO1";
 
 				ControlObject control = con.CreateControlObject(objectReference);
@@ -41,11 +41,35 @@ namespace control
 
 				Console.WriteLine(objectReference + " has control model " + controlModel.ToString());
 
-				if (controlModel != ControlModel.STATUS_ONLY)
-					control.Operate(true);
 
-				if (!control.Operate(true))
-					Console.WriteLine("operate failed!");
+				switch (controlModel) {
+
+				case ControlModel.STATUS_ONLY:
+					Console.WriteLine("Control is status-only!");
+					break;
+
+				case ControlModel.DIRECT_NORMAL:
+				case ControlModel.DIRECT_ENHANCED:
+					if (!control.Operate(true))
+						Console.WriteLine("operate failed!");
+					else
+						Console.WriteLine("operated successfully!");
+					break;
+
+				case ControlModel.SBO_NORMAL:
+				case ControlModel.SBO_ENHANCED:
+
+					if (control.Select()) {
+						if (!control.Operate(true))
+							Console.WriteLine("operate failed!");
+						else
+							Console.WriteLine("operated successfully!");
+					}
+					else
+						Console.WriteLine("Select failed!");
+
+					break;
+				}
 
 				/* direct control with enhanced security */
 				objectReference = "simpleIOGenericIO/GGIO1.SPCSO3";
