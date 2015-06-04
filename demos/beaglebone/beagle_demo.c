@@ -66,8 +66,6 @@ performCheckHandler(void* parameter, MmsValue* ctlVal, bool test, bool interlock
     if (test)
         return CONTROL_TEMPORARILY_UNAVAILABLE;
 
-    printf("controllingClient: %p connection: %p\n", controllingClient, connection);
-
     /* If there is already another client that controls the device reject the control attempt */
     if (controllingClient == connection)
         return CONTROL_ACCEPTED;
