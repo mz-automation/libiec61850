@@ -6,7 +6,7 @@
 #define BEAGLEBONE_LEDS_H_
 
 
-//#define SIMULATED 1
+#define SIMULATED 1
 
 
 #if 0

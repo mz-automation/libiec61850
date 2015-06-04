@@ -34,10 +34,10 @@ void sigint_handler(int signalId)
 	running = 0;
 }
 
-void
+static void
 connectionIndicationHandler(IedServer server, ClientConnection connection, bool connected, void* parameter)
 {
-    char* clientAddress = ClientConnection_getPeerAddress(connection);
+    const char* clientAddress = ClientConnection_getPeerAddress(connection);
 
     if (connected) {
         printf("BeagleDemoServer: new client connection from %s\n", clientAddress);
@@ -62,6 +62,12 @@ performCheckHandler(void* parameter, MmsValue* ctlVal, bool test, bool interlock
         automaticOperationMode = false;
     }
 
+    /* test command not accepted if mode is "on" */
+    if (test)
+        return CONTROL_TEMPORARILY_UNAVAILABLE;
+
+    printf("controllingClient: %p connection: %p\n", controllingClient, connection);
+
     /* If there is already another client that controls the device reject the control attempt */
     if (controllingClient == connection)
         return CONTROL_ACCEPTED;
@@ -69,7 +75,7 @@ performCheckHandler(void* parameter, MmsValue* ctlVal, bool test, bool interlock
         return CONTROL_TEMPORARILY_UNAVAILABLE;
 }
 
-void
+static void
 updateLED1stVal(bool newLedState, uint64_t timeStamp) {
     switchLED(LED1, newLedState);
 
@@ -78,7 +84,7 @@ updateLED1stVal(bool newLedState, uint64_t timeStamp) {
     IedServer_updateUTCTimeAttributeValue(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO1_t, timeStamp);
 }
 
-void
+static void
 updateLED2stVal(bool newLedState, uint64_t timeStamp) {
     switchLED(LED2, newLedState);
 
@@ -87,7 +93,7 @@ updateLED2stVal(bool newLedState, uint64_t timeStamp) {
     IedServer_updateUTCTimeAttributeValue(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO2_t, timeStamp);
 }
 
-void
+static void
 updateLED3stVal(bool newLedState, uint64_t timeStamp) {
     switchLED(LED3, newLedState);
 
@@ -96,14 +102,11 @@ updateLED3stVal(bool newLedState, uint64_t timeStamp) {
     IedServer_updateUTCTimeAttributeValue(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO3_t, timeStamp);
 }
 
-bool
+static ControlHandlerResult
 controlHandlerForBinaryOutput(void* parameter, MmsValue* value, bool test)
 {
     if (test)
-        return true;
-
-    if (MmsValue_getType(value) != MMS_BOOLEAN)
-        return false;
+        return CONTROL_RESULT_OK;
 
     uint64_t timeStamp = Hal_getTimeInMs();
 
@@ -142,7 +145,7 @@ controlHandlerForBinaryOutput(void* parameter, MmsValue* value, bool test)
         IedServer_updateUTCTimeAttributeValue(iedServer, IEDMODEL_GenericIO_GGIO1_DPCSO1_t, timeStamp);
     }
 
-    return true;
+    return CONTROL_RESULT_OK;
 }
 
 

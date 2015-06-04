@@ -131,6 +131,9 @@ Control_readAccessControlObject(MmsMapping* self, MmsDomain* domain, char* varia
         MmsServerConnection connection);
 
 static void
+unselectObject(ControlObject* self);
+
+static void
 setState(ControlObject* self, int newState)
 {
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
@@ -315,7 +318,7 @@ abortControlOperation(ControlObject* self)
     if ((self->ctlModel == 2) || (self->ctlModel == 4)) {
 
         if (isSboClassOperateOnce(self))
-            setState(self, STATE_UNSELECTED);
+            unselectObject(self);
         else
             setState(self, STATE_READY);
     }
@@ -604,11 +607,23 @@ ControlObject_getMmsValue(ControlObject* self)
 static void
 selectObject(ControlObject* self, uint64_t selectTime, MmsServerConnection connection)
 {
+    if (DEBUG_IED_SERVER)
+        printf("IED_SERVER: control %s selected\n", self->ctlObjectName);
+
     updateSboTimeoutValue(self);
     self->selected = true;
     self->selectTime = selectTime;
     self->mmsConnection = connection;
     setState(self, STATE_READY);
+}
+
+static void
+unselectObject(ControlObject* self)
+{
+    setState(self, STATE_UNSELECTED);
+
+    if (DEBUG_IED_SERVER)
+        printf("IED_SERVER: control %s unselected\n", self->ctlObjectName);
 }
 
 static void
@@ -620,8 +635,10 @@ checkSelectTimeout(ControlObject* self, uint64_t currentTime)
             if (self->selectTimeout > 0) {
                 if (currentTime > (self->selectTime + self->selectTimeout)) {
                     if (DEBUG_IED_SERVER)
-                        printf("isSelected: select-timeout (timeout-val = %i)\n", self->selectTimeout);
-                    setState(self, STATE_UNSELECTED);
+                        printf("IED_SERVER: select-timeout (timeout-val = %i) for control %s\n",
+                                self->selectTimeout, self->ctlObjectName);
+
+                    unselectObject(self);
                 }
             }
         }
@@ -681,9 +698,13 @@ Control_processControlActions(MmsMapping* self, uint64_t currentTimeInMs)
                 CheckHandlerResult checkResult = CONTROL_ACCEPTED;
 
                 if (controlObject->checkHandler != NULL) { /* perform operative tests */
+
+                    ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer,
+                            controlObject->mmsConnection);
+
                     checkResult = controlObject->checkHandler(
                             controlObject->checkHandlerParameter, controlObject->ctlVal, controlObject->testMode,
-                            controlObject->interlockCheck, (ClientConnection) controlObject->mmsConnection);
+                            controlObject->interlockCheck, clientConnection);
                 }
 
                 if (checkResult == CONTROL_ACCEPTED) {
@@ -1121,9 +1142,13 @@ Control_readAccessControlObject(MmsMapping* self, MmsDomain* domain, char* varia
                         CheckHandlerResult checkResult = CONTROL_ACCEPTED;
 
                         if (controlObject->checkHandler != NULL) { /* perform operative tests */
+
+                            ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer,
+                                                                                connection);
+
                             checkResult = controlObject->checkHandler(
                                     controlObject->checkHandlerParameter, NULL, false, false,
-                                    (ClientConnection) connection);
+                                    clientConnection);
                         }
 
                         if (checkResult == CONTROL_ACCEPTED) {
@@ -1419,7 +1444,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                 if (controlObject->mmsConnection != connection) {
                     indication = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
                     if (DEBUG_IED_SERVER)
-                        printf("Oper: operate from wrong client connection!\n");
+                        printf("IED_SERVER: Oper - operate from wrong client connection!\n");
                     goto free_and_return;
                 }
 
@@ -1537,7 +1562,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
             if (state != STATE_UNSELECTED) {
                 if (controlObject->mmsConnection == connection) {
                     indication = DATA_ACCESS_ERROR_SUCCESS;
-                    setState(controlObject, STATE_UNSELECTED);
+                    unselectObject(controlObject);
                     goto free_and_return;
                 }
                 else {

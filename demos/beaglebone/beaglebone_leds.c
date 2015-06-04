@@ -5,13 +5,15 @@
 #include <stdio.h>
 #include "beaglebone_leds.h"
 
+#ifndef SIMULATED
 static void
 writeToFile(char* filename, char* text)
 {
     FILE* file = fopen(filename, "w");
-    fprintf(file, text);
+    fprintf(file, "%s", text);
     fclose(file);
 }
+#endif /* SIMULATED */
 
 void
 flashLED(char* led)
@@ -37,7 +39,7 @@ switchLED(char* led, int value)
 {
 #ifndef SIMULATED
     char filename[255];
-    char* valueStr[10];
+    char valueStr[10];
 
     sprintf(filename, "%s/trigger", led);
     writeToFile(filename, "none");

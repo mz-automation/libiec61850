@@ -19,42 +19,48 @@
     </SubNetwork>
   </Communication>
   <IED name="beagle">
+  
     <Services>
-      <DynAssociation />
-      <GetDirectory />
-      <GetDataObjectDefinition />
-      <GetDataSetValue />
-      <DataSetDirectory />
-      <ReadWrite />
-      <GetCBValues />
-      <ConfLNs fixPrefix="true" fixLnInst="true" />
-      <GOOSE max="5" />
-      <GSSE max="5" />
-      <FileHandling />
-      <GSEDir />
-      <TimerActivatedControl />
+		<DynAssociation max="5"/>
+		<GetDirectory />
+		<DataObjectDirectory />
+		<GetDataObjectDefinition />
+		<GetDataSetValue />
+		<DataSetDirectory />
+		<ReadWrite />
+		<GetCBValues />
+		<ConfDataSet max="1" modify="false" />
+		<DynDataSet max="10"/>
+		<ConfReportControl max="1" bufConf="false" />
+		<ReportSettings cbName="Fix" datSet="Dyn" rptID="Dyn" optFields="Dyn" bufTime="Dyn" trgOps="Dyn" intgPd="Dyn" owner="true"/>
+		<ConfLNs fixPrefix="true" fixLnInst="true"/>
+		<ClientServices >
+			<TimeSyncProt sntp="true" c37_238="false" other="false"/>
+		</ClientServices>
+      	<GOOSE max="5" />
+      	<GSSE max="5" />
+      	<GSEDir />
+      	<TimerActivatedControl />
     </Services>
+    
     <AccessPoint name="accessPoint1">
       <Server>
         <Authentication />
         <LDevice inst="GenericIO">
+        
           <LN0 lnClass="LLN0" lnType="LLN01" inst="">
+          
           	<DataSet name="Events" desc="Events">
               <FCDA ldInst="GenericIO" lnClass="GGIO" fc="ST" lnInst="1" doName="SPCSO1" daName="stVal" />
               <FCDA ldInst="GenericIO" lnClass="GGIO" fc="ST" lnInst="1" doName="SPCSO2" daName="stVal" />
               <FCDA ldInst="GenericIO" lnClass="GGIO" fc="ST" lnInst="1" doName="SPCSO3" daName="stVal" />
               <FCDA ldInst="GenericIO" lnClass="GGIO" fc="ST" lnInst="1" doName="DPCSO1" daName="stVal" />
             </DataSet>
+            
             <ReportControl name="EventsRCB" confRev="1" datSet="Events" rptID="Events1" buffered="false" intgPd="1000" bufTime="50">
               <TrgOps period="true" />
               <OptFields seqNum="true" timeStamp="true" dataSet="true" reasonCode="true" entryID="true" configRef="true" />
-              <RptEnabled max="1" />
-            </ReportControl>
-            
-            <ReportControl name="EventsRCB2" confRev="1" datSet="Events" rptID="Events2" buffered="false" intgPd="1000" bufTime="50">
-              <TrgOps period="true" />
-              <OptFields seqNum="true" timeStamp="true" dataSet="true" reasonCode="true" entryID="true" configRef="true" />
-              <RptEnabled max="1" />
+              <RptEnabled max="5" />
             </ReportControl>
             
             <DOI name="Mod">
@@ -62,7 +68,9 @@
                 <Val>status-only</Val>
               </DAI>
             </DOI>
+            
           </LN0>
+          
           <LN lnClass="LPHD" lnType="LPHD1" inst="1" prefix="" />
           <LN lnClass="GGIO" lnType="GGIO1" inst="1" prefix="">
             <DOI name="Mod">
@@ -77,7 +85,7 @@
             </DOI>
             <DOI name="SPCSO2">
               <DAI name="ctlModel">
-                <Val>direct-with-normal-security</Val>
+                <Val>sbo-with-normal-security</Val>
               </DAI>
             </DOI>
             <DOI name="SPCSO3">
@@ -95,6 +103,7 @@
       </Server>
     </AccessPoint>
   </IED>
+  
   <DataTypeTemplates>
     <LNodeType id="LLN01" lnClass="LLN0">
       <DO name="Mod" type="INC_1_Mod" />
@@ -183,7 +192,9 @@
     <DOType id="SPC_1_SPCSO2" cdc="SPC">
       <DA name="stVal" bType="BOOLEAN" fc="ST" dchg="true" />
       <DA name="q" bType="Quality" fc="ST" qchg="true" />
+      <DA name="SBO" fc="CO" bType="VisString64" />
       <DA name="Oper" type="SPCOperate_1" bType="Struct" fc="CO" />
+      <DA name="Cancel" fc="CO" bType="Struct" type="SPCCancel" />
       <DA name="ctlModel" type="CtlModels" bType="Enum" fc="CF" />
       <DA name="t" bType="Timestamp" fc="ST" />
     </DOType>
@@ -209,6 +220,15 @@
       <BDA name="Test" bType="BOOLEAN" />
       <BDA name="Check" bType="Check" />
     </DAType>
+    
+	<DAType id="SPCCancel">
+		<BDA name="ctlVal" bType="INT8" />
+		<BDA name="origin" bType="Struct" type="Originator_1" />
+		<BDA name="ctlNum" bType="INT8U" />
+		<BDA name="T" bType="Timestamp" />
+		<BDA name="Test" bType="BOOLEAN" />
+	</DAType>
+    
     <EnumType id="CtlModels">
       <EnumVal ord="0">status-only</EnumVal>
       <EnumVal ord="1">direct-with-normal-security</EnumVal>
