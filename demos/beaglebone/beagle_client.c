@@ -54,7 +54,10 @@ int main(int argc, char** argv) {
         MmsValue* ctlValOff = MmsValue_newBoolean(false);
 
         if (!ControlObjectClient_operate(controlLED1, ctlValOff, 0)) goto control_error;
+
+        ControlObjectClient_select(controlLED2);
         if (!ControlObjectClient_operate(controlLED2, ctlValOff, 0)) goto control_error;
+
         if (!ControlObjectClient_operate(controlLED4, ctlValOff, 0)) goto control_error;
 
         while (1) {
@@ -63,10 +66,15 @@ int main(int argc, char** argv) {
             Thread_sleep(1000);
 
             if (!ControlObjectClient_operate(controlLED1, ctlValOff, 0)) goto control_error;
+
+            ControlObjectClient_select(controlLED2);
             if (!ControlObjectClient_operate(controlLED2, ctlValOn, 0)) goto control_error;
+
             Thread_sleep(1000);
 
+            ControlObjectClient_select(controlLED2);
             if (!ControlObjectClient_operate(controlLED2, ctlValOff, 0)) goto control_error;
+
             if (!ControlObjectClient_operate(controlLED3, ctlValOn, 0)) goto control_error;
             Thread_sleep(1000);
 

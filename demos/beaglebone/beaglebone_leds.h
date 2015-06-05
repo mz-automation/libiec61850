@@ -6,8 +6,8 @@
 #define BEAGLEBONE_LEDS_H_
 
 
-#define SIMULATED 1
-
+/* set to 1 if you want to run the demo on a PC */
+//#define SIMULATED 1
 
 #if 0
 #define LED1 "/sys/class/leds/beaglebone::usr0"
