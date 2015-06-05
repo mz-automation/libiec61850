@@ -1,3 +1,18 @@
+Changes to version 0.8.6
+------------------------
+- demos: extended beaglebone demo to use SBO control
+- common: fixed bug that led to wrong encoding of large unsigned integer values on big endian systems
+- server: fixed server crash problem when read request contains only LN but no FC
+- server: fixed server sending empty report when RCB is disabled while report is pending during bufTm
+- server: fixed server allowed creation of dynamic data set with wrong LD name
+- server: sending type-inconsistent instead of unknown-error when receiving a write request with invalid value type
+- server: fixed server side SBO control handling code provides wrong ClientConnection object to PerformCheckHandler
+- client: fixed client does not correctly handle GCBs for edition 1 devices. Also will fail for edition 2 devices when optional elements are missing.
+- GOOSE subscriber: fixed - subscriber rejects messages with trailing data (like PRP trail)
+- server: added support for multiple data models with static model generator.
+- client: added function ClientReport_getBufOvfl to client API
+- dotnet: added support to access report entry ID 
+
 Changes to version 0.8.5
 ------------------------
 - server/GOOSE: better support for GOOSE minTime, maxTime
