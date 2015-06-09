@@ -31,6 +31,15 @@ iedModel_emptyVariableInitializer(void)
     return;
 }
 
+void
+IedModel_setIedNameForDynamicModel(IedModel* self, const char* name)
+{
+    if (self->name != NULL)
+        GLOBAL_FREEMEM(self->name);
+
+    self->name = copyString(name);
+}
+
 IedModel*
 IedModel_create(const char* name/*, MemoryAllocator allocator*/)
 {

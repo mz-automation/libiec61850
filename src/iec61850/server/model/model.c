@@ -46,7 +46,7 @@ void
 IedModel_setIedName(IedModel* self, const char* name)
 {
     self->name = (char*) name;
-};
+}
 
 void
 IedModel_setAttributeValuesToNull(IedModel* iedModel)

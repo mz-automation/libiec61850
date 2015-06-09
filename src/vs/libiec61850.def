@@ -513,3 +513,4 @@ EXPORTS
     MmsServerIdentity_destroy
     ClientReport_getBufOvfl
     MmsValue_getUtcTimeInMsWithUs
+    IedModel_setIedNameForDynamicModel
