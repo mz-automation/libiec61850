@@ -458,6 +458,16 @@ IedConnection_getRCBValues(IedConnection self, IedClientError* error, const char
         return NULL;
     }
 
+    if (MmsValue_getType(rcb) == MMS_DATA_ACCESS_ERROR) {
+        if (DEBUG_IED_CLIENT)
+            printf("DEBUG_IED_CLIENT: getRCBValues returned data-access-error!\n");
+
+        *error = iedConnection_mapDataAccessErrorToIedError(
+                        MmsValue_getDataAccessError(rcb));
+
+        return NULL;
+    }
+
     if (MmsValue_getType(rcb) != MMS_STRUCTURE) {
         if (DEBUG_IED_CLIENT)
             printf("DEBUG_IED_CLIENT: getRCBValues returned wrong type!\n");

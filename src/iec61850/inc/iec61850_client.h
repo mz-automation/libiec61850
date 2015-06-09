@@ -120,17 +120,41 @@ typedef enum {
     /** The server rejected the access to the requested object/service due to access control */
     IED_ERROR_ACCESS_DENIED = 21,
 
-    /** The server reported that the requested object does not exist */
+    /** The server reported that the requested object does not exist (returned by server) */
     IED_ERROR_OBJECT_DOES_NOT_EXIST = 22,
 
     /** The server reported that the requested object already exists */
     IED_ERROR_OBJECT_EXISTS = 23,
 
-    /** The server does not support the requested access method */
+    /** The server does not support the requested access method (returned by server) */
     IED_ERROR_OBJECT_ACCESS_UNSUPPORTED = 24,
 
-    /** The server expected an object of another type */
+    /** The server expected an object of another type (returned by server) */
     IED_ERROR_TYPE_INCONSISTENT = 25,
+
+    /** The object or service is temporarily unavailable (returned by server) */
+    IED_ERROR_TEMPORARILY_UNAVAILABLE = 26,
+
+    /** The specified object is not defined in the server (returned by server) */
+    IED_ERROR_OBJECT_UNDEFINED = 27,
+
+    /** The specified address is invalid (returned by server) */
+    IED_ERROR_INVALID_ADDRESS = 28,
+
+    /** Service failed due to a hardware fault (returned by server) */
+    IED_ERROR_HARDWARE_FAULT = 29,
+
+    /** The requested data type is not supported by the server (returned by server) */
+    IED_ERROR_TYPE_UNSUPPORTED = 30,
+
+    /** The provided attributes are inconsistent (returned by server) */
+    IED_ERROR_OBJECT_ATTRIBUTE_INCONSISTENT = 31,
+
+    /** The provided object value is invalid (returned by server) */
+    IED_ERROR_OBJECT_VALUE_INVALID = 32,
+
+    /** The object is invalidated (returned by server) */
+    IED_ERROR_OBJECT_INVALIDATED = 33,
 
     /* unknown error */
     IED_ERROR_UNKNOWN = 99

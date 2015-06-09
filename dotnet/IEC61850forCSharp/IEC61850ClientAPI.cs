@@ -1146,6 +1146,30 @@ namespace IEC61850
 			/** The server expected an object of another type */
 			IED_ERROR_TYPE_INCONSISTENT = 25,
 
+            /** The object or service is temporarily unavailable */
+            IED_ERROR_TEMPORARILY_UNAVAILABLE = 26,
+
+            /** The specified object is not defined in the server (returned by server) */
+            IED_ERROR_OBJECT_UNDEFINED = 27,
+
+            /** The specified address is invalid (returned by server) */
+            IED_ERROR_INVALID_ADDRESS = 28,
+
+            /** Service failed due to a hardware fault (returned by server) */
+            IED_ERROR_HARDWARE_FAULT = 29,
+
+            /** The requested data type is not supported by the server (returned by server) */
+            IED_ERROR_TYPE_UNSUPPORTED = 30,
+
+            /** The provided attributes are inconsistent (returned by server) */
+            IED_ERROR_OBJECT_ATTRIBUTE_INCONSISTENT = 31,
+
+            /** The provided object value is invalid (returned by server) */
+            IED_ERROR_OBJECT_VALUE_INVALID = 32,
+
+            /** The object is invalidated (returned by server) */
+            IED_ERROR_OBJECT_INVALIDATED = 33,
+
 			/* unknown error */
 			IED_ERROR_UNKNOWN = 99
 		}  
