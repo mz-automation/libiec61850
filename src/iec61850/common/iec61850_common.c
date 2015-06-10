@@ -353,5 +353,5 @@ Timestamp_getTimeInMs(Timestamp* self)
 char*
 LibIEC61850_getVersionString()
 {
-    return CONFIG_DEFAULT_MMS_REVISION;
+    return LIBIEC61850_VERSION;
 }

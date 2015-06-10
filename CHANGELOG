@@ -1,3 +1,8 @@
+Changes to version 0.8.7
+------------------------
+- server: changed signature of WriteAccessHandler: Handler now return MmsDataAccessError instead of boolean value!
+- server: added function IedModel_setIedNameForDynamicModel
+
 Changes to version 0.8.6
 ------------------------
 - demos: extended beaglebone demo to use SBO control

@@ -21,15 +21,24 @@ void sigint_handler(int signalId)
 	running = 0;
 }
 
-static bool
+static MmsDataAccessError
 writeAccessHandler (DataAttribute* dataAttribute, MmsValue* value, ClientConnection connection)
 {
     if (dataAttribute == IEDMODEL_Inverter_ZINV1_OutVarSet_setMag_f) {
-        printf("New value for OutVarSet_setMag_f = %f\n", MmsValue_toFloat(value));
-        return true;
+
+        float newValue = MmsValue_toFloat(value);
+
+        printf("New value for OutVarSet_setMag_f = %f\n", newValue);
+
+        /* Check if value is inside of valid range */
+        if ((newValue >= 0.f) && (newValue <= 1000.1f))
+            return DATA_ACCESS_ERROR_SUCCESS;
+        else
+            return DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+
     }
 
-    return false;
+    return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
 }
 
 int main(int argc, char** argv) {

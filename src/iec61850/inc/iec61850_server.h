@@ -958,12 +958,13 @@ IedServer_observeDataAttribute(IedServer self, DataAttribute* dataAttribute,
  * is accepted.
  *
  * \param the data attribute that has been written by an MMS client.
- * \param the value the client want to write to the data attribtue
+ * \param the value the client want to write to the data attribute
  * \param connection the connection object of the client connection that invoked the write operation
  *
  * \return true if access is accepted, false if access is denied.
  */
-typedef bool (*WriteAccessHandler) (DataAttribute* dataAttribute, MmsValue* value, ClientConnection connection);
+typedef MmsDataAccessError
+(*WriteAccessHandler) (DataAttribute* dataAttribute, MmsValue* value, ClientConnection connection);
 
 /**
  * \brief Install a WriteAccessHandler for a data attribute.

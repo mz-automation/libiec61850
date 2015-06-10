@@ -15,6 +15,20 @@
 
 #include "platform_endian.h"
 
+#define LIBIEC61850_VERSION "0.8.7"
+
+#ifndef CONFIG_DEFAULT_MMS_VENDOR_NAME
+#define CONFIG_DEFAULT_MMS_VENDOR_NAME "libiec61850.com"
+#endif
+
+#ifndef CONFIG_DEFAULT_MMS_MODEL_NAME
+#define CONFIG_DEFAULT_MMS_MODEL_NAME "LIBIEC61850"
+#endif
+
+#ifndef CONFIG_DEFAULT_MMS_REVISION
+#define CONFIG_DEFAULT_MMS_REVISION LIBIEC61850_VERSION
+#endif
+
 #if (DEBUG != 1)
 #define NDEBUG 1
 #endif

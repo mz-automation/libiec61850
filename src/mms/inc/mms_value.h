@@ -44,7 +44,7 @@ extern "C" {
 /**@{*/
 
 
-typedef enum ATTRIBUTE_PACKED {
+typedef enum {
     DATA_ACCESS_ERROR_NO_RESPONSE = -2, /* for server internal purposes only! */
     DATA_ACCESS_ERROR_SUCCESS = -1,
     DATA_ACCESS_ERROR_OBJECT_INVALIDATED = 0,

@@ -1825,21 +1825,28 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
                     MmsValue* matchingValue = checkIfValueBelongsToModelNode(dataAttribute, cachedValue, value);
 
                     if (matchingValue != NULL) {
-                        if (accessHandler->handler(dataAttribute, matchingValue, (ClientConnection) connection))
+                        MmsDataAccessError handlerResult =
+                            accessHandler->handler(dataAttribute, matchingValue, (ClientConnection) connection);
+
+                        if (handlerResult == DATA_ACCESS_ERROR_SUCCESS)
                             handlerFound = true;
                         else
-                            return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+                            return handlerResult;
                     }
 
                 }
                 else { /* if ACCESS_POLICY_DENY only allow direct access to handled data attribute */
                     if (dataAttribute->mmsValue == cachedValue) {
-                        if (accessHandler->handler(dataAttribute, value, (ClientConnection) connection)) {
+                        MmsDataAccessError handlerResult =
+                            accessHandler->handler(dataAttribute, value, (ClientConnection) connection);
+
+
+                        if (handlerResult == DATA_ACCESS_ERROR_SUCCESS) {
                             handlerFound = true;
                             break;
                         }
                         else
-                            return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+                            return handlerResult;
                     }
 
                 }
@@ -1882,8 +1889,6 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
         else
             return DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
     }
-
-    printf("WRITE ACCESS DENIED!\n");
 
     return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
 }
