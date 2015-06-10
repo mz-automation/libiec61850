@@ -109,7 +109,7 @@ ControlObjectClient_create(const char* objectReference, IedConnection connection
 
     /* request control model from server */
     char domainId[65];
-    char itemId[65];
+    char itemId[129];
 
     char* domainName = MmsMapping_getMmsDomainFromObjectReference(objectReference, domainId);
 
