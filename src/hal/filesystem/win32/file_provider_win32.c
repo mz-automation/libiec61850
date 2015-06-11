@@ -74,9 +74,9 @@ FileSystem_openFile(char* fileName, bool readWrite)
     FileHandle newHandle = NULL;
 
     if (readWrite)
-        newHandle = (FileHandle) fopen(fullPath, "w");
+        newHandle = (FileHandle) fopen(fullPath, "wb");
     else
-        newHandle = (FileHandle) fopen(fullPath, "r");
+        newHandle = (FileHandle) fopen(fullPath, "rb");
 
     return newHandle;
 }
