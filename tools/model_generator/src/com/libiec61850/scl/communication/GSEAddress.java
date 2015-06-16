@@ -44,13 +44,19 @@ public class GSEAddress {
            String type = ParserUtils.parseAttribute(pNode, "type");
            
            if (type.equals("VLAN-ID")) {
-               vlanId = new Integer(pNode.getTextContent());
+               vlanId = Integer.parseInt(pNode.getTextContent(), 16);
+               
+               if (vlanId > 0xfff)
+            	   throw new SclParserException(addressNode, "VLAN-ID value out of range");
            }
            else if (type.equals("VLAN-PRIORITY")) {
                vlanPriority = new Integer(pNode.getTextContent());
            }
            else if (type.equals("APPID")) {
-               appId = new Integer(pNode.getTextContent());
+               appId = Integer.parseInt(pNode.getTextContent(), 16);
+               
+               if (appId > 0xfff)
+            	   throw new SclParserException(addressNode, "APPID value out of range");
            }
            else if (type.equals("MAC-Address")) {
                String[] addressElements = pNode.getTextContent().split("-");
