@@ -55,7 +55,7 @@ public class GSEAddress {
            else if (type.equals("APPID")) {
                appId = Integer.parseInt(pNode.getTextContent(), 16);
                
-               if (appId > 0xfff)
+               if (appId > 0xffff)
             	   throw new SclParserException(addressNode, "APPID value out of range");
            }
            else if (type.equals("MAC-Address")) {
