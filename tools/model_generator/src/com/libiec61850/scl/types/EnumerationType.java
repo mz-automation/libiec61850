@@ -80,4 +80,13 @@ public class EnumerationType extends SclType {
 	    throw new IllegalValueException("Enum has no value " + enumString);
 	}
 	
+	
+	public boolean isValidOrdValue(int ordValue) {
+		for (EnumerationValue enumValue : enumValues) {
+			if (enumValue.getOrd() == ordValue)
+				return true;
+		}
+		
+		return false;
+	}
 }

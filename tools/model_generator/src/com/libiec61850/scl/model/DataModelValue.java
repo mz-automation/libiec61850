@@ -3,7 +3,7 @@ package com.libiec61850.scl.model;
 /*
  *  DataModelValue.java
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013, 2015 Michael Zillgith
  *
  *	This file is part of libIEC61850.
  *
@@ -40,11 +40,30 @@ public class DataModelValue {
     }
     
     public DataModelValue(AttributeType type, SclType sclType, String value) throws IllegalValueException {
-
+    	
         switch (type) {
         case ENUMERATED:
     		EnumerationType enumType = (EnumerationType) sclType;
-            this.value = (Object) (new Integer(enumType.getOrdByEnumString(value)));
+    		
+    		try {
+    			this.value = (Object) (new Integer(enumType.getOrdByEnumString(value)));
+    		} catch (IllegalValueException e) {
+    			try {
+    				
+    				this.value = Integer.parseInt(value);
+    				
+    				if (enumType.isValidOrdValue(Integer.parseInt(value)) == false) {
+    					throw new IllegalValueException(value + 
+        						" is not a valid value of type " + sclType.getId());
+    				}
+    				
+    				System.out.println("WARNING: Initialization of ENUM with ordinal value!");
+    			}
+    			catch (NumberFormatException nfe) {
+    				throw new IllegalValueException(value + 
+    						" is not a valid value of type " + sclType.getId());
+    			}
+    		}
        	
             break;
         case INT8:
@@ -55,28 +74,56 @@ public class DataModelValue {
         case INT32U:
         case INT24U:
         case INT64:
-        	if (value.isEmpty())
+        	
+        	String trimmedValue = value.trim();
+        	
+        	if (trimmedValue != value) {
+        		System.out.println("WARNING: value initializer contains leading or trailing whitespace");
+        	}
+        	
+        	if (trimmedValue.isEmpty())
         		this.value = new Long(0);
         	else
-        		this.value = new Long(value);
+        		this.value = Long.decode(trimmedValue);
             break;
         case BOOLEAN:
-            if (value.toLowerCase().equals("true"))
+        	
+        	trimmedValue = value.trim();
+        	
+        	if (trimmedValue != value) {
+        		System.out.println("WARNING: value initializer contains leading or trailing whitespace");
+        	}
+        	
+            if (trimmedValue.toLowerCase().equals("true"))
                 this.value = new Boolean(true);
             else
                 this.value = new Boolean(false);
             break;
         case FLOAT32:
-        	if (value.isEmpty())
+        	
+        	trimmedValue = value.trim();
+        	
+        	if (trimmedValue != value) {
+        		System.out.println("WARNING: value initializer contains leading or trailing whitespace");
+        	}
+        	
+        	if (trimmedValue.isEmpty())
         		this.value = new Float(0);
         	else
-        		this.value = new Float(value);
+        		this.value = new Float(trimmedValue);
         	break;
         case FLOAT64:
-        	if (value.isEmpty())
+        	
+        	trimmedValue = value.trim();
+        	
+        	if (trimmedValue != value) {
+        		System.out.println("WARNING: value initializer contains leading or trailing whitespace");
+        	}
+        	
+        	if (trimmedValue.isEmpty())
         		this.value = new Double(0);
         	else
-        		this.value = new Double(value);
+        		this.value = new Double(trimmedValue);
         	break;
         case UNICODE_STRING_255:
         	this.value = value;
@@ -90,11 +137,15 @@ public class DataModelValue {
             this.value = (Object) value;
             break;
         case CHECK:
-            System.out.println("Warning: Initialization of CHECK is unsupported!\n");
+            System.out.println("Warning: Initialization of CHECK is unsupported!");
         case CODEDENUM:
             this.value = null;
-            System.out.println("Warning: Initialization of CODEDENUM is unsupported!\n");
+            System.out.println("Warning: Initialization of CODEDENUM is unsupported!");
             break;
+        case QUALITY:
+        	this.value = null;
+        	System.out.println("Warning: Initialization of QUALITY is unsupported!");
+        	break;
         default:
             throw new IllegalValueException("Unsupported type " + type.toString() + " value: " + value);
         }
