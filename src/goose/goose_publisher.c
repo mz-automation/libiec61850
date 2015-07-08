@@ -201,6 +201,7 @@ prepareGooseBuffer(GoosePublisher self, CommParameters* parameters, const char* 
 
     int bufPos = 12;
 
+#if 0
     /* Priority tag - IEEE 802.1Q */
     self->buffer[bufPos++] = 0x81;
     self->buffer[bufPos++] = 0x00;
@@ -212,6 +213,7 @@ prepareGooseBuffer(GoosePublisher self, CommParameters* parameters, const char* 
 
     self->buffer[bufPos++] = tci1; /* Priority + VLAN-ID */
     self->buffer[bufPos++] = tci2; /* VLAN-ID */
+#endif
 
     /* EtherType GOOSE */
     self->buffer[bufPos++] = 0x88;

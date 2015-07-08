@@ -752,7 +752,6 @@ GooseReceiver_destroy(GooseReceiver self)
 void
 GooseReceiver_startThreadless(GooseReceiver self)
 {
-
     if (self->interfaceId == NULL)
         self->ethSocket = Ethernet_createSocket(CONFIG_ETHERNET_INTERFACE_ID, NULL);
     else
