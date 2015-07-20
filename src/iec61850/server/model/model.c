@@ -143,6 +143,8 @@ IedModel_getDevice(IedModel* model, const char* deviceName)
         if (strcmp(domainName, deviceName) == 0)
             return device;
 
+        printf("domainename: %s\n", domainName);
+
         device = (LogicalDevice*) device->sibling;
     }
 
@@ -398,6 +400,54 @@ LogicalDevice_getLogicalNodeCount(LogicalDevice* logicalDevice)
 	}
 
 	return lnCount;
+}
+
+ModelNode*
+LogicalDevice_getChildByMmsVariableName(LogicalDevice* logicalDevice, const char* mmsVariableName)
+{
+
+
+	char fcString[3];
+	char nameRef[65];
+
+	char* separator = strchr(mmsVariableName,'$');
+
+	if (separator == NULL)
+		return NULL;
+
+	if (strlen(separator) > 4) {
+		fcString[0] = separator[1];
+		fcString[1] = separator[2];
+		fcString[2] = 0;
+
+		char* strpos = mmsVariableName;
+
+		int targetPos = 0;
+
+		while (strpos < separator) {
+			nameRef[targetPos++] = strpos[0];
+			strpos++;
+		}
+
+		nameRef[targetPos++] = '.';
+
+		strpos = separator + 4;
+
+		while (strpos[0] != 0) {
+			nameRef[targetPos++] = strpos[0];
+			strpos++;
+		}
+
+		nameRef[targetPos++] = 0;
+
+		StringUtils_replace(nameRef, '$', '.');
+
+		FunctionalConstraint fc = FunctionalConstraint_fromString(fcString);
+
+		return ModelNode_getChildWithFc((ModelNode*) logicalDevice, nameRef, fc);
+	}
+
+	return NULL;
 }
 
 static int

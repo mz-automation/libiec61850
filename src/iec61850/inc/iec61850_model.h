@@ -407,6 +407,9 @@ IedModel_getLogicalDeviceCount(IedModel* iedModel);
 int
 LogicalDevice_getLogicalNodeCount(LogicalDevice* logicalDevice);
 
+ModelNode*
+LogicalDevice_getChildByMmsVariableName(LogicalDevice* logicalDevice, const char* mmsVariableName);
+
 bool
 LogicalNode_hasFCData(LogicalNode* node, FunctionalConstraint fc);
 
