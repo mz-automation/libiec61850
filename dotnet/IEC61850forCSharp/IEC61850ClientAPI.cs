@@ -261,8 +261,10 @@ namespace IEC61850
 
             ~IedConnection ()
             {
+				Console.WriteLine ("IedConnection destructor invoked");
                 if (connection != IntPtr.Zero)
                    IedConnection_destroy(connection);
+				Console.WriteLine ("IedConnection destructor finished");
             }
 
 			public IsoConnectionParameters GetConnectionParameters ()

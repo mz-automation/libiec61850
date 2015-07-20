@@ -1413,6 +1413,8 @@ writeAccessGooseControlBlock(MmsMapping* self, MmsDomain* domain, char* variable
 
 #if (CONFIG_GOOSE_DATSET_WRITABLE == 1)
             if (strcmp(varName, "DatSet") == 0) {
+            	// allow to set non-existing data set?
+
                 MmsValue_update(MmsValue_getElement(MmsGooseControlBlock_getMmsValues(mmsGCB), 2), value);
                 allowAccess = true;
             }

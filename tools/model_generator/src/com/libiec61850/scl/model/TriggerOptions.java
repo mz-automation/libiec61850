@@ -32,7 +32,7 @@ public class TriggerOptions {
     private boolean qchg = false; /* 2 */
     private boolean dupd = false; /* 4 */
     private boolean period = false; /* 8 */
-    private boolean gi = false; /* 16 */
+    private boolean gi = true; /* 16 */
 
     public TriggerOptions(Node trgOpsNode) throws SclParserException {
 
@@ -55,6 +55,11 @@ public class TriggerOptions {
         Boolean giVal = ParserUtils.parseBooleanAttribute(trgOpsNode, "gi");
         if (giVal != null)
             this.gi = giVal;
+    }
+    
+    /** Constructor for default values when trigger options are not present */
+    public TriggerOptions() {
+    	// nothing to do
     }
 
     public TriggerOptions(boolean dchg, boolean qchg, boolean dupd, boolean period, boolean gi) {

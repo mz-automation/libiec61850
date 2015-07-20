@@ -485,6 +485,7 @@ IedConnection_create()
     self->state = IED_STATE_IDLE;
 
     self->stateMutex = Semaphore_create(1);
+    self->reportHandlerMutex = Semaphore_create(1);
 
     self->connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
 
@@ -617,9 +618,11 @@ IedConnection_destroy(IedConnection self)
     LinkedList_destroyStatic(self->clientControls);
 
     Semaphore_destroy(self->stateMutex);
+    Semaphore_destroy(self->reportHandlerMutex);
 
     GLOBAL_FREEMEM(self);
 }
+
 
 MmsVariableSpecification*
 IedConnection_getVariableSpecification(IedConnection self, IedClientError* error, const char* objectReference,
@@ -1128,7 +1131,6 @@ static void
 mmsFileReadHandler(void* parameter, int32_t frsmId, uint8_t* buffer, uint32_t bytesReceived)
 {
     struct sClientProvidedFileReadHandler* handler = (struct sClientProvidedFileReadHandler*) parameter;
-
 
     handler->retVal = handler->handler(handler->handlerParameter, buffer, bytesReceived);
 
