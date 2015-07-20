@@ -345,6 +345,46 @@ LogicalNode_hasFCData(LogicalNode* node, FunctionalConstraint fc)
 	return false;
 }
 
+DataSet*
+LogicalNode_getDataSet(LogicalNode* self, const char* dataSetName)
+{
+	assert(self->modelType == LogicalNodeModelType);
+	assert(dataSetName != NULL);
+
+	char dsName[66];
+
+	LogicalDevice* ld = (LogicalDevice*) self->parent;
+
+	if (strlen(dataSetName) > 32) {
+
+		if (DEBUG_IED_SERVER) {
+			printf("IED_SERVER: LogicalNode_getDataSet - data set name %s too long!\n", dataSetName);
+		}
+
+		goto exit_error;
+	}
+
+	StringUtils_createStringInBuffer(dsName, 3, self->name, "$", dataSetName);
+
+	IedModel* iedModel = (IedModel*) ld->parent;
+
+	DataSet* ds = iedModel->dataSets;
+
+	while (ds != NULL) {
+		if (strcmp(ds->logicalDeviceName, ld->name) == 0) {
+			if (strcmp(ds->name, dsName) == 0) {
+				return ds;
+			}
+		}
+
+		ds = ds->sibling;
+	}
+
+
+exit_error:
+	return NULL;
+}
+
 int
 LogicalDevice_getLogicalNodeCount(LogicalDevice* logicalDevice)
 {

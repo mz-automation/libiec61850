@@ -103,12 +103,19 @@ encodeStructuredAccessResult(MmsValue* value, uint8_t* buffer, int bufPos, bool 
 int
 mmsServer_encodeAccessResult(MmsValue* value, uint8_t* buffer, int bufPos, bool encode)
 {
-    if (value == NULL) // TODO report internal error
-        return 0;
+//    if (value == NULL) // TODO report internal error
+//        return 0;
 
     int size;
 
     switch (value->type) {
+    case MMS_BOOLEAN:
+        if (encode)
+            bufPos = BerEncoder_encodeBoolean(0x83, value->value.boolean, buffer, bufPos);
+        else
+            size = 3;
+        break;
+
     case MMS_STRUCTURE:
         if (encode)
             bufPos = encodeStructuredAccessResult(value, buffer, bufPos, true);
@@ -166,12 +173,7 @@ mmsServer_encodeAccessResult(MmsValue* value, uint8_t* buffer, int bufPos, bool 
         else
             size = BerEncoder_determineEncodedBitStringSize(value->value.bitString.size);
         break;
-    case MMS_BOOLEAN:
-        if (encode)
-            bufPos = BerEncoder_encodeBoolean(0x83, value->value.boolean, buffer, bufPos);
-        else
-            size = 3;
-        break;
+
     case MMS_BINARY_TIME:
         if (encode)
             bufPos = BerEncoder_encodeOctetString(0x8c, value->value.binaryTime.buf,

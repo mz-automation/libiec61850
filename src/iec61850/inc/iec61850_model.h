@@ -416,6 +416,17 @@ LogicalNode_hasBufferedReports(LogicalNode* node);
 bool
 LogicalNode_hasUnbufferedReports(LogicalNode* node);
 
+/**
+ * \brief get a data set instance
+ *
+ * \param self the logical node instance of the data set
+ * \param dataSetName the name of the data set
+ *
+ * \return the data set instance or NULL if the data set does not exist
+ */
+DataSet*
+LogicalNode_getDataSet(LogicalNode* self, const char* dataSetName);
+
 bool
 DataObject_hasFCData(DataObject* dataObject, FunctionalConstraint fc);
 
