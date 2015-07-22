@@ -91,7 +91,7 @@ EXPORTS
     ControlObjectClient_getObjectReference @218
     ControlObjectClient_operate @219
     ControlObjectClient_select @220
-    ControlObjectClient_selectWithValue @221MmsConnection_setConnectTimeout
+    ControlObjectClient_selectWithValue @221
     ControlObjectClient_setLastApplError @222
     ControlObjectClient_setCommandTerminationHandler
     DataAttribute_create @273
@@ -515,3 +515,4 @@ EXPORTS
     MmsValue_getUtcTimeInMsWithUs
     IedModel_setIedNameForDynamicModel
     ControlObjectClient_useConstantT
+    ControlObjectClient_setOrigin
