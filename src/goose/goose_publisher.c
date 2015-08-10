@@ -201,7 +201,7 @@ prepareGooseBuffer(GoosePublisher self, CommParameters* parameters, const char* 
 
     int bufPos = 12;
 
-#if 0
+#if 1
     /* Priority tag - IEEE 802.1Q */
     self->buffer[bufPos++] = 0x81;
     self->buffer[bufPos++] = 0x00;
