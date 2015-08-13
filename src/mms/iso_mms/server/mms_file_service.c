@@ -532,6 +532,9 @@ createFileDirectoryResponse(uint32_t invokeId, ByteBuffer* response, char* direc
         FileSystem_closeDirectory(directory);
     }
     else {
+
+       //TODO check if it is a directory
+
        if (DEBUG_MMS_SERVER)
             printf("Error opening directory!\n");
 
@@ -678,6 +681,10 @@ mmsServer_handleFileDirectoryRequest(
         case 0xa0: /* filename */
             if (!parseFileName(filename, buffer, &bufPos, bufPos + length, invokeId, response))
                 return;
+
+            /* check for wildcard character(*) */
+            if (strcmp(filename, "*") == 0) filename[0] = 0;
+
             break;
 
         case 0xa1: /* continue-after */

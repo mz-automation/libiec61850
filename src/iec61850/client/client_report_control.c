@@ -611,7 +611,7 @@ IedConnection_setRCBValues(IedConnection self, IedClientError* error, ClientRepo
         if (!isBuffered)
             goto error_invalid_parameter;
 
-        strcpy(itemId + itemIdLen, "$TimeOfEntry");
+        strcpy(itemId + itemIdLen, "$TimeofEntry");
 
         LinkedList_add(itemIds, copyString(itemId));
         LinkedList_add(values, rcb->timeOfEntry);

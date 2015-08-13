@@ -214,7 +214,7 @@ ReportControl_getRCBValue(ReportControl* rc, char* elementName)
             return MmsValue_getElement(rc->rcbValues, 10);
         else if (strcmp(elementName, "EntryID") == 0)
             return MmsValue_getElement(rc->rcbValues, 11);
-        else if (strcmp(elementName, "TimeOfEntry") == 0)
+        else if (strcmp(elementName, "TimeofEntry") == 0)
             return MmsValue_getElement(rc->rcbValues, 12);
         else if (strcmp(elementName, "ResvTms") == 0)
             return MmsValue_getElement(rc->rcbValues, 13);
@@ -949,7 +949,7 @@ createBufferedReportControlBlock(ReportControlBlock* reportControlBlock,
     mmsValue->value.structure.components[11] = MmsValue_newOctetString(8, 8);
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("TimeOfEntry");
+    namedVariable->name = copyString("TimeofEntry");
     namedVariable->type = MMS_BINARY_TIME;
     namedVariable->typeSpec.binaryTime = 6;
     rcb->typeSpec.structure.elements[12] = namedVariable;

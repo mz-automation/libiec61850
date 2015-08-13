@@ -131,8 +131,8 @@ FileSystem_getFileInfo(char* filename, uint32_t* fileSize, uint64_t* lastModific
         return false;
 
     if (lastModificationTimestamp != NULL)
-        *lastModificationTimestamp = fileStats.st_mtime * 1000;
-        // does not work on older systems --> *lastModificationTimestamp = fileStats.st_ctim.tv_sec * 1000;
+        *lastModificationTimestamp = (uint64_t) (fileStats.st_mtime) * 1000LL;
+        // does not work on older systems --> *lastModificationTimestamp = (uint64_t) (fileStats.st_ctim.tv_sec) * 1000LL;
 
     if (fileSize != NULL)
         *fileSize = fileStats.st_size;

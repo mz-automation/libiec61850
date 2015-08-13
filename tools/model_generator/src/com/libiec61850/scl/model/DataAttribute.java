@@ -62,6 +62,9 @@ public class DataAttribute implements DataModelNode {
         if (this.fc == null)
             this.fc = fc;
         
+        if (fc != null)
+        	this.fc = fc;
+        
         if ((parent != null) && (parent instanceof DataAttribute))      
             this.triggerOptions = ((DataAttribute) parent).getTriggerOptions();
         else
