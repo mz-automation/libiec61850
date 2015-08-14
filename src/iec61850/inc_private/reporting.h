@@ -29,6 +29,7 @@ typedef struct sReportBufferEntry ReportBufferEntry;
 struct sReportBufferEntry {
     uint8_t entryId[8];
     uint8_t flags; /* bit 0 (1 = isIntegrityReport), bit 1 (1 = isGiReport) */
+    uint64_t timeOfEntry;
     int entryLength;
     ReportBufferEntry* next;
 };
