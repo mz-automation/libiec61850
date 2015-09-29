@@ -40,6 +40,7 @@ struct sIedConnection
     LastApplError lastApplError;
 
     Semaphore stateMutex;
+    Semaphore reportHandlerMutex;
 
     IedConnectionClosedHandler connectionCloseHandler;
     void* connectionClosedParameter;

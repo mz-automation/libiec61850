@@ -77,7 +77,10 @@ public class ReportControlBlock {
 				
 		Node trgOpsNode = ParserUtils.getChildNodeWithTag(reportControlNode, "TrgOps");
 		
-		this.triggerOptions = new TriggerOptions(trgOpsNode);
+		if (trgOpsNode != null)
+			this.triggerOptions = new TriggerOptions(trgOpsNode);
+		else
+			this.triggerOptions = new TriggerOptions(); // use default values if no node present
 		
 		Node optFieldsNode = ParserUtils.getChildNodeWithTag(reportControlNode, "OptFields");
 		
