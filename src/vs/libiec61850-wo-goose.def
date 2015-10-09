@@ -490,4 +490,5 @@ EXPORTS
     ClientReport_getBufOvfl
     MmsValue_getUtcTimeInMsWithUs
     IedModel_setIedNameForDynamicModel
+    ControlObjectClient_useConstantT
     ControlObjectClient_setOrigin

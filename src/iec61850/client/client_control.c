@@ -46,7 +46,11 @@ struct sControlObjectClient
     bool interlockCheck;
     bool synchroCheck;
     bool hasTimeActivatedMode;
+
     int edition; /* 1 = Ed. 1 - 2 = Ed. 2 */
+
+    bool useConstantT; /* some servers require a constant T parameter for select and operate */
+    uint64_t constantT; /* timestamp of select/operate to be used when constant T option is selected */
 
     LastApplError lastApplError;
 
@@ -380,7 +384,16 @@ ControlObjectClient_operate(ControlObjectClient self, MmsValue* ctlVal, uint64_t
     MmsValue* ctlNum = MmsValue_newUnsignedFromUint32(self->ctlNum);
     MmsValue_setElement(operParameters, index++, ctlNum);
 
-    uint64_t timestamp = Hal_getTimeInMs();
+    uint64_t timestamp;
+
+    if ((self->ctlModel == CONTROL_MODEL_SBO_ENHANCED) && (self->useConstantT))
+    	timestamp = self->constantT;
+    else
+    	timestamp = Hal_getTimeInMs();
+
+    if (self->useConstantT)
+    	self->constantT = timestamp;
+
     MmsValue* ctlTime;
 
     if (self->edition == 2)
@@ -484,6 +497,9 @@ ControlObjectClient_selectWithValue(ControlObjectClient self, MmsValue* ctlVal)
 
     uint64_t timestamp = Hal_getTimeInMs();
     MmsValue* ctlTime;
+
+    if (self->useConstantT)
+    	self->constantT = timestamp;
 
     if (self->edition == 2)
         ctlTime = MmsValue_newUtcTimeByMsTime(timestamp);
@@ -609,7 +625,13 @@ ControlObjectClient_cancel(ControlObjectClient self)
     MmsValue* ctlNum = MmsValue_newUnsignedFromUint32(self->ctlNum);
     MmsValue_setElement(cancelParameters, index++, ctlNum);
 
-    uint64_t timestamp = Hal_getTimeInMs();
+    uint64_t timestamp;
+
+    if (self->useConstantT)
+    	timestamp = self->constantT;
+    else
+    	timestamp = Hal_getTimeInMs();
+
     MmsValue* ctlTime;
 
     if (self->edition == 2)
@@ -650,6 +672,12 @@ ControlObjectClient_cancel(ControlObjectClient self)
     }
 
     return true;
+}
+
+void
+ControlObjectClient_useConstantT(ControlObjectClient self, bool useConstantT)
+{
+	self->useConstantT = useConstantT;
 }
 
 void

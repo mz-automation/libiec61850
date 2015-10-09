@@ -77,34 +77,34 @@ namespace reporting
 				ReportControlBlock rcb2 = con.GetReportControlBlock(rcbReference2);
 				ReportControlBlock rcb3 = con.GetReportControlBlock(rcbReference3);
 
-				rcb1.GetRCBValues();
+                rcb1.GetRCBValues();
 
-				// note: the second parameter is not required!
-				rcb1.InstallReportHandler(reportHandler, rcb1);
+                // note: the second parameter is not required!
+                rcb1.InstallReportHandler(reportHandler, rcb1);
 
-				if (rcb1.IsBuffered())
-					Console.WriteLine ("RCB: " + rcbReference1 + " is buffered");
+                if (rcb1.IsBuffered())
+                    Console.WriteLine("RCB: " + rcbReference1 + " is buffered");
 
-				rcb1.SetTrgOps(TriggerOptions.DATA_CHANGED | TriggerOptions.INTEGRITY);				
-				rcb1.SetIntgPd(5000);
-				rcb1.SetRptEna(true);
+                rcb1.SetTrgOps(TriggerOptions.DATA_CHANGED | TriggerOptions.INTEGRITY);
+                rcb1.SetIntgPd(5000);
+                rcb1.SetRptEna(true);
 
-				rcb1.SetRCBValues();
+                rcb1.SetRCBValues();
 
-				rcb2.GetRCBValues();
+                rcb2.GetRCBValues();
 
-				if (rcb2.IsBuffered())
-					Console.WriteLine ("RCB: " + rcbReference2 + " is buffered");
+                if (rcb2.IsBuffered())
+                    Console.WriteLine("RCB: " + rcbReference2 + " is buffered");
 
-				rcb2.InstallReportHandler(reportHandler, rcb2);
+                rcb2.InstallReportHandler(reportHandler, rcb2);
 
                 rcb2.SetOptFlds(ReportOptions.REASON_FOR_INCLUSION | ReportOptions.SEQ_NUM | ReportOptions.TIME_STAMP |
                     ReportOptions.CONF_REV | ReportOptions.ENTRY_ID | ReportOptions.DATA_REFERENCE | ReportOptions.DATA_SET);
-				rcb2.SetTrgOps(TriggerOptions.DATA_CHANGED | TriggerOptions.INTEGRITY);				
-				rcb2.SetIntgPd(2000);
-				rcb2.SetRptEna(true);
+                rcb2.SetTrgOps(TriggerOptions.DATA_CHANGED | TriggerOptions.INTEGRITY);
+                rcb2.SetIntgPd(2000);
+                rcb2.SetRptEna(true);
 
-				rcb2.SetRCBValues();
+                rcb2.SetRCBValues();
 
 				rcb3.GetRCBValues();
 
@@ -128,13 +128,19 @@ namespace reporting
 					ReportingExample.running = false;
 				};
 
+				/* stop main loop when connection is lost */
+				con.InstallConnectionClosedHandler(delegate(IedConnection connection) {
+					Console.WriteLine("Connection closed");
+					ReportingExample.running = false;
+				});
+
 				while (running) {
 					Thread.Sleep(10);
 				}
 
 				con.Abort ();
 			} catch (IedConnectionException e) {
-				Console.WriteLine (e.Message);
+				Console.WriteLine ("Error: " + e.Message);
 			}
 
 		}

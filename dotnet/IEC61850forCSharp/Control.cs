@@ -164,6 +164,7 @@ namespace IEC61850
 					commandTerminationHandler(commandTerminationHandlerParameter, this);
 			}
 
+			private InternalCommandTerminationHandler intCommandTerminationHandler;
 
 			internal ControlObject (string objectReference, IntPtr connection, IedConnection iedConnection)
 			{
@@ -174,7 +175,7 @@ namespace IEC61850
 				if (this.controlObject == System.IntPtr.Zero)
 					throw new IedConnectionException("Control object not found", 0);
 
-				InternalCommandTerminationHandler intCommandTerminationHandler = new InternalCommandTerminationHandler (MyCommandTerminationHandler);
+				intCommandTerminationHandler = new InternalCommandTerminationHandler (MyCommandTerminationHandler);
 
 				ControlObjectClient_setCommandTerminationHandler(controlObject, intCommandTerminationHandler, controlObject);
 			}

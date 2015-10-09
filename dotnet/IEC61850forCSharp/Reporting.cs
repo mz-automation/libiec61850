@@ -33,7 +33,7 @@ namespace IEC61850
 		{
 			public ReportControlBlock GetReportControlBlock (string rcbObjectReference)
 			{
-				return new ReportControlBlock (rcbObjectReference, connection);
+				return new ReportControlBlock (rcbObjectReference, this, connection);
 			}
 		}
 

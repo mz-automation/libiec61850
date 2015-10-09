@@ -159,6 +159,7 @@ namespace IEC61850
 
 			private IntPtr self;
 			private IntPtr connection;
+			private IedConnection iedConnection = null;
 			private string objectReference;
 			private bool flagRptId = false;
 			private bool flagRptEna = false;
@@ -202,6 +203,7 @@ namespace IEC61850
 
 			private void internalReportHandler (IntPtr parameter, IntPtr report)
 			{
+				Console.WriteLine ("called internalReportHandler");
 				try {
 
 					if (this.report == null)
@@ -217,16 +219,20 @@ namespace IEC61850
 				}
 			}
 
-			internal ReportControlBlock (string objectReference, IntPtr connection)
+			internal ReportControlBlock (string objectReference, IedConnection iedConnection, IntPtr connection)
 			{
 				self = ClientReportControlBlock_create (objectReference);
+				this.iedConnection = iedConnection;
 				this.connection = connection;
 				this.objectReference = objectReference;
 			}
 
             ~ReportControlBlock()
             {
-                IedConnection_uninstallReportHandler(connection, objectReference);
+				Console.WriteLine ("Destructor invoked");
+                //IedConnection_uninstallReportHandler(connection, objectReference);
+				//this.iedConnection = null;
+				Console.WriteLine ("Destructor finished");
             }
 
 			public string GetObjectReference ()
