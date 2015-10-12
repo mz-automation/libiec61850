@@ -76,8 +76,11 @@ public class LogControl {
         	reasonCode = reasonCodeBoolean;
 
 		Node trgOpsNode = ParserUtils.getChildNodeWithTag(logControlNode, "TrgOps");
-		
-		this.triggerOptions = new TriggerOptions(trgOpsNode);
+				
+		if (trgOpsNode != null)
+			this.triggerOptions = new TriggerOptions(trgOpsNode);
+		else
+			this.triggerOptions = new TriggerOptions(); // use default values if no node present
 
     }
 

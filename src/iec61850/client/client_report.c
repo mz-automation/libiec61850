@@ -267,7 +267,9 @@ IedConnection_installReportHandler(IedConnection self, const char* rcbReference,
     else
         report->rptId = NULL;
 
+    Semaphore_wait(self->reportHandlerMutex);
     LinkedList_add(self->enabledReports, report);
+    Semaphore_post(self->reportHandlerMutex);
 
     if (DEBUG_IED_CLIENT)
         printf("DEBUG_IED_CLIENT: Installed new report callback handler for %s\n", rcbReference);
@@ -276,12 +278,16 @@ IedConnection_installReportHandler(IedConnection self, const char* rcbReference,
 void
 IedConnection_uninstallReportHandler(IedConnection self, const char* rcbReference)
 {
+	Semaphore_wait(self->reportHandlerMutex);
+
     ClientReport report = lookupReportHandler(self, rcbReference);
 
     if (report != NULL) {
         LinkedList_remove(self->enabledReports, report);
         ClientReport_destroy(report);
     }
+
+    Semaphore_post(self->reportHandlerMutex);
 }
 
 void
@@ -544,9 +550,13 @@ private_IedConnection_handleReport(IedConnection self, MmsValue* value)
         }
     }
 
+    printf("U0 sem wait\n");
+    Semaphore_wait(self->reportHandlerMutex);
+    printf("U1 call user\n");
     if (matchingReport->callback != NULL)
         matchingReport->callback(matchingReport->callbackParameter, matchingReport);
-
+    Semaphore_post(self->reportHandlerMutex);
+    printf("U2\n");
 exit_function:
     return;
 }

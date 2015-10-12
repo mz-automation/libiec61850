@@ -1335,6 +1335,17 @@ ControlObjectClient_setTestMode(ControlObjectClient self);
 void
 ControlObjectClient_setOrigin(ControlObjectClient self, const char* orIdent, int orCat);
 
+/**
+ * \brief Use a constant T parameter for all command (select, operate, cancel) of a single control sequence
+ *
+ * NOTE: Some non-standard compliant servers may require this to accept oper/cancel requests
+ *
+ * \param self the ControlObjectClient instance
+ * \param useContantT enable this behaviour with true, disable with false
+ */
+void
+ControlObjectClient_useConstantT(ControlObjectClient self, bool useConstantT);
+
 void
 ControlObjectClient_enableInterlockCheck(ControlObjectClient self);
 
