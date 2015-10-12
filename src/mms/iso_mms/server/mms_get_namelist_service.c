@@ -436,9 +436,12 @@ mmsServer_handleGetNameListRequest(
 		else if (objectClass == OBJECT_CLASS_NAMED_VARIABLE_LIST) {
 			LinkedList nameList = getNamedVariableListsDomainSpecific(connection, domainSpecificName);
 
-			createNameListResponse(connection, invokeId, nameList, response, continueAfter);
-
-			LinkedList_destroy(nameList);
+			if (nameList == NULL)
+	            mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
+			else {
+                createNameListResponse(connection, invokeId, nameList, response, continueAfter);
+                LinkedList_destroy(nameList);
+			}
 		}
 #endif /* (MMS_DATA_SET_SERVICE == 1) */
 
@@ -447,7 +450,6 @@ mmsServer_handleGetNameListRequest(
 
 			mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_ACCESS_UNSUPPORTED);
 		}
-
 	}
 
 	else if (objectScope == OBJECT_SCOPE_VMD) { /* vmd-specific */
