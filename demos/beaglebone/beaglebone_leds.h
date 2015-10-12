@@ -9,6 +9,9 @@
 /* set to 1 if you want to run the demo on a PC */
 //#define SIMULATED 1
 
+
+
+/* select correct file paths to access LEDs - depends on beaglebones linux distro/version */
 #if 0
 #define LED1 "/sys/class/leds/beaglebone::usr0"
 #define LED2 "/sys/class/leds/beaglebone::usr1"
