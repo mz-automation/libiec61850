@@ -418,7 +418,7 @@ LogicalDevice_getChildByMmsVariableName(LogicalDevice* logicalDevice, const char
 		fcString[1] = separator[2];
 		fcString[2] = 0;
 
-		char* strpos = mmsVariableName;
+		const char* strpos = mmsVariableName;
 
 		int targetPos = 0;
 
