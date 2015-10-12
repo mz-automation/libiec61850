@@ -604,37 +604,21 @@ IedConnection_close(IedConnection self)
 void
 IedConnection_destroy(IedConnection self)
 {
-	printf("D1\n");
-
     IedConnection_close(self);
 
-    printf("D2\n");
-
     MmsConnection_destroy(self->connection);
-
-    printf("D3\n");
 
     if (self->logicalDevices != NULL)
         LinkedList_destroyDeep(self->logicalDevices, (LinkedListValueDeleteFunction) ICLogicalDevice_destroy);
 
-    printf("D4\n");
-
-#if 0
     if (self->enabledReports != NULL)
         LinkedList_destroyDeep(self->enabledReports, (LinkedListValueDeleteFunction) ClientReport_destroy);
-#endif
 
     LinkedList_destroyStatic(self->clientControls);
 
-    printf("D6\n");
-
     Semaphore_destroy(self->stateMutex);
 
-    printf("D7\n");
-
     GLOBAL_FREEMEM(self);
-
-    printf("D8\n");
 }
 
 MmsVariableSpecification*

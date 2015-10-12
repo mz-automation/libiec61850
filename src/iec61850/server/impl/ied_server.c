@@ -920,12 +920,6 @@ IedServer_updateBooleanAttributeValue(IedServer self, DataAttribute* dataAttribu
         checkForUpdateTrigger(self, dataAttribute);
     }
     else {
-//    	struct timeval tv;
-//
-//		gettimeofday(&tv,NULL/*&tz*/);
-//		printf("UPDATE BOOL: %ld %ld\n",tv.tv_sec, tv.tv_usec);
-
-
         MmsValue_setBoolean(dataAttribute->mmsValue, value);
 
         checkForChangedTriggers(self, dataAttribute);

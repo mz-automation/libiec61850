@@ -143,8 +143,6 @@ IedModel_getDevice(IedModel* model, const char* deviceName)
         if (strcmp(domainName, deviceName) == 0)
             return device;
 
-        printf("domainename: %s\n", domainName);
-
         device = (LogicalDevice*) device->sibling;
     }
 
