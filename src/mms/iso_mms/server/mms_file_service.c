@@ -214,11 +214,11 @@ mmsServer_handleFileDeleteRequest(
     filename[length] = 0;
 
     if (DEBUG_MMS_SERVER)
-        printf("mms_file_service.c: Delete file (%s)\n", filename);
+        printf("MMS_SERVER: mms_file_service.c: Delete file (%s)\n", filename);
 
     if (!FileSystem_getFileInfo(filename, NULL, NULL)) {
         if (DEBUG_MMS_SERVER)
-            printf("mms_file_service.c:  File (%s) not found\n", filename);
+            printf("MMS_SERVER: mms_file_service.c:  File (%s) not found\n", filename);
 
         mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_FILE_FILE_NON_EXISTENT);
         return;
@@ -226,7 +226,7 @@ mmsServer_handleFileDeleteRequest(
 
     if (!FileSystem_deleteFile(filename)) {
         if (DEBUG_MMS_SERVER)
-            printf("mms_file_service.c:  Delete file (%s) failed\n", filename);
+            printf("MMS_SERVER: mms_file_service.c:  Delete file (%s) failed\n", filename);
 
         mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_FILE_FILE_ACCESS_DENIED);
         return;
@@ -381,7 +381,7 @@ mmsServer_handleFileReadRequest(
     int32_t frsmId = (int32_t) BerDecoder_decodeUint32(buffer, maxBufPos - bufPos, bufPos);
 
     if (DEBUG_MMS_SERVER)
-        printf("mmsServer_handleFileReadRequest read request for frsmId: %i\n", frsmId);
+        printf("MMS_SERVER: mmsServer_handleFileReadRequest read request for frsmId: %i\n", frsmId);
 
     MmsFileReadStateMachine* frsm = getFrsm(connection, frsmId);
 
@@ -436,7 +436,82 @@ encodeFileSpecification(uint8_t tag, char* fileSpecification, uint8_t* buffer, i
     }
 }
 
+static int
+addFileEntriesToResponse(uint8_t* buffer, int bufPos, int maxBufSize, char* directoryName, char* continueAfterFileName, bool* moreFollows)
+{
+	int directoryNameLength = strlen(directoryName);
 
+    DirectoryHandle directory = FileSystem_openDirectory(directoryName);
+
+    if (directory != NULL) {
+        bool isDirectory;
+        char* fileName = FileSystem_readDirectory(directory, &isDirectory);
+
+        while (fileName != NULL) {
+        	directoryName[directoryNameLength] = 0;
+
+        	if (directoryNameLength > 0)
+        		strcat(directoryName, "/");
+
+        	strcat(directoryName, fileName);
+
+            if (isDirectory) {
+            	bufPos = addFileEntriesToResponse(buffer, bufPos, maxBufSize, directoryName, continueAfterFileName, moreFollows);
+
+            	if (*moreFollows == true)
+            		break;
+            }
+            else {
+            	if (continueAfterFileName != NULL) {
+					if (strcmp(continueAfterFileName, directoryName) == 0)
+						continueAfterFileName = NULL;
+				}
+				else {
+					uint64_t msTime;
+
+					uint32_t fileSize;
+
+					FileSystem_getFileInfo(directoryName, &fileSize, &msTime);
+
+					char gtString[30];
+
+					Conversions_msTimeToGeneralizedTime(msTime, (uint8_t*) gtString);
+
+					int fileAttributesSize = encodeFileAttributes(0xa1, fileSize, gtString, NULL, 0);
+
+					int filenameSize = encodeFileSpecification(0xa0, directoryName, NULL, 0);
+
+					int dirEntrySize = 2 + fileAttributesSize + filenameSize;
+
+					int overallEntrySize = 1 + BerEncoder_determineLengthSize(dirEntrySize) + dirEntrySize;
+
+					int bufferSpaceLeft = maxBufSize - bufPos;
+
+					if (overallEntrySize > bufferSpaceLeft) {
+
+						*moreFollows = true;
+						break;
+					}
+
+					bufPos = BerEncoder_encodeTL(0x30, dirEntrySize, buffer, bufPos); /* SEQUENCE (DirectoryEntry) */
+					bufPos = encodeFileSpecification(0xa0, directoryName, buffer, bufPos); /* fileName */
+					bufPos = encodeFileAttributes(0xa1, fileSize, gtString, buffer, bufPos); /* file attributes */
+
+				}
+
+            }
+
+
+            fileName = FileSystem_readDirectory(directory, &isDirectory);
+        }
+
+        FileSystem_closeDirectory(directory);
+    }
+
+    directoryName[directoryNameLength] = 0;
+
+    return bufPos;
+}
 
 static void
 createFileDirectoryResponse(uint32_t invokeId, ByteBuffer* response, char* directoryName, char* continueAfterFileName)
@@ -450,93 +525,17 @@ createFileDirectoryResponse(uint32_t invokeId, ByteBuffer* response, char* direc
     int tempCurPos = tempStartPos;
     int tempEncoded = 0;
 
-    char extendedFileName[300];
-
-    DirectoryHandle directory = FileSystem_openDirectory(directoryName);
-
     if (continueAfterFileName != NULL) {
         if (strlen(continueAfterFileName) == 0)
             continueAfterFileName = NULL;
     }
 
-    if (directory != NULL) {
-        bool isDirectory;
-        char* fileName = FileSystem_readDirectory(directory, &isDirectory);
+    tempCurPos = addFileEntriesToResponse(buffer, tempCurPos, maxSize, directoryName, continueAfterFileName, &moreFollows);
 
-        while (fileName != NULL) {
-            if (isDirectory) {
-                strcpy(extendedFileName, fileName);
-                strcat(extendedFileName, "/");
-
-                fileName = extendedFileName;
-            }
-
-            if (continueAfterFileName != NULL) {
-                if (strcmp(continueAfterFileName, fileName) == 0)
-                    continueAfterFileName = NULL;
-            }
-            else {
-                uint64_t msTime;
-
-                char fullPath[CONFIG_MMS_FILE_SERVICE_MAX_FILENAME_LENGTH];
-
-                if (directoryName != NULL) {
-                    int directoryLen = strlen(directoryName);
-
-                    strcpy(fullPath, directoryName);
-
-                    if (directoryName[directoryLen - 1] != CONFIG_SYSTEM_FILE_SEPARATOR) {
-                        fullPath[directoryLen] = CONFIG_SYSTEM_FILE_SEPARATOR;
-                        fullPath[directoryLen + 1] = 0;
-                    }
-
-                    strcat(fullPath, fileName);
-                }
-                else {
-                    strncpy(fullPath, fileName, CONFIG_MMS_FILE_SERVICE_MAX_FILENAME_LENGTH - 1);
-                    fullPath[CONFIG_MMS_FILE_SERVICE_MAX_FILENAME_LENGTH - 1] = 0;
-                }
-
-                uint32_t fileSize;
-
-                FileSystem_getFileInfo(fullPath, &fileSize, &msTime);
-
-                char gtString[30];
-
-                Conversions_msTimeToGeneralizedTime(msTime, (uint8_t*) gtString);
-
-                int fileAttributesSize = encodeFileAttributes(0xa1, fileSize, gtString, NULL, 0);
-
-                int filenameSize = encodeFileSpecification(0xa0, fileName, NULL, 0);
-
-                int dirEntrySize = 2 + fileAttributesSize + filenameSize;
-
-                int overallEntrySize = 1 + BerEncoder_determineLengthSize(dirEntrySize) + dirEntrySize;
-
-                int bufferSpaceLeft = maxSize - tempCurPos;
-
-                if (overallEntrySize > bufferSpaceLeft) {
-                    moreFollows = true;
-                    break;
-                }
-
-                tempCurPos = BerEncoder_encodeTL(0x30, dirEntrySize, buffer, tempCurPos); /* SEQUENCE (DirectoryEntry) */
-                tempCurPos = encodeFileSpecification(0xa0, fileName, buffer, tempCurPos); /* fileName */
-                tempCurPos = encodeFileAttributes(0xa1, fileSize, gtString, buffer, tempCurPos); /* file attributes */
-
-            }
-
-            fileName = FileSystem_readDirectory(directory, &isDirectory);
-        }
-
-        FileSystem_closeDirectory(directory);
-    }
-    else {
-
-       //TODO check if it is a directory
+	if (tempCurPos < 0) {
 
        if (DEBUG_MMS_SERVER)
-            printf("Error opening directory!\n");
+            printf("MMS_SERVER: Error opening directory!\n");
 
        mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_FILE_FILE_NON_EXISTENT);
 
@@ -611,7 +610,7 @@ mmsServer_handleFileRenameRequest(
                 return;
 
             if (DEBUG_MMS_SERVER)
-                printf("currentFileName: (%s)\n", currentFileName);
+                printf("MMS_SERVER: currentFileName: (%s)\n", currentFileName);
 
             break;
 
@@ -620,12 +619,12 @@ mmsServer_handleFileRenameRequest(
                 return;
 
             if (DEBUG_MMS_SERVER)
-                printf("newFileName: (%s)\n", newFileName);
+                printf("MMS_SERVER: newFileName: (%s)\n", newFileName);
 
             break;
         default: /* ignore unknown tag */
             if (DEBUG_MMS_SERVER)
-                printf("unknown tag: (%02x)\n", tag);
+                printf("MMS_SERVER: unknown tag: (%02x)\n", tag);
 
             bufPos += length;
             break;
@@ -640,7 +639,7 @@ mmsServer_handleFileRenameRequest(
         else
         {
             if (DEBUG_MMS_SERVER)
-                printf("rename file failed!\n");
+                printf("MMS_SERVER: rename file failed!\n");
 
             mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_FILE_OTHER);
         }
@@ -658,7 +657,7 @@ mmsServer_handleFileDirectoryRequest(
     ByteBuffer* response)
 {
     if (DEBUG_MMS_SERVER)
-        printf("handleFileDirectoryRequest bufPos:%i, maxBufPus:%i\n", bufPos, maxBufPos);
+        printf("MMS_SERVER: handleFileDirectoryRequest bufPos:%i, maxBufPus:%i\n", bufPos, maxBufPos);
 
     char filename[256] = "";
 
@@ -683,7 +682,8 @@ mmsServer_handleFileDirectoryRequest(
                 return;
 
             /* check for wildcard character(*) */
-            if (strcmp(filename, "*") == 0) filename[0] = 0;
+            if ((strcmp(filename, "*") == 0) || (strcmp(filename, "/") == 0) || (strcmp(filename, "\\") == 0))
+            	filename[0] = 0;
 
             break;
 
@@ -697,7 +697,7 @@ mmsServer_handleFileDirectoryRequest(
 
         default: /* unrecognized parameter */
             if (DEBUG_MMS_SERVER)
-                printf("handleFileDirectoryRequest: unrecognized parameter\n");
+                printf("MMS_SERVER: handleFileDirectoryRequest: unrecognized parameter\n");
             mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
             return;
         }

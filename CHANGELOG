@@ -1,5 +1,7 @@
 Changes to version 0.8.7
 ------------------------
+- extended beoglebone demo (write access to GAPC settings, ...)
+- File service: support for wildcard character ('*') in requests
 - server: changed signature of WriteAccessHandler: Handler now return MmsDataAccessError instead of boolean value!
 - server: added function IedModel_setIedNameForDynamicModel
 

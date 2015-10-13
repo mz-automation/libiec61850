@@ -133,6 +133,10 @@ FileSystem_openDirectory(char* directoryName);
 /**
  * \brief read the next directory entry
  *
+ * This function returns the next directory entry. The entry is only a valid pointer as long as the
+ * FileSystem_closeDirectory or another FileSystem_readDirectory function is not called for the given
+ * DirectoryHandle.
+ *
  * \param directory the handle to identify the directory
  * \param isDirectory return value that indicates if the directory entry is itself a directory (true)
  *

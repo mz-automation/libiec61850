@@ -96,7 +96,7 @@ FileSystem_closeFile(FileHandle handle)
 bool
 FileSystem_getFileInfo(char* filename, uint32_t* fileSize, uint64_t* lastModificationTimestamp)
 {
-    char fullPath[sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 255];
+    char fullPath[sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 256];
 
     createFullPathFromFileName(fullPath, filename);
 
