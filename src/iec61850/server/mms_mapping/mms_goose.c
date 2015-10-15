@@ -169,7 +169,6 @@ MmsGooseControlBlock_enable(MmsGooseControlBlock self)
 
     if (!MmsGooseControlBlock_isEnabled(self)) {
 
-
         if (self->dataSetRef != NULL) {
             GLOBAL_FREEMEM(self->dataSetRef);
 

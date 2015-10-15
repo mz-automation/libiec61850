@@ -10,7 +10,7 @@
 #define STACK_CONFIG_H_
 
 /* include asserts if set to 1 */
-#define DEBUG 1
+#define DEBUG 0
 
 /* print debugging information with printf if set to 1 */
 #define DEBUG_SOCKET 0
@@ -136,7 +136,7 @@
 #define CONFIG_IEC61850_SETTING_GROUPS 1
 
 /* default reservation time of a setting group control block in s */
-#define CONFIG_IEC61850_SG_RESVTMS 10
+#define CONFIG_IEC61850_SG_RESVTMS 300
 
 /* default results for MMS identify service */
 #define CONFIG_DEFAULT_MMS_VENDOR_NAME "libiec61850.com"

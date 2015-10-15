@@ -214,7 +214,7 @@ ReportControl_getRCBValue(ReportControl* rc, char* elementName)
             return MmsValue_getElement(rc->rcbValues, 10);
         else if (strcmp(elementName, "EntryID") == 0)
             return MmsValue_getElement(rc->rcbValues, 11);
-        else if (strcmp(elementName, "TimeOfEntry") == 0)
+        else if (strcmp(elementName, "TimeofEntry") == 0)
             return MmsValue_getElement(rc->rcbValues, 12);
         else if (strcmp(elementName, "ResvTms") == 0)
             return MmsValue_getElement(rc->rcbValues, 13);
@@ -949,7 +949,7 @@ createBufferedReportControlBlock(ReportControlBlock* reportControlBlock,
     mmsValue->value.structure.components[11] = MmsValue_newOctetString(8, 8);
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("TimeOfEntry");
+    namedVariable->name = copyString("TimeofEntry");
     namedVariable->type = MMS_BINARY_TIME;
     namedVariable->typeSpec.binaryTime = 6;
     rcb->typeSpec.structure.elements[12] = namedVariable;
@@ -1420,7 +1420,6 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
         if (rcbValue != NULL)
             MmsValue_update(rcbValue, value);
         else {
-            printf("AAAAAA\n");
             retVal = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
             goto exit_function;
         }
@@ -1520,7 +1519,7 @@ printReportId(ReportBufferEntry* report)
 #endif
 
 static void
-enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI)
+enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_t timeOfEntry)
 {
     if (DEBUG_IED_SERVER) printf("IED_SERVER: enqueueReport: RCB name: %s (SQN:%u) enabled:%i buffered:%i buffering:%i intg:%i GI:%i\n",
             reportControl->name, (unsigned) reportControl->sqNum, reportControl->enabled,
@@ -1746,15 +1745,17 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI)
     ReportBufferEntry* entry = (ReportBufferEntry*) entryBufPos;
 
     /* ENTRY_ID is set to system time in ms! */
-    uint64_t timestamp = Hal_getTimeInMs();
+    uint64_t entryId = timeOfEntry;
 
-    if (timestamp <= reportControl->lastEntryId)
-        timestamp = reportControl->lastEntryId + 1;
+    if (entryId <= reportControl->lastEntryId)
+    	entryId = reportControl->lastEntryId + 1;
+
+    entry->timeOfEntry = entryId;
 
 #if (ORDER_LITTLE_ENDIAN == 1)
-    memcpyReverseByteOrder(entry->entryId, (uint8_t*) &timestamp, 8);
+    memcpyReverseByteOrder(entry->entryId, (uint8_t*) &entryId, 8);
 #else
-    memcpy (entry->entryId, (uint8_t*) &timestamp, 8);
+    memcpy (entry->entryId, (uint8_t*) &entryId, 8);
 #endif
 
 #if (DEBUG_IED_SERVER == 1)
@@ -1844,7 +1845,7 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI)
     if (buffer->oldestReport == NULL)
         buffer->oldestReport = buffer->lastEnqueuedReport;
 
-    reportControl->lastEntryId = timestamp;
+    reportControl->lastEntryId = entryId;
 }
 
 static void
@@ -1924,7 +1925,15 @@ sendNextReportEntry(ReportControl* self)
             goto return_out_of_memory;
 
     if (MmsValue_getBitStringBit(optFlds, 2)) { /* report time stamp */
-        if (MemAllocLinkedList_add(reportElements, self->timeOfEntry) == NULL)
+    	MmsValue* timeOfEntry = (MmsValue*) MemoryAllocator_allocate(&ma, sizeof(MmsValue));
+
+    	if (timeOfEntry == NULL) goto return_out_of_memory;
+
+    	timeOfEntry->deleteValue = 0;
+    	timeOfEntry->type = MMS_UTC_TIME;
+    	MmsValue_setUtcTimeMs(timeOfEntry, report->timeOfEntry);
+
+        if (MemAllocLinkedList_add(reportElements, timeOfEntry) == NULL)
             goto return_out_of_memory;
     }
 
@@ -2010,7 +2019,7 @@ sendNextReportEntry(ReportControl* self)
                       + ldNameLength
                       + variableNameLength + 1;
 
-              char* dataReference = (char*) MemoryAllocator_allocate(&ma, refLen);
+              char* dataReference = (char*) MemoryAllocator_allocate(&ma, refLen + 1);
 
               if (dataReference == NULL) goto return_out_of_memory;
 
@@ -2214,7 +2223,7 @@ processEventsForReport(ReportControl* rc, uint64_t currentTimeInMs)
                 /* send current events in event buffer before GI report */
                 if (rc->triggered) {
                     if (rc->buffered)
-                        enqueueReport(rc, false, false);
+                        enqueueReport(rc, false, false, currentTimeInMs);
                     else
                         sendReport(rc, false, false);
 
@@ -2224,7 +2233,7 @@ processEventsForReport(ReportControl* rc, uint64_t currentTimeInMs)
                 updateTimeOfEntry(rc, currentTimeInMs);
 
                 if (rc->buffered)
-                    enqueueReport(rc, false, true);
+                    enqueueReport(rc, false, true, currentTimeInMs);
                 else
                     sendReport(rc, false, true);
 
@@ -2242,7 +2251,7 @@ processEventsForReport(ReportControl* rc, uint64_t currentTimeInMs)
                     /* send current events in event buffer before integrity report */
                     if (rc->triggered) {
                         if (rc->buffered)
-                            enqueueReport(rc, false, false);
+                            enqueueReport(rc, false, false, currentTimeInMs);
                         else
                             sendReport(rc, false, false);
 
@@ -2253,7 +2262,7 @@ processEventsForReport(ReportControl* rc, uint64_t currentTimeInMs)
                     updateTimeOfEntry(rc, currentTimeInMs);
 
                     if (rc->buffered)
-                        enqueueReport(rc, true, false);
+                        enqueueReport(rc, true, false, currentTimeInMs);
                     else
                         sendReport(rc, true, false);
 
@@ -2266,7 +2275,7 @@ processEventsForReport(ReportControl* rc, uint64_t currentTimeInMs)
             if (currentTimeInMs >= rc->reportTime) {
 
                 if (rc->buffered)
-                    enqueueReport(rc, false, false);
+                    enqueueReport(rc, false, false, currentTimeInMs);
                 else
                     sendReport(rc, false, false);
 

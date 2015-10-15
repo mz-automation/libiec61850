@@ -139,7 +139,7 @@ void
 MmsMapping_setConnectionIndicationHandler(MmsMapping* self, IedConnectionIndicationHandler handler, void* parameter);
 
 void
-MmsMapping_installWriteAccessHandler(MmsMapping* self, DataAttribute* dataAttribute, WriteAccessHandler handler);
+MmsMapping_installWriteAccessHandler(MmsMapping* self, DataAttribute* dataAttribute, WriteAccessHandler handler, void* parameter);
 
 MmsDataAccessError
 Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* variableIdOrig,

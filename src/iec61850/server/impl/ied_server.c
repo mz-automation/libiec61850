@@ -476,7 +476,7 @@ singleThreadedServerThread(void* parameter)
 
     while (running) {
 
-        if (IedServer_waitReady(self, 100) > 0) {
+        if (IedServer_waitReady(self, 25) > 0) {
             MmsServer_handleIncomingMessages(self->mmsServer);
             IedServer_performPeriodicTasks(self);
         }
@@ -770,25 +770,25 @@ checkForChangedTriggers(IedServer self, DataAttribute* dataAttribute)
 #if (CONFIG_IEC61850_REPORT_SERVICE == 1) || (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
     if (dataAttribute->triggerOptions & TRG_OPT_DATA_CHANGED) {
 
+#if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
+        MmsMapping_triggerGooseObservers(self->mmsMapping, dataAttribute->mmsValue);
+#endif
+
 #if (CONFIG_IEC61850_REPORT_SERVICE == 1)
         MmsMapping_triggerReportObservers(self->mmsMapping, dataAttribute->mmsValue,
                 REPORT_CONTROL_VALUE_CHANGED);
-#endif
-
-#if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
-        MmsMapping_triggerGooseObservers(self->mmsMapping, dataAttribute->mmsValue);
 #endif
     }
 
     else if (dataAttribute->triggerOptions & TRG_OPT_QUALITY_CHANGED) {
 
+#if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
+        MmsMapping_triggerGooseObservers(self->mmsMapping, dataAttribute->mmsValue);
+#endif
+
 #if (CONFIG_IEC61850_REPORT_SERVICE == 1)
         MmsMapping_triggerReportObservers(self->mmsMapping, dataAttribute->mmsValue,
                 REPORT_CONTROL_QUALITY_CHANGED);
-#endif
-
-#if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
-        MmsMapping_triggerGooseObservers(self->mmsMapping, dataAttribute->mmsValue);
 #endif
     }
 #endif /* (CONFIG_IEC61850_REPORT_SERVICE== 1) || (CONFIG_INCLUDE_GOOSE_SUPPORT == 1) */
@@ -916,6 +916,7 @@ IedServer_updateBooleanAttributeValue(IedServer self, DataAttribute* dataAttribu
     bool currentValue = MmsValue_getBoolean(dataAttribute->mmsValue);
 
     if (currentValue == value) {
+
         checkForUpdateTrigger(self, dataAttribute);
     }
     else {
@@ -993,14 +994,14 @@ IedServer_updateQuality(IedServer self, DataAttribute* dataAttribute, Quality qu
     if (oldQuality != (uint32_t) quality) {
         MmsValue_setBitStringFromInteger(dataAttribute->mmsValue, (uint32_t) quality);
 
+#if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
+        MmsMapping_triggerGooseObservers(self->mmsMapping, dataAttribute->mmsValue);
+#endif
+
 #if (CONFIG_IEC61850_REPORT_SERVICE == 1)
         if (dataAttribute->triggerOptions & TRG_OPT_QUALITY_CHANGED)
             MmsMapping_triggerReportObservers(self->mmsMapping, dataAttribute->mmsValue,
                                 REPORT_CONTROL_QUALITY_CHANGED);
-#endif
-
-#if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
-        MmsMapping_triggerGooseObservers(self->mmsMapping, dataAttribute->mmsValue);
 #endif
     }
 
@@ -1079,12 +1080,12 @@ IedServer_setWriteAccessPolicy(IedServer self, FunctionalConstraint fc, AccessPo
 }
 
 void
-IedServer_handleWriteAccess(IedServer self, DataAttribute* dataAttribute, WriteAccessHandler handler)
+IedServer_handleWriteAccess(IedServer self, DataAttribute* dataAttribute, WriteAccessHandler handler, void* parameter)
 {
     if (dataAttribute == NULL)
         *((int*) NULL) = 1;
 
-    MmsMapping_installWriteAccessHandler(self->mmsMapping, dataAttribute, handler);
+    MmsMapping_installWriteAccessHandler(self->mmsMapping, dataAttribute, handler, parameter);
 }
 
 void

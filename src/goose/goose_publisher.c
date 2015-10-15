@@ -201,6 +201,7 @@ prepareGooseBuffer(GoosePublisher self, CommParameters* parameters, const char* 
 
     int bufPos = 12;
 
+#if 1
     /* Priority tag - IEEE 802.1Q */
     self->buffer[bufPos++] = 0x81;
     self->buffer[bufPos++] = 0x00;
@@ -212,6 +213,7 @@ prepareGooseBuffer(GoosePublisher self, CommParameters* parameters, const char* 
 
     self->buffer[bufPos++] = tci1; /* Priority + VLAN-ID */
     self->buffer[bufPos++] = tci2; /* VLAN-ID */
+#endif
 
     /* EtherType GOOSE */
     self->buffer[bufPos++] = 0x88;
@@ -373,6 +375,11 @@ GoosePublisher_publish(GoosePublisher self, LinkedList dataSet)
 
     if (DEBUG_GOOSE_PUBLISHER)
         printf("GOOSE_PUBLISHER: send GOOSE message\n");
+
+	struct timeval tv;
+
+	gettimeofday(&tv,NULL/*&tz*/);
+	printf("GOOSE SEND: %ld %ld\n",tv.tv_sec, tv.tv_usec);
 
     Ethernet_sendPacket(self->ethernetSocket, self->buffer, self->payloadStart + payloadLength);
 

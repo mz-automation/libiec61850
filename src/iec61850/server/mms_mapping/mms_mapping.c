@@ -50,6 +50,7 @@ typedef struct
 {
     DataAttribute* attribute;
     WriteAccessHandler handler;
+    void* parameter;
 } AttributeAccessHandler;
 
 
@@ -1761,6 +1762,8 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
                                     sg->editSgConfirmedHandler(sg->editSgConfirmedHandlerParameter, sg->sgcb,
                                             sg->sgcb->editSG);
 
+                                    unselectSettingGroup(sg);
+
                                     return DATA_ACCESS_ERROR_SUCCESS;
                                 }
                                 else
@@ -1828,7 +1831,8 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
 
                     if (matchingValue != NULL) {
                         MmsDataAccessError handlerResult =
-                            accessHandler->handler(dataAttribute, matchingValue, (ClientConnection) connection);
+                            accessHandler->handler(dataAttribute, matchingValue, (ClientConnection) connection,
+                            		accessHandler->parameter);
 
                         if (handlerResult == DATA_ACCESS_ERROR_SUCCESS)
                             handlerFound = true;
@@ -1840,8 +1844,8 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
                 else { /* if ACCESS_POLICY_DENY only allow direct access to handled data attribute */
                     if (dataAttribute->mmsValue == cachedValue) {
                         MmsDataAccessError handlerResult =
-                            accessHandler->handler(dataAttribute, value, (ClientConnection) connection);
-
+                            accessHandler->handler(dataAttribute, value, (ClientConnection) connection,
+                            		accessHandler->parameter);
 
                         if (handlerResult == DATA_ACCESS_ERROR_SUCCESS) {
                             handlerFound = true;
@@ -1925,7 +1929,7 @@ getAccessHandlerForAttribute(MmsMapping* self, DataAttribute* dataAttribute)
 }
 
 void
-MmsMapping_installWriteAccessHandler(MmsMapping* self, DataAttribute* dataAttribute, WriteAccessHandler handler)
+MmsMapping_installWriteAccessHandler(MmsMapping* self, DataAttribute* dataAttribute, WriteAccessHandler handler, void* parameter)
 {
     AttributeAccessHandler* accessHandler = getAccessHandlerForAttribute(self, dataAttribute);
 
@@ -1933,6 +1937,7 @@ MmsMapping_installWriteAccessHandler(MmsMapping* self, DataAttribute* dataAttrib
         accessHandler = (AttributeAccessHandler*) GLOBAL_MALLOC(sizeof(AttributeAccessHandler));
 
         accessHandler->attribute = dataAttribute;
+        accessHandler->parameter = parameter;
         LinkedList_add(self->attributeAccessHandlers, (void*) accessHandler);
     }
 

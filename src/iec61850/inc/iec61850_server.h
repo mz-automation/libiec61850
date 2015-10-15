@@ -960,11 +960,12 @@ IedServer_observeDataAttribute(IedServer self, DataAttribute* dataAttribute,
  * \param the data attribute that has been written by an MMS client.
  * \param the value the client want to write to the data attribute
  * \param connection the connection object of the client connection that invoked the write operation
+ * \param parameter the user provided parameter
  *
  * \return true if access is accepted, false if access is denied.
  */
 typedef MmsDataAccessError
-(*WriteAccessHandler) (DataAttribute* dataAttribute, MmsValue* value, ClientConnection connection);
+(*WriteAccessHandler) (DataAttribute* dataAttribute, MmsValue* value, ClientConnection connection, void* parameter);
 
 /**
  * \brief Install a WriteAccessHandler for a data attribute.
@@ -979,10 +980,11 @@ typedef MmsDataAccessError
  * \param dataAttribute the data attribute to monitor
  * \param handler the callback function that is invoked if a client tries to write to
  *        the monitored data attribute.
+ * \param parameter a user provided parameter that is passed to the WriteAccessHandler when called.
  */
 void
 IedServer_handleWriteAccess(IedServer self, DataAttribute* dataAttribute,
-        WriteAccessHandler handler);
+        WriteAccessHandler handler, void* parameter);
 
 typedef enum {
     ACCESS_POLICY_ALLOW,

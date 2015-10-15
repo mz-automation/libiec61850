@@ -345,6 +345,46 @@ LogicalNode_hasFCData(LogicalNode* node, FunctionalConstraint fc)
 	return false;
 }
 
+DataSet*
+LogicalNode_getDataSet(LogicalNode* self, const char* dataSetName)
+{
+	assert(self->modelType == LogicalNodeModelType);
+	assert(dataSetName != NULL);
+
+	char dsName[66];
+
+	LogicalDevice* ld = (LogicalDevice*) self->parent;
+
+	if (strlen(dataSetName) > 32) {
+
+		if (DEBUG_IED_SERVER) {
+			printf("IED_SERVER: LogicalNode_getDataSet - data set name %s too long!\n", dataSetName);
+		}
+
+		goto exit_error;
+	}
+
+	StringUtils_createStringInBuffer(dsName, 3, self->name, "$", dataSetName);
+
+	IedModel* iedModel = (IedModel*) ld->parent;
+
+	DataSet* ds = iedModel->dataSets;
+
+	while (ds != NULL) {
+		if (strcmp(ds->logicalDeviceName, ld->name) == 0) {
+			if (strcmp(ds->name, dsName) == 0) {
+				return ds;
+			}
+		}
+
+		ds = ds->sibling;
+	}
+
+
+exit_error:
+	return NULL;
+}
+
 int
 LogicalDevice_getLogicalNodeCount(LogicalDevice* logicalDevice)
 {
@@ -358,6 +398,54 @@ LogicalDevice_getLogicalNodeCount(LogicalDevice* logicalDevice)
 	}
 
 	return lnCount;
+}
+
+ModelNode*
+LogicalDevice_getChildByMmsVariableName(LogicalDevice* logicalDevice, const char* mmsVariableName)
+{
+
+
+	char fcString[3];
+	char nameRef[65];
+
+	char* separator = strchr(mmsVariableName,'$');
+
+	if (separator == NULL)
+		return NULL;
+
+	if (strlen(separator) > 4) {
+		fcString[0] = separator[1];
+		fcString[1] = separator[2];
+		fcString[2] = 0;
+
+		const char* strpos = mmsVariableName;
+
+		int targetPos = 0;
+
+		while (strpos < separator) {
+			nameRef[targetPos++] = strpos[0];
+			strpos++;
+		}
+
+		nameRef[targetPos++] = '.';
+
+		strpos = separator + 4;
+
+		while (strpos[0] != 0) {
+			nameRef[targetPos++] = strpos[0];
+			strpos++;
+		}
+
+		nameRef[targetPos++] = 0;
+
+		StringUtils_replace(nameRef, '$', '.');
+
+		FunctionalConstraint fc = FunctionalConstraint_fromString(fcString);
+
+		return ModelNode_getChildWithFc((ModelNode*) logicalDevice, nameRef, fc);
+	}
+
+	return NULL;
 }
 
 static int
