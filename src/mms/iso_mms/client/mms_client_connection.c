@@ -1058,10 +1058,11 @@ mmsClient_getNameListSingleRequest(
 
     ByteBuffer* responseMessage = sendRequestAndWaitForResponse(self, invokeId, payload);
 
-
-
     if (responseMessage != NULL)
         moreFollows = mmsClient_parseGetNameListResponse(nameList, self->lastResponse, NULL);
+
+    if (self->lastResponseError != MMS_ERROR_NONE)
+		*mmsError = self->lastResponseError;
 
     releaseResponse(self);
 

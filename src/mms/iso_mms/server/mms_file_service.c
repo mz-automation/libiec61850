@@ -488,7 +488,6 @@ addFileEntriesToResponse(uint8_t* buffer, int bufPos, int maxBufSize, char* dire
 					int bufferSpaceLeft = maxBufSize - bufPos;
 
 					if (overallEntrySize > bufferSpaceLeft) {
-
 						*moreFollows = true;
 						break;
 					}
