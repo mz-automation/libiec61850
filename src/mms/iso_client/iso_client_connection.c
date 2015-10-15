@@ -106,8 +106,6 @@ connectionHandlingThread(IsoClientConnection self)
 
         TpktState packetState;
 
-        printf("P1\n");
-
         while ((packetState = CotpConnection_readToTpktBuffer(self->cotpConnection)) == TPKT_WAITING)
         {
             Thread_sleep(1);
@@ -117,9 +115,6 @@ connectionHandlingThread(IsoClientConnection self)
                 break;
             }
         }
-
-        printf("P2\n");
-
 
         if (packetState == TPKT_ERROR)
             break;
@@ -151,43 +146,26 @@ connectionHandlingThread(IsoClientConnection self)
             break;
         }
 
-        printf("P3\n");
-
-
         self->callback(ISO_IND_DATA, self->callbackParameter,
                 &(self->presentation->nextPayload));
-
-        printf("P4\n");
-
 
         /* wait for user to release the buffer */
         Semaphore_wait(self->receiveBufferMutex);
 
-
-        printf("P5\n");
-
         CotpConnection_resetPayload(self->cotpConnection);
     }
 
-    printf("I1\n");
-
-    self->callback(ISO_IND_CLOSED, self->callbackParameter, NULL);
-
-    printf("I2\n");
+    self->callback(ISO_IND_CLOSED, self->callbackParameter, NULL);;
 
     self->state = STATE_IDLE;
 
     Socket_destroy(self->socket);
-
-    printf("I3\n");
 
     if (DEBUG_ISO_CLIENT)
         printf("ISO_CLIENT_CONNECTION: exit connection %p\n", self);
 
     /* release buffer to enable reuse of client connection */
     Semaphore_post(self->receiveBufferMutex);
-
-    printf("I4\n");
 
     self->handlingThreadRunning = false;
 }
@@ -449,15 +427,11 @@ IsoClientConnection_close(IsoClientConnection self)
     if (DEBUG_ISO_CLIENT)
         printf("ISO_CLIENT: IsoClientConnection_close\n");
 
-    printf("B1\n");
-
     if (self->handlingThreadRunning) {
         self->stopHandlingThread = true;
         while (self->handlingThreadRunning)
             Thread_sleep(1);
     }
-
-    printf("B2\n");
 
     self->state = STATE_IDLE;
 }

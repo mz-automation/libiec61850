@@ -221,6 +221,9 @@ parseInitiateRequestPdu(MmsServerConnection self, uint8_t* buffer, int bufPos, i
         case 0xa4: /* mms-init-request-detail */
             /* we ignore this */
             break;
+
+        default:
+        	break; /* Ignore unknown tags */
         }
 
         bufPos += length;

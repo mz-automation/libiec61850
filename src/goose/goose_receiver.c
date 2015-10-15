@@ -612,13 +612,6 @@ exit_with_fault:
 static void
 parseGooseMessage(GooseReceiver self, int numbytes)
 {
-	struct timeval tv;
-
-	gettimeofday(&tv,NULL/*&tz*/);
-
-	printf("RCVD GOOSE: %ld %ld\n",tv.tv_sec, tv.tv_usec);
-
-
     int bufPos;
     bool subscriberFound = false;
     uint8_t* buffer = self->buffer;

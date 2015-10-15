@@ -376,11 +376,6 @@ GoosePublisher_publish(GoosePublisher self, LinkedList dataSet)
     if (DEBUG_GOOSE_PUBLISHER)
         printf("GOOSE_PUBLISHER: send GOOSE message\n");
 
-	struct timeval tv;
-
-	gettimeofday(&tv,NULL/*&tz*/);
-	printf("GOOSE SEND: %ld %ld\n",tv.tv_sec, tv.tv_usec);
-
     Ethernet_sendPacket(self->ethernetSocket, self->buffer, self->payloadStart + payloadLength);
 
     return 0;

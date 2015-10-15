@@ -98,6 +98,9 @@ mmsClient_parseIdentifyResponse(MmsConnection self)
         case 0x83: /* list of abstract syntaxes */
             bufPos += length;
             break;
+        default: /* ignore unknown tags */
+        	bufPos += length;
+        	break;
         }
     }
 

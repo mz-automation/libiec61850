@@ -88,6 +88,9 @@ iedConnection_mapMmsErrorToIedError(MmsError mmsError)
     case MMS_ERROR_CONNECTION_REJECTED:
         return IED_ERROR_CONNECTION_REJECTED;
 
+    case MMS_ERROR_ACCESS_OBJECT_VALUE_INVALID:
+    	return IED_ERROR_OBJECT_VALUE_INVALID;
+
     default:
         return IED_ERROR_UNKNOWN;
     }

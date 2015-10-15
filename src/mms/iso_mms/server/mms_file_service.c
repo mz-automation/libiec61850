@@ -450,8 +450,10 @@ addFileEntriesToResponse(uint8_t* buffer, int bufPos, int maxBufSize, char* dire
         while (fileName != NULL) {
         	directoryName[directoryNameLength] = 0;
 
-        	if (directoryNameLength > 0)
-        		strcat(directoryName, "/");
+        	if (directoryNameLength > 0) {
+        		if (directoryName[directoryNameLength - 1] != '/')
+        			strcat(directoryName, "/");
+        	}
 
         	strcat(directoryName, fileName);
 
@@ -506,6 +508,8 @@ addFileEntriesToResponse(uint8_t* buffer, int bufPos, int maxBufSize, char* dire
 
         FileSystem_closeDirectory(directory);
     }
+    else
+    	bufPos = -1;
 
     directoryName[directoryNameLength] = 0;
 
