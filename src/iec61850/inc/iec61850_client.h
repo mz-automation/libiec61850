@@ -1311,12 +1311,29 @@ ControlObjectClient_getObjectReference(ControlObjectClient self);
 ControlModel
 ControlObjectClient_getControlModel(ControlObjectClient self);
 
+/**
+ * \brief Send an operate command to the server
+ *
+ * \param self the control object instance to use
+ * \param ctlVal the control value (for APC the value may be either AnalogueValue (MMS_STRUCT) or MMS_FLOAT/MMS_INTEGER
+ * \param operTime the time when the command has to be executed (for time activated control). If this value is 0 the command will be executed instantly.
+ *
+ * \return true if operation has been successful, false otherwise.
+ */
 bool
 ControlObjectClient_operate(ControlObjectClient self, MmsValue* ctlVal, uint64_t operTime);
 
 bool
 ControlObjectClient_select(ControlObjectClient self);
 
+/**
+ * \brief Send an select with value command to the server
+ *
+ * \param self the control object instance to use
+ * \param ctlVal the control value (for APC the value may be either AnalogueValue (MMS_STRUCT) or MMS_FLOAT/MMS_INTEGER
+ *
+ * \return true if select has been successful, false otherwise.
+ */
 bool
 ControlObjectClient_selectWithValue(ControlObjectClient self, MmsValue* ctlVal);
 

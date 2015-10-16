@@ -47,7 +47,10 @@ struct sControlObjectClient
     bool synchroCheck;
     bool hasTimeActivatedMode;
 
-    int edition; /* 1 = Ed. 1 - 2 = Ed. 2 */
+    MmsValue* analogValue; /* for APC-CDCs */
+
+    int edition; /* 1 = Ed. 1 - 2 = Ed. 2 - to distinguish time stamp format */
+    bool hasCtlNum; /* Check if ctlNum attribute is present - ctlNum is(/can be?) absent in edition 1 APC CDC */
 
     bool useConstantT; /* some servers require a constant T parameter for select and operate */
     uint64_t constantT; /* timestamp of select/operate to be used when constant T option is selected */
@@ -177,8 +180,9 @@ ControlObjectClient_create(const char* objectReference, IedConnection connection
         goto exit_function;
     }
 
-    /* check for time activated control */
+    /* check for time activated control and ctlNum */
     bool hasTimeActivatedControl = false;
+    bool hasCtlNum = false;
 
     strcpy(itemId, objectReference);
     strcat(itemId, ".Oper");
@@ -194,7 +198,9 @@ ControlObjectClient_create(const char* objectReference, IedConnection connection
 
         if (strcmp(objectName, "operTm") == 0) {
             hasTimeActivatedControl = true;
-            break;
+        }
+        else if (strcmp(objectName, "ctlNum") == 0) {
+        	hasCtlNum = true;
         }
 
         element = LinkedList_getNext(element);
@@ -222,9 +228,16 @@ ControlObjectClient_create(const char* objectReference, IedConnection connection
     self->connection = connection;
     self->ctlModel = (ControlModel) ctlModelVal;
     self->hasTimeActivatedMode = hasTimeActivatedControl;
+    self->hasCtlNum = hasCtlNum;
     self->ctlVal = MmsValue_getElement(oper, 0);
 
-    /* Check for T element type (EntryTime -> Ed.1, Timestamp -> Ed.2) */
+    if (MmsValue_getType(self->ctlVal) == MMS_STRUCTURE)
+    	self->analogValue = MmsValue_createEmptyStructure(1);
+    else
+    	self->analogValue = NULL;
+
+
+    /* Check for T element type (Binary time -> Ed.1,UTC time -> Ed.2) */
     MmsValue* t;
 
     if (hasTimeActivatedControl)
@@ -260,6 +273,9 @@ ControlObjectClient_destroy(ControlObjectClient self)
 
         if (self->ctlVal != NULL)
             MmsValue_delete(self->ctlVal);
+
+        if (self->analogValue != NULL)
+        	MmsValue_delete(self->analogValue);
 
         if (self->orIdent != NULL)
             GLOBAL_FREEMEM(self->orIdent);
@@ -358,10 +374,23 @@ ControlObjectClient_operate(ControlObjectClient self, MmsValue* ctlVal, uint64_t
 
     MmsValue* operParameters;
 
+    int operElementCount = 5;
+
     if (self->hasTimeActivatedMode)
-        operParameters = MmsValue_createEmptyStructure(7);
-    else
-        operParameters = MmsValue_createEmptyStructure(6);
+    	operElementCount++;
+
+    if (self->hasCtlNum)
+    	operElementCount++;
+
+	operParameters = MmsValue_createEmptyStructure(operElementCount);
+
+	/* support simplified usage of APC controls - user doesn't need to create the structure */
+	if (self->analogValue != NULL) {
+		if (MmsValue_getType(ctlVal) != MMS_STRUCTURE) {
+			MmsValue_setElement(self->analogValue, 0, ctlVal);
+			ctlVal = self->analogValue;
+		}
+	}
 
     MmsValue_setElement(operParameters, 0, ctlVal);
 
@@ -381,8 +410,10 @@ ControlObjectClient_operate(ControlObjectClient self, MmsValue* ctlVal, uint64_t
         self->ctlNum++;
     }
 
-    MmsValue* ctlNum = MmsValue_newUnsignedFromUint32(self->ctlNum);
-    MmsValue_setElement(operParameters, index++, ctlNum);
+    if (self->hasCtlNum) {
+    	MmsValue* ctlNum = MmsValue_newUnsignedFromUint32(self->ctlNum);
+    	MmsValue_setElement(operParameters, index++, ctlNum);
+    }
 
     uint64_t timestamp;
 
@@ -443,6 +474,10 @@ ControlObjectClient_operate(ControlObjectClient self, MmsValue* ctlVal, uint64_t
     }
 
     MmsValue_update(self->ctlVal, ctlVal);
+
+    if (self->analogValue)
+    	MmsValue_setElement(self->analogValue, 0, NULL);
+
     self->opertime = operTime;
 
     success = true;
@@ -470,12 +505,23 @@ ControlObjectClient_selectWithValue(ControlObjectClient self, MmsValue* ctlVal)
 
     MmsError mmsError;
 
-    MmsValue* selValParameters;
+    int selValElementCount = 5;
 
     if (self->hasTimeActivatedMode)
-        selValParameters = MmsValue_createEmptyStructure(7);
-    else
-        selValParameters = MmsValue_createEmptyStructure(6);
+    	selValElementCount++;
+
+    if (self->hasCtlNum)
+    	selValElementCount++;
+
+    MmsValue* selValParameters = MmsValue_createEmptyStructure(selValElementCount);
+
+	/* support simplified usage of APC controls - user doesn't need to create the structure */
+	if (self->analogValue != NULL) {
+		if (MmsValue_getType(ctlVal) != MMS_STRUCTURE) {
+			MmsValue_setElement(self->analogValue, 0, ctlVal);
+			ctlVal = self->analogValue;
+		}
+	}
 
     MmsValue_setElement(selValParameters, 0, ctlVal);
 
@@ -491,9 +537,10 @@ ControlObjectClient_selectWithValue(ControlObjectClient self, MmsValue* ctlVal)
 
     self->ctlNum++;
 
-    MmsValue* ctlNum = MmsValue_newUnsignedFromUint32(self->ctlNum);
-    MmsValue_setElement(selValParameters, index++, ctlNum);
-
+    if (self->hasCtlNum) {
+		MmsValue* ctlNum = MmsValue_newUnsignedFromUint32(self->ctlNum);
+		MmsValue_setElement(selValParameters, index++, ctlNum);
+    }
 
     uint64_t timestamp = Hal_getTimeInMs();
     MmsValue* ctlTime;
@@ -531,6 +578,9 @@ ControlObjectClient_selectWithValue(ControlObjectClient self, MmsValue* ctlVal)
     }
 
     MmsValue_update(self->ctlVal, ctlVal);
+
+    if (self->analogValue)
+    	MmsValue_setElement(self->analogValue, 0, NULL);
 
     return true;
 }
