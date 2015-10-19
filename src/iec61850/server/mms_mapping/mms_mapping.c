@@ -1714,45 +1714,45 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
                 if (sg != NULL) {
                     uint32_t val = MmsValue_toUint32(value);
 
-                    if (sg->editingClient == (ClientConnection) connection) {
+                    if ((sg->editingClient != NULL) && ( sg->editingClient != (ClientConnection) connection))
+                    	/* Edit SG was set by other client */
+                    	return DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
 
-						if (val == 0) {
-							unselectEditSettingGroup(sg);
-							return DATA_ACCESS_ERROR_SUCCESS;
-						}
+					if (val == 0) {
+						unselectEditSettingGroup(sg);
+						return DATA_ACCESS_ERROR_SUCCESS;
+					}
 
-						if ((val > 0) && (val <= sg->sgcb->numOfSGs)) {
+					if ((val > 0) && (val <= sg->sgcb->numOfSGs)) {
 
-							if (sg->editSgChangedHandler != NULL) {
+						if (sg->editSgChangedHandler != NULL) {
 
-								if (sg->editSgChangedHandler(sg->editSgChangedHandlerParameter, sg->sgcb,
-										(uint8_t) val, (ClientConnection) connection))
-								{
-									sg->sgcb->editSG = val;
-									sg->editingClient = (ClientConnection) connection;
+							if (sg->editSgChangedHandler(sg->editSgChangedHandlerParameter, sg->sgcb,
+									(uint8_t) val, (ClientConnection) connection))
+							{
+								sg->sgcb->editSG = val;
+								sg->editingClient = (ClientConnection) connection;
 
-									sg->reservationTimeout = Hal_getTimeInMs() + (sg->sgcb->resvTms * 1000);
+								sg->reservationTimeout = Hal_getTimeInMs() + (sg->sgcb->resvTms * 1000);
 
-									MmsValue* editSg = MmsValue_getElement(sg->sgcbMmsValues, 2);
-									MmsValue* resvTms = MmsValue_getElement(sg->sgcbMmsValues, 5);
+								MmsValue* editSg = MmsValue_getElement(sg->sgcbMmsValues, 2);
+								MmsValue* resvTms = MmsValue_getElement(sg->sgcbMmsValues, 5);
 
-									MmsValue_setUint16(resvTms, sg->sgcb->resvTms);
-									MmsValue_setUint8(editSg, sg->sgcb->editSG);
+								MmsValue_setUint16(resvTms, sg->sgcb->resvTms);
+								MmsValue_setUint8(editSg, sg->sgcb->editSG);
 
-									return DATA_ACCESS_ERROR_SUCCESS;
-								}
-								else
-									return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+								return DATA_ACCESS_ERROR_SUCCESS;
 							}
 							else
 								return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
-
-                    	}
+						}
 						else
-							return DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
-                    }
-                    else /* Edit SG was set by other client */
-                    	return DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
+							return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+
+					}
+					else
+						return DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+
                 }
             }
             else if (strcmp(nameId, "CnfEdit") == 0) {
