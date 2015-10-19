@@ -550,13 +550,13 @@ private_IedConnection_handleReport(IedConnection self, MmsValue* value)
         }
     }
 
-    printf("U0 sem wait\n");
     Semaphore_wait(self->reportHandlerMutex);
-    printf("U1 call user\n");
+    
     if (matchingReport->callback != NULL)
         matchingReport->callback(matchingReport->callbackParameter, matchingReport);
+
     Semaphore_post(self->reportHandlerMutex);
-    printf("U2\n");
+
 exit_function:
     return;
 }

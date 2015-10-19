@@ -435,7 +435,7 @@ EXPORTS
     ReportControlBlock_create
     IedConnection_readBooleanValue
     IedConnection_readFloatValue
-	IedConnection_readStringValue
+    IedConnection_readStringValue
     IedConnection_readInt32Value
     IedConnection_readUnsigned32Value
     IedConnection_readTimestampValue
@@ -475,8 +475,8 @@ EXPORTS
     SettingGroupControlBlock_create
     MmsConnection_setConnectTimeout
     IedConnection_setConnectTimeout
-	MmsValue_newVisibleStringWithSize
-	MmsValue_newMmsStringWithSize
+    MmsValue_newVisibleStringWithSize
+    MmsValue_newMmsStringWithSize
     MmsValue_setInt8
     MmsValue_setInt16
     LogicalDevice_getSettingGroupControlBlock
@@ -510,11 +510,10 @@ EXPORTS
     MmsValue_getUtcTimeBuffer
     Timestamp_clearFlags
     IedServer_setGooseInterfaceId
-    MmsServerIdentity_destroy
     ClientReport_getBufOvfl
     MmsValue_getUtcTimeInMsWithUs
     IedModel_setIedNameForDynamicModel
     ControlObjectClient_useConstantT
     ControlObjectClient_setOrigin
     LogicalDevice_getChildByMmsVariableName
-    LogicalNode_getDataset
+    LogicalNode_getDataSet

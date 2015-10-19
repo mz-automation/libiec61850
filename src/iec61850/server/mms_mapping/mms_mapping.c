@@ -1893,7 +1893,7 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
             return DATA_ACCESS_ERROR_SUCCESS;
         }
         else
-            return DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+        	return DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT;
     }
 
     return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;

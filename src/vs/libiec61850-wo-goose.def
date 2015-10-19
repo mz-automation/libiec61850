@@ -486,11 +486,10 @@ EXPORTS
     MmsValue_getUtcTimeBuffer
     Timestamp_clearFlags
     IedServer_setGooseInterfaceId
-    MmsServerIdentity_destroy
     ClientReport_getBufOvfl
     MmsValue_getUtcTimeInMsWithUs
     IedModel_setIedNameForDynamicModel
     ControlObjectClient_useConstantT
     ControlObjectClient_setOrigin
     LogicalDevice_getChildByMmsVariableName
-    LogicalNode_getDataset 
+    LogicalNode_getDataSet 

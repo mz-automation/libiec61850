@@ -408,7 +408,7 @@ LogicalDevice_getChildByMmsVariableName(LogicalDevice* logicalDevice, const char
 	char fcString[3];
 	char nameRef[65];
 
-	char* separator = strchr(mmsVariableName,'$');
+	const char* separator = strchr(mmsVariableName,'$');
 
 	if (separator == NULL)
 		return NULL;

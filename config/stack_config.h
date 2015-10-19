@@ -18,8 +18,8 @@
 #define DEBUG_ISO_SERVER 0
 #define DEBUG_ISO_CLIENT 0
 #define DEBUG_IED_SERVER 0
-#define DEBUG_IED_CLIENT 1
-#define DEBUG_MMS_CLIENT 1
+#define DEBUG_IED_CLIENT 0
+#define DEBUG_MMS_CLIENT 0
 #define DEBUG_MMS_SERVER 0
 #define DEBUG_GOOSE_SUBSCRIBER 0
 #define DEBUG_GOOSE_PUBLISHER 0
@@ -34,7 +34,7 @@
  * 0 ==> server runs in multi-threaded mode (one thread for each connection and
  * one server background thread )
  */
-#define CONFIG_MMS_SINGLE_THREADED 1
+#define CONFIG_MMS_SINGLE_THREADED 0
 
 /*
  * Optimize stack for threadless operation - don't use semaphores
