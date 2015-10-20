@@ -35,17 +35,8 @@
 MmsValue*
 mmsMsg_parseDataElement(Data_t* dataElement);
 
-void
-mmsMsg_createFloatData(MmsValue* value, int* size,  uint8_t** buf);
-
 Data_t*
 mmsMsg_createBasicDataElement(MmsValue* value);
-
-Data_t*
-mmsMsg_createDataElement(MmsValue* value);
-
-void
-mmsMsg_addResultToResultList(AccessResult_t* accessResult, MmsValue* value);
 
 AccessResult_t**
 mmsMsg_createAccessResultsList(MmsPdu_t* mmsPdu, int resultsCount);
