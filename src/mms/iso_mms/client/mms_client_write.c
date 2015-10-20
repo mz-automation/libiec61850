@@ -282,7 +282,6 @@ mmsClient_createWriteMultipleItemsRequest(uint32_t invokeId, const char* domainI
     for (i = 0; i < numberOfItems; i++) {
         GLOBAL_FREEMEM(request->variableAccessSpecification.choice.listOfVariable.list.array[i]);
         deleteDataElement(request->listOfData.list.array[i]);
-
     }
 
     GLOBAL_FREEMEM(request->variableAccessSpecification.choice.listOfVariable.list.array);

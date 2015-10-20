@@ -115,6 +115,117 @@ ControlObjectClient_create(const char* objectReference, IedConnection connection
     ControlObjectClient self = NULL;
 
     /* request control model from server */
+    char reference[129];
+
+    if (strlen(objectReference) < 121) {
+    	strcpy(reference, objectReference);
+    	strcat(reference, ".ctlModel");
+    }
+    else
+    	goto exit_function;
+
+    IedClientError error;
+
+    uint32_t ctlModel = IedConnection_readUnsigned32Value(connection, &error, reference, IEC61850_FC_CF);
+
+    if (error != IED_ERROR_OK) {
+        if (DEBUG_IED_CLIENT)
+            printf("IED_CLIENT: ControlObjectClient_create: failed to get %s from server\n", reference);
+
+        goto exit_function;
+    }
+
+    MmsVariableSpecification* ctlVarSpec =
+    		IedConnection_getVariableSpecification(connection, &error, objectReference, IEC61850_FC_CO);
+
+    if (error != IED_ERROR_OK) {
+        if (DEBUG_IED_CLIENT)
+            printf("IED_CLIENT: ControlObjectClient_create: failed to get data directory of control object\n");
+
+        goto exit_function;
+    }
+
+    /* check what control elements are available */
+    bool hasOper = false;
+    bool hasTimeActivatedControl = false;
+    bool hasCtlNum = false;
+    MmsVariableSpecification* ctlVal = NULL;
+    MmsVariableSpecification* t = NULL;
+
+    if (MmsVariableSpecification_getType(ctlVarSpec) == MMS_STRUCTURE) {
+    	MmsVariableSpecification* oper = MmsVariableSpecification_getNamedVariableRecursive(ctlVarSpec, "Oper");
+
+    	if (oper)
+    	{
+    		hasOper = true;
+
+    		MmsVariableSpecification* operTm = MmsVariableSpecification_getNamedVariableRecursive(oper, "operTm");
+
+    		if (operTm)
+    			hasTimeActivatedControl = true;
+
+    		MmsVariableSpecification* ctlNum = MmsVariableSpecification_getNamedVariableRecursive(oper, "ctlNum");
+
+    		if (ctlNum)
+    			hasCtlNum = true;
+
+    		ctlVal = MmsVariableSpecification_getNamedVariableRecursive(oper, "ctlVal");
+    		t = MmsVariableSpecification_getNamedVariableRecursive(oper, "T");
+    	}
+    }
+
+    if (hasOper == false) {
+        if (DEBUG_IED_CLIENT)
+            printf("IED_CLIENT: control is missing required element \"Oper\"\n");
+
+        goto exit_function;
+    }
+
+    if ((ctlVal == NULL) || (t == NULL)) {
+    	if (DEBUG_IED_CLIENT)
+    		printf("IED_CLIENT:   \"Oper\" is missing required element\n");
+
+    	goto free_varspec;
+    }
+
+    self = (ControlObjectClient) GLOBAL_CALLOC(1, sizeof(struct sControlObjectClient));
+
+    if (self == NULL)
+        goto exit_function;
+
+    self->objectReference = copyString(objectReference);
+    self->connection = connection;
+    self->ctlModel = (ControlModel) ctlModel;
+    self->hasTimeActivatedMode = hasTimeActivatedControl;
+    self->hasCtlNum = hasCtlNum;
+    self->ctlVal = MmsValue_newDefaultValue(ctlVal);
+
+    /* Check for T element type (Binary time -> Ed.1,UTC time -> Ed.2) */
+    if (MmsVariableSpecification_getType(t) == MMS_BINARY_TIME)
+        self->edition = 1;
+    else
+        self->edition = 2;
+
+    if (DEBUG_IED_CLIENT)
+        printf("IED_CLIENT: Detected edition %i control\n", self->edition);
+
+    private_IedConnection_addControlClient(connection, self);
+
+free_varspec:
+    MmsVariableSpecification_destroy(ctlVarSpec);
+
+exit_function:
+    return self;
+}
+
+
+#if 0
+ControlObjectClient
+ControlObjectClient_create(const char* objectReference, IedConnection connection)
+{
+    ControlObjectClient self = NULL;
+
+    /* request control model from server */
     char domainId[65];
     char itemId[129];
 
@@ -261,6 +372,7 @@ ControlObjectClient_create(const char* objectReference, IedConnection connection
 exit_function:
     return self;
 }
+#endif
 
 void
 ControlObjectClient_destroy(ControlObjectClient self)
