@@ -1,8 +1,9 @@
 Changes to version 0.8.7
 ------------------------
-- changed ControlObjectClient_create function: doesn't read "Oper" and uses GetVarSpec instead of GetNameList service
+- server: only client that set EditSG can change EditSG and modify variables with FC=SE
+- server: changed ControlObjectClient_create function: doesn't read "Oper" and uses GetVarSpec instead of GetNameList service
 - extended beoglebone demo (write access to GAPC settings, ...)
-- File service: support for wildcard character ('*') in requests
+- server: File service: support for wildcard character ('*') in requests
 - server: changed signature of WriteAccessHandler: Handler now return MmsDataAccessError instead of boolean value!
 - server: added function IedModel_setIedNameForDynamicModel
 

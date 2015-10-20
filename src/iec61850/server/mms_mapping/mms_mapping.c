@@ -1793,6 +1793,15 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
 
     FunctionalConstraint fc = getFunctionalConstraintForWritableNode(self, separator);
 
+#if (CONFIG_IEC61850_SETTING_GROUPS == 1)
+	if (fc == IEC61850_FC_SE) {
+		SettingGroup* sg = getSettingGroupByMmsDomain(self, domain);
+
+		if (sg->editingClient != connection)
+			return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+	}
+#endif /* (CONFIG_IEC61850_SETTING_GROUPS == 1) */
+
     /* writable data model elements - SP, SV, CF, DC */
     if (fc != IEC61850_FC_NONE) {
         MmsValue* cachedValue;
