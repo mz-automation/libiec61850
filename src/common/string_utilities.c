@@ -240,3 +240,129 @@ StringUtils_startsWith(char* string, char* prefix)
     return false;
 }
 
+#define LT_MAX_CHARS 128
+
+static int
+getCharWeight(int c)
+{
+	static bool initialized = false;
+	static char lookupTable[LT_MAX_CHARS + 1];
+	static char* charOrder = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz$_0123456789";
+
+	if (!initialized) {
+		int ltIndex;
+		int weight = 1;
+
+		for (ltIndex = 1;  ltIndex < LT_MAX_CHARS; ltIndex++) {
+			if (strchr(charOrder, ltIndex)) continue;
+			lookupTable[ltIndex] = weight;
+			weight++;
+		}
+
+		int charIndex;
+
+		for (charIndex = 0; charOrder[charIndex]; charIndex++) {
+			lookupTable[(int)charOrder[charIndex]] = weight;
+			weight++;
+		}
+
+		initialized = true;
+	}
+
+	if ((c < 1) || (c > LT_MAX_CHARS))
+		return c;
+	else
+		return lookupTable[c];
+}
+
+int
+StringUtils_compareChars(char a, char b)
+{
+	return (getCharWeight(a) - getCharWeight(b));
+}
+
+int
+StringUtils_compareStrings(const char* a, const char* b)
+{
+	int diff = StringUtils_compareChars(*a, *b);
+
+	while (diff == 0) {
+		if ((*a == 0) || (*b == 0)) {
+			return b - a;
+		}
+
+		diff = StringUtils_compareChars(*++a, *++b);
+	}
+
+	return diff;
+}
+
+void
+StringUtils_sortList(LinkedList list)
+{
+	LinkedList firstElement = list->next;
+	LinkedList prevElement = NULL;
+
+	while (true) {
+
+		/* Check for end of list */
+		if (firstElement->next) {
+
+			char* str1 = (char*) LinkedList_getData(firstElement);
+			char* str2 = (char*) LinkedList_getData(firstElement->next);
+
+			/* Compare first element with next element */
+			if (StringUtils_compareStrings(str1, str2) > 0) {
+				LinkedList removedElement = firstElement;
+
+				if (firstElement == list->next)
+					list->next = firstElement->next;
+				else
+					prevElement->next = firstElement->next;
+
+				firstElement = firstElement->next;
+
+				/* search for place to insert */
+				LinkedList compareElement = removedElement->next->next;
+				LinkedList prevCompareElement = removedElement->next;
+
+				while (true) {
+					str2 = (char*) LinkedList_getData(compareElement);
+
+					if (StringUtils_compareStrings(str1, str2) < 0) {
+						/* insert element before */
+						prevCompareElement->next = removedElement;
+						removedElement->next = compareElement;
+
+						break;
+					}
+
+					prevCompareElement = compareElement;
+					compareElement = compareElement->next;
+
+					/* Are we at the end of the list? */
+					if (compareElement == NULL) {
+						/* Insert removed element at end of list */
+						prevCompareElement->next = removedElement;
+						removedElement->next = NULL;
+						break;
+					}
+
+				}
+
+			}
+			else {
+
+				prevElement = firstElement;
+				firstElement = firstElement->next;
+			}
+
+
+		}
+		else
+			break;
+
+	}
+}
+
+

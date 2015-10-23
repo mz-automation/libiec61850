@@ -432,7 +432,7 @@ sendReport(ReportControl* self, bool isIntegrity, bool isGI)
     if (self->sqNum == 256)
         self->sqNum = 0;
 
-    MmsValue_setUint8(sqNum, self->sqNum);
+    MmsValue_setUint16(sqNum, self->sqNum);
 
     LinkedList_destroyDeep(deletableElements, (LinkedListValueDeleteFunction) MmsValue_delete);
     LinkedList_destroyStatic(reportElements);
@@ -1225,7 +1225,7 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 
                 MmsValue* sqNum = ReportControl_getRCBValue(rc, "SqNum");
 
-                MmsValue_setUint16(sqNum, 0U);
+                MmsValue_setUint32(sqNum, 0U);
 
                 retVal = DATA_ACCESS_ERROR_SUCCESS;
                 goto exit_function;
@@ -2165,7 +2165,7 @@ sendNextReportEntry(ReportControl* self)
 
     /* Increase sequence number */
     self->sqNum++;
-    MmsValue_setUint16(sqNum, self->sqNum);
+    MmsValue_setUint32(sqNum, self->sqNum);
 
     assert(self->reportBuffer->nextToTransmit != self->reportBuffer->nextToTransmit->next);
 

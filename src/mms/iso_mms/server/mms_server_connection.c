@@ -62,6 +62,11 @@ mmsServer_writeMmsRejectPdu(uint32_t* invokeId, int reason, ByteBuffer* response
 	    mmsPdu->choice.rejectPDU.rejectReason.choice.confirmedResponsePDU =
 	                RejectPDU__rejectReason__confirmedRequestPDU_invalidArgument;
 	}
+	else if (reason == MMS_ERROR_REJECT_INVALID_PDU) {
+		mmsPdu->choice.rejectPDU.rejectReason.present = RejectPDU__rejectReason_PR_pduError;
+		mmsPdu->choice.rejectPDU.rejectReason.choice.confirmedResponsePDU =
+				 RejectPDU__rejectReason__pduError_invalidPdu;
+	}
 	else {
 		mmsPdu->choice.rejectPDU.rejectReason.present = RejectPDU__rejectReason_PR_confirmedRequestPDU;
 		mmsPdu->choice.rejectPDU.rejectReason.choice.confirmedResponsePDU =

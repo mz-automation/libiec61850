@@ -182,10 +182,10 @@
 #define CONFIG_IEC61850_CONTROL_SERVICE 0
 #endif
 
-/* support flatted named variable name space required by IEC 61850-8-1 MMS mapping */
+/* support flat named variable name space required by IEC 61850-8-1 MMS mapping */
 #define CONFIG_MMS_SUPPORT_FLATTED_NAME_SPACE 1
 
-/* VMD scope named variables are not used by IEC 61850 */
+/* VMD scope named variables are not used by IEC 61850 (one application is ICCP) */
 #define CONFIG_MMS_SUPPORT_VMD_SCOPE_NAMED_VARIABLES 0
 
 #define CONFIG_INCLUDE_PLATFORM_SPECIFIC_HEADERS 0

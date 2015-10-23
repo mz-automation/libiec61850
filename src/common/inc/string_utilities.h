@@ -25,6 +25,7 @@
 #define STRING_UTILITIES_H_
 
 #include "libiec61850_platform_includes.h"
+#include "linked_list.h"
 
 char*
 copyString(const char* string);
@@ -75,5 +76,35 @@ StringUtils_createBufferFromHexString(char* hexString, uint8_t* buffer);
  */
 bool
 StringUtils_startsWith(char* string, char* prefix);
+
+/**
+ * \brief Compare to characters using the collation order as defined in ISO 9506-2 7.5.2
+ *
+ * \param a the first string
+ * \param b the second string
+ *
+ * \returns 0 if a equals b; a positive number if b > a; a negative number if b < a
+ */
+int
+StringUtils_compareChars(char a, char b);
+
+/**
+ * \brief Compare to strings using the collation order as defined in ISO 9506-2 7.5.2
+ *
+ * \param a the first string
+ * \param b the second string
+ *
+ * \returns 0 if a equals b; a positive number if b > a; a negative number if b < a
+ */
+int
+StringUtils_compareStrings(const char* a, const char* b);
+
+/**
+ * \brief sort a list of strings alphabetically (according to the MMS identifier collation order)
+ *
+ * \param list a list that contains string elements
+ */
+void
+StringUtils_sortList(LinkedList list);
 
 #endif /* STRING_UTILITIES_H_ */
