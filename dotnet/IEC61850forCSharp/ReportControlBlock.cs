@@ -203,7 +203,6 @@ namespace IEC61850
 
 			private void internalReportHandler (IntPtr parameter, IntPtr report)
 			{
-				Console.WriteLine ("called internalReportHandler");
 				try {
 
 					if (this.report == null)
@@ -227,13 +226,25 @@ namespace IEC61850
 				this.objectReference = objectReference;
 			}
 
-            ~ReportControlBlock()
-            {
-				Console.WriteLine ("Destructor invoked");
-                //IedConnection_uninstallReportHandler(connection, objectReference);
-				//this.iedConnection = null;
-				Console.WriteLine ("Destructor finished");
-            }
+			internal void DisposeInternal() 
+			{
+				IedConnection_uninstallReportHandler(connection, objectReference);
+			}
+
+			/// <summary>
+			/// Releases all resource used by the <see cref="IEC61850.Client.ReportControlBlock"/> object.
+			/// </summary>
+			/// <remarks>Call <see cref="Dispose"/> when you are finished using the <see cref="IEC61850.Client.ReportControlBlock"/>. The
+			/// <see cref="Dispose"/> method leaves the <see cref="IEC61850.Client.ReportControlBlock"/> in an unusable state.
+			/// After calling <see cref="Dispose"/>, you must release all references to the
+			/// <see cref="IEC61850.Client.ReportControlBlock"/> so the garbage collector can reclaim the memory that the
+			/// <see cref="IEC61850.Client.ReportControlBlock"/> was occupying.</remarks>
+			public void Dispose() 
+			{
+				DisposeInternal ();
+
+				iedConnection.RemoveRCB (this);
+			}
 
 			public string GetObjectReference ()
 			{

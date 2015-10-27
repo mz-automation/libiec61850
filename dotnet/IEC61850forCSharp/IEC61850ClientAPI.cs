@@ -259,12 +259,31 @@ namespace IEC61850
 				connection = IedConnection_create ();
 			}
 
+			/// <summary>
+			/// Releases all resource used by the <see cref="IEC61850.Client.IedConnection"/> object.
+			/// </summary>
+			/// <remarks>Call <see cref="Dispose"/> when you are finished using the <see cref="IEC61850.Client.IedConnection"/>. The
+			/// <see cref="Dispose"/> method leaves the <see cref="IEC61850.Client.IedConnection"/> in an unusable state. After
+			/// calling <see cref="Dispose"/>, you must release all references to the <see cref="IEC61850.Client.IedConnection"/>
+			/// so the garbage collector can reclaim the memory that the <see cref="IEC61850.Client.IedConnection"/> was occupying.</remarks>
+			public void Dispose()
+			{
+				if (connection != IntPtr.Zero) {
+					cleanupRCBs ();
+
+					IedConnection_destroy (connection);
+
+					connection = IntPtr.Zero;
+				}
+			}
+
             ~IedConnection ()
             {
-				Console.WriteLine ("IedConnection destructor invoked");
-                if (connection != IntPtr.Zero)
-                   IedConnection_destroy(connection);
-				Console.WriteLine ("IedConnection destructor finished");
+				if (connection != IntPtr.Zero) {
+					cleanupRCBs ();
+
+					IedConnection_destroy (connection);
+				}
             }
 
 			public IsoConnectionParameters GetConnectionParameters ()

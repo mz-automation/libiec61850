@@ -43,6 +43,10 @@ namespace authenticate
             {
 				Console.WriteLine(e.Message);
             }
+
+
+			// release all resources - do NOT use the object after this call!!
+			con.Dispose ();
         }
     }
 }

@@ -39,6 +39,8 @@ namespace example2
                 Console.WriteLine("IED connection excepion: " + e.Message);
             }
 
+			// release all resources - do NOT use the object after this call!!
+			con.Dispose ();
         }
     }
 }

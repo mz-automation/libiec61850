@@ -104,6 +104,8 @@ namespace report_new_dataset
 				Console.WriteLine(e.Message + " reason: " + e.GetIedClientError().ToString());
             }
 
+			// release all resources - do NOT use the object after this call!!
+			con.Dispose ();
         }
     }
 }

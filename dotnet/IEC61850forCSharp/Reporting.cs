@@ -24,6 +24,7 @@ using System;
 using System.Runtime.InteropServices;
 
 using IEC61850.Common;
+using System.Collections.Generic;
 
 namespace IEC61850
 {
@@ -31,10 +32,38 @@ namespace IEC61850
 	{
 		public partial class IedConnection
 		{
+
+			private List<ReportControlBlock> activeRCBs = null;
+
+			private void cleanupRCBs() 
+			{
+				if (activeRCBs != null) {
+
+					foreach (ReportControlBlock rcb in activeRCBs) {
+						rcb.DisposeInternal ();
+					}
+				}
+
+			}
+
 			public ReportControlBlock GetReportControlBlock (string rcbObjectReference)
 			{
-				return new ReportControlBlock (rcbObjectReference, this, connection);
+				var newRCB = new ReportControlBlock (rcbObjectReference, this, connection);
+
+				if (activeRCBs == null)
+					activeRCBs = new List<ReportControlBlock> ();
+
+				activeRCBs.Add (newRCB);
+
+				return newRCB;
 			}
+
+			internal void RemoveRCB(ReportControlBlock rcb) {
+				if (activeRCBs != null) {
+					activeRCBs.Remove (rcb);
+				}
+			}
+
 		}
 
 		public enum ReasonForInclusion

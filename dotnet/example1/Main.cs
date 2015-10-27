@@ -73,6 +73,9 @@ namespace example1
             }
 
             System.Threading.Thread.Sleep(2000);
+
+			// release all resources - do NOT use the object after this call!!
+			con.Dispose ();
         }
     }
 }

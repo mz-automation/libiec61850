@@ -138,9 +138,18 @@ namespace reporting
 					Thread.Sleep(10);
 				}
 
+				/* Dispose the RCBs when you no longer need them */
+				rcb1.Dispose();
+				rcb2.Dispose();
+				rcb3.Dispose();
+
 				con.Abort ();
+
+				con.Dispose();
 			} catch (IedConnectionException e) {
 				Console.WriteLine ("Error: " + e.Message);
+
+				con.Dispose ();
 			}
 
 		}
