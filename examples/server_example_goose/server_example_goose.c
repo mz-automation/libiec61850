@@ -55,6 +55,13 @@ int main(int argc, char** argv) {
 
 	iedServer = IedServer_create(&iedModel);
 
+	if (argc > 1) {
+		char* ethernetIfcID = argv[1];
+
+		printf("Using GOOSE interface: %s\n", ethernetIfcID);
+		IedServer_setGooseInterfaceId(iedServer, ethernetIfcID);
+	}
+
 	/* MMS server will be instructed to start listening to client connections. */
 	IedServer_start(iedServer, 102);
 

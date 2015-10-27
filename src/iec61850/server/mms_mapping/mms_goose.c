@@ -504,6 +504,8 @@ GOOSE_createGOOSEControlBlocks(MmsMapping* self, MmsDomain* domain,
             MmsValue* goID = MmsValue_getElement(gseValues, 1);
 
             MmsValue_setVisibleString(goID, gooseControlBlock->appId);
+
+            mmsGCB->goId = copyString(gooseControlBlock->appId);
         }
 
         if (gooseControlBlock->dataSetName != NULL)

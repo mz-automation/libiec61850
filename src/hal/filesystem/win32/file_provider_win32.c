@@ -1,7 +1,7 @@
 /*
  *  file_provider_win32.c
  *
- *  Copyright 2014 Michael Zillgith
+ *  Copyright 2014, 2015 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -45,7 +45,8 @@ static char* fileBasePath = CONFIG_VIRTUAL_FILESTORE_BASEPATH;
 
 struct sDirectoryHandle {
     HANDLE handle;
-    WIN32_FIND_DATA findData;
+    WIN32_FIND_DATAW findData;
+	char utf8Filename[MAX_PATH * 3 + 1];
     bool available;
 };
 
@@ -134,10 +135,18 @@ FileSystem_openDirectory(char* directoryName)
 
     strcat(fullPath, "\\*");
 
-    dirHandle->handle = FindFirstFile(fullPath, &(dirHandle->findData));
+	/* convert UTF-8 path name to WCHAR */
+	WCHAR unicodeFullPath[MAX_PATH + 1];
+	MultiByteToWideChar(CP_UTF8, 0, fullPath, -1, unicodeFullPath, MAX_PATH);
 
-    if (dirHandle->handle != NULL)
-        dirHandle->available = true;
+	dirHandle->handle = FindFirstFileW(unicodeFullPath, &(dirHandle->findData));
+
+	if (dirHandle->handle != NULL) {
+		dirHandle->available = true;
+
+		/* convert WCHAR to UTF-8 */
+		WideCharToMultiByte(CP_UTF8, 0, dirHandle->findData.cFileName, -1, dirHandle->utf8Filename, (MAX_PATH * 3) + 1, NULL, NULL);
+	}
 
     if (dirHandle->handle == INVALID_HANDLE_VALUE) {
         GLOBAL_FREEMEM(dirHandle);
@@ -158,18 +167,21 @@ getNextDirectoryEntry(DirectoryHandle directory, bool* isDirectory)
         else
             *isDirectory = false;
 
-        return directory->findData.cFileName;
+        return directory->utf8Filename;
     }
     else {
 
-        if (FindNextFile(directory->handle, &(directory->findData)) != 0) {
+        if (FindNextFileW(directory->handle, &(directory->findData)) != 0) {
 
             if (directory->findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
                 *isDirectory = true;
             else
                 *isDirectory = false;
 
-            return directory->findData.cFileName;
+			/* convert WCHAR to UTF-8 */
+			WideCharToMultiByte(CP_UTF8, 0, directory->findData.cFileName, -1, directory->utf8Filename, (MAX_PATH * 3) + 1, NULL, NULL);
+
+            return directory->utf8Filename;
         }
         else
             return NULL;
