@@ -30,6 +30,10 @@ namespace reporting
 				Console.WriteLine ("  entryID: " + shb.ToString ());
 			}
 
+			if (report.HasDataSetName ()) {
+				Console.WriteLine ("   report data set: " + report.GetDataSetName ());
+			}
+
 			Console.WriteLine ("  report dataset contains " + values.Size () + " elements");
 
 			for (int i = 0; i < values.Size(); i++) {

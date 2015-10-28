@@ -146,6 +146,9 @@ namespace IEC61850
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern IntPtr ClientReport_getRcbReference(IntPtr self);
 
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr ClientReport_getDataSetName(IntPtr self);
+
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern IntPtr ClientReport_getRptId(IntPtr self);
 
@@ -288,6 +291,13 @@ namespace IEC61850
 
                 return Marshal.PtrToStringAnsi (rcbRef);
             }
+
+			public string GetDataSetName ()
+			{
+				IntPtr dataSetName = ClientReport_getDataSetName (self);
+
+				return Marshal.PtrToStringAnsi (dataSetName);
+			}
 
             /// <summary>
             /// Gets the data reference for the specified data set element
