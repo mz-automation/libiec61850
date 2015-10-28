@@ -353,7 +353,7 @@ MmsServerConnection_deleteNamedVariableList(MmsServerConnection self, char* list
 }
 
 MmsNamedVariableList
-MmsServerConnection_getNamedVariableList(MmsServerConnection self, char* variableListName)
+MmsServerConnection_getNamedVariableList(MmsServerConnection self, const char* variableListName)
 {
 	//TODO remove code duplication - similar to MmsDomain_getNamedVariableList !
 	MmsNamedVariableList variableList = NULL;

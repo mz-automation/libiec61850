@@ -489,7 +489,7 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
     }
 
     if (dataSetValue != NULL) {
-        char* dataSetName = MmsValue_toString(dataSetValue);
+        const char* dataSetName = MmsValue_toString(dataSetValue);
 
         DataSet* dataSet = IedModel_lookupDataSet(mapping->model, dataSetName);
 

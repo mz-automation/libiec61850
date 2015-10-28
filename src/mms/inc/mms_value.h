@@ -292,8 +292,25 @@ MmsValue_setBoolean(MmsValue* value, bool boolValue);
 bool
 MmsValue_getBoolean(const MmsValue* value);
 
-char*
+/**
+ * \brief Returns the value of an MMS_VISIBLE_STRING object as C string
+ *
+ * \param self MmsValue instance to operate on. Has to be of a type MMS_VISIBLE_STRING or MMS_STRING.
+ *
+ * \returns the string value as 0 terminated C string
+ */
+const char*
 MmsValue_toString(MmsValue* self);
+
+/**
+ * \brief Returns the (maximum) length of the string
+ *
+ * NOTE: this function return the amount of memory allocated for the string buffer - 1.
+ *
+ * \param self MmsValue instance to operate on. Has to be of a type MMS_VISIBLE_STRING or MMS_STRING.
+ */
+int
+MmsValue_getStringSize(MmsValue* self);
 
 void
 MmsValue_setVisibleString(MmsValue* self, const char* string);

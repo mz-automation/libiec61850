@@ -118,10 +118,10 @@ ControlObject*
 MmsMapping_getControlObject(MmsMapping* self, MmsDomain* domain, char* lnName, char* coName);
 
 MmsNamedVariableList
-MmsMapping_getDomainSpecificVariableList(MmsMapping* self, char* variableListReference);
+MmsMapping_getDomainSpecificVariableList(MmsMapping* self, const char* variableListReference);
 
 DataSet*
-MmsMapping_getDomainSpecificDataSet(MmsMapping* self, char* dataSetName);
+MmsMapping_getDomainSpecificDataSet(MmsMapping* self, const char* dataSetName);
 
 void
 MmsMapping_freeDynamicallyCreatedDataSet(DataSet* dataSet);

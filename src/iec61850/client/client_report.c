@@ -37,6 +37,10 @@ struct sClientReport
     void* callbackParameter;
     char* rcbReference;
     char* rptId;
+
+    char* dataSetName;
+    int dataSetNameSize; /* size of the dataSetName buffer */
+
     MmsValue* entryId;
     MmsValue* dataReferences;
     MmsValue* dataSetValues;
@@ -105,6 +109,9 @@ ClientReport_destroy(ClientReport self)
 
     if (self->reasonForInclusion != NULL)
         GLOBAL_FREEMEM(self->reasonForInclusion);
+
+    if (self->dataSetName != NULL)
+    	GLOBAL_FREEMEM((void*) self->dataSetName);
 
     GLOBAL_FREEMEM(self);
 }
@@ -219,6 +226,12 @@ ClientReport_getDataReference(ClientReport self, int elementIndex)
     }
 
     return dataReference;
+}
+
+const char*
+ClientReport_getDataSetName(ClientReport self)
+{
+	return self->dataSetName;
 }
 
 MmsValue*
@@ -397,6 +410,26 @@ private_IedConnection_handleReport(IedConnection self, MmsValue* value)
     /* check if data set name is present */
     if (MmsValue_getBitStringBit(optFlds, 4) == true) {
         matchingReport->hasDataSetName = true;
+
+        MmsValue* dataSetName = MmsValue_getElement(value, inclusionIndex);
+
+        const char* dataSetNameStr = MmsValue_toString(dataSetName);
+
+        if (matchingReport->dataSetName == NULL) {
+        	matchingReport->dataSetName = (char*) GLOBAL_MALLOC(MmsValue_getStringSize(dataSetName) + 1);
+        	matchingReport->dataSetNameSize = MmsValue_getStringSize(dataSetName) + 1;
+        }
+        else {
+        	if (matchingReport->dataSetNameSize < MmsValue_getStringSize(dataSetName) + 1) {
+        		GLOBAL_FREEMEM((void*) matchingReport->dataSetName);
+
+        		matchingReport->dataSetName = (char*) GLOBAL_MALLOC(MmsValue_getStringSize(dataSetName) + 1);
+				matchingReport->dataSetNameSize = MmsValue_getStringSize(dataSetName) + 1;
+        	}
+        }
+
+    	strcpy(matchingReport->dataSetName, dataSetNameStr);
+
         inclusionIndex++;
     }
 

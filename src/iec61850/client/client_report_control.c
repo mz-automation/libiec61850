@@ -93,7 +93,7 @@ ClientReportControlBlock_isBuffered(ClientReportControlBlock self)
     return self->isBuffered;
 }
 
-char*
+const char*
 ClientReportControlBlock_getRptId(ClientReportControlBlock self)
 {
     if (self->rptId != NULL)
@@ -150,7 +150,7 @@ ClientReportControlBlock_setResv(ClientReportControlBlock self, bool resv)
         MmsValue_setBoolean(self->resv, resv);
 }
 
-char*
+const char*
 ClientReportControlBlock_getDataSetReference(ClientReportControlBlock self)
 {
     if (self->datSet != NULL)

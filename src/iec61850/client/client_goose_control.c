@@ -90,7 +90,7 @@ ClientGooseControlBlock_setGoEna(ClientGooseControlBlock self, bool goEna)
         MmsValue_setBoolean(self->goEna, goEna);
 }
 
-char*
+const char*
 ClientGooseControlBlock_getGoID(ClientGooseControlBlock self)
 {
     if (self->goID != NULL)
@@ -108,7 +108,7 @@ ClientGooseControlBlock_setGoID(ClientGooseControlBlock self, const char* goID)
         MmsValue_setVisibleString(self->goID, goID);
 }
 
-char*
+const char*
 ClientGooseControlBlock_getDatSet(ClientGooseControlBlock self)
 {
     if (self->datSet != NULL)

@@ -517,3 +517,5 @@ EXPORTS
     ControlObjectClient_setOrigin
     LogicalDevice_getChildByMmsVariableName
     LogicalNode_getDataSet
+    ClientReport_getDataSetName
+    MmsValue_getStringSize

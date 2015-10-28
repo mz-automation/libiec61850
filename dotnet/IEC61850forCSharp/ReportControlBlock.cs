@@ -429,6 +429,42 @@ namespace IEC61850
 				return retVal.AddMilliseconds (entryTime);
 			}
 
+			/// <summary>
+			/// Gets the entryID of RCB
+			/// </summary>
+			/// Returns the EntryID of the last received GetRCBValues service response.
+			/// The EntryID is only present in buffered RCBs (BRCBs).
+			/// 
+			/// <returns>The entry ID</returns>
+			public byte[] GetEntryID() 
+			{
+				IntPtr entryIdRef = ClientReportControlBlock_getEntryId (self);
+
+				if (entryIdRef == IntPtr.Zero)
+					return null;
+				else {
+					MmsValue entryId = new MmsValue (entryIdRef);
+
+					return entryId.getOctetString ();
+				}
+			}
+
+			public void SetEntryID(byte[] entryId)
+			{
+				flagEntryId = true;
+
+
+
+				MmsValue entryID = MmsValue.NewOctetString (entryId.Length);
+
+				entryID.setOctetString (entryId);
+
+				ClientReportControlBlock_setEntryId (self, entryID.valueReference);
+
+
+			}
+
+
             /// <summary>
             /// Gets the data set reference of the associated data set
             /// </summary>

@@ -454,7 +454,7 @@ IedServer_getBitStringAttributeValue(IedServer self, const DataAttribute* dataAt
  *
  * \return the value as a C string (null terminated string)
  */
-char*
+const char*
 IedServer_getStringAttributeValue(IedServer self, const DataAttribute* dataAttribute);
 
 

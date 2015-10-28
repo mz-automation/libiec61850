@@ -187,7 +187,7 @@ MmsGooseControlBlock_enable(MmsGooseControlBlock self)
 
         self->dataSet = NULL;
 
-        char* dataSetRef = MmsValue_toString(MmsValue_getElement(self->mmsValue, 2));
+        const char* dataSetRef = MmsValue_toString(MmsValue_getElement(self->mmsValue, 2));
 
         if (dataSetRef != NULL) {
 

@@ -363,13 +363,13 @@ ClientGooseControlBlock_getGoEna(ClientGooseControlBlock self);
 void
 ClientGooseControlBlock_setGoEna(ClientGooseControlBlock self, bool goEna);
 
-char*
+const char*
 ClientGooseControlBlock_getGoID(ClientGooseControlBlock self);
 
 void
 ClientGooseControlBlock_setGoID(ClientGooseControlBlock self, const char* goID);
 
-char*
+const char*
 ClientGooseControlBlock_getDatSet(ClientGooseControlBlock self);
 
 void
@@ -680,6 +680,17 @@ IedConnection_triggerGIReport(IedConnection self, IedClientError* error, const c
  ****************************************/
 
 /**
+ * \brief Get the name of the report data set
+ *
+ * NOTE: the returned string is only valid as long as the ClientReport instance exists!
+ *
+ * \param self the ClientReport instance
+ * \return report data set name as 0 terminated string
+ */
+const char*
+ClientReport_getDataSetName(ClientReport self);
+
+/**
  * \brief return the received data set values of the report
  *
  * \param self the ClientReport instance
@@ -843,7 +854,7 @@ ClientReportControlBlock_getObjectReference(ClientReportControlBlock self);
 bool
 ClientReportControlBlock_isBuffered(ClientReportControlBlock self);
 
-char*
+const char*
 ClientReportControlBlock_getRptId(ClientReportControlBlock self);
 
 void
@@ -861,7 +872,7 @@ ClientReportControlBlock_getResv(ClientReportControlBlock self);
 void
 ClientReportControlBlock_setResv(ClientReportControlBlock self, bool resv);
 
-char*
+const char*
 ClientReportControlBlock_getDataSetReference(ClientReportControlBlock self);
 
 /**

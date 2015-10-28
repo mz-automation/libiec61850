@@ -1727,13 +1727,22 @@ MmsValue_setVisibleString(MmsValue* self, const char* string)
 	}
 }
 
-char*
+const char*
 MmsValue_toString(MmsValue* self)
 {
 	if ((self->type == MMS_VISIBLE_STRING) || (self->type == MMS_STRING))
 		return self->value.visibleString.buf;
 
 	return NULL;
+}
+
+int
+MmsValue_getStringSize(MmsValue* self)
+{
+	if ((self->type == MMS_VISIBLE_STRING) || (self->type == MMS_STRING))
+		return self->value.visibleString.size;
+	else
+		return 0;
 }
 
 MmsValue*

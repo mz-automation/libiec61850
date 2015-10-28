@@ -49,7 +49,7 @@ bool
 MmsServerConnection_addNamedVariableList(MmsServerConnection self, MmsNamedVariableList variableList);
 
 MmsNamedVariableList
-MmsServerConnection_getNamedVariableList(MmsServerConnection self, char* variableListName);
+MmsServerConnection_getNamedVariableList(MmsServerConnection self, const char* variableListName);
 
 LinkedList
 MmsServerConnection_getNamedVariableLists(MmsServerConnection self);

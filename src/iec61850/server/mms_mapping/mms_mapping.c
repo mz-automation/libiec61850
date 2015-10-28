@@ -2744,7 +2744,7 @@ MmsMapping_createDataSetByNamedVariableList(MmsMapping* self, MmsNamedVariableLi
 }
 
 MmsNamedVariableList
-MmsMapping_getDomainSpecificVariableList(MmsMapping* self, char* variableListReference)
+MmsMapping_getDomainSpecificVariableList(MmsMapping* self, const char* variableListReference)
 {
     char variableListReferenceCopy[193];
 
@@ -2773,7 +2773,7 @@ MmsMapping_getDomainSpecificVariableList(MmsMapping* self, char* variableListRef
 }
 
 DataSet*
-MmsMapping_getDomainSpecificDataSet(MmsMapping* self, char* dataSetName)
+MmsMapping_getDomainSpecificDataSet(MmsMapping* self, const char* dataSetName)
 {
     MmsNamedVariableList variableList = MmsMapping_getDomainSpecificVariableList(self, dataSetName);
 

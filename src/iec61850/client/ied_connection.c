@@ -238,7 +238,7 @@ ClientDataSet_getDataSetSize(ClientDataSet self)
 }
 
 bool
-private_IedConnection_doesControlObjectMatch(char* objRef, char* cntrlObj)
+private_IedConnection_doesControlObjectMatch(const char* objRef, const char* cntrlObj)
 {
     int i = 0;
 
@@ -420,7 +420,7 @@ handleLastApplErrorMessage(IedConnection self, MmsValue* lastApplError)
     while (control != NULL) {
         ControlObjectClient object = (ControlObjectClient) control->data;
 
-        char* objectRef = ControlObjectClient_getObjectReference(object);
+        const char* objectRef = ControlObjectClient_getObjectReference(object);
 
         if (private_IedConnection_doesControlObjectMatch(objectRef, MmsValue_toString(cntrlObj))) {
             ControlObjectClient_setLastApplError(object, self->lastApplError);

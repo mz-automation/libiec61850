@@ -742,7 +742,7 @@ IedServer_getBitStringAttributeValue(IedServer self, const DataAttribute* dataAt
     return MmsValue_getBitStringAsInteger(dataAttribute->mmsValue);
 }
 
-char*
+const char*
 IedServer_getStringAttributeValue(IedServer self, const DataAttribute* dataAttribute)
 {
     assert(self != NULL);
@@ -933,7 +933,7 @@ IedServer_updateVisibleStringAttributeValue(IedServer self, DataAttribute* dataA
     assert(dataAttribute != NULL);
     assert(self != NULL);
 
-    char *currentValue = MmsValue_toString(dataAttribute->mmsValue);
+    const char *currentValue = MmsValue_toString(dataAttribute->mmsValue);
 
     if (!strcmp(currentValue ,value)) {
         checkForUpdateTrigger(self, dataAttribute);
