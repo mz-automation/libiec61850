@@ -300,69 +300,64 @@ StringUtils_compareStrings(const char* a, const char* b)
 void
 StringUtils_sortList(LinkedList list)
 {
-	LinkedList firstElement = list->next;
-	LinkedList prevElement = NULL;
+	LinkedList selectedElement = list->next;
 
-	while (true) {
+	if (selectedElement == NULL) /* list is empty */
+		return;
 
-		/* Check for end of list */
-		if (firstElement->next) {
+	list->next = selectedElement->next;
+	selectedElement->next = NULL;
 
-			char* str1 = (char*) LinkedList_getData(firstElement);
-			char* str2 = (char*) LinkedList_getData(firstElement->next);
+	struct sLinkedList sortedListData;
 
-			/* Compare first element with next element */
-			if (StringUtils_compareStrings(str1, str2) > 0) {
-				LinkedList removedElement = firstElement;
+	LinkedList sortedList = &sortedListData;
 
-				if (firstElement == list->next)
-					list->next = firstElement->next;
-				else
-					prevElement->next = firstElement->next;
+	sortedList->next = selectedElement;
 
-				firstElement = firstElement->next;
+	selectedElement = list->next;
 
-				/* search for place to insert */
-				LinkedList compareElement = removedElement->next->next;
-				LinkedList prevCompareElement = removedElement->next;
+	while (selectedElement != NULL) {
 
-				while (true) {
-					str2 = (char*) LinkedList_getData(compareElement);
+		list->next = selectedElement->next;
+		selectedElement->next = NULL;
 
-					if (StringUtils_compareStrings(str1, str2) < 0) {
-						/* insert element before */
-						prevCompareElement->next = removedElement;
-						removedElement->next = compareElement;
+		char* str1 = (char*) LinkedList_getData(selectedElement);
 
-						break;
-					}
+		LinkedList prevElement = sortedList;
 
-					prevCompareElement = compareElement;
-					compareElement = compareElement->next;
+		while (true) {
 
-					/* Are we at the end of the list? */
-					if (compareElement == NULL) {
-						/* Insert removed element at end of list */
-						prevCompareElement->next = removedElement;
-						removedElement->next = NULL;
-						break;
-					}
+			if (prevElement->next == NULL) {
+				prevElement->next = selectedElement;
+				break;
+			}
 
+			char* str2 = (char*) LinkedList_getData(prevElement->next);
+
+			if (StringUtils_compareStrings(str1, str2) < 0) {
+
+				/* insert "nextElement" before */
+				if (sortedList == prevElement) {
+					selectedElement->next = sortedList->next;
+					sortedList->next = selectedElement;
+				}
+				else {
+					selectedElement->next = prevElement->next;
+					prevElement->next = selectedElement;
 				}
 
-			}
-			else {
-
-				prevElement = firstElement;
-				firstElement = firstElement->next;
+				break;
 			}
 
-
+			prevElement = prevElement->next;
 		}
-		else
+
+		selectedElement = list->next;
+
+		if (selectedElement == NULL)
 			break;
-
 	}
-}
 
+	list->next = sortedList->next;
+}
 
