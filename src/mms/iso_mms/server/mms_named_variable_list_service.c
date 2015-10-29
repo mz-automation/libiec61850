@@ -251,7 +251,7 @@ createNamedVariableList(MmsDomain* domain, MmsDevice* device,
 
 	int variableCount = request->listOfVariable.list.count;
 
-	if (variableCount > CONFIG_MMS_MAX_NUMBER_OF_DATA_SET_MEMBERS) {
+	if ((variableCount == 0 ) || (variableCount > CONFIG_MMS_MAX_NUMBER_OF_DATA_SET_MEMBERS)) {
 	    *mmsError = MMS_ERROR_DEFINITION_OTHER;
 	    goto exit_function;
 	}

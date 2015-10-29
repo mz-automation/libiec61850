@@ -1134,8 +1134,8 @@ MmsMapping_create(IedModel* model)
 #endif
 
 #if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
-        self->gseControls = LinkedList_create();
-        self->gooseInterfaceId = NULL;
+    self->gseControls = LinkedList_create();
+    self->gooseInterfaceId = NULL;
 #endif
 
 #if (CONFIG_IEC61850_CONTROL_SERVICE == 1)

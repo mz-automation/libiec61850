@@ -80,6 +80,23 @@ getNameListVMDSpecific(MmsServerConnection connection)
 }
 #endif /* (CONFIG_MMS_SUPPORT_VMD_SCOPE_NAMED_VARIABLES == 1) */
 
+static void
+sortIndex(int* index, int size, MmsVariableSpecification** namedVariables)
+{
+    int n;
+    int i;
+
+    for (n = size; n > 1; n = n - 1) {
+        for (i = 0; i < n - 1; i = i + 1) {
+            if (StringUtils_compareStrings(namedVariables[index[i]]->name, namedVariables[index[i + 1]]->name) > 0) {
+                int storedIndex = index[i];
+                index[i] = index[i + 1];
+                index[i + 1] = storedIndex;
+            }
+        }
+    }
+}
+
 #if (CONFIG_MMS_SUPPORT_FLATTED_NAME_SPACE == 1)
 static char*
 appendMmsSubVariable(char* name, char* child)
@@ -116,14 +133,22 @@ addSubNamedVaribleNamesToList(LinkedList nameList, char* prefix, MmsVariableSpec
 
 		int i;
 
-		MmsVariableSpecification** variables = variable->typeSpec.structure.elements;
+	    int* index = GLOBAL_MALLOC(sizeof(int) * variable->typeSpec.structure.elementCount);
+
+        for (i = 0; i < variable->typeSpec.structure.elementCount; i++)
+            index[i] = i;
+
+        MmsVariableSpecification** variables = variable->typeSpec.structure.elements;
+
+        sortIndex(index, variable->typeSpec.structure.elementCount, variables);
+
 
 		for (i = 0; i < variable->typeSpec.structure.elementCount; i++) {
-			char* variableName = appendMmsSubVariable(prefix, variables[i]->name);
+			char* variableName = appendMmsSubVariable(prefix, variables[index[i]]->name);
 
 			listElement = LinkedList_insertAfter(listElement, variableName);
 
-			listElement = addSubNamedVaribleNamesToList(listElement, variableName, variables[i]);
+			listElement = addSubNamedVaribleNamesToList(listElement, variableName, variables[index[i]]);
 		}
 	}
 
@@ -131,6 +156,7 @@ addSubNamedVaribleNamesToList(LinkedList nameList, char* prefix, MmsVariableSpec
 }
 
 #endif /* (CONFIG_MMS_SUPPORT_FLATTED_NAME_SPACE == 1) */
+
 
 static LinkedList
 getNameListDomainSpecific(MmsServerConnection connection, char* domainName)
@@ -149,15 +175,26 @@ getNameListDomainSpecific(MmsServerConnection connection, char* domainName)
 
 		LinkedList element = nameList;
 
+		int* index = GLOBAL_MALLOC(sizeof(int) * domain->namedVariablesCount);
+
+		for (i = 0; i < domain->namedVariablesCount; i++)
+		    index[i] = i;
+
+		sortIndex(index, domain->namedVariablesCount, domain->namedVariables);
+
 		for (i = 0; i < domain->namedVariablesCount; i++) {
-			element = LinkedList_insertAfter(element, copyString(variables[i]->name));
+
+
+			element = LinkedList_insertAfter(element, copyString(variables[index[i]]->name));
 
 #if (CONFIG_MMS_SUPPORT_FLATTED_NAME_SPACE == 1)
-			char* prefix = variables[i]->name;
-			element = addSubNamedVaribleNamesToList(element, prefix, variables[i]);
+			char* prefix = variables[index[i]]->name;
+			element = addSubNamedVaribleNamesToList(element, prefix, variables[index[i]]);
 #endif
 
 		}
+
+		GLOBAL_FREEMEM(index);
 	}
 
 	return nameList;
@@ -437,7 +474,7 @@ mmsServer_handleGetNameListRequest(
 			else {
 
 #if (CONFIG_MMS_SORT_NAME_LIST == 1)
-				StringUtils_sortList(nameList);
+			//	StringUtils_sortList(nameList);
 #endif
 
 				createNameListResponse(connection, invokeId, nameList, response, continueAfterId);
