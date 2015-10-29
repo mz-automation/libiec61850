@@ -1,11 +1,22 @@
 Changes to version 0.8.7
 ------------------------
+- client: added client side control service support for edition 1 and 2 APC CDCs
+- client: ControlObjectClient uses GetVarSpec instead of GetNameList and ReadData to get required information from the server (compatible with more server implementations)
+- client: Added function ControlObjectClient_useConstantT to support constant T parameter during a control sequence (required my some non-standard conformant servers)
+- server: Fixed problem with SqNum in RCBs and reports
+- windows file provider now supports unicode file name and converts them to UTF-8
+- some small API changes (some char* parameter became const char*; new function ClientReport_getDataSetName)
+- client API: added function ClientReport_getDataSetName
+- .NET API: new methods Report.GetDataSetName, ReportControlBlock.GetEntryID, ReportControlBlock.SetEntryID, Dispose methods for ReportControlBlock and IedConnection classes
+- .NET API: fixed bug with garbage collected CommandTerminationHandler
+- server: getNameList response with alphabetically sorted variable names (configurable by CONFIG_MMS_SORT_NAME_LIST option)
 - server: only client that set EditSG can change EditSG and modify variables with FC=SE
 - server: changed ControlObjectClient_create function: doesn't read "Oper" and uses GetVarSpec instead of GetNameList service
 - extended beoglebone demo (write access to GAPC settings, ...)
-- server: File service: support for wildcard character ('*') in requests
-- server: changed signature of WriteAccessHandler: Handler now return MmsDataAccessError instead of boolean value!
+- server: File service: support for wildcard character ('*') in requests; support for flat file list
+- server: changed signature of WriteAccessHandler: Handler now returns MmsDataAccessError instead of boolean value!
 - server: added function IedModel_setIedNameForDynamicModel
+- and some more small changes and bug fixes
 
 Changes to version 0.8.6
 ------------------------

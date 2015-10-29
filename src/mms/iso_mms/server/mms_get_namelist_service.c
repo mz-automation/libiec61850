@@ -139,7 +139,7 @@ addSubNamedVaribleNamesToList(LinkedList nameList, char* prefix, MmsVariableSpec
         MmsVariableSpecification** variables = variable->typeSpec.structure.elements;
 
 #if (CONFIG_MMS_SORT_NAME_LIST == 1)
-        int* index = GLOBAL_MALLOC(sizeof(int) * variable->typeSpec.structure.elementCount);
+        int* index = (int*) GLOBAL_MALLOC(sizeof(int) * variable->typeSpec.structure.elementCount);
 
         for (i = 0; i < variable->typeSpec.structure.elementCount; i++)
             index[i] = i;
@@ -191,7 +191,7 @@ getNameListDomainSpecific(MmsServerConnection connection, char* domainName)
         LinkedList element = nameList;
 
 #if (CONFIG_MMS_SORT_NAME_LIST == 1)
-        int* index = GLOBAL_MALLOC(sizeof(int) * domain->namedVariablesCount);
+        int* index = (int*) GLOBAL_MALLOC(sizeof(int) * domain->namedVariablesCount);
 
         for (i = 0; i < domain->namedVariablesCount; i++)
             index[i] = i;
