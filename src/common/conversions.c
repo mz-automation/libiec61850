@@ -259,7 +259,7 @@ Conversions_generalizedTimeToMsTime(const char* gtString)
         return -1;
     }
 
-    uint64_t msTime = t * 1000;
+    uint64_t msTime = (uint64_t) t * 1000LL;
 
     msTime += msOffset;
 
