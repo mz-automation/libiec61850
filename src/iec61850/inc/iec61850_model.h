@@ -82,36 +82,71 @@ typedef struct sGSEControlBlock GSEControlBlock;
 
 
 typedef enum {
-	BOOLEAN = 0,/* int */
-	INT8 = 1,   /* int8_t */
-	INT16 = 2,  /* int16_t */
-	INT32 = 3,  /* int32_t */
-	INT64 = 4,  /* int64_t */
-	INT128 = 5, /* no native mapping! */
-	INT8U = 6,  /* uint8_t */
-	INT16U = 7, /* uint16_t */
-	INT24U = 8, /* uint32_t */
-	INT32U = 9, /* uint32_t */
-	FLOAT32 = 10, /* float */
-	FLOAT64 = 11, /* double */
-	ENUMERATED = 12,
-	OCTET_STRING_64 = 13,
-	OCTET_STRING_6 = 14,
-	OCTET_STRING_8 = 15,
-	VISIBLE_STRING_32 = 16,
-	VISIBLE_STRING_64 = 17,
-	VISIBLE_STRING_65 = 18,
-	VISIBLE_STRING_129 = 19,
-	VISIBLE_STRING_255 = 20,
-	UNICODE_STRING_255 = 21,
-	TIMESTAMP = 22,
-	QUALITY = 23,
-	CHECK = 24,
-	CODEDENUM = 25,
-	GENERIC_BITSTRING = 26,
-	CONSTRUCTED = 27,
-	ENTRY_TIME = 28,
-	PHYCOMADDR = 29
+	IEC61850_BOOLEAN = 0,/* int */
+	IEC61850_INT8 = 1,   /* int8_t */
+	IEC61850_INT16 = 2,  /* int16_t */
+	IEC61850_INT32 = 3,  /* int32_t */
+	IEC61850_INT64 = 4,  /* int64_t */
+	IEC61850_INT128 = 5, /* no native mapping! */
+	IEC61850_INT8U = 6,  /* uint8_t */
+	IEC61850_INT16U = 7, /* uint16_t */
+	IEC61850_INT24U = 8, /* uint32_t */
+	IEC61850_INT32U = 9, /* uint32_t */
+	IEC61850_FLOAT32 = 10, /* float */
+	IEC61850_FLOAT64 = 11, /* double */
+	IEC61850_ENUMERATED = 12,
+	IEC61850_OCTET_STRING_64 = 13,
+	IEC61850_OCTET_STRING_6 = 14,
+	IEC61850_OCTET_STRING_8 = 15,
+	IEC61850_VISIBLE_STRING_32 = 16,
+	IEC61850_VISIBLE_STRING_64 = 17,
+	IEC61850_VISIBLE_STRING_65 = 18,
+	IEC61850_VISIBLE_STRING_129 = 19,
+	IEC61850_VISIBLE_STRING_255 = 20,
+	IEC61850_UNICODE_STRING_255 = 21,
+	IEC61850_TIMESTAMP = 22,
+	IEC61850_QUALITY = 23,
+	IEC61850_CHECK = 24,
+	IEC61850_CODEDENUM = 25,
+	IEC61850_GENERIC_BITSTRING = 26,
+	IEC61850_CONSTRUCTED = 27,
+	IEC61850_ENTRY_TIME = 28,
+	IEC61850_PHYCOMADDR = 29
+
+
+#if (CONFIG_IEC61850_USE_COMPAT_TYPE_DECLARATIONS == 1)
+	,
+    BOOLEAN = 0,/* int */
+    INT8 = 1,   /* int8_t */
+    INT16 = 2,  /* int16_t */
+    INT32 = 3,  /* int32_t */
+    INT64 = 4,  /* int64_t */
+    INT128 = 5, /* no native mapping! */
+    INT8U = 6,  /* uint8_t */
+    INT16U = 7, /* uint16_t */
+    INT24U = 8, /* uint32_t */
+    INT32U = 9, /* uint32_t */
+    FLOAT32 = 10, /* float */
+    FLOAT64 = 11, /* double */
+    ENUMERATED = 12,
+    OCTET_STRING_64 = 13,
+    OCTET_STRING_6 = 14,
+    OCTET_STRING_8 = 15,
+    VISIBLE_STRING_32 = 16,
+    VISIBLE_STRING_64 = 17,
+    VISIBLE_STRING_65 = 18,
+    VISIBLE_STRING_129 = 19,
+    VISIBLE_STRING_255 = 20,
+    UNICODE_STRING_255 = 21,
+    TIMESTAMP = 22,
+    QUALITY = 23,
+    CHECK = 24,
+    CODEDENUM = 25,
+    GENERIC_BITSTRING = 26,
+    CONSTRUCTED = 27,
+    ENTRY_TIME = 28,
+    PHYCOMADDR = 29
+#endif
 } DataAttributeType;
 
 typedef enum {

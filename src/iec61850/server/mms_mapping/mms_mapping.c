@@ -154,118 +154,118 @@ createNamedVariableFromDataAttribute(DataAttribute* attribute)
     }
     else {
         switch (attribute->type) {
-        case BOOLEAN:
+        case IEC61850_BOOLEAN:
             namedVariable->type = MMS_BOOLEAN;
             break;
-        case INT8:
+        case IEC61850_INT8:
             namedVariable->typeSpec.integer = 8;
             namedVariable->type = MMS_INTEGER;
             break;
-        case INT16:
+        case IEC61850_INT16:
             namedVariable->typeSpec.integer = 16;
             namedVariable->type = MMS_INTEGER;
             break;
-        case INT32:
+        case IEC61850_INT32:
             namedVariable->typeSpec.integer = 32;
             namedVariable->type = MMS_INTEGER;
             break;
-        case INT64:
+        case IEC61850_INT64:
             namedVariable->typeSpec.integer = 64;
             namedVariable->type = MMS_INTEGER;
             break;
-        case INT128:
+        case IEC61850_INT128:
             namedVariable->typeSpec.integer = 128;
             namedVariable->type = MMS_INTEGER;
             break;
-        case INT8U:
+        case IEC61850_INT8U:
             namedVariable->typeSpec.unsignedInteger = 8;
             namedVariable->type = MMS_UNSIGNED;
             break;
-        case INT16U:
+        case IEC61850_INT16U:
             namedVariable->typeSpec.unsignedInteger = 16;
             namedVariable->type = MMS_UNSIGNED;
             break;
-        case INT24U:
+        case IEC61850_INT24U:
             namedVariable->typeSpec.unsignedInteger = 24;
             namedVariable->type = MMS_UNSIGNED;
             break;
-        case INT32U:
+        case IEC61850_INT32U:
             namedVariable->typeSpec.unsignedInteger = 32;
             namedVariable->type = MMS_UNSIGNED;
             break;
-        case FLOAT32:
+        case IEC61850_FLOAT32:
             namedVariable->typeSpec.floatingpoint.formatWidth = 32;
             namedVariable->typeSpec.floatingpoint.exponentWidth = 8;
             namedVariable->type = MMS_FLOAT;
             break;
-        case FLOAT64:
+        case IEC61850_FLOAT64:
             namedVariable->typeSpec.floatingpoint.formatWidth = 64;
             namedVariable->typeSpec.floatingpoint.exponentWidth = 11;
             namedVariable->type = MMS_FLOAT;
             break;
-        case ENUMERATED:
+        case IEC61850_ENUMERATED:
             namedVariable->typeSpec.integer = 8; /* 8 bit integer should be enough for all enumerations */
             namedVariable->type = MMS_INTEGER;
             break;
-        case CHECK:
+        case IEC61850_CHECK:
             namedVariable->typeSpec.bitString = -2;
             namedVariable->type = MMS_BIT_STRING;
             break;
-        case CODEDENUM:
+        case IEC61850_CODEDENUM:
             namedVariable->typeSpec.bitString = 2;
             namedVariable->type = MMS_BIT_STRING;
             break;
-        case OCTET_STRING_6:
+        case IEC61850_OCTET_STRING_6:
             namedVariable->typeSpec.octetString = -6;
             namedVariable->type = MMS_OCTET_STRING;
             break;
-        case OCTET_STRING_8:
+        case IEC61850_OCTET_STRING_8:
             namedVariable->typeSpec.octetString = 8;
             namedVariable->type = MMS_OCTET_STRING;
             break;
-        case OCTET_STRING_64:
+        case IEC61850_OCTET_STRING_64:
             namedVariable->typeSpec.octetString = -64;
             namedVariable->type = MMS_OCTET_STRING;
             break;
-        case VISIBLE_STRING_32:
+        case IEC61850_VISIBLE_STRING_32:
             namedVariable->typeSpec.visibleString = -129;
             namedVariable->type = MMS_VISIBLE_STRING;
             break;
-        case VISIBLE_STRING_64:
+        case IEC61850_VISIBLE_STRING_64:
             namedVariable->typeSpec.visibleString = -129;
             namedVariable->type = MMS_VISIBLE_STRING;
             break;
-        case VISIBLE_STRING_65:
+        case IEC61850_VISIBLE_STRING_65:
             namedVariable->typeSpec.visibleString = -129;
             namedVariable->type = MMS_VISIBLE_STRING;
             break;
-        case VISIBLE_STRING_129:
+        case IEC61850_VISIBLE_STRING_129:
             namedVariable->typeSpec.visibleString = -129;
             namedVariable->type = MMS_VISIBLE_STRING;
             break;
-        case VISIBLE_STRING_255:
+        case IEC61850_VISIBLE_STRING_255:
             namedVariable->typeSpec.visibleString = -255;
             namedVariable->type = MMS_VISIBLE_STRING;
             break;
-        case UNICODE_STRING_255:
+        case IEC61850_UNICODE_STRING_255:
             namedVariable->typeSpec.mmsString = -255;
             namedVariable->type = MMS_STRING;
             break;
-        case GENERIC_BITSTRING:
+        case IEC61850_GENERIC_BITSTRING:
             namedVariable->type = MMS_BIT_STRING;
             break;
-        case TIMESTAMP:
+        case IEC61850_TIMESTAMP:
             namedVariable->type = MMS_UTC_TIME;
             break;
-        case QUALITY:
+        case IEC61850_QUALITY:
             namedVariable->typeSpec.bitString = -13; // -13 = up to 13 bits
             namedVariable->type = MMS_BIT_STRING;
             break;
-        case ENTRY_TIME:
+        case IEC61850_ENTRY_TIME:
             namedVariable->type = MMS_BINARY_TIME;
             namedVariable->typeSpec.binaryTime = 6;
             break;
-        case PHYCOMADDR:
+        case IEC61850_PHYCOMADDR:
             MmsMapping_createPhyComAddrStructure(namedVariable);
             break;
         default:

@@ -10,8 +10,8 @@ endif()
 project(libiec61850)
 
 set(LIB_VERSION_MAJOR "0")
-set(LIB_VERSION_MINOR "8")
-set(LIB_VERSION_PATCH "7")
+set(LIB_VERSION_MINOR "9")
+set(LIB_VERSION_PATCH "0")
 
 # feature checks
 include(CheckLibraryExists)

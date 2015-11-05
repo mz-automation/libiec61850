@@ -292,7 +292,7 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
 
                         if (valueIndicator != NULL) {
                             switch (dataAttribute->type) {
-                            case UNICODE_STRING_255:
+                            case IEC61850_UNICODE_STRING_255:
                                 {
                                     char* stringStart = valueIndicator + 2;
                                     terminateString(stringStart, '"');
@@ -300,11 +300,11 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
                                 }
                                 break;
 
-                            case VISIBLE_STRING_255:
-                            case VISIBLE_STRING_129:
-                            case VISIBLE_STRING_65:
-                            case VISIBLE_STRING_64:
-                            case VISIBLE_STRING_32:
+                            case IEC61850_VISIBLE_STRING_255:
+                            case IEC61850_VISIBLE_STRING_129:
+                            case IEC61850_VISIBLE_STRING_65:
+                            case IEC61850_VISIBLE_STRING_64:
+                            case IEC61850_VISIBLE_STRING_32:
                                 {
                                     char* stringStart = valueIndicator + 2;
                                     terminateString(stringStart, '"');
@@ -312,12 +312,12 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
                                 }
                                 break;
 
-                            case INT8:
-                            case INT16:
-                            case INT32:
-                            case INT64:
-                            case INT128:
-                            case ENUMERATED:
+                            case IEC61850_INT8:
+                            case IEC61850_INT16:
+                            case IEC61850_INT32:
+                            case IEC61850_INT64:
+                            case IEC61850_INT128:
+                            case IEC61850_ENUMERATED:
                                 {
                                     int32_t intValue;
                                     if (sscanf(valueIndicator + 1, "%i", &intValue) != 1) goto exit_error;
@@ -325,10 +325,10 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
                                 }
                                 break;
 
-                            case INT8U:
-                            case INT16U:
-                            case INT24U:
-                            case INT32U:
+                            case IEC61850_INT8U:
+                            case IEC61850_INT16U:
+                            case IEC61850_INT24U:
+                            case IEC61850_INT32U:
                                 {
                                     uint32_t uintValue;
                                     if (sscanf(valueIndicator + 1, "%u", &uintValue) != 1) goto exit_error;
@@ -336,7 +336,7 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
                                 }
                                 break;
 
-                            case FLOAT32:
+                            case IEC61850_FLOAT32:
                                 {
                                     float floatValue;
                                     if (sscanf(valueIndicator + 1, "%f", &floatValue) != 1) goto exit_error;
@@ -344,7 +344,7 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
                                 }
                                 break;
 
-                            case FLOAT64:
+                            case IEC61850_FLOAT64:
                                 {
                                     double doubleValue;
                                     if (sscanf(valueIndicator + 1, "%lf", &doubleValue) != 1) goto exit_error;
@@ -352,7 +352,7 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
                                 }
                                 break;
 
-                            case BOOLEAN:
+                            case IEC61850_BOOLEAN:
                                 {
                                     int boolean;
                                     if (sscanf(valueIndicator + 1, "%i", &boolean) != 1) goto exit_error;
