@@ -1,7 +1,7 @@
 /*
  *  goose_receiver.c
  *
- *  Copyright 2014 Michael Zillgith
+ *  Copyright 2014, 2015 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -650,7 +650,7 @@ parseGooseMessage(GooseReceiver self, int numbytes)
     int apduLength = length - 8;
 
     if (numbytes < length + headerLength) {
-        if (DEBUG)
+        if (DEBUG_GOOSE_SUBSCRIBER)
             printf("GOOSE_SUBSCRIBER: Invalid PDU size\n");
         return;
     }
