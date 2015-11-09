@@ -67,11 +67,13 @@
 /* Ethernet interface ID for GOOSE and SV */
 #define CONFIG_ETHERNET_INTERFACE_ID "eth0"
 //#define CONFIG_ETHERNET_INTERFACE_ID "vboxnet0"
-//#define CONFIG_ETHERNET_INTERFACE_ID "eth-f"
 //#define CONFIG_ETHERNET_INTERFACE_ID "en0"  // OS X uses enX in place of ethX as ethernet NIC names.
 
 /* Set to 1 to include GOOSE support in the build. Otherwise set to 0 */
 #define CONFIG_INCLUDE_GOOSE_SUPPORT 1
+
+/* Set to 1 to include Sampled Values support in the build. Otherwise set to 0 */
+#define CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT 1
 
 #ifdef _WIN32
 

@@ -766,9 +766,8 @@ countGSEControlBlocksForLogicalNode(MmsMapping* self, LogicalNode* logicalNode)
     GSEControlBlock* gcb = self->model->gseCBs;
 
     while (gcb != NULL) {
-        if (gcb->parent == logicalNode) {
+        if (gcb->parent == logicalNode)
             gseCount++;
-        }
 
         gcb = gcb->sibling;
     }
@@ -777,6 +776,27 @@ countGSEControlBlocksForLogicalNode(MmsMapping* self, LogicalNode* logicalNode)
 }
 
 #endif /* (CONFIG_INCLUDE_GOOSE_SUPPORT == 1) */
+
+#if (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1)
+
+static int
+countSVControlBlocksForLogicalNode(MmsMapping* self, LogicalNode* logicalNode, bool unicast)
+{
+    int svCount = 0;
+
+    SVControlBlock* svCb = self->model->svCBs;
+
+    while (svCb != NULL) {
+        if ((svCb->parent == logicalNode) && (svCb->isUnicast == unicast))
+            svCount++;
+
+        svCb = svCb->sibling;
+    }
+
+    return svCount;
+}
+
+#endif /* (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1) */
 
 static SettingGroupControlBlock*
 checkForSgcb(MmsMapping* self, LogicalNode* logicalNode)
@@ -861,6 +881,28 @@ createNamedVariableFromLogicalNode(MmsMapping* self, MmsDomain* domain,
     }
 
 #endif /* (CONFIG_INCLUDE_GOOSE_SUPPORT == 1) */
+
+#if (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1)
+
+    int msvcbCount = countSVControlBlocksForLogicalNode(self, logicalNode, false);
+
+    if (msvcbCount > 0) {
+        if (DEBUG_IED_SERVER)
+            printf("   and %i MSV control blocks\n", msvcbCount);
+
+        componentCount++;
+    }
+
+    int usvcbCount = countSVControlBlocksForLogicalNode(self, logicalNode, true);
+
+    if (usvcbCount > 0) {
+        if (DEBUG_IED_SERVER)
+            printf("   and %i USV control blocks\n", usvcbCount);
+
+        componentCount++;
+    }
+
+#endif /* (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1) */
 
     namedVariable->typeSpec.structure.elements = (MmsVariableSpecification**) GLOBAL_CALLOC(componentCount,
             sizeof(MmsVariableSpecification*));
@@ -960,6 +1002,24 @@ createNamedVariableFromLogicalNode(MmsMapping* self, MmsDomain* domain,
                 createFCNamedVariable(logicalNode, IEC61850_FC_SE);
         currentComponent++;
     }
+
+#if (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1)
+
+    /* Add MS and US named variables */
+    if (msvcbCount > 0) {
+        namedVariable->typeSpec.structure.elements[currentComponent] =
+                LIBIEC61850_SV_creatSVControlBlocks(self, domain, logicalNode, msvcbCount, false);
+
+        currentComponent++;
+    }
+
+    if (usvcbCount > 0) {
+        namedVariable->typeSpec.structure.elements[currentComponent] =
+                LIBIEC61850_SV_creatSVControlBlocks(self, domain, logicalNode, msvcbCount, true);
+
+        currentComponent++;
+    }
+#endif
 
     if (LogicalNode_hasFCData(logicalNode, IEC61850_FC_EX)) {
         namedVariable->typeSpec.structure.elements[currentComponent] =
@@ -1138,6 +1198,11 @@ MmsMapping_create(IedModel* model)
     self->gooseInterfaceId = NULL;
 #endif
 
+#if (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1)
+    self->svControls = LinkedList_create();
+    self->svInterfaceId = NULL;
+#endif
+
 #if (CONFIG_IEC61850_CONTROL_SERVICE == 1)
     self->controlObjects = LinkedList_create();
 #endif
@@ -1175,6 +1240,10 @@ MmsMapping_destroy(MmsMapping* self)
 
 #if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
     LinkedList_destroyDeep(self->gseControls, (LinkedListValueDeleteFunction) MmsGooseControlBlock_destroy);
+#endif
+
+#if (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1)
+    LinkedList_destroyDeep(self->svControls, (LinkedListValueDeleteFunction) MmsSvControlBlock_destroy);
 #endif
 
 #if (CONFIG_IEC61850_CONTROL_SERVICE == 1)

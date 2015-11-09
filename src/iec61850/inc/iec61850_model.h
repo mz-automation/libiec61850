@@ -80,6 +80,8 @@ typedef struct sSettingGroupControlBlock SettingGroupControlBlock;
 
 typedef struct sGSEControlBlock GSEControlBlock;
 
+typedef struct sSVControlBlock SVControlBlock;
+
 
 typedef enum {
 	IEC61850_BOOLEAN = 0,/* int */
@@ -162,6 +164,7 @@ struct sIedModel {
     DataSet* dataSets;
     ReportControlBlock* rcbs;
     GSEControlBlock* gseCBs;
+    SVControlBlock* svCBs;
     SettingGroupControlBlock* sgcbs;
     void (*initializer) (void);
 };
@@ -279,12 +282,35 @@ struct sGSEControlBlock {
     char* name;
     char* appId;
     char* dataSetName; /* pre loaded with relative name in logical node */
-    uint32_t confRef;  /* ConfRef - configuration revision */
+    uint32_t confRev;  /* ConfRev - configuration revision */
     bool fixedOffs;    /* fixed offsets */
     PhyComAddress* address; /* GSE communication parameters */
     int minTime; /* optional minTime parameter --> -1 if not present */
     int maxTime; /* optional maxTime parameter --> -1 if not present */
     GSEControlBlock* sibling; /* next control block in list or NULL if this is the last entry */
+};
+
+struct sSVControlBlock {
+    LogicalNode* parent;
+    char* name;
+
+    char* svId; /* MsvUD/UsvID */
+    char* dataSetName; /* pre loaded with relative name in logical node */
+
+    uint8_t optFlds;
+
+    uint8_t smpMod;
+    uint16_t smpRate;
+
+    uint32_t confRev;  /* ConfRev - configuration revision */
+
+    PhyComAddress* dstAddress; /* SV communication parameters */
+
+    bool isUnicast;
+
+    int noASDU;
+
+    SVControlBlock* sibling; /* next control block in list or NULL if this is the last entry */
 };
 
 /**

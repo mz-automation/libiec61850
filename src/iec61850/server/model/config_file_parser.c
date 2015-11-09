@@ -395,8 +395,12 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
                         if (StringUtils_createBufferFromHexString(nameString, (uint8_t*) nameString2) != 6)
                             goto exit_error;
 
-                        PhyComAddress_create(currentGoCB, (uint8_t) vlanPrio, (uint16_t) vlanId, (uint16_t) appId,
-                                (uint8_t*) nameString2);
+
+                        PhyComAddress* dstAddress =
+                                PhyComAddress_create((uint8_t) vlanPrio, (uint16_t) vlanId, (uint16_t) appId,
+                                        (uint8_t*) nameString2);
+
+                        GSEControlBlock_addPhyComAddress(currentGoCB, dstAddress);
 
                     }
                     else

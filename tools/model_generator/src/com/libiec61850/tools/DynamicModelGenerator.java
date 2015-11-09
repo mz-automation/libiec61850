@@ -35,7 +35,7 @@ import com.libiec61850.scl.DataAttributeDefinition;
 import com.libiec61850.scl.SclParser;
 import com.libiec61850.scl.SclParserException;
 import com.libiec61850.scl.communication.ConnectedAP;
-import com.libiec61850.scl.communication.GSEAddress;
+import com.libiec61850.scl.communication.PhyComAddress;
 import com.libiec61850.scl.model.AccessPoint;
 import com.libiec61850.scl.model.DataAttribute;
 import com.libiec61850.scl.model.DataModelValue;
@@ -145,7 +145,7 @@ public class DynamicModelGenerator {
         for (GSEControl gcb : logicalNode.getGSEControlBlocks()) {
             LogicalDevice ld = logicalNode.getParentLogicalDevice();
             
-            GSEAddress gseAddress = null;
+            PhyComAddress gseAddress = null;
             
             if (connectedAP != null)
             	gseAddress = connectedAP.lookupGSEAddress(ld.getInst(), gcb.getName());

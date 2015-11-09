@@ -29,14 +29,14 @@ import org.w3c.dom.Node;
 import com.libiec61850.scl.ParserUtils;
 import com.libiec61850.scl.SclParserException;
 
-public class GSEAddress {
+public class PhyComAddress {
 
     private Integer vlanId = null;
     private Integer vlanPriority = null;
     private Integer appId = null;
     private int[] macAddress = null;
     
-    public GSEAddress(Node addressNode) throws DOMException, SclParserException {
+    public PhyComAddress(Node addressNode) throws DOMException, SclParserException {
         
        List<Node> pNodes = ParserUtils.getChildNodesWithTag(addressNode, "P");
        

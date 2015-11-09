@@ -495,3 +495,6 @@ EXPORTS
     LogicalNode_getDataSet
     ClientReport_getDataSetName
     MmsValue_getStringSize
+    SVControlBlock_create
+    SVControlBlock_addPhyComAddress
+    GSEControlBlock_addPhyComAddress

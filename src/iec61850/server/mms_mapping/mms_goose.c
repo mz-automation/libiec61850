@@ -550,7 +550,7 @@ GOOSE_createGOOSEControlBlocks(MmsMapping* self, MmsDomain* domain,
 
         MmsValue* confRef = MmsValue_getElement(gseValues, 3);
 
-        MmsValue_setUint32(confRef, gooseControlBlock->confRef);
+        MmsValue_setUint32(confRef, gooseControlBlock->confRev);
 
         mmsGCB->dataSet = NULL;
 
@@ -587,5 +587,5 @@ GOOSE_createGOOSEControlBlocks(MmsMapping* self, MmsDomain* domain,
     return namedVariable;
 }
 
-#endif
+#endif /* (CONFIG_INCLUDE_GOOSE_SUPPORT == 1) */
 

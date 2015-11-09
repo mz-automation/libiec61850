@@ -35,6 +35,7 @@ public class ConnectedAP {
     private String apName;
 
     private List<GSE> gses;
+    private List<SMV> smvs;
 
     public ConnectedAP(Node node) throws SclParserException {
         iedName = ParserUtils.parseAttribute(node, "iedName");
@@ -50,6 +51,14 @@ public class ConnectedAP {
         for (Node gseNode : gseNodes) {
             gses.add(new GSE(gseNode));
         }
+        
+        smvs = new LinkedList<SMV>();
+        
+        List<Node> smvNodes = ParserUtils.getChildNodesWithTag(node, "SMV");
+        
+        for (Node smvNode : smvNodes) {
+        	smvs.add(new SMV(smvNode));
+        }
     }
 
     public String getIedName() {
@@ -64,12 +73,28 @@ public class ConnectedAP {
         return gses;
     }
 
-    public GSEAddress lookupGSEAddress(String logicalDeviceName, String name) {
+    public List<SMV> getSmvs() {
+    	return smvs;
+    }
+    
+    public PhyComAddress lookupGSEAddress(String logicalDeviceName, String name) {
 
         for (GSE gse : this.getGses()) {
             if (gse.getLdInst().equals(logicalDeviceName)) {
                 if (gse.getCbName().equals(name))
                     return gse.getAddress();
+            }
+        }
+
+        return null;
+    }
+    
+    public PhyComAddress lookupSMVAddress(String logicalDeviceName, String name) {
+
+        for (SMV smv : this.getSmvs()) {
+            if (smv.getLdInst().equals(logicalDeviceName)) {
+                if (smv.getCbName().equals(name))
+                    return smv.getAddress();
             }
         }
 

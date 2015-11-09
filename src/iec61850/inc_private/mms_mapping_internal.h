@@ -40,6 +40,11 @@ struct sMmsMapping {
     const char* gooseInterfaceId;
 #endif
 
+#if (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1)
+    LinkedList svControls;
+    const char* svInterfaceId;
+#endif
+
     LinkedList controlObjects;
     LinkedList observedObjects;
     LinkedList attributeAccessHandlers;

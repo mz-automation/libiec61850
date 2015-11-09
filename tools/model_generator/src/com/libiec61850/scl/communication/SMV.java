@@ -1,7 +1,12 @@
 package com.libiec61850.scl.communication;
 
+import org.w3c.dom.Node;
+
+import com.libiec61850.scl.ParserUtils;
+import com.libiec61850.scl.SclParserException;
+
 /*
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2015 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -21,29 +26,23 @@ package com.libiec61850.scl.communication;
  *  See COPYING file for the complete license text.
  */
 
-import org.w3c.dom.Node;
-
-import com.libiec61850.scl.ParserUtils;
-import com.libiec61850.scl.SclParserException;
-
-public class GSE {
-
+public class SMV {
     private String ldInst;
     private String cbName;
     
     private PhyComAddress address;
     
-    public GSE(Node gseNode) throws SclParserException {
+    public SMV(Node gseNode) throws SclParserException {
         ldInst = ParserUtils.parseAttribute(gseNode, "ldInst");
         cbName = ParserUtils.parseAttribute(gseNode, "cbName");
         
         if ((ldInst == null) || (cbName == null))
-            throw new SclParserException(gseNode, "GSE is missing required attribute");
+            throw new SclParserException(gseNode, "SMV is missing required attribute");
         
         Node addressNode = ParserUtils.getChildNodeWithTag(gseNode, "Address");
         
         if (addressNode == null)
-            throw new SclParserException(gseNode, "GSE is missing address definition!");
+            throw new SclParserException(gseNode, "SMV is missing address definition!");
         
         address = new PhyComAddress(addressNode);
     }
@@ -59,5 +58,4 @@ public class GSE {
     public PhyComAddress getAddress() {
         return address;
     }
-
 }

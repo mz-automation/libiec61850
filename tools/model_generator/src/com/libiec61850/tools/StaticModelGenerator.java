@@ -37,7 +37,7 @@ import com.libiec61850.scl.SclParserException;
 import com.libiec61850.scl.communication.Communication;
 import com.libiec61850.scl.communication.ConnectedAP;
 import com.libiec61850.scl.communication.GSE;
-import com.libiec61850.scl.communication.GSEAddress;
+import com.libiec61850.scl.communication.PhyComAddress;
 import com.libiec61850.scl.communication.SubNetwork;
 import com.libiec61850.scl.model.AccessPoint;
 import com.libiec61850.scl.model.DataAttribute;
@@ -753,7 +753,7 @@ public class StaticModelGenerator {
 
         for (GSEControl gseControlBlock : gseControlBlocks) {
 
-            GSEAddress gseAddress = connectedAP.lookupGSEAddress(logicalDeviceName, gseControlBlock.getName());
+            PhyComAddress gseAddress = connectedAP.lookupGSEAddress(logicalDeviceName, gseControlBlock.getName());
 
             String gseString = "";
 
