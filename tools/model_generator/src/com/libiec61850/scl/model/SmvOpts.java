@@ -8,11 +8,12 @@ import com.libiec61850.scl.SclParserException;
 public class SmvOpts {
     
     
-    private boolean refreshTime = false;
-    private boolean sampleRate = false;
-    private boolean dataSet = false;
-    private boolean security = false;
-    private boolean sampleSynchronized = false;
+    private boolean refreshTime = false; /* 1 */
+    private boolean sampleSynchronized = false; /* 2 */
+    private boolean sampleRate = false; /* 4 */
+    private boolean dataSet = false; /* 8 */
+    private boolean security = false; /* 16 */
+   
 
     public SmvOpts(Node smvOptsNode) throws SclParserException {
 
@@ -38,4 +39,16 @@ public class SmvOpts {
 
     }
     
+    
+    public int getIntValue() {
+        int intValue = 0;
+        
+        if (refreshTime) intValue += 1;
+        if (sampleSynchronized) intValue += 2;
+        if (sampleRate) intValue += 4;
+        if (dataSet) intValue += 8;
+        if (security) intValue += 16;
+        
+        return intValue;
+    }
 }

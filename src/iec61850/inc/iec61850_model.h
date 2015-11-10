@@ -1,7 +1,7 @@
 /*
  *  model.h
  *
- *  Copyright 2013, 2014 Michael Zillgith
+ *  Copyright 2013, 2014, 2015 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *

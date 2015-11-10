@@ -51,6 +51,7 @@ import com.libiec61850.scl.model.IED;
 import com.libiec61850.scl.model.LogicalDevice;
 import com.libiec61850.scl.model.LogicalNode;
 import com.libiec61850.scl.model.ReportControlBlock;
+import com.libiec61850.scl.model.SampledValueControl;
 import com.libiec61850.scl.model.Server;
 import com.libiec61850.scl.model.SettingControl;
 import com.libiec61850.scl.model.TriggerOptions;
@@ -70,6 +71,10 @@ public class StaticModelGenerator {
     private StringBuffer gseControlBlocks;
     private List<String> gseVariableNames;
     private int currentGseVariableNumber = 0;
+    
+    private StringBuffer smvControlBlocks;
+    private List<String> smvVariableNames;
+    private int currentSvCBVariableNumber = 0;
     
     private StringBuffer settingGroupControlBlocks;
     private List<String> sgcbVariableNames;
@@ -100,6 +105,9 @@ public class StaticModelGenerator {
         this.rcbVariableNames = new LinkedList<String>();
         this.gseControlBlocks = new StringBuffer();
         this.gseVariableNames = new LinkedList<String>();
+        
+        this.smvControlBlocks = new StringBuffer();
+        this.smvVariableNames = new LinkedList<String>();
         
         this.settingGroupControlBlocks = new StringBuffer();
         this.sgcbVariableNames = new LinkedList<String>();
@@ -267,6 +275,8 @@ public class StaticModelGenerator {
         
         createGooseVariableList(logicalDevices);
         
+        createSmvVariableList(logicalDevices);
+        
         createSettingControlsVariableList(logicalDevices);
 
         for (int i = 0; i < logicalDevices.size(); i++) {
@@ -308,6 +318,11 @@ public class StaticModelGenerator {
         
         cOut.println(reportControlBlocks);
         
+        for (String smv : smvVariableNames)
+            cOut.println("extern SVControlBlock " + smv + ";");
+        
+        cOut.println(smvControlBlocks);
+        
         for (String gcb : gseVariableNames)
         	cOut.println("extern GSEControlBlock " + gcb + ";");
 
@@ -335,6 +350,11 @@ public class StaticModelGenerator {
 
         if (gseVariableNames.size() > 0)
             cOut.println("    &" + gseVariableNames.get(0) + ",");
+        else
+            cOut.println("    NULL,");
+        
+        if (smvVariableNames.size() > 0)
+            cOut.println("    &" + smvVariableNames.get(0) + ",");
         else
             cOut.println("    NULL,");
         
@@ -366,6 +386,28 @@ public class StaticModelGenerator {
 		}
 	}
 
+    
+    private void createSmvVariableList(List<LogicalDevice> logicalDevices) {
+        for (LogicalDevice ld : logicalDevices) {
+            List<LogicalNode> lnodes = ld.getLogicalNodes();
+            
+            String ldName = ld.getInst();
+            
+            
+            for (LogicalNode ln : lnodes) {
+                List<SampledValueControl> svCBs = ln.getSampledValueControlBlocks();
+                
+                int smvCount = 0;
+                
+                for (SampledValueControl smv : svCBs) {
+                    String smvVariableName = modelPrefix + "_" + ldName + "_" + ln.getName() + "_smv" + smvCount;
+                    smvVariableNames.add(smvVariableName);
+                    smvCount++;
+                }
+            }
+        }
+    }
+    
 	private void createReportVariableList(List<LogicalDevice> logicalDevices) {
 
 		for (LogicalDevice ld : logicalDevices) {
@@ -444,6 +486,8 @@ public class StaticModelGenerator {
             printReportControlBlocks(lnName, logicalNode);
 
             printGSEControlBlocks(ldName, lnName, logicalNode);
+            
+            printSVControlBlocks(ldName, lnName, logicalNode);
             
             printSettingControlBlock(lnName, logicalNode);
         }
@@ -742,11 +786,100 @@ public class StaticModelGenerator {
         hOut.println("#endif /* " + hDefineName + " */\n");
     }
 
+    private void printSVControlBlocks(String ldName, String lnPrefix, LogicalNode logicalNode) {
+        List<SampledValueControl> svControlBlocks = logicalNode.getSampledValueControlBlocks();
+        
+        /* strip "iedModel_" from ldName */
+        String[] ldNameComponents = ldName.split("_");
+        String logicalDeviceName = ldNameComponents[1];
+        
+        int smvControlNumber = 0;
+        
+        for (SampledValueControl svCB : svControlBlocks) {
+            
+            System.out.println("SVCB: " + svCB.getName());
+            
+            PhyComAddress svAddress = connectedAP.lookupSMVAddress(logicalDeviceName, svCB.getName());
+            
+            String svString = "";
+            
+            String phyComAddrName = "";
+            
+            if (svAddress != null) {
+                phyComAddrName = lnPrefix + "_smv" + smvControlNumber + "_address";
+                
+                svString += "\nstatic PhyComAddress " + phyComAddrName + " = {\n";
+                svString += "  " + svAddress.getVlanPriority() + ",\n";
+                svString += "  " + svAddress.getVlanId() + ",\n";
+                svString += "  " + svAddress.getAppId() + ",\n";
+                svString += "  {";
+                
+                for (int i = 0; i < 6; i++) {
+                    svString += "0x" + Integer.toHexString(svAddress.getMacAddress()[i]);
+                    if (i == 5)
+                        svString += "}\n";
+                    else
+                        svString += ", ";
+                }
+                
+                svString += "};\n\n";
+            }
+            
+            String smvVariableName = lnPrefix + "_smv" + smvControlNumber;
+            
+            svString += "SVControlBlock " + smvVariableName + " = {";
+            svString += "&" + lnPrefix + ", ";
+            
+            svString += "\"" + svCB.getName() + "\", ";
+            
+            if (svCB.getSmvID() == null)
+                svString += "NULL, ";
+            else
+                svString += "\"" + svCB.getSmvID() + "\", ";
+            
+            if (svCB.getDatSet() != null)
+                svString += "\"" + svCB.getDatSet() + "\", ";
+            else
+                svString += "NULL, ";
+            
+            svString += svCB.getSmvOpts().getIntValue() + ", ";
+            
+            svString += "0, " + svCB.getSmpRate() + ", ";
+            
+            svString += svCB.getConfRev() + ", ";
+            
+            if (svAddress != null)
+                svString += "&" + phyComAddrName + ", ";
+            else
+                svString += "NULL, ";
+            
+            if (svCB.isMulticast())
+                svString += "false, ";
+            else
+                svString += "true, ";
+            
+            svString += svCB.getNofASDI() + ", ";
+            
+            currentSvCBVariableNumber++;
+            
+            if (currentSvCBVariableNumber < smvVariableNames.size())
+                svString += "&" + smvVariableNames.get(currentSvCBVariableNumber);
+            else
+                svString += "NULL";
+
+            svString += "};\n";
+            
+            this.smvControlBlocks.append(svString);
+                   
+            smvControlNumber++;
+        }
+    }
+    
     private void printGSEControlBlocks(String ldName, String lnPrefix, LogicalNode logicalNode) {
         List<GSEControl> gseControlBlocks = logicalNode.getGSEControlBlocks();
 
+        /* strip "iedModel_" from ldName */
         String[] ldNameComponents = ldName.split("_");
-
         String logicalDeviceName = ldNameComponents[1];
 
         int gseControlNumber = 0;

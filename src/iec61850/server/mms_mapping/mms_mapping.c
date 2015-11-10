@@ -1,7 +1,7 @@
 /*
  *  mms_mapping.c
  *
- *  Copyright 2013, 2014 Michael Zillgith
+ *  Copyright 2013, 2014, 2015 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -28,6 +28,7 @@
 #include "stack_config.h"
 
 #include "mms_goose.h"
+#include "mms_sv.h"
 #include "reporting.h"
 #include "control.h"
 #include "ied_server_private.h"
@@ -1008,14 +1009,14 @@ createNamedVariableFromLogicalNode(MmsMapping* self, MmsDomain* domain,
     /* Add MS and US named variables */
     if (msvcbCount > 0) {
         namedVariable->typeSpec.structure.elements[currentComponent] =
-                LIBIEC61850_SV_creatSVControlBlocks(self, domain, logicalNode, msvcbCount, false);
+                LIBIEC61850_SV_createSVControlBlocks(self, domain, logicalNode, msvcbCount, false);
 
         currentComponent++;
     }
 
     if (usvcbCount > 0) {
         namedVariable->typeSpec.structure.elements[currentComponent] =
-                LIBIEC61850_SV_creatSVControlBlocks(self, domain, logicalNode, msvcbCount, true);
+                LIBIEC61850_SV_createSVControlBlocks(self, domain, logicalNode, msvcbCount, true);
 
         currentComponent++;
     }
@@ -1243,7 +1244,7 @@ MmsMapping_destroy(MmsMapping* self)
 #endif
 
 #if (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1)
-    LinkedList_destroyDeep(self->svControls, (LinkedListValueDeleteFunction) MmsSvControlBlock_destroy);
+    LinkedList_destroyDeep(self->svControls, (LinkedListValueDeleteFunction) MmsSampledValueControlBlock_destroy);
 #endif
 
 #if (CONFIG_IEC61850_CONTROL_SERVICE == 1)
@@ -1352,6 +1353,23 @@ isGooseControlBlock(char* separator)
 }
 
 #endif /* (CONFIG_INCLUDE_GOOSE_SUPPORT == 1) */
+
+
+#if (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1)
+
+static bool
+isSampledValueControlBlock(char* separator)
+{
+    if (strncmp(separator + 1, "MS", 2) == 0)
+        return true;
+
+    if (strncmp(separator + 1, "US", 2) == 0)
+        return true;
+
+    return false;
+}
+
+#endif /* (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1) */
 
 char*
 MmsMapping_getNextNameElement(char* name)
@@ -1678,6 +1696,14 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
         return writeAccessGooseControlBlock(self, domain, variableId, value);
     }
 #endif /* (CONFIG_INCLUDE_GOOSE_SUPPORT == 1) */
+
+#if (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1)
+    /* Sampled Value control block - MS/US */
+    if (isSampledValueControlBlock(separator)) {
+        //TODO handle write access to SVCB
+    }
+#endif /* (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1) */
+
 
 #if (CONFIG_IEC61850_REPORT_SERVICE == 1)
     /* Report control blocks - BR, RP */
@@ -2075,6 +2101,7 @@ readAccessGooseControlBlock(MmsMapping* self, MmsDomain* domain, char* variableI
 
 #endif /* (CONFIG_INCLUDE_GOOSE_SUPPORT == 1) */
 
+
 static MmsValue*
 mmsReadHandler(void* parameter, MmsDomain* domain, char* variableId, MmsServerConnection connection)
 {
@@ -2100,10 +2127,19 @@ mmsReadHandler(void* parameter, MmsDomain* domain, char* variableId, MmsServerCo
     }
 #endif
 
-    /* GOOSE control blocks - GO */
+
 #if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
+    /* GOOSE control blocks - GO */
     if (isGooseControlBlock(separator)) {
         retValue = readAccessGooseControlBlock(self, domain, variableId);
+        goto exit_function;
+    }
+#endif
+
+#if (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1)
+    /* Sampled Value control blocks - MS/US */
+    if (isSampledValueControlBlock(separator)) {
+        retValue = LIBIEC61850_SV_readAccessSampledValueControlBlock(self, domain, variableId);
         goto exit_function;
     }
 #endif

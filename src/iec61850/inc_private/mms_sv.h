@@ -24,8 +24,20 @@
 #ifndef LIBIEC61850_SRC_IEC61850_INC_PRIVATE_MMS_SV_H_
 #define LIBIEC61850_SRC_IEC61850_INC_PRIVATE_MMS_SV_H_
 
+
+typedef struct sMmsSampledValueControlBlock* MmsSampledValueControlBlock;
+
+MmsSampledValueControlBlock
+MmsSampledValueControlBlock_create(void);
+
+void
+MmsSampledValueControlBlock_destroy(MmsSampledValueControlBlock self);
+
 MmsVariableSpecification*
 LIBIEC61850_SV_createSVControlBlocks(MmsMapping* self, MmsDomain* domain,
         LogicalNode* logicalNode, int svCount, bool unicast);
+
+MmsValue*
+LIBIEC61850_SV_readAccessSampledValueControlBlock(MmsMapping* self, MmsDomain* domain, char* variableIdOrig);
 
 #endif /* LIBIEC61850_SRC_IEC61850_INC_PRIVATE_MMS_SV_H_ */

@@ -292,7 +292,8 @@ MmsConnection_getVariableListNamesAssociationSpecific(MmsConnection self, MmsErr
  * \param itemId name of the variable to be read
  *
  * \return Returns a MmsValue object or NULL if the request failed. The MmsValue object can
- * either be a simple value or a complex value or array.
+ * either be a simple value or a complex value or array. It is also possible that the return value is NULL
+ * even if mmsError = MMS_ERROR_NON. This is the case when the servers returns an empty result list.
  */
 MmsValue*
 MmsConnection_readVariable(MmsConnection self, MmsError* mmsError, const char* domainId, const char* itemId);

@@ -30,10 +30,109 @@
 #include "linked_list.h"
 #include "array_list.h"
 
+#include "mms_sv.h"
+
 #include "mms_mapping_internal.h"
 
+struct sMmsSampledValueControlBlock {
+    char* name;
+    bool svEna;
 
-static GSEControlBlock*
+    char* dstAddress;
+
+    MmsDomain* domain;
+    LogicalNode* logicalNode;
+
+    MmsVariableSpecification* mmsType;
+    MmsValue* mmsValue;
+
+    //MmsMapping* mmsMapping;
+};
+
+MmsSampledValueControlBlock
+MmsSampledValueControlBlock_create()
+{
+    MmsSampledValueControlBlock self = (MmsSampledValueControlBlock) GLOBAL_CALLOC(1, sizeof(struct sMmsSampledValueControlBlock));
+
+    return self;
+}
+
+
+void
+MmsSampledValueControlBlock_destroy(MmsSampledValueControlBlock self)
+{
+    MmsValue_delete(self->mmsValue);
+
+    GLOBAL_FREEMEM(self);
+}
+
+static MmsSampledValueControlBlock
+lookupSVCB(MmsMapping* self, MmsDomain* domain, char* lnName, char* objectName)
+{
+    LinkedList element = LinkedList_getNext(self->svControls);
+
+    while (element != NULL) {
+        MmsSampledValueControlBlock mmsSVCB = (MmsSampledValueControlBlock) element->data;
+
+        if (mmsSVCB->domain == domain) {
+            if (strcmp(mmsSVCB->logicalNode->name, lnName) == 0) {
+                if (strcmp(mmsSVCB->name, objectName) == 0) {
+                    return mmsSVCB;
+                }
+            }
+        }
+
+        element = LinkedList_getNext(element);
+    }
+
+    return NULL;
+}
+
+
+MmsValue*
+LIBIEC61850_SV_readAccessSampledValueControlBlock(MmsMapping* self, MmsDomain* domain, char* variableIdOrig)
+{
+    MmsValue* value = NULL;
+
+    char variableId[130];
+
+    strncpy(variableId, variableIdOrig, 129);
+
+    char* separator = strchr(variableId, '$');
+
+    *separator = 0;
+
+    char* lnName = variableId;
+
+    if (lnName == NULL)
+        return NULL;
+
+    char* objectName = MmsMapping_getNextNameElement(separator + 1);
+
+    if (objectName == NULL)
+        return NULL;
+
+    char* varName = MmsMapping_getNextNameElement(objectName);
+
+    if (varName != NULL)
+        *(varName - 1) = 0;
+
+    MmsSampledValueControlBlock mmsSVCB = lookupSVCB(self, domain, lnName, objectName);
+
+    if (mmsSVCB != NULL) {
+        if (varName != NULL) {
+            value = MmsValue_getSubElement(mmsSVCB->mmsValue, mmsSVCB->mmsType, varName);
+        }
+        else {
+            value = mmsSVCB->mmsValue;
+        }
+    }
+
+    return value;
+}
+
+
+static SVControlBlock*
 getSVCBForLogicalNodeWithIndex(MmsMapping* self, LogicalNode* logicalNode, int index, bool isUnicast)
 {
     int svCount = 0;
@@ -88,6 +187,8 @@ createSVControlBlockMmsStructure(char* gcbName, bool isUnicast)
         namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
         namedVariable->name = copyString("Resv");
         namedVariable->type = MMS_BOOLEAN;
+
+        gcb->typeSpec.structure.elements[currentElement++] = namedVariable;
     }
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
@@ -125,6 +226,13 @@ createSVControlBlockMmsStructure(char* gcbName, bool isUnicast)
     namedVariable->name = copyString("OptFlds");
     namedVariable->type = MMS_BIT_STRING;
     namedVariable->typeSpec.bitString = 5;
+
+    gcb->typeSpec.structure.elements[currentElement++] = namedVariable;
+
+    namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
+    namedVariable->name = copyString("SmpMod");
+    namedVariable->type = MMS_INTEGER;
+    namedVariable->typeSpec.integer = 8;
 
     gcb->typeSpec.structure.elements[currentElement++] = namedVariable;
 
@@ -205,7 +313,7 @@ LIBIEC61850_SV_createSVControlBlocks(MmsMapping* self, MmsDomain* domain,
 
         /* SmpMod */
         MmsValue* smpMod = MmsValue_getElement(svValues, currentIndex++);
-        MmsValue_setInt32(smpRate, svControlBlock->smpMod);
+        MmsValue_setInt32(smpMod, svControlBlock->smpMod);
 
         /* Set communication parameters - DstAddress */
         uint8_t priority = CONFIG_GOOSE_DEFAULT_PRIORITY;
@@ -241,6 +349,16 @@ LIBIEC61850_SV_createSVControlBlocks(MmsMapping* self, MmsDomain* domain,
         /* noASDU */
         MmsValue* noASDU = MmsValue_getElement(svValues, currentIndex++);
         MmsValue_setInt32(noASDU, svControlBlock->noASDU);
+
+        MmsSampledValueControlBlock mmsSvCb = MmsSampledValueControlBlock_create();
+
+        mmsSvCb->mmsValue = svValues;
+        mmsSvCb->mmsType = svTypeSpec;
+        mmsSvCb->domain = domain;
+        mmsSvCb->logicalNode = logicalNode;
+        mmsSvCb->name = svControlBlock->name;
+
+        LinkedList_add(self->svControls, (void*) mmsSvCb);
 
         currentSVCB++;
     }

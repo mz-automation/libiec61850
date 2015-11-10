@@ -15,6 +15,8 @@ print_help()
     printf("-d show list of MMS domains\n");
     printf("-i show server identity\n");
     printf("-t <domain_name> show domain directory\n");
+    printf("-r <variable_name> read domain variable\n");
+    printf("-a <domain_name> specify domain for read or write command");
 }
 
 int main(int argc, char** argv) {
@@ -24,14 +26,18 @@ int main(int argc, char** argv) {
 	int maxPduSize = 65000;
 
 	char* domainName = NULL;
+	char* variableName = NULL;
 
 	int readDeviceList = 0;
 	int getDeviceDirectory = 0;
 	int identifyDevice = 0;
+	int readWriteHasDomain = 0;
+	int readVariable = 0;
+
 
 	int c;
 
-	while ((c = getopt(argc, argv, "idh:p:l:t:")) != -1)
+	while ((c = getopt(argc, argv, "idh:p:l:t:a:r:")) != -1)
 		switch (c) {
 		case 'h':
 			hostname = copyString(optarg);
@@ -52,6 +58,15 @@ int main(int argc, char** argv) {
 			getDeviceDirectory = 1;
 			domainName = copyString(optarg);
 			break;
+		case 'a':
+		    readWriteHasDomain = 1;
+		    domainName = copyString(optarg);
+		    break;
+		case 'r':
+		    readVariable = 1;
+		    variableName = copyString(optarg);
+		    break;
+
 		default:
 		    print_help();
 			return 0;
@@ -103,11 +118,38 @@ int main(int argc, char** argv) {
 		while ((element = LinkedList_getNext(element)) != NULL) {
 			char* name = (char*) element->data;
 
-			if (strchr(name, '$') == NULL)
-				printf("  %s\n", name);
+			printf("  %s\n", name);
 		}
 
 	}
+
+	if (readVariable) {
+	    if (readWriteHasDomain) {
+	        MmsValue* result = MmsConnection_readVariable(con, &error, domainName, variableName);
+
+	        if (error != MMS_ERROR_NONE) {
+	            printf("Reading variable failed: (ERROR %i)\n", error);
+	        }
+	        else {
+	            printf("Read SUCCESS\n");
+
+
+	            if (result != NULL) {
+                    char outbuf[1024];
+
+                    MmsValue_printToBuffer(result, outbuf, 1024);
+
+                    printf("%s\n", outbuf);
+	            }
+	            else
+	                printf("result: NULL\n");
+	        }
+
+	    }
+	    else
+	        printf("Reading VMD scope variable not yet supported!\n");
+	}
+
 
 exit:
 	MmsConnection_destroy(con);

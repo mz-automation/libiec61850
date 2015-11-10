@@ -116,7 +116,10 @@ public class LogicalNode implements DataModelNode {
         
         /* Parse Sampled Values (SV) control block definitions */
         smvControlBlocks = new LinkedList<SampledValueControl>();
-        
+
+        List<Node> svControlNodes = ParserUtils.getChildNodesWithTag(lnNode, "SampledValueControl");
+        for (Node svControlNode : svControlNodes)
+            smvControlBlocks.add(new SampledValueControl(svControlNode));
         
         /* Parse log control block definitions */
         logControlBlocks = new LinkedList<LogControl>();

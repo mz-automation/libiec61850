@@ -48,17 +48,15 @@ public class ConnectedAP {
 
         List<Node> gseNodes = ParserUtils.getChildNodesWithTag(node, "GSE");
 
-        for (Node gseNode : gseNodes) {
+        for (Node gseNode : gseNodes)
             gses.add(new GSE(gseNode));
-        }
-        
+                
         smvs = new LinkedList<SMV>();
         
         List<Node> smvNodes = ParserUtils.getChildNodesWithTag(node, "SMV");
         
-        for (Node smvNode : smvNodes) {
-        	smvs.add(new SMV(smvNode));
-        }
+        for (Node smvNode : smvNodes)
+        	smvs.add(new SMV(smvNode));      
     }
 
     public String getIedName() {

@@ -14,7 +14,7 @@ public class SampledValueControl {
     private String smvID;
     private int smpRate;
     private int nofASDU;
-    private boolean multicast;
+    private boolean multicast = false;
     private SmvOpts smvOpts;
     
     
@@ -31,7 +31,10 @@ public class SampledValueControl {
         
         this.smvID = ParserUtils.parseAttribute(smvControlNode, "smvID");
         
-        this.multicast = ParserUtils.parseBooleanAttribute(smvControlNode, "multicast");
+        Boolean multicast = ParserUtils.parseBooleanAttribute(smvControlNode, "multicast");
+        
+        if (multicast != null)
+            this.multicast = multicast;
         
         String smpRateString = ParserUtils.parseAttribute(smvControlNode, "smpRate");
         
