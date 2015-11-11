@@ -522,3 +522,4 @@ EXPORTS
     SVControlBlock_create
     SVControlBlock_addPhyComAddress
     GSEControlBlock_addPhyComAddress
+    GooseSubscriber_getConfRev
