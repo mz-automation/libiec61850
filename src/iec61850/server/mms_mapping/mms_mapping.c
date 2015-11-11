@@ -1691,17 +1691,19 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
 #endif /* (CONFIG_IEC61850_CONTROL_SERVICE == 1) */
 
 #if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
+
     /* Goose control block - GO */
-    if (isGooseControlBlock(separator)) {
+    if (isGooseControlBlock(separator))
         return writeAccessGooseControlBlock(self, domain, variableId, value);
-    }
+
 #endif /* (CONFIG_INCLUDE_GOOSE_SUPPORT == 1) */
 
 #if (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1)
+
     /* Sampled Value control block - MS/US */
-    if (isSampledValueControlBlock(separator)) {
-        //TODO handle write access to SVCB
-    }
+    if (isSampledValueControlBlock(separator))
+        return LIBIEC61850_SV_writeAccessSVControlBlock(self, domain, variableId, value, connection);
+
 #endif /* (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1) */
 
 

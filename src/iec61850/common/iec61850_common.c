@@ -125,6 +125,10 @@ FunctionalConstraint_toString(FunctionalConstraint fc) {
         return "EX";
     case IEC61850_FC_CO:
         return "CO";
+    case IEC61850_FC_US:
+        return "US";
+    case IEC61850_FC_MS:
+        return "MS";
     default:
         return NULL;
     }

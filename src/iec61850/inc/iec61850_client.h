@@ -1,7 +1,7 @@
 /*
  *  iec61850_client.h
  *
- *  Copyright 2013, 2014 Michael Zillgith
+ *  Copyright 2013, 2014, 2015 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -303,6 +303,51 @@ IedConnection_installConnectionClosedHandler(IedConnection self, IedConnectionCl
  */
 MmsConnection
 IedConnection_getMmsConnection(IedConnection self);
+
+/** @} */
+
+/**
+ * @defgroup IEC61850_CLIENT_SV Client side SV control block handling functions
+ *
+ * @{
+ */
+
+/** an opaque handle to the instance data of a ClientSVControlBlock object */
+typedef struct sClientSVControlBlock* ClientSVControlBlock;
+
+/**
+ * \brief Create a new ClientSVControlBlock instance
+ *
+ *  This function simplifies client side access to server MSV/USV control blocks
+ *  NOTE: Do not use the functions after the IedConnection object is invalidated!
+ *
+ * \param connection the IedConnection object with a valid connection to the server.
+ * \param reference the object reference of the control block
+ *
+ * \return the new instance
+ */
+ClientSVControlBlock
+ClientSVControlBlock_create(IedConnection connection, const char* reference);
+
+/**
+ * \brief Free all resources related to the ClientSVControlBlock instance.
+ *
+ * \param self the ClientSVControlBlock instance to operate on
+ */
+void
+ClientSVControlBlock_destroy(ClientSVControlBlock self);
+
+bool
+ClientSVControlBlock_isMulticast(ClientSVControlBlock self);
+
+bool
+ClientSVControlBlock_setSvEna(ClientSVControlBlock self, bool svEna);
+
+bool
+ClientSVControlBlock_getSvEna(ClientSVControlBlock self);
+
+char*
+ClientSVControlBlock_getMsvID(ClientSVControlBlock self);
 
 /** @} */
 

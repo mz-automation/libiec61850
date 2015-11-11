@@ -36,7 +36,9 @@
 
 struct sMmsSampledValueControlBlock {
     char* name;
+
     bool svEna;
+    MmsServerConnection reservedByClient;
 
     char* dstAddress;
 
@@ -46,7 +48,8 @@ struct sMmsSampledValueControlBlock {
     MmsVariableSpecification* mmsType;
     MmsValue* mmsValue;
 
-    //MmsMapping* mmsMapping;
+    MmsValue* svEnaValue;
+    MmsValue* resvValue;
 };
 
 MmsSampledValueControlBlock
@@ -88,6 +91,109 @@ lookupSVCB(MmsMapping* self, MmsDomain* domain, char* lnName, char* objectName)
     return NULL;
 }
 
+static void
+MmsSampledValueControlBlock_enable(MmsSampledValueControlBlock self)
+{
+    //TODO call application callback handler
+    self->svEna = true;
+    MmsValue_setBoolean(self->svEnaValue, true);
+}
+
+static void
+MmsSampledValueControlBlock_disable(MmsSampledValueControlBlock self)
+{
+    //TODO call application callback handler
+    self->svEna = false;
+    MmsValue_setBoolean(self->svEnaValue, false);
+}
+
+static bool
+MmsSampledValueControlBlock_isEnabled(MmsSampledValueControlBlock self)
+{
+    return self->svEna;
+}
+
+MmsDataAccessError
+LIBIEC61850_SV_writeAccessSVControlBlock(MmsMapping* self, MmsDomain* domain, char* variableIdOrig,
+        MmsValue* value, MmsServerConnection connection)
+{
+    char variableId[130];
+
+    strncpy(variableId, variableIdOrig, 129);
+
+    char* separator = strchr(variableId, '$');
+
+    *separator = 0;
+
+    char* lnName = variableId;
+
+    if (lnName == NULL)
+        return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+
+    char* objectName = MmsMapping_getNextNameElement(separator + 1);
+
+    if (objectName == NULL)
+        return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+
+    char* varName = MmsMapping_getNextNameElement(objectName);
+
+    if (varName != NULL)
+        *(varName - 1) = 0;
+    else
+       return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+
+    MmsSampledValueControlBlock mmsSVCB = lookupSVCB(self, domain, lnName, objectName);
+
+    if (mmsSVCB == NULL)
+        return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+
+    if (mmsSVCB->reservedByClient != NULL) {
+        if (mmsSVCB->reservedByClient != connection)
+            return DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
+    }
+
+    if (strcmp(varName, "Resv") == 0) {
+        if (MmsValue_getType(value) != MMS_BOOLEAN)
+            return DATA_ACCESS_ERROR_TYPE_INCONSISTENT;
+
+        if (MmsValue_getBoolean(value)) {
+            mmsSVCB->reservedByClient = connection;
+            MmsValue_setBoolean(mmsSVCB->resvValue, true);
+        }
+        else {
+            mmsSVCB->reservedByClient = NULL;
+            MmsValue_setBoolean(mmsSVCB->resvValue, false);
+        }
+
+        return DATA_ACCESS_ERROR_SUCCESS;
+    }
+    else if (strcmp(varName, "SvEna") == 0) {
+        if (MmsValue_getType(value) != MMS_BOOLEAN)
+            return DATA_ACCESS_ERROR_TYPE_INCONSISTENT;
+
+        if (MmsValue_getBoolean(value))
+            MmsSampledValueControlBlock_enable(mmsSVCB);
+        else
+            MmsSampledValueControlBlock_disable(mmsSVCB);
+
+        return DATA_ACCESS_ERROR_SUCCESS;
+    }
+    else {
+        if (MmsSampledValueControlBlock_isEnabled(mmsSVCB))
+            return DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
+        else {
+            bool allowAccess = false;
+
+            // In 61850-9-2 mapping only Resv and SvEna are writable!
+
+            if (allowAccess)
+                return DATA_ACCESS_ERROR_SUCCESS;
+            else
+                return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+
+        }
+    }
+}
 
 MmsValue*
 LIBIEC61850_SV_readAccessSampledValueControlBlock(MmsMapping* self, MmsDomain* domain, char* variableIdOrig)
@@ -284,12 +390,18 @@ LIBIEC61850_SV_createSVControlBlocks(MmsMapping* self, MmsDomain* domain,
 
         namedVariable->typeSpec.structure.elements[currentSVCB] = svTypeSpec;
 
-        int currentIndex;
+        int currentIndex = 0;
 
-        if (unicast)
-            currentIndex = 2;
-        else
-            currentIndex = 1;
+        /* SvEna */
+        MmsValue* svEna = MmsValue_getElement(svValues, currentIndex++);
+
+        MmsValue* resv = NULL;
+
+        if (unicast) {
+            /* Resv */
+            resv = MmsValue_getElement(svValues, currentIndex++);
+        }
+
 
         /* SvID */
         MmsValue* svID = MmsValue_getElement(svValues, currentIndex++);
@@ -353,6 +465,8 @@ LIBIEC61850_SV_createSVControlBlocks(MmsMapping* self, MmsDomain* domain,
         MmsSampledValueControlBlock mmsSvCb = MmsSampledValueControlBlock_create();
 
         mmsSvCb->mmsValue = svValues;
+        mmsSvCb->svEnaValue = svEna;
+        mmsSvCb->resvValue = resv;
         mmsSvCb->mmsType = svTypeSpec;
         mmsSvCb->domain = domain;
         mmsSvCb->logicalNode = logicalNode;
