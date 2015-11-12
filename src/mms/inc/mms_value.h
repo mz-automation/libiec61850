@@ -935,6 +935,18 @@ MmsValue_getSubElement(MmsValue* self, MmsVariableSpecification* varSpec, char* 
 char*
 MmsValue_getTypeString(MmsValue* self);
 
+/**
+ * \brief create a string representation of the MmsValue object in the provided buffer
+ *
+ * NOTE: This function is for debugging purposes only. It may not be aimed to be used
+ * in embedded systems. It requires a full featured snprintf function.
+ *
+ * \param self the MmsValue instance
+ * \param buffer the buffer where to copy the string representation
+ * \param bufferSize the size of the provided buffer
+ *
+ * \return a pointer to the start of the buffer
+ */
 char*
 MmsValue_printToBuffer(MmsValue* self, char* buffer, int bufferSize);
 

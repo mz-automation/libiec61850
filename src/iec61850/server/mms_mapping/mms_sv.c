@@ -358,7 +358,11 @@ createSVControlBlockMmsStructure(char* gcbName, bool isUnicast)
     return gcb;
 }
 
-
+static void
+createDataSetReference(char* buffer, char* domainName, char* lnName, char* dataSetName)
+{
+    StringUtils_createStringInBuffer(buffer, 5, domainName, "/", lnName, "$", dataSetName);
+}
 
 MmsVariableSpecification*
 LIBIEC61850_SV_createSVControlBlocks(MmsMapping* self, MmsDomain* domain,
@@ -379,6 +383,8 @@ LIBIEC61850_SV_createSVControlBlocks(MmsMapping* self, MmsDomain* domain,
             sizeof(MmsVariableSpecification*));
 
     int currentSVCB = 0;
+
+    char dataRefBuffer[130];
 
     while (currentSVCB < svCount) {
         SVControlBlock* svControlBlock = getSVCBForLogicalNodeWithIndex(
@@ -409,7 +415,11 @@ LIBIEC61850_SV_createSVControlBlocks(MmsMapping* self, MmsDomain* domain,
 
         /* DatSet */
         MmsValue* dataSetRef = MmsValue_getElement(svValues, currentIndex++);
-        MmsValue_setVisibleString(dataSetRef, svControlBlock->dataSetName);
+
+        createDataSetReference(dataRefBuffer, MmsDomain_getName(domain),
+                logicalNode->name, svControlBlock->dataSetName);
+
+        MmsValue_setVisibleString(dataSetRef, dataRefBuffer);
 
         /* ConfRev */
         MmsValue* confRev = MmsValue_getElement(svValues, currentIndex++);

@@ -312,8 +312,30 @@ IedConnection_getMmsConnection(IedConnection self);
  * @{
  */
 
+/** SV ASDU contains attribute RefrTm */
+#define IEC61850_SV_OPT_REFRESH_TIME 1
+
+/** SV ASDU contains attribute SmpSynch */
+#define IEC61850_SV_OPT_SAMPLE_SYNC 2
+
+/** SV ASDU contains attribute SmpRate */
+#define IEC61850_SV_OPT_SAMPLE_RATE 4
+
+/** SV ASDU contains attribute DatSet */
+#define IEC61850_SV_OPT_DATA_SET 8
+
+/** SV ASDU contains attribute Security */
+#define IEC61850_SV_OPT_SECURITY 16
+
 /** an opaque handle to the instance data of a ClientSVControlBlock object */
 typedef struct sClientSVControlBlock* ClientSVControlBlock;
+
+typedef struct {
+    uint8_t addr[6];
+    uint8_t priority;
+    uint16_t vid;
+    uint16_t appId;
+} DstAddress;
 
 /**
  * \brief Create a new ClientSVControlBlock instance
@@ -340,14 +362,82 @@ ClientSVControlBlock_destroy(ClientSVControlBlock self);
 bool
 ClientSVControlBlock_isMulticast(ClientSVControlBlock self);
 
+/**
+ * \brief Return the error code of the last write or write acccess to the SVCB
+ *
+ * \param self the ClientSVControlBlock instance to operate on
+ *
+ * \return the error code of the last read or write access
+ */
+IedClientError
+ClientSVControlBlock_getLastError(ClientSVControlBlock self);
+
+
 bool
 ClientSVControlBlock_setSvEna(ClientSVControlBlock self, bool svEna);
 
 bool
 ClientSVControlBlock_getSvEna(ClientSVControlBlock self);
 
+bool
+ClientSVControlBlock_setResv(ClientSVControlBlock self, bool svEna);
+
 char*
 ClientSVControlBlock_getMsvID(ClientSVControlBlock self);
+
+/**
+ * \brief Get the (MMS) reference to the data set
+ *
+ * NOTE: the returned string is dynamically allocated with the
+ * GLOBAL_MALLOC macro. The application is responsible to release
+ * the memory when the string is no longer needed.
+ *
+ * \param self the ClientSVControlBlock instance to operate on
+ *
+ * \return the data set reference as a NULL terminated string
+ */
+char*
+ClientSVControlBlock_getDatSet(ClientSVControlBlock self);
+
+uint32_t
+ClientSVControlBlock_getConfRev(ClientSVControlBlock self);
+
+uint16_t
+ClientSVControlBlock_getSmpRate(ClientSVControlBlock self);
+
+
+/**
+ * \brief returns the destination address of the SV publisher
+ *
+ * \param self the ClientSVControlBlock instance to operate on
+ */
+DstAddress
+ClientSVControlBlock_getDstAddress(ClientSVControlBlock self);
+
+/**
+ * \brief returns the OptFlds bit string as integer
+ *
+ * \param self the ClientSVControlBlock instance to operate on
+ */
+int
+ClientSVControlBlock_getOptFlds(ClientSVControlBlock self);
+
+/**
+ * \brief returns number of sample mode of the SV publisher
+ *
+ * \param self the ClientSVControlBlock instance to operate on
+ */
+uint8_t
+ClientSVControlBlock_getSmpMod(ClientSVControlBlock self);
+
+/**
+ * \brief returns number of ASDUs included in the SV message
+ *
+ * \param self the ClientSVControlBlock instance to operate on
+ */
+int
+ClientSVControlBlock_getNoASDU(ClientSVControlBlock self);
+
 
 /** @} */
 

@@ -57,6 +57,35 @@ int main(int argc, char** argv) {
                 free(msvID);
             }
 
+            char* datSetName = ClientSVControlBlock_getDatSet(svcb);
+
+            if (datSetName != NULL) {
+                printf("DatSet: %s\n", datSetName);
+                free(datSetName);
+            }
+
+            printf("ConfRev: %i\n", ClientSVControlBlock_getConfRev(svcb));
+            printf("SmpRate: %i\n", ClientSVControlBlock_getSmpRate(svcb));
+            printf("SmpMod: %i\n", ClientSVControlBlock_getSmpMod(svcb));
+
+            int optFlds = ClientSVControlBlock_getOptFlds(svcb);
+
+            printf("OptFlds: ");
+            if (optFlds & IEC61850_SV_OPT_REFRESH_TIME)
+                printf("refresh-time ");
+            if (optFlds & IEC61850_SV_OPT_SAMPLE_SYNC)
+                printf("sample-synch ");
+            if (optFlds & IEC61850_SV_OPT_SAMPLE_RATE)
+                printf("sample-rate ");
+            if (optFlds & IEC61850_SV_OPT_DATA_SET)
+                printf("date-set ");
+            if (optFlds & IEC61850_SV_OPT_SECURITY)
+                printf("security ");
+            printf("\n");
+
+            printf("noASDU: %i\n", ClientSVControlBlock_getNoASDU(svcb));
+
+
         }
         else {
             printf("SVCB %s does not exist on server!\n", svcbRef);

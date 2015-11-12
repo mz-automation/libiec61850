@@ -1,7 +1,7 @@
 /*
  *  MmsValue.c
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013-2015 Michael Zillgith
  *
  *	This file is part of libIEC61850.
  *
@@ -1968,6 +1968,22 @@ MmsValue_getTypeString(MmsValue* self)
     }
 }
 
+
+static void
+msTimeToGeneralizedTime(uint64_t msTime, uint8_t* buffer, size_t bufferSize)
+{
+    time_t unixTime = (msTime / 1000);
+
+    struct tm tmTime;
+
+    int msPart = (msTime % 1000);
+    gmtime_r(&unixTime, &tmTime);
+
+    snprintf((char*) buffer, bufferSize, "%04d%02d%02d%02d%02d%02d.%03dZ", tmTime.tm_year + 1900, tmTime.tm_mon + 1,
+         tmTime.tm_mday, tmTime.tm_hour, tmTime.tm_min, tmTime.tm_sec, msPart);
+}
+
+
 char*
 MmsValue_printToBuffer(MmsValue* self, char* buffer, int bufferSize)
 {
@@ -1995,18 +2011,31 @@ MmsValue_printToBuffer(MmsValue* self, char* buffer, int bufferSize)
                 }
             }
 
-            buffer[bufPos++] = '}';
-            buffer[bufPos] = 0;
+            if (bufPos < (bufferSize - 1)) {
+                buffer[bufPos++] = '}';
+                buffer[bufPos] = 0;
+            }
+            else
+                buffer[bufferSize - 1] = 0;
+
         }
         break;
+
     case MMS_BINARY_TIME:
-        Conversions_msTimeToGeneralizedTime(MmsValue_getBinaryTimeAsUtcMs(self), (uint8_t*) buffer);
+        msTimeToGeneralizedTime(MmsValue_getBinaryTimeAsUtcMs(self), (uint8_t*) buffer, bufferSize);
         break;
+
     case MMS_BIT_STRING:
         {
             int bufPos = 0;
 
             int size = MmsValue_getBitStringSize(self);
+
+            /* Behave like strncpy and fill buffer with zeros */
+            if (size > bufferSize) {
+                memset(buffer, 0, bufferSize);
+                break;
+            }
 
             int i;
             for (i = 0; i < size; i++) {
@@ -2018,24 +2047,40 @@ MmsValue_printToBuffer(MmsValue* self, char* buffer, int bufferSize)
             buffer[bufPos] = 0;
         }
         break;
+
     case MMS_BOOLEAN:
         if (MmsValue_getBoolean(self))
             strncpy(buffer, "true", bufferSize);
         else
             strncpy(buffer, "false", bufferSize);
+
+        /* Ensure buffer is always 0 terminated */
+        if (bufferSize > 0)
+            buffer[bufferSize - 1] = 0;
+
         break;
+
     case MMS_DATA_ACCESS_ERROR:
         snprintf(buffer, bufferSize, "error %i", self->value.dataAccessError);
         break;
+
     case MMS_FLOAT:
         snprintf(buffer, bufferSize, "%f", MmsValue_toFloat(self));
         break;
-    case MMS_GENERALIZED_TIME:
+
+    case MMS_GENERALIZED_TIME: /* type not supported */
         strncpy(buffer, "generalized time", bufferSize);
+
+        /* Ensure buffer is always 0 terminated */
+        if (bufferSize > 0)
+            buffer[bufferSize - 1] = 0;
+
         break;
+
     case MMS_INTEGER:
         snprintf(buffer, bufferSize, "%i", MmsValue_toInt32(self));
         break;
+
     case MMS_OCTET_STRING:
         {
             int size = MmsValue_getOctetStringSize(self);
@@ -2049,20 +2094,33 @@ MmsValue_printToBuffer(MmsValue* self, char* buffer, int bufferSize)
                     break;
             }
         }
-
         break;
+
     case MMS_UNSIGNED:
         snprintf(buffer, bufferSize, "%u", MmsValue_toUint32(self));
         break;
+
     case MMS_UTC_TIME:
-        Conversions_msTimeToGeneralizedTime(MmsValue_getUtcTimeInMs(self), (uint8_t*) buffer);
+        msTimeToGeneralizedTime(MmsValue_getUtcTimeInMs(self), (uint8_t*) buffer, bufferSize);
         break;
+
     case MMS_STRING:
     case MMS_VISIBLE_STRING:
         strncpy(buffer, MmsValue_toString(self), bufferSize);
+
+        /* Ensure buffer is always 0 terminated */
+        if (bufferSize > 0)
+            buffer[bufferSize - 1] = 0;
+
         break;
+
     default:
         strncpy(buffer, "unknown type", bufferSize);
+
+        /* Ensure buffer is always 0 terminated */
+        if (bufferSize > 0)
+            buffer[bufferSize - 1] = 0;
+
         break;
     }
 
