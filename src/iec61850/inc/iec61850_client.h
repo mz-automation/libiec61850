@@ -327,6 +327,7 @@ IedConnection_getMmsConnection(IedConnection self);
 /** SV ASDU contains attribute Security */
 #define IEC61850_SV_OPT_SECURITY 16
 
+
 /** an opaque handle to the instance data of a ClientSVControlBlock object */
 typedef struct sClientSVControlBlock* ClientSVControlBlock;
 
@@ -370,7 +371,7 @@ ClientSVControlBlock_isMulticast(ClientSVControlBlock self);
  * \return the error code of the last read or write access
  */
 IedClientError
-ClientSVControlBlock_getLastError(ClientSVControlBlock self);
+ClientSVControlBlock_getLastComError(ClientSVControlBlock self);
 
 
 bool
@@ -381,6 +382,9 @@ ClientSVControlBlock_getSvEna(ClientSVControlBlock self);
 
 bool
 ClientSVControlBlock_setResv(ClientSVControlBlock self, bool svEna);
+
+bool
+ClientSVControlBlock_getResv(ClientSVControlBlock self);
 
 char*
 ClientSVControlBlock_getMsvID(ClientSVControlBlock self);

@@ -3,56 +3,9 @@
  *
  * automatically generated from mhai_array.icd
  */
-#include <stdlib.h>
-#include "iec61850_model.h"
+#include "static_model.h"
 
-extern IedModel iedModel;
 static void initializeValues();
-extern LogicalDevice iedModel_ComplexArray;
-extern LogicalNode   iedModel_ComplexArray_LLN0;
-extern DataObject    iedModel_ComplexArray_LLN0_Mod;
-extern DataAttribute iedModel_ComplexArray_LLN0_Mod_q;
-extern DataAttribute iedModel_ComplexArray_LLN0_Mod_t;
-extern DataAttribute iedModel_ComplexArray_LLN0_Mod_ctlModel;
-extern DataObject    iedModel_ComplexArray_LLN0_Beh;
-extern DataAttribute iedModel_ComplexArray_LLN0_Beh_stVal;
-extern DataAttribute iedModel_ComplexArray_LLN0_Beh_q;
-extern DataAttribute iedModel_ComplexArray_LLN0_Beh_t;
-extern DataObject    iedModel_ComplexArray_LLN0_Health;
-extern DataAttribute iedModel_ComplexArray_LLN0_Health_stVal;
-extern DataAttribute iedModel_ComplexArray_LLN0_Health_q;
-extern DataAttribute iedModel_ComplexArray_LLN0_Health_t;
-extern DataObject    iedModel_ComplexArray_LLN0_NamPlt;
-extern DataAttribute iedModel_ComplexArray_LLN0_NamPlt_vendor;
-extern DataAttribute iedModel_ComplexArray_LLN0_NamPlt_swRev;
-extern DataAttribute iedModel_ComplexArray_LLN0_NamPlt_d;
-extern DataAttribute iedModel_ComplexArray_LLN0_NamPlt_configRev;
-extern DataAttribute iedModel_ComplexArray_LLN0_NamPlt_ldNs;
-extern LogicalNode   iedModel_ComplexArray_LPHD1;
-extern DataObject    iedModel_ComplexArray_LPHD1_PhyNam;
-extern DataAttribute iedModel_ComplexArray_LPHD1_PhyNam_vendor;
-extern DataObject    iedModel_ComplexArray_LPHD1_PhyHealth;
-extern DataAttribute iedModel_ComplexArray_LPHD1_PhyHealth_stVal;
-extern DataAttribute iedModel_ComplexArray_LPHD1_PhyHealth_q;
-extern DataAttribute iedModel_ComplexArray_LPHD1_PhyHealth_t;
-extern DataObject    iedModel_ComplexArray_LPHD1_Proxy;
-extern DataAttribute iedModel_ComplexArray_LPHD1_Proxy_stVal;
-extern DataAttribute iedModel_ComplexArray_LPHD1_Proxy_q;
-extern DataAttribute iedModel_ComplexArray_LPHD1_Proxy_t;
-extern LogicalNode   iedModel_ComplexArray_MHAI1;
-extern DataObject    iedModel_ComplexArray_MHAI1_HA;
-extern DataObject    iedModel_ComplexArray_MHAI1_HA_phsAHar;
-extern DataAttribute iedModel_ComplexArray_MHAI1_HA_phsAHar_cVal;
-extern DataAttribute iedModel_ComplexArray_MHAI1_HA_phsAHar_cVal_mag;
-extern DataAttribute iedModel_ComplexArray_MHAI1_HA_phsAHar_cVal_mag_f;
-extern DataAttribute iedModel_ComplexArray_MHAI1_HA_phsAHar_cVal_ang;
-extern DataAttribute iedModel_ComplexArray_MHAI1_HA_phsAHar_cVal_ang_f;
-extern DataAttribute iedModel_ComplexArray_MHAI1_HA_phsAHar_q;
-extern DataAttribute iedModel_ComplexArray_MHAI1_HA_phsAHar_t;
-extern DataAttribute iedModel_ComplexArray_MHAI1_HA_numHar;
-extern DataAttribute iedModel_ComplexArray_MHAI1_HA_numCyc;
-extern DataAttribute iedModel_ComplexArray_MHAI1_HA_evalTm;
-extern DataAttribute iedModel_ComplexArray_MHAI1_HA_frequency;
 
 
 
@@ -590,9 +543,11 @@ DataAttribute iedModel_ComplexArray_MHAI1_HA_frequency = {
 
 
 
+
 IedModel iedModel = {
     "test",
     &iedModel_ComplexArray,
+    NULL,
     NULL,
     NULL,
     NULL,

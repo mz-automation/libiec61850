@@ -1968,22 +1968,6 @@ MmsValue_getTypeString(MmsValue* self)
     }
 }
 
-
-static void
-msTimeToGeneralizedTime(uint64_t msTime, uint8_t* buffer, size_t bufferSize)
-{
-    time_t unixTime = (msTime / 1000);
-
-    struct tm tmTime;
-
-    int msPart = (msTime % 1000);
-    gmtime_r(&unixTime, &tmTime);
-
-    snprintf((char*) buffer, bufferSize, "%04d%02d%02d%02d%02d%02d.%03dZ", tmTime.tm_year + 1900, tmTime.tm_mon + 1,
-         tmTime.tm_mday, tmTime.tm_hour, tmTime.tm_min, tmTime.tm_sec, msPart);
-}
-
-
 char*
 MmsValue_printToBuffer(MmsValue* self, char* buffer, int bufferSize)
 {
@@ -2022,7 +2006,11 @@ MmsValue_printToBuffer(MmsValue* self, char* buffer, int bufferSize)
         break;
 
     case MMS_BINARY_TIME:
-        msTimeToGeneralizedTime(MmsValue_getBinaryTimeAsUtcMs(self), (uint8_t*) buffer, bufferSize);
+        {
+            uint8_t tempBuf[20];
+            Conversions_msTimeToGeneralizedTime(MmsValue_getBinaryTimeAsUtcMs(self), tempBuf);
+            snprintf(buffer, bufferSize, "%s", tempBuf);
+        }
         break;
 
     case MMS_BIT_STRING:
@@ -2101,7 +2089,11 @@ MmsValue_printToBuffer(MmsValue* self, char* buffer, int bufferSize)
         break;
 
     case MMS_UTC_TIME:
-        msTimeToGeneralizedTime(MmsValue_getUtcTimeInMs(self), (uint8_t*) buffer, bufferSize);
+        {
+            uint8_t tempBuf[20];
+            Conversions_msTimeToGeneralizedTime(MmsValue_getUtcTimeInMs(self), tempBuf);
+            snprintf(buffer, bufferSize, "%s", tempBuf);
+        }
         break;
 
     case MMS_STRING:

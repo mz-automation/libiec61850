@@ -7,3 +7,4 @@ INCLUDES += -I$(LIBIEC_HOME)/src/iec61850/inc
 INCLUDES += -I$(LIBIEC_HOME)/src/iec61850/inc_private
 INCLUDES += -I$(LIBIEC_HOME)/src/hal/inc
 INCLUDES += -I$(LIBIEC_HOME)/src/goose
+INCLUDES += -I$(LIBIEC_HOME)/src/sampled_values

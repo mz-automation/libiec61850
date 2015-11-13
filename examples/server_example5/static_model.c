@@ -3,357 +3,60 @@
  *
  * automatically generated from complexModel.icd
  */
-#include <stdlib.h>
-#include "iec61850_model.h"
+#include "static_model.h"
 
-extern IedModel iedModel;
 static void initializeValues();
-extern LogicalDevice iedModel_Inverter;
-extern LogicalNode   iedModel_Inverter_LLN0;
-extern DataObject    iedModel_Inverter_LLN0_Mod;
-extern DataAttribute iedModel_Inverter_LLN0_Mod_q;
-extern DataAttribute iedModel_Inverter_LLN0_Mod_t;
-extern DataAttribute iedModel_Inverter_LLN0_Mod_ctlModel;
-extern DataObject    iedModel_Inverter_LLN0_Beh;
-extern DataAttribute iedModel_Inverter_LLN0_Beh_stVal;
-extern DataAttribute iedModel_Inverter_LLN0_Beh_q;
-extern DataAttribute iedModel_Inverter_LLN0_Beh_t;
-extern DataObject    iedModel_Inverter_LLN0_Health;
-extern DataAttribute iedModel_Inverter_LLN0_Health_stVal;
-extern DataAttribute iedModel_Inverter_LLN0_Health_q;
-extern DataAttribute iedModel_Inverter_LLN0_Health_t;
-extern DataObject    iedModel_Inverter_LLN0_NamPlt;
-extern DataAttribute iedModel_Inverter_LLN0_NamPlt_vendor;
-extern DataAttribute iedModel_Inverter_LLN0_NamPlt_swRev;
-extern DataAttribute iedModel_Inverter_LLN0_NamPlt_d;
-extern DataAttribute iedModel_Inverter_LLN0_NamPlt_configRev;
-extern DataAttribute iedModel_Inverter_LLN0_NamPlt_ldNs;
-extern LogicalNode   iedModel_Inverter_LPHD1;
-extern DataObject    iedModel_Inverter_LPHD1_PhyNam;
-extern DataAttribute iedModel_Inverter_LPHD1_PhyNam_vendor;
-extern DataObject    iedModel_Inverter_LPHD1_PhyHealth;
-extern DataAttribute iedModel_Inverter_LPHD1_PhyHealth_stVal;
-extern DataAttribute iedModel_Inverter_LPHD1_PhyHealth_q;
-extern DataAttribute iedModel_Inverter_LPHD1_PhyHealth_t;
-extern DataObject    iedModel_Inverter_LPHD1_Proxy;
-extern DataAttribute iedModel_Inverter_LPHD1_Proxy_stVal;
-extern DataAttribute iedModel_Inverter_LPHD1_Proxy_q;
-extern DataAttribute iedModel_Inverter_LPHD1_Proxy_t;
-extern LogicalNode   iedModel_Inverter_ZINV1;
-extern DataObject    iedModel_Inverter_ZINV1_Mod;
-extern DataAttribute iedModel_Inverter_ZINV1_Mod_q;
-extern DataAttribute iedModel_Inverter_ZINV1_Mod_t;
-extern DataAttribute iedModel_Inverter_ZINV1_Mod_ctlModel;
-extern DataObject    iedModel_Inverter_ZINV1_Beh;
-extern DataAttribute iedModel_Inverter_ZINV1_Beh_stVal;
-extern DataAttribute iedModel_Inverter_ZINV1_Beh_q;
-extern DataAttribute iedModel_Inverter_ZINV1_Beh_t;
-extern DataObject    iedModel_Inverter_ZINV1_Health;
-extern DataAttribute iedModel_Inverter_ZINV1_Health_stVal;
-extern DataAttribute iedModel_Inverter_ZINV1_Health_q;
-extern DataAttribute iedModel_Inverter_ZINV1_Health_t;
-extern DataObject    iedModel_Inverter_ZINV1_NamPlt;
-extern DataAttribute iedModel_Inverter_ZINV1_NamPlt_vendor;
-extern DataAttribute iedModel_Inverter_ZINV1_NamPlt_swRev;
-extern DataAttribute iedModel_Inverter_ZINV1_NamPlt_d;
-extern DataObject    iedModel_Inverter_ZINV1_WRtg;
-extern DataAttribute iedModel_Inverter_ZINV1_WRtg_setMag;
-extern DataAttribute iedModel_Inverter_ZINV1_WRtg_setMag_f;
-extern DataAttribute iedModel_Inverter_ZINV1_WRtg_units;
-extern DataAttribute iedModel_Inverter_ZINV1_WRtg_units_SIUnit;
-extern DataObject    iedModel_Inverter_ZINV1_VarRtg;
-extern DataAttribute iedModel_Inverter_ZINV1_VarRtg_setMag;
-extern DataAttribute iedModel_Inverter_ZINV1_VarRtg_setMag_f;
-extern DataAttribute iedModel_Inverter_ZINV1_VarRtg_units;
-extern DataAttribute iedModel_Inverter_ZINV1_VarRtg_units_SIUnit;
-extern DataObject    iedModel_Inverter_ZINV1_ACTyp;
-extern DataAttribute iedModel_Inverter_ZINV1_ACTyp_setVal;
-extern DataObject    iedModel_Inverter_ZINV1_OutWSet;
-extern DataAttribute iedModel_Inverter_ZINV1_OutWSet_setMag;
-extern DataAttribute iedModel_Inverter_ZINV1_OutWSet_setMag_f;
-extern DataAttribute iedModel_Inverter_ZINV1_OutWSet_units;
-extern DataAttribute iedModel_Inverter_ZINV1_OutWSet_units_SIUnit;
-extern DataObject    iedModel_Inverter_ZINV1_OutVarSet;
-extern DataAttribute iedModel_Inverter_ZINV1_OutVarSet_setMag;
-extern DataAttribute iedModel_Inverter_ZINV1_OutVarSet_setMag_f;
-extern DataAttribute iedModel_Inverter_ZINV1_OutVarSet_units;
-extern DataAttribute iedModel_Inverter_ZINV1_OutVarSet_units_SIUnit;
-extern LogicalNode   iedModel_Inverter_MMXU1;
-extern DataObject    iedModel_Inverter_MMXU1_Mod;
-extern DataAttribute iedModel_Inverter_MMXU1_Mod_q;
-extern DataAttribute iedModel_Inverter_MMXU1_Mod_t;
-extern DataAttribute iedModel_Inverter_MMXU1_Mod_ctlModel;
-extern DataObject    iedModel_Inverter_MMXU1_Beh;
-extern DataAttribute iedModel_Inverter_MMXU1_Beh_stVal;
-extern DataAttribute iedModel_Inverter_MMXU1_Beh_q;
-extern DataAttribute iedModel_Inverter_MMXU1_Beh_t;
-extern DataObject    iedModel_Inverter_MMXU1_Health;
-extern DataAttribute iedModel_Inverter_MMXU1_Health_stVal;
-extern DataAttribute iedModel_Inverter_MMXU1_Health_q;
-extern DataAttribute iedModel_Inverter_MMXU1_Health_t;
-extern DataObject    iedModel_Inverter_MMXU1_NamPlt;
-extern DataAttribute iedModel_Inverter_MMXU1_NamPlt_vendor;
-extern DataAttribute iedModel_Inverter_MMXU1_NamPlt_swRev;
-extern DataAttribute iedModel_Inverter_MMXU1_NamPlt_d;
-extern DataObject    iedModel_Inverter_MMXU1_TotW;
-extern DataAttribute iedModel_Inverter_MMXU1_TotW_mag;
-extern DataAttribute iedModel_Inverter_MMXU1_TotW_mag_f;
-extern DataAttribute iedModel_Inverter_MMXU1_TotW_q;
-extern DataAttribute iedModel_Inverter_MMXU1_TotW_t;
-extern DataObject    iedModel_Inverter_MMXU1_TotVAr;
-extern DataAttribute iedModel_Inverter_MMXU1_TotVAr_mag;
-extern DataAttribute iedModel_Inverter_MMXU1_TotVAr_mag_f;
-extern DataAttribute iedModel_Inverter_MMXU1_TotVAr_q;
-extern DataAttribute iedModel_Inverter_MMXU1_TotVAr_t;
-extern DataObject    iedModel_Inverter_MMXU1_TotVA;
-extern DataAttribute iedModel_Inverter_MMXU1_TotVA_mag;
-extern DataAttribute iedModel_Inverter_MMXU1_TotVA_mag_f;
-extern DataAttribute iedModel_Inverter_MMXU1_TotVA_q;
-extern DataAttribute iedModel_Inverter_MMXU1_TotVA_t;
-extern DataObject    iedModel_Inverter_MMXU1_Hz;
-extern DataAttribute iedModel_Inverter_MMXU1_Hz_mag;
-extern DataAttribute iedModel_Inverter_MMXU1_Hz_mag_f;
-extern DataAttribute iedModel_Inverter_MMXU1_Hz_q;
-extern DataAttribute iedModel_Inverter_MMXU1_Hz_t;
-extern DataObject    iedModel_Inverter_MMXU1_PhV;
-extern DataObject    iedModel_Inverter_MMXU1_PhV_phsA;
-extern DataAttribute iedModel_Inverter_MMXU1_PhV_phsA_cVal;
-extern DataAttribute iedModel_Inverter_MMXU1_PhV_phsA_cVal_mag;
-extern DataAttribute iedModel_Inverter_MMXU1_PhV_phsA_cVal_mag_f;
-extern DataAttribute iedModel_Inverter_MMXU1_PhV_phsA_q;
-extern DataAttribute iedModel_Inverter_MMXU1_PhV_phsA_t;
-extern DataObject    iedModel_Inverter_MMXU1_PhV_phsB;
-extern DataAttribute iedModel_Inverter_MMXU1_PhV_phsB_cVal;
-extern DataAttribute iedModel_Inverter_MMXU1_PhV_phsB_cVal_mag;
-extern DataAttribute iedModel_Inverter_MMXU1_PhV_phsB_cVal_mag_f;
-extern DataAttribute iedModel_Inverter_MMXU1_PhV_phsB_q;
-extern DataAttribute iedModel_Inverter_MMXU1_PhV_phsB_t;
-extern DataObject    iedModel_Inverter_MMXU1_PhV_phsC;
-extern DataAttribute iedModel_Inverter_MMXU1_PhV_phsC_cVal;
-extern DataAttribute iedModel_Inverter_MMXU1_PhV_phsC_cVal_mag;
-extern DataAttribute iedModel_Inverter_MMXU1_PhV_phsC_cVal_mag_f;
-extern DataAttribute iedModel_Inverter_MMXU1_PhV_phsC_q;
-extern DataAttribute iedModel_Inverter_MMXU1_PhV_phsC_t;
-extern DataObject    iedModel_Inverter_MMXU1_PhV_neut;
-extern DataAttribute iedModel_Inverter_MMXU1_PhV_neut_cVal;
-extern DataAttribute iedModel_Inverter_MMXU1_PhV_neut_cVal_mag;
-extern DataAttribute iedModel_Inverter_MMXU1_PhV_neut_cVal_mag_f;
-extern DataAttribute iedModel_Inverter_MMXU1_PhV_neut_q;
-extern DataAttribute iedModel_Inverter_MMXU1_PhV_neut_t;
-extern DataObject    iedModel_Inverter_MMXU1_A;
-extern DataObject    iedModel_Inverter_MMXU1_A_phsA;
-extern DataAttribute iedModel_Inverter_MMXU1_A_phsA_cVal;
-extern DataAttribute iedModel_Inverter_MMXU1_A_phsA_cVal_mag;
-extern DataAttribute iedModel_Inverter_MMXU1_A_phsA_cVal_mag_f;
-extern DataAttribute iedModel_Inverter_MMXU1_A_phsA_q;
-extern DataAttribute iedModel_Inverter_MMXU1_A_phsA_t;
-extern DataObject    iedModel_Inverter_MMXU1_A_phsB;
-extern DataAttribute iedModel_Inverter_MMXU1_A_phsB_cVal;
-extern DataAttribute iedModel_Inverter_MMXU1_A_phsB_cVal_mag;
-extern DataAttribute iedModel_Inverter_MMXU1_A_phsB_cVal_mag_f;
-extern DataAttribute iedModel_Inverter_MMXU1_A_phsB_q;
-extern DataAttribute iedModel_Inverter_MMXU1_A_phsB_t;
-extern DataObject    iedModel_Inverter_MMXU1_A_phsC;
-extern DataAttribute iedModel_Inverter_MMXU1_A_phsC_cVal;
-extern DataAttribute iedModel_Inverter_MMXU1_A_phsC_cVal_mag;
-extern DataAttribute iedModel_Inverter_MMXU1_A_phsC_cVal_mag_f;
-extern DataAttribute iedModel_Inverter_MMXU1_A_phsC_q;
-extern DataAttribute iedModel_Inverter_MMXU1_A_phsC_t;
-extern DataObject    iedModel_Inverter_MMXU1_A_neut;
-extern DataAttribute iedModel_Inverter_MMXU1_A_neut_cVal;
-extern DataAttribute iedModel_Inverter_MMXU1_A_neut_cVal_mag;
-extern DataAttribute iedModel_Inverter_MMXU1_A_neut_cVal_mag_f;
-extern DataAttribute iedModel_Inverter_MMXU1_A_neut_q;
-extern DataAttribute iedModel_Inverter_MMXU1_A_neut_t;
-extern DataObject    iedModel_Inverter_MMXU1_W;
-extern DataObject    iedModel_Inverter_MMXU1_W_phsA;
-extern DataAttribute iedModel_Inverter_MMXU1_W_phsA_cVal;
-extern DataAttribute iedModel_Inverter_MMXU1_W_phsA_cVal_mag;
-extern DataAttribute iedModel_Inverter_MMXU1_W_phsA_cVal_mag_f;
-extern DataAttribute iedModel_Inverter_MMXU1_W_phsA_q;
-extern DataAttribute iedModel_Inverter_MMXU1_W_phsA_t;
-extern DataObject    iedModel_Inverter_MMXU1_W_phsB;
-extern DataAttribute iedModel_Inverter_MMXU1_W_phsB_cVal;
-extern DataAttribute iedModel_Inverter_MMXU1_W_phsB_cVal_mag;
-extern DataAttribute iedModel_Inverter_MMXU1_W_phsB_cVal_mag_f;
-extern DataAttribute iedModel_Inverter_MMXU1_W_phsB_q;
-extern DataAttribute iedModel_Inverter_MMXU1_W_phsB_t;
-extern DataObject    iedModel_Inverter_MMXU1_W_phsC;
-extern DataAttribute iedModel_Inverter_MMXU1_W_phsC_cVal;
-extern DataAttribute iedModel_Inverter_MMXU1_W_phsC_cVal_mag;
-extern DataAttribute iedModel_Inverter_MMXU1_W_phsC_cVal_mag_f;
-extern DataAttribute iedModel_Inverter_MMXU1_W_phsC_q;
-extern DataAttribute iedModel_Inverter_MMXU1_W_phsC_t;
-extern LogicalDevice iedModel_Battery;
-extern LogicalNode   iedModel_Battery_LLN0;
-extern DataObject    iedModel_Battery_LLN0_Mod;
-extern DataAttribute iedModel_Battery_LLN0_Mod_q;
-extern DataAttribute iedModel_Battery_LLN0_Mod_t;
-extern DataAttribute iedModel_Battery_LLN0_Mod_ctlModel;
-extern DataObject    iedModel_Battery_LLN0_Beh;
-extern DataAttribute iedModel_Battery_LLN0_Beh_stVal;
-extern DataAttribute iedModel_Battery_LLN0_Beh_q;
-extern DataAttribute iedModel_Battery_LLN0_Beh_t;
-extern DataObject    iedModel_Battery_LLN0_Health;
-extern DataAttribute iedModel_Battery_LLN0_Health_stVal;
-extern DataAttribute iedModel_Battery_LLN0_Health_q;
-extern DataAttribute iedModel_Battery_LLN0_Health_t;
-extern DataObject    iedModel_Battery_LLN0_NamPlt;
-extern DataAttribute iedModel_Battery_LLN0_NamPlt_vendor;
-extern DataAttribute iedModel_Battery_LLN0_NamPlt_swRev;
-extern DataAttribute iedModel_Battery_LLN0_NamPlt_d;
-extern DataAttribute iedModel_Battery_LLN0_NamPlt_configRev;
-extern DataAttribute iedModel_Battery_LLN0_NamPlt_ldNs;
-extern LogicalNode   iedModel_Battery_LPHD1;
-extern DataObject    iedModel_Battery_LPHD1_PhyNam;
-extern DataAttribute iedModel_Battery_LPHD1_PhyNam_vendor;
-extern DataObject    iedModel_Battery_LPHD1_PhyHealth;
-extern DataAttribute iedModel_Battery_LPHD1_PhyHealth_stVal;
-extern DataAttribute iedModel_Battery_LPHD1_PhyHealth_q;
-extern DataAttribute iedModel_Battery_LPHD1_PhyHealth_t;
-extern DataObject    iedModel_Battery_LPHD1_Proxy;
-extern DataAttribute iedModel_Battery_LPHD1_Proxy_stVal;
-extern DataAttribute iedModel_Battery_LPHD1_Proxy_q;
-extern DataAttribute iedModel_Battery_LPHD1_Proxy_t;
-extern LogicalNode   iedModel_Battery_ZBAT1;
-extern DataObject    iedModel_Battery_ZBAT1_Mod;
-extern DataAttribute iedModel_Battery_ZBAT1_Mod_q;
-extern DataAttribute iedModel_Battery_ZBAT1_Mod_t;
-extern DataAttribute iedModel_Battery_ZBAT1_Mod_ctlModel;
-extern DataObject    iedModel_Battery_ZBAT1_Beh;
-extern DataAttribute iedModel_Battery_ZBAT1_Beh_stVal;
-extern DataAttribute iedModel_Battery_ZBAT1_Beh_q;
-extern DataAttribute iedModel_Battery_ZBAT1_Beh_t;
-extern DataObject    iedModel_Battery_ZBAT1_Health;
-extern DataAttribute iedModel_Battery_ZBAT1_Health_stVal;
-extern DataAttribute iedModel_Battery_ZBAT1_Health_q;
-extern DataAttribute iedModel_Battery_ZBAT1_Health_t;
-extern DataObject    iedModel_Battery_ZBAT1_NamPlt;
-extern DataAttribute iedModel_Battery_ZBAT1_NamPlt_vendor;
-extern DataAttribute iedModel_Battery_ZBAT1_NamPlt_swRev;
-extern DataAttribute iedModel_Battery_ZBAT1_NamPlt_d;
-extern DataObject    iedModel_Battery_ZBAT1_Vol;
-extern DataAttribute iedModel_Battery_ZBAT1_Vol_mag;
-extern DataAttribute iedModel_Battery_ZBAT1_Vol_mag_f;
-extern DataAttribute iedModel_Battery_ZBAT1_Vol_q;
-extern DataAttribute iedModel_Battery_ZBAT1_Vol_t;
-extern DataObject    iedModel_Battery_ZBAT1_Amp;
-extern DataAttribute iedModel_Battery_ZBAT1_Amp_mag;
-extern DataAttribute iedModel_Battery_ZBAT1_Amp_mag_f;
-extern DataAttribute iedModel_Battery_ZBAT1_Amp_q;
-extern DataAttribute iedModel_Battery_ZBAT1_Amp_t;
-extern LogicalNode   iedModel_Battery_ZBTC1;
-extern DataObject    iedModel_Battery_ZBTC1_Mod;
-extern DataAttribute iedModel_Battery_ZBTC1_Mod_q;
-extern DataAttribute iedModel_Battery_ZBTC1_Mod_t;
-extern DataAttribute iedModel_Battery_ZBTC1_Mod_ctlModel;
-extern DataObject    iedModel_Battery_ZBTC1_Beh;
-extern DataAttribute iedModel_Battery_ZBTC1_Beh_stVal;
-extern DataAttribute iedModel_Battery_ZBTC1_Beh_q;
-extern DataAttribute iedModel_Battery_ZBTC1_Beh_t;
-extern DataObject    iedModel_Battery_ZBTC1_Health;
-extern DataAttribute iedModel_Battery_ZBTC1_Health_stVal;
-extern DataAttribute iedModel_Battery_ZBTC1_Health_q;
-extern DataAttribute iedModel_Battery_ZBTC1_Health_t;
-extern DataObject    iedModel_Battery_ZBTC1_NamPlt;
-extern DataAttribute iedModel_Battery_ZBTC1_NamPlt_vendor;
-extern DataAttribute iedModel_Battery_ZBTC1_NamPlt_swRev;
-extern DataAttribute iedModel_Battery_ZBTC1_NamPlt_d;
-extern DataObject    iedModel_Battery_ZBTC1_BatChaSt;
-extern DataObject    iedModel_Battery_ZBTC1_BatChaPwr;
-extern DataObject    iedModel_Battery_ZBTC1_BatChaMod;
-extern DataObject    iedModel_Battery_ZBTC1_ChaV;
-extern DataAttribute iedModel_Battery_ZBTC1_ChaV_mag;
-extern DataAttribute iedModel_Battery_ZBTC1_ChaV_mag_f;
-extern DataAttribute iedModel_Battery_ZBTC1_ChaV_q;
-extern DataAttribute iedModel_Battery_ZBTC1_ChaV_t;
-extern DataObject    iedModel_Battery_ZBTC1_ChaA;
-extern DataAttribute iedModel_Battery_ZBTC1_ChaA_mag;
-extern DataAttribute iedModel_Battery_ZBTC1_ChaA_mag_f;
-extern DataAttribute iedModel_Battery_ZBTC1_ChaA_q;
-extern DataAttribute iedModel_Battery_ZBTC1_ChaA_t;
-extern LogicalDevice iedModel_Physical_Measurements;
-extern LogicalNode   iedModel_Physical_Measurements_LLN0;
-extern DataObject    iedModel_Physical_Measurements_LLN0_Mod;
-extern DataAttribute iedModel_Physical_Measurements_LLN0_Mod_q;
-extern DataAttribute iedModel_Physical_Measurements_LLN0_Mod_t;
-extern DataAttribute iedModel_Physical_Measurements_LLN0_Mod_ctlModel;
-extern DataObject    iedModel_Physical_Measurements_LLN0_Beh;
-extern DataAttribute iedModel_Physical_Measurements_LLN0_Beh_stVal;
-extern DataAttribute iedModel_Physical_Measurements_LLN0_Beh_q;
-extern DataAttribute iedModel_Physical_Measurements_LLN0_Beh_t;
-extern DataObject    iedModel_Physical_Measurements_LLN0_Health;
-extern DataAttribute iedModel_Physical_Measurements_LLN0_Health_stVal;
-extern DataAttribute iedModel_Physical_Measurements_LLN0_Health_q;
-extern DataAttribute iedModel_Physical_Measurements_LLN0_Health_t;
-extern DataObject    iedModel_Physical_Measurements_LLN0_NamPlt;
-extern DataAttribute iedModel_Physical_Measurements_LLN0_NamPlt_vendor;
-extern DataAttribute iedModel_Physical_Measurements_LLN0_NamPlt_swRev;
-extern DataAttribute iedModel_Physical_Measurements_LLN0_NamPlt_d;
-extern DataAttribute iedModel_Physical_Measurements_LLN0_NamPlt_configRev;
-extern DataAttribute iedModel_Physical_Measurements_LLN0_NamPlt_ldNs;
-extern LogicalNode   iedModel_Physical_Measurements_LPHD1;
-extern DataObject    iedModel_Physical_Measurements_LPHD1_PhyNam;
-extern DataAttribute iedModel_Physical_Measurements_LPHD1_PhyNam_vendor;
-extern DataObject    iedModel_Physical_Measurements_LPHD1_PhyHealth;
-extern DataAttribute iedModel_Physical_Measurements_LPHD1_PhyHealth_stVal;
-extern DataAttribute iedModel_Physical_Measurements_LPHD1_PhyHealth_q;
-extern DataAttribute iedModel_Physical_Measurements_LPHD1_PhyHealth_t;
-extern DataObject    iedModel_Physical_Measurements_LPHD1_Proxy;
-extern DataAttribute iedModel_Physical_Measurements_LPHD1_Proxy_stVal;
-extern DataAttribute iedModel_Physical_Measurements_LPHD1_Proxy_q;
-extern DataAttribute iedModel_Physical_Measurements_LPHD1_Proxy_t;
 
-extern DataSet ds_Inverter_LLN0_dataset1;
+extern DataSet iedModelds_Inverter_LLN0_dataset1;
 
 
-extern DataSetEntry ds_Inverter_LLN0_dataset1_fcda0;
-extern DataSetEntry ds_Inverter_LLN0_dataset1_fcda1;
-extern DataSetEntry ds_Inverter_LLN0_dataset1_fcda2;
-extern DataSetEntry ds_Inverter_LLN0_dataset1_fcda3;
-extern DataSetEntry ds_Inverter_LLN0_dataset1_fcda4;
+extern DataSetEntry iedModelds_Inverter_LLN0_dataset1_fcda0;
+extern DataSetEntry iedModelds_Inverter_LLN0_dataset1_fcda1;
+extern DataSetEntry iedModelds_Inverter_LLN0_dataset1_fcda2;
+extern DataSetEntry iedModelds_Inverter_LLN0_dataset1_fcda3;
+extern DataSetEntry iedModelds_Inverter_LLN0_dataset1_fcda4;
 
-DataSetEntry ds_Inverter_LLN0_dataset1_fcda0 = {
+DataSetEntry iedModelds_Inverter_LLN0_dataset1_fcda0 = {
   "Inverter",
   false,
   "LLN0$ST$Mod$q",
   -1,
   NULL,
   NULL,
-  &ds_Inverter_LLN0_dataset1_fcda1
+  &iedModelds_Inverter_LLN0_dataset1_fcda1
 };
 
-DataSetEntry ds_Inverter_LLN0_dataset1_fcda1 = {
+DataSetEntry iedModelds_Inverter_LLN0_dataset1_fcda1 = {
   "Battery",
   false,
   "LLN0$ST$Mod$q",
   -1,
   NULL,
   NULL,
-  &ds_Inverter_LLN0_dataset1_fcda2
+  &iedModelds_Inverter_LLN0_dataset1_fcda2
 };
 
-DataSetEntry ds_Inverter_LLN0_dataset1_fcda2 = {
+DataSetEntry iedModelds_Inverter_LLN0_dataset1_fcda2 = {
   "Inverter",
   false,
   "MMXU1$ST$Mod$q",
   -1,
   NULL,
   NULL,
-  &ds_Inverter_LLN0_dataset1_fcda3
+  &iedModelds_Inverter_LLN0_dataset1_fcda3
 };
 
-DataSetEntry ds_Inverter_LLN0_dataset1_fcda3 = {
+DataSetEntry iedModelds_Inverter_LLN0_dataset1_fcda3 = {
   "Inverter",
   false,
   "MMXU1$CF$Mod$ctlModel",
   -1,
   NULL,
   NULL,
-  &ds_Inverter_LLN0_dataset1_fcda4
+  &iedModelds_Inverter_LLN0_dataset1_fcda4
 };
 
-DataSetEntry ds_Inverter_LLN0_dataset1_fcda4 = {
+DataSetEntry iedModelds_Inverter_LLN0_dataset1_fcda4 = {
   "Inverter",
   false,
   "MMXU1$MX$TotW$mag",
@@ -363,11 +66,11 @@ DataSetEntry ds_Inverter_LLN0_dataset1_fcda4 = {
   NULL
 };
 
-DataSet ds_Inverter_LLN0_dataset1 = {
+DataSet iedModelds_Inverter_LLN0_dataset1 = {
   "Inverter",
   "LLN0$dataset1",
   5,
-  &ds_Inverter_LLN0_dataset1_fcda0,
+  &iedModelds_Inverter_LLN0_dataset1_fcda0,
   NULL
 };
 
@@ -3877,7 +3580,8 @@ DataAttribute iedModel_Physical_Measurements_LPHD1_Proxy_t = {
 
 extern ReportControlBlock iedModel_Inverter_LLN0_report0;
 
-ReportControlBlock iedModel_Inverter_LLN0_report0 = {&iedModel_Inverter_LLN0, "rcb101", "ID", false, "dataset1", 0, 3, 32, 0, 0, NULL};
+ReportControlBlock iedModel_Inverter_LLN0_report0 = {&iedModel_Inverter_LLN0, "rcb101", "ID", false, "dataset1", 0, 19, 32, 0, 0, NULL};
+
 
 
 
@@ -3885,8 +3589,9 @@ ReportControlBlock iedModel_Inverter_LLN0_report0 = {&iedModel_Inverter_LLN0, "r
 IedModel iedModel = {
     "ied1",
     &iedModel_Inverter,
-    &ds_Inverter_LLN0_dataset1,
+    &iedModelds_Inverter_LLN0_dataset1,
     &iedModel_Inverter_LLN0_report0,
+    NULL,
     NULL,
     NULL,
     initializeValues

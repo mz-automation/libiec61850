@@ -25,6 +25,7 @@ EXAMPLE_DIRS += server_example_threadless
 EXAMPLE_DIRS += server_example_setting_groups
 EXAMPLE_DIRS += goose_subscriber
 EXAMPLE_DIRS += goose_publisher
+EXAMPLE_DIRS += sv_subscriber
 EXAMPLE_DIRS += mms_utility
 
 MODEL_DIRS += server_example1

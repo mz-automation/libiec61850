@@ -19,6 +19,7 @@ LIB_SOURCE_DIRS += src/mms/iso_mms/asn1c
 LIB_SOURCE_DIRS += src/mms/iso_server
 ifndef EXCLUDE_ETHERNET_WINDOWS
 LIB_SOURCE_DIRS += src/goose
+LIB_SOURCE_DIRS += src/sampled_values
 endif
 LIB_SOURCE_DIRS += src/iec61850/client
 LIB_SOURCE_DIRS += src/iec61850/common
@@ -45,13 +46,14 @@ LIB_SOURCE_DIRS += src/hal/ethernet/bsd
 LIB_SOURCE_DIRS += src/hal/filesystem/linux
 LIB_SOURCE_DIRS += src/hal/time/unix
 endif
-LIB_INCLUDE_DIRS +=	config
+LIB_INCLUDE_DIRS += config
 LIB_INCLUDE_DIRS += src/common/inc
 LIB_INCLUDE_DIRS += src/mms/iso_mms/asn1c
 LIB_INCLUDE_DIRS += src/mms/inc
-LIB_INCLUDE_DIRS +=	src/mms/inc_private
-LIB_INCLUDE_DIRS +=	src/hal/inc
-LIB_INCLUDE_DIRS +=	src/goose
+LIB_INCLUDE_DIRS += src/mms/inc_private
+LIB_INCLUDE_DIRS += src/hal/inc
+LIB_INCLUDE_DIRS += src/goose
+LIB_INCLUDE_DIRS += src/sampled_values
 LIB_INCLUDE_DIRS += src/iec61850/inc
 LIB_INCLUDE_DIRS += src/iec61850/inc_private
 ifeq ($(HAL_IMPL), WIN32)
@@ -92,6 +94,7 @@ LIB_API_HEADER_FILES += src/mms/inc/ber_integer.h
 LIB_API_HEADER_FILES += src/mms/inc/asn1_ber_primitive_value.h
 LIB_API_HEADER_FILES += src/goose/goose_subscriber.h
 LIB_API_HEADER_FILES += src/goose/goose_receiver.h
+LIB_API_HEADER_FILES += src/sampled_values/sv_subscriber.h
 
 get_sources_from_directory  = $(wildcard $1/*.c)
 get_sources = $(foreach dir, $1, $(call get_sources_from_directory,$(dir)))

@@ -292,7 +292,7 @@ Timestamp_setTimeInSeconds(Timestamp* self, uint32_t secondsSinceEpoch)
 void
 Timestamp_setTimeInMilliseconds(Timestamp* self, uint64_t millisSinceEpoch)
 {
-    uint32_t timeval32 = (millisSinceEpoch / 1000LL);
+    uint32_t timeval32 = (uint32_t) (millisSinceEpoch / 1000LL);
 
     uint8_t* timeArray = (uint8_t*) &timeval32;
     uint8_t* valueArray = self->val;
