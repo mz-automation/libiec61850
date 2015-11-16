@@ -32,6 +32,47 @@ extern "C" {
 
 /**
  * \defgroup sv_subscriber_api_group IEC 61850 sampled values (SV) subscriber API
+ *
+ * The sampled values (SV) subscriber API consists of three different objects.
+ * The \ref SVReceiver object is responsible for handling all SV Ethernet messages
+ * for a specific Ethernet interface. If you want to receive SV messages on multiple
+ * Ethernet interfaces you have to use several \ref SVReceiver instances.
+ * An \ref SVSubscriber object is associated to a SV data stream that is identified by its appID
+ * and destination Ethernet address. The \reg SVSubscriber object is used to install a callback
+ * handler that is invoked for each ASDU (application service data unit) received for the
+ * associated stream. An \ref SVClientASDU is an object that represents a single ASDU. Each ASDU contains
+ * some meta information that can be obtained by specific access functions like e.g.
+ * \ref SVClientASDU_getSmpCnt to access the "SmpCnt" (sample count) attribute of the ASDU. The actual
+ * measurement data contained in the ASDU does not consist of structured ASN.1 data but stored as raw binary
+ * data. Without a priori knowledge of the dataset associated with the ASDU data stream it is not
+ * possible to interpret the received data correctly. Therefore you have to provide the data access functions
+ * with an index value to indicate the data type and the start of the data in the data block of the ASDU.
+ * E.g. reading a data set consisting of two FLOAT32 values you can use two subsequent calls of
+ * \ref SVClientASDU_getFLOAT32 one with index = 0 and the second one with index = 4.
+ *
+ *  | IEC 61850 type | required bytes |
+ *  | -------------- | -------------- |
+ *  | BOOLEAN | 1 byte |
+ *  | INT8    | 1 byte |
+ *  | INT16   | 2 byte |
+ *  | INT32   | 4 byte |
+ *  | INT64   | 8 byte |
+ *  | INT8U   | 1 byte |
+ *  | INT16U  | 2 byte |
+ *  | INT24U  | 3 byte |
+ *  | INT32U  | 4 byte |
+ *  | FLOAT32 | 4 byte |
+ *  | FLOAT64 | 8 byte |
+ *  | ENUMERATED | 4 byte |
+ *  | CODED ENUM | 4 byte |
+ *  | OCTET STRING | 20 byte |
+ *  | VISIBLE STRING | 35 byte |
+ *  | TimeStamp | 8 byte |
+ *  | EntryTime | 6 byte |
+ *  | BITSTRING | 4 byte |
+ *
+ * The SV subscriber API can be used independent of the IEC 61850 client API. In order to access the SVCB via MMS you
+ * have to use the IEC 61850 client API. Please see \ref ClientSVControlBlock object in section \ref IEC61850_CLIENT_SV .
  */
 /**@{*/
 
