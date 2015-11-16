@@ -1,0 +1,2 @@
+For GOOSE support add winpcap source and headers here. Rerun cmake to configure the build system for GOOSE support.
+
