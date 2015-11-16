@@ -72,7 +72,8 @@ extern "C" {
  *  | BITSTRING | 4 byte |
  *
  * The SV subscriber API can be used independent of the IEC 61850 client API. In order to access the SVCB via MMS you
- * have to use the IEC 61850 client API. Please see \ref ClientSVControlBlock object in section \ref IEC61850_CLIENT_SV .
+ * have to use the IEC 61850 client API. Please see \ref ClientSVControlBlock object in section \ref IEC61850_CLIENT_SV.
+ *
  */
 /**@{*/
 
