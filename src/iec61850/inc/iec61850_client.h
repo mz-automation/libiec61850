@@ -331,13 +331,6 @@ IedConnection_getMmsConnection(IedConnection self);
 /** an opaque handle to the instance data of a ClientSVControlBlock object */
 typedef struct sClientSVControlBlock* ClientSVControlBlock;
 
-typedef struct {
-    uint8_t addr[6];
-    uint8_t priority;
-    uint16_t vid;
-    uint16_t appId;
-} DstAddress;
-
 /**
  * \brief Create a new ClientSVControlBlock instance
  *
@@ -415,7 +408,7 @@ ClientSVControlBlock_getSmpRate(ClientSVControlBlock self);
  *
  * \param self the ClientSVControlBlock instance to operate on
  */
-DstAddress
+PhyComAddress
 ClientSVControlBlock_getDstAddress(ClientSVControlBlock self);
 
 /**

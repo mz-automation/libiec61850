@@ -39,7 +39,7 @@ extern "C" {
  * Ethernet interfaces you have to use several \ref SVReceiver instances.
  * An \ref SVSubscriber object is associated to a SV data stream that is identified by its appID
  * and destination Ethernet address. The \reg SVSubscriber object is used to install a callback
- * handler that is invoked for each ASDU (application service data unit) received for the
+ * handler \ref SVUpdateListener that is invoked for each ASDU (application service data unit) received for the
  * associated stream. An \ref SVClientASDU is an object that represents a single ASDU. Each ASDU contains
  * some meta information that can be obtained by specific access functions like e.g.
  * \ref SVClientASDU_getSmpCnt to access the "SmpCnt" (sample count) attribute of the ASDU. The actual

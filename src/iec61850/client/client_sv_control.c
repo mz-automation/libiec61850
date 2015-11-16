@@ -271,7 +271,7 @@ ClientSVControlBlock_getNoASDU(ClientSVControlBlock self)
     return readUIntVariable(self, "noASDU");
 }
 
-DstAddress
+PhyComAddress
 ClientSVControlBlock_getDstAddress(ClientSVControlBlock self)
 {
     char refBuf[130];
@@ -289,7 +289,7 @@ ClientSVControlBlock_getDstAddress(ClientSVControlBlock self)
     else
         dstAddrValue = IedConnection_readObject(self->connection, &(self->lastError), refBuf, IEC61850_FC_US);
 
-    DstAddress retVal;
+    PhyComAddress retVal;
     memset(&retVal, 0, sizeof(retVal));
 
     if (dstAddrValue == NULL) goto exit_error;
@@ -318,7 +318,7 @@ ClientSVControlBlock_getDstAddress(ClientSVControlBlock self)
 
     uint8_t* addrBuf = MmsValue_getOctetStringBuffer(addr);
 
-    memcpy(&(retVal.addr), addrBuf, 6);
+    memcpy(&(retVal.dstAddress), addrBuf, 6);
 
     MmsValue* prio = MmsValue_getElement(dstAddrValue, 1);
 
@@ -327,7 +327,7 @@ ClientSVControlBlock_getDstAddress(ClientSVControlBlock self)
         goto exit_cleanup;
     }
 
-    retVal.priority = MmsValue_toUint32(prio);
+    retVal.vlanPriority = MmsValue_toUint32(prio);
 
     MmsValue* vid = MmsValue_getElement(dstAddrValue, 2);
 
@@ -336,7 +336,7 @@ ClientSVControlBlock_getDstAddress(ClientSVControlBlock self)
         goto exit_cleanup;
     }
 
-    retVal.vid = MmsValue_toUint32(vid);
+    retVal.vlanId = MmsValue_toUint32(vid);
 
     MmsValue* appID = MmsValue_getElement(dstAddrValue, 3);
 

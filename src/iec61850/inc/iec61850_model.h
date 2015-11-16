@@ -270,13 +270,6 @@ struct sSettingGroupControlBlock {
     SettingGroupControlBlock* sibling; /* next control block in list or NULL if this is the last entry */
 };
 
-typedef struct {
-    uint8_t vlanPriority;
-    uint16_t vlanId;
-    uint16_t appId;
-    uint8_t dstAddress[6];
-} PhyComAddress;
-
 struct sGSEControlBlock {
     LogicalNode* parent;
     char* name;

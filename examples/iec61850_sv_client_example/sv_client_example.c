@@ -12,16 +12,16 @@
 #include "hal_thread.h"
 
 static void
-printDstAddr(DstAddress dstAddress)
+printDstAddr(PhyComAddress dstAddress)
 {
     printf("  addr: ");
 
     int i;
     for (i = 0; i < 6; i++)
-        printf("%02x", dstAddress.addr[i]);
+        printf("%02x", dstAddress.dstAddress[i]);
 
-    printf("\n  prio:  %u\n", dstAddress.priority);
-    printf("  vid:   %u\n", dstAddress.vid);
+    printf("\n  prio:  %u\n", dstAddress.vlanPriority);
+    printf("  vid:   %u\n", dstAddress.vlanId);
     printf("  appID:  %u\n", dstAddress.appId);
 }
 
@@ -98,7 +98,7 @@ int main(int argc, char** argv) {
 
             printf("noASDU: %i\n", ClientSVControlBlock_getNoASDU(svcb));
 
-            DstAddress dstAddress = ClientSVControlBlock_getDstAddress(svcb);
+            PhyComAddress dstAddress = ClientSVControlBlock_getDstAddress(svcb);
 
             printDstAddr(dstAddress);
 
