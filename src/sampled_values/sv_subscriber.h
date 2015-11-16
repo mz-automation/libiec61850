@@ -31,6 +31,12 @@ extern "C" {
 #endif
 
 /**
+ * \defgroup sv_subscriber_api_group IEC 61850 sampled values (SV) subscriber API
+ */
+/**@{*/
+
+
+/**
  * \brief opaque handle to a SV ASDU (Application service data unit) instance.
  *
  * Sampled Values (SV) ASDUs (application service data units) are the basic units for
@@ -317,6 +323,8 @@ SVClientASDU_getFLOAT64(SVClientASDU self, int index);
  */
 int
 SVClientASDU_getDataSize(SVClientASDU self);
+
+/**@}*/
 
 #ifdef __cplusplus
 }

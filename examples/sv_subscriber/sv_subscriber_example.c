@@ -1,5 +1,5 @@
 /*
- * subscriber_test.c
+ * sv_subscriber_example.c
  *
  * Example program for Sampled Values (SV) subscriber
  *
@@ -33,6 +33,16 @@ svUpdateListener (SVSubscriber subscriber, void* parameter, SVClientASDU asdu)
     printf("  smpCnt: %i\n", SVClientASDU_getSmpCnt(asdu));
     printf("  confRev: %u\n", SVClientASDU_getConfRev(asdu));
 
+    /*
+     * Access to the data requires a priori knowledge of the data set.
+     * For this example we assume a data set consisting of FLOAT32 values.
+     * A FLOAT32 value is encoded as 4 bytes. You can find the first FLOAT32
+     * value at byte position 0, the second value at byte position 4, the third
+     * value at byte position 8, and so on.
+     *
+     * To prevent damages due configuration, please check the length of the
+     * data block of the SV message before accessing the data.
+     */
     if (SVClientASDU_getDataSize(asdu) >= 8) {
         printf("   DATA[0]: %f\n", SVClientASDU_getFLOAT32(asdu, 0));
         printf("   DATA[1]: %f\n", SVClientASDU_getFLOAT32(asdu, 4));
@@ -53,21 +63,26 @@ main(int argc, char** argv)
         SVReceiver_setInterfaceId(receiver, "eth0");
     }
 
+    /* Create a subscriber listening to SV messages with APPID 4000h */
     SVSubscriber subscriber = SVSubscriber_create(NULL, 0x4000);
 
+    /* Install a callback handler for the subscriber */
     SVSubscriber_setListener(subscriber, svUpdateListener, NULL);
 
+    /* Connect the subscriber to the receiver */
     SVReceiver_addSubscriber(receiver, subscriber);
 
+    /* Start listening to SV messages - starts a new receiver background thread */
     SVReceiver_start(receiver);
 
     signal(SIGINT, sigint_handler);
 
-    while (running) {
+    while (running)
         Thread_sleep(1);
-    }
 
+    /* Stop listening to SV messages */
     SVReceiver_stop(receiver);
 
+    /* Cleanup and free resources */
     SVReceiver_destroy(receiver);
 }
