@@ -180,8 +180,6 @@ SVReceiver_destroy(SVReceiver self)
 void
 SVReceiver_startThreadless(SVReceiver self)
 {
-	printf("SVReceiver_startThreadless\n");
-
     if (self->interfaceId == NULL)
         self->ethSocket = Ethernet_createSocket(CONFIG_ETHERNET_INTERFACE_ID, NULL);
     else
