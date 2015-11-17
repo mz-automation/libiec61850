@@ -634,7 +634,7 @@ refreshTriggerOptions(ReportControl* rc)
 static void
 purgeBuf(ReportControl* rc)
 {
-    if (DEBUG_IED_SERVER) printf("reporting.c: run purgeBuf\n");
+    if (DEBUG_IED_SERVER) printf("IED_SERVER: reporting.c: run purgeBuf\n");
 
     ReportBuffer* reportBuffer = rc->reportBuffer;
 
@@ -1202,7 +1202,7 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
             }
 
             if (DEBUG_IED_SERVER)
-                printf("Activate report for client %s\n",
+                printf("IED_SERVER: Activate report for client %s\n",
                         MmsServerConnection_getClientAddress(connection));
 
             if (updateReportDataset(self, rc, NULL, connection)) {
@@ -1245,7 +1245,7 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
             }
 
             if (DEBUG_IED_SERVER)
-                printf("Deactivate report for client %s\n",
+                printf("IED_SERVER: Deactivate report for client %s\n",
                         MmsServerConnection_getClientAddress(connection));
 
             if (rc->buffered == false) {
@@ -1321,7 +1321,6 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
                     increaseConfRev(rc);
                 }
                 else {
-                    printf("BBBBBB\n");
                     retVal = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
                     goto exit_function;
                 }
