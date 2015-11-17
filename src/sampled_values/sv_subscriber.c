@@ -80,7 +80,7 @@ struct sSVClientASDU {
 SVReceiver
 SVReceiver_create(void)
 {
-    SVReceiver self = (SVReceiver) GLOBAL_MALLOC(sizeof(struct sSVReceiver));
+    SVReceiver self = (SVReceiver) GLOBAL_CALLOC(1, sizeof(struct sSVReceiver));
 
     if (self != NULL) {
         self->subscriberList = LinkedList_create();
@@ -180,6 +180,8 @@ SVReceiver_destroy(SVReceiver self)
 void
 SVReceiver_startThreadless(SVReceiver self)
 {
+	printf("SVReceiver_startThreadless\n");
+
     if (self->interfaceId == NULL)
         self->ethSocket = Ethernet_createSocket(CONFIG_ETHERNET_INTERFACE_ID, NULL);
     else

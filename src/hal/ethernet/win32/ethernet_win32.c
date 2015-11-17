@@ -29,6 +29,10 @@
 
 #include "libiec61850_platform_includes.h"
 
+#ifndef DEBUG_HAL_ETHERNET
+#define DEBUG_HAL_ETHERNET 1
+#endif
+
 #if (CONFIG_INCLUDE_ETHERNET_WINDOWS == 1)
 
 
@@ -92,25 +96,24 @@ static bool dllLoaded = false;
 static void
 loadDLLs(void)
 {
-	HINSTANCE hDll = LoadLibrary("iphlpapi.dll");
+    HINSTANCE hDll = LoadLibrary("iphlpapi.dll");
 
-	if (hDll == NULL) {
-	    printf("Error loading iphlpapi.dll!\n");
-	    return;
-	}
+    if (hDll == NULL) {
+        if (DEBUG_HAL_ETHERNET)
+            printf("Error loading iphlpapi.dll!\n");
+        return;
+    }
 
+    GetAdaptersAddresses = (pgetadaptersaddresses) GetProcAddress(hDll,
+            "GetAdaptersAddresses");
 
-	GetAdaptersAddresses = (pgetadaptersaddresses) GetProcAddress(hDll,
-			"GetAdaptersAddresses");
-
-	if (GetAdaptersAddresses == NULL)
-			printf("Error loading GetAdaptersAddresses from iphlpapi.dll (%d)\n", (int) GetLastError());
+    if (GetAdaptersAddresses == NULL)
+        printf("Error loading GetAdaptersAddresses from iphlpapi.dll (%d)\n", (int) GetLastError());
 }
 
 #endif /* __MINGW64_VERSION_MAJOR */
 
 #endif /* __GNUC__ */
-
 
 static char*
 getInterfaceName(int interfaceIndex)
@@ -137,6 +140,7 @@ getInterfaceName(int interfaceIndex)
         if (i == interfaceIndex) {
             interfaceName = (char*) malloc(strlen(device->name) + 1);
             strcpy(interfaceName, device->name);
+            if (DEBUG_HAL_ETHERNET)
             printf("Use interface (%s)\n", interfaceName);
             ifaceFound = true;
             break;
@@ -147,6 +151,7 @@ getInterfaceName(int interfaceIndex)
 
     if (!ifaceFound)
     {
+        if (DEBUG_HAL_ETHERNET)
         printf("No ethernet interfaces found! Make sure WinPcap is installed.\n");
         return NULL;
     }
@@ -159,52 +164,55 @@ getInterfaceName(int interfaceIndex)
 static void
 getAdapterMacAddress(char* pcapAdapterName, uint8_t* macAddress)
 {
-	PIP_ADAPTER_ADDRESSES pAddresses = NULL;
-	ULONG outBufLen = 0;
+    PIP_ADAPTER_ADDRESSES pAddresses = NULL;
+    ULONG outBufLen = 0;
 
-	pAddresses = (IP_ADAPTER_ADDRESSES*) malloc(65000);
+    pAddresses = (IP_ADAPTER_ADDRESSES*) malloc(65000);
 
-	if (GetAdaptersAddresses(AF_UNSPEC, 0, NULL, pAddresses, &outBufLen) == ERROR_BUFFER_OVERFLOW) {
-		free(pAddresses);
-		pAddresses = (IP_ADAPTER_ADDRESSES*) malloc(outBufLen);
-	}
+    if (GetAdaptersAddresses(AF_UNSPEC, 0, NULL, pAddresses, &outBufLen) == ERROR_BUFFER_OVERFLOW) {
+        free(pAddresses);
+        pAddresses = (IP_ADAPTER_ADDRESSES*) malloc(outBufLen);
+    }
 
-	if (GetAdaptersAddresses(AF_UNSPEC, 0, NULL, pAddresses, &outBufLen) == NO_ERROR) {
-		PIP_ADAPTER_ADDRESSES pAddress = pAddresses;
+    if (GetAdaptersAddresses(AF_UNSPEC, 0, NULL, pAddresses, &outBufLen) == NO_ERROR) {
+        PIP_ADAPTER_ADDRESSES pAddress = pAddresses;
 
-		while (pAddress != NULL) {
+        while (pAddress != NULL) {
 
-			DWORD addressLength = pAddress->PhysicalAddressLength;
+            DWORD addressLength = pAddress->PhysicalAddressLength;
 
-			if (addressLength == 6) {
+            if (addressLength == 6) {
 
-				int i;
+                int i;
 
-				printf("Adapter %s: ", pAddress->AdapterName);
+                if (DEBUG_HAL_ETHERNET) {
+                    printf("Adapter %s: ", pAddress->AdapterName);
 
-				for (i = 0; i < (int) addressLength; i++) {
-					printf("%02x ", pAddress->PhysicalAddress[i]);
-				}
+                    for (i = 0; i < (int) addressLength; i++) {
+                        printf("%02x ", pAddress->PhysicalAddress[i]);
+                    }
+                }
 
-				if (strstr(pcapAdapterName, pAddress->AdapterName) != 0) {
-					printf(" requested found!");
+                if (strstr(pcapAdapterName, pAddress->AdapterName) != 0) {
+                    if (DEBUG_HAL_ETHERNET)
+                    printf(" requested found!");
 
-					for (i = 0; i < (int) addressLength; i++) {
-						macAddress[i] = pAddress->PhysicalAddress[i];
-					}
-				}
+                    for (i = 0; i < (int) addressLength; i++) {
+                        macAddress[i] = pAddress->PhysicalAddress[i];
+                    }
+                }
 
-				printf("\n");
-			}
+                printf("\n");
+            }
 
-			pAddress = pAddress->Next;
-		}
+            pAddress = pAddress->Next;
+        }
 
-		free(pAddresses);
-	}
-	else {
-		printf("Error getting device addresses!\n");
-	}
+        free(pAddresses);
+    }
+    else {
+        printf("Error getting device addresses!\n");
+    }
 }
 
 
@@ -215,8 +223,8 @@ Ethernet_getInterfaceMACAddress(const char* interfaceId, uint8_t* addr)
 #ifdef __GNUC__
 #ifndef __MINGW64_VERSION_MAJOR
     if (!dllLoaded) {
-    	loadDLLs();
-    	dllLoaded = true;
+        loadDLLs();
+        dllLoaded = true;
     }
 #endif
 #endif
@@ -226,13 +234,13 @@ Ethernet_getInterfaceMACAddress(const char* interfaceId, uint8_t* addr)
     long interfaceIndex = strtol(interfaceId, &endPtr, 10);
 
     if (endPtr != NULL) {
-    	printf("Ethernet_getInterfaceMACAddress: invalid interface number %s\n", interfaceId);
-    	return;
+        printf("Ethernet_getInterfaceMACAddress: invalid interface number %s\n", interfaceId);
+        return;
     }
 
     char* interfaceName = getInterfaceName((int) interfaceIndex);
 
-	getAdapterMacAddress(interfaceName, addr);
+    getAdapterMacAddress(interfaceName, addr);
 }
 
 
@@ -276,44 +284,44 @@ Ethernet_sendPacket(EthernetSocket ethSocket, uint8_t* buffer, int packetSize)
 void
 Ethernet_setProtocolFilter(EthernetSocket ethSocket, uint16_t etherType)
 {
-	char filterString[100];
+    char filterString[100];
 
-	sprintf(filterString, "(ether proto 0x%04x) or (vlan and ether proto 0x%04x)", etherType, etherType);
+    sprintf(filterString, "(ether proto 0x%04x) or (vlan and ether proto 0x%04x)", etherType, etherType);
 
-	if (pcap_compile(ethSocket->rawSocket, &(ethSocket->etherTypeFilter), filterString, 1, 0) < 0) {
-		printf("Compiling packet filter failed!\n");
-		return;
-	}
+    if (pcap_compile(ethSocket->rawSocket, &(ethSocket->etherTypeFilter), filterString, 1, 0) < 0) {
+        printf("Compiling packet filter failed!\n");
+        return;
+    }
 
-	if (pcap_setfilter(ethSocket->rawSocket, &(ethSocket->etherTypeFilter)) < 0) {
-		printf("Setting packet filter failed!\n");
-	}
+    if (pcap_setfilter(ethSocket->rawSocket, &(ethSocket->etherTypeFilter)) < 0) {
+        printf("Setting packet filter failed!\n");
+    }
 }
 
 int
 Ethernet_receivePacket(EthernetSocket self, uint8_t* buffer, int bufferSize)
 {
-	struct pcap_pkthdr* header;
-	uint8_t* packetData;
+    struct pcap_pkthdr* header;
+    uint8_t* packetData;
 
-	int pcapCode = pcap_next_ex(self->rawSocket, &header, (const unsigned char**) &packetData);
+    int pcapCode = pcap_next_ex(self->rawSocket, &header, (const unsigned char**) &packetData);
 
-	if (pcapCode > 0) {
-		int packetSize = header->caplen;
+    if (pcapCode > 0) {
+        int packetSize = header->caplen;
 
-		if (packetSize > bufferSize)
-			packetSize = bufferSize;
+        if (packetSize > bufferSize)
+        packetSize = bufferSize;
 
-		memcpy(buffer, packetData, packetSize);
+        memcpy(buffer, packetData, packetSize);
 
-		return packetSize;
-	}
-	else {
-		if (pcapCode < 0)
-			printf("winpcap error\n");
+        return packetSize;
+    }
+    else {
+        if (pcapCode < 0)
+        printf("winpcap error\n");
 
-		return 0;
-	}
+        return 0;
+    }
 }
 
 bool

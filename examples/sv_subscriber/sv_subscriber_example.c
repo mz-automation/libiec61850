@@ -55,8 +55,8 @@ main(int argc, char** argv)
     SVReceiver receiver = SVReceiver_create();
 
     if (argc > 1) {
-        printf("Set interface id: %s\n", argv[1]);
         SVReceiver_setInterfaceId(receiver, argv[1]);
+		printf("Set interface id: %s\n", argv[1]);
     }
     else {
         printf("Using interface eth0\n");

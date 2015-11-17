@@ -1,4 +1,4 @@
-LIBIEC_HOME=../../../libiec61850
+LIBIEC_HOME=../..
 
 PROJECT_BINARY_NAME = sv_subscriber
 PROJECT_SOURCES += sv_subscriber_example.c

@@ -5,8 +5,6 @@ set(goose_subscriber_example_SRCS
 
 IF(WIN32)
 
-IF(WITH_WPCAP)
-
 set_source_files_properties(${goose_subscriber_example_SRCS}
                                        PROPERTIES LANGUAGE CXX)
 add_executable(goose_subscriber_example
@@ -16,8 +14,6 @@ add_executable(goose_subscriber_example
 target_link_libraries(goose_subscriber_example
     iec61850
 )
-
-ENDIF(WITH_WPCAP)
 
 ELSE(WIN32)
 
