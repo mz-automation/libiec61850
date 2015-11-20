@@ -63,7 +63,7 @@ typedef struct {
 
     MmsValue** valueReferences; /* array to store value references for fast access */
 
-    bool gi;
+    bool gi; /* flag to indicate that a GI report is triggered */
 
     uint16_t sqNum;
     uint32_t intgPd;
@@ -84,9 +84,14 @@ typedef struct {
     bool triggered;                      /* { covered by mutex } */
     uint64_t reportTime;                 /* { covered by mutex } */
 
-    /* the following members are only required for buffered RCBs */
+    /*
+     * the following members are only required for buffered RCBs *
+     * TODO move to ReportBuffer structure!
+     */
+
     bool isBuffering; /* true if buffered RCB is buffering (datSet is set to a valid value) */
     bool isResync; /* true if buffered RCB is in resync state */
+
     ReportBuffer* reportBuffer;
     MmsValue* timeOfEntry;
 } ReportControl;

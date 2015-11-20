@@ -1143,6 +1143,24 @@ updateOwner(ReportControl* rc, MmsServerConnection connection)
 #endif /* CONFIG_REPORTING_SUPPORTS_OWNER == 1*/
 }
 
+
+static bool
+checkForZeroEntryID(MmsValue* value)
+{
+    uint8_t* buffer = MmsValue_getOctetStringBuffer(value);
+
+    int i = 0;
+
+    while (i < 8) {
+        if (buffer[i] != 0)
+            return false;
+
+        i++;
+    }
+
+    return true;
+}
+
 static bool
 checkReportBufferForEntryID(ReportControl* rc, MmsValue* value)
 {
@@ -1154,14 +1172,8 @@ checkReportBufferForEntryID(ReportControl* rc, MmsValue* value)
         if (memcmp(entry->entryId, value->value.octetString.buf, 8) == 0) {
             ReportBufferEntry* nextEntryForResync = entry->next;
 
-            if (nextEntryForResync != NULL) {
-                rc->reportBuffer->nextToTransmit = nextEntryForResync;
-                rc->isResync = true;
-            }
-            else {
-                rc->isResync = false;
-                rc->reportBuffer->nextToTransmit = NULL;
-            }
+            rc->reportBuffer->nextToTransmit = nextEntryForResync;
+            rc->isResync = true;
 
             retVal = true;
             break;
@@ -1213,8 +1225,15 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 
                 MmsValue_update(rptEna, value);
 
+                if (rc->buffered) {
+
+                    if (rc->isResync == false)
+                        rc->reportBuffer->nextToTransmit = rc->reportBuffer->oldestReport;
+
+                    rc->isResync = false;
+                }
+
                 rc->enabled = true;
-                rc->isResync = false;
                 rc->gi = false;
 
                 refreshBufferTime(rc);
@@ -1359,19 +1378,28 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 
             goto exit_function;
         }
-        else if (strcmp(elementName, "EntryId") == 0) {
+        else if (strcmp(elementName, "EntryID") == 0) {
+
             if (MmsValue_getOctetStringSize(value) != 8) {
                 retVal = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
                 goto exit_function;
             }
 
-            if (!checkReportBufferForEntryID(rc, value)) {
-                retVal = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
-                goto exit_function;
+            if (checkForZeroEntryID(value) == false) {
+
+                if (!checkReportBufferForEntryID(rc, value)) {
+                    rc->reportBuffer->isOverflow = true;
+                    retVal = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+                    goto exit_function;
+                }
+            }
+            else {
+                rc->reportBuffer->nextToTransmit = rc->reportBuffer->oldestReport;
+                rc->isResync = false;
+                rc->reportBuffer->isOverflow = true;
             }
 
             MmsValue* entryID = ReportControl_getRCBValue(rc, elementName);
-
             MmsValue_update(entryID, value);
 
             goto exit_function;
@@ -1517,6 +1545,42 @@ printReportId(ReportBufferEntry* report)
 }
 #endif
 
+
+static void
+removeAllGIReportsFromReportBuffer(ReportBuffer* reportBuffer)
+{
+    ReportBufferEntry* currentReport = reportBuffer->oldestReport;
+    ReportBufferEntry* lastReport = NULL;
+
+    while (currentReport != NULL) {
+        if (currentReport->flags & 2) {
+
+            if (currentReport == reportBuffer->oldestReport) {
+                reportBuffer->oldestReport = currentReport->next;
+            }
+            else {
+                lastReport->next = currentReport->next;
+
+            }
+
+#if (DEBUG_IED_SERVER == 1)
+                printf("IED_SERVER:   REMOVE old GI report with ID ");
+                printReportId(currentReport);
+                printf("\n");
+#endif
+
+            if (reportBuffer->nextToTransmit == currentReport)
+                reportBuffer->nextToTransmit = currentReport->next;
+
+            currentReport = currentReport->next;
+        }
+        else {
+            lastReport = currentReport;
+            currentReport = currentReport->next;
+        }
+    }
+}
+
 static void
 enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_t timeOfEntry)
 {
@@ -1581,6 +1645,8 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
         return;
     }
 
+    if (isGI) removeAllGIReportsFromReportBuffer(buffer);
+
     uint8_t* entryBufPos = NULL;
     uint8_t* entryStartPos;
 
@@ -1604,7 +1670,7 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
 
         if (DEBUG_IED_SERVER) printf ("IED_SERVER: Last buffer offset: %i\n", (int) ((uint8_t*) buffer->lastEnqueuedReport - buffer->memoryBlock));
 
-        if (buffer->lastEnqueuedReport == buffer->oldestReport) { // --> buffer->reportsCount = 1?
+        if (buffer->lastEnqueuedReport == buffer->oldestReport) { /* --> buffer->reportsCount == 1 */
             assert(buffer->reportsCount == 1);
 
             entryBufPos = (uint8_t*) ((uint8_t*) buffer->lastEnqueuedReport + buffer->lastEnqueuedReport->entryLength);
@@ -1638,19 +1704,20 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
             if ((entryBufPos + bufferEntrySize) > (buffer->memoryBlock + buffer->memoryBlockSize)) { /* buffer overflow */
                 entryBufPos = buffer->memoryBlock;
 
+                /* remove old reports until enough space for new entry is available */
                 while ((entryBufPos + bufferEntrySize) > (uint8_t*) buffer->oldestReport) {
                     assert(buffer->oldestReport != NULL);
 
-                    if (buffer->nextToTransmit == buffer->oldestReport)
+                    if (buffer->nextToTransmit == buffer->oldestReport) {
                         buffer->nextToTransmit = buffer->oldestReport->next;
+                        buffer->isOverflow = true;
+                    }
 
 #if (DEBUG_IED_SERVER == 1)
                     printf("IED_SERVER: REMOVE report with ID ");
                     printReportId(buffer->oldestReport);
                     printf("\n");
 #endif
-
-                    buffer->isOverflow = true;
 
                     buffer->oldestReport = buffer->oldestReport->next;
 
@@ -1676,8 +1743,10 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
                 while ((uint8_t*) buffer->oldestReport > buffer->memoryBlock) {
                     assert(buffer->oldestReport != NULL);
 
-                    if (buffer->nextToTransmit == buffer->oldestReport)
+                    if (buffer->nextToTransmit == buffer->oldestReport) {
                         buffer->nextToTransmit = buffer->oldestReport->next;
+                        buffer->isOverflow = true;
+                    }
 
 #if (DEBUG_IED_SERVER == 1)
                     printf("IED_SERVER: REMOVE report with ID ");
@@ -1696,8 +1765,10 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
 
                     assert(buffer->oldestReport != NULL);
 
-                    if (buffer->nextToTransmit == buffer->oldestReport)
+                    if (buffer->nextToTransmit == buffer->oldestReport) {
                         buffer->nextToTransmit = buffer->oldestReport->next;
+                        buffer->isOverflow = true;
+                    }
 
 #if (DEBUG_IED_SERVER == 1)
                     printf("IED_SERVER: REMOVE report with ID ");
@@ -1717,8 +1788,10 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
 
                     assert(buffer->oldestReport != NULL);
 
-                    if (buffer->nextToTransmit == buffer->oldestReport)
+                    if (buffer->nextToTransmit == buffer->oldestReport) {
                         buffer->nextToTransmit = buffer->oldestReport->next;
+                        buffer->isOverflow = true;
+                    }
 
 #if (DEBUG_IED_SERVER == 1)
                     printf("IED_SERVER: REMOVE report with ID ");

@@ -1224,7 +1224,8 @@ namespace IEC61850
 			DATA_REFERENCE = 16,
 			BUFFER_OVERFLOW = 32,
 			ENTRY_ID = 64,
-			CONF_REV = 128
+			CONF_REV = 128,
+			ALL = 255
 		}
 
 		public enum Validity
