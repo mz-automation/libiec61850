@@ -372,6 +372,8 @@ namespace IEC61850
 
                 IedConnection_setRCBValues (connection, out error, self, parametersMask, singleRequest);
 
+				resetSendFlags();
+
                 if (error != 0)
                     throw new IedConnectionException ("setRCBValues service failed", error);
 
@@ -382,8 +384,6 @@ namespace IEC61850
                         InstallReportHandler(this.reportHandler, this.reportHandlerParameter);
                     }
                 }
-
-                resetSendFlags();
 			}
 
             /// <summary>

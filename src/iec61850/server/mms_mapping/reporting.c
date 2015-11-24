@@ -1178,6 +1178,8 @@ checkReportBufferForEntryID(ReportControl* rc, MmsValue* value)
             retVal = true;
             break;
         }
+
+        entry = entry->next;
     }
 
     return retVal;
@@ -2002,8 +2004,10 @@ sendNextReportEntry(ReportControl* self)
     	if (timeOfEntry == NULL) goto return_out_of_memory;
 
     	timeOfEntry->deleteValue = 0;
-    	timeOfEntry->type = MMS_UTC_TIME;
-    	MmsValue_setUtcTimeMs(timeOfEntry, report->timeOfEntry);
+    	timeOfEntry->type = MMS_BINARY_TIME;
+    	timeOfEntry->value.binaryTime.size = 6;
+
+    	MmsValue_setBinaryTime(timeOfEntry, report->timeOfEntry);
 
         if (MemAllocLinkedList_add(reportElements, timeOfEntry) == NULL)
             goto return_out_of_memory;

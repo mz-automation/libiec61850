@@ -397,11 +397,15 @@ private_IedConnection_handleReport(IedConnection self, MmsValue* value)
 
     /* has report-timestamp */
     if (MmsValue_getBitStringBit(optFlds, 2) == true) {
+
         MmsValue* timeStampValue = MmsValue_getElement(value, inclusionIndex);
 
         if (MmsValue_getType(timeStampValue) == MMS_BINARY_TIME) {
             matchingReport->hasTimestamp = true;
             matchingReport->timestamp = MmsValue_getBinaryTimeAsUtcMs(timeStampValue);
+
+            if (DEBUG_IED_CLIENT)
+                printf("DEBUG_IED_CLIENT: report has timestamp %llu\n", matchingReport->timestamp);
         }
 
         inclusionIndex++;
