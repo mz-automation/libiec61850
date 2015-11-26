@@ -229,7 +229,12 @@ typedef enum eFunctionalConstraint {
     IEC61850_FC_US = 13,
     /** Multicast SV */
     IEC61850_FC_MS = 14,
+    /** Unbuffered report */
+    IEC61850_FC_RP = 15,
+    /** Buffered report */
+    IEC61850_FC_BR = 16,
 
+    /** All FCs - wildcard value */
     IEC61850_FC_ALL = 99,
     IEC61850_FC_NONE = -1
 } FunctionalConstraint;

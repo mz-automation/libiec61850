@@ -1323,6 +1323,16 @@ namespace IEC61850
 			EX = 11,
 			/** Control */
 			CO = 12,
+			/** Unicast SV */
+			US = 13,
+			/** Multicast SV */
+			MS = 14,
+			/** Unbuffered report */
+			RP = 15,
+			/** Buffered report */
+			BR = 16,
+
+			/** All FCs - wildcard value */
 			ALL = 99,
 			NONE = -1
 		}

@@ -637,7 +637,7 @@ IedConnection_setRCBValues(IedConnection self, IedClientError* error, ClientRepo
                 MmsValue* dataAccessError = (MmsValue*) accessResult->data;
 
                 if (MmsValue_getDataAccessError(dataAccessError) != DATA_ACCESS_ERROR_SUCCESS) {
-                    *error = IED_ERROR_UNKNOWN;
+                    *error = iedConnection_mapDataAccessErrorToIedError(MmsValue_getDataAccessError(dataAccessError));
                     break;
                 }
 

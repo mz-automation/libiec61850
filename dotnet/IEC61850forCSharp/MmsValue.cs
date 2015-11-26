@@ -140,6 +140,12 @@ namespace IEC61850
             [return: MarshalAs(UnmanagedType.I1)]
             static extern bool MmsValue_equals(IntPtr self, IntPtr otherValue);
 
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr MmsValue_newBinaryTime (bool timeOfDay);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern void MmsValue_setBinaryTime (IntPtr self, UInt64 timestamp);
+
 
 			internal MmsValue (IntPtr value)
 			{
@@ -228,6 +234,26 @@ namespace IEC61850
 
 				return new MmsValue(newValue, true);
 			}																												
+
+			/// <summary>
+			/// Create a new MmsValue instance of type MMS_BINARY_TIME
+			/// </summary>
+			/// <returns>the new MmsValue instance.</returns>
+			/// <param name="largeFormat">If set to <c>true</c> large 6 byte format.</param>
+			public static MmsValue NewBinaryTime(bool largeFormat) 
+			{
+				IntPtr newValue = MmsValue_newBinaryTime (largeFormat);
+
+				return new MmsValue (newValue, true);
+			}
+
+			/// <summary>
+			/// Sets the binary time.
+			/// </summary>
+			/// <param name="timestamp">Timestamp.</param>
+			public void SetBinaryTime(UInt64 timestamp) {
+				MmsValue_setBinaryTime (this.valueReference, timestamp);
+			}
 
 			internal IntPtr valueReference;
 			private bool responsableForDeletion;

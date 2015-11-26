@@ -129,6 +129,10 @@ FunctionalConstraint_toString(FunctionalConstraint fc) {
         return "US";
     case IEC61850_FC_MS:
         return "MS";
+    case IEC61850_FC_RP:
+        return "RP";
+    case IEC61850_FC_BR:
+        return "BR";
     default:
         return NULL;
     }
@@ -157,6 +161,8 @@ FunctionalConstraint_fromString(const char* fcString)
     if (fcString[0] == 'M') {
         if (fcString[1] == 'X')
             return IEC61850_FC_MX;
+        if (fcString[1] == 'S')
+            return IEC61850_FC_MS;
         return IEC61850_FC_NONE;
     }
 
@@ -183,12 +189,26 @@ FunctionalConstraint_fromString(const char* fcString)
     if (fcString[0] == 'B') {
         if (fcString[1] == 'L')
             return IEC61850_FC_BL;
+        if (fcString[1] == 'R')
+            return IEC61850_FC_BR;
         return IEC61850_FC_NONE;
     }
 
     if (fcString[0] == 'E') {
         if (fcString[1] == 'X')
             return IEC61850_FC_EX;
+        return IEC61850_FC_NONE;
+    }
+
+    if (fcString[0] == 'U') {
+        if (fcString[1] == 'S')
+            return IEC61850_FC_US;
+        return IEC61850_FC_NONE;
+    }
+
+    if (fcString[0] == 'R') {
+        if (fcString[1] == 'P')
+            return IEC61850_FC_RP;
         return IEC61850_FC_NONE;
     }
 

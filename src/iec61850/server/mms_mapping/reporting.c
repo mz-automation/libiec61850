@@ -1438,10 +1438,6 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 
             goto exit_function;
         }
-        else if ((strcmp(elementName, "ConfRev") == 0) || (strcmp(elementName, "SqNum") == 0)) {
-            retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
-            goto exit_function;
-        }
         else if (strcmp(elementName, "RptID") == 0) {
             MmsValue* rptId = ReportControl_getRCBValue(rc, elementName);
 
@@ -1452,11 +1448,19 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 
             goto exit_function;
         }
+        else if (strcmp(elementName, "ConfRev") == 0) {
+            retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+            goto exit_function;
+        }
         else if (strcmp(elementName, "SqNum") == 0) {
             retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
             goto exit_function;
         }
         else if (strcmp(elementName, "Owner") == 0) {
+            retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+            goto exit_function;
+        }
+        else if (strcmp(elementName, "TimeofEntry") == 0) {
             retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
             goto exit_function;
         }
