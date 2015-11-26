@@ -133,6 +133,9 @@
 /* include support for IEC 61850 reporting services */
 #define CONFIG_IEC61850_REPORT_SERVICE 1
 
+/* support buffered report control blocks with ResvTms field */
+#define CONFIG_IEC61850_BRCB_WITH_RESVTMS 0
+
 /* The default buffer size of buffered RCBs in bytes */
 #define CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE 65536
 

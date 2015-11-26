@@ -43,6 +43,10 @@
 
 #if (CONFIG_IEC61850_REPORT_SERVICE == 1)
 
+#ifndef CONFIG_IEC61850_BRCB_WITH_RESVTMS
+#define CONFIG_IEC61850_BRCB_WITH_RESVTMS 0
+#endif
+
 static ReportBuffer*
 ReportBuffer_create(void)
 {
@@ -836,15 +840,23 @@ createBufferedReportControlBlock(ReportControlBlock* reportControlBlock,
     rcb->name = copyString(reportControlBlock->name);
     rcb->type = MMS_STRUCTURE;
 
+    int brcbElementCount;
+
+#if (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1)
+    brcbElementCount = 15;
+#else
+    brcbElementCount = 14;
+#endif
+
+
     MmsValue* mmsValue = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
     mmsValue->deleteValue = false;
     mmsValue->type = MMS_STRUCTURE;
-    mmsValue->value.structure.size = 15;
-    mmsValue->value.structure.components = (MmsValue**) GLOBAL_CALLOC(15, sizeof(MmsValue*));
+    mmsValue->value.structure.size = brcbElementCount;
+    mmsValue->value.structure.components = (MmsValue**) GLOBAL_CALLOC(brcbElementCount, sizeof(MmsValue*));
 
-    rcb->typeSpec.structure.elementCount = 15;
-
-    rcb->typeSpec.structure.elements = (MmsVariableSpecification**) GLOBAL_CALLOC(15,
+    rcb->typeSpec.structure.elementCount = brcbElementCount;
+    rcb->typeSpec.structure.elements = (MmsVariableSpecification**) GLOBAL_CALLOC(brcbElementCount,
             sizeof(MmsVariableSpecification*));
 
     MmsVariableSpecification* namedVariable = 
@@ -957,19 +969,24 @@ createBufferedReportControlBlock(ReportControlBlock* reportControlBlock,
 
     reportControl->timeOfEntry = mmsValue->value.structure.components[12];
 
+    int currentIndex = 13;
+
+#if (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1)
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
     namedVariable->name = copyString("ResvTms");
-    namedVariable->type = MMS_UNSIGNED;
-    namedVariable->typeSpec.unsignedInteger = 32;
-    rcb->typeSpec.structure.elements[13] = namedVariable;
-    mmsValue->value.structure.components[13] = MmsValue_newUnsigned(32);
+    namedVariable->type = MMS_INTEGER;
+    namedVariable->typeSpec.integer = 16;
+    rcb->typeSpec.structure.elements[currentIndex] = namedVariable;
+    mmsValue->value.structure.components[currentIndex] = MmsValue_newInteger(16);
+    currentIndex++;
+#endif /* (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1) */
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
     namedVariable->name = copyString("Owner");
     namedVariable->type = MMS_OCTET_STRING;
     namedVariable->typeSpec.octetString = -64;
-    rcb->typeSpec.structure.elements[14] = namedVariable;
-    mmsValue->value.structure.components[14] = MmsValue_newOctetString(0, 4); /* size 4 is enough to store client IPv4 address */
+    rcb->typeSpec.structure.elements[currentIndex] = namedVariable;
+    mmsValue->value.structure.components[currentIndex] = MmsValue_newOctetString(0, 4); /* size 4 is enough to store client IPv4 address */
 
     reportControl->rcbValues = mmsValue;
 
