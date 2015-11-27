@@ -513,6 +513,13 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
                             dataSet = MmsMapping_createDataSetByNamedVariableList(mapping, mmsVariableList);
                     }
                 }
+                /* check for VMD specific data set */
+                else if (dataSetName[0] == '/') {
+                    MmsNamedVariableList mmsVariableList = MmsDevice_getNamedVariableListWithName(mapping->mmsDevice, dataSetName + 1);
+
+                    if (mmsVariableList != NULL)
+                        dataSet = MmsMapping_createDataSetByNamedVariableList(mapping, mmsVariableList);
+                }
             }
 
             if (dataSet == NULL)

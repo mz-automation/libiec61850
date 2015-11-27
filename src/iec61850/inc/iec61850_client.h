@@ -1310,7 +1310,9 @@ IedConnection_readDataSetValues(IedConnection self, IedClientError* error, const
  * \brief create a new data set at the connected server device
  *
  * This function creates a new data set at the server. The parameter dataSetReference is the name of the new data set
- * to create. It is either in the form LDName/LNodeName.dataSetName or @dataSetName for an association specific data set.
+ * to create. It is either in the form LDName/LNodeName.dataSetName for permanent domain or VMD scope data sets or
+ * @dataSetName for an association specific data set. If the LDName part of the reference is missing the resulting
+ * data set will be of VMD scope.
  *
  * The dataSetElements parameter contains a linked list containing the object references of FCDs or FCDAs. The format of
  * this object references is LDName/LNodeName.item(arrayIndex)component[FC].

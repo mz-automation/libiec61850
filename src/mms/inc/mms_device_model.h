@@ -182,6 +182,9 @@ MmsDevice_getNamedVariable(MmsDevice* self, char* variableName);
 LinkedList
 MmsDevice_getNamedVariableLists(MmsDevice* self);
 
+MmsNamedVariableList
+MmsDevice_getNamedVariableListWithName(MmsDevice* self, const char* variableListName);
+
 /**@}*/
 
 #ifdef __cplusplus

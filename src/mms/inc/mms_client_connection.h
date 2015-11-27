@@ -384,6 +384,9 @@ MmsConnection_getVariableAccessAttributes(MmsConnection self, MmsError* mmsError
 /**
  * \brief Read the values of a domain specific named variable list
  *
+ * The resulting named variable list will either be of domain scope (when the domainId argument
+ * is present) or VMD scope when the domainId argument is NULL.
+ *
  * \param self MmsConnection instance to operate on
  * \param mmsError user provided variable to store error code
  * \param domainId the domain name of the requested variables.
@@ -416,7 +419,10 @@ MmsConnection_readNamedVariableListValuesAssociationSpecific(MmsConnection self,
         const char* listName,	bool specWithResult);
 
 /**
- * \brief Define a new named variable list at the server.
+ * \brief Define a new VMD or domain scoped named variable list at the server.
+ *
+ * The resulting named variable list will either be of domain scope (when the domainId argument
+ * is present) or VMD scope when the domainId argument is NULL.
  *
  * \param self MmsConnection instance to operate on
  * \param mmsError user provided variable to store error code
@@ -445,6 +451,9 @@ MmsConnection_defineNamedVariableListAssociationSpecific(MmsConnection self, Mms
 
 /**
  * \brief Read the entry list of a named variable list at the server.
+ *
+ * The resulting named variable list will either be of domain scope (when the domainId argument
+ * is present) or VMD scope when the domainId argument is NULL.
  *
  * \param self MmsConnection instance to operate on
  * \param mmsError user provided variable to store error code
@@ -476,6 +485,9 @@ MmsConnection_readNamedVariableListDirectoryAssociationSpecific(MmsConnection se
 
 /**
  * \brief Delete a named variable list at the server.
+ *
+ * The resulting named variable list will either be of domain scope (when the domainId argument
+ * is present) or VMD scope when the domainId argument is NULL.
  *
  * \param self MmsConnection instance to operate on
  * \param mmsError user provided variable to store error code

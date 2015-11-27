@@ -1901,23 +1901,34 @@ IedConnection_createDataSet(IedConnection self, IedClientError* error, const cha
     bool isAssociationSpecific = false;
 
     if (dataSetReference[0] != '@') {
-        domainId = MmsMapping_getMmsDomainFromObjectReference(dataSetReference, domainIdBuffer);
 
-        if (domainId == NULL) {
-            *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
-            goto exit_function;
+        if ((dataSetReference[0] == '/') || (strchr(dataSetReference, '/') == NULL)) {
+            domainId = NULL;
+
+            if (dataSetReference[0] == '/')
+                itemId = dataSetReference + 1;
+            else
+                itemId = dataSetReference;
         }
+        else {
+            domainId = MmsMapping_getMmsDomainFromObjectReference(dataSetReference, domainIdBuffer);
 
-        int domainIdLength = strlen(domainId);
+            if (domainId == NULL) {
+                *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
+                goto exit_function;
+            }
 
-        if ((strlen(dataSetReference) - domainIdLength - 1) > 32) {
-            *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
-            goto exit_function;
+            int domainIdLength = strlen(domainId);
+
+            if ((strlen(dataSetReference) - domainIdLength - 1) > 32) {
+                *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
+                goto exit_function;
+            }
+
+            char* itemIdRef = copyStringToBuffer(dataSetReference + domainIdLength + 1, itemIdBuffer);
+            StringUtils_replace(itemIdRef, '.', '$');
+            itemId = itemIdRef;
         }
-
-        char* itemIdRef = copyStringToBuffer(dataSetReference + domainIdLength + 1, itemIdBuffer);
-        StringUtils_replace(itemIdRef, '.', '$');
-        itemId = itemIdRef;
     }
     else {
         itemId = dataSetReference + 1;
@@ -1965,28 +1976,40 @@ exit_function:
 void
 IedConnection_deleteDataSet(IedConnection self, IedClientError* error, const char* dataSetReference)
 {
-    char domainId[65];
+    char domainIdBuf[65];
+    char* domainId = domainIdBuf;
     char itemId[DATA_SET_MAX_NAME_LENGTH + 1];
     bool isAssociationSpecific = false;
 
     int dataSetReferenceLength = strlen(dataSetReference);
 
     if (dataSetReference[0] != '@') {
-        if (MmsMapping_getMmsDomainFromObjectReference(dataSetReference, domainId) == NULL) {
-            *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
-            goto exit_function;
+        if ((dataSetReference[0] == '/') || (strchr(dataSetReference, '/') == NULL)) {
+            domainId = NULL;
+
+            if (dataSetReference[0] == '/')
+                strcpy(itemId, dataSetReference + 1);
+            else
+                strcpy(itemId, dataSetReference);
         }
+        else {
 
-        const char* itemIdString = dataSetReference + strlen(domainId) + 1;
+            if (MmsMapping_getMmsDomainFromObjectReference(dataSetReference, domainId) == NULL) {
+                *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
+                goto exit_function;
+            }
 
-        if (strlen(itemIdString) > DATA_SET_MAX_NAME_LENGTH) {
-            *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
-            goto exit_function;
+            const char* itemIdString = dataSetReference + strlen(domainId) + 1;
+
+            if (strlen(itemIdString) > DATA_SET_MAX_NAME_LENGTH) {
+                *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
+                goto exit_function;
+            }
+
+            copyStringToBuffer(itemIdString, itemId);
+
+            StringUtils_replace(itemId, '.', '$');
         }
-
-        copyStringToBuffer(itemIdString, itemId);
-
-        StringUtils_replace(itemId, '.', '$');
     }
     else {
         if (dataSetReferenceLength > 33) {
@@ -2028,23 +2051,33 @@ IedConnection_getDataSetDirectory(IedConnection self, IedClientError* error, con
     bool isAssociationSpecific = false;
 
     if (dataSetReference[0] != '@') {
-        domainId = MmsMapping_getMmsDomainFromObjectReference(dataSetReference, domainIdBuffer);
+        if ((dataSetReference[0] == '/') || (strchr(dataSetReference, '/') == NULL)) {
+            domainId = NULL;
 
-        if (domainId == NULL) {
-            *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
-            goto exit_function;
+            if (dataSetReference[0] == '/')
+                itemId = dataSetReference + 1;
+            else
+                itemId = dataSetReference;
         }
+        else {
+            domainId = MmsMapping_getMmsDomainFromObjectReference(dataSetReference, domainIdBuffer);
 
-        const char* itemIdRef = dataSetReference + strlen(domainId) + 1;
+            if (domainId == NULL) {
+                *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
+                goto exit_function;
+            }
 
-        if (strlen(itemIdRef) > DATA_SET_MAX_NAME_LENGTH) {
-            *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
-            goto exit_function;
+            const char* itemIdRef = dataSetReference + strlen(domainId) + 1;
+
+            if (strlen(itemIdRef) > DATA_SET_MAX_NAME_LENGTH) {
+                *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
+                goto exit_function;
+            }
+
+            char* itemIdRefInBuffer = copyStringToBuffer(itemIdRef, itemIdBuffer);
+            StringUtils_replace(itemIdRefInBuffer, '.', '$');
+            itemId = itemIdRefInBuffer;
         }
-
-        char* itemIdRefInBuffer = copyStringToBuffer(itemIdRef, itemIdBuffer);
-        StringUtils_replace(itemIdRefInBuffer, '.', '$');
-        itemId = itemIdRefInBuffer;
     }
     else {
         itemId = dataSetReference + 1;
@@ -2103,24 +2136,35 @@ IedConnection_readDataSetValues(IedConnection self, IedClientError* error, const
     bool isAssociationSpecific = false;
 
     if (dataSetReference[0] != '@') {
-        domainId = MmsMapping_getMmsDomainFromObjectReference(dataSetReference, domainIdBuffer);
 
-        if (domainId == NULL) {
-            *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
-            goto exit_function;
+        if ((dataSetReference[0] == '/') || (strchr(dataSetReference, '/') == NULL)) {
+            domainId = NULL;
+
+            if (dataSetReference[0] == '/')
+                itemId = dataSetReference + 1;
+            else
+                itemId = dataSetReference;
         }
+        else {
+            domainId = MmsMapping_getMmsDomainFromObjectReference(dataSetReference, domainIdBuffer);
 
-        const char* itemIdRefOrig = dataSetReference + strlen(domainId) + 1;
+            if (domainId == NULL) {
+                *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
+                goto exit_function;
+            }
 
-        if (strlen(itemIdRefOrig) > DATA_SET_MAX_NAME_LENGTH) {
-            *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
-            goto exit_function;
+            const char* itemIdRefOrig = dataSetReference + strlen(domainId) + 1;
+
+            if (strlen(itemIdRefOrig) > DATA_SET_MAX_NAME_LENGTH) {
+                *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
+                goto exit_function;
+            }
+
+            char* itemIdRef = copyStringToBuffer(itemIdRefOrig, itemIdBuffer);
+
+            StringUtils_replace(itemIdRef, '.', '$');
+            itemId = itemIdRef;
         }
-
-        char* itemIdRef = copyStringToBuffer(itemIdRefOrig, itemIdBuffer);
-
-        StringUtils_replace(itemIdRef, '.', '$');
-        itemId = itemIdRef;
     }
     else {
         itemId = dataSetReference + 1;
