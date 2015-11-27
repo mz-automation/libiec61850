@@ -355,23 +355,7 @@ MmsServerConnection_deleteNamedVariableList(MmsServerConnection self, char* list
 MmsNamedVariableList
 MmsServerConnection_getNamedVariableList(MmsServerConnection self, const char* variableListName)
 {
-	//TODO remove code duplication - similar to MmsDomain_getNamedVariableList !
-	MmsNamedVariableList variableList = NULL;
-
-	LinkedList element = LinkedList_getNext(self->namedVariableLists);
-
-	while (element != NULL) {
-		MmsNamedVariableList varList = (MmsNamedVariableList) element->data;
-
-		if (strcmp(MmsNamedVariableList_getName(varList), variableListName) == 0) {
-			variableList = varList;
-			break;
-		}
-
-		element = LinkedList_getNext(element);
-	}
-
-	return variableList;
+    return mmsServer_getNamedVariableListWithName(self->namedVariableLists, variableListName);
 }
 #endif /* (MMS_DYNAMIC_DATA_SETS == 1) */
 

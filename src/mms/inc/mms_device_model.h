@@ -116,7 +116,7 @@ void
 MmsDomain_deleteNamedVariableList(MmsDomain* self, char* variableListName);
 
 MmsNamedVariableList
-MmsDomain_getNamedVariableList(MmsDomain* self, char* variableListName);
+MmsDomain_getNamedVariableList(MmsDomain* self, const char* variableListName);
 
 LinkedList
 MmsDomain_getNamedVariableLists(MmsDomain* self);

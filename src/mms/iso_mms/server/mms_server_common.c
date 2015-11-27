@@ -201,6 +201,28 @@ mmsServer_getNumberOfElements(AlternateAccess_t* alternateAccess)
 	return 0;
 }
 
+MmsNamedVariableList
+mmsServer_getNamedVariableListWithName(LinkedList namedVariableLists, const char* variableListName)
+{
+    MmsNamedVariableList variableList = NULL;
+
+    LinkedList element = LinkedList_getNext(namedVariableLists);
+
+    while (element != NULL) {
+        MmsNamedVariableList varList = (MmsNamedVariableList) element->data;
+
+        if (strcmp(MmsNamedVariableList_getName(varList), variableListName) == 0) {
+            variableList = varList;
+            break;
+        }
+
+        element = LinkedList_getNext(element);
+    }
+
+    return variableList;
+}
+
+
 void
 mmsServer_deleteVariableList(LinkedList namedVariableLists, char* variableListName)
 {

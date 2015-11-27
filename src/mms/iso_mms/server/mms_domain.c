@@ -77,26 +77,14 @@ MmsDomain_addNamedVariableList(MmsDomain* self, MmsNamedVariableList variableLis
 }
 
 MmsNamedVariableList
-MmsDomain_getNamedVariableList(MmsDomain* self, char* variableListName)
+MmsDomain_getNamedVariableList(MmsDomain* self, const char* variableListName)
 {
 	MmsNamedVariableList variableList = NULL;
 
 	if (self == NULL)
 	    goto exit_function;
 
-	LinkedList element = LinkedList_getNext(self->namedVariableLists);
-
-	while (element != NULL) {
-		MmsNamedVariableList varList = (MmsNamedVariableList) element->data;
-
-		if (strcmp(MmsNamedVariableList_getName(varList), variableListName) == 0) {
-			variableList = varList;
-			break;
-		}
-
-		element = LinkedList_getNext(element);
-	}
-
+	variableList = mmsServer_getNamedVariableListWithName(self->namedVariableLists, variableListName);
 
 exit_function:
 	return variableList;
