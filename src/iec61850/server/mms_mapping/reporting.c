@@ -1531,6 +1531,7 @@ printEnqueuedReports(ReportControl* reportControl)
 {
     ReportBuffer* rb = reportControl->reportBuffer;
 
+#if 0
     printf("IED_SERVER: --- Enqueued reports ---\n");
 
     if (rb->oldestReport == NULL) {
@@ -1561,7 +1562,8 @@ printEnqueuedReports(ReportControl* reportControl)
             entry = entry->next;
         }
     }
-    printf("IED_SERVER:   reports: %i\n", rb->reportsCount);
+#endif
+    printf("IED_SERVER:   BRCB %s reports: %i\n", reportControl->name, rb->reportsCount);
     printf("IED_SERVER: -------------------------\n");
 }
 
