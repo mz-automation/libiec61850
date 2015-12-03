@@ -1231,8 +1231,8 @@ namespace IEC61850
 		public enum Validity
 		{
 			GOOD = 0,
-			INVALID = 1,
-			RESERVED = 2,
+			RESERVED = 1,
+			INVALID = 2,
 			QUESTIONABLE = 3
 		}
 
