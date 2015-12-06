@@ -2597,6 +2597,12 @@ MmsMapping_createMmsVariableNameFromObjectReference(const char* objectReference,
         }
     }
 
+    if (!fcAdded) {
+        mmsVariableName[destIndex++] = '$';
+        mmsVariableName[destIndex++] = fcString[0];
+        mmsVariableName[destIndex++] = fcString[1];
+    }
+
     mmsVariableName[destIndex] = 0;
 
     return mmsVariableName;
