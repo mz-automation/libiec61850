@@ -1301,7 +1301,10 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
                 printf("IED_SERVER: Deactivate report for client %s\n",
                         MmsServerConnection_getClientAddress(connection));
 
-            if (rc->buffered == false) {
+            if (rc->buffered) {
+                rc->reportBuffer->isOverflow = true;
+            }
+            else {
                 GLOBAL_FREEMEM(rc->inclusionFlags);
                 rc->inclusionFlags = NULL;
 
@@ -1428,11 +1431,13 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
                     retVal = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
                     goto exit_function;
                 }
+
+                rc->reportBuffer->isOverflow = false;
             }
             else {
                 rc->reportBuffer->nextToTransmit = rc->reportBuffer->oldestReport;
-                rc->isResync = false;
                 rc->reportBuffer->isOverflow = true;
+                rc->isResync = false;
             }
 
             MmsValue* entryID = ReportControl_getRCBValue(rc, elementName);
