@@ -503,16 +503,24 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
 
             if (dataSet == NULL) {
 
-                /* check if association specific data set is requested */
-                if (dataSetName[0] == '@') {
-                    if (connection != NULL) {
-                        MmsNamedVariableList mmsVariableList
-                            = MmsServerConnection_getNamedVariableList(connection, dataSetName + 1);
 
-                        if (mmsVariableList != NULL)
-                            dataSet = MmsMapping_createDataSetByNamedVariableList(mapping, mmsVariableList);
+                /* check if association specific data set is requested */
+
+
+                if (dataSetName[0] == '@') {
+
+                    if (rc->buffered == false) { /* for buffered report non-permanent datasets are not allowed */
+                        if (connection != NULL) {
+                            MmsNamedVariableList mmsVariableList
+                                = MmsServerConnection_getNamedVariableList(connection, dataSetName + 1);
+
+                            if (mmsVariableList != NULL)
+                                dataSet = MmsMapping_createDataSetByNamedVariableList(mapping, mmsVariableList);
+                        }
                     }
+
                 }
+
                 /* check for VMD specific data set */
                 else if (dataSetName[0] == '/') {
                     MmsNamedVariableList mmsVariableList = MmsDevice_getNamedVariableListWithName(mapping->mmsDevice, dataSetName + 1);
@@ -1315,8 +1323,10 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
     if (strcmp(elementName, "GI") == 0) {
         if ((rc->enabled) && (rc->clientConnection == connection)) {
 
-            if (MmsValue_getBoolean(value))
-                rc->gi = true;
+            if (MmsValue_getBoolean(value)) {
+                if (rc->triggerOps & TRG_OPT_GI)
+                    rc->gi = true;
+            }
 
             retVal = DATA_ACCESS_ERROR_SUCCESS;
             goto exit_function;
