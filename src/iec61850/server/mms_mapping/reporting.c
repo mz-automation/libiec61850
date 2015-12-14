@@ -1458,6 +1458,9 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
         else if (strcmp(elementName, "RptID") == 0) {
             MmsValue* rptId = ReportControl_getRCBValue(rc, elementName);
 
+            if (rc->buffered)
+                purgeBuf(rc);
+
             if (strlen(MmsValue_toString(value)) == 0)
                 updateWithDefaultRptId(rc, rptId);
             else
