@@ -220,10 +220,15 @@ ReportControl_getRCBValue(ReportControl* rc, char* elementName)
             return MmsValue_getElement(rc->rcbValues, 11);
         else if (strcmp(elementName, "TimeofEntry") == 0)
             return MmsValue_getElement(rc->rcbValues, 12);
+#if (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1)
         else if (strcmp(elementName, "ResvTms") == 0)
             return MmsValue_getElement(rc->rcbValues, 13);
         else if (strcmp(elementName, "Owner") == 0)
             return MmsValue_getElement(rc->rcbValues, 14);
+#else
+        else if (strcmp(elementName, "Owner") == 0)
+            return MmsValue_getElement(rc->rcbValues, 13);
+#endif
     } else {
         if (strcmp(elementName, "RptID") == 0)
             return MmsValue_getElement(rc->rcbValues, 0);
@@ -1001,7 +1006,7 @@ createBufferedReportControlBlock(ReportControlBlock* reportControlBlock,
     namedVariable->type = MMS_OCTET_STRING;
     namedVariable->typeSpec.octetString = -64;
     rcb->typeSpec.structure.elements[currentIndex] = namedVariable;
-    mmsValue->value.structure.components[currentIndex] = MmsValue_newOctetString(0, 4); /* size 4 is enough to store client IPv4 address */
+    mmsValue->value.structure.components[currentIndex] = MmsValue_newOctetString(0, 128); /* size 4 is enough to store client IPv4 address */
 
     reportControl->rcbValues = mmsValue;
 
