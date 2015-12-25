@@ -57,7 +57,7 @@ ReportBuffer_create(void)
     self->memoryBlockSize = CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE;
     self->memoryBlock = (uint8_t*) GLOBAL_MALLOC(self->memoryBlockSize);
     self->reportsCount = 0;
-    self->isOverflow = false;
+    self->isOverflow = true;
 
     return self;
 }
@@ -1266,8 +1266,10 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 
                 if (rc->buffered) {
 
-                    if (rc->isResync == false)
+                    if (rc->isResync == false) {
                         rc->reportBuffer->nextToTransmit = rc->reportBuffer->oldestReport;
+                        rc->reportBuffer->isOverflow = true;
+                    }
 
                     rc->isResync = false;
                 }
@@ -1308,6 +1310,7 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 
             if (rc->buffered) {
                 rc->reportBuffer->isOverflow = true;
+                rc->isResync = false;
             }
             else {
                 GLOBAL_FREEMEM(rc->inclusionFlags);

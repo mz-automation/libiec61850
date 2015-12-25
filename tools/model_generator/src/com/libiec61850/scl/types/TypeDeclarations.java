@@ -68,5 +68,11 @@ public class TypeDeclarations {
 		
 		return null;
 	}
+
+    public List<SclType> getTypeDeclarations() {
+        return typeDeclarations;
+    }
+	
+	
 	
 }
