@@ -62,28 +62,47 @@ public class SclParser {
     private List<IED> ieds;
     private Communication communication;
     private TypeDeclarations typeDeclarations;
-    private Node scl;
+    
+    public static boolean withOutput = true;
+    
+    public TypeDeclarations getTypeDeclarations() {
+        return typeDeclarations;
+    }
 
-    public SclParser(InputStream stream) throws SclParserException {
+    private Node scl;
+    
+    public SclParser(InputStream stream, boolean withOutput) throws SclParserException {
+        this.withOutput = withOutput;
+        
         Document doc = parseXmlDocument(stream);
         
         scl = getRootNode(doc);
 
-        System.out.println("parse data type templates ...");
+        if (withOutput)
+            System.out.println("parse data type templates ...");
+        
         typeDeclarations = parseTypeDeclarations();
 
-        System.out.println("parse IED section ...");
+        if (withOutput)
+            System.out.println("parse IED section ...");
         
         parseIedSections();
 
-        System.out.println("parse communication section ...");
+        if (withOutput)
+            System.out.println("parse communication section ...");
+        
         communication = parseCommunicationSection();
         
         if (communication == null)
-        	System.out.println("WARNING: No communication section found!");
+            if (withOutput)
+                System.out.println("WARNING: No communication section found!");
     }
 
-    public IED getIedByteName(String iedName) {
+    public SclParser(InputStream stream) throws SclParserException {
+        this(stream, true);
+    }
+
+    public IED getIedByName(String iedName) {
     	for (IED ied : ieds) {
     		if (ied.getName().equals(iedName))
     			return ied;
@@ -280,7 +299,8 @@ public class SclParser {
 
                         if (connectedAP.getApName().equals(accessPointName)) {
 
-                            System.out.println("Found connectedAP " + accessPointName + " for IED " + ied.getName());
+                            if (withOutput)
+                                System.out.println("Found connectedAP " + accessPointName + " for IED " + ied.getName());
 
                             return connectedAP;
                         }

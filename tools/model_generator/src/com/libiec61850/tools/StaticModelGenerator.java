@@ -129,7 +129,7 @@ public class StaticModelGenerator {
         if (iedName == null)
         	ied = sclParser.getFirstIed();
         else
-        	ied = sclParser.getIedByteName(iedName);
+        	ied = sclParser.getIedByName(iedName);
 
         if (ied == null)
             System.out.println("IED model not found in SCL file! Exit.");

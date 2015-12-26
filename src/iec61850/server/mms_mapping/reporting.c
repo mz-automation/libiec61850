@@ -57,7 +57,7 @@ ReportBuffer_create(void)
     self->memoryBlockSize = CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE;
     self->memoryBlock = (uint8_t*) GLOBAL_MALLOC(self->memoryBlockSize);
     self->reportsCount = 0;
-    self->isOverflow = false;
+    self->isOverflow = true;
 
     return self;
 }
@@ -220,10 +220,15 @@ ReportControl_getRCBValue(ReportControl* rc, char* elementName)
             return MmsValue_getElement(rc->rcbValues, 11);
         else if (strcmp(elementName, "TimeofEntry") == 0)
             return MmsValue_getElement(rc->rcbValues, 12);
+#if (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1)
         else if (strcmp(elementName, "ResvTms") == 0)
             return MmsValue_getElement(rc->rcbValues, 13);
         else if (strcmp(elementName, "Owner") == 0)
             return MmsValue_getElement(rc->rcbValues, 14);
+#else
+        else if (strcmp(elementName, "Owner") == 0)
+            return MmsValue_getElement(rc->rcbValues, 13);
+#endif
     } else {
         if (strcmp(elementName, "RptID") == 0)
             return MmsValue_getElement(rc->rcbValues, 0);
@@ -503,16 +508,24 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
 
             if (dataSet == NULL) {
 
-                /* check if association specific data set is requested */
-                if (dataSetName[0] == '@') {
-                    if (connection != NULL) {
-                        MmsNamedVariableList mmsVariableList
-                            = MmsServerConnection_getNamedVariableList(connection, dataSetName + 1);
 
-                        if (mmsVariableList != NULL)
-                            dataSet = MmsMapping_createDataSetByNamedVariableList(mapping, mmsVariableList);
+                /* check if association specific data set is requested */
+
+
+                if (dataSetName[0] == '@') {
+
+                    if (rc->buffered == false) { /* for buffered report non-permanent datasets are not allowed */
+                        if (connection != NULL) {
+                            MmsNamedVariableList mmsVariableList
+                                = MmsServerConnection_getNamedVariableList(connection, dataSetName + 1);
+
+                            if (mmsVariableList != NULL)
+                                dataSet = MmsMapping_createDataSetByNamedVariableList(mapping, mmsVariableList);
+                        }
                     }
+
                 }
+
                 /* check for VMD specific data set */
                 else if (dataSetName[0] == '/') {
                     MmsNamedVariableList mmsVariableList = MmsDevice_getNamedVariableListWithName(mapping->mmsDevice, dataSetName + 1);
@@ -993,7 +1006,7 @@ createBufferedReportControlBlock(ReportControlBlock* reportControlBlock,
     namedVariable->type = MMS_OCTET_STRING;
     namedVariable->typeSpec.octetString = -64;
     rcb->typeSpec.structure.elements[currentIndex] = namedVariable;
-    mmsValue->value.structure.components[currentIndex] = MmsValue_newOctetString(0, 4); /* size 4 is enough to store client IPv4 address */
+    mmsValue->value.structure.components[currentIndex] = MmsValue_newOctetString(0, 128); /* size 4 is enough to store client IPv4 address */
 
     reportControl->rcbValues = mmsValue;
 
@@ -1253,8 +1266,10 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 
                 if (rc->buffered) {
 
-                    if (rc->isResync == false)
+                    if (rc->isResync == false) {
                         rc->reportBuffer->nextToTransmit = rc->reportBuffer->oldestReport;
+                        rc->reportBuffer->isOverflow = true;
+                    }
 
                     rc->isResync = false;
                 }
@@ -1293,7 +1308,11 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
                 printf("IED_SERVER: Deactivate report for client %s\n",
                         MmsServerConnection_getClientAddress(connection));
 
-            if (rc->buffered == false) {
+            if (rc->buffered) {
+                rc->reportBuffer->isOverflow = true;
+                rc->isResync = false;
+            }
+            else {
                 GLOBAL_FREEMEM(rc->inclusionFlags);
                 rc->inclusionFlags = NULL;
 
@@ -1420,11 +1439,13 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
                     retVal = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
                     goto exit_function;
                 }
+
+                rc->reportBuffer->isOverflow = false;
             }
             else {
                 rc->reportBuffer->nextToTransmit = rc->reportBuffer->oldestReport;
-                rc->isResync = false;
                 rc->reportBuffer->isOverflow = true;
+                rc->isResync = false;
             }
 
             MmsValue* entryID = ReportControl_getRCBValue(rc, elementName);
@@ -1449,6 +1470,9 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
         }
         else if (strcmp(elementName, "RptID") == 0) {
             MmsValue* rptId = ReportControl_getRCBValue(rc, elementName);
+
+            if (rc->buffered)
+                purgeBuf(rc);
 
             if (strlen(MmsValue_toString(value)) == 0)
                 updateWithDefaultRptId(rc, rptId);

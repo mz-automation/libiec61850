@@ -26,7 +26,7 @@ import org.w3c.dom.Node;
 import com.libiec61850.scl.ParserUtils;
 import com.libiec61850.scl.SclParserException;
 
-public class SclType {
+public abstract class SclType {
 	
 	private String id = null;
 	private String description;

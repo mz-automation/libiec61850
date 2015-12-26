@@ -517,9 +517,9 @@ addFileEntriesToResponse(uint8_t* buffer, int bufPos, int maxBufSize, char* dire
 }
 
 static void
-createFileDirectoryResponse(uint32_t invokeId, ByteBuffer* response, char* directoryName, char* continueAfterFileName)
+createFileDirectoryResponse(uint32_t invokeId, ByteBuffer* response, int maxPduSize, char* directoryName, char* continueAfterFileName)
 {
-    int maxSize = response->maxSize - 3; /* reserve space for moreFollows */
+    int maxSize = maxPduSize - 3; /* reserve space for moreFollows */
     uint8_t* buffer = response->buffer;
 
     bool moreFollows = false;
@@ -532,6 +532,8 @@ createFileDirectoryResponse(uint32_t invokeId, ByteBuffer* response, char* direc
         if (strlen(continueAfterFileName) == 0)
             continueAfterFileName = NULL;
     }
+
+    printf("createFileDirectoryResponse: maxSize:%i\n", maxSize);
 
     tempCurPos = addFileEntriesToResponse(buffer, tempCurPos, maxSize, directoryName, continueAfterFileName, &moreFollows);
 
@@ -584,6 +586,8 @@ createFileDirectoryResponse(uint32_t invokeId, ByteBuffer* response, char* direc
         bufPos = BerEncoder_encodeBoolean(0x81, moreFollows, buffer, bufPos);
 
     response->size = bufPos;
+
+    printf("createFileDirectoryResponse: maxSize:%i response->isze:%i\n", maxSize, response->size);
 }
 
 void
@@ -708,7 +712,9 @@ mmsServer_handleFileDirectoryRequest(
 
     }
 
-    createFileDirectoryResponse(invokeId, response, filename, continueAfter);
+    int maxPduSize = connection->maxPduSize;
+
+    createFileDirectoryResponse(invokeId, response, maxPduSize, filename, continueAfter);
 }
 
 #endif /* MMS_FILE_SERVICE == 1 */

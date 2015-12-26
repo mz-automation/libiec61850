@@ -102,9 +102,14 @@
 /* The number of GOOSE retransmissions after an event */
 #define CONFIG_GOOSE_EVENT_RETRANSMISSION_COUNT 2
 
-/* Define if GOOSE control block elements are writable (1) or read-only (0) */
-#define CONFIG_GOOSE_GOID_WRITABLE 1
-#define CONFIG_GOOSE_DATSET_WRITABLE 1
+/* Define if GOOSE control block elements are writable (1) or read-only (0)
+ *
+ * WARNING: To be compliant with the IEC 61850-8-1 standard all GoCB elements
+ * but GoEna have to be read-only!
+ *
+ * */
+#define CONFIG_GOOSE_GOID_WRITABLE 0
+#define CONFIG_GOOSE_DATSET_WRITABLE 0
 #define CONFIG_GOOSE_CONFREV_WRITABLE 0
 #define CONFIG_GOOSE_NDSCOM_WRITABLE 0
 #define CONFIG_GOOSE_DSTADDRESS_WRITABLE 0

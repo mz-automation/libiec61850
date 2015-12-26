@@ -82,12 +82,9 @@ public class DataObject implements DataModelNode {
 
         for (DataAttributeDefinition daDefinition : daDefinitions) {
         	
-        	if (daDefinition.getFc() == FunctionalConstraint.SE) {
-        		
-        		System.out.println("Add SG DA for corresponding SE DA: ");
-        		this.dataAttributes.add(new DataAttribute(daDefinition, typeDeclarations, FunctionalConstraint.SG, this));
-        	}
-        	
+        	if (daDefinition.getFc() == FunctionalConstraint.SE)
+        	    this.dataAttributes.add(new DataAttribute(daDefinition, typeDeclarations, FunctionalConstraint.SG, this));
+        	        	
             this.dataAttributes.add(new DataAttribute(daDefinition, typeDeclarations, null, this));
             
 

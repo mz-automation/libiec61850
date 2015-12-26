@@ -62,7 +62,7 @@ public class DynamicModelGenerator {
         if (iedName == null)
         	ied = sclParser.getFirstIed();
         else
-        	ied = sclParser.getIedByteName(iedName);
+        	ied = sclParser.getIedByName(iedName);
 
         if (ied == null)
             throw new SclParserException("No data model present in SCL file! Exit.");
