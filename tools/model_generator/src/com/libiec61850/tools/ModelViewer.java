@@ -26,7 +26,7 @@ import com.libiec61850.scl.types.TypeDeclarations;
 
 public class ModelViewer {
     
-    private static void showTypes(InputStream stream, String icdFile, PrintStream output, String iedName, String accessPointName) 
+    private static void showTypes(InputStream stream, String icdFile, PrintStream output, String iedName, String accessPointName, boolean unusedOnly) 
             throws SclParserException {
 
         SclParser sclParser = new SclParser(stream, false);
@@ -34,6 +34,12 @@ public class ModelViewer {
         TypeDeclarations typeDecl = sclParser.getTypeDeclarations();
 
         for (SclType type : typeDecl.getTypeDeclarations()) {
+            
+            if (unusedOnly) {
+                if (type.isUsed() == true)
+                    continue;
+            }
+            
             output.print(type.getId());
             
             if (type.getClass() == LogicalNodeType.class)
@@ -44,6 +50,10 @@ public class ModelViewer {
                 output.print(" : DataAttribute");
             else if (type.getClass() == EnumerationType.class)
                 output.print(" : Enumeration");
+            
+            if (!unusedOnly)
+                if (type.isUsed() == false)
+                    System.out.print("  UNUSED TYPE!");
             
             output.println();
         }
@@ -175,6 +185,7 @@ public class ModelViewer {
             System.out.println("  -ied select IED");
             System.out.println("  -ap select AP");
             System.out.println("  -t print type list");
+            System.out.println("  -u print list of unused types");
             System.out.println("  -s print IED device model structure");
             System.out.println("  -a print list of data attributes (object references)");
             System.exit(1);
@@ -188,6 +199,7 @@ public class ModelViewer {
         String iedName = null;
         
         boolean printTypeList = false;
+        boolean printUnusedTypes = false;
         boolean printModelStructure = false;
         boolean printDataAttribtues = false;
         
@@ -226,6 +238,12 @@ public class ModelViewer {
                     i++;
                     
                 }
+                else if (args[i].equals("-u")) {
+                    printUnusedTypes = true;
+                    
+                    i++;
+                    
+                }
                 else {
                      outputStream = new PrintStream(new FileOutputStream(new File(args[i])));
                 }
@@ -237,7 +255,10 @@ public class ModelViewer {
 
         try {
             if (printTypeList)
-                showTypes(stream, icdFile, outputStream, iedName, accessPointName);
+                showTypes(stream, icdFile, outputStream, iedName, accessPointName, false);
+            
+            if (printUnusedTypes)
+                showTypes(stream, icdFile, outputStream, iedName, accessPointName, true);
             
             if (printModelStructure)
                 printModelStructure(stream, icdFile, outputStream, iedName, accessPointName);

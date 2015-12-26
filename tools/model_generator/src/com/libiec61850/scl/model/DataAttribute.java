@@ -87,6 +87,8 @@ public class DataAttribute implements DataModelNode {
 
         if (!(this.sclType instanceof EnumerationType))
             throw new SclParserException("Wrong type definition for enumerated data attribute");
+        
+        this.sclType.setUsed(true);
     }
 
     private void createConstructedAttribute(DataAttributeDefinition daDefinition, TypeDeclarations typeDeclarations)
@@ -98,6 +100,8 @@ public class DataAttribute implements DataModelNode {
 
         if (!(this.sclType instanceof DataAttributeType))
             throw new SclParserException("Wrong type definition for constructed data attribute");
+        
+        this.sclType.setUsed(true);
 
         DataAttributeType dataAttributeType = (DataAttributeType) this.sclType;
 

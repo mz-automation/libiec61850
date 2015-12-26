@@ -55,6 +55,9 @@ public class DataObject implements DataModelNode {
 
         if (sclType == null)
             throw new SclParserException("type declaration missing for data object.");
+        
+        /* mark type as used */
+        sclType.setUsed(true);
 
         createDataAttributes(typeDeclarations, sclType);
 

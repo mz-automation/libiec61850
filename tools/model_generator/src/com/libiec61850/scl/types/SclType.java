@@ -30,6 +30,7 @@ public abstract class SclType {
 	
 	private String id = null;
 	private String description;
+	private boolean isUsed = false;
 	
 	public SclType(Node xmlNode) throws SclParserException {
 		this.id = ParserUtils.parseAttribute(xmlNode, "id");
@@ -50,5 +51,13 @@ public abstract class SclType {
 
 	public String getDesc() {
 		return description;
+	}
+	
+	public void setUsed(boolean isUsed) {
+	    this.isUsed = isUsed;
+	}
+	
+	public boolean isUsed() {
+	    return this.isUsed;
 	}
 }

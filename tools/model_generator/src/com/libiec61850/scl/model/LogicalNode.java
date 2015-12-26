@@ -82,6 +82,9 @@ public class LogicalNode implements DataModelNode {
             dataObjects = new LinkedList<DataObject>();
 
             LogicalNodeType type = (LogicalNodeType) sclType;
+            
+            /* mark type as used */
+            type.setUsed(true);
 
             List<DataObjectDefinition> doDefinitions = type.getDataObjectDefinitions();
 
