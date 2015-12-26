@@ -1315,8 +1315,10 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
     if (strcmp(elementName, "GI") == 0) {
         if ((rc->enabled) && (rc->clientConnection == connection)) {
 
-            if (MmsValue_getBoolean(value))
-                rc->gi = true;
+            if (MmsValue_getBoolean(value)) {
+                if (rc->triggerOps & TRG_OPT_GI)
+                    rc->gi = true;
+            }
 
             retVal = DATA_ACCESS_ERROR_SUCCESS;
             goto exit_function;
