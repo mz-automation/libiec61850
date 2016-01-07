@@ -437,7 +437,7 @@ encodeFileSpecification(uint8_t tag, char* fileSpecification, uint8_t* buffer, i
 }
 
 static int
-addFileEntriesToResponse(uint8_t* buffer, int bufPos, int maxBufSize, char* directoryName, char* continueAfterFileName, bool* moreFollows)
+addFileEntriesToResponse(uint8_t* buffer, int bufPos, int maxBufSize, char* directoryName, char** continueAfterFileName, bool* moreFollows)
 {
 	int directoryNameLength = strlen(directoryName);
 
@@ -464,9 +464,10 @@ addFileEntriesToResponse(uint8_t* buffer, int bufPos, int maxBufSize, char* dire
             		break;
             }
             else {
-            	if (continueAfterFileName != NULL) {
-					if (strcmp(continueAfterFileName, directoryName) == 0)
-						continueAfterFileName = NULL;
+            	if (*continueAfterFileName != NULL) {
+					if (strcmp(*continueAfterFileName, directoryName) == 0) {
+						*continueAfterFileName = NULL;
+					}
 				}
 				else {
 					uint64_t msTime;
@@ -533,9 +534,7 @@ createFileDirectoryResponse(uint32_t invokeId, ByteBuffer* response, int maxPduS
             continueAfterFileName = NULL;
     }
 
-    printf("createFileDirectoryResponse: maxSize:%i\n", maxSize);
-
-    tempCurPos = addFileEntriesToResponse(buffer, tempCurPos, maxSize, directoryName, continueAfterFileName, &moreFollows);
+    tempCurPos = addFileEntriesToResponse(buffer, tempCurPos, maxSize, directoryName, &continueAfterFileName, &moreFollows);
 
 	if (tempCurPos < 0) {
 
@@ -586,8 +585,6 @@ createFileDirectoryResponse(uint32_t invokeId, ByteBuffer* response, int maxPduS
         bufPos = BerEncoder_encodeBoolean(0x81, moreFollows, buffer, bufPos);
 
     response->size = bufPos;
-
-    printf("createFileDirectoryResponse: maxSize:%i response->isze:%i\n", maxSize, response->size);
 }
 
 void

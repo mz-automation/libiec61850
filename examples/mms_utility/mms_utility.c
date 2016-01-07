@@ -8,7 +8,8 @@
 static void
 print_help()
 {
-    printf("MMS utility (libiec61850 v0.5) options:\n");
+
+    printf("MMS utility (libiec61850 " LIBIEC61850_VERSION ") options:\n");
     printf("-h <hostname> specify hostname\n");
     printf("-p <port> specify port\n");
     printf("-l <max_pdu_size> specify maximum PDU size\n");
@@ -16,7 +17,18 @@ print_help()
     printf("-i show server identity\n");
     printf("-t <domain_name> show domain directory\n");
     printf("-r <variable_name> read domain variable\n");
-    printf("-a <domain_name> specify domain for read or write command");
+    printf("-a <domain_name> specify domain for read or write command\n");
+    printf("-f show file list\n");
+}
+
+static void
+mmsFileDirectoryHandler (void* parameter, char* filename, uint32_t size, uint64_t lastModified)
+{
+    char* lastName = (char*) parameter;
+
+    strcpy (lastName, filename);
+
+    printf("%s\n", filename);
 }
 
 int main(int argc, char** argv) {
@@ -33,11 +45,12 @@ int main(int argc, char** argv) {
 	int identifyDevice = 0;
 	int readWriteHasDomain = 0;
 	int readVariable = 0;
+	int showFileList = 0;
 
 
 	int c;
 
-	while ((c = getopt(argc, argv, "idh:p:l:t:a:r:")) != -1)
+	while ((c = getopt(argc, argv, "ifdh:p:l:t:a:r:")) != -1)
 		switch (c) {
 		case 'h':
 			hostname = copyString(optarg);
@@ -65,6 +78,9 @@ int main(int argc, char** argv) {
 		case 'r':
 		    readVariable = 1;
 		    variableName = copyString(optarg);
+		    break;
+		case 'f':
+		    showFileList = 1;
 		    break;
 
 		default:
@@ -150,6 +166,16 @@ int main(int argc, char** argv) {
 	        printf("Reading VMD scope variable not yet supported!\n");
 	}
 
+	if (showFileList) {
+	    char lastName[300];
+	    lastName[0] = 0;
+
+	    char* continueAfter = NULL;
+
+	    while (MmsConnection_getFileDirectory(con, &error, "", continueAfter, mmsFileDirectoryHandler, lastName)) {
+	        continueAfter = lastName;
+	    }
+	}
 
 exit:
 	MmsConnection_destroy(con);
