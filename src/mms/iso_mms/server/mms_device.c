@@ -127,3 +127,10 @@ MmsDevice_getNamedVariableLists(MmsDevice* self)
 {
     return self->namedVariableLists;
 }
+
+MmsNamedVariableList
+MmsDevice_getNamedVariableListWithName(MmsDevice* self, const char* variableListName)
+{
+    return mmsServer_getNamedVariableListWithName(self->namedVariableLists, variableListName);
+}
+

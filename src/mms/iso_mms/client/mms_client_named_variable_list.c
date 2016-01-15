@@ -54,11 +54,18 @@ mmsClient_createDeleteNamedVariableListRequest(long invokeId, ByteBuffer* writeB
 	request->listOfVariableListName->list.array = (ObjectName_t**) GLOBAL_CALLOC(1, sizeof(ObjectName_t*));
 	request->listOfVariableListName->list.array[0] = (ObjectName_t*) GLOBAL_CALLOC(1, sizeof(ObjectName_t));
 
-	request->listOfVariableListName->list.array[0]->present = ObjectName_PR_domainspecific;
-	request->listOfVariableListName->list.array[0]->choice.domainspecific.domainId.size = strlen(domainId);
-	request->listOfVariableListName->list.array[0]->choice.domainspecific.domainId.buf = (uint8_t*) copyString(domainId);
-	request->listOfVariableListName->list.array[0]->choice.domainspecific.itemId.size = strlen(listNameId);
-	request->listOfVariableListName->list.array[0]->choice.domainspecific.itemId.buf = (uint8_t*) copyString(listNameId);
+	if (domainId != NULL) {
+        request->listOfVariableListName->list.array[0]->present = ObjectName_PR_domainspecific;
+        request->listOfVariableListName->list.array[0]->choice.domainspecific.domainId.size = strlen(domainId);
+        request->listOfVariableListName->list.array[0]->choice.domainspecific.domainId.buf = (uint8_t*) copyString(domainId);
+        request->listOfVariableListName->list.array[0]->choice.domainspecific.itemId.size = strlen(listNameId);
+        request->listOfVariableListName->list.array[0]->choice.domainspecific.itemId.buf = (uint8_t*) copyString(listNameId);
+	}
+	else {
+	    request->listOfVariableListName->list.array[0]->present = ObjectName_PR_vmdspecific;
+	    request->listOfVariableListName->list.array[0]->choice.vmdspecific.size = strlen(listNameId);
+	    request->listOfVariableListName->list.array[0]->choice.vmdspecific.buf = (uint8_t*) copyString(listNameId);
+	}
 
 	request->scopeOfDelete = (INTEGER_t*) GLOBAL_CALLOC(1, sizeof(INTEGER_t));
 	asn_long2INTEGER(request->scopeOfDelete, DeleteNamedVariableListRequest__scopeOfDelete_specific);
@@ -156,13 +163,21 @@ mmsClient_createGetNamedVariableListAttributesRequest(uint32_t invokeId, ByteBuf
 	GetNamedVariableListAttributesRequest_t* request =
 			&(mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.choice.getNamedVariableListAttributes);
 
-	request->present = ObjectName_PR_domainspecific;
+	if (domainId != NULL) {
+        request->present = ObjectName_PR_domainspecific;
 
-	request->choice.domainspecific.domainId.size = strlen(domainId);
-	request->choice.domainspecific.domainId.buf = (uint8_t*) copyString(domainId);
+        request->choice.domainspecific.domainId.size = strlen(domainId);
+        request->choice.domainspecific.domainId.buf = (uint8_t*) copyString(domainId);
 
-	request->choice.domainspecific.itemId.size = strlen(listNameId);
-	request->choice.domainspecific.itemId.buf = (uint8_t*) copyString(listNameId);
+        request->choice.domainspecific.itemId.size = strlen(listNameId);
+        request->choice.domainspecific.itemId.buf = (uint8_t*) copyString(listNameId);
+	}
+	else {
+	    request->present = ObjectName_PR_vmdspecific;
+
+	    request->choice.vmdspecific.size = strlen(listNameId);
+	    request->choice.vmdspecific.buf = (uint8_t*) copyString(listNameId);
+	}
 
 	der_encode(&asn_DEF_MmsPdu, mmsPdu,
 			(asn_app_consume_bytes_f*) mmsClient_write_out, (void*) writeBuffer);
@@ -277,13 +292,21 @@ mmsClient_createDefineNamedVariableListRequest(
 		request->variableListName.choice.aaspecific.buf = (uint8_t*) copyString(listNameId);
 	}
 	else {
-		request->variableListName.present = ObjectName_PR_domainspecific;
+	    if (domainId != NULL) {  /* domain scope */
+            request->variableListName.present = ObjectName_PR_domainspecific;
 
-		request->variableListName.choice.domainspecific.domainId.size = strlen(domainId);
-		request->variableListName.choice.domainspecific.domainId.buf = (uint8_t*) copyString(domainId);
+            request->variableListName.choice.domainspecific.domainId.size = strlen(domainId);
+            request->variableListName.choice.domainspecific.domainId.buf = (uint8_t*) copyString(domainId);
 
-		request->variableListName.choice.domainspecific.itemId.size = strlen(listNameId);
-		request->variableListName.choice.domainspecific.itemId.buf = (uint8_t*) copyString(listNameId);
+            request->variableListName.choice.domainspecific.itemId.size = strlen(listNameId);
+            request->variableListName.choice.domainspecific.itemId.buf = (uint8_t*) copyString(listNameId);
+	    }
+	    else { /* VMD scope */
+	        request->variableListName.present = ObjectName_PR_vmdspecific;
+
+	        request->variableListName.choice.vmdspecific.size = strlen(listNameId);
+            request->variableListName.choice.vmdspecific.buf = (uint8_t*) copyString(listNameId);
+	    }
 	}
 
 	int listSize = LinkedList_size(listOfVariables);

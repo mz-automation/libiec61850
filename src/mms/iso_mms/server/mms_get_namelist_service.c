@@ -266,7 +266,7 @@ getNamedVariableListsDomainSpecific(MmsServerConnection connection, char* domain
 }
 
 static LinkedList
-getnamedVariableListsVMDSpecific(MmsServerConnection connection)
+getNamedVariableListsVMDSpecific(MmsServerConnection connection)
 {
     MmsDevice* device = MmsServer_getDevice(connection->server);
 
@@ -555,7 +555,7 @@ mmsServer_handleGetNameListRequest(
 
 #if (MMS_DATA_SET_SERVICE == 1)
 	    else if (objectClass == OBJECT_CLASS_NAMED_VARIABLE_LIST) {
-	        LinkedList nameList = getnamedVariableListsVMDSpecific(connection);
+	        LinkedList nameList = getNamedVariableListsVMDSpecific(connection);
 
 #if (CONFIG_MMS_SORT_NAME_LIST == 1)
 	        StringUtils_sortList(nameList);

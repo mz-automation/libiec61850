@@ -122,7 +122,6 @@
         </DOType>
         
         <DOType cdc="ASG" id="ASG_SE">
-           <DA bType="Struct" fc="SG" name="setMag" type="AnalogueValue_1"/>
            <DA bType="Struct" fc="SE" name="setMag" type="AnalogueValue_1"/>
         </DOType>
 		
@@ -151,7 +150,6 @@
 		</DOType>
 		
 		<DOType id="ING_SE" cdc="ING">
-			<DA name="setVal" bType="INT32" fc="SG" dchg="true" />
 			<DA name="setVal" bType="INT32" fc="SE" dchg="true" />
 		</DOType>
 		

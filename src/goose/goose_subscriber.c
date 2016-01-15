@@ -109,6 +109,12 @@ GooseSubscriber_isTest(GooseSubscriber self)
     return self->simulation;
 }
 
+uint32_t
+GooseSubscriber_getConfRev(GooseSubscriber self)
+{
+    return self->confRev;
+}
+
 bool
 GooseSubscriber_needsCommission(GooseSubscriber self)
 {

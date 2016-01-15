@@ -47,6 +47,7 @@ public class LogicalNode implements DataModelNode {
     private List<DataSet> dataSets;
     private List<ReportControlBlock> reportControlBlocks;
     private List<GSEControl> gseControlBlocks;
+    private List<SampledValueControl> smvControlBlocks;
     private List<LogControl> logControlBlocks;
 	private List<Log> logs;
 	private List<SettingControl> settingGroupControlBlocks;
@@ -81,6 +82,9 @@ public class LogicalNode implements DataModelNode {
             dataObjects = new LinkedList<DataObject>();
 
             LogicalNodeType type = (LogicalNodeType) sclType;
+            
+            /* mark type as used */
+            type.setUsed(true);
 
             List<DataObjectDefinition> doDefinitions = type.getDataObjectDefinitions();
 
@@ -112,6 +116,13 @@ public class LogicalNode implements DataModelNode {
         List<Node> gseControlNodes = ParserUtils.getChildNodesWithTag(lnNode, "GSEControl");
         for (Node gseControlNode : gseControlNodes)
             gseControlBlocks.add(new GSEControl(gseControlNode));
+        
+        /* Parse Sampled Values (SV) control block definitions */
+        smvControlBlocks = new LinkedList<SampledValueControl>();
+
+        List<Node> svControlNodes = ParserUtils.getChildNodesWithTag(lnNode, "SampledValueControl");
+        for (Node svControlNode : svControlNodes)
+            smvControlBlocks.add(new SampledValueControl(svControlNode));
         
         /* Parse log control block definitions */
         logControlBlocks = new LinkedList<LogControl>();
@@ -259,6 +270,10 @@ public class LogicalNode implements DataModelNode {
 
     public List<GSEControl> getGSEControlBlocks() {
         return gseControlBlocks;
+    }
+    
+    public List<SampledValueControl> getSampledValueControlBlocks() {
+        return smvControlBlocks;
     }
     
     public List<SettingControl> getSettingGroupControlBlocks() {

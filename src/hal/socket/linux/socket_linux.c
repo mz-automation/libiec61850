@@ -316,7 +316,7 @@ Socket_connect(Socket self, const char* address, int port)
 
     activateTcpNoDelay(self);
 
-#if CONFIG_ACTIVATE_TCP_KEEPALIVE == 1
+#if (CONFIG_ACTIVATE_TCP_KEEPALIVE == 1)
     activateKeepAlive(self->fd);
 #endif
 

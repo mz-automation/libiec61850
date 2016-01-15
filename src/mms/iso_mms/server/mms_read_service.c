@@ -663,6 +663,29 @@ handleReadNamedVariableListRequest(
 			}
 		}
 	}
+	else if (read->variableAccessSpecification.choice.variableListName.present == ObjectName_PR_vmdspecific)
+	{
+	    char listName[65];
+
+        mmsMsg_copyAsn1IdentifierToStringBuffer(read->variableAccessSpecification.choice.variableListName.choice.vmdspecific,
+                listName, 65);
+
+        MmsNamedVariableList namedList = mmsServer_getNamedVariableListWithName(connection->server->device->namedVariableLists, listName);
+
+        if (namedList == NULL)
+            mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
+        else {
+
+            VarAccessSpec accessSpec;
+
+            accessSpec.isNamedVariableList = true;
+            accessSpec.specific = 0;
+            accessSpec.domainId = NULL;
+            accessSpec.itemId = listName;
+
+            createNamedVariableListResponse(connection, namedList, invokeId, response, read, &accessSpec);
+        }
+	}
 #if (MMS_DYNAMIC_DATA_SETS == 1)
 	else if (read->variableAccessSpecification.choice.variableListName.present ==
 				ObjectName_PR_aaspecific)
@@ -674,17 +697,18 @@ handleReadNamedVariableListRequest(
 
 		MmsNamedVariableList namedList = MmsServerConnection_getNamedVariableList(connection, listName);
 
-		VarAccessSpec accessSpec;
-
-		accessSpec.isNamedVariableList = true;
-		accessSpec.specific = 2;
-		accessSpec.domainId = NULL;
-		accessSpec.itemId = listName;
-
 		if (namedList == NULL)
 			mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
-		else
+		else {
+            VarAccessSpec accessSpec;
+
+            accessSpec.isNamedVariableList = true;
+            accessSpec.specific = 2;
+            accessSpec.domainId = NULL;
+            accessSpec.itemId = listName;
+
 			createNamedVariableListResponse(connection, namedList, invokeId, response, read, &accessSpec);
+		}
 	}
 #endif /* (MMS_DYNAMIC_DATA_SETS == 1) */
 	else

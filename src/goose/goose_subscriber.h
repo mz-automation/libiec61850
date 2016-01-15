@@ -125,6 +125,17 @@ GooseSubscriber_getSqNum(GooseSubscriber self);
 bool
 GooseSubscriber_isTest(GooseSubscriber self);
 
+/**
+ * \brief returns the confRev value of the last received GOOSE message
+ *
+ * \param self GooseSubscriber instance to operate on.
+ *
+ * \return the confRev value of the last received GOOSE message. If the message does not contain such
+ *         a value the result is always 0
+ */
+uint32_t
+GooseSubscriber_getConfRev(GooseSubscriber self);
+
 bool
 GooseSubscriber_needsCommission(GooseSubscriber self);
 

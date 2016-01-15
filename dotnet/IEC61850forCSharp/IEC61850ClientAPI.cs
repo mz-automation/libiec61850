@@ -1224,14 +1224,15 @@ namespace IEC61850
 			DATA_REFERENCE = 16,
 			BUFFER_OVERFLOW = 32,
 			ENTRY_ID = 64,
-			CONF_REV = 128
+			CONF_REV = 128,
+			ALL = 255
 		}
 
 		public enum Validity
 		{
 			GOOD = 0,
-			INVALID = 1,
-			RESERVED = 2,
+			RESERVED = 1,
+			INVALID = 2,
 			QUESTIONABLE = 3
 		}
 
@@ -1322,6 +1323,16 @@ namespace IEC61850
 			EX = 11,
 			/** Control */
 			CO = 12,
+			/** Unicast SV */
+			US = 13,
+			/** Multicast SV */
+			MS = 14,
+			/** Unbuffered report */
+			RP = 15,
+			/** Buffered report */
+			BR = 16,
+
+			/** All FCs - wildcard value */
 			ALL = 99,
 			NONE = -1
 		}

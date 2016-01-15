@@ -1,7 +1,7 @@
 /*
  *  mms_mapping.c
  *
- *  Copyright 2013, 2014 Michael Zillgith
+ *  Copyright 2013, 2014, 2015 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -28,6 +28,7 @@
 #include "stack_config.h"
 
 #include "mms_goose.h"
+#include "mms_sv.h"
 #include "reporting.h"
 #include "control.h"
 #include "ied_server_private.h"
@@ -154,118 +155,118 @@ createNamedVariableFromDataAttribute(DataAttribute* attribute)
     }
     else {
         switch (attribute->type) {
-        case BOOLEAN:
+        case IEC61850_BOOLEAN:
             namedVariable->type = MMS_BOOLEAN;
             break;
-        case INT8:
+        case IEC61850_INT8:
             namedVariable->typeSpec.integer = 8;
             namedVariable->type = MMS_INTEGER;
             break;
-        case INT16:
+        case IEC61850_INT16:
             namedVariable->typeSpec.integer = 16;
             namedVariable->type = MMS_INTEGER;
             break;
-        case INT32:
+        case IEC61850_INT32:
             namedVariable->typeSpec.integer = 32;
             namedVariable->type = MMS_INTEGER;
             break;
-        case INT64:
+        case IEC61850_INT64:
             namedVariable->typeSpec.integer = 64;
             namedVariable->type = MMS_INTEGER;
             break;
-        case INT128:
+        case IEC61850_INT128:
             namedVariable->typeSpec.integer = 128;
             namedVariable->type = MMS_INTEGER;
             break;
-        case INT8U:
+        case IEC61850_INT8U:
             namedVariable->typeSpec.unsignedInteger = 8;
             namedVariable->type = MMS_UNSIGNED;
             break;
-        case INT16U:
+        case IEC61850_INT16U:
             namedVariable->typeSpec.unsignedInteger = 16;
             namedVariable->type = MMS_UNSIGNED;
             break;
-        case INT24U:
+        case IEC61850_INT24U:
             namedVariable->typeSpec.unsignedInteger = 24;
             namedVariable->type = MMS_UNSIGNED;
             break;
-        case INT32U:
+        case IEC61850_INT32U:
             namedVariable->typeSpec.unsignedInteger = 32;
             namedVariable->type = MMS_UNSIGNED;
             break;
-        case FLOAT32:
+        case IEC61850_FLOAT32:
             namedVariable->typeSpec.floatingpoint.formatWidth = 32;
             namedVariable->typeSpec.floatingpoint.exponentWidth = 8;
             namedVariable->type = MMS_FLOAT;
             break;
-        case FLOAT64:
+        case IEC61850_FLOAT64:
             namedVariable->typeSpec.floatingpoint.formatWidth = 64;
             namedVariable->typeSpec.floatingpoint.exponentWidth = 11;
             namedVariable->type = MMS_FLOAT;
             break;
-        case ENUMERATED:
+        case IEC61850_ENUMERATED:
             namedVariable->typeSpec.integer = 8; /* 8 bit integer should be enough for all enumerations */
             namedVariable->type = MMS_INTEGER;
             break;
-        case CHECK:
+        case IEC61850_CHECK:
             namedVariable->typeSpec.bitString = -2;
             namedVariable->type = MMS_BIT_STRING;
             break;
-        case CODEDENUM:
+        case IEC61850_CODEDENUM:
             namedVariable->typeSpec.bitString = 2;
             namedVariable->type = MMS_BIT_STRING;
             break;
-        case OCTET_STRING_6:
+        case IEC61850_OCTET_STRING_6:
             namedVariable->typeSpec.octetString = -6;
             namedVariable->type = MMS_OCTET_STRING;
             break;
-        case OCTET_STRING_8:
+        case IEC61850_OCTET_STRING_8:
             namedVariable->typeSpec.octetString = 8;
             namedVariable->type = MMS_OCTET_STRING;
             break;
-        case OCTET_STRING_64:
+        case IEC61850_OCTET_STRING_64:
             namedVariable->typeSpec.octetString = -64;
             namedVariable->type = MMS_OCTET_STRING;
             break;
-        case VISIBLE_STRING_32:
+        case IEC61850_VISIBLE_STRING_32:
             namedVariable->typeSpec.visibleString = -129;
             namedVariable->type = MMS_VISIBLE_STRING;
             break;
-        case VISIBLE_STRING_64:
+        case IEC61850_VISIBLE_STRING_64:
             namedVariable->typeSpec.visibleString = -129;
             namedVariable->type = MMS_VISIBLE_STRING;
             break;
-        case VISIBLE_STRING_65:
+        case IEC61850_VISIBLE_STRING_65:
             namedVariable->typeSpec.visibleString = -129;
             namedVariable->type = MMS_VISIBLE_STRING;
             break;
-        case VISIBLE_STRING_129:
+        case IEC61850_VISIBLE_STRING_129:
             namedVariable->typeSpec.visibleString = -129;
             namedVariable->type = MMS_VISIBLE_STRING;
             break;
-        case VISIBLE_STRING_255:
+        case IEC61850_VISIBLE_STRING_255:
             namedVariable->typeSpec.visibleString = -255;
             namedVariable->type = MMS_VISIBLE_STRING;
             break;
-        case UNICODE_STRING_255:
+        case IEC61850_UNICODE_STRING_255:
             namedVariable->typeSpec.mmsString = -255;
             namedVariable->type = MMS_STRING;
             break;
-        case GENERIC_BITSTRING:
+        case IEC61850_GENERIC_BITSTRING:
             namedVariable->type = MMS_BIT_STRING;
             break;
-        case TIMESTAMP:
+        case IEC61850_TIMESTAMP:
             namedVariable->type = MMS_UTC_TIME;
             break;
-        case QUALITY:
+        case IEC61850_QUALITY:
             namedVariable->typeSpec.bitString = -13; // -13 = up to 13 bits
             namedVariable->type = MMS_BIT_STRING;
             break;
-        case ENTRY_TIME:
+        case IEC61850_ENTRY_TIME:
             namedVariable->type = MMS_BINARY_TIME;
             namedVariable->typeSpec.binaryTime = 6;
             break;
-        case PHYCOMADDR:
+        case IEC61850_PHYCOMADDR:
             MmsMapping_createPhyComAddrStructure(namedVariable);
             break;
         default:
@@ -766,9 +767,8 @@ countGSEControlBlocksForLogicalNode(MmsMapping* self, LogicalNode* logicalNode)
     GSEControlBlock* gcb = self->model->gseCBs;
 
     while (gcb != NULL) {
-        if (gcb->parent == logicalNode) {
+        if (gcb->parent == logicalNode)
             gseCount++;
-        }
 
         gcb = gcb->sibling;
     }
@@ -777,6 +777,27 @@ countGSEControlBlocksForLogicalNode(MmsMapping* self, LogicalNode* logicalNode)
 }
 
 #endif /* (CONFIG_INCLUDE_GOOSE_SUPPORT == 1) */
+
+#if (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1)
+
+static int
+countSVControlBlocksForLogicalNode(MmsMapping* self, LogicalNode* logicalNode, bool unicast)
+{
+    int svCount = 0;
+
+    SVControlBlock* svCb = self->model->svCBs;
+
+    while (svCb != NULL) {
+        if ((svCb->parent == logicalNode) && (svCb->isUnicast == unicast))
+            svCount++;
+
+        svCb = svCb->sibling;
+    }
+
+    return svCount;
+}
+
+#endif /* (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1) */
 
 static SettingGroupControlBlock*
 checkForSgcb(MmsMapping* self, LogicalNode* logicalNode)
@@ -861,6 +882,28 @@ createNamedVariableFromLogicalNode(MmsMapping* self, MmsDomain* domain,
     }
 
 #endif /* (CONFIG_INCLUDE_GOOSE_SUPPORT == 1) */
+
+#if (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1)
+
+    int msvcbCount = countSVControlBlocksForLogicalNode(self, logicalNode, false);
+
+    if (msvcbCount > 0) {
+        if (DEBUG_IED_SERVER)
+            printf("   and %i MSV control blocks\n", msvcbCount);
+
+        componentCount++;
+    }
+
+    int usvcbCount = countSVControlBlocksForLogicalNode(self, logicalNode, true);
+
+    if (usvcbCount > 0) {
+        if (DEBUG_IED_SERVER)
+            printf("   and %i USV control blocks\n", usvcbCount);
+
+        componentCount++;
+    }
+
+#endif /* (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1) */
 
     namedVariable->typeSpec.structure.elements = (MmsVariableSpecification**) GLOBAL_CALLOC(componentCount,
             sizeof(MmsVariableSpecification*));
@@ -960,6 +1003,24 @@ createNamedVariableFromLogicalNode(MmsMapping* self, MmsDomain* domain,
                 createFCNamedVariable(logicalNode, IEC61850_FC_SE);
         currentComponent++;
     }
+
+#if (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1)
+
+    /* Add MS and US named variables */
+    if (msvcbCount > 0) {
+        namedVariable->typeSpec.structure.elements[currentComponent] =
+                LIBIEC61850_SV_createSVControlBlocks(self, domain, logicalNode, msvcbCount, false);
+
+        currentComponent++;
+    }
+
+    if (usvcbCount > 0) {
+        namedVariable->typeSpec.structure.elements[currentComponent] =
+                LIBIEC61850_SV_createSVControlBlocks(self, domain, logicalNode, msvcbCount, true);
+
+        currentComponent++;
+    }
+#endif
 
     if (LogicalNode_hasFCData(logicalNode, IEC61850_FC_EX)) {
         namedVariable->typeSpec.structure.elements[currentComponent] =
@@ -1138,6 +1199,11 @@ MmsMapping_create(IedModel* model)
     self->gooseInterfaceId = NULL;
 #endif
 
+#if (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1)
+    self->svControls = LinkedList_create();
+    self->svInterfaceId = NULL;
+#endif
+
 #if (CONFIG_IEC61850_CONTROL_SERVICE == 1)
     self->controlObjects = LinkedList_create();
 #endif
@@ -1175,6 +1241,10 @@ MmsMapping_destroy(MmsMapping* self)
 
 #if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
     LinkedList_destroyDeep(self->gseControls, (LinkedListValueDeleteFunction) MmsGooseControlBlock_destroy);
+#endif
+
+#if (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1)
+    LinkedList_destroyDeep(self->svControls, (LinkedListValueDeleteFunction) MmsSampledValueControlBlock_destroy);
 #endif
 
 #if (CONFIG_IEC61850_CONTROL_SERVICE == 1)
@@ -1283,6 +1353,23 @@ isGooseControlBlock(char* separator)
 }
 
 #endif /* (CONFIG_INCLUDE_GOOSE_SUPPORT == 1) */
+
+
+#if (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1)
+
+static bool
+isSampledValueControlBlock(char* separator)
+{
+    if (strncmp(separator + 1, "MS", 2) == 0)
+        return true;
+
+    if (strncmp(separator + 1, "US", 2) == 0)
+        return true;
+
+    return false;
+}
+
+#endif /* (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1) */
 
 char*
 MmsMapping_getNextNameElement(char* name)
@@ -1604,11 +1691,21 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
 #endif /* (CONFIG_IEC61850_CONTROL_SERVICE == 1) */
 
 #if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
+
     /* Goose control block - GO */
-    if (isGooseControlBlock(separator)) {
+    if (isGooseControlBlock(separator))
         return writeAccessGooseControlBlock(self, domain, variableId, value);
-    }
+
 #endif /* (CONFIG_INCLUDE_GOOSE_SUPPORT == 1) */
+
+#if (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1)
+
+    /* Sampled Value control block - MS/US */
+    if (isSampledValueControlBlock(separator))
+        return LIBIEC61850_SV_writeAccessSVControlBlock(self, domain, variableId, value, connection);
+
+#endif /* (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1) */
+
 
 #if (CONFIG_IEC61850_REPORT_SERVICE == 1)
     /* Report control blocks - BR, RP */
@@ -2006,6 +2103,7 @@ readAccessGooseControlBlock(MmsMapping* self, MmsDomain* domain, char* variableI
 
 #endif /* (CONFIG_INCLUDE_GOOSE_SUPPORT == 1) */
 
+
 static MmsValue*
 mmsReadHandler(void* parameter, MmsDomain* domain, char* variableId, MmsServerConnection connection)
 {
@@ -2031,10 +2129,19 @@ mmsReadHandler(void* parameter, MmsDomain* domain, char* variableId, MmsServerCo
     }
 #endif
 
-    /* GOOSE control blocks - GO */
+
 #if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
+    /* GOOSE control blocks - GO */
     if (isGooseControlBlock(separator)) {
         retValue = readAccessGooseControlBlock(self, domain, variableId);
+        goto exit_function;
+    }
+#endif
+
+#if (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1)
+    /* Sampled Value control blocks - MS/US */
+    if (isSampledValueControlBlock(separator)) {
+        retValue = LIBIEC61850_SV_readAccessSampledValueControlBlock(self, domain, variableId);
         goto exit_function;
     }
 #endif

@@ -272,6 +272,9 @@ mmsServer_getLowIndex(AlternateAccess_t* alternateAccess);
 int
 mmsServer_getNumberOfElements(AlternateAccess_t* alternateAccess);
 
+MmsNamedVariableList
+mmsServer_getNamedVariableListWithName(LinkedList namedVariableLists, const char* variableListName);
+
 void
 mmsServer_deleteVariableList(LinkedList namedVariableLists, char* variableListName);
 

@@ -36,6 +36,14 @@ extern "C" {
  */
 /**@{*/
 
+/** PhyComAddress type contains Ethernet address and VLAN attributes */
+typedef struct {
+    uint8_t vlanPriority;
+    uint16_t vlanId;
+    uint16_t appId;
+    uint8_t dstAddress[6];
+} PhyComAddress;
+
 /**
  * @defgroup TRIGGER_OPTIONS Trigger options (bit values combinable)
  *
@@ -217,6 +225,16 @@ typedef enum eFunctionalConstraint {
     IEC61850_FC_EX = 11,
     /** Control */
     IEC61850_FC_CO = 12,
+    /** Unicast SV */
+    IEC61850_FC_US = 13,
+    /** Multicast SV */
+    IEC61850_FC_MS = 14,
+    /** Unbuffered report */
+    IEC61850_FC_RP = 15,
+    /** Buffered report */
+    IEC61850_FC_BR = 16,
+
+    /** All FCs - wildcard value */
     IEC61850_FC_ALL = 99,
     IEC61850_FC_NONE = -1
 } FunctionalConstraint;

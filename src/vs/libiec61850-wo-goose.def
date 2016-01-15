@@ -495,3 +495,22 @@ EXPORTS
     LogicalNode_getDataSet
     ClientReport_getDataSetName
     MmsValue_getStringSize
+    SVControlBlock_create
+    SVControlBlock_addPhyComAddress
+    GSEControlBlock_addPhyComAddress
+    ClientSVControlBlock_create
+    ClientSVControlBlock_destroy
+    ClientSVControlBlock_isMulticast
+    ClientSVControlBlock_getLastComError
+    ClientSVControlBlock_setSvEna
+    ClientSVControlBlock_getSvEna
+    ClientSVControlBlock_setResv
+    ClientSVControlBlock_getResv
+    ClientSVControlBlock_getMsvID
+    ClientSVControlBlock_getDatSet
+    ClientSVControlBlock_getConfRev
+    ClientSVControlBlock_getSmpRate
+    ClientSVControlBlock_getDstAddress
+    ClientSVControlBlock_getOptFlds
+    ClientSVControlBlock_getSmpMod
+    ClientSVControlBlock_getNoASDU

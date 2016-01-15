@@ -71,6 +71,9 @@
 /* Set to 1 to include GOOSE support in the build. Otherwise set to 0 */
 #cmakedefine01 CONFIG_INCLUDE_GOOSE_SUPPORT
 
+/* Set to 1 to include Sampled Values support in the build. Otherwise set to 0 */
+#cmakedefine01 CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT
+
 #ifdef _WIN32
 
 /* GOOSE will be disabled for Windows if ethernet support (winpcap) is not available */

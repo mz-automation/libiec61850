@@ -23,6 +23,8 @@
 #define DEBUG_MMS_SERVER 0
 #define DEBUG_GOOSE_SUBSCRIBER 0
 #define DEBUG_GOOSE_PUBLISHER 0
+#define DEBUG_SV_SUBSCRIBER 0
+#define DEBUG_HAL_ETHERNET 0
 
 /* Maximum MMS PDU SIZE - default is 65000 */
 #define CONFIG_MMS_MAXIMUM_PDU_SIZE 65000
@@ -34,7 +36,7 @@
  * 0 ==> server runs in multi-threaded mode (one thread for each connection and
  * one server background thread )
  */
-#define CONFIG_MMS_SINGLE_THREADED 0
+#define CONFIG_MMS_SINGLE_THREADED 1
 
 /*
  * Optimize stack for threadless operation - don't use semaphores
@@ -67,11 +69,13 @@
 /* Ethernet interface ID for GOOSE and SV */
 #define CONFIG_ETHERNET_INTERFACE_ID "eth0"
 //#define CONFIG_ETHERNET_INTERFACE_ID "vboxnet0"
-//#define CONFIG_ETHERNET_INTERFACE_ID "eth-f"
 //#define CONFIG_ETHERNET_INTERFACE_ID "en0"  // OS X uses enX in place of ethX as ethernet NIC names.
 
 /* Set to 1 to include GOOSE support in the build. Otherwise set to 0 */
 #define CONFIG_INCLUDE_GOOSE_SUPPORT 1
+
+/* Set to 1 to include Sampled Values support in the build. Otherwise set to 0 */
+#define CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT 1
 
 #ifdef _WIN32
 
@@ -98,9 +102,14 @@
 /* The number of GOOSE retransmissions after an event */
 #define CONFIG_GOOSE_EVENT_RETRANSMISSION_COUNT 2
 
-/* Define if GOOSE control block elements are writable (1) or read-only (0) */
-#define CONFIG_GOOSE_GOID_WRITABLE 1
-#define CONFIG_GOOSE_DATSET_WRITABLE 1
+/* Define if GOOSE control block elements are writable (1) or read-only (0)
+ *
+ * WARNING: To be compliant with the IEC 61850-8-1 standard all GoCB elements
+ * but GoEna have to be read-only!
+ *
+ * */
+#define CONFIG_GOOSE_GOID_WRITABLE 0
+#define CONFIG_GOOSE_DATSET_WRITABLE 0
 #define CONFIG_GOOSE_CONFREV_WRITABLE 0
 #define CONFIG_GOOSE_NDSCOM_WRITABLE 0
 #define CONFIG_GOOSE_DSTADDRESS_WRITABLE 0
@@ -129,6 +138,9 @@
 /* include support for IEC 61850 reporting services */
 #define CONFIG_IEC61850_REPORT_SERVICE 1
 
+/* support buffered report control blocks with ResvTms field */
+#define CONFIG_IEC61850_BRCB_WITH_RESVTMS 0
+
 /* The default buffer size of buffered RCBs in bytes */
 #define CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE 65536
 
@@ -141,7 +153,7 @@
 /* default results for MMS identify service */
 #define CONFIG_DEFAULT_MMS_VENDOR_NAME "libiec61850.com"
 #define CONFIG_DEFAULT_MMS_MODEL_NAME "LIBIEC61850"
-#define CONFIG_DEFAULT_MMS_REVISION "0.8.7"
+#define CONFIG_DEFAULT_MMS_REVISION "0.9.0"
 
 /* MMS virtual file store base path - where file services are looking for files */
 #define CONFIG_VIRTUAL_FILESTORE_BASEPATH "./vmd-filestore/"

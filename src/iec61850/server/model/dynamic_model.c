@@ -327,7 +327,7 @@ GSEControlBlock_create(const char* name, LogicalNode* parent, char* appId, char*
     else
         self->dataSetName = NULL;
 
-    self->confRef = confRef;
+    self->confRev = confRef;
     self->fixedOffs = fixedOffs;
     self->minTime = minTime;
     self->maxTime = maxTime;
@@ -342,14 +342,47 @@ GSEControlBlock_create(const char* name, LogicalNode* parent, char* appId, char*
     return self;
 }
 
-static void
+SVControlBlock*
+SVControlBlock_create(const char* name, LogicalNode* parent, char* svID, char* dataSet, uint32_t confRev, uint8_t smpMod,
+        uint16_t smpRate, uint8_t optFlds, bool isUnicast)
+{
+    SVControlBlock* self = (SVControlBlock*) GLOBAL_MALLOC(sizeof(SVControlBlock));
+
+    self->name = copyString(name);
+    self->parent = parent;
+
+    self->svId = copyString(svID); /* Is there a default value? */
+
+    if (dataSet)
+        self->dataSetName = copyString(dataSet);
+    else
+        self->dataSetName = NULL;
+
+    self->confRev = confRev;
+
+    self->smpMod = smpMod;
+    self->smpRate = smpRate;
+
+    self->optFlds = optFlds;
+    self->isUnicast = isUnicast;
+
+    return self;
+}
+
+void
+SVControlBlock_addPhyComAddress(SVControlBlock* self, PhyComAddress* phyComAddress)
+{
+    self->dstAddress = phyComAddress;
+}
+
+void
 GSEControlBlock_addPhyComAddress(GSEControlBlock* self, PhyComAddress* phyComAddress)
 {
     self->address = phyComAddress;
 }
 
 PhyComAddress*
-PhyComAddress_create(GSEControlBlock* parent, uint8_t vlanPriority, uint16_t vlanId, uint16_t appId, uint8_t dstAddress[])
+PhyComAddress_create(uint8_t vlanPriority, uint16_t vlanId, uint16_t appId, uint8_t dstAddress[])
 {
     PhyComAddress* self = (PhyComAddress*) GLOBAL_MALLOC(sizeof(PhyComAddress));
 
@@ -358,9 +391,6 @@ PhyComAddress_create(GSEControlBlock* parent, uint8_t vlanPriority, uint16_t vla
     self->appId = appId;
 
     memcpy(self->dstAddress, dstAddress, 6);
-
-    if (parent != NULL)
-        GSEControlBlock_addPhyComAddress(parent, self);
 
     return self;
 }

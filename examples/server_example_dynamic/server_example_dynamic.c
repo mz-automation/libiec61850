@@ -57,6 +57,8 @@ int main(int argc, char** argv) {
     ReportControlBlock_create("events01", lln0, "events01", false, NULL, 1, TRG_OPT_DATA_CHANGED, rptOptions, 50, 0);
     ReportControlBlock_create("events02", lln0, "events02", false, NULL, 1, TRG_OPT_DATA_CHANGED, rptOptions, 50, 0);
 
+    GSEControlBlock_create("gse01", lln0, "events01", "events", 1, false, 200, 3000);
+
     /*********************
      * run server
      ********************/
@@ -81,9 +83,8 @@ int main(int argc, char** argv) {
 	while (running) {
 	    IedServer_lockDataModel(iedServer);
 
-	    MmsValue_setFloat(temperatureValue->mmsValue, val);
-	    MmsValue_setUtcTimeMs(temperatureTimestamp->mmsValue, Hal_getTimeInMs());
-	    IedServer_updateAttributeValue(iedServer, temperatureValue, temperatureValue->mmsValue);
+	    IedServer_updateUTCTimeAttributeValue(iedServer, temperatureTimestamp, Hal_getTimeInMs())
+	    IedServer_updateFloatAttributeValue(iedServer, temperatureValue, val);
 
 	    IedServer_unlockDataModel(iedServer);
 

@@ -58,6 +58,7 @@ set (lib_common_SRCS
 ./iec61850/client/client_control.c
 ./iec61850/client/client_report_control.c
 ./iec61850/client/client_goose_control.c
+./iec61850/client/client_sv_control.c
 ./iec61850/client/client_report.c
 ./iec61850/client/ied_connection.c
 ./iec61850/common/iec61850_common.c
@@ -71,7 +72,7 @@ set (lib_common_SRCS
 ./iec61850/server/mms_mapping/mms_mapping.c
 ./iec61850/server/mms_mapping/reporting.c
 ./iec61850/server/mms_mapping/mms_goose.c
-
+./iec61850/server/mms_mapping/mms_sv.c
 )
 
 set (lib_asn1c_SRCS
@@ -173,6 +174,10 @@ set (lib_goose_SRCS
 ./goose/goose_publisher.c
 )
 
+set (lib_sv_SRCS
+./sampled_values/sv_subscriber.c
+)
+
 set (lib_linux_SRCS
 ./hal/socket/linux/socket_linux.c
 ./hal/ethernet/linux/ethernet_linux.c
@@ -213,6 +218,8 @@ set_source_files_properties(${lib_common_SRCS} ${lib_windows_SRCS}
 IF(WITH_WPCAP)
 set_source_files_properties(${lib_goose_SRCS}
                                        PROPERTIES LANGUAGE CXX)
+set_source_files_properties(${lib_sv_SRCS}
+                                       PROPERTIES LANGUAGE CXX)                                                                           
 ELSE()
 add_definitions(-DEXCLUDE_ETHERNET_WINDOWS)
 ENDIF()
@@ -225,16 +232,17 @@ include_directories(
 
 IF(WITH_WPCAP)
 set (library_SRCS
-	${lib_common_SRCS}
-	${lib_asn1c_SRCS}
-	${lib_goose_SRCS}
+    ${lib_common_SRCS}
+    ${lib_asn1c_SRCS}
+    ${lib_goose_SRCS}
+    ${lib_sv_SRCS}
     ${lib_windows_SRCS}
 )
 
 ELSE()
 set (library_SRCS
-	${lib_common_SRCS}
-	${lib_asn1c_SRCS}
+    ${lib_common_SRCS}
+    ${lib_asn1c_SRCS}
     ${lib_windows_SRCS}
 )
 
@@ -243,23 +251,26 @@ ENDIF(WITH_WPCAP)
 ELSEIF(UNIX)
 IF(APPLE)
 set (library_SRCS
-	${lib_common_SRCS}
-	${lib_asn1c_SRCS}
-	${lib_goose_SRCS}
+    ${lib_common_SRCS}
+    ${lib_asn1c_SRCS}
+    ${lib_goose_SRCS}
+    ${lib_sv_SRCS}
     ${lib_bsd_SRCS}
 )
 ELSEIF(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
 set (library_SRCS
-	${lib_common_SRCS}
-	${lib_asn1c_SRCS}
-	${lib_goose_SRCS}
+    ${lib_common_SRCS}
+    ${lib_asn1c_SRCS}
+    ${lib_goose_SRCS}
+    ${lib_sv_SRCS}
     ${lib_bsd_SRCS}
 )
 ELSE()
 set (library_SRCS
-	${lib_common_SRCS}
-	${lib_asn1c_SRCS}
-	${lib_goose_SRCS}
+    ${lib_common_SRCS}
+    ${lib_asn1c_SRCS}
+    ${lib_goose_SRCS}
+    ${lib_sv_SRCS}
     ${lib_linux_SRCS}	
 )
 ENDIF(APPLE)

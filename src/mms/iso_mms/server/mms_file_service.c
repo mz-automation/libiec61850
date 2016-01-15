@@ -437,7 +437,7 @@ encodeFileSpecification(uint8_t tag, char* fileSpecification, uint8_t* buffer, i
 }
 
 static int
-addFileEntriesToResponse(uint8_t* buffer, int bufPos, int maxBufSize, char* directoryName, char* continueAfterFileName, bool* moreFollows)
+addFileEntriesToResponse(uint8_t* buffer, int bufPos, int maxBufSize, char* directoryName, char** continueAfterFileName, bool* moreFollows)
 {
 	int directoryNameLength = strlen(directoryName);
 
@@ -464,9 +464,10 @@ addFileEntriesToResponse(uint8_t* buffer, int bufPos, int maxBufSize, char* dire
             		break;
             }
             else {
-            	if (continueAfterFileName != NULL) {
-					if (strcmp(continueAfterFileName, directoryName) == 0)
-						continueAfterFileName = NULL;
+            	if (*continueAfterFileName != NULL) {
+					if (strcmp(*continueAfterFileName, directoryName) == 0) {
+						*continueAfterFileName = NULL;
+					}
 				}
 				else {
 					uint64_t msTime;
@@ -517,9 +518,9 @@ addFileEntriesToResponse(uint8_t* buffer, int bufPos, int maxBufSize, char* dire
 }
 
 static void
-createFileDirectoryResponse(uint32_t invokeId, ByteBuffer* response, char* directoryName, char* continueAfterFileName)
+createFileDirectoryResponse(uint32_t invokeId, ByteBuffer* response, int maxPduSize, char* directoryName, char* continueAfterFileName)
 {
-    int maxSize = response->maxSize - 3; /* reserve space for moreFollows */
+    int maxSize = maxPduSize - 3; /* reserve space for moreFollows */
     uint8_t* buffer = response->buffer;
 
     bool moreFollows = false;
@@ -533,7 +534,7 @@ createFileDirectoryResponse(uint32_t invokeId, ByteBuffer* response, char* direc
             continueAfterFileName = NULL;
     }
 
-    tempCurPos = addFileEntriesToResponse(buffer, tempCurPos, maxSize, directoryName, continueAfterFileName, &moreFollows);
+    tempCurPos = addFileEntriesToResponse(buffer, tempCurPos, maxSize, directoryName, &continueAfterFileName, &moreFollows);
 
 	if (tempCurPos < 0) {
 
@@ -708,7 +709,9 @@ mmsServer_handleFileDirectoryRequest(
 
     }
 
-    createFileDirectoryResponse(invokeId, response, filename, continueAfter);
+    int maxPduSize = connection->maxPduSize;
+
+    createFileDirectoryResponse(invokeId, response, maxPduSize, filename, continueAfter);
 }
 
 #endif /* MMS_FILE_SERVICE == 1 */

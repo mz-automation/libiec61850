@@ -43,6 +43,10 @@
 
 #if (CONFIG_IEC61850_REPORT_SERVICE == 1)
 
+#ifndef CONFIG_IEC61850_BRCB_WITH_RESVTMS
+#define CONFIG_IEC61850_BRCB_WITH_RESVTMS 0
+#endif
+
 static ReportBuffer*
 ReportBuffer_create(void)
 {
@@ -53,7 +57,7 @@ ReportBuffer_create(void)
     self->memoryBlockSize = CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE;
     self->memoryBlock = (uint8_t*) GLOBAL_MALLOC(self->memoryBlockSize);
     self->reportsCount = 0;
-    self->isOverflow = false;
+    self->isOverflow = true;
 
     return self;
 }
@@ -216,10 +220,15 @@ ReportControl_getRCBValue(ReportControl* rc, char* elementName)
             return MmsValue_getElement(rc->rcbValues, 11);
         else if (strcmp(elementName, "TimeofEntry") == 0)
             return MmsValue_getElement(rc->rcbValues, 12);
+#if (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1)
         else if (strcmp(elementName, "ResvTms") == 0)
             return MmsValue_getElement(rc->rcbValues, 13);
         else if (strcmp(elementName, "Owner") == 0)
             return MmsValue_getElement(rc->rcbValues, 14);
+#else
+        else if (strcmp(elementName, "Owner") == 0)
+            return MmsValue_getElement(rc->rcbValues, 13);
+#endif
     } else {
         if (strcmp(elementName, "RptID") == 0)
             return MmsValue_getElement(rc->rcbValues, 0);
@@ -499,15 +508,30 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
 
             if (dataSet == NULL) {
 
-                /* check if association specific data set is requested */
-                if (dataSetName[0] == '@') {
-                    if (connection != NULL) {
-                        MmsNamedVariableList mmsVariableList
-                            = MmsServerConnection_getNamedVariableList(connection, dataSetName + 1);
 
-                        if (mmsVariableList != NULL)
-                            dataSet = MmsMapping_createDataSetByNamedVariableList(mapping, mmsVariableList);
+                /* check if association specific data set is requested */
+
+
+                if (dataSetName[0] == '@') {
+
+                    if (rc->buffered == false) { /* for buffered report non-permanent datasets are not allowed */
+                        if (connection != NULL) {
+                            MmsNamedVariableList mmsVariableList
+                                = MmsServerConnection_getNamedVariableList(connection, dataSetName + 1);
+
+                            if (mmsVariableList != NULL)
+                                dataSet = MmsMapping_createDataSetByNamedVariableList(mapping, mmsVariableList);
+                        }
                     }
+
+                }
+
+                /* check for VMD specific data set */
+                else if (dataSetName[0] == '/') {
+                    MmsNamedVariableList mmsVariableList = MmsDevice_getNamedVariableListWithName(mapping->mmsDevice, dataSetName + 1);
+
+                    if (mmsVariableList != NULL)
+                        dataSet = MmsMapping_createDataSetByNamedVariableList(mapping, mmsVariableList);
                 }
             }
 
@@ -634,7 +658,7 @@ refreshTriggerOptions(ReportControl* rc)
 static void
 purgeBuf(ReportControl* rc)
 {
-    if (DEBUG_IED_SERVER) printf("reporting.c: run purgeBuf\n");
+    if (DEBUG_IED_SERVER) printf("IED_SERVER: reporting.c: run purgeBuf\n");
 
     ReportBuffer* reportBuffer = rc->reportBuffer;
 
@@ -836,15 +860,23 @@ createBufferedReportControlBlock(ReportControlBlock* reportControlBlock,
     rcb->name = copyString(reportControlBlock->name);
     rcb->type = MMS_STRUCTURE;
 
+    int brcbElementCount;
+
+#if (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1)
+    brcbElementCount = 15;
+#else
+    brcbElementCount = 14;
+#endif
+
+
     MmsValue* mmsValue = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
     mmsValue->deleteValue = false;
     mmsValue->type = MMS_STRUCTURE;
-    mmsValue->value.structure.size = 15;
-    mmsValue->value.structure.components = (MmsValue**) GLOBAL_CALLOC(15, sizeof(MmsValue*));
+    mmsValue->value.structure.size = brcbElementCount;
+    mmsValue->value.structure.components = (MmsValue**) GLOBAL_CALLOC(brcbElementCount, sizeof(MmsValue*));
 
-    rcb->typeSpec.structure.elementCount = 15;
-
-    rcb->typeSpec.structure.elements = (MmsVariableSpecification**) GLOBAL_CALLOC(15,
+    rcb->typeSpec.structure.elementCount = brcbElementCount;
+    rcb->typeSpec.structure.elements = (MmsVariableSpecification**) GLOBAL_CALLOC(brcbElementCount,
             sizeof(MmsVariableSpecification*));
 
     MmsVariableSpecification* namedVariable = 
@@ -957,19 +989,24 @@ createBufferedReportControlBlock(ReportControlBlock* reportControlBlock,
 
     reportControl->timeOfEntry = mmsValue->value.structure.components[12];
 
+    int currentIndex = 13;
+
+#if (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1)
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
     namedVariable->name = copyString("ResvTms");
-    namedVariable->type = MMS_UNSIGNED;
-    namedVariable->typeSpec.unsignedInteger = 32;
-    rcb->typeSpec.structure.elements[13] = namedVariable;
-    mmsValue->value.structure.components[13] = MmsValue_newUnsigned(32);
+    namedVariable->type = MMS_INTEGER;
+    namedVariable->typeSpec.integer = 16;
+    rcb->typeSpec.structure.elements[currentIndex] = namedVariable;
+    mmsValue->value.structure.components[currentIndex] = MmsValue_newInteger(16);
+    currentIndex++;
+#endif /* (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1) */
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
     namedVariable->name = copyString("Owner");
     namedVariable->type = MMS_OCTET_STRING;
     namedVariable->typeSpec.octetString = -64;
-    rcb->typeSpec.structure.elements[14] = namedVariable;
-    mmsValue->value.structure.components[14] = MmsValue_newOctetString(0, 4); /* size 4 is enough to store client IPv4 address */
+    rcb->typeSpec.structure.elements[currentIndex] = namedVariable;
+    mmsValue->value.structure.components[currentIndex] = MmsValue_newOctetString(0, 128); /* size 4 is enough to store client IPv4 address */
 
     reportControl->rcbValues = mmsValue;
 
@@ -1143,6 +1180,24 @@ updateOwner(ReportControl* rc, MmsServerConnection connection)
 #endif /* CONFIG_REPORTING_SUPPORTS_OWNER == 1*/
 }
 
+
+static bool
+checkForZeroEntryID(MmsValue* value)
+{
+    uint8_t* buffer = MmsValue_getOctetStringBuffer(value);
+
+    int i = 0;
+
+    while (i < 8) {
+        if (buffer[i] != 0)
+            return false;
+
+        i++;
+    }
+
+    return true;
+}
+
 static bool
 checkReportBufferForEntryID(ReportControl* rc, MmsValue* value)
 {
@@ -1154,18 +1209,14 @@ checkReportBufferForEntryID(ReportControl* rc, MmsValue* value)
         if (memcmp(entry->entryId, value->value.octetString.buf, 8) == 0) {
             ReportBufferEntry* nextEntryForResync = entry->next;
 
-            if (nextEntryForResync != NULL) {
-                rc->reportBuffer->nextToTransmit = nextEntryForResync;
-                rc->isResync = true;
-            }
-            else {
-                rc->isResync = false;
-                rc->reportBuffer->nextToTransmit = NULL;
-            }
+            rc->reportBuffer->nextToTransmit = nextEntryForResync;
+            rc->isResync = true;
 
             retVal = true;
             break;
         }
+
+        entry = entry->next;
     }
 
     return retVal;
@@ -1202,7 +1253,7 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
             }
 
             if (DEBUG_IED_SERVER)
-                printf("Activate report for client %s\n",
+                printf("IED_SERVER: Activate report for client %s\n",
                         MmsServerConnection_getClientAddress(connection));
 
             if (updateReportDataset(self, rc, NULL, connection)) {
@@ -1213,8 +1264,17 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 
                 MmsValue_update(rptEna, value);
 
+                if (rc->buffered) {
+
+                    if (rc->isResync == false) {
+                        rc->reportBuffer->nextToTransmit = rc->reportBuffer->oldestReport;
+                        rc->reportBuffer->isOverflow = true;
+                    }
+
+                    rc->isResync = false;
+                }
+
                 rc->enabled = true;
-                rc->isResync = false;
                 rc->gi = false;
 
                 refreshBufferTime(rc);
@@ -1245,10 +1305,14 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
             }
 
             if (DEBUG_IED_SERVER)
-                printf("Deactivate report for client %s\n",
+                printf("IED_SERVER: Deactivate report for client %s\n",
                         MmsServerConnection_getClientAddress(connection));
 
-            if (rc->buffered == false) {
+            if (rc->buffered) {
+                rc->reportBuffer->isOverflow = true;
+                rc->isResync = false;
+            }
+            else {
                 GLOBAL_FREEMEM(rc->inclusionFlags);
                 rc->inclusionFlags = NULL;
 
@@ -1270,8 +1334,10 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
     if (strcmp(elementName, "GI") == 0) {
         if ((rc->enabled) && (rc->clientConnection == connection)) {
 
-            if (MmsValue_getBoolean(value))
-                rc->gi = true;
+            if (MmsValue_getBoolean(value)) {
+                if (rc->triggerOps & TRG_OPT_GI)
+                    rc->gi = true;
+            }
 
             retVal = DATA_ACCESS_ERROR_SUCCESS;
             goto exit_function;
@@ -1321,7 +1387,6 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
                     increaseConfRev(rc);
                 }
                 else {
-                    printf("BBBBBB\n");
                     retVal = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
                     goto exit_function;
                 }
@@ -1360,19 +1425,30 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 
             goto exit_function;
         }
-        else if (strcmp(elementName, "EntryId") == 0) {
+        else if (strcmp(elementName, "EntryID") == 0) {
+
             if (MmsValue_getOctetStringSize(value) != 8) {
                 retVal = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
                 goto exit_function;
             }
 
-            if (!checkReportBufferForEntryID(rc, value)) {
-                retVal = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
-                goto exit_function;
+            if (checkForZeroEntryID(value) == false) {
+
+                if (!checkReportBufferForEntryID(rc, value)) {
+                    rc->reportBuffer->isOverflow = true;
+                    retVal = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+                    goto exit_function;
+                }
+
+                rc->reportBuffer->isOverflow = false;
+            }
+            else {
+                rc->reportBuffer->nextToTransmit = rc->reportBuffer->oldestReport;
+                rc->reportBuffer->isOverflow = true;
+                rc->isResync = false;
             }
 
             MmsValue* entryID = ReportControl_getRCBValue(rc, elementName);
-
             MmsValue_update(entryID, value);
 
             goto exit_function;
@@ -1392,12 +1468,11 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 
             goto exit_function;
         }
-        else if ((strcmp(elementName, "ConfRev") == 0) || (strcmp(elementName, "SqNum") == 0)) {
-            retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
-            goto exit_function;
-        }
         else if (strcmp(elementName, "RptID") == 0) {
             MmsValue* rptId = ReportControl_getRCBValue(rc, elementName);
+
+            if (rc->buffered)
+                purgeBuf(rc);
 
             if (strlen(MmsValue_toString(value)) == 0)
                 updateWithDefaultRptId(rc, rptId);
@@ -1406,11 +1481,19 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 
             goto exit_function;
         }
+        else if (strcmp(elementName, "ConfRev") == 0) {
+            retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+            goto exit_function;
+        }
         else if (strcmp(elementName, "SqNum") == 0) {
             retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
             goto exit_function;
         }
         else if (strcmp(elementName, "Owner") == 0) {
+            retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+            goto exit_function;
+        }
+        else if (strcmp(elementName, "TimeofEntry") == 0) {
             retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
             goto exit_function;
         }
@@ -1474,6 +1557,7 @@ printEnqueuedReports(ReportControl* reportControl)
 {
     ReportBuffer* rb = reportControl->reportBuffer;
 
+#if 0
     printf("IED_SERVER: --- Enqueued reports ---\n");
 
     if (rb->oldestReport == NULL) {
@@ -1504,7 +1588,8 @@ printEnqueuedReports(ReportControl* reportControl)
             entry = entry->next;
         }
     }
-    printf("IED_SERVER:   reports: %i\n", rb->reportsCount);
+#endif
+    printf("IED_SERVER:   BRCB %s reports: %i\n", reportControl->name, rb->reportsCount);
     printf("IED_SERVER: -------------------------\n");
 }
 
@@ -1517,6 +1602,42 @@ printReportId(ReportBufferEntry* report)
     }
 }
 #endif
+
+
+static void
+removeAllGIReportsFromReportBuffer(ReportBuffer* reportBuffer)
+{
+    ReportBufferEntry* currentReport = reportBuffer->oldestReport;
+    ReportBufferEntry* lastReport = NULL;
+
+    while (currentReport != NULL) {
+        if (currentReport->flags & 2) {
+
+            if (currentReport == reportBuffer->oldestReport) {
+                reportBuffer->oldestReport = currentReport->next;
+            }
+            else {
+                lastReport->next = currentReport->next;
+
+            }
+
+#if (DEBUG_IED_SERVER == 1)
+                printf("IED_SERVER:   REMOVE old GI report with ID ");
+                printReportId(currentReport);
+                printf("\n");
+#endif
+
+            if (reportBuffer->nextToTransmit == currentReport)
+                reportBuffer->nextToTransmit = currentReport->next;
+
+            currentReport = currentReport->next;
+        }
+        else {
+            lastReport = currentReport;
+            currentReport = currentReport->next;
+        }
+    }
+}
 
 static void
 enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_t timeOfEntry)
@@ -1582,6 +1703,8 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
         return;
     }
 
+    if (isGI) removeAllGIReportsFromReportBuffer(buffer);
+
     uint8_t* entryBufPos = NULL;
     uint8_t* entryStartPos;
 
@@ -1605,7 +1728,7 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
 
         if (DEBUG_IED_SERVER) printf ("IED_SERVER: Last buffer offset: %i\n", (int) ((uint8_t*) buffer->lastEnqueuedReport - buffer->memoryBlock));
 
-        if (buffer->lastEnqueuedReport == buffer->oldestReport) { // --> buffer->reportsCount = 1?
+        if (buffer->lastEnqueuedReport == buffer->oldestReport) { /* --> buffer->reportsCount == 1 */
             assert(buffer->reportsCount == 1);
 
             entryBufPos = (uint8_t*) ((uint8_t*) buffer->lastEnqueuedReport + buffer->lastEnqueuedReport->entryLength);
@@ -1639,19 +1762,20 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
             if ((entryBufPos + bufferEntrySize) > (buffer->memoryBlock + buffer->memoryBlockSize)) { /* buffer overflow */
                 entryBufPos = buffer->memoryBlock;
 
+                /* remove old reports until enough space for new entry is available */
                 while ((entryBufPos + bufferEntrySize) > (uint8_t*) buffer->oldestReport) {
                     assert(buffer->oldestReport != NULL);
 
-                    if (buffer->nextToTransmit == buffer->oldestReport)
+                    if (buffer->nextToTransmit == buffer->oldestReport) {
                         buffer->nextToTransmit = buffer->oldestReport->next;
+                        buffer->isOverflow = true;
+                    }
 
 #if (DEBUG_IED_SERVER == 1)
                     printf("IED_SERVER: REMOVE report with ID ");
                     printReportId(buffer->oldestReport);
                     printf("\n");
 #endif
-
-                    buffer->isOverflow = true;
 
                     buffer->oldestReport = buffer->oldestReport->next;
 
@@ -1677,8 +1801,10 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
                 while ((uint8_t*) buffer->oldestReport > buffer->memoryBlock) {
                     assert(buffer->oldestReport != NULL);
 
-                    if (buffer->nextToTransmit == buffer->oldestReport)
+                    if (buffer->nextToTransmit == buffer->oldestReport) {
                         buffer->nextToTransmit = buffer->oldestReport->next;
+                        buffer->isOverflow = true;
+                    }
 
 #if (DEBUG_IED_SERVER == 1)
                     printf("IED_SERVER: REMOVE report with ID ");
@@ -1697,8 +1823,10 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
 
                     assert(buffer->oldestReport != NULL);
 
-                    if (buffer->nextToTransmit == buffer->oldestReport)
+                    if (buffer->nextToTransmit == buffer->oldestReport) {
                         buffer->nextToTransmit = buffer->oldestReport->next;
+                        buffer->isOverflow = true;
+                    }
 
 #if (DEBUG_IED_SERVER == 1)
                     printf("IED_SERVER: REMOVE report with ID ");
@@ -1718,8 +1846,10 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
 
                     assert(buffer->oldestReport != NULL);
 
-                    if (buffer->nextToTransmit == buffer->oldestReport)
+                    if (buffer->nextToTransmit == buffer->oldestReport) {
                         buffer->nextToTransmit = buffer->oldestReport->next;
+                        buffer->isOverflow = true;
+                    }
 
 #if (DEBUG_IED_SERVER == 1)
                     printf("IED_SERVER: REMOVE report with ID ");
@@ -1930,8 +2060,10 @@ sendNextReportEntry(ReportControl* self)
     	if (timeOfEntry == NULL) goto return_out_of_memory;
 
     	timeOfEntry->deleteValue = 0;
-    	timeOfEntry->type = MMS_UTC_TIME;
-    	MmsValue_setUtcTimeMs(timeOfEntry, report->timeOfEntry);
+    	timeOfEntry->type = MMS_BINARY_TIME;
+    	timeOfEntry->value.binaryTime.size = 6;
+
+    	MmsValue_setBinaryTime(timeOfEntry, report->timeOfEntry);
 
         if (MemAllocLinkedList_add(reportElements, timeOfEntry) == NULL)
             goto return_out_of_memory;

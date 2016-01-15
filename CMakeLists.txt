@@ -10,8 +10,8 @@ endif()
 project(libiec61850)
 
 set(LIB_VERSION_MAJOR "0")
-set(LIB_VERSION_MINOR "8")
-set(LIB_VERSION_PATCH "7")
+set(LIB_VERSION_MINOR "9")
+set(LIB_VERSION_PATCH "0")
 
 # feature checks
 include(CheckLibraryExists)
@@ -59,6 +59,7 @@ include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}/config
     src/common/inc
     src/goose
+    src/sampled_values
     src/hal/inc
     src/iec61850/inc
     src/iec61850/inc_private
@@ -75,27 +76,28 @@ set(API_HEADERS
     src/common/inc/linked_list.h
     src/common/inc/byte_buffer.h
     src/common/inc/lib_memory.h
-	src/iec61850/inc/iec61850_client.h
-	src/iec61850/inc/iec61850_common.h
-	src/iec61850/inc/iec61850_server.h
-	src/iec61850/inc/iec61850_model.h
-	src/iec61850/inc/iec61850_cdc.h
-	src/iec61850/inc/iec61850_dynamic_model.h
-	src/iec61850/inc/iec61850_config_file_parser.h
-	src/mms/inc/mms_value.h
-	src/mms/inc/mms_common.h
-	src/mms/inc/mms_types.h
-	src/mms/inc/mms_device_model.h
-	src/mms/inc/mms_server.h
-	src/mms/inc/mms_named_variable_list.h
-	src/mms/inc/mms_type_spec.h
-	src/mms/inc/mms_client_connection.h
-	src/mms/inc/iso_connection_parameters.h
-	src/mms/inc/iso_server.h
-	src/mms/inc/ber_integer.h
-	src/mms/inc/asn1_ber_primitive_value.h
-	src/goose/goose_subscriber.h
-	src/goose/goose_receiver.h
+    src/iec61850/inc/iec61850_client.h
+    src/iec61850/inc/iec61850_common.h
+    src/iec61850/inc/iec61850_server.h
+    src/iec61850/inc/iec61850_model.h
+    src/iec61850/inc/iec61850_cdc.h
+    src/iec61850/inc/iec61850_dynamic_model.h
+    src/iec61850/inc/iec61850_config_file_parser.h
+    src/mms/inc/mms_value.h
+    src/mms/inc/mms_common.h
+    src/mms/inc/mms_types.h
+    src/mms/inc/mms_device_model.h
+    src/mms/inc/mms_server.h
+    src/mms/inc/mms_named_variable_list.h
+    src/mms/inc/mms_type_spec.h
+    src/mms/inc/mms_client_connection.h
+    src/mms/inc/iso_connection_parameters.h
+    src/mms/inc/iso_server.h
+    src/mms/inc/ber_integer.h
+    src/mms/inc/asn1_ber_primitive_value.h
+    src/goose/goose_subscriber.h
+    src/goose/goose_receiver.h
+    src/sampled_values/sv_subscriber.h
 )
 
 IF(WIN32)

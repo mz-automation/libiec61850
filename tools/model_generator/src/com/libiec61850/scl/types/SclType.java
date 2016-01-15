@@ -26,10 +26,11 @@ import org.w3c.dom.Node;
 import com.libiec61850.scl.ParserUtils;
 import com.libiec61850.scl.SclParserException;
 
-public class SclType {
+public abstract class SclType {
 	
 	private String id = null;
 	private String description;
+	private boolean isUsed = false;
 	
 	public SclType(Node xmlNode) throws SclParserException {
 		this.id = ParserUtils.parseAttribute(xmlNode, "id");
@@ -50,5 +51,13 @@ public class SclType {
 
 	public String getDesc() {
 		return description;
+	}
+	
+	public void setUsed(boolean isUsed) {
+	    this.isUsed = isUsed;
+	}
+	
+	public boolean isUsed() {
+	    return this.isUsed;
 	}
 }

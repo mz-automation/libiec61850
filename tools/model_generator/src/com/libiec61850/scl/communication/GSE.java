@@ -31,7 +31,7 @@ public class GSE {
     private String ldInst;
     private String cbName;
     
-    private GSEAddress address;
+    private PhyComAddress address;
     
     public GSE(Node gseNode) throws SclParserException {
         ldInst = ParserUtils.parseAttribute(gseNode, "ldInst");
@@ -45,7 +45,7 @@ public class GSE {
         if (addressNode == null)
             throw new SclParserException(gseNode, "GSE is missing address definition!");
         
-        address = new GSEAddress(addressNode);
+        address = new PhyComAddress(addressNode);
     }
 
     public String getLdInst() {
@@ -56,7 +56,7 @@ public class GSE {
         return cbName;
     }
 
-    public GSEAddress getAddress() {
+    public PhyComAddress getAddress() {
         return address;
     }
 

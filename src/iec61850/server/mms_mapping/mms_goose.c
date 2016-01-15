@@ -305,24 +305,20 @@ MmsGooseControlBlock_checkAndPublish(MmsGooseControlBlock self, uint64_t current
         GoosePublisher_publish(self->publisher, self->dataSetValues);
 
         if (self->retransmissionsLeft > 0) {
-            self->nextPublishTime = currentTime + CONFIG_GOOSE_EVENT_RETRANSMISSION_INTERVAL;
+            self->nextPublishTime = currentTime + self->minTime;
 
 
             if (self->retransmissionsLeft > 1)
-                GoosePublisher_setTimeAllowedToLive(self->publisher,
-                        CONFIG_GOOSE_EVENT_RETRANSMISSION_INTERVAL * 3);
+                GoosePublisher_setTimeAllowedToLive(self->publisher, self->minTime * 3);
             else
-                GoosePublisher_setTimeAllowedToLive(self->publisher,
-                        CONFIG_GOOSE_STABLE_STATE_TRANSMISSION_INTERVAL * 3);
+                GoosePublisher_setTimeAllowedToLive(self->publisher, self->maxTime * 3);
 
             self->retransmissionsLeft--;
         }
         else {
-            GoosePublisher_setTimeAllowedToLive(self->publisher,
-                                CONFIG_GOOSE_STABLE_STATE_TRANSMISSION_INTERVAL * 3);
+            GoosePublisher_setTimeAllowedToLive(self->publisher, self->maxTime * 3);
 
-            self->nextPublishTime = currentTime +
-                CONFIG_GOOSE_STABLE_STATE_TRANSMISSION_INTERVAL;
+            self->nextPublishTime = currentTime + self->maxTime;
         }
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
@@ -343,18 +339,14 @@ MmsGooseControlBlock_observedObjectChanged(MmsGooseControlBlock self)
     self->retransmissionsLeft = CONFIG_GOOSE_EVENT_RETRANSMISSION_COUNT;
 
     if (self->retransmissionsLeft > 0) {
-        self->nextPublishTime = currentTime +
-                CONFIG_GOOSE_EVENT_RETRANSMISSION_INTERVAL;
+        self->nextPublishTime = currentTime + self->minTime;
 
-        GoosePublisher_setTimeAllowedToLive(self->publisher,
-                           CONFIG_GOOSE_EVENT_RETRANSMISSION_INTERVAL * 3);
+        GoosePublisher_setTimeAllowedToLive(self->publisher, self->minTime * 3);
     }
     else {
-        self->nextPublishTime = currentTime +
-            CONFIG_GOOSE_STABLE_STATE_TRANSMISSION_INTERVAL;
+        self->nextPublishTime = currentTime + self->maxTime;
 
-        GoosePublisher_setTimeAllowedToLive(self->publisher,
-                           CONFIG_GOOSE_STABLE_STATE_TRANSMISSION_INTERVAL * 3);
+        GoosePublisher_setTimeAllowedToLive(self->publisher, self->maxTime * 3);
     }
 
     GoosePublisher_publish(self->publisher, self->dataSetValues);
@@ -550,7 +542,7 @@ GOOSE_createGOOSEControlBlocks(MmsMapping* self, MmsDomain* domain,
 
         MmsValue* confRef = MmsValue_getElement(gseValues, 3);
 
-        MmsValue_setUint32(confRef, gooseControlBlock->confRef);
+        MmsValue_setUint32(confRef, gooseControlBlock->confRev);
 
         mmsGCB->dataSet = NULL;
 
@@ -587,5 +579,5 @@ GOOSE_createGOOSEControlBlocks(MmsMapping* self, MmsDomain* domain,
     return namedVariable;
 }
 
-#endif
+#endif /* (CONFIG_INCLUDE_GOOSE_SUPPORT == 1) */
 

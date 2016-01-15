@@ -183,7 +183,7 @@ SettingGroupControlBlock_create(LogicalNode* parent, uint8_t actSG, uint8_t numO
  * \param parent the parent LN
  * \param appId the application ID of the GoCB
  * \param dataSet the data set reference to be used by the GoCB
- * \param confRef the configuration revision
+ * \param confRev the configuration revision
  * \param fixedOffs indicates if GOOSE publisher shall use fixed offsets (NOT YET SUPPORTED)
  * \param minTime minimum GOOSE retransmission time (-1 if not specified - uses stack default then)
  * \param maxTime GOOSE retransmission time in stable state (-1 if not specified - uses stack default then)
@@ -191,15 +191,40 @@ SettingGroupControlBlock_create(LogicalNode* parent, uint8_t actSG, uint8_t numO
  * \return the new GoCB instance
  */
 GSEControlBlock*
-GSEControlBlock_create(const char* name, LogicalNode* parent, char* appId, char* dataSet, uint32_t confRef,
+GSEControlBlock_create(const char* name, LogicalNode* parent, char* appId, char* dataSet, uint32_t confRev,
         bool fixedOffs, int minTime, int maxTime);
 
 /**
- * \brief create a PhyComAddress object and add it to a GoCB
+ * \brief create a new Multicast/Unicast Sampled Value (SV) control block (SvCB)
  *
- * A PhyComAddress object contains all required addressing informations for a GOOSE publisher.
+ * Create a new Sampled Value control block (SvCB) and add it to the given logical node (LN)
  *
- * \param parent the parent GSEControlBlock object
+ * \param name name of the SvCB relative to the parent LN
+ * \param parent the parent LN
+ * \param svID the application ID of the SvCB
+ * \param dataSet the data set reference to be used by the SVCB
+ * \param confRev the configuration revision
+ * \param smpMod the sampling mode used
+ * \param smpRate the sampling rate used
+ * \param optFlds the optional element configuration
+ *
+ * \return the new SvCB instance
+ */
+SVControlBlock*
+SVControlBlock_create(const char* name, LogicalNode* parent, char* svID, char* dataSet, uint32_t confRev, uint8_t smpMod,
+        uint16_t smpRate, uint8_t optFlds, bool isUnicast);
+
+void
+SVControlBlock_addPhyComAddress(SVControlBlock* self, PhyComAddress* phyComAddress);
+
+void
+GSEControlBlock_addPhyComAddress(GSEControlBlock* self, PhyComAddress* phyComAddress);
+
+/**
+ * \brief create a PhyComAddress object
+ *
+ * A PhyComAddress object contains all required addressing information for a GOOSE publisher.
+ *
  * \param vlanPriority the priority field of the VLAN tag
  * \param vlanId the ID field of the VLAN tag
  * \param appId the application identifier
@@ -208,7 +233,7 @@ GSEControlBlock_create(const char* name, LogicalNode* parent, char* appId, char*
  * \return the new PhyComAddress object
  */
 PhyComAddress*
-PhyComAddress_create(GSEControlBlock* parent, uint8_t vlanPriority, uint16_t vlanId, uint16_t appId, uint8_t dstAddress[]);
+PhyComAddress_create(uint8_t vlanPriority, uint16_t vlanId, uint16_t appId, uint8_t dstAddress[]);
 
 /**
  * \brief create a new data set

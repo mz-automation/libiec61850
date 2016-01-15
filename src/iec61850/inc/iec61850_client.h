@@ -1,7 +1,7 @@
 /*
  *  iec61850_client.h
  *
- *  Copyright 2013, 2014 Michael Zillgith
+ *  Copyright 2013, 2014, 2015 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -303,6 +303,138 @@ IedConnection_installConnectionClosedHandler(IedConnection self, IedConnectionCl
  */
 MmsConnection
 IedConnection_getMmsConnection(IedConnection self);
+
+/** @} */
+
+/**
+ * @defgroup IEC61850_CLIENT_SV Client side SV control block handling functions
+ *
+ * @{
+ */
+
+/** SV ASDU contains attribute RefrTm */
+#define IEC61850_SV_OPT_REFRESH_TIME 1
+
+/** SV ASDU contains attribute SmpSynch */
+#define IEC61850_SV_OPT_SAMPLE_SYNC 2
+
+/** SV ASDU contains attribute SmpRate */
+#define IEC61850_SV_OPT_SAMPLE_RATE 4
+
+/** SV ASDU contains attribute DatSet */
+#define IEC61850_SV_OPT_DATA_SET 8
+
+/** SV ASDU contains attribute Security */
+#define IEC61850_SV_OPT_SECURITY 16
+
+
+/** an opaque handle to the instance data of a ClientSVControlBlock object */
+typedef struct sClientSVControlBlock* ClientSVControlBlock;
+
+/**
+ * \brief Create a new ClientSVControlBlock instance
+ *
+ *  This function simplifies client side access to server MSV/USV control blocks
+ *  NOTE: Do not use the functions after the IedConnection object is invalidated!
+ *
+ * \param connection the IedConnection object with a valid connection to the server.
+ * \param reference the object reference of the control block
+ *
+ * \return the new instance
+ */
+ClientSVControlBlock
+ClientSVControlBlock_create(IedConnection connection, const char* reference);
+
+/**
+ * \brief Free all resources related to the ClientSVControlBlock instance.
+ *
+ * \param self the ClientSVControlBlock instance to operate on
+ */
+void
+ClientSVControlBlock_destroy(ClientSVControlBlock self);
+
+bool
+ClientSVControlBlock_isMulticast(ClientSVControlBlock self);
+
+/**
+ * \brief Return the error code of the last write or write acccess to the SVCB
+ *
+ * \param self the ClientSVControlBlock instance to operate on
+ *
+ * \return the error code of the last read or write access
+ */
+IedClientError
+ClientSVControlBlock_getLastComError(ClientSVControlBlock self);
+
+
+bool
+ClientSVControlBlock_setSvEna(ClientSVControlBlock self, bool svEna);
+
+bool
+ClientSVControlBlock_getSvEna(ClientSVControlBlock self);
+
+bool
+ClientSVControlBlock_setResv(ClientSVControlBlock self, bool svEna);
+
+bool
+ClientSVControlBlock_getResv(ClientSVControlBlock self);
+
+char*
+ClientSVControlBlock_getMsvID(ClientSVControlBlock self);
+
+/**
+ * \brief Get the (MMS) reference to the data set
+ *
+ * NOTE: the returned string is dynamically allocated with the
+ * GLOBAL_MALLOC macro. The application is responsible to release
+ * the memory when the string is no longer needed.
+ *
+ * \param self the ClientSVControlBlock instance to operate on
+ *
+ * \return the data set reference as a NULL terminated string
+ */
+char*
+ClientSVControlBlock_getDatSet(ClientSVControlBlock self);
+
+uint32_t
+ClientSVControlBlock_getConfRev(ClientSVControlBlock self);
+
+uint16_t
+ClientSVControlBlock_getSmpRate(ClientSVControlBlock self);
+
+
+/**
+ * \brief returns the destination address of the SV publisher
+ *
+ * \param self the ClientSVControlBlock instance to operate on
+ */
+PhyComAddress
+ClientSVControlBlock_getDstAddress(ClientSVControlBlock self);
+
+/**
+ * \brief returns the OptFlds bit string as integer
+ *
+ * \param self the ClientSVControlBlock instance to operate on
+ */
+int
+ClientSVControlBlock_getOptFlds(ClientSVControlBlock self);
+
+/**
+ * \brief returns number of sample mode of the SV publisher
+ *
+ * \param self the ClientSVControlBlock instance to operate on
+ */
+uint8_t
+ClientSVControlBlock_getSmpMod(ClientSVControlBlock self);
+
+/**
+ * \brief returns number of ASDUs included in the SV message
+ *
+ * \param self the ClientSVControlBlock instance to operate on
+ */
+int
+ClientSVControlBlock_getNoASDU(ClientSVControlBlock self);
+
 
 /** @} */
 
@@ -1178,7 +1310,9 @@ IedConnection_readDataSetValues(IedConnection self, IedClientError* error, const
  * \brief create a new data set at the connected server device
  *
  * This function creates a new data set at the server. The parameter dataSetReference is the name of the new data set
- * to create. It is either in the form LDName/LNodeName.dataSetName or @dataSetName for an association specific data set.
+ * to create. It is either in the form LDName/LNodeName.dataSetName for permanent domain or VMD scope data sets or
+ * @dataSetName for an association specific data set. If the LDName part of the reference is missing the resulting
+ * data set will be of VMD scope.
  *
  * The dataSetElements parameter contains a linked list containing the object references of FCDs or FCDAs. The format of
  * this object references is LDName/LNodeName.item(arrayIndex)component[FC].
