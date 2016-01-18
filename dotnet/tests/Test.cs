@@ -74,6 +74,35 @@ namespace tests
 			Assert.AreEqual(octetString, secondOctetString);
 		}
 
+		[Test ()]
+		public void MmsValueFloat() 
+		{
+			var val = new MmsValue ((float) 1234.5678);
+
+			Assert.AreEqual (val.ToFloat (), (float)1234.5678);
+
+			val.SetFloat ((float) 0.1234);
+
+			Assert.AreEqual (val.ToFloat (), (float) 0.1234);
+
+			Assert.AreEqual (val.ToDouble (), (double) 0.1234, (double) 0.0001);
+		}
+
+		[Test ()]
+		public void MmsValueDouble() 
+		{
+			var val = new MmsValue ((double) 1234.5678);
+
+			Assert.AreEqual (val.ToDouble (), (double)1234.5678);
+
+			val.SetDouble ((double) 0.1234);
+
+			Assert.AreEqual (val.ToDouble (), (double) 0.1234);
+
+			Assert.AreEqual (val.ToFloat (), (float)0.1234);
+		}
+
+
 	}
 }
 

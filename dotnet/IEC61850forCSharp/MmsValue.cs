@@ -45,7 +45,13 @@ namespace IEC61850
 			static extern float MmsValue_toFloat (IntPtr self);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern void MmsValue_setFloat (IntPtr self, float value);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern double MmsValue_toDouble (IntPtr self);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern void MmsValue_setDouble (IntPtr self, double newFloatValue);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.I1)]
@@ -90,6 +96,9 @@ namespace IEC61850
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern ulong MmsValue_getUtcTimeInMs (IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern void MmsValue_setUtcTimeMs (IntPtr self, ulong timeval);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern ulong MmsValue_getUtcTimeInMsWithUs(IntPtr self, [Out] uint usec);
@@ -146,13 +155,14 @@ namespace IEC61850
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern void MmsValue_setBinaryTime (IntPtr self, UInt64 timestamp);
 
-
-			internal MmsValue (IntPtr value)
+			// TODO make internal
+			public MmsValue (IntPtr value)
 			{
 				valueReference = value;
 				this.responsableForDeletion = false;
 			}
 
+			// TODO make internal
 			internal MmsValue (IntPtr value, bool responsableForDeletion)
 			{
 				valueReference = value;
@@ -395,6 +405,22 @@ namespace IEC61850
 					throw new MmsValueException ("Value is not a time type");
 			}
 
+			/// <summary>
+			/// Sets the timestamp value as UTC time in ms.
+			/// </summary>
+			/// <description>
+            /// Sets the value as milliseconds since epoch (1.1.1970 UTC).
+            /// The value has to be of type MMS_UTC_TIME.
+			/// </description>
+            /// <exception cref="MmsValueException">This exception is thrown if the value has the wrong type.</exception>
+            public void SetUtcTimeMs(ulong timeval)
+			{
+				if (GetType () == MmsType.MMS_UTC_TIME) {
+                    MmsValue_setUtcTimeMs(valueReference, timeval);
+				} else
+					throw new MmsValueException ("Value is not a time type");
+			}
+
             /// <summary>
             /// Gets the timestamp value as UTC time in ms.
             /// </summary>
@@ -616,6 +642,21 @@ namespace IEC61850
 					throw new MmsValueException ("Value type is not float");
 			}
 
+			/// <summary>
+			/// Sets the float value of an MMS_FLOAT instance
+			/// </summary>
+			/// <param name='value'>
+			/// the new value to set
+			/// </param>
+			/// <exception cref="MmsValueException">This exception is thrown if the value has the wrong type.</exception>
+			public void SetFloat (float value)
+			{
+			    if (GetType () == MmsType.MMS_FLOAT)
+			        MmsValue_setFloat (valueReference, value);
+			    else
+			        throw new MmsValueException ("Value type is not float");
+			}
+
             /// <summary>
             /// Gets the double value of an MMS_FLOAT instance
             /// </summary>
@@ -627,6 +668,21 @@ namespace IEC61850
 			{
 				if (GetType () == MmsType.MMS_FLOAT)
 					return MmsValue_toDouble (valueReference);
+				else
+					throw new MmsValueException ("Value type is not float");
+			}
+						
+			/// <summary>
+			/// Sets the float/double value of an MMS_FLOAT instance
+			/// </summary>
+			/// <param name='value'>
+			/// the new value to set
+			/// </param>
+			/// <exception cref="MmsValueException">This exception is thrown if the value has the wrong type.</exception>
+			public void SetDouble (double value)
+			{
+				if (GetType () == MmsType.MMS_FLOAT)
+					MmsValue_setDouble (valueReference, value);
 				else
 					throw new MmsValueException ("Value type is not float");
 			}
