@@ -485,15 +485,12 @@ singleThreadedServerThread(void* parameter)
 
     while (running) {
 
-        if (IedServer_waitReady(self, 25) > 0) {
+        if (IedServer_waitReady(self, 25) > 0)
             MmsServer_handleIncomingMessages(self->mmsServer);
-            IedServer_performPeriodicTasks(self);
-        }
-        else {
-            IedServer_performPeriodicTasks(self);
-        }
 
-        Thread_sleep(1);
+        IedServer_performPeriodicTasks(self);
+
+        //Thread_sleep(1);
 
         running = mmsMapping->reportThreadRunning;
     }

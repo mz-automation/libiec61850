@@ -36,7 +36,7 @@
  * 0 ==> server runs in multi-threaded mode (one thread for each connection and
  * one server background thread )
  */
-#define CONFIG_MMS_SINGLE_THREADED 1
+#define CONFIG_MMS_SINGLE_THREADED 0
 
 /*
  * Optimize stack for threadless operation - don't use semaphores

@@ -130,6 +130,11 @@ IsoConnection_addHandleSet(const IsoConnection self, HandleSet handles)
 void
 IsoConnection_handleTcpConnection(IsoConnection self)
 {
+#if (CONFIG_MMS_SINGLE_THREADED == 0)
+    if (IsoServer_waitReady(self->isoServer, 10) < 1)
+        return;
+#endif /* (CONFIG_MMS_SINGLE_THREADED == 0) */
+
     TpktState tpktState = CotpConnection_readToTpktBuffer(self->cotpConnection);
 
     if (tpktState == TPKT_ERROR)
@@ -430,7 +435,7 @@ handleTcpConnection(void* parameter)
 
     while(self->state == ISO_CON_STATE_RUNNING) {
         IsoConnection_handleTcpConnection(self);
-        Thread_sleep(1);
+       // Thread_sleep(1);
     }
 
     finalizeIsoConnection(self);
