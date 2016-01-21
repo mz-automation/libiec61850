@@ -132,7 +132,7 @@ IsoConnection_handleTcpConnection(IsoConnection self)
 {
 #if (CONFIG_MMS_SINGLE_THREADED == 0)
     if (IsoServer_waitReady(self->isoServer, 10) < 1)
-        return;
+        goto exit_function;
 #endif /* (CONFIG_MMS_SINGLE_THREADED == 0) */
 
     TpktState tpktState = CotpConnection_readToTpktBuffer(self->cotpConnection);
@@ -433,10 +433,8 @@ handleTcpConnection(void* parameter)
 {
     IsoConnection self = (IsoConnection) parameter;
 
-    while(self->state == ISO_CON_STATE_RUNNING) {
+    while(self->state == ISO_CON_STATE_RUNNING)
         IsoConnection_handleTcpConnection(self);
-       // Thread_sleep(1);
-    }
 
     finalizeIsoConnection(self);
 }
