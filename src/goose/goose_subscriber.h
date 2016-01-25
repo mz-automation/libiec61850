@@ -116,12 +116,40 @@ GooseSubscriber_destroy(GooseSubscriber self);
 void
 GooseSubscriber_setListener(GooseSubscriber self, GooseListener listener, void* parameter);
 
+/**
+ * \brief return the state number (stNum) of the last received GOOSE message.
+ *
+ * The state number is increased if any of the values in the GOOSE data set changed due to a valid trigger condition
+ *
+ * \param self GooseSubscriber instance to operate on.
+ *
+ * \return the state number of the last received GOOSE message
+ */
 uint32_t
 GooseSubscriber_getStNum(GooseSubscriber self);
 
+/**
+ * \brief return the sequence number (sqNum) of the last received GOOSE message.
+ *
+ * The sequence number is increased for every consecutive GOOSE message without state change. When a state change occurs (stNum is increased)
+ * then the sequence number (sqNum) will be reset.
+ *
+ * \param self GooseSubscriber instance to operate on.
+ *
+ * \return the sequence number of the last received GOOSE message
+ */
 uint32_t
 GooseSubscriber_getSqNum(GooseSubscriber self);
 
+/**
+ * \brief returns the test flag of the last received GOOSE message
+ *
+ * IMPORTANT: Goose messages with test=TRUE have to be ignored to be standard compliant!
+ *
+ * \param self GooseSubscriber instance to operate on.
+ *
+ * \return the state of the test flag of the last received GOOSE message.
+ */
 bool
 GooseSubscriber_isTest(GooseSubscriber self);
 
@@ -136,12 +164,36 @@ GooseSubscriber_isTest(GooseSubscriber self);
 uint32_t
 GooseSubscriber_getConfRev(GooseSubscriber self);
 
+/**
+ * \brief returns the value of the ndsCom (needs commission) flag of the last received GOOSE message.
+ *
+ * IMPORTANT: Goose messages with ndsCom=TRUE have to be ignored to be standard compliant!
+ *
+ * \param self GooseSubscriber instance to operate on.
+ *
+ * \return the state of the ndsCom flag of the last received GOOSE message.
+ *
+ */
 bool
 GooseSubscriber_needsCommission(GooseSubscriber self);
 
+/**
+ * \brief Get the TimeAllowedToLive value of the last received message.
+ *
+ * \param self GooseSubscriber instance to operate on.
+ *
+ * \return the TimeAllowedToLive value of the last received GOOSE message in milliseconds.
+ */
 uint32_t
 GooseSubscriber_getTimeAllowedToLive(GooseSubscriber self);
 
+/**
+ * \brief Get the timestamp of the last received message.
+ *
+ * \param self GooseSubscriber instance to operate on.
+ *
+ * \return the timestamp value of the last received GOOSE message in milliseconds since epoch (1.1.1970 UTC).
+ */
 uint64_t
 GooseSubscriber_getTimestamp(GooseSubscriber self);
 
