@@ -1,165 +1,173 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- edited with XMLSPY v5 rel. 4 U (http://www.xmlspy.com) by Christoph Brunner (ABB Switzerland Ltd) -->
 <SCL xmlns="http://www.iec.ch/61850/2003/SCL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xsi:schemaLocation="http://www.iec.ch/61850/2003/SCL
+	xsi:schemaLocation="http://www.iec.ch/61850/2003/SCL
 SCL.xsd">
-<Header id="9-2LE-Spec" nameStructure="FuncName" version="0.7" revision="1"/>
-<Communication>
-    <SubNetwork name="subnetwork1" type="8-MMS">
-      <Text>Station bus</Text>
-      <BitRate unit="b/s">10</BitRate>
-      <ConnectedAP iedName="TEMPLATE" apName="accessPoint1">
-        <Address>
-          <P type="IP">10.0.0.2</P>
-          <P type="IP-SUBNET">255.255.255.0</P>
-          <P type="IP-GATEWAY">10.0.0.1</P>
-          <P type="OSI-TSEL">0001</P>
-          <P type="OSI-PSEL">00000001</P>
-          <P type="OSI-SSEL">0001</P>
-        </Address>
+	<Header id="9-2LE-Spec" nameStructure="FuncName" version="0.7"
+		revision="1" />
+	<Communication>
+		<SubNetwork name="subnetwork1" type="8-MMS">
+			<Text>Station bus</Text>
+			<BitRate unit="b/s">10</BitRate>
+			<ConnectedAP iedName="TEMPLATE" apName="accessPoint1">
+				<Address>
+					<P type="IP">10.0.0.2</P>
+					<P type="IP-SUBNET">255.255.255.0</P>
+					<P type="IP-GATEWAY">10.0.0.1</P>
+					<P type="OSI-TSEL">0001</P>
+					<P type="OSI-PSEL">00000001</P>
+					<P type="OSI-SSEL">0001</P>
+				</Address>
 
-         <SMV ldInst="MUnn" cbName="MSVCB01">
-           <Address>
-                <P type="VLAN-ID">1</P>
-                <P type="VLAN-PRIORITY">4</P>
-                <P type="MAC-Address">01-0c-cd-04-00-01</P>
-                <P type="APPID">1001</P>
-           </Address>
-         </SMV>
+				<SMV ldInst="MUnn" cbName="MSVCB01">
+					<Address>
+						<P type="VLAN-ID">1</P>
+						<P type="VLAN-PRIORITY">4</P>
+						<P type="MAC-Address">01-0c-cd-04-00-01</P>
+						<P type="APPID">1001</P>
+					</Address>
+				</SMV>
 
-      </ConnectedAP>
-    </SubNetwork>
-  </Communication>
-<Substation name="">
-<VoltageLevel name="">
-<Bay name="">
-<ConductingEquipment name="Inn" type="CTR">
-<SubEquipment name="A" phase="A">
-<LNode lnClass="TCTR" lnInst="1"/>
-</SubEquipment>
-<SubEquipment name="B" phase="B">
-<LNode lnClass="TCTR" lnInst="2"/>
-</SubEquipment>
-<SubEquipment name="C" phase="C">
-<LNode lnClass="TCTR" lnInst="3"/>
-</SubEquipment>
-<SubEquipment name="N" phase="N">
-<LNode lnClass="TCTR" lnInst="4"/>
-</SubEquipment>
-</ConductingEquipment>
-<ConductingEquipment name="Unn" type="VTR">
-<SubEquipment name="A" phase="A">
-<LNode lnClass="TVTR" lnInst="1"/>
-</SubEquipment>
-<SubEquipment name="B" phase="B">
-<LNode lnClass="TVTR" lnInst="2"/>
-</SubEquipment>
-<SubEquipment name="C" phase="C">
-<LNode lnClass="TVTR" lnInst="3"/>
-</SubEquipment>
-<SubEquipment name="N" phase="N">
-<LNode lnClass="TVTR" lnInst="4"/>
-</SubEquipment>
-</ConductingEquipment>
-</Bay>
-</VoltageLevel>
-</Substation>
-<IED name="TEMPLATE">
-<AccessPoint name="accessPoint1">
-<Server>
-<Authentication/>
+			</ConnectedAP>
+		</SubNetwork>
+	</Communication>
+	<Substation name="">
+		<VoltageLevel name="">
+			<Bay name="">
+				<ConductingEquipment name="Inn" type="CTR">
+					<SubEquipment name="A" phase="A">
+						<LNode lnClass="TCTR" lnInst="1" />
+					</SubEquipment>
+					<SubEquipment name="B" phase="B">
+						<LNode lnClass="TCTR" lnInst="2" />
+					</SubEquipment>
+					<SubEquipment name="C" phase="C">
+						<LNode lnClass="TCTR" lnInst="3" />
+					</SubEquipment>
+					<SubEquipment name="N" phase="N">
+						<LNode lnClass="TCTR" lnInst="4" />
+					</SubEquipment>
+				</ConductingEquipment>
+				<ConductingEquipment name="Unn" type="VTR">
+					<SubEquipment name="A" phase="A">
+						<LNode lnClass="TVTR" lnInst="1" />
+					</SubEquipment>
+					<SubEquipment name="B" phase="B">
+						<LNode lnClass="TVTR" lnInst="2" />
+					</SubEquipment>
+					<SubEquipment name="C" phase="C">
+						<LNode lnClass="TVTR" lnInst="3" />
+					</SubEquipment>
+					<SubEquipment name="N" phase="N">
+						<LNode lnClass="TVTR" lnInst="4" />
+					</SubEquipment>
+				</ConductingEquipment>
+			</Bay>
+		</VoltageLevel>
+	</Substation>
+	<IED name="TEMPLATE">
+		<AccessPoint name="accessPoint1">
+			<Server>
+				<Authentication />
 
-<LDevice inst="MUnn">
-<LN0 lnType="9-2LELLN0" lnClass="LLN0" inst="">
-<DataSet name="PhsMeas1">
+				<LDevice inst="MUnn">
+					<LN0 lnType="9-2LELLN0" lnClass="LLN0" inst="">
+						<DataSet name="PhsMeas1">
 
-	<FCDA ldInst="MUnn" lnClass="TCTR" lnInst="1" fc="MX" doName="Amp"/>
-	<FCDA ldInst="MUnn" lnClass="TCTR" lnInst="2" fc="MX" doName="Amp"/>
-	<FCDA ldInst="MUnn" lnClass="TCTR" lnInst="3" fc="MX" doName="Amp"/>
-	<FCDA ldInst="MUnn" lnClass="TCTR" lnInst="4" fc="MX" doName="Amp"/>
-	<FCDA ldInst="MUnn" lnClass="TVTR" lnInst="1" fc="MX" doName="Vol"/>
-	<FCDA ldInst="MUnn" lnClass="TVTR" lnInst="2" fc="MX" doName="Vol"/>
-	<FCDA ldInst="MUnn" lnClass="TVTR" lnInst="3" fc="MX" doName="Vol"/>
-	<FCDA ldInst="MUnn" lnClass="TVTR" lnInst="4" fc="MX" doName="Vol"/>
+							<FCDA ldInst="MUnn" lnClass="TCTR" lnInst="1" fc="MX"
+								doName="Amp" />
+							<FCDA ldInst="MUnn" lnClass="TCTR" lnInst="2" fc="MX"
+								doName="Amp" />
+							<FCDA ldInst="MUnn" lnClass="TCTR" lnInst="3" fc="MX"
+								doName="Amp" />
+							<FCDA ldInst="MUnn" lnClass="TCTR" lnInst="4" fc="MX"
+								doName="Amp" />
+							<FCDA ldInst="MUnn" lnClass="TVTR" lnInst="1" fc="MX"
+								doName="Vol" />
+							<FCDA ldInst="MUnn" lnClass="TVTR" lnInst="2" fc="MX"
+								doName="Vol" />
+							<FCDA ldInst="MUnn" lnClass="TVTR" lnInst="3" fc="MX"
+								doName="Vol" />
+							<FCDA ldInst="MUnn" lnClass="TVTR" lnInst="4" fc="MX"
+								doName="Vol" />
 
-</DataSet>
+						</DataSet>
 
-<SampledValueControl name="MSVCB01" datSet="PhsMeas1" smvID="xxxxMUnn01"
-smpRate="80" nofASDU="1" confRev="1">
+						<SampledValueControl name="MSVCB01" datSet="PhsMeas1"
+							smvID="xxxxMUnn01" smpRate="80" nofASDU="1" confRev="1">
 
-<SmvOpts refreshTime="false" sampleSynchronized="true"
-security="false" dataRef="false"/>
+							<SmvOpts refreshTime="false" sampleSynchronized="true"
+								security="false" dataRef="false" />
 
-</SampledValueControl>
+						</SampledValueControl>
 
-</LN0>
+					</LN0>
 
-<LN lnType="9-2LETCTR" lnClass="TCTR" inst="1"/>
-<LN lnType="9-2LETCTR" lnClass="TCTR" inst="2"/>
-<LN lnType="9-2LETCTR" lnClass="TCTR" inst="3"/>
-<LN lnType="9-2LETCTR" lnClass="TCTR" inst="4"/>
+					<LN lnType="9-2LETCTR" lnClass="TCTR" inst="1" />
+					<LN lnType="9-2LETCTR" lnClass="TCTR" inst="2" />
+					<LN lnType="9-2LETCTR" lnClass="TCTR" inst="3" />
+					<LN lnType="9-2LETCTR" lnClass="TCTR" inst="4" />
 
-<LN lnType="9-2LETVTR" lnClass="TVTR" inst="1"/>
-<LN lnType="9-2LETVTR" lnClass="TVTR" inst="2"/>
-<LN lnType="9-2LETVTR" lnClass="TVTR" inst="3"/>
-<LN lnType="9-2LETVTR" lnClass="TVTR" inst="4"/>
+					<LN lnType="9-2LETVTR" lnClass="TVTR" inst="1" />
+					<LN lnType="9-2LETVTR" lnClass="TVTR" inst="2" />
+					<LN lnType="9-2LETVTR" lnClass="TVTR" inst="3" />
+					<LN lnType="9-2LETVTR" lnClass="TVTR" inst="4" />
 
-</LDevice>
-</Server>
-</AccessPoint>
-</IED>
+				</LDevice>
+			</Server>
+		</AccessPoint>
+	</IED>
 
-<DataTypeTemplates>
+	<DataTypeTemplates>
 
-<LNodeType id="9-2LELLN0" lnClass="LLN0">
-	<DO name="Mod" type="9-2LEINC"/>
-</LNodeType>
+		<LNodeType id="9-2LELLN0" lnClass="LLN0">
+			<DO name="Mod" type="9-2LEINC" />
+		</LNodeType>
 
-<LNodeType id="9-2LETCTR" lnClass="TCTR">
-	<DO name="Amp" type="9-2LESAVAmp"/>
-</LNodeType>
+		<LNodeType id="9-2LETCTR" lnClass="TCTR">
+			<DO name="Amp" type="9-2LESAVAmp" />
+		</LNodeType>
 
-<LNodeType id="9-2LETVTR" lnClass="TVTR">
-	<DO name="Vol" type="9-2LESAVVol"/>
-</LNodeType>
+		<LNodeType id="9-2LETVTR" lnClass="TVTR">
+			<DO name="Vol" type="9-2LESAVVol" />
+		</LNodeType>
 
-<DOType id="9-2LESAVAmp" cdc="SAV">
-	<DA name="instMag" bType="Struct" type="9-2LEAV" fc="MX"/>
-	<DA name="q" bType="Quality" fc="MX"/>
-	<DA name="sVC" bType="Struct" type="9-2LEsVCAmp" fc="CF"/>
-</DOType>
+		<DOType id="9-2LESAVAmp" cdc="SAV">
+			<DA name="instMag" bType="Struct" type="9-2LEAV" fc="MX" />
+			<DA name="q" bType="Quality" fc="MX" />
+			<DA name="sVC" bType="Struct" type="9-2LEsVCAmp" fc="CF" />
+		</DOType>
 
-<DOType id="9-2LESAVVol" cdc="SAV">
-	<DA name="instMag" bType="Struct" type="9-2LEAV" fc="MX"/>
-	<DA name="q" bType="Quality" fc="MX"/>
-	<DA name="sVC" bType="Struct" type="9-2LEsVCVol" fc="CF"/>
-</DOType>
+		<DOType id="9-2LESAVVol" cdc="SAV">
+			<DA name="instMag" bType="Struct" type="9-2LEAV" fc="MX" />
+			<DA name="q" bType="Quality" fc="MX" />
+			<DA name="sVC" bType="Struct" type="9-2LEsVCVol" fc="CF" />
+		</DOType>
 
-<DOType id="9-2LEINC" cdc="INC">
-	<DA name="stVal" fc="ST" bType="INT32" dchg="true"/>
-	<DA name="q" fc="ST" bType="Quality" dchg="true"/>
-	<DA name="t" fc="ST" bType="Timestamp" dchg="true"/>
-</DOType>
+		<DOType id="9-2LEINC" cdc="INC">
+			<DA name="stVal" fc="ST" bType="INT32" dchg="true" />
+			<DA name="q" fc="ST" bType="Quality" dchg="true" />
+			<DA name="t" fc="ST" bType="Timestamp" dchg="true" />
+		</DOType>
 
-<DAType id="9-2LEAV">
-<BDA name="i" bType="INT32"/>
-</DAType>
-<DAType id="9-2LEsVCAmp">
-<BDA name="scaleFactor" bType="FLOAT32">
-<Val>0.001</Val>
-</BDA>
-<BDA name="offset" bType="FLOAT32">
-<Val>0</Val>
-</BDA>
-</DAType>
-<DAType id="9-2LEsVCVol">
-<BDA name="scaleFactor" bType="FLOAT32">
-<Val>0.01</Val>
-</BDA>
-<BDA name="offset" bType="FLOAT32">
-<Val>0</Val>
-</BDA>
-</DAType>
-</DataTypeTemplates>
+		<DAType id="9-2LEAV">
+			<BDA name="i" bType="INT32" />
+		</DAType>
+		<DAType id="9-2LEsVCAmp">
+			<BDA name="scaleFactor" bType="FLOAT32">
+				<Val>0.001</Val>
+			</BDA>
+			<BDA name="offset" bType="FLOAT32">
+				<Val>0</Val>
+			</BDA>
+		</DAType>
+		<DAType id="9-2LEsVCVol">
+			<BDA name="scaleFactor" bType="FLOAT32">
+				<Val>0.01</Val>
+			</BDA>
+			<BDA name="offset" bType="FLOAT32">
+				<Val>0</Val>
+			</BDA>
+		</DAType>
+	</DataTypeTemplates>
 </SCL>
 
