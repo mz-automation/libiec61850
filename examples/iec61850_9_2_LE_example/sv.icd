@@ -68,62 +68,79 @@ SCL.xsd">
 <AccessPoint name="accessPoint1">
 <Server>
 <Authentication/>
+
 <LDevice inst="MUnn">
 <LN0 lnType="9-2LELLN0" lnClass="LLN0" inst="">
 <DataSet name="PhsMeas1">
-<FCDA lnClass="TCTR" ldInst="1" fc="MX" doName="Amp"/>
-<FCDA lnClass="TCTR" ldInst="2" fc="MX" doName="Amp"/>
-<FCDA lnClass="TCTR" ldInst="3" fc="MX" doName="Amp"/>
-<FCDA lnClass="TCTR" ldInst="4" fc="MX" doName="Amp"/>
-<FCDA lnClass="TVTR" ldInst="1" fc="MX" doName="Vol"/>
-<FCDA lnClass="TVTR" ldInst="2" fc="MX" doName="Vol"/>
-<FCDA lnClass="TVTR" ldInst="3" fc="MX" doName="Vol"/>
-<FCDA lnClass="TVTR" ldInst="4" fc="MX" doName="Vol"/>
+
+	<FCDA ldInst="MUnn" lnClass="TCTR" lnInst="1" fc="MX" doName="Amp"/>
+	<FCDA ldInst="MUnn" lnClass="TCTR" lnInst="2" fc="MX" doName="Amp"/>
+	<FCDA ldInst="MUnn" lnClass="TCTR" lnInst="3" fc="MX" doName="Amp"/>
+	<FCDA ldInst="MUnn" lnClass="TCTR" lnInst="4" fc="MX" doName="Amp"/>
+	<FCDA ldInst="MUnn" lnClass="TVTR" lnInst="1" fc="MX" doName="Vol"/>
+	<FCDA ldInst="MUnn" lnClass="TVTR" lnInst="2" fc="MX" doName="Vol"/>
+	<FCDA ldInst="MUnn" lnClass="TVTR" lnInst="3" fc="MX" doName="Vol"/>
+	<FCDA ldInst="MUnn" lnClass="TVTR" lnInst="4" fc="MX" doName="Vol"/>
+
 </DataSet>
+
 <SampledValueControl name="MSVCB01" datSet="PhsMeas1" smvID="xxxxMUnn01"
 smpRate="80" nofASDU="1" confRev="1">
+
 <SmvOpts refreshTime="false" sampleSynchronized="true"
 security="false" dataRef="false"/>
+
 </SampledValueControl>
+
 </LN0>
+
 <LN lnType="9-2LETCTR" lnClass="TCTR" inst="1"/>
 <LN lnType="9-2LETCTR" lnClass="TCTR" inst="2"/>
 <LN lnType="9-2LETCTR" lnClass="TCTR" inst="3"/>
 <LN lnType="9-2LETCTR" lnClass="TCTR" inst="4"/>
+
 <LN lnType="9-2LETVTR" lnClass="TVTR" inst="1"/>
 <LN lnType="9-2LETVTR" lnClass="TVTR" inst="2"/>
 <LN lnType="9-2LETVTR" lnClass="TVTR" inst="3"/>
 <LN lnType="9-2LETVTR" lnClass="TVTR" inst="4"/>
+
 </LDevice>
 </Server>
 </AccessPoint>
 </IED>
+
 <DataTypeTemplates>
+
 <LNodeType id="9-2LELLN0" lnClass="LLN0">
-<DO name="Mod" type="9-2LEINC"/>
+	<DO name="Mod" type="9-2LEINC"/>
 </LNodeType>
+
 <LNodeType id="9-2LETCTR" lnClass="TCTR">
-<DO name="Amp" type="9-2LESAVAmp"/>
+	<DO name="Amp" type="9-2LESAVAmp"/>
 </LNodeType>
+
 <LNodeType id="9-2LETVTR" lnClass="TVTR">
-<DO name="Vol" type="9-2LESAVVol"/>
+	<DO name="Vol" type="9-2LESAVVol"/>
 </LNodeType>
+
 <DOType id="9-2LESAVAmp" cdc="SAV">
-<DA name="instMag" bType="Struct" type="9-2LEAV" fc="MX"/>
-<DA name="q" bType="Quality" fc="MX"/>
-<DA name="sVC" bType="Struct" type="9-2LEsVCAmp" fc="CF"/>
+	<DA name="instMag" bType="Struct" type="9-2LEAV" fc="MX"/>
+	<DA name="q" bType="Quality" fc="MX"/>
+	<DA name="sVC" bType="Struct" type="9-2LEsVCAmp" fc="CF"/>
 </DOType>
+
 <DOType id="9-2LESAVVol" cdc="SAV">
-<DA name="instMag" bType="Struct" type="9-2LEAV" fc="MX"/>
-<DA name="q" bType="Quality" fc="MX"/>
-<DA name="sVC" bType="Struct" type="9-2LEsVCVol" fc="CF"/>
+	<DA name="instMag" bType="Struct" type="9-2LEAV" fc="MX"/>
+	<DA name="q" bType="Quality" fc="MX"/>
+	<DA name="sVC" bType="Struct" type="9-2LEsVCVol" fc="CF"/>
 </DOType>
+
 <DOType id="9-2LEINC" cdc="INC">
-<DA name="ctlVal" fc="CO" bType="INT32"/>
-<DA name="stVal" fc="ST" bType="INT32" dchg="true"/>
-<DA name="q" fc="ST" bType="Quality" dchg="true"/>
-<DA name="t" fc="ST" bType="Timestamp" dchg="true"/>
+	<DA name="stVal" fc="ST" bType="INT32" dchg="true"/>
+	<DA name="q" fc="ST" bType="Quality" dchg="true"/>
+	<DA name="t" fc="ST" bType="Timestamp" dchg="true"/>
 </DOType>
+
 <DAType id="9-2LEAV">
 <BDA name="i" bType="INT32"/>
 </DAType>

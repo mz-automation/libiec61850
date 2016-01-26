@@ -827,7 +827,6 @@ createNamedVariableFromLogicalNode(MmsMapping* self, MmsDomain* domain,
 
     int componentCount = determineLogicalNodeComponentCount(logicalNode);
 
-
     SettingGroupControlBlock* sgControlBlock = NULL;
 
 #if (CONFIG_IEC61850_SETTING_GROUPS == 1)
@@ -1016,7 +1015,7 @@ createNamedVariableFromLogicalNode(MmsMapping* self, MmsDomain* domain,
 
     if (usvcbCount > 0) {
         namedVariable->typeSpec.structure.elements[currentComponent] =
-                LIBIEC61850_SV_createSVControlBlocks(self, domain, logicalNode, msvcbCount, true);
+                LIBIEC61850_SV_createSVControlBlocks(self, domain, logicalNode, usvcbCount, true);
 
         currentComponent++;
     }

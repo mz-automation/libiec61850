@@ -14,7 +14,6 @@ extern IedModel iedModel;
 extern LogicalDevice iedModel_MUnn;
 extern LogicalNode   iedModel_MUnn_LLN0;
 extern DataObject    iedModel_MUnn_LLN0_Mod;
-extern DataAttribute iedModel_MUnn_LLN0_Mod_ctlVal;
 extern DataAttribute iedModel_MUnn_LLN0_Mod_stVal;
 extern DataAttribute iedModel_MUnn_LLN0_Mod_q;
 extern DataAttribute iedModel_MUnn_LLN0_Mod_t;
@@ -88,7 +87,6 @@ extern DataAttribute iedModel_MUnn_TVTR4_Vol_sVC_offset;
 #define IEDMODEL_MUnn (&iedModel_MUnn)
 #define IEDMODEL_MUnn_LLN0 (&iedModel_MUnn_LLN0)
 #define IEDMODEL_MUnn_LLN0_Mod (&iedModel_MUnn_LLN0_Mod)
-#define IEDMODEL_MUnn_LLN0_Mod_ctlVal (&iedModel_MUnn_LLN0_Mod_ctlVal)
 #define IEDMODEL_MUnn_LLN0_Mod_stVal (&iedModel_MUnn_LLN0_Mod_stVal)
 #define IEDMODEL_MUnn_LLN0_Mod_q (&iedModel_MUnn_LLN0_Mod_q)
 #define IEDMODEL_MUnn_LLN0_Mod_t (&iedModel_MUnn_LLN0_Mod_t)

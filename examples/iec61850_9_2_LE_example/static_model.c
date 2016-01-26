@@ -20,9 +20,9 @@ extern DataSetEntry iedModelds_MUnn_LLN0_PhsMeas1_fcda6;
 extern DataSetEntry iedModelds_MUnn_LLN0_PhsMeas1_fcda7;
 
 DataSetEntry iedModelds_MUnn_LLN0_PhsMeas1_fcda0 = {
-  "1",
+  "MUnn",
   false,
-  "TCTR$MX$Amp",
+  "TCTR1$MX$Amp",
   -1,
   NULL,
   NULL,
@@ -30,9 +30,9 @@ DataSetEntry iedModelds_MUnn_LLN0_PhsMeas1_fcda0 = {
 };
 
 DataSetEntry iedModelds_MUnn_LLN0_PhsMeas1_fcda1 = {
-  "2",
+  "MUnn",
   false,
-  "TCTR$MX$Amp",
+  "TCTR2$MX$Amp",
   -1,
   NULL,
   NULL,
@@ -40,9 +40,9 @@ DataSetEntry iedModelds_MUnn_LLN0_PhsMeas1_fcda1 = {
 };
 
 DataSetEntry iedModelds_MUnn_LLN0_PhsMeas1_fcda2 = {
-  "3",
+  "MUnn",
   false,
-  "TCTR$MX$Amp",
+  "TCTR3$MX$Amp",
   -1,
   NULL,
   NULL,
@@ -50,9 +50,9 @@ DataSetEntry iedModelds_MUnn_LLN0_PhsMeas1_fcda2 = {
 };
 
 DataSetEntry iedModelds_MUnn_LLN0_PhsMeas1_fcda3 = {
-  "4",
+  "MUnn",
   false,
-  "TCTR$MX$Amp",
+  "TCTR4$MX$Amp",
   -1,
   NULL,
   NULL,
@@ -60,9 +60,9 @@ DataSetEntry iedModelds_MUnn_LLN0_PhsMeas1_fcda3 = {
 };
 
 DataSetEntry iedModelds_MUnn_LLN0_PhsMeas1_fcda4 = {
-  "1",
+  "MUnn",
   false,
-  "TVTR$MX$Vol",
+  "TVTR1$MX$Vol",
   -1,
   NULL,
   NULL,
@@ -70,9 +70,9 @@ DataSetEntry iedModelds_MUnn_LLN0_PhsMeas1_fcda4 = {
 };
 
 DataSetEntry iedModelds_MUnn_LLN0_PhsMeas1_fcda5 = {
-  "2",
+  "MUnn",
   false,
-  "TVTR$MX$Vol",
+  "TVTR2$MX$Vol",
   -1,
   NULL,
   NULL,
@@ -80,9 +80,9 @@ DataSetEntry iedModelds_MUnn_LLN0_PhsMeas1_fcda5 = {
 };
 
 DataSetEntry iedModelds_MUnn_LLN0_PhsMeas1_fcda6 = {
-  "3",
+  "MUnn",
   false,
-  "TVTR$MX$Vol",
+  "TVTR3$MX$Vol",
   -1,
   NULL,
   NULL,
@@ -90,9 +90,9 @@ DataSetEntry iedModelds_MUnn_LLN0_PhsMeas1_fcda6 = {
 };
 
 DataSetEntry iedModelds_MUnn_LLN0_PhsMeas1_fcda7 = {
-  "4",
+  "MUnn",
   false,
-  "TVTR$MX$Vol",
+  "TVTR4$MX$Vol",
   -1,
   NULL,
   NULL,
@@ -128,22 +128,9 @@ DataObject iedModel_MUnn_LLN0_Mod = {
     "Mod",
     (ModelNode*) &iedModel_MUnn_LLN0,
     NULL,
-    (ModelNode*) &iedModel_MUnn_LLN0_Mod_ctlVal,
+    (ModelNode*) &iedModel_MUnn_LLN0_Mod_stVal,
     0
 };
-
-DataAttribute iedModel_MUnn_LLN0_Mod_ctlVal = {
-    DataAttributeModelType,
-    "ctlVal",
-    (ModelNode*) &iedModel_MUnn_LLN0_Mod,
-    (ModelNode*) &iedModel_MUnn_LLN0_Mod_stVal,
-    NULL,
-    0,
-    IEC61850_FC_CO,
-    IEC61850_INT32,
-    0,
-    NULL,
-    0};
 
 DataAttribute iedModel_MUnn_LLN0_Mod_stVal = {
     DataAttributeModelType,
