@@ -1,7 +1,7 @@
 LIBIEC_HOME=../..
 
-PROJECT_BINARY_NAME = server_example2
-PROJECT_SOURCES = server_example2.c
+PROJECT_BINARY_NAME = sv_9_2LE_example
+PROJECT_SOURCES = iec61850_9_2_LE_example.c
 PROJECT_SOURCES += static_model.c
 
 PROJECT_ICD_FILE = complexModel.icd

@@ -24,7 +24,11 @@
 #include "stack_config.h"
 #include "libiec61850_platform_includes.h"
 
+
+#include "sv_publisher.h"
+
 #include "hal_ethernet.h"
+#include "ber_encoder.h"
 
 #define DEBUG_SV_PUBLISHER 1
 
@@ -36,14 +40,6 @@
 
 #define SV_MAX_MESSAGE_SIZE 1518
 
-#define IEC61850_SV_SMPSYNC_NOT_SYNCHRONIZED 0
-#define IEC61850_SV_SMPSYNC_SYNCED_UNSPEC_LOCAL_CLOCK 1
-#define IEC61850_SV_SMPSYNC_SYNCED_GLOBAL_CLOCK 2
-
-#define IEC61850_SV_SMPMOD_PER_NOMINAL_PERIOD 0
-#define IEC61850_SV_SMPMOD_SAMPLES_PER_SECOND 1
-#define IEC61850_SV_SMPMOD_SECONDS_PER_SAMPLE 2
-
 typedef struct sCommParameters {
     uint8_t vlanPriority;
     uint16_t vlanId;
@@ -51,7 +47,7 @@ typedef struct sCommParameters {
     uint8_t dstAddress[6];
 } CommParameters;
 
-typedef struct sSV_ASDU* SV_ASDU;
+
 
 struct sSV_ASDU {
     char* svID;
@@ -73,7 +69,7 @@ struct sSV_ASDU {
     SV_ASDU _next;
 };
 
-typedef struct sSampledValuesPublisher* SampledValuesPublisher;
+
 
 struct sSampledValuesPublisher {
     uint8_t* buffer;
@@ -93,7 +89,7 @@ struct sSampledValuesPublisher {
 
 
 static void
-preparePacketBuffer(SampledValuesPublisher self, CommParameters* parameters, char* interfaceID)
+preparePacketBuffer(SampledValuesPublisher self, CommParameters* parameters, const char* interfaceID)
 {
     uint8_t srcAddr[6];
 
@@ -208,6 +204,26 @@ encodeUInt32FixedSize(uint32_t value, uint8_t* buffer, int bufPos)
     return bufPos;
 }
 
+static int
+encodeInt32FixedSize(int32_t value, uint8_t* buffer, int bufPos)
+{
+    uint8_t* valueArray = (uint8_t*) &value;
+
+#if (ORDER_LITTLE_ENDIAN == 1)
+    buffer[bufPos++] = valueArray[3];
+    buffer[bufPos++] = valueArray[2];
+    buffer[bufPos++] = valueArray[1];
+    buffer[bufPos++] = valueArray[0];
+#else
+    buffer[bufPos++] = valueArray[0];
+    buffer[bufPos++] = valueArray[1];
+    buffer[bufPos++] = valueArray[2];
+    buffer[bufPos++] = valueArray[3];
+#endif
+
+    return bufPos;
+}
+
 
 SampledValuesPublisher
 SampledValuesPublisher_create(const char* interfaceId)
@@ -302,7 +318,7 @@ SV_ASDU_encodeToBuffer(SV_ASDU self, uint8_t* buffer, int bufPos)
     if (self->datset != NULL)
         bufPos = BerEncoder_encodeStringWithTag(0x81, self->datset, buffer, bufPos);
 
-    uint8_t octetString[4];
+    //uint8_t octetString[4];
 
     /* SmpCnt */
     bufPos = BerEncoder_encodeTL(0x82, 2, buffer, bufPos);
@@ -447,6 +463,12 @@ SV_ASDU_addINT32(SV_ASDU self)
     return index;
 }
 
+void
+SV_ASDU_setINT32(SV_ASDU self, int index, int32_t value)
+{
+    encodeInt32FixedSize(value, self->_dataBuffer, index);
+}
+
 int
 SV_ASDU_addFLOAT(SV_ASDU self)
 {
@@ -480,7 +502,9 @@ SV_ASDU_setFLOAT(SV_ASDU self, int index, float value)
 void
 SV_ASDU_setSmpCnt(SV_ASDU self, uint16_t value)
 {
-    //TODO write value to correct field in buffer
+    self->smpCnt = value;
+
+    encodeUInt16FixedSize(self->smpCnt, self->smpCntBuf, 0);
 }
 
 void
@@ -498,45 +522,7 @@ SV_ASDU_setRefrTm(SV_ASDU self, Timestamp refrTm)
 }
 #endif
 
-
-int
-main(int argc, char** argv)
-{
-    SampledValuesPublisher svPublisher = SampledValuesPublisher_create("eth1");
-
-    SV_ASDU asdu1 = SampledValuesPublisher_addASDU(svPublisher, "svpub1", NULL, 1);
-
-    int float1 = SV_ASDU_addFLOAT(asdu1);
-    int float2 = SV_ASDU_addFLOAT(asdu1);
-
-    SV_ASDU asdu2 = SampledValuesPublisher_addASDU(svPublisher, "svpub2", NULL, 1);
-
-    int float3 = SV_ASDU_addFLOAT(asdu2);
-    int float4 = SV_ASDU_addFLOAT(asdu2);
-
-    SampledValuesPublisher_setupComplete(svPublisher);
-
-    float fVal1 = 1234.5678f;
-    float fVal2 = 0.12345f;
-
-    int i;
-
-    for (i = 0; i < 10; i++) {
-        SV_ASDU_setFLOAT(asdu1, float1, fVal1);
-        SV_ASDU_setFLOAT(asdu1, float2, fVal2);
-
-        SV_ASDU_increaseSmpCnt(asdu1);
-        SV_ASDU_increaseSmpCnt(asdu2);
-
-        fVal1 += 1.1f;
-        fVal2 += 0.1f;
-
-        SampledValuesPublisher_publish(svPublisher);
-    }
-
-    SampledValuesPublisher_destroy(svPublisher);
-}
-
+#if 0
 int
 main1(int argc, char** argv)
 {
@@ -568,4 +554,4 @@ main1(int argc, char** argv)
 
 	SampledValuesPublisher_destroy(svPublisher);
 }
-
+#endif

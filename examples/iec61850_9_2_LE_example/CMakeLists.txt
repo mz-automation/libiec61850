@@ -2,20 +2,20 @@ include_directories(
    .
 )
 
-set(server_example2_SRCS
+set(sv_9_2_LE_example_SRCS
    server_example2.c
    static_model.c
 )
 
 IF(WIN32)
-set_source_files_properties(${server_example2_SRCS}
+set_source_files_properties(${sv_9_2_LE_example_SRCS}
                                        PROPERTIES LANGUAGE CXX)
 ENDIF(WIN32)
 
-add_executable(server_example2
-  ${server_example2_SRCS}
+add_executable(sv_9_2_LE_example
+  ${sv_9_2_LE_example_SRCS}
 )
 
-target_link_libraries(server_example2
+target_link_libraries(sv_9_2_LE_example
     iec61850
 )
