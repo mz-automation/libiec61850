@@ -36,6 +36,7 @@
 extern IedModel iedModel;
 
 static int running = 0;
+static int svcbEnabled = 0;
 
 void sigint_handler(int signalId)
 {
@@ -75,12 +76,18 @@ setupSVPublisher()
     SampledValuesPublisher_setupComplete(svPublisher);
 }
 
+static void sVCBEventHandler (SVControlBlock* svcb, int event, void* parameter)
+{
+    if (event == IEC61850_SVCB_EVENT_ENABLE)
+        svcbEnabled = 1;
+    else if (event == IEC61850_SVCB_EVENT_DISABLE)
+        svcbEnabled = 0;
+}
+
 int 
 main(int argc, char** argv)
 {
     IedServer iedServer = IedServer_create(&iedModel);
-
-    // TODO set initial measurement and status values from process
 
     /* MMS server will be instructed to start listening to client connections. */
     IedServer_start(iedServer, 102);
@@ -100,6 +107,15 @@ main(int argc, char** argv)
     int voltage = 1;
     int current = 1;
 
+    SVControlBlock* svcb = IedModel_getSVControlBlock(&iedModel, IEDMODEL_MUnn_LLN0, "MSVCB01");
+
+    if (svcb == NULL) {
+        printf("Lookup svcb failed!\n");
+        exit(1);
+    }
+
+    IedServer_setSVCBHandler(iedServer, svcb, sVCBEventHandler, NULL);
+
     while (running) {
 
         uint64_t timeval = Hal_getTimeInMs();
@@ -118,7 +134,7 @@ main(int argc, char** argv)
 
         IedServer_unlockDataModel(iedServer);
 
-        if (1) {
+        if (svcbEnabled) {
 
             SV_ASDU_setINT32(asdu, amp1, current);
             SV_ASDU_setINT32(asdu, amp2, current);

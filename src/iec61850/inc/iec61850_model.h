@@ -383,6 +383,9 @@ IedModel_setIedName(IedModel* self, const char* iedName);
 ModelNode*
 IedModel_getModelNodeByObjectReference(IedModel* model, const char* objectReference);
 
+SVControlBlock*
+IedModel_getSVControlBlock(IedModel* self, LogicalNode* parentLN, const char* svcbName);
+
 /**
  * \brief Lookup a model node by its short (normalized) reference
  *

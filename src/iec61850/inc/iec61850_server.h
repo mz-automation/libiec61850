@@ -907,6 +907,40 @@ IedServer_setWaitForExecutionHandler(IedServer self, DataObject* node, ControlWa
 /**@}*/
 
 /**
+ * @defgroup IEC61850_SERVER_SVCB Server side sampled values control block (SVCB) handling
+ *
+ * @{
+ */
+
+/** Control block has been enabled by client */
+#define IEC61850_SVCB_EVENT_ENABLE 1
+
+/** Control block has been disabled by client */
+#define IEC61850_SVCB_EVENT_DISABLE 0
+
+/**
+ * \brief callback handler for SVCB events.
+ *
+ * \param svcb the related SVCB instance
+ * \param the event type
+ * \param user defined parameter
+ */
+typedef void (*SVCBEventHandler) (SVControlBlock* svcb, int event, void* parameter);
+
+/**
+ * \brief Set a handler for SVCB control block events (enable/disable)
+ *
+ * \param self the instance of IedServer to operate on.
+ * \param svcb the SVCB control block instance
+ * \param handler the event handler to be used
+ * \param parameter a user provided parameter that is passed to the handler.
+ */
+void
+IedServer_setSVCBHandler(IedServer self, SVControlBlock* svcb, SVCBEventHandler handler, void* parameter);
+
+/**@}*/
+
+/**
  * @defgroup IEC61850_SERVER_EXTERNAL_ACCESS Handle external access to data model and access control
  *
  * @{

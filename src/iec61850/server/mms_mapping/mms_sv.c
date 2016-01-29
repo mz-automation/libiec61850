@@ -35,7 +35,7 @@
 #include "mms_mapping_internal.h"
 
 struct sMmsSampledValueControlBlock {
-    char* name;
+    SVControlBlock* svcb;
 
     bool svEna;
     MmsServerConnection reservedByClient;
@@ -50,6 +50,10 @@ struct sMmsSampledValueControlBlock {
 
     MmsValue* svEnaValue;
     MmsValue* resvValue;
+
+
+    SVCBEventHandler eventHandler;
+    void* eventHandlerParameter;
 };
 
 MmsSampledValueControlBlock
@@ -79,7 +83,7 @@ lookupSVCB(MmsMapping* self, MmsDomain* domain, char* lnName, char* objectName)
 
         if (mmsSVCB->domain == domain) {
             if (strcmp(mmsSVCB->logicalNode->name, lnName) == 0) {
-                if (strcmp(mmsSVCB->name, objectName) == 0) {
+                if (strcmp(mmsSVCB->svcb->name, objectName) == 0) {
                     return mmsSVCB;
                 }
             }
@@ -94,17 +98,25 @@ lookupSVCB(MmsMapping* self, MmsDomain* domain, char* lnName, char* objectName)
 static void
 MmsSampledValueControlBlock_enable(MmsSampledValueControlBlock self)
 {
-    //TODO call application callback handler
     self->svEna = true;
     MmsValue_setBoolean(self->svEnaValue, true);
+
+    if (DEBUG_IED_SERVER)
+        printf("IED_SERVER: enable SVCB %s\n", self->svcb->name);
+
+    self->eventHandler(self->svcb, IEC61850_SVCB_EVENT_ENABLE, self->eventHandlerParameter);
 }
 
 static void
 MmsSampledValueControlBlock_disable(MmsSampledValueControlBlock self)
 {
-    //TODO call application callback handler
     self->svEna = false;
     MmsValue_setBoolean(self->svEnaValue, false);
+
+    if (DEBUG_IED_SERVER)
+        printf("IED_SERVER: disable SVCB %s\n", self->svcb->name);
+
+    self->eventHandler(self->svcb, IEC61850_SVCB_EVENT_DISABLE, self->eventHandlerParameter);
 }
 
 static bool
@@ -364,6 +376,29 @@ createDataSetReference(char* buffer, char* domainName, char* lnName, char* dataS
     StringUtils_createStringInBuffer(buffer, 5, domainName, "/", lnName, "$", dataSetName);
 }
 
+void
+LIBIEC61850_SV_setSVCBHandler(MmsMapping* self, SVControlBlock* svcb, SVCBEventHandler handler, void* parameter)
+{
+    LinkedList svcbElement = LinkedList_getNext(self->svControls);
+
+    while (svcbElement != NULL) {
+        MmsSampledValueControlBlock mmsSVCB = (MmsSampledValueControlBlock) svcbElement->data;
+
+        if (mmsSVCB->svcb == svcb) {
+            mmsSVCB->eventHandler = handler;
+            mmsSVCB->eventHandlerParameter = parameter;
+            break;
+        }
+
+        svcbElement = LinkedList_getNext(svcbElement);
+    }
+
+    if (DEBUG_IED_SERVER) {
+        if (svcbElement == NULL)
+            printf("IED_SERVER: setSVCBHandler failed\n");
+    }
+}
+
 MmsVariableSpecification*
 LIBIEC61850_SV_createSVControlBlocks(MmsMapping* self, MmsDomain* domain,
         LogicalNode* logicalNode, int svCount, bool unicast)
@@ -480,7 +515,7 @@ LIBIEC61850_SV_createSVControlBlocks(MmsMapping* self, MmsDomain* domain,
         mmsSvCb->mmsType = svTypeSpec;
         mmsSvCb->domain = domain;
         mmsSvCb->logicalNode = logicalNode;
-        mmsSvCb->name = svControlBlock->name;
+        mmsSvCb->svcb = svControlBlock;
 
         LinkedList_add(self->svControls, (void*) mmsSvCb);
 

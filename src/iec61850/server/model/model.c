@@ -276,6 +276,30 @@ IedModel_getModelNodeByObjectReference(IedModel* model, const char* objectRefere
     return ModelNode_getChild((ModelNode*) ld, separator + 1);
 }
 
+#if (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1)
+
+SVControlBlock*
+IedModel_getSVControlBlock(IedModel* self, LogicalNode* parentLN, const char* svcbName)
+{
+    SVControlBlock* retVal = NULL;
+
+    SVControlBlock* svCb = self->svCBs;
+
+    while (svCb != NULL) {
+        if ((svCb->parent == parentLN) && (strcmp(svCb->name, svcbName) == 0)) {
+            retVal = svCb;
+            break;
+        }
+
+
+        svCb = svCb->sibling;
+    }
+
+    return retVal;
+}
+
+#endif /* (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1) */
+
 ModelNode*
 IedModel_getModelNodeByShortObjectReference(IedModel* model, const char* objectReference)
 {

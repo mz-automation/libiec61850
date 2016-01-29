@@ -24,7 +24,7 @@
 #include "stack_config.h"
 #include "libiec61850_platform_includes.h"
 
-
+#include <stdbool.h>
 #include "sv_publisher.h"
 
 #include "hal_ethernet.h"
@@ -63,6 +63,9 @@ struct sSV_ASDU {
     uint8_t smpSynch;
     uint16_t smpCnt;
     uint32_t confRev;
+
+    uint64_t refrTm;
+    uint8_t smpMod;
 
     uint8_t* smpCntBuf;
 
@@ -224,6 +227,39 @@ encodeInt32FixedSize(int32_t value, uint8_t* buffer, int bufPos)
     return bufPos;
 }
 
+static int
+encodeUtcTime(uint64_t timeval, uint8_t* buffer, int bufPos)
+{
+    uint32_t timeval32 = (timeval / 1000LL);
+
+    uint8_t* timeArray = (uint8_t*) &timeval32;
+    uint8_t* valueArray = buffer + bufPos;
+
+#if (ORDER_LITTLE_ENDIAN == 1)
+    valueArray[0] = timeArray[3];
+    valueArray[1] = timeArray[2];
+    valueArray[2] = timeArray[1];
+    valueArray[3] = timeArray[0];
+#else
+    valueArray[0] = timeArray[0];
+    valueArray[1] = timeArray[1];
+    valueArray[2] = timeArray[2];
+    valueArray[3] = timeArray[3];
+#endif
+
+    uint32_t remainder = (timeval % 1000LL);
+    uint32_t fractionOfSecond = (remainder) * 16777 + ((remainder * 216) / 1000);
+
+    /* encode fraction of second */
+    valueArray[4] = ((fractionOfSecond >> 16) & 0xff);
+    valueArray[5] = ((fractionOfSecond >> 8) & 0xff);
+    valueArray[6] = (fractionOfSecond & 0xff);
+
+    /* encode time quality */
+    valueArray[7] = 0x0a; /* 10 bit sub-second time accuracy */
+
+    return bufPos + 8;
+}
 
 SampledValuesPublisher
 SampledValuesPublisher_create(const char* interfaceId)
@@ -330,7 +366,10 @@ SV_ASDU_encodeToBuffer(SV_ASDU self, uint8_t* buffer, int bufPos)
     bufPos = encodeUInt32FixedSize(self->confRev, buffer, bufPos);
 
     /* RefrTm */
-    //TODO implement me
+    if (self->hasRefrTm) {
+        bufPos = BerEncoder_encodeTL(0x84, 8, buffer, bufPos);
+        bufPos = encodeUtcTime(self->refrTm, buffer, bufPos);
+    }
 
     /* SmpSynch */
     bufPos = BerEncoder_encodeTL(0x85, 1, buffer, bufPos);
@@ -347,7 +386,14 @@ SV_ASDU_encodeToBuffer(SV_ASDU self, uint8_t* buffer, int bufPos)
     bufPos += self->dataSize; /* data has to inserted by user before sending message */
 
     /* SmpMod */
-    //TODO implement me
+    if (self->hasSmpMod) {
+        bufPos = BerEncoder_encodeTL(0x84, 4, buffer, bufPos);
+        buffer[bufPos++] = 0;
+        buffer[bufPos++] = 0;
+        buffer[bufPos++] = 0;
+        buffer[bufPos++] = self->smpMod;
+
+    }
 
     return bufPos;
 }
@@ -515,43 +561,17 @@ SV_ASDU_increaseSmpCnt(SV_ASDU self)
     encodeUInt16FixedSize(self->smpCnt, self->smpCntBuf, 0);
 }
 
-#if 0
 void
-SV_ASDU_setRefrTm(SV_ASDU self, Timestamp refrTm)
+SV_ASDU_setRefrTm(SV_ASDU self, uint64_t refrTm)
 {
+    self->hasRefrTm = true;
+    self->refrTm = refrTm;
 }
-#endif
 
-#if 0
-int
-main1(int argc, char** argv)
+void
+SV_ASDU_setSmpMod(SV_ASDU self, uint8_t smpMod)
 {
-	SampledValuesPublisher svPublisher = SampledValuesPublisher_create("eth1");
-
-	SV_ASDU asdu = SampledValuesPublisher_addASDU(svPublisher, "svpub1", NULL, 1);
-
-	int float1 = SV_ASDU_addFLOAT(asdu);
-	int float2 = SV_ASDU_addFLOAT(asdu);
-
-	SampledValuesPublisher_setupComplete(svPublisher);
-
-
-	float fVal1 = 1234.5678f;
-	float fVal2 = 0.12345f;
-
-	int i;
-
-	for (i = 0; i < 10; i++) {
-        SV_ASDU_setFLOAT(asdu, float1, fVal1);
-        SV_ASDU_setFLOAT(asdu, float2, fVal2);
-        SV_ASDU_increaseSmpCnt(asdu);
-
-        fVal1 += 1.1f;
-        fVal2 += 0.1f;
-
-        SampledValuesPublisher_publish(svPublisher);
-	}
-
-	SampledValuesPublisher_destroy(svPublisher);
+    self->hasSmpMod = true;
+    self->smpMod = smpMod;
 }
-#endif
+

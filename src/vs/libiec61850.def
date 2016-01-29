@@ -564,3 +564,5 @@ EXPORTS
     ClientSVControlBlock_getOptFlds
     ClientSVControlBlock_getSmpMod
     ClientSVControlBlock_getNoASDU
+    IedServer_setSVCBHandler
+    IedModel_getSVControlBlock

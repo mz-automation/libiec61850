@@ -81,7 +81,19 @@ SV_ASDU_setSmpCnt(SV_ASDU self, uint16_t value);
 void
 SV_ASDU_increaseSmpCnt(SV_ASDU self);
 
+void
+SV_ASDU_setRefrTm(SV_ASDU self, uint64_t refrTm);
 
-
+/**
+ * \brief Set the sample mode of the ASDU
+ *
+ * If not set the transmitted ASDU will not contain an sampleMod value
+ *
+ * \param self the SV_ASDU
+ *
+ * \param smpMod one of IEC61850_SV_SMPMOD_PER_NOMINAL_PERIOD, IEC61850_SV_SMPMOD_SAMPLES_PER_SECOND or IEC61850_SV_SMPMOD_SECONDS_PER_SAMPLE
+ */
+void
+SV_ASDU_setSmpMod(SV_ASDU self, uint8_t smpMod);
 
 #endif /* LIBIEC61850_SRC_SAMPLED_VALUES_SV_PUBLISHER_H_ */

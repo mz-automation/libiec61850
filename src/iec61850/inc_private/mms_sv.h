@@ -44,4 +44,7 @@ MmsDataAccessError
 LIBIEC61850_SV_writeAccessSVControlBlock(MmsMapping* self, MmsDomain* domain, char* variableIdOrig,
         MmsValue* value, MmsServerConnection connection);
 
+void
+LIBIEC61850_SV_setSVCBHandler(MmsMapping* self, SVControlBlock* svcb, SVCBEventHandler handler, void* parameter);
+
 #endif /* LIBIEC61850_SRC_IEC61850_INC_PRIVATE_MMS_SV_H_ */

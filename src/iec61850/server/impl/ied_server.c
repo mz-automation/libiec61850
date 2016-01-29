@@ -32,6 +32,7 @@
 #include "reporting.h"
 
 #include "libiec61850_platform_includes.h"
+#include "mms_sv.h"
 
 #ifndef DEBUG_IED_SERVER
 #define DEBUG_IED_SERVER 0
@@ -660,6 +661,16 @@ IedServer_setWaitForExecutionHandler(IedServer self, DataObject* node, ControlWa
         ControlObject_installWaitForExecutionHandler(controlObject, handler, parameter);
 }
 #endif /* (CONFIG_IEC61850_CONTROL_SERVICE == 1) */
+
+#if (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1)
+
+void
+IedServer_setSVCBHandler(IedServer self, SVControlBlock* svcb, SVCBEventHandler handler, void* parameter)
+{
+    LIBIEC61850_SV_setSVCBHandler(self->mmsMapping, svcb, handler, parameter);
+}
+
+#endif /* (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1) */
 
 MmsValue*
 IedServer_getAttributeValue(IedServer self, DataAttribute* dataAttribute)
