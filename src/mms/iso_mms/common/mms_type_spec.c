@@ -165,6 +165,8 @@ MmsVariableSpecification_getNamedVariableRecursive(MmsVariableSpecification* var
 
                 namedVariable = MmsVariableSpecification_getNamedVariableRecursive(namedVariable, separator + 1);
             }
+            else /* ERROR: request for a child element of a simple (leaf-node) variable */
+                return NULL;
         }
 
         return namedVariable;
