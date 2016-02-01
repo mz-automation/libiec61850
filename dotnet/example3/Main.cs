@@ -28,7 +28,11 @@ namespace example3
 
 				con.ConnectTimeout = 10000;
 
+				con.GetMmsConnection().SetLocalDetail(1200);
+
                 con.Connect(hostname, 102);
+
+				Console.WriteLine("Negotiated PDU size: " + con.GetMmsConnection().GetLocalDetail());
 
                 List<string> serverDirectory = con.GetServerDirectory(false);
 
