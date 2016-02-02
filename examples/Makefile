@@ -27,6 +27,10 @@ EXAMPLE_DIRS += goose_subscriber
 EXAMPLE_DIRS += goose_publisher
 EXAMPLE_DIRS += sv_subscriber
 EXAMPLE_DIRS += mms_utility
+EXAMPLE_DIRS += iec61850_9_2_LE_example
+EXAMPLE_DIRS += iec61850_sv_client_example
+EXAMPLE_DIRS += sv_publisher
+EXAMPLE_DIRS += sv_subscriber
 
 MODEL_DIRS += server_example1
 MODEL_DIRS += server_example2
@@ -40,6 +44,7 @@ MODEL_DIRS += server_example_complex_array
 MODEL_DIRS += server_example_61400_25
 MODEL_DIRS += server_example_threadless
 MODEL_DIRS += server_example_setting_groups
+MODEL_DIRS += iec61850_9_2_LE_example
 
 all:	examples
 

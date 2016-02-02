@@ -3,7 +3,7 @@ include_directories(
 )
 
 set(sv_9_2_LE_example_SRCS
-   server_example2.c
+   iec61850_9_2_LE_example.c
    static_model.c
 )
 

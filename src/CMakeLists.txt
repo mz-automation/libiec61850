@@ -176,6 +176,7 @@ set (lib_goose_SRCS
 
 set (lib_sv_SRCS
 ./sampled_values/sv_subscriber.c
+./sampled_values/sv_publisher.c
 )
 
 set (lib_linux_SRCS

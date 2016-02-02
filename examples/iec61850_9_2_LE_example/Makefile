@@ -4,7 +4,7 @@ PROJECT_BINARY_NAME = sv_9_2LE_example
 PROJECT_SOURCES = iec61850_9_2_LE_example.c
 PROJECT_SOURCES += static_model.c
 
-PROJECT_ICD_FILE = complexModel.icd
+PROJECT_ICD_FILE = sv.icd
 
 include $(LIBIEC_HOME)/make/target_system.mk
 include $(LIBIEC_HOME)/make/stack_includes.mk

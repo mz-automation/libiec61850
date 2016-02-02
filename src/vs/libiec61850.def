@@ -566,3 +566,4 @@ EXPORTS
     ClientSVControlBlock_getNoASDU
     IedServer_setSVCBHandler
     IedModel_getSVControlBlock
+    

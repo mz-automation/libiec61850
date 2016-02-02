@@ -660,6 +660,18 @@ MmsConnection_fileDelete(MmsConnection self, MmsError* mmsError, const char* fil
 void
 MmsConnection_fileRename(MmsConnection self, MmsError* mmsError, const char* currentFileName, const char* newFileName);
 
+
+/**
+ * \brief Send an obtainFile request to the server (used to initiate file download to server)
+ *
+ * \param self MmsConnection instance to operate on
+ * \param mmsError user provided variable to store error code
+ * \param sourceFile the name of the source file (client side name)
+ * \param destinationFile the name of the destination file (server side name)
+ */
+void
+MmsConnection_obtainFile(MmsConnection self, MmsError* mmsError, const char* sourceFile, const char* destinationFile);
+
 /**
  * \brief get the file directory of the server.
  *

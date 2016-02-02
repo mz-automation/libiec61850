@@ -1795,6 +1795,29 @@ MmsConnection_fileRename(MmsConnection self, MmsError* mmsError, const char* cur
 
 
 void
+MmsConnection_obtainFile(MmsConnection self, MmsError* mmsError, const char* sourceFile, const char* destinationFile)
+{
+    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
+
+    *mmsError = MMS_ERROR_NONE;
+
+    uint32_t invokeId = getNextInvokeId(self);
+
+    mmsClient_createObtainFileRequest(invokeId, payload, sourceFile, destinationFile);
+
+    sendRequestAndWaitForResponse(self, invokeId, payload);
+
+
+    if (self->lastResponseError != MMS_ERROR_NONE)
+        *mmsError = self->lastResponseError;
+
+    releaseResponse(self);
+
+    if (self->associationState == MMS_STATE_CLOSED)
+        *mmsError = MMS_ERROR_CONNECTION_LOST;
+}
+
+void
 MmsConnection_writeVariable(MmsConnection self, MmsError* mmsError,
         const char* domainId, const char* itemId,
         MmsValue* value)

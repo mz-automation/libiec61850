@@ -83,7 +83,7 @@ int main(int argc, char** argv) {
 	while (running) {
 	    IedServer_lockDataModel(iedServer);
 
-	    IedServer_updateUTCTimeAttributeValue(iedServer, temperatureTimestamp, Hal_getTimeInMs())
+	    IedServer_updateUTCTimeAttributeValue(iedServer, temperatureTimestamp, Hal_getTimeInMs());
 	    IedServer_updateFloatAttributeValue(iedServer, temperatureValue, val);
 
 	    IedServer_unlockDataModel(iedServer);

@@ -264,7 +264,7 @@ encodeUtcTime(uint64_t timeval, uint8_t* buffer, int bufPos)
 SampledValuesPublisher
 SampledValuesPublisher_create(const char* interfaceId)
 {
-	SampledValuesPublisher self = GLOBAL_CALLOC(1, sizeof(struct sSampledValuesPublisher));
+	SampledValuesPublisher self = (SampledValuesPublisher) GLOBAL_CALLOC(1, sizeof(struct sSampledValuesPublisher));
 
 	self->asduLIst = NULL;
 
@@ -276,7 +276,7 @@ SampledValuesPublisher_create(const char* interfaceId)
 SV_ASDU
 SampledValuesPublisher_addASDU(SampledValuesPublisher self, char* svID, char* datset, uint32_t confRev)
 {
-    SV_ASDU newAsdu = GLOBAL_CALLOC(1, sizeof(struct sSV_ASDU));
+    SV_ASDU newAsdu = (SV_ASDU) GLOBAL_CALLOC(1, sizeof(struct sSV_ASDU));
 
     newAsdu->svID = svID;
     newAsdu->datset = datset;

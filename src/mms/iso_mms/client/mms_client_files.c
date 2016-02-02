@@ -183,7 +183,7 @@ mmsClient_createFileRenameRequest(uint32_t invokeId, ByteBuffer* request, const 
 {
     uint32_t invokeIdSize = BerEncoder_UInt32determineEncodedSize(invokeId);
 
-    uint32_t confirmedRequestPduSize = 1 + 2 + 2  + invokeIdSize + 0;
+    uint32_t confirmedRequestPduSize = 1 + 2 + 2  + invokeIdSize;
 
     uint32_t parameterSize = 0;
 
@@ -211,6 +211,41 @@ mmsClient_createFileRenameRequest(uint32_t invokeId, ByteBuffer* request, const 
 
     request->size = bufPos;
 }
+
+void
+mmsClient_createObtainFileRequest(uint32_t invokeId, ByteBuffer* request, const char* sourceFile, const char* destinationFile)
+{
+    uint32_t invokeIdSize = BerEncoder_UInt32determineEncodedSize(invokeId);
+
+    uint32_t confirmedRequestPduSize = 1 + 2 + 2 + invokeIdSize;
+
+    uint32_t parameterSize = 0;
+
+    parameterSize += encodeFileSpecification(0xa0, sourceFile, NULL, 0);
+
+    parameterSize += encodeFileSpecification(0xa1, destinationFile, NULL, 0);
+
+    confirmedRequestPduSize += parameterSize;
+
+    int bufPos = 0;
+    uint8_t* buffer = request->buffer;
+
+    bufPos = BerEncoder_encodeTL(0xa0, confirmedRequestPduSize, buffer, bufPos);
+    bufPos = BerEncoder_encodeTL(0x02, invokeIdSize, buffer, bufPos);
+    bufPos = BerEncoder_encodeUInt32(invokeId, buffer, bufPos);
+
+    /* Encode ObtainFile tag (context | structured ) [46 = 2eh] */
+    buffer[bufPos++] = 0xbf;
+    buffer[bufPos++] = 0x2e;
+    bufPos = BerEncoder_encodeLength(parameterSize, buffer, bufPos);
+
+    bufPos = encodeFileSpecification(0xa1, sourceFile, buffer, bufPos);
+
+    bufPos = encodeFileSpecification(0xa2, destinationFile, buffer, bufPos);
+
+    request->size = bufPos;
+}
+
 
 static bool
 parseFileAttributes(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t* fileSize, uint64_t* lastModified)

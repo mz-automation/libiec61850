@@ -98,6 +98,7 @@ set(API_HEADERS
     src/goose/goose_subscriber.h
     src/goose/goose_receiver.h
     src/sampled_values/sv_subscriber.h
+    src/sampled_values/sv_publisher.h
 )
 
 IF(WIN32)

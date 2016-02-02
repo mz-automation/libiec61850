@@ -1,3 +1,19 @@
+Changes to version 0.9
+----------------------
+- Sampled values subscriber code
+- Experimental sampled values publisher and MMS SVCB code
+- server: support for VMD scope data sets (MMS named variable lists)
+- .NET API: added MmsConnection.setLocalDetail and MmsConnection.getLocalDetail
+- example server/sv publisher according to IEC 61850-9-2LE
+- server: multi-threaded configuration now uses select instead of socket polling
+- .NET API: some additional methods for MmsValue class
+- server: fixed bug with nested directories in file service
+- mms_utility: added read file directory feature
+- SCL parser/modelviewer: show unused types in SCL file
+- server: fixed some problems related to buffered reporting UCA test cases
+- other bug fixes
+
+
 Changes to version 0.8.7
 ------------------------
 - client: added client side control service support for edition 1 and 2 APC CDCs

@@ -237,6 +237,9 @@ void
 mmsClient_createFileRenameRequest(uint32_t invokeId, ByteBuffer* request, const char* currentFileName, const char* newFileName);
 
 void
+mmsClient_createObtainFileRequest(uint32_t invokeId, ByteBuffer* request, const char* sourceFile, const char* destinationFile);
+
+void
 mmsClient_createFileDeleteRequest(uint32_t invokeId, ByteBuffer* request, const char* fileName);
 
 void
