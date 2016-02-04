@@ -522,7 +522,6 @@ EXPORTS
     SVControlBlock_create
     SVControlBlock_addPhyComAddress
     GSEControlBlock_addPhyComAddress
-    GooseSubscriber_getConfRev
     SVReceiver_create
     SVReceiver_setInterfaceId
     SVReceiver_addSubscriber
@@ -566,4 +565,32 @@ EXPORTS
     ClientSVControlBlock_getNoASDU
     IedServer_setSVCBHandler
     IedModel_getSVControlBlock
-    
+    GooseSubscriber_getConfRev
+    GooseSubscriber_isValid
+    GooseReceiver_create
+    GooseReceiver_setInterfaceId
+    GooseReceiver_addSubscriber
+    GooseReceiver_removeSubscriber
+    GooseReceiver_start
+    GooseReceiver_stop
+    GooseReceiver_destroy
+    GooseReceiver_startThreadless
+    GooseReceiver_stopThreadless
+    GooseReceiver_tick
+    SampledValuesPublisher_create
+    SampledValuesPublisher_addASDU
+    SampledValuesPublisher_setupComplete
+    SampledValuesPublisher_publish
+    SampledValuesPublisher_destroy
+    SV_ASDU_resetBuffer
+    SV_ASDU_addINT8
+    SV_ASDU_setINT8
+    SV_ASDU_addINT32
+    SV_ASDU_setINT32
+    SV_ASDU_addFLOAT
+    SV_ASDU_setFLOAT
+    SV_ASDU_setSmpCnt
+    SV_ASDU_increaseSmpCnt
+    SV_ASDU_setRefrTm
+    SV_ASDU_setSmpMod
+    MmsValue_printToBuffer

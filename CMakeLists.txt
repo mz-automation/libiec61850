@@ -97,6 +97,7 @@ set(API_HEADERS
     src/mms/inc/asn1_ber_primitive_value.h
     src/goose/goose_subscriber.h
     src/goose/goose_receiver.h
+    src/goose/goose_publisher.h
     src/sampled_values/sv_subscriber.h
     src/sampled_values/sv_publisher.h
 )

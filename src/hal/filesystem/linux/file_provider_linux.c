@@ -38,7 +38,8 @@
 #define CONFIG_VIRTUAL_FILESTORE_BASEPATH "./vmd-filestore/"
 #endif
 
-static char* fileBasePath = CONFIG_VIRTUAL_FILESTORE_BASEPATH;
+static char fileBasePath[256];
+static bool fileBasePathInitialized = false;
 
 struct sDirectoryHandle {
     DIR* handle;
@@ -47,6 +48,11 @@ struct sDirectoryHandle {
 static void
 createFullPathFromFileName(char* fullPath, char* filename)
 {
+    if (!fileBasePathInitialized) {
+        strcpy(fileBasePath, CONFIG_VIRTUAL_FILESTORE_BASEPATH);
+        fileBasePathInitialized = true;
+    }
+
     strcpy(fullPath, fileBasePath);
 
     if (filename != NULL)
@@ -57,7 +63,8 @@ createFullPathFromFileName(char* fullPath, char* filename)
 void
 FileSystem_setBasePath(char* basePath)
 {
-    fileBasePath = basePath;
+    strcpy(fileBasePath, basePath);
+    fileBasePathInitialized = true;
 }
 
 FileHandle
@@ -191,24 +198,3 @@ FileSystem_closeDirectory(DirectoryHandle directory)
     GLOBAL_FREEMEM(directory);
 }
 
-#if 0
-int
-main(int argc, char** argv)
-{
-    DirectoryHandle directory = FileSystem_openDirectory("/");
-
-    if (directory != NULL) {
-        char* fileName = FileSystem_readDirectory(directory);
-
-
-        while (fileName != NULL) {
-            printf("FILE: (%s)\n", fileName);
-            fileName = FileSystem_readDirectory(directory);
-        }
-
-        FileSystem_closeDirectory(directory);
-    }
-    else
-        printf("Error opening directory!\n");
-}
-#endif

@@ -94,15 +94,6 @@ GooseSubscriber_setAppId(GooseSubscriber self, uint16_t appId);
 bool
 GooseSubscriber_isValid(GooseSubscriber self);
 
-//uint16_t
-//GooseSubscriber_getAppId(GooseSubscriber self);
-
-void
-GooseSubscriber_setGoId(GooseSubscriber self, const char* goId);
-
-//char*
-//GooseSubscriber_getGoId(GooseSubscriber self);
-
 void
 GooseSubscriber_destroy(GooseSubscriber self);
 

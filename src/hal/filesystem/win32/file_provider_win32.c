@@ -41,7 +41,10 @@
 #define CONFIG_VIRTUAL_FILESTORE_BASEPATH ".\\vmd-filestore\\"
 #endif
 
-static char* fileBasePath = CONFIG_VIRTUAL_FILESTORE_BASEPATH;
+//static char* fileBasePath = CONFIG_VIRTUAL_FILESTORE_BASEPATH;
+
+static char fileBasePath[256];
+static bool fileBasePathInitialized = false;
 
 struct sDirectoryHandle {
     HANDLE handle;
@@ -53,6 +56,11 @@ struct sDirectoryHandle {
 static void
 createFullPathFromFileName(char* fullPath, char* filename)
 {
+    if (!fileBasePathInitialized) {
+        strcpy(fileBasePath, CONFIG_VIRTUAL_FILESTORE_BASEPATH);
+        fileBasePathInitialized = true;
+    }
+
     strcpy(fullPath, fileBasePath);
 
     if (filename != NULL)
@@ -62,7 +70,8 @@ createFullPathFromFileName(char* fullPath, char* filename)
 void
 FileSystem_setBasePath(char* basePath)
 {
-    fileBasePath = basePath;
+    strcpy(fileBasePath, basePath);
+    fileBasePathInitialized = true;
 }
 
 FileHandle

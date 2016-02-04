@@ -94,7 +94,9 @@ LIB_API_HEADER_FILES += src/mms/inc/ber_integer.h
 LIB_API_HEADER_FILES += src/mms/inc/asn1_ber_primitive_value.h
 LIB_API_HEADER_FILES += src/goose/goose_subscriber.h
 LIB_API_HEADER_FILES += src/goose/goose_receiver.h
+LIB_API_HEADER_FILES += src/goose/goose_publisher.h
 LIB_API_HEADER_FILES += src/sampled_values/sv_subscriber.h
+LIB_API_HEADER_FILES += src/sampled_values/sv_publisher.h
 
 get_sources_from_directory  = $(wildcard $1/*.c)
 get_sources = $(foreach dir, $1, $(call get_sources_from_directory,$(dir)))

@@ -516,3 +516,4 @@ EXPORTS
     ClientSVControlBlock_getNoASDU
     IedServer_setSVCBHandler
     IedModel_getSVControlBlock
+    MmsValue_printToBuffer
