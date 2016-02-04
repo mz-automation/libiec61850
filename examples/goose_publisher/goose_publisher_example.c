@@ -36,7 +36,13 @@ main(int argc, char** argv)
 	gooseCommParameters.vlanId = 0;
 	gooseCommParameters.vlanPriority = 4;
 
-	GoosePublisher publisher = GoosePublisher_create(&gooseCommParameters, "eth0");
+	/*
+	 * Create a new GOOSE publisher instance. As the second parameter the interface
+	 * name can be provided (e.g. "eth0" on a Linux system). If the second parameter
+	 * is NULL the interface name as defined with CONFIG_ETHERNET_INTERFACE_ID in
+	 * stack_config.h is used.
+	 */
+	GoosePublisher publisher = GoosePublisher_create(&gooseCommParameters, NULL);
 
 	GoosePublisher_setGoCbRef(publisher, "simpleIOGenericIO/LLN0$GO$gcbAnalogValues");
 	GoosePublisher_setConfRev(publisher, 1);

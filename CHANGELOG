@@ -1,3 +1,7 @@
+Changes to version 0.9.0.1
+--------------------------
+- fixed problem with windows build with GOOSE and SV support
+
 Changes to version 0.9
 ----------------------
 - Sampled values subscriber code
