@@ -26,6 +26,11 @@
 
 #include <goose_subscriber.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 /**
  * \addtogroup goose_api_group
  */
@@ -121,5 +126,10 @@ bool
 GooseReceiver_tick(GooseReceiver self);
 
 /**@}*/
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif /* GOOSE_RECEIVER_H_ */

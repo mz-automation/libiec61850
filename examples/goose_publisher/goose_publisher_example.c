@@ -7,7 +7,6 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdio.h>
-#include <unistd.h>
 
 #include "mms_value.h"
 #include "goose_publisher.h"

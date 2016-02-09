@@ -27,6 +27,11 @@
 
 #include "libiec61850_platform_includes.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 #define IEC61850_SV_SMPSYNC_NOT_SYNCHRONIZED 0
 #define IEC61850_SV_SMPSYNC_SYNCED_UNSPEC_LOCAL_CLOCK 1
 #define IEC61850_SV_SMPSYNC_SYNCED_GLOBAL_CLOCK 2
@@ -95,5 +100,10 @@ SV_ASDU_setRefrTm(SV_ASDU self, uint64_t refrTm);
  */
 void
 SV_ASDU_setSmpMod(SV_ASDU self, uint8_t smpMod);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif /* LIBIEC61850_SRC_SAMPLED_VALUES_SV_PUBLISHER_H_ */

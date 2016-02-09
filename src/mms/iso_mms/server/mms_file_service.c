@@ -485,9 +485,7 @@ addFileEntriesToResponse(uint8_t* buffer, int bufPos, int maxBufSize, char* dire
 
             uint32_t fileSize;
 
-            if (FileSystem_getFileInfo(directoryName, &fileSize, &msTime) == NULL)
-                bufPos = -1;
-            else {
+            if (FileSystem_getFileInfo(directoryName, &fileSize, &msTime)) {
 
                 char gtString[30];
 
@@ -512,6 +510,8 @@ addFileEntriesToResponse(uint8_t* buffer, int bufPos, int maxBufSize, char* dire
                 bufPos = encodeFileSpecification(0xa0, directoryName, buffer, bufPos); /* fileName */
                 bufPos = encodeFileAttributes(0xa1, fileSize, gtString, buffer, bufPos); /* file attributes */
             }
+            else
+                bufPos = -1;
 
         }
 

@@ -525,13 +525,13 @@ handleReadListOfVariablesRequest(
 					if (DEBUG_MMS_SERVER)
 					    printf("MMS_SERVER: READ domain %s not found!\n", domainIdStr);
 
-					appendErrorToResultList(values, 10 /* object-non-existent*/);
+					appendErrorToResultList(values, (uint32_t) DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT /* object-non-existent*/);
 				}
 				else {
                     MmsVariableSpecification* namedVariable = MmsDomain_getNamedVariable(domain, nameIdStr);
 
                     if (namedVariable == NULL)
-                        appendErrorToResultList(values, 10 /* object-non-existent*/);
+                        appendErrorToResultList(values, (uint32_t) DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT /* object-non-existent*/);
                     else
                         addNamedVariableToResultList(namedVariable, domain, nameIdStr,
                             values, connection, alternateAccess);
@@ -559,7 +559,7 @@ handleReadListOfVariablesRequest(
 #endif /* (CONFIG_MMS_SUPPORT_VMD_SCOPE_NAMED_VARIABLES == 1) */
 
 			else {
-                appendErrorToResultList(values, 10 /* object-non-existent*/);
+                appendErrorToResultList(values, (uint32_t) DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT /* object-non-existent*/);
 
 				if (DEBUG_MMS_SERVER) printf("MMS_SERVER: READ object name type not supported!\n");
 			}
