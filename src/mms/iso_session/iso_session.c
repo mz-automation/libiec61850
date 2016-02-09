@@ -165,21 +165,33 @@ parseSessionHeaderParameters(IsoSession* session, ByteBuffer* message, int param
             if (DEBUG_SESSION)
                 printf("SESSION: Parameter - Calling Session Selector\n");
 
-            if (parameterLength != 2)
+            if (parameterLength > 16)
                 return SESSION_ERROR;
 
-            session->callingSessionSelector = message->buffer[offset++] * 0x100;
-            session->callingSessionSelector += message->buffer[offset++];
+            {
+                session->callingSessionSelector.size = parameterLength;
+
+                int i;
+                for (i = 0; i < session->callingSessionSelector.size; i++)
+                    session->callingSessionSelector.value[i] = message->buffer[offset++];
+            }
+
             break;
         case 52: /* Called Session Selector */
             if (DEBUG_SESSION)
                 printf("SESSION: Parameter - Called Session Selector\n");
 
-            if (parameterLength != 2)
+            if (parameterLength > 16)
                 return SESSION_ERROR;
 
-            session->calledSessionSelector = message->buffer[offset++] * 0x100;
-            session->calledSessionSelector += message->buffer[offset++];
+            {
+               session->calledSessionSelector.size = parameterLength;
+
+               int i;
+               for (i = 0; i < session->calledSessionSelector.size; i++)
+                   session->calledSessionSelector.value[i] = message->buffer[offset++];
+            }
+
             break;
         case 60: /* Data Overflow */
             if (DEBUG_SESSION)
@@ -251,9 +263,11 @@ static int
 encodeCallingSessionSelector(IsoSession* self, uint8_t* buf, int offset)
 {
     buf[offset++] = 0x33;
-    buf[offset++] = 2;
-    buf[offset++] = (uint8_t) (self->callingSessionSelector / 0x100);
-    buf[offset++] = (uint8_t) (self->callingSessionSelector & 0x00ff);
+    buf[offset++] = self->callingSessionSelector.size;
+
+    int i;
+    for (i = 0; i < self->callingSessionSelector.size; i++)
+        buf[offset++] = self->callingSessionSelector.value[i];
 
     return offset;
 }
@@ -262,9 +276,11 @@ static int
 encodeCalledSessionSelector(IsoSession* self, uint8_t* buf, int offset)
 {
     buf[offset++] = 0x34;
-    buf[offset++] = 2;
-    buf[offset++] = (uint8_t) (self->calledSessionSelector / 0x100);
-    buf[offset++] = (uint8_t) (self->calledSessionSelector & 0x00ff);
+    buf[offset++] = self->calledSessionSelector.size;
+
+    int i;
+    for (i = 0; i < self->calledSessionSelector.size; i++)
+        buf[offset++] = self->calledSessionSelector.value[i];
 
     return offset;
 }
@@ -399,8 +415,14 @@ IsoSession_init(IsoSession* session)
 {
     memset(session, 0, sizeof(IsoSession));
     session->sessionRequirement = 0x0002; /* default = duplex functional unit */
-    session->callingSessionSelector = 0x0001;
-    session->calledSessionSelector = 0x0001;
+
+    session->callingSessionSelector.size = 2;
+    session->callingSessionSelector.value[0] = 0;
+    session->callingSessionSelector.value[1] = 1;
+
+    session->calledSessionSelector.size = 2;
+    session->calledSessionSelector.value[0] = 0;
+    session->calledSessionSelector.value[1] = 1;
 }
 
 ByteBuffer*

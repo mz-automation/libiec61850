@@ -50,9 +50,13 @@ int main(int argc, char** argv) {
 	TSelector localTSelector = { 3, { 0x00, 0x01, 0x02 } };
 	TSelector remoteTSelector = { 2, { 0x00, 0x01 } };
 
+	SSelector sSelector1 = {2, { 0, 1 } };
+    SSelector sSelector2 = {5, { 0, 1, 2, 3, 4 } };
+
+
     /* change parameters for presentation, session and transport layers */
-	IsoConnectionParameters_setRemoteAddresses(parameters, 0x12345678, 12, localTSelector);
-    IsoConnectionParameters_setLocalAddresses(parameters, 0x87654321, 1234 , remoteTSelector);
+	IsoConnectionParameters_setRemoteAddresses(parameters, 0x12345678, sSelector1, localTSelector);
+    IsoConnectionParameters_setLocalAddresses(parameters, 0x87654321, sSelector2 , remoteTSelector);
 
     char* password = "top secret";
 

@@ -29,8 +29,8 @@
 #include "iso_connection_parameters.h"
 
 typedef struct {
-	uint16_t callingSessionSelector;
-	uint16_t calledSessionSelector;
+	SSelector callingSessionSelector;
+	SSelector calledSessionSelector;
 	uint16_t sessionRequirement;
 	uint8_t protocolOptions;
 	ByteBuffer userData;

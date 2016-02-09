@@ -771,12 +771,12 @@ MmsConnection_create()
     self->isoParameters = IsoConnectionParameters_create();
 
     /* Load default values for connection parameters */
-	TSelector selector1 = { 2, { 0, 1 } };
-	TSelector selector2 = { 2, { 0, 1 } };
+	TSelector tSelector = { 2, { 0, 1 } };
+	SSelector sSelector = {2, { 0, 1 } };
 
-    IsoConnectionParameters_setLocalAddresses(self->isoParameters, 1, 1, selector1);
+    IsoConnectionParameters_setLocalAddresses(self->isoParameters, 1, sSelector, tSelector);
     IsoConnectionParameters_setLocalApTitle(self->isoParameters, "1.1.1.999", 12);
-    IsoConnectionParameters_setRemoteAddresses(self->isoParameters, 1, 1, selector2);
+    IsoConnectionParameters_setRemoteAddresses(self->isoParameters, 1, sSelector, tSelector);
     IsoConnectionParameters_setRemoteApTitle(self->isoParameters, "1.1.1.999.1", 12);
 
     self->connectTimeout = CONFIG_MMS_CONNECTION_DEFAULT_CONNECT_TIMEOUT;

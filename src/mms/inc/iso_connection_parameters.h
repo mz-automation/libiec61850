@@ -98,8 +98,13 @@ typedef bool
  */
 typedef struct {
     uint8_t size; /** 0 .. 4 - 0 means T-selector is not present */
-    uint8_t value[4]; /** T-selector value - value[0] */
+    uint8_t value[4]; /** T-selector value */
 } TSelector;
+
+typedef struct {
+    uint8_t size; /** 0 .. 16 - 0 means S-selector is not present */
+    uint8_t value[16]; /** P-selector value */
+} SSelector;
 
 struct sIsoConnectionParameters
 {
@@ -112,14 +117,14 @@ struct sIsoConnectionParameters
     int remoteApTitleLen;
     int remoteAEQualifier;
     uint32_t remotePSelector;
-    uint16_t remoteSSelector;
+    SSelector remoteSSelector;
     TSelector remoteTSelector;
 
     uint8_t localApTitle[10];
     int localApTitleLen;
     int localAEQualifier;
     uint32_t localPSelector;
-    uint16_t localSSelector;
+    SSelector localSSelector;
     TSelector localTSelector;
 
 };
@@ -201,7 +206,7 @@ IsoConnectionParameters_setRemoteApTitle(IsoConnectionParameters self, const cha
  *  \param tSelector the T-Selector (ISO transport layer address)
  */
 void
-IsoConnectionParameters_setRemoteAddresses(IsoConnectionParameters self, uint32_t pSelector, uint16_t sSelector, TSelector tSelector);
+IsoConnectionParameters_setRemoteAddresses(IsoConnectionParameters self, uint32_t pSelector, SSelector sSelector, TSelector tSelector);
 
 /**
  * \brief set the local AP-Title and AE-Qualifier
@@ -231,7 +236,7 @@ IsoConnectionParameters_setLocalApTitle(IsoConnectionParameters self, char* apTi
  *  \param tSelector the T-Selector (ISO transport layer address)
  */
 void
-IsoConnectionParameters_setLocalAddresses(IsoConnectionParameters self, uint32_t pSelector, uint16_t sSelector, TSelector tSelector);
+IsoConnectionParameters_setLocalAddresses(IsoConnectionParameters self, uint32_t pSelector, SSelector sSelector, TSelector tSelector);
 
 /**@}*/
 
