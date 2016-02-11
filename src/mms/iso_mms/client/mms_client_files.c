@@ -101,7 +101,15 @@ mmsClient_createFileReadRequest(uint32_t invokeId, ByteBuffer* request, int32_t 
 {
     uint32_t invokeIdSize = BerEncoder_UInt32determineEncodedSize(invokeId);
 
-    uint32_t frsmIdSize = BerEncoder_UInt32determineEncodedSize(frsmId);
+    uint8_t frsmIdBuf[5];
+    Asn1PrimitiveValue frsmIdBer;
+    frsmIdBer.octets = frsmIdBuf;
+    frsmIdBer.maxSize = 5;
+    frsmIdBer.size = 0;
+
+    BerInteger_setInt32(&frsmIdBer, frsmId);
+
+    uint32_t frsmIdSize = frsmIdBer.size;
 
     uint32_t confirmedRequestPduSize = 1 + 2 + 2  + invokeIdSize + frsmIdSize;
 
@@ -114,9 +122,7 @@ mmsClient_createFileReadRequest(uint32_t invokeId, ByteBuffer* request, int32_t 
 
     /* Encode FileRead tag (context | primitive ) [73 = 49h] */
     buffer[bufPos++] = 0x9f;
-    buffer[bufPos++] = 0x49;
-    bufPos = BerEncoder_encodeLength(frsmIdSize, buffer, bufPos);
-    bufPos = BerEncoder_encodeUInt32(frsmId, buffer, bufPos);
+    bufPos = BerEncoder_encodeOctetString(0x49, frsmIdBer.octets, frsmIdBer.size, buffer, bufPos);
 
     request->size = bufPos;
 }
