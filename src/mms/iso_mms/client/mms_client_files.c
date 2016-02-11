@@ -577,9 +577,15 @@ mmsClient_createFileCloseRequest(uint32_t invokeId, ByteBuffer* request, int32_t
 {
     uint32_t invokeIdSize = BerEncoder_UInt32determineEncodedSize(invokeId);
 
-    uint32_t frsmIdSize = BerEncoder_UInt32determineEncodedSize(frsmId);
+    uint8_t frsmIdBuf[5];
+    Asn1PrimitiveValue frsmIdBer;
+    frsmIdBer.octets = frsmIdBuf;
+    frsmIdBer.maxSize = 5;
+    frsmIdBer.size = 0;
 
-    uint32_t confirmedRequestPduSize = 1 + 2 + 2  + invokeIdSize + frsmIdSize;
+    BerInteger_setInt32(&frsmIdBer, frsmId);
+
+    uint32_t confirmedRequestPduSize = 1 + 2 + 2  + invokeIdSize + frsmIdBer.size;
 
     int bufPos = 0;
     uint8_t* buffer = request->buffer;
@@ -590,9 +596,7 @@ mmsClient_createFileCloseRequest(uint32_t invokeId, ByteBuffer* request, int32_t
 
     /* Encode FileClose tag (context | primitive) [74 = 4ah] */
     buffer[bufPos++] = 0x9f;
-    buffer[bufPos++] = 0x4a;
-    bufPos = BerEncoder_encodeLength(frsmIdSize, buffer, bufPos);
-    bufPos = BerEncoder_encodeUInt32(frsmId, buffer, bufPos);
+    bufPos = BerEncoder_encodeOctetString(0x4a, frsmIdBer.octets, frsmIdBer.size, buffer, bufPos);
 
     request->size = bufPos;
 }

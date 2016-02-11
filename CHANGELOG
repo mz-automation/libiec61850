@@ -1,5 +1,7 @@
 Changes to version 0.9.0.2
 --------------------------
+- fixed encoding problem with negative frsmId in client file read service
+- allow 1 to 16 octet size ISO session selector (small API change in IsoConnectionParameters methods)
 - added C++ compatible headers to GOOSE/SV publisher headers 
 - server: fixed problem in GetFileDirectory-service with a single file as parameter
 - added goose_publisher_example to cmake
