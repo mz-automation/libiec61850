@@ -205,7 +205,7 @@ set (lib_bsd_SRCS
 
 IF(WIN32)
 
-if(EXISTS "../third_party/winpcap/Lib/wpcap.lib")
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../third_party/winpcap/Lib/wpcap.lib")
 message("Found winpcap -> can compile with GOOSE support")
 set(WITH_WPCAP 1)
 endif()

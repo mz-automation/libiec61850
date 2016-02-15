@@ -23,7 +23,7 @@ add_subdirectory(mms_client_example3)
 add_subdirectory(mms_client_example4)
 
 IF(WIN32)
-if(EXISTS "../third_party/winpcap/Lib/wpcap.lib")
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../third_party/winpcap/Lib/wpcap.lib")
 message("Found winpcap -> compile examples for GOOSE and SV")
 add_subdirectory(server_example_goose)
 add_subdirectory(goose_subscriber)
