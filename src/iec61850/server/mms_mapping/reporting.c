@@ -47,6 +47,20 @@
 #define CONFIG_IEC61850_BRCB_WITH_RESVTMS 0
 #endif
 
+
+#ifndef CONFIG_IEC61850_EDITION_1
+#define CONFIG_IEC61850_EDITION_1 0
+#endif
+
+#if (CONFIG_IEC61850_EDITION_1 == 1)
+#define CONFIG_REPORTING_SUPPORTS_OWNER 0
+#endif
+
+#ifndef CONFIG_REPORTING_SUPPORTS_OWNER
+#define CONFIG_REPORTING_SUPPORTS_OWNER 1
+#endif
+
+
 static ReportBuffer*
 ReportBuffer_create(void)
 {
@@ -269,6 +283,8 @@ updateTimeOfEntry(ReportControl* self, uint64_t currentTime)
 static void
 sendReport(ReportControl* self, bool isIntegrity, bool isGI)
 {
+    updateTimeOfEntry(self, Hal_getTimeInMs());
+
     LinkedList reportElements = LinkedList_create();
 
     LinkedList deletableElements = LinkedList_create();
@@ -734,10 +750,17 @@ createUnbufferedReportControlBlock(ReportControlBlock* reportControlBlock,
     MmsValue* mmsValue = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
     mmsValue->deleteValue = false;
     mmsValue->type = MMS_STRUCTURE;
-    mmsValue->value.structure.size = 12;
-    mmsValue->value.structure.components = (MmsValue**) GLOBAL_CALLOC(12, sizeof(MmsValue*));
 
-    rcb->typeSpec.structure.elementCount = 12;
+#if (CONFIG_REPORTING_SUPPORTS_OWNER == 1)
+    int structSize = 12;
+#else
+    int structSize = 11;
+#endif
+
+    mmsValue->value.structure.size = structSize;
+    mmsValue->value.structure.components = (MmsValue**) GLOBAL_CALLOC(structSize, sizeof(MmsValue*));
+
+    rcb->typeSpec.structure.elementCount = structSize;
 
     rcb->typeSpec.structure.elements = (MmsVariableSpecification**) GLOBAL_CALLOC(12,
             sizeof(MmsVariableSpecification*));
@@ -834,12 +857,14 @@ createUnbufferedReportControlBlock(ReportControlBlock* reportControlBlock,
     rcb->typeSpec.structure.elements[10] = namedVariable;
     mmsValue->value.structure.components[10] = MmsValue_newBoolean(false);
 
+#if (CONFIG_REPORTING_SUPPORTS_OWNER == 1)
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
     namedVariable->name = copyString("Owner");
     namedVariable->type = MMS_OCTET_STRING;
     namedVariable->typeSpec.octetString = -64;
     rcb->typeSpec.structure.elements[11] = namedVariable;
     mmsValue->value.structure.components[11] = MmsValue_newOctetString(0, 128);
+#endif /* (CONFIG_REPORTING_SUPPORTS_OWNER == 1) */
 
     reportControl->rcbValues = mmsValue;
 
@@ -860,14 +885,15 @@ createBufferedReportControlBlock(ReportControlBlock* reportControlBlock,
     rcb->name = copyString(reportControlBlock->name);
     rcb->type = MMS_STRUCTURE;
 
-    int brcbElementCount;
+    int brcbElementCount = 13;
 
 #if (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1)
-    brcbElementCount = 15;
-#else
-    brcbElementCount = 14;
+    brcbElementCount++;
 #endif
 
+#if (CONFIG_REPORTING_SUPPORTS_OWNER == 1)
+    brcbElementCount++;
+#endif
 
     MmsValue* mmsValue = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
     mmsValue->deleteValue = false;
@@ -989,7 +1015,9 @@ createBufferedReportControlBlock(ReportControlBlock* reportControlBlock,
 
     reportControl->timeOfEntry = mmsValue->value.structure.components[12];
 
+#if ((CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1) || (CONFIG_REPORTING_SUPPORTS_OWNER == 1))
     int currentIndex = 13;
+#endif
 
 #if (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1)
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
@@ -1001,12 +1029,14 @@ createBufferedReportControlBlock(ReportControlBlock* reportControlBlock,
     currentIndex++;
 #endif /* (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1) */
 
+#if (CONFIG_REPORTING_SUPPORTS_OWNER == 1)
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
     namedVariable->name = copyString("Owner");
     namedVariable->type = MMS_OCTET_STRING;
     namedVariable->typeSpec.octetString = -64;
     rcb->typeSpec.structure.elements[currentIndex] = namedVariable;
     mmsValue->value.structure.components[currentIndex] = MmsValue_newOctetString(0, 128); /* size 4 is enough to store client IPv4 address */
+#endif /* (CONFIG_REPORTING_SUPPORTS_OWNER == 1) */
 
     reportControl->rcbValues = mmsValue;
 
@@ -1016,7 +1046,7 @@ createBufferedReportControlBlock(ReportControlBlock* reportControlBlock,
     refreshTriggerOptions(reportControl);
 
     return rcb;
-}
+} /* createBufferedReportControlBlock() */
 
 static ReportControlBlock*
 getRCBForLogicalNodeWithIndex(MmsMapping* self, LogicalNode* logicalNode,
@@ -1118,15 +1148,12 @@ Reporting_createMmsUnbufferedRCBs(MmsMapping* self, MmsDomain* domain,
     return namedVariable;
 }
 
-#define CONFIG_REPORTING_SUPPORTS_OWNER 1
-
 static void
 updateOwner(ReportControl* rc, MmsServerConnection connection)
 {
     rc->clientConnection = connection;
 
 #if (CONFIG_REPORTING_SUPPORTS_OWNER == 1)
-
     MmsValue* owner = ReportControl_getRCBValue(rc, "Owner");
 
     if (owner != NULL) {
@@ -1645,6 +1672,8 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
     if (DEBUG_IED_SERVER) printf("IED_SERVER: enqueueReport: RCB name: %s (SQN:%u) enabled:%i buffered:%i buffering:%i intg:%i GI:%i\n",
             reportControl->name, (unsigned) reportControl->sqNum, reportControl->enabled,
             reportControl->isBuffering, reportControl->buffered, isIntegrity, isGI);
+
+    updateTimeOfEntry(reportControl, Hal_getTimeInMs());
 
     ReportBuffer* buffer = reportControl->reportBuffer;
 
@@ -2362,8 +2391,6 @@ processEventsForReport(ReportControl* rc, uint64_t currentTimeInMs)
                     rc->triggered = false;
                 }
 
-                updateTimeOfEntry(rc, currentTimeInMs);
-
                 if (rc->buffered)
                     enqueueReport(rc, false, true, currentTimeInMs);
                 else
@@ -2391,7 +2418,6 @@ processEventsForReport(ReportControl* rc, uint64_t currentTimeInMs)
                     }
 
                     rc->nextIntgReportTime = currentTimeInMs + rc->intgPd;
-                    updateTimeOfEntry(rc, currentTimeInMs);
 
                     if (rc->buffered)
                         enqueueReport(rc, true, false, currentTimeInMs);

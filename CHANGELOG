@@ -1,5 +1,6 @@
 Changes to version 0.9.0.2
 --------------------------
+- added CONFIG_IEC61850_EDITION_1 configuration option to enable server builds for edition 1 (at the moment only remove "Owner" form RCBs).
 - fixed encoding problem with negative frsmId in client file read service
 - allow 1 to 16 octet size ISO session selector (small API change in IsoConnectionParameters methods)
 - added C++ compatible headers to GOOSE/SV publisher headers 

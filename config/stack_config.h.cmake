@@ -74,6 +74,9 @@
 /* Set to 1 to include Sampled Values support in the build. Otherwise set to 0 */
 #define CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT 1
 
+/* Set to 1 to compile for edition 1 server - default is 0 to compile for edition 2 */
+#define CONFIG_IEC61850_EDITION_1 0
+
 #ifdef _WIN32
 
 /* GOOSE will be disabled for Windows if ethernet support (winpcap) is not available */

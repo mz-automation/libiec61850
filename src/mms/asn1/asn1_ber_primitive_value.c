@@ -37,16 +37,6 @@ Asn1PrimitiveValue_create(int size)
 	return self;
 }
 
-//Asn1PrimitiveValue*
-//Asn1PrimitiveValue_createFromBuffer(uint8_t buffer, int bufferSize)
-//{
-//    Asn1PrimitiveValue* self = GLOBAL_MALLOC(sizeof(Asn1PrimitiveValue));
-//    self->size = bufferSize;
-//    self->maxSize = bufferSize;
-//    self->octets = GLOBAL_MALLOC(1, bufferSize);
-//
-//}
-
 Asn1PrimitiveValue*
 Asn1PrimitiveValue_clone(Asn1PrimitiveValue* self)
 {
