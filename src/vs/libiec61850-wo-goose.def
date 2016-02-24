@@ -514,3 +514,7 @@ EXPORTS
     ClientSVControlBlock_getOptFlds
     ClientSVControlBlock_getSmpMod
     ClientSVControlBlock_getNoASDU
+    CDC_CTE_create
+    CDC_SPV_create
+    CDC_TMS_create
+ 
