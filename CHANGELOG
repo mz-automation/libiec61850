@@ -1,3 +1,7 @@
+Changes to version 0.9.1
+------------------------
+- changed signature of IedConnection_deleteDataSet, MmsConnection_deleteAssociationSpecificNamedVariableList, MmsConnection_deleteNamedVariableList. added boolean return value to indicate if data set/named variable list has been deleted.
+
 Changes to version 0.9.0.2
 --------------------------
 - added CONFIG_IEC61850_EDITION_1 configuration option to enable server builds for edition 1 (at the moment only remove "Owner" form RCBs).

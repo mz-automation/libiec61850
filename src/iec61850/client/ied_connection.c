@@ -1973,13 +1973,14 @@ exit_function:
     return;
 }
 
-void
+bool
 IedConnection_deleteDataSet(IedConnection self, IedClientError* error, const char* dataSetReference)
 {
     char domainIdBuf[65];
     char* domainId = domainIdBuf;
     char itemId[DATA_SET_MAX_NAME_LENGTH + 1];
     bool isAssociationSpecific = false;
+    bool isDeleted = false;
 
     int dataSetReferenceLength = strlen(dataSetReference);
 
@@ -2025,14 +2026,14 @@ IedConnection_deleteDataSet(IedConnection self, IedClientError* error, const cha
     MmsError mmsError;
 
     if (isAssociationSpecific)
-        MmsConnection_deleteAssociationSpecificNamedVariableList(self->connection, &mmsError, itemId);
+        isDeleted = MmsConnection_deleteAssociationSpecificNamedVariableList(self->connection, &mmsError, itemId);
     else
-        MmsConnection_deleteNamedVariableList(self->connection, &mmsError, domainId, itemId);
+        isDeleted = MmsConnection_deleteNamedVariableList(self->connection, &mmsError, domainId, itemId);
 
     *error = iedConnection_mapMmsErrorToIedError(mmsError);
 
 exit_function:
-    return;
+    return isDeleted;
 }
 
 LinkedList /* <char*> */

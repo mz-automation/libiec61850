@@ -2403,11 +2403,13 @@ ReportControlBlock iedModel_GenericIO_LLN0_report4 = {&iedModel_GenericIO_LLN0, 
 
 
 
+
 IedModel iedModel = {
     "beagle",
     &iedModel_GenericIO,
     &iedModelds_GenericIO_LLN0_Events,
     &iedModel_GenericIO_LLN0_report0,
+    NULL,
     NULL,
     NULL,
     initializeValues

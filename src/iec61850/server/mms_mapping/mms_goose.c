@@ -325,6 +325,9 @@ MmsGooseControlBlock_checkAndPublish(MmsGooseControlBlock self, uint64_t current
         Semaphore_post(self->publisherMutex);
 #endif
     }
+    else if ((self->nextPublishTime - currentTime) > ((uint32_t) self->maxTime * 2)) {
+        self->nextPublishTime = currentTime + self->minTime;
+    }
 }
 
 void

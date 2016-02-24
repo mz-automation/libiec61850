@@ -1003,15 +1003,18 @@ namespace IEC61850
 			/// <description>This function will delete a data set at the server. This function may fail if the data set is not
 			/// deletable.</description>
 			/// <param name="dataSetReference">The object reference of the data set</param>
+			/// <returns>true if data set has been deleted, false otherwise</returns>
 			/// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
-			public void DeleteDataSet (string dataSetReference)
+			public bool DeleteDataSet (string dataSetReference)
 			{
 				int error;
 
-				IedConnection_deleteDataSet (connection, out error, dataSetReference);
+				bool isDeleted = IedConnection_deleteDataSet (connection, out error, dataSetReference);
 
 				if (error != 0)
 					throw new IedConnectionException ("Failed to delete data set", error);
+
+				return isDeleted;
 			}
 
             /// <summary>

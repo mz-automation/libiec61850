@@ -1459,10 +1459,12 @@ exit_function:
     return;
 }
 
-void
+bool
 MmsConnection_deleteNamedVariableList(MmsConnection self, MmsError* mmsError,
         const char* domainId, const char* listName)
 {
+    bool isDeleted = false;
+
     if (self->associationState != MMS_STATE_CONNECTED) {
         *mmsError = MMS_ERROR_CONNECTION_LOST;
         goto exit_function;
@@ -1481,8 +1483,8 @@ MmsConnection_deleteNamedVariableList(MmsConnection self, MmsError* mmsError,
     if (self->lastResponseError != MMS_ERROR_NONE)
         *mmsError = self->lastResponseError;
     else if (responseMessage != NULL)
-        if (!mmsClient_parseDeleteNamedVariableListResponse(self->lastResponse, NULL))
-            *mmsError = MMS_ERROR_ACCESS_OTHER;
+        if (mmsClient_parseDeleteNamedVariableListResponse(self->lastResponse, NULL))
+            isDeleted = true;
 
     releaseResponse(self);
 
@@ -1490,13 +1492,15 @@ MmsConnection_deleteNamedVariableList(MmsConnection self, MmsError* mmsError,
         *mmsError = MMS_ERROR_CONNECTION_LOST;
 
 exit_function:
-    return;
+    return isDeleted;
 }
 
-void
+bool
 MmsConnection_deleteAssociationSpecificNamedVariableList(MmsConnection self,
         MmsError* mmsError, const char* listName)
 {
+    bool isDeleted = false;
+
     if (self->associationState != MMS_STATE_CONNECTED) {
         *mmsError = MMS_ERROR_CONNECTION_LOST;
         goto exit_function;
@@ -1516,8 +1520,8 @@ MmsConnection_deleteAssociationSpecificNamedVariableList(MmsConnection self,
     if (self->lastResponseError != MMS_ERROR_NONE)
         *mmsError = self->lastResponseError;
     else if (responseMessage != NULL)
-        if (!mmsClient_parseDeleteNamedVariableListResponse(self->lastResponse, NULL))
-            *mmsError = MMS_ERROR_ACCESS_OTHER;
+        if (mmsClient_parseDeleteNamedVariableListResponse(self->lastResponse, NULL))
+            isDeleted = true;
 
     releaseResponse(self);
 
@@ -1525,7 +1529,7 @@ MmsConnection_deleteAssociationSpecificNamedVariableList(MmsConnection self,
         *mmsError = MMS_ERROR_CONNECTION_LOST;
 
 exit_function:
-    return;
+    return isDeleted;
 }
 
 MmsVariableSpecification*

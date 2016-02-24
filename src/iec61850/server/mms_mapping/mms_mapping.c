@@ -229,15 +229,15 @@ createNamedVariableFromDataAttribute(DataAttribute* attribute)
             namedVariable->type = MMS_OCTET_STRING;
             break;
         case IEC61850_VISIBLE_STRING_32:
-            namedVariable->typeSpec.visibleString = -129;
+            namedVariable->typeSpec.visibleString = -32;
             namedVariable->type = MMS_VISIBLE_STRING;
             break;
         case IEC61850_VISIBLE_STRING_64:
-            namedVariable->typeSpec.visibleString = -129;
+            namedVariable->typeSpec.visibleString = -64;
             namedVariable->type = MMS_VISIBLE_STRING;
             break;
         case IEC61850_VISIBLE_STRING_65:
-            namedVariable->typeSpec.visibleString = -129;
+            namedVariable->typeSpec.visibleString = -65;
             namedVariable->type = MMS_VISIBLE_STRING;
             break;
         case IEC61850_VISIBLE_STRING_129:

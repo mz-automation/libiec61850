@@ -1336,8 +1336,10 @@ IedConnection_createDataSet(IedConnection self, IedClientError* error, const cha
  * \param connection the connection object
  * \param error the error code if an error occurs
  * \param dataSetReference object reference of the data set
+ *
+ * \return true if data set has been deleted, false otherwise
  */
-void
+bool
 IedConnection_deleteDataSet(IedConnection self, IedClientError* error, const char* dataSetReference);
 
 

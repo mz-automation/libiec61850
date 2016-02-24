@@ -493,8 +493,10 @@ MmsConnection_readNamedVariableListDirectoryAssociationSpecific(MmsConnection se
  * \param mmsError user provided variable to store error code
  * \param domainId the domain name of the domain of the variable list
  * \param listName the name of the named variable list
+ *
+ * \return true if named variable list has been deleted, false otherwise
  */
-void
+bool
 MmsConnection_deleteNamedVariableList(MmsConnection self, MmsError* mmsError, const char* domainId, const char* listName);
 
 /**
@@ -503,8 +505,10 @@ MmsConnection_deleteNamedVariableList(MmsConnection self, MmsError* mmsError, co
  * \param self MmsConnection instance to operate on
  * \param mmsError user provided variable to store error code
  * \param listName the name of the named variable list
+ *
+ * \return true if named variable list has been deleted, false otherwise
  */
-void
+bool
 MmsConnection_deleteAssociationSpecificNamedVariableList(MmsConnection self, MmsError* mmsError,
         const char* listName);
 
