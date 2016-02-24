@@ -19,6 +19,7 @@ print_help()
     printf("-r <variable_name> read domain variable\n");
     printf("-a <domain_name> specify domain for read or write command\n");
     printf("-f show file list\n");
+    printf("-g <filename> get file attributes\n");
 }
 
 static void
@@ -31,6 +32,18 @@ mmsFileDirectoryHandler (void* parameter, char* filename, uint32_t size, uint64_
     printf("%s\n", filename);
 }
 
+static void
+mmsGetFileAttributeHandler (void* parameter, char* filename, uint32_t size, uint64_t lastModified)
+{
+    char gtString[30];
+    Conversions_msTimeToGeneralizedTime(lastModified, (uint8_t*) gtString);
+
+    printf("FILENAME: %s\n", filename);
+    printf("SIZE: %u\n", size);
+    printf("DATE: %s\n", gtString);
+}
+
+
 int main(int argc, char** argv) {
 
 	char* hostname = copyString("localhost");
@@ -39,6 +52,7 @@ int main(int argc, char** argv) {
 
 	char* domainName = NULL;
 	char* variableName = NULL;
+	char* filename = NULL;
 
 	int readDeviceList = 0;
 	int getDeviceDirectory = 0;
@@ -46,11 +60,12 @@ int main(int argc, char** argv) {
 	int readWriteHasDomain = 0;
 	int readVariable = 0;
 	int showFileList = 0;
+	int getFileAttributes = 0;
 
 
 	int c;
 
-	while ((c = getopt(argc, argv, "ifdh:p:l:t:a:r:")) != -1)
+	while ((c = getopt(argc, argv, "ifdh:p:l:t:a:r:g:")) != -1)
 		switch (c) {
 		case 'h':
 			hostname = copyString(optarg);
@@ -81,6 +96,10 @@ int main(int argc, char** argv) {
 		    break;
 		case 'f':
 		    showFileList = 1;
+		    break;
+		case 'g':
+		    getFileAttributes = 1;
+		    filename = copyString(optarg);
 		    break;
 
 		default:
@@ -175,6 +194,10 @@ int main(int argc, char** argv) {
 	    while (MmsConnection_getFileDirectory(con, &error, "", continueAfter, mmsFileDirectoryHandler, lastName)) {
 	        continueAfter = lastName;
 	    }
+	}
+
+	if (getFileAttributes) {
+	    MmsConnection_getFileDirectory(con, &error, filename, NULL, mmsGetFileAttributeHandler, NULL);
 	}
 
 exit:

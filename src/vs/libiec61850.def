@@ -594,3 +594,6 @@ EXPORTS
     SV_ASDU_setRefrTm
     SV_ASDU_setSmpMod
     MmsValue_printToBuffer
+    CDC_CTE_create
+    CDC_SPV_create
+    CDC_TMS_create
