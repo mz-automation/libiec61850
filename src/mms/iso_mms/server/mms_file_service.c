@@ -516,41 +516,6 @@ addFileEntriesToResponse(uint8_t* buffer, int bufPos, int maxBufSize, char* dire
         }
 
     }
-    else if (directoryName != NULL) {
-        uint64_t msTime;
-
-        uint32_t fileSize;
-
-        if (FileSystem_getFileInfo(directoryName, &fileSize, &msTime)) {
-
-            char gtString[30];
-
-            Conversions_msTimeToGeneralizedTime(msTime, (uint8_t*) gtString);
-
-            int fileAttributesSize = encodeFileAttributes(0xa1, fileSize, gtString, NULL, 0);
-
-            int filenameSize = encodeFileSpecification(0xa0, directoryName, NULL, 0);
-
-            int dirEntrySize = 2 + fileAttributesSize + filenameSize;
-
-            int overallEntrySize = 1 + BerEncoder_determineLengthSize(dirEntrySize) + dirEntrySize;
-
-            int bufferSpaceLeft = maxBufSize - bufPos;
-
-            if (overallEntrySize <= bufferSpaceLeft) {
-                bufPos = BerEncoder_encodeTL(0x30, dirEntrySize, buffer, bufPos); /* SEQUENCE (DirectoryEntry) */
-                bufPos = encodeFileSpecification(0xa0, directoryName, buffer, bufPos); /* fileName */
-                bufPos = encodeFileAttributes(0xa1, fileSize, gtString, buffer, bufPos); /* file attributes */
-            }
-
-            else
-                bufPos = -1;
-        }
-        else
-            bufPos = -1;
-    }
-    else
-    	bufPos = -1;
 
     directoryName[directoryNameLength] = 0;
 
