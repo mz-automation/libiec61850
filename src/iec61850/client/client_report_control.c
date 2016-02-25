@@ -37,7 +37,7 @@ isBufferedRcb(const char* objectReference)
     const char* separator = strchr(objectReference, '.');
 
     if (separator == NULL)
-        return false; //TODO report an error
+        return false;
 
     if (*(separator + 1) == 'B')
         return true;
@@ -49,6 +49,8 @@ ClientReportControlBlock
 ClientReportControlBlock_create(const char* objectReference)
 {
     ClientReportControlBlock self = (ClientReportControlBlock) GLOBAL_CALLOC(1, sizeof(struct sClientReportControlBlock));
+
+    //TODO check validity of object reference?!
 
     self->objectReference = copyString(objectReference);
     self->isBuffered = isBufferedRcb(objectReference);
@@ -499,6 +501,7 @@ IedConnection_setRCBValues(IedConnection self, IedClientError* error, ClientRepo
     MmsError mmsError = MMS_ERROR_NONE;
 
     bool isBuffered = ClientReportControlBlock_isBuffered(rcb);
+    bool sendGILast = false; /* GI should be sent last when RptEna=TRUE is included */
 
     char domainId[65];
     char itemId[129];
@@ -591,10 +594,18 @@ IedConnection_setRCBValues(IedConnection self, IedClientError* error, ClientRepo
     }
 
     if (parametersMask & RCB_ELEMENT_GI) {
-        strcpy(itemId + itemIdLen, "$GI");
 
-        LinkedList_add(itemIds, copyString(itemId));
-        LinkedList_add(values, rcb->gi);
+        if (parametersMask & RCB_ELEMENT_RPT_ENA) {
+            if (MmsValue_getBoolean(rcb->rptEna))
+                sendGILast = true;
+        }
+
+        if (sendGILast == false) {
+            strcpy(itemId + itemIdLen, "$GI");
+
+            LinkedList_add(itemIds, copyString(itemId));
+            LinkedList_add(values, rcb->gi);
+        }
     }
 
     if (parametersMask & RCB_ELEMENT_PURGE_BUF) {
@@ -622,6 +633,13 @@ IedConnection_setRCBValues(IedConnection self, IedClientError* error, ClientRepo
 
         LinkedList_add(itemIds, copyString(itemId));
         LinkedList_add(values, rcb->rptEna);
+    }
+
+    if (sendGILast) {
+        strcpy(itemId + itemIdLen, "$GI");
+
+        LinkedList_add(itemIds, copyString(itemId));
+        LinkedList_add(values, rcb->gi);
     }
 
     if (singleRequest) {
@@ -672,10 +690,10 @@ IedConnection_setRCBValues(IedConnection self, IedClientError* error, ClientRepo
         goto exit_function;
     }
 
-    error_invalid_parameter:
+error_invalid_parameter:
     *error = IED_ERROR_USER_PROVIDED_INVALID_ARGUMENT;
 
-    exit_function:
+exit_function:
     LinkedList_destroy(itemIds);
     LinkedList_destroyStatic(values);
 }

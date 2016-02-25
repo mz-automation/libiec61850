@@ -116,13 +116,14 @@ int main(int argc, char** argv) {
         ClientReportControlBlock_setResv(rcb, true);
         ClientReportControlBlock_setDataSetReference(rcb, "simpleIOGenericIO/LLN0$Events"); /* NOTE the "$" instead of "." ! */
         ClientReportControlBlock_setRptEna(rcb, true);
+        ClientReportControlBlock_setGI(rcb, true);
 
         /* Configure the report receiver */
         IedConnection_installReportHandler(con, "simpleIOGenericIO/LLN0.RP.EventsRCB", ClientReportControlBlock_getRptId(rcb), reportCallbackFunction,
                 (void*) dataSetDirectory);
 
         /* Write RCB parameters and enable report */
-        IedConnection_setRCBValues(con, &error, rcb, RCB_ELEMENT_RESV | RCB_ELEMENT_DATSET | RCB_ELEMENT_RPT_ENA, true);
+        IedConnection_setRCBValues(con, &error, rcb, RCB_ELEMENT_RESV | RCB_ELEMENT_DATSET | RCB_ELEMENT_RPT_ENA | RCB_ELEMENT_GI, true);
 
         if (error != IED_ERROR_OK) {
             printf("setRCBValues service error!\n");
