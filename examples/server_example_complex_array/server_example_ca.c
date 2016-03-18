@@ -110,6 +110,8 @@ int main(int argc, char** argv) {
 	    IedServer_lockDataModel(iedServer);
 	    for (i = 0; i < 16; i++) {
 	        updateCMVArrayElement(mhai1_ha_phsAHar_mx, i, mag, angle, quality, timestamp);
+	        mag += 0.1f;
+	        angle += 0.05f;
 	    }
 	    IedServer_unlockDataModel(iedServer);
 

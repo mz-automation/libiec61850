@@ -218,8 +218,9 @@ alternateArrayAccess(MmsServerConnection connection,
 			                        namedVariable, structValue);
 			        }
 			    }
-			    else
+			    else {
 			        value = MmsValue_getElement(arrayValue, index);
+			    }
 			else {
 				value = MmsValue_createEmptyArray(numberOfElements);
 
@@ -284,7 +285,7 @@ addNamedVariableToResultList(MmsVariableSpecification* namedVariable, MmsDomain*
 				alternateArrayAccess(connection, alternateAccess, domain,
 						nameIdStr, values, namedVariable);
 			}
-			else { //getCompleteArray
+			else { /* return complete array */
 			    MmsValue* value = mmsServer_getValue(connection->server, domain, nameIdStr, connection);
 			    appendValueToResultList(value, values);
 			}

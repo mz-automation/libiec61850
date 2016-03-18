@@ -2464,7 +2464,7 @@ Reporting_processReportEvents(MmsMapping* self, uint64_t currentTimeInMs)
 }
 
 void
-ReportControl_valueUpdated(ReportControl* self, int dataSetEntryIndex, ReportInclusionFlag flag, MmsValue* value)
+ReportControl_valueUpdated(ReportControl* self, int dataSetEntryIndex, ReportInclusionFlag flag)
 {
     ReportControl_lockNotify(self);
 

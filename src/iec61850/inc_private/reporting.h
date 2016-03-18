@@ -103,7 +103,7 @@ void
 ReportControl_destroy(ReportControl* self);
 
 void
-ReportControl_valueUpdated(ReportControl* self, int dataSetEntryIndex, ReportInclusionFlag flag, MmsValue* value);
+ReportControl_valueUpdated(ReportControl* self, int dataSetEntryIndex, ReportInclusionFlag flag);
 
 MmsValue*
 ReportControl_getRCBValue(ReportControl* rc, char* elementName);
