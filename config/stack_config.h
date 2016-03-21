@@ -159,7 +159,7 @@
 #define CONFIG_DEFAULT_MMS_REVISION "0.9.1"
 
 /* MMS virtual file store base path - where file services are looking for files */
-#define CONFIG_VIRTUAL_FILESTORE_BASEPATH "./vmd-filestore/"
+#define CONFIG_VIRTUAL_FILESTORE_BASEPATH "/home/root/vmd-filestore/"
 
 /* Maximum number of open file per MMS connection (for MMS file read service) */
 #define CONFIG_MMS_MAX_NUMBER_OF_OPEN_FILES_PER_CONNECTION 5

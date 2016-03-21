@@ -52,6 +52,10 @@ int main(int argc, char** argv) {
 
     IedConnection con = IedConnection_create();
 
+    MmsConnection mmsCon = IedConnection_getMmsConnection(con);
+
+    MmsConnection_setLocalDetail(mmsCon, 800);
+
     IedConnection_connect(con, &error, hostname, tcpPort);
 
     if (error == IED_ERROR_OK) {
