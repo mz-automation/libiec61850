@@ -389,7 +389,6 @@ sendReport(ReportControl* self, bool isIntegrity, bool isGI)
         }
     }
 
-
     /* add data set value elements */
     DataSetEntry* dataSetEntry = self->dataSet->fcdas;
 
@@ -1634,6 +1633,8 @@ printReportId(ReportBufferEntry* report)
 static void
 removeAllGIReportsFromReportBuffer(ReportBuffer* reportBuffer)
 {
+    printf("removeAllGIReportsFromReportBuffer\n");
+
     ReportBufferEntry* currentReport = reportBuffer->oldestReport;
     ReportBufferEntry* lastReport = NULL;
 
@@ -1737,7 +1738,8 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
     uint8_t* entryBufPos = NULL;
     uint8_t* entryStartPos;
 
-    if (DEBUG_IED_SERVER) printf("IED_SERVER: number of buffered reports:%i\n", buffer->reportsCount);
+    //if (DEBUG_IED_SERVER)
+        printf("IED_SERVER: number of buffered reports:%i\n", buffer->reportsCount);
 
     if (buffer->lastEnqueuedReport == NULL) { /* buffer is empty - we start at the beginning of the memory block */
         entryBufPos = buffer->memoryBlock;
@@ -2027,11 +2029,11 @@ sendNextReportEntry(ReportControl* self)
 
     ReportBufferEntry* report = self->reportBuffer->nextToTransmit;
 
-#if (DEBUG_IED_SERVER == 1)
+//#if (DEBUG_IED_SERVER == 1)
     printf("IED_SERVER: SEND NEXT REPORT: ");
-    printReportId(report);
+    //printReportId(report);
     printf(" size: %i\n", report->entryLength);
-#endif
+//#endif
 
     MmsValue* entryIdValue = MmsValue_getElement(self->rcbValues, 11);
     MmsValue_setOctetString(entryIdValue, (uint8_t*) report->entryId, 8);
@@ -2380,7 +2382,7 @@ processEventsForReport(ReportControl* rc, uint64_t currentTimeInMs)
 
         if (rc->triggerOps & TRG_OPT_GI) {
             if (rc->gi) {
-
+                printf("rc->gi\n");
                 /* send current events in event buffer before GI report */
                 if (rc->triggered) {
                     if (rc->buffered)
@@ -2406,9 +2408,12 @@ processEventsForReport(ReportControl* rc, uint64_t currentTimeInMs)
 
             if (rc->intgPd > 0) {
                 if (currentTimeInMs >= rc->nextIntgReportTime) {
-
+                    printf("integrity\n");
                     /* send current events in event buffer before integrity report */
                     if (rc->triggered) {
+
+                        printf("intg check triggered\n");
+
                         if (rc->buffered)
                             enqueueReport(rc, false, false, currentTimeInMs);
                         else
@@ -2431,6 +2436,8 @@ processEventsForReport(ReportControl* rc, uint64_t currentTimeInMs)
 
         if (rc->triggered) {
             if (currentTimeInMs >= rc->reportTime) {
+
+                printf("triggered\n");
 
                 if (rc->buffered)
                     enqueueReport(rc, false, false, currentTimeInMs);
