@@ -66,36 +66,28 @@ encodeArrayAccessResult(MmsValue* value, uint8_t* buffer, int bufPos, bool encod
 static int
 encodeStructuredAccessResult(MmsValue* value, uint8_t* buffer, int bufPos, bool encode)
 {
-    if (value == NULL) // TODO report internal error
-        return 0;
-
     int componentsSize = 0;
     int i;
     int size;
 
-    int components = value->value.structure.size;
+    int componentCount = value->value.structure.size;
 
-    for (i = 0; i < components; i++) {
-        MmsValue* component = value->value.structure.components[i];
+    MmsValue** components = value->value.structure.components;
 
-        componentsSize += mmsServer_encodeAccessResult(component, NULL, 0, false);
-    }
+    for (i = 0; i < componentCount; i++)
+        componentsSize += mmsServer_encodeAccessResult(components[i], NULL, 0, false);
 
     if (encode) {
         buffer[bufPos++] = 0xa2; /* tag for structure */
         bufPos = BerEncoder_encodeLength(componentsSize, buffer, bufPos);
 
-        for (i = 0; i < components; i++) {
-            MmsValue* component = value->value.structure.components[i];
-
-            bufPos = mmsServer_encodeAccessResult(component, buffer, bufPos, true);
-        }
+        for (i = 0; i < componentCount; i++)
+            bufPos = mmsServer_encodeAccessResult(components[i], buffer, bufPos, true);
 
         size = bufPos;
     }
-    else {
+    else
         size = 1 + componentsSize + BerEncoder_determineLengthSize(componentsSize);
-    }
 
     return size;
 }
@@ -103,9 +95,6 @@ encodeStructuredAccessResult(MmsValue* value, uint8_t* buffer, int bufPos, bool 
 int
 mmsServer_encodeAccessResult(MmsValue* value, uint8_t* buffer, int bufPos, bool encode)
 {
-//    if (value == NULL) // TODO report internal error
-//        return 0;
-
     int size;
 
     switch (value->type) {

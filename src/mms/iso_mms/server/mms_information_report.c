@@ -234,14 +234,10 @@ MmsServerConnection_sendInformationReportVMDSpecific(MmsServerConnection self, c
 	variableAccessSpecSize += BerEncoder_determineLengthSize(objectNameSize);
 	variableAccessSpecSize += 1; /* space for tag (a1) */
 
-    int variableCount = LinkedList_size(values);
-
     /* iterate values list and add values to the accessResultList */
     LinkedList value = LinkedList_getNext(values);
 
-    int i;
-
-    for (i = 0; i < variableCount; i++) {
+    while (value != NULL) {
 
         MmsValue* data = (MmsValue*) value->data;
 
@@ -267,7 +263,7 @@ MmsServerConnection_sendInformationReportVMDSpecific(MmsServerConnection self, c
         goto exit_function;
     }
 
-    if (DEBUG_MMS_SERVER) printf("MMS_SERVER: sendInfReport: %i items\n", variableCount);
+    if (DEBUG_MMS_SERVER) printf("MMS_SERVER: sendInfReport\n");
 
     ByteBuffer* reportBuffer =  self->server->reportBuffer;
 
@@ -286,7 +282,7 @@ MmsServerConnection_sendInformationReportVMDSpecific(MmsServerConnection self, c
 
     value = LinkedList_getNext(values);
 
-    for (i = 0; i < variableCount; i++) {
+    while (value != NULL) {
 
         MmsValue* data = (MmsValue*) value->data;
 

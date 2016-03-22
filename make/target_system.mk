@@ -56,6 +56,7 @@ endif
 
 ifeq ($(TARGET), LINUX-ARM)
 TOOLCHAIN_PREFIX=$(ARM_TOOLCHAIN_PREFIX)
+CFLAGS += -mcpu=arm926ej-s
 endif
 
 ifeq ($(TARGET), UCLINUX-WAGO)
