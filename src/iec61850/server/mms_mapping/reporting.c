@@ -601,6 +601,9 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
         rc->inclusionFlags = (ReportInclusionFlag*) GLOBAL_CALLOC(dataSet->elementCount, sizeof(ReportInclusionFlag));
 
         success = true;
+
+        rc->isBuffering = true;
+
         goto exit_function;
     }
 
@@ -1676,7 +1679,8 @@ removeAllGIReportsFromReportBuffer(ReportBuffer* reportBuffer)
 static void
 enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_t timeOfEntry)
 {
-    if (DEBUG_IED_SERVER) printf("IED_SERVER: enqueueReport: RCB name: %s (SQN:%u) enabled:%i buffered:%i buffering:%i intg:%i GI:%i\n",
+   // if (DEBUG_IED_SERVER)
+        printf("IED_SERVER: enqueueReport: RCB name: %s (SQN:%u) enabled:%i buffered:%i buffering:%i intg:%i GI:%i\n",
             reportControl->name, (unsigned) reportControl->sqNum, reportControl->enabled,
             reportControl->isBuffering, reportControl->buffered, isIntegrity, isGI);
 

@@ -56,6 +56,7 @@ endif
 
 ifeq ($(TARGET), LINUX-ARM)
 TOOLCHAIN_PREFIX=$(ARM_TOOLCHAIN_PREFIX)
+CFLAGS += -mno-unaligned-access
 CFLAGS += -mcpu=arm926ej-s
 endif
 
