@@ -2773,6 +2773,7 @@ eventWorkerThread(MmsMapping* self)
     self->reportThreadFinished = false;
 
     while (running) {
+
         processPeriodicTasks(self);
 
         Thread_sleep(1); /* hand-over control to other threads */

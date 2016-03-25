@@ -144,6 +144,20 @@ ReportControl_unlockNotify(ReportControl* self)
 
 
 static void
+purgeBuf(ReportControl* rc)
+{
+    if (DEBUG_IED_SERVER) printf("IED_SERVER: reporting.c: run purgeBuf\n");
+
+    ReportBuffer* reportBuffer = rc->reportBuffer;
+
+    reportBuffer->lastEnqueuedReport = NULL;
+    reportBuffer->oldestReport = NULL;
+    reportBuffer->nextToTransmit = NULL;
+    reportBuffer->reportsCount = 0;
+}
+
+
+static void
 deleteDataSetValuesShadowBuffer(ReportControl* self)
 {
     if (self->bufferedDataSetValues != NULL) {
@@ -389,7 +403,6 @@ sendReport(ReportControl* self, bool isIntegrity, bool isGI)
         }
     }
 
-
     /* add data set value elements */
     DataSetEntry* dataSetEntry = self->dataSet->fcdas;
 
@@ -497,6 +510,11 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
         if (strcmp(MmsValue_toString(newDatSet), "") == 0) {
             success = true;
             dataSetValue = NULL;
+
+            if (rc->buffered) {
+                rc->isBuffering = false;
+                purgeBuf(rc);
+            }
         }
         else
             dataSetValue = newDatSet;
@@ -583,6 +601,9 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
         rc->inclusionFlags = (ReportInclusionFlag*) GLOBAL_CALLOC(dataSet->elementCount, sizeof(ReportInclusionFlag));
 
         success = true;
+
+        rc->isBuffering = true;
+
         goto exit_function;
     }
 
@@ -669,19 +690,6 @@ refreshTriggerOptions(ReportControl* rc)
 
     if (MmsValue_getBitStringBit(trgOps, 5))
         rc->triggerOps += TRG_OPT_GI;
-}
-
-static void
-purgeBuf(ReportControl* rc)
-{
-    if (DEBUG_IED_SERVER) printf("IED_SERVER: reporting.c: run purgeBuf\n");
-
-    ReportBuffer* reportBuffer = rc->reportBuffer;
-
-    reportBuffer->lastEnqueuedReport = NULL;
-    reportBuffer->oldestReport = NULL;
-    reportBuffer->nextToTransmit = NULL;
-    reportBuffer->reportsCount = 0;
 }
 
 static void
@@ -1634,6 +1642,8 @@ printReportId(ReportBufferEntry* report)
 static void
 removeAllGIReportsFromReportBuffer(ReportBuffer* reportBuffer)
 {
+    printf("removeAllGIReportsFromReportBuffer\n");
+
     ReportBufferEntry* currentReport = reportBuffer->oldestReport;
     ReportBufferEntry* lastReport = NULL;
 
@@ -1669,7 +1679,8 @@ removeAllGIReportsFromReportBuffer(ReportBuffer* reportBuffer)
 static void
 enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_t timeOfEntry)
 {
-    if (DEBUG_IED_SERVER) printf("IED_SERVER: enqueueReport: RCB name: %s (SQN:%u) enabled:%i buffered:%i buffering:%i intg:%i GI:%i\n",
+   // if (DEBUG_IED_SERVER)
+        printf("IED_SERVER: enqueueReport: RCB name: %s (SQN:%u) enabled:%i buffered:%i buffering:%i intg:%i GI:%i\n",
             reportControl->name, (unsigned) reportControl->sqNum, reportControl->enabled,
             reportControl->isBuffering, reportControl->buffered, isIntegrity, isGI);
 
@@ -1729,7 +1740,7 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
         if (DEBUG_IED_SERVER)
             printf("IED_SERVER: enqueueReport: report buffer too small for report entry! Skip event!\n");
 
-        return;
+        goto exit_function;
     }
 
     if (isGI) removeAllGIReportsFromReportBuffer(buffer);
@@ -1737,7 +1748,8 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
     uint8_t* entryBufPos = NULL;
     uint8_t* entryStartPos;
 
-    if (DEBUG_IED_SERVER) printf("IED_SERVER: number of buffered reports:%i\n", buffer->reportsCount);
+    if (DEBUG_IED_SERVER)
+        printf("IED_SERVER: number of buffered reports:%i\n", buffer->reportsCount);
 
     if (buffer->lastEnqueuedReport == NULL) { /* buffer is empty - we start at the beginning of the memory block */
         entryBufPos = buffer->memoryBlock;
@@ -2005,7 +2017,10 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
         buffer->oldestReport = buffer->lastEnqueuedReport;
 
     reportControl->lastEntryId = entryId;
-}
+
+exit_function:
+    return;
+} /* enqueuReport() */
 
 static void
 sendNextReportEntry(ReportControl* self)
@@ -2354,6 +2369,7 @@ cleanup_and_return:
 
     if (localStorage != NULL)
         GLOBAL_FREEMEM(localStorage);
+
 }
 
 void
@@ -2376,6 +2392,8 @@ Reporting_activateBufferedReports(MmsMapping* self)
 static void
 processEventsForReport(ReportControl* rc, uint64_t currentTimeInMs)
 {
+
+
     if ((rc->enabled) || (rc->isBuffering)) {
 
         if (rc->triggerOps & TRG_OPT_GI) {
@@ -2443,8 +2461,9 @@ processEventsForReport(ReportControl* rc, uint64_t currentTimeInMs)
 
         if (rc->buffered && rc->enabled)
             sendNextReportEntry(rc);
-
     }
+
+
 }
 
 void

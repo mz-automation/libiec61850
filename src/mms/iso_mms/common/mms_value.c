@@ -994,6 +994,8 @@ MmsValue_cloneToBuffer(const MmsValue* self, uint8_t* destinationAddress)
             int i;
             for (i = 0; i < self->value.structure.size; i++) {
                 newValue->value.structure.components[i] = (MmsValue*) destinationAddress;
+                //memcpy(&(newValue->value.structure.components[i]), &(destinationAddress), sizeof (MmsValue*));
+
                 destinationAddress = MmsValue_cloneToBuffer(self->value.structure.components[i], destinationAddress);
             }
         }

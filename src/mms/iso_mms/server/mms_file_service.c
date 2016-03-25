@@ -459,14 +459,14 @@ addFileEntriesToResponse(uint8_t* buffer, int bufPos, int maxBufSize, char* dire
 
             if (isDirectory) {
             	bufPos = addFileEntriesToResponse(buffer, bufPos, maxBufSize, directoryName, continueAfterFileName, moreFollows);
-
-            	if (*moreFollows == true)
-            		break;
             }
             else {
                 bufPos = addFileEntriesToResponse(buffer, bufPos, maxBufSize, directoryName, continueAfterFileName, moreFollows);
 
             }
+
+            if (*moreFollows == true)
+                break;
 
             fileName = FileSystem_readDirectory(directory, &isDirectory);
         }
@@ -503,12 +503,13 @@ addFileEntriesToResponse(uint8_t* buffer, int bufPos, int maxBufSize, char* dire
 
                 if (overallEntrySize > bufferSpaceLeft) {
                     *moreFollows = true;
-                    //break;
                 }
+                else {
 
-                bufPos = BerEncoder_encodeTL(0x30, dirEntrySize, buffer, bufPos); /* SEQUENCE (DirectoryEntry) */
-                bufPos = encodeFileSpecification(0xa0, directoryName, buffer, bufPos); /* fileName */
-                bufPos = encodeFileAttributes(0xa1, fileSize, gtString, buffer, bufPos); /* file attributes */
+                    bufPos = BerEncoder_encodeTL(0x30, dirEntrySize, buffer, bufPos); /* SEQUENCE (DirectoryEntry) */
+                    bufPos = encodeFileSpecification(0xa0, directoryName, buffer, bufPos); /* fileName */
+                    bufPos = encodeFileAttributes(0xa1, fileSize, gtString, buffer, bufPos); /* file attributes */
+                }
             }
             else
                 bufPos = -1;

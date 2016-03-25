@@ -491,7 +491,7 @@ singleThreadedServerThread(void* parameter)
 
         IedServer_performPeriodicTasks(self);
 
-        //Thread_sleep(1);
+        Thread_sleep(1);
 
         running = mmsMapping->reportThreadRunning;
     }
