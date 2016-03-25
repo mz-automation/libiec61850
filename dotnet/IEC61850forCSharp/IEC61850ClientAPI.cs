@@ -215,7 +215,7 @@ namespace IEC61850
 			static extern IntPtr IedConnection_createDataSet (IntPtr self, out int error, [MarshalAs(UnmanagedType.LPStr)] string dataSetReference, IntPtr dataSet);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern void IedConnection_deleteDataSet (IntPtr self, out int error, string dataSetReference);
+			static extern bool IedConnection_deleteDataSet (IntPtr self, out int error, string dataSetReference);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern IntPtr IedConnection_getDataSetDirectory(IntPtr self, out int error, string dataSetReference, [MarshalAs(UnmanagedType.I1)] out bool isDeletable);
