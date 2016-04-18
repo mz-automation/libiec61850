@@ -8,6 +8,7 @@ if(DEFINED ENV{TOOLCHAIN})
 endif()
 
 project(libiec61850)
+ENABLE_TESTING()
 
 set(LIB_VERSION_MAJOR "0")
 set(LIB_VERSION_MINOR "9")
@@ -25,6 +26,7 @@ set(CONFIG_MMS_MAXIMUM_PDU_SIZE "65000" CACHE STRING "Configure the maximum size
 set(CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS 5 CACHE STRING "Configure the maximum number of clients allowed to connect to the server")
 
 option(BUILD_EXAMPLES "Build the examples" ON)
+option(BUILD_PYTHON_BINDINGS "Build Python bindings" OFF)
 
 option(CONFIG_MMS_SINGLE_THREADED "Compile for single threaded version" OFF)
 option(CONFIG_MMS_THREADLESS_STACK "Optimize stack for threadless operation (warning: single- or multi-threaded server will not work!)" OFF)
@@ -119,6 +121,9 @@ add_subdirectory(src)
 
 INSTALL(FILES ${API_HEADERS} DESTINATION include/libiec61850)
 
+IF(BUILD_PYTHON_BINDINGS)
+	add_subdirectory(pyiec61850)
+ENDIF(BUILD_PYTHON_BINDINGS)
 
 IF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
 INCLUDE(InstallRequiredSystemLibraries)
@@ -144,6 +149,3 @@ SET(CPACK_COMPONENTS_ALL Libraries ApplicationData)
 INCLUDE(CPack)
  
 ENDIF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
-
-
-
