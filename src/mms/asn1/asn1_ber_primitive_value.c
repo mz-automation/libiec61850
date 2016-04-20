@@ -30,7 +30,7 @@ Asn1PrimitiveValue_create(int size)
 {
 	Asn1PrimitiveValue* self = (Asn1PrimitiveValue*) GLOBAL_MALLOC(sizeof(Asn1PrimitiveValue));
 
-	self->size = size;
+	self->size = 1;
 	self->maxSize = size;
 	self->octets = (uint8_t*) GLOBAL_CALLOC(1, size);
 
