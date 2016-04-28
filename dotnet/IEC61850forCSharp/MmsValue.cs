@@ -104,6 +104,12 @@ namespace IEC61850
 			static extern ulong MmsValue_getUtcTimeInMsWithUs(IntPtr self, [Out] uint usec);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern byte MmsValue_getUtcTimeQuality (IntPtr self);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern void MmsValue_setUtcTimeQuality (IntPtr self, byte timeQuality);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern UInt32 MmsValue_toUnixTimestamp (IntPtr self);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
@@ -463,6 +469,44 @@ namespace IEC61850
 					usec = (int)uusec;
 					return msVal;
 				}
+				else
+					throw new MmsValueException("Value is not a time type");
+			}
+
+			/// <summary>
+			/// Gets quality flags of an UTC timestamp.
+			/// </summary>
+			/// <description>
+			/// Meaning of the bits in the timeQuality byte:
+			/// bit 7 = leapSecondsKnown
+	        /// bit 6 = clockFailure
+	        /// bit 5 = clockNotSynchronized
+		    /// bit 0-4 = subsecond time accuracy (number of significant bits of subsecond time)
+			/// </description>
+			/// <returns>The UTC time quality.</returns>
+			public byte GetUtcTimeQuality()
+			{
+				if (GetType() == MmsType.MMS_UTC_TIME)
+					return MmsValue_getUtcTimeQuality(valueReference);
+				else
+					throw new MmsValueException("Value is not a time type");
+			}
+
+			/// <summary>
+			/// Sets the quality flags of an UTC timestamp
+			/// </summary>
+			/// <description>
+			/// Meaning of the bits in the timeQuality byte:
+			/// bit 7 = leapSecondsKnown
+			/// bit 6 = clockFailure
+			/// bit 5 = clockNotSynchronized
+			/// bit 0-4 = subsecond time accuracy (number of significant bits of subsecond time)
+			/// </description>
+			/// <param name="timeQuality">Time quality.</param>
+			public void SetUtcTimeQuality(byte timeQuality)
+			{
+				if (GetType () == MmsType.MMS_UTC_TIME)
+					MmsValue_setUtcTimeQuality (valueReference, timeQuality);
 				else
 					throw new MmsValueException("Value is not a time type");
 			}

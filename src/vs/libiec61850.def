@@ -600,4 +600,5 @@ EXPORTS
     MmsValue_getUtcTimeQuality
     MmsConnection_getMmsConnectionParameters
     IedServer_updateVisibleStringAttributeValue
+    MmsValue_setUtcTimeQuality
 
