@@ -280,7 +280,7 @@ createGoosePayload(GoosePublisher self, LinkedList dataSetValues, uint8_t* buffe
     while (element != NULL) {
         MmsValue* dataSetEntry = (MmsValue*) element->data;
 
-        dataSetSize += mmsServer_encodeAccessResult(dataSetEntry, NULL, 0, false);
+        dataSetSize += MmsValue_encodeMmsData(dataSetEntry, NULL, 0, false);
 
         element = LinkedList_getNext(element);
     }
@@ -344,7 +344,7 @@ createGoosePayload(GoosePublisher self, LinkedList dataSetValues, uint8_t* buffe
     while (element != NULL) {
         MmsValue* dataSetEntry = (MmsValue*) element->data;
 
-        bufPos = mmsServer_encodeAccessResult(dataSetEntry, buffer, bufPos, true);
+        bufPos = MmsValue_encodeMmsData(dataSetEntry, buffer, bufPos, true);
 
         element = LinkedList_getNext(element);
     }

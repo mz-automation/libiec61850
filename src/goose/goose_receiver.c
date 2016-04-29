@@ -304,7 +304,7 @@ parseAllDataUnknownValue(GooseSubscriber self, uint8_t* buffer, int allDataLengt
             break;
         default:
             if (DEBUG_GOOSE_SUBSCRIBER)
-                printf("GOOSE_SUBSCRIBER:    found unkown tag %02x\n", tag);
+                printf("GOOSE_SUBSCRIBER:    found unknown tag %02x\n", tag);
             goto exit_with_error;
         }
 

@@ -406,7 +406,7 @@ encodeReadResponse(MmsServerConnection connection,
 
         MmsValue* data = (MmsValue*) value->data;
 
-        accessResultSize += mmsServer_encodeAccessResult(data, NULL, 0, false);
+        accessResultSize += MmsValue_encodeMmsData(data, NULL, 0, false);
 
         value = LinkedList_getNext(value);
     }
@@ -467,7 +467,7 @@ encodeReadResponse(MmsServerConnection connection,
     for (i = 0; i < variableCount; i++) {
         MmsValue* data = (MmsValue*) value->data;
 
-        bufPos = mmsServer_encodeAccessResult(data, buffer, bufPos, true);
+        bufPos = MmsValue_encodeMmsData(data, buffer, bufPos, true);
 
         value = LinkedList_getNext(value);
     }

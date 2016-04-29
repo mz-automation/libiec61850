@@ -950,6 +950,21 @@ MmsValue_getTypeString(MmsValue* self);
 char*
 MmsValue_printToBuffer(MmsValue* self, char* buffer, int bufferSize);
 
+/**
+ * \brief create a new MmsValue instance from a BER encoded MMS Data element (deserialize)
+ *
+ */
+MmsValue*
+MmsValue_decodeMmsData(uint8_t* buffer, int bufPos, int bufferLength);
+
+/**
+ * \brief Serialize the MmsValue instance as BER encoded MMS Data element
+ *
+ * \param self the MmsValue instance
+ */
+int
+MmsValue_encodeMmsData(MmsValue* self, uint8_t* buffer, int bufPos, bool encode);
+
 /**@}*/
 
 /**@}*/

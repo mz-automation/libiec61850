@@ -38,7 +38,7 @@ MmsServerConnection_sendInformationReportSingleVariableVMDSpecific(MmsServerConn
 	uint32_t sequenceSize = 1 + BerEncoder_determineLengthSize(varSpecSize) + varSpecSize;
 	uint32_t listOfVariableSize = 1 + BerEncoder_determineLengthSize(sequenceSize) + sequenceSize;
 
-	uint32_t accessResultSize = mmsServer_encodeAccessResult(value, NULL, 0, false);
+	uint32_t accessResultSize = MmsValue_encodeMmsData(value, NULL, 0, false);
 
 	uint32_t listOfAccessResultSize = 1 + BerEncoder_determineLengthSize(accessResultSize) + accessResultSize;
 
@@ -77,7 +77,7 @@ MmsServerConnection_sendInformationReportSingleVariableVMDSpecific(MmsServerConn
 
 	/* encode access result (variable value) */
 	bufPos = BerEncoder_encodeTL(0xa0, accessResultSize, buffer, bufPos);
-	bufPos = mmsServer_encodeAccessResult(value, buffer, bufPos, true);
+	bufPos = MmsValue_encodeMmsData(value, buffer, bufPos, true);
 
     reportBuffer->size = bufPos;
 
@@ -128,7 +128,7 @@ MmsServerConnection_sendInformationReportListOfVariables(
     while (valueElement != NULL) {
         MmsValue* value = (MmsValue*) valueElement->data;
 
-        accessResultSize += mmsServer_encodeAccessResult(value, NULL, 0, false);
+        accessResultSize += MmsValue_encodeMmsData(value, NULL, 0, false);
 
         valueElement = LinkedList_getNext(valueElement);
     }
@@ -204,7 +204,7 @@ MmsServerConnection_sendInformationReportListOfVariables(
     while (valueElement != NULL) {
         MmsValue* value = (MmsValue*) valueElement->data;
 
-        bufPos = mmsServer_encodeAccessResult(value, buffer, bufPos, true);
+        bufPos = MmsValue_encodeMmsData(value, buffer, bufPos, true);
 
         valueElement = LinkedList_getNext(valueElement);
     }
@@ -241,7 +241,7 @@ MmsServerConnection_sendInformationReportVMDSpecific(MmsServerConnection self, c
 
         MmsValue* data = (MmsValue*) value->data;
 
-        accessResultSize += mmsServer_encodeAccessResult(data, NULL, 0, false);
+        accessResultSize += MmsValue_encodeMmsData(data, NULL, 0, false);
 
         value = LinkedList_getNext(value);
     }
@@ -286,7 +286,7 @@ MmsServerConnection_sendInformationReportVMDSpecific(MmsServerConnection self, c
 
         MmsValue* data = (MmsValue*) value->data;
 
-        bufPos = mmsServer_encodeAccessResult(data, buffer, bufPos, true);
+        bufPos = MmsValue_encodeMmsData(data, buffer, bufPos, true);
 
         value = LinkedList_getNext(value);
     }
