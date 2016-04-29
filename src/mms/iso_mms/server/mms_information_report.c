@@ -25,7 +25,6 @@
 
 #include "mms_server_internal.h"
 #include "mms_common_internal.h"
-#include "mms_access_result.h"
 
 #include "ber_encoder.h"
 

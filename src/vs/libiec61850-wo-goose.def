@@ -524,4 +524,6 @@ EXPORTS
     MmsConnection_getMmsConnectionParameters
     IedServer_updateVisibleStringAttributeValue
     MmsValue_setUtcTimeQuality
+    MmsValue_decodeMmsData
+    MmsValue_encodeMmsData
 

@@ -22,7 +22,6 @@
  */
 
 #include "libiec61850_platform_includes.h"
-#include "mms_access_result.h"
 #include "mms_server_internal.h"
 #include "mms_value_internal.h"
 
@@ -148,8 +147,8 @@ exit_with_error:
     return -1;
 }
 
-static MmsValue*
-decodeData(uint8_t* buffer, int bufPos, int bufferLength)
+MmsValue*
+MmsValue_decodeMmsData(uint8_t* buffer, int bufPos, int bufferLength)
 {
    int dataEndBufPos = bufPos + bufferLength;
 
@@ -188,7 +187,7 @@ decodeData(uint8_t* buffer, int bufPos, int bufferLength)
                if (newBufPos == -1)
                    goto exit_with_error;
 
-               MmsValue* elementValue = decodeData(buffer, bufPos, dataLength);
+               MmsValue* elementValue = MmsValue_decodeMmsData(buffer, bufPos, dataLength);
 
                if (elementValue == NULL)
                    goto exit_with_error;
@@ -201,6 +200,11 @@ decodeData(uint8_t* buffer, int bufPos, int bufferLength)
            if (value == NULL)
                goto exit_with_error;
        }
+
+       break;
+
+   case 0x80: /* MMS_DATA_ACCESS_ERROR */
+       value = MmsValue_newDataAccessError((MmsDataAccessError) BerDecoder_decodeUint32(buffer, dataLength, bufPos));
 
        break;
 
@@ -257,6 +261,12 @@ decodeData(uint8_t* buffer, int bufPos, int bufferLength)
 
        break;
 
+   case 0x90: /* MMS_STRING */
+       value = MmsValue_newVisibleStringFromByteArray(buffer + bufPos, dataLength);
+       value->type = MMS_STRING;
+
+       break;
+
    case 0x91: /* MMS_UTC_TIME */
        if (dataLength == 8) {
            value = MmsValue_newUtcTime(0);
@@ -279,12 +289,6 @@ exit_with_error:
         MmsValue_delete(value);
 
    return NULL;
-}
-
-MmsValue*
-MmsValue_decodeMmsData(uint8_t* buffer, int bufPos, int bufferLength)
-{
-    return decodeData(buffer, bufPos, bufferLength);
 }
 
 int

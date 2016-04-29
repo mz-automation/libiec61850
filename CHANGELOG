@@ -1,5 +1,6 @@
 Changes to version 0.9.1
 ------------------------
+- added functions MmsValue_encodeMmsData, MmsValue_decodeMmsData to serialize/deserialize MmsValue objects to BER encoded MMS Data
 - changed signature of IedConnection_deleteDataSet, MmsConnection_deleteAssociationSpecificNamedVariableList, MmsConnection_deleteNamedVariableList. added boolean return value to indicate if data set/named variable list has been deleted.
 
 Changes to version 0.9.0.2

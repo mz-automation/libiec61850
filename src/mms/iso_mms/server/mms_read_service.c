@@ -27,8 +27,6 @@
 #include "mms_common_internal.h"
 #include "mms_value_internal.h"
 
-#include "mms_access_result.h"
-
 #include "linked_list.h"
 
 #include "ber_encoder.h"
