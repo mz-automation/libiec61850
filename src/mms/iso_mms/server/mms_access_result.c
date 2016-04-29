@@ -92,6 +92,10 @@ encodeStructuredAccessResult(MmsValue* value, uint8_t* buffer, int bufPos, bool 
 }
 
 
+/*
+ * Returns the number of elements in an MMS Data element
+ * or -1 in case of an parsing error.
+ */
 static int
 getNumberOfElements(uint8_t* buffer, int bufPos, int elementLength)
 {
@@ -150,145 +154,145 @@ exit_with_error:
 MmsValue*
 MmsValue_decodeMmsData(uint8_t* buffer, int bufPos, int bufferLength)
 {
-   int dataEndBufPos = bufPos + bufferLength;
+    int dataEndBufPos = bufPos + bufferLength;
 
-   uint8_t tag = buffer[bufPos++];
+    uint8_t tag = buffer[bufPos++];
 
-   int dataLength;
+    int dataLength;
 
-   bufPos = BerDecoder_decodeLength(buffer, &dataLength, bufPos, dataEndBufPos);
+    bufPos = BerDecoder_decodeLength(buffer, &dataLength, bufPos, dataEndBufPos);
 
-   if (bufPos + dataLength > dataEndBufPos)
-       goto exit_with_error;
+    if (bufPos + dataLength > dataEndBufPos)
+        goto exit_with_error;
 
-   MmsValue* value = NULL;
+    MmsValue* value = NULL;
 
-   switch (tag) {
+    switch (tag) {
 
-   case 0xa1: /* MMS_ARRAY */
-   case 0xa2: /* MMS_STRUCTURE */
-       {
+    case 0xa1: /* MMS_ARRAY */
+    case 0xa2: /* MMS_STRUCTURE */
+    {
 
-           int elementCount = getNumberOfElements(buffer, bufPos, dataLength);
+        int elementCount = getNumberOfElements(buffer, bufPos, dataLength);
 
-           if (tag == 0xa1)
-               value = MmsValue_createEmptyArray(elementCount);
-           else
-               value = MmsValue_createEmptyStructure(elementCount);
+        if (tag == 0xa1)
+            value = MmsValue_createEmptyArray(elementCount);
+        else
+            value = MmsValue_createEmptyStructure(elementCount);
 
-           int i;
+        int i;
 
-           for (i = 0; i < elementCount; i++) {
+        for (i = 0; i < elementCount; i++) {
 
-               int elementLength;
+            int elementLength;
 
-               int newBufPos = BerDecoder_decodeLength(buffer, &elementLength, bufPos + 1, dataEndBufPos);
+            int newBufPos = BerDecoder_decodeLength(buffer, &elementLength, bufPos + 1, dataEndBufPos);
 
-               if (newBufPos == -1)
-                   goto exit_with_error;
+            if (newBufPos == -1)
+                goto exit_with_error;
 
-               MmsValue* elementValue = MmsValue_decodeMmsData(buffer, bufPos, dataLength);
+            MmsValue* elementValue = MmsValue_decodeMmsData(buffer, bufPos, dataLength);
 
-               if (elementValue == NULL)
-                   goto exit_with_error;
+            if (elementValue == NULL)
+                goto exit_with_error;
 
-               MmsValue_setElement(value, i, elementValue);
+            MmsValue_setElement(value, i, elementValue);
 
-               bufPos = newBufPos + elementLength;
-           }
+            bufPos = newBufPos + elementLength;
+        }
 
-           if (value == NULL)
-               goto exit_with_error;
-       }
+        if (value == NULL)
+            goto exit_with_error;
+    }
 
-       break;
+        break;
 
-   case 0x80: /* MMS_DATA_ACCESS_ERROR */
-       value = MmsValue_newDataAccessError((MmsDataAccessError) BerDecoder_decodeUint32(buffer, dataLength, bufPos));
+    case 0x80: /* MMS_DATA_ACCESS_ERROR */
+        value = MmsValue_newDataAccessError((MmsDataAccessError) BerDecoder_decodeUint32(buffer, dataLength, bufPos));
 
-       break;
+        break;
 
-   case 0x83: /* MMS_BOOLEAN */
-       value = MmsValue_newBoolean(BerDecoder_decodeBoolean(buffer, bufPos));
+    case 0x83: /* MMS_BOOLEAN */
+        value = MmsValue_newBoolean(BerDecoder_decodeBoolean(buffer, bufPos));
 
-       break;
+        break;
 
-   case 0x84: /* MMS_BIT_STRING */
-       {
-           int padding = buffer[bufPos];
-           int bitStringLength = (8 * (dataLength - 1)) - padding;
-           value = MmsValue_newBitString(bitStringLength);
-           memcpy(value->value.bitString.buf, buffer + bufPos + 1, dataLength - 1);
-       }
-       break;
+    case 0x84: /* MMS_BIT_STRING */
+    {
+        int padding = buffer[bufPos];
+        int bitStringLength = (8 * (dataLength - 1)) - padding;
+        value = MmsValue_newBitString(bitStringLength);
+        memcpy(value->value.bitString.buf, buffer + bufPos + 1, dataLength - 1);
+    }
+        break;
 
-   case 0x85: /* MMS_INTEGER */
-       value = MmsValue_newInteger(dataLength * 8);
-       memcpy(value->value.integer->octets, buffer + bufPos, dataLength);
-       value->value.integer->size = dataLength;
-       break;
+    case 0x85: /* MMS_INTEGER */
+        value = MmsValue_newInteger(dataLength * 8);
+        memcpy(value->value.integer->octets, buffer + bufPos, dataLength);
+        value->value.integer->size = dataLength;
+        break;
 
-   case 0x86: /* MMS_UNSIGNED */
-       value = MmsValue_newUnsigned(dataLength * 8);
-       memcpy(value->value.integer->octets, buffer + bufPos, dataLength);
-       value->value.integer->size = dataLength;
-       break;
+    case 0x86: /* MMS_UNSIGNED */
+        value = MmsValue_newUnsigned(dataLength * 8);
+        memcpy(value->value.integer->octets, buffer + bufPos, dataLength);
+        value->value.integer->size = dataLength;
+        break;
 
-   case 0x87: /* MMS_FLOAT */
-       if (dataLength == 9)
-           value = MmsValue_newDouble(BerDecoder_decodeDouble(buffer, bufPos));
-       else if (dataLength == 5)
-           value = MmsValue_newFloat(BerDecoder_decodeFloat(buffer, bufPos));
-       break;
+    case 0x87: /* MMS_FLOAT */
+        if (dataLength == 9)
+            value = MmsValue_newDouble(BerDecoder_decodeDouble(buffer, bufPos));
+        else if (dataLength == 5)
+            value = MmsValue_newFloat(BerDecoder_decodeFloat(buffer, bufPos));
+        break;
 
-   case 0x89: /* MMS_OCTET_STRING */
-       value = MmsValue_newOctetString(dataLength, dataLength);
-       memcpy(value->value.octetString.buf, buffer + bufPos, dataLength);
-       break;
+    case 0x89: /* MMS_OCTET_STRING */
+        value = MmsValue_newOctetString(dataLength, dataLength);
+        memcpy(value->value.octetString.buf, buffer + bufPos, dataLength);
+        break;
 
-   case 0x8a: /* MMS_VISIBLE_STRING */
-       value = MmsValue_newVisibleStringFromByteArray(buffer + bufPos, dataLength);
-       break;
+    case 0x8a: /* MMS_VISIBLE_STRING */
+        value = MmsValue_newVisibleStringFromByteArray(buffer + bufPos, dataLength);
+        break;
 
-   case 0x8c: /* MMS_BINARY_TIME */
-       if (dataLength == 4)
-           value = MmsValue_newBinaryTime(true);
-       else if (dataLength == 6)
-           value = MmsValue_newBinaryTime(false);
+    case 0x8c: /* MMS_BINARY_TIME */
+        if (dataLength == 4)
+            value = MmsValue_newBinaryTime(true);
+        else if (dataLength == 6)
+            value = MmsValue_newBinaryTime(false);
 
-       if ((dataLength == 4) || (dataLength == 6))
-           memcpy(value->value.binaryTime.buf, buffer + bufPos, dataLength);
+        if ((dataLength == 4) || (dataLength == 6))
+            memcpy(value->value.binaryTime.buf, buffer + bufPos, dataLength);
 
-       break;
+        break;
 
-   case 0x90: /* MMS_STRING */
-       value = MmsValue_newVisibleStringFromByteArray(buffer + bufPos, dataLength);
-       value->type = MMS_STRING;
+    case 0x90: /* MMS_STRING */
+        value = MmsValue_newVisibleStringFromByteArray(buffer + bufPos, dataLength);
+        value->type = MMS_STRING;
 
-       break;
+        break;
 
-   case 0x91: /* MMS_UTC_TIME */
-       if (dataLength == 8) {
-           value = MmsValue_newUtcTime(0);
-           MmsValue_setUtcTimeByBuffer(value, buffer + bufPos);
-       }
-       else
-           goto exit_with_error;
+    case 0x91: /* MMS_UTC_TIME */
+        if (dataLength == 8) {
+            value = MmsValue_newUtcTime(0);
+            MmsValue_setUtcTimeByBuffer(value, buffer + bufPos);
+        }
+        else
+            goto exit_with_error;
 
-       break;
+        break;
 
-   default:  /* unknown tag -> decoding error */
-       goto exit_with_error;
-   }
+    default: /* unknown tag -> decoding error */
+        goto exit_with_error;
+    }
 
-   return value;
+    return value;
 
 exit_with_error:
 
     if (value != NULL)
         MmsValue_delete(value);
 
-   return NULL;
+    return NULL;
 }
 
 int

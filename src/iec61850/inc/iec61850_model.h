@@ -82,6 +82,7 @@ typedef struct sGSEControlBlock GSEControlBlock;
 
 typedef struct sSVControlBlock SVControlBlock;
 
+typedef struct sLogControlBlock LogControlBlock;
 
 typedef enum {
 	IEC61850_BOOLEAN = 0,/* int */
@@ -254,6 +255,19 @@ struct sReportControlBlock {
 	uint32_t intPeriod;  /* IntgPd - integrity period */
 
 	ReportControlBlock* sibling; /* next control block in list or NULL if this is the last entry */
+};
+
+struct sLogControlBlock {
+    LogicalNode* parent;
+
+    char* name;
+
+    char* dataSetName;
+    char* logRef;        /* object reference to the journal. Defaults to <MMS DomainName>/<LNName>$GeneralLog */
+
+    uint8_t trgOps;      /* TrgOps - trigger conditions */
+    uint8_t options;     /* OptFlds */
+    uint32_t intPeriod;  /* IntgPd - integrity period */
 };
 
 struct sSettingGroupControlBlock {
