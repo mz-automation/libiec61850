@@ -260,4 +260,7 @@ int
 mmsClient_createMmsGetNameListRequestAssociationSpecific(long invokeId, ByteBuffer* writeBuffer,
 		const char* continueAfter);
 
+void
+mmsClient_createReadJournalRequest(uint32_t invokeId, ByteBuffer* request, const char* domainId, const char* itemId);
+
 #endif /* MMS_MSG_INTERNAL_H_ */

@@ -711,6 +711,10 @@ MmsConnection_getFileDirectory(MmsConnection self, MmsError* mmsError, const cha
         MmsFileDirectoryHandler handler, void* handlerParameter);
 
 
+LinkedList
+MmsConnection_readJournal(MmsConnection self, MmsError* mmsError, const char* domainId, const char* itemId);
+
+
 /**
  * \brief Destroy (free) an MmsServerIdentity object
  *

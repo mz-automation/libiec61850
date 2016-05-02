@@ -31,7 +31,7 @@
 #include "simple_allocator.h"
 #include "mem_alloc_linked_list.h"
 
-#include "reporting.h"
+#include "stack_config.h"
 #include "mms_mapping_internal.h"
 #include "mms_value_internal.h"
 #include "conversions.h"

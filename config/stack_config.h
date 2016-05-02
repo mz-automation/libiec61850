@@ -153,6 +153,9 @@
 /* default reservation time of a setting group control block in s */
 #define CONFIG_IEC61850_SG_RESVTMS 300
 
+/* include support for IEC 61850 log services */
+#define CONFIG_IEC61850_LOG_SERVICE 1
+
 /* default results for MMS identify service */
 #define CONFIG_DEFAULT_MMS_VENDOR_NAME "libiec61850.com"
 #define CONFIG_DEFAULT_MMS_MODEL_NAME "LIBIEC61850"

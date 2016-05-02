@@ -41,6 +41,7 @@ MmsDomain_create(char* domainName)
 
 	self->domainName = copyString(domainName);
 	self->namedVariableLists = LinkedList_create();
+	self->journals = NULL;
 
 	return self;
 }
@@ -57,6 +58,10 @@ MmsDomain_destroy(MmsDomain* self)
 		GLOBAL_FREEMEM(self->namedVariables);
 	}
 
+	if (self->journals != NULL) {
+	    LinkedList_destroyDeep(self->journals, (LinkedListValueDeleteFunction) MmsJournal_destroy);
+	}
+
 	LinkedList_destroyDeep(self->namedVariableLists, (LinkedListValueDeleteFunction) MmsNamedVariableList_destroy);
 
 	GLOBAL_FREEMEM(self);
@@ -66,6 +71,15 @@ char*
 MmsDomain_getName(MmsDomain* self)
 {
 	return self->domainName;
+}
+
+void
+MmsDomain_addJournal(MmsDomain* self, MmsJournal journal)
+{
+    if (self->journals == NULL)
+        self->journals = LinkedList_create();
+
+    LinkedList_add(self->journals, (void*) journal);
 }
 
 bool

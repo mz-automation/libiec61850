@@ -1637,6 +1637,34 @@ MmsConnection_getServerStatus(MmsConnection self, MmsError* mmsError, int* vmdLo
 }
 
 
+LinkedList
+MmsConnection_readJournal(MmsConnection self, MmsError* mmsError, const char* domainId, const char* itemId)
+{
+    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
+
+    *mmsError = MMS_ERROR_NONE;
+
+    uint32_t invokeId = getNextInvokeId(self);
+
+    mmsClient_createReadJournalRequest(invokeId, payload, domainId, itemId);
+
+    ByteBuffer* responseMessage = sendRequestAndWaitForResponse(self, invokeId, payload);
+
+    if (self->lastResponseError != MMS_ERROR_NONE)
+        *mmsError = self->lastResponseError;
+    else if (responseMessage != NULL) {
+    //    if (mmsClient_parseFileOpenResponse(self, &frsmId, fileSize, lastModified) == false)
+    //        *mmsError = MMS_ERROR_PARSING_RESPONSE;
+    }
+
+    releaseResponse(self);
+
+    if (self->associationState == MMS_STATE_CLOSED)
+        *mmsError = MMS_ERROR_CONNECTION_LOST;
+
+    return NULL;
+}
+
 int32_t
 MmsConnection_fileOpen(MmsConnection self, MmsError* mmsError, const char* filename, uint32_t initialPosition,
         uint32_t* fileSize, uint64_t* lastModified)

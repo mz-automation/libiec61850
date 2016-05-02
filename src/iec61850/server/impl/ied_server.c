@@ -773,12 +773,22 @@ IedServer_getStringAttributeValue(IedServer self, const DataAttribute* dataAttri
 static inline void
 checkForUpdateTrigger(IedServer self, DataAttribute* dataAttribute)
 {
-#if (CONFIG_IEC61850_REPORT_SERVICE== 1)
+#if ((CONFIG_IEC61850_REPORT_SERVICE == 1) || (CONFIG_IEC61850_LOG_SERVICE == 1))
     if (dataAttribute->triggerOptions & TRG_OPT_DATA_UPDATE) {
+
+#if (CONFIG_IEC61850_REPORT_SERVICE == 1)
         MmsMapping_triggerReportObservers(self->mmsMapping, dataAttribute->mmsValue,
                 REPORT_CONTROL_VALUE_UPDATE);
-    }
 #endif
+
+#if (CONFIG_IEC61850_LOG_SERVICE == 1)
+        //MmsMapping_triggerLogObserver(self->mmsMapping, dataAttribute->mmsValue,...)
+
+#endif
+
+
+    }
+#endif /* ((CONFIG_IEC61850_REPORT_SERVICE == 1) || (CONFIG_IEC61850_LOG_SERVICE == 1)) */
 }
 
 static inline void

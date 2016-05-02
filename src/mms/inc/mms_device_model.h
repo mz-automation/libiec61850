@@ -49,14 +49,22 @@ typedef struct {
     MmsDomain** domains;
 } MmsDevice;
 
+
+struct sMmsJournal {
+    char* name;
+};
+
+typedef struct sMmsJournal* MmsJournal;
+
 /*
- * Server side data structure to hold informations for a MMS domain (Logical Device)
+ * Server side data structure to hold information of an MMS domain (Logical Device)
  */
 struct sMmsDomain {
     char* domainName;
     int namedVariablesCount;
     MmsVariableSpecification** namedVariables;
     LinkedList /*<MmsNamedVariableList>*/ namedVariableLists;
+    LinkedList /* <MmsJournal> */ journals;
 };
 
 /**
@@ -79,6 +87,9 @@ MmsDomain_create(char* domainName);
 
 char*
 MmsDomain_getName(MmsDomain* self);
+
+void
+MmsDomain_addJournal(MmsDomain* self, MmsJournal journal);
 
 /**
  * Delete a MmsDomain instance
@@ -184,6 +195,12 @@ MmsDevice_getNamedVariableLists(MmsDevice* self);
 
 MmsNamedVariableList
 MmsDevice_getNamedVariableListWithName(MmsDevice* self, const char* variableListName);
+
+MmsJournal
+MmsJournal_create(const char* name);
+
+void
+MmsJournal_destroy(MmsJournal self);
 
 /**@}*/
 

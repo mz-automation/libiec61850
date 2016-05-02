@@ -168,6 +168,9 @@ int main(int argc, char** argv) {
                 char* name = (char*) element->data;
 
                 printf("  %s\n", name);
+
+                printf("  read journal...\n");
+                MmsConnection_readJournal(con, &error, domainName, name);
             }
 		}
 	}
