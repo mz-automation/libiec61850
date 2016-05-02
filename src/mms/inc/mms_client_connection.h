@@ -270,6 +270,20 @@ LinkedList /* <char*> */
 MmsConnection_getDomainVariableListNames(MmsConnection self, MmsError* mmsError, const char* domainId);
 
 /**
+ * \brief Get the names of all journals present in a MMS domain of the server
+ *
+ * This will result in a domain specific GetNameList request.
+ *
+ * \param self MmsConnection instance to operate on
+ * \param mmsError user provided variable to store error code
+ * \param domainId the domain name for the domain specific request
+ *
+ * \return the domain specific journal names or NULL if the request failed.
+ */
+LinkedList /* <char*> */
+MmsConnection_getDomainJournals(MmsConnection self, MmsError* mmsError, const char* domainId);
+
+/**
  * \brief Get the names of all named variable lists associated with this client connection.
  *
  * This will result in an association specific GetNameList request.

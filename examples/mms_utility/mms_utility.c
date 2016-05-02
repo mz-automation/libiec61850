@@ -156,6 +156,20 @@ int main(int argc, char** argv) {
 			printf("  %s\n", name);
 		}
 
+		variableList = MmsConnection_getDomainJournals(con, &error, domainName);
+
+		if (variableList != NULL) {
+
+            element = variableList;
+
+            printf("\nMMS journals for domain %s\n", domainName);
+
+            while ((element = LinkedList_getNext(element)) != NULL) {
+                char* name = (char*) element->data;
+
+                printf("  %s\n", name);
+            }
+		}
 	}
 
 	if (readVariable) {

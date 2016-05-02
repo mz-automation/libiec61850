@@ -1048,7 +1048,7 @@ mmsClient_getNameListSingleRequest(
                 payload, continueAfter);
     else {
 
-        if (objectClass == MMS_DOMAIN_NAMES)
+        if (objectClass == MMS_OBJECT_CLASS_DOMAIN)
             mmsClient_createMmsGetNameListRequestVMDspecific(invokeId,
                     payload, continueAfter);
         else
@@ -1104,31 +1104,37 @@ mmsClient_getNameList(MmsConnection self, MmsError *mmsError,
 LinkedList /* <char*> */
 MmsConnection_getVMDVariableNames(MmsConnection self, MmsError* mmsError)
 {
-    return mmsClient_getNameList(self, mmsError, NULL, MMS_NAMED_VARIABLE, false);
+    return mmsClient_getNameList(self, mmsError, NULL, MMS_OBJECT_CLASS_NAMED_VARIABLE, false);
 }
 
 LinkedList /* <char*> */
 MmsConnection_getDomainNames(MmsConnection self, MmsError* mmsError)
 {
-    return mmsClient_getNameList(self, mmsError, NULL, MMS_DOMAIN_NAMES, false);
+    return mmsClient_getNameList(self, mmsError, NULL, MMS_OBJECT_CLASS_DOMAIN, false);
 }
 
 LinkedList /* <char*> */
 MmsConnection_getDomainVariableNames(MmsConnection self, MmsError* mmsError, const char* domainId)
 {
-    return mmsClient_getNameList(self, mmsError, domainId, MMS_NAMED_VARIABLE, false);
+    return mmsClient_getNameList(self, mmsError, domainId, MMS_OBJECT_CLASS_NAMED_VARIABLE, false);
 }
 
 LinkedList /* <char*> */
 MmsConnection_getDomainVariableListNames(MmsConnection self, MmsError* mmsError, const char* domainId)
 {
-    return mmsClient_getNameList(self, mmsError, domainId, MMS_NAMED_VARIABLE_LIST, false);
+    return mmsClient_getNameList(self, mmsError, domainId, MMS_OBJECT_CLASS_NAMED_VARIABLE_LIST, false);
+}
+
+LinkedList /* <char*> */
+MmsConnection_getDomainJournals(MmsConnection self, MmsError* mmsError, const char* domainId)
+{
+    return mmsClient_getNameList(self, mmsError, domainId, MMS_OBJECT_CLASS_JOURNAL, false);
 }
 
 LinkedList /* <char*> */
 MmsConnection_getVariableListNamesAssociationSpecific(MmsConnection self, MmsError* mmsError)
 {
-    return mmsClient_getNameList(self, mmsError, NULL, MMS_NAMED_VARIABLE_LIST, true);
+    return mmsClient_getNameList(self, mmsError, NULL, MMS_OBJECT_CLASS_NAMED_VARIABLE_LIST, true);
 }
 
 MmsValue*

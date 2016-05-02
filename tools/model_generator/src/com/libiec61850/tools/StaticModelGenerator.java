@@ -3,7 +3,7 @@ package com.libiec61850.tools;
 /*
  *  StaticModelGenerator.java
  *
- *  Copyright 2013, 2014 Michael Zillgith
+ *  Copyright 2013-2016 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -68,6 +68,10 @@ public class StaticModelGenerator {
     private List<String> rcbVariableNames;
     private int currentRcbVariableNumber = 0;
 
+    private StringBuffer logControlBlocks;
+    private List<String> lcbVariableNames;
+    private int currentLcbVariableNumber;
+    
     private StringBuffer gseControlBlocks;
     private List<String> gseVariableNames;
     private int currentGseVariableNumber = 0;

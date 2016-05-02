@@ -94,9 +94,10 @@ struct sMmsConnection {
  * MMS Object class enumeration type
  */
 typedef enum {
-	MMS_NAMED_VARIABLE,
-	MMS_NAMED_VARIABLE_LIST,
-	MMS_DOMAIN_NAMES
+	MMS_OBJECT_CLASS_NAMED_VARIABLE = 0,
+	MMS_OBJECT_CLASS_NAMED_VARIABLE_LIST = 2,
+	MMS_OBJECT_CLASS_JOURNAL = 8,
+	MMS_OBJECT_CLASS_DOMAIN = 9
 } MmsObjectClass;
 
 MmsValue*
