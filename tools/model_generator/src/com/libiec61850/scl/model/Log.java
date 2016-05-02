@@ -33,8 +33,10 @@ public class Log {
 	public Log(Node logNode) throws SclParserException {
 		name = ParserUtils.parseAttribute(logNode, "name");
 		
-		if (name == null)
-			throw new SclParserException(logNode, "Log is missing required attribute name!");
+		if (name == null) {
+			/* Use default log name */
+		    name = "GeneralLog";
+		}
 	}
 
 	public String getName() {
