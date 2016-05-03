@@ -1193,6 +1193,10 @@ MmsMapping_create(IedModel* model)
     self->reportControls = LinkedList_create();
 #endif
 
+#if (CONFIG_IEC61850_LOG_SERVICE == 1)
+    self->logControls = LinkedList_create();
+#endif
+
 #if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
     self->gseControls = LinkedList_create();
     self->gooseInterfaceId = NULL;

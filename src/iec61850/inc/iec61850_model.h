@@ -84,6 +84,8 @@ typedef struct sSVControlBlock SVControlBlock;
 
 typedef struct sLogControlBlock LogControlBlock;
 
+typedef struct sLog Log;
+
 typedef enum {
 	IEC61850_BOOLEAN = 0,/* int */
 	IEC61850_INT8 = 1,   /* int8_t */
@@ -167,6 +169,8 @@ struct sIedModel {
     GSEControlBlock* gseCBs;
     SVControlBlock* svCBs;
     SettingGroupControlBlock* sgcbs;
+    LogControlBlock* lcbs;
+    Log* logs;
     void (*initializer) (void);
 };
 
@@ -268,6 +272,16 @@ struct sLogControlBlock {
     uint8_t trgOps;      /* TrgOps - trigger conditions */
     uint8_t options;     /* OptFlds */
     uint32_t intPeriod;  /* IntgPd - integrity period */
+
+    LogControlBlock* sibling; /* next control block in list or NULL if this is the last entry */
+};
+
+struct sLog {
+    LogicalNode* parent;
+
+    char* name;
+
+    Log* sibling; /* next log instance in list or NULL if this is the last entry */
 };
 
 struct sSettingGroupControlBlock {

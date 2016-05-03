@@ -21,7 +21,9 @@
  *  See COPYING file for the complete license text.
  */
 
+#include "libiec61850_platform_includes.h"
 #include "mms_device_model.h"
+#include "mms_server_internal.h"
 
 MmsJournal
 MmsJournal_create(const char* name)
