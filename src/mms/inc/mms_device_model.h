@@ -89,7 +89,7 @@ char*
 MmsDomain_getName(MmsDomain* self);
 
 void
-MmsDomain_addJournal(MmsDomain* self, MmsJournal journal);
+MmsDomain_addJournal(MmsDomain* self, const char* name);
 
 /**
  * Delete a MmsDomain instance

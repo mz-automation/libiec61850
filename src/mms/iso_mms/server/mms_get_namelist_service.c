@@ -173,6 +173,35 @@ addSubNamedVaribleNamesToList(LinkedList nameList, char* prefix, MmsVariableSpec
 
 #endif /* (CONFIG_MMS_SUPPORT_FLATTED_NAME_SPACE == 1) */
 
+
+
+
+static LinkedList
+getJournalListDomainSpecific(MmsServerConnection connection, char* domainName)
+{
+    MmsDevice* device = MmsServer_getDevice(connection->server);
+
+    LinkedList nameList = NULL;
+
+    MmsDomain* domain = MmsDevice_getDomain(device, domainName);
+
+    if (domain != NULL) {
+        nameList = LinkedList_create();
+
+        LinkedList journalList = domain->journals;
+
+        while ((journalList = LinkedList_getNext(journalList)) != NULL) {
+
+            MmsJournal journal = (MmsJournal) LinkedList_getData(journalList);
+
+            LinkedList_add(nameList, (void*) journal->name);
+        }
+
+    }
+
+    return nameList;
+}
+
 static LinkedList
 getNameListDomainSpecific(MmsServerConnection connection, char* domainName)
 {
@@ -502,6 +531,16 @@ mmsServer_handleGetNameListRequest(
 				createNameListResponse(connection, invokeId, nameList, response, continueAfterId);
 				LinkedList_destroy(nameList);
 			}
+		}
+		else if (objectClass == OBJECT_CLASS_JOURNAL) {
+		    LinkedList nameList = getJournalListDomainSpecific(connection, domainSpecificName);
+
+            if (nameList == NULL)
+                mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
+            else {
+                createNameListResponse(connection, invokeId, nameList, response, continueAfterId);
+                LinkedList_destroy(nameList);
+            }
 		}
 #if (MMS_DATA_SET_SERVICE == 1)
 		else if (objectClass == OBJECT_CLASS_NAMED_VARIABLE_LIST) {

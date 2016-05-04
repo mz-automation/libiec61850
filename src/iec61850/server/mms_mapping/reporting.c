@@ -770,7 +770,7 @@ createUnbufferedReportControlBlock(ReportControlBlock* reportControlBlock,
 
     rcb->typeSpec.structure.elementCount = structSize;
 
-    rcb->typeSpec.structure.elements = (MmsVariableSpecification**) GLOBAL_CALLOC(12,
+    rcb->typeSpec.structure.elements = (MmsVariableSpecification**) GLOBAL_CALLOC(structSize,
             sizeof(MmsVariableSpecification*));
 
     MmsVariableSpecification* namedVariable = 

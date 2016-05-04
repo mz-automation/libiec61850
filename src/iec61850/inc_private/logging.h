@@ -30,6 +30,8 @@ typedef struct {
 
     DataSet* dataSet;
 
+    MmsDomain* domain;
+
     bool enabled;
 
     int triggerOps;
@@ -37,10 +39,13 @@ typedef struct {
 } LogControl;
 
 LogControl*
-LogControl_create(bool buffered, LogicalNode* parentLN);
+LogControl_create(LogicalNode* parentLN);
 
 void
 LogControl_destroy(LogControl* self);
 
+MmsVariableSpecification*
+Logging_createLCBs(MmsMapping* self, MmsDomain* domain, LogicalNode* logicalNode,
+        int lcbCount);
 
 #endif /* LIBIEC61850_SRC_IEC61850_INC_PRIVATE_LOGGING_H_ */

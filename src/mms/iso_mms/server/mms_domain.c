@@ -74,10 +74,12 @@ MmsDomain_getName(MmsDomain* self)
 }
 
 void
-MmsDomain_addJournal(MmsDomain* self, MmsJournal journal)
+MmsDomain_addJournal(MmsDomain* self, const char* name)
 {
     if (self->journals == NULL)
         self->journals = LinkedList_create();
+
+    MmsJournal journal = MmsJournal_create(name);
 
     LinkedList_add(self->journals, (void*) journal);
 }

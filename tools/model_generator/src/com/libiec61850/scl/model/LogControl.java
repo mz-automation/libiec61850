@@ -6,7 +6,7 @@ import com.libiec61850.scl.ParserUtils;
 import com.libiec61850.scl.SclParserException;
 
 /*
- *  Copyright 2014 Michael Zillgith
+ *  Copyright 2014-2016 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *

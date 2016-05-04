@@ -280,6 +280,14 @@ public class LogicalNode implements DataModelNode {
 		return settingGroupControlBlocks;
 	}
 
+    public List<LogControl> getLogControlBlocks() {
+        return logControlBlocks;
+    }
+    
+    public List<Log> getLogs() {
+        return logs;
+    }
+    
     @Override
     public DataModelNode getChildByName(String childName) {
         for (DataObject dataObject : dataObjects) {

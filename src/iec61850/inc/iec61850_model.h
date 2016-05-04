@@ -270,8 +270,10 @@ struct sLogControlBlock {
     char* logRef;        /* object reference to the journal. Defaults to <MMS DomainName>/<LNName>$GeneralLog */
 
     uint8_t trgOps;      /* TrgOps - trigger conditions */
-    uint8_t options;     /* OptFlds */
     uint32_t intPeriod;  /* IntgPd - integrity period */
+
+    bool logEna;         /* enable log by default */
+    bool reasonCode;     /* include reason code in log */
 
     LogControlBlock* sibling; /* next control block in list or NULL if this is the last entry */
 };

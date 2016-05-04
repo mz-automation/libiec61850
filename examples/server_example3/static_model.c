@@ -1955,6 +1955,16 @@ ReportControlBlock iedModel_GenericIO_LLN0_report6 = {&iedModel_GenericIO_LLN0, 
 
 
 
+extern LogControlBlock iedModel_GenericIO_LLN0_lcb0;
+extern LogControlBlock iedModel_GenericIO_LLN0_lcb1;
+LogControlBlock iedModel_GenericIO_LLN0_lcb0 = {&iedModel_GenericIO_LLN0, "EventLog", "Events", "EventLog", 19, 0, true, true, &iedModel_GenericIO_LLN0_lcb1};
+LogControlBlock iedModel_GenericIO_LLN0_lcb1 = {&iedModel_GenericIO_LLN0, "GeneralLog", "", "", 19, 0, true, true, NULL};
+
+extern Log iedModel_GenericIO_LLN0_log0;
+extern Log iedModel_GenericIO_LLN0_log1;
+Log iedModel_GenericIO_LLN0_log0 = {&iedModel_GenericIO_LLN0, "GeneralLog", &iedModel_GenericIO_LLN0_log1};
+Log iedModel_GenericIO_LLN0_log1 = {&iedModel_GenericIO_LLN0, "EventLog", NULL};
+
 
 IedModel iedModel = {
     "simpleIO",
@@ -1964,6 +1974,8 @@ IedModel iedModel = {
     NULL,
     NULL,
     NULL,
+    &iedModel_GenericIO_LLN0_lcb0,
+    &iedModel_GenericIO_LLN0_log0,
     initializeValues
 };
 

@@ -1,7 +1,7 @@
 /*
  *  mms_mapping.c
  *
- *  Copyright 2013, 2014, 2015 Michael Zillgith
+ *  Copyright 2013-2016 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -30,6 +30,7 @@
 #include "mms_goose.h"
 #include "mms_sv.h"
 #include "reporting.h"
+#include "logging.h"
 #include "control.h"
 #include "ied_server_private.h"
 
@@ -756,6 +757,25 @@ countReportControlBlocksForLogicalNode(MmsMapping* self, LogicalNode* logicalNod
 }
 #endif /* (CONFIG_IEC61850_CONTROL_SERVICE == 1) */
 
+#if (CONFIG_IEC61850_LOG_SERVICE == 1)
+static int
+countLogControlBlocksForLogicalNode (MmsMapping* self, LogicalNode* logicalNode)
+{
+    int lcbCount = 0;
+
+    LogControlBlock* lcb = self->model->lcbs;
+
+    while (lcb != NULL) {
+        if (lcb->parent == logicalNode)
+            lcbCount++;
+
+        lcb = lcb->sibling;
+    }
+
+    return lcbCount;
+}
+#endif /* (CONFIG_IEC61850_LOG_SERVICE == 1) */
+
 
 #if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
 
@@ -870,6 +890,19 @@ createNamedVariableFromLogicalNode(MmsMapping* self, MmsDomain* domain,
     }
 #endif /* (CONFIG_IEC61850_REPORT_SERVICE == 1) */
 
+#if (CONFIG_IEC61850_LOG_SERVICE == 1)
+
+    int lcbCount = countLogControlBlocksForLogicalNode(self, logicalNode);
+
+    if (lcbCount > 0) {
+        if (DEBUG_IED_SERVER)
+            printf("   and %i LOG control blocks\n", lcbCount);
+
+        componentCount++;
+    }
+
+#endif /* (CONFIG_IEC61850_LOG_SERVICE == 1) */
+
 #if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
 
     int gseCount = countGSEControlBlocksForLogicalNode(self, logicalNode);
@@ -969,7 +1002,15 @@ createNamedVariableFromLogicalNode(MmsMapping* self, MmsDomain* domain,
     }
 #endif /* (CONFIG_IEC61850_REPORT_SERVICE == 1) */
 
-    /* TODO create LCBs here */
+#if (CONFIG_IEC61850_LOG_SERVICE == 1)
+    if (lcbCount > 0) {
+        namedVariable->typeSpec.structure.elements[currentComponent] =
+                Logging_createLCBs(self, domain, logicalNode, lcbCount);
+
+        currentComponent++;
+    }
+#endif /* (CONFIG_IEC61850_LOG_SERVICE == 1) */
+
 
 #if (CONFIG_IEC61850_REPORT_SERVICE == 1)
     if (brcbCount > 0) {
@@ -1068,6 +1109,18 @@ createMmsDomainFromIedDevice(MmsMapping* self, LogicalDevice* logicalDevice)
 
     if (domain == NULL)
         goto exit_function;
+
+#if (CONFIG_IEC61850_LOG_SERVICE == 1)
+    /* add logs (journals) */
+    Log* log = self->model->logs;
+
+    while (log != NULL) {
+
+        MmsDomain_addJournal(domain, log->name);
+
+        log = log->sibling;
+    }
+#endif /* (CONFIG_IEC61850_LOG_SERVICE == 1) */
 
     int nodesCount = LogicalDevice_getLogicalNodeCount(logicalDevice);
 
