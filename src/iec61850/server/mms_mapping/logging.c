@@ -44,6 +44,7 @@ LogControl_create(LogicalNode* parentLN)
     self->enabled = false;
     self->dataSet = NULL;
     self->triggerOps = 0;
+    self->logicalNode = parentLN;
 
     return self;
 }
@@ -78,6 +79,73 @@ getLCBForLogicalNodeWithIndex(MmsMapping* self, LogicalNode* logicalNode, int in
 
     return NULL ;
 }
+
+static LogControl*
+lookupLogControl(MmsMapping* self, MmsDomain* domain, char* lnName, char* objectName)
+{
+    LinkedList element = LinkedList_getNext(self->logControls);
+
+    while (element != NULL) {
+        LogControl* logControl = (LogControl*) element->data;
+
+        if (logControl->domain == domain) {
+            if (strcmp(logControl->logicalNode->name, lnName) == 0) {
+                if (strcmp(logControl->logControlBlock->name, objectName) == 0) {
+                    return logControl;
+                }
+            }
+        }
+
+        element = LinkedList_getNext(element);
+    }
+
+    return NULL;
+}
+
+
+
+MmsValue*
+LIBIEC61850_LOG_SVC_readAccessControlBlock(MmsMapping* self, MmsDomain* domain, char* variableIdOrig)
+{
+    MmsValue* value = NULL;
+
+    char variableId[130];
+
+    strncpy(variableId, variableIdOrig, 129);
+
+    char* separator = strchr(variableId, '$');
+
+    *separator = 0;
+
+    char* lnName = variableId;
+
+    if (lnName == NULL)
+        return NULL;
+
+    char* objectName = MmsMapping_getNextNameElement(separator + 1);
+
+    if (objectName == NULL)
+        return NULL;
+
+    char* varName = MmsMapping_getNextNameElement(objectName);
+
+    if (varName != NULL)
+        *(varName - 1) = 0;
+
+    LogControl* logControl = lookupLogControl(self, domain, lnName, objectName);
+
+    if (logControl != NULL) {
+        if (varName != NULL) {
+            value = MmsValue_getSubElement(logControl->mmsValue, logControl->mmsType, varName);
+        }
+        else {
+            value = logControl->mmsValue;
+        }
+    }
+
+    return value;
+}
+
 
 static char*
 createDataSetReferenceForDefaultDataSet(LogControlBlock* lcb, LogControl* logControl)
@@ -118,9 +186,9 @@ static MmsVariableSpecification*
 createLogControlBlock(LogControlBlock* logControlBlock,
         LogControl* logControl)
 {
-    MmsVariableSpecification* rcb = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    rcb->name = copyString(logControlBlock->name);
-    rcb->type = MMS_STRUCTURE;
+    MmsVariableSpecification* lcb = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
+    lcb->name = copyString(logControlBlock->name);
+    lcb->type = MMS_STRUCTURE;
 
     MmsValue* mmsValue = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
     mmsValue->deleteValue = false;
@@ -131,9 +199,9 @@ createLogControlBlock(LogControlBlock* logControlBlock,
     mmsValue->value.structure.size = structSize;
     mmsValue->value.structure.components = (MmsValue**) GLOBAL_CALLOC(structSize, sizeof(MmsValue*));
 
-    rcb->typeSpec.structure.elementCount = structSize;
+    lcb->typeSpec.structure.elementCount = structSize;
 
-    rcb->typeSpec.structure.elements = (MmsVariableSpecification**) GLOBAL_CALLOC(structSize,
+    lcb->typeSpec.structure.elements = (MmsVariableSpecification**) GLOBAL_CALLOC(structSize,
             sizeof(MmsVariableSpecification*));
 
     /* LogEna */
@@ -143,7 +211,7 @@ createLogControlBlock(LogControlBlock* logControlBlock,
     namedVariable->name = copyString("LogEna");
     namedVariable->type = MMS_BOOLEAN;
 
-    rcb->typeSpec.structure.elements[0] = namedVariable;
+    lcb->typeSpec.structure.elements[0] = namedVariable;
     mmsValue->value.structure.components[0] = MmsValue_newBoolean(logControlBlock->logEna);
 
     /* LogRef */
@@ -151,7 +219,7 @@ createLogControlBlock(LogControlBlock* logControlBlock,
     namedVariable->name = copyString("LogRef");
     namedVariable->typeSpec.visibleString = -129;
     namedVariable->type = MMS_VISIBLE_STRING;
-    rcb->typeSpec.structure.elements[1] = namedVariable;
+    lcb->typeSpec.structure.elements[1] = namedVariable;
 
     if (logControlBlock->logRef != NULL) {
         mmsValue->value.structure.components[1] = MmsValue_newVisibleString(logControlBlock->logRef);
@@ -170,7 +238,7 @@ createLogControlBlock(LogControlBlock* logControlBlock,
     namedVariable->name = copyString("DatSet");
     namedVariable->typeSpec.visibleString = -129;
     namedVariable->type = MMS_VISIBLE_STRING;
-    rcb->typeSpec.structure.elements[2] = namedVariable;
+    lcb->typeSpec.structure.elements[2] = namedVariable;
 
     if (logControlBlock->dataSetName != NULL) {
         char* dataSetReference = createDataSetReferenceForDefaultDataSet(logControlBlock, logControl);
@@ -186,7 +254,7 @@ createLogControlBlock(LogControlBlock* logControlBlock,
     namedVariable->name = copyString("OldEntrTm");
     namedVariable->type = MMS_BINARY_TIME;
     namedVariable->typeSpec.binaryTime = 6;
-    rcb->typeSpec.structure.elements[3] = namedVariable;
+    lcb->typeSpec.structure.elements[3] = namedVariable;
 
     mmsValue->value.structure.components[3] = MmsValue_newBinaryTime(false);
 
@@ -195,7 +263,7 @@ createLogControlBlock(LogControlBlock* logControlBlock,
     namedVariable->name = copyString("NewEntrTm");
     namedVariable->type = MMS_BINARY_TIME;
     namedVariable->typeSpec.binaryTime = 6;
-    rcb->typeSpec.structure.elements[4] = namedVariable;
+    lcb->typeSpec.structure.elements[4] = namedVariable;
 
     mmsValue->value.structure.components[4] = MmsValue_newBinaryTime(false);
 
@@ -205,7 +273,7 @@ createLogControlBlock(LogControlBlock* logControlBlock,
     namedVariable->type = MMS_OCTET_STRING;
     namedVariable->typeSpec.octetString = 8;
 
-    rcb->typeSpec.structure.elements[5] = namedVariable;
+    lcb->typeSpec.structure.elements[5] = namedVariable;
 
     mmsValue->value.structure.components[5] = MmsValue_newOctetString(8, 8);
 
@@ -215,7 +283,7 @@ createLogControlBlock(LogControlBlock* logControlBlock,
     namedVariable->type = MMS_OCTET_STRING;
     namedVariable->typeSpec.octetString = 8;
 
-    rcb->typeSpec.structure.elements[6] = namedVariable;
+    lcb->typeSpec.structure.elements[6] = namedVariable;
 
     mmsValue->value.structure.components[6] = MmsValue_newOctetString(8, 8);
 
@@ -224,7 +292,7 @@ createLogControlBlock(LogControlBlock* logControlBlock,
     namedVariable->name = copyString("TrgOps");
     namedVariable->type = MMS_BIT_STRING;
     namedVariable->typeSpec.bitString = -6;
-    rcb->typeSpec.structure.elements[7] = namedVariable;
+    lcb->typeSpec.structure.elements[7] = namedVariable;
     mmsValue->value.structure.components[7] = createTrgOps(logControlBlock);
 
     /* IntgPd */
@@ -232,14 +300,16 @@ createLogControlBlock(LogControlBlock* logControlBlock,
     namedVariable->name = copyString("IntgPd");
     namedVariable->type = MMS_UNSIGNED;
     namedVariable->typeSpec.unsignedInteger = 32;
-    rcb->typeSpec.structure.elements[8] = namedVariable;
+    lcb->typeSpec.structure.elements[8] = namedVariable;
     mmsValue->value.structure.components[8] =
             MmsValue_newUnsignedFromUint32(logControlBlock->intPeriod);
 
 
-    //TODO logControl->rcbValues = mmsValue;
+    logControl->mmsType = lcb;
+    logControl->mmsValue = mmsValue;
+    logControl->logControlBlock = logControlBlock;
 
-    return rcb;
+    return lcb;
 }
 
 

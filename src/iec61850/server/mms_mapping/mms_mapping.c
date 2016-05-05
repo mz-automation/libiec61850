@@ -1427,6 +1427,19 @@ isSampledValueControlBlock(char* separator)
 
 #endif /* (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1) */
 
+#if (CONFIG_IEC61850_LOG_SERVICE == 1)
+
+static bool
+isLogControlBlock(char* separator)
+{
+    if (strncmp(separator + 1, "LG", 2) == 0)
+        return true;
+
+    return false;
+}
+
+#endif /* (CONFIG_IEC61850_LOG_SERVICE == 1) */
+
 char*
 MmsMapping_getNextNameElement(char* name)
 {
@@ -2198,6 +2211,14 @@ mmsReadHandler(void* parameter, MmsDomain* domain, char* variableId, MmsServerCo
     /* Sampled Value control blocks - MS/US */
     if (isSampledValueControlBlock(separator)) {
         retValue = LIBIEC61850_SV_readAccessSampledValueControlBlock(self, domain, variableId);
+        goto exit_function;
+    }
+#endif
+
+#if (CONFIG_IEC61850_LOG_SERVICE == 1)
+    /* LOG control block - LG */
+    if (isLogControlBlock(separator)) {
+        retValue = LIBIEC61850_LOG_SVC_readAccessControlBlock(self, domain, variableId);
         goto exit_function;
     }
 #endif

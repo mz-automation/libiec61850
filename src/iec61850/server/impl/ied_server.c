@@ -198,6 +198,10 @@ createMmsServerCache(IedServer self)
                         && (strcmp(fcName, "MS") != 0) && (strcmp(fcName, "US") != 0)
 #endif
 
+#if (CONFIG_IEC61850_LOG_SERVICE == 1)
+                        && (strcmp(fcName, "LG") != 0)
+#endif
+
                    )
                 {
                     char* variableName = createString(3, lnName, "$", fcName);

@@ -27,10 +27,15 @@
 
 typedef struct {
     char* name;
+    LogControlBlock* logControlBlock;
 
     DataSet* dataSet;
 
+    LogicalNode* logicalNode;
     MmsDomain* domain;
+
+    MmsValue* mmsValue;
+    MmsVariableSpecification* mmsType;
 
     bool enabled;
 
@@ -47,5 +52,8 @@ LogControl_destroy(LogControl* self);
 MmsVariableSpecification*
 Logging_createLCBs(MmsMapping* self, MmsDomain* domain, LogicalNode* logicalNode,
         int lcbCount);
+
+MmsValue*
+LIBIEC61850_LOG_SVC_readAccessControlBlock(MmsMapping* self, MmsDomain* domain, char* variableIdOrig);
 
 #endif /* LIBIEC61850_SRC_IEC61850_INC_PRIVATE_LOGGING_H_ */
