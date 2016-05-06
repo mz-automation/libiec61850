@@ -28,14 +28,17 @@
 typedef struct {
     char* name;
     LogControlBlock* logControlBlock;
+    MmsMapping* mmsMapping;
 
     DataSet* dataSet;
+    char* dataSetRef;
 
     LogicalNode* logicalNode;
     MmsDomain* domain;
 
     MmsValue* mmsValue;
     MmsVariableSpecification* mmsType;
+
 
     bool enabled;
 
@@ -44,7 +47,7 @@ typedef struct {
 } LogControl;
 
 LogControl*
-LogControl_create(LogicalNode* parentLN);
+LogControl_create(LogicalNode* parentLN, MmsMapping* mmsMapping);
 
 void
 LogControl_destroy(LogControl* self);

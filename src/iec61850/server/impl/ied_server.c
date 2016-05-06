@@ -786,8 +786,8 @@ checkForUpdateTrigger(IedServer self, DataAttribute* dataAttribute)
 #endif
 
 #if (CONFIG_IEC61850_LOG_SERVICE == 1)
-        //MmsMapping_triggerLogObserver(self->mmsMapping, dataAttribute->mmsValue,...)
-
+        MmsMapping_triggerLogging(self->mmsMapping, dataAttribute->mmsValue,
+                LOG_CONTROL_VALUE_UPDATE);
 #endif
 
 
@@ -809,6 +809,11 @@ checkForChangedTriggers(IedServer self, DataAttribute* dataAttribute)
         MmsMapping_triggerReportObservers(self->mmsMapping, dataAttribute->mmsValue,
                 REPORT_CONTROL_VALUE_CHANGED);
 #endif
+
+#if (CONFIG_IEC61850_LOG_SERVICE == 1)
+        MmsMapping_triggerLogging(self->mmsMapping, dataAttribute->mmsValue,
+                LOG_CONTROL_VALUE_CHANGED);
+#endif
     }
 
     else if (dataAttribute->triggerOptions & TRG_OPT_QUALITY_CHANGED) {
@@ -821,6 +826,12 @@ checkForChangedTriggers(IedServer self, DataAttribute* dataAttribute)
         MmsMapping_triggerReportObservers(self->mmsMapping, dataAttribute->mmsValue,
                 REPORT_CONTROL_QUALITY_CHANGED);
 #endif
+
+#if (CONFIG_IEC61850_LOG_SERVICE == 1)
+        MmsMapping_triggerLogging(self->mmsMapping, dataAttribute->mmsValue,
+                LOG_CONTROL_QUALITY_CHANGED);
+#endif
+
     }
 #endif /* (CONFIG_IEC61850_REPORT_SERVICE== 1) || (CONFIG_INCLUDE_GOOSE_SUPPORT == 1) */
 
@@ -1034,6 +1045,13 @@ IedServer_updateQuality(IedServer self, DataAttribute* dataAttribute, Quality qu
             MmsMapping_triggerReportObservers(self->mmsMapping, dataAttribute->mmsValue,
                                 REPORT_CONTROL_QUALITY_CHANGED);
 #endif
+
+#if (CONFIG_IEC61850_LOG_SERVICE == 1)
+        if (dataAttribute->triggerOptions & TRG_OPT_QUALITY_CHANGED)
+            MmsMapping_triggerLogging(self->mmsMapping, dataAttribute->mmsValue,
+                    LOG_CONTROL_QUALITY_CHANGED);
+#endif
+
     }
 
 

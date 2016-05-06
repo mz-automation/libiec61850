@@ -2482,6 +2482,8 @@ variableListChangedHandler (void* parameter, bool create, MmsVariableListType li
                 }
             }
         }
+
+        //TODO check if data set is referenced in a log control block
     }
 
     return allow;
@@ -2607,6 +2609,33 @@ MmsMapping_triggerReportObservers(MmsMapping* self, MmsValue* value, ReportInclu
 #endif /* (CONFIG_IEC61850_REPORT_SERVICE == 1) */
 
 #if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
+
+#if (CONFIG_IEC61850_LOG_SERVICE == 1)
+
+void
+MmsMapping_triggerLogging(MmsMapping* self, MmsValue* value, LogInclusionFlag flag)
+{
+    LinkedList element = self->logControls;
+
+    while ((element = LinkedList_getNext(element)) != NULL) {
+        LogControl* lc = (LogControl*) element->data;
+
+        if ((lc->enabled) && (lc->dataSet != NULL)) {
+          //  switch (flag) {
+
+            int index;
+
+            if (DataSet_isMemberValue(lc->dataSet, value, &index)) {
+                printf("Log value\n");
+            }
+
+
+        }
+    }
+}
+
+#endif /* (CONFIG_IEC61850_LOG_SERVICE == 1) */
+
 
 void
 MmsMapping_triggerGooseObservers(MmsMapping* self, MmsValue* value)

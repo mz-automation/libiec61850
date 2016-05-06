@@ -37,7 +37,7 @@
 
 
 LogControl*
-LogControl_create(LogicalNode* parentLN)
+LogControl_create(LogicalNode* parentLN, MmsMapping* mmsMapping)
 {
     LogControl* self = (LogControl*) GLOBAL_MALLOC(sizeof(LogControl));
 
@@ -45,6 +45,8 @@ LogControl_create(LogicalNode* parentLN)
     self->dataSet = NULL;
     self->triggerOps = 0;
     self->logicalNode = parentLN;
+    self->mmsMapping = mmsMapping;
+    self->dataSetRef = NULL;
 
     return self;
 }
@@ -175,11 +177,23 @@ createTrgOps(LogControlBlock* reportControlBlock) {
     if (triggerOps & TRG_OPT_INTEGRITY)
         MmsValue_setBitStringBit(trgOps, 4, true);
 
-    //TODO remove - GI doesn't exist here!
-    if (triggerOps & TRG_OPT_GI)
-        MmsValue_setBitStringBit(trgOps, 5, true);
-
     return trgOps;
+}
+
+static bool
+enableLogging(LogControl* logControl)
+{
+    printf("enableLogging\n");
+    DataSet* dataSet = IedModel_lookupDataSet(logControl->mmsMapping->model, logControl->dataSetRef);
+
+    if (dataSet == NULL) {
+        printf("   data set (%s) not found!\n", logControl->dataSetRef);
+        return false;
+    }
+
+
+
+    return true;
 }
 
 static MmsVariableSpecification*
@@ -243,8 +257,12 @@ createLogControlBlock(LogControlBlock* logControlBlock,
     if (logControlBlock->dataSetName != NULL) {
         char* dataSetReference = createDataSetReferenceForDefaultDataSet(logControlBlock, logControl);
 
+        printf("createLogControlBlock dataSetRef: %s\n", dataSetReference);
+
+        logControl->dataSetRef = dataSetReference;
+
         mmsValue->value.structure.components[2] = MmsValue_newVisibleString(dataSetReference);
-        GLOBAL_FREEMEM(dataSetReference);
+        //GLOBAL_FREEMEM(dataSetReference);
     }
     else
         mmsValue->value.structure.components[2] = MmsValue_newVisibleString("");
@@ -309,6 +327,12 @@ createLogControlBlock(LogControlBlock* logControlBlock,
     logControl->mmsValue = mmsValue;
     logControl->logControlBlock = logControlBlock;
 
+    logControl->enabled = logControlBlock->logEna;
+
+    if (logControl->enabled) {
+        enableLogging(logControl);
+    }
+
     return lcb;
 }
 
@@ -331,7 +355,7 @@ Logging_createLCBs(MmsMapping* self, MmsDomain* domain, LogicalNode* logicalNode
 
     while (currentLcb < lcbCount) {
 
-        LogControl* logControl = LogControl_create(logicalNode);
+        LogControl* logControl = LogControl_create(logicalNode, self);
 
         LogControlBlock* logControlBlock = getLCBForLogicalNodeWithIndex(self, logicalNode, currentLcb);
 
