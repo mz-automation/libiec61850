@@ -137,11 +137,11 @@ namespace IEC61850
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             private static extern void ControlObjectClient_setOrigin(IntPtr self, string orIdent, int orCat);
 
-            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-            private static extern void ControlObjectClient_enableInterlockCheck(IntPtr self);
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			private static extern void ControlObjectClient_setInterlockCheck(IntPtr self, bool value);
 
-            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-            private static extern void ControlObjectClient_enableSynchroCheck(IntPtr self);
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			private static extern void ControlObjectClient_setSynchroCheck(IntPtr self, bool value);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 			private delegate void InternalCommandTerminationHandler(IntPtr parameter,IntPtr controlClient);
@@ -373,18 +373,36 @@ namespace IEC61850
             /// <summary>
             /// Enables the synchro check for operate commands
             /// </summary>
+			[Obsolete("use SetSynchroCheck instead")]
             public void EnableSynchroCheck ()
             {
-                ControlObjectClient_enableSynchroCheck(controlObject);
+				ControlObjectClient_setSynchroCheck (controlObject, true);
             }
 
             /// <summary>
             /// Enables the interlock check for operate and select commands
             /// </summary>
-            public void EnableInterlockCheck ()
+			[Obsolete("use SetInterlockCheck instead")]
+			public void EnableInterlockCheck ()
             {
-                ControlObjectClient_enableInterlockCheck(controlObject);
+				ControlObjectClient_setInterlockCheck (controlObject, true);
             }
+
+			/// <summary>
+			/// Sets the value of the interlock check flag for operate and select commands
+			/// </summary>
+			public void SetInterlockCheck (bool value)
+			{
+				ControlObjectClient_setInterlockCheck (controlObject, value);
+			}
+
+			/// <summary>
+			/// Sets the value of the synchro check flag for operate command
+			/// </summary>
+			public void SetSynchroCheck (bool value)
+			{
+				ControlObjectClient_setSynchroCheck (controlObject, value);
+			}
 
 			/// <summary>
 			/// Gets the last received LastApplError (Additional Cause Diagnostics) value.
