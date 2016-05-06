@@ -1510,11 +1510,35 @@ ControlObjectClient_setOrigin(ControlObjectClient self, const char* orIdent, int
 void
 ControlObjectClient_useConstantT(ControlObjectClient self, bool useConstantT);
 
+/**
+ * \deprecated use ControlObjectClient_setInterlockCheck instead
+ */
 void
 ControlObjectClient_enableInterlockCheck(ControlObjectClient self);
 
+/**
+ * \deprecated use ControlObjectClient_setSynchroCheck instead
+ */
 void
 ControlObjectClient_enableSynchroCheck(ControlObjectClient self);
+
+/**
+ * \brief Set the value of the interlock check flag when a control command is sent
+ *
+ * \param self the ControlObjectClient instance
+ * \param value if true the server will perform a interlock check if supported
+ */
+void
+ControlObjectClient_setInterlockCheck(ControlObjectClient self, bool value);
+
+/**
+ * \brief Set the value of the synchro check flag when a control command is sent
+ *
+ * \param self the ControlObjectClient instance
+ * \param value if true the server will perform a synchro check if supported
+ */
+void
+ControlObjectClient_setSynchroCheck(ControlObjectClient self, bool value);
 
 
 /**

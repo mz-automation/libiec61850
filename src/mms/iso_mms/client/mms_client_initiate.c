@@ -130,6 +130,11 @@ mmsClient_parseInitiateResponse(MmsConnection self)
 
         self->parameters.maxServOutstandingCalling = initiateResponse->negotiatedMaxServOutstandingCalling;
 
+        int i;
+
+        for (i = 0; i < 11; i++)
+            self->parameters.servicesSupported[i] = initiateResponse->mmsInitResponseDetail.servicesSupportedCalled.buf[i];
+
         result = true;
     }
     else
