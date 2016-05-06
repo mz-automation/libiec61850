@@ -600,4 +600,7 @@ EXPORTS
     MmsValue_getUtcTimeQuality
     MmsValue_decodeMmsData
     MmsValue_encodeMmsData
-
+    MmsConnection_getMmsConnectionParameters
+    IedServer_updateVisibleStringAttributeValue
+    ControlObjectClient_setInterlockCheck
+    ControlObjectClient_setSynchroCheck

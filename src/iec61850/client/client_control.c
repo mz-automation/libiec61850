@@ -849,9 +849,22 @@ ControlObjectClient_enableInterlockCheck(ControlObjectClient self)
 }
 
 void
+ControlObjectClient_setInterlockCheck(ControlObjectClient self, bool value)
+{
+    self->interlockCheck = value;
+}
+
+
+void
 ControlObjectClient_enableSynchroCheck(ControlObjectClient self)
 {
     self->synchroCheck = true;
+}
+
+void
+ControlObjectClient_setSynchroCheck(ControlObjectClient self, bool value)
+{
+    self->synchroCheck = value;
 }
 
 void

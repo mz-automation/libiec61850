@@ -213,14 +213,18 @@ endif()
 set_source_files_properties(${lib_asn1c_SRCS}
                                        PROPERTIES LANGUAGE C)
 
+IF(MSVC)
 set_source_files_properties(${lib_common_SRCS} ${lib_windows_SRCS}
                                        PROPERTIES LANGUAGE CXX)
+ENDIF()
 
 IF(WITH_WPCAP)
+IF(MSVC)
 set_source_files_properties(${lib_goose_SRCS}
                                        PROPERTIES LANGUAGE CXX)
 set_source_files_properties(${lib_sv_SRCS}
                                        PROPERTIES LANGUAGE CXX)                                                                           
+ENDIF()
 ELSE()
 add_definitions(-DEXCLUDE_ETHERNET_WINDOWS)
 ENDIF()
@@ -311,8 +315,10 @@ IF(UNIX)
      )
   ENDIF (CONFIG_SYSTEM_HAS_CLOCK_GETTIME)
 ENDIF(UNIX)
-
-
+IF(MINGW)
+  target_link_libraries(iec61850-shared ws2_32 iphlpapi)
+  target_link_libraries(iec61850 ws2_32 iphlpapi)
+ENDIF(MINGW)
 iF(WITH_WPCAP)
 target_link_libraries(iec61850
    ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/winpcap/lib/wpcap.lib
@@ -329,7 +335,6 @@ if(MSVC)
            	LINK_FLAGS "/DEF:\"${CMAKE_CURRENT_SOURCE_DIR}/vs/libiec61850.def\""
        	)
 endif()
-
 
 ELSE(WITH_WPCAP)
 if(MSVC)

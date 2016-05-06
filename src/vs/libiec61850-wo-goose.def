@@ -526,4 +526,6 @@ EXPORTS
     MmsValue_setUtcTimeQuality
     MmsValue_decodeMmsData
     MmsValue_encodeMmsData
+    ControlObjectClient_setInterlockCheck
+    ControlObjectClient_setSynchroCheck
 

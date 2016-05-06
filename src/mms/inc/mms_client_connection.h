@@ -1,7 +1,7 @@
 /*
  *  mms_client_connection.h
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013-2016 Michael Zillgith
  *
  *	This file is part of libIEC61850.
  *
@@ -49,6 +49,7 @@ typedef struct sMmsConnectionParameters {
 	int maxServOutstandingCalled;
 	int dataStructureNestingLevel;
 	int maxPduSize; /* local detail */
+	uint8_t servicesSupported[11];
 } MmsConnectionParameters;
 
 typedef struct {
@@ -112,13 +113,22 @@ MmsConnection_setInformationReportHandler(MmsConnection self, MmsInformationRepo
         void* parameter);
 
 /**
- * \brief Get the connection parameters for an MmsConnection instance
+ * \brief Get the ISO connection parameters for an MmsConnection instance
  *
  * \param self MmsConnection instance to operate on
  * \return params the to be used by this connection
  */
 IsoConnectionParameters
 MmsConnection_getIsoConnectionParameters(MmsConnection self);
+
+/**
+ * \brief Get the MMS specific connection parameters for an MmsConnection instance
+ *
+ * \param self MmsConnection instance to operate on
+ * \return params the to be used by this connection
+ */
+MmsConnectionParameters
+MmsConnection_getMmsConnectionParameters(MmsConnection self);
 
 /**
  * \brief User provided handler function that will be called if the connection to the server is lost

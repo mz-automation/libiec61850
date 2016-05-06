@@ -841,6 +841,12 @@ MmsConnection_getIsoConnectionParameters(MmsConnection self)
     return self->isoParameters;
 }
 
+MmsConnectionParameters
+MmsConnection_getMmsConnectionParameters(MmsConnection self)
+{
+    return self->parameters;
+}
+
 static void
 waitForConnectResponse(MmsConnection self)
 {
