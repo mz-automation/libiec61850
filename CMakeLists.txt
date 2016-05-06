@@ -12,7 +12,7 @@ ENABLE_TESTING()
 
 set(LIB_VERSION_MAJOR "0")
 set(LIB_VERSION_MINOR "9")
-set(LIB_VERSION_PATCH "1")
+set(LIB_VERSION_PATCH "2")
 
 # feature checks
 include(CheckLibraryExists)
