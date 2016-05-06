@@ -104,11 +104,11 @@ set(API_HEADERS
     src/sampled_values/sv_publisher.h
 )
 
-IF(WIN32)
+IF(MSVC)
 include_directories(
     src/vs
 )
-ENDIF(WIN32)
+ENDIF(MSVC)
 
 # write the detected stuff to this file
 configure_file(config/stack_config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config/stack_config.h)
