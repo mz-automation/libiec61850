@@ -24,7 +24,7 @@
 #include "libiec61850_platform_includes.h"
 #include "mms_server_internal.h"
 
-#if MMS_STATUS_SERVICE == 1
+#if (MMS_STATUS_SERVICE == 1)
 
 void
 mmsServer_handleStatusRequest(

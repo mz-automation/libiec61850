@@ -190,8 +190,8 @@ enableLogging(LogControl* logControl)
         printf("   data set (%s) not found!\n", logControl->dataSetRef);
         return false;
     }
-
-
+    else
+        logControl->dataSet = dataSet;
 
     return true;
 }
@@ -326,6 +326,7 @@ createLogControlBlock(LogControlBlock* logControlBlock,
     logControl->mmsType = lcb;
     logControl->mmsValue = mmsValue;
     logControl->logControlBlock = logControlBlock;
+    logControl->triggerOps = logControlBlock->trgOps;
 
     logControl->enabled = logControlBlock->logEna;
 

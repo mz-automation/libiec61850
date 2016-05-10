@@ -2621,12 +2621,37 @@ MmsMapping_triggerLogging(MmsMapping* self, MmsValue* value, LogInclusionFlag fl
         LogControl* lc = (LogControl*) element->data;
 
         if ((lc->enabled) && (lc->dataSet != NULL)) {
-          //  switch (flag) {
+
 
             int index;
 
+            switch (flag) {
+
+            case LOG_CONTROL_VALUE_UPDATE:
+                if ((lc->triggerOps & TRG_OPT_DATA_UPDATE) == 0)
+                    continue;
+
+                break;
+
+            case LOG_CONTROL_VALUE_CHANGED:
+                if (((lc->triggerOps & TRG_OPT_DATA_CHANGED) == 0) &&
+                        ((lc->triggerOps & TRG_OPT_DATA_UPDATE) == 0))
+                    continue;
+
+                break;
+
+            case LOG_CONTROL_QUALITY_CHANGED:
+                if ((lc->triggerOps & TRG_OPT_QUALITY_CHANGED) == 0)
+                    continue;
+
+                break;
+
+            default:
+                continue;
+            }
+
             if (DataSet_isMemberValue(lc->dataSet, value, &index)) {
-                printf("Log value\n");
+                printf("Log value - flag:%i\n", flag);
             }
 
 

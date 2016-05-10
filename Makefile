@@ -17,6 +17,9 @@ LIB_SOURCE_DIRS += src/mms/iso_common
 LIB_SOURCE_DIRS += src/mms/iso_mms/common
 LIB_SOURCE_DIRS += src/mms/iso_mms/asn1c
 LIB_SOURCE_DIRS += src/mms/iso_server
+
+LIB_SOURCE_DIRS += src/logging
+
 ifndef EXCLUDE_ETHERNET_WINDOWS
 LIB_SOURCE_DIRS += src/goose
 LIB_SOURCE_DIRS += src/sampled_values

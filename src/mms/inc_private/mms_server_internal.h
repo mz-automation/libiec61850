@@ -222,6 +222,14 @@ mmsServer_handleStatusRequest(
         ByteBuffer* response);
 
 void
+mmsServer_handleReadJournalRequest(
+        MmsServerConnection connection,
+        uint8_t* requestBuffer,
+        int bufPos, int maxBufPos,
+        uint32_t invokeId,
+        ByteBuffer* response);
+
+void
 mmsServer_handleFileDirectoryRequest(
         MmsServerConnection connection,
         uint8_t* buffer, int bufPos, int maxBufPos,

@@ -113,6 +113,12 @@ handleConfirmedRequestPdu(
 		if (extendedTag) {
 		    switch(tag) {
 
+#if (MMS_JOURNAL_SERVICE == 1)
+            case 0x41: /* read-journal */
+                mmsServer_handleReadJournalRequest(self, buffer, bufPos, bufPos + length, invokeId, response);
+                break;
+#endif /* (MMS_JOURNAL_SERVICE == 1) */
+
 #if (MMS_FILE_SERVICE == 1)
 		    case 0x48: /* file-open-request */
 		        mmsServer_handleFileOpenRequest(self, buffer, bufPos, bufPos + length, invokeId, response);

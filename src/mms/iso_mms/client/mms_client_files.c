@@ -60,7 +60,7 @@ mmsClient_createReadJournalRequest(uint32_t invokeId, ByteBuffer* request, const
     bufPos = BerEncoder_encodeTL(0x02, invokeIdSize, buffer, bufPos);
     bufPos = BerEncoder_encodeUInt32(invokeId, buffer, bufPos);
 
-    /* Encode FileOpen tag (context | structured ) [65 = 41h] */
+    /* Encode read journal tag (context | structured ) [65 = 41h] */
     buffer[bufPos++] = 0xbf;
     buffer[bufPos++] = 0x41;
 
@@ -68,8 +68,6 @@ mmsClient_createReadJournalRequest(uint32_t invokeId, ByteBuffer* request, const
     bufPos = BerEncoder_encodeTL(0xa0, journalNameSize, buffer, bufPos);
 
     bufPos = BerEncoder_encodeTL(0xa1, objectIdSize, buffer, bufPos);
-
-//    bufPos = BerEncoder_encodeTL(0xa1, domainIdStringSize, buffer, bufPos);
 
     bufPos = BerEncoder_encodeOctetString(0x1a, (uint8_t*) domainId, domainIdStringSize, buffer, bufPos);
     bufPos = BerEncoder_encodeOctetString(0x1a, (uint8_t*) itemId, itemIdStringSize, buffer, bufPos);

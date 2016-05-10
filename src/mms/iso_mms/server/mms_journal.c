@@ -28,6 +28,9 @@
 MmsJournal
 MmsJournal_create(const char* name)
 {
+    if (DEBUG_MMS_SERVER)
+        printf("MMS_SERVER: create new journal %s\n", name);
+
     MmsJournal self = (MmsJournal) GLOBAL_MALLOC(sizeof(struct sMmsJournal));
 
     self->name = copyString(name);
