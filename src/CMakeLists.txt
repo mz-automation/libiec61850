@@ -43,6 +43,8 @@ set (lib_common_SRCS
 ./mms/iso_mms/server/mms_domain.c
 ./mms/iso_mms/server/mms_device.c
 ./mms/iso_mms/server/mms_information_report.c
+./mms/iso_mms/server/mms_journal.c
+./mms/iso_mms/server/mms_journal_service.c
 ./mms/iso_mms/server/mms_server_connection.c
 ./mms/iso_mms/server/mms_write_service.c
 ./mms/iso_mms/server/mms_get_var_access_service.c

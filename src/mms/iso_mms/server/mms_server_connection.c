@@ -47,6 +47,8 @@ mmsServer_writeMmsRejectPdu(uint32_t* invokeId, int reason, ByteBuffer* response
 		asn_long2INTEGER(mmsPdu->choice.rejectPDU.originalInvokeID, *invokeId);
 	}
 
+	printf("invokeId %p originalInvokeID: %p\n", invokeId, mmsPdu->choice.rejectPDU.originalInvokeID);
+
 	if (reason == MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE) {
 		mmsPdu->choice.rejectPDU.rejectReason.present = RejectPDU__rejectReason_PR_confirmedRequestPDU;
 		mmsPdu->choice.rejectPDU.rejectReason.choice.confirmedResponsePDU =
@@ -74,6 +76,12 @@ mmsServer_writeMmsRejectPdu(uint32_t* invokeId, int reason, ByteBuffer* response
 	}
 
 	der_encode(&asn_DEF_MmsPdu, mmsPdu,	mmsServer_write_out, (void*) response);
+
+	if (mmsPdu->choice.rejectPDU.originalInvokeID != NULL) {
+	    GLOBAL_FREEMEM(mmsPdu->choice.rejectPDU.originalInvokeID);
+	    mmsPdu->choice.rejectPDU.originalInvokeID = NULL;
+	}
+
 
 	asn_DEF_MmsPdu.free_struct(&asn_DEF_MmsPdu, mmsPdu, 0);
 }

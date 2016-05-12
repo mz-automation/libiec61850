@@ -32,7 +32,7 @@ parseStringWithMaxLength(char* filename, int maxLength, uint8_t* buffer, int* bu
     uint8_t tag = buffer[(*bufPos)++];
     int length;
 
-    if (tag != 0x19) {
+    if (tag != 0x19) { /* TODO 0x1a */
       mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
       return false;
     }
