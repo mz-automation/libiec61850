@@ -45,6 +45,8 @@ typedef enum
     MMS_ERROR_PARSING_RESPONSE = 4,
     MMS_ERROR_HARDWARE_FAULT = 5,
     MMS_ERROR_CONCLUDE_REJECTED = 6,
+    MMS_ERROR_INVALID_ARGUMENTS = 7,
+
     MMS_ERROR_OTHER = 9,
 
     /* confirmed error PDU codes */

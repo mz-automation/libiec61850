@@ -724,6 +724,13 @@ MmsConnection_getFileDirectory(MmsConnection self, MmsError* mmsError, const cha
 LinkedList
 MmsConnection_readJournal(MmsConnection self, MmsError* mmsError, const char* domainId, const char* itemId);
 
+LinkedList
+MmsConnection_readJournalTimeRange(MmsConnection self, MmsError* mmsError, const char* domainId, const char* itemId,
+        MmsValue* startingTime, MmsValue* endingTime);
+
+LinkedList
+MmsConnection_readJournalStartAfter(MmsConnection self, MmsError* mmsError, const char* domainId, const char* itemId,
+        MmsValue* timeSpecification, MmsValue* entrySpecification);
 
 /**
  * \brief Destroy (free) an MmsServerIdentity object

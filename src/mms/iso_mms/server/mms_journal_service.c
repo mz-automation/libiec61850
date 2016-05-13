@@ -32,7 +32,7 @@ parseStringWithMaxLength(char* filename, int maxLength, uint8_t* buffer, int* bu
     uint8_t tag = buffer[(*bufPos)++];
     int length;
 
-    if (tag != 0x19) { /* TODO 0x1a */
+    if (tag != 0x1a) {
       mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
       return false;
     }
@@ -96,12 +96,10 @@ mmsServer_handleReadJournalRequest(
                     printf("  domain-specific-log\n");
 
                     if (!parseStringWithMaxLength(domainId, 64, requestBuffer, &bufPos, bufPos + length, invokeId, response)) {
-                        mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
                         return;
                     }
 
                     if (!parseStringWithMaxLength(logName, 64, requestBuffer, &bufPos, bufPos + length, invokeId, response)) {
-                        mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
                         return;
                     }
 

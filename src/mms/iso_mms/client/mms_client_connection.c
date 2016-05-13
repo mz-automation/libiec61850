@@ -1642,17 +1642,10 @@ MmsConnection_getServerStatus(MmsConnection self, MmsError* mmsError, int* vmdLo
 
 }
 
-
-LinkedList
-MmsConnection_readJournal(MmsConnection self, MmsError* mmsError, const char* domainId, const char* itemId)
+static LinkedList
+readJournal(MmsConnection self, MmsError* mmsError, uint32_t invokeId,  ByteBuffer* payload)
 {
-    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
-
     *mmsError = MMS_ERROR_NONE;
-
-    uint32_t invokeId = getNextInvokeId(self);
-
-    mmsClient_createReadJournalRequest(invokeId, payload, domainId, itemId);
 
     ByteBuffer* responseMessage = sendRequestAndWaitForResponse(self, invokeId, payload);
 
@@ -1669,6 +1662,59 @@ MmsConnection_readJournal(MmsConnection self, MmsError* mmsError, const char* do
         *mmsError = MMS_ERROR_CONNECTION_LOST;
 
     return NULL;
+}
+
+LinkedList
+MmsConnection_readJournal(MmsConnection self, MmsError* mmsError, const char* domainId, const char* itemId)
+{
+    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
+
+    uint32_t invokeId = getNextInvokeId(self);
+
+    mmsClient_createReadJournalRequest(invokeId, payload, domainId, itemId);
+
+    return readJournal(self, mmsError, invokeId, payload);
+}
+
+LinkedList
+MmsConnection_readJournalTimeRange(MmsConnection self, MmsError* mmsError, const char* domainId, const char* itemId,
+        MmsValue* startingTime, MmsValue* endingTime)
+{
+    if ((MmsValue_getType(startingTime) != MMS_BINARY_TIME) ||
+            (MmsValue_getType(endingTime) != MMS_BINARY_TIME)) {
+
+        *mmsError = MMS_ERROR_INVALID_ARGUMENTS;
+        return NULL;
+    }
+
+    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
+
+    uint32_t invokeId = getNextInvokeId(self);
+
+    mmsClient_createReadJournalRequestWithTimeRange(invokeId, payload, domainId, itemId, startingTime, endingTime);
+
+    return readJournal(self, mmsError, invokeId, payload);
+}
+
+LinkedList
+MmsConnection_readJournalStartAfter(MmsConnection self, MmsError* mmsError, const char* domainId, const char* itemId,
+        MmsValue* timeSpecification, MmsValue* entrySpecification)
+{
+
+    if ((MmsValue_getType(timeSpecification) != MMS_BINARY_TIME) ||
+            (MmsValue_getType(entrySpecification) != MMS_OCTET_STRING)) {
+
+        *mmsError = MMS_ERROR_INVALID_ARGUMENTS;
+        return NULL;
+    }
+
+    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
+
+    uint32_t invokeId = getNextInvokeId(self);
+
+    mmsClient_createReadJournalRequestStartAfter(invokeId, payload, domainId, itemId, timeSpecification, entrySpecification);
+
+    return readJournal(self, mmsError, invokeId, payload);
 }
 
 int32_t

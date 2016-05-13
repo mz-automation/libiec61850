@@ -33,49 +33,6 @@
 #include "conversions.h"
 
 void
-mmsClient_createReadJournalRequest(uint32_t invokeId, ByteBuffer* request, const char* domainId, const char* itemId)
-{
-    /* calculate sizes */
-    uint32_t invokeIdSize = BerEncoder_UInt32determineEncodedSize(invokeId);
-
-    uint32_t domainIdStringSize = strlen(domainId);
-    uint32_t domainIdSize = 1 + BerEncoder_determineLengthSize(domainIdStringSize) + domainIdStringSize;
-
-    uint32_t itemIdStringSize = strlen(itemId);
-    uint32_t itemIdSize = 1 + BerEncoder_determineLengthSize(itemIdStringSize) + itemIdStringSize;
-
-    uint32_t objectIdSize = domainIdSize + itemIdSize;
-
-    uint32_t journalNameSize =  1 + BerEncoder_determineLengthSize(objectIdSize) + (objectIdSize);
-
-    uint32_t journalReadSize = 1 + BerEncoder_determineLengthSize(journalNameSize) + (journalNameSize);
-
-    uint32_t confirmedRequestPduSize = 1 + 2 + 2  + invokeIdSize + journalReadSize;
-
-    /* encode to buffer */
-    int bufPos = 0;
-    uint8_t* buffer = request->buffer;
-
-    bufPos = BerEncoder_encodeTL(0xa0, confirmedRequestPduSize, buffer, bufPos);
-    bufPos = BerEncoder_encodeTL(0x02, invokeIdSize, buffer, bufPos);
-    bufPos = BerEncoder_encodeUInt32(invokeId, buffer, bufPos);
-
-    /* Encode read journal tag (context | structured ) [65 = 41h] */
-    buffer[bufPos++] = 0xbf;
-    buffer[bufPos++] = 0x41;
-
-    bufPos = BerEncoder_encodeLength(journalReadSize, buffer, bufPos);
-    bufPos = BerEncoder_encodeTL(0xa0, journalNameSize, buffer, bufPos);
-
-    bufPos = BerEncoder_encodeTL(0xa1, objectIdSize, buffer, bufPos);
-
-    bufPos = BerEncoder_encodeOctetString(0x1a, (uint8_t*) domainId, domainIdStringSize, buffer, bufPos);
-    bufPos = BerEncoder_encodeOctetString(0x1a, (uint8_t*) itemId, itemIdStringSize, buffer, bufPos);
-
-    request->size = bufPos;
-}
-
-void
 mmsClient_createFileOpenRequest(uint32_t invokeId, ByteBuffer* request, const char* fileName, uint32_t initialPosition)
 {
     uint32_t invokeIdSize = BerEncoder_UInt32determineEncodedSize(invokeId);

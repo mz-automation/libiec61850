@@ -170,7 +170,30 @@ int main(int argc, char** argv) {
                 printf("  %s\n", name);
 
                 printf("  read journal...\n");
-                MmsConnection_readJournal(con, &error, domainName, name);
+             //   MmsConnection_readJournal(con, &error, domainName, name);
+
+#if 1
+                uint64_t timestamp = Hal_getTimeInMs();
+
+                MmsValue* startTime = MmsValue_newBinaryTime(false);
+                MmsValue_setBinaryTime(startTime, timestamp - 60000);
+
+                MmsValue* endTime = MmsValue_newBinaryTime(false);
+                MmsValue_setBinaryTime(endTime, timestamp);
+
+                MmsConnection_readJournalTimeRange(con, &error, domainName, name, startTime, endTime);
+#endif
+
+#if 0
+                uint64_t timestamp = Hal_getTimeInMs();
+
+                MmsValue* startTime = MmsValue_newBinaryTime(false);
+                MmsValue_setBinaryTime(startTime, timestamp - 60000);
+
+                MmsValue* entrySpec = MmsValue_newOctetString(8, 8);
+
+                MmsConnection_readJournalStartAfter(con, &error, domainName, name, startTime, entrySpec);
+#endif
             }
 		}
 	}

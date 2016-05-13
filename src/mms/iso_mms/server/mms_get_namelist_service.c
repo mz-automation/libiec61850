@@ -539,7 +539,7 @@ mmsServer_handleGetNameListRequest(
                 mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
             else {
                 createNameListResponse(connection, invokeId, nameList, response, continueAfterId);
-                LinkedList_destroy(nameList);
+                LinkedList_destroyStatic(nameList);
             }
 		}
 #if (MMS_DATA_SET_SERVICE == 1)
