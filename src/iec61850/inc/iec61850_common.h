@@ -30,6 +30,7 @@ extern "C" {
 
 
 #include "libiec61850_common_api.h"
+#include "logging_api.h"
 
 /**
  * @defgroup iec61850_common_api_group IEC 61850 API common parts

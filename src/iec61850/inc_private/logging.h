@@ -27,6 +27,13 @@
 
 typedef struct {
     char* name;
+    LogicalNode* parentLN;
+
+    LogStorage logStorage;
+} LogInstance;
+
+typedef struct {
+    char* name;
     LogControlBlock* logControlBlock;
     MmsMapping* mmsMapping;
 
@@ -39,6 +46,7 @@ typedef struct {
     MmsValue* mmsValue;
     MmsVariableSpecification* mmsType;
 
+    LogInstance* logInstance;
 
     bool enabled;
 
@@ -46,11 +54,21 @@ typedef struct {
 
 } LogControl;
 
+
+LogInstance*
+LogInstance_create(LogicalNode* parentLN, const char* name);
+
+void
+LogInstance_destroy(LogInstance* self);
+
 LogControl*
 LogControl_create(LogicalNode* parentLN, MmsMapping* mmsMapping);
 
 void
 LogControl_destroy(LogControl* self);
+
+void
+LogControl_setLogStorage(LogControl* self, LogStorage logStorage);
 
 MmsVariableSpecification*
 Logging_createLCBs(MmsMapping* self, MmsDomain* domain, LogicalNode* logicalNode,

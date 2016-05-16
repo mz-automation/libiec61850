@@ -37,6 +37,7 @@ struct sMmsMapping {
 
 #if (CONFIG_IEC61850_LOG_SERVICE == 1)
     LinkedList logControls;
+    LinkedList logInstances;
 #endif
 
 #if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)

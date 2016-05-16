@@ -1118,6 +1118,12 @@ createMmsDomainFromIedDevice(MmsMapping* self, LogicalDevice* logicalDevice)
 
         MmsDomain_addJournal(domain, log->name);
 
+        printf("log->name: %s\n", log->name);
+
+        LogInstance* logInstance = LogInstance_create(log->parent, log->name);
+
+        LinkedList_add(self->logInstances, (void*) logInstance);
+
         log = log->sibling;
     }
 #endif /* (CONFIG_IEC61850_LOG_SERVICE == 1) */
@@ -1248,6 +1254,7 @@ MmsMapping_create(IedModel* model)
 
 #if (CONFIG_IEC61850_LOG_SERVICE == 1)
     self->logControls = LinkedList_create();
+    self->logInstances = LinkedList_create();
 #endif
 
 #if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
@@ -1309,6 +1316,11 @@ MmsMapping_destroy(MmsMapping* self)
 
 #if (CONFIG_IEC61850_SETTING_GROUPS == 1)
     LinkedList_destroy(self->settingGroups);
+#endif
+
+#if (CONFIG_IEC61850_LOG_SERVICE == 1)
+    LinkedList_destroyDeep(self->logControls, (LinkedListValueDeleteFunction) LogControl_destroy);
+    LinkedList_destroyDeep(self->logInstances, (LinkedListValueDeleteFunction) LogInstance_destroy);
 #endif
 
     LinkedList_destroy(self->observedObjects);
@@ -2512,7 +2524,7 @@ MmsMapping_setConnectionIndicationHandler(MmsMapping* self, IedConnectionIndicat
     self->connectionIndicationHandlerParameter = parameter;
 }
 
-#if ((CONFIG_IEC61850_REPORT_SERVICE == 1) || (CONFIG_INCLUDE_GOOSE_SUPPORT == 1))
+
 
 static bool
 isMemberValueRecursive(MmsValue* container, MmsValue* value)
@@ -2539,6 +2551,8 @@ isMemberValueRecursive(MmsValue* container, MmsValue* value)
 
     return isMemberValue;
 }
+
+#if ((CONFIG_IEC61850_REPORT_SERVICE == 1) || (CONFIG_INCLUDE_GOOSE_SUPPORT == 1))
 
 static bool
 DataSet_isMemberValue(DataSet* dataSet, MmsValue* value, int* index)
@@ -2568,6 +2582,38 @@ DataSet_isMemberValue(DataSet* dataSet, MmsValue* value, int* index)
     return false;
 }
 #endif /* ((CONFIG_IEC61850_REPORT_SERVICE == 1) || (CONFIG_INCLUDE_GOOSE_SUPPORT)) */
+
+#if (CONFIG_IEC61850_LOG_SERVICE == 1)
+
+static bool
+DataSet_isMemberValueWithRef(DataSet* dataSet, MmsValue* value, char* dataRef)
+{
+    int i = 0;
+
+     DataSetEntry* dataSetEntry = dataSet->fcdas;
+
+     while (dataSetEntry != NULL) {
+
+         MmsValue* dataSetValue = dataSetEntry->value;
+
+         if (dataSetValue != NULL) { /* prevent invalid data set members */
+             if (isMemberValueRecursive(dataSetValue, value)) {
+                 if (dataRef != NULL)
+                     sprintf(dataRef, "%s/%s", dataSetEntry->logicalDeviceName, dataSetEntry->variableName);
+
+                 return true;
+             }
+         }
+
+         i++;
+
+         dataSetEntry = dataSetEntry->sibling;
+     }
+
+     return false;
+}
+
+#endif /* (CONFIG_IEC61850_LOG_SERVICE == 1) */
 
 #if (CONFIG_IEC61850_REPORT_SERVICE == 1)
 void
@@ -2622,9 +2668,6 @@ MmsMapping_triggerLogging(MmsMapping* self, MmsValue* value, LogInclusionFlag fl
 
         if ((lc->enabled) && (lc->dataSet != NULL)) {
 
-
-            int index;
-
             switch (flag) {
 
             case LOG_CONTROL_VALUE_UPDATE:
@@ -2650,8 +2693,32 @@ MmsMapping_triggerLogging(MmsMapping* self, MmsValue* value, LogInclusionFlag fl
                 continue;
             }
 
-            if (DataSet_isMemberValue(lc->dataSet, value, &index)) {
-                printf("Log value - flag:%i\n", flag);
+            char dataRef[130];
+
+            if (DataSet_isMemberValueWithRef(lc->dataSet, value, dataRef)) {
+                printf("Log value - dataRef: %s flag: %i\n", dataRef, flag);
+
+                //TODO log to logInstance
+
+                if (lc->logInstance != NULL) {
+
+                    LogStorage logStorage = lc->logInstance->logStorage;
+
+                    if (logStorage != NULL) {
+
+                        uint64_t entryID = LogStorage_addEntry(logStorage, Hal_getTimeInMs());
+
+                        int dataSize = MmsValue_encodeMmsData(value, NULL, 0, false);
+
+                        uint8_t* data = GLOBAL_MALLOC(dataSize);
+
+                        MmsValue_encodeMmsData(value, data, 0, true);
+
+                        LogStorage_addEntryData(logStorage, entryID, dataRef, data, dataSize, flag);
+
+
+                    }
+                }
             }
 
 

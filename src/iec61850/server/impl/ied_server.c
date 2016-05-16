@@ -1244,6 +1244,14 @@ IedServer_setEditSettingGroupConfirmationHandler(IedServer self, SettingGroupCon
 #endif
 }
 
+void
+IedServer_setLogStorage(IedServer self, const char* logRef, LogStorage logStorage)
+{
+#if (CONFIG_IEC61850_LOG_SERVICE == 1)
+    MmsMapping_setLogStorage(self->mmsMapping, logRef, logStorage);
+#endif
+}
+
 ClientConnection
 private_IedServer_getClientConnectionByHandle(IedServer self, void* serverConnectionHandle)
 {

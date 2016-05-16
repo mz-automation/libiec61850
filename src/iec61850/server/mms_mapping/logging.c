@@ -36,6 +36,26 @@
 #include "mms_value_internal.h"
 
 
+LogInstance*
+LogInstance_create(LogicalNode* parentLN, const char* name)
+{
+    LogInstance* self = (LogInstance*) GLOBAL_MALLOC(sizeof(LogInstance));
+
+
+    self->name = copyString(name);
+    self->parentLN = parentLN;
+    self->logStorage = NULL;
+
+    return self;
+}
+
+void
+LogInstance_destroy(LogInstance* self)
+{
+    GLOBAL_FREEMEM(self->name);
+    GLOBAL_FREEMEM(self);
+}
+
 LogControl*
 LogControl_create(LogicalNode* parentLN, MmsMapping* mmsMapping)
 {
@@ -47,6 +67,7 @@ LogControl_create(LogicalNode* parentLN, MmsMapping* mmsMapping)
     self->logicalNode = parentLN;
     self->mmsMapping = mmsMapping;
     self->dataSetRef = NULL;
+    self->logInstance = NULL;
 
     return self;
 }
@@ -57,6 +78,12 @@ LogControl_destroy(LogControl* self)
     if (self != NULL) {
         GLOBAL_FREEMEM(self);
     }
+}
+
+void
+LogControl_setLog(LogControl* self, LogInstance* logInstance)
+{
+    self->logInstance = logInstance;
 }
 
 static LogControlBlock*
@@ -337,7 +364,86 @@ createLogControlBlock(LogControlBlock* logControlBlock,
     return lcb;
 }
 
+static LogInstance*
+getLogInstanceByLogRef(MmsMapping* self, const char* logRef)
+{
+    char refStr[130];
+    char* domainName;
+    char* lnName;
+    char* logName;
 
+    strncpy(refStr, logRef, 129);
+
+    printf("getLogInst... %s\n", refStr);
+
+    domainName = refStr;
+
+    lnName = strchr(refStr, '/');
+
+    if (lnName == NULL)
+        return NULL;
+
+    if ((lnName - domainName) > 64)
+        return NULL;
+
+    lnName[0] = 0;
+    lnName++;
+
+    logName = strchr(lnName, '$');
+
+    if (logName == NULL)
+        return NULL;
+
+    logName[0] = 0;
+    logName++;
+
+    printf("LOG: dn: %s ln: %s name: %s\n", domainName, lnName, logName);
+
+    LinkedList instance = LinkedList_getNext(self->logInstances);
+
+    while (instance != NULL) {
+
+        LogInstance* logInstance = LinkedList_getData(instance);
+
+        printf("logInstance: %s\n", logInstance->name);
+
+        if (strcmp(logInstance->name, logName) == 0) {
+            printf ("  lnName: %s\n", logInstance->parentLN->name);
+
+            if (strcmp(lnName, logInstance->parentLN->name) == 0) {
+                LogicalDevice* ld = (LogicalDevice*) logInstance->parentLN->parent;
+
+                printf("  ldName: %s\n", ld->name);
+
+                if (strcmp(ld->name, domainName) == 0)
+                    return logInstance;
+            }
+        }
+
+        instance = LinkedList_getNext(instance);
+    }
+
+    return NULL;
+}
+
+static LogInstance*
+getLogInstance(MmsMapping* self, LogicalNode* logicalNode, const char* logName)
+{
+    LinkedList logInstance = LinkedList_getNext(self->logInstances);
+
+    while (logInstance != NULL) {
+        LogInstance* instance = (LogInstance*) LinkedList_getData(logInstance);
+
+        printf("LOG: %s (%s)\n", instance->name, logName);
+
+        if ((strcmp(instance->name, logName) == 0) && (logicalNode == instance->parentLN))
+            return instance;
+
+        logInstance = LinkedList_getNext(logInstance);
+    }
+
+    return NULL;
+}
 
 MmsVariableSpecification*
 Logging_createLCBs(MmsMapping* self, MmsDomain* domain, LogicalNode* logicalNode,
@@ -366,6 +472,9 @@ Logging_createLCBs(MmsMapping* self, MmsDomain* domain, LogicalNode* logicalNode
         namedVariable->typeSpec.structure.elements[currentLcb] =
                 createLogControlBlock(logControlBlock, logControl);
 
+        //getLogInstanceByLogRef(self, logControlBlock->logRef);
+        logControl->logInstance = getLogInstance(self, logicalNode, logControlBlock->logRef);
+
         LinkedList_add(self->logControls, logControl);
 
         currentLcb++;
@@ -374,4 +483,15 @@ Logging_createLCBs(MmsMapping* self, MmsDomain* domain, LogicalNode* logicalNode
     return namedVariable;
 }
 
+void
+MmsMapping_setLogStorage(MmsMapping* self, const char* logRef, LogStorage logStorage)
+{
+    LogInstance* logInstance = getLogInstanceByLogRef(self, logRef);
 
+    if (logInstance != NULL)
+        logInstance->logStorage = logStorage;
+
+    //if (DEBUG_IED_SERVER)
+        if (logInstance == NULL)
+            printf("IED_SERVER: MmsMapping_setLogStorage no matching log for %s found!\n", logRef);
+}

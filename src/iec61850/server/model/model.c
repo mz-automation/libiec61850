@@ -372,7 +372,7 @@ LogicalNode_hasFCData(LogicalNode* node, FunctionalConstraint fc)
 DataSet*
 LogicalNode_getDataSet(LogicalNode* self, const char* dataSetName)
 {
-	assert(self->modelType == LogicalNodeModelType);
+    assert(self->modelType == LogicalNodeModelType);
 	assert(dataSetName != NULL);
 
 	char dsName[66];
@@ -407,6 +407,20 @@ LogicalNode_getDataSet(LogicalNode* self, const char* dataSetName)
 
 exit_error:
 	return NULL;
+}
+
+
+void
+LogicalNode_setLogStorage(LogicalNode* self, const char* logName, LogStorage logStorage)
+{
+    assert(self->modelType == LogicalNodeModelType);
+    assert(logName != NULL);
+
+    LogicalDevice* ld = (LogicalDevice*) self->parent;
+
+    IedModel* iedModel = (IedModel*) ld->parent;
+
+
 }
 
 int

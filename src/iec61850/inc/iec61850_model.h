@@ -517,6 +517,9 @@ LogicalNode_hasUnbufferedReports(LogicalNode* node);
 DataSet*
 LogicalNode_getDataSet(LogicalNode* self, const char* dataSetName);
 
+void
+LogicalNode_setLogStorage(LogicalNode* self, const char* logName, LogStorage logStorage);
+
 bool
 DataObject_hasFCData(DataObject* dataObject, FunctionalConstraint fc);
 

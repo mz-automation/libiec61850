@@ -59,6 +59,7 @@ LIB_INCLUDE_DIRS += src/goose
 LIB_INCLUDE_DIRS += src/sampled_values
 LIB_INCLUDE_DIRS += src/iec61850/inc
 LIB_INCLUDE_DIRS += src/iec61850/inc_private
+LIB_INCLUDE_DIRS += src/logging
 ifeq ($(HAL_IMPL), WIN32)
 LIB_INCLUDE_DIRS += third_party/winpcap/Include
 endif
@@ -100,6 +101,7 @@ LIB_API_HEADER_FILES += src/goose/goose_receiver.h
 LIB_API_HEADER_FILES += src/goose/goose_publisher.h
 LIB_API_HEADER_FILES += src/sampled_values/sv_subscriber.h
 LIB_API_HEADER_FILES += src/sampled_values/sv_publisher.h
+LIB_API_HEADER_FILES += src/logging/logging_api.h
 
 get_sources_from_directory  = $(wildcard $1/*.c)
 get_sources = $(foreach dir, $1, $(call get_sources_from_directory,$(dir)))
