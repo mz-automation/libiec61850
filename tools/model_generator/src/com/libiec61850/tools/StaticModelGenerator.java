@@ -321,7 +321,7 @@ public class StaticModelGenerator {
             cOut.println("    (ModelNode*) &" + firstChildName);
             cOut.println("};\n");
 
-            printLogicalNodeDefinitions(ldName, logicalDevice.getLogicalNodes());
+            printLogicalNodeDefinitions(ldName, logicalDevice, logicalDevice.getLogicalNodes());
         }
 
         
@@ -541,7 +541,7 @@ public class StaticModelGenerator {
 		}
 	}
 
-	private void printLogicalNodeDefinitions(String ldName, List<LogicalNode> logicalNodes) {
+	private void printLogicalNodeDefinitions(String ldName, LogicalDevice logicalDevice, List<LogicalNode> logicalNodes) {
         for (int i = 0; i < logicalNodes.size(); i++) {
             LogicalNode logicalNode = logicalNodes.get(i);
 
@@ -568,7 +568,7 @@ public class StaticModelGenerator {
 
             printReportControlBlocks(lnName, logicalNode);
             
-            printLogControlBlocks(lnName, logicalNode);
+            printLogControlBlocks(ldName, lnName, logicalNode, logicalDevice);
             
             printLogs(lnName, logicalNode);
 
@@ -1077,7 +1077,7 @@ public class StaticModelGenerator {
         }
     }
     
-    private void printLogControlBlocks(String lnPrefix, LogicalNode logicalNode) 
+    private void printLogControlBlocks(String ldName, String lnPrefix, LogicalNode logicalNode, LogicalDevice logicalDevice) 
     {
         List<LogControl> logControlBlocks = logicalNode.getLogControlBlocks();
         
@@ -1086,7 +1086,7 @@ public class StaticModelGenerator {
         int lcbNumber = 0;
         
         for (LogControl lcb : logControlBlocks) {
-            printLogControlBlock(lnPrefix, lcb, lcbNumber, lcbCount);
+            printLogControlBlock(logicalDevice, lnPrefix, lcb, lcbNumber, lcbCount);
             lcbNumber++;
         }
     }
@@ -1157,7 +1157,7 @@ public class StaticModelGenerator {
         this.logs.append(logString);
     }
     
-    private void printLogControlBlock(String lnPrefix, LogControl lcb, int lcbNumber, int lcbCount)
+    private void printLogControlBlock(LogicalDevice logicalDevice, String lnPrefix, LogControl lcb, int lcbNumber, int lcbCount)
     {
         String lcbVariableName = lnPrefix + "_lcb" + lcbNumber;
         
@@ -1172,8 +1172,21 @@ public class StaticModelGenerator {
         else
             lcbString += "NULL, ";
         
+        
+        String logRef;
+        
+        if (lcb.getLdInst() == null)
+            logRef = logicalDevice.getInst() + "/";
+        else
+            logRef = lcb.getLdInst() + "/";
+               
+        if (lcb.getLnClass().equals("LLN0"))
+            logRef += "LLN0$";
+        else
+            logRef += lcb.getLnClass() + "$";
+        
         if (lcb.getLogName() != null)
-            lcbString += "\"" + lcb.getLogName() + "\", ";
+            lcbString += "\"" + logRef + lcb.getLogName() + "\", ";
         else
             lcbString += "NULL, ";
         

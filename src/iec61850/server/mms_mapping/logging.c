@@ -41,10 +41,14 @@ LogInstance_create(LogicalNode* parentLN, const char* name)
 {
     LogInstance* self = (LogInstance*) GLOBAL_MALLOC(sizeof(LogInstance));
 
-
     self->name = copyString(name);
     self->parentLN = parentLN;
     self->logStorage = NULL;
+
+    self->oldEntryId = 0;
+    self->oldEntryTime = 0;
+    self->newEntryId = 0;
+    self->newEntryTime = 0;
 
     return self;
 }
@@ -54,6 +58,49 @@ LogInstance_destroy(LogInstance* self)
 {
     GLOBAL_FREEMEM(self->name);
     GLOBAL_FREEMEM(self);
+}
+
+void
+LogInstance_logSingleData(LogInstance* self, const char* dataRef, MmsValue* value, uint8_t flag)
+{
+    LogStorage logStorage = self->logStorage;
+
+    if (logStorage != NULL) {
+
+        printf("Log value - dataRef: %s flag: %i\n", dataRef, flag);
+
+        uint64_t timestamp = Hal_getTimeInMs();
+
+        uint64_t entryID = LogStorage_addEntry(logStorage, timestamp);
+
+        int dataSize = MmsValue_encodeMmsData(value, NULL, 0, false);
+
+        uint8_t* data = GLOBAL_MALLOC(dataSize);
+
+        MmsValue_encodeMmsData(value, data, 0, true);
+
+        LogStorage_addEntryData(logStorage, entryID, dataRef, data, dataSize, flag);
+
+        self->newEntryId = entryID;
+        self->newEntryTime = timestamp;
+
+    }
+    else
+        printf("no log storage available!\n");
+}
+
+void
+LogInstance_setLogStorage(LogInstance* self, LogStorage logStorage)
+{
+    self->logStorage = logStorage;
+
+    LogStorage_getOldestAndNewestEntries(logStorage, &(self->newEntryId), &(self->newEntryTime),
+            &(self->oldEntryId), &(self->oldEntryTime));
+
+    printf("Attached storage to log: %s\n", self->name);
+    printf("  oldEntryID: %llu oldEntryTm: %llu\n", self->oldEntryId, self->oldEntryTime);
+    printf("  newEntryID: %llu newEntryTm: %llu\n", self->newEntryId, self->newEntryTime);
+
 }
 
 LogControl*
@@ -131,12 +178,28 @@ lookupLogControl(MmsMapping* self, MmsDomain* domain, char* lnName, char* object
     return NULL;
 }
 
+static void
+updateLogStatusInLCB(LogControl* self)
+{
+    LogInstance* logInstance = self->logInstance;
+
+    if (logInstance != NULL) {
+
+        MmsValue_setBinaryTime(self->oldEntrTm, logInstance->oldEntryTime);
+        MmsValue_setBinaryTime(self->newEntrTm, logInstance->newEntryTime);
+
+        MmsValue_setOctetString(self->oldEntr, &(logInstance->oldEntryId), 8);
+        MmsValue_setOctetString(self->newEntr, &(logInstance->newEntryId), 8);
+    }
+}
 
 
 MmsValue*
 LIBIEC61850_LOG_SVC_readAccessControlBlock(MmsMapping* self, MmsDomain* domain, char* variableIdOrig)
 {
     MmsValue* value = NULL;
+
+    printf("READ ACCESS LOG CB\n");
 
     char variableId[130];
 
@@ -164,6 +227,9 @@ LIBIEC61850_LOG_SVC_readAccessControlBlock(MmsMapping* self, MmsDomain* domain, 
     LogControl* logControl = lookupLogControl(self, domain, lnName, objectName);
 
     if (logControl != NULL) {
+
+        updateLogStatusInLCB(logControl);
+
         if (varName != NULL) {
             value = MmsValue_getSubElement(logControl->mmsValue, logControl->mmsType, varName);
         }
@@ -210,7 +276,13 @@ createTrgOps(LogControlBlock* reportControlBlock) {
 static bool
 enableLogging(LogControl* logControl)
 {
-    printf("enableLogging\n");
+    printf("Enable LCB %s...\n", logControl->name);
+
+    if (logControl->dataSetRef == NULL) {
+        printf("  no data set specified!\n");
+        return false;
+    }
+
     DataSet* dataSet = IedModel_lookupDataSet(logControl->mmsMapping->model, logControl->dataSetRef);
 
     if (dataSet == NULL) {
@@ -220,11 +292,13 @@ enableLogging(LogControl* logControl)
     else
         logControl->dataSet = dataSet;
 
+    printf("  enabled\n");
+
     return true;
 }
 
 static MmsVariableSpecification*
-createLogControlBlock(LogControlBlock* logControlBlock,
+createLogControlBlock(MmsMapping* self, LogControlBlock* logControlBlock,
         LogControl* logControl)
 {
     MmsVariableSpecification* lcb = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
@@ -263,7 +337,14 @@ createLogControlBlock(LogControlBlock* logControlBlock,
     lcb->typeSpec.structure.elements[1] = namedVariable;
 
     if (logControlBlock->logRef != NULL) {
-        mmsValue->value.structure.components[1] = MmsValue_newVisibleString(logControlBlock->logRef);
+        char logRef[130];
+
+        int maxLogRefLength = 129 - strlen(self->model->name);
+
+        strcpy(logRef, self->model->name);
+        strncat(logRef, logControlBlock->logRef, maxLogRefLength);
+
+        mmsValue->value.structure.components[1] = MmsValue_newVisibleString(logRef);
     }
     else {
         char* logRef = createString(4, logControl->domain->domainName, "/", logControlBlock->parent->name,
@@ -303,6 +384,8 @@ createLogControlBlock(LogControlBlock* logControlBlock,
 
     mmsValue->value.structure.components[3] = MmsValue_newBinaryTime(false);
 
+    logControl->oldEntrTm = mmsValue->value.structure.components[3];
+
     /* NewEntrTm */
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
     namedVariable->name = copyString("NewEntrTm");
@@ -311,6 +394,8 @@ createLogControlBlock(LogControlBlock* logControlBlock,
     lcb->typeSpec.structure.elements[4] = namedVariable;
 
     mmsValue->value.structure.components[4] = MmsValue_newBinaryTime(false);
+
+    logControl->newEntrTm = mmsValue->value.structure.components[4];
 
     /* OldEntr */
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
@@ -322,6 +407,8 @@ createLogControlBlock(LogControlBlock* logControlBlock,
 
     mmsValue->value.structure.components[5] = MmsValue_newOctetString(8, 8);
 
+    logControl->oldEntr = mmsValue->value.structure.components[5];
+
     /* NewEntr */
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
     namedVariable->name = copyString("NewEntr");
@@ -331,6 +418,8 @@ createLogControlBlock(LogControlBlock* logControlBlock,
     lcb->typeSpec.structure.elements[6] = namedVariable;
 
     mmsValue->value.structure.components[6] = MmsValue_newOctetString(8, 8);
+
+    logControl->newEntr = mmsValue->value.structure.components[6];
 
     /* TrgOps */
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
@@ -426,9 +515,13 @@ getLogInstanceByLogRef(MmsMapping* self, const char* logRef)
     return NULL;
 }
 
+#if 0
 static LogInstance*
 getLogInstance(MmsMapping* self, LogicalNode* logicalNode, const char* logName)
 {
+    if (logName == NULL)
+        return NULL;
+
     LinkedList logInstance = LinkedList_getNext(self->logInstances);
 
     while (logInstance != NULL) {
@@ -444,6 +537,7 @@ getLogInstance(MmsMapping* self, LogicalNode* logicalNode, const char* logName)
 
     return NULL;
 }
+#endif
 
 MmsVariableSpecification*
 Logging_createLCBs(MmsMapping* self, MmsDomain* domain, LogicalNode* logicalNode,
@@ -470,10 +564,13 @@ Logging_createLCBs(MmsMapping* self, MmsDomain* domain, LogicalNode* logicalNode
         logControl->domain = domain;
 
         namedVariable->typeSpec.structure.elements[currentLcb] =
-                createLogControlBlock(logControlBlock, logControl);
+                createLogControlBlock(self, logControlBlock, logControl);
 
         //getLogInstanceByLogRef(self, logControlBlock->logRef);
-        logControl->logInstance = getLogInstance(self, logicalNode, logControlBlock->logRef);
+        //logControl->logInstance = getLogInstance(self, logicalNode, logControlBlock->logRef);
+
+        if (logControlBlock->logRef != NULL)
+            logControl->logInstance = getLogInstanceByLogRef(self, logControlBlock->logRef);
 
         LinkedList_add(self->logControls, logControl);
 
@@ -489,7 +586,7 @@ MmsMapping_setLogStorage(MmsMapping* self, const char* logRef, LogStorage logSto
     LogInstance* logInstance = getLogInstanceByLogRef(self, logRef);
 
     if (logInstance != NULL)
-        logInstance->logStorage = logStorage;
+        LogInstance_setLogStorage(logInstance, logStorage);
 
     //if (DEBUG_IED_SERVER)
         if (logInstance == NULL)

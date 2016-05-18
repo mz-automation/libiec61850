@@ -27,6 +27,90 @@
 
 #if (MMS_JOURNAL_SERVICE == 1)
 
+
+typedef struct sJournalVariable* JournalVariable;
+
+struct sJournalVariable {
+   char* tag; /* UTF8(1..255) */
+   int tagSize;
+
+   uint8_t* data;
+   int dataSize;
+
+   JournalVariable next;
+};
+
+typedef struct {
+    uint8_t* entryID;
+    int entryIDSize;
+
+    uint64_t timestamp;
+
+    JournalVariable listOfVariables;
+} JournalEntry;
+
+
+struct sJournalEncoder {
+    uint8_t* buffer;
+    int maxSize;
+    int bufPos;
+    int currentEntryBufPos; /* store start buffer position of current entry in case the whole JournalEntry will become too long */
+
+};
+
+static bool
+entryCallback(void* parameter, uint64_t timestamp, uint64_t entryID, bool moreFollow)
+{
+    if (moreFollow)
+        printf("Found entry ID:%llu timestamp:%llu\n", entryID, timestamp);
+
+    return true;
+}
+
+static bool
+entryDataCallback (void* parameter, const char* dataRef, uint8_t* data, int dataSize, uint8_t reasonCode, bool moreFollow)
+{
+    if (moreFollow) {
+        printf("  EntryData: ref: %s\n", dataRef);
+
+        MmsValue* value = MmsValue_decodeMmsData(data, 0, dataSize);
+
+        char buffer[256];
+
+        MmsValue_printToBuffer(value, buffer, 256);
+
+        printf("  value: %s\n", buffer);
+    }
+
+    return true;
+}
+
+
+bool
+MmsJournal_queryJournalByRange(MmsJournal self, uint64_t startTime, uint64_t endTime, ByteBuffer* response)
+{
+    // forward request to implementation class
+
+    //TODO get handle of LogStorage
+
+    struct sJournalEncoder encoderData;
+
+    LogStorage logStorage;
+
+    LogStorage_setCallbacks(logStorage, entryCallback, entryDataCallback, &encoderData);
+
+    LogStorage_getEntries(logStorage, startTime, endTime);
+
+    /* actual encoding will happen in callback handler. When getEntries returns the data is
+     * already encoded in the buffer.
+     */
+
+    // encoder header in response buffer
+
+    // move encoded JournalEntry data to continue the buffer header
+}
+
+
 static bool
 parseStringWithMaxLength(char* filename, int maxLength, uint8_t* buffer, int* bufPos, int maxBufPos , uint32_t invokeId, ByteBuffer* response)
 {
@@ -268,6 +352,30 @@ mmsServer_handleReadJournalRequest(
     }
 
     //TODO check if required fields are present
+    //TODO check valid field combinations
+
+    /* lookup journal */
+    MmsServer server = connection->server;
+
+    MmsDevice* mmsDevice = MmsServer_getDevice(connection->server);
+
+    MmsDomain* mmsDomain = MmsDevice_getDomain(mmsDevice, domainId);
+
+    if (mmsDomain == NULL) {
+        printf("Domain %s not found\n", domainId);
+        mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
+        return;
+    }
+
+    MmsJournal mmsJournal = MmsDomain_getJournal(mmsDomain, logName);
+
+    if (mmsJournal == NULL) {
+        printf("Journal %s not found\n", logName);
+        mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
+        return;
+    }
+
+    printf("Read journal %s ...\n", mmsJournal->name);
 }
 
 #endif /* (MMS_JOURNAL_SERVICE == 1) */

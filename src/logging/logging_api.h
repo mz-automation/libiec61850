@@ -58,6 +58,9 @@ struct sLogStorage {
 
     bool (*getEntriesAfter) (LogStorage self, uint64_t startingTime, uint64_t entryID);
 
+    bool (*getOldestAndNewestEntries) (LogStorage self, uint64_t* newEntry, uint64_t* newEntryTime,
+            uint64_t* oldEntry, uint64_t* oldEntryTime);
+
     void (*destroy) (LogStorage self);
 };
 
@@ -77,6 +80,10 @@ LogStorage_getEntriesAfter(LogStorage self, uint64_t startingTime, uint64_t entr
 
 void
 LogStorage_setCallbacks(LogStorage self, LogEntryCallback entryCallback, LogEntryDataCallback entryDataCallback, void* callbackParameter);
+
+bool
+LogStorage_getOldestAndNewestEntries(LogStorage self, uint64_t* newEntry, uint64_t* newEntryTime,
+        uint64_t* oldEntry, uint64_t* oldEntryTime);
 
 void
 LogStorage_destroy(LogStorage self);

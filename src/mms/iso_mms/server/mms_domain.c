@@ -84,6 +84,24 @@ MmsDomain_addJournal(MmsDomain* self, const char* name)
     LinkedList_add(self->journals, (void*) journal);
 }
 
+MmsJournal
+MmsDomain_getJournal(MmsDomain* self, const char* name)
+{
+    LinkedList journal = LinkedList_getNext(self->journals);
+
+    while (journal != NULL) {
+
+        MmsJournal mmsJournal = (MmsJournal) LinkedList_getData(journal);
+
+        if (strcmp(mmsJournal->name, name) == 0)
+            return mmsJournal;
+
+        journal = LinkedList_getNext(journal);
+    }
+
+    return NULL;
+}
+
 bool
 MmsDomain_addNamedVariableList(MmsDomain* self, MmsNamedVariableList variableList)
 {

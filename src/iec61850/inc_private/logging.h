@@ -30,6 +30,13 @@ typedef struct {
     LogicalNode* parentLN;
 
     LogStorage logStorage;
+
+    uint64_t newEntryId;
+    uint64_t newEntryTime;
+
+    uint64_t oldEntryId;
+    uint64_t oldEntryTime;
+
 } LogInstance;
 
 typedef struct {
@@ -46,6 +53,11 @@ typedef struct {
     MmsValue* mmsValue;
     MmsVariableSpecification* mmsType;
 
+    MmsValue* oldEntr;
+    MmsValue* oldEntrTm;
+    MmsValue* newEntr;
+    MmsValue* newEntrTm;
+
     LogInstance* logInstance;
 
     bool enabled;
@@ -57,6 +69,12 @@ typedef struct {
 
 LogInstance*
 LogInstance_create(LogicalNode* parentLN, const char* name);
+
+void
+LogInstance_setLogStorage(LogInstance* self, LogStorage logStorage);
+
+void
+LogInstance_logSingleData(LogInstance* self, const char* dataRef, MmsValue* value, uint8_t flag);
 
 void
 LogInstance_destroy(LogInstance* self);

@@ -1116,13 +1116,25 @@ createMmsDomainFromIedDevice(MmsMapping* self, LogicalDevice* logicalDevice)
 
     while (log != NULL) {
 
-        MmsDomain_addJournal(domain, log->name);
+        char journalName[65];
 
-        printf("log->name: %s\n", log->name);
+        int nameLength = strlen(log->parent->name) + strlen(log->name);
 
-        LogInstance* logInstance = LogInstance_create(log->parent, log->name);
+        if (nameLength > 63) {
+            if (DEBUG_IED_SERVER)
+                printf("IED_SERVER: Log name %s invalid! Resulting journal name too long! Skip log\n", log->name);
+        }
+        else {
+            strcpy(journalName, log->parent->name);
+            strcat(journalName, "$");
+            strcat(journalName, log->name);
 
-        LinkedList_add(self->logInstances, (void*) logInstance);
+            MmsDomain_addJournal(domain, journalName);
+
+            LogInstance* logInstance = LogInstance_create(log->parent, log->name);
+
+            LinkedList_add(self->logInstances, (void*) logInstance);
+        }
 
         log = log->sibling;
     }
@@ -2586,7 +2598,7 @@ DataSet_isMemberValue(DataSet* dataSet, MmsValue* value, int* index)
 #if (CONFIG_IEC61850_LOG_SERVICE == 1)
 
 static bool
-DataSet_isMemberValueWithRef(DataSet* dataSet, MmsValue* value, char* dataRef)
+DataSet_isMemberValueWithRef(DataSet* dataSet, MmsValue* value, char* dataRef, const char* iedName)
 {
     int i = 0;
 
@@ -2599,7 +2611,7 @@ DataSet_isMemberValueWithRef(DataSet* dataSet, MmsValue* value, char* dataRef)
          if (dataSetValue != NULL) { /* prevent invalid data set members */
              if (isMemberValueRecursive(dataSetValue, value)) {
                  if (dataRef != NULL)
-                     sprintf(dataRef, "%s/%s", dataSetEntry->logicalDeviceName, dataSetEntry->variableName);
+                     sprintf(dataRef, "%s%s/%s", iedName, dataSetEntry->logicalDeviceName, dataSetEntry->variableName);
 
                  return true;
              }
@@ -2695,30 +2707,13 @@ MmsMapping_triggerLogging(MmsMapping* self, MmsValue* value, LogInclusionFlag fl
 
             char dataRef[130];
 
-            if (DataSet_isMemberValueWithRef(lc->dataSet, value, dataRef)) {
-                printf("Log value - dataRef: %s flag: %i\n", dataRef, flag);
-
-                //TODO log to logInstance
+            if (DataSet_isMemberValueWithRef(lc->dataSet, value, dataRef, self->model->name)) {
 
                 if (lc->logInstance != NULL) {
-
-                    LogStorage logStorage = lc->logInstance->logStorage;
-
-                    if (logStorage != NULL) {
-
-                        uint64_t entryID = LogStorage_addEntry(logStorage, Hal_getTimeInMs());
-
-                        int dataSize = MmsValue_encodeMmsData(value, NULL, 0, false);
-
-                        uint8_t* data = GLOBAL_MALLOC(dataSize);
-
-                        MmsValue_encodeMmsData(value, data, 0, true);
-
-                        LogStorage_addEntryData(logStorage, entryID, dataRef, data, dataSize, flag);
-
-
-                    }
+                    LogInstance_logSingleData(lc->logInstance, dataRef, value, flag);
                 }
+                else
+                    printf("No log instance available!\n");
             }
 
 

@@ -91,6 +91,9 @@ MmsDomain_getName(MmsDomain* self);
 void
 MmsDomain_addJournal(MmsDomain* self, const char* name);
 
+MmsJournal
+MmsDomain_getJournal(MmsDomain* self, const char* name);
+
 /**
  * Delete a MmsDomain instance
  *

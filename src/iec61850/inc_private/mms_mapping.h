@@ -148,6 +148,9 @@ void
 MmsMapping_setConnectionIndicationHandler(MmsMapping* self, IedConnectionIndicationHandler handler, void* parameter);
 
 void
+MmsMapping_setLogStorage(MmsMapping* self, const char* logRef, LogStorage logStorage);
+
+void
 MmsMapping_installWriteAccessHandler(MmsMapping* self, DataAttribute* dataAttribute, WriteAccessHandler handler, void* parameter);
 
 MmsDataAccessError
