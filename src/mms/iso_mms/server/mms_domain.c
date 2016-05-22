@@ -76,6 +76,8 @@ MmsDomain_getName(MmsDomain* self)
 void
 MmsDomain_addJournal(MmsDomain* self, const char* name)
 {
+    printf("CREATE JOURNAL\n");
+
     if (self->journals == NULL)
         self->journals = LinkedList_create();
 
@@ -83,6 +85,7 @@ MmsDomain_addJournal(MmsDomain* self, const char* name)
 
     LinkedList_add(self->journals, (void*) journal);
 }
+
 
 MmsJournal
 MmsDomain_getJournal(MmsDomain* self, const char* name)
@@ -92,6 +95,8 @@ MmsDomain_getJournal(MmsDomain* self, const char* name)
     while (journal != NULL) {
 
         MmsJournal mmsJournal = (MmsJournal) LinkedList_getData(journal);
+
+        printf("  MMS journal: %s (%s)\n", mmsJournal->name, name);
 
         if (strcmp(mmsJournal->name, name) == 0)
             return mmsJournal;

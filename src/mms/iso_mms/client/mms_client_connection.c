@@ -1652,8 +1652,10 @@ readJournal(MmsConnection self, MmsError* mmsError, uint32_t invokeId,  ByteBuff
     if (self->lastResponseError != MMS_ERROR_NONE)
         *mmsError = self->lastResponseError;
     else if (responseMessage != NULL) {
-    //    if (mmsClient_parseFileOpenResponse(self, &frsmId, fileSize, lastModified) == false)
-    //        *mmsError = MMS_ERROR_PARSING_RESPONSE;
+        bool moreFollows;
+
+        if (mmsClient_parseReadJournalResponse(self, &moreFollows) == false)
+            *mmsError = MMS_ERROR_PARSING_RESPONSE;
     }
 
     releaseResponse(self);

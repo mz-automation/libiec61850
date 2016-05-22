@@ -1114,7 +1114,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO2_SBO = {
     NULL,
     0,
     IEC61850_FC_CO,
-    IEC61850_VISIBLE_STRING_64,
+    IEC61850_VISIBLE_STRING_129,
     0,
     NULL,
     0};
@@ -2404,11 +2404,15 @@ ReportControlBlock iedModel_GenericIO_LLN0_report4 = {&iedModel_GenericIO_LLN0, 
 
 
 
+
+
 IedModel iedModel = {
     "beagle",
     &iedModel_GenericIO,
     &iedModelds_GenericIO_LLN0_Events,
     &iedModel_GenericIO_LLN0_report0,
+    NULL,
+    NULL,
     NULL,
     NULL,
     NULL,
@@ -2425,11 +2429,11 @@ iedModel_GenericIO_GGIO1_Mod_ctlModel.mmsValue = MmsValue_newIntegerFromInt32(0)
 
 iedModel_GenericIO_GGIO1_SPCSO1_ctlModel.mmsValue = MmsValue_newIntegerFromInt32(1);
 
-iedModel_GenericIO_GGIO1_SPCSO2_ctlModel.mmsValue = MmsValue_newIntegerFromInt32(2);
+iedModel_GenericIO_GGIO1_SPCSO2_ctlModel.mmsValue = MmsValue_newIntegerFromInt32(1);
 
 iedModel_GenericIO_GGIO1_SPCSO3_ctlModel.mmsValue = MmsValue_newIntegerFromInt32(1);
 
-iedModel_GenericIO_GGIO1_DPCSO1_ctlModel.mmsValue = MmsValue_newIntegerFromInt32(3);
+iedModel_GenericIO_GGIO1_DPCSO1_ctlModel.mmsValue = MmsValue_newIntegerFromInt32(1);
 
 iedModel_GenericIO_TIM_GAPC1_Mod_ctlModel.mmsValue = MmsValue_newIntegerFromInt32(0);
 

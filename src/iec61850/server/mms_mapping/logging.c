@@ -89,6 +89,7 @@ LogInstance_logSingleData(LogInstance* self, const char* dataRef, MmsValue* valu
         printf("no log storage available!\n");
 }
 
+
 void
 LogInstance_setLogStorage(LogInstance* self, LogStorage logStorage)
 {
@@ -100,7 +101,6 @@ LogInstance_setLogStorage(LogInstance* self, LogStorage logStorage)
     printf("Attached storage to log: %s\n", self->name);
     printf("  oldEntryID: %llu oldEntryTm: %llu\n", self->oldEntryId, self->oldEntryTime);
     printf("  newEntryID: %llu newEntryTm: %llu\n", self->newEntryId, self->newEntryTime);
-
 }
 
 LogControl*
@@ -585,8 +585,50 @@ MmsMapping_setLogStorage(MmsMapping* self, const char* logRef, LogStorage logSto
 {
     LogInstance* logInstance = getLogInstanceByLogRef(self, logRef);
 
-    if (logInstance != NULL)
+    if (logInstance != NULL) {
         LogInstance_setLogStorage(logInstance, logStorage);
+
+#if 1
+        char domainName[65];
+
+        MmsMapping_getMmsDomainFromObjectReference(logRef, domainName);
+
+        char domainName2[65];
+
+        strcpy(domainName2, self->model->name);
+        strcat(domainName2, domainName);
+
+        MmsDomain* mmsDomain = MmsDevice_getDomain(self->mmsDevice, domainName2);
+
+        if (mmsDomain == NULL) {
+            printf("IED_SERVER: MmsMapping_setLogStorage: domain %s not found!\n", domainName2);
+        }
+#if 0
+        char journalName[65];
+
+        strcpy(journalName, self->parentLN->name);
+        strcat(journalName, "$");
+        strcat(journalName, self->name);
+#endif
+
+        printf("Connect LogStorage to MMS journal %s\n", logRef);
+
+        MmsJournal mmsJournal = NULL;
+
+        char* logName = strchr(logRef, '/');
+
+        if (logName != NULL) {
+            logName += 1;
+            mmsJournal = MmsDomain_getJournal(mmsDomain, logName);
+        }
+
+        if (mmsJournal != NULL)
+            mmsJournal->logStorage = logStorage;
+        else
+            printf("Failed to retrieve MMS journal for log!\n");
+#endif
+
+    }
 
     //if (DEBUG_IED_SERVER)
         if (logInstance == NULL)

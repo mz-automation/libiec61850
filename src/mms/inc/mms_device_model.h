@@ -29,6 +29,7 @@
 #include "mms_type_spec.h"
 #include "mms_common.h"
 #include "mms_named_variable_list.h"
+#include "logging_api.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -52,6 +53,7 @@ typedef struct {
 
 struct sMmsJournal {
     char* name;
+    LogStorage logStorage;
 };
 
 typedef struct sMmsJournal* MmsJournal;

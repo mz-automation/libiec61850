@@ -172,11 +172,11 @@ int main(int argc, char** argv) {
                 printf("  read journal...\n");
              //   MmsConnection_readJournal(con, &error, domainName, name);
 
-#if 0
+#if 1
                 uint64_t timestamp = Hal_getTimeInMs();
 
                 MmsValue* startTime = MmsValue_newBinaryTime(false);
-                MmsValue_setBinaryTime(startTime, timestamp - 60000);
+                MmsValue_setBinaryTime(startTime, timestamp - 6000000000);
 
                 MmsValue* endTime = MmsValue_newBinaryTime(false);
                 MmsValue_setBinaryTime(endTime, timestamp);
@@ -184,7 +184,7 @@ int main(int argc, char** argv) {
                 MmsConnection_readJournalTimeRange(con, &error, domainName, name, startTime, endTime);
 #endif
 
-#if 1
+#if 0
                 uint64_t timestamp = Hal_getTimeInMs();
 
                 MmsValue* startTime = MmsValue_newBinaryTime(false);

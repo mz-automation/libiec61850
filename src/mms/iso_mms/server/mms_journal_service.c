@@ -50,19 +50,41 @@ typedef struct {
 } JournalEntry;
 
 
+typedef struct sJournalEncoder* JournalEncoder;
+
 struct sJournalEncoder {
     uint8_t* buffer;
     int maxSize;
     int bufPos;
     int currentEntryBufPos; /* store start buffer position of current entry in case the whole JournalEntry will become too long */
-
+    uint64_t currentEntryId; //TODO use a byte array for the generic MMS case!
+    uint64_t currentTimestamp;
+    bool moreFollows;
 };
 
 static bool
 entryCallback(void* parameter, uint64_t timestamp, uint64_t entryID, bool moreFollow)
 {
-    if (moreFollow)
-        printf("Found entry ID:%llu timestamp:%llu\n", entryID, timestamp);
+    JournalEncoder encoder = (JournalEncoder) parameter;
+
+    if (moreFollow) {
+        //printf("Encode entry ID:%" PRIu64 " timestamp:%" PRIu64 "\n", entryID, timestamp);
+        if (encoder->moreFollows) {
+            printf("entryCallback return false\n");
+            return false;
+        }
+
+        encoder->currentEntryBufPos = encoder->bufPos;
+
+        encoder->bufPos += 48; /* reserve space for common entry parts */
+
+        encoder->currentEntryId = entryID;
+        encoder->currentTimestamp = timestamp;
+
+    }
+    else {
+        printf("Encoded last entry: FINISHED\n");
+    }
 
     return true;
 }
@@ -70,46 +92,87 @@ entryCallback(void* parameter, uint64_t timestamp, uint64_t entryID, bool moreFo
 static bool
 entryDataCallback (void* parameter, const char* dataRef, uint8_t* data, int dataSize, uint8_t reasonCode, bool moreFollow)
 {
+    JournalEncoder encoder = (JournalEncoder) parameter;
+
+    uint8_t* buffer = encoder->buffer;
+
+    //TODO check if entry is too long for buffer!
+
     if (moreFollow) {
-        printf("  EntryData: ref: %s\n", dataRef);
+        int bufPos = encoder->bufPos;
 
-        MmsValue* value = MmsValue_decodeMmsData(data, 0, dataSize);
+        uint32_t dataRefStrLen = strlen(dataRef);
+        uint32_t dataRefLen = 1 + BerEncoder_determineLengthSize(dataRefStrLen) + dataRefStrLen;
 
-        char buffer[256];
+        uint32_t valueSpecLen = 1 + BerEncoder_determineLengthSize(dataSize) + dataSize;
 
-        MmsValue_printToBuffer(value, buffer, 256);
+        if (bufPos > encoder->maxSize) {
+            encoder->moreFollows = true;
+            encoder->bufPos = encoder->currentEntryBufPos; /* remove last entry */
+            return false;
+        }
 
-        printf("  value: %s\n", buffer);
+        //TODO check if entry is too long for buffer!
+
+        bufPos = BerEncoder_encodeTL(0x30, valueSpecLen + dataRefLen, buffer, bufPos);
+
+        /* encode dataRef */
+        bufPos = BerEncoder_encodeOctetString(0x80, (uint8_t*) dataRef, dataRefStrLen, buffer, bufPos);
+
+        /* encode valueSpec */
+        bufPos = BerEncoder_encodeOctetString(0xa1, data, dataSize, buffer, bufPos);
+
+        //TODO optionally encode reasonCode
+
+        encoder->bufPos = bufPos;
+    }
+    else {
+        int dataContentLen = encoder->bufPos - (encoder->currentEntryBufPos + 48);
+
+        int journalVariablesLen = 1  + BerEncoder_determineLengthSize(dataContentLen) + dataContentLen;
+
+        int dataLen = 1 + BerEncoder_determineLengthSize(journalVariablesLen) + journalVariablesLen;
+
+        int dataAndTimeLen = dataLen + 8;
+
+        int entryContentLen = 1 + BerEncoder_determineLengthSize(dataAndTimeLen) + dataAndTimeLen;
+
+        int journalEntryContentLen =  10 /* entryIdentifier */
+                                    +  4 /* originatingApplication */
+                                    + entryContentLen;
+
+        int headerBufPos = encoder->currentEntryBufPos;
+
+        headerBufPos = BerEncoder_encodeTL(0x30, journalEntryContentLen, buffer, headerBufPos);
+
+        headerBufPos = BerEncoder_encodeOctetString(0x80, (uint8_t*) &(encoder->currentEntryId), 8, buffer, headerBufPos);
+
+        headerBufPos = BerEncoder_encodeTL(0xa1, 2, buffer, headerBufPos);
+        headerBufPos = BerEncoder_encodeTL(0x30, 0, buffer, headerBufPos);
+
+        headerBufPos = BerEncoder_encodeTL(0xa2, dataAndTimeLen, buffer, headerBufPos);
+
+        MmsValue occurenceTime;
+        occurenceTime.type = MMS_BINARY_TIME;
+        occurenceTime.value.binaryTime.size = 6;
+        MmsValue_setBinaryTime(&occurenceTime, encoder->currentTimestamp);
+        headerBufPos = BerEncoder_encodeOctetString(0x80, occurenceTime.value.binaryTime.buf, 6, buffer, headerBufPos);
+
+        headerBufPos = BerEncoder_encodeTL(0xa2, journalVariablesLen, buffer, headerBufPos);
+        headerBufPos = BerEncoder_encodeTL(0xa1, dataContentLen, buffer, headerBufPos);
+
+        int entryHeaderLength =  headerBufPos - encoder->currentEntryBufPos;
+
+        /* move data to entry header */
+        memmove(buffer + (encoder->currentEntryBufPos + entryHeaderLength), buffer + (encoder->currentEntryBufPos + 48),
+                dataContentLen);
+
+        /* prepare buffer for next entry. */
+        encoder->bufPos = encoder->currentEntryBufPos + entryHeaderLength + dataContentLen;
     }
 
     return true;
 }
-
-
-bool
-MmsJournal_queryJournalByRange(MmsJournal self, uint64_t startTime, uint64_t endTime, ByteBuffer* response)
-{
-    // forward request to implementation class
-
-    //TODO get handle of LogStorage
-
-    struct sJournalEncoder encoderData;
-
-    LogStorage logStorage;
-
-    LogStorage_setCallbacks(logStorage, entryCallback, entryDataCallback, &encoderData);
-
-    LogStorage_getEntries(logStorage, startTime, endTime);
-
-    /* actual encoding will happen in callback handler. When getEntries returns the data is
-     * already encoded in the buffer.
-     */
-
-    // encoder header in response buffer
-
-    // move encoded JournalEntry data to continue the buffer header
-}
-
 
 static bool
 parseStringWithMaxLength(char* filename, int maxLength, uint8_t* buffer, int* bufPos, int maxBufPos , uint32_t invokeId, ByteBuffer* response)
@@ -141,6 +204,7 @@ parseStringWithMaxLength(char* filename, int maxLength, uint8_t* buffer, int* bu
     return true;
 }
 
+#define RESERVED_SPACE_FOR_HEADER 22
 
 void
 mmsServer_handleReadJournalRequest(
@@ -154,7 +218,7 @@ mmsServer_handleReadJournalRequest(
 
     char domainId[65];
     char logName[65];
-    char entryIdBuf[64]; /* maximum size of entry id is 64 bytes! */
+    uint8_t entryIdBuf[64]; /* maximum size of entry id is 64 bytes! */
 
     MmsValue entrySpec;
     entrySpec.type = MMS_OCTET_STRING;
@@ -243,7 +307,7 @@ mmsServer_handleReadJournalRequest(
                 }
                 else {
                     mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
-                    return;
+                    return;    // forward request to implementation class
                 }
 
                 bufPos += length;
@@ -277,7 +341,7 @@ mmsServer_handleReadJournalRequest(
                 }
                 else {
                     mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
-                    return;
+                    return;    // forward request to implementation class
                 }
 
                 bufPos += length;
@@ -352,11 +416,15 @@ mmsServer_handleReadJournalRequest(
     }
 
     //TODO check if required fields are present
+    if (hasNames == false) {
+        printf("MMS_SERVER: readJournal missing journal name\n");
+        mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
+        return;
+    }
+
     //TODO check valid field combinations
 
     /* lookup journal */
-    MmsServer server = connection->server;
-
     MmsDevice* mmsDevice = MmsServer_getDevice(connection->server);
 
     MmsDomain* mmsDomain = MmsDevice_getDomain(mmsDevice, domainId);
@@ -376,6 +444,86 @@ mmsServer_handleReadJournalRequest(
     }
 
     printf("Read journal %s ...\n", mmsJournal->name);
+
+    struct sJournalEncoder encoder;
+
+    encoder.buffer = response->buffer;
+    encoder.moreFollows = false;
+    encoder.maxSize = connection->maxPduSize - 3; /* reserve three bytes for moreFollows */
+    encoder.bufPos = RESERVED_SPACE_FOR_HEADER; /* reserve space for header */
+
+    LogStorage logStorage = mmsJournal->logStorage;
+
+    if (logStorage != NULL) {
+
+        if (hasRangeStartSpec && hasRangeStopSpec) {
+            LogStorage_getEntries(logStorage, MmsValue_getBinaryTimeAsUtcMs(&rangeStart), MmsValue_getBinaryTimeAsUtcMs(&rangeStop),
+                    entryCallback, entryDataCallback, &encoder);
+        }
+        else if (hasEntrySpec && hasTimeSpec) {
+            LogStorage_getEntriesAfter(logStorage, MmsValue_getBinaryTimeAsUtcMs(&rangeStart), *((uint64_t*) entryIdBuf),
+                    entryCallback, entryDataCallback, &encoder);
+        }
+        else {
+            printf("MMS_SERVER: readJournal missing valid argument combination\n");
+            mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
+            return;
+        }
+
+    }
+    /* actual encoding will happen in callback handler. When getEntries returns the data is
+     * already encoded in the buffer.
+     */
+
+    /* encode message header in response buffer */
+
+    uint8_t* buffer = encoder.buffer;
+    bufPos = 0;
+
+    int dataSize = encoder.bufPos - RESERVED_SPACE_FOR_HEADER;
+
+    uint32_t invokeIdSize = BerEncoder_UInt32determineEncodedSize((uint32_t) invokeId) + 2;
+    uint32_t listOfEntriesLen = 1 + BerEncoder_determineLengthSize(dataSize) + dataSize;
+
+    uint32_t moreFollowsLen;
+
+    if (encoder.moreFollows)
+        moreFollowsLen = 3;
+    else
+        moreFollowsLen = 0;
+
+//    uint32_t readJournalLen = 2 + BerEncoder_determineLengthSize(listOfEntriesLen + moreFollowsLen) +
+//            (listOfEntriesLen + moreFollowsLen);
+
+    uint32_t readJournalLen = 2 + BerEncoder_determineLengthSize(listOfEntriesLen + moreFollowsLen) +
+             (listOfEntriesLen + moreFollowsLen);
+
+    uint32_t confirmedResponsePDUSize = readJournalLen + invokeIdSize;
+
+    bufPos = BerEncoder_encodeTL(0xa1, confirmedResponsePDUSize, buffer, bufPos);
+
+    bufPos = BerEncoder_encodeTL(0x02, invokeIdSize - 2, buffer, bufPos);
+    bufPos = BerEncoder_encodeUInt32((uint32_t) invokeId, buffer, bufPos);
+
+    buffer[bufPos++] = 0xbf;
+    buffer[bufPos++] = 0x41;
+
+    bufPos = BerEncoder_encodeLength(listOfEntriesLen + moreFollowsLen, buffer, bufPos);
+
+    bufPos = BerEncoder_encodeTL(0xa0, dataSize, buffer, bufPos);
+
+    /* move encoded JournalEntry data to continue the buffer header */
+
+    printf("Encoded message header with %i bytes\n", bufPos);
+    memmove(buffer + bufPos, buffer + RESERVED_SPACE_FOR_HEADER, dataSize);
+
+    bufPos = bufPos + dataSize;
+
+    /* encode morefollows */
+    if (encoder.moreFollows)
+        bufPos = BerEncoder_encodeBoolean(0x81, true, buffer, bufPos);
+
+    response->size = bufPos;
 }
 
 #endif /* (MMS_JOURNAL_SERVICE == 1) */

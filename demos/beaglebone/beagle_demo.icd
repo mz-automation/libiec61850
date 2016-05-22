@@ -1,24 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SCL xmlns="http://www.iec.ch/61850/2003/SCL">
-  <Header id="" nameStructure="IEDName">
+<SCL xmlns="http://www.iec.ch/61850/2003/SCL" version="2007" revision="B">
+  <Header id="" version="1" revision="" nameStructure="IEDName">
   </Header>
-  <Communication>
-    <SubNetwork name="subnetwork1" type="8-MMS">
-      <Text>Station bus</Text>
-      <BitRate unit="b/s">10</BitRate>
-      <ConnectedAP iedName="beagle" apName="accessPoint1">
-        <Address>
-          <P type="IP">10.0.0.2</P>
-          <P type="IP-SUBNET">255.255.255.0</P>
-          <P type="IP-GATEWAY">10.0.0.1</P>
-          <P type="OSI-TSEL">0001</P>
-          <P type="OSI-PSEL">00000001</P>
-          <P type="OSI-SSEL">0001</P>
-        </Address>
-      </ConnectedAP>
-    </SubNetwork>
-  </Communication>
-  <IED name="beagle">
+
+  <IED name="Template">
   
     <Services>
 		<DynAssociation max="5"/>
@@ -30,17 +15,13 @@
 		<ReadWrite />
 		<GetCBValues />
 		<ConfDataSet max="1" modify="false" />
-		<DynDataSet max="10"/>
-		<ConfReportControl max="1" bufConf="false" />
+		<DynDataSet max="5"/>
+		<ConfReportControl max="5" bufConf="false" />
 		<ReportSettings cbName="Fix" datSet="Dyn" rptID="Dyn" optFields="Dyn" bufTime="Dyn" trgOps="Dyn" intgPd="Dyn" owner="true"/>
 		<ConfLNs fixPrefix="true" fixLnInst="true"/>
 		<ClientServices >
 			<TimeSyncProt sntp="true" c37_238="false" other="false"/>
 		</ClientServices>
-      	<GOOSE max="5" />
-      	<GSSE max="5" />
-      	<GSEDir />
-      	<TimerActivatedControl />
     </Services>
     
     <AccessPoint name="accessPoint1">
@@ -63,22 +44,12 @@
               <RptEnabled max="5" />
             </ReportControl>
             
-            <DOI name="Mod">
-              <DAI name="ctlModel">
-                <Val>status-only</Val>
-              </DAI>
-            </DOI>
-            
           </LN0>
           
           <LN lnClass="LPHD" lnType="LPHD1" inst="1" prefix="" />
           
           <LN lnClass="GGIO" lnType="GGIO1" inst="1" prefix="">
-            <DOI name="Mod">
-              <DAI name="ctlModel">
-                <Val>status-only</Val>
-              </DAI>
-            </DOI>
+
             <DOI name="SPCSO1">
               <DAI name="ctlModel">
                 <Val>direct-with-normal-security</Val>
@@ -86,7 +57,7 @@
             </DOI>
             <DOI name="SPCSO2">
               <DAI name="ctlModel">
-                <Val>sbo-with-normal-security</Val>
+                <Val>direct-with-normal-security</Val>
               </DAI>
             </DOI>
             <DOI name="SPCSO3">
@@ -96,7 +67,7 @@
             </DOI>
             <DOI name="DPCSO1">
               <DAI name="ctlModel">
-                <Val>direct-with-enhanced-security</Val>
+                <Val>direct-with-normal-security</Val>
               </DAI>
             </DOI>
           </LN>
@@ -112,20 +83,20 @@
     <LNodeType id="LLN01" lnClass="LLN0">
       <DO name="Beh" type="ENS_Beh" />
       <DO name="Mod" type="ENC_Mod_status_only" />
-      <DO name="Health" type="ENS_Beh" />
+      <DO name="Health" type="ENS_Health" />
       <DO name="NamPlt" type="LPL_1_NamPlt" />
     </LNodeType>
     
     <LNodeType id="LPHD1" lnClass="LPHD">
       <DO name="PhyNam" type="DPL_1_PhyNam" />
-      <DO name="PhyHealth" type="ENS_Beh" />
+      <DO name="PhyHealth" type="ENS_Health" />
       <DO name="Proxy" type="SPS_1_Proxy" />
     </LNodeType>
     
     <LNodeType id="GGIO1" lnClass="GGIO">
       <DO name="Beh" type="ENS_Beh" />
       <DO name="Mod" type="ENC_Mod_status_only" />
-      <DO name="Health" type="ENS_Beh" />
+      <DO name="Health" type="ENS_Health" />
       <DO name="NamPlt" type="LPL_2_NamPlt" />
       <DO name="AnIn1" type="MV_1_AnIn1" />
       <DO name="AnIn2" type="MV_1_AnIn1" />
@@ -167,16 +138,22 @@
 		<DA name="t" fc="ST" bType="Timestamp" />
 	</DOType>
     
+    <DOType id="ENS_Health" cdc="ENS">
+		<DA name="stVal" fc="ST" bType="Enum" type="healthEnum" dchg="true" />
+		<DA name="q" fc="ST" bType="Quality" qchg="true" />
+		<DA name="t" fc="ST" bType="Timestamp" />
+	</DOType>
+    
     <DOType id="INC_OpCntRs" cdc="INC">
       <DA name="stVal" bType="INT32" fc="ST" dchg="true" />
       <DA name="q" bType="Quality" fc="ST" qchg="true" />
       <DA name="t" bType="Timestamp" fc="ST" />
-      <DA name="Oper" type="SPCOperate_1" bType="Struct" fc="CO" />
-      <DA name="ctlModel" type="CtlModels" bType="Enum" fc="CF">
+      <DA name="Oper" type="INCOperate_1" bType="Struct" fc="CO" />
+      <DA name="ctlModel" type="CtlModels" valKind="RO" bType="Enum" fc="CF">
       	<Val>direct-with-normal-security</Val>
       </DA>
     </DOType>
-
+    
 	<DOType cdc="ACD" id="ACD_Str">
 		<DA bType="BOOLEAN" dchg="true" fc="ST" name="general" />
 		<DA bType="Enum" dchg="true" fc="ST" name="dirGeneral" type="dirGeneral" />
@@ -194,7 +171,7 @@
       <DA bType="Enum" dchg="true" fc="ST" name="stVal" type="Beh"/>
       <DA bType="Quality" fc="ST" name="q" qchg="true"/>
       <DA bType="Timestamp" fc="ST" name="t"/>
-      <DA bType="Enum" fc="CF" name="ctlModel" type="CtlModels">
+      <DA bType="Enum" fc="CF" name="ctlModel" valKind="RO" type="CtlModels">
       	<Val>status-only</Val>
       </DA>
     </DOType>
@@ -233,31 +210,25 @@
       <DA name="stVal" bType="Dbpos" fc="ST" dchg="true" />
       <DA name="q" bType="Quality" fc="ST" qchg="true" />
       <DA name="Oper" type="SPCOperate_1" bType="Struct" fc="CO" />
-      <DA name="ctlModel" type="CtlModels" bType="Enum" fc="CF" />
+      <DA name="ctlModel" type="CtlModels" valKind="RO" bType="Enum" fc="CF" />
       <DA name="t" bType="Timestamp" fc="ST" />
-    </DOType>
-    
-    <DOType id="INC_2_Mod" cdc="INC">
-      <DA name="q" bType="Quality" fc="ST" qchg="true" />
-      <DA name="t" bType="Timestamp" fc="ST" />
-      <DA name="ctlModel" type="CtlModels" bType="Enum" fc="CF" />
     </DOType>
     
     <DOType id="SPC_2_SPCSO1" cdc="SPC">
       <DA name="stVal" bType="BOOLEAN" fc="ST" dchg="true" />
       <DA name="q" bType="Quality" fc="ST" qchg="true" />
       <DA name="Oper" type="SPCOperate_1" bType="Struct" fc="CO" />
-      <DA name="ctlModel" type="CtlModels" bType="Enum" fc="CF" />
+      <DA name="ctlModel" type="CtlModels" valKind="RO" bType="Enum" fc="CF" />
       <DA name="t" bType="Timestamp" fc="ST" />
     </DOType>
     
     <DOType id="SPC_1_SPCSO2" cdc="SPC">
       <DA name="stVal" bType="BOOLEAN" fc="ST" dchg="true" />
       <DA name="q" bType="Quality" fc="ST" qchg="true" />
-      <DA name="SBO" fc="CO" bType="VisString64" />
+      <DA name="SBO" fc="CO" bType="VisString129" />
       <DA name="Oper" type="SPCOperate_1" bType="Struct" fc="CO" />
       <DA name="Cancel" fc="CO" bType="Struct" type="SPCCancel" />
-      <DA name="ctlModel" type="CtlModels" bType="Enum" fc="CF" />
+      <DA name="ctlModel" type="CtlModels" valKind="RO" bType="Enum" fc="CF" />
       <DA name="t" bType="Timestamp" fc="ST" />
     </DOType>
     
@@ -265,15 +236,7 @@
       <DA name="stVal" bType="BOOLEAN" fc="ST" dchg="true" />
       <DA name="q" bType="Quality" fc="ST" qchg="true" />
       <DA name="Oper" type="SPCOperate_1" bType="Struct" fc="CO" />
-      <DA name="ctlModel" type="CtlModels" bType="Enum" fc="CF" />
-      <DA name="t" bType="Timestamp" fc="ST" />
-    </DOType>
-    
-    <DOType id="INC_OpCntRs" cdc="SPC">
-      <DA name="stVal" bType="INT32" fc="ST" dchg="true" />
-      <DA name="q" bType="Quality" fc="ST" qchg="true" />
-      <DA name="Oper" type="INCOperate_1" bType="Struct" fc="CO" />
-      <DA name="ctlModel" type="CtlModels" bType="Enum" fc="CF" />
+      <DA name="ctlModel" type="CtlModels" valKind="RO" bType="Enum" fc="CF" />
       <DA name="t" bType="Timestamp" fc="ST" />
     </DOType>
     
@@ -286,15 +249,6 @@
       <BDA name="orIdent" bType="Octet64" />
     </DAType>
    
-    <DAType id="INCOperate_1">
-      <BDA name="ctlVal" bType="INT32" />
-      <BDA name="origin" type="Originator_1" bType="Struct" />
-      <BDA name="ctlNum" bType="INT8U" />
-      <BDA name="T" bType="Timestamp" />
-      <BDA name="Test" bType="BOOLEAN" />
-      <BDA name="Check" bType="Check" />
-    </DAType>
-    
     <DAType id="SPCOperate_1">
       <BDA name="ctlVal" bType="BOOLEAN" />
       <BDA name="origin" type="Originator_1" bType="Struct" />
@@ -305,12 +259,21 @@
     </DAType>
     
 	<DAType id="SPCCancel">
-		<BDA name="ctlVal" bType="INT8" />
+		<BDA name="ctlVal" bType="BOOLEAN" />
 		<BDA name="origin" bType="Struct" type="Originator_1" />
 		<BDA name="ctlNum" bType="INT8U" />
 		<BDA name="T" bType="Timestamp" />
 		<BDA name="Test" bType="BOOLEAN" />
 	</DAType>
+	
+	<DAType id="INCOperate_1">
+      <BDA name="ctlVal" bType="INT32" />
+      <BDA name="origin" type="Originator_1" bType="Struct" />
+      <BDA name="ctlNum" bType="INT8U" />
+      <BDA name="T" bType="Timestamp" />
+      <BDA name="Test" bType="BOOLEAN" />
+      <BDA name="Check" bType="Check" />
+    </DAType>
 	    
 	<EnumType id="Beh">
 		<EnumVal ord="1">on</EnumVal>
@@ -318,6 +281,12 @@
 		<EnumVal ord="3">test</EnumVal>
 		<EnumVal ord="4">test/blocked</EnumVal>
 		<EnumVal ord="5">off</EnumVal>
+	</EnumType>
+	
+	<EnumType id="healthEnum">
+		<EnumVal ord="1">Ok</EnumVal>
+		<EnumVal ord="2">Warning</EnumVal>
+		<EnumVal ord="3">Alarm</EnumVal>
 	</EnumType>
 	
     <EnumType id="dirGeneral">
@@ -330,9 +299,6 @@
     <EnumType id="CtlModels">
       <EnumVal ord="0">status-only</EnumVal>
       <EnumVal ord="1">direct-with-normal-security</EnumVal>
-      <EnumVal ord="2">sbo-with-normal-security</EnumVal>
-      <EnumVal ord="3">direct-with-enhanced-security</EnumVal>
-      <EnumVal ord="4">sbo-with-enhanced-security</EnumVal>
     </EnumType>
     
     <EnumType id="OrCat">
