@@ -33,21 +33,6 @@
 #include "conversions.h"
 #include "mms_value_internal.h"
 
-typedef struct sMmsJournalEntry* MmsJournalEntry;
-
-typedef struct sMmsJournalVariable* MmsJournalVariable;
-
-struct sMmsJournalEntry {
-    MmsValue* entryID; /* type MMS_OCTET_STRING */
-    MmsValue* occurenceTime; /* type MMS_BINARY_TIME */
-    LinkedList journalVariables;
-};
-
-struct sMmsJournalVariable {
-    char* tag;
-    MmsValue* value;
-};
-
 //TODO add event-based API to parse journal entries
 
 static bool
@@ -75,8 +60,6 @@ parseJournalVariable(uint8_t* buffer, int bufPos, int maxLength, MmsJournalVaria
                 journalVariable->tag = (char*) GLOBAL_MALLOC(length + 1);
                 memcpy(journalVariable->tag, buffer + bufPos, length);
                 journalVariable->tag[length] = 0;
-
-                printf("  tag: %s\n", journalVariable->tag);
             }
 
             break;
@@ -201,8 +184,6 @@ parseEntryContent(uint8_t* buffer, int bufPos, int maxLength, MmsJournalEntry jo
 
        switch (tag) {
        case 0x80: /* occurenceTime */
-           printf("  parse occurenceTime\n");
-
            if (length == 6)
                journalEntry->occurenceTime = MmsValue_newBinaryTime(false);
            else if (length == 4)
@@ -304,7 +285,6 @@ parseListOfJournalEntries(uint8_t* buffer, int bufPos, int maxLength, LinkedList
 
         switch (tag) {
         case 0x30:
-            printf("Parse journalEntry\n");
             if (parseJournalEntry(buffer, bufPos, length, journalEntries) == false)
                 return false;
             break;
@@ -323,7 +303,7 @@ parseListOfJournalEntries(uint8_t* buffer, int bufPos, int maxLength, LinkedList
 }
 
 bool
-mmsClient_parseReadJournalResponse(MmsConnection self, bool* moreFollows)
+mmsClient_parseReadJournalResponse(MmsConnection self, bool* moreFollows, LinkedList* result)
 {
     uint8_t* buffer = self->lastResponse->buffer;
     int maxBufPos = self->lastResponse->size;
@@ -388,9 +368,12 @@ mmsClient_parseReadJournalResponse(MmsConnection self, bool* moreFollows)
         bufPos += length;
     }
 
+    *result = journalEntries;
+
     return true;
 }
 
+#if 0
 void
 mmsClient_createReadJournalRequest(uint32_t invokeId, ByteBuffer* request, const char* domainId, const char* itemId)
 {
@@ -433,6 +416,7 @@ mmsClient_createReadJournalRequest(uint32_t invokeId, ByteBuffer* request, const
 
     request->size = bufPos;
 }
+#endif
 
 void
 mmsClient_createReadJournalRequestWithTimeRange(uint32_t invokeId, ByteBuffer* request, const char* domainId, const char* itemId,
@@ -515,7 +499,7 @@ mmsClient_createReadJournalRequestStartAfter(uint32_t invokeId, ByteBuffer* requ
 
     uint32_t objectIdSize = domainIdSize + itemIdSize;
 
-    uint32_t journalNameSize =  1 + BerEncoder_determineLengthSize(objectIdSize) + (objectIdSize);
+    uint32_t journalNameSize = 1 + BerEncoder_determineLengthSize(objectIdSize) + (objectIdSize);
 
     uint32_t timeSpecificationSize = 2 + timeSpecification->value.binaryTime.size;
 

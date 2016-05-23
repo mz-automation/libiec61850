@@ -1643,18 +1643,19 @@ MmsConnection_getServerStatus(MmsConnection self, MmsError* mmsError, int* vmdLo
 }
 
 static LinkedList
-readJournal(MmsConnection self, MmsError* mmsError, uint32_t invokeId,  ByteBuffer* payload)
+readJournal(MmsConnection self, MmsError* mmsError, uint32_t invokeId,  ByteBuffer* payload, bool* moreFollows)
 {
     *mmsError = MMS_ERROR_NONE;
 
     ByteBuffer* responseMessage = sendRequestAndWaitForResponse(self, invokeId, payload);
 
+    LinkedList response = NULL;
+
     if (self->lastResponseError != MMS_ERROR_NONE)
         *mmsError = self->lastResponseError;
     else if (responseMessage != NULL) {
-        bool moreFollows;
 
-        if (mmsClient_parseReadJournalResponse(self, &moreFollows) == false)
+        if (mmsClient_parseReadJournalResponse(self, moreFollows, &response) == false)
             *mmsError = MMS_ERROR_PARSING_RESPONSE;
     }
 
@@ -1663,9 +1664,10 @@ readJournal(MmsConnection self, MmsError* mmsError, uint32_t invokeId,  ByteBuff
     if (self->associationState == MMS_STATE_CLOSED)
         *mmsError = MMS_ERROR_CONNECTION_LOST;
 
-    return NULL;
+    return response;
 }
 
+#if 0
 LinkedList
 MmsConnection_readJournal(MmsConnection self, MmsError* mmsError, const char* domainId, const char* itemId)
 {
@@ -1677,10 +1679,11 @@ MmsConnection_readJournal(MmsConnection self, MmsError* mmsError, const char* do
 
     return readJournal(self, mmsError, invokeId, payload);
 }
+#endif
 
 LinkedList
 MmsConnection_readJournalTimeRange(MmsConnection self, MmsError* mmsError, const char* domainId, const char* itemId,
-        MmsValue* startingTime, MmsValue* endingTime)
+        MmsValue* startingTime, MmsValue* endingTime, bool* moreFollows)
 {
     if ((MmsValue_getType(startingTime) != MMS_BINARY_TIME) ||
             (MmsValue_getType(endingTime) != MMS_BINARY_TIME)) {
@@ -1695,12 +1698,12 @@ MmsConnection_readJournalTimeRange(MmsConnection self, MmsError* mmsError, const
 
     mmsClient_createReadJournalRequestWithTimeRange(invokeId, payload, domainId, itemId, startingTime, endingTime);
 
-    return readJournal(self, mmsError, invokeId, payload);
+    return readJournal(self, mmsError, invokeId, payload, moreFollows);
 }
 
 LinkedList
 MmsConnection_readJournalStartAfter(MmsConnection self, MmsError* mmsError, const char* domainId, const char* itemId,
-        MmsValue* timeSpecification, MmsValue* entrySpecification)
+        MmsValue* timeSpecification, MmsValue* entrySpecification, bool* moreFollows)
 {
 
     if ((MmsValue_getType(timeSpecification) != MMS_BINARY_TIME) ||
@@ -1716,7 +1719,7 @@ MmsConnection_readJournalStartAfter(MmsConnection self, MmsError* mmsError, cons
 
     mmsClient_createReadJournalRequestStartAfter(invokeId, payload, domainId, itemId, timeSpecification, entrySpecification);
 
-    return readJournal(self, mmsError, invokeId, payload);
+    return readJournal(self, mmsError, invokeId, payload, moreFollows);
 }
 
 int32_t

@@ -20,6 +20,7 @@ print_help()
     printf("-a <domain_name> specify domain for read or write command\n");
     printf("-f show file list\n");
     printf("-g <filename> get file attributes\n");
+    printf("-j <domainName/journalName> read journal\n");
 }
 
 static void
@@ -43,6 +44,59 @@ mmsGetFileAttributeHandler (void* parameter, char* filename, uint32_t size, uint
     printf("DATE: %s\n", gtString);
 }
 
+static void
+printJournalEntries(LinkedList journalEntries)
+{
+    char buf[1024];
+
+    LinkedList journalEntriesElem = LinkedList_getNext(journalEntries);
+
+    while (journalEntriesElem != NULL) {
+
+        MmsJournalEntry journalEntry = (MmsJournalEntry) LinkedList_getData(journalEntriesElem);
+
+        MmsValue_printToBuffer(journalEntry->entryID, buf, 1024);
+        printf("EntryID: %s\n", buf);
+        MmsValue_printToBuffer(journalEntry->occurenceTime, buf, 1024);
+        printf("  occurence time: %s\n", buf);
+
+        LinkedList journalVariableElem = LinkedList_getNext(journalEntry->journalVariables);
+
+        while (journalVariableElem != NULL) {
+
+            MmsJournalVariable journalVariable = (MmsJournalVariable) LinkedList_getData(journalVariableElem);
+
+            printf("   variable-tag: %s\n", journalVariable->tag);
+            MmsValue_printToBuffer(journalVariable->value, buf, 1024);
+            printf("   variable-value: %s\n", buf);
+
+            journalVariableElem = LinkedList_getNext(journalVariableElem);
+        }
+
+        journalEntriesElem = LinkedList_getNext(journalEntriesElem);
+    }
+}
+
+static void
+MmsJournalVariable_destroy(MmsJournalVariable self)
+{
+    if (self != NULL) {
+        GLOBAL_FREEMEM(self->tag);
+        MmsValue_delete(self->value);
+        GLOBAL_FREEMEM(self);
+    }
+}
+
+void
+MmsJournalEntry_destroy(MmsJournalEntry self)
+{
+    if (self != NULL) {
+        MmsValue_delete(self->entryID);
+        MmsValue_delete(self->occurenceTime);
+        LinkedList_destroyDeep(self->journalVariables, MmsJournalVariable_destroy);
+        GLOBAL_FREEMEM(self);
+    }
+}
 
 int main(int argc, char** argv) {
 
@@ -53,6 +107,7 @@ int main(int argc, char** argv) {
 	char* domainName = NULL;
 	char* variableName = NULL;
 	char* filename = NULL;
+	char* journalName = NULL;
 
 	int readDeviceList = 0;
 	int getDeviceDirectory = 0;
@@ -61,11 +116,11 @@ int main(int argc, char** argv) {
 	int readVariable = 0;
 	int showFileList = 0;
 	int getFileAttributes = 0;
-
+	int readJournal = 0;
 
 	int c;
 
-	while ((c = getopt(argc, argv, "ifdh:p:l:t:a:r:g:")) != -1)
+	while ((c = getopt(argc, argv, "ifdh:p:l:t:a:r:g:j:")) != -1)
 		switch (c) {
 		case 'h':
 			hostname = copyString(optarg);
@@ -100,6 +155,11 @@ int main(int argc, char** argv) {
 		case 'g':
 		    getFileAttributes = 1;
 		    filename = copyString(optarg);
+		    break;
+
+		case 'j':
+		    readJournal = 1;
+		    journalName = copyString(optarg);
 		    break;
 
 		default:
@@ -146,15 +206,19 @@ int main(int argc, char** argv) {
 		LinkedList variableList = MmsConnection_getDomainVariableNames(con, &error,
 				domainName);
 
-		LinkedList element = variableList;
+		LinkedList element = LinkedList_getNext(variableList);
 
 		printf("\nMMS domain variables for domain %s\n", domainName);
 
-		while ((element = LinkedList_getNext(element)) != NULL) {
+		while (element != NULL) {
 			char* name = (char*) element->data;
 
 			printf("  %s\n", name);
+
+			element = LinkedList_getNext(element);
 		}
+
+		LinkedList_destroy(variableList);
 
 		variableList = MmsConnection_getDomainJournals(con, &error, domainName);
 
@@ -169,20 +233,9 @@ int main(int argc, char** argv) {
 
                 printf("  %s\n", name);
 
-                printf("  read journal...\n");
-             //   MmsConnection_readJournal(con, &error, domainName, name);
 
-#if 1
-                uint64_t timestamp = Hal_getTimeInMs();
 
-                MmsValue* startTime = MmsValue_newBinaryTime(false);
-                MmsValue_setBinaryTime(startTime, timestamp - 6000000000);
 
-                MmsValue* endTime = MmsValue_newBinaryTime(false);
-                MmsValue_setBinaryTime(endTime, timestamp);
-
-                MmsConnection_readJournalTimeRange(con, &error, domainName, name, startTime, endTime);
-#endif
 
 #if 0
                 uint64_t timestamp = Hal_getTimeInMs();
@@ -195,7 +248,75 @@ int main(int argc, char** argv) {
                 MmsConnection_readJournalStartAfter(con, &error, domainName, name, startTime, entrySpec);
 #endif
             }
+
+            LinkedList_destroy(variableList);
 		}
+	}
+
+	if (readJournal) {
+
+	    printf("  read journal %s...\n", journalName);
+
+	    char* logDomain = journalName;
+	    char* logName = strchr(journalName, '/');
+
+	    if (logName != NULL) {
+
+            logName[0] = 0;
+            logName++;
+
+
+            uint64_t timestamp = Hal_getTimeInMs();
+
+            MmsValue* startTime = MmsValue_newBinaryTime(false);
+            MmsValue_setBinaryTime(startTime, timestamp - 6000000000);
+
+            MmsValue* endTime = MmsValue_newBinaryTime(false);
+            MmsValue_setBinaryTime(endTime, timestamp);
+
+            bool moreFollows;
+
+            LinkedList journalEntries = MmsConnection_readJournalTimeRange(con, &error, logDomain, logName, startTime, endTime,
+                    &moreFollows);
+
+            MmsValue_delete(startTime);
+            MmsValue_delete(endTime);
+
+            if (journalEntries != NULL) {
+
+                bool readNext;
+
+                do {
+                    readNext = false;
+
+                    LinkedList lastEntry = LinkedList_getLastElement(journalEntries);
+                    MmsJournalEntry lastJournalEntry = (MmsJournalEntry) LinkedList_getData(lastEntry);
+
+                    MmsValue* nextEntryId = MmsValue_clone(lastJournalEntry->entryID);
+                    MmsValue* nextTimestamp = MmsValue_clone(lastJournalEntry->occurenceTime);
+
+                    printJournalEntries(journalEntries);
+
+                    LinkedList_destroyDeep(journalEntries, MmsJournalEntry_destroy);
+
+                    if (moreFollows) {
+                        char buf[100];
+                        MmsValue_printToBuffer(nextEntryId, buf, 100);
+
+                        printf("READ NEXT AFTER entryID: %s ...\n", buf);
+
+                        journalEntries = MmsConnection_readJournalStartAfter(con, &error, logDomain, logName, nextTimestamp, nextEntryId, &moreFollows);
+
+                        MmsValue_delete(nextEntryId);
+                        MmsValue_delete(nextTimestamp);
+
+                        readNext = true;
+                    }
+                } while ((moreFollows == true) || (readNext == true));
+            }
+	    }
+	    else
+	        printf("  Invalid log name!\n");
 	}
 
 	if (readVariable) {

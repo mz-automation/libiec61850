@@ -89,6 +89,8 @@ entryCallback(void* parameter, uint64_t timestamp, uint64_t entryID, bool moreFo
     return true;
 }
 
+static const char* REASON_CODE_STR = "ReasonCode";
+
 static bool
 entryDataCallback (void* parameter, const char* dataRef, uint8_t* data, int dataSize, uint8_t reasonCode, bool moreFollow)
 {
@@ -106,13 +108,31 @@ entryDataCallback (void* parameter, const char* dataRef, uint8_t* data, int data
 
         uint32_t valueSpecLen = 1 + BerEncoder_determineLengthSize(dataSize) + dataSize;
 
-        if (bufPos > encoder->maxSize) {
+        uint32_t firstVariableLen = 1 + BerEncoder_determineLengthSize(valueSpecLen + dataRefLen)
+                + valueSpecLen + dataRefLen;
+
+        uint8_t reasonCodeNBuf[2];
+        MmsValue reasonCodeValue;
+        reasonCodeValue.type = MMS_BIT_STRING;
+        reasonCodeValue.value.bitString.size = 7;
+        reasonCodeValue.value.bitString.buf = reasonCodeNBuf;
+
+        MmsValue_setBitStringFromInteger(&reasonCodeValue, reasonCode);
+
+        uint32_t reasonCodeValueLen = MmsValue_encodeMmsData(&reasonCodeValue, NULL, 0, false);
+
+        uint32_t reasonCodeContentLen = reasonCodeValueLen + 2 + 12;
+
+        uint32_t secondVariableLen = 1 + BerEncoder_determineLengthSize(reasonCodeContentLen)
+                + reasonCodeContentLen;
+
+        uint32_t totalLen = firstVariableLen + secondVariableLen;
+
+        if ((bufPos + totalLen) > encoder->maxSize) {
             encoder->moreFollows = true;
             encoder->bufPos = encoder->currentEntryBufPos; /* remove last entry */
             return false;
         }
-
-        //TODO check if entry is too long for buffer!
 
         bufPos = BerEncoder_encodeTL(0x30, valueSpecLen + dataRefLen, buffer, bufPos);
 
@@ -122,7 +142,14 @@ entryDataCallback (void* parameter, const char* dataRef, uint8_t* data, int data
         /* encode valueSpec */
         bufPos = BerEncoder_encodeOctetString(0xa1, data, dataSize, buffer, bufPos);
 
-        //TODO optionally encode reasonCode
+        /* encode reasonCode */
+
+        bufPos = BerEncoder_encodeTL(0x30, reasonCodeContentLen , buffer, bufPos);
+
+        bufPos = BerEncoder_encodeOctetString(0x80, (uint8_t*) REASON_CODE_STR, 10, buffer, bufPos);
+
+        bufPos = BerEncoder_encodeTL(0xa1, reasonCodeValueLen, buffer, bufPos);
+        bufPos = MmsValue_encodeMmsData(&reasonCodeValue, buffer, bufPos, true);
 
         encoder->bufPos = bufPos;
     }
@@ -255,7 +282,6 @@ mmsServer_handleReadJournalRequest(
 
                 switch (objectIdTag) {
                 case 0xa1: /* domain-specific */
-                    printf("domain-specific-log  \n");
 
                     if (!parseStringWithMaxLength(domainId, 64, requestBuffer, &bufPos, bufPos + length, invokeId, response)) {
                         return;
@@ -264,8 +290,6 @@ mmsServer_handleReadJournalRequest(
                     if (!parseStringWithMaxLength(logName, 64, requestBuffer, &bufPos, bufPos + length, invokeId, response)) {
                         return;
                     }
-
-                    printf("  domain: %s log: %s\n", domainId, logName);
 
                     hasNames = true;
 
@@ -301,8 +325,6 @@ mmsServer_handleReadJournalRequest(
                     char stringBuf[100];
                     MmsValue_printToBuffer(&rangeStart, stringBuf, 100);
 
-                    printf("rangeStartSpec: %s\n", stringBuf);
-
                     hasRangeStartSpec = true;
                 }
                 else {
@@ -325,7 +347,6 @@ mmsServer_handleReadJournalRequest(
                     return;
                 }
 
-
                 if ((length == 4) || (length == 6)) {
                     rangeStop.type = MMS_BINARY_TIME;
                     rangeStop.value.binaryTime.size = length;
@@ -334,8 +355,6 @@ mmsServer_handleReadJournalRequest(
 
                     char stringBuf[100];
                     MmsValue_printToBuffer(&rangeStop, stringBuf, 100);
-
-                    printf("rangeStopSpec: %s\n", stringBuf);
 
                     hasRangeStopSpec = true;
                 }
@@ -351,7 +370,6 @@ mmsServer_handleReadJournalRequest(
 
         case 0xa5: /* entryToStartAfter */
             {
-                printf("entryToStartAfter\n");
                 int maxSubBufPos = bufPos + length;
 
                 while (bufPos < maxSubBufPos) {
@@ -370,9 +388,7 @@ mmsServer_handleReadJournalRequest(
                             char stringBuf[100];
                             MmsValue_printToBuffer(&rangeStart, stringBuf, 100);
 
-                            printf("timeSpecification: %s\n", stringBuf);
-
-                            hasRangeStopSpec = true;
+                            hasTimeSpec = true;
                         }
                         else {
                             mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
@@ -386,8 +402,6 @@ mmsServer_handleReadJournalRequest(
                         if (length <= entrySpec.value.octetString.maxSize) {
                             memcpy(entrySpec.value.octetString.buf, requestBuffer + bufPos, length);
                             entrySpec.value.octetString.size = length;
-
-                            printf("EntrySpecification with size %i\n", length);
 
                             hasEntrySpec = true;
                         }
@@ -492,9 +506,6 @@ mmsServer_handleReadJournalRequest(
     else
         moreFollowsLen = 0;
 
-//    uint32_t readJournalLen = 2 + BerEncoder_determineLengthSize(listOfEntriesLen + moreFollowsLen) +
-//            (listOfEntriesLen + moreFollowsLen);
-
     uint32_t readJournalLen = 2 + BerEncoder_determineLengthSize(listOfEntriesLen + moreFollowsLen) +
              (listOfEntriesLen + moreFollowsLen);
 
@@ -514,7 +525,9 @@ mmsServer_handleReadJournalRequest(
 
     /* move encoded JournalEntry data to continue the buffer header */
 
-    printf("Encoded message header with %i bytes\n", bufPos);
+    if (DEBUG_MMS_SERVER)
+        printf("MMS_SERVER: readJournal: Encoded message header with %i bytes\n", bufPos);
+
     memmove(buffer + bufPos, buffer + RESERVED_SPACE_FOR_HEADER, dataSize);
 
     bufPos = bufPos + dataSize;

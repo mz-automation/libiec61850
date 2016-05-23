@@ -720,17 +720,29 @@ bool
 MmsConnection_getFileDirectory(MmsConnection self, MmsError* mmsError, const char* fileSpecification, const char* continueAfter,
         MmsFileDirectoryHandler handler, void* handlerParameter);
 
+typedef struct sMmsJournalEntry* MmsJournalEntry;
 
-LinkedList
-MmsConnection_readJournal(MmsConnection self, MmsError* mmsError, const char* domainId, const char* itemId);
+typedef struct sMmsJournalVariable* MmsJournalVariable;
+
+struct sMmsJournalEntry {
+    MmsValue* entryID; /* type MMS_OCTET_STRING */
+    MmsValue* occurenceTime; /* type MMS_BINARY_TIME */
+    LinkedList journalVariables;
+};
+
+struct sMmsJournalVariable {
+    char* tag;
+    MmsValue* value;
+};
+
 
 LinkedList
 MmsConnection_readJournalTimeRange(MmsConnection self, MmsError* mmsError, const char* domainId, const char* itemId,
-        MmsValue* startingTime, MmsValue* endingTime);
+        MmsValue* startingTime, MmsValue* endingTime, bool* moreFollows);
 
 LinkedList
 MmsConnection_readJournalStartAfter(MmsConnection self, MmsError* mmsError, const char* domainId, const char* itemId,
-        MmsValue* timeSpecification, MmsValue* entrySpecification);
+        MmsValue* timeSpecification, MmsValue* entrySpecification, bool* moreFollows);
 
 /**
  * \brief Destroy (free) an MmsServerIdentity object

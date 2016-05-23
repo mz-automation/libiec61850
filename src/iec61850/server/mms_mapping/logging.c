@@ -81,6 +81,8 @@ LogInstance_logSingleData(LogInstance* self, const char* dataRef, MmsValue* valu
 
         LogStorage_addEntryData(logStorage, entryID, dataRef, data, dataSize, flag);
 
+        GLOBAL_FREEMEM(data);
+
         self->newEntryId = entryID;
         self->newEntryTime = timestamp;
 
@@ -97,10 +99,6 @@ LogInstance_setLogStorage(LogInstance* self, LogStorage logStorage)
 
     LogStorage_getOldestAndNewestEntries(logStorage, &(self->newEntryId), &(self->newEntryTime),
             &(self->oldEntryId), &(self->oldEntryTime));
-
-    printf("Attached storage to log: %s\n", self->name);
-    printf("  oldEntryID: %llu oldEntryTm: %llu\n", self->oldEntryId, self->oldEntryTime);
-    printf("  newEntryID: %llu newEntryTm: %llu\n", self->newEntryId, self->newEntryTime);
 }
 
 LogControl*
@@ -123,6 +121,13 @@ void
 LogControl_destroy(LogControl* self)
 {
     if (self != NULL) {
+
+        MmsValue_delete(self->mmsValue);
+        GLOBAL_FREEMEM(self->name);
+
+        if (self->dataSetRef != NULL)
+            GLOBAL_FREEMEM(self->dataSetRef);
+
         GLOBAL_FREEMEM(self);
     }
 }
@@ -188,8 +193,8 @@ updateLogStatusInLCB(LogControl* self)
         MmsValue_setBinaryTime(self->oldEntrTm, logInstance->oldEntryTime);
         MmsValue_setBinaryTime(self->newEntrTm, logInstance->newEntryTime);
 
-        MmsValue_setOctetString(self->oldEntr, &(logInstance->oldEntryId), 8);
-        MmsValue_setOctetString(self->newEntr, &(logInstance->newEntryId), 8);
+        MmsValue_setOctetString(self->oldEntr, (uint8_t*) &(logInstance->oldEntryId), 8);
+        MmsValue_setOctetString(self->newEntr, (uint8_t*) &(logInstance->newEntryId), 8);
     }
 }
 
@@ -365,12 +370,9 @@ createLogControlBlock(MmsMapping* self, LogControlBlock* logControlBlock,
     if (logControlBlock->dataSetName != NULL) {
         char* dataSetReference = createDataSetReferenceForDefaultDataSet(logControlBlock, logControl);
 
-        printf("createLogControlBlock dataSetRef: %s\n", dataSetReference);
-
         logControl->dataSetRef = dataSetReference;
 
         mmsValue->value.structure.components[2] = MmsValue_newVisibleString(dataSetReference);
-        //GLOBAL_FREEMEM(dataSetReference);
     }
     else
         mmsValue->value.structure.components[2] = MmsValue_newVisibleString("");
@@ -611,7 +613,6 @@ MmsMapping_setLogStorage(MmsMapping* self, const char* logRef, LogStorage logSto
         strcat(journalName, self->name);
 #endif
 
-        printf("Connect LogStorage to MMS journal %s\n", logRef);
 
         MmsJournal mmsJournal = NULL;
 
@@ -625,7 +626,7 @@ MmsMapping_setLogStorage(MmsMapping* self, const char* logRef, LogStorage logSto
         if (mmsJournal != NULL)
             mmsJournal->logStorage = logStorage;
         else
-            printf("Failed to retrieve MMS journal for log!\n");
+            printf("IED_SERVER: Failed to retrieve MMS journal for log!\n");
 #endif
 
     }
