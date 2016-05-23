@@ -31,10 +31,10 @@
 #include "simple_allocator.h"
 #include "mem_alloc_linked_list.h"
 
-#include "reporting.h"
 #include "mms_mapping_internal.h"
 #include "mms_value_internal.h"
 #include "conversions.h"
+#include "reporting.h"
 #include <string.h>
 
 #ifndef DEBUG_IED_SERVER
@@ -602,7 +602,8 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
 
         success = true;
 
-        rc->isBuffering = true;
+        if (rc->buffered)
+            rc->isBuffering = true;
 
         goto exit_function;
     }
@@ -770,7 +771,7 @@ createUnbufferedReportControlBlock(ReportControlBlock* reportControlBlock,
 
     rcb->typeSpec.structure.elementCount = structSize;
 
-    rcb->typeSpec.structure.elements = (MmsVariableSpecification**) GLOBAL_CALLOC(12,
+    rcb->typeSpec.structure.elements = (MmsVariableSpecification**) GLOBAL_CALLOC(structSize,
             sizeof(MmsVariableSpecification*));
 
     MmsVariableSpecification* namedVariable = 
