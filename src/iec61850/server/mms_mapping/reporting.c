@@ -602,7 +602,8 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
 
         success = true;
 
-        rc->isBuffering = true;
+        if (rc->buffered)
+            rc->isBuffering = true;
 
         goto exit_function;
     }
