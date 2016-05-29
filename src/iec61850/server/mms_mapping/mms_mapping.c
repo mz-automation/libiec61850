@@ -1799,6 +1799,13 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
 
 #endif /* (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1) */
 
+#if (CONFIG_IEC61850_LOG_SERVICE == 1)
+
+    /* Log control block - LG */
+    if (isLogControlBlock(separator))
+        return LIBIEC61850_LOG_SVC_writeAccessLogControlBlock(self, domain, variableId, value, connection);
+
+#endif /* (CONFIG_IEC61850_LOG_SERVICE == 1) */
 
 #if (CONFIG_IEC61850_REPORT_SERVICE == 1)
     /* Report control blocks - BR, RP */
@@ -2625,6 +2632,65 @@ DataSet_isMemberValueWithRef(DataSet* dataSet, MmsValue* value, char* dataRef, c
      return false;
 }
 
+void
+MmsMapping_triggerLogging(MmsMapping* self, MmsValue* value, LogInclusionFlag flag)
+{
+    LinkedList element = self->logControls;
+
+    while ((element = LinkedList_getNext(element)) != NULL) {
+        LogControl* lc = (LogControl*) element->data;
+
+        if ((lc->enabled) && (lc->dataSet != NULL)) {
+
+            uint8_t reasonCode;
+
+            switch (flag) {
+
+            case LOG_CONTROL_VALUE_UPDATE:
+                if ((lc->triggerOps & TRG_OPT_DATA_UPDATE) == 0)
+                    continue;
+
+                reasonCode = TRG_OPT_DATA_UPDATE * 2;
+
+                break;
+
+            case LOG_CONTROL_VALUE_CHANGED:
+                if (((lc->triggerOps & TRG_OPT_DATA_CHANGED) == 0) &&
+                        ((lc->triggerOps & TRG_OPT_DATA_UPDATE) == 0))
+                    continue;
+
+                reasonCode = TRG_OPT_DATA_CHANGED * 2;
+
+                break;
+
+            case LOG_CONTROL_QUALITY_CHANGED:
+                if ((lc->triggerOps & TRG_OPT_QUALITY_CHANGED) == 0)
+                    continue;
+
+                reasonCode = TRG_OPT_QUALITY_CHANGED * 2;
+
+                break;
+
+            default:
+                continue;
+            }
+
+            char dataRef[130];
+
+            if (DataSet_isMemberValueWithRef(lc->dataSet, value, dataRef, self->model->name)) {
+
+                if (lc->logInstance != NULL) {
+                    LogInstance_logSingleData(lc->logInstance, dataRef, value, reasonCode);
+                }
+                else
+                    printf("No log instance available!\n");
+            }
+
+
+        }
+    }
+}
+
 #endif /* (CONFIG_IEC61850_LOG_SERVICE == 1) */
 
 #if (CONFIG_IEC61850_REPORT_SERVICE == 1)
@@ -2667,62 +2733,6 @@ MmsMapping_triggerReportObservers(MmsMapping* self, MmsValue* value, ReportInclu
 #endif /* (CONFIG_IEC61850_REPORT_SERVICE == 1) */
 
 #if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
-
-#if (CONFIG_IEC61850_LOG_SERVICE == 1)
-
-void
-MmsMapping_triggerLogging(MmsMapping* self, MmsValue* value, LogInclusionFlag flag)
-{
-    LinkedList element = self->logControls;
-
-    while ((element = LinkedList_getNext(element)) != NULL) {
-        LogControl* lc = (LogControl*) element->data;
-
-        if ((lc->enabled) && (lc->dataSet != NULL)) {
-
-            switch (flag) {
-
-            case LOG_CONTROL_VALUE_UPDATE:
-                if ((lc->triggerOps & TRG_OPT_DATA_UPDATE) == 0)
-                    continue;
-
-                break;
-
-            case LOG_CONTROL_VALUE_CHANGED:
-                if (((lc->triggerOps & TRG_OPT_DATA_CHANGED) == 0) &&
-                        ((lc->triggerOps & TRG_OPT_DATA_UPDATE) == 0))
-                    continue;
-
-                break;
-
-            case LOG_CONTROL_QUALITY_CHANGED:
-                if ((lc->triggerOps & TRG_OPT_QUALITY_CHANGED) == 0)
-                    continue;
-
-                break;
-
-            default:
-                continue;
-            }
-
-            char dataRef[130];
-
-            if (DataSet_isMemberValueWithRef(lc->dataSet, value, dataRef, self->model->name)) {
-
-                if (lc->logInstance != NULL) {
-                    LogInstance_logSingleData(lc->logInstance, dataRef, value, flag);
-                }
-                else
-                    printf("No log instance available!\n");
-            }
-
-
-        }
-    }
-}
-
-#endif /* (CONFIG_IEC61850_LOG_SERVICE == 1) */
-
 
 void
 MmsMapping_triggerGooseObservers(MmsMapping* self, MmsValue* value)
@@ -2949,6 +2959,10 @@ processPeriodicTasks(MmsMapping* self)
 
 #if (CONFIG_IEC61850_SETTING_GROUPS == 1)
     MmsMapping_checkForSettingGroupReservationTimeouts(self, currentTimeInMs);
+#endif
+
+#if (CONFIG_IEC61850_LOG_SERVICE == 1)
+    Logging_processIntegrityLogs(self, currentTimeInMs);
 #endif
 }
 

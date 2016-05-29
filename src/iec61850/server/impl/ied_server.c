@@ -447,6 +447,19 @@ IedServer_destroy(IedServer self)
 {
     MmsServer_destroy(self->mmsServer);
     IsoServer_destroy(self->isoServer);
+
+#if (CONFIG_MMS_SINGLE_THREADED == 1)
+
+    /* trigger stopping background task thread */
+    self->mmsMapping->reportThreadRunning = false;
+
+    /* waiting for thread to finish */
+    while (self->mmsMapping->reportThreadFinished == false) {
+        Thread_sleep(10);
+    }
+
+#endif
+
     MmsMapping_destroy(self->mmsMapping);
 
     LinkedList_destroyDeep(self->clientConnections, (LinkedListValueDeleteFunction) private_ClientConnection_destroy);

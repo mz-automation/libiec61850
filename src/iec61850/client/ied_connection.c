@@ -1440,6 +1440,10 @@ IedConnection_getLogicalNodeDirectory(IedConnection self, IedClientError* error,
         addVariablesWithFc("GO", logicalNodeName, ld->variables, lnDirectory);
         break;
 
+    case ACSI_CLASS_LCB:
+        addVariablesWithFc("LG", logicalNodeName, ld->variables, lnDirectory);
+        break;
+
     case ACSI_CLASS_DATA_SET:
         {
             LinkedList dataSet = LinkedList_getNext(ld->dataSets);

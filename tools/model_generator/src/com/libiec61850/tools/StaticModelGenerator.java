@@ -1171,8 +1171,7 @@ public class StaticModelGenerator {
             lcbString += "\"" + lcb.getDataSet() + "\", ";
         else
             lcbString += "NULL, ";
-        
-        
+              
         String logRef;
         
         if (lcb.getLdInst() == null)
@@ -1190,11 +1189,14 @@ public class StaticModelGenerator {
         else
             lcbString += "NULL, ";
         
-        int triggerOps = 16;
+        int triggerOps = 0;
 
         if (lcb.getTriggerOptions() != null)
             triggerOps = lcb.getTriggerOptions().getIntValue();
 
+        if (triggerOps >= 16)
+            triggerOps = triggerOps - 16;
+        
         lcbString += triggerOps + ", ";
         
         if (lcb.getIntgPd() != 0)

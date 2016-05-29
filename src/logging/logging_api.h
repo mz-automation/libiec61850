@@ -37,7 +37,7 @@ typedef struct sLogStorage* LogStorage;
  */
 typedef bool (*LogEntryCallback) (void* parameter, uint64_t timestamp, uint64_t entryID, bool moreFollow);
 
-typedef bool (*LogEntryDataCallback) (void* parameter, const char* dataRef, uint8_t* data, int dataSize, uint8_t reasonCode, bool moreFollow);
+typedef bool (*LogEntryDataCallback) (void* parameter, const char* dataRef, const uint8_t* data, int dataSize, uint8_t reasonCode, bool moreFollow);
 
 struct sLogStorage {
 
