@@ -166,6 +166,8 @@ exit_with_error:
 static uint64_t
 SqliteLogStorage_addEntry(LogStorage self, uint64_t timestamp)
 {
+    printf("SQLITE-DRIVER: add entry\n");
+
     SqliteLogStorage* instanceData = (SqliteLogStorage*) (self->instanceData);
 
     sqlite3* db = instanceData->db;
@@ -366,6 +368,10 @@ SqliteLogStorage_getOldestAndNewestEntries(LogStorage self, uint64_t* newEntry, 
         *oldEntryTime = sqlite3_column_int64(instanceData->getOldEntry, 1);
         validNewEntry = true;
     }
+    else {
+        *oldEntry = 0;
+        *oldEntryTime = 0;
+    }
 
     sqlite3_reset(instanceData->getOldEntry);
 
@@ -377,6 +383,10 @@ SqliteLogStorage_getOldestAndNewestEntries(LogStorage self, uint64_t* newEntry, 
         *newEntry = sqlite3_column_int64(instanceData->getNewEntry, 0);
         *newEntryTime = sqlite3_column_int64(instanceData->getNewEntry, 1);
         validOldEntry = true;
+    }
+    else {
+        *newEntry = 0;
+        *newEntryTime = 0;
     }
 
     sqlite3_reset(instanceData->getNewEntry);

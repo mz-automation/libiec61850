@@ -1600,7 +1600,12 @@ MmsValue_newBinaryTime(bool timeOfDay)
 void
 MmsValue_setBinaryTime(MmsValue* self, uint64_t timestamp)
 {
-    uint64_t mmsTime = timestamp - (441763200000LL);
+    uint64_t mmsTime;
+
+    if (timestamp > 441763200000LL)
+        mmsTime = timestamp - (441763200000LL);
+    else
+        timestamp = 0;
 
     uint8_t* binaryTimeBuf = self->value.binaryTime.buf;
 
@@ -1877,7 +1882,7 @@ MmsValue_setElement(MmsValue* complexValue, int index, MmsValue* elementValue)
 }
 
 MmsValue*
-MmsValue_getElement(MmsValue* complexValue, int index)
+MmsValue_getElement(const MmsValue* complexValue, int index)
 {
 	if ((complexValue->type != MMS_ARRAY) && (complexValue->type != MMS_STRUCTURE))
 		return NULL;
@@ -1918,7 +1923,7 @@ MmsValue_isDeletable(MmsValue* self)
 }
 
 MmsType
-MmsValue_getType(MmsValue* self)
+MmsValue_getType(const MmsValue* self)
 {
 	return self->type;
 }
@@ -1970,8 +1975,8 @@ MmsValue_getTypeString(MmsValue* self)
     }
 }
 
-char*
-MmsValue_printToBuffer(MmsValue* self, char* buffer, int bufferSize)
+const char*
+MmsValue_printToBuffer(const MmsValue* self, char* buffer, int bufferSize)
 {
     switch (MmsValue_getType(self)) {
     case MMS_STRUCTURE:
@@ -1985,7 +1990,7 @@ MmsValue_printToBuffer(MmsValue* self, char* buffer, int bufferSize)
             int i;
             for (i = 0; i < arraySize; i++) {
 
-                char* currentStr = MmsValue_printToBuffer(MmsValue_getElement(self, i), buffer + bufPos, bufferSize - bufPos);
+                const char* currentStr = MmsValue_printToBuffer((const MmsValue*) MmsValue_getElement(self, i), buffer + bufPos, bufferSize - bufPos);
 
                 bufPos += strlen(currentStr);
 
@@ -2100,7 +2105,7 @@ MmsValue_printToBuffer(MmsValue* self, char* buffer, int bufferSize)
 
     case MMS_STRING:
     case MMS_VISIBLE_STRING:
-        strncpy(buffer, MmsValue_toString(self), bufferSize);
+        strncpy(buffer, MmsValue_toString((MmsValue*) self), bufferSize);
 
         /* Ensure buffer is always 0 terminated */
         if (bufferSize > 0)

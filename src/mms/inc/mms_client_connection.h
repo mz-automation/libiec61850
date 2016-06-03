@@ -735,6 +735,37 @@ struct sMmsJournalVariable {
     MmsValue* value;
 };
 
+/**
+ * \brief Destroy a single MmsJournalEntry instance.
+ *
+ * This function will destroy the whole MmsJournalEntry object including the attached list
+ * of MmsJournalVariable objects. It is intended to be used in conjunction with the
+ * LinkedList_destroyDeep function in order to free the result of MmsConnection_readJournalTimeRange
+ * or MmsConnection_readJournalStartAfter
+ *
+ * LinkedList_destroyDeep(journalEntries, (LinkedListValueDeleteFunction)
+ *                           MmsJournalEntry_destroy);
+ *
+ * \param self the MmsJournalEntry instance to destroy
+ */
+void
+MmsJournalEntry_destroy(MmsJournalEntry self);
+
+const MmsValue*
+MmsJournalEntry_getEntryID(MmsJournalEntry self);
+
+const MmsValue*
+MmsJournalEntry_getOccurenceTime(MmsJournalEntry self);
+
+const LinkedList /* <MmsJournalVariable> */
+MmsJournalEntry_getJournalVariables(MmsJournalEntry self);
+
+const char*
+MmsJournalVariable_getTag(MmsJournalVariable self);
+
+const MmsValue*
+MmsJournalVariable_getValue(MmsJournalVariable self);
+
 
 LinkedList
 MmsConnection_readJournalTimeRange(MmsConnection self, MmsError* mmsError, const char* domainId, const char* itemId,

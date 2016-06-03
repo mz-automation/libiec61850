@@ -55,9 +55,9 @@ printJournalEntries(LinkedList journalEntries)
 
         MmsJournalEntry journalEntry = (MmsJournalEntry) LinkedList_getData(journalEntriesElem);
 
-        MmsValue_printToBuffer(journalEntry->entryID, buf, 1024);
+        MmsValue_printToBuffer(MmsJournalEntry_getEntryID(journalEntry), buf, 1024);
         printf("EntryID: %s\n", buf);
-        MmsValue_printToBuffer(journalEntry->occurenceTime, buf, 1024);
+        MmsValue_printToBuffer(MmsJournalEntry_getOccurenceTime(journalEntry), buf, 1024);
         printf("  occurence time: %s\n", buf);
 
         LinkedList journalVariableElem = LinkedList_getNext(journalEntry->journalVariables);
@@ -66,8 +66,8 @@ printJournalEntries(LinkedList journalEntries)
 
             MmsJournalVariable journalVariable = (MmsJournalVariable) LinkedList_getData(journalVariableElem);
 
-            printf("   variable-tag: %s\n", journalVariable->tag);
-            MmsValue_printToBuffer(journalVariable->value, buf, 1024);
+            printf("   variable-tag: %s\n", MmsJournalVariable_getTag(journalVariable));
+            MmsValue_printToBuffer(MmsJournalVariable_getValue(journalVariable), buf, 1024);
             printf("   variable-value: %s\n", buf);
 
             journalVariableElem = LinkedList_getNext(journalVariableElem);
@@ -77,26 +77,6 @@ printJournalEntries(LinkedList journalEntries)
     }
 }
 
-static void
-MmsJournalVariable_destroy(MmsJournalVariable self)
-{
-    if (self != NULL) {
-        GLOBAL_FREEMEM(self->tag);
-        MmsValue_delete(self->value);
-        GLOBAL_FREEMEM(self);
-    }
-}
-
-void
-MmsJournalEntry_destroy(MmsJournalEntry self)
-{
-    if (self != NULL) {
-        MmsValue_delete(self->entryID);
-        MmsValue_delete(self->occurenceTime);
-        LinkedList_destroyDeep(self->journalVariables, MmsJournalVariable_destroy);
-        GLOBAL_FREEMEM(self);
-    }
-}
 
 int main(int argc, char** argv) {
 
@@ -265,7 +245,6 @@ int main(int argc, char** argv) {
             logName[0] = 0;
             logName++;
 
-
             uint64_t timestamp = Hal_getTimeInMs();
 
             MmsValue* startTime = MmsValue_newBinaryTime(false);
@@ -292,12 +271,13 @@ int main(int argc, char** argv) {
                     LinkedList lastEntry = LinkedList_getLastElement(journalEntries);
                     MmsJournalEntry lastJournalEntry = (MmsJournalEntry) LinkedList_getData(lastEntry);
 
-                    MmsValue* nextEntryId = MmsValue_clone(lastJournalEntry->entryID);
-                    MmsValue* nextTimestamp = MmsValue_clone(lastJournalEntry->occurenceTime);
+                    MmsValue* nextEntryId = MmsValue_clone(MmsJournalEntry_getEntryID(lastJournalEntry));
+                    MmsValue* nextTimestamp = MmsValue_clone(MmsJournalEntry_getOccurenceTime(lastJournalEntry));
 
                     printJournalEntries(journalEntries);
 
-                    LinkedList_destroyDeep(journalEntries, MmsJournalEntry_destroy);
+                    LinkedList_destroyDeep(journalEntries, (LinkedListValueDeleteFunction)
+                            MmsJournalEntry_destroy);
 
                     if (moreFollows) {
                         char buf[100];

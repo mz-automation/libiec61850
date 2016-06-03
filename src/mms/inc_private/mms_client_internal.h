@@ -261,14 +261,14 @@ mmsClient_createMmsGetNameListRequestAssociationSpecific(long invokeId, ByteBuff
 		const char* continueAfter);
 
 void
-mmsClient_createReadJournalRequest(uint32_t invokeId, ByteBuffer* request, const char* domainId, const char* itemId);
-
-void
 mmsClient_createReadJournalRequestWithTimeRange(uint32_t invokeId, ByteBuffer* request, const char* domainId, const char* itemId,
         MmsValue* startingTime, MmsValue* endingTime);
 
 void
 mmsClient_createReadJournalRequestStartAfter(uint32_t invokeId, ByteBuffer* request, const char* domainId, const char* itemId,
         MmsValue* timeSpecification, MmsValue* entrySpecification);
+
+bool
+mmsClient_parseReadJournalResponse(MmsConnection self, bool* moreFollows, LinkedList* result);
 
 #endif /* MMS_MSG_INTERNAL_H_ */

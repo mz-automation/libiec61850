@@ -177,6 +177,7 @@ LogControl_create(LogicalNode* parentLN, MmsMapping* mmsMapping)
     self->dataSetRef = NULL;
     self->logInstance = NULL;
     self->intgPd = 0;
+    self->nextIntegrityScan = 0;
 
     return self;
 }
@@ -345,7 +346,6 @@ updateLogStatusInLCB(LogControl* self)
     LogInstance* logInstance = self->logInstance;
 
     if (logInstance != NULL) {
-
         MmsValue_setBinaryTime(self->oldEntrTm, logInstance->oldEntryTime);
         MmsValue_setBinaryTime(self->newEntrTm, logInstance->newEntryTime);
 
@@ -829,7 +829,7 @@ Logging_processIntegrityLogs(MmsMapping* self, uint64_t currentTimeInMs)
 
                 if (currentTimeInMs >= logControl->nextIntegrityScan) {
 
-                    if (DEBUG_IED_SERVER)
+                    //if (DEBUG_IED_SERVER)
                         printf("IED_SERVER: INTEGRITY SCAN for log %s\n", logControl->name);
 
                     LogControl_logAllDatasetEntries(logControl, self->mmsDevice->deviceName);

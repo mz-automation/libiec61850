@@ -1667,19 +1667,58 @@ readJournal(MmsConnection self, MmsError* mmsError, uint32_t invokeId,  ByteBuff
     return response;
 }
 
-#if 0
-LinkedList
-MmsConnection_readJournal(MmsConnection self, MmsError* mmsError, const char* domainId, const char* itemId)
+static void
+MmsJournalVariable_destroy(MmsJournalVariable self)
 {
-    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
-
-    uint32_t invokeId = getNextInvokeId(self);
-
-    mmsClient_createReadJournalRequest(invokeId, payload, domainId, itemId);
-
-    return readJournal(self, mmsError, invokeId, payload);
+    if (self != NULL) {
+        GLOBAL_FREEMEM(self->tag);
+        MmsValue_delete(self->value);
+        GLOBAL_FREEMEM(self);
+    }
 }
-#endif
+
+void
+MmsJournalEntry_destroy(MmsJournalEntry self)
+{
+    if (self != NULL) {
+        MmsValue_delete(self->entryID);
+        MmsValue_delete(self->occurenceTime);
+        LinkedList_destroyDeep(self->journalVariables,
+                (LinkedListValueDeleteFunction) MmsJournalVariable_destroy);
+        GLOBAL_FREEMEM(self);
+    }
+}
+
+
+const MmsValue*
+MmsJournalEntry_getEntryID(MmsJournalEntry self)
+{
+    return self->entryID;
+}
+
+const MmsValue*
+MmsJournalEntry_getOccurenceTime(MmsJournalEntry self)
+{
+    return self->occurenceTime;
+}
+
+const LinkedList /* <MmsJournalVariable> */
+MmsJournalEntry_getJournalVariables(MmsJournalEntry self)
+{
+    return self->journalVariables;
+}
+
+const char*
+MmsJournalVariable_getTag(MmsJournalVariable self)
+{
+    return self->tag;
+}
+
+const MmsValue*
+MmsJournalVariable_getValue(MmsJournalVariable self)
+{
+    return self->value;
+}
 
 LinkedList
 MmsConnection_readJournalTimeRange(MmsConnection self, MmsError* mmsError, const char* domainId, const char* itemId,
