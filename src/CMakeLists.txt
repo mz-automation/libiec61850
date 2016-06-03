@@ -287,6 +287,24 @@ ENDIF(WIN32)
 
 include (GenerateExportHeader)
 
+set(RES_FILES "")
+if ( WIN32 )
+	# Adding RC resource file for adding information to the archive
+	set(RES_FILES "${CMAKE_CURRENT_BINARY_DIR}/version.rc")
+	message(STATUS "Generating RC file : ${RES_FILES}")
+	configure_file(
+			${CMAKE_CURRENT_SOURCE_DIR}/version.rc.in
+			${RES_FILES}
+			@ONLY)
+	if( MINGW )
+		set(CMAKE_RC_COMPILER_INIT windres)
+		ENABLE_LANGUAGE(RC)
+		SET(CMAKE_RC_COMPILE_OBJECT
+		"<CMAKE_RC_COMPILER> <FLAGS> -O coff <DEFINES> -i <SOURCE> -o <OBJECT>")
+	endif(MINGW)
+	set(library_SRCS ${library_SRCS} ${RES_FILES})
+endif( WIN32 )
+
 add_library (iec61850-shared SHARED ${library_SRCS} )
 
 set_target_properties(iec61850-shared PROPERTIES
@@ -348,10 +366,9 @@ endif()
 ENDIF(WITH_WPCAP)
 
 
-
 install (TARGETS iec61850 iec61850-shared
-	RUNTIME DESTINATION bin
-	ARCHIVE DESTINATION lib
-    LIBRARY DESTINATION lib
+	RUNTIME DESTINATION bin COMPONENT Applications
+	ARCHIVE DESTINATION lib COMPONENT Libraries
+    LIBRARY DESTINATION lib COMPONENT Libraries
 )
 
