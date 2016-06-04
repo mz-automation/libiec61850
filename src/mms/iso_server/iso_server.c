@@ -561,8 +561,11 @@ IsoServer_waitReady(IsoServer self, unsigned int timeoutMs)
                if (self->openClientConnections[i] != NULL) {
                    if (IsoConnection_isRunning(self->openClientConnections[i])) {
                        IsoConnection_addHandleSet(self->openClientConnections[i], handles);
-                   } else {
+                   }
+                   else {
+#if ((CONFIG_MMS_SINGLE_THREADED == 1) || (CONFIG_MMS_THREADLESS_STACK == 1))
                        IsoConnection_destroy(self->openClientConnections[i]);
+#endif
                        self->openClientConnections[i] = NULL;
                    }
                }
