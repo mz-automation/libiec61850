@@ -220,7 +220,7 @@ mmsServer_handleFileDeleteRequest(
         if (DEBUG_MMS_SERVER)
             printf("MMS_SERVER: mms_file_service.c:  File (%s) not found\n", filename);
 
-        mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_FILE_FILE_NON_EXISTENT);
+        mmsServer_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_FILE_NON_EXISTENT);
         return;
     }
 
@@ -228,7 +228,7 @@ mmsServer_handleFileDeleteRequest(
         if (DEBUG_MMS_SERVER)
             printf("MMS_SERVER: mms_file_service.c:  Delete file (%s) failed\n", filename);
 
-        mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_FILE_FILE_ACCESS_DENIED);
+        mmsServer_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_FILE_ACCESS_DENIED);
         return;
     }
 
@@ -294,12 +294,12 @@ mmsServer_handleFileOpenRequest(
                 createFileOpenResponse(invokeId, response, filename, frsm);
             }
             else
-                mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_FILE_FILE_NON_EXISTENT);
+                mmsServer_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_FILE_NON_EXISTENT);
 
 
         }
         else
-            mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_RESOURCE_OTHER);
+            mmsServer_createServiceErrorPdu(invokeId, response, MMS_ERROR_RESOURCE_OTHER);
     }
     else
         goto exit_invalid_parameter;
@@ -388,7 +388,7 @@ mmsServer_handleFileReadRequest(
     if (frsm != NULL)
         createFileReadResponse(connection, invokeId, response, frsm);
     else
-        mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_FILE_OTHER);
+        mmsServer_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_OTHER);
 }
 
 static void
@@ -547,7 +547,7 @@ createFileDirectoryResponse(uint32_t invokeId, ByteBuffer* response, int maxPduS
        if (DEBUG_MMS_SERVER)
             printf("MMS_SERVER: Error opening directory!\n");
 
-       mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_FILE_FILE_NON_EXISTENT);
+       mmsServer_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_FILE_NON_EXISTENT);
 
        return;
     }
@@ -651,7 +651,7 @@ mmsServer_handleFileRenameRequest(
             if (DEBUG_MMS_SERVER)
                 printf("MMS_SERVER: rename file failed!\n");
 
-            mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_FILE_OTHER);
+            mmsServer_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_OTHER);
         }
     }
     else

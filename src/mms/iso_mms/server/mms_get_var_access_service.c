@@ -221,7 +221,7 @@ createVariableAccessAttributesResponse(
 	    if (domain == NULL) {
 	        if (DEBUG_MMS_SERVER) printf("MMS_SERVER: domain %s not known\n", domainId);
 
-	        mmsServer_createConfirmedErrorPdu(invokeId, response,
+	        mmsServer_createServiceErrorPdu(invokeId, response,
 	                              MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
 	        goto exit_function;
 	    }
@@ -237,7 +237,7 @@ createVariableAccessAttributesResponse(
 	if (namedVariable == NULL) {
 		if (DEBUG_MMS_SERVER) printf("MMS_SERVER: named variable %s not known\n", nameId);
 
-		mmsServer_createConfirmedErrorPdu(invokeId, response,
+		mmsServer_createServiceErrorPdu(invokeId, response,
 		                          MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
 
 		goto exit_function;
@@ -266,7 +266,7 @@ createVariableAccessAttributesResponse(
         if (DEBUG_MMS_SERVER)
             printf("MMS getVariableAccessAttributes: message to large! send error PDU!\n");
 
-        mmsServer_createConfirmedErrorPdu(invokeId, response,
+        mmsServer_createServiceErrorPdu(invokeId, response,
                       MMS_ERROR_SERVICE_OTHER);
 
         goto exit_function;

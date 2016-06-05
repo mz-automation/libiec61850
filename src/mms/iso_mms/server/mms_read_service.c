@@ -431,7 +431,7 @@ encodeReadResponse(MmsServerConnection connection,
         if (DEBUG_MMS_SERVER)
             printf("MMS read: message to large! send error PDU!\n");
 
-        mmsServer_createConfirmedErrorPdu(invokeId, response,
+        mmsServer_createServiceErrorPdu(invokeId, response,
                 MMS_ERROR_SERVICE_OTHER);
 
         goto exit_function;
@@ -647,7 +647,7 @@ handleReadNamedVariableListRequest(
 
 		if (domain == NULL) {
 			if (DEBUG_MMS_SERVER) printf("MMS read: domain %s not found!\n", domainIdStr);
-			mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
+			mmsServer_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
 		}
 		else {
 			MmsNamedVariableList namedList = MmsDomain_getNamedVariableList(domain, nameIdStr);
@@ -658,7 +658,7 @@ handleReadNamedVariableListRequest(
 			}
 			else {
 				if (DEBUG_MMS_SERVER) printf("MMS read: named variable list %s not found!\n", nameIdStr);
-				mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
+				mmsServer_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
 			}
 		}
 	}
@@ -672,7 +672,7 @@ handleReadNamedVariableListRequest(
         MmsNamedVariableList namedList = mmsServer_getNamedVariableListWithName(connection->server->device->namedVariableLists, listName);
 
         if (namedList == NULL)
-            mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
+            mmsServer_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
         else {
 
             VarAccessSpec accessSpec;
@@ -697,7 +697,7 @@ handleReadNamedVariableListRequest(
 		MmsNamedVariableList namedList = MmsServerConnection_getNamedVariableList(connection, listName);
 
 		if (namedList == NULL)
-			mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
+			mmsServer_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
 		else {
             VarAccessSpec accessSpec;
 
@@ -711,7 +711,7 @@ handleReadNamedVariableListRequest(
 	}
 #endif /* (MMS_DYNAMIC_DATA_SETS == 1) */
 	else
-		mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_ACCESS_UNSUPPORTED);
+		mmsServer_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_ACCESS_UNSUPPORTED);
 }
 
 #endif /* MMS_DATA_SET_SERVICE == 1 */
@@ -745,7 +745,7 @@ mmsServer_handleReadRequest(
 	}
 #endif
 	else {
-		mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_ACCESS_UNSUPPORTED);
+		mmsServer_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_ACCESS_UNSUPPORTED);
 	}
 
 	asn_DEF_MmsPdu.free_struct(&asn_DEF_MmsPdu, mmsPdu, 0);

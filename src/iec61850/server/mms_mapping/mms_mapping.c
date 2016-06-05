@@ -2483,10 +2483,10 @@ variableListChangedHandler (void* parameter, bool create, MmsVariableListType li
     else {
         /* Check if data set is referenced in a report */
 
-        LinkedList element = self->reportControls;
+        LinkedList rcElement = self->reportControls;
 
-        while ((element = LinkedList_getNext(element)) != NULL) {
-            ReportControl* rc = (ReportControl*) element->data;
+        while ((rcElement = LinkedList_getNext(rcElement)) != NULL) {
+            ReportControl* rc = (ReportControl*) rcElement->data;
 
             if (rc->isDynamicDataSet) {
                 if (rc->dataSet != NULL) {
@@ -2495,7 +2495,7 @@ variableListChangedHandler (void* parameter, bool create, MmsVariableListType li
                         if (rc->dataSet->logicalDeviceName != NULL) {
                             if (strcmp(rc->dataSet->name, listName) == 0) {
                                 if (strcmp(rc->dataSet->logicalDeviceName, MmsDomain_getName(domain)) == 0) {
-                                    allow = MMS_ERROR_ACCESS_OBJECT_ACCESS_DENIED;
+                                    allow = MMS_ERROR_SERVICE_OBJECT_CONSTRAINT_CONFLICT;
                                     break;
                                 }
                             }
@@ -2504,7 +2504,7 @@ variableListChangedHandler (void* parameter, bool create, MmsVariableListType li
                     else if (listType == MMS_ASSOCIATION_SPECIFIC) {
                         if (rc->dataSet->logicalDeviceName == NULL) {
                             if (strcmp(rc->dataSet->name, listName) == 0) {
-                                allow = MMS_ERROR_ACCESS_OBJECT_ACCESS_DENIED;
+                                allow = MMS_ERROR_SERVICE_OBJECT_CONSTRAINT_CONFLICT;
                                 break;
                             }
                         }

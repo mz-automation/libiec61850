@@ -345,7 +345,7 @@ createNameListResponse(
         }
 
         if (startElement == NULL) {
-            mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_ACCESS_UNSUPPORTED);
+            mmsServer_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_ACCESS_UNSUPPORTED);
             return;
         }
     }
@@ -526,7 +526,7 @@ mmsServer_handleGetNameListRequest(
 			LinkedList nameList = getNameListDomainSpecific(connection, domainSpecificName);
 
 			if (nameList == NULL)
-				mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
+				mmsServer_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
 			else {
 				createNameListResponse(connection, invokeId, nameList, response, continueAfterId);
 				LinkedList_destroy(nameList);
@@ -536,7 +536,7 @@ mmsServer_handleGetNameListRequest(
 		    LinkedList nameList = getJournalListDomainSpecific(connection, domainSpecificName);
 
             if (nameList == NULL)
-                mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
+                mmsServer_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
             else {
                 createNameListResponse(connection, invokeId, nameList, response, continueAfterId);
                 LinkedList_destroyStatic(nameList);
@@ -547,7 +547,7 @@ mmsServer_handleGetNameListRequest(
 			LinkedList nameList = getNamedVariableListsDomainSpecific(connection, domainSpecificName);
 
 			if (nameList == NULL)
-	            mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
+	            mmsServer_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
 			else {
 
 #if (CONFIG_MMS_SORT_NAME_LIST == 1)
@@ -563,7 +563,7 @@ mmsServer_handleGetNameListRequest(
 		else {
 			if (DEBUG_MMS_SERVER) printf("MMS_SERVER: getNameList domain specific objectClass %i not supported!\n", objectClass);
 
-			mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_ACCESS_UNSUPPORTED);
+			mmsServer_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_ACCESS_UNSUPPORTED);
 		}
 	}
 
@@ -621,7 +621,7 @@ mmsServer_handleGetNameListRequest(
         else {
             if (DEBUG_MMS_SERVER) printf("MMS_SERVER: getNameList VMD specific objectClass %i not supported!\n", objectClass);
 
-            mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_ACCESS_UNSUPPORTED);
+            mmsServer_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_ACCESS_UNSUPPORTED);
         }
 	}
 
@@ -641,14 +641,14 @@ mmsServer_handleGetNameListRequest(
 			LinkedList_destroy(nameList);
 		}
 		else
-			mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_ACCESS_UNSUPPORTED);
+			mmsServer_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_ACCESS_UNSUPPORTED);
 	}
 #endif /* (MMS_DYNAMIC_DATA_SETS == 1) */
 #endif /* (MMS_DATA_SET_SERVICE == 1) */
 
 	else {
 		if (DEBUG_MMS_SERVER) printf("MMS_SERVER:  getNameList(%i) not supported!\n", objectScope);
-		mmsServer_createConfirmedErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_ACCESS_UNSUPPORTED);
+		mmsServer_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_ACCESS_UNSUPPORTED);
 	}
 
 }
