@@ -1661,7 +1661,10 @@ IedConnection_getLogicalNodeVariables(IedConnection self, IedClientError* error,
 /**
  * \brief returns the directory of the given logical node (LN) containing elements of the specified ACSI class
  *
- * Implementation of the GetLogicalNodeDirectory ACSI service.
+ * Implementation of the GetLogicalNodeDirectory ACSI service. In contrast to the ACSI description this
+ * function does not always creates a request to the server. For most ACSI classes it simply accesses the
+ * data model that was retrieved before. An exception to this rule are the ACSI classes ACSI_CLASS_DATASET and
+ * ACSI_CLASS_LOG. Both always perform a request to the server.
  *
  * \param self the connection object
  * \param error the error code if an error occurs
