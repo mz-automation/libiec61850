@@ -212,21 +212,6 @@ int main(int argc, char** argv) {
                 char* name = (char*) element->data;
 
                 printf("  %s\n", name);
-
-
-
-
-
-#if 0
-                uint64_t timestamp = Hal_getTimeInMs();
-
-                MmsValue* startTime = MmsValue_newBinaryTime(false);
-                MmsValue_setBinaryTime(startTime, timestamp - 60000);
-
-                MmsValue* entrySpec = MmsValue_newOctetString(8, 8);
-
-                MmsConnection_readJournalStartAfter(con, &error, domainName, name, startTime, entrySpec);
-#endif
             }
 
             LinkedList_destroy(variableList);

@@ -2501,6 +2501,14 @@ variableListChangedHandler (void* parameter, bool create, MmsVariableListType li
                             }
                         }
                     }
+                    else if (listType == MMS_VMD_SPECIFIC) {
+                        if (rc->dataSet->logicalDeviceName == NULL) {
+                            if (strcmp(rc->dataSet->name, listName) == 0) {
+                                allow = MMS_ERROR_SERVICE_OBJECT_CONSTRAINT_CONFLICT;
+                               break;
+                            }
+                        }
+                    }
                     else if (listType == MMS_ASSOCIATION_SPECIFIC) {
                         if (rc->dataSet->logicalDeviceName == NULL) {
                             if (strcmp(rc->dataSet->name, listName) == 0) {
@@ -2514,7 +2522,41 @@ variableListChangedHandler (void* parameter, bool create, MmsVariableListType li
             }
         }
 
-        //TODO check if data set is referenced in a log control block
+
+#if (CONFIG_IEC61850_LOG_SERVICE == 1)
+        /* check if data set is referenced in a log control block*/
+        LinkedList logElement = self->logControls;
+
+        while ((logElement = LinkedList_getNext(logElement)) != NULL) {
+            LogControl* lc = (LogControl*) logElement->data;
+
+            if (lc->isDynamicDataSet) {
+                if (lc->dataSet != NULL) {
+
+                    if (listType == MMS_DOMAIN_SPECIFIC) {
+                        if (lc->dataSet->logicalDeviceName != NULL) {
+                            if (strcmp(lc->dataSet->name, listName) == 0) {
+                                if (strcmp(lc->dataSet->logicalDeviceName, MmsDomain_getName(domain)) == 0) {
+                                    allow = MMS_ERROR_SERVICE_OBJECT_CONSTRAINT_CONFLICT;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    else if (listType == MMS_VMD_SPECIFIC) {
+                        if (lc->dataSet->logicalDeviceName == NULL) {
+                            if (strcmp(lc->dataSet->name, listName) == 0) {
+                                allow = MMS_ERROR_SERVICE_OBJECT_CONSTRAINT_CONFLICT;
+                               break;
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
+
+#endif /* (CONFIG_IEC61850_LOG_SERVICE == 1) */
     }
 
     return allow;

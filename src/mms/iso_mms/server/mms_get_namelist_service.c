@@ -538,6 +538,10 @@ mmsServer_handleGetNameListRequest(
             if (nameList == NULL)
                 mmsServer_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
             else {
+#if (CONFIG_MMS_SORT_NAME_LIST == 1)
+                StringUtils_sortList(nameList);
+#endif
+
                 createNameListResponse(connection, invokeId, nameList, response, continueAfterId);
                 LinkedList_destroyStatic(nameList);
             }

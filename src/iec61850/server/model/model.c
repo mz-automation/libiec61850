@@ -409,20 +409,6 @@ exit_error:
 	return NULL;
 }
 
-
-void
-LogicalNode_setLogStorage(LogicalNode* self, const char* logName, LogStorage logStorage)
-{
-    assert(self->modelType == LogicalNodeModelType);
-    assert(logName != NULL);
-
-    LogicalDevice* ld = (LogicalDevice*) self->parent;
-
-    IedModel* iedModel = (IedModel*) ld->parent;
-
-
-}
-
 int
 LogicalDevice_getLogicalNodeCount(LogicalDevice* logicalDevice)
 {

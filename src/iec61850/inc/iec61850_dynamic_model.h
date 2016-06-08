@@ -146,7 +146,7 @@ DataAttribute_create(const char* name, ModelNode* parent, DataAttributeType type
  * \param parent the parent LN.
  * \param rptId of the report. If NULL the default report ID (object reference) is used.
  * \param isBuffered true for a buffered RCB - false for unbuffered RCB
- * \param dataSetName name (object reference) of the default data set or NULL if no data
+ * \param dataSetName name (object reference) of the default data set or NULL if no data set
  *        is set by default
  * \param confRef the configuration revision
  * \param trgOps the trigger options supported by this RCB (bit set)
@@ -159,6 +159,38 @@ DataAttribute_create(const char* name, ModelNode* parent, DataAttributeType type
 ReportControlBlock*
 ReportControlBlock_create(const char* name, LogicalNode* parent, char* rptId, bool isBuffered, char*
         dataSetName, uint32_t confRef, uint8_t trgOps, uint8_t options, uint32_t bufTm, uint32_t intgPd);
+
+/**
+ * \brief create a new log control block (LCB)
+ *
+ * Create a new log control block (LCB) and add it to the given logical node (LN).
+ *
+ * \param name name of the LCB relative to the parent LN
+ * \param parent the parent LN.
+ * \param dataSetName name (object reference) of the default data set or NULL if no data set
+ *        is set by default
+ * \param logRef name (object reference) of the default log or NULL if no log is set by default
+ * \param trgOps the trigger options supported by this LCB (bit set)
+ * \param intgPd integrity period in milliseconds
+ * \param logEna if true the log will be enabled by default, false otherwise
+ * \param reasonCode if true the reasonCode will be included in the log (this is always true in MMS mapping)
+ *
+ * \return the new LCB instance
+ */
+LogControlBlock*
+LogControlBlock_create(const char* name, LogicalNode* parent, char* dataSetName, char* logRef, uint8_t trgOps,
+        uint32_t intgPd, bool logEna, bool reasonCode);
+
+/**
+ * \brief create a log (used by the IEC 61850 log service)
+ *
+ * \param name name of the LOG relative to the parent LN
+ * \param parent the parent LN
+ *
+ * \return the new LOG instance
+ */
+Log*
+Log_create(const char* name, LogicalNode* parent);
 
 /**
  * \brief create a setting group control block (SGCB)

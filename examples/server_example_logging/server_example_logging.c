@@ -17,6 +17,8 @@
 
 #include "logging_api.h"
 
+LogStorage SqliteLogStorage_createInstance(const char*);
+
 /* import IEC 61850 device model created from SCL-File */
 extern IedModel iedModel;
 
@@ -164,7 +166,7 @@ main(int argc, char** argv)
 
     LogStorage_addEntryData(statusLog, entryID, "simpleIOGenerioIO/GPIO1$ST$SPCSO1$t", blob, blobSize, 0);
 
-    LogStorage_getEntries(statusLog, 0, Hal_getTimeInMs(), entryCallback, entryDataCallback, NULL);
+    LogStorage_getEntries(statusLog, 0, Hal_getTimeInMs(), entryCallback, (LogEntryDataCallback) entryDataCallback, NULL);
 
     /* MMS server will be instructed to start listening to client connections. */
     IedServer_start(iedServer, 102);

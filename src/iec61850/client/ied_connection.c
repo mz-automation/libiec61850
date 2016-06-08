@@ -1306,6 +1306,56 @@ addVariablesWithFc(char* fc, char* lnName, LinkedList variables, LinkedList lnDi
     }
 }
 
+static LinkedList
+getLogicalNodeDirectoryLogs(IedConnection self, IedClientError* error, const char* logicalDeviceName,
+        const char* logicalNodeName)
+{
+    MmsConnection mmsCon = self->connection;
+
+    MmsError mmsError;
+
+    LinkedList journals = MmsConnection_getDomainJournals(mmsCon, &mmsError, logicalDeviceName);
+
+    if (mmsError != MMS_ERROR_NONE) {
+        *error = iedConnection_mapMmsErrorToIedError(mmsError);
+        return NULL;
+    }
+
+    LinkedList logs = LinkedList_create();
+
+    LinkedList journal = LinkedList_getNext(journals);
+
+    while (journal != NULL) {
+
+        char* journalName = (char*) LinkedList_getData(journal);
+
+        char* logName = strchr(journalName, '$');
+
+        if (logName != NULL) {
+            logName[0] = 0;
+            logName += 1;
+
+            if (strcmp(journalName, logicalNodeName) == 0) {
+                char* log = copyString(logName);
+                LinkedList_add(logs, (void*) log);
+            }
+        }
+
+        journal = LinkedList_getNext(journal);
+    }
+
+    LinkedList_destroy(journals);
+
+    return logs;
+}
+
+static LinkedList
+getLogicalNodeDirectoryDataSets(IedConnection self, IedClientError* error, const char* logicalDeviceName,
+        const char* logicalNodeName)
+{
+    MmsConnection mmsCon = self->connection;
+}
+
 LinkedList /*<char*>*/
 IedConnection_getLogicalNodeDirectory(IedConnection self, IedClientError* error,
         const char* logicalNodeReference, ACSIClass acsiClass)
@@ -1316,12 +1366,6 @@ IedConnection_getLogicalNodeDirectory(IedConnection self, IedClientError* error,
         *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
         return NULL;
     }
-
-    if (self->logicalDevices == NULL)
-        IedConnection_getDeviceModelFromServer(self, error);
-
-    if (*error != IED_ERROR_OK)
-        return NULL;
 
     char lnRefCopy[130];
 
@@ -1340,6 +1384,16 @@ IedConnection_getLogicalNodeDirectory(IedConnection self, IedClientError* error,
     char* logicalDeviceName = lnRefCopy;
 
     char* logicalNodeName = ldSep + 1;
+
+    if (acsiClass == ACSI_CLASS_LOG) {
+        return getLogicalNodeDirectoryLogs(self, error, logicalDeviceName, logicalNodeName);
+    }
+
+    if (self->logicalDevices == NULL)
+        IedConnection_getDeviceModelFromServer(self, error);
+
+    if (*error != IED_ERROR_OK)
+        return NULL;
 
     /* search for logical device */
 

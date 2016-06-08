@@ -1108,6 +1108,8 @@ extern SettingGroupControlBlock iedModel_PROT_LLN0_sgcb;
 SettingGroupControlBlock iedModel_PROT_LLN0_sgcb = {&iedModel_PROT_LLN0, 1, 5, 0, false, 0, 0, NULL};
 
 
+
+
 IedModel iedModel = {
     "DEMO",
     &iedModel_PROT,
@@ -1116,6 +1118,8 @@ IedModel iedModel = {
     NULL,
     NULL,
     &iedModel_PROT_LLN0_sgcb,
+    NULL,
+    NULL,
     initializeValues
 };
 

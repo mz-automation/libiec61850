@@ -604,3 +604,20 @@ EXPORTS
     IedServer_updateVisibleStringAttributeValue
     ControlObjectClient_setInterlockCheck
     ControlObjectClient_setSynchroCheck
+    LogStorage_addEntry
+    LogStorage_addEntryData
+    LogStorage_getEntries
+    LogStorage_getEntriesAfter
+    LogStorage_getOldestAndNewestEntries
+    LogStorage_destroy
+    IedServer_setLogStorage
+    MmsJournalEntry_destroy
+    MmsJournalEntry_getEntryID
+    MmsJournalEntry_getOccurenceTime
+    MmsJournalEntry_getJournalVariables
+    MmsJournalVariable_getTag
+    MmsJournalVariable_getValue
+    MmsConnection_readJournalTimeRange
+    MmsConnection_readJournalStartAfter
+    LogControlBlock_create
+	Log_create

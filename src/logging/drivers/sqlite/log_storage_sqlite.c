@@ -166,7 +166,8 @@ exit_with_error:
 static uint64_t
 SqliteLogStorage_addEntry(LogStorage self, uint64_t timestamp)
 {
-    printf("SQLITE-DRIVER: add entry\n");
+    if (DEBUG_LOG_STORAGE_DRIVER)
+        printf("LOG_STORAGE_DRIVER: sqlite - add entry\n");
 
     SqliteLogStorage* instanceData = (SqliteLogStorage*) (self->instanceData);
 
@@ -269,8 +270,8 @@ getEntryData(LogStorage self, uint64_t entryID, LogEntryDataCallback entryDataCa
 
     while ((rc = sqlite3_step(instanceData->getEntryData)) == SQLITE_ROW) {
 
-        const char* dataRef = sqlite3_column_text(instanceData->getEntryData, 0);
-        const uint8_t* data = sqlite3_column_blob(instanceData->getEntryData, 1);
+        const char* dataRef = (const char*) sqlite3_column_text(instanceData->getEntryData, 0);
+        uint8_t* data = (uint8_t*) sqlite3_column_blob(instanceData->getEntryData, 1);
         int dataSize = sqlite3_column_bytes(instanceData->getEntryData, 1);
         int reasonCode = sqlite3_column_int(instanceData->getEntryData, 2);
 
@@ -317,7 +318,6 @@ SqliteLogStorage_getEntries(LogStorage self, uint64_t startingTime, uint64_t end
     bool sendFinalEvent = true;
 
     while((rc = sqlite3_step(instanceData->getEntriesWithRange)) == SQLITE_ROW) {
-        int col;
 
         uint64_t entryID = sqlite3_column_int64(instanceData->getEntriesWithRange, 0);
         uint64_t timestamp = sqlite3_column_int64(instanceData->getEntriesWithRange, 1);
@@ -412,7 +412,6 @@ SqliteLogStorage_getEntriesAfter(LogStorage self, uint64_t startingTime, uint64_
     bool sendFinalEvent = true;
 
     while ((rc = sqlite3_step(instanceData->getEntriesAfter)) == SQLITE_ROW) {
-        int col;
 
         uint64_t entryID = sqlite3_column_int64(instanceData->getEntriesAfter, 0);
         uint64_t timestamp = sqlite3_column_int64(instanceData->getEntriesAfter, 1);

@@ -24,6 +24,10 @@
 #ifndef LIBIEC61850_SRC_LOGGING_LOGGING_API_H_
 #define LIBIEC61850_SRC_LOGGING_LOGGING_API_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -37,7 +41,7 @@ typedef struct sLogStorage* LogStorage;
  */
 typedef bool (*LogEntryCallback) (void* parameter, uint64_t timestamp, uint64_t entryID, bool moreFollow);
 
-typedef bool (*LogEntryDataCallback) (void* parameter, const char* dataRef, const uint8_t* data, int dataSize, uint8_t reasonCode, bool moreFollow);
+typedef bool (*LogEntryDataCallback) (void* parameter, const char* dataRef, uint8_t* data, int dataSize, uint8_t reasonCode, bool moreFollow);
 
 struct sLogStorage {
 
@@ -81,5 +85,9 @@ LogStorage_getOldestAndNewestEntries(LogStorage self, uint64_t* newEntry, uint64
 
 void
 LogStorage_destroy(LogStorage self);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* LIBIEC61850_SRC_LOGGING_LOGGING_API_H_ */

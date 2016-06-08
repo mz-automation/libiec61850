@@ -156,10 +156,10 @@
 /* include support for IEC 61850 log services */
 #define CONFIG_IEC61850_LOG_SERVICE 1
 
-/* default results for MMS identify service */
-#define CONFIG_DEFAULT_MMS_VENDOR_NAME "libiec61850.com"
-#define CONFIG_DEFAULT_MMS_MODEL_NAME "LIBIEC61850"
-#define CONFIG_DEFAULT_MMS_REVISION "0.9.2"
+/* overwrite default results for MMS identify service */
+//#define CONFIG_DEFAULT_MMS_VENDOR_NAME "libiec61850.com"
+//#define CONFIG_DEFAULT_MMS_MODEL_NAME "LIBIEC61850"
+//#define CONFIG_DEFAULT_MMS_REVISION "0.9.2"
 
 /* MMS virtual file store base path - where file services are looking for files */
 #define CONFIG_VIRTUAL_FILESTORE_BASEPATH "./vmd-filestore/"

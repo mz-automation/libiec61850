@@ -4134,9 +4134,13 @@ DataAttribute iedModel_WTG_WTUR1_SetTurOp_cmAcs = {
 
 
 
+
+
 IedModel iedModel = {
     "WIND",
     &iedModel_WTG,
+    NULL,
+    NULL,
     NULL,
     NULL,
     NULL,

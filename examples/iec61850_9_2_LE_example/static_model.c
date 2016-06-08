@@ -947,6 +947,8 @@ SVControlBlock iedModel_MUnn_LLN0_smv0 = {&iedModel_MUnn_LLN0, "MSVCB01", "xxxxM
 
 
 
+
+
 IedModel iedModel = {
     "TEMPLATE",
     &iedModel_MUnn,
@@ -954,6 +956,8 @@ IedModel iedModel = {
     NULL,
     NULL,
     &iedModel_MUnn_LLN0_smv0,
+    NULL,
+    NULL,
     NULL,
     initializeValues
 };

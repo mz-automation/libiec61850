@@ -1851,6 +1851,10 @@ ReportControlBlock iedModel_GenericIO_LLN0_report3 = {&iedModel_GenericIO_LLN0, 
 
 
 
+extern LogControlBlock iedModel_GenericIO_LLN0_lcb0;
+LogControlBlock iedModel_GenericIO_LLN0_lcb0 = {&iedModel_GenericIO_LLN0, "EventLog", "Events", "GenericIO/LLN0$EventLog", 3, 0, true, true, NULL};
+
+
 
 IedModel iedModel = {
     "simpleIO",
@@ -1859,6 +1863,8 @@ IedModel iedModel = {
     &iedModel_GenericIO_LLN0_report0,
     NULL,
     NULL,
+    NULL,
+    &iedModel_GenericIO_LLN0_lcb0,
     NULL,
     initializeValues
 };

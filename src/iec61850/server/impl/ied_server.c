@@ -404,6 +404,8 @@ IedServer_create(IedModel* iedModel)
 
     self->model = iedModel;
 
+    // self->running = false; /* not required due to CALLOC */
+
     self->mmsMapping = MmsMapping_create(iedModel);
 
     self->mmsDevice = MmsMapping_getMmsDeviceModel(self->mmsMapping);
@@ -445,6 +447,16 @@ IedServer_create(IedModel* iedModel)
 void
 IedServer_destroy(IedServer self)
 {
+
+    /* Stop server if running */
+    if (self->running) {
+#if (CONFIG_MMS_THREADLESS_STACK == 1)
+        IedServer_stopThreadless(self);
+#else
+        IedServer_stop(self);
+#endif
+    }
+
     MmsServer_destroy(self->mmsServer);
     IsoServer_destroy(self->isoServer);
 
@@ -525,17 +537,22 @@ singleThreadedServerThread(void* parameter)
 void
 IedServer_start(IedServer self, int tcpPort)
 {
+    if (self->running == false) {
+
 #if (CONFIG_MMS_SINGLE_THREADED == 1)
-    MmsServer_startListeningThreadless(self->mmsServer, tcpPort);
+        MmsServer_startListeningThreadless(self->mmsServer, tcpPort);
 
-    Thread serverThread = Thread_create((ThreadExecutionFunction) singleThreadedServerThread, (void*) self, true);
+        Thread serverThread = Thread_create((ThreadExecutionFunction) singleThreadedServerThread, (void*) self, true);
 
-    Thread_start(serverThread);
+        Thread_start(serverThread);
 #else
 
-    MmsServer_startListening(self->mmsServer, tcpPort);
-    MmsMapping_startEventWorkerThread(self->mmsMapping);
+        MmsServer_startListening(self->mmsServer, tcpPort);
+        MmsMapping_startEventWorkerThread(self->mmsMapping);
 #endif
+
+        self->running = true;
+    }
 }
 #endif
 
@@ -558,13 +575,17 @@ IedServer_getDataModel(IedServer self)
 void
 IedServer_stop(IedServer self)
 {
-    MmsMapping_stopEventWorkerThread(self->mmsMapping);
+    if (self->running) {
+        self->running = false;
+
+        MmsMapping_stopEventWorkerThread(self->mmsMapping);
 
 #if (CONFIG_MMS_SINGLE_THREADED == 1)
-    MmsServer_stopListeningThreadless(self->mmsServer);
+        MmsServer_stopListeningThreadless(self->mmsServer);
 #else
-    MmsServer_stopListening(self->mmsServer);
+        MmsServer_stopListening(self->mmsServer);
 #endif
+    }
 }
 #endif /* (CONFIG_MMS_THREADLESS_STACK != 1) */
 
@@ -572,7 +593,10 @@ IedServer_stop(IedServer self)
 void
 IedServer_startThreadless(IedServer self, int tcpPort)
 {
-    MmsServer_startListeningThreadless(self->mmsServer, tcpPort);
+    if (self->running == false) {
+        MmsServer_startListeningThreadless(self->mmsServer, tcpPort);
+        self->running = true;
+    }
 }
 
 int
@@ -590,7 +614,11 @@ IedServer_processIncomingData(IedServer self)
 void
 IedServer_stopThreadless(IedServer self)
 {
-    MmsServer_stopListeningThreadless(self->mmsServer);
+    if (self->running) {
+        self->running = false;
+
+        MmsServer_stopListeningThreadless(self->mmsServer);
+    }
 }
 
 void

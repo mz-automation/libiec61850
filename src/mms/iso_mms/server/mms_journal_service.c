@@ -68,7 +68,7 @@ entryCallback(void* parameter, uint64_t timestamp, uint64_t entryID, bool moreFo
     JournalEncoder encoder = (JournalEncoder) parameter;
 
     if (moreFollow) {
-        //printf("Encode entry ID:%" PRIu64 " timestamp:%" PRIu64 "\n", entryID, timestamp);
+
         if (encoder->moreFollows) {
             printf("entryCallback return false\n");
             return false;
@@ -128,7 +128,7 @@ entryDataCallback (void* parameter, const char* dataRef, uint8_t* data, int data
 
         uint32_t totalLen = firstVariableLen + secondVariableLen;
 
-        if ((bufPos + totalLen) > encoder->maxSize) {
+        if ((int) (bufPos + totalLen) > encoder->maxSize) {
             encoder->moreFollows = true;
             encoder->bufPos = encoder->currentEntryBufPos; /* remove last entry */
             return false;
@@ -241,8 +241,6 @@ mmsServer_handleReadJournalRequest(
         uint32_t invokeId,
         ByteBuffer* response)
 {
-    printf("READ-JOURNAL\n");
-
     char domainId[65];
     char logName[65];
     uint8_t entryIdBuf[64]; /* maximum size of entry id is 64 bytes! */
@@ -276,7 +274,6 @@ mmsServer_handleReadJournalRequest(
 
         case 0xa0: /* journalName */
             {
-
                 uint8_t objectIdTag = requestBuffer[bufPos++];
                 bufPos = BerDecoder_decodeLength(requestBuffer, &length, bufPos, maxBufPos);
 

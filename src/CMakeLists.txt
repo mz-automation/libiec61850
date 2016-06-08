@@ -76,6 +76,8 @@ set (lib_common_SRCS
 ./iec61850/server/mms_mapping/reporting.c
 ./iec61850/server/mms_mapping/mms_goose.c
 ./iec61850/server/mms_mapping/mms_sv.c
+./iec61850/server/mms_mapping/logging.c
+./logging/log_storage.c
 )
 
 set (lib_asn1c_SRCS

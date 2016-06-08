@@ -1779,11 +1779,15 @@ ReportControlBlock iedModel_GenericIO_LLN0_report0 = {&iedModel_GenericIO_LLN0, 
 
 
 
+
+
 IedModel iedModel = {
     "simpleIO",
     &iedModel_GenericIO,
     &iedModelds_GenericIO_LLN0_Events,
     &iedModel_GenericIO_LLN0_report0,
+    NULL,
+    NULL,
     NULL,
     NULL,
     NULL,

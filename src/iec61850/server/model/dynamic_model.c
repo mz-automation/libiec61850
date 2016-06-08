@@ -58,6 +58,10 @@ IedModel_create(const char* name/*, MemoryAllocator allocator*/)
 
     self->sgcbs = NULL;
 
+    self->lcbs = NULL;
+
+    self->logs = NULL;
+
     self->initializer = iedModel_emptyVariableInitializer;
 
     return self;
@@ -94,6 +98,36 @@ IedModel_addLogicalDevice(IedModel* self, LogicalDevice* lDevice)
             sibling = (LogicalDevice*) sibling->sibling;
 
         sibling->sibling = (ModelNode*) lDevice;
+    }
+}
+
+static void
+IedModel_addLog(IedModel* self, Log* log)
+{
+    if (self->logs == NULL)
+        self->logs = log;
+    else {
+        Log* lastLog = self->logs;
+
+        while (lastLog->sibling != NULL)
+            lastLog = lastLog->sibling;
+
+        lastLog->sibling = log;
+    }
+}
+
+static void
+IedModel_addLogControlBlock(IedModel* self, LogControlBlock* lcb)
+{
+    if (self->lcbs == NULL)
+        self->lcbs = lcb;
+    else {
+        LogControlBlock* lastLcb = self->lcbs;
+
+        while (lastLcb->sibling != NULL)
+            lastLcb = lastLcb->sibling;
+
+        lastLcb->sibling = lcb;
     }
 }
 
@@ -229,6 +263,65 @@ LogicalNode_addDataObject(LogicalNode* self, DataObject* dataObject)
 
         lastDataObject->sibling = (ModelNode*) dataObject;
     }
+}
+
+static void
+LogicalNode_addLog(LogicalNode* self, Log* log)
+{
+    IedModel* model = (IedModel*) self->parent->parent;
+
+    IedModel_addLog(model, log);
+}
+
+Log*
+Log_create(const char* name, LogicalNode* parent)
+{
+    Log* self = (Log*) GLOBAL_MALLOC(sizeof(Log));
+
+    self->name = copyString(name);
+    self->parent = parent;
+    self->sibling = NULL;
+
+    LogicalNode_addLog(parent, self);
+
+    return self;
+}
+
+static void
+LogicalNode_addLogControlBlock(LogicalNode* self, LogControlBlock* lcb)
+{
+    IedModel* model = (IedModel*) self->parent->parent;
+
+    IedModel_addLogControlBlock(model, lcb);
+}
+
+LogControlBlock*
+LogControlBlock_create(const char* name, LogicalNode* parent, char* dataSetName, char* logRef, uint8_t trgOps,
+        uint32_t intPeriod, bool logEna, bool reasonCode)
+{
+    LogControlBlock* self = (LogControlBlock*) GLOBAL_MALLOC(sizeof(LogControlBlock));
+
+    self->name = copyString(name);
+    self->parent = parent;
+
+    if (dataSetName)
+        self->dataSetName = copyString(dataSetName);
+    else
+        dataSetName = NULL;
+
+    if (logRef)
+        self->logRef = copyString(logRef);
+    else
+        logRef = NULL;
+
+    self->trgOps = trgOps;
+    self->intPeriod = intPeriod;
+    self->logEna = logEna;
+    self->reasonCode = reasonCode;
+
+    LogicalNode_addLogControlBlock(parent, self);
+
+    return self;
 }
 
 static void
@@ -741,6 +834,28 @@ IedModel_destroy(IedModel* model)
         GLOBAL_FREEMEM(sgcb);
 
         sgcb = nextSgcb;
+    }
+
+    /* delete all LCBs */
+    LogControlBlock* lcb = model->lcbs;
+
+    while (lcb != NULL) {
+        LogControlBlock* nextLcb = lcb->sibling;
+
+        GLOBAL_FREEMEM(lcb);
+
+        lcb = nextLcb;
+    }
+
+    /* delete all LOGs */
+    Log* log = model->logs;
+
+    while (log != NULL) {
+        Log* nextLog = log->sibling;
+
+        GLOBAL_FREEMEM(log);
+
+        log = nextLog;
     }
 
 

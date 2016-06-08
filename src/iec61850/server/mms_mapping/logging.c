@@ -35,6 +35,8 @@
 #include "mms_mapping_internal.h"
 #include "mms_value_internal.h"
 
+#include "logging_api.h"
+
 #if (CONFIG_IEC61850_LOG_SERVICE == 1)
 
 LogInstance*
@@ -74,7 +76,7 @@ LogInstance_logSingleData(LogInstance* self, const char* dataRef, MmsValue* valu
 
         self->locked = true;
 
-        //if (DEBUG_IED_SERVER)
+        if (DEBUG_IED_SERVER)
             printf("IED_SERVER: Log value - dataRef: %s flag: %i\n", dataRef, flag);
 
         uint64_t timestamp = Hal_getTimeInMs();
@@ -83,7 +85,7 @@ LogInstance_logSingleData(LogInstance* self, const char* dataRef, MmsValue* valu
 
         int dataSize = MmsValue_encodeMmsData(value, NULL, 0, false);
 
-        uint8_t* data = GLOBAL_MALLOC(dataSize);
+        uint8_t* data = (uint8_t*) GLOBAL_MALLOC(dataSize);
 
         MmsValue_encodeMmsData(value, data, 0, true);
 
@@ -137,7 +139,7 @@ LogInstance_logEntryData(LogInstance* self, uint64_t entryID, const char* dataRe
 
         int dataSize = MmsValue_encodeMmsData(value, NULL, 0, false);
 
-        uint8_t* data = GLOBAL_MALLOC(dataSize);
+        uint8_t* data = (uint8_t*) GLOBAL_MALLOC(dataSize);
 
         MmsValue_encodeMmsData(value, data, 0, true);
 
@@ -171,6 +173,7 @@ LogControl_create(LogicalNode* parentLN, MmsMapping* mmsMapping)
 
     self->enabled = false;
     self->dataSet = NULL;
+    self->isDynamicDataSet = false;
     self->triggerOps = 0;
     self->logicalNode = parentLN;
     self->mmsMapping = mmsMapping;
@@ -207,16 +210,14 @@ static void
 prepareLogControl(LogControl* logControl)
 {
     if (logControl->dataSetRef == NULL) {
-        printf("  no data set specified!\n");
+        logControl->enabled = false;
         return;
     }
 
     DataSet* dataSet = IedModel_lookupDataSet(logControl->mmsMapping->model, logControl->dataSetRef);
 
-    if (dataSet == NULL) {
-        printf("   data set (%s) not found!\n", logControl->dataSetRef);
+    if (dataSet == NULL)
         return;
-    }
     else
         logControl->dataSet = dataSet;
 }
@@ -322,7 +323,7 @@ getLogInstanceByLogRef(MmsMapping* self, const char* logRef)
 
     while (instance != NULL) {
 
-        LogInstance* logInstance = LinkedList_getData(instance);
+        LogInstance* logInstance = (LogInstance*) LinkedList_getData(instance);
 
         if (strcmp(logInstance->name, logName) == 0) {
 
@@ -354,6 +355,18 @@ updateLogStatusInLCB(LogControl* self)
     }
 }
 
+
+static void
+freeDynamicDataSet(LogControl* self)
+{
+    if (self->isDynamicDataSet) {
+        if (self->dataSet != NULL) {
+            MmsMapping_freeDynamicallyCreatedDataSet(self->dataSet);
+            self->isDynamicDataSet = false;
+            self->dataSet = NULL;
+        }
+    }
+}
 
 MmsDataAccessError
 LIBIEC61850_LOG_SVC_writeAccessLogControlBlock(MmsMapping* self, MmsDomain* domain, char* variableIdOrig,
@@ -460,7 +473,6 @@ LIBIEC61850_LOG_SVC_writeAccessLogControlBlock(MmsMapping* self, MmsDomain* doma
 
         if (logControl->enabled == false) {
              /* check if datSet is valid or NULL/empty */
-
             const char* dataSetRef = MmsValue_toString(value);
 
             if (strlen(dataSetRef) == 0) {
@@ -470,16 +482,51 @@ LIBIEC61850_LOG_SVC_writeAccessLogControlBlock(MmsMapping* self, MmsDomain* doma
             else {
                 DataSet* dataSet = IedModel_lookupDataSet(logControl->mmsMapping->model, dataSetRef);
 
+                if (dataSet != NULL) {
+                    freeDynamicDataSet(logControl);
+
+                    logControl->dataSet = dataSet;
+                    updateValue = true;
+
+                }
+
+#if (MMS_DYNAMIC_DATA_SETS == 1)
+
+                if (dataSet == NULL) {
+
+                    dataSet = MmsMapping_getDomainSpecificDataSet(self, dataSetRef);
+
+                    if (dataSet == NULL) {
+
+                        if (dataSetRef[0] == '/') { /* check for VMD specific data set */
+                            MmsNamedVariableList mmsVariableList =
+                                    MmsDevice_getNamedVariableListWithName(self->mmsDevice, dataSetRef + 1);
+
+                            if (mmsVariableList != NULL)
+                                dataSet = MmsMapping_createDataSetByNamedVariableList(self, mmsVariableList);
+                        }
+                    }
+
+                    if (dataSet != NULL) {
+                        freeDynamicDataSet(logControl);
+                        logControl->dataSet = dataSet;
+                        logControl->isDynamicDataSet = true;
+
+                        updateValue = true;
+                    }
+
+                }
+
+#endif /*(MMS_DYNAMIC_DATA_SETS == 1) */
+
                 if (dataSet == NULL) {
                     if (DEBUG_IED_SERVER)
                         printf("IED_SERVER:   data set (%s) not found!\n", logControl->dataSetRef);
                     return DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
                 }
-                else {
-                    logControl->dataSet = dataSet;
-                    updateValue = true;
-                }
             }
+
+
         }
         else
             return DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
@@ -589,7 +636,11 @@ createTrgOps(LogControlBlock* logControlBlock) {
     return trgOps;
 }
 
-
+static void
+LogControl_updateLogEna(LogControl* self)
+{
+    MmsValue_setBoolean(MmsValue_getElement(self->mmsValue, 0), self->enabled);
+}
 
 static MmsVariableSpecification*
 createLogControlBlock(MmsMapping* self, LogControlBlock* logControlBlock,
@@ -743,6 +794,8 @@ createLogControlBlock(MmsMapping* self, LogControlBlock* logControlBlock,
     if (logControl->enabled)
         enableLogging(logControl);
 
+    LogControl_updateLogEna(logControl);
+
     return lcb;
 }
 
@@ -871,7 +924,7 @@ MmsMapping_setLogStorage(MmsMapping* self, const char* logRef, LogStorage logSto
 
         MmsJournal mmsJournal = NULL;
 
-        char* logName = strchr(logRef, '/');
+        const char* logName = strchr(logRef, '/');
 
         if (logName != NULL) {
             logName += 1;

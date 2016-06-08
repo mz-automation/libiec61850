@@ -3874,9 +3874,13 @@ DataAttribute iedModel_GenericIO_GGIO1_Ind4_t = {
 
 
 
+
+
 IedModel iedModel = {
     "simpleIO",
     &iedModel_GenericIO,
+    NULL,
+    NULL,
     NULL,
     NULL,
     NULL,

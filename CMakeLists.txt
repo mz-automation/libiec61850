@@ -14,6 +14,8 @@ set(LIB_VERSION_MAJOR "0")
 set(LIB_VERSION_MINOR "9")
 set(LIB_VERSION_PATCH "2")
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/third_party/cmake/modules/")
+
 # feature checks
 include(CheckLibraryExists)
 check_library_exists(rt clock_gettime "time.h" CONFIG_SYSTEM_HAS_CLOCK_GETTIME)
@@ -28,7 +30,7 @@ set(CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS 5 CACHE STRING "Configure the maximum 
 option(BUILD_EXAMPLES "Build the examples" ON)
 option(BUILD_PYTHON_BINDINGS "Build Python bindings" OFF)
 
-option(CONFIG_MMS_SINGLE_THREADED "Compile for single threaded version" OFF)
+option(CONFIG_MMS_SINGLE_THREADED "Compile for single threaded version" ON)
 option(CONFIG_MMS_THREADLESS_STACK "Optimize stack for threadless operation (warning: single- or multi-threaded server will not work!)" OFF)
 
 # choose the library features which shall be included
@@ -37,6 +39,8 @@ option(CONFIG_INCLUDE_GOOSE_SUPPORT "Build with GOOSE support" ON)
 option(CONFIG_IEC61850_CONTROL_SERVICE "Build with support for IEC 61850 control features" ON)
 
 option(CONFIG_IEC61850_REPORT_SERVICE "Build with support for IEC 61850 reporting services" ON)
+
+option(CONFIG_IEC61850_LOG_SERVICE "Build with support for IEC 61850 logging services" ON)
 
 option(CONFIG_IEC61850_SETTING_GROUPS "Build with support for IEC 61850 setting group services" ON)
 
@@ -68,6 +72,7 @@ include_directories(
     src/mms/inc
     src/mms/inc_private
     src/mms/iso_mms/asn1c
+    src/logging
 )
 
 set(API_HEADERS 
@@ -102,6 +107,7 @@ set(API_HEADERS
     src/goose/goose_publisher.h
     src/sampled_values/sv_subscriber.h
     src/sampled_values/sv_publisher.h
+    src/logging/logging_api.h
 )
 
 IF(MSVC)

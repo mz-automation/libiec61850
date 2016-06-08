@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <signal.h>
-
+#include <inttypes.h>
 
 static int running = 1;
 
@@ -28,7 +28,7 @@ gooseListener(GooseSubscriber subscriber, void* parameter)
     printf("  stNum: %u sqNum: %u\n", GooseSubscriber_getStNum(subscriber),
             GooseSubscriber_getSqNum(subscriber));
     printf("  timeToLive: %u\n", GooseSubscriber_getTimeAllowedToLive(subscriber));
-    printf("  timestamp: %llu\n", GooseSubscriber_getTimestamp(subscriber));
+    printf("  timestamp: %"PRIu64"\n", GooseSubscriber_getTimestamp(subscriber));
 
     MmsValue* values = GooseSubscriber_getDataSetValues(subscriber);
 

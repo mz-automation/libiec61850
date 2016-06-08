@@ -48,6 +48,7 @@ typedef struct {
 
     DataSet* dataSet;
     char* dataSetRef;
+    bool isDynamicDataSet;
 
     LogicalNode* logicalNode;
     MmsDomain* domain;

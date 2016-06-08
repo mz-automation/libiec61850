@@ -1,0 +1,8 @@
+BUILD THE EXAMPLE:
+
+To build the logging example it is required to have sqlite present!
+
+If you have sqlite installed on the system (including the header files) e.g. in an Ubuntu installation with the sqlite3 package installed, you can simply use the Makefile.
+
+If you don't have sqlite installed you have to download the sqlite amalgamation package and install the files sqlite3.c, sqlite3.h in the libiec61850/third_party/sqlite folder and use the Makefile.sqliteStatic instead. This will build a version of the example with the sqlite code statically linked.
+ 
