@@ -2250,6 +2250,91 @@ exit_function:
     return dataSet;
 }
 
+LinkedList /* <MmsJournalEntry> */
+IedConnection_queryLogByTime(IedConnection self, IedClientError* error, const char* logReference,
+        uint64_t startTime, uint64_t endTime, bool* moreFollows)
+{
+    MmsError mmsError;
+
+    char logRef[130];
+
+    strncpy(logRef, logReference, 129);
+
+    char* logDomain = logRef;
+    char* logName = strchr(logRef, '/');
+
+    if (logName != NULL) {
+
+        logName[0] = 0;
+        logName++;
+
+        MmsValue* startTimeMms = MmsValue_newBinaryTime(false);
+        MmsValue_setBinaryTime(startTimeMms, startTime);
+
+        MmsValue* endTimeMms = MmsValue_newBinaryTime(false);
+        MmsValue_setBinaryTime(endTimeMms, endTime);
+
+        LinkedList journalEntries = MmsConnection_readJournalTimeRange(self->connection, &mmsError, logDomain, logName,
+                startTimeMms, endTimeMms, moreFollows);
+
+        MmsValue_delete(startTimeMms);
+        MmsValue_delete(endTimeMms);
+
+        if (mmsError != MMS_ERROR_NONE) {
+            *error = iedConnection_mapMmsErrorToIedError(mmsError);
+            return NULL;
+        }
+        else
+            return journalEntries;
+    }
+    else {
+        *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
+        return NULL;
+    }
+
+}
+
+
+LinkedList /* <MmsJournalEntry> */
+IedConnection_queryLogAfter(IedConnection self, IedClientError* error, const char* logReference,
+        MmsValue* entryID, uint64_t timeStamp, bool* moreFollows)
+{
+    MmsError mmsError;
+
+    char logRef[130];
+
+    strncpy(logRef, logReference, 129);
+
+    char* logDomain = logRef;
+    char* logName = strchr(logRef, '/');
+
+    if (logName != NULL) {
+
+        logName[0] = 0;
+        logName++;
+
+        MmsValue* timeStampMms = MmsValue_newBinaryTime(false);
+        MmsValue_setBinaryTime(timeStampMms, timeStamp);
+
+        LinkedList journalEntries = MmsConnection_readJournalStartAfter(self->connection, &mmsError, logDomain, logName,
+               timeStampMms, entryID,  moreFollows);
+
+        MmsValue_delete(timeStampMms);
+
+        if (mmsError != MMS_ERROR_NONE) {
+            *error = iedConnection_mapMmsErrorToIedError(mmsError);
+            return NULL;
+        }
+        else
+            return journalEntries;
+    }
+    else {
+        *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
+        return NULL;
+    }
+}
+
+
 
 MmsConnection
 IedConnection_getMmsConnection(IedConnection self)

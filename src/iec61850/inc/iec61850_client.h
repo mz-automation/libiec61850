@@ -1750,6 +1750,58 @@ IedConnection_getVariableSpecification(IedConnection self, IedClientError* error
 /** @} */
 
 /**
+ * @defgroup IEC61850_CLIENT_LOG_SERVICE Log service related functions, data types, and definitions
+ *
+ * @{
+ */
+
+/**
+ * \brief Implementation of the QueryLogByTime ACSI service
+ *
+ * Read log entries from a log at the server. The log entries to read are specified by
+ * a starting time and an end time. If the complete range does not fit in a single MMS message
+ * the moreFollows flag will be set to true, to indicate that more entries are available for the
+ * specified time range.
+ *
+ * \param self the connection object
+ * \param error the error code if an error occurs
+ * \param logReference log object reference in the form <LD name>/<LN name>$<log name>
+ * \param startTime as millisecond UTC timestamp
+ * \param endTime as millisecond UTC timestamp
+ * \param moreFollows (output value) indicates that more entries are available that match the specification.
+ *
+ * \return list of MmsJournalEntry objects matching the specification
+ */
+LinkedList /* <MmsJournalEntry> */
+IedConnection_queryLogByTime(IedConnection self, IedClientError* error, const char* logReference,
+        uint64_t startTime, uint64_t endTime, bool* moreFollows);
+
+/**
+ * \brief Implementation of the QueryLogAfter ACSI service
+ *
+ * Read log entries from a log at the server following the entry with the specified entryID and timestamp.
+ * If the complete range does not fit in a single MMS message
+ * the moreFollows flag will be set to true, to indicate that more entries are available for the
+ * specified time range.
+ *
+ * \param self the connection object
+ * \param error the error code if an error occurs
+ * \param logReference log object reference in the form <LD name>/<LN name>$<log name>
+ * \param entryID usually the entryID of the last received entry
+ * \param timeStamp as millisecond UTC timestamp
+ * \param moreFollows (output value) indicates that more entries are available that match the specification.
+ *
+ * \return list of MmsJournalEntry objects matching the specification
+ */
+LinkedList /* <MmsJournalEntry> */
+IedConnection_queryLogAfter(IedConnection self, IedClientError* error, const char* logReference,
+        MmsValue* entryID, uint64_t timeStamp, bool* moreFollows);
+
+
+
+/** @} */
+
+/**
  * @defgroup IEC61850_CLIENT_FILE_SERVICE File service related functions, data types, and definitions
  *
  * @{

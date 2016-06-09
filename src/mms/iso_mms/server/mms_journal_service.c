@@ -69,10 +69,8 @@ entryCallback(void* parameter, uint64_t timestamp, uint64_t entryID, bool moreFo
 
     if (moreFollow) {
 
-        if (encoder->moreFollows) {
-            printf("entryCallback return false\n");
+        if (encoder->moreFollows)
             return false;
-        }
 
         encoder->currentEntryBufPos = encoder->bufPos;
 
@@ -80,10 +78,6 @@ entryCallback(void* parameter, uint64_t timestamp, uint64_t entryID, bool moreFo
 
         encoder->currentEntryId = entryID;
         encoder->currentTimestamp = timestamp;
-
-    }
-    else {
-        printf("Encoded last entry: FINISHED\n");
     }
 
     return true;
@@ -319,9 +313,6 @@ mmsServer_handleReadJournalRequest(
 
                     memcpy(rangeStart.value.binaryTime.buf, requestBuffer + bufPos, length);
 
-                    char stringBuf[100];
-                    MmsValue_printToBuffer(&rangeStart, stringBuf, 100);
-
                     hasRangeStartSpec = true;
                 }
                 else {
@@ -349,9 +340,6 @@ mmsServer_handleReadJournalRequest(
                     rangeStop.value.binaryTime.size = length;
 
                     memcpy(rangeStop.value.binaryTime.buf, requestBuffer + bufPos, length);
-
-                    char stringBuf[100];
-                    MmsValue_printToBuffer(&rangeStop, stringBuf, 100);
 
                     hasRangeStopSpec = true;
                 }
@@ -381,9 +369,6 @@ mmsServer_handleReadJournalRequest(
                             rangeStart.value.binaryTime.size = length;
 
                             memcpy(rangeStart.value.binaryTime.buf, requestBuffer + bufPos, length);
-
-                            char stringBuf[100];
-                            MmsValue_printToBuffer(&rangeStart, stringBuf, 100);
 
                             hasTimeSpec = true;
                         }
@@ -428,7 +413,9 @@ mmsServer_handleReadJournalRequest(
 
     //TODO check if required fields are present
     if (hasNames == false) {
-        printf("MMS_SERVER: readJournal missing journal name\n");
+        if (DEBUG_MMS_SERVER)
+            printf("MMS_SERVER: readJournal missing journal name\n");
+
         mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
         return;
     }
@@ -441,7 +428,9 @@ mmsServer_handleReadJournalRequest(
     MmsDomain* mmsDomain = MmsDevice_getDomain(mmsDevice, domainId);
 
     if (mmsDomain == NULL) {
-        printf("Domain %s not found\n", domainId);
+        if (DEBUG_MMS_SERVER)
+            printf("MMS_SERVER: readJournal domain %s not found\n", domainId);
+
         mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
         return;
     }
@@ -449,12 +438,15 @@ mmsServer_handleReadJournalRequest(
     MmsJournal mmsJournal = MmsDomain_getJournal(mmsDomain, logName);
 
     if (mmsJournal == NULL) {
-        printf("Journal %s not found\n", logName);
+        if (DEBUG_MMS_SERVER)
+            printf("MMS_SERVER: readJournal journal %s not found\n", logName);
+
         mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
         return;
     }
 
-    printf("Read journal %s ...\n", mmsJournal->name);
+    if (DEBUG_MMS_SERVER)
+        printf("MMS_SERVER: readJournal - read journal %s ...\n", mmsJournal->name);
 
     struct sJournalEncoder encoder;
 
@@ -476,7 +468,9 @@ mmsServer_handleReadJournalRequest(
                     entryCallback, entryDataCallback, &encoder);
         }
         else {
-            printf("MMS_SERVER: readJournal missing valid argument combination\n");
+            if (DEBUG_MMS_SERVER)
+                printf("MMS_SERVER: readJournal missing valid argument combination\n");
+
             mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
             return;
         }

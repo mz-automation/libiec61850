@@ -621,3 +621,6 @@ EXPORTS
     MmsConnection_readJournalStartAfter
     LogControlBlock_create
 	Log_create
+	IedConnection_queryLogByTime
+	IedConnection_queryLogAfter
+
