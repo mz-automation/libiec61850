@@ -774,9 +774,45 @@ CDC_LPL_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
     DataAttribute_create("vendor", (ModelNode*) newLPL, IEC61850_VISIBLE_STRING_255, IEC61850_FC_DC, 0, 0, 0);
     DataAttribute_create("swRev", (ModelNode*) newLPL, IEC61850_VISIBLE_STRING_255, IEC61850_FC_DC, 0, 0, 0);
 
+    if (options & CDC_OPTION_AC_LN0_M)
+        DataAttribute_create("configRev", (ModelNode*) newLPL, IEC61850_VISIBLE_STRING_255, IEC61850_FC_DC, 0, 0, 0);
+
+    if (options & CDC_OPTION_AC_LN0_EX)
+        DataAttribute_create("ldNs", (ModelNode*) newLPL, IEC61850_VISIBLE_STRING_255, IEC61850_FC_EX, 0, 0, 0);
+
+    if (options & CDC_OPTION_AC_DLD_M)
+        DataAttribute_create("lnNs", (ModelNode*) newLPL, IEC61850_VISIBLE_STRING_255, IEC61850_FC_EX, 0, 0, 0);
+
     CDC_addStandardOptions(newLPL, options);
 
     return newLPL;
+}
+
+DataObject*
+CDC_DPL_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
+{
+    DataObject* newDPL = DataObject_create(dataObjectName, parent, 0);
+
+    DataAttribute_create("vendor", (ModelNode*) newDPL, IEC61850_VISIBLE_STRING_255, IEC61850_FC_DC, 0, 0, 0);
+
+    if (options & CDC_OPTION_DPL_HWREV)
+        DataAttribute_create("hwRev", (ModelNode*) newDPL, IEC61850_VISIBLE_STRING_255, IEC61850_FC_DC, 0, 0, 0);
+
+    if (options & CDC_OPTION_DPL_SWREV)
+        DataAttribute_create("swRev", (ModelNode*) newDPL, IEC61850_VISIBLE_STRING_255, IEC61850_FC_DC, 0, 0, 0);
+
+    if (options & CDC_OPTION_DPL_SERNUM)
+        DataAttribute_create("serNum", (ModelNode*) newDPL, IEC61850_VISIBLE_STRING_255, IEC61850_FC_DC, 0, 0, 0);
+
+    if (options & CDC_OPTION_DPL_MODEL)
+        DataAttribute_create("model", (ModelNode*) newDPL, IEC61850_VISIBLE_STRING_255, IEC61850_FC_DC, 0, 0, 0);
+
+    if (options & CDC_OPTION_DPL_LOCATION)
+        DataAttribute_create("location", (ModelNode*) newDPL, IEC61850_VISIBLE_STRING_255, IEC61850_FC_DC, 0, 0, 0);
+
+    CDC_addStandardOptions(newDPL, options);
+
+    return newDPL;
 }
 
 /* Directional protection activation information (ACD) */

@@ -215,6 +215,34 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
                         ReportControlBlock_create(nameString, currentLN, rptId,
                                 (bool) isBuffered, dataSetName, confRef, trgOps, options, bufTm, intgPd);
                     }
+                    else if (StringUtils_startsWith((char*) lineBuffer, "LC")) {
+                        uint32_t trgOps;
+                        uint32_t intgPd;
+                        int logEna;
+                        int withReasonCode;
+
+                        int matchedItems = sscanf((char*) lineBuffer, "LC(%s %s %s %u %u %i %i)",
+                                nameString, nameString2, nameString3, &trgOps, &intgPd, &logEna, &withReasonCode);
+
+                        if (matchedItems < 7) goto exit_error;
+
+                        char* dataSet = NULL;
+                        if (strcmp(nameString2, "-") != 0)
+                            dataSet = nameString2;
+
+                        char* logRef = NULL;
+                        if (strcmp(nameString3, "-") != 0)
+                            logRef = nameString3;
+
+                        LogControlBlock_create(nameString, currentLN, dataSet, logRef, trgOps, intgPd, logEna, withReasonCode);
+                    }
+                    else if (StringUtils_startsWith((char*) lineBuffer, "LOG")) {
+                        int matchedItems = sscanf((char*) lineBuffer, "LOG(%s)", nameString);
+
+                        if (matchedItems < 1) goto exit_error;
+
+                        Log_create(nameString, currentLN);
+                    }
                     else if (StringUtils_startsWith((char*) lineBuffer, "GC")) {
                         uint32_t confRef;
                         int fixedOffs;

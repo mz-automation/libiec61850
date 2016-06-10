@@ -623,4 +623,4 @@ EXPORTS
 	Log_create
 	IedConnection_queryLogByTime
 	IedConnection_queryLogAfter
-
+    CDC_DPL_create

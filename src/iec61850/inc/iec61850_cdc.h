@@ -46,12 +46,20 @@ extern "C" {
  */
 #define CDC_OPTION_PICS_SUBST (1 << 0)
 #define CDC_OPTION_BLK_ENA (1 << 1)
+
+/** Add d (description) data attribute */
 #define CDC_OPTION_DESC (1 << 2)
+
+/** Add dU (unicode description) data attribute */
 #define CDC_OPTION_DESC_UNICODE (1 << 3)
 
+/** Add cdcNs and cdcName required when a CDC is an extension to the standard */
 #define CDC_OPTION_AC_DLNDA (1 << 4)
+
+/** Add dataNs (data namespace) required for extended CDCs */
 #define CDC_OPTION_AC_DLN (1 << 5)
 
+/** Add the unit data attribute */
 #define CDC_OPTION_UNIT (1 << 6)
 
 #define CDC_OPTION_FROZEN_VALUE (1 << 7)
@@ -87,6 +95,17 @@ extern "C" {
 
 #define CDC_OPTION_ANGLE_REF (1 << 23)
 
+/** Options that are only valid for DPL CDC */
+#define CDC_OPTION_DPL_HWREV (1 << 17)
+#define CDC_OPTION_DPL_SWREV (1 << 18)
+#define CDC_OPTION_DPL_SERNUM (1 << 19)
+#define CDC_OPTION_DPL_MODEL (1 << 20)
+#define CDC_OPTION_DPL_LOCATION (1 << 21)
+
+/** Add mandatory data attributes for LLN0 (e.g. LBL configRef) */
+#define CDC_OPTION_AC_LN0_M (1 << 24)
+#define CDC_OPTION_AC_LN0_EX (1 << 25)
+#define CDC_OPTION_AC_DLD_M (1 << 26)
 
 /**
  * \brief Control model types
@@ -233,9 +252,53 @@ CDC_CMV_create(const char* dataObjectName, ModelNode* parent, uint32_t options);
 DataObject*
 CDC_SAV_create(const char* dataObjectName, ModelNode* parent, uint32_t options, bool isIntegerNotFloat);
 
-
+/**
+ * \brief create a new LPL (Logical node name plate) CDC instance (data object)
+ *
+ * Allowed parent type is LogicalNode
+ *
+ * possible options:
+ *   CDC_OPTION_AC_LN0_M (includes "configRev")
+ *   CDC_OPTION_AC_LN0_EX (includes "ldNs")
+ *   CDC_OPTION_AC_DLD_M (includes "lnNs")
+ *   standard options:
+ *   CDC_OPTION_DESC (includes "d")
+ *   CDC_OPTION_DESC_UNICODE (include "du")
+ *   CDC_OPTION_AC_DLNDA (include "cdcNs" and "cdcName")
+ *   CDC_OPTION_AC_DLN (includes "dataNs")
+ *
+ * \param dataObjectName the name of the new object
+ * \param parent the parent of the new data object (either a LogicalNode or another DataObject)
+ * \param options bit mask to encode required optional elements
+ *
+ * \return new DataObject instance
+ */
 DataObject*
 CDC_LPL_create(const char* dataObjectName, ModelNode* parent, uint32_t options);
+
+/**
+ * \brief create a new DPL (Device name plate) CDC instance (data object)
+ *
+ * Allowed parent type is LogicalNode
+ *
+ * possible options:
+ *   CDC_OPTION_DPL_HWREV (includes "hwRev")
+ *   CDC_OPTION_DPL_SWREV (includes "swRev")
+ *   CDC_OPTION_DPL_SERNUM (includes "serNum")
+ *   CDC_OPTION_DPL_MODEL (includes "model")
+ *   CDC_OPTION_DPL_LOCATION (includes "location")
+ *   standard options:
+ *   CDC_OPTION_AC_DLNDA (include "cdcNs" and "cdcName")
+ *   CDC_OPTION_AC_DLN (includes "dataNs")
+ *
+ * \param dataObjectName the name of the new object
+ * \param parent the parent of the new data object (either a LogicalNode or another DataObject)
+ * \param options bit mask to encode required optional elements
+ *
+ * \return new DataObject instance
+ */
+DataObject*
+CDC_DPL_create(const char* dataObjectName, ModelNode* parent, uint32_t options);
 
 DataObject*
 CDC_HST_create(const char* dataObjectName, ModelNode* parent, uint32_t options, uint16_t maxPts);

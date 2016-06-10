@@ -44,6 +44,8 @@ import com.libiec61850.scl.model.DataSet;
 import com.libiec61850.scl.model.FunctionalConstraintData;
 import com.libiec61850.scl.model.GSEControl;
 import com.libiec61850.scl.model.IED;
+import com.libiec61850.scl.model.Log;
+import com.libiec61850.scl.model.LogControl;
 import com.libiec61850.scl.model.LogicalDevice;
 import com.libiec61850.scl.model.LogicalNode;
 import com.libiec61850.scl.model.ReportControlBlock;
@@ -97,7 +99,7 @@ public class DynamicModelGenerator {
         for (LogicalNode logicalNode : logicalDevice.getLogicalNodes()) {
             output.print("LN(" + logicalNode.getName() + "){\n");
 
-            exportLogicalNode(output, logicalNode);
+            exportLogicalNode(output, logicalNode, logicalDevice);
 
             output.println("}");
         }
@@ -107,7 +109,7 @@ public class DynamicModelGenerator {
         return iecString.replace('.', '$');
     }
 
-    private void exportLogicalNode(PrintStream output, LogicalNode logicalNode) {
+    private void exportLogicalNode(PrintStream output, LogicalNode logicalNode, LogicalDevice logicalDevice) {
     	
     	for (SettingControl sgcb : logicalNode.getSettingGroupControlBlocks()) {
     		output.print("SG(" + sgcb.getActSG() + " " + sgcb.getNumOfSGs() + ")\n");
@@ -141,6 +143,12 @@ public class DynamicModelGenerator {
             else 
                 printRCBInstance(output, rcb, "");  
         }
+        
+        for (LogControl lcb : logicalNode.getLogControlBlocks())
+            printLCB(output, lcb, logicalNode, logicalDevice);
+        
+        for (Log log : logicalNode.getLogs())
+            output.println("LOG(" + log.getName() + ")");
         
         for (GSEControl gcb : logicalNode.getGSEControlBlocks()) {
             LogicalDevice ld = logicalNode.getParentLogicalDevice();
@@ -186,6 +194,36 @@ public class DynamicModelGenerator {
                 output.println("}");
             }
         }
+    }
+    
+    private void printLCB(PrintStream output, LogControl lcb, LogicalNode ln, LogicalDevice logicalDevice) {
+        output.print("LC(");
+        output.print(lcb.getName() + " ");
+        
+        if (lcb.getDataSet() != null)
+            output.print(lcb.getDataSet() + " ");
+        else
+            output.print("- ");
+        
+        if (lcb.getLogName() != null) {
+            String logRef = logicalDevice.getInst() + "/" + ln.getName() + "$" + lcb.getLogName();
+            output.print(logRef + " ");
+        }
+        else
+            output.print("- ");
+        
+        output.print(lcb.getTriggerOptions().getIntValue() + " ");
+        output.print(lcb.getIntgPd() + " ");
+        
+        if (lcb.isLogEna())
+            output.print("1 ");
+        else
+            output.print("0 ");
+        
+        if (lcb.isReasonCode())
+            output.println("1)");
+        else
+            output.println("0)");
     }
 
     private void printRCBInstance(PrintStream output, ReportControlBlock rcb, String index) {

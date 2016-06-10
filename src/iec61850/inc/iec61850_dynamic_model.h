@@ -169,7 +169,7 @@ ReportControlBlock_create(const char* name, LogicalNode* parent, char* rptId, bo
  * \param parent the parent LN.
  * \param dataSetName name (object reference) of the default data set or NULL if no data set
  *        is set by default
- * \param logRef name (object reference) of the default log or NULL if no log is set by default
+ * \param logRef name (object reference) of the default log or NULL if no log is set by default. THe LDname doesn't contain the IED name!
  * \param trgOps the trigger options supported by this LCB (bit set)
  * \param intgPd integrity period in milliseconds
  * \param logEna if true the log will be enabled by default, false otherwise
