@@ -76,6 +76,18 @@ static const char* GET_ENTRY_DATA = "select dataRef, value, reasonCode from Entr
 static const char* GET_OLD_ENTRY = "select * from Entries where entryID = (select min(entryID) from Entries where timeOfEntry = (select min(timeOfEntry) from Entries))";
 static const char* GET_NEW_ENTRY = "select * from Entries where entryID = (select max(entryID) from Entries where timeOfEntry = (select max(timeOfEntry) from Entries))";
 
+static char*
+copyStringInternal(const char* string)
+{
+    int newStringLength = strlen(string) + 1;
+
+    char* newString = (char*) malloc(newStringLength);
+
+    memcpy(newString, string, newStringLength);
+
+    return newString;
+}
+
 LogStorage
 SqliteLogStorage_createInstance(const char* filename)
 {
@@ -131,10 +143,11 @@ SqliteLogStorage_createInstance(const char* filename)
     if (rc != SQLITE_OK)
         goto exit_with_error;
 
-    LogStorage self = (LogStorage) GLOBAL_CALLOC(1, sizeof(struct sLogStorage));
+    LogStorage self = (LogStorage) calloc(1, sizeof(struct sLogStorage));
 
-    SqliteLogStorage* instanceData = (SqliteLogStorage*) GLOBAL_CALLOC(1, sizeof(struct sSqliteLogStorage));
-    instanceData->filename = copyString(filename);
+    SqliteLogStorage* instanceData = (SqliteLogStorage*) calloc(1, sizeof(struct sSqliteLogStorage));
+
+    instanceData->filename = copyStringInternal(filename);
     instanceData->db = db;
     instanceData->insertEntryStmt = insertEntryStmt;
     instanceData->insertEntryDataStmt = insertEntryDataStmt;
@@ -263,8 +276,10 @@ getEntryData(LogStorage self, uint64_t entryID, LogEntryDataCallback entryDataCa
 
     rc = sqlite3_bind_int64(instanceData->getEntryData, 1, entryID);
 
-    if (rc != SQLITE_OK)
-        printf("getEntryData 1 rc:%i\n", rc);
+    if (rc != SQLITE_OK) {
+        if (DEBUG_LOG_STORAGE_DRIVER)
+            printf("LOG_STORAGE_DRIVER: sqlite - getEntryData 1 rc:%i\n", rc);
+    }
 
     bool sendFinalEvent = true;
 
@@ -292,7 +307,8 @@ getEntryData(LogStorage self, uint64_t entryID, LogEntryDataCallback entryDataCa
     rc = sqlite3_reset(instanceData->getEntryData);
 
     if (rc != SQLITE_OK)
-        printf("getEntryData reset rc:%i\n", rc);
+        if (DEBUG_LOG_STORAGE_DRIVER)
+            printf("LOG_STORAGE_DRIVER: sqlite - getEntryData reset rc:%i\n", rc);
 }
 
 static bool
@@ -308,12 +324,14 @@ SqliteLogStorage_getEntries(LogStorage self, uint64_t startingTime, uint64_t end
     rc = sqlite3_bind_int64(instanceData->getEntriesWithRange, 1, startingTime);
 
     if (rc != SQLITE_OK)
-        printf("SqliteLogStorage_getEntries 1 rc:%i\n", rc);
+        if (DEBUG_LOG_STORAGE_DRIVER)
+            printf("LOG_STORAGE_DRIVER: sqlite - SqliteLogStorage_getEntries 1 rc:%i\n", rc);
 
     rc = sqlite3_bind_int64(instanceData->getEntriesWithRange, 2, endingTime);
 
     if (rc != SQLITE_OK)
-        printf("SqliteLogStorage_getEntries 2 rc:%i\n", rc);
+        if (DEBUG_LOG_STORAGE_DRIVER)
+            printf("LOG_STORAGE_DRIVER: sqlite - SqliteLogStorage_getEntries 2 rc:%i\n", rc);
 
     bool sendFinalEvent = true;
 
@@ -341,7 +359,8 @@ SqliteLogStorage_getEntries(LogStorage self, uint64_t startingTime, uint64_t end
     rc = sqlite3_reset(instanceData->getEntriesWithRange);
 
     if (rc != SQLITE_OK)
-        printf("SqliteLogStorage_getEntries reset rc:%i\n", rc);
+        if (DEBUG_LOG_STORAGE_DRIVER)
+            printf("LOG_STORAGE_DRIVER: sqlite - SqliteLogStorage_getEntries reset rc:%i\n", rc);
 
     return true;
 }
@@ -407,7 +426,8 @@ SqliteLogStorage_getEntriesAfter(LogStorage self, uint64_t startingTime, uint64_
     rc = sqlite3_bind_int64(instanceData->getEntriesAfter, 1, entryID);
 
     if (rc != SQLITE_OK)
-        printf("SqliteLogStorage_getEntriesAfter 1 rc:%i\n", rc);
+        if (DEBUG_LOG_STORAGE_DRIVER)
+            printf("LOG_STORAGE_DRIVER: sqlite - SqliteLogStorage_getEntriesAfter 1 rc:%i\n", rc);
 
     bool sendFinalEvent = true;
 
@@ -433,7 +453,8 @@ SqliteLogStorage_getEntriesAfter(LogStorage self, uint64_t startingTime, uint64_
     rc = sqlite3_reset(instanceData->getEntriesAfter);
 
     if (rc != SQLITE_OK)
-        printf("SqliteLogStorage_getEntriesAfter reset rc:%i\n", rc);
+        if (DEBUG_LOG_STORAGE_DRIVER)
+            printf("LOG_STORAGE_DRIVER: sqlite - SqliteLogStorage_getEntriesAfter reset rc:%i\n", rc);
 
     return true;
 }
@@ -452,11 +473,12 @@ SqliteLogStorage_destroy(LogStorage self)
     sqlite3_finalize(instanceData->getNewEntry);
 
     if (sqlite3_close(instanceData->db) != SQLITE_OK)
-        printf("SqliteLogStorage: failed to close database %s!\n", instanceData->filename);
+        if (DEBUG_LOG_STORAGE_DRIVER)
+            printf("LOG_STORAGE_DRIVER: sqlite - SqliteLogStorage: failed to close database %s!\n", instanceData->filename);
 
-    GLOBAL_FREEMEM(instanceData->filename);
-    GLOBAL_FREEMEM(instanceData);
-    GLOBAL_FREEMEM(self);
+    free(instanceData->filename);
+    free(instanceData);
+    free(self);
 }
 
 

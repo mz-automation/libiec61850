@@ -2901,9 +2901,26 @@ MmsMapping_createMmsVariableNameFromObjectReference(const char* objectReference,
         return NULL;
 
     if (i == objRefLength)
-        i = 0;
+        i = 0; /* for the case when no LD name is present */
     else
         i++;
+
+
+    if (fc == IEC61850_FC_NONE) {
+
+        int len = objRefLength - i;
+
+        char* mmsVariableName;
+
+        if (buffer == NULL)
+            mmsVariableName = (char*) GLOBAL_MALLOC(len);
+        else
+            mmsVariableName = buffer;
+
+        strcpy(mmsVariableName, objectReference + i);
+
+        return mmsVariableName;
+    }
 
     char* fcString = FunctionalConstraint_toString(fc);
 

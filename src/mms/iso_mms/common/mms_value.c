@@ -1605,7 +1605,7 @@ MmsValue_setBinaryTime(MmsValue* self, uint64_t timestamp)
     if (timestamp > 441763200000LL)
         mmsTime = timestamp - (441763200000LL);
     else
-        timestamp = 0;
+        mmsTime = 0;
 
     uint8_t* binaryTimeBuf = self->value.binaryTime.buf;
 

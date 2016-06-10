@@ -37,15 +37,6 @@
 
 #include <windows.h>
 
-#ifndef CONFIG_VIRTUAL_FILESTORE_BASEPATH
-#define CONFIG_VIRTUAL_FILESTORE_BASEPATH ".\\vmd-filestore\\"
-#endif
-
-//static char* fileBasePath = CONFIG_VIRTUAL_FILESTORE_BASEPATH;
-
-static char fileBasePath[256];
-static bool fileBasePathInitialized = false;
-
 struct sDirectoryHandle {
     HANDLE handle;
     WIN32_FIND_DATAW findData;
@@ -53,40 +44,16 @@ struct sDirectoryHandle {
     bool available;
 };
 
-static void
-createFullPathFromFileName(char* fullPath, char* filename)
-{
-    if (!fileBasePathInitialized) {
-        strcpy(fileBasePath, CONFIG_VIRTUAL_FILESTORE_BASEPATH);
-        fileBasePathInitialized = true;
-    }
-
-    strcpy(fullPath, fileBasePath);
-
-    if (filename != NULL)
-        strcat(fullPath, filename);
-}
-
-void
-FileSystem_setBasePath(char* basePath)
-{
-    strcpy(fileBasePath, basePath);
-    fileBasePathInitialized = true;
-}
 
 FileHandle
 FileSystem_openFile(char* fileName, bool readWrite)
 {
-    char fullPath[sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 255];
-
-    createFullPathFromFileName(fullPath, fileName);
-
     FileHandle newHandle = NULL;
 
     if (readWrite)
-        newHandle = (FileHandle) fopen(fullPath, "wb");
+        newHandle = (FileHandle) fopen(fileName, "wb");
     else
-        newHandle = (FileHandle) fopen(fullPath, "rb");
+        newHandle = (FileHandle) fopen(fileName, "rb");
 
     return newHandle;
 }
@@ -106,13 +73,9 @@ FileSystem_closeFile(FileHandle handle)
 bool
 FileSystem_getFileInfo(char* filename, uint32_t* fileSize, uint64_t* lastModificationTimestamp)
 {
-    char fullPath[sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 256];
-
-    createFullPathFromFileName(fullPath, filename);
-
     WIN32_FILE_ATTRIBUTE_DATA fad;
 
-    if (GetFileAttributesEx(fullPath, GetFileExInfoStandard, &fad) == 0)
+    if (GetFileAttributesEx(filename, GetFileExInfoStandard, &fad) == 0)
         return false;
 
     if (lastModificationTimestamp != NULL) {
@@ -136,13 +99,12 @@ FileSystem_getFileInfo(char* filename, uint32_t* fileSize, uint64_t* lastModific
 DirectoryHandle
 FileSystem_openDirectory(char* directoryName)
 {
-    char fullPath[sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 255];
-
-    createFullPathFromFileName(fullPath, directoryName);
-
     DirectoryHandle dirHandle = (DirectoryHandle) GLOBAL_CALLOC(1, sizeof(struct sDirectoryHandle));
 
-    strcat(fullPath, "\\*");
+    char fullPath[MAX_PATH + 1];
+
+    strncpy(fullPath, directoryName, MAX_PATH - 3);
+    strncat(fullPath, "\\*", MAX_PATH);
 
 	/* convert UTF-8 path name to WCHAR */
 	WCHAR unicodeFullPath[MAX_PATH + 1];
@@ -201,11 +163,7 @@ getNextDirectoryEntry(DirectoryHandle directory, bool* isDirectory)
 bool
 FileSystem_deleteFile(char* filename)
 {
-    char fullPath[sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 255];
-
-    createFullPathFromFileName(fullPath, filename);
-
-    if (remove(fullPath) == 0)
+    if (remove(filename) == 0)
         return true;
     else
         return false;
@@ -214,13 +172,7 @@ FileSystem_deleteFile(char* filename)
 bool
 FileSystem_renameFile(char* oldFilename, char* newFilename)
 {
-    char oldFullPath[sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 255];
-    char newFullPath[sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 255];
-
-    createFullPathFromFileName(oldFullPath, oldFilename);
-    createFullPathFromFileName(newFullPath, newFilename);
-
-    if (rename(oldFullPath, newFullPath) == 0)
+    if (rename(oldFilename, newFilename) == 0)
         return true;
     else
         return false;

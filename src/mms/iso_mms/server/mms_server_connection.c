@@ -1,7 +1,7 @@
 /*
  *  mms_server_connection.c
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013-2016 Michael Zillgith
  *
  *	This file is part of libIEC61850.
  *
@@ -108,8 +108,6 @@ handleConfirmedRequestPdu(
 			return;
 		}
 
-		if (DEBUG_MMS_SERVER) printf("tag %02x extended tag: %i size: %i\n", tag, extendedTag, length);
-
 		if (extendedTag) {
 		    switch(tag) {
 
@@ -155,7 +153,8 @@ handleConfirmedRequestPdu(
             switch(tag) {
             case 0x02: /* invoke Id */
                 invokeId = BerDecoder_decodeUint32(buffer, length, bufPos);
-                if (DEBUG_MMS_SERVER) printf("invokeId: %i\n", invokeId);
+                if (DEBUG_MMS_SERVER)
+                    printf("MMS_SERVER: received request with invokeId: %i\n", invokeId);
                 self->lastInvokeId = invokeId;
                 break;
 
@@ -256,7 +255,7 @@ MmsServerConnection_parseMessage(MmsServerConnection self, ByteBuffer* message, 
 		return MMS_ERROR;
 
 	if (DEBUG_MMS_SERVER)
-	    printf("mms_server: recvd MMS-PDU type: %02x size: %i\n", pduType, pduLength);
+	    printf("MMS_SERVER: recvd MMS-PDU type: %02x size: %i\n", pduType, pduLength);
 
 	switch (pduType) {
 	case 0xa8: /* Initiate request PDU */
@@ -272,7 +271,8 @@ MmsServerConnection_parseMessage(MmsServerConnection self, ByteBuffer* message, 
 		retVal = MMS_CONCLUDE;
 		break;
 	case 0xa4: /* Reject PDU - silently ignore */
-	    if (DEBUG) printf("received reject PDU!\n");
+	    if (DEBUG_MMS_SERVER)
+	        printf("MMS_SERVER: received reject PDU!\n");
 		retVal = MMS_OK;
 		break;
 	default:

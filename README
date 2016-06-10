@@ -90,6 +90,12 @@ C# client API
 
 A C#/.NET wrapper and examples and Visual Studio/MonoDevelop project files can be found in the dotnet folder. The examples and the C# wrapper API can be build and run on .NET or Mono.
 
+Experimental Python bindings
+----------------------------
+
+The experimental Python binding can be created using SWIG with cmake.
+
+To enable the bindings you have to select the phyton configuration option with ccmake of cmake-gui.
 
 Commercial licenses
 -------------------
