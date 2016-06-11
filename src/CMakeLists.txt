@@ -203,7 +203,7 @@ set (lib_windows_SRCS
 set (lib_bsd_SRCS
 ./hal/socket/bsd/socket_bsd.c
 ./hal/ethernet/bsd/ethernet_bsd.c
-./hal/thread/linux/thread_linux.c
+./hal/thread/bsd/thread_bsd.c
 ./hal/filesystem/linux/file_provider_linux.c
 ./hal/time/unix/time.c
 )

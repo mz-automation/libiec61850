@@ -44,7 +44,7 @@ LIB_SOURCE_DIRS += src/hal/filesystem/linux
 LIB_SOURCE_DIRS += src/hal/time/unix
 else ifeq ($(HAL_IMPL), BSD)
 LIB_SOURCE_DIRS += src/hal/socket/bsd
-LIB_SOURCE_DIRS += src/hal/thread/linux
+LIB_SOURCE_DIRS += src/hal/thread/bsd
 LIB_SOURCE_DIRS += src/hal/ethernet/bsd
 LIB_SOURCE_DIRS += src/hal/filesystem/linux
 LIB_SOURCE_DIRS += src/hal/time/unix
