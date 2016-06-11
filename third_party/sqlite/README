@@ -1,0 +1,1 @@
+Copy the sqlite amalagamation source code files (sqlite3.c sqlite3ext.h  sqlite3.h) in this directory. You can download an archive withan archive with the files here: https://www.sqlite.org/download.html 
