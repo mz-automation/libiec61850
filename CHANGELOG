@@ -6,8 +6,9 @@ Changes to version 0.9.2
 - server: negative delete data set response is now compatible with new test procedures (TPCL 1.1)
 - FileSystem API is now intended to access the complete file system. Path translation for VMD filestore is done by MMS file service implementation (removed FileSystem_setBasePath function)
 - added CDC_DPL_create function
-- MMS server: fixed raced condition when opening/closing connections in multi-threaded configuration.
-
+- MMS server: fixed race condition when opening/closing connections in multi-threaded configuration.
+- client: IedConnection_readObject and IedConnection_getVariableSpecification functions can now be applied to whole LNs
+- client: GetLogicalNodeDirectory for data set and log ACSI classes will not use cached model data but request the information from server. This way the client can get up to date information about newly created dynamic data sets
 
 Changes to version 0.9.1
 ------------------------

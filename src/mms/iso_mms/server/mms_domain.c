@@ -88,16 +88,19 @@ MmsDomain_addJournal(MmsDomain* self, const char* name)
 MmsJournal
 MmsDomain_getJournal(MmsDomain* self, const char* name)
 {
-    LinkedList journal = LinkedList_getNext(self->journals);
+    if (self->journals != NULL) {
 
-    while (journal != NULL) {
+        LinkedList journal = LinkedList_getNext(self->journals);
 
-        MmsJournal mmsJournal = (MmsJournal) LinkedList_getData(journal);
+        while (journal != NULL) {
 
-        if (strcmp(mmsJournal->name, name) == 0)
-            return mmsJournal;
+            MmsJournal mmsJournal = (MmsJournal) LinkedList_getData(journal);
 
-        journal = LinkedList_getNext(journal);
+            if (strcmp(mmsJournal->name, name) == 0)
+                return mmsJournal;
+
+            journal = LinkedList_getNext(journal);
+        }
     }
 
     return NULL;

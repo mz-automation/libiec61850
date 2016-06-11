@@ -1,7 +1,7 @@
 /*
  * static_model.c
  *
- * automatically generated from beagle_demo.icd
+ * automatically generated from beagle_demo.iid
  */
 #include "static_model.h"
 
@@ -1257,7 +1257,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO2_Cancel_ctlVal = {
     NULL,
     0,
     IEC61850_FC_CO,
-    IEC61850_INT8,
+    IEC61850_BOOLEAN,
     0,
     NULL,
     0};
@@ -2279,7 +2279,7 @@ DataAttribute iedModel_GenericIO_TIM_GAPC1_OpCntRs_Oper_ctlVal = {
     NULL,
     0,
     IEC61850_FC_CO,
-    IEC61850_BOOLEAN,
+    IEC61850_INT32,
     0,
     NULL,
     0};

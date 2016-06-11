@@ -188,15 +188,18 @@ getJournalListDomainSpecific(MmsServerConnection connection, char* domainName)
     if (domain != NULL) {
         nameList = LinkedList_create();
 
-        LinkedList journalList = domain->journals;
+        if (domain->journals != NULL) {
 
-        while ((journalList = LinkedList_getNext(journalList)) != NULL) {
+            LinkedList journalList = domain->journals;
 
-            MmsJournal journal = (MmsJournal) LinkedList_getData(journalList);
+            while ((journalList = LinkedList_getNext(journalList)) != NULL) {
 
-            LinkedList_add(nameList, (void*) journal->name);
+                MmsJournal journal = (MmsJournal) LinkedList_getData(journalList);
+
+                LinkedList_add(nameList, (void*) journal->name);
+            }
+
         }
-
     }
 
     return nameList;
