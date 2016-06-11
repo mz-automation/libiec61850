@@ -9,6 +9,9 @@ Changes to version 0.9.2
 - MMS server: fixed race condition when opening/closing connections in multi-threaded configuration.
 - client: IedConnection_readObject and IedConnection_getVariableSpecification functions can now be applied to whole LNs
 - client: GetLogicalNodeDirectory for data set and log ACSI classes will not use cached model data but request the information from server. This way the client can get up to date information about newly created dynamic data sets
+- changed HAL thread implementation for bsd to be compatible with MacOS X 10.10
+- fixed problem with test case sSgN4: return temporarily-unavailable when no EditSG is selected
+- fixed bug in ethernet_win32.c
 
 Changes to version 0.9.1
 ------------------------
