@@ -113,7 +113,6 @@ EXPORTS
     FileSystem_readDirectory @302
     FileSystem_readFile @303
     FileSystem_renameFile @304
-    FileSystem_setBasePath @305
     FunctionalConstraint_fromString @313
     FunctionalConstraint_toString @314
     GSEControlBlock_create @316
