@@ -1054,7 +1054,7 @@ mmsClient_getNameListSingleRequest(
                 payload, continueAfter);
     else {
 
-        if (objectClass == MMS_DOMAIN_NAMES)
+        if (objectClass == MMS_OBJECT_CLASS_DOMAIN)
             mmsClient_createMmsGetNameListRequestVMDspecific(invokeId,
                     payload, continueAfter);
         else
@@ -1110,31 +1110,37 @@ mmsClient_getNameList(MmsConnection self, MmsError *mmsError,
 LinkedList /* <char*> */
 MmsConnection_getVMDVariableNames(MmsConnection self, MmsError* mmsError)
 {
-    return mmsClient_getNameList(self, mmsError, NULL, MMS_NAMED_VARIABLE, false);
+    return mmsClient_getNameList(self, mmsError, NULL, MMS_OBJECT_CLASS_NAMED_VARIABLE, false);
 }
 
 LinkedList /* <char*> */
 MmsConnection_getDomainNames(MmsConnection self, MmsError* mmsError)
 {
-    return mmsClient_getNameList(self, mmsError, NULL, MMS_DOMAIN_NAMES, false);
+    return mmsClient_getNameList(self, mmsError, NULL, MMS_OBJECT_CLASS_DOMAIN, false);
 }
 
 LinkedList /* <char*> */
 MmsConnection_getDomainVariableNames(MmsConnection self, MmsError* mmsError, const char* domainId)
 {
-    return mmsClient_getNameList(self, mmsError, domainId, MMS_NAMED_VARIABLE, false);
+    return mmsClient_getNameList(self, mmsError, domainId, MMS_OBJECT_CLASS_NAMED_VARIABLE, false);
 }
 
 LinkedList /* <char*> */
 MmsConnection_getDomainVariableListNames(MmsConnection self, MmsError* mmsError, const char* domainId)
 {
-    return mmsClient_getNameList(self, mmsError, domainId, MMS_NAMED_VARIABLE_LIST, false);
+    return mmsClient_getNameList(self, mmsError, domainId, MMS_OBJECT_CLASS_NAMED_VARIABLE_LIST, false);
+}
+
+LinkedList /* <char*> */
+MmsConnection_getDomainJournals(MmsConnection self, MmsError* mmsError, const char* domainId)
+{
+    return mmsClient_getNameList(self, mmsError, domainId, MMS_OBJECT_CLASS_JOURNAL, false);
 }
 
 LinkedList /* <char*> */
 MmsConnection_getVariableListNamesAssociationSpecific(MmsConnection self, MmsError* mmsError)
 {
-    return mmsClient_getNameList(self, mmsError, NULL, MMS_NAMED_VARIABLE_LIST, true);
+    return mmsClient_getNameList(self, mmsError, NULL, MMS_OBJECT_CLASS_NAMED_VARIABLE_LIST, true);
 }
 
 MmsValue*
@@ -1636,6 +1642,124 @@ MmsConnection_getServerStatus(MmsConnection self, MmsError* mmsError, int* vmdLo
 
 }
 
+static LinkedList
+readJournal(MmsConnection self, MmsError* mmsError, uint32_t invokeId,  ByteBuffer* payload, bool* moreFollows)
+{
+    *mmsError = MMS_ERROR_NONE;
+
+    ByteBuffer* responseMessage = sendRequestAndWaitForResponse(self, invokeId, payload);
+
+    LinkedList response = NULL;
+
+    if (self->lastResponseError != MMS_ERROR_NONE)
+        *mmsError = self->lastResponseError;
+    else if (responseMessage != NULL) {
+
+        if (mmsClient_parseReadJournalResponse(self, moreFollows, &response) == false)
+            *mmsError = MMS_ERROR_PARSING_RESPONSE;
+    }
+
+    releaseResponse(self);
+
+    if (self->associationState == MMS_STATE_CLOSED)
+        *mmsError = MMS_ERROR_CONNECTION_LOST;
+
+    return response;
+}
+
+static void
+MmsJournalVariable_destroy(MmsJournalVariable self)
+{
+    if (self != NULL) {
+        GLOBAL_FREEMEM(self->tag);
+        MmsValue_delete(self->value);
+        GLOBAL_FREEMEM(self);
+    }
+}
+
+void
+MmsJournalEntry_destroy(MmsJournalEntry self)
+{
+    if (self != NULL) {
+        MmsValue_delete(self->entryID);
+        MmsValue_delete(self->occurenceTime);
+        LinkedList_destroyDeep(self->journalVariables,
+                (LinkedListValueDeleteFunction) MmsJournalVariable_destroy);
+        GLOBAL_FREEMEM(self);
+    }
+}
+
+
+const MmsValue*
+MmsJournalEntry_getEntryID(MmsJournalEntry self)
+{
+    return self->entryID;
+}
+
+const MmsValue*
+MmsJournalEntry_getOccurenceTime(MmsJournalEntry self)
+{
+    return self->occurenceTime;
+}
+
+const LinkedList /* <MmsJournalVariable> */
+MmsJournalEntry_getJournalVariables(MmsJournalEntry self)
+{
+    return self->journalVariables;
+}
+
+const char*
+MmsJournalVariable_getTag(MmsJournalVariable self)
+{
+    return self->tag;
+}
+
+const MmsValue*
+MmsJournalVariable_getValue(MmsJournalVariable self)
+{
+    return self->value;
+}
+
+LinkedList
+MmsConnection_readJournalTimeRange(MmsConnection self, MmsError* mmsError, const char* domainId, const char* itemId,
+        MmsValue* startingTime, MmsValue* endingTime, bool* moreFollows)
+{
+    if ((MmsValue_getType(startingTime) != MMS_BINARY_TIME) ||
+            (MmsValue_getType(endingTime) != MMS_BINARY_TIME)) {
+
+        *mmsError = MMS_ERROR_INVALID_ARGUMENTS;
+        return NULL;
+    }
+
+    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
+
+    uint32_t invokeId = getNextInvokeId(self);
+
+    mmsClient_createReadJournalRequestWithTimeRange(invokeId, payload, domainId, itemId, startingTime, endingTime);
+
+    return readJournal(self, mmsError, invokeId, payload, moreFollows);
+}
+
+LinkedList
+MmsConnection_readJournalStartAfter(MmsConnection self, MmsError* mmsError, const char* domainId, const char* itemId,
+        MmsValue* timeSpecification, MmsValue* entrySpecification, bool* moreFollows)
+{
+
+    if ((MmsValue_getType(timeSpecification) != MMS_BINARY_TIME) ||
+            (MmsValue_getType(entrySpecification) != MMS_OCTET_STRING)) {
+
+        *mmsError = MMS_ERROR_INVALID_ARGUMENTS;
+        return NULL;
+    }
+
+    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
+
+    uint32_t invokeId = getNextInvokeId(self);
+
+    mmsClient_createReadJournalRequestStartAfter(invokeId, payload, domainId, itemId, timeSpecification, entrySpecification);
+
+    return readJournal(self, mmsError, invokeId, payload, moreFollows);
+}
 
 int32_t
 MmsConnection_fileOpen(MmsConnection self, MmsError* mmsError, const char* filename, uint32_t initialPosition,

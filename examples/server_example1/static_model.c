@@ -1596,11 +1596,15 @@ ReportControlBlock iedModel_Device1_LLN0_report0 = {&iedModel_Device1_LLN0, "LLN
 
 
 
+
+
 IedModel iedModel = {
     "SampleIED",
     &iedModel_Device1,
     &iedModelds_Device1_LLN0_dataset1,
     &iedModel_Device1_LLN0_report0,
+    NULL,
+    NULL,
     NULL,
     NULL,
     NULL,

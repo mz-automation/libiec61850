@@ -41,6 +41,7 @@ MmsDomain_create(char* domainName)
 
 	self->domainName = copyString(domainName);
 	self->namedVariableLists = LinkedList_create();
+	self->journals = NULL;
 
 	return self;
 }
@@ -57,6 +58,10 @@ MmsDomain_destroy(MmsDomain* self)
 		GLOBAL_FREEMEM(self->namedVariables);
 	}
 
+	if (self->journals != NULL) {
+	    LinkedList_destroyDeep(self->journals, (LinkedListValueDeleteFunction) MmsJournal_destroy);
+	}
+
 	LinkedList_destroyDeep(self->namedVariableLists, (LinkedListValueDeleteFunction) MmsNamedVariableList_destroy);
 
 	GLOBAL_FREEMEM(self);
@@ -66,6 +71,39 @@ char*
 MmsDomain_getName(MmsDomain* self)
 {
 	return self->domainName;
+}
+
+void
+MmsDomain_addJournal(MmsDomain* self, const char* name)
+{
+    if (self->journals == NULL)
+        self->journals = LinkedList_create();
+
+    MmsJournal journal = MmsJournal_create(name);
+
+    LinkedList_add(self->journals, (void*) journal);
+}
+
+
+MmsJournal
+MmsDomain_getJournal(MmsDomain* self, const char* name)
+{
+    if (self->journals != NULL) {
+
+        LinkedList journal = LinkedList_getNext(self->journals);
+
+        while (journal != NULL) {
+
+            MmsJournal mmsJournal = (MmsJournal) LinkedList_getData(journal);
+
+            if (strcmp(mmsJournal->name, name) == 0)
+                return mmsJournal;
+
+            journal = LinkedList_getNext(journal);
+        }
+    }
+
+    return NULL;
 }
 
 bool

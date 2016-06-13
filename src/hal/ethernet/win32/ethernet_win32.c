@@ -233,7 +233,7 @@ Ethernet_getInterfaceMACAddress(const char* interfaceId, uint8_t* addr)
 
     long interfaceIndex = strtol(interfaceId, &endPtr, 10);
 
-    if (endPtr != NULL) {
+    if ((*interfaceId != '\0') && (*endPtr != '\0')) {
         printf("Ethernet_getInterfaceMACAddress: invalid interface number %s\n", interfaceId);
         return;
     }

@@ -1,7 +1,7 @@
 /*
  *  mms_mapping.c
  *
- *  Copyright 2013, 2014, 2015 Michael Zillgith
+ *  Copyright 2013-2016 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -30,6 +30,7 @@
 #include "mms_goose.h"
 #include "mms_sv.h"
 #include "reporting.h"
+#include "logging.h"
 #include "control.h"
 #include "ied_server_private.h"
 
@@ -756,6 +757,25 @@ countReportControlBlocksForLogicalNode(MmsMapping* self, LogicalNode* logicalNod
 }
 #endif /* (CONFIG_IEC61850_CONTROL_SERVICE == 1) */
 
+#if (CONFIG_IEC61850_LOG_SERVICE == 1)
+static int
+countLogControlBlocksForLogicalNode (MmsMapping* self, LogicalNode* logicalNode)
+{
+    int lcbCount = 0;
+
+    LogControlBlock* lcb = self->model->lcbs;
+
+    while (lcb != NULL) {
+        if (lcb->parent == logicalNode)
+            lcbCount++;
+
+        lcb = lcb->sibling;
+    }
+
+    return lcbCount;
+}
+#endif /* (CONFIG_IEC61850_LOG_SERVICE == 1) */
+
 
 #if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
 
@@ -870,6 +890,19 @@ createNamedVariableFromLogicalNode(MmsMapping* self, MmsDomain* domain,
     }
 #endif /* (CONFIG_IEC61850_REPORT_SERVICE == 1) */
 
+#if (CONFIG_IEC61850_LOG_SERVICE == 1)
+
+    int lcbCount = countLogControlBlocksForLogicalNode(self, logicalNode);
+
+    if (lcbCount > 0) {
+        if (DEBUG_IED_SERVER)
+            printf("   and %i LOG control blocks\n", lcbCount);
+
+        componentCount++;
+    }
+
+#endif /* (CONFIG_IEC61850_LOG_SERVICE == 1) */
+
 #if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
 
     int gseCount = countGSEControlBlocksForLogicalNode(self, logicalNode);
@@ -969,7 +1002,15 @@ createNamedVariableFromLogicalNode(MmsMapping* self, MmsDomain* domain,
     }
 #endif /* (CONFIG_IEC61850_REPORT_SERVICE == 1) */
 
-    /* TODO create LCBs here */
+#if (CONFIG_IEC61850_LOG_SERVICE == 1)
+    if (lcbCount > 0) {
+        namedVariable->typeSpec.structure.elements[currentComponent] =
+                Logging_createLCBs(self, domain, logicalNode, lcbCount);
+
+        currentComponent++;
+    }
+#endif /* (CONFIG_IEC61850_LOG_SERVICE == 1) */
+
 
 #if (CONFIG_IEC61850_REPORT_SERVICE == 1)
     if (brcbCount > 0) {
@@ -1068,6 +1109,36 @@ createMmsDomainFromIedDevice(MmsMapping* self, LogicalDevice* logicalDevice)
 
     if (domain == NULL)
         goto exit_function;
+
+#if (CONFIG_IEC61850_LOG_SERVICE == 1)
+    /* add logs (journals) */
+    Log* log = self->model->logs;
+
+    while (log != NULL) {
+
+        char journalName[65];
+
+        int nameLength = strlen(log->parent->name) + strlen(log->name);
+
+        if (nameLength > 63) {
+            if (DEBUG_IED_SERVER)
+                printf("IED_SERVER: Log name %s invalid! Resulting journal name too long! Skip log\n", log->name);
+        }
+        else {
+            strcpy(journalName, log->parent->name);
+            strcat(journalName, "$");
+            strcat(journalName, log->name);
+
+            MmsDomain_addJournal(domain, journalName);
+
+            LogInstance* logInstance = LogInstance_create(log->parent, log->name);
+
+            LinkedList_add(self->logInstances, (void*) logInstance);
+        }
+
+        log = log->sibling;
+    }
+#endif /* (CONFIG_IEC61850_LOG_SERVICE == 1) */
 
     int nodesCount = LogicalDevice_getLogicalNodeCount(logicalDevice);
 
@@ -1193,6 +1264,11 @@ MmsMapping_create(IedModel* model)
     self->reportControls = LinkedList_create();
 #endif
 
+#if (CONFIG_IEC61850_LOG_SERVICE == 1)
+    self->logControls = LinkedList_create();
+    self->logInstances = LinkedList_create();
+#endif
+
 #if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
     self->gseControls = LinkedList_create();
     self->gooseInterfaceId = NULL;
@@ -1252,6 +1328,11 @@ MmsMapping_destroy(MmsMapping* self)
 
 #if (CONFIG_IEC61850_SETTING_GROUPS == 1)
     LinkedList_destroy(self->settingGroups);
+#endif
+
+#if (CONFIG_IEC61850_LOG_SERVICE == 1)
+    LinkedList_destroyDeep(self->logControls, (LinkedListValueDeleteFunction) LogControl_destroy);
+    LinkedList_destroyDeep(self->logInstances, (LinkedListValueDeleteFunction) LogInstance_destroy);
 #endif
 
     LinkedList_destroy(self->observedObjects);
@@ -1369,6 +1450,19 @@ isSampledValueControlBlock(char* separator)
 }
 
 #endif /* (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1) */
+
+#if (CONFIG_IEC61850_LOG_SERVICE == 1)
+
+static bool
+isLogControlBlock(char* separator)
+{
+    if (strncmp(separator + 1, "LG", 2) == 0)
+        return true;
+
+    return false;
+}
+
+#endif /* (CONFIG_IEC61850_LOG_SERVICE == 1) */
 
 char*
 MmsMapping_getNextNameElement(char* name)
@@ -1705,6 +1799,13 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
 
 #endif /* (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1) */
 
+#if (CONFIG_IEC61850_LOG_SERVICE == 1)
+
+    /* Log control block - LG */
+    if (isLogControlBlock(separator))
+        return LIBIEC61850_LOG_SVC_writeAccessLogControlBlock(self, domain, variableId, value, connection);
+
+#endif /* (CONFIG_IEC61850_LOG_SERVICE == 1) */
 
 #if (CONFIG_IEC61850_REPORT_SERVICE == 1)
     /* Report control blocks - BR, RP */
@@ -1894,7 +1995,7 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
 		SettingGroup* sg = getSettingGroupByMmsDomain(self, domain);
 
 		if (sg->editingClient != (ClientConnection) connection)
-			return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+		    return DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
 	}
 #endif /* (CONFIG_IEC61850_SETTING_GROUPS == 1) */
 
@@ -2145,6 +2246,14 @@ mmsReadHandler(void* parameter, MmsDomain* domain, char* variableId, MmsServerCo
     }
 #endif
 
+#if (CONFIG_IEC61850_LOG_SERVICE == 1)
+    /* LOG control block - LG */
+    if (isLogControlBlock(separator)) {
+        retValue = LIBIEC61850_LOG_SVC_readAccessControlBlock(self, domain, variableId);
+        goto exit_function;
+    }
+#endif
+
 #if (CONFIG_IEC61850_REPORT_SERVICE == 1)
     /* Report control blocks - BR, RP */
     if (isReportControlBlock(separator)) {
@@ -2374,10 +2483,10 @@ variableListChangedHandler (void* parameter, bool create, MmsVariableListType li
     else {
         /* Check if data set is referenced in a report */
 
-        LinkedList element = self->reportControls;
+        LinkedList rcElement = self->reportControls;
 
-        while ((element = LinkedList_getNext(element)) != NULL) {
-            ReportControl* rc = (ReportControl*) element->data;
+        while ((rcElement = LinkedList_getNext(rcElement)) != NULL) {
+            ReportControl* rc = (ReportControl*) rcElement->data;
 
             if (rc->isDynamicDataSet) {
                 if (rc->dataSet != NULL) {
@@ -2386,16 +2495,24 @@ variableListChangedHandler (void* parameter, bool create, MmsVariableListType li
                         if (rc->dataSet->logicalDeviceName != NULL) {
                             if (strcmp(rc->dataSet->name, listName) == 0) {
                                 if (strcmp(rc->dataSet->logicalDeviceName, MmsDomain_getName(domain)) == 0) {
-                                    allow = MMS_ERROR_ACCESS_OBJECT_ACCESS_DENIED;
+                                    allow = MMS_ERROR_SERVICE_OBJECT_CONSTRAINT_CONFLICT;
                                     break;
                                 }
+                            }
+                        }
+                    }
+                    else if (listType == MMS_VMD_SPECIFIC) {
+                        if (rc->dataSet->logicalDeviceName == NULL) {
+                            if (strcmp(rc->dataSet->name, listName) == 0) {
+                                allow = MMS_ERROR_SERVICE_OBJECT_CONSTRAINT_CONFLICT;
+                               break;
                             }
                         }
                     }
                     else if (listType == MMS_ASSOCIATION_SPECIFIC) {
                         if (rc->dataSet->logicalDeviceName == NULL) {
                             if (strcmp(rc->dataSet->name, listName) == 0) {
-                                allow = MMS_ERROR_ACCESS_OBJECT_ACCESS_DENIED;
+                                allow = MMS_ERROR_SERVICE_OBJECT_CONSTRAINT_CONFLICT;
                                 break;
                             }
                         }
@@ -2404,6 +2521,42 @@ variableListChangedHandler (void* parameter, bool create, MmsVariableListType li
                 }
             }
         }
+
+
+#if (CONFIG_IEC61850_LOG_SERVICE == 1)
+        /* check if data set is referenced in a log control block*/
+        LinkedList logElement = self->logControls;
+
+        while ((logElement = LinkedList_getNext(logElement)) != NULL) {
+            LogControl* lc = (LogControl*) logElement->data;
+
+            if (lc->isDynamicDataSet) {
+                if (lc->dataSet != NULL) {
+
+                    if (listType == MMS_DOMAIN_SPECIFIC) {
+                        if (lc->dataSet->logicalDeviceName != NULL) {
+                            if (strcmp(lc->dataSet->name, listName) == 0) {
+                                if (strcmp(lc->dataSet->logicalDeviceName, MmsDomain_getName(domain)) == 0) {
+                                    allow = MMS_ERROR_SERVICE_OBJECT_CONSTRAINT_CONFLICT;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    else if (listType == MMS_VMD_SPECIFIC) {
+                        if (lc->dataSet->logicalDeviceName == NULL) {
+                            if (strcmp(lc->dataSet->name, listName) == 0) {
+                                allow = MMS_ERROR_SERVICE_OBJECT_CONSTRAINT_CONFLICT;
+                               break;
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
+
+#endif /* (CONFIG_IEC61850_LOG_SERVICE == 1) */
     }
 
     return allow;
@@ -2432,7 +2585,7 @@ MmsMapping_setConnectionIndicationHandler(MmsMapping* self, IedConnectionIndicat
     self->connectionIndicationHandlerParameter = parameter;
 }
 
-#if ((CONFIG_IEC61850_REPORT_SERVICE == 1) || (CONFIG_INCLUDE_GOOSE_SUPPORT == 1))
+
 
 static bool
 isMemberValueRecursive(MmsValue* container, MmsValue* value)
@@ -2459,6 +2612,8 @@ isMemberValueRecursive(MmsValue* container, MmsValue* value)
 
     return isMemberValue;
 }
+
+#if ((CONFIG_IEC61850_REPORT_SERVICE == 1) || (CONFIG_INCLUDE_GOOSE_SUPPORT == 1))
 
 static bool
 DataSet_isMemberValue(DataSet* dataSet, MmsValue* value, int* index)
@@ -2488,6 +2643,97 @@ DataSet_isMemberValue(DataSet* dataSet, MmsValue* value, int* index)
     return false;
 }
 #endif /* ((CONFIG_IEC61850_REPORT_SERVICE == 1) || (CONFIG_INCLUDE_GOOSE_SUPPORT)) */
+
+#if (CONFIG_IEC61850_LOG_SERVICE == 1)
+
+static bool
+DataSet_isMemberValueWithRef(DataSet* dataSet, MmsValue* value, char* dataRef, const char* iedName)
+{
+    int i = 0;
+
+     DataSetEntry* dataSetEntry = dataSet->fcdas;
+
+     while (dataSetEntry != NULL) {
+
+         MmsValue* dataSetValue = dataSetEntry->value;
+
+         if (dataSetValue != NULL) { /* prevent invalid data set members */
+             if (isMemberValueRecursive(dataSetValue, value)) {
+                 if (dataRef != NULL)
+                     sprintf(dataRef, "%s%s/%s", iedName, dataSetEntry->logicalDeviceName, dataSetEntry->variableName);
+
+                 return true;
+             }
+         }
+
+         i++;
+
+         dataSetEntry = dataSetEntry->sibling;
+     }
+
+     return false;
+}
+
+void
+MmsMapping_triggerLogging(MmsMapping* self, MmsValue* value, LogInclusionFlag flag)
+{
+    LinkedList element = self->logControls;
+
+    while ((element = LinkedList_getNext(element)) != NULL) {
+        LogControl* lc = (LogControl*) element->data;
+
+        if ((lc->enabled) && (lc->dataSet != NULL)) {
+
+            uint8_t reasonCode;
+
+            switch (flag) {
+
+            case LOG_CONTROL_VALUE_UPDATE:
+                if ((lc->triggerOps & TRG_OPT_DATA_UPDATE) == 0)
+                    continue;
+
+                reasonCode = TRG_OPT_DATA_UPDATE * 2;
+
+                break;
+
+            case LOG_CONTROL_VALUE_CHANGED:
+                if (((lc->triggerOps & TRG_OPT_DATA_CHANGED) == 0) &&
+                        ((lc->triggerOps & TRG_OPT_DATA_UPDATE) == 0))
+                    continue;
+
+                reasonCode = TRG_OPT_DATA_CHANGED * 2;
+
+                break;
+
+            case LOG_CONTROL_QUALITY_CHANGED:
+                if ((lc->triggerOps & TRG_OPT_QUALITY_CHANGED) == 0)
+                    continue;
+
+                reasonCode = TRG_OPT_QUALITY_CHANGED * 2;
+
+                break;
+
+            default:
+                continue;
+            }
+
+            char dataRef[130];
+
+            if (DataSet_isMemberValueWithRef(lc->dataSet, value, dataRef, self->model->name)) {
+
+                if (lc->logInstance != NULL) {
+                    LogInstance_logSingleData(lc->logInstance, dataRef, value, reasonCode);
+                }
+                else
+                    printf("No log instance available!\n");
+            }
+
+
+        }
+    }
+}
+
+#endif /* (CONFIG_IEC61850_LOG_SERVICE == 1) */
 
 #if (CONFIG_IEC61850_REPORT_SERVICE == 1)
 void
@@ -2655,9 +2901,26 @@ MmsMapping_createMmsVariableNameFromObjectReference(const char* objectReference,
         return NULL;
 
     if (i == objRefLength)
-        i = 0;
+        i = 0; /* for the case when no LD name is present */
     else
         i++;
+
+
+    if (fc == IEC61850_FC_NONE) {
+
+        int len = objRefLength - i;
+
+        char* mmsVariableName;
+
+        if (buffer == NULL)
+            mmsVariableName = (char*) GLOBAL_MALLOC(len);
+        else
+            mmsVariableName = buffer;
+
+        strcpy(mmsVariableName, objectReference + i);
+
+        return mmsVariableName;
+    }
 
     char* fcString = FunctionalConstraint_toString(fc);
 
@@ -2755,6 +3018,10 @@ processPeriodicTasks(MmsMapping* self)
 
 #if (CONFIG_IEC61850_SETTING_GROUPS == 1)
     MmsMapping_checkForSettingGroupReservationTimeouts(self, currentTimeInMs);
+#endif
+
+#if (CONFIG_IEC61850_LOG_SERVICE == 1)
+    Logging_processIntegrityLogs(self, currentTimeInMs);
 #endif
 }
 

@@ -94,9 +94,10 @@ struct sMmsConnection {
  * MMS Object class enumeration type
  */
 typedef enum {
-	MMS_NAMED_VARIABLE,
-	MMS_NAMED_VARIABLE_LIST,
-	MMS_DOMAIN_NAMES
+	MMS_OBJECT_CLASS_NAMED_VARIABLE = 0,
+	MMS_OBJECT_CLASS_NAMED_VARIABLE_LIST = 2,
+	MMS_OBJECT_CLASS_JOURNAL = 8,
+	MMS_OBJECT_CLASS_DOMAIN = 9
 } MmsObjectClass;
 
 MmsValue*
@@ -258,5 +259,16 @@ mmsClient_createConcludeRequest(MmsConnection self, ByteBuffer* message);
 int
 mmsClient_createMmsGetNameListRequestAssociationSpecific(long invokeId, ByteBuffer* writeBuffer,
 		const char* continueAfter);
+
+void
+mmsClient_createReadJournalRequestWithTimeRange(uint32_t invokeId, ByteBuffer* request, const char* domainId, const char* itemId,
+        MmsValue* startingTime, MmsValue* endingTime);
+
+void
+mmsClient_createReadJournalRequestStartAfter(uint32_t invokeId, ByteBuffer* request, const char* domainId, const char* itemId,
+        MmsValue* timeSpecification, MmsValue* entrySpecification);
+
+bool
+mmsClient_parseReadJournalResponse(MmsConnection self, bool* moreFollows, LinkedList* result);
 
 #endif /* MMS_MSG_INTERNAL_H_ */

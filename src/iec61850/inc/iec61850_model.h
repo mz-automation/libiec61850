@@ -1,7 +1,7 @@
 /*
  *  model.h
  *
- *  Copyright 2013, 2014, 2015 Michael Zillgith
+ *  Copyright 2013-2016 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -83,6 +83,8 @@ typedef struct sGSEControlBlock GSEControlBlock;
 typedef struct sSVControlBlock SVControlBlock;
 
 typedef struct sLogControlBlock LogControlBlock;
+
+typedef struct sLog Log;
 
 typedef enum {
 	IEC61850_BOOLEAN = 0,/* int */
@@ -167,6 +169,8 @@ struct sIedModel {
     GSEControlBlock* gseCBs;
     SVControlBlock* svCBs;
     SettingGroupControlBlock* sgcbs;
+    LogControlBlock* lcbs;
+    Log* logs;
     void (*initializer) (void);
 };
 
@@ -266,8 +270,20 @@ struct sLogControlBlock {
     char* logRef;        /* object reference to the journal. Defaults to <MMS DomainName>/<LNName>$GeneralLog */
 
     uint8_t trgOps;      /* TrgOps - trigger conditions */
-    uint8_t options;     /* OptFlds */
     uint32_t intPeriod;  /* IntgPd - integrity period */
+
+    bool logEna;         /* enable log by default */
+    bool reasonCode;     /* include reason code in log */
+
+    LogControlBlock* sibling; /* next control block in list or NULL if this is the last entry */
+};
+
+struct sLog {
+    LogicalNode* parent;
+
+    char* name;
+
+    Log* sibling; /* next log instance in list or NULL if this is the last entry */
 };
 
 struct sSettingGroupControlBlock {

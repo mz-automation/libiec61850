@@ -3586,11 +3586,15 @@ ReportControlBlock iedModel_Inverter_LLN0_report0 = {&iedModel_Inverter_LLN0, "r
 
 
 
+
+
 IedModel iedModel = {
     "ied1",
     &iedModel_Inverter,
     &iedModelds_Inverter_LLN0_dataset1,
     &iedModel_Inverter_LLN0_report0,
+    NULL,
+    NULL,
     NULL,
     NULL,
     NULL,

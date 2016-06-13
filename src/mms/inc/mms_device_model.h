@@ -29,6 +29,7 @@
 #include "mms_type_spec.h"
 #include "mms_common.h"
 #include "mms_named_variable_list.h"
+#include "logging_api.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -49,14 +50,23 @@ typedef struct {
     MmsDomain** domains;
 } MmsDevice;
 
+
+struct sMmsJournal {
+    char* name;
+    LogStorage logStorage;
+};
+
+typedef struct sMmsJournal* MmsJournal;
+
 /*
- * Server side data structure to hold informations for a MMS domain (Logical Device)
+ * Server side data structure to hold information of an MMS domain (Logical Device)
  */
 struct sMmsDomain {
     char* domainName;
     int namedVariablesCount;
     MmsVariableSpecification** namedVariables;
     LinkedList /*<MmsNamedVariableList>*/ namedVariableLists;
+    LinkedList /* <MmsJournal> */ journals;
 };
 
 /**
@@ -79,6 +89,12 @@ MmsDomain_create(char* domainName);
 
 char*
 MmsDomain_getName(MmsDomain* self);
+
+void
+MmsDomain_addJournal(MmsDomain* self, const char* name);
+
+MmsJournal
+MmsDomain_getJournal(MmsDomain* self, const char* name);
 
 /**
  * Delete a MmsDomain instance
@@ -184,6 +200,12 @@ MmsDevice_getNamedVariableLists(MmsDevice* self);
 
 MmsNamedVariableList
 MmsDevice_getNamedVariableListWithName(MmsDevice* self, const char* variableListName);
+
+MmsJournal
+MmsJournal_create(const char* name);
+
+void
+MmsJournal_destroy(MmsJournal self);
 
 /**@}*/
 

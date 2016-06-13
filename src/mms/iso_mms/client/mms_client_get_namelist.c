@@ -229,12 +229,7 @@ mmsClient_createGetNameListRequestDomainOrVMDSpecific(long invokeId, const char*
 
 	request->objectClass.present = ObjectClass_PR_basicObjectClass;
 
-	if (objectClass == MMS_NAMED_VARIABLE)
-		asn_long2INTEGER(&request->objectClass.choice.basicObjectClass,
-				ObjectClass__basicObjectClass_namedVariable);
-	else if (objectClass == MMS_NAMED_VARIABLE_LIST)
-		asn_long2INTEGER(&request->objectClass.choice.basicObjectClass,
-				ObjectClass__basicObjectClass_namedVariableList);
+	asn_long2INTEGER(&request->objectClass.choice.basicObjectClass, objectClass);
 
 	asn_enc_rval_t rval;
 

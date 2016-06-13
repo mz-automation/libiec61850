@@ -168,7 +168,11 @@ MmsPdu_t*
 mmsServer_createConfirmedResponse(uint32_t invokeId);
 
 void
-mmsServer_createConfirmedErrorPdu(uint32_t invokeId, ByteBuffer* response, MmsError errorType);
+mmsServer_createServiceErrorPdu(uint32_t invokeId, ByteBuffer* response, MmsError errorType);
+
+void
+mmsServer_createServiceErrorPduWithServiceSpecificInfo(uint32_t invokeId, ByteBuffer* response,
+        MmsError errorType, uint8_t* serviceSpecificInfo, int serviceSpecficInfoLength);
 
 void
 mmsServer_writeConcludeResponsePdu(ByteBuffer* response);
@@ -219,6 +223,14 @@ mmsServer_handleStatusRequest(
         uint8_t* requestBuffer,
         int bufPos,
         int invokeId,
+        ByteBuffer* response);
+
+void
+mmsServer_handleReadJournalRequest(
+        MmsServerConnection connection,
+        uint8_t* requestBuffer,
+        int bufPos, int maxBufPos,
+        uint32_t invokeId,
         ByteBuffer* response);
 
 void

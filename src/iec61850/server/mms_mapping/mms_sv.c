@@ -249,7 +249,6 @@ LIBIEC61850_SV_readAccessSampledValueControlBlock(MmsMapping* self, MmsDomain* d
     return value;
 }
 
-
 static SVControlBlock*
 getSVCBForLogicalNodeWithIndex(MmsMapping* self, LogicalNode* logicalNode, int index, bool isUnicast)
 {

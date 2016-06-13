@@ -280,6 +280,20 @@ LinkedList /* <char*> */
 MmsConnection_getDomainVariableListNames(MmsConnection self, MmsError* mmsError, const char* domainId);
 
 /**
+ * \brief Get the names of all journals present in a MMS domain of the server
+ *
+ * This will result in a domain specific GetNameList request.
+ *
+ * \param self MmsConnection instance to operate on
+ * \param mmsError user provided variable to store error code
+ * \param domainId the domain name for the domain specific request
+ *
+ * \return the domain specific journal names or NULL if the request failed.
+ */
+LinkedList /* <char*> */
+MmsConnection_getDomainJournals(MmsConnection self, MmsError* mmsError, const char* domainId);
+
+/**
  * \brief Get the names of all named variable lists associated with this client connection.
  *
  * This will result in an association specific GetNameList request.
@@ -706,6 +720,60 @@ bool
 MmsConnection_getFileDirectory(MmsConnection self, MmsError* mmsError, const char* fileSpecification, const char* continueAfter,
         MmsFileDirectoryHandler handler, void* handlerParameter);
 
+typedef struct sMmsJournalEntry* MmsJournalEntry;
+
+typedef struct sMmsJournalVariable* MmsJournalVariable;
+
+struct sMmsJournalEntry {
+    MmsValue* entryID; /* type MMS_OCTET_STRING */
+    MmsValue* occurenceTime; /* type MMS_BINARY_TIME */
+    LinkedList journalVariables;
+};
+
+struct sMmsJournalVariable {
+    char* tag;
+    MmsValue* value;
+};
+
+/**
+ * \brief Destroy a single MmsJournalEntry instance.
+ *
+ * This function will destroy the whole MmsJournalEntry object including the attached list
+ * of MmsJournalVariable objects. It is intended to be used in conjunction with the
+ * LinkedList_destroyDeep function in order to free the result of MmsConnection_readJournalTimeRange
+ * or MmsConnection_readJournalStartAfter
+ *
+ * LinkedList_destroyDeep(journalEntries, (LinkedListValueDeleteFunction)
+ *                           MmsJournalEntry_destroy);
+ *
+ * \param self the MmsJournalEntry instance to destroy
+ */
+void
+MmsJournalEntry_destroy(MmsJournalEntry self);
+
+const MmsValue*
+MmsJournalEntry_getEntryID(MmsJournalEntry self);
+
+const MmsValue*
+MmsJournalEntry_getOccurenceTime(MmsJournalEntry self);
+
+const LinkedList /* <MmsJournalVariable> */
+MmsJournalEntry_getJournalVariables(MmsJournalEntry self);
+
+const char*
+MmsJournalVariable_getTag(MmsJournalVariable self);
+
+const MmsValue*
+MmsJournalVariable_getValue(MmsJournalVariable self);
+
+
+LinkedList
+MmsConnection_readJournalTimeRange(MmsConnection self, MmsError* mmsError, const char* domainId, const char* itemId,
+        MmsValue* startingTime, MmsValue* endingTime, bool* moreFollows);
+
+LinkedList
+MmsConnection_readJournalStartAfter(MmsConnection self, MmsError* mmsError, const char* domainId, const char* itemId,
+        MmsValue* timeSpecification, MmsValue* entrySpecification, bool* moreFollows);
 
 /**
  * \brief Destroy (free) an MmsServerIdentity object

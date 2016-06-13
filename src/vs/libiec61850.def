@@ -113,7 +113,6 @@ EXPORTS
     FileSystem_readDirectory @302
     FileSystem_readFile @303
     FileSystem_renameFile @304
-    FileSystem_setBasePath @305
     FunctionalConstraint_fromString @313
     FunctionalConstraint_toString @314
     GSEControlBlock_create @316
@@ -604,3 +603,23 @@ EXPORTS
     IedServer_updateVisibleStringAttributeValue
     ControlObjectClient_setInterlockCheck
     ControlObjectClient_setSynchroCheck
+    LogStorage_addEntry
+    LogStorage_addEntryData
+    LogStorage_getEntries
+    LogStorage_getEntriesAfter
+    LogStorage_getOldestAndNewestEntries
+    LogStorage_destroy
+    IedServer_setLogStorage
+    MmsJournalEntry_destroy
+    MmsJournalEntry_getEntryID
+    MmsJournalEntry_getOccurenceTime
+    MmsJournalEntry_getJournalVariables
+    MmsJournalVariable_getTag
+    MmsJournalVariable_getValue
+    MmsConnection_readJournalTimeRange
+    MmsConnection_readJournalStartAfter
+    LogControlBlock_create
+	Log_create
+	IedConnection_queryLogByTime
+	IedConnection_queryLogAfter
+    CDC_DPL_create

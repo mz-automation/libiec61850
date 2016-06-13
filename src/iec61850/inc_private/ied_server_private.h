@@ -42,6 +42,7 @@ struct sIedServer
     MmsMapping* mmsMapping;
     LinkedList clientConnections;
     uint8_t writeAccessPolicies;
+    bool running;
 };
 
 

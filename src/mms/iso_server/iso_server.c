@@ -67,24 +67,23 @@ struct sIsoServer {
 
 #if (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS == -1)
     LinkedList openClientConnections;
-
-#if (CONFIG_MMS_THREADLESS_STACK != 1)
-    Semaphore openClientConnectionsMutex; /* mutex for openClientConnections list */
-#endif
-
 #else
     IsoConnection* openClientConnections;
 #endif /* (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS == -1) */
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore userLock;
+#endif
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1) && (CONFIG_MMS_SINGLE_THREADED == 0)
+    Semaphore openClientConnectionsMutex; /* mutex for openClientConnections list */
     Semaphore connectionCounterMutex;
 #endif
+
     int connectionCounter;
 };
 
-#if (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS == -1)
+#if (CONFIG_MMS_THREADLESS_STACK != 1) && (CONFIG_MMS_SINGLE_THREADED == 0)
 static inline void
 lockClientConnections(IsoServer self)
 {
@@ -102,6 +101,18 @@ static void
 addClientConnection(IsoServer self, IsoConnection connection)
 {
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1) && (CONFIG_MMS_SINGLE_THREADED == 0)
+    Semaphore_wait(self->connectionCounterMutex);
+#endif
+
+    self->connectionCounter++;
+    if (DEBUG_ISO_SERVER)
+        printf("IsoServer: increase connection counter to %i!\n", self->connectionCounter);
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1) && (CONFIG_MMS_SINGLE_THREADED == 0)
+    lockClientConnections(self);
+#endif
+
 #if (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS == -1)
     LinkedList_add(self->openClientConnections, connection);
 #else
@@ -118,30 +129,37 @@ addClientConnection(IsoServer self, IsoConnection connection)
         }
     }
 #endif
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1) && (CONFIG_MMS_SINGLE_THREADED == 0)
+    unlockClientConnections(self);
+#endif
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1) && (CONFIG_MMS_SINGLE_THREADED == 0)
+    Semaphore_post(self->connectionCounterMutex);
+#endif
+
 }
 
 static void
 removeClientConnection(IsoServer self, IsoConnection connection)
 {
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1) && (CONFIG_MMS_SINGLE_THREADED == 0)
+    lockClientConnections(self);
+#endif
+
 #if (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS == -1)
 
 
 #if (CONFIG_MMS_SINGLE_THREADED == 0)
 
-#if (CONFIG_MMS_THREADLESS_STACK != 1)
-    lockClientConnections(self);
-#endif
-
     LinkedList_remove(self->openClientConnections, connection);
-
-#if (CONFIG_MMS_THREADLESS_STACK != 1)
-    unlockClientConnections(self);
-#endif
 
 #endif /* (CONFIG_MMS_SINGLE_THREADED == 0) */
 
 
 #else
+
     int i;
 
     for (i = 0; i < CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS; i++) {
@@ -155,17 +173,21 @@ removeClientConnection(IsoServer self, IsoConnection connection)
         }
     }
 #endif /* (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS == -1) */
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1) && (CONFIG_MMS_SINGLE_THREADED == 0)
+    unlockClientConnections(self);
+#endif
 }
 
 static void
 closeAllOpenClientConnections(IsoServer self)
 {
 
-#if (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS == -1)
-
-#if (CONFIG_MMS_THREADLESS_STACK != 1)
+#if (CONFIG_MMS_THREADLESS_STACK != 1) && (CONFIG_MMS_SINGLE_THREADED == 0)
     lockClientConnections(self);
 #endif
+
+#if (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS == -1)
 
     LinkedList openConnection = LinkedList_getNext(self->openClientConnections);
     while (openConnection != NULL) {
@@ -186,11 +208,6 @@ closeAllOpenClientConnections(IsoServer self)
     self->openClientConnections = NULL;
 #endif
 
-
-#if (CONFIG_MMS_THREADLESS_STACK != 1)
-    unlockClientConnections(self);
-#endif
-
 #else
     int i;
 
@@ -206,7 +223,12 @@ closeAllOpenClientConnections(IsoServer self)
 
         }
     }
+#endif /* (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS == -1) */
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1) && (CONFIG_MMS_SINGLE_THREADED == 0)
+    unlockClientConnections(self);
 #endif
+
 }
 
 static void
@@ -214,7 +236,7 @@ handleClientConnections(IsoServer self)
 {
 #if (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS == -1)
 
-#if (CONFIG_MMS_THREADLESS_STACK != 1)
+#if (CONFIG_MMS_THREADLESS_STACK != 1) && (CONFIG_MMS_SINGLE_THREADED == 0)
     lockClientConnections(self);
 #endif
 
@@ -237,12 +259,15 @@ handleClientConnections(IsoServer self)
         openConnection = LinkedList_getNext(openConnection);
     }
 
-#if (CONFIG_MMS_THREADLESS_STACK != 1)
+#if (CONFIG_MMS_THREADLESS_STACK != 1) && (CONFIG_MMS_SINGLE_THREADED == 0)
     unlockClientConnections(self);
 #endif
 
 #else
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1) && (CONFIG_MMS_SINGLE_THREADED == 0)
+    lockClientConnections(self);
+#endif
 
     int i;
 
@@ -260,6 +285,11 @@ handleClientConnections(IsoServer self)
 
         }
     }
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1) && (CONFIG_MMS_SINGLE_THREADED == 0)
+    unlockClientConnections(self);
+#endif
+
 #endif /* (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS == -1) */
 }
 
@@ -319,8 +349,6 @@ handleIsoConnections(IsoServer self)
 
         IsoConnection isoConnection = IsoConnection_create(connectionSocket, self);
 
-        private_IsoServer_increaseConnectionCounter(self);
-
         addClientConnection(self, isoConnection);
 
         self->connectionHandler(ISO_CONNECTION_OPENED, self->connectionHandlerParameter,
@@ -356,8 +384,6 @@ handleIsoConnectionsThreadless(IsoServer self)
 #endif
 
         IsoConnection isoConnection = IsoConnection_create(connectionSocket, self);
-
-        private_IsoServer_increaseConnectionCounter(self);
 
         addClientConnection(self, isoConnection);
 
@@ -419,12 +445,9 @@ IsoServer_create()
             GLOBAL_CALLOC(CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS, sizeof(IsoConnection));
 #endif
 
-#if (CONFIG_MMS_THREADLESS_STACK != 1)
+#if (CONFIG_MMS_THREADLESS_STACK != 1) && (CONFIG_MMS_SINGLE_THREADED == 0)
     self->connectionCounterMutex = Semaphore_create(1);
-#if (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS == -1)
     self->openClientConnectionsMutex = Semaphore_create(1);
-#endif
-
 #endif /* (CONFIG_MMS_THREADLESS_STACK != 1) */
 
     self->connectionCounter = 0;
@@ -525,11 +548,12 @@ IsoServer_waitReady(IsoServer self, unsigned int timeoutMs)
 
        handles = Handleset_new();
        if (handles != NULL) {
-#if (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS == -1)
 
-#if (CONFIG_MMS_THREADLESS_STACK != 1)
+#if (CONFIG_MMS_THREADLESS_STACK != 1) && (CONFIG_MMS_SINGLE_THREADED == 0)
            lockClientConnections(self);
 #endif
+
+#if (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS == -1)
 
            LinkedList openConnection = LinkedList_getNext(self->openClientConnections);
            LinkedList lastConnection = self->openClientConnections;
@@ -550,10 +574,6 @@ IsoServer_waitReady(IsoServer self, unsigned int timeoutMs)
                lastConnection = lastConnection->next;
            }
 
-#if (CONFIG_MMS_THREADLESS_STACK != 1)
-           unlockClientConnections(self);
-#endif
-
 #else
            int i;
 
@@ -561,12 +581,20 @@ IsoServer_waitReady(IsoServer self, unsigned int timeoutMs)
                if (self->openClientConnections[i] != NULL) {
                    if (IsoConnection_isRunning(self->openClientConnections[i])) {
                        IsoConnection_addHandleSet(self->openClientConnections[i], handles);
-                   } else {
+                   }
+                   else {
+#if ((CONFIG_MMS_SINGLE_THREADED == 1) || (CONFIG_MMS_THREADLESS_STACK == 1))
                        IsoConnection_destroy(self->openClientConnections[i]);
+#endif
                        self->openClientConnections[i] = NULL;
                    }
                }
            }
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1) && (CONFIG_MMS_SINGLE_THREADED == 0)
+           unlockClientConnections(self);
+#endif
+
 #endif /* (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS == -1) */
            Handleset_addSocket(handles, self->serverSocket);
            result = Handleset_waitReady(handles, timeoutMs);
@@ -668,42 +696,26 @@ IsoServer_destroy(IsoServer self)
         LinkedList_destroyStatic(self->openClientConnections);
 #endif /* (CONFIG_MMS_SINGLE_THREADED == 1) */
 
-#if (CONFIG_MMS_THREADLESS_STACK != 1)
+#if (CONFIG_MMS_THREADLESS_STACK != 1) && (CONFIG_MMS_SINGLE_THREADED == 0)
     lockClientConnections(self);
-    Semaphore_destroy(self->openClientConnectionsMutex);
 #endif
 
 #else
     GLOBAL_FREEMEM(self->openClientConnections);
 #endif /* (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS == -1) */
 
-#if (CONFIG_MMS_THREADLESS_STACK != 1)
+#if (CONFIG_MMS_THREADLESS_STACK != 1) && (CONFIG_MMS_SINGLE_THREADED == 0)
     Semaphore_destroy(self->connectionCounterMutex);
+    Semaphore_destroy(self->openClientConnectionsMutex);
 #endif
 
     GLOBAL_FREEMEM(self);
 }
 
 void
-private_IsoServer_increaseConnectionCounter(IsoServer self)
-{
-#if (CONFIG_MMS_THREADLESS_STACK != 1)
-    Semaphore_wait(self->connectionCounterMutex);
-#endif
-
-    self->connectionCounter++;
-    if (DEBUG_ISO_SERVER)
-        printf("IsoServer: increase connection counter to %i!\n", self->connectionCounter);
-
-#if (CONFIG_MMS_THREADLESS_STACK != 1)
-    Semaphore_post(self->connectionCounterMutex);
-#endif
-}
-
-void
 private_IsoServer_decreaseConnectionCounter(IsoServer self)
 {
-#if (CONFIG_MMS_THREADLESS_STACK != 1)
+#if (CONFIG_MMS_THREADLESS_STACK != 1) && (CONFIG_MMS_SINGLE_THREADED == 0)
     Semaphore_wait(self->connectionCounterMutex);
 #endif
 
@@ -712,7 +724,7 @@ private_IsoServer_decreaseConnectionCounter(IsoServer self)
     if (DEBUG_ISO_SERVER)
         printf("IsoServer: decrease connection counter to %i!\n", self->connectionCounter);
 
-#if (CONFIG_MMS_THREADLESS_STACK != 1)
+#if (CONFIG_MMS_THREADLESS_STACK != 1) && (CONFIG_MMS_SINGLE_THREADED == 0)
     Semaphore_post(self->connectionCounterMutex);
 #endif
 }
@@ -722,13 +734,13 @@ private_IsoServer_getConnectionCounter(IsoServer self)
 {
     int connectionCounter;
 
-#if (CONFIG_MMS_THREADLESS_STACK != 1)
+#if (CONFIG_MMS_THREADLESS_STACK != 1) && (CONFIG_MMS_SINGLE_THREADED == 0)
     Semaphore_wait(self->connectionCounterMutex);
 #endif
 
     connectionCounter = self->connectionCounter;
 
-#if (CONFIG_MMS_THREADLESS_STACK != 1)
+#if (CONFIG_MMS_THREADLESS_STACK != 1) && (CONFIG_MMS_SINGLE_THREADED == 0)
     Semaphore_post(self->connectionCounterMutex);
 #endif
 

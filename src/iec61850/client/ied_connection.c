@@ -39,7 +39,6 @@ typedef struct sICLogicalDevice
 {
     char* name;
     LinkedList variables;
-    LinkedList dataSets;
 } ICLogicalDevice;
 
 struct sClientDataSet
@@ -166,21 +165,12 @@ ICLogicalDevice_setVariableList(ICLogicalDevice* self, LinkedList variables)
 }
 
 static void
-ICLogicalDevice_setDataSetList(ICLogicalDevice* self, LinkedList dataSets)
-{
-    self->dataSets = dataSets;
-}
-
-static void
 ICLogicalDevice_destroy(ICLogicalDevice* self)
 {
     GLOBAL_FREEMEM(self->name);
 
     if (self->variables != NULL)
         LinkedList_destroy(self->variables);
-
-    if (self->dataSets != NULL)
-        LinkedList_destroy(self->dataSets);
 
     GLOBAL_FREEMEM(self);
 }
@@ -1015,16 +1005,6 @@ IedConnection_getDeviceModelFromServer(IedConnection self, IedClientError* error
                 break;
             }
 
-            LinkedList dataSets = MmsConnection_getDomainVariableListNames(self->connection,
-                    &mmsError, name);
-
-            if (dataSets != NULL)
-                ICLogicalDevice_setDataSetList(icLogicalDevice, dataSets);
-            else {
-                *error = iedConnection_mapMmsErrorToIedError(mmsError);
-                break;
-            }
-
             LinkedList_add(logicalDevices, icLogicalDevice);
 
             logicalDevice = LinkedList_getNext(logicalDevice);
@@ -1306,6 +1286,91 @@ addVariablesWithFc(char* fc, char* lnName, LinkedList variables, LinkedList lnDi
     }
 }
 
+static LinkedList
+getLogicalNodeDirectoryLogs(IedConnection self, IedClientError* error, const char* logicalDeviceName,
+        const char* logicalNodeName)
+{
+    MmsConnection mmsCon = self->connection;
+
+    MmsError mmsError;
+
+    LinkedList journals = MmsConnection_getDomainJournals(mmsCon, &mmsError, logicalDeviceName);
+
+    if (mmsError != MMS_ERROR_NONE) {
+        *error = iedConnection_mapMmsErrorToIedError(mmsError);
+        return NULL;
+    }
+
+    LinkedList logs = LinkedList_create();
+
+    LinkedList journal = LinkedList_getNext(journals);
+
+    while (journal != NULL) {
+
+        char* journalName = (char*) LinkedList_getData(journal);
+
+        char* logName = strchr(journalName, '$');
+
+        if (logName != NULL) {
+            logName[0] = 0;
+            logName += 1;
+
+            if (strcmp(journalName, logicalNodeName) == 0) {
+                char* log = copyString(logName);
+                LinkedList_add(logs, (void*) log);
+            }
+        }
+
+        journal = LinkedList_getNext(journal);
+    }
+
+    LinkedList_destroy(journals);
+
+    return logs;
+}
+
+static LinkedList
+getLogicalNodeDirectoryDataSets(IedConnection self, IedClientError* error, const char* logicalDeviceName,
+        const char* logicalNodeName)
+{
+    MmsConnection mmsCon = self->connection;
+
+    MmsError mmsError;
+
+    LinkedList dataSets = MmsConnection_getDomainVariableListNames(mmsCon, &mmsError, logicalDeviceName);
+
+    if (mmsError != MMS_ERROR_NONE) {
+        *error = iedConnection_mapMmsErrorToIedError(mmsError);
+        return NULL;
+    }
+
+    LinkedList lnDataSets = LinkedList_create();
+
+    LinkedList dataSet = LinkedList_getNext(dataSets);
+
+    while (dataSet != NULL) {
+        char* dataSetName = (char*) LinkedList_getData(dataSet);
+
+        char* lnDataSetName = strchr(dataSetName, '$');
+
+        if (lnDataSetName != NULL) {
+            lnDataSetName[0] = 0;
+            lnDataSetName += 1;
+
+            if (strcmp(dataSetName, logicalNodeName) == 0) {
+                char* lnDataSet = copyString(lnDataSetName);
+                LinkedList_add(lnDataSets, (void*) lnDataSet);
+            }
+        }
+
+        dataSet = LinkedList_getNext(dataSet);
+    }
+
+    LinkedList_destroy(dataSets);
+
+    return lnDataSets;
+}
+
 LinkedList /*<char*>*/
 IedConnection_getLogicalNodeDirectory(IedConnection self, IedClientError* error,
         const char* logicalNodeReference, ACSIClass acsiClass)
@@ -1316,12 +1381,6 @@ IedConnection_getLogicalNodeDirectory(IedConnection self, IedClientError* error,
         *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
         return NULL;
     }
-
-    if (self->logicalDevices == NULL)
-        IedConnection_getDeviceModelFromServer(self, error);
-
-    if (*error != IED_ERROR_OK)
-        return NULL;
 
     char lnRefCopy[130];
 
@@ -1340,6 +1399,18 @@ IedConnection_getLogicalNodeDirectory(IedConnection self, IedClientError* error,
     char* logicalDeviceName = lnRefCopy;
 
     char* logicalNodeName = ldSep + 1;
+
+    if (acsiClass == ACSI_CLASS_LOG)
+        return getLogicalNodeDirectoryLogs(self, error, logicalDeviceName, logicalNodeName);
+
+    if (acsiClass == ACSI_CLASS_DATA_SET)
+        return getLogicalNodeDirectoryDataSets(self, error, logicalDeviceName, logicalNodeName);
+
+    if (self->logicalDevices == NULL)
+        IedConnection_getDeviceModelFromServer(self, error);
+
+    if (*error != IED_ERROR_OK)
+        return NULL;
 
     /* search for logical device */
 
@@ -1440,33 +1511,8 @@ IedConnection_getLogicalNodeDirectory(IedConnection self, IedClientError* error,
         addVariablesWithFc("GO", logicalNodeName, ld->variables, lnDirectory);
         break;
 
-    case ACSI_CLASS_DATA_SET:
-        {
-            LinkedList dataSet = LinkedList_getNext(ld->dataSets);
-
-            while (dataSet != NULL) {
-                char* dataSetName = (char*) dataSet->data;
-
-                char* fcPos = strchr(dataSetName, '$');
-
-                if (fcPos == NULL)
-                    goto next_data_set_element;
-
-                size_t lnNameLen = fcPos - dataSetName;
-
-                if (strlen(logicalNodeName) != lnNameLen)
-                    goto next_data_set_element;
-
-                if (memcmp(dataSetName, logicalNodeName, lnNameLen) != 0)
-                    goto next_data_set_element;
-
-                LinkedList_add(lnDirectory, copyString(fcPos + 1));
-
-                next_data_set_element:
-
-                dataSet = LinkedList_getNext(dataSet);
-            }
-        }
+    case ACSI_CLASS_LCB:
+        addVariablesWithFc("LG", logicalNodeName, ld->variables, lnDirectory);
         break;
 
     default:
@@ -2203,6 +2249,91 @@ IedConnection_readDataSetValues(IedConnection self, IedClientError* error, const
 exit_function:
     return dataSet;
 }
+
+LinkedList /* <MmsJournalEntry> */
+IedConnection_queryLogByTime(IedConnection self, IedClientError* error, const char* logReference,
+        uint64_t startTime, uint64_t endTime, bool* moreFollows)
+{
+    MmsError mmsError;
+
+    char logRef[130];
+
+    strncpy(logRef, logReference, 129);
+
+    char* logDomain = logRef;
+    char* logName = strchr(logRef, '/');
+
+    if (logName != NULL) {
+
+        logName[0] = 0;
+        logName++;
+
+        MmsValue* startTimeMms = MmsValue_newBinaryTime(false);
+        MmsValue_setBinaryTime(startTimeMms, startTime);
+
+        MmsValue* endTimeMms = MmsValue_newBinaryTime(false);
+        MmsValue_setBinaryTime(endTimeMms, endTime);
+
+        LinkedList journalEntries = MmsConnection_readJournalTimeRange(self->connection, &mmsError, logDomain, logName,
+                startTimeMms, endTimeMms, moreFollows);
+
+        MmsValue_delete(startTimeMms);
+        MmsValue_delete(endTimeMms);
+
+        if (mmsError != MMS_ERROR_NONE) {
+            *error = iedConnection_mapMmsErrorToIedError(mmsError);
+            return NULL;
+        }
+        else
+            return journalEntries;
+    }
+    else {
+        *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
+        return NULL;
+    }
+
+}
+
+
+LinkedList /* <MmsJournalEntry> */
+IedConnection_queryLogAfter(IedConnection self, IedClientError* error, const char* logReference,
+        MmsValue* entryID, uint64_t timeStamp, bool* moreFollows)
+{
+    MmsError mmsError;
+
+    char logRef[130];
+
+    strncpy(logRef, logReference, 129);
+
+    char* logDomain = logRef;
+    char* logName = strchr(logRef, '/');
+
+    if (logName != NULL) {
+
+        logName[0] = 0;
+        logName++;
+
+        MmsValue* timeStampMms = MmsValue_newBinaryTime(false);
+        MmsValue_setBinaryTime(timeStampMms, timeStamp);
+
+        LinkedList journalEntries = MmsConnection_readJournalStartAfter(self->connection, &mmsError, logDomain, logName,
+               timeStampMms, entryID,  moreFollows);
+
+        MmsValue_delete(timeStampMms);
+
+        if (mmsError != MMS_ERROR_NONE) {
+            *error = iedConnection_mapMmsErrorToIedError(mmsError);
+            return NULL;
+        }
+        else
+            return journalEntries;
+    }
+    else {
+        *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
+        return NULL;
+    }
+}
+
 
 
 MmsConnection

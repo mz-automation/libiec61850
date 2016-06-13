@@ -49,8 +49,6 @@ int main(int argc, char** argv) {
 
 	IedServer iedServer = IedServer_create(&iedModel);
 
-	// get stored values from persistent storage
-
 	// set initial measurement and status values from process
 
 	/* MMS server will be instructed to start listening to client connections. */

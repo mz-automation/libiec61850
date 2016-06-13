@@ -28,6 +28,7 @@ set (lib_common_SRCS
 ./mms/iso_mms/client/mms_client_get_var_access.c
 ./mms/iso_mms/client/mms_client_common.c
 ./mms/iso_mms/client/mms_client_read.c
+./mms/iso_mms/client/mms_client_journals.c
 ./mms/iso_mms/server/mms_read_service.c
 ./mms/iso_mms/server/mms_file_service.c
 ./mms/iso_mms/server/mms_association_service.c
@@ -43,6 +44,8 @@ set (lib_common_SRCS
 ./mms/iso_mms/server/mms_domain.c
 ./mms/iso_mms/server/mms_device.c
 ./mms/iso_mms/server/mms_information_report.c
+./mms/iso_mms/server/mms_journal.c
+./mms/iso_mms/server/mms_journal_service.c
 ./mms/iso_mms/server/mms_server_connection.c
 ./mms/iso_mms/server/mms_write_service.c
 ./mms/iso_mms/server/mms_get_var_access_service.c
@@ -73,6 +76,8 @@ set (lib_common_SRCS
 ./iec61850/server/mms_mapping/reporting.c
 ./iec61850/server/mms_mapping/mms_goose.c
 ./iec61850/server/mms_mapping/mms_sv.c
+./iec61850/server/mms_mapping/logging.c
+./logging/log_storage.c
 )
 
 set (lib_asn1c_SRCS
@@ -198,7 +203,7 @@ set (lib_windows_SRCS
 set (lib_bsd_SRCS
 ./hal/socket/bsd/socket_bsd.c
 ./hal/ethernet/bsd/ethernet_bsd.c
-./hal/thread/linux/thread_linux.c
+./hal/thread/bsd/thread_bsd.c
 ./hal/filesystem/linux/file_provider_linux.c
 ./hal/time/unix/time.c
 )
@@ -284,6 +289,24 @@ ENDIF(WIN32)
 
 include (GenerateExportHeader)
 
+set(RES_FILES "")
+if ( WIN32 )
+	# Adding RC resource file for adding information to the archive
+	set(RES_FILES "${CMAKE_CURRENT_BINARY_DIR}/version.rc")
+	message(STATUS "Generating RC file : ${RES_FILES}")
+	configure_file(
+			${CMAKE_CURRENT_SOURCE_DIR}/version.rc.in
+			${RES_FILES}
+			@ONLY)
+	if( MINGW )
+		set(CMAKE_RC_COMPILER_INIT windres)
+		ENABLE_LANGUAGE(RC)
+		SET(CMAKE_RC_COMPILE_OBJECT
+		"<CMAKE_RC_COMPILER> <FLAGS> -O coff <DEFINES> -i <SOURCE> -o <OBJECT>")
+	endif(MINGW)
+	set(library_SRCS ${library_SRCS} ${RES_FILES})
+endif( WIN32 )
+
 add_library (iec61850-shared SHARED ${library_SRCS} )
 
 set_target_properties(iec61850-shared PROPERTIES
@@ -345,10 +368,9 @@ endif()
 ENDIF(WITH_WPCAP)
 
 
-
 install (TARGETS iec61850 iec61850-shared
-	RUNTIME DESTINATION bin
-	ARCHIVE DESTINATION lib
-    LIBRARY DESTINATION lib
+	RUNTIME DESTINATION bin COMPONENT Applications
+	ARCHIVE DESTINATION lib COMPONENT Libraries
+    LIBRARY DESTINATION lib COMPONENT Libraries
 )
 

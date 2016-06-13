@@ -85,11 +85,28 @@ Note: The ".." at the end of the command line tells cmake where to find the main
 
 To select some configuration options you can use ccmake or cmake-gui.
 
+
+Building the sqlite logging driver
+-----------------------------------
+
+You can use the driver by including the src/logging/drivers/sqlite/log_storage_sqlite.c file into your application build. 
+
+On Ubuntu Linux (and simpilar Linux distributions) it is enough to install the sqlite dev packages from the standard repository. For other OSes (e.g. Windows) and cross-compiling it is recomended to download the amalagation source code (from https://www.sqlite.org/download.html) of sqlite and copy them to the third_party/sqlite folder.
+
+On windows the cmake skript will detect the sqlite source code and also creates the example project for logging.
+
+
 C# client API
 --------------
 
 A C#/.NET wrapper and examples and Visual Studio/MonoDevelop project files can be found in the dotnet folder. The examples and the C# wrapper API can be build and run on .NET or Mono.
 
+Experimental Python bindings
+----------------------------
+
+The experimental Python binding can be created using SWIG with cmake.
+
+To enable the bindings you have to select the phyton configuration option with ccmake of cmake-gui.
 
 Commercial licenses
 -------------------

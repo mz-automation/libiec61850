@@ -1,7 +1,7 @@
 /*
  *  mms_mapping.h
  *
- *  Copyright 2013, 2014 Michael Zillgith
+ *  Copyright 2013-2016 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -25,7 +25,6 @@
 #define MMS_MAPPING_H_
 
 #include "iec61850_model.h"
-//#include "mms_server_connection.h"
 #include "mms_device_model.h"
 #include "control.h"
 
@@ -35,6 +34,13 @@ typedef enum {
     REPORT_CONTROL_VALUE_CHANGED,
     REPORT_CONTROL_QUALITY_CHANGED
 } ReportInclusionFlag;
+
+typedef enum {
+    LOG_CONTROL_NONE,
+    LOG_CONTROL_VALUE_UPDATE,
+    LOG_CONTROL_VALUE_CHANGED,
+    LOG_CONTROL_QUALITY_CHANGED
+} LogInclusionFlag;
 
 typedef struct sMmsMapping MmsMapping;
 
@@ -87,6 +93,9 @@ void
 MmsMapping_triggerReportObservers(MmsMapping* self, MmsValue* value, ReportInclusionFlag flag);
 
 void
+MmsMapping_triggerLogging(MmsMapping* self, MmsValue* value, LogInclusionFlag flag);
+
+void
 MmsMapping_triggerGooseObservers(MmsMapping* self, MmsValue* value);
 
 void
@@ -137,6 +146,9 @@ MmsMapping_setIedServer(MmsMapping* self, IedServer iedServer);
 
 void
 MmsMapping_setConnectionIndicationHandler(MmsMapping* self, IedConnectionIndicationHandler handler, void* parameter);
+
+void
+MmsMapping_setLogStorage(MmsMapping* self, const char* logRef, LogStorage logStorage);
 
 void
 MmsMapping_installWriteAccessHandler(MmsMapping* self, DataAttribute* dataAttribute, WriteAccessHandler handler, void* parameter);

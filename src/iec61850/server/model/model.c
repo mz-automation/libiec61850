@@ -372,7 +372,7 @@ LogicalNode_hasFCData(LogicalNode* node, FunctionalConstraint fc)
 DataSet*
 LogicalNode_getDataSet(LogicalNode* self, const char* dataSetName)
 {
-	assert(self->modelType == LogicalNodeModelType);
+    assert(self->modelType == LogicalNodeModelType);
 	assert(dataSetName != NULL);
 
 	char dsName[66];

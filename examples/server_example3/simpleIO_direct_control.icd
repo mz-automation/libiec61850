@@ -85,7 +85,15 @@
             
             <LogControl name="EventLog" datSet="Events" logName="EventLog">
 			  <TrgOps dchg="true" qchg="true"/>
-			</LogControl>
+	    </LogControl>
+
+	    <LogControl name="GeneralLog" datSet="" logName="">
+                          <TrgOps dchg="true" qchg="true"/>
+            </LogControl>
+
+
+	    <Log />
+            <Log name="EventLog" />
 
             <DOI name="Mod">
               <DAI name="ctlModel">

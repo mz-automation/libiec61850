@@ -544,9 +544,13 @@ DataAttribute iedModel_ComplexArray_MHAI1_HA_frequency = {
 
 
 
+
+
 IedModel iedModel = {
     "test",
     &iedModel_ComplexArray,
+    NULL,
+    NULL,
     NULL,
     NULL,
     NULL,

@@ -12,7 +12,9 @@ ENABLE_TESTING()
 
 set(LIB_VERSION_MAJOR "0")
 set(LIB_VERSION_MINOR "9")
-set(LIB_VERSION_PATCH "1")
+set(LIB_VERSION_PATCH "2")
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/third_party/cmake/modules/")
 
 # feature checks
 include(CheckLibraryExists)
@@ -28,7 +30,7 @@ set(CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS 5 CACHE STRING "Configure the maximum 
 option(BUILD_EXAMPLES "Build the examples" ON)
 option(BUILD_PYTHON_BINDINGS "Build Python bindings" OFF)
 
-option(CONFIG_MMS_SINGLE_THREADED "Compile for single threaded version" OFF)
+option(CONFIG_MMS_SINGLE_THREADED "Compile for single threaded version" ON)
 option(CONFIG_MMS_THREADLESS_STACK "Optimize stack for threadless operation (warning: single- or multi-threaded server will not work!)" OFF)
 
 # choose the library features which shall be included
@@ -37,6 +39,8 @@ option(CONFIG_INCLUDE_GOOSE_SUPPORT "Build with GOOSE support" ON)
 option(CONFIG_IEC61850_CONTROL_SERVICE "Build with support for IEC 61850 control features" ON)
 
 option(CONFIG_IEC61850_REPORT_SERVICE "Build with support for IEC 61850 reporting services" ON)
+
+option(CONFIG_IEC61850_LOG_SERVICE "Build with support for IEC 61850 logging services" ON)
 
 option(CONFIG_IEC61850_SETTING_GROUPS "Build with support for IEC 61850 setting group services" ON)
 
@@ -68,6 +72,7 @@ include_directories(
     src/mms/inc
     src/mms/inc_private
     src/mms/iso_mms/asn1c
+    src/logging
 )
 
 set(API_HEADERS 
@@ -102,6 +107,7 @@ set(API_HEADERS
     src/goose/goose_publisher.h
     src/sampled_values/sv_subscriber.h
     src/sampled_values/sv_publisher.h
+    src/logging/logging_api.h
 )
 
 IF(MSVC)
@@ -119,7 +125,7 @@ endif(BUILD_EXAMPLES)
 
 add_subdirectory(src)
 
-INSTALL(FILES ${API_HEADERS} DESTINATION include/libiec61850)
+INSTALL(FILES ${API_HEADERS} DESTINATION include/libiec61850 COMPONENT Development)
 
 IF(BUILD_PYTHON_BINDINGS)
 	add_subdirectory(pyiec61850)
@@ -127,10 +133,6 @@ ENDIF(BUILD_PYTHON_BINDINGS)
 
 IF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
 INCLUDE(InstallRequiredSystemLibraries)
- 
-SET(CPACK_SET_DESTDIR "on")
-SET(CPACK_INSTALL_PREFIX "/usr")
-SET(CPACK_GENERATOR "DEB")
  
 SET(CPACK_PACKAGE_DESCRIPTION "IEC 61850 MMS/GOOSE client and server library")
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "IEC 61850 MMS/GOOSE client and server library")
@@ -142,10 +144,8 @@ SET(CPACK_PACKAGE_VERSION_PATCH "${LIB_VERSION_PATCH}")
 SET(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}_${LIB_VERSION_MAJOR}.${LIB_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}_${CMAKE_SYSTEM_PROCESSOR}")
 SET(CPACK_SOURCE_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}_${LIB_VERSION_MAJOR}.${LIB_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
  
-SET(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
-SET(CPACK_DEBIAN_ARCHITECTURE ${CMAKE_SYSTEM_PROCESSOR})
- 
-SET(CPACK_COMPONENTS_ALL Libraries ApplicationData)
+SET(CPACK_COMPONENTS_ALL Libraries Development Applications)
+#set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CMAKE_PROJECT_NAME}")
 INCLUDE(CPack)
  
 ENDIF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")

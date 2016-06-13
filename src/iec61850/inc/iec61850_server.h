@@ -650,6 +650,9 @@ IedServer_updateQuality(IedServer self, DataAttribute* dataAttribute, Quality qu
 /**@}*/
 
 
+void
+IedServer_setLogStorage(IedServer self, const char* logRef, LogStorage logStorage);
+
 /**
  * @defgroup IEC61850_SERVER_SETTING_GROUPS Server side setting group handling
  *

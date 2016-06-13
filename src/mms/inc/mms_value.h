@@ -101,7 +101,7 @@ MmsValue_getArraySize(const MmsValue* self);
  * \return the element object
  */
 MmsValue*
-MmsValue_getElement(MmsValue* array, int index);
+MmsValue_getElement(const MmsValue* array, int index);
 
 /**
  * \brief Create an emtpy array.
@@ -911,7 +911,7 @@ MmsValue_isDeletable(MmsValue* self);
  * \param self the MmsValue instance
  */
 MmsType
-MmsValue_getType(MmsValue* self);
+MmsValue_getType(const MmsValue* self);
 
 /**
  * \brief Get a sub-element of a MMS_STRUCTURE value specified by a path name.
@@ -947,8 +947,8 @@ MmsValue_getTypeString(MmsValue* self);
  *
  * \return a pointer to the start of the buffer
  */
-char*
-MmsValue_printToBuffer(MmsValue* self, char* buffer, int bufferSize);
+const char*
+MmsValue_printToBuffer(const MmsValue* self, char* buffer, int bufferSize);
 
 /**
  * \brief create a new MmsValue instance from a BER encoded MMS Data element (deserialize)

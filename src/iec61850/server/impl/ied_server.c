@@ -198,6 +198,10 @@ createMmsServerCache(IedServer self)
                         && (strcmp(fcName, "MS") != 0) && (strcmp(fcName, "US") != 0)
 #endif
 
+#if (CONFIG_IEC61850_LOG_SERVICE == 1)
+                        && (strcmp(fcName, "LG") != 0)
+#endif
+
                    )
                 {
                     char* variableName = createString(3, lnName, "$", fcName);
@@ -400,6 +404,8 @@ IedServer_create(IedModel* iedModel)
 
     self->model = iedModel;
 
+    // self->running = false; /* not required due to CALLOC */
+
     self->mmsMapping = MmsMapping_create(iedModel);
 
     self->mmsDevice = MmsMapping_getMmsDeviceModel(self->mmsMapping);
@@ -441,8 +447,31 @@ IedServer_create(IedModel* iedModel)
 void
 IedServer_destroy(IedServer self)
 {
+
+    /* Stop server if running */
+    if (self->running) {
+#if (CONFIG_MMS_THREADLESS_STACK == 1)
+        IedServer_stopThreadless(self);
+#else
+        IedServer_stop(self);
+#endif
+    }
+
     MmsServer_destroy(self->mmsServer);
     IsoServer_destroy(self->isoServer);
+
+#if (CONFIG_MMS_SINGLE_THREADED == 1)
+
+    /* trigger stopping background task thread */
+    self->mmsMapping->reportThreadRunning = false;
+
+    /* waiting for thread to finish */
+    while (self->mmsMapping->reportThreadFinished == false) {
+        Thread_sleep(10);
+    }
+
+#endif
+
     MmsMapping_destroy(self->mmsMapping);
 
     LinkedList_destroyDeep(self->clientConnections, (LinkedListValueDeleteFunction) private_ClientConnection_destroy);
@@ -508,17 +537,22 @@ singleThreadedServerThread(void* parameter)
 void
 IedServer_start(IedServer self, int tcpPort)
 {
+    if (self->running == false) {
+
 #if (CONFIG_MMS_SINGLE_THREADED == 1)
-    MmsServer_startListeningThreadless(self->mmsServer, tcpPort);
+        MmsServer_startListeningThreadless(self->mmsServer, tcpPort);
 
-    Thread serverThread = Thread_create((ThreadExecutionFunction) singleThreadedServerThread, (void*) self, true);
+        Thread serverThread = Thread_create((ThreadExecutionFunction) singleThreadedServerThread, (void*) self, true);
 
-    Thread_start(serverThread);
+        Thread_start(serverThread);
 #else
 
-    MmsServer_startListening(self->mmsServer, tcpPort);
-    MmsMapping_startEventWorkerThread(self->mmsMapping);
+        MmsServer_startListening(self->mmsServer, tcpPort);
+        MmsMapping_startEventWorkerThread(self->mmsMapping);
 #endif
+
+        self->running = true;
+    }
 }
 #endif
 
@@ -541,13 +575,17 @@ IedServer_getDataModel(IedServer self)
 void
 IedServer_stop(IedServer self)
 {
-    MmsMapping_stopEventWorkerThread(self->mmsMapping);
+    if (self->running) {
+        self->running = false;
+
+        MmsMapping_stopEventWorkerThread(self->mmsMapping);
 
 #if (CONFIG_MMS_SINGLE_THREADED == 1)
-    MmsServer_stopListeningThreadless(self->mmsServer);
+        MmsServer_stopListeningThreadless(self->mmsServer);
 #else
-    MmsServer_stopListening(self->mmsServer);
+        MmsServer_stopListening(self->mmsServer);
 #endif
+    }
 }
 #endif /* (CONFIG_MMS_THREADLESS_STACK != 1) */
 
@@ -555,7 +593,10 @@ IedServer_stop(IedServer self)
 void
 IedServer_startThreadless(IedServer self, int tcpPort)
 {
-    MmsServer_startListeningThreadless(self->mmsServer, tcpPort);
+    if (self->running == false) {
+        MmsServer_startListeningThreadless(self->mmsServer, tcpPort);
+        self->running = true;
+    }
 }
 
 int
@@ -573,7 +614,11 @@ IedServer_processIncomingData(IedServer self)
 void
 IedServer_stopThreadless(IedServer self)
 {
-    MmsServer_stopListeningThreadless(self->mmsServer);
+    if (self->running) {
+        self->running = false;
+
+        MmsServer_stopListeningThreadless(self->mmsServer);
+    }
 }
 
 void
@@ -773,12 +818,22 @@ IedServer_getStringAttributeValue(IedServer self, const DataAttribute* dataAttri
 static inline void
 checkForUpdateTrigger(IedServer self, DataAttribute* dataAttribute)
 {
-#if (CONFIG_IEC61850_REPORT_SERVICE== 1)
+#if ((CONFIG_IEC61850_REPORT_SERVICE == 1) || (CONFIG_IEC61850_LOG_SERVICE == 1))
     if (dataAttribute->triggerOptions & TRG_OPT_DATA_UPDATE) {
+
+#if (CONFIG_IEC61850_REPORT_SERVICE == 1)
         MmsMapping_triggerReportObservers(self->mmsMapping, dataAttribute->mmsValue,
                 REPORT_CONTROL_VALUE_UPDATE);
-    }
 #endif
+
+#if (CONFIG_IEC61850_LOG_SERVICE == 1)
+        MmsMapping_triggerLogging(self->mmsMapping, dataAttribute->mmsValue,
+                LOG_CONTROL_VALUE_UPDATE);
+#endif
+
+
+    }
+#endif /* ((CONFIG_IEC61850_REPORT_SERVICE == 1) || (CONFIG_IEC61850_LOG_SERVICE == 1)) */
 }
 
 static inline void
@@ -795,6 +850,11 @@ checkForChangedTriggers(IedServer self, DataAttribute* dataAttribute)
         MmsMapping_triggerReportObservers(self->mmsMapping, dataAttribute->mmsValue,
                 REPORT_CONTROL_VALUE_CHANGED);
 #endif
+
+#if (CONFIG_IEC61850_LOG_SERVICE == 1)
+        MmsMapping_triggerLogging(self->mmsMapping, dataAttribute->mmsValue,
+                LOG_CONTROL_VALUE_CHANGED);
+#endif
     }
 
     else if (dataAttribute->triggerOptions & TRG_OPT_QUALITY_CHANGED) {
@@ -807,6 +867,12 @@ checkForChangedTriggers(IedServer self, DataAttribute* dataAttribute)
         MmsMapping_triggerReportObservers(self->mmsMapping, dataAttribute->mmsValue,
                 REPORT_CONTROL_QUALITY_CHANGED);
 #endif
+
+#if (CONFIG_IEC61850_LOG_SERVICE == 1)
+        MmsMapping_triggerLogging(self->mmsMapping, dataAttribute->mmsValue,
+                LOG_CONTROL_QUALITY_CHANGED);
+#endif
+
     }
 #endif /* (CONFIG_IEC61850_REPORT_SERVICE== 1) || (CONFIG_INCLUDE_GOOSE_SUPPORT == 1) */
 
@@ -1020,6 +1086,13 @@ IedServer_updateQuality(IedServer self, DataAttribute* dataAttribute, Quality qu
             MmsMapping_triggerReportObservers(self->mmsMapping, dataAttribute->mmsValue,
                                 REPORT_CONTROL_QUALITY_CHANGED);
 #endif
+
+#if (CONFIG_IEC61850_LOG_SERVICE == 1)
+        if (dataAttribute->triggerOptions & TRG_OPT_QUALITY_CHANGED)
+            MmsMapping_triggerLogging(self->mmsMapping, dataAttribute->mmsValue,
+                    LOG_CONTROL_QUALITY_CHANGED);
+#endif
+
     }
 
 
@@ -1209,6 +1282,14 @@ IedServer_setEditSettingGroupConfirmationHandler(IedServer self, SettingGroupCon
 {
 #if (CONFIG_IEC61850_SETTING_GROUPS == 1)
     MmsMapping_setConfirmEditSgHandler(self->mmsMapping, sgcb, handler, parameter);
+#endif
+}
+
+void
+IedServer_setLogStorage(IedServer self, const char* logRef, LogStorage logStorage)
+{
+#if (CONFIG_IEC61850_LOG_SERVICE == 1)
+    MmsMapping_setLogStorage(self->mmsMapping, logRef, logStorage);
 #endif
 }
 

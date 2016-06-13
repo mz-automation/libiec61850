@@ -10,6 +10,7 @@ EXAMPLE_DIRS += iec61850_client_example3
 EXAMPLE_DIRS += iec61850_client_example4
 EXAMPLE_DIRS += iec61850_client_example5
 EXAMPLE_DIRS += iec61850_client_example_reporting
+EXAMPLE_DIRS += iec61850_client_example_log
 EXAMPLE_DIRS += server_example1
 EXAMPLE_DIRS += server_example2
 EXAMPLE_DIRS += server_example3
@@ -23,6 +24,7 @@ EXAMPLE_DIRS += server_example_complex_array
 EXAMPLE_DIRS += server_example_61400_25
 EXAMPLE_DIRS += server_example_threadless
 EXAMPLE_DIRS += server_example_setting_groups
+EXAMPLE_DIRS += server_example_logging
 EXAMPLE_DIRS += goose_subscriber
 EXAMPLE_DIRS += goose_publisher
 EXAMPLE_DIRS += sv_subscriber
@@ -44,6 +46,7 @@ MODEL_DIRS += server_example_complex_array
 MODEL_DIRS += server_example_61400_25
 MODEL_DIRS += server_example_threadless
 MODEL_DIRS += server_example_setting_groups
+MODEL_DIRS += server_example_logging
 MODEL_DIRS += iec61850_9_2_LE_example
 
 all:	examples

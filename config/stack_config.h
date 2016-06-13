@@ -153,12 +153,15 @@
 /* default reservation time of a setting group control block in s */
 #define CONFIG_IEC61850_SG_RESVTMS 300
 
-/* default results for MMS identify service */
-#define CONFIG_DEFAULT_MMS_VENDOR_NAME "libiec61850.com"
-#define CONFIG_DEFAULT_MMS_MODEL_NAME "LIBIEC61850"
-#define CONFIG_DEFAULT_MMS_REVISION "0.9.1"
+/* include support for IEC 61850 log services */
+#define CONFIG_IEC61850_LOG_SERVICE 1
 
-/* MMS virtual file store base path - where file services are looking for files */
+/* overwrite default results for MMS identify service */
+//#define CONFIG_DEFAULT_MMS_VENDOR_NAME "libiec61850.com"
+//#define CONFIG_DEFAULT_MMS_MODEL_NAME "LIBIEC61850"
+//#define CONFIG_DEFAULT_MMS_REVISION "0.9.2"
+
+/* MMS virtual file store base path - where MMS file services are looking for files */
 #define CONFIG_VIRTUAL_FILESTORE_BASEPATH "./vmd-filestore/"
 
 /* Maximum number of open file per MMS connection (for MMS file read service) */
@@ -183,6 +186,7 @@
 #define MMS_READ_SERVICE 1
 #define MMS_WRITE_SERVICE 1
 #define MMS_GET_NAME_LIST 1
+#define MMS_JOURNAL_SERVICE 1
 #define MMS_GET_VARIABLE_ACCESS_ATTRIBUTES 1
 #define MMS_DATA_SET_SERVICE 1
 #define MMS_DYNAMIC_DATA_SETS 1

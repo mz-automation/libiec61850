@@ -142,6 +142,9 @@
 /* default reservation time of a setting group control block in s */
 #define CONFIG_IEC61850_SG_RESVTMS 100
 
+/* include support for IEC 61850 log services */
+#cmakedefine01 CONFIG_IEC61850_LOG_SERVICE
+
 /* default results for MMS identify service */
 #define CONFIG_DEFAULT_MMS_VENDOR_NAME "libiec61850.com"
 #define CONFIG_DEFAULT_MMS_MODEL_NAME "LIBIEC61850"
@@ -175,6 +178,7 @@
 #define MMS_READ_SERVICE 1
 #define MMS_WRITE_SERVICE 1
 #define MMS_GET_NAME_LIST 1
+#define MMS_JOURNAL_SERVICE 1
 #define MMS_GET_VARIABLE_ACCESS_ATTRIBUTES 1
 #define MMS_DATA_SET_SERVICE 1
 #define MMS_DYNAMIC_DATA_SETS 1

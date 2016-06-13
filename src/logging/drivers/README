@@ -1,0 +1,3 @@
+This directory contains the log driver implementation that implements the logging API. The logging API is a service provider interface that has to be implemented by the log driver.
+An application can use different log drivers at the same time.
+Each log driver provides a public constructor for the driver specific implementation of the LogStorage class. The constructor has to fill the virtual function table of the LogStorage instance with its own implementation functions.

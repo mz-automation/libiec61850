@@ -6,7 +6,7 @@ import com.libiec61850.scl.ParserUtils;
 import com.libiec61850.scl.SclParserException;
 
 /*
- *  Copyright 2014 Michael Zillgith
+ *  Copyright 2014-2016 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -34,6 +34,7 @@ public class LogControl {
 	private String ldInst = null;
 	private String prefix = "";
 	private String lnClass = "LLN0";
+	private String lnInst = "";
 	private String logName;
 	private boolean logEna = true;
 	private boolean reasonCode = true;
@@ -49,6 +50,10 @@ public class LogControl {
         desc = ParserUtils.parseAttribute(logControlNode, "desc");
         dataSet = ParserUtils.parseAttribute(logControlNode, "datSet");
         
+        if (dataSet != null) 
+            if (dataSet.equals(""))
+                dataSet = null;
+        
         ldInst = ParserUtils.parseAttribute(logControlNode, "ldInst");
         prefix = ParserUtils.parseAttribute(logControlNode, "prefix");
         
@@ -57,10 +62,18 @@ public class LogControl {
         if (lnClassString != null)
         	lnClass = lnClassString;
         
+        String lnInstString = ParserUtils.parseAttribute(logControlNode, "lnInst");
+        
+        if (lnInstString != null)
+            lnInst = lnInstString;
+        
         logName = ParserUtils.parseAttribute(logControlNode, "logName");
         
         if (logName == null)
         	throw new SclParserException(logControlNode, "LogControl is missing required attribute \"logName\"");
+        
+        if (logName.equals(""))
+            logName = null;
         
         String intgPdString = ParserUtils.parseAttribute(logControlNode, "intgPd");
 

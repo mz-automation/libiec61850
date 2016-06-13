@@ -34,52 +34,20 @@
 
 #include "stack_config.h"
 
-#ifndef CONFIG_VIRTUAL_FILESTORE_BASEPATH
-#define CONFIG_VIRTUAL_FILESTORE_BASEPATH "./vmd-filestore/"
-#endif
-
-static char fileBasePath[256];
-static bool fileBasePathInitialized = false;
-
 struct sDirectoryHandle {
     DIR* handle;
 };
 
-static void
-createFullPathFromFileName(char* fullPath, char* filename)
-{
-    if (!fileBasePathInitialized) {
-        strcpy(fileBasePath, CONFIG_VIRTUAL_FILESTORE_BASEPATH);
-        fileBasePathInitialized = true;
-    }
-
-    strcpy(fullPath, fileBasePath);
-
-    if (filename != NULL)
-        strcat(fullPath, filename);
-}
-
-
-void
-FileSystem_setBasePath(char* basePath)
-{
-    strcpy(fileBasePath, basePath);
-    fileBasePathInitialized = true;
-}
 
 FileHandle
 FileSystem_openFile(char* fileName, bool readWrite)
 {
-    char fullPath[sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 255];
-
-    createFullPathFromFileName(fullPath, fileName);
-
     FileHandle newHandle = NULL;
 
     if (readWrite)
-        newHandle = (FileHandle) fopen(fullPath, "w");
+        newHandle = (FileHandle) fopen(fileName, "w");
     else
-        newHandle = (FileHandle) fopen(fullPath, "r");
+        newHandle = (FileHandle) fopen(fileName, "r");
 
     return newHandle;
 }
@@ -99,11 +67,7 @@ FileSystem_closeFile(FileHandle handle)
 bool
 FileSystem_deleteFile(char* filename)
 {
-    char fullPath[sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 255];
-
-    createFullPathFromFileName(fullPath, filename);
-
-    if (remove(fullPath) == 0)
+    if (remove(filename) == 0)
         return true;
     else
         return false;
@@ -112,13 +76,7 @@ FileSystem_deleteFile(char* filename)
 bool
 FileSystem_renameFile(char* oldFilename, char* newFilename)
 {
-    char oldFullPath[sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 255];
-    char newFullPath[sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 255];
-
-    createFullPathFromFileName(oldFullPath, oldFilename);
-    createFullPathFromFileName(newFullPath, newFilename);
-
-    if (rename(oldFullPath, newFullPath) == 0)
+    if (rename(oldFilename, newFilename) == 0)
         return true;
     else
         return false;
@@ -130,11 +88,7 @@ FileSystem_getFileInfo(char* filename, uint32_t* fileSize, uint64_t* lastModific
 {
     struct stat fileStats;
 
-    char fullPath[sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 256];
-
-    createFullPathFromFileName(fullPath, filename);
-
-    if (stat(fullPath, &fileStats) == -1)
+    if (stat(filename, &fileStats) == -1)
         return false;
 
     if (lastModificationTimestamp != NULL)
@@ -150,11 +104,7 @@ FileSystem_getFileInfo(char* filename, uint32_t* fileSize, uint64_t* lastModific
 DirectoryHandle
 FileSystem_openDirectory(char* directoryName)
 {
-    char fullPath[sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 255];
-
-    createFullPathFromFileName(fullPath, directoryName);
-
-    DIR* dirHandle = opendir(fullPath);
+    DIR* dirHandle = opendir(directoryName);
 
     DirectoryHandle handle = NULL;
 

@@ -3,7 +3,7 @@ package com.libiec61850.tools;
 /*
  *  StaticModelGenerator.java
  *
- *  Copyright 2013, 2014 Michael Zillgith
+ *  Copyright 2013-2016 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -48,6 +48,8 @@ import com.libiec61850.scl.model.FunctionalConstraint;
 import com.libiec61850.scl.model.FunctionalConstraintData;
 import com.libiec61850.scl.model.GSEControl;
 import com.libiec61850.scl.model.IED;
+import com.libiec61850.scl.model.Log;
+import com.libiec61850.scl.model.LogControl;
 import com.libiec61850.scl.model.LogicalDevice;
 import com.libiec61850.scl.model.LogicalNode;
 import com.libiec61850.scl.model.ReportControlBlock;
@@ -68,6 +70,14 @@ public class StaticModelGenerator {
     private List<String> rcbVariableNames;
     private int currentRcbVariableNumber = 0;
 
+    private StringBuffer logControlBlocks;
+    private List<String> lcbVariableNames;
+    private int currentLcbVariableNumber = 0;
+    
+    private StringBuffer logs;
+    private List<String> logVariableNames;
+    private int currentLogVariableNumber = 0;
+    
     private StringBuffer gseControlBlocks;
     private List<String> gseVariableNames;
     private int currentGseVariableNumber = 0;
@@ -100,9 +110,12 @@ public class StaticModelGenerator {
     {
         this.cOut = cOut;
         this.hOut = hOut;
+        
         this.initializerBuffer = new StringBuffer();
+        
         this.reportControlBlocks = new StringBuffer();
         this.rcbVariableNames = new LinkedList<String>();
+
         this.gseControlBlocks = new StringBuffer();
         this.gseVariableNames = new LinkedList<String>();
         
@@ -112,6 +125,12 @@ public class StaticModelGenerator {
         this.settingGroupControlBlocks = new StringBuffer();
         this.sgcbVariableNames = new LinkedList<String>();
 
+        this.logControlBlocks = new StringBuffer();
+        this.lcbVariableNames = new LinkedList<String>();
+        
+        this.logs = new StringBuffer();
+        this.logVariableNames = new LinkedList<String>();
+        
         SclParser sclParser = new SclParser(stream);
 
 		this.outputFileName = outputFileName;
@@ -252,15 +271,6 @@ public class StaticModelGenerator {
         }
     }
 
-//    private String getLogicalDeviceName(LogicalDevice logicalDevice) {
-//        String logicalDeviceName = logicalDevice.getLdName();
-//
-//        if (logicalDeviceName == null)
-//            logicalDeviceName = ied.getName() + logicalDevice.getInst();
-//
-//        return logicalDeviceName;
-//    }
-
     private String getLogicalDeviceInst(LogicalDevice logicalDevice) {
     	return logicalDevice.getInst();
     }
@@ -272,6 +282,10 @@ public class StaticModelGenerator {
         List<LogicalDevice> logicalDevices = accessPoint.getServer().getLogicalDevices();
         
         createReportVariableList(logicalDevices);
+        
+        createLogControlVariableList(logicalDevices);
+        
+        createLogVariableList(logicalDevices);
         
         createGooseVariableList(logicalDevices);
         
@@ -307,7 +321,7 @@ public class StaticModelGenerator {
             cOut.println("    (ModelNode*) &" + firstChildName);
             cOut.println("};\n");
 
-            printLogicalNodeDefinitions(ldName, logicalDevice.getLogicalNodes());
+            printLogicalNodeDefinitions(ldName, logicalDevice, logicalDevice.getLogicalNodes());
         }
 
         
@@ -317,6 +331,7 @@ public class StaticModelGenerator {
         cOut.println();
         
         cOut.println(reportControlBlocks);
+        
         
         for (String smv : smvVariableNames)
             cOut.println("extern SVControlBlock " + smv + ";");
@@ -332,7 +347,17 @@ public class StaticModelGenerator {
         	cOut.println("extern SettingGroupControlBlock " + sgcb + ";");
         
         cOut.println(settingGroupControlBlocks);
-
+        
+        for (String lcb : lcbVariableNames)
+            cOut.println("extern LogControlBlock " + lcb + ";");
+        
+        cOut.println(logControlBlocks);
+        
+        for (String log : logVariableNames)
+            cOut.println("extern Log " + log + ";");
+        
+        cOut.println(logs);
+        
         String firstLogicalDeviceName = logicalDevices.get(0).getInst();
         cOut.println("\nIedModel " + modelPrefix + " = {");
         cOut.println("    \"" + ied.getName() + "\",");
@@ -363,6 +388,16 @@ public class StaticModelGenerator {
         else
             cOut.println("    NULL,");
 
+        if (lcbVariableNames.size() > 0)
+            cOut.println("    &" + lcbVariableNames.get(0) + ",");
+        else
+            cOut.println("    NULL,");
+        
+        if (logVariableNames.size() > 0)
+            cOut.println("    &" + logVariableNames.get(0) + ",");
+        else
+            cOut.println("    NULL,");
+        
         cOut.println("    initializeValues\n};");
     }
 
@@ -438,6 +473,54 @@ public class StaticModelGenerator {
 		}
 	}
 	
+	private void createLogControlVariableList(List<LogicalDevice> logicalDevices)
+	{
+	    for (LogicalDevice ld : logicalDevices) {
+	        List<LogicalNode> lnodes = ld.getLogicalNodes();
+	        
+	        String ldName = ld.getInst();
+	        
+	        for (LogicalNode ln : lnodes) {
+	            List<LogControl> lcbs = ln.getLogControlBlocks();
+	            
+	            int lcbCount = 0;
+	            
+	            for (LogControl logControl : lcbs) {
+	                
+	                String lcbVariableName = modelPrefix + "_" + ldName + "_" + ln.getName() + "_lcb" + lcbCount;
+	                
+	                lcbVariableNames.add(lcbVariableName);
+	                
+	                lcbCount++;	                
+	            }
+	        }
+	    }
+	}
+	
+	private void createLogVariableList(List<LogicalDevice> logicalDevices)
+	{
+	    for (LogicalDevice ld : logicalDevices) {
+            List<LogicalNode> lnodes = ld.getLogicalNodes();
+            
+            String ldName = ld.getInst();
+            
+            for (LogicalNode ln : lnodes) {
+                List<Log> logs = ln.getLogs();
+                
+                int logCount = 0;
+                
+                for (Log log : logs) {
+                    
+                    String logVariableName = modelPrefix + "_" + ldName + "_" + ln.getName() + "_log" + logCount;
+                    
+                    logVariableNames.add(logVariableName);
+                    
+                    logCount++;             
+                }
+            }
+	    }
+	}
+	
 	private void createSettingControlsVariableList(List<LogicalDevice> logicalDevices) {
 		for (LogicalDevice ld : logicalDevices) {
 			List<LogicalNode> lnodes = ld.getLogicalNodes();
@@ -458,7 +541,7 @@ public class StaticModelGenerator {
 		}
 	}
 
-	private void printLogicalNodeDefinitions(String ldName, List<LogicalNode> logicalNodes) {
+	private void printLogicalNodeDefinitions(String ldName, LogicalDevice logicalDevice, List<LogicalNode> logicalNodes) {
         for (int i = 0; i < logicalNodes.size(); i++) {
             LogicalNode logicalNode = logicalNodes.get(i);
 
@@ -484,6 +567,10 @@ public class StaticModelGenerator {
             printDataObjectDefinitions(lnName, logicalNode.getDataObjects(), null);
 
             printReportControlBlocks(lnName, logicalNode);
+            
+            printLogControlBlocks(ldName, lnName, logicalNode, logicalDevice);
+            
+            printLogs(lnName, logicalNode);
 
             printGSEControlBlocks(ldName, lnName, logicalNode);
             
@@ -990,6 +1077,34 @@ public class StaticModelGenerator {
         }
     }
     
+    private void printLogControlBlocks(String ldName, String lnPrefix, LogicalNode logicalNode, LogicalDevice logicalDevice) 
+    {
+        List<LogControl> logControlBlocks = logicalNode.getLogControlBlocks();
+        
+        int lcbCount = logControlBlocks.size();
+        
+        int lcbNumber = 0;
+        
+        for (LogControl lcb : logControlBlocks) {
+            printLogControlBlock(logicalDevice, lnPrefix, lcb, lcbNumber, lcbCount);
+            lcbNumber++;
+        }
+    }
+    
+    private void printLogs(String lnPrefix, LogicalNode logicalNode)
+    {
+        List<Log> logs = logicalNode.getLogs();
+        
+        int logCount = logs.size();
+        
+        int logNumber = 0;
+        
+        for (Log log : logs) {
+            printLog(lnPrefix, log, logNumber, logCount);
+            logNumber++;
+        }
+    }
+    
     private void printSettingControlBlock(String lnPrefix, LogicalNode logicalNode)
     {
     	List<SettingControl> settingControls = logicalNode.getSettingGroupControlBlocks();
@@ -1019,8 +1134,100 @@ public class StaticModelGenerator {
     		currentSGCBVariableNumber++;
     	}
     }
+    
+    private void printLog(String lnPrefix, Log log, int logNumber, int logCount)
+    {
+        String logVariableName = lnPrefix + "_log" + logNumber;
+        
+        String logString = "Log " + logVariableName + " = {";
+        
+        logString += "&" + lnPrefix + ", ";
+        
+        logString += "\"" + log.getName() + "\", ";
+        
+        currentLogVariableNumber++;
+        
+        if (currentLogVariableNumber < logVariableNames.size())
+            logString += "&" + logVariableNames.get(currentLogVariableNumber);
+        else
+            logString += "NULL";
 
-    private void printReportControlBlockInstance(String lnPrefix, ReportControlBlock rcb, String index, int reportNumber, int reportsCount) {
+        logString += "};\n";
+
+        this.logs.append(logString);
+    }
+    
+    private void printLogControlBlock(LogicalDevice logicalDevice, String lnPrefix, LogControl lcb, int lcbNumber, int lcbCount)
+    {
+        String lcbVariableName = lnPrefix + "_lcb" + lcbNumber;
+        
+        String lcbString = "LogControlBlock " + lcbVariableName + " = {";
+        
+        lcbString += "&" + lnPrefix + ", ";
+        
+        lcbString += "\"" + lcb.getName() + "\", ";
+        
+        if (lcb.getDataSet() != null)
+            lcbString += "\"" + lcb.getDataSet() + "\", ";
+        else
+            lcbString += "NULL, ";
+              
+        String logRef;
+        
+        if (lcb.getLdInst() == null)
+            logRef = logicalDevice.getInst() + "/";
+        else
+            logRef = lcb.getLdInst() + "/";
+               
+        if (lcb.getLnClass().equals("LLN0"))
+            logRef += "LLN0$";
+        else
+            logRef += lcb.getLnClass() + "$";
+        
+        if (lcb.getLogName() != null)
+            lcbString += "\"" + logRef + lcb.getLogName() + "\", ";
+        else
+            lcbString += "NULL, ";
+        
+        int triggerOps = 0;
+
+        if (lcb.getTriggerOptions() != null)
+            triggerOps = lcb.getTriggerOptions().getIntValue();
+
+        if (triggerOps >= 16)
+            triggerOps = triggerOps - 16;
+        
+        lcbString += triggerOps + ", ";
+        
+        if (lcb.getIntgPd() != 0)
+            lcbString += lcb.getIntgPd() + ", ";
+        else
+            lcbString += "0, ";
+        
+        if (lcb.isLogEna())
+            lcbString += "true, ";
+        else
+            lcbString += "false, ";
+        
+        if (lcb.isReasonCode())
+            lcbString += "true, ";
+        else
+            lcbString += "false, ";
+        
+        currentLcbVariableNumber++;
+        
+        if (currentLcbVariableNumber < lcbVariableNames.size())
+            lcbString += "&" + lcbVariableNames.get(currentLcbVariableNumber);
+        else
+            lcbString += "NULL";
+
+        lcbString += "};\n";
+
+        this.logControlBlocks.append(lcbString);
+    }
+
+    private void printReportControlBlockInstance(String lnPrefix, ReportControlBlock rcb, String index, int reportNumber, int reportsCount) 
+    {
         String rcbVariableName = lnPrefix + "_report" + reportNumber;
 
         String rcbString = "ReportControlBlock " + rcbVariableName + " = {";
