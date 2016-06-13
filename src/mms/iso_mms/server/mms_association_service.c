@@ -46,6 +46,8 @@
 #define MMS_SERVICE_DEFINE_NAMED_TYPE 0x02
 #define MMS_SERVICE_GET_NAMED_TYPE_ATTRIBUTES 0x01
 
+#define MMS_SERVICE_READ_JOURNAL 0x40
+
 #define MMS_SERVICE_FILE_OPEN 0x80
 #define MMS_SERVICE_FILE_READ 0x40
 #define MMS_SERVICE_FILE_CLOSE 0x20
@@ -63,11 +65,11 @@
 static uint8_t servicesSupported[] =
 {
         0x00
-#if MMS_STATUS_SERVICE == 1
+#if (MMS_STATUS_SERVICE == 1)
         | MMS_SERVICE_STATUS
 #endif
         | MMS_SERVICE_GET_NAME_LIST
-#if MMS_IDENTIFY_SERVICE == 1
+#if (MMS_IDENTIFY_SERVICE == 1)
         | MMS_SERVICE_IDENTIFY
 #endif
         | MMS_SERVICE_READ
@@ -85,9 +87,13 @@ static uint8_t servicesSupported[] =
         0x00,
         0x00,
         0x00,
-        0x00,
         0x00
-#if MMS_FILE_SERVICE == 1
+#if (MMS_JOURNAL_SERVICE == 1)
+        | MMS_SERVICE_READ_JOURNAL
+#endif
+        ,
+        0x00
+#if (MMS_FILE_SERVICE == 1)
         | MMS_SERVICE_FILE_OPEN
         | MMS_SERVICE_FILE_READ
         | MMS_SERVICE_FILE_CLOSE
