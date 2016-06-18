@@ -1,7 +1,7 @@
 /*
  *  ied_server.c
  *
- *  Copyright 2013, 2014, 2015 Michael Zillgith
+ *  Copyright 2013-2016 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -460,14 +460,16 @@ IedServer_destroy(IedServer self)
     MmsServer_destroy(self->mmsServer);
     IsoServer_destroy(self->isoServer);
 
-#if (CONFIG_MMS_SINGLE_THREADED == 1)
+#if ((CONFIG_MMS_SINGLE_THREADED == 1) && (CONFIG_MMS_THREADLESS_STACK == 0))
 
     /* trigger stopping background task thread */
-    self->mmsMapping->reportThreadRunning = false;
+    if (self->mmsMapping->reportThreadRunning) {
+        self->mmsMapping->reportThreadRunning = false;
 
-    /* waiting for thread to finish */
-    while (self->mmsMapping->reportThreadFinished == false) {
-        Thread_sleep(10);
+        /* waiting for thread to finish */
+        while (self->mmsMapping->reportThreadFinished == false) {
+            Thread_sleep(10);
+        }
     }
 
 #endif

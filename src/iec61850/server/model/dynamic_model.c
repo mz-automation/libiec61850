@@ -1,7 +1,7 @@
 /*
  *  dynamic_model.c
  *
- *  Copyright 2014 Michael Zillgith
+ *  Copyright 2014-2016 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -303,16 +303,17 @@ LogControlBlock_create(const char* name, LogicalNode* parent, char* dataSetName,
 
     self->name = copyString(name);
     self->parent = parent;
+    self->sibling = NULL;
 
     if (dataSetName)
         self->dataSetName = copyString(dataSetName);
     else
-        dataSetName = NULL;
+        self->dataSetName = NULL;
 
     if (logRef)
         self->logRef = copyString(logRef);
     else
-        logRef = NULL;
+        self->logRef = NULL;
 
     self->trgOps = trgOps;
     self->intPeriod = intPeriod;
@@ -842,6 +843,15 @@ IedModel_destroy(IedModel* model)
     while (lcb != NULL) {
         LogControlBlock* nextLcb = lcb->sibling;
 
+        if (lcb->name)
+            GLOBAL_FREEMEM(lcb->name);
+
+        if (lcb->dataSetName)
+            GLOBAL_FREEMEM(lcb->dataSetName);
+
+        if (lcb->logRef)
+            GLOBAL_FREEMEM(lcb->logRef);
+
         GLOBAL_FREEMEM(lcb);
 
         lcb = nextLcb;
@@ -852,6 +862,9 @@ IedModel_destroy(IedModel* model)
 
     while (log != NULL) {
         Log* nextLog = log->sibling;
+
+        if (log->name)
+            GLOBAL_FREEMEM(log->name);
 
         GLOBAL_FREEMEM(log);
 

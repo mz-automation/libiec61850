@@ -1,3 +1,9 @@
+Changes to version 0.9.2.1
+--------------------------
+- server: fixed some memory access problens in dynamic model LCB
+- server: fixed some minor problems with configuration options
+
+
 Changes to version 0.9.2
 ------------------------
 - client/server: support for MMS journals and IEC 61850 log service
