@@ -422,7 +422,11 @@ ControlObjectClient_setOrigin(ControlObjectClient self, const char* orIdent, int
     if (self->orIdent != NULL)
         GLOBAL_FREEMEM(self->orIdent);
 
-    self->orIdent = copyString(orIdent);
+    if (orIdent != NULL)
+        self->orIdent = copyString(orIdent);
+    else
+        self->orIdent = NULL;
+
     self->orCat = orCat;
 }
 

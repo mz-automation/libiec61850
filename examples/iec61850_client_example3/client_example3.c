@@ -57,6 +57,8 @@ int main(int argc, char** argv) {
 
         MmsValue* ctlVal = MmsValue_newBoolean(true);
 
+        ControlObjectClient_setOrigin(control, NULL, 3);
+
         if (ControlObjectClient_operate(control, ctlVal, 0 /* operate now */)) {
             printf("simpleIOGenericIO/GGIO1.SPCSO1 operated successfully\n");
         }
