@@ -48,7 +48,7 @@ reportCallbackFunction(void* parameter, ClientReport report)
     for (i = 0; i < LinkedList_size(dataSetDirectory); i++) {
         ReasonForInclusion reason = ClientReport_getReasonForInclusion(report, i);
 
-        if (reason != REASON_NOT_INCLUDED) {
+        if (reason != IEC61850_REASON_NOT_INCLUDED) {
 
             LinkedList entry = LinkedList_get(dataSetDirectory, i);
 

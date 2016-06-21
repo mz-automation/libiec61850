@@ -658,26 +658,34 @@ IedConnection_getRCBValues(IedConnection self, IedClientError* error, const char
 /** Describes the reason for the inclusion of the element in the report */
 typedef enum {
     /** the element is not included in the received report */
-    REASON_NOT_INCLUDED = 0,
+    IEC61850_REASON_NOT_INCLUDED = 0,
 
     /** the element is included due to a change of the data value */
-    REASON_DATA_CHANGE = 1,
+    IEC61850_REASON_DATA_CHANGE = 1,
 
     /** the element is included due to a change in the quality of data */
-    REASON_QUALITY_CHANGE = 2,
+    IEC61850_REASON_QUALITY_CHANGE = 2,
 
     /** the element is included due to an update of the data value */
-    REASON_DATA_UPDATE = 3,
+    IEC61850_REASON_DATA_UPDATE = 3,
 
     /** the element is included due to a periodic integrity report task */
-    REASON_INTEGRITY = 4,
+    IEC61850_REASON_INTEGRITY = 4,
 
     /** the element is included due to a general interrogation by the client */
-    REASON_GI = 5,
+    IEC61850_REASON_GI = 5,
 
     /** the reason for inclusion is unknown */
-    REASON_UNKNOWN = 6
+    IEC61850_REASON_UNKNOWN = 6
 } ReasonForInclusion;
+
+#define REASON_NOT_INCLUDED IEC61850_REASON_NOT_INCLUDED
+#define REASON_DATA_CHANGE IEC61850_REASON_DATA_CHANGE
+#define REASON_QUALITY_CHANGE IEC61850_REASON_QUALITY_CHANGE
+#define REASON_DATA_UPDATE IEC61850_REASON_DATA_UPDATE
+#define REASON_INTEGRITY IEC61850_REASON_INTEGRITY
+#define REASON_GI IEC61850_REASON_GI
+#define REASON_UNKNOWN IEC61850_REASON_UNKNOWN
 
 
 /* Element encoding mask values for ClientReportControlBlock */

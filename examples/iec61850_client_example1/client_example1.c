@@ -22,7 +22,7 @@ reportCallbackFunction(void* parameter, ClientReport report)
     for (i = 0; i < 4; i++) {
         ReasonForInclusion reason = ClientReport_getReasonForInclusion(report, i);
 
-        if (reason != REASON_NOT_INCLUDED) {
+        if (reason != IEC61850_REASON_NOT_INCLUDED) {
             printf("  GGIO1.SPCSO%i.stVal: %i (included for reason %i)\n", i,
                     MmsValue_getBoolean(MmsValue_getElement(dataSetValues, i)), reason);
         }

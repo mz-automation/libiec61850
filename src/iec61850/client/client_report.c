@@ -67,17 +67,17 @@ char*
 ReasonForInclusion_getValueAsString(ReasonForInclusion reasonCode)
 {
     switch (reasonCode) {
-    case REASON_NOT_INCLUDED:
+    case IEC61850_REASON_NOT_INCLUDED:
         return "not-included";
-    case REASON_DATA_CHANGE:
+    case IEC61850_REASON_DATA_CHANGE:
         return "data-change";
-    case REASON_DATA_UPDATE:
+    case IEC61850_REASON_DATA_UPDATE:
         return "data-update";
-    case REASON_QUALITY_CHANGE:
+    case IEC61850_REASON_QUALITY_CHANGE:
         return "quality-change";
-    case REASON_GI:
+    case IEC61850_REASON_GI:
         return "GI";
-    case REASON_INTEGRITY:
+    case IEC61850_REASON_INTEGRITY:
         return "integrity";
     default:
         return "unknown";
@@ -136,7 +136,7 @@ ClientReport_getReasonForInclusion(ClientReport self, int elementIndex)
     if (self->reasonForInclusion != NULL)
         return self->reasonForInclusion[elementIndex];
     else
-        return REASON_NOT_INCLUDED;
+        return IEC61850_REASON_NOT_INCLUDED;
 }
 
 MmsValue*
@@ -536,7 +536,7 @@ private_IedConnection_handleReport(IedConnection self, MmsValue* value)
         int elementIndex;
 
         for (elementIndex = 0; elementIndex < dataSetSize; elementIndex++)
-            matchingReport->reasonForInclusion[elementIndex] = REASON_NOT_INCLUDED;
+            matchingReport->reasonForInclusion[elementIndex] = IEC61850_REASON_NOT_INCLUDED;
 
     }
 
@@ -570,22 +570,22 @@ private_IedConnection_handleReport(IedConnection self, MmsValue* value)
                 MmsValue* reasonForInclusion = MmsValue_getElement(value, reasonForInclusionIndex);
 
                 if (MmsValue_getBitStringBit(reasonForInclusion, 1) == true)
-                    matchingReport->reasonForInclusion[i] = REASON_DATA_CHANGE;
+                    matchingReport->reasonForInclusion[i] = IEC61850_REASON_DATA_CHANGE;
                 else if (MmsValue_getBitStringBit(reasonForInclusion, 2) == true)
-                    matchingReport->reasonForInclusion[i] = REASON_QUALITY_CHANGE;
+                    matchingReport->reasonForInclusion[i] = IEC61850_REASON_QUALITY_CHANGE;
                 else if (MmsValue_getBitStringBit(reasonForInclusion, 3) == true)
-                    matchingReport->reasonForInclusion[i] = REASON_DATA_UPDATE;
+                    matchingReport->reasonForInclusion[i] = IEC61850_REASON_DATA_UPDATE;
                 else if (MmsValue_getBitStringBit(reasonForInclusion, 4) == true)
-                    matchingReport->reasonForInclusion[i] = REASON_INTEGRITY;
+                    matchingReport->reasonForInclusion[i] = IEC61850_REASON_INTEGRITY;
                 else if (MmsValue_getBitStringBit(reasonForInclusion, 5) == true)
-                    matchingReport->reasonForInclusion[i] = REASON_GI;
+                    matchingReport->reasonForInclusion[i] = IEC61850_REASON_GI;
             }
             else {
-                matchingReport->reasonForInclusion[i] = REASON_UNKNOWN;
+                matchingReport->reasonForInclusion[i] = IEC61850_REASON_UNKNOWN;
             }
         }
         else {
-            matchingReport->reasonForInclusion[i] = REASON_NOT_INCLUDED;
+            matchingReport->reasonForInclusion[i] = IEC61850_REASON_NOT_INCLUDED;
         }
     }
 
