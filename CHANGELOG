@@ -1,8 +1,8 @@
 Changes to version 0.9.2.1
 --------------------------
 - server: fixed some memory access problens in dynamic model LCB
-- server: fixed some minor problems with configuration options
-
+- server: fixed some minor problems with stack configuration options
+- client: added IEC61850_REASON prefix to inclusion reason code values for reporting
 
 Changes to version 0.9.2
 ------------------------
