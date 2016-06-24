@@ -3,7 +3,7 @@ package com.libiec61850.tools;
 /*
  *  DynamicModelGenerator.java
  *
- *  Copyright 2014 Michael Zillgith
+ *  Copyright 2014-2016 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -148,7 +148,7 @@ public class DynamicModelGenerator {
             printLCB(output, lcb, logicalNode, logicalDevice);
         
         for (Log log : logicalNode.getLogs())
-            output.println("LOG(" + log.getName() + ")");
+            output.println("LOG(" + log.getName() + ");");
         
         for (GSEControl gcb : logicalNode.getGSEControlBlocks()) {
             LogicalDevice ld = logicalNode.getParentLogicalDevice();
@@ -221,9 +221,9 @@ public class DynamicModelGenerator {
             output.print("0 ");
         
         if (lcb.isReasonCode())
-            output.println("1)");
+            output.println("1);");
         else
-            output.println("0)");
+            output.println("0);");
     }
 
     private void printRCBInstance(PrintStream output, ReportControlBlock rcb, String index) {
