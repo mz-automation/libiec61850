@@ -295,6 +295,13 @@ sendRequestAndWaitForResponse(MmsConnection self, uint32_t invokeId, ByteBuffer*
 
     addToOutstandingCalls(self, invokeId);
 
+#if (CONFIG_MMS_RAW_MESSAGE_LOGGING == 1)
+    if (self->rawMmsMessageHandler != NULL) {
+        MmsRawMessageHandler handler = (MmsRawMessageHandler) self->rawMmsMessageHandler;
+        handler(self->rawMmsMessageHandlerParameter, message->buffer, message->size, false);
+    }
+#endif /* (CONFIG_MMS_RAW_MESSAGE_LOGGING == 1) */
+
     IsoClientConnection_sendMessage(self->isoClient, message);
 
     while (currentTime < waitUntilTime) {
@@ -607,6 +614,13 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
 
     uint8_t* buf = ByteBuffer_getBuffer(payload);
 
+#if (CONFIG_MMS_RAW_MESSAGE_LOGGING == 1)
+    if (self->rawMmsMessageHandler != NULL) {
+        MmsRawMessageHandler handler = (MmsRawMessageHandler) self->rawMmsMessageHandler;
+        handler(self->rawMmsMessageHandlerParameter, buf, payload->size, true);
+    }
+#endif /* (CONFIG_MMS_RAW_MESSAGE_LOGGING == 1) */
+
     uint8_t tag = buf[0];
 
     if (DEBUG_MMS_CLIENT)
@@ -805,6 +819,16 @@ MmsConnection_destroy(MmsConnection self)
 }
 
 void
+MmsConnection_setRawMessageHandler(MmsConnection self, MmsRawMessageHandler handler, void* parameter)
+{
+#if (CONFIG_MMS_RAW_MESSAGE_LOGGING == 1)
+    self->rawMmsMessageHandler = (void*) handler;
+    self->rawMmsMessageHandlerParameter = parameter;
+#endif
+}
+
+
+void
 MmsConnection_setConnectionLostHandler(MmsConnection self, MmsConnectionLostHandler handler, void* handlerParameter)
 {
     self->connectionLostHandler = handler;
@@ -878,6 +902,13 @@ MmsConnection_connect(MmsConnection self, MmsError* mmsError, const char* server
     ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
     mmsClient_createInitiateRequest(self, payload);
+
+#if (CONFIG_MMS_RAW_MESSAGE_LOGGING == 1)
+    if (self->rawMmsMessageHandler != NULL) {
+        MmsRawMessageHandler handler = (MmsRawMessageHandler) self->rawMmsMessageHandler;
+        handler(self->rawMmsMessageHandlerParameter, payload->buffer, payload->size, false);
+    }
+#endif /* (CONFIG_MMS_RAW_MESSAGE_LOGGING == 1) */
 
     self->connectionState = MMS_CON_WAITING;
 

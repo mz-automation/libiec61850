@@ -80,6 +80,33 @@ MmsConnection
 MmsConnection_create(void);
 
 /**
+ * \brief Callback function to intercept raw MMS messages
+ *
+ * IMPORTANT: the message buffer is only valid in the context of the the callback function. If the
+ * message data is required elsewhere it has to be copied here!
+ *
+ * \param parameter user provided parameter that is passed to the callback function
+ * \param message buffer of the message.
+ * \param messageLength length of the message in bytes
+ * \param received if true message has been received, false when message has been sent.
+ */
+typedef void (*MmsRawMessageHandler) (void* parameter, uint8_t* message, int messageLength, bool received);
+
+/**
+ * \brief Set the callback handler to intercept the raw MMS messages of the connection
+ *
+ * This function can be used to log raw MMS messages. It may be useful for debugging purposes
+ * or advanced test tools. This function will only work when the flag CONFIG_MMS_RAW_MESSAGE_LOGGING
+ * it set in stack_config.h
+ *
+ * \param self MmsConnection instance to operate on
+ * \param handler the connection specific callback function
+ * \param a user provided parameter passed to the callback function (use NULL if not required).
+ */
+void
+MmsConnection_setRawMessageHandler(MmsConnection self, MmsRawMessageHandler handler, void* parameter);
+
+/**
  * \brief Set the request timeout in ms for this connection
  *
  * \param self MmsConnection instance to operate on

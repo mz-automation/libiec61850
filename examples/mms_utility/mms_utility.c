@@ -21,6 +21,7 @@ print_help()
     printf("-f show file list\n");
     printf("-g <filename> get file attributes\n");
     printf("-j <domainName/journalName> read journal\n");
+    printf("-m print raw MMS messages\n");
 }
 
 static void
@@ -77,6 +78,21 @@ printJournalEntries(LinkedList journalEntries)
     }
 }
 
+void*
+printRawMmsMessage(void* parameter, uint8_t* message, int messageLength, bool received)
+{
+    if (received)
+        printf("RECV: ");
+    else
+        printf("SEND: ");
+
+    int i;
+    for (i = 0; i < messageLength; i++) {
+        printf("%02x ", message[i]);
+    }
+
+    printf("\n");
+}
 
 int main(int argc, char** argv) {
 
@@ -97,11 +113,16 @@ int main(int argc, char** argv) {
 	int showFileList = 0;
 	int getFileAttributes = 0;
 	int readJournal = 0;
+	int printRawMmsMessages = 0;
 
 	int c;
 
-	while ((c = getopt(argc, argv, "ifdh:p:l:t:a:r:g:j:")) != -1)
+	while ((c = getopt(argc, argv, "mifdh:p:l:t:a:r:g:j:")) != -1)
 		switch (c) {
+		case 'm':
+		    printRawMmsMessages = 1;
+		    break;
+
 		case 'h':
 			hostname = copyString(optarg);
 			break;
@@ -153,6 +174,9 @@ int main(int argc, char** argv) {
 
 	/* Set maximum MMS PDU size (local detail) to 2000 byte */
 	MmsConnection_setLocalDetail(con, maxPduSize);
+
+	if (printRawMmsMessages)
+	    MmsConnection_setRawMessageHandler(con, (MmsRawMessageHandler) printRawMmsMessage, NULL);
 
 	if (!MmsConnection_connect(con, &error, hostname, tcpPort)) {
 		printf("MMS connect failed!\n");

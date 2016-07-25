@@ -549,3 +549,4 @@ EXPORTS
 	CDC_DPL_create
 	SV_ASDU_addFLOAT64
     SV_ASDU_setFLOAT64
+    MmsConnection_setRawMessageHandler

@@ -32,6 +32,10 @@
 
 #include "hal_thread.h"
 
+#ifndef CONFIG_MMS_RAW_MESSAGE_LOGGING
+#define CONFIG_MMS_RAW_MESSAGE_LOGGING 0
+#endif
+
 #ifndef DEBUG_MMS_CLIENT
 #define DEBUG_MMS_CLIENT 0
 #endif
@@ -84,6 +88,11 @@ struct sMmsConnection {
 
 	MmsConnectionLostHandler connectionLostHandler;
 	void* connectionLostHandlerParameter;
+
+#if (CONFIG_MMS_RAW_MESSAGE_LOGGING == 1)
+	void* rawMmsMessageHandler;
+	void* rawMmsMessageHandlerParameter;
+#endif
 
 	/* state of an active connection conclude/release process */
 	int concludeState;
