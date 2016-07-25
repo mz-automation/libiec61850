@@ -42,6 +42,11 @@ struct sIedServer
     MmsMapping* mmsMapping;
     LinkedList clientConnections;
     uint8_t writeAccessPolicies;
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore dataModelLock;
+#endif
+
     bool running;
 };
 

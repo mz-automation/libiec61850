@@ -545,6 +545,29 @@ SV_ASDU_setFLOAT(SV_ASDU self, int index, float value)
 }
 
 
+int
+SV_ASDU_addFLOAT64(SV_ASDU self)
+{
+    int index = self->dataSize;
+    self->dataSize += 8;
+    return index;
+}
+
+void
+SV_ASDU_setFLOAT64(SV_ASDU self, int index, double value)
+{
+    uint8_t* buf = (uint8_t*) &value;
+#if (ORDER_LITTLE_ENDIAN == 1)
+    BerEncoder_revertByteOrder(buf, 8);
+#endif
+    int i;
+    uint8_t* buffer = self->_dataBuffer + index;
+    for (i = 0; i < 8; i++) {
+        buffer[i] = buf[i];
+    }
+}
+
+
 void
 SV_ASDU_setSmpCnt(SV_ASDU self, uint16_t value)
 {

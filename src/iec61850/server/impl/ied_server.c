@@ -406,6 +406,10 @@ IedServer_create(IedModel* iedModel)
 
     // self->running = false; /* not required due to CALLOC */
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    self->dataModelLock = Semaphore_create(1);
+#endif
+
     self->mmsMapping = MmsMapping_create(iedModel);
 
     self->mmsDevice = MmsMapping_getMmsDeviceModel(self->mmsMapping);
@@ -477,6 +481,11 @@ IedServer_destroy(IedServer self)
     MmsMapping_destroy(self->mmsMapping);
 
     LinkedList_destroyDeep(self->clientConnections, (LinkedListValueDeleteFunction) private_ClientConnection_destroy);
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_destroy(self->dataModelLock);
+#endif
+
     GLOBAL_FREEMEM(self);
 }
 
@@ -891,7 +900,16 @@ IedServer_updateAttributeValue(IedServer self, DataAttribute* dataAttribute, Mms
     if (MmsValue_equals(dataAttribute->mmsValue, value))
         checkForUpdateTrigger(self, dataAttribute);
     else {
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_wait(self->dataModelLock);
+#endif
+
         MmsValue_update(dataAttribute->mmsValue, value);
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_post(self->dataModelLock);
+#endif
 
         checkForChangedTriggers(self, dataAttribute);
     }
@@ -910,7 +928,13 @@ IedServer_updateFloatAttributeValue(IedServer self, DataAttribute* dataAttribute
         checkForUpdateTrigger(self, dataAttribute);
     }
     else {
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_wait(self->dataModelLock);
+#endif
         MmsValue_setFloat(dataAttribute->mmsValue, value);
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_post(self->dataModelLock);
+#endif
         checkForChangedTriggers(self, dataAttribute);
     }
 }
@@ -928,7 +952,13 @@ IedServer_updateInt32AttributeValue(IedServer self, DataAttribute* dataAttribute
         checkForUpdateTrigger(self, dataAttribute);
     }
     else {
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_wait(self->dataModelLock);
+#endif
         MmsValue_setInt32(dataAttribute->mmsValue, value);
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_post(self->dataModelLock);
+#endif
 
         checkForChangedTriggers(self, dataAttribute);
     }
@@ -947,7 +977,13 @@ IedServer_updateInt64AttributeValue(IedServer self, DataAttribute* dataAttribute
         checkForUpdateTrigger(self, dataAttribute);
     }
     else {
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_wait(self->dataModelLock);
+#endif
         MmsValue_setInt64(dataAttribute->mmsValue, value);
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_post(self->dataModelLock);
+#endif
 
         checkForChangedTriggers(self, dataAttribute);
     }
@@ -966,7 +1002,13 @@ IedServer_updateUnsignedAttributeValue(IedServer self, DataAttribute* dataAttrib
         checkForUpdateTrigger(self, dataAttribute);
     }
     else {
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_wait(self->dataModelLock);
+#endif
         MmsValue_setUint32(dataAttribute->mmsValue, value);
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_post(self->dataModelLock);
+#endif
 
         checkForChangedTriggers(self, dataAttribute);
     }
@@ -985,7 +1027,13 @@ IedServer_updateBitStringAttributeValue(IedServer self, DataAttribute* dataAttri
         checkForUpdateTrigger(self, dataAttribute);
     }
     else {
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_wait(self->dataModelLock);
+#endif
         MmsValue_setBitStringFromInteger(dataAttribute->mmsValue, value);
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_post(self->dataModelLock);
+#endif
 
         checkForChangedTriggers(self, dataAttribute);
     }
@@ -1005,7 +1053,13 @@ IedServer_updateBooleanAttributeValue(IedServer self, DataAttribute* dataAttribu
         checkForUpdateTrigger(self, dataAttribute);
     }
     else {
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_wait(self->dataModelLock);
+#endif
         MmsValue_setBoolean(dataAttribute->mmsValue, value);
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_post(self->dataModelLock);
+#endif
 
         checkForChangedTriggers(self, dataAttribute);
     }
@@ -1024,7 +1078,13 @@ IedServer_updateVisibleStringAttributeValue(IedServer self, DataAttribute* dataA
         checkForUpdateTrigger(self, dataAttribute);
     }
     else {
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_wait(self->dataModelLock);
+#endif
         MmsValue_setVisibleString(dataAttribute->mmsValue, value);
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_post(self->dataModelLock);
+#endif
 
         checkForChangedTriggers(self, dataAttribute);
     }
@@ -1043,7 +1103,13 @@ IedServer_updateUTCTimeAttributeValue(IedServer self, DataAttribute* dataAttribu
         checkForUpdateTrigger(self, dataAttribute);
     }
     else {
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_wait(self->dataModelLock);
+#endif
         MmsValue_setUtcTimeMs(dataAttribute->mmsValue, value);
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_post(self->dataModelLock);
+#endif
 
         checkForChangedTriggers(self, dataAttribute);
     }
@@ -1060,7 +1126,13 @@ IedServer_updateTimestampAttributeValue(IedServer self, DataAttribute* dataAttri
         checkForUpdateTrigger(self, dataAttribute);
     }
     else {
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_wait(self->dataModelLock);
+#endif
         MmsValue_setUtcTimeByBuffer(dataAttribute->mmsValue, timestamp->val);
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_post(self->dataModelLock);
+#endif
 
         checkForChangedTriggers(self, dataAttribute);
     }
@@ -1077,7 +1149,14 @@ IedServer_updateQuality(IedServer self, DataAttribute* dataAttribute, Quality qu
     uint32_t oldQuality = MmsValue_getBitStringAsInteger(dataAttribute->mmsValue);
 
     if (oldQuality != (uint32_t) quality) {
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_wait(self->dataModelLock);
+#endif
         MmsValue_setBitStringFromInteger(dataAttribute->mmsValue, (uint32_t) quality);
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_post(self->dataModelLock);
+#endif
 
 #if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
         MmsMapping_triggerGooseObservers(self->mmsMapping, dataAttribute->mmsValue);

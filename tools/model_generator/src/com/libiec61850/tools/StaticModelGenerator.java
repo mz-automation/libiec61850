@@ -706,10 +706,8 @@ public class StaticModelGenerator {
             
             cOut.println("};\n");
 
-            if (dataAttribute.getSubDataAttributes() != null)
-          
-            	
-            printDataAttributeDefinitions(daName, dataAttribute.getSubDataAttributes());
+            if (dataAttribute.getSubDataAttributes() != null) 	
+                printDataAttributeDefinitions(daName, dataAttribute.getSubDataAttributes());
             
             DataModelValue value = dataAttribute.getValue();
                      

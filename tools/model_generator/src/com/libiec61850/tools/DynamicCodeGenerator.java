@@ -11,10 +11,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import com.libiec61850.scl.DataAttributeDefinition;
 import com.libiec61850.scl.DataObjectDefinition;
 import com.libiec61850.scl.SclParser;
 import com.libiec61850.scl.SclParserException;
+import com.libiec61850.scl.model.AttributeType;
 import com.libiec61850.scl.model.LogicalNode;
+import com.libiec61850.scl.types.DataAttributeType;
 import com.libiec61850.scl.types.DataObjectType;
 import com.libiec61850.scl.types.LogicalNodeType;
 import com.libiec61850.scl.types.SclType;
@@ -76,25 +79,48 @@ public class DynamicCodeGenerator {
         
         Set<DataObjectType> doTypeDefs = new HashSet<DataObjectType>();
         Set<LogicalNodeType> lnTypeDefs = new HashSet<LogicalNodeType>();
+        Set<DataAttributeType> daTypeDefs = new HashSet<DataAttributeType>();
         
         List<String> functionPrototypes = new LinkedList<String>();
+         
         
-        List<SclType> types =  declarations.getTypeDeclarations();
+        /* Create type lists */
         
-        for (SclType type : types) {
+        for (SclType type : declarations.getTypeDeclarations()) {
             
             if (type.getClass().equals(LogicalNodeType.class))
                 lnTypeDefs.add((LogicalNodeType) type);
             else if (type.getClass().equals(DataObjectType.class))
                 doTypeDefs.add((DataObjectType) type);
-            
+            else if (type.getClass().equals(DataAttributeType.class))
+                daTypeDefs.add((DataAttributeType) type);    
         }
+        
+        /* Create function prototypes */
         
         for (LogicalNodeType lnType : lnTypeDefs) {
             String functionPrototype = "LogicalNode*\nLN_" + lnType.getId() 
                     + "_createInstance(char* lnName, LogicalDevice* parent);";
             
             functionPrototypes.add(functionPrototype);
+        }
+        
+        for (DataObjectType doType : doTypeDefs) {
+            String functionPrototype = "DataObject*\nDO_" + doType.getId()
+                    + "_createInstance(char* doName, ModelNode* parent);";
+            
+            functionPrototypes.add(functionPrototype);
+        }
+        
+        for (DataAttributeType daType : daTypeDefs) {
+            String functionPrototype = "DataAttribute*\nDA_" + daType.getId()
+                    + "_createInstance(char* daName, ModelNode* parent, FunctionalConstraint fc, uint8_t triggerOptions);";
+            
+            functionPrototypes.add(functionPrototype);
+        }
+        
+        
+        for (LogicalNodeType lnType : lnTypeDefs) {
             
             out.println("/**");
             out.printf(" * LN: %s ", lnType.getId());
@@ -109,7 +135,7 @@ public class DynamicCodeGenerator {
             List<DataObjectDefinition> doDefs = lnType.getDataObjectDefinitions();
             
             for (DataObjectDefinition objDef : doDefs) {
-                out.printf("    %s_createInstance(\"%s\", (ModelNode*) newLn);\n", objDef.getType(), objDef.getName());
+                out.printf("    DO_%s_createInstance(\"%s\", (ModelNode*) newLn);\n", objDef.getType(), objDef.getName());
             }
             
             out.println("\n    return newLn;");           
@@ -117,11 +143,6 @@ public class DynamicCodeGenerator {
         }
         
         for (DataObjectType doType : doTypeDefs) {
-            String functionPrototype = "DataObject*\nDO_" + doType.getId()
-                    + "_createInstance(char* doName, ModelNode* parent);";
-            
-            functionPrototypes.add(functionPrototype);
-            
             out.println("/**");
             out.printf(" * DO: %s ", doType.getId());
             if (doType.getDesc() != null)
@@ -131,12 +152,70 @@ public class DynamicCodeGenerator {
             out.println("DataObject*");
             out.printf("DO_%s_createInstance(char* doName, ModelNode* parent)\n", doType.getId());
             out.println("{");
-            out.println("    LogicalNode* newDo = DataObject_create(doName, parent);\n");
+            out.println("    DataObject* newDo = DataObject_create(doName, parent);\n");
+            
+            for (DataAttributeDefinition dad : doType.getDataAttributes()) {
+                
+                if (dad.getAttributeType() == AttributeType.CONSTRUCTED) {    
+                    out.print("    DA_" + dad.getType() + "_createInstance(\"" + dad.getName() + "\", ");
+                    out.print("(ModelNode*) newDo, IEC61850_FC_" + dad.getFc().toString());
+                    out.print(", " + dad.getTriggerOptions().getIntValue());
+                    out.println(");");
+                }
+                else {
+                    out.print("    DataAttribute_create(\"" + dad.getName() + "\", ");
+                    out.print("(ModelNode*) newDo, IEC61850_" + dad.getAttributeType());
+                    out.print(", IEC61850_FC_" + dad.getFc().toString());
+                    out.print(", " + dad.getTriggerOptions().getIntValue());
+                    out.print(", " + dad.getCount());
+                    out.print(", 0");
+                    out.println(");");
+                }
+                    
+            }
+            
+            
+            for (DataObjectDefinition dod : doType.getSubDataObjects()) {
+                out.print("    DO_" + dod.getType() + "_createInstance(\"" + dod.getName() + "\")");
+                out.println("(ModelNode*) newDo);");
+            }
             
             out.println("\n    return newDo;");
             out.println("}\n\n");
         }
         
+        for (DataAttributeType daType : daTypeDefs) {  
+            out.println("/**");
+            out.printf(" * DA: %s ", daType.getId());
+            if (daType.getDesc() != null)
+                out.printf("(%s)", daType.getDesc());
+            out.println();
+            out.println(" */");
+            out.println("DataAttribute*");
+            out.printf("DA_%s_createInstance(char* daName, ModelNode* parent, FunctionalConstraint fc, uint8_t triggerOptions)\n", daType.getId());
+            out.println("{");   
+            out.println("    DataAttribute* newDa = DataAttribute_create(daName, parent, IEC61850_CONSTRUCTED, fc, triggerOptions, 0, 0);\n");
+            
+            for (DataAttributeDefinition dad : daType.getSubDataAttributes()) {
+                if (dad.getAttributeType() == AttributeType.CONSTRUCTED) {    
+                    out.print("    DA_" + dad.getType() + "_createInstance(\"" + dad.getName() + "\", ");
+                    out.println("(ModelNode*) newDo, fc, triggerOptions);");
+                }
+                else {
+                    out.print("    DataAttribute_create(\"" + dad.getName() + "\", ");
+                    out.print("(ModelNode*) newDa, IEC61850_" + dad.getAttributeType());
+                    out.print(", fc");
+                    out.print(", triggerOptions");
+                    out.print(", " + dad.getCount());
+                    out.print(", 0");
+                    out.println(");");
+                }
+            }
+            
+            out.println("\n    return newDo;");
+            out.println("}\n\n");
+            
+        }
 
     }
 

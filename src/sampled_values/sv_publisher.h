@@ -80,6 +80,12 @@ SV_ASDU_addFLOAT(SV_ASDU self);
 void
 SV_ASDU_setFLOAT(SV_ASDU self, int index, float value);
 
+int
+SV_ASDU_addFLOAT64(SV_ASDU self);
+
+void
+SV_ASDU_setFLOAT64(SV_ASDU self, int index, double value);
+
 void
 SV_ASDU_setSmpCnt(SV_ASDU self, uint16_t value);
 

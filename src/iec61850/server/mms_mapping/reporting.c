@@ -542,10 +542,7 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
 
             if (dataSet == NULL) {
 
-
                 /* check if association specific data set is requested */
-
-
                 if (dataSetName[0] == '@') {
 
                     if (rc->buffered == false) { /* for buffered report non-permanent datasets are not allowed */
@@ -1643,8 +1640,6 @@ printReportId(ReportBufferEntry* report)
 static void
 removeAllGIReportsFromReportBuffer(ReportBuffer* reportBuffer)
 {
-    printf("removeAllGIReportsFromReportBuffer\n");
-
     ReportBufferEntry* currentReport = reportBuffer->oldestReport;
     ReportBufferEntry* lastReport = NULL;
 
@@ -2393,8 +2388,6 @@ Reporting_activateBufferedReports(MmsMapping* self)
 static void
 processEventsForReport(ReportControl* rc, uint64_t currentTimeInMs)
 {
-
-
     if ((rc->enabled) || (rc->isBuffering)) {
 
         if (rc->triggerOps & TRG_OPT_GI) {
