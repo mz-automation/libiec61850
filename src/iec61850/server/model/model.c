@@ -639,6 +639,12 @@ ModelNode_getChildWithFc(ModelNode* self, const char* name, FunctionalConstraint
        return matchingNode;
 }
 
+ModelNodeType
+ModelNode_getType(ModelNode* self)
+{
+    return self->modelType;
+}
+
 LogicalNode*
 LogicalDevice_getLogicalNode(LogicalDevice* self, const char* nodeName)
 {

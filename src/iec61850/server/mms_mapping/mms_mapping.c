@@ -621,8 +621,6 @@ MmsMapping_configureSettingGroups(MmsMapping* self)
             MmsValue_setUint16(resvTms, 0U);
 
             settingGroup->sgcbMmsValues = values;
-
-            break;
         }
         else if (DEBUG_IED_SERVER)
             printf("IED_SERVER: Values for SGCB do not exist\n");

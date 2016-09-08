@@ -156,9 +156,9 @@ typedef enum {
 
 typedef enum {
     LogicalDeviceModelType,
-	LogicalNodeModelType,
-	DataObjectModelType,
-	DataAttributeModelType
+    LogicalNodeModelType,
+    DataObjectModelType,
+    DataAttributeModelType
 } ModelNodeType;
 
 struct sIedModel {
@@ -176,89 +176,89 @@ struct sIedModel {
 
 struct sLogicalDevice {
     ModelNodeType modelType;
-	char* name;
-	ModelNode* parent;
-	ModelNode* sibling;
-	ModelNode* firstChild;
+    char* name;
+    ModelNode* parent;
+    ModelNode* sibling;
+    ModelNode* firstChild;
 };
 
 struct sModelNode {
-	ModelNodeType modelType;
-	char* name;
-	ModelNode* parent;
-	ModelNode* sibling;
-	ModelNode* firstChild;
+    ModelNodeType modelType;
+    char* name;
+    ModelNode* parent;
+    ModelNode* sibling;
+    ModelNode* firstChild;
 };
 
 struct sLogicalNode {
-	ModelNodeType modelType;
-	char* name;
-	ModelNode* parent;
-	ModelNode* sibling;
-	ModelNode* firstChild;
+    ModelNodeType modelType;
+    char* name;
+    ModelNode* parent;
+    ModelNode* sibling;
+    ModelNode* firstChild;
 };
 
 struct sDataObject {
-	ModelNodeType modelType;
-	char* name;
-	ModelNode* parent;
-	ModelNode* sibling;
-	ModelNode* firstChild;
+    ModelNodeType modelType;
+    char* name;
+    ModelNode* parent;
+    ModelNode* sibling;
+    ModelNode* firstChild;
 
-	int elementCount;  /* > 0 if this is an array */
+    int elementCount; /* > 0 if this is an array */
 };
 
 struct sDataAttribute {
-	ModelNodeType modelType;
-	char* name;
-	ModelNode* parent;
-	ModelNode* sibling;
-	ModelNode* firstChild;
+    ModelNodeType modelType;
+    char* name;
+    ModelNode* parent;
+    ModelNode* sibling;
+    ModelNode* firstChild;
 
-	int elementCount;  /* > 0 if this is an array */
+    int elementCount; /* > 0 if this is an array */
 
-	FunctionalConstraint fc;
-	DataAttributeType type;
+    FunctionalConstraint fc;
+    DataAttributeType type;
 
-	uint8_t triggerOptions; /* TRG_OPT_DATA_CHANGED | TRG_OPT_QUALITY_CHANGED | TRG_OPT_DATA_UPDATE */
+    uint8_t triggerOptions; /* TRG_OPT_DATA_CHANGED | TRG_OPT_QUALITY_CHANGED | TRG_OPT_DATA_UPDATE */
 
-	MmsValue* mmsValue;
+    MmsValue* mmsValue;
 
-	uint32_t sAddr;
+    uint32_t sAddr;
 };
 
 typedef struct sDataSetEntry {
-	char* logicalDeviceName;
-	bool isLDNameDynamicallyAllocated;
-	char* variableName;
-	int index;
-	char* componentName;
-	MmsValue* value;
-	struct sDataSetEntry* sibling;
+    char* logicalDeviceName;
+    bool isLDNameDynamicallyAllocated;
+    char* variableName;
+    int index;
+    char* componentName;
+    MmsValue* value;
+    struct sDataSetEntry* sibling;
 } DataSetEntry;
 
 struct sDataSet {
-	char* logicalDeviceName;
-	char* name; /* eg. MMXU1$dataset1 */
-	int elementCount;
-	DataSetEntry* fcdas;
-	DataSet* sibling;
+    char* logicalDeviceName;
+    char* name; /* eg. MMXU1$dataset1 */
+    int elementCount;
+    DataSetEntry* fcdas;
+    DataSet* sibling;
 };
 
 struct sReportControlBlock {
-	LogicalNode* parent;
-	char* name;
-	char* rptId;
-	bool buffered;
-	char* dataSetName; /* pre loaded with relative name in logical node */
+    LogicalNode* parent;
+    char* name;
+    char* rptId;
+    bool buffered;
+    char* dataSetName; /* pre loaded with relative name in logical node */
 
-	uint32_t confRef;    /* ConfRef - configuration revision */
-	uint8_t trgOps;      /* TrgOps - trigger conditions */
-	uint8_t options;     /* OptFlds */
-	uint32_t bufferTime; /* BufTm - time to buffer events until a report is generated */
-	uint32_t intPeriod;  /* IntgPd - integrity period */
+    uint32_t confRef; /* ConfRef - configuration revision */
+    uint8_t trgOps; /* TrgOps - trigger conditions */
+    uint8_t options; /* OptFlds */
+    uint32_t bufferTime; /* BufTm - time to buffer events until a report is generated */
+    uint32_t intPeriod; /* IntgPd - integrity period */
 
-	ReportControlBlock* sibling; /* next control block in list or NULL if this is the last entry */
+    ReportControlBlock* sibling; /* next control block in list or NULL if this is the last entry */
 };
 
 struct sLogControlBlock {
@@ -385,6 +385,12 @@ ModelNode_getChildWithFc(ModelNode* self, const char* name, FunctionalConstraint
  */
 char*
 ModelNode_getObjectReference(ModelNode* self, char* objectReference);
+
+/**
+ *
+ */
+ModelNodeType
+ModelNode_getType(ModelNode* self);
 
 /**
  * \brief Set the name of the IED

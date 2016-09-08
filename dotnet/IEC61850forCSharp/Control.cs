@@ -143,6 +143,9 @@ namespace IEC61850
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			private static extern void ControlObjectClient_setSynchroCheck(IntPtr self, bool value);
 
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			private static extern void ControlObjectClient_setTestMode(IntPtr self, bool value);
+
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 			private delegate void InternalCommandTerminationHandler(IntPtr parameter,IntPtr controlClient);
 
@@ -402,6 +405,14 @@ namespace IEC61850
 			public void SetSynchroCheck (bool value)
 			{
 				ControlObjectClient_setSynchroCheck (controlObject, value);
+			}
+
+			/// <summary>
+			/// Sets the value of the test flag for the operate command
+			/// </summary>
+			public void SetTestMode (bool value)
+			{
+				ControlObjectClient_setTestMode (controlObject, value);
 			}
 
 			/// <summary>

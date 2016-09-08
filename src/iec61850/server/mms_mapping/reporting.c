@@ -1670,6 +1670,9 @@ removeAllGIReportsFromReportBuffer(ReportBuffer* reportBuffer)
             currentReport = currentReport->next;
         }
     }
+
+    if (reportBuffer->oldestReport == NULL)
+        reportBuffer->lastEnqueuedReport = NULL;
 }
 
 static void

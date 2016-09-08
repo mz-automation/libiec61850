@@ -72,7 +72,12 @@
             </DOI>
           </LN>
           
-           <LN lnClass="GAPC" lnType="TIM_GAPC" inst="1" prefix="TIM_" />
+          <LN lnClass="GAPC" lnType="TIM_GAPC" inst="1" prefix="TIM_" />
+          
+          <LN lnClass="FSCH" lnType="FSCH_60S" inst="1" prefix="T60S_" />
+          <LN lnClass="FSCH" lnType="FSCH_60S" inst="2" prefix="T60S_" />
+          
+          <LN lnClass="FSCC" lnType="FSCC" inst="1" prefix="GGIO_" />
           
         </LDevice>
       </Server>
@@ -124,6 +129,159 @@
 		
 		<DO name="OpCntRs" type="INC_OpCntRs" />
 	</LNodeType>
+	
+	<!-- Schedule type for 60s on/off controls -->
+	<LNodeType id="FSCH_60S" lnClass="FSCH">
+		<DO name="Beh" type="ENS_Beh" desc="Enumerated status" />
+		
+		<DO name="SchdSt" type="ENS_ScheduleStateKind" desc="schedule state"/>
+		<DO name="SchdEntr" type="INS_0" desc="current schedule entry of the running schedule"/>
+		
+		<DO name="ValSPS" type="SPS_0" desc="current value determined by the schedule" />
+		
+		<DO name="VldReq" type="SPC_0" desc="validate request"/>
+		<DO name="EnaReq" type="SPC_0" desc="enable request"/>
+		<DO name="EdtReq" type="SPC_0" desc="enable request"/>
+		<DO name="DsaReq" type="SPC_0" desc="disable request"/>
+		
+		<DO name="SchdPrio" type="ING" desc="schedule priority"/>
+		<DO name="NumEntr" type="ING" desc="number of valid entries"/>
+		
+		<DO name="SchdIntv" type="ING" desc="the schedule interval duration in time entities as specified in the unit"/>
+		
+		<DO name="ValSPG1" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG2" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG3" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG4" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG5" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG6" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG7" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG8" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG9" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG10" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG11" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG12" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG13" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG14" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG15" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG16" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG17" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG18" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG19" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG20" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG21" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG22" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG23" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG24" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG25" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG26" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG27" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG28" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG29" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG30" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG31" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG32" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG33" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG34" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG35" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG36" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG37" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG38" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG39" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG40" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG41" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG42" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG43" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG44" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG45" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG46" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG47" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG48" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG49" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG50" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG51" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG52" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG53" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG54" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG55" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG56" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG57" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG58" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG59" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		<DO name="ValSPG60" type="SPG_0" desc="the SPG scheduled values (current value as SPS)"/>
+		
+		<DO name="StrTm" type="TSG_0" desc="start time of the schedule in UTC time" />
+		
+		<DO name="IntvPer" type="ING" desc="the periodicity interval duration in entities as specified in IntvTyp; if the value is 0, the schedule shall not be repeated periodically"/>
+		<DO name="IntvTyp" type="ENG_ScheduleIntervalKind" desc="interval type (units) to define the periodicity"/>
+		
+		<DO name="SchdReuse" type="SPG_0" desc=""/>
+	</LNodeType>
+	
+	<LNodeType id="FSCC" lnClass="FSCH">
+		<DO name="Beh" type="ENS_Beh" desc="Enumerated status" />
+		
+		<DO name="ActSchdRef" type="ORS_0" desc="object reference of active schedule"/>
+	
+		<DO name="CtlEnt" type="ORG_0" desc="object reference to the entity controlled by the schedule"/>
+	
+		<DO name="Schd1" type="ORG_0" desc="object reference to schedule 1"/>
+		<DO name="Schd2" type="ORG_0" desc="object reference to schedule 2"/>
+	</LNodeType>
+
+	<DOType cdc="ORG" id="ORG_0">
+		<DA name="setSrcRef" fc="SP" dchg="true" bType="VisString129" />
+	</DOType>
+
+	<DOType cdc="ORS" id="ORS_0">
+		<DA name="stVal" fc="ST" dchg="true" bType="VisString129" />
+		<DA name="q" bType="Quality" fc="ST" qchg="true" />
+		<DA name="t" bType="Timestamp" fc="ST" />
+	</DOType>
+
+	<DOType cdc="ENS" desc="Enumerated status" id="ENS_ScheduleStateKind">
+		<DA bType="Enum" dchg="true" fc="ST" name="stVal" type="ScheduleStateKind" />
+		<DA bType="Quality" fc="ST" name="q" qchg="true" />
+		<DA bType="Timestamp" fc="ST" name="t" />
+	</DOType>
+
+	<DOType cdc="INS" desc="Integer status" id="INS_0">
+		<DA bType="INT32" dchg="true" fc="ST" name="stVal" />
+		<DA bType="Quality" fc="ST" name="q" qchg="true" />
+		<DA bType="Timestamp" fc="ST" name="t" />
+	</DOType>
+
+	<DOType cdc="SPS" desc="Single point status" id="SPS_0">
+		<DA bType="BOOLEAN" dchg="true" fc="ST" name="stVal" />
+		<DA bType="Quality" fc="ST" name="q" qchg="true" />
+		<DA bType="Timestamp" fc="ST" name="t" />
+	</DOType>
+
+	<DOType id="SPC_0" cdc="SPC">
+		<DA name="stVal" bType="BOOLEAN" fc="ST" dchg="true" />
+		<DA name="q" bType="Quality" fc="ST" qchg="true" />
+		<DA name="Oper" type="SPCOperate_1" bType="Struct" fc="CO" />
+		<DA name="ctlModel" type="CtlModels" bType="Enum" fc="CF" />
+		<DA name="t" bType="Timestamp" fc="ST" />
+	</DOType>
+
+	<DOType id="ING" cdc="ING">
+		<DA name="setVal" bType="INT32" fc="SP" dchg="true" />
+	</DOType>
+
+	<DOType cdc="SPG" id="SPG_0">
+		<DA name="setVal" bType="BOOLEAN" fc="SG" dchg="true" />
+	</DOType>
+
+	<DOType cdc="TSG" id="TSG_0">
+		<DA name="setTm" bType="Timestamp" fc="SP" dchg="true" />
+		<DA name="setCal" bType="Struct" type="CalendarTime" fc="SP" dchg="true" />
+	</DOType>
+
+	<DOType id="ENG_ScheduleIntervalKind" cdc="ENG">
+		<DA name="setVal" bType="Enum" type="ScheduleIntervalKind" fc="SP"
+			dchg="true" />
+	</DOType>
 	
 	<DOType id="ING_EXT" cdc="ING">
 		<DA name="setVal" bType="INT32" fc="SP" dchg="true" />
@@ -274,6 +432,17 @@
       <BDA name="Test" bType="BOOLEAN" />
       <BDA name="Check" bType="Check" />
     </DAType>
+
+	<DAType id="CalendarTime">
+		<BDA name="occ" bType="INT16U" />
+		<BDA name="occType" bType="Enum" type="OccurenceKind" />
+		<BDA name="occPer" bType="Enum" type="PeriodKind" />
+		<BDA name="weekDay" bType="Enum" type="WeekdayKind" />
+		<BDA name="month" bType="Enum" type="MonthKind" />
+		<BDA name="day" bType="INT8U" />
+		<BDA name="hr" bType="INT8U" />
+		<BDA name="mn" bType="INT8U" />
+	</DAType>
 	    
 	<EnumType id="Beh">
 		<EnumVal ord="1">on</EnumVal>
@@ -312,5 +481,66 @@
       <EnumVal ord="7">maintenance</EnumVal>
       <EnumVal ord="8">process</EnumVal>
     </EnumType>
+
+	<EnumType id="ScheduleStateKind">
+		<EnumVal ord="1">not-ready</EnumVal>
+		<EnumVal ord="2">validated</EnumVal>
+		<EnumVal ord="3">ready</EnumVal>
+		<EnumVal ord="4">running</EnumVal>
+	</EnumType>
+
+	<EnumType id="OccurenceKind">
+		<EnumVal ord="0">Time</EnumVal>
+		<EnumVal ord="1">WeekDay</EnumVal>
+		<EnumVal ord="2">WeekOfYear</EnumVal>
+		<EnumVal ord="3">DayOfMonth</EnumVal>
+		<EnumVal ord="4">DayOfYear</EnumVal>
+	</EnumType>
+
+	<EnumType id="PeriodKind">
+		<EnumVal ord="0">Hour</EnumVal>
+		<EnumVal ord="1">Day</EnumVal>
+		<EnumVal ord="2">Week</EnumVal>
+		<EnumVal ord="3">Month</EnumVal>
+		<EnumVal ord="4">Year</EnumVal>
+	</EnumType>
+
+	<EnumType id="WeekdayKind">
+		<EnumVal ord="0">reserved</EnumVal>
+		<EnumVal ord="1">Monday</EnumVal>
+		<EnumVal ord="2">Tuesday</EnumVal>
+		<EnumVal ord="3">Wednesday</EnumVal>
+		<EnumVal ord="4">Thursday</EnumVal>
+		<EnumVal ord="5">Friday</EnumVal>
+		<EnumVal ord="6">Saturday</EnumVal>
+		<EnumVal ord="7">Sunday</EnumVal>
+	</EnumType>
+
+	<EnumType id="MonthKind">
+		<EnumVal ord="0">reserved</EnumVal>
+		<EnumVal ord="1">January</EnumVal>
+		<EnumVal ord="2">February</EnumVal>
+		<EnumVal ord="3">March</EnumVal>
+		<EnumVal ord="4">April</EnumVal>
+		<EnumVal ord="5">May</EnumVal>
+		<EnumVal ord="6">June</EnumVal>
+		<EnumVal ord="7">July</EnumVal>
+		<EnumVal ord="8">August</EnumVal>
+		<EnumVal ord="9">September</EnumVal>
+		<EnumVal ord="10">October</EnumVal>
+		<EnumVal ord="11">November</EnumVal>
+		<EnumVal ord="12">December</EnumVal>
+	</EnumType>
+
+	<EnumType id="ScheduleIntervalKind">
+		<EnumVal ord="1">MS</EnumVal>
+		<EnumVal ord="2">PER_CYCLE</EnumVal>
+		<EnumVal ord="3">CYCLE</EnumVal>
+		<EnumVal ord="4">DAY</EnumVal>
+		<EnumVal ord="5">WEEK</EnumVal>
+		<EnumVal ord="6">MONTH</EnumVal>
+		<EnumVal ord="7">YEAR</EnumVal>
+		<EnumVal ord="8">EXTERNAL</EnumVal>
+	</EnumType>
   </DataTypeTemplates>
 </SCL>

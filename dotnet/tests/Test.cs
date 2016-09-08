@@ -2,6 +2,9 @@
 using System;
 using IEC61850.Common;
 using IEC61850.Client;
+using IEC61850.Server;
+using System.Collections.Generic;
+using System.Threading;
 
 namespace tests
 {
@@ -102,7 +105,267 @@ namespace tests
 			Assert.AreEqual (val.ToFloat (), (float)0.1234);
 		}
 
+		[Test ()]
+		public void CreateModelFromNonExistingFile()
+		{
+			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("test.cfg");
 
+			Assert.IsNull (iedModel);
+		}
+
+		[Test ()]
+		public void CreateModelFromFile()
+		{			
+			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../model.cfg");
+
+			Assert.NotNull (iedModel);
+		}
+
+		[Test ()]
+		public void StartStopSimpleServer()
+		{	
+			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../model.cfg");
+
+			IedServer iedServer = new IedServer (iedModel);
+
+			Assert.NotNull (iedServer);
+
+			iedServer.Start (10002);
+
+			Assert.IsTrue (iedServer.IsRunning ());
+
+			iedServer.Stop ();
+
+			Assert.IsFalse (iedServer.IsRunning ());
+
+			iedServer.Destroy ();
+		}
+
+		[Test ()]
+		public void ConnectToServer()
+		{	
+			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../model.cfg");
+
+			IedServer iedServer = new IedServer (iedModel);
+
+			iedServer.Start (10002);
+
+			IedConnection connection = new IedConnection ();
+
+			connection.Connect ("localhost", 10002);
+
+			List<string> list = connection.GetServerDirectory ();
+
+			Assert.IsNotEmpty (list);
+
+			Assert.AreEqual (list.ToArray () [0], "simpleIOGenericIO");
+
+			iedServer.Stop ();
+
+			iedServer.Destroy ();
+		}
+
+		[Test ()]
+		public void AccessDataModelServerSide()
+		{
+			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../model.cfg");
+
+			ModelNode modelNode = iedModel.GetModelNodeByShortObjectReference ("GenericIO/GGIO1.AnIn1");
+
+			Assert.IsTrue (modelNode.GetType ().Equals (typeof(DataObject)));
+
+			modelNode = iedModel.GetModelNodeByShortObjectReference ("GenericIO/GGIO1.AnIn1.mag.f");
+
+			Assert.IsTrue (modelNode.GetType ().Equals (typeof(DataAttribute)));
+
+			Assert.IsNotNull (modelNode);
+		}
+
+		[Test ()]
+		public void AccessDataModelClientServer()
+		{
+			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../model.cfg");
+
+			ModelNode ind1 = iedModel.GetModelNodeByShortObjectReference ("GenericIO/GGIO1.Ind1.stVal");
+
+			Assert.IsTrue (ind1.GetType ().Equals (typeof(DataAttribute)));
+
+			IedServer iedServer = new IedServer (iedModel);
+
+			iedServer.Start (10002);
+
+			iedServer.UpdateBooleanAttributeValue((DataAttribute) ind1, true);
+
+			IedConnection connection = new IedConnection ();
+
+			connection.Connect ("localhost", 10002);
+
+			bool stVal = connection.ReadBooleanValue ("simpleIOGenericIO/GGIO1.Ind1.stVal", FunctionalConstraint.ST);
+
+			Assert.IsTrue (stVal);
+
+			iedServer.UpdateBooleanAttributeValue((DataAttribute) ind1, false);
+
+			stVal = connection.ReadBooleanValue ("simpleIOGenericIO/GGIO1.Ind1.stVal", FunctionalConstraint.ST);
+
+			Assert.IsFalse (stVal);
+
+			connection.Abort ();
+
+			iedServer.Stop ();
+
+			iedServer.Destroy ();
+		}
+			
+	
+		[Test()]
+		public void ControlWriteAccessToServer()
+		{
+
+			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../model.cfg");
+
+			DataAttribute opDlTmms = (DataAttribute) iedModel.GetModelNodeByShortObjectReference("GenericIO/PDUP1.OpDlTmms.setVal");
+			DataAttribute rsDlTmms = (DataAttribute)iedModel.GetModelNodeByShortObjectReference ("GenericIO/PDUP1.RsDlTmms.setVal");
+
+			IedServer iedServer = new IedServer (iedModel);
+
+			int opDlTmmsValue = 0;
+
+			iedServer.HandleWriteAccess (opDlTmms, delegate(DataAttribute dataAttr, MmsValue value, ClientConnection con, object parameter) {
+				opDlTmmsValue = value.ToInt32();
+				return MmsDataAccessError.DATA_ACCESS_ERROR_SUCCESS;
+			}, null);
+
+			iedServer.HandleWriteAccess (rsDlTmms, delegate(DataAttribute dataAttr, MmsValue value, ClientConnection con, object parameter) {
+				if (value.ToInt32() > 1000)
+					return MmsDataAccessError.DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+				else
+					return MmsDataAccessError.DATA_ACCESS_ERROR_SUCCESS;
+			}, null);
+
+			iedServer.Start (10002);
+
+			IedConnection connection = new IedConnection ();
+
+			connection.Connect ("localhost", 10002);
+
+			connection.WriteValue ("simpleIOGenericIO/PDUP1.OpDlTmms.setVal", FunctionalConstraint.SP, new MmsValue ((int)1234));
+
+
+			try {
+				connection.WriteValue ("simpleIOGenericIO/PDUP1.RsDlTmms.setVal", FunctionalConstraint.SP, new MmsValue ((int)1234));
+			}
+			catch (IedConnectionException e) {
+				Assert.AreEqual (IedClientError.IED_ERROR_OBJECT_VALUE_INVALID, e.GetIedClientError());
+			}
+
+			connection.WriteValue ("simpleIOGenericIO/PDUP1.RsDlTmms.setVal", FunctionalConstraint.SP, new MmsValue ((int)999));
+
+			MmsValue rsDlTmmsValue = iedServer.GetAttributeValue (rsDlTmms);
+
+			Assert.AreEqual (999, rsDlTmmsValue.ToInt32 ());
+
+			connection.Abort ();
+
+			iedServer.Stop ();
+
+			Assert.AreEqual ((int) 1234, opDlTmmsValue);
+
+			iedServer.Destroy ();
+		}
+
+		[Test()]
+		public void WriteAccessPolicy()
+		{
+
+			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../model.cfg");
+
+			DataAttribute opDlTmms = (DataAttribute) iedModel.GetModelNodeByShortObjectReference("GenericIO/PDUP1.OpDlTmms.setVal");
+			DataAttribute rsDlTmms = (DataAttribute)iedModel.GetModelNodeByShortObjectReference ("GenericIO/PDUP1.RsDlTmms.setVal");
+
+			IedServer iedServer = new IedServer (iedModel);
+
+			iedServer.HandleWriteAccess (opDlTmms, delegate(DataAttribute dataAttr, MmsValue value, ClientConnection con, object parameter) {
+				return MmsDataAccessError.DATA_ACCESS_ERROR_SUCCESS;
+			}, null);
+				
+
+			iedServer.Start (10002);
+
+			IedConnection connection = new IedConnection ();
+
+			connection.Connect ("localhost", 10002);
+
+			connection.WriteValue ("simpleIOGenericIO/PDUP1.RsDlTmms.setVal", FunctionalConstraint.SP, new MmsValue ((int)1234));
+
+			iedServer.SetWriteAccessPolicy (FunctionalConstraint.SP, AccessPolicy.ACCESS_POLICY_DENY);
+
+			connection.WriteValue ("simpleIOGenericIO/PDUP1.OpDlTmms.setVal", FunctionalConstraint.SP, new MmsValue ((int)1234));
+
+			try {
+				connection.WriteValue ("simpleIOGenericIO/PDUP1.RsDlTmms.setVal", FunctionalConstraint.SP, new MmsValue ((int)999));
+			}
+			catch (IedConnectionException e) {
+				Assert.AreEqual (IedClientError.IED_ERROR_ACCESS_DENIED, e.GetIedClientError());
+			}
+
+			MmsValue rsDlTmmsValue = iedServer.GetAttributeValue (rsDlTmms);
+
+			Assert.AreEqual (1234, rsDlTmmsValue.ToInt32 ());
+
+			connection.Abort ();
+
+			iedServer.Stop ();
+
+			iedServer.Destroy ();
+		}
+
+		[Test()]
+		public void ConnectionHandler()
+		{
+			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../model.cfg");
+
+			int handlerCalled = 0;
+			int connectionCount = 0;
+
+			IedServer iedServer = new IedServer (iedModel);
+
+			string ipAddress = null;
+
+			iedServer.SetConnectionIndicationHandler(delegate(IedServer server, ClientConnection clientConnection, bool connected, object parameter) {
+				handlerCalled++;
+				if (connected)
+					connectionCount++;
+				else
+					connectionCount--;
+
+				ipAddress = clientConnection.GetPeerAddress();
+			}, null);
+
+			iedServer.Start (10002);
+
+			IedConnection con1 = new IedConnection ();
+			con1.Connect ("localhost", 10002);
+
+			Assert.AreEqual (1, handlerCalled);
+			Assert.AreEqual (1, connectionCount);
+
+			IedConnection con2 = new IedConnection ();
+			con2.Connect ("localhost", 10002);
+
+			Assert.AreEqual (2, handlerCalled);
+			Assert.AreEqual (2, connectionCount);
+
+			con1.Abort ();
+			con2.Abort ();
+
+			Assert.AreEqual (4, handlerCalled);
+			Assert.AreEqual (0, connectionCount);
+
+			Assert.AreEqual ("127.0.0.1:", ipAddress.Substring (0, 10));
+
+			iedServer.Stop ();
+		}
 	}
 }
 

@@ -27,9 +27,9 @@ public class DynamicCodeGenerator {
 
     public static void main(String[] args) throws FileNotFoundException, SclParserException {
 
-        System.out.println("Dynamic code generator");
-
         if (args.length < 1) {
+            System.out.println("Dynamic code generator");
+            
             System.out.println("Usage: gencode <ICD file> [-ied  <ied-name>] [-ap <access-point-name>] [<output filename>]");
             System.exit(1);
         }
@@ -66,8 +66,10 @@ public class DynamicCodeGenerator {
         }
 
         InputStream stream = new FileInputStream(icdFile);
+        
+        SclParser.withOutput = false;
 
-        SclParser sclParser = new SclParser(stream);
+        SclParser sclParser = new SclParser(stream, false);
         
         createDynamicCode(sclParser);
     }
@@ -107,7 +109,7 @@ public class DynamicCodeGenerator {
         
         for (DataObjectType doType : doTypeDefs) {
             String functionPrototype = "DataObject*\nDO_" + doType.getId()
-                    + "_createInstance(char* doName, ModelNode* parent);";
+                    + "_createInstance(char* doName, ModelNode* parent, int arrayCount);";
             
             functionPrototypes.add(functionPrototype);
         }
@@ -117,6 +119,16 @@ public class DynamicCodeGenerator {
                     + "_createInstance(char* daName, ModelNode* parent, FunctionalConstraint fc, uint8_t triggerOptions);";
             
             functionPrototypes.add(functionPrototype);
+        }
+        
+        /* Print header */
+        
+        System.out.println("#include \"iec61850_server.h\"");
+        System.out.println();
+        
+        for (String prototype : functionPrototypes) {
+            System.out.println(prototype);
+            System.out.println();
         }
         
         
@@ -134,8 +146,8 @@ public class DynamicCodeGenerator {
             out.println("    LogicalNode* newLn = LogicalNode_create(lnName, parent);\n");
             List<DataObjectDefinition> doDefs = lnType.getDataObjectDefinitions();
             
-            for (DataObjectDefinition objDef : doDefs) {
-                out.printf("    DO_%s_createInstance(\"%s\", (ModelNode*) newLn);\n", objDef.getType(), objDef.getName());
+            for (DataObjectDefinition objDef : doDefs) {             
+                out.printf("    DO_%s_createInstance(\"%s\", (ModelNode*) newLn, %d);\n", objDef.getType(), objDef.getName(), objDef.getCount());
             }
             
             out.println("\n    return newLn;");           
@@ -150,9 +162,10 @@ public class DynamicCodeGenerator {
             out.println();
             out.println(" */");
             out.println("DataObject*");
-            out.printf("DO_%s_createInstance(char* doName, ModelNode* parent)\n", doType.getId());
+            out.printf("DO_%s_createInstance(char* doName, ModelNode* parent, int arrayCount)\n", doType.getId());
             out.println("{");
-            out.println("    DataObject* newDo = DataObject_create(doName, parent);\n");
+          
+            out.println("    DataObject* newDo = DataObject_create(doName, parent, arrayCount);\n");
             
             for (DataAttributeDefinition dad : doType.getDataAttributes()) {
                 
@@ -199,7 +212,7 @@ public class DynamicCodeGenerator {
             for (DataAttributeDefinition dad : daType.getSubDataAttributes()) {
                 if (dad.getAttributeType() == AttributeType.CONSTRUCTED) {    
                     out.print("    DA_" + dad.getType() + "_createInstance(\"" + dad.getName() + "\", ");
-                    out.println("(ModelNode*) newDo, fc, triggerOptions);");
+                    out.println("(ModelNode*) newDa, fc, triggerOptions);");
                 }
                 else {
                     out.print("    DataAttribute_create(\"" + dad.getName() + "\", ");
@@ -212,7 +225,7 @@ public class DynamicCodeGenerator {
                 }
             }
             
-            out.println("\n    return newDo;");
+            out.println("\n    return newDa;");
             out.println("}\n\n");
             
         }

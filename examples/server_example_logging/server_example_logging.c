@@ -145,6 +145,7 @@ main(int argc, char** argv)
 
     IedServer_setLogStorage(iedServer, "GenericIO/LLN0$EventLog", statusLog);
 
+#if 0
     uint64_t entryID = LogStorage_addEntry(statusLog, Hal_getTimeInMs());
 
     MmsValue* value = MmsValue_newIntegerFromInt32(123);
@@ -167,6 +168,8 @@ main(int argc, char** argv)
     LogStorage_addEntryData(statusLog, entryID, "simpleIOGenerioIO/GPIO1$ST$SPCSO1$t", blob, blobSize, 0);
 
     LogStorage_getEntries(statusLog, 0, Hal_getTimeInMs(), entryCallback, (LogEntryDataCallback) entryDataCallback, NULL);
+#endif
+
 
     /* MMS server will be instructed to start listening to client connections. */
     IedServer_start(iedServer, 102);

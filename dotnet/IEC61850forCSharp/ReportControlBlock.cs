@@ -256,7 +256,7 @@ namespace IEC61850
             /// </summary>
             /// <description>
             /// This will install a callback handler (delegate) that is invoked whenever a report
-            /// related this RCB is received. Any call of this method will replace an previously registered
+            /// related to this RCB is received. Any call of this method will replace an previously registered
             /// handler!
             /// </description>
             /// <param name='reportHandler'>

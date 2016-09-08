@@ -262,6 +262,7 @@ TcpSocket_create()
 	Socket self = (Socket) GLOBAL_MALLOC(sizeof(struct sSocket));
 
 	self->fd = INVALID_SOCKET;
+	self->connectTimeout = 5000;
 
 	return self;
 }

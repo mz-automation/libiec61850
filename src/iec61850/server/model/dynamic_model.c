@@ -387,6 +387,7 @@ SettingGroupControlBlock_create(LogicalNode* parent, uint8_t actSG, uint8_t numO
     self->actSG = actSG;
     self->numOfSGs = numOfSGs;
     self->sibling = NULL;
+    self->editSG = 0;
 
     LogicalNode_addSettingGroupControlBlock(parent, self);
 

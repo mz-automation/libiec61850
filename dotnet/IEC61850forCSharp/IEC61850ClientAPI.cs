@@ -629,7 +629,7 @@ namespace IEC61850
 				if (mmsValue.GetType () == MmsType.MMS_BOOLEAN)
 					return mmsValue.GetBoolean ();
 				else
-					throw new IedConnectionException ("Result is not of type timestamp (MMS_UTC_TIME)", 0);
+					throw new IedConnectionException ("Result is not of type boolean (MMS_BOOLEAN)", 0);
 			}
 
 			/// <summary>Read the value of a basic data attribute (BDA) of type float.</summary>

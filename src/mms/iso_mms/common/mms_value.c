@@ -1,7 +1,7 @@
 /*
- *  MmsValue.c
+ *  mms_value.c
  *
- *  Copyright 2013-2015 Michael Zillgith
+ *  Copyright 2013-2016 Michael Zillgith
  *
  *	This file is part of libIEC61850.
  *

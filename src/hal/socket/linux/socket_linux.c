@@ -331,11 +331,19 @@ Socket_connect(Socket self, const char* address, int port)
     timeout.tv_sec = self->connectTimeout / 1000;
     timeout.tv_usec = (self->connectTimeout % 1000) * 1000;
 
-    if (select(self->fd + 1, NULL, &fdSet, NULL, &timeout) <= 0)
-        return false;
-    else
-        return true;
+    if (select(self->fd + 1, NULL, &fdSet , NULL, &timeout) == 1) {
+        int so_error;
+        socklen_t len = sizeof so_error;
 
+        getsockopt(self->fd, SOL_SOCKET, SO_ERROR, &so_error, &len);
+
+        if (so_error == 0)
+            return true;
+    }
+
+    close (self->fd);
+
+    return false;
 }
 
 char*

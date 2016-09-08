@@ -872,6 +872,12 @@ ControlObjectClient_setSynchroCheck(ControlObjectClient self, bool value)
 }
 
 void
+ControlObjectClient_setTestMode(ControlObjectClient self, bool value)
+{
+    self->test = value;
+}
+
+void
 ControlObjectClient_setLastApplError(ControlObjectClient self, LastApplError lastApplError)
 {
     self->lastApplError = lastApplError;

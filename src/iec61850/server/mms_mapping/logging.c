@@ -791,11 +791,6 @@ createLogControlBlock(MmsMapping* self, LogControlBlock* logControlBlock,
 
     prepareLogControl(logControl);
 
-    if (logControl->enabled)
-        enableLogging(logControl);
-
-    LogControl_updateLogEna(logControl);
-
     return lcb;
 }
 
@@ -828,6 +823,11 @@ Logging_createLCBs(MmsMapping* self, MmsDomain* domain, LogicalNode* logicalNode
 
         if (logControlBlock->logRef != NULL)
             logControl->logInstance = getLogInstanceByLogRef(self, logControlBlock->logRef);
+
+        if (logControl->enabled)
+            enableLogging(logControl);
+
+        LogControl_updateLogEna(logControl);
 
         LinkedList_add(self->logControls, logControl);
 

@@ -108,7 +108,7 @@
 							<RptEnabled max="3" />
 						</ReportControl>
 
-						<LogControl name="EventLog" datSet="Events" logName="EventLog">
+						<LogControl name="EventLog" datSet="Events" logName="EventLog" logEna="true">
 							<TrgOps dchg="true" qchg="true" />
 						</LogControl>
 

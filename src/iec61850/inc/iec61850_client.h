@@ -1502,7 +1502,7 @@ LastApplError
 ControlObjectClient_getLastApplError(ControlObjectClient self);
 
 void
-ControlObjectClient_setTestMode(ControlObjectClient self);
+ControlObjectClient_setTestMode(ControlObjectClient self, bool value);
 
 void
 ControlObjectClient_setOrigin(ControlObjectClient self, const char* orIdent, int orCat);
