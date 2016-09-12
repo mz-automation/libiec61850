@@ -1,10 +1,10 @@
 UNAME := $(shell uname)
 
 MIPSEL_TOOLCHAIN_PREFIX=mipsel-openwrt-linux-
-# ARM_TOOLCHAIN_PREFIX=arm-linux-gnueabihf-
+ARM_TOOLCHAIN_PREFIX=arm-linux-gnueabihf-
 #ARM_TOOLCHAIN_PREFIX=arm-linux-gnueabi-
 #ARM_TOOLCHAIN_PREFIX=arm-poky-linux-gnueabi-
-ARM_TOOLCHAIN_PREFIX=arm-linux-gnueabi-
+#ARM_TOOLCHAIN_PREFIX=arm-linux-gnueabi-
 UCLINUX_ARM_TOOLCHAIN_PREFIX=arm-uclinux-elf-
 MINGW_TOOLCHAIN_PREFIX=i586-mingw32msvc-
 #MINGW_TOOLCHAIN_PREFIX=x86_64-w64-mingw32-
@@ -57,7 +57,7 @@ endif
 ifeq ($(TARGET), LINUX-ARM)
 TOOLCHAIN_PREFIX=$(ARM_TOOLCHAIN_PREFIX)
 CFLAGS += -mno-unaligned-access
-CFLAGS += -mcpu=arm926ej-s
+#CFLAGS += -mcpu=arm926ej-s
 endif
 
 ifeq ($(TARGET), UCLINUX-WAGO)

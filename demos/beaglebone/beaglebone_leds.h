@@ -7,7 +7,7 @@
 
 
 /* set to 1 if you want to run the demo on a PC */
-#define SIMULATED 0
+//#define SIMULATED
 
 
 

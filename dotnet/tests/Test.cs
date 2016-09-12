@@ -321,6 +321,46 @@ namespace tests
 		}
 
 		[Test()]
+		public void ControlHandler()
+		{
+			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../model.cfg");
+
+			DataObject spcso1 = (DataObject)iedModel.GetModelNodeByShortObjectReference ("GenericIO/GGIO1.SPCSO1");
+
+			Assert.IsNotNull (spcso1);
+
+			int handlerCalled = 0;
+
+			IedServer iedServer = new IedServer (iedModel);
+
+			iedServer.SetControlHandler (spcso1, delegate(DataObject controlObject, object parameter, MmsValue ctlVal, bool test) {
+				handlerCalled++;
+				return ControlHandlerResult.OK;
+			}, null);
+
+			iedServer.Start (10002);
+
+			IedConnection connection = new IedConnection ();
+
+			connection.Connect ("localhost", 10002);
+
+			ControlObject controlClient = connection.CreateControlObject ("simpleIOGenericIO/GGIO1.SPCSO1");
+
+			Assert.IsNotNull (controlClient);
+
+			controlClient.Operate (true);
+		
+			connection.Abort ();
+
+			Assert.AreEqual (1, handlerCalled);
+
+			iedServer.Stop ();
+
+			iedServer.Destroy ();
+		}
+
+
+		[Test()]
 		public void ConnectionHandler()
 		{
 			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../model.cfg");
