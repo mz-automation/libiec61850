@@ -62,17 +62,17 @@ option(DEBUG_MMS_CLIENT "Enable MMS CLIENT printf debugging" OFF)
 #				 DEBUG_IED_CLIENT DEBUG_MMS_SERVER DEBUG_MMS_CLIENT)
 
 include_directories(
-    ${CMAKE_CURRENT_BINARY_DIR}/config
-    src/common/inc
-    src/goose
-    src/sampled_values
-    src/hal/inc
-    src/iec61850/inc
-    src/iec61850/inc_private
-    src/mms/inc
-    src/mms/inc_private
-    src/mms/iso_mms/asn1c
-    src/logging
+    ${CMAKE_CURRENT_LIST_DIR}/config
+    ${CMAKE_CURRENT_LIST_DIR}/src/common/inc
+    ${CMAKE_CURRENT_LIST_DIR}/src/goose
+    ${CMAKE_CURRENT_LIST_DIR}/src/sampled_values
+    ${CMAKE_CURRENT_LIST_DIR}/src/hal/inc
+    ${CMAKE_CURRENT_LIST_DIR}/src/iec61850/inc
+    ${CMAKE_CURRENT_LIST_DIR}/src/iec61850/inc_private
+    ${CMAKE_CURRENT_LIST_DIR}/src/mms/inc
+    ${CMAKE_CURRENT_LIST_DIR}/src/mms/inc_private
+    ${CMAKE_CURRENT_LIST_DIR}/src/mms/iso_mms/asn1c
+    ${CMAKE_CURRENT_LIST_DIR}/src/logging
 )
 
 set(API_HEADERS 
@@ -117,18 +117,18 @@ include_directories(
 ENDIF(MSVC)
 
 # write the detected stuff to this file
-configure_file(config/stack_config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config/stack_config.h)
+configure_file(${CMAKE_CURRENT_LIST_DIR}/config/stack_config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config/stack_config.h)
 
 if(BUILD_EXAMPLES)
 	add_subdirectory(examples)
 endif(BUILD_EXAMPLES)
 
-add_subdirectory(src)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/src)
 
 INSTALL(FILES ${API_HEADERS} DESTINATION include/libiec61850 COMPONENT Development)
 
 IF(BUILD_PYTHON_BINDINGS)
-	add_subdirectory(pyiec61850)
+	add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/pyiec61850)
 ENDIF(BUILD_PYTHON_BINDINGS)
 
 IF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
