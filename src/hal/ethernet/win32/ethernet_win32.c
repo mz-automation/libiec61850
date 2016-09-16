@@ -318,7 +318,7 @@ Ethernet_receivePacket(EthernetSocket self, uint8_t* buffer, int bufferSize)
     }
     else {
         if (pcapCode < 0)
-        printf("winpcap error\n");
+            printf("winpcap error\n");
 
         return 0;
     }
