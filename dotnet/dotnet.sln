@@ -25,6 +25,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "example3", "example3\exampl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "report_new_dataset", "report_new_dataset\report_new_dataset.csproj", "{71485F99-2976-45E6-B73D-4946E594C15C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "log_client", "log_client\log_client.csproj", "{14C71267-2F38-460D-AA55-6803EE80AFB4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,6 +37,10 @@ Global
 		{0BECEC77-2315-4B95-AFF9-E6007E644BBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0BECEC77-2315-4B95-AFF9-E6007E644BBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0BECEC77-2315-4B95-AFF9-E6007E644BBF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{14C71267-2F38-460D-AA55-6803EE80AFB4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{14C71267-2F38-460D-AA55-6803EE80AFB4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{14C71267-2F38-460D-AA55-6803EE80AFB4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{14C71267-2F38-460D-AA55-6803EE80AFB4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2A226B6D-1D1F-4BFE-B8CC-158116F71270}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2A226B6D-1D1F-4BFE-B8CC-158116F71270}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2A226B6D-1D1F-4BFE-B8CC-158116F71270}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -89,7 +95,6 @@ Global
 		{EDC263E3-0419-4B23-91A4-250EF0A6DD62}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItem = IEC61850forCSharp\IEC61850forCSharp.csproj
 		Policies = $0
 		$0.DotNetNamingPolicy = $1
 		$1.DirectoryNamespaceAssociation = None
@@ -116,6 +121,7 @@ Global
 		$0.StandardHeader = $7
 		$7.Text = 
 		$7.IncludeInNewFiles = True
+		StartupItem = IEC61850forCSharp\IEC61850forCSharp.csproj
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

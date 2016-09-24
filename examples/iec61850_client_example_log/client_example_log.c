@@ -92,6 +92,12 @@ int main(int argc, char** argv) {
 
         if (error == IED_ERROR_OK) {
 
+            char printBuf[1024];
+
+            MmsValue_printToBuffer(lcbValue, printBuf, 1024);
+
+            printf("LCB values: %s\n", printBuf);
+
             MmsValue* oldEntryTm = MmsValue_getElement(lcbValue, 3);
             MmsValue* oldEntry = MmsValue_getElement(lcbValue, 5);
 

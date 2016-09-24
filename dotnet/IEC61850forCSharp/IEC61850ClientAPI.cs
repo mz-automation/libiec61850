@@ -117,6 +117,127 @@ namespace IEC61850
 
 		}
 
+
+		public class MmsJournalVariable
+		{
+			[DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
+			static extern IntPtr MmsJournalVariable_getTag(IntPtr self);
+
+			[DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
+			static extern IntPtr MmsJournalVariable_getValue(IntPtr self);
+
+			private IntPtr self;
+
+			internal MmsJournalVariable(IntPtr self)
+			{
+				this.self = self;
+			}
+
+			public string GetTag()
+			{
+				return Marshal.PtrToStringAnsi (MmsJournalVariable_getTag (self));
+			}
+
+			public MmsValue GetValue()
+			{
+				MmsValue mmsValue = new MmsValue (MmsJournalVariable_getValue (self));
+
+				return mmsValue;
+			}
+
+		}
+
+		/// <summary>
+		/// Represents an entry of a log
+		/// </summary>
+		public class MmsJournalEntry 
+		{
+			[DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
+			static extern void MmsJournalEntry_destroy(IntPtr self);
+
+			[DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
+			static extern IntPtr MmsJournalEntry_getEntryID(IntPtr self);
+
+			[DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
+			static extern IntPtr MmsJournalEntry_getOccurenceTime(IntPtr self);
+
+			[DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
+			static extern IntPtr MmsJournalEntry_getJournalVariables (IntPtr self);
+
+			/****************
+        	* LinkedList
+         	***************/
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr LinkedList_getNext (IntPtr self);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr LinkedList_getData (IntPtr self);
+
+			private IntPtr self;
+			private List<MmsJournalVariable> variables = null;
+
+			internal MmsJournalEntry(IntPtr self)
+			{
+				this.self = self;
+			}
+
+			public List<MmsJournalVariable> GetJournalVariables()
+			{
+				if (variables == null) {
+
+					IntPtr linkedList = MmsJournalEntry_getJournalVariables (self);
+
+					IntPtr element = LinkedList_getNext (linkedList);
+
+					variables = new List<MmsJournalVariable> ();
+
+					while (element != IntPtr.Zero) {
+						MmsJournalVariable journalVariable = new MmsJournalVariable (LinkedList_getData (element));
+
+						variables.Add (journalVariable);
+
+						element = LinkedList_getNext (element);
+					}
+				}
+
+				return variables;
+			}
+
+
+			public byte[] GetEntryID()
+			{
+				IntPtr mmsValuePtr = MmsJournalEntry_getEntryID (self);
+
+				MmsValue mmsValue = new MmsValue (mmsValuePtr);
+
+				byte[] octetString = mmsValue.getOctetString ();
+
+				return octetString;
+			}
+
+			public ulong GetOccurenceTime()
+			{
+				IntPtr mmsValuePtr = MmsJournalEntry_getOccurenceTime (self);
+
+				MmsValue mmsValue = new MmsValue (mmsValuePtr);
+
+				return mmsValue.GetBinaryTimeAsUtcMs ();
+			}
+
+			public void Dispose()
+			{
+				if (self != IntPtr.Zero) {
+					MmsJournalEntry_destroy (self);
+					self = IntPtr.Zero;
+				}
+			}
+
+			~MmsJournalEntry ()
+			{
+				Dispose ();
+			}
+		}
+
 		/// <summary>
 		/// This class acts as the entry point for the IEC 61850 client API. It represents a single
 		/// (MMS) connection to a server.
@@ -231,6 +352,15 @@ namespace IEC61850
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern void IedConnection_deleteFile(IntPtr self, out int error, string fileName);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr IedConnection_queryLogAfter(IntPtr self, out int error, string logReference,
+				IntPtr entryID, ulong timeStamp, out bool moreFollows);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr IedConnection_queryLogByTime (IntPtr self, out int error, string logReference,
+                  ulong startTime, ulong endTime, out bool moreFollows);
+
 
             /********************
             * FileDirectoryEntry
@@ -573,6 +703,108 @@ namespace IEC61850
 				return newList;
 			}
 
+			private static List<MmsJournalEntry> WrapNativeLogQueryResult(IntPtr linkedList)
+			{
+				List<MmsJournalEntry> journalEntries = new List<MmsJournalEntry> ();
+
+				IntPtr element = LinkedList_getNext (linkedList);
+
+				while (element != IntPtr.Zero) {
+
+					MmsJournalEntry journalEntry = new MmsJournalEntry(LinkedList_getData (element));
+
+					journalEntries.Add (journalEntry);
+
+					element = LinkedList_getNext (element);
+				}
+
+				LinkedList_destroyStatic (linkedList);
+
+				return journalEntries;
+			}
+
+			/// <summary>
+			/// Queries all log entries after the entry with the given entryID and timestamp
+			/// </summary>
+			/// <returns>The list of log entries contained in the response</returns>
+			/// <param name="logRef">The object reference of the log (e.g. "simpleIOGenericIO/LLN0$EventLog")</param>
+			/// <param name="entryID">EntryID of the last received MmsJournalEntry</param>
+			/// <param name="timestamp">Timestamp of the last received MmsJournalEntry</param>
+			/// <param name="moreFollows">Indicates that more log entries are available</param>
+			public List<MmsJournalEntry> QueryLogAfter(string logRef, byte[] entryID, ulong timestamp, out bool moreFollows)
+			{
+				int error;
+				bool moreFollowsVal;
+
+				MmsValue entryIdValue = new MmsValue (entryID);
+
+				IntPtr linkedList = IedConnection_queryLogAfter (connection, out error, logRef, entryIdValue.valueReference, timestamp, out moreFollowsVal);
+
+				if (error != 0)
+					throw new IedConnectionException ("QueryLogAfter failed", error);
+
+				moreFollows = moreFollowsVal;
+
+				return WrapNativeLogQueryResult(linkedList);
+			}
+
+			/// <summary>
+			/// Queries all log entries of the given time range
+			/// </summary>
+			/// <returns>The list of log entries contained in the response</returns>
+			/// <param name="logRef">The object reference of the log (e.g. "simpleIOGenericIO/LLN0$EventLog")</param>
+			/// <param name="startTime">Start time of the time range</param>
+			/// <param name="stopTime">End time of the time range</param>
+			/// <param name="moreFollows">Indicates that more log entries are available</param>
+			public List<MmsJournalEntry> QueryLogByTime(string logRef, ulong startTime, ulong stopTime, out bool moreFollows)
+			{
+				int error;
+				bool moreFollowsVal;
+
+				IntPtr linkedList = IedConnection_queryLogByTime (connection, out error, logRef, startTime, stopTime, out moreFollowsVal);
+
+				if (error != 0)
+					throw new IedConnectionException ("QueryLogByTime failed", error);
+
+				moreFollows = moreFollowsVal;
+
+				return WrapNativeLogQueryResult(linkedList);
+
+			}
+
+			private static DateTime DateTimeFromMsTimestamp(ulong msTime)
+			{
+				DateTime dateTime =  new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+
+				ulong seconds = msTime / 1000;
+				ulong millies = msTime % 1000;
+
+				dateTime.AddSeconds ((double) seconds);
+				dateTime.AddMilliseconds((double) millies);
+
+				return dateTime;
+			}
+
+			private static ulong DateTimeToMsTimestamp(DateTime dateTime)
+			{
+				return (ulong) (dateTime.ToUniversalTime ().Subtract (new DateTime (1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds);
+			}
+
+			/// <summary>
+			/// Queries all log entries of the given time range
+			/// </summary>
+			/// <returns>The list of log entries contained in the response</returns>
+			/// <param name="logRef">The object reference of the log (e.g. "simpleIOGenericIO/LLN0$EventLog")</param>
+			/// <param name="startTime">Start time of the time range</param>
+			/// <param name="stopTime">End time of the time range</param>
+			/// <param name="moreFollows">Indicates that more log entries are available</param>
+			public List<MmsJournalEntry> QueryLogByTime(string logRef, DateTime startTime, DateTime stopTime, out bool moreFollows)
+			{
+				ulong startTimeMs = DateTimeToMsTimestamp (startTime);
+				ulong stopTimeMs = DateTimeToMsTimestamp (stopTime);
+
+				return QueryLogByTime (logRef, startTimeMs, stopTimeMs, out moreFollows);
+			}
 
 			/// <summary>Read the variable specification (type description of a DA or FDCO</summary>
 			/// <param name="objectReference">The object reference of a DA or FCDO.</param>
@@ -1349,6 +1581,8 @@ namespace IEC61850
 			RP = 15,
 			/** Buffered report */
 			BR = 16,
+			/** Log control blocks */
+			LG = 17,
 
 			/** All FCs - wildcard value */
 			ALL = 99,

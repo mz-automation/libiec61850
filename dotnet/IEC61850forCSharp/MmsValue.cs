@@ -161,6 +161,13 @@ namespace IEC61850
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern void MmsValue_setBinaryTime (IntPtr self, UInt64 timestamp);
 
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern ulong MmsValue_getBinaryTimeAsUtcMs (IntPtr self);
+
+			internal IntPtr valueReference; /* reference to native MmsValue instance */
+
+			private bool responsableForDeletion; /* if .NET wrapper is responsable for the deletion of the native MmsValue instance */
+
 			// TODO make internal
 			public MmsValue (IntPtr value)
 			{
@@ -251,6 +258,16 @@ namespace IEC61850
 				return new MmsValue(newValue, true);
 			}																												
 
+			public MmsValue(byte[] octetString)
+			{
+				if (octetString.Length > 255)
+					throw new MmsValueException ("octet string too long");
+
+				valueReference = MmsValue_newOctetString(octetString.Length, octetString.Length);
+
+				this.setOctetString (octetString);
+			}
+
 			/// <summary>
 			/// Create a new MmsValue instance of type MMS_BINARY_TIME
 			/// </summary>
@@ -271,8 +288,24 @@ namespace IEC61850
 				MmsValue_setBinaryTime (this.valueReference, timestamp);
 			}
 
-			internal IntPtr valueReference;
-			private bool responsableForDeletion;
+			/// <summary>
+			/// Gets the binary time value as UTC time in ms.
+			/// </summary>
+			/// <description>
+			/// Return the value as milliseconds since epoch (1.1.1970 UTC).
+			/// The value has to be of type MMS_UTC_TIME.
+			/// </description>
+			/// <returns>
+			/// The UTC time in ms.
+			/// </returns>
+			/// <exception cref="MmsValueException">This exception is thrown if the value has the wrong type.</exception>
+			public ulong GetBinaryTimeAsUtcMs ()
+			{
+				if (GetType () == MmsType.MMS_BINARY_TIME) {
+					return MmsValue_getBinaryTimeAsUtcMs (valueReference);
+				} else
+					throw new MmsValueException ("Value is not a time type");
+			}
 
             /// <summary>
             /// Gets the type of the value
@@ -755,8 +788,33 @@ namespace IEC61850
 					return ToDouble ().ToString ();
 				case MmsType.MMS_UTC_TIME:
 					return GetUtcTimeAsDateTimeOffset ().ToString ();
+				case MmsType.MMS_BINARY_TIME:
+					return (MsTimeToDateTimeOffset (GetBinaryTimeAsUtcMs ()).ToString ());
+				case MmsType.MMS_OCTET_STRING:
+					return BitConverter.ToString (getOctetString ());
                 case MmsType.MMS_BIT_STRING:
                     return GetBitStringAsString();
+				case MmsType.MMS_STRUCTURE:
+					{
+						string retString = "{";
+
+						bool first = true;
+
+						foreach (MmsValue element in this) {
+							if (first) {
+								retString += element.ToString ();
+
+								first = false;
+							} else {
+								retString += ", " + element.ToString ();
+							}
+						}
+
+						retString += "}";
+
+						return retString;
+					}
+
 				default:
 					return "unknown";
 				}
