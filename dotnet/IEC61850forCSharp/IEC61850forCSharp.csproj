@@ -46,6 +46,7 @@
     <Compile Include="IsoConnectionParameters.cs" />
     <Compile Include="MmsVariableSpecification.cs" />
     <Compile Include="IEC61850ServerAPI.cs" />
+    <Compile Include="IEC61850CommonAPI.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -63,6 +63,9 @@ typedef struct sSqliteLogStorage {
     sqlite3_stmt* getEntryData;
     sqlite3_stmt* getOldEntry;
     sqlite3_stmt* getNewEntry;
+    sqlite3_stmt* getEntriesCount;
+    sqlite3_stmt* deleteEntryData;
+    sqlite3_stmt* deleteEntry;
 } SqliteLogStorage;
 
 static const char* CREATE_TABLE_ENTRYS = "create table if not exists Entries (entryID integer primary key, timeOfEntry integer)";
@@ -75,6 +78,11 @@ static const char* GET_ENTRY_DATA = "select dataRef, value, reasonCode from Entr
 
 static const char* GET_OLD_ENTRY = "select * from Entries where entryID = (select min(entryID) from Entries where timeOfEntry = (select min(timeOfEntry) from Entries))";
 static const char* GET_NEW_ENTRY = "select * from Entries where entryID = (select max(entryID) from Entries where timeOfEntry = (select max(timeOfEntry) from Entries))";
+
+static const char* GET_ENTRIES_COUNT = "select Count(*) from Entries";
+
+static const char* DELETE_ENTRY_DATA = "delete from EntryData where entryID=?";
+static const char* DELETE_ENTRY = "delete from Entries where entryID=?";
 
 static char*
 copyStringInternal(const char* string)
@@ -100,6 +108,10 @@ SqliteLogStorage_createInstance(const char* filename)
     sqlite3_stmt* getEntryData = NULL;
     sqlite3_stmt* getOldEntry = NULL;
     sqlite3_stmt* getNewEntry = NULL;
+    sqlite3_stmt* getEntriesCount = NULL;
+    sqlite3_stmt* deleteEntryData = NULL;
+    sqlite3_stmt* deleteEntry = NULL;
+
     char *zErrMsg = 0;
 
     int rc = sqlite3_open(filename, &db);
@@ -143,6 +155,18 @@ SqliteLogStorage_createInstance(const char* filename)
     if (rc != SQLITE_OK)
         goto exit_with_error;
 
+    rc = sqlite3_prepare_v2(db, GET_ENTRIES_COUNT, -1, &getEntriesCount, NULL);
+    if (rc != SQLITE_OK)
+        goto exit_with_error;
+
+    rc = sqlite3_prepare_v2(db, DELETE_ENTRY_DATA, -1, &deleteEntryData, NULL);
+    if (rc != SQLITE_OK)
+        goto exit_with_error;
+
+    rc = sqlite3_prepare_v2(db, DELETE_ENTRY, -1, &deleteEntry, NULL);
+    if (rc != SQLITE_OK)
+        goto exit_with_error;
+
     LogStorage self = (LogStorage) calloc(1, sizeof(struct sLogStorage));
 
     SqliteLogStorage* instanceData = (SqliteLogStorage*) calloc(1, sizeof(struct sSqliteLogStorage));
@@ -156,6 +180,9 @@ SqliteLogStorage_createInstance(const char* filename)
     instanceData->getEntryData = getEntryData;
     instanceData->getOldEntry = getOldEntry;
     instanceData->getNewEntry = getNewEntry;
+    instanceData->getEntriesCount = getEntriesCount;
+    instanceData->deleteEntryData = deleteEntryData;
+    instanceData->deleteEntry = deleteEntry;
 
     self->instanceData = (void*) instanceData;
 
@@ -165,6 +192,7 @@ SqliteLogStorage_createInstance(const char* filename)
     self->getEntriesAfter = SqliteLogStorage_getEntriesAfter;
     self->getOldestAndNewestEntries = SqliteLogStorage_getOldestAndNewestEntries;
     self->destroy = SqliteLogStorage_destroy;
+    self->maxLogEntries = -1;
 
     return self;
 
@@ -175,6 +203,87 @@ exit_with_error:
     return NULL;
 }
 
+static void
+deleteOldestEntry(SqliteLogStorage* self)
+{
+    int rc;
+
+    /* Get oldest entry */
+    rc = sqlite3_reset(self->getOldEntry);
+
+    if (rc != SQLITE_OK)
+        goto exit_with_error;
+
+    rc = sqlite3_step(self->getOldEntry);
+
+    int64_t entryId;
+
+    if (rc == SQLITE_ROW) {
+        entryId = sqlite3_column_int64(self->getOldEntry, 0);
+
+        sqlite3_reset(self->deleteEntryData);
+
+        rc = sqlite3_bind_int64(self->deleteEntryData, 1, (sqlite_int64) entryId);
+
+        rc = sqlite3_step(self->deleteEntryData);
+
+        if (rc != SQLITE_DONE)
+            goto exit_with_error;
+
+        sqlite3_reset(self->deleteEntry);
+
+        rc = sqlite3_bind_int64(self->deleteEntry, 1, (sqlite_int64) entryId);
+
+        rc = sqlite3_step(self->deleteEntry);
+
+        if (rc != SQLITE_DONE)
+            goto exit_with_error;
+
+    }
+    else
+        goto exit_with_error;
+
+    return;
+
+exit_with_error:
+    if (DEBUG_LOG_STORAGE_DRIVER)
+        printf("LOG_STORAGE_DRIVER: sqlite - failed to delete oldest entry (rc=%i)!\n", rc);
+
+    return;
+}
+
+static int
+getEntriesCount(SqliteLogStorage* self)
+{
+    int rc;
+
+    rc = sqlite3_reset(self->getEntriesCount);
+
+    if (rc != SQLITE_OK)
+        goto exit_with_error;
+
+    rc = sqlite3_step(self->getEntriesCount);
+
+    int entryCount = sqlite3_column_int(self->getEntriesCount, 0);
+
+    return entryCount;
+
+exit_with_error:
+    if (DEBUG_LOG_STORAGE_DRIVER)
+        printf("LOG_STORAGE_DRIVER: sqlite - failed to get entry count! (rc=%i)\n", rc);
+
+    return -1;
+}
+
+static void
+trimToMaxEntries(SqliteLogStorage* self, int maxEntries)
+{
+    int deleteEntries = getEntriesCount(self) - maxEntries;
+
+    int i;
+    for (i = 0; i < deleteEntries; i++)
+        deleteOldestEntry(self);
+}
 
 static uint64_t
 SqliteLogStorage_addEntry(LogStorage self, uint64_t timestamp)
@@ -207,6 +316,11 @@ SqliteLogStorage_addEntry(LogStorage self, uint64_t timestamp)
 
     if (rc != SQLITE_OK)
         goto exit_with_error;
+
+    if (self->maxLogEntries > 0) {
+        if (getEntriesCount(instanceData) > self->maxLogEntries)
+            trimToMaxEntries(instanceData, self->maxLogEntries);
+    }
 
     return id;
 
@@ -379,6 +493,7 @@ SqliteLogStorage_getOldestAndNewestEntries(LogStorage self, uint64_t* newEntry, 
     int rc;
 
     /* Get oldest entry */
+    sqlite3_reset(instanceData->getOldEntry);
 
     rc = sqlite3_step(instanceData->getOldEntry);
 
@@ -392,9 +507,9 @@ SqliteLogStorage_getOldestAndNewestEntries(LogStorage self, uint64_t* newEntry, 
         *oldEntryTime = 0;
     }
 
-    sqlite3_reset(instanceData->getOldEntry);
 
     /* Get newest entry */
+    sqlite3_reset(instanceData->getNewEntry);
 
     rc = sqlite3_step(instanceData->getNewEntry);
 
@@ -407,8 +522,6 @@ SqliteLogStorage_getOldestAndNewestEntries(LogStorage self, uint64_t* newEntry, 
         *newEntry = 0;
         *newEntryTime = 0;
     }
-
-    sqlite3_reset(instanceData->getNewEntry);
 
     return (validOldEntry && validNewEntry);
 }
@@ -471,6 +584,9 @@ SqliteLogStorage_destroy(LogStorage self)
     sqlite3_finalize(instanceData->getEntryData);
     sqlite3_finalize(instanceData->getOldEntry);
     sqlite3_finalize(instanceData->getNewEntry);
+    sqlite3_finalize(instanceData->getEntriesCount);
+    sqlite3_finalize(instanceData->deleteEntryData);
+    sqlite3_finalize(instanceData->deleteEntry);
 
     if (sqlite3_close(instanceData->db) != SQLITE_OK)
         if (DEBUG_LOG_STORAGE_DRIVER)

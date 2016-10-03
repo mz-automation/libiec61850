@@ -17,7 +17,8 @@
 
 #include "logging_api.h"
 
-LogStorage SqliteLogStorage_createInstance(const char*);
+LogStorage
+SqliteLogStorage_createInstance(const char* filename);
 
 /* import IEC 61850 device model created from SCL-File */
 extern IedModel iedModel;
@@ -142,6 +143,8 @@ main(int argc, char** argv)
     IedServer_setConnectionIndicationHandler(iedServer, (IedConnectionIndicationHandler) connectionHandler, NULL);
 
     LogStorage statusLog = SqliteLogStorage_createInstance("log_status.db");
+
+    LogStorage_setMaxLogEntries(statusLog, 10);
 
     IedServer_setLogStorage(iedServer, "GenericIO/LLN0$EventLog", statusLog);
 

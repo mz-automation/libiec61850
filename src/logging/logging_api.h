@@ -41,7 +41,7 @@ extern "C" {
  *
  * This interface has to be implemented by the log storage provider. The Log storage provider
  * has to provide a specific constructor that creates an instance of LogStorage by allocating
- * the required memory fot the struct sLogStorage data structure and populate the function
+ * the required memory for the struct sLogStorage data structure and populate the function
  * pointers with provider specific implementation functions.
  *
  * @{
@@ -80,6 +80,8 @@ struct sLogStorage {
 
     void* instanceData;
 
+    int maxLogEntries;
+
     uint64_t (*addEntry) (LogStorage self, uint64_t timestamp);
 
     bool (*addEntryData) (LogStorage self, uint64_t entryID, const char* dataRef, uint8_t* data, int dataSize, uint8_t reasonCode);
@@ -96,6 +98,15 @@ struct sLogStorage {
     void (*destroy) (LogStorage self);
 };
 
+
+/**
+ * \brief Set the maximum number of log entries for this log
+ *
+ * \param self the pointer of the LogStorage instance
+ * \param maxEntries the maximum number of log entries
+ */
+void
+LogStorage_setMaxLogEntries(LogStorage self, int maxEntries);
 
 /**
  * \brief Add an entry to the log

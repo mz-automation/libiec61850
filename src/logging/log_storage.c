@@ -23,6 +23,13 @@
 
 #include "logging_api.h"
 
+
+void
+LogStorage_setMaxLogEntries(LogStorage self, int maxEntries)
+{
+    self->maxLogEntries = maxEntries;
+}
+
 uint64_t
 LogStorage_addEntry(LogStorage self, uint64_t timestamp)
 {
