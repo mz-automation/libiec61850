@@ -628,4 +628,4 @@ EXPORTS
     MmsConnection_setRawMessageHandler
     ModelNode_getType
     ControlObjectClient_setTestMode
-
+    LogStorage_setMaxLogEntries

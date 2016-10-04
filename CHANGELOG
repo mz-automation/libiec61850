@@ -1,6 +1,10 @@
 Changes to version 0.9.3
 ------------------------
 - .NET API: server side API
+- .NET API: client side support for log service
+- server: added maximum number of log entries for log service
+- client: added callback to provide user access to raw MMS functions
+- SV: added FLOAT64 support
 
 Changes to version 0.9.2.1
 --------------------------
