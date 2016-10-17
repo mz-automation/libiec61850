@@ -3,8 +3,6 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{71485F99-2976-45E6-B73D-4946E594C15C}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>report_new_dataset</RootNamespace>

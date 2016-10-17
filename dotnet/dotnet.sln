@@ -1,6 +1,8 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+VisualStudioVersion = 12.0.40629.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IEC61850forCSharp", "IEC61850forCSharp\IEC61850forCSharp.csproj", "{C35D624E-5506-4560-8074-1728F1FA1A4D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "example1", "example1\example1.csproj", "{C616A6DF-831E-443C-9310-3F343A6E3D1A}"
@@ -26,6 +28,13 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "report_new_dataset", "report_new_dataset\report_new_dataset.csproj", "{71485F99-2976-45E6-B73D-4946E594C15C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "log_client", "log_client\log_client.csproj", "{14C71267-2F38-460D-AA55-6803EE80AFB4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{0D2F61F1-A173-44E7-BFB0-B698A1D44D12}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\packages.config = .nuget\packages.config
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "server1", "server1\server1.csproj", "{9286D2AB-96ED-4631-AB3C-ED20FF5D6E6C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -61,6 +70,10 @@ Global
 		{77127456-19B9-4D1A-AEF9-40F8D1C5695E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{77127456-19B9-4D1A-AEF9-40F8D1C5695E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{77127456-19B9-4D1A-AEF9-40F8D1C5695E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9286D2AB-96ED-4631-AB3C-ED20FF5D6E6C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9286D2AB-96ED-4631-AB3C-ED20FF5D6E6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9286D2AB-96ED-4631-AB3C-ED20FF5D6E6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9286D2AB-96ED-4631-AB3C-ED20FF5D6E6C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9E29B4CE-EE5F-4CA6-85F6-5D1FF8B27BF8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9E29B4CE-EE5F-4CA6-85F6-5D1FF8B27BF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9E29B4CE-EE5F-4CA6-85F6-5D1FF8B27BF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -85,14 +98,8 @@ Global
 		{FBDFE530-DBEB-474B-BA54-9AB287DD57B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FBDFE530-DBEB-474B-BA54-9AB287DD57B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FBDFE530-DBEB-474B-BA54-9AB287DD57B3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{740DC107-F506-416C-B145-F71649A4A5A0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{740DC107-F506-416C-B145-F71649A4A5A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{740DC107-F506-416C-B145-F71649A4A5A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{740DC107-F506-416C-B145-F71649A4A5A0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{EDC263E3-0419-4B23-91A4-250EF0A6DD62}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EDC263E3-0419-4B23-91A4-250EF0A6DD62}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EDC263E3-0419-4B23-91A4-250EF0A6DD62}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EDC263E3-0419-4B23-91A4-250EF0A6DD62}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		Policies = $0
@@ -104,23 +111,6 @@ Global
 		$2.TabsToSpaces = False
 		$2.inheritsSet = VisualStudio
 		$2.inheritsScope = text/plain
-		$2.scope = text/plain
-		$0.TextStylePolicy = $3
-		$3.inheritsSet = null
-		$3.scope = text/microsoft-resx
-		$0.XmlFormattingPolicy = $4
-		$4.inheritsSet = null
-		$4.scope = text/microsoft-resx
-		$0.TextStylePolicy = $5
-		$5.inheritsSet = null
-		$5.scope = application/xml
-		$0.XmlFormattingPolicy = $6
-		$6.inheritsSet = Mono
-		$6.inheritsScope = application/xml
-		$6.scope = application/xml
-		$0.StandardHeader = $7
-		$7.Text = 
-		$7.IncludeInNewFiles = True
 		StartupItem = IEC61850forCSharp\IEC61850forCSharp.csproj
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution

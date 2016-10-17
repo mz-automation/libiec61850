@@ -176,7 +176,7 @@ namespace tests
 
 			modelNode = iedModel.GetModelNodeByShortObjectReference ("GenericIO/GGIO1.AnIn1.mag.f");
 
-			Assert.IsTrue (modelNode.GetType ().Equals (typeof(DataAttribute)));
+			Assert.IsTrue (modelNode.GetType ().Equals (typeof(IEC61850.Server.DataAttribute)));
 
 			Assert.IsNotNull (modelNode);
 		}
@@ -188,13 +188,13 @@ namespace tests
 
 			ModelNode ind1 = iedModel.GetModelNodeByShortObjectReference ("GenericIO/GGIO1.Ind1.stVal");
 
-			Assert.IsTrue (ind1.GetType ().Equals (typeof(DataAttribute)));
+			Assert.IsTrue (ind1.GetType ().Equals (typeof(IEC61850.Server.DataAttribute)));
 
 			IedServer iedServer = new IedServer (iedModel);
 
 			iedServer.Start (10002);
 
-			iedServer.UpdateBooleanAttributeValue((DataAttribute) ind1, true);
+			iedServer.UpdateBooleanAttributeValue((IEC61850.Server.DataAttribute) ind1, true);
 
 			IedConnection connection = new IedConnection ();
 
@@ -204,7 +204,7 @@ namespace tests
 
 			Assert.IsTrue (stVal);
 
-			iedServer.UpdateBooleanAttributeValue((DataAttribute) ind1, false);
+			iedServer.UpdateBooleanAttributeValue((IEC61850.Server.DataAttribute) ind1, false);
 
 			stVal = connection.ReadBooleanValue ("simpleIOGenericIO/GGIO1.Ind1.stVal", FunctionalConstraint.ST);
 
@@ -224,19 +224,19 @@ namespace tests
 
 			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../model.cfg");
 
-			DataAttribute opDlTmms = (DataAttribute) iedModel.GetModelNodeByShortObjectReference("GenericIO/PDUP1.OpDlTmms.setVal");
-			DataAttribute rsDlTmms = (DataAttribute)iedModel.GetModelNodeByShortObjectReference ("GenericIO/PDUP1.RsDlTmms.setVal");
+			IEC61850.Server.DataAttribute opDlTmms = (IEC61850.Server.DataAttribute) iedModel.GetModelNodeByShortObjectReference("GenericIO/PDUP1.OpDlTmms.setVal");
+			IEC61850.Server.DataAttribute rsDlTmms = (IEC61850.Server.DataAttribute)iedModel.GetModelNodeByShortObjectReference ("GenericIO/PDUP1.RsDlTmms.setVal");
 
 			IedServer iedServer = new IedServer (iedModel);
 
 			int opDlTmmsValue = 0;
 
-			iedServer.HandleWriteAccess (opDlTmms, delegate(DataAttribute dataAttr, MmsValue value, ClientConnection con, object parameter) {
+			iedServer.HandleWriteAccess (opDlTmms, delegate(IEC61850.Server.DataAttribute dataAttr, MmsValue value, ClientConnection con, object parameter) {
 				opDlTmmsValue = value.ToInt32();
 				return MmsDataAccessError.DATA_ACCESS_ERROR_SUCCESS;
 			}, null);
 
-			iedServer.HandleWriteAccess (rsDlTmms, delegate(DataAttribute dataAttr, MmsValue value, ClientConnection con, object parameter) {
+			iedServer.HandleWriteAccess (rsDlTmms, delegate(IEC61850.Server.DataAttribute dataAttr, MmsValue value, ClientConnection con, object parameter) {
 				if (value.ToInt32() > 1000)
 					return MmsDataAccessError.DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
 				else
@@ -280,12 +280,12 @@ namespace tests
 
 			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../model.cfg");
 
-			DataAttribute opDlTmms = (DataAttribute) iedModel.GetModelNodeByShortObjectReference("GenericIO/PDUP1.OpDlTmms.setVal");
-			DataAttribute rsDlTmms = (DataAttribute)iedModel.GetModelNodeByShortObjectReference ("GenericIO/PDUP1.RsDlTmms.setVal");
+			IEC61850.Server.DataAttribute opDlTmms = (IEC61850.Server.DataAttribute) iedModel.GetModelNodeByShortObjectReference("GenericIO/PDUP1.OpDlTmms.setVal");
+            IEC61850.Server.DataAttribute rsDlTmms = (IEC61850.Server.DataAttribute)iedModel.GetModelNodeByShortObjectReference("GenericIO/PDUP1.RsDlTmms.setVal");
 
 			IedServer iedServer = new IedServer (iedModel);
 
-			iedServer.HandleWriteAccess (opDlTmms, delegate(DataAttribute dataAttr, MmsValue value, ClientConnection con, object parameter) {
+			iedServer.HandleWriteAccess (opDlTmms, delegate(IEC61850.Server.DataAttribute dataAttr, MmsValue value, ClientConnection con, object parameter) {
 				return MmsDataAccessError.DATA_ACCESS_ERROR_SUCCESS;
 			}, null);
 				

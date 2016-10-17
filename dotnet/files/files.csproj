@@ -3,8 +3,6 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{77127456-19B9-4D1A-AEF9-40F8D1C5695E}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>files</RootNamespace>

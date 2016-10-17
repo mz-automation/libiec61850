@@ -3,8 +3,6 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{C35D624E-5506-4560-8074-1728F1FA1A4D}</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>iec61850dotnet</RootNamespace>
