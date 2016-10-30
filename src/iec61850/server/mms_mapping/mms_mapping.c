@@ -3021,6 +3021,9 @@ processPeriodicTasks(MmsMapping* self)
 #if (CONFIG_IEC61850_LOG_SERVICE == 1)
     Logging_processIntegrityLogs(self, currentTimeInMs);
 #endif
+
+    /* handle low priority MMS backgound tasks (like file upload...) */
+    MmsServer_handleBackgroundTasks(self->mmsServer);
 }
 
 void

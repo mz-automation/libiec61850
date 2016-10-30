@@ -111,6 +111,12 @@ handleConfirmedRequestPdu(
 		if (extendedTag) {
 		    switch(tag) {
 
+#if (MMS_OBTAIN_FILE_SERVICE == 1)
+		    case 0x2e: /* obtain-file */
+		        mmsServer_handleObtainFileRequest(self, buffer, bufPos, bufPos + length, invokeId, response);
+		        break;
+#endif /* MMS_OBTAIN_FILE_SERVICE == 1 */
+
 #if (MMS_JOURNAL_SERVICE == 1)
             case 0x41: /* read-journal */
                 mmsServer_handleReadJournalRequest(self, buffer, bufPos, bufPos + length, invokeId, response);
@@ -234,6 +240,199 @@ handleConfirmedRequestPdu(
 	}
 }
 
+#if (MMS_OBTAIN_FILE_SERVICE == 1)
+
+static void
+handleConfirmedErrorPdu(
+        MmsServerConnection self,
+        uint8_t* buffer, int bufPos, int maxBufPos,
+        ByteBuffer* response)
+{
+    uint32_t invokeId;
+    MmsServiceError serviceError;
+
+
+
+    if (mmsMsg_parseConfirmedErrorPDU(buffer, bufPos, maxBufPos, &invokeId, &serviceError)) {
+
+        printf("MMS_SERVER: Handle confirmed error PDU: invokeID: %i\n", invokeId);
+
+        /* check if message is related to an existing file upload task */
+        int i;
+        for (i = 0; i < CONFIG_MMS_SERVER_MAX_GET_FILE_TASKS; i++) {
+
+            if (self->server->fileUploadTasks[i].lastRequestInvokeId == invokeId) {
+
+                self->server->fileUploadTasks[i].state = MMS_FILE_UPLOAD_STATE_SEND_OBTAIN_FILE_ERROR_SOURCE;
+                return;
+            }
+        }
+    }
+    else {
+        printf("MMS_SERVER: error parsing confirmed error PDU\n");
+    }
+}
+
+
+static MmsObtainFileTask
+getUploadTaskByInvokeId(MmsServer mmsServer, uint32_t invokeId)
+{
+    int i;
+    for (i = 0; i < CONFIG_MMS_SERVER_MAX_GET_FILE_TASKS; i++) {
+        if (mmsServer->fileUploadTasks[i].lastRequestInvokeId == invokeId)
+            return &(mmsServer->fileUploadTasks[i]);
+    }
+
+    return NULL;
+}
+
+static void
+mmsFileReadHandler(void* parameter, int32_t frsmId, uint8_t* buffer, uint32_t bytesReceived)
+{
+    MmsObtainFileTask task = (MmsObtainFileTask) parameter;
+
+    printf("  FILE %i received %i bytes\n", frsmId, bytesReceived);
+    //TODO write data to file
+}
+
+static void
+handleConfirmedResponsePdu(
+        MmsServerConnection self,
+        uint8_t* buffer, int bufPos, int maxBufPos,
+        ByteBuffer* response)
+{
+    uint32_t invokeId = 0;
+
+    while (bufPos < maxBufPos) {
+        int startBufPos = bufPos;
+
+        uint8_t tag = buffer[bufPos++];
+        int length;
+
+        bool extendedTag = false;
+
+        if ((tag & 0x1f) == 0x1f) {
+            extendedTag = true;
+            tag = buffer[bufPos++];
+        }
+
+        bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
+
+        if (bufPos < 0)  {
+            mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE, response);
+            return;
+        }
+
+        if (extendedTag) {
+            switch(tag) {
+
+#if (MMS_FILE_SERVICE == 1)
+            case 0x48: /* file-open-response */
+                printf("MMS_SERVER: received file-open-response\n");
+
+                {
+                    MmsObtainFileTask fileTask = getUploadTaskByInvokeId(self->server, invokeId);
+
+                    if (fileTask != NULL) {
+
+                    int32_t frmsId;
+
+                        if (mmsMsg_parseFileOpenResponse(buffer, startBufPos, maxBufPos, &frmsId, NULL, NULL)) {
+                            printf("MMS_SERVER: received file-open-response with frmsId=%i\n", frmsId);
+
+                            fileTask->frmsId = frmsId;
+                            fileTask->state = MMS_FILE_UPLOAD_STATE_SEND_FILE_READ;
+                        }
+                        else {
+                            printf("MMS_SERVER: error parsing file-open-response\n");
+                            fileTask->state = MMS_FILE_UPLOAD_STATE_SEND_OBTAIN_FILE_ERROR_SOURCE;
+                        }
+                    }
+                    else
+                        printf("MMS_SERVER: unexpected file-open-response\n");
+                }
+
+                break;
+
+            case 0x49: /* file-read-response */
+                printf("MMS_SERVER: received file-read-response\n");
+
+                {
+                    MmsObtainFileTask fileTask = getUploadTaskByInvokeId(self->server, invokeId);
+
+                    if (fileTask != NULL) {
+
+                        bool moreFollows;
+
+                        if (mmsMsg_parseFileReadResponse(buffer, startBufPos, maxBufPos, fileTask->frmsId, &moreFollows, mmsFileReadHandler, (void*) fileTask)) {
+
+                            printf("MMS_SERVER: received file data\n");
+
+                            if (moreFollows) {
+                                fileTask->state = MMS_FILE_UPLOAD_STATE_SEND_FILE_READ;
+                            }
+                            else {
+
+                                //TODO close local file
+
+                                fileTask->state = MMS_FILE_UPLOAD_STATE_SEND_FILE_CLOSE;
+                            }
+                        }
+                        else {
+                            fileTask->state = MMS_FILE_UPLOAD_STATE_SEND_OBTAIN_FILE_ERROR_SOURCE;
+                            printf("MMS_SERVER: error parsing file-read-response\n");
+                        }
+                    }
+                    else
+                        printf("MMS_SERVER: unexpected file-read-response\n");
+                }
+
+                break;
+
+            case 0x4a: /* file-close-response */
+                {
+
+                    printf("MMS_SERVER: received file-close-response\n");
+
+
+                    MmsObtainFileTask fileTask = getUploadTaskByInvokeId(self->server, invokeId);
+
+                    if (fileTask != NULL) {
+                        fileTask->state = MMS_FILE_UPLOAD_STATE_SEND_OBTAIN_FILE_RESPONSE;
+                    }
+                    else
+                       printf("MMS_SERVER: unexpected file-close-response\n");
+                }
+                break;
+#endif /* MMS_FILE_SERVICE == 1 */
+
+            default:
+                mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE, response);
+                return;
+                break;
+            }
+        }
+        else {
+            switch(tag) {
+            case 0x02: /* invoke Id */
+                invokeId = BerDecoder_decodeUint32(buffer, length, bufPos);
+                if (DEBUG_MMS_SERVER)
+                    printf("MMS_SERVER: received request with invokeId: %i\n", invokeId);
+                self->lastInvokeId = invokeId;
+                break;
+
+            default:
+                mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE, response);
+                return;
+                break;
+            }
+        }
+
+        bufPos += length;
+    }
+} /* handleConfirmedResponsePdu */
+#endif /* (MMS_OBTAIN_FILE_SERVICE == 1) */
+
 MmsIndication
 MmsServerConnection_parseMessage(MmsServerConnection self, ByteBuffer* message, ByteBuffer* response)
 {
@@ -266,6 +465,17 @@ MmsServerConnection_parseMessage(MmsServerConnection self, ByteBuffer* message, 
 		handleConfirmedRequestPdu(self, buffer, bufPos, bufPos + pduLength, response);
 		retVal = MMS_CONFIRMED_REQUEST;
 		break;
+#if (MMS_OBTAIN_FILE_SERVICE == 1)
+	case 0xa1: /* Confirmed response PDU */
+	    handleConfirmedResponsePdu(self, buffer, bufPos, bufPos + pduLength, response);
+	    retVal = MMS_CONFIRMED_REQUEST;
+	    break;
+	case 0xa2: /* Confirmed error PDU */
+	    handleConfirmedErrorPdu(self, buffer, 0, bufPos + pduLength, response);
+	    retVal = MMS_CONFIRMED_REQUEST;
+	    break;
+
+#endif /* (MMS_OBTAIN_FILE_SERVICE == 1) */
 	case 0x8b: /* Conclude request PDU */
 		mmsServer_writeConcludeResponsePdu(response);
 		retVal = MMS_CONCLUDE;
@@ -315,6 +525,10 @@ MmsServerConnection_init(MmsServerConnection connection, MmsServer server, IsoCo
 
 #if (MMS_DYNAMIC_DATA_SETS == 1)
 	self->namedVariableLists = LinkedList_create();
+#endif
+
+#if (MMS_OBTAIN_FILE_SERVICE == 1)
+	self->lastRequestInvokeId = 0;
 #endif
 
 	IsoConnection_installListener(isoCon, messageReceived, (void*) self);
@@ -390,4 +604,11 @@ uint32_t
 MmsServerConnection_getLastInvokeId(MmsServerConnection self)
 {
     return self->lastInvokeId;
+}
+
+uint32_t
+MmsServerConnection_getNextRequestInvokeId(MmsServerConnection self)
+{
+    self->lastRequestInvokeId++;
+    return self->lastRequestInvokeId;
 }

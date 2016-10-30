@@ -1,7 +1,7 @@
 /*
  *  mms_server.c
  *
- *  Copyright 2013, 2014, 2015 Michael Zillgith
+ *  Copyright 2013 - 2016 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -60,10 +60,11 @@ MmsServer_create(IsoServer isoServer, MmsDevice* device)
     self->valueCaches = createValueCaches(device);
     self->isLocked = false;
 
-    self->reportBuffer = ByteBuffer_create(NULL, CONFIG_MMS_MAXIMUM_PDU_SIZE);
+    self->transmitBuffer = ByteBuffer_create(NULL, CONFIG_MMS_MAXIMUM_PDU_SIZE);
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     self->modelMutex = Semaphore_create(1);
+    self->transmitBufferMutex = Semaphore_create(1);
 
     IsoServer_setUserLock(isoServer, self->modelMutex);
 #endif
@@ -86,6 +87,45 @@ MmsServer_unlockModel(MmsServer self)
     Semaphore_post(self->modelMutex);
 #endif
 }
+
+ByteBuffer*
+MmsServer_reserveTransmitBuffer(MmsServer self)
+{
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_wait(self->transmitBufferMutex);
+#endif
+
+    return self->transmitBuffer;
+}
+
+void
+MmsServer_releaseTransmitBuffer(MmsServer self)
+{
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_post(self->transmitBufferMutex);
+#endif
+}
+
+#if (MMS_OBTAIN_FILE_SERVICE == 1)
+
+MmsObtainFileTask
+MmsServer_getObtainFileTask(MmsServer self)
+{
+    int i;
+
+    for (i = 0; i < CONFIG_MMS_SERVER_MAX_GET_FILE_TASKS; i++) {
+
+        if (self->fileUploadTasks[i].state == 0) {
+            self->fileUploadTasks[i].state = 1;
+            return &(self->fileUploadTasks[i]);
+        }
+
+    }
+
+    return NULL;
+}
+
+#endif /* (MMS_OBTAIN_FILE_SERVICE == 1) */
 
 void
 MmsServer_installReadHandler(MmsServer self, MmsReadVariableHandler readHandler, void* parameter)
@@ -151,9 +191,10 @@ MmsServer_destroy(MmsServer self)
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_destroy(self->modelMutex);
+    Semaphore_destroy(self->transmitBufferMutex);
 #endif
 
-    ByteBuffer_destroy(self->reportBuffer);
+    ByteBuffer_destroy(self->transmitBuffer);
 
     GLOBAL_FREEMEM(self);
 }
@@ -309,6 +350,22 @@ void
 MmsServer_handleIncomingMessages(MmsServer self)
 {
     IsoServer_processIncomingMessages(self->isoServer);
+}
+
+void
+MmsServer_handleBackgroundTasks(MmsServer self)
+{
+
+#if (MMS_OBTAIN_FILE_SERVICE == 1)
+
+    int i;
+    for (i = 0; i < CONFIG_MMS_SERVER_MAX_GET_FILE_TASKS; i++)
+    {
+        if (self->fileUploadTasks[i].state != 0)
+            mmsServer_fileUploadTask(self, &(self->fileUploadTasks[i]));
+    }
+
+#endif /* (MMS_OBTAIN_FILE_SERVICE == 1) */
 }
 
 void

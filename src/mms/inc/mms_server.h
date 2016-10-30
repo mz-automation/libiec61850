@@ -124,6 +124,17 @@ typedef MmsError (*MmsNamedVariableListChangedHandler)(void* parameter, bool cre
 void
 MmsServer_installVariableListChangedHandler(MmsServer self, MmsNamedVariableListChangedHandler handler, void* parameter);
 
+
+typedef bool (*MmsObtainFileHandler)(void* parameter, MmsServerConnection connection, const char* sourceFilename, const char* destinationFilename);
+
+void
+MmsServer_installObtainFileHandler(MmsServer self, MmsObtainFileHandler handler, void* parameter);
+
+typedef void (*MmsGetFileCompleteHandler)(void* parameter, MmsServerConnection connection, const char* destinationFilename);
+
+void
+MmsServer_installGetFileCompleteHandler(MmsServer self, MmsGetFileCompleteHandler handler, void* parameter);
+
 /**
  * \brief lock the cached server data model
  *
@@ -208,6 +219,14 @@ MmsServer_waitReady(MmsServer self, unsigned int timeoutMs);
  */
 void
 MmsServer_handleIncomingMessages(MmsServer self);
+
+/**
+ * \brief Handle MmsServer background task
+ *
+ * \param self the MmsServer instance to operate on
+ */
+void
+MmsServer_handleBackgroundTasks(MmsServer self);
 
 /**
  * \brief Stop the server (for non-threaded operation mode)

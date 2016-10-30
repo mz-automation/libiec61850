@@ -59,7 +59,7 @@ MmsServerConnection_sendInformationReportSingleVariableVMDSpecific(MmsServerConn
 
 	if (DEBUG_MMS_SERVER) printf("MMS_SERVER: sendInfReportSingle variable: %s\n", itemId);
 
-	ByteBuffer* reportBuffer = self->server->reportBuffer;
+	ByteBuffer* reportBuffer = MmsServer_reserveTransmitBuffer(self->server);
 
 	uint8_t* buffer = reportBuffer->buffer;
 	int bufPos = 0;
@@ -81,6 +81,8 @@ MmsServerConnection_sendInformationReportSingleVariableVMDSpecific(MmsServerConn
     reportBuffer->size = bufPos;
 
     IsoConnection_sendMessage(self->isoConnection, reportBuffer, handlerMode);
+
+    MmsServer_releaseTransmitBuffer(self->server);
 
 exit_function:
     return;
@@ -151,7 +153,7 @@ MmsServerConnection_sendInformationReportListOfVariables(
     }
 
     /* encode message */
-    ByteBuffer* reportBuffer = self->server->reportBuffer;
+    ByteBuffer* reportBuffer = MmsServer_reserveTransmitBuffer(self->server);
 
     uint8_t* buffer = reportBuffer->buffer;
     int bufPos = 0;
@@ -212,6 +214,8 @@ MmsServerConnection_sendInformationReportListOfVariables(
 
     IsoConnection_sendMessage(self->isoConnection, reportBuffer, handlerMode);
 
+    MmsServer_releaseTransmitBuffer(self->server);
+
 exit_function:
     return;
 }
@@ -264,7 +268,7 @@ MmsServerConnection_sendInformationReportVMDSpecific(MmsServerConnection self, c
 
     if (DEBUG_MMS_SERVER) printf("MMS_SERVER: sendInfReport\n");
 
-    ByteBuffer* reportBuffer =  self->server->reportBuffer;
+    ByteBuffer* reportBuffer =  MmsServer_reserveTransmitBuffer(self->server);
 
     uint8_t* buffer = reportBuffer->buffer;
     int bufPos = 0;
@@ -293,6 +297,8 @@ MmsServerConnection_sendInformationReportVMDSpecific(MmsServerConnection self, c
     reportBuffer->size = bufPos;
 
     IsoConnection_sendMessage(self->isoConnection, reportBuffer, false);
+
+    MmsServer_releaseTransmitBuffer(self->server);
 
 exit_function:
     return;

@@ -327,7 +327,7 @@ sendRequestAndWaitForResponse(MmsConnection self, uint32_t invokeId, ByteBuffer*
 
     if (!success) {
         if (DEBUG_MMS_CLIENT)
-            printf("TIMEOUT for request %u: \n", invokeId);
+            printf("MMS_CLIENT: TIMEOUT for request %u: \n", invokeId);
         self->lastResponseError = MMS_ERROR_SERVICE_TIMEOUT;
     }
 
@@ -371,12 +371,6 @@ waitUntilLastResponseHasBeenProcessed(MmsConnection self)
         currentInvokeId = getResponseInvokeId(self);
     }
 }
-
-typedef struct sMmsServiceError
-{
-    int errorClass;
-    int errorCode;
-} MmsServiceError;
 
 static MmsError
 convertServiceErrorToMmsError(MmsServiceError serviceError)
@@ -519,12 +513,9 @@ parseServiceError(uint8_t* buffer, int bufPos, int maxLength, MmsServiceError* e
     return bufPos;
 }
 
-static int
-parseConfirmedErrorPDU(ByteBuffer* message, uint32_t* invokeId, MmsServiceError* serviceError)
+int
+mmsMsg_parseConfirmedErrorPDU(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t* invokeId, MmsServiceError* serviceError)
 {
-    uint8_t* buffer = message->buffer;
-    int maxBufPos = message->size;
-    int bufPos = 0;
     int length;
 
     uint8_t tag = buffer[bufPos++];
@@ -675,7 +666,7 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
         uint32_t invokeId;
         MmsServiceError serviceError = {0, 0};
 
-        if (parseConfirmedErrorPDU(payload, &invokeId, &serviceError) < 0) {
+        if (mmsMsg_parseConfirmedErrorPDU(payload->buffer, 0, payload->size, &invokeId, &serviceError) < 0) {
             if (DEBUG_MMS_CLIENT)
                 printf("MMS_CLIENT: Error parsing confirmedErrorPDU!\n");
         }
@@ -742,6 +733,124 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
         else
             goto exit_with_error;
     }
+#if (MMS_OBTAIN_FILE_SERVICE == 1)
+    else if (tag == 0xa0) {
+
+        printf("MMS_CLIENT: received confirmed request PDU (size=%i)\n", payload->size);
+
+        // TODO handle confirmed request PDU only when obtainFile service is enabled
+        // TODO extract function
+
+        int bufPos = 1;
+        int length;
+        bufPos = BerDecoder_decodeLength(buf, &length, bufPos, payload->size);
+
+        uint32_t invokeId;
+
+        while (bufPos < payload->size) {
+
+            uint8_t tag = buf[bufPos++];
+
+
+            bool extendedTag = false;
+
+            if ((tag & 0x1f) == 0x1f) {
+                extendedTag = true;
+                tag = buf[bufPos++];
+            }
+
+            bufPos = BerDecoder_decodeLength(buf, &length, bufPos, payload->size);
+
+          //  printf("tag:%02x len:%i\n", tag, length);
+
+//            if (bufPos < 0)  {
+//              mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE, response);
+//                return;
+//            }
+
+            if (extendedTag) {
+                switch(tag) {
+
+#if (MMS_FILE_SERVICE == 1)
+                case 0x48: /* file-open-request */
+                    {
+                        printf("MMS_CLIENT: received file-open-request\n");
+
+                        ByteBuffer* response = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
+
+                        mmsClient_handleFileOpenRequest(self, buf, bufPos, bufPos + length, invokeId, response);
+
+                        IsoClientConnection_sendMessage(self->isoClient, response);
+
+                        IsoClientConnection_releaseReceiveBuffer(self->isoClient);
+                    }
+                    break;
+
+                case 0x49: /* file-read-request */
+                    {
+                        printf("MMS_CLIENT: received file-read-request\n");
+
+                        ByteBuffer* response = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
+
+                        mmsClient_handleFileReadRequest(self, buf, bufPos, bufPos + length, invokeId, response);
+
+                        IsoClientConnection_sendMessage(self->isoClient, response);
+
+                        IsoClientConnection_releaseReceiveBuffer(self->isoClient);
+                    }
+                    break;
+
+                case 0x4a: /* file-close-request */
+                    {
+                        printf("MMS_CLIENT: received file-close-request\n");
+
+                        ByteBuffer* response = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
+
+                        mmsClient_handleFileCloseRequest(self, buf, bufPos, bufPos + length, invokeId, response);
+
+                        IsoClientConnection_sendMessage(self->isoClient, response);
+
+                        IsoClientConnection_releaseReceiveBuffer(self->isoClient);
+                    }
+                    break;
+#endif /* MMS_FILE_SERVICE == 1 */
+
+                default:
+                   // mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE, response);
+
+                    printf("MMS_CLIENT: unexpected message from server!\n");
+                    IsoClientConnection_releaseReceiveBuffer(self->isoClient);
+
+                    break;
+                }
+            }
+            else {
+                switch(tag) {
+                case 0x02: /* invoke Id */
+                    invokeId = BerDecoder_decodeUint32(buf, length, bufPos);
+                    if (DEBUG_MMS_CLIENT)
+                        printf("MMS_CLIENT: received request with invokeId: %i\n", invokeId);
+                    self->lastInvokeId = invokeId;
+                    break;
+
+
+                default:
+                  //  mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE, response);
+                    printf("MMS_CLIENT: unexpected message from server!\n");
+                                        IsoClientConnection_releaseReceiveBuffer(self->isoClient);
+
+                    goto exit_with_error;
+
+                    break;
+                }
+            }
+
+            bufPos += length;
+        }
+
+
+    }
+#endif /* (MMS_OBTAIN_FILE_SERVICE == 1) */
 
     if (DEBUG_MMS_CLIENT)
         printf("MMS_CLIENT: LEAVE mmsIsoCallback - OK\n");
@@ -752,6 +861,7 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
 
     if (DEBUG_MMS_CLIENT)
         printf("received malformed message from server!\n");
+
     IsoClientConnection_releaseReceiveBuffer(self->isoClient);
 
 
@@ -1811,7 +1921,12 @@ MmsConnection_fileOpen(MmsConnection self, MmsError* mmsError, const char* filen
     if (self->lastResponseError != MMS_ERROR_NONE)
         *mmsError = self->lastResponseError;
     else if (responseMessage != NULL) {
-        if (mmsClient_parseFileOpenResponse(self, &frsmId, fileSize, lastModified) == false)
+
+        uint8_t* buffer = self->lastResponse->buffer;
+        int maxBufPos = self->lastResponse->size;
+        int bufPos = self->lastResponseBufPos;
+
+        if (mmsMsg_parseFileOpenResponse(buffer, bufPos, maxBufPos, &frsmId, fileSize, lastModified) == false)
             *mmsError = MMS_ERROR_PARSING_RESPONSE;
     }
 
@@ -1890,7 +2005,11 @@ MmsConnection_fileRead(MmsConnection self, MmsError* mmsError, int32_t frsmId, M
     if (self->lastResponseError != MMS_ERROR_NONE)
         *mmsError = self->lastResponseError;
     else if (responseMessage != NULL) {
-        if (mmsClient_parseFileReadResponse(self, frsmId, &moreFollows, handler, handlerParameter) == false)
+        uint8_t* buffer = self->lastResponse->buffer;
+        int maxBufPos = self->lastResponse->size;
+        int bufPos = self->lastResponseBufPos;
+
+        if (mmsMsg_parseFileReadResponse(buffer, bufPos, maxBufPos, frsmId, &moreFollows, handler, handlerParameter) == false)
             *mmsError = MMS_ERROR_PARSING_RESPONSE;
     }
 
@@ -1968,13 +2087,16 @@ MmsConnection_obtainFile(MmsConnection self, MmsError* mmsError, const char* sou
 
     uint32_t invokeId = getNextInvokeId(self);
 
+    //TODO enable file service
+
     mmsClient_createObtainFileRequest(invokeId, payload, sourceFile, destinationFile);
 
-    sendRequestAndWaitForResponse(self, invokeId, payload);
-
+    ByteBuffer* responseMessage = sendRequestAndWaitForResponse(self, invokeId, payload);
 
     if (self->lastResponseError != MMS_ERROR_NONE)
         *mmsError = self->lastResponseError;
+
+    /* nothing to do - response contains no data to evaluate */
 
     releaseResponse(self);
 

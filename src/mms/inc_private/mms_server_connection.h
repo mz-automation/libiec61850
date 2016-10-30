@@ -98,6 +98,9 @@ MmsServerConnection_sendWriteResponse(MmsServerConnection self, uint32_t invokeI
 uint32_t
 MmsServerConnection_getLastInvokeId(MmsServerConnection self);
 
+uint32_t
+MmsServerConnection_getNextRequestInvokeId(MmsServerConnection self);
+
 #endif /* MMS_SERVER_CONNECTION_H_ */
 
 

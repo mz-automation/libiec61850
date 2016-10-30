@@ -179,6 +179,9 @@
 /* Maximum number of the members in a data set (named variable list) */
 #define CONFIG_MMS_MAX_NUMBER_OF_DATA_SET_MEMBERS 100
 
+/* maximum number of contemporary file upload tasks (obtainFile) per server instance */
+#define CONFIG_MMS_SERVER_MAX_GET_FILE_TASKS 5
+
 /* Definition of supported services */
 #define MMS_DEFAULT_PROFILE 1
 
@@ -194,6 +197,7 @@
 #define MMS_STATUS_SERVICE 1
 #define MMS_IDENTIFY_SERVICE 1
 #define MMS_FILE_SERVICE 1
+#define MMS_OBTAIN_FILE_SERVICE 1
 #endif /* MMS_DEFAULT_PROFILE */
 
 #if (MMS_WRITE_SERVICE != 1)
@@ -216,7 +220,7 @@
 /* use short FC defines as in old API */
 #define CONFIG_PROVIDE_OLD_FC_DEFINES 0
 
-/* Support user acccess to raw messages */
+/* Support user access to raw messages */
 #define CONFIG_MMS_RAW_MESSAGE_LOGGING 1
 
 #endif /* STACK_CONFIG_H_ */

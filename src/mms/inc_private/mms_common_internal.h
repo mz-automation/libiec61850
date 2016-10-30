@@ -27,6 +27,50 @@
 #include "mms_value.h"
 #include "MmsPdu.h"
 #include "conversions.h"
+#include "byte_buffer.h"
+
+#if (MMS_FILE_SERVICE == 1)
+
+#ifndef CONFIG_MMS_MAX_NUMBER_OF_OPEN_FILES_PER_CONNECTION
+#define CONFIG_MMS_MAX_NUMBER_OF_OPEN_FILES_PER_CONNECTION 5
+#endif
+
+#include "hal_filesystem.h"
+
+typedef struct {
+        int32_t frsmId;
+        uint32_t readPosition;
+        uint32_t fileSize;
+        FileHandle fileHandle;
+} MmsFileReadStateMachine;
+
+//TODO already defined in public API mms_connection.h
+typedef void
+(*MmsFileReadHandler) (void* parameter, int32_t frsmId, uint8_t* buffer, uint32_t bytesReceived);
+
+bool
+mmsMsg_parseFileOpenResponse(uint8_t* buffer, int bufPos, int maxBufPos, int32_t* frsmId, uint32_t* fileSize, uint64_t* lastModified);
+
+bool
+mmsMsg_parseFileReadResponse(uint8_t* buffer, int bufPos, int maxBufPos, int32_t frsmId,  bool* moreFollows, MmsFileReadHandler handler, void* handlerParameter);
+
+void
+mmsMsg_createFileReadResponse(int maxPduSize, uint32_t invokeId, ByteBuffer* response,  MmsFileReadStateMachine* frsm);
+
+void
+mmsMsg_createFileCloseResponse(uint32_t invokeId, ByteBuffer* response);
+
+#endif /* (MMS_FILE_SERVICE == 1) */
+
+typedef struct sMmsServiceError
+{
+    int errorClass;
+    int errorCode;
+} MmsServiceError;
+
+int
+mmsMsg_parseConfirmedErrorPDU(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t* invokeId, MmsServiceError* serviceError);
+
 
 MmsValue*
 mmsMsg_parseDataElement(Data_t* dataElement);

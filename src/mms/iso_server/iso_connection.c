@@ -54,9 +54,9 @@
 struct sIsoConnection
 {
     uint8_t* receiveBuffer;
-    uint8_t* sendBuffer;
-
     ByteBuffer rcvBuffer;
+
+    uint8_t* sendBuffer;
 
     uint8_t* cotpReadBuf;
     uint8_t* cotpWriteBuf;

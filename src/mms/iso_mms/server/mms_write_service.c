@@ -38,6 +38,7 @@ int
 mmsServer_createMmsWriteResponse(MmsServerConnection connection,
 		int invokeId, ByteBuffer* response, int numberOfItems, MmsDataAccessError* accessResults)
 {
+    //TODO remove asn1c code
 	MmsPdu_t* mmsPdu = mmsServer_createConfirmedResponse(invokeId);
 
 	mmsPdu->choice.confirmedResponsePdu.confirmedServiceResponse.present =
@@ -75,13 +76,15 @@ mmsServer_createMmsWriteResponse(MmsServerConnection connection,
 void
 MmsServerConnection_sendWriteResponse(MmsServerConnection self, uint32_t invokeId, MmsDataAccessError indication, bool handlerMode)
 {
-    ByteBuffer* response = ByteBuffer_create(NULL, self->maxPduSize);
+    ByteBuffer* response = MmsServer_reserveTransmitBuffer(self->server);
+
+    ByteBuffer_setSize(response, 0);
 
     mmsServer_createMmsWriteResponse(self, invokeId, response, 1, &indication);
 
     IsoConnection_sendMessage(self->isoConnection, response, handlerMode);
 
-    ByteBuffer_destroy(response);
+    MmsServer_releaseTransmitBuffer(self->server);
 }
 
 void

@@ -551,3 +551,6 @@ EXPORTS
     ModelNode_getType
     ControlObjectClient_setTestMode
     LogStorage_setMaxLogEntries
+    MmsServer_installObtainFileHandler
+    MmsServer_installGetFileCompleteHandler
+    MmsServer_handleBackgroundTasks

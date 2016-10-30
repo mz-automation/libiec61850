@@ -661,8 +661,12 @@ typedef void
 typedef void
 (*MmsFileReadHandler) (void* parameter, int32_t frsmId, uint8_t* buffer, uint32_t bytesReceived);
 
+
 /**
  * \brief open a file for read
+ *
+ * \param self MmsConnection instance to operate on
+ * \param mmsError user provided variable to store error code
  *
  * \return the FRSM ID (file read state machine) handle of the opened file
  */

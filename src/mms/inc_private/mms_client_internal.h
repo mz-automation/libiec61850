@@ -32,6 +32,8 @@
 
 #include "hal_thread.h"
 
+#include "mms_common_internal.h"
+
 #ifndef CONFIG_MMS_RAW_MESSAGE_LOGGING
 #define CONFIG_MMS_RAW_MESSAGE_LOGGING 0
 #endif
@@ -96,6 +98,11 @@ struct sMmsConnection {
 
 	/* state of an active connection conclude/release process */
 	int concludeState;
+
+#if (MMS_OBTAIN_FILE_SERVICE == 1)
+    int32_t nextFrsmId;
+    MmsFileReadStateMachine frsms[CONFIG_MMS_MAX_NUMBER_OF_OPEN_FILES_PER_CONNECTION];
+#endif
 };
 
 
@@ -231,14 +238,8 @@ mmsClient_parseStatusResponse(MmsConnection self, int* vmdLogicalStatus, int* vm
 void
 mmsClient_createFileOpenRequest(uint32_t invokeId, ByteBuffer* request, const char* fileName, uint32_t initialPosition);
 
-bool
-mmsClient_parseFileOpenResponse(MmsConnection self, int32_t* frsmId, uint32_t* fileSize, uint64_t* lastModified);
-
 void
 mmsClient_createFileReadRequest(uint32_t invokeId, ByteBuffer* request, int32_t frsmId);
-
-bool
-mmsClient_parseFileReadResponse(MmsConnection self, int32_t frsmId, bool* moreFollows, MmsFileReadHandler handler, void* handlerParameter);
 
 void
 mmsClient_createFileCloseRequest(uint32_t invokeId, ByteBuffer* request, int32_t frsmId);
@@ -279,5 +280,26 @@ mmsClient_createReadJournalRequestStartAfter(uint32_t invokeId, ByteBuffer* requ
 
 bool
 mmsClient_parseReadJournalResponse(MmsConnection self, bool* moreFollows, LinkedList* result);
+
+void
+mmsClient_handleFileOpenRequest(MmsConnection connection,
+    uint8_t* buffer, int bufPos, int maxBufPos,
+    uint32_t invokeId, ByteBuffer* response);
+
+void
+mmsClient_handleFileReadRequest(
+    MmsConnection connection,
+    uint8_t* buffer, int bufPos, int maxBufPos,
+    uint32_t invokeId,
+    ByteBuffer* response);
+
+void
+mmsClient_handleFileReadRequest(
+    MmsConnection connection,
+    uint8_t* buffer, int bufPos, int maxBufPos,
+    uint32_t invokeId,
+    ByteBuffer* response);
+
+
 
 #endif /* MMS_MSG_INTERNAL_H_ */
