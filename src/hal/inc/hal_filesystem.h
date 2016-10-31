@@ -63,7 +63,7 @@ FileSystem_openFile(char* pathName, bool readWrite);
  *
  * This function will read the next block of the file. The maximum number of bytes to read
  * is given. A call to this function will move the file position by the number of bytes read.
- * If the file position reaches the end of file then subseqeuent calls of this function shall
+ * If the file position reaches the end of file then subsequent calls of this function shall
  * return 0.
  *
  * \param handle the file handle to identify the file
@@ -74,6 +74,18 @@ FileSystem_openFile(char* pathName, bool readWrite);
  */
 int
 FileSystem_readFile(FileHandle handle, uint8_t* buffer, int maxSize);
+
+/**
+ * \brief write to an open file
+ *
+ * \param handle the file handle to identify the file
+ * \param buffer the buffer with the data to write
+ * \param size the number of bytes to write
+ *
+ * \return the number of bytes actually written
+ */
+int
+FileSystem_writeFile(FileHandle handle, uint8_t* buffer, int size);
 
 /**
  * \brief close an open file

@@ -291,8 +291,10 @@ mmsFileReadHandler(void* parameter, int32_t frsmId, uint8_t* buffer, uint32_t by
 {
     MmsObtainFileTask task = (MmsObtainFileTask) parameter;
 
-    printf("  FILE %i received %i bytes\n", frsmId, bytesReceived);
-    //TODO write data to file
+    if (DEBUG_MMS_SERVER)
+        printf("MMS_SERVER:  FILE %i received %i bytes\n", frsmId, bytesReceived);
+
+    FileSystem_writeFile(task->fileHandle, buffer, bytesReceived);
 }
 
 static void
@@ -328,7 +330,9 @@ handleConfirmedResponsePdu(
 
 #if (MMS_FILE_SERVICE == 1)
             case 0x48: /* file-open-response */
-                printf("MMS_SERVER: received file-open-response\n");
+
+                if (DEBUG_MMS_SERVER)
+                    printf("MMS_SERVER: received file-open-response\n");
 
                 {
                     MmsObtainFileTask fileTask = getUploadTaskByInvokeId(self->server, invokeId);
@@ -338,26 +342,30 @@ handleConfirmedResponsePdu(
                     int32_t frmsId;
 
                         if (mmsMsg_parseFileOpenResponse(buffer, startBufPos, maxBufPos, &frmsId, NULL, NULL)) {
-                            printf("MMS_SERVER: received file-open-response with frmsId=%i\n", frmsId);
-
                             fileTask->frmsId = frmsId;
                             fileTask->state = MMS_FILE_UPLOAD_STATE_SEND_FILE_READ;
                         }
                         else {
-                            printf("MMS_SERVER: error parsing file-open-response\n");
+                            if (DEBUG_MMS_SERVER)
+                                printf("MMS_SERVER: error parsing file-open-response\n");
                             fileTask->state = MMS_FILE_UPLOAD_STATE_SEND_OBTAIN_FILE_ERROR_SOURCE;
                         }
                     }
-                    else
-                        printf("MMS_SERVER: unexpected file-open-response\n");
+                    else {
+                        /* ignore */
+
+                        if (DEBUG_MMS_SERVER)
+                            printf("MMS_SERVER: unexpected file-open-response\n");
+                    }
                 }
 
                 break;
 
             case 0x49: /* file-read-response */
-                printf("MMS_SERVER: received file-read-response\n");
-
                 {
+                    if (DEBUG_MMS_SERVER)
+                        printf("MMS_SERVER: received file-read-response\n");
+
                     MmsObtainFileTask fileTask = getUploadTaskByInvokeId(self->server, invokeId);
 
                     if (fileTask != NULL) {
@@ -366,42 +374,47 @@ handleConfirmedResponsePdu(
 
                         if (mmsMsg_parseFileReadResponse(buffer, startBufPos, maxBufPos, fileTask->frmsId, &moreFollows, mmsFileReadHandler, (void*) fileTask)) {
 
-                            printf("MMS_SERVER: received file data\n");
-
                             if (moreFollows) {
                                 fileTask->state = MMS_FILE_UPLOAD_STATE_SEND_FILE_READ;
                             }
                             else {
-
-                                //TODO close local file
-
                                 fileTask->state = MMS_FILE_UPLOAD_STATE_SEND_FILE_CLOSE;
                             }
                         }
                         else {
                             fileTask->state = MMS_FILE_UPLOAD_STATE_SEND_OBTAIN_FILE_ERROR_SOURCE;
-                            printf("MMS_SERVER: error parsing file-read-response\n");
+
+                            if (DEBUG_MMS_SERVER)
+                                printf("MMS_SERVER: error parsing file-read-response\n");
                         }
                     }
-                    else
-                        printf("MMS_SERVER: unexpected file-read-response\n");
+                    else {
+                        /* ignore */
+
+                        if (DEBUG_MMS_SERVER)
+                            printf("MMS_SERVER: unexpected file-read-response\n");
+                    }
                 }
 
                 break;
 
             case 0x4a: /* file-close-response */
                 {
-
-                    printf("MMS_SERVER: received file-close-response\n");
-
+                    if (DEBUG_MMS_SERVER)
+                        printf("MMS_SERVER: received file-close-response\n");
 
                     MmsObtainFileTask fileTask = getUploadTaskByInvokeId(self->server, invokeId);
 
                     if (fileTask != NULL) {
+                        FileSystem_closeFile(fileTask->fileHandle);
                         fileTask->state = MMS_FILE_UPLOAD_STATE_SEND_OBTAIN_FILE_RESPONSE;
                     }
-                    else
-                       printf("MMS_SERVER: unexpected file-close-response\n");
+                    else {
+                        /* ignore */
+
+                        if (DEBUG_MMS_SERVER)
+                            printf("MMS_SERVER: unexpected file-close-response\n");
+                    }
                 }
                 break;
 #endif /* MMS_FILE_SERVICE == 1 */

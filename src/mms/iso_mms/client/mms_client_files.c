@@ -96,8 +96,6 @@ openFile(char* fileName, bool readWrite)
 
     createExtendedFilename(extendedFileName, fileName);
 
-    printf("open file %s\n", extendedFileName);
-
     return FileSystem_openFile(extendedFileName, readWrite);
 }
 
@@ -222,7 +220,7 @@ mmsClient_handleFileReadRequest(
     MmsFileReadStateMachine* frsm = getFrsm(connection, frsmId);
 
     if (frsm != NULL)
-        mmsMsg_createFileReadResponse(connection, invokeId, response, frsm);
+        mmsMsg_createFileReadResponse(connection->parameters.maxPduSize, invokeId, response, frsm);
     else
         mmsServer_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_OTHER);
 }

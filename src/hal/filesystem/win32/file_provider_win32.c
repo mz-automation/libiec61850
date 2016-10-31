@@ -64,6 +64,12 @@ FileSystem_readFile(FileHandle handle, uint8_t* buffer, int maxSize)
     return fread(buffer, maxSize, 1, (FILE*) handle);
 }
 
+int
+FileSystem_writeFile(FileHandle handle, uint8_t* buffer, int size)
+{
+    return fwrite(buffer, size, 1, (FILE*) handle);
+}
+
 void
 FileSystem_closeFile(FileHandle handle)
 {

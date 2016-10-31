@@ -736,7 +736,8 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
 #if (MMS_OBTAIN_FILE_SERVICE == 1)
     else if (tag == 0xa0) {
 
-        printf("MMS_CLIENT: received confirmed request PDU (size=%i)\n", payload->size);
+        if (DEBUG_MMS_CLIENT)
+            printf("MMS_CLIENT: received confirmed request PDU (size=%i)\n", payload->size);
 
         // TODO handle confirmed request PDU only when obtainFile service is enabled
         // TODO extract function
@@ -761,20 +762,14 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
 
             bufPos = BerDecoder_decodeLength(buf, &length, bufPos, payload->size);
 
-          //  printf("tag:%02x len:%i\n", tag, length);
-
-//            if (bufPos < 0)  {
-//              mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE, response);
-//                return;
-//            }
-
             if (extendedTag) {
                 switch(tag) {
 
 #if (MMS_FILE_SERVICE == 1)
                 case 0x48: /* file-open-request */
                     {
-                        printf("MMS_CLIENT: received file-open-request\n");
+                        if (DEBUG_MMS_CLIENT)
+                            printf("MMS_CLIENT: received file-open-request\n");
 
                         ByteBuffer* response = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
@@ -788,7 +783,8 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
 
                 case 0x49: /* file-read-request */
                     {
-                        printf("MMS_CLIENT: received file-read-request\n");
+                        if (DEBUG_MMS_CLIENT)
+                            printf("MMS_CLIENT: received file-read-request\n");
 
                         ByteBuffer* response = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
@@ -802,7 +798,8 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
 
                 case 0x4a: /* file-close-request */
                     {
-                        printf("MMS_CLIENT: received file-close-request\n");
+                        if (DEBUG_MMS_CLIENT)
+                            printf("MMS_CLIENT: received file-close-request\n");
 
                         ByteBuffer* response = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
@@ -817,8 +814,9 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
 
                 default:
                    // mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE, response);
+                    if (DEBUG_MMS_CLIENT)
+                        printf("MMS_CLIENT: unexpected message from server!\n");
 
-                    printf("MMS_CLIENT: unexpected message from server!\n");
                     IsoClientConnection_releaseReceiveBuffer(self->isoClient);
 
                     break;
@@ -836,8 +834,10 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
 
                 default:
                   //  mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE, response);
-                    printf("MMS_CLIENT: unexpected message from server!\n");
-                                        IsoClientConnection_releaseReceiveBuffer(self->isoClient);
+                    if (DEBUG_MMS_CLIENT)
+                        printf("MMS_CLIENT: unexpected message from server!\n");
+
+                    IsoClientConnection_releaseReceiveBuffer(self->isoClient);
 
                     goto exit_with_error;
 
@@ -2086,8 +2086,6 @@ MmsConnection_obtainFile(MmsConnection self, MmsError* mmsError, const char* sou
     *mmsError = MMS_ERROR_NONE;
 
     uint32_t invokeId = getNextInvokeId(self);
-
-    //TODO enable file service
 
     mmsClient_createObtainFileRequest(invokeId, payload, sourceFile, destinationFile);
 
