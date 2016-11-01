@@ -347,6 +347,13 @@ private_IedConnection_handleReport(IedConnection self, MmsValue* value)
 {
     MmsValue* rptIdValue = MmsValue_getElement(value, 0);
 
+    if ((rptIdValue == NULL) || (MmsValue_getType(rptIdValue) != MMS_VISIBLE_STRING)) {
+        if (DEBUG_IED_CLIENT)
+            printf("IED_CLIENT: received malformed report (RptId)\n");
+
+        goto exit_function;
+    }
+
     LinkedList element = LinkedList_getNext(self->enabledReports);
     ClientReport matchingReport = NULL;
 
@@ -378,9 +385,16 @@ private_IedConnection_handleReport(IedConnection self, MmsValue* value)
     matchingReport->hasBufOverflow = false;
 
    if (DEBUG_IED_CLIENT)
-        printf("DEBUG_IED_CLIENT: received report with ID %s\n", MmsValue_toString(rptIdValue));
+        printf("IED_CLIENT: received report with ID %s\n", MmsValue_toString(rptIdValue));
 
     MmsValue* optFlds = MmsValue_getElement(value, 1);
+
+    if ((optFlds == NULL) || (MmsValue_getType(optFlds) != MMS_BIT_STRING)) {
+        if (DEBUG_IED_CLIENT)
+            printf("IED_CLIENT: received malformed report (OptFlds)\n");
+
+        goto exit_function;
+    }
 
     int inclusionIndex = 2;
 
@@ -389,10 +403,15 @@ private_IedConnection_handleReport(IedConnection self, MmsValue* value)
 
         MmsValue* seqNum = MmsValue_getElement(value, inclusionIndex);
 
-        if (MmsValue_getType(seqNum) == MMS_UNSIGNED) {
-            matchingReport->seqNum = (uint16_t) MmsValue_toUint32(seqNum);
-            matchingReport->hasSequenceNumber = true;
+        if ((seqNum == NULL) || (MmsValue_getType(seqNum) != MMS_UNSIGNED)) {
+            if (DEBUG_IED_CLIENT)
+                printf("IED_CLIENT: received malformed report (seqNum)\n");
+
+            goto exit_function;
         }
+
+        matchingReport->seqNum = (uint16_t) MmsValue_toUint32(seqNum);
+        matchingReport->hasSequenceNumber = true;
 
         inclusionIndex++;
     }
@@ -402,13 +421,18 @@ private_IedConnection_handleReport(IedConnection self, MmsValue* value)
 
         MmsValue* timeStampValue = MmsValue_getElement(value, inclusionIndex);
 
-        if (MmsValue_getType(timeStampValue) == MMS_BINARY_TIME) {
-            matchingReport->hasTimestamp = true;
-            matchingReport->timestamp = MmsValue_getBinaryTimeAsUtcMs(timeStampValue);
-
+        if ((timeStampValue == NULL) || (MmsValue_getType(timeStampValue) != MMS_BINARY_TIME)) {
             if (DEBUG_IED_CLIENT)
-                printf("DEBUG_IED_CLIENT: report has timestamp %" PRIu64 "\n", matchingReport->timestamp);
+                printf("IED_CLIENT: received malformed report (timeStamp)\n");
+
+            goto exit_function;
         }
+
+        matchingReport->hasTimestamp = true;
+        matchingReport->timestamp = MmsValue_getBinaryTimeAsUtcMs(timeStampValue);
+
+        if (DEBUG_IED_CLIENT)
+            printf("IED_CLIENT: report has timestamp %" PRIu64 "\n", matchingReport->timestamp);
 
         inclusionIndex++;
     }
@@ -418,6 +442,13 @@ private_IedConnection_handleReport(IedConnection self, MmsValue* value)
         matchingReport->hasDataSetName = true;
 
         MmsValue* dataSetName = MmsValue_getElement(value, inclusionIndex);
+
+        if ((dataSetName == NULL) || (MmsValue_getType(dataSetName) != MMS_VISIBLE_STRING)) {
+            if (DEBUG_IED_CLIENT)
+                printf("IED_CLIENT: received malformed report (DatSet)\n");
+
+            goto exit_function;
+        }
 
         const char* dataSetNameStr = MmsValue_toString(dataSetName);
 
@@ -440,11 +471,18 @@ private_IedConnection_handleReport(IedConnection self, MmsValue* value)
     }
 
     if (DEBUG_IED_CLIENT)
-        printf("DEBUG_IED_CLIENT: Found enabled report!\n");
+        printf("IED_CLIENT: Found enabled report!\n");
 
     /* check bufOvfl */
     if (MmsValue_getBitStringBit(optFlds, 6) == true) {
         MmsValue* bufOverflow = MmsValue_getElement(value, inclusionIndex);
+
+        if ((bufOverflow == NULL) || (MmsValue_getType(bufOverflow) != MMS_BOOLEAN)) {
+            if (DEBUG_IED_CLIENT)
+                printf("IED_CLIENT: received malformed report (BufOvfl)\n");
+
+            goto exit_function;
+        }
 
         matchingReport->hasBufOverflow = true;
         matchingReport->bufOverflow = MmsValue_getBoolean(bufOverflow);
@@ -455,6 +493,13 @@ private_IedConnection_handleReport(IedConnection self, MmsValue* value)
     /* check for entryId */
     if (MmsValue_getBitStringBit(optFlds, 7) == true) {
         MmsValue* entryId = MmsValue_getElement(value, inclusionIndex);
+
+        if ((entryId == NULL) || (MmsValue_getType(entryId) != MMS_OCTET_STRING)) {
+            if (DEBUG_IED_CLIENT)
+                printf("IED_CLIENT: received malformed report (entryID)\n");
+
+            goto exit_function;
+        }
 
         if (matchingReport->entryId != NULL) {
 
@@ -474,10 +519,15 @@ private_IedConnection_handleReport(IedConnection self, MmsValue* value)
     if (MmsValue_getBitStringBit(optFlds, 8) == true) {
         MmsValue* confRev = MmsValue_getElement(value, inclusionIndex);
 
-        if (MmsValue_getType(confRev) == MMS_UNSIGNED) {
-            matchingReport->confRev = MmsValue_toUint32(confRev);
-            matchingReport->hasConfRev = true;
+        if ((confRev == NULL) || (MmsValue_getType(confRev) != MMS_UNSIGNED)) {
+            if (DEBUG_IED_CLIENT)
+                printf("IED_CLIENT: received malformed report (confRev)\n");
+
+            goto exit_function;
         }
+
+        matchingReport->confRev = MmsValue_toUint32(confRev);
+        matchingReport->hasConfRev = true;
 
         inclusionIndex++;
     }
@@ -489,12 +539,19 @@ private_IedConnection_handleReport(IedConnection self, MmsValue* value)
 
     MmsValue* inclusion = MmsValue_getElement(value, inclusionIndex);
 
+    if ((inclusion == NULL) || (MmsValue_getType(inclusion) != MMS_BIT_STRING)) {
+        if (DEBUG_IED_CLIENT)
+            printf("IED_CLIENT: received malformed report (inclusion)\n");
+
+        goto exit_function;
+    }
+
     int dataSetSize = MmsValue_getBitStringSize(inclusion);
 
     int includedElements = MmsValue_getNumberOfSetBits(inclusion);
 
     if (DEBUG_IED_CLIENT)
-        printf("DEBUG_IED_CLIENT: Report includes %i data set elements of %i\n", includedElements,
+        printf("IED_CLIENT: Report includes %i data set elements of %i\n", includedElements,
                 dataSetSize);
 
     int valueIndex = inclusionIndex + 1;
@@ -514,16 +571,23 @@ private_IedConnection_handleReport(IedConnection self, MmsValue* value)
                 MmsValue* dataSetElement = MmsValue_getElement(matchingReport->dataReferences, elementIndex);
 
                 if (dataSetElement == NULL) {
-                    dataSetElement = MmsValue_clone(MmsValue_getElement(value, valueIndex));
 
-                    MmsValue_setElement(matchingReport->dataReferences, elementIndex, dataSetElement);
+                    MmsValue* dataRefValue = MmsValue_getElement(value, valueIndex);
+
+                    if ((dataRefValue == NULL) || (MmsValue_getType(dataRefValue) != MMS_VISIBLE_STRING)) {
+                        if (DEBUG_IED_CLIENT)
+                            printf("IED_CLIENT: report contains invalid data reference\n");
+                    }
+                    else {
+                        dataSetElement = MmsValue_clone(dataRefValue);
+
+                        MmsValue_setElement(matchingReport->dataReferences, elementIndex, dataSetElement);
+                    }
                 }
 
                 valueIndex += 1;
             }
         }
-
-        // valueIndex += includedElements;
     }
 
     int i;
@@ -556,18 +620,32 @@ private_IedConnection_handleReport(IedConnection self, MmsValue* value)
 
             MmsValue* newElementValue = MmsValue_getElement(value, valueIndex);
 
+            if (newElementValue == NULL) {
+                if (DEBUG_IED_CLIENT)
+                    printf("IED_CLIENT: report is missing expected element value\n");
+
+                goto exit_function;
+            }
+
             if (dataSetElement == NULL)
                 MmsValue_setElement(dataSetValues, i, MmsValue_clone(newElementValue));
             else
                 MmsValue_update(dataSetElement, newElementValue);
 
             if (DEBUG_IED_CLIENT)
-                printf("DEBUG_IED_CLIENT:  update element value type: %i\n", MmsValue_getType(newElementValue));
+                printf("IED_CLIENT:  update element value type: %i\n", MmsValue_getType(newElementValue));
 
             valueIndex++;
 
             if (hasReasonForInclusion) {
                 MmsValue* reasonForInclusion = MmsValue_getElement(value, reasonForInclusionIndex);
+
+                if ((reasonForInclusion == NULL) || (MmsValue_getType(reasonForInclusion) != MMS_BIT_STRING)) {
+                    if (DEBUG_IED_CLIENT)
+                        printf("IED_CLIENT: report contains invalid reason-for-inclusion\n");
+
+                    goto exit_function;
+                }
 
                 if (MmsValue_getBitStringBit(reasonForInclusion, 1) == true)
                     matchingReport->reasonForInclusion[i] = IEC61850_REASON_DATA_CHANGE;

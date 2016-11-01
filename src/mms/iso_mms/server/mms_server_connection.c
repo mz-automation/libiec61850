@@ -619,9 +619,11 @@ MmsServerConnection_getLastInvokeId(MmsServerConnection self)
     return self->lastInvokeId;
 }
 
+#if (MMS_OBTAIN_FILE_SERVICE == 1)
 uint32_t
 MmsServerConnection_getNextRequestInvokeId(MmsServerConnection self)
 {
     self->lastRequestInvokeId++;
     return self->lastRequestInvokeId;
 }
+#endif /* (MMS_OBTAIN_FILE_SERVICE == 1) */
