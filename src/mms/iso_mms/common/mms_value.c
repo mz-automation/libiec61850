@@ -372,6 +372,23 @@ MmsValue_getNumberOfSetBits(const MmsValue* self)
 
     int i;
     for (i = 0; i < byteSize; i++) {
+
+        /* deal with wrong padding */
+        if (i == (byteSize - 1)) {
+            int paddingSize = (byteSize * 8) - self->value.bitString.size;
+
+            uint8_t mask = 0;
+
+            int k;
+
+            for (k = 0; k < paddingSize; k++)
+                mask += (1 << k);
+
+            mask = ~mask;
+
+            self->value.bitString.buf[i] = (self->value.bitString.buf[i] & mask);
+        }
+
         uint8_t currentByte = self->value.bitString.buf[i];
 
         while (currentByte != 0) {
