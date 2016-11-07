@@ -1,3 +1,13 @@
+Changes to version 1.0.0
+------------------------
+- MMS client/server: implemented obtainFile service
+- client/server: implemented setFile service
+- fixed bug in MmsValue_getNumberOfSetBits
+- hardened client report handling
+- added FileSystem_writeFile function required for obtainFile service
+- added server1 example for .NET
+- fixed problems in windows .def files
+
 Changes to version 0.9.3
 ------------------------
 - .NET API: server side API
