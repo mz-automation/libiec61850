@@ -10,9 +10,9 @@ endif()
 project(libiec61850)
 ENABLE_TESTING()
 
-set(LIB_VERSION_MAJOR "0")
-set(LIB_VERSION_MINOR "9")
-set(LIB_VERSION_PATCH "3")
+set(LIB_VERSION_MAJOR "1")
+set(LIB_VERSION_MINOR "0")
+set(LIB_VERSION_PATCH "0")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/third_party/cmake/modules/")
 

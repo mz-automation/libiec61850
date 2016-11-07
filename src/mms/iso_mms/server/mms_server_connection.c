@@ -37,7 +37,8 @@
  *********************************************************************************************/
 
 void
-mmsServer_writeMmsRejectPdu(uint32_t* invokeId, int reason, ByteBuffer* response) {
+mmsMsg_createMmsRejectPdu(uint32_t* invokeId, int reason, ByteBuffer* response)
+{
 	MmsPdu_t* mmsPdu = (MmsPdu_t*) GLOBAL_CALLOC(1, sizeof(MmsPdu_t));
 
 	mmsPdu->present = MmsPdu_PR_rejectPDU;
@@ -104,7 +105,7 @@ handleConfirmedRequestPdu(
 		bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
 
 		if (bufPos < 0)  {
-			mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE, response);
+			mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE, response);
 			return;
 		}
 
@@ -150,7 +151,7 @@ handleConfirmedRequestPdu(
 #endif /* MMS_FILE_SERVICE == 1 */
 
             default:
-                mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE, response);
+                mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE, response);
                 return;
                 break;
 		    }
@@ -230,7 +231,7 @@ handleConfirmedRequestPdu(
 #endif /* (MMS_DYNAMIC_DATA_SETS == 1) */
 
             default:
-                mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE, response);
+                mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE, response);
                 return;
                 break;
             }
@@ -255,21 +256,27 @@ handleConfirmedErrorPdu(
 
     if (mmsMsg_parseConfirmedErrorPDU(buffer, bufPos, maxBufPos, &invokeId, &serviceError)) {
 
-        printf("MMS_SERVER: Handle confirmed error PDU: invokeID: %i\n", invokeId);
+        if (DEBUG_MMS_SERVER)
+            printf("MMS_SERVER: Handle confirmed error PDU: invokeID: %i\n", invokeId);
 
         /* check if message is related to an existing file upload task */
         int i;
         for (i = 0; i < CONFIG_MMS_SERVER_MAX_GET_FILE_TASKS; i++) {
 
-            if (self->server->fileUploadTasks[i].lastRequestInvokeId == invokeId) {
+            if (self->server->fileUploadTasks[i].state != MMS_FILE_UPLOAD_STATE_NOT_USED) {
 
-                self->server->fileUploadTasks[i].state = MMS_FILE_UPLOAD_STATE_SEND_OBTAIN_FILE_ERROR_SOURCE;
-                return;
+                if (self->server->fileUploadTasks[i].lastRequestInvokeId == invokeId) {
+
+                    self->server->fileUploadTasks[i].state = MMS_FILE_UPLOAD_STATE_SEND_OBTAIN_FILE_ERROR_SOURCE;
+                    return;
+                }
+
             }
         }
     }
     else {
-        printf("MMS_SERVER: error parsing confirmed error PDU\n");
+        if (DEBUG_MMS_SERVER)
+            printf("MMS_SERVER: error parsing confirmed error PDU\n");
     }
 }
 
@@ -321,7 +328,7 @@ handleConfirmedResponsePdu(
         bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
 
         if (bufPos < 0)  {
-            mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE, response);
+            mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE, response);
             return;
         }
 
@@ -420,7 +427,7 @@ handleConfirmedResponsePdu(
 #endif /* MMS_FILE_SERVICE == 1 */
 
             default:
-                mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE, response);
+                mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE, response);
                 return;
                 break;
             }
@@ -435,7 +442,7 @@ handleConfirmedResponsePdu(
                 break;
 
             default:
-                mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE, response);
+                mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE, response);
                 return;
                 break;
             }
@@ -499,7 +506,7 @@ MmsServerConnection_parseMessage(MmsServerConnection self, ByteBuffer* message, 
 		retVal = MMS_OK;
 		break;
 	default:
-		mmsServer_writeMmsRejectPdu(NULL, MMS_ERROR_REJECT_UNKNOWN_PDU_TYPE, response);
+		mmsMsg_createMmsRejectPdu(NULL, MMS_ERROR_REJECT_UNKNOWN_PDU_TYPE, response);
 		retVal = MMS_ERROR;
 		break;
 	}

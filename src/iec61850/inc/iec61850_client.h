@@ -156,7 +156,10 @@ typedef enum {
     /** The object is invalidated (returned by server) */
     IED_ERROR_OBJECT_INVALIDATED = 33,
 
-    /* unknown error */
+    /** Service not implemented */
+    IED_ERROR_SERVICE_NOT_IMPLEMENTED = 98,
+
+    /** unknown error */
     IED_ERROR_UNKNOWN = 99
 } IedClientError;
 
@@ -1885,6 +1888,20 @@ typedef bool
 uint32_t
 IedConnection_getFile(IedConnection self, IedClientError* error, const char* fileName, IedClientGetFileHandler handler,
         void* handlerParameter);
+
+/**
+ * \brief Implementation of the SetFile ACSI service
+ *
+ * Upload a file to the server. The file has to be available in the local VMD filestore.
+ *
+ * \param self the connection object
+ * \param error the error code if an error occurs
+ * \param sourceFilename the filename of the local (client side) file
+ * \param destinationFilename the filename of the remote (service side) file
+ */
+void
+IedConnection_setFile(IedConnection self, IedClientError* error, const char* sourceFilename, const char* destinationFilename);
+
 
 /**
  * \brief Implementation of the DeleteFile ACSI service

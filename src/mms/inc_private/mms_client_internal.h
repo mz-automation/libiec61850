@@ -294,12 +294,11 @@ mmsClient_handleFileReadRequest(
     ByteBuffer* response);
 
 void
-mmsClient_handleFileReadRequest(
-    MmsConnection connection,
-    uint8_t* buffer, int bufPos, int maxBufPos,
-    uint32_t invokeId,
-    ByteBuffer* response);
-
+mmsClient_handleFileCloseRequest(
+MmsConnection connection,
+uint8_t* buffer, int bufPos, int maxBufPos,
+uint32_t invokeId,
+ByteBuffer* response);
 
 
 #endif /* MMS_MSG_INTERNAL_H_ */

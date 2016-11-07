@@ -60,6 +60,10 @@ mmsMsg_createFileReadResponse(int maxPduSize, uint32_t invokeId, ByteBuffer* res
 void
 mmsMsg_createFileCloseResponse(uint32_t invokeId, ByteBuffer* response);
 
+void
+mmsMsg_createFileOpenResponse(uint32_t invokeId, ByteBuffer* response, char* fullPath, MmsFileReadStateMachine* frsm);
+
+
 #endif /* (MMS_FILE_SERVICE == 1) */
 
 typedef struct sMmsServiceError
@@ -67,6 +71,13 @@ typedef struct sMmsServiceError
     int errorClass;
     int errorCode;
 } MmsServiceError;
+
+
+void /* Confirmed service error (ServiceError) */
+mmsMsg_createServiceErrorPdu(uint32_t invokeId, ByteBuffer* response, MmsError errorType);
+
+void
+mmsMsg_createMmsRejectPdu(uint32_t* invokeId, int reason, ByteBuffer* response);
 
 int
 mmsMsg_parseConfirmedErrorPDU(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t* invokeId, MmsServiceError* serviceError);

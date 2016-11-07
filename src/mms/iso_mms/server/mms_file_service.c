@@ -23,6 +23,7 @@
 
 #include "libiec61850_platform_includes.h"
 #include "mms_server_internal.h"
+#include "mms_client_internal.h"
 
 #if (MMS_FILE_SERVICE == 1)
 
@@ -179,7 +180,7 @@ deleteFile(char* fileName) {
 }
 
 void
-mmsServer_createFileOpenResponse(uint32_t invokeId, ByteBuffer* response, char* fullPath, MmsFileReadStateMachine* frsm)
+mmsMsg_createFileOpenResponse(uint32_t invokeId, ByteBuffer* response, char* fullPath, MmsFileReadStateMachine* frsm)
 {
     uint64_t msTime;
 
@@ -225,19 +226,19 @@ parseFileName(char* filename, uint8_t* buffer, int* bufPos, int maxBufPos , uint
     int length;
 
     if (tag != 0x19) {
-      mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
+      mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
       return false;
     }
 
     *bufPos = BerDecoder_decodeLength(buffer, &length, *bufPos, maxBufPos);
 
     if (*bufPos < 0)  {
-      mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
+      mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
       return false;
     }
 
     if (length > 255) {
-      mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
+      mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
       return false;
     }
 
@@ -274,7 +275,7 @@ mmsServer_handleFileDeleteRequest(
         if (DEBUG_MMS_SERVER)
             printf("MMS_SERVER: mms_file_service.c:  File (%s) not found\n", filename);
 
-        mmsServer_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_FILE_NON_EXISTENT);
+        mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_FILE_NON_EXISTENT);
         return;
     }
 
@@ -282,7 +283,7 @@ mmsServer_handleFileDeleteRequest(
         if (DEBUG_MMS_SERVER)
             printf("MMS_SERVER: mms_file_service.c:  Delete file (%s) failed\n", filename);
 
-        mmsServer_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_FILE_ACCESS_DENIED);
+        mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_FILE_ACCESS_DENIED);
         return;
     }
 
@@ -290,7 +291,7 @@ mmsServer_handleFileDeleteRequest(
     return;
 
 exit_reject_invalid_pdu:
-    mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
+    mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
 }
 
 void
@@ -345,15 +346,15 @@ mmsServer_handleFileOpenRequest(
                 frsm->readPosition = filePosition;
                 frsm->frsmId = getNextFrsmId(connection);
 
-                mmsServer_createFileOpenResponse(invokeId, response, filename, frsm);
+                mmsMsg_createFileOpenResponse(invokeId, response, filename, frsm);
             }
             else
-                mmsServer_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_FILE_NON_EXISTENT);
+                mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_FILE_NON_EXISTENT);
 
 
         }
         else
-            mmsServer_createServiceErrorPdu(invokeId, response, MMS_ERROR_RESOURCE_OTHER);
+            mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_RESOURCE_OTHER);
     }
     else
         goto exit_invalid_parameter;
@@ -361,14 +362,28 @@ mmsServer_handleFileOpenRequest(
     return;
 
 exit_invalid_parameter:
-    mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
+    mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
     return;
 
 exit_reject_invalid_pdu:
-    mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
+    mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
 }
 
 #if (MMS_OBTAIN_FILE_SERVICE == 1)
+
+
+static void /* Confirmed service error (ServiceError) */
+createServiceErrorObtainFileError(uint32_t invokeId, ByteBuffer* response,
+        MmsError errorType, uint32_t value)
+{
+    uint8_t buffer[8];
+
+    int size = BerEncoder_encodeUInt32WithTL(0x80, value, buffer, 0);
+
+    mmsServer_createServiceErrorPduWithServiceSpecificInfo(invokeId, response, errorType,
+            buffer, size);
+}
+
 
 static void
 createObtainFileResponse(uint32_t invokeId, ByteBuffer* response)
@@ -379,6 +394,9 @@ createObtainFileResponse(uint32_t invokeId, ByteBuffer* response)
 void
 mmsServer_fileUploadTask(MmsServer self, MmsObtainFileTask task)
 {
+
+    //printf("mmsServer_fileUploadTask: state: %i\n", task->state);
+
     switch (task->state) {
 
         case MMS_FILE_UPLOAD_STATE_NOT_USED:
@@ -468,21 +486,41 @@ mmsServer_fileUploadTask(MmsServer self, MmsObtainFileTask task)
 
         case MMS_FILE_UPLOAD_STATE_SEND_OBTAIN_FILE_ERROR_SOURCE:
 
-                // TODO send ObtainFileError
+            {
+                /* send ObtainFileError */
 
-                printf("MMS_SERVER: ObtainFile service: failed to open file from client\n");
+                ByteBuffer* response = MmsServer_reserveTransmitBuffer(self);
+
+                createServiceErrorObtainFileError(task->obtainFileRequestInvokeId, response, MMS_ERROR_FILE_FILE_NON_EXISTENT, 0);
+
+                IsoConnection_sendMessage(task->connection->isoConnection, response, false);
+
+                MmsServer_releaseTransmitBuffer(self);
+
+                if (DEBUG_MMS_SERVER)
+                    printf("MMS_SERVER: ObtainFile service: failed to open file from client\n");
 
                 task->state = MMS_FILE_UPLOAD_STATE_NOT_USED;
-
+            }
             break;
 
         case MMS_FILE_UPLOAD_STATE_SEND_OBTAIN_FILE_ERROR_DESTINATION:
+            {
+                /* send ObtainFileError */
 
-            //TODO send ObtainFileError
-            printf("MMS_SERVER: ObtainFile service: failed to create local file\n");
+                ByteBuffer* response = MmsServer_reserveTransmitBuffer(self);
 
+                createServiceErrorObtainFileError(task->obtainFileRequestInvokeId, response, MMS_ERROR_FILE_OTHER, 1);
 
-            task->state = MMS_FILE_UPLOAD_STATE_NOT_USED;
+                IsoConnection_sendMessage(task->connection->isoConnection, response, false);
+
+                MmsServer_releaseTransmitBuffer(self);
+
+                if (DEBUG_MMS_SERVER)
+                    printf("MMS_SERVER: ObtainFile service: failed to create local file\n");
+
+                task->state = MMS_FILE_UPLOAD_STATE_NOT_USED;
+            }
 
             break;
 
@@ -559,7 +597,15 @@ mmsServer_handleObtainFileRequest(
             if (connection->server->obtainFileHandler(connection->server->obtainFileHandlerParameter, connection, sourceFilename, destinationFilename) == false)
                 goto exit_access_denied;
 
-        //TODO check if destination file already exists. If exists return error message
+        /*  check if destination file already exists. If exists return error message */
+        char extendedFileName[sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 256];
+        createExtendedFilename(extendedFileName, destinationFilename);
+
+        if (FileSystem_getFileInfo(extendedFileName, NULL, NULL)) {
+            if (DEBUG_MMS_SERVER)
+                printf("MMS_SERVER: obtainFile - file already exists on server\n");
+            goto exit_file_already_exists;
+        }
 
         if (DEBUG_MMS_SERVER)
             printf("MMS_SERVER: Start download file %s from client to local file %s...\n", sourceFilename, destinationFilename);
@@ -604,19 +650,23 @@ mmsServer_handleObtainFileRequest(
     return;
 
 exit_invalid_parameter:
-    mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
+    mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
     return;
 
 exit_access_denied:
-    mmsServer_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_ACCESS_DENIED);
+    createServiceErrorObtainFileError(invokeId, response, MMS_ERROR_FILE_FILE_ACCESS_DENIED, 1);
+    return;
+
+exit_file_already_exists:
+    createServiceErrorObtainFileError(invokeId, response, MMS_ERROR_FILE_DUPLICATE_FILENAME, 1);
     return;
 
 exit_unavailable:
-    mmsServer_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_TEMPORARILY_UNAVAILABLE);
+    mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_TEMPORARILY_UNAVAILABLE);
     return;
 
 exit_reject_invalid_pdu:
-    mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
+    mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
 }
 
 #endif /* (MMS_OBTAIN_FILE_SERVICE == 1) */
@@ -694,7 +744,7 @@ mmsServer_handleFileReadRequest(
     if (frsm != NULL)
         mmsMsg_createFileReadResponse(connection->maxPduSize, invokeId, response, frsm);
     else
-        mmsServer_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_OTHER);
+        mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_OTHER);
 }
 
 void
@@ -846,7 +896,7 @@ createFileDirectoryResponse(uint32_t invokeId, ByteBuffer* response, int maxPduS
        if (DEBUG_MMS_SERVER)
             printf("MMS_SERVER: Error opening directory!\n");
 
-       mmsServer_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_FILE_NON_EXISTENT);
+       mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_FILE_NON_EXISTENT);
 
        return;
     }
@@ -909,7 +959,7 @@ mmsServer_handleFileRenameRequest(
         bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
 
         if (bufPos < 0)  {
-            mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
+            mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
             return;
         }
 
@@ -950,11 +1000,11 @@ mmsServer_handleFileRenameRequest(
             if (DEBUG_MMS_SERVER)
                 printf("MMS_SERVER: rename file failed!\n");
 
-            mmsServer_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_OTHER);
+            mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_OTHER);
         }
     }
     else
-        mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
+        mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
 
 }
 
@@ -981,7 +1031,7 @@ mmsServer_handleFileDirectoryRequest(
         bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
 
         if (bufPos < 0)  {
-            mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
+            mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
             return;
         }
 
@@ -1007,7 +1057,7 @@ mmsServer_handleFileDirectoryRequest(
         default: /* unrecognized parameter */
             if (DEBUG_MMS_SERVER)
                 printf("MMS_SERVER: handleFileDirectoryRequest: unrecognized parameter\n");
-            mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
+            mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
             return;
         }
 

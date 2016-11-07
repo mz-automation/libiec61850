@@ -103,7 +103,7 @@ mmsServer_handleWriteRequest(
 	rval = ber_decode(NULL, &asn_DEF_MmsPdu, (void**) &mmsPdu, buffer, CONFIG_MMS_MAXIMUM_PDU_SIZE);
 
 	if (rval.code != RC_OK) {
-	    mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
+	    mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
 	    return;
 	}
 
@@ -112,17 +112,17 @@ mmsServer_handleWriteRequest(
 	int numberOfWriteItems = writeRequest->variableAccessSpecification.choice.listOfVariable.list.count;
 
 	if (numberOfWriteItems < 1) {
-        mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
+        mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
         return;
 	}
 
 	if (numberOfWriteItems > CONFIG_MMS_WRITE_SERVICE_MAX_NUMBER_OF_WRITE_ITEMS) {
-	    mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_OTHER, response);
+	    mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_OTHER, response);
 	    return;
 	}
 
     if (writeRequest->listOfData.list.count != numberOfWriteItems) {
-        mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
+        mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
         return;
     }
 

@@ -104,6 +104,7 @@ MmsServer_releaseTransmitBuffer(MmsServer self)
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_post(self->transmitBufferMutex);
 #endif
+    self->transmitBuffer->size = 0;
 }
 
 #if (MMS_OBTAIN_FILE_SERVICE == 1)
@@ -168,6 +169,21 @@ MmsServer_setClientAuthenticator(MmsServer self, AcseAuthenticator authenticator
     IsoServer_setAuthenticator(self->isoServer, authenticator, authenticatorParameter);
 }
 
+#if (MMS_OBTAIN_FILE_SERVICE == 1)
+void
+MmsServer_installObtainFileHandler(MmsServer self, MmsObtainFileHandler handler, void* parameter)
+{
+    self->obtainFileHandler = handler;
+    self->obtainFileHandlerParameter = parameter;
+}
+
+void
+MmsServer_installGetFileCompleteHandler(MmsServer self, MmsGetFileCompleteHandler handler, void* parameter)
+{
+    self->getFileCompleteHandler = handler;
+    self->getFileCompleteHandlerParameter = parameter;
+}
+#endif /* (MMS_OBTAIN_FILE_SERVICE == 1) */
 
 static void
 closeConnection(void* con)

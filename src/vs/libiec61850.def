@@ -633,3 +633,5 @@ EXPORTS
 	MmsServer_installGetFileCompleteHandler
     MmsServer_handleBackgroundTasks
     FileSystem_writeFile
+    MmsConnection_obtainFile
+    IedConnection_setFile

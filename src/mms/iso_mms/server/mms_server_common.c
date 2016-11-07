@@ -100,9 +100,34 @@ mapErrorTypeToErrorClass(MmsError errorType, uint8_t* tag, uint8_t* value)
         *value = 0;
         break;
 
+    case MMS_ERROR_FILE_FILENAME_AMBIGUOUS:
+        *tag = 0x8b; /* file */
+        *value = 1;
+        break;
+
+    case MMS_ERROR_FILE_POSITION_INVALID:
+        *tag = 0x8b; /* file */
+        *value = 5;
+        break;
+
+    case MMS_ERROR_FILE_FILE_ACCESS_DENIED:
+        *tag = 0x8b; /* file */
+        *value = 6;
+        break;
+
     case MMS_ERROR_FILE_FILE_NON_EXISTENT:
         *tag = 0x8b; /* file */
         *value = 7;
+        break;
+
+    case MMS_ERROR_FILE_DUPLICATE_FILENAME:
+        *tag = 0x8b; /* file */
+        *value = 8;
+        break;
+
+    case MMS_ERROR_FILE_INSUFFICIENT_SPACE_IN_FILESTORE:
+        *tag = 0x8b; /* file */
+        *value = 9;
         break;
 
     case MMS_ERROR_RESOURCE_OTHER:
@@ -178,7 +203,7 @@ mmsServer_createServiceErrorPduWithServiceSpecificInfo(uint32_t invokeId, ByteBu
 }
 
 void /* Confirmed service error (ServiceError) */
-mmsServer_createServiceErrorPdu(uint32_t invokeId, ByteBuffer* response, MmsError errorType)
+mmsMsg_createServiceErrorPdu(uint32_t invokeId, ByteBuffer* response, MmsError errorType)
 {
     mmsServer_createServiceErrorPduWithServiceSpecificInfo(invokeId, response, errorType, NULL, 0);
 }

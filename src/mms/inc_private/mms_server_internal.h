@@ -184,6 +184,9 @@ struct sMmsServerConnection {
 #if (MMS_OBTAIN_FILE_SERVICE == 1)
 MmsObtainFileTask
 MmsServer_getObtainFileTask(MmsServer self);
+
+void
+mmsServer_fileUploadTask(MmsServer self, MmsObtainFileTask task);
 #endif
 
 ByteBuffer*
@@ -222,7 +225,7 @@ MmsPdu_t*
 mmsServer_createConfirmedResponse(uint32_t invokeId);
 
 void
-mmsServer_createServiceErrorPdu(uint32_t invokeId, ByteBuffer* response, MmsError errorType);
+mmsMsg_createServiceErrorPdu(uint32_t invokeId, ByteBuffer* response, MmsError errorType);
 
 void
 mmsServer_createServiceErrorPduWithServiceSpecificInfo(uint32_t invokeId, ByteBuffer* response,
@@ -363,7 +366,7 @@ mmsServer_createMmsWriteResponse(MmsServerConnection connection,
         int invokeId, ByteBuffer* response, int numberOfItems, MmsDataAccessError* accessResults);
 
 void
-mmsServer_writeMmsRejectPdu(uint32_t* invokeId, int reason, ByteBuffer* response);
+mmsMsg_createMmsRejectPdu(uint32_t* invokeId, int reason, ByteBuffer* response);
 
 MmsError
 mmsServer_callVariableListChangedHandler(bool create, MmsVariableListType listType, MmsDomain* domain,

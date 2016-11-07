@@ -84,6 +84,12 @@ iedConnection_mapMmsErrorToIedError(MmsError mmsError)
     case MMS_ERROR_FILE_FILE_NON_EXISTENT:
         return IED_ERROR_OBJECT_DOES_NOT_EXIST;
 
+    case MMS_ERROR_FILE_DUPLICATE_FILENAME:
+        return IED_ERROR_OBJECT_EXISTS;
+
+    case MMS_ERROR_FILE_FILE_ACCESS_DENIED:
+        return IED_ERROR_ACCESS_DENIED;
+
     case MMS_ERROR_CONNECTION_REJECTED:
         return IED_ERROR_CONNECTION_REJECTED;
 
@@ -1170,6 +1176,24 @@ IedConnection_getFile(IedConnection self, IedClientError* error, const char* fil
     *error = iedConnection_mapMmsErrorToIedError(mmsError);
 
     return clientFileReadHandler.byteReceived;
+}
+
+void
+IedConnection_setFile(IedConnection self, IedClientError* error, const char* sourceFilename, const char* destinationFilename)
+{
+#if (MMS_OBTAIN_FILE_SERVICE == 1)
+    *error = IED_ERROR_OK;
+
+    MmsError mmsError;
+
+    MmsConnection_obtainFile(self->connection, &mmsError, sourceFilename, destinationFilename);
+
+    if (mmsError != MMS_ERROR_NONE) {
+        *error = iedConnection_mapMmsErrorToIedError(mmsError);
+    }
+#else
+    *error = IED_ERROR_SERVICE_NOT_IMPLEMENTED;
+#endif /* (MMS_OBTAIN_FILE_SERVICE == 1) */
 }
 
 void

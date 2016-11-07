@@ -450,8 +450,32 @@ convertServiceErrorToMmsError(MmsServiceError serviceError)
 
     case 11: /* class: file */
         switch (serviceError.errorCode) {
+        case 1:
+            mmsError = MMS_ERROR_FILE_FILENAME_AMBIGUOUS;
+            break;
+        case 2:
+            mmsError = MMS_ERROR_FILE_FILE_BUSY;
+            break;
+        case 3:
+            mmsError = MMS_ERROR_FILE_FILENAME_SYNTAX_ERROR;
+            break;
+        case 4:
+            mmsError = MMS_ERROR_FILE_CONTENT_TYPE_INVALID;
+            break;
+        case 5:
+            mmsError = MMS_ERROR_FILE_POSITION_INVALID;
+            break;
+        case 6:
+            mmsError = MMS_ERROR_FILE_FILE_ACCESS_DENIED;
+            break;
         case 7:
             mmsError = MMS_ERROR_FILE_FILE_NON_EXISTENT;
+            break;
+        case 8:
+            mmsError = MMS_ERROR_FILE_DUPLICATE_FILENAME;
+            break;
+        case 9:
+            mmsError = MMS_ERROR_FILE_INSUFFICIENT_SPACE_IN_FILESTORE;
             break;
         default:
             mmsError = MMS_ERROR_FILE_OTHER;
@@ -739,7 +763,6 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
         if (DEBUG_MMS_CLIENT)
             printf("MMS_CLIENT: received confirmed request PDU (size=%i)\n", payload->size);
 
-        // TODO handle confirmed request PDU only when obtainFile service is enabled
         // TODO extract function
 
         int bufPos = 1;
@@ -750,20 +773,19 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
 
         while (bufPos < payload->size) {
 
-            uint8_t tag = buf[bufPos++];
-
+            uint8_t nestedTag = buf[bufPos++];
 
             bool extendedTag = false;
 
-            if ((tag & 0x1f) == 0x1f) {
+            if ((nestedTag & 0x1f) == 0x1f) {
                 extendedTag = true;
-                tag = buf[bufPos++];
+                nestedTag = buf[bufPos++];
             }
 
             bufPos = BerDecoder_decodeLength(buf, &length, bufPos, payload->size);
 
             if (extendedTag) {
-                switch(tag) {
+                switch(nestedTag) {
 
 #if (MMS_FILE_SERVICE == 1)
                 case 0x48: /* file-open-request */
@@ -823,7 +845,7 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
                 }
             }
             else {
-                switch(tag) {
+                switch(nestedTag) {
                 case 0x02: /* invoke Id */
                     invokeId = BerDecoder_decodeUint32(buf, length, bufPos);
                     if (DEBUG_MMS_CLIENT)
@@ -2089,7 +2111,7 @@ MmsConnection_obtainFile(MmsConnection self, MmsError* mmsError, const char* sou
 
     mmsClient_createObtainFileRequest(invokeId, payload, sourceFile, destinationFile);
 
-    ByteBuffer* responseMessage = sendRequestAndWaitForResponse(self, invokeId, payload);
+    sendRequestAndWaitForResponse(self, invokeId, payload);
 
     if (self->lastResponseError != MMS_ERROR_NONE)
         *mmsError = self->lastResponseError;

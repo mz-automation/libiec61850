@@ -46,6 +46,8 @@
 #define MMS_SERVICE_DEFINE_NAMED_TYPE 0x02
 #define MMS_SERVICE_GET_NAMED_TYPE_ATTRIBUTES 0x01
 
+#define MMS_SERVICE_OBTAIN_FILE 0x02
+
 #define MMS_SERVICE_READ_JOURNAL 0x40
 
 #define MMS_SERVICE_FILE_OPEN 0x80
@@ -84,7 +86,11 @@ static uint8_t servicesSupported[] =
         0x00,
         0x00,
         0x00,
-        0x00,
+        0x00
+#if (MMS_OBTAIN_FILE_SERVICE == 1)
+        | MMS_SERVICE_OBTAIN_FILE
+#endif
+        ,
         0x00,
         0x00,
         0x00

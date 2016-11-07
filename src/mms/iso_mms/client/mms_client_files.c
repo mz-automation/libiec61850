@@ -107,19 +107,19 @@ parseFileName(char* filename, uint8_t* buffer, int* bufPos, int maxBufPos , uint
     int length;
 
     if (tag != 0x19) {
-      mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
+      mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
       return false;
     }
 
     *bufPos = BerDecoder_decodeLength(buffer, &length, *bufPos, maxBufPos);
 
     if (*bufPos < 0)  {
-      mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
+      mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
       return false;
     }
 
     if (length > 255) {
-      mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
+      mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
       return false;
     }
 
@@ -182,14 +182,14 @@ mmsClient_handleFileOpenRequest(
                 frsm->readPosition = filePosition;
                 frsm->frsmId = getNextFrsmId(connection);
 
-                mmsServer_createFileOpenResponse(invokeId, response, filename, frsm);
+                mmsMsg_createFileOpenResponse(invokeId, response, filename, frsm);
             }
             else
-                mmsServer_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_FILE_NON_EXISTENT);
+                mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_FILE_NON_EXISTENT);
 
         }
         else
-            mmsServer_createServiceErrorPdu(invokeId, response, MMS_ERROR_RESOURCE_OTHER);
+            mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_RESOURCE_OTHER);
     }
     else
         goto exit_invalid_parameter;
@@ -197,11 +197,11 @@ mmsClient_handleFileOpenRequest(
     return;
 
 exit_invalid_parameter:
-    mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
+    mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
     return;
 
 exit_reject_invalid_pdu:
-    mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
+    mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
 }
 
 
@@ -222,7 +222,7 @@ mmsClient_handleFileReadRequest(
     if (frsm != NULL)
         mmsMsg_createFileReadResponse(connection->parameters.maxPduSize, invokeId, response, frsm);
     else
-        mmsServer_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_OTHER);
+        mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_OTHER);
 }
 
 void
