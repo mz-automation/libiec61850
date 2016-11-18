@@ -1,7 +1,7 @@
 /*
  *  IEC61850ClientAPI.cs
  *
- *  Copyright 2014 Michael Zillgith
+ *  Copyright 2014-2016 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -265,6 +265,10 @@ namespace IEC61850
         
 			[DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
 			static extern void MmsValue_delete (IntPtr self);
+
+
+			[DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
+			static extern int MmsValue_getDataAccessError(IntPtr self);
 
 			/****************
             * IedConnection
@@ -838,7 +842,7 @@ namespace IEC61850
 				if (error != 0)
 					throw new IedConnectionException ("Reading value failed", error);
 
-				if (mmsValue.ToInt32 () == 0)
+				if (mmsValue == IntPtr.Zero)
 					throw new IedConnectionException ("Variable not found on server", error);
 
 				return mmsValue;
@@ -856,6 +860,22 @@ namespace IEC61850
 				return new MmsValue (value, true);
 			}
 
+			private IntPtr readObjectInternalAndCheckDataAccessError(string objectReference, FunctionalConstraint fc)
+			{
+				IntPtr mmsValue = readObjectInternal (objectReference, fc);
+
+				if (MmsValue_getType(mmsValue) == (int) MmsType.MMS_DATA_ACCESS_ERROR) {
+
+					int dataAccessError = MmsValue_getDataAccessError (mmsValue);
+
+					MmsValue_delete (mmsValue);
+
+					throw new IedConnectionException ("Data access error", dataAccessError);
+				}
+
+				return mmsValue;
+			}
+
 			/// <summary>Read the value of a basic data attribute (BDA) of type boolean.</summary>
 			/// <param name="objectReference">The object reference of a BDA.</param>
 			/// <param name="fc">The functional constraint (FC) of the object</param>
@@ -863,12 +883,18 @@ namespace IEC61850
 			/// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
 			public bool ReadBooleanValue (string objectReference, FunctionalConstraint fc)
 			{
-				var mmsValue = ReadValue (objectReference, fc);
+				IntPtr mmsValue = readObjectInternalAndCheckDataAccessError (objectReference, fc);
 
-				if (mmsValue.GetType () == MmsType.MMS_BOOLEAN)
-					return mmsValue.GetBoolean ();
-				else
+				if (MmsValue_getType (mmsValue) != (int) MmsType.MMS_BOOLEAN) {
+					MmsValue_delete (mmsValue);
 					throw new IedConnectionException ("Result is not of type boolean (MMS_BOOLEAN)", 0);
+				}
+
+				bool value = MmsValue_getBoolean (mmsValue);
+
+				MmsValue_delete (mmsValue);
+
+				return value;
 			}
 
 			/// <summary>Read the value of a basic data attribute (BDA) of type float.</summary>
@@ -877,10 +903,12 @@ namespace IEC61850
 			/// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
 			public float ReadFloatValue (string objectReference, FunctionalConstraint fc)
 			{
-				IntPtr mmsValue = readObjectInternal (objectReference, fc);
+				IntPtr mmsValue = readObjectInternalAndCheckDataAccessError (objectReference, fc);
 
-				if (MmsValue_getType (mmsValue) != (int)MmsType.MMS_FLOAT)
-					throw new IedConnectionException ("Result is not of type float", 0);
+				if (MmsValue_getType (mmsValue) != (int)MmsType.MMS_FLOAT) {
+					MmsValue_delete (mmsValue);
+					throw new IedConnectionException ("Result is not of type float (MMS_FLOAT)", 0);
+				}
 
 				float value = MmsValue_toFloat (mmsValue);
 
@@ -895,7 +923,7 @@ namespace IEC61850
 			/// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
 			public string ReadStringValue (string objectReference, FunctionalConstraint fc)
 			{
-				IntPtr mmsValue = readObjectInternal (objectReference, fc);
+				IntPtr mmsValue = readObjectInternalAndCheckDataAccessError (objectReference, fc);
 
 				if (!((MmsValue_getType (mmsValue) == (int)MmsType.MMS_VISIBLE_STRING) || (MmsValue_getType (mmsValue) == (int)MmsType.MMS_STRING))) {
 					MmsValue_delete (mmsValue);
@@ -917,7 +945,7 @@ namespace IEC61850
 			/// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
 			public Quality ReadQualityValue (string objectReference, FunctionalConstraint fc)
 			{
-				IntPtr mmsValue = readObjectInternal (objectReference, fc);
+				IntPtr mmsValue = readObjectInternalAndCheckDataAccessError (objectReference, fc);
 
 				if (MmsValue_getType (mmsValue) == (int)MmsType.MMS_BIT_STRING) {
 					int bitStringValue = (int)MmsValue_getBitStringAsInteger (mmsValue);
@@ -936,7 +964,7 @@ namespace IEC61850
 			/// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
 			public int ReadBitStringValue (string objectReference, FunctionalConstraint fc)
 			{
-				IntPtr mmsValue = readObjectInternal (objectReference, fc);
+				IntPtr mmsValue = readObjectInternalAndCheckDataAccessError (objectReference, fc);
 
 				if (MmsValue_getType (mmsValue) == (int)MmsType.MMS_BIT_STRING) {
 					int bitStringValue = (int)MmsValue_getBitStringAsInteger (mmsValue);
@@ -955,11 +983,11 @@ namespace IEC61850
 			/// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
 			public UInt64 ReadTimestampValue (string objectReference, FunctionalConstraint fc)
 			{
-				var mmsValuePtr = readObjectInternal (objectReference, fc);
+				var mmsValuePtr = readObjectInternalAndCheckDataAccessError (objectReference, fc);
 
 				var mmsValue = new MmsValue (mmsValuePtr, true);
 
-				if (mmsValue.GetType () == MmsType.MMS_UTC_TIME)
+				if (mmsValue.GetType () == MmsType.MMS_UTC_TIME) 
 					return mmsValue.GetUtcTimeInMs ();
 				else
 					throw new IedConnectionException ("Result is not of type timestamp (MMS_UTC_TIME)", 0);
@@ -973,7 +1001,7 @@ namespace IEC61850
 			/// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
 			public Int64 ReadIntegerValue (string objectReference, FunctionalConstraint fc)
 			{
-				var mmsValuePtr = readObjectInternal (objectReference, fc);
+				var mmsValuePtr = readObjectInternalAndCheckDataAccessError (objectReference, fc);
 
 				var mmsValue = new MmsValue (mmsValuePtr, true);
 

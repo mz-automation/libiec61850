@@ -166,6 +166,30 @@ namespace tests
 		}
 
 		[Test ()]
+		public void ReadNonExistingObject()
+		{	
+			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../model.cfg");
+
+			IedServer iedServer = new IedServer (iedModel);
+
+			iedServer.Start (10002);
+
+			IedConnection connection = new IedConnection ();
+
+			connection.Connect ("localhost", 10002);
+
+			MmsValue value = connection.ReadValue ("simpleIOGenericIO/GGIO1.SPCSO1.stVal", FunctionalConstraint.MX);
+
+			Assert.IsNotNull (value);
+
+			Assert.AreEqual (MmsType.MMS_DATA_ACCESS_ERROR, value.GetType ());
+
+			iedServer.Stop ();
+
+			iedServer.Destroy ();
+		}
+
+		[Test ()]
 		public void AccessDataModelServerSide()
 		{
 			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../model.cfg");

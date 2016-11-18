@@ -174,8 +174,7 @@ namespace IEC61850
 				valueReference = value;
 				this.responsableForDeletion = false;
 			}
-
-			// TODO make internal
+				
 			internal MmsValue (IntPtr value, bool responsableForDeletion)
 			{
 				valueReference = value;
