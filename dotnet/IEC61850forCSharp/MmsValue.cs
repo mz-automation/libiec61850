@@ -164,6 +164,9 @@ namespace IEC61850
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern ulong MmsValue_getBinaryTimeAsUtcMs (IntPtr self);
 
+			[DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
+			static extern int MmsValue_getDataAccessError(IntPtr self);
+
 			internal IntPtr valueReference; /* reference to native MmsValue instance */
 
 			private bool responsableForDeletion; /* if .NET wrapper is responsable for the deletion of the native MmsValue instance */
@@ -422,6 +425,14 @@ namespace IEC61850
 						throw new MmsValueException ("Index out of bounds");
 				} else
 					throw new MmsValueException ("Value is of wrong type");
+			}
+
+
+			public MmsDataAccessError GetDataAccessError ()
+			{
+				int errorCode = MmsValue_getDataAccessError (valueReference);
+
+				return (MmsDataAccessError)errorCode;
 			}
 
             /// <summary>

@@ -1242,7 +1242,7 @@ IedServer_setWriteAccessPolicy(IedServer self, FunctionalConstraint fc, AccessPo
             self->writeAccessPolicies &= ~ALLOW_WRITE_ACCESS_SV;
             break;
         case IEC61850_FC_SE:
-            self->writeAccessPolicies &= ALLOW_WRITE_ACCESS_SE;
+            self->writeAccessPolicies &= ~ALLOW_WRITE_ACCESS_SE;
             break;
         default: /* ignore - request is invalid */
             break;

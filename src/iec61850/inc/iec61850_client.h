@@ -30,7 +30,6 @@ extern "C" {
 
 #include "libiec61850_common_api.h"
 #include "iec61850_common.h"
-#include "goose_subscriber.h"
 #include "mms_value.h"
 #include "mms_client_connection.h"
 #include "linked_list.h"

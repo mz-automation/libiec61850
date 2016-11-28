@@ -266,7 +266,6 @@ namespace IEC61850
 			[DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
 			static extern void MmsValue_delete (IntPtr self);
 
-
 			[DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
 			static extern int MmsValue_getDataAccessError(IntPtr self);
 

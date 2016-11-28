@@ -44,9 +44,8 @@ typedef struct {
         FileHandle fileHandle;
 } MmsFileReadStateMachine;
 
-//TODO already defined in public API mms_connection.h
-typedef void
-(*MmsFileReadHandler) (void* parameter, int32_t frsmId, uint8_t* buffer, uint32_t bytesReceived);
+/* include for MmsFileReadHandler definition */
+#include "mms_client_connection.h"
 
 bool
 mmsMsg_parseFileOpenResponse(uint8_t* buffer, int bufPos, int maxBufPos, int32_t* frsmId, uint32_t* fileSize, uint64_t* lastModified);

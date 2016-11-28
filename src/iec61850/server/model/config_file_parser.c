@@ -242,8 +242,7 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
                         if (matchedItems < 1) goto exit_error;
 
                         /* remove trailing ')' character */
-                        int nameLen = strlen(nameString);
-                        nameString[nameLen - 1] = 0;
+                        strtok(nameString, ")");
 
                         Log_create(nameString, currentLN);
                     }

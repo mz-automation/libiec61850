@@ -257,14 +257,14 @@ namespace tests
 
 			iedServer.HandleWriteAccess (opDlTmms, delegate(IEC61850.Server.DataAttribute dataAttr, MmsValue value, ClientConnection con, object parameter) {
 				opDlTmmsValue = value.ToInt32();
-				return MmsDataAccessError.DATA_ACCESS_ERROR_SUCCESS;
+				return MmsDataAccessError.SUCCESS;
 			}, null);
 
 			iedServer.HandleWriteAccess (rsDlTmms, delegate(IEC61850.Server.DataAttribute dataAttr, MmsValue value, ClientConnection con, object parameter) {
 				if (value.ToInt32() > 1000)
-					return MmsDataAccessError.DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+					return MmsDataAccessError.OBJECT_VALUE_INVALID;
 				else
-					return MmsDataAccessError.DATA_ACCESS_ERROR_SUCCESS;
+					return MmsDataAccessError.SUCCESS;
 			}, null);
 
 			iedServer.Start (10002);
@@ -310,7 +310,7 @@ namespace tests
 			IedServer iedServer = new IedServer (iedModel);
 
 			iedServer.HandleWriteAccess (opDlTmms, delegate(IEC61850.Server.DataAttribute dataAttr, MmsValue value, ClientConnection con, object parameter) {
-				return MmsDataAccessError.DATA_ACCESS_ERROR_SUCCESS;
+				return MmsDataAccessError.SUCCESS;
 			}, null);
 				
 

@@ -1,3 +1,8 @@
+Changes to version 1.0.1
+------------------------
+- .NET API: fixed bug in client readValue functions
+- .NET API: added MmsValue.GetDataAccessError() method
+
 Changes to version 1.0.0
 ------------------------
 - MMS client/server: implemented obtainFile service
