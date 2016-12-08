@@ -1,7 +1,7 @@
 /*
  * static_model.c
  *
- * automatically generated from beagle_demo.icd
+ * automatically generated from beagle_demo.iid
  */
 #include "static_model.h"
 
@@ -7583,7 +7583,7 @@ ReportControlBlock iedModel_GenericIO_LLN0_report4 = {&iedModel_GenericIO_LLN0, 
 
 
 IedModel iedModel = {
-    "Template",
+    "beagle",
     &iedModel_GenericIO,
     &iedModelds_GenericIO_LLN0_Events,
     &iedModel_GenericIO_LLN0_report0,

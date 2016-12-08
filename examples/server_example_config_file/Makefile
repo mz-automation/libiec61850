@@ -13,7 +13,7 @@ all:	$(PROJECT_BINARY_NAME)
 include $(LIBIEC_HOME)/make/common_targets.mk
 
 model:	$(PROJECT_ICD_FILE)
-	java -jar $(LIBIEC_HOME)/tools/model_generator/genconfig.jar $(PROJECT_ICD_FILE) > vmd-filestore/model.cfg 
+	java -jar $(LIBIEC_HOME)/tools/model_generator/genconfig.jar $(PROJECT_ICD_FILE) model.cfg 
 
 $(PROJECT_BINARY_NAME):	$(PROJECT_SOURCES) $(LIB_NAME)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $(PROJECT_BINARY_NAME) $(PROJECT_SOURCES) $(INCLUDES) $(LIB_NAME) $(LDLIBS)

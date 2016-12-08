@@ -1,7 +1,7 @@
 /*
  * static_model.h
  *
- * automatically generated from beagle_demo.icd
+ * automatically generated from beagle_demo.iid
  */
 
 #ifndef STATIC_MODEL_H_
