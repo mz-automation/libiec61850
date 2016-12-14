@@ -1187,6 +1187,19 @@ int32_t
 IedConnection_readInt32Value(IedConnection self, IedClientError* error, const char* objectReference, FunctionalConstraint fc);
 
 /**
+ * \brief read a functional constrained data attribute (FCDA) of type Integer or Unsigned and return the result as int64_t
+ *
+ * \param self  the connection object to operate on
+ * \param error the error code if an error occurs
+ * \param object reference of the data attribute to read
+ * \param fc the functional constraint of the data attribute to read
+ *
+ * \return an int64_t value of the read data attributes
+ */
+int64_t
+IedConnection_readInt64Value(IedConnection self, IedClientError* error, const char* objectReference, FunctionalConstraint fc);
+
+/**
  * \brief read a functional constrained data attribute (FCDA) of type Integer or Unsigned and return the result as uint32_t
  *
  * \param self  the connection object to operate on

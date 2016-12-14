@@ -635,3 +635,4 @@ EXPORTS
     FileSystem_writeFile
     MmsConnection_obtainFile
     IedConnection_setFile
+    IedConnection_readInt64Value

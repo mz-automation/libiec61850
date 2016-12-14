@@ -762,7 +762,7 @@ IedConnection_readInt32Value(IedConnection self, IedClientError* error, const ch
 {
     MmsValue* value = IedConnection_readObject(self, error, objectReference, fc);
 
-    int32_t retVal = 0.f;
+    int32_t retVal = 0;
 
     if (value != NULL) {
         if ((MmsValue_getType(value) == MMS_INTEGER) || (MmsValue_getType(value) == MMS_UNSIGNED))
@@ -790,6 +790,29 @@ IedConnection_readUnsigned32Value(IedConnection self, IedClientError* error, con
     if (value != NULL) {
         if ((MmsValue_getType(value) == MMS_INTEGER) || (MmsValue_getType(value) == MMS_UNSIGNED))
             retVal = MmsValue_toUint32(value);
+        else {
+            if (MmsValue_getType(value) == MMS_DATA_ACCESS_ERROR)
+                *error = iedConnection_mapDataAccessErrorToIedError(MmsValue_getDataAccessError(value));
+            else
+                *error = IED_ERROR_UNEXPECTED_VALUE_RECEIVED;
+        }
+
+        MmsValue_delete(value);
+    }
+
+    return retVal;
+}
+
+int64_t
+IedConnection_readInt64Value(IedConnection self, IedClientError* error, const char* objectReference, FunctionalConstraint fc)
+{
+    MmsValue* value = IedConnection_readObject(self, error, objectReference, fc);
+
+    int64_t retVal = 0;
+
+    if (value != NULL) {
+        if ((MmsValue_getType(value) == MMS_INTEGER) || (MmsValue_getType(value) == MMS_UNSIGNED))
+            retVal = MmsValue_toInt64(value);
         else {
             if (MmsValue_getType(value) == MMS_DATA_ACCESS_ERROR)
                 *error = iedConnection_mapDataAccessErrorToIedError(MmsValue_getDataAccessError(value));
