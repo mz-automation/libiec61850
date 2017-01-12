@@ -193,7 +193,7 @@ ControlObjectClient_create(const char* objectReference, IedConnection connection
     if (self == NULL)
         goto exit_function;
 
-    self->objectReference = copyString(objectReference);
+    self->objectReference = StringUtils_copyString(objectReference);
     self->connection = connection;
     self->ctlModel = (ControlModel) ctlModel;
     self->hasTimeActivatedMode = hasTimeActivatedControl;
@@ -335,7 +335,7 @@ ControlObjectClient_create(const char* objectReference, IedConnection connection
     if (self == NULL)
         goto exit_function;
 
-    self->objectReference = copyString(objectReference);
+    self->objectReference = StringUtils_copyString(objectReference);
     self->connection = connection;
     self->ctlModel = (ControlModel) ctlModelVal;
     self->hasTimeActivatedMode = hasTimeActivatedControl;
@@ -423,7 +423,7 @@ ControlObjectClient_setOrigin(ControlObjectClient self, const char* orIdent, int
         GLOBAL_FREEMEM(self->orIdent);
 
     if (orIdent != NULL)
-        self->orIdent = copyString(orIdent);
+        self->orIdent = StringUtils_copyString(orIdent);
     else
         self->orIdent = NULL;
 

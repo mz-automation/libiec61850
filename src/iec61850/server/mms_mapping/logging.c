@@ -44,7 +44,7 @@ LogInstance_create(LogicalNode* parentLN, const char* name)
 {
     LogInstance* self = (LogInstance*) GLOBAL_MALLOC(sizeof(LogInstance));
 
-    self->name = copyString(name);
+    self->name = StringUtils_copyString(name);
     self->parentLN = parentLN;
     self->logStorage = NULL;
     self->locked = false;
@@ -613,7 +613,7 @@ createDataSetReferenceForDefaultDataSet(LogControlBlock* lcb, LogControl* logCon
     char* domainName = MmsDomain_getName(logControl->domain);
     char* lnName = lcb->parent->name;
 
-    dataSetReference = createString(5, domainName, "/", lnName, "$", lcb->dataSetName);
+    dataSetReference = StringUtils_createString(5, domainName, "/", lnName, "$", lcb->dataSetName);
 
     return dataSetReference;
 }
@@ -647,7 +647,7 @@ createLogControlBlock(MmsMapping* self, LogControlBlock* logControlBlock,
         LogControl* logControl)
 {
     MmsVariableSpecification* lcb = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    lcb->name = copyString(logControlBlock->name);
+    lcb->name = StringUtils_copyString(logControlBlock->name);
     lcb->type = MMS_STRUCTURE;
 
     MmsValue* mmsValue = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
@@ -668,7 +668,7 @@ createLogControlBlock(MmsMapping* self, LogControlBlock* logControlBlock,
     MmsVariableSpecification* namedVariable =
             (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
 
-    namedVariable->name = copyString("LogEna");
+    namedVariable->name = StringUtils_copyString("LogEna");
     namedVariable->type = MMS_BOOLEAN;
 
     lcb->typeSpec.structure.elements[0] = namedVariable;
@@ -676,7 +676,7 @@ createLogControlBlock(MmsMapping* self, LogControlBlock* logControlBlock,
 
     /* LogRef */
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("LogRef");
+    namedVariable->name = StringUtils_copyString("LogRef");
     namedVariable->typeSpec.visibleString = -129;
     namedVariable->type = MMS_VISIBLE_STRING;
     lcb->typeSpec.structure.elements[1] = namedVariable;
@@ -692,7 +692,7 @@ createLogControlBlock(MmsMapping* self, LogControlBlock* logControlBlock,
         mmsValue->value.structure.components[1] = MmsValue_newVisibleString(logRef);
     }
     else {
-        char* logRef = createString(4, logControl->domain->domainName, "/", logControlBlock->parent->name,
+        char* logRef = StringUtils_createString(4, logControl->domain->domainName, "/", logControlBlock->parent->name,
                 "$GeneralLog");
 
         mmsValue->value.structure.components[1] = MmsValue_newVisibleString(logRef);
@@ -702,7 +702,7 @@ createLogControlBlock(MmsMapping* self, LogControlBlock* logControlBlock,
 
     /* DatSet */
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("DatSet");
+    namedVariable->name = StringUtils_copyString("DatSet");
     namedVariable->typeSpec.visibleString = -129;
     namedVariable->type = MMS_VISIBLE_STRING;
     lcb->typeSpec.structure.elements[2] = namedVariable;
@@ -719,7 +719,7 @@ createLogControlBlock(MmsMapping* self, LogControlBlock* logControlBlock,
 
     /* OldEntrTm */
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("OldEntrTm");
+    namedVariable->name = StringUtils_copyString("OldEntrTm");
     namedVariable->type = MMS_BINARY_TIME;
     namedVariable->typeSpec.binaryTime = 6;
     lcb->typeSpec.structure.elements[3] = namedVariable;
@@ -730,7 +730,7 @@ createLogControlBlock(MmsMapping* self, LogControlBlock* logControlBlock,
 
     /* NewEntrTm */
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("NewEntrTm");
+    namedVariable->name = StringUtils_copyString("NewEntrTm");
     namedVariable->type = MMS_BINARY_TIME;
     namedVariable->typeSpec.binaryTime = 6;
     lcb->typeSpec.structure.elements[4] = namedVariable;
@@ -741,7 +741,7 @@ createLogControlBlock(MmsMapping* self, LogControlBlock* logControlBlock,
 
     /* OldEntr */
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("OldEntr");
+    namedVariable->name = StringUtils_copyString("OldEntr");
     namedVariable->type = MMS_OCTET_STRING;
     namedVariable->typeSpec.octetString = 8;
 
@@ -753,7 +753,7 @@ createLogControlBlock(MmsMapping* self, LogControlBlock* logControlBlock,
 
     /* NewEntr */
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("NewEntr");
+    namedVariable->name = StringUtils_copyString("NewEntr");
     namedVariable->type = MMS_OCTET_STRING;
     namedVariable->typeSpec.octetString = 8;
 
@@ -765,7 +765,7 @@ createLogControlBlock(MmsMapping* self, LogControlBlock* logControlBlock,
 
     /* TrgOps */
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("TrgOps");
+    namedVariable->name = StringUtils_copyString("TrgOps");
     namedVariable->type = MMS_BIT_STRING;
     namedVariable->typeSpec.bitString = -6;
     lcb->typeSpec.structure.elements[7] = namedVariable;
@@ -773,7 +773,7 @@ createLogControlBlock(MmsMapping* self, LogControlBlock* logControlBlock,
 
     /* IntgPd */
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("IntgPd");
+    namedVariable->name = StringUtils_copyString("IntgPd");
     namedVariable->type = MMS_UNSIGNED;
     namedVariable->typeSpec.unsignedInteger = 32;
     lcb->typeSpec.structure.elements[8] = namedVariable;
@@ -800,7 +800,7 @@ Logging_createLCBs(MmsMapping* self, MmsDomain* domain, LogicalNode* logicalNode
 {
     MmsVariableSpecification* namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1,
             sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("LG");
+    namedVariable->name = StringUtils_copyString("LG");
     namedVariable->type = MMS_STRUCTURE;
 
     namedVariable->typeSpec.structure.elementCount = lcbCount;
@@ -815,7 +815,7 @@ Logging_createLCBs(MmsMapping* self, MmsDomain* domain, LogicalNode* logicalNode
 
         LogControlBlock* logControlBlock = getLCBForLogicalNodeWithIndex(self, logicalNode, currentLcb);
 
-        logControl->name = createString(3, logicalNode->name, "$LG$", logControlBlock->name);
+        logControl->name = StringUtils_createString(3, logicalNode->name, "$LG$", logControlBlock->name);
         logControl->domain = domain;
 
         namedVariable->typeSpec.structure.elements[currentLcb] =

@@ -113,7 +113,7 @@ MmsVariableSpecification_getStructureElements(MmsVariableSpecification* self)
     for (i = 0; i < self->typeSpec.structure.elementCount; i++) {
         MmsVariableSpecification* typeSpec = self->typeSpec.structure.elements[i];
 
-        LinkedList_add(elementNames, copyString(typeSpec->name));
+        LinkedList_add(elementNames, StringUtils_copyString(typeSpec->name));
     }
 
     return elementNames;

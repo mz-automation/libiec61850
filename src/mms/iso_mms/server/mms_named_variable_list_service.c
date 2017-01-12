@@ -633,13 +633,13 @@ createGetNamedVariableListAttributesResponse(int invokeId, ByteBuffer* response,
 		char* variableDomainName = MmsDomain_getName(variableEntry->domain);
 
 		varListResponse->listOfVariable.list.array[i]->variableSpecification.choice.name.choice.
-			domainspecific.domainId.buf = (uint8_t*) copyString(variableDomainName);
+			domainspecific.domainId.buf = (uint8_t*) StringUtils_copyString(variableDomainName);
 
 		varListResponse->listOfVariable.list.array[i]->variableSpecification.choice.name.choice.
 			domainspecific.domainId.size = strlen(variableDomainName);
 
 		varListResponse->listOfVariable.list.array[i]->variableSpecification.choice.name.choice.
-			domainspecific.itemId.buf = (uint8_t*) copyString(variableEntry->variableName);
+			domainspecific.itemId.buf = (uint8_t*) StringUtils_copyString(variableEntry->variableName);
 
 		varListResponse->listOfVariable.list.array[i]->variableSpecification.choice.name.choice.
 			domainspecific.itemId.size = strlen(variableEntry->variableName);

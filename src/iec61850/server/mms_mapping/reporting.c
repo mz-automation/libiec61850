@@ -617,7 +617,7 @@ createDataSetReferenceForDefaultDataSet(ReportControlBlock* rcb, ReportControl* 
     char* domainName = MmsDomain_getName(reportControl->domain);
     char* lnName = rcb->parent->name;
 
-    dataSetReference = createString(5, domainName, "/", lnName, "$", rcb->dataSetName);
+    dataSetReference = StringUtils_createString(5, domainName, "/", lnName, "$", rcb->dataSetName);
 
     return dataSetReference;
 }
@@ -750,7 +750,7 @@ createUnbufferedReportControlBlock(ReportControlBlock* reportControlBlock,
         ReportControl* reportControl)
 {
     MmsVariableSpecification* rcb = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    rcb->name = copyString(reportControlBlock->name);
+    rcb->name = StringUtils_copyString(reportControlBlock->name);
     rcb->type = MMS_STRUCTURE;
 
     MmsValue* mmsValue = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
@@ -773,7 +773,7 @@ createUnbufferedReportControlBlock(ReportControlBlock* reportControlBlock,
 
     MmsVariableSpecification* namedVariable = 
 			(MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("RptID");
+    namedVariable->name = StringUtils_copyString("RptID");
     namedVariable->typeSpec.visibleString = -129;
     namedVariable->type = MMS_VISIBLE_STRING;
     rcb->typeSpec.structure.elements[0] = namedVariable;
@@ -784,19 +784,19 @@ createUnbufferedReportControlBlock(ReportControlBlock* reportControlBlock,
         mmsValue->value.structure.components[0] = createDefaultRptId(reportControl);
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("RptEna");
+    namedVariable->name = StringUtils_copyString("RptEna");
     namedVariable->type = MMS_BOOLEAN;
     rcb->typeSpec.structure.elements[1] = namedVariable;
     mmsValue->value.structure.components[1] = MmsValue_newBoolean(false);
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("Resv");
+    namedVariable->name = StringUtils_copyString("Resv");
     namedVariable->type = MMS_BOOLEAN;
     rcb->typeSpec.structure.elements[2] = namedVariable;
     mmsValue->value.structure.components[2] = MmsValue_newBoolean(false);
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("DatSet");
+    namedVariable->name = StringUtils_copyString("DatSet");
     namedVariable->typeSpec.visibleString = -129;
     namedVariable->type = MMS_VISIBLE_STRING;
     rcb->typeSpec.structure.elements[3] = namedVariable;
@@ -811,7 +811,7 @@ createUnbufferedReportControlBlock(ReportControlBlock* reportControlBlock,
     	mmsValue->value.structure.components[3] = MmsValue_newVisibleString("");
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("ConfRev");
+    namedVariable->name = StringUtils_copyString("ConfRev");
     namedVariable->type = MMS_UNSIGNED;
     namedVariable->typeSpec.unsignedInteger = 32;
     rcb->typeSpec.structure.elements[4] = namedVariable;
@@ -821,14 +821,14 @@ createUnbufferedReportControlBlock(ReportControlBlock* reportControlBlock,
     reportControl->confRev = mmsValue->value.structure.components[4];
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("OptFlds");
+    namedVariable->name = StringUtils_copyString("OptFlds");
     namedVariable->type = MMS_BIT_STRING;
     namedVariable->typeSpec.bitString = -10;
     rcb->typeSpec.structure.elements[5] = namedVariable;
     mmsValue->value.structure.components[5] = createOptFlds(reportControlBlock);
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("BufTm");
+    namedVariable->name = StringUtils_copyString("BufTm");
     namedVariable->type = MMS_UNSIGNED;
     namedVariable->typeSpec.unsignedInteger = 32;
     rcb->typeSpec.structure.elements[6] = namedVariable;
@@ -836,21 +836,21 @@ createUnbufferedReportControlBlock(ReportControlBlock* reportControlBlock,
             MmsValue_newUnsignedFromUint32(reportControlBlock->bufferTime);
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("SqNum");
+    namedVariable->name = StringUtils_copyString("SqNum");
     namedVariable->type = MMS_UNSIGNED;
     namedVariable->typeSpec.unsignedInteger = 8;
     rcb->typeSpec.structure.elements[7] = namedVariable;
     mmsValue->value.structure.components[7] = MmsValue_newUnsigned(8);
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("TrgOps");
+    namedVariable->name = StringUtils_copyString("TrgOps");
     namedVariable->type = MMS_BIT_STRING;
     namedVariable->typeSpec.bitString = -6;
     rcb->typeSpec.structure.elements[8] = namedVariable;
     mmsValue->value.structure.components[8] = createTrgOps(reportControlBlock);
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("IntgPd");
+    namedVariable->name = StringUtils_copyString("IntgPd");
     namedVariable->type = MMS_UNSIGNED;
     namedVariable->typeSpec.unsignedInteger = 32;
     rcb->typeSpec.structure.elements[9] = namedVariable;
@@ -858,14 +858,14 @@ createUnbufferedReportControlBlock(ReportControlBlock* reportControlBlock,
             MmsValue_newUnsignedFromUint32(reportControlBlock->intPeriod);
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("GI");
+    namedVariable->name = StringUtils_copyString("GI");
     namedVariable->type = MMS_BOOLEAN;
     rcb->typeSpec.structure.elements[10] = namedVariable;
     mmsValue->value.structure.components[10] = MmsValue_newBoolean(false);
 
 #if (CONFIG_REPORTING_SUPPORTS_OWNER == 1)
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("Owner");
+    namedVariable->name = StringUtils_copyString("Owner");
     namedVariable->type = MMS_OCTET_STRING;
     namedVariable->typeSpec.octetString = -64;
     rcb->typeSpec.structure.elements[11] = namedVariable;
@@ -888,7 +888,7 @@ createBufferedReportControlBlock(ReportControlBlock* reportControlBlock,
         ReportControl* reportControl, MmsMapping* mmsMapping)
 {
     MmsVariableSpecification* rcb = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    rcb->name = copyString(reportControlBlock->name);
+    rcb->name = StringUtils_copyString(reportControlBlock->name);
     rcb->type = MMS_STRUCTURE;
 
     int brcbElementCount = 13;
@@ -913,7 +913,7 @@ createBufferedReportControlBlock(ReportControlBlock* reportControlBlock,
 
     MmsVariableSpecification* namedVariable = 
 			(MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("RptID");
+    namedVariable->name = StringUtils_copyString("RptID");
     namedVariable->typeSpec.visibleString = -129;
     namedVariable->type = MMS_VISIBLE_STRING;
     rcb->typeSpec.structure.elements[0] = namedVariable;
@@ -925,13 +925,13 @@ createBufferedReportControlBlock(ReportControlBlock* reportControlBlock,
         mmsValue->value.structure.components[0] = createDefaultRptId(reportControl);
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("RptEna");
+    namedVariable->name = StringUtils_copyString("RptEna");
     namedVariable->type = MMS_BOOLEAN;
     rcb->typeSpec.structure.elements[1] = namedVariable;
     mmsValue->value.structure.components[1] = MmsValue_newBoolean(false);
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("DatSet");
+    namedVariable->name = StringUtils_copyString("DatSet");
     namedVariable->typeSpec.visibleString = -129;
     namedVariable->type = MMS_VISIBLE_STRING;
     rcb->typeSpec.structure.elements[2] = namedVariable;
@@ -947,7 +947,7 @@ createBufferedReportControlBlock(ReportControlBlock* reportControlBlock,
     	mmsValue->value.structure.components[2] = MmsValue_newVisibleString("");
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("ConfRev");
+    namedVariable->name = StringUtils_copyString("ConfRev");
     namedVariable->type = MMS_UNSIGNED;
     namedVariable->typeSpec.unsignedInteger = 32;
     rcb->typeSpec.structure.elements[3] = namedVariable;
@@ -957,14 +957,14 @@ createBufferedReportControlBlock(ReportControlBlock* reportControlBlock,
     reportControl->confRev = mmsValue->value.structure.components[3];
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("OptFlds");
+    namedVariable->name = StringUtils_copyString("OptFlds");
     namedVariable->type = MMS_BIT_STRING;
     namedVariable->typeSpec.bitString = -10;
     rcb->typeSpec.structure.elements[4] = namedVariable;
     mmsValue->value.structure.components[4] = createOptFlds(reportControlBlock);
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("BufTm");
+    namedVariable->name = StringUtils_copyString("BufTm");
     namedVariable->type = MMS_UNSIGNED;
     namedVariable->typeSpec.unsignedInteger = 32;
     rcb->typeSpec.structure.elements[5] = namedVariable;
@@ -972,21 +972,21 @@ createBufferedReportControlBlock(ReportControlBlock* reportControlBlock,
             MmsValue_newUnsignedFromUint32(reportControlBlock->bufferTime);
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("SqNum");
+    namedVariable->name = StringUtils_copyString("SqNum");
     namedVariable->type = MMS_UNSIGNED;
     namedVariable->typeSpec.unsignedInteger = 16;
     rcb->typeSpec.structure.elements[6] = namedVariable;
     mmsValue->value.structure.components[6] = MmsValue_newUnsigned(16);
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("TrgOps");
+    namedVariable->name = StringUtils_copyString("TrgOps");
     namedVariable->type = MMS_BIT_STRING;
     namedVariable->typeSpec.bitString = -6;
     rcb->typeSpec.structure.elements[7] = namedVariable;
     mmsValue->value.structure.components[7] = createTrgOps(reportControlBlock);
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("IntgPd");
+    namedVariable->name = StringUtils_copyString("IntgPd");
     namedVariable->type = MMS_UNSIGNED;
     namedVariable->typeSpec.unsignedInteger = 32;
     rcb->typeSpec.structure.elements[8] = namedVariable;
@@ -994,26 +994,26 @@ createBufferedReportControlBlock(ReportControlBlock* reportControlBlock,
             MmsValue_newUnsignedFromUint32(reportControlBlock->intPeriod);
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("GI");
+    namedVariable->name = StringUtils_copyString("GI");
     namedVariable->type = MMS_BOOLEAN;
     rcb->typeSpec.structure.elements[9] = namedVariable;
     mmsValue->value.structure.components[9] = MmsValue_newBoolean(false);
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("PurgeBuf");
+    namedVariable->name = StringUtils_copyString("PurgeBuf");
     namedVariable->type = MMS_BOOLEAN;
     rcb->typeSpec.structure.elements[10] = namedVariable;
     mmsValue->value.structure.components[10] = MmsValue_newBoolean(false);
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("EntryID");
+    namedVariable->name = StringUtils_copyString("EntryID");
     namedVariable->type = MMS_OCTET_STRING;
     namedVariable->typeSpec.octetString = 8;
     rcb->typeSpec.structure.elements[11] = namedVariable;
     mmsValue->value.structure.components[11] = MmsValue_newOctetString(8, 8);
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("TimeofEntry");
+    namedVariable->name = StringUtils_copyString("TimeofEntry");
     namedVariable->type = MMS_BINARY_TIME;
     namedVariable->typeSpec.binaryTime = 6;
     rcb->typeSpec.structure.elements[12] = namedVariable;
@@ -1027,7 +1027,7 @@ createBufferedReportControlBlock(ReportControlBlock* reportControlBlock,
 
 #if (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1)
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("ResvTms");
+    namedVariable->name = StringUtils_copyString("ResvTms");
     namedVariable->type = MMS_INTEGER;
     namedVariable->typeSpec.integer = 16;
     rcb->typeSpec.structure.elements[currentIndex] = namedVariable;
@@ -1037,7 +1037,7 @@ createBufferedReportControlBlock(ReportControlBlock* reportControlBlock,
 
 #if (CONFIG_REPORTING_SUPPORTS_OWNER == 1)
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("Owner");
+    namedVariable->name = StringUtils_copyString("Owner");
     namedVariable->type = MMS_OCTET_STRING;
     namedVariable->typeSpec.octetString = -64;
     rcb->typeSpec.structure.elements[currentIndex] = namedVariable;
@@ -1086,7 +1086,7 @@ Reporting_createMmsBufferedRCBs(MmsMapping* self, MmsDomain* domain,
 {
     MmsVariableSpecification* namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1,
             sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("BR");
+    namedVariable->name = StringUtils_copyString("BR");
     namedVariable->type = MMS_STRUCTURE;
 
     namedVariable->typeSpec.structure.elementCount = reportsCount;
@@ -1103,7 +1103,7 @@ Reporting_createMmsBufferedRCBs(MmsMapping* self, MmsDomain* domain,
         ReportControlBlock* reportControlBlock = getRCBForLogicalNodeWithIndex(
                 self, logicalNode, currentReport, true);
 
-        rc->name = createString(3, logicalNode->name, "$BR$",
+        rc->name = StringUtils_createString(3, logicalNode->name, "$BR$",
                 reportControlBlock->name);
 
         namedVariable->typeSpec.structure.elements[currentReport] =
@@ -1123,7 +1123,7 @@ Reporting_createMmsUnbufferedRCBs(MmsMapping* self, MmsDomain* domain,
 {
     MmsVariableSpecification* namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1,
             sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("RP");
+    namedVariable->name = StringUtils_copyString("RP");
     namedVariable->type = MMS_STRUCTURE;
 
     namedVariable->typeSpec.structure.elementCount = reportsCount;
@@ -1140,7 +1140,7 @@ Reporting_createMmsUnbufferedRCBs(MmsMapping* self, MmsDomain* domain,
         ReportControlBlock* reportControlBlock = getRCBForLogicalNodeWithIndex(
                 self, logicalNode, currentReport, false);
 
-        rc->name = createString(3, logicalNode->name, "$RP$",
+        rc->name = StringUtils_createString(3, logicalNode->name, "$RP$",
                 reportControlBlock->name);
 
         namedVariable->typeSpec.structure.elements[currentReport] =

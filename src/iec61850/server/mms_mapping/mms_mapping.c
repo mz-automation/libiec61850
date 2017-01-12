@@ -92,25 +92,25 @@ MmsMapping_createPhyComAddrStructure(MmsVariableSpecification* namedVariable)
     MmsVariableSpecification* element;
 
     element = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    element->name = copyString("Addr");
+    element->name = StringUtils_copyString("Addr");
     element->type = MMS_OCTET_STRING;
     element->typeSpec.octetString = 6;
     namedVariable->typeSpec.structure.elements[0] = element;
 
     element = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    element->name = copyString("PRIORITY");
+    element->name = StringUtils_copyString("PRIORITY");
     element->type = MMS_UNSIGNED;
     element->typeSpec.unsignedInteger = 8;
     namedVariable->typeSpec.structure.elements[1] = element;
 
     element = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    element->name = copyString("VID");
+    element->name = StringUtils_copyString("VID");
     element->type = MMS_UNSIGNED;
     element->typeSpec.unsignedInteger = 16;
     namedVariable->typeSpec.structure.elements[2] = element;
 
     element = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    element->name = copyString("APPID");
+    element->name = StringUtils_copyString("APPID");
     element->type = MMS_UNSIGNED;
     element->typeSpec.unsignedInteger = 16;
     namedVariable->typeSpec.structure.elements[3] = element;
@@ -121,7 +121,7 @@ createNamedVariableFromDataAttribute(DataAttribute* attribute)
 {
     MmsVariableSpecification* origNamedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1,
             sizeof(MmsVariableSpecification));
-    origNamedVariable->name = copyString(attribute->name);
+    origNamedVariable->name = StringUtils_copyString(attribute->name);
 
     MmsVariableSpecification* namedVariable = origNamedVariable;
 
@@ -316,7 +316,7 @@ createFCNamedVariableFromDataObject(DataObject* dataObject,
 
     MmsVariableSpecification* completeNamedVariable = namedVariable;
 
-    namedVariable->name = copyString(dataObject->name);
+    namedVariable->name = StringUtils_copyString(dataObject->name);
 
     if (dataObject->elementCount > 0) {
         namedVariable->type = MMS_ARRAY;
@@ -371,7 +371,7 @@ createFCNamedVariable(LogicalNode* logicalNode, FunctionalConstraint fc)
 {
     MmsVariableSpecification* namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1,
             sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString(FunctionalConstraint_toString(fc));
+    namedVariable->name = StringUtils_copyString(FunctionalConstraint_toString(fc));
     namedVariable->type = MMS_STRUCTURE;
 
     int dataObjectCount = 0;
@@ -415,7 +415,7 @@ createSGCB(void)
 {
     MmsVariableSpecification* namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1,
             sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("SGCB");
+    namedVariable->name = StringUtils_copyString("SGCB");
     namedVariable->type = MMS_STRUCTURE;
 
     namedVariable->typeSpec.structure.elementCount = 6;
@@ -425,35 +425,35 @@ createSGCB(void)
     MmsVariableSpecification* element;
 
     element = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    element->name = copyString("NumOfSG");
+    element->name = StringUtils_copyString("NumOfSG");
     element->type = MMS_UNSIGNED;
     element->typeSpec.integer = 8;
     namedVariable->typeSpec.structure.elements[0] = element;
 
     element = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    element->name = copyString("ActSG");
+    element->name = StringUtils_copyString("ActSG");
     element->type = MMS_UNSIGNED;
     element->typeSpec.integer = 8;
     namedVariable->typeSpec.structure.elements[1] = element;
 
     element = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    element->name = copyString("EditSG");
+    element->name = StringUtils_copyString("EditSG");
     element->type = MMS_UNSIGNED;
     element->typeSpec.integer = 8;
     namedVariable->typeSpec.structure.elements[2] = element;
 
     element = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    element->name = copyString("CnfEdit");
+    element->name = StringUtils_copyString("CnfEdit");
     element->type = MMS_BOOLEAN;
     namedVariable->typeSpec.structure.elements[3] = element;
 
     element = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    element->name = copyString("LActTm");
+    element->name = StringUtils_copyString("LActTm");
     element->type = MMS_UTC_TIME;
     namedVariable->typeSpec.structure.elements[4] = element;
 
     element = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    element->name = copyString("ResvTms");
+    element->name = StringUtils_copyString("ResvTms");
     element->type = MMS_UNSIGNED;
     element->typeSpec.integer = 16;
     namedVariable->typeSpec.structure.elements[5] = element;
@@ -467,7 +467,7 @@ createFCNamedVariableSPWithSGCB(LogicalNode* logicalNode)
 {
     MmsVariableSpecification* namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1,
             sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("SP");
+    namedVariable->name = StringUtils_copyString("SP");
     namedVariable->type = MMS_STRUCTURE;
 
     int dataObjectCount = 1;
@@ -839,7 +839,7 @@ createNamedVariableFromLogicalNode(MmsMapping* self, MmsDomain* domain,
     MmsVariableSpecification* namedVariable = (MmsVariableSpecification*)
             GLOBAL_MALLOC(sizeof(MmsVariableSpecification));
 
-    namedVariable->name = copyString(logicalNode->name);
+    namedVariable->name = StringUtils_copyString(logicalNode->name);
 
     namedVariable->type = MMS_STRUCTURE;
 
@@ -3211,7 +3211,7 @@ MmsMapping_ObjectReferenceToVariableAccessSpec(char* objectReference)
     MmsVariableAccessSpecification* accessSpec =
             (MmsVariableAccessSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableAccessSpecification));
 
-    accessSpec->domainId = createStringFromBuffer((uint8_t*) objectReference, domainIdLen);
+    accessSpec->domainId = StringUtils_createStringFromBuffer((uint8_t*) objectReference, domainIdLen);
 
     char* indexBrace = strchr(domainIdEnd, '(');
 
@@ -3249,7 +3249,7 @@ MmsMapping_ObjectReferenceToVariableAccessSpec(char* objectReference)
             int componentNameLen = objRefLen - ((indexEnd + 2) - objectReference) - 4;
 
             if (componentNameLen > 0) {
-                accessSpec->componentName = createStringFromBuffer((uint8_t*) (indexEnd + 2), componentNameLen);
+                accessSpec->componentName = StringUtils_createStringFromBuffer((uint8_t*) (indexEnd + 2), componentNameLen);
                 StringUtils_replace(accessSpec->componentName, '.', '$');
             }
         }

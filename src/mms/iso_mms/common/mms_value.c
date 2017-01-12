@@ -1718,7 +1718,7 @@ MmsValue_newStringFromByteArray(const uint8_t* byteArray, int size, MmsType type
 
     self->value.visibleString.size = size;
 
-    self->value.visibleString.buf = createStringFromBuffer(byteArray, size);
+    self->value.visibleString.buf = StringUtils_createStringFromBuffer(byteArray, size);
 
     if (self->value.visibleString.buf == NULL) {
         GLOBAL_FREEMEM(self);

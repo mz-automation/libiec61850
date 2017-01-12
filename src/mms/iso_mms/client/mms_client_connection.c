@@ -76,7 +76,7 @@ handleUnconfirmedMmsPdu(MmsConnection self, ByteBuffer* message)
                             uint8_t* buffer =
                                     report->variableAccessSpecification.choice.variableListName.choice.vmdspecific.buf;
 
-                            char* variableListName = createStringFromBuffer(buffer, nameSize);
+                            char* variableListName = StringUtils_createStringFromBuffer(buffer, nameSize);
 
                             int listSize = report->listOfAccessResult.list.count;
 

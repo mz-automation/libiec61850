@@ -52,7 +52,7 @@ ClientReportControlBlock_create(const char* objectReference)
 
     //TODO check validity of object reference?!
 
-    self->objectReference = copyString(objectReference);
+    self->objectReference = StringUtils_copyString(objectReference);
     self->isBuffered = isBufferedRcb(objectReference);
 
     return self;
@@ -530,7 +530,7 @@ IedConnection_setRCBValues(IedConnection self, IedClientError* error, ClientRepo
 
         strcpy(itemId + itemIdLen, "$Resv");
 
-        LinkedList_add(itemIds, copyString(itemId));
+        LinkedList_add(itemIds, StringUtils_copyString(itemId));
         LinkedList_add(values, rcb->resv);
     }
 
@@ -540,56 +540,56 @@ IedConnection_setRCBValues(IedConnection self, IedClientError* error, ClientRepo
 
         strcpy(itemId + itemIdLen, "$ResvTms");
 
-        LinkedList_add(itemIds, copyString(itemId));
+        LinkedList_add(itemIds, StringUtils_copyString(itemId));
         LinkedList_add(values, rcb->resvTms);
     }
 
     if (parametersMask & RCB_ELEMENT_RPT_ID) {
         strcpy(itemId + itemIdLen, "$RptID");
 
-        LinkedList_add(itemIds, copyString(itemId));
+        LinkedList_add(itemIds, StringUtils_copyString(itemId));
         LinkedList_add(values, rcb->rptId);
     }
 
     if (parametersMask & RCB_ELEMENT_DATSET) {
         strcpy(itemId + itemIdLen, "$DatSet");
 
-        LinkedList_add(itemIds, copyString(itemId));
+        LinkedList_add(itemIds, StringUtils_copyString(itemId));
         LinkedList_add(values, rcb->datSet);
     }
 
     if (parametersMask & RCB_ELEMENT_ENTRY_ID) {
         strcpy(itemId + itemIdLen, "$EntryID");
 
-        LinkedList_add(itemIds, copyString(itemId));
+        LinkedList_add(itemIds, StringUtils_copyString(itemId));
         LinkedList_add(values, rcb->entryId);
     }
 
     if (parametersMask & RCB_ELEMENT_OPT_FLDS) {
         strcpy(itemId + itemIdLen, "$OptFlds");
 
-        LinkedList_add(itemIds, copyString(itemId));
+        LinkedList_add(itemIds, StringUtils_copyString(itemId));
         LinkedList_add(values, rcb->optFlds);
     }
 
     if (parametersMask & RCB_ELEMENT_BUF_TM) {
         strcpy(itemId + itemIdLen, "$BufTm");
 
-        LinkedList_add(itemIds, copyString(itemId));
+        LinkedList_add(itemIds, StringUtils_copyString(itemId));
         LinkedList_add(values, rcb->bufTm);
     }
 
     if (parametersMask & RCB_ELEMENT_TRG_OPS) {
         strcpy(itemId + itemIdLen, "$TrgOps");
 
-        LinkedList_add(itemIds, copyString(itemId));
+        LinkedList_add(itemIds, StringUtils_copyString(itemId));
         LinkedList_add(values, rcb->trgOps);
     }
 
     if (parametersMask & RCB_ELEMENT_INTG_PD) {
         strcpy(itemId + itemIdLen, "$IntgPd");
 
-        LinkedList_add(itemIds, copyString(itemId));
+        LinkedList_add(itemIds, StringUtils_copyString(itemId));
         LinkedList_add(values, rcb->intgPd);
     }
 
@@ -603,7 +603,7 @@ IedConnection_setRCBValues(IedConnection self, IedClientError* error, ClientRepo
         if (sendGILast == false) {
             strcpy(itemId + itemIdLen, "$GI");
 
-            LinkedList_add(itemIds, copyString(itemId));
+            LinkedList_add(itemIds, StringUtils_copyString(itemId));
             LinkedList_add(values, rcb->gi);
         }
     }
@@ -614,7 +614,7 @@ IedConnection_setRCBValues(IedConnection self, IedClientError* error, ClientRepo
 
         strcpy(itemId + itemIdLen, "$PurgeBuf");
 
-        LinkedList_add(itemIds, copyString(itemId));
+        LinkedList_add(itemIds, StringUtils_copyString(itemId));
         LinkedList_add(values, rcb->purgeBuf);
     }
 
@@ -624,21 +624,21 @@ IedConnection_setRCBValues(IedConnection self, IedClientError* error, ClientRepo
 
         strcpy(itemId + itemIdLen, "$TimeofEntry");
 
-        LinkedList_add(itemIds, copyString(itemId));
+        LinkedList_add(itemIds, StringUtils_copyString(itemId));
         LinkedList_add(values, rcb->timeOfEntry);
     }
 
     if (parametersMask & RCB_ELEMENT_RPT_ENA) {
         strcpy(itemId + itemIdLen, "$RptEna");
 
-        LinkedList_add(itemIds, copyString(itemId));
+        LinkedList_add(itemIds, StringUtils_copyString(itemId));
         LinkedList_add(values, rcb->rptEna);
     }
 
     if (sendGILast) {
         strcpy(itemId + itemIdLen, "$GI");
 
-        LinkedList_add(itemIds, copyString(itemId));
+        LinkedList_add(itemIds, StringUtils_copyString(itemId));
         LinkedList_add(values, rcb->gi);
     }
 

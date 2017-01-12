@@ -40,7 +40,7 @@ GooseSubscriber_create(char* goCbRef, MmsValue* dataSetValues)
 {
     GooseSubscriber self = (GooseSubscriber) GLOBAL_CALLOC(1, sizeof(struct sGooseSubscriber));
 
-    self->goCBRef = copyString(goCbRef);
+    self->goCBRef = StringUtils_copyString(goCbRef);
     self->goCBRefLen = strlen(goCbRef);
     self->timestamp = MmsValue_newUtcTime(0);
     self->dataSetValues = dataSetValues;

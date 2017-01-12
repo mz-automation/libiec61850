@@ -159,7 +159,7 @@ ICLogicalDevice_create(char* name)
 {
     ICLogicalDevice* self = (ICLogicalDevice*) GLOBAL_CALLOC(1, sizeof(struct sICLogicalDevice));
 
-    self->name = copyString(name);
+    self->name = StringUtils_copyString(name);
 
     return self;
 }
@@ -186,7 +186,7 @@ ClientDataSet_create(const char* dataSetReference)
 {
     ClientDataSet self = (ClientDataSet) GLOBAL_CALLOC(1, sizeof(struct sClientDataSet));
 
-    self->dataSetReference = copyString(dataSetReference);
+    self->dataSetReference = StringUtils_copyString(dataSetReference);
     StringUtils_replace(self->dataSetReference, '.', '$');
 
     self->dataSetValues = NULL;
@@ -743,7 +743,7 @@ IedConnection_readStringValue(IedConnection self, IedClientError* error, const c
 
     if (value != NULL) {
         if ((MmsValue_getType(value) == MMS_VISIBLE_STRING) || (MmsValue_getType(value) == MMS_STRING))
-            retVal = copyString(MmsValue_toString(value));
+            retVal = StringUtils_copyString(MmsValue_toString(value));
         else {
             if (MmsValue_getType(value) == MMS_DATA_ACCESS_ERROR)
                 *error = iedConnection_mapDataAccessErrorToIedError(MmsValue_getDataAccessError(value));
@@ -1067,7 +1067,7 @@ IedConnection_getLogicalDeviceList(IedConnection self, IedClientError* error)
         while (logicalDevice != NULL) {
             ICLogicalDevice* icLogicalDevice = (ICLogicalDevice*) logicalDevice->data;
 
-            char* logicalDeviceName = copyString(icLogicalDevice->name);
+            char* logicalDeviceName = StringUtils_copyString(icLogicalDevice->name);
 
             LinkedList_add(logicalDeviceList, logicalDeviceName);
 
@@ -1267,7 +1267,7 @@ IedConnection_getLogicalDeviceDirectory(IedConnection self, IedClientError* erro
                 char* variableName = (char*) variable->data;
 
                 if (strchr(variableName, '$') == NULL)
-                    LinkedList_add(logicalNodeNames, copyString((char*) variable->data));
+                    LinkedList_add(logicalNodeNames, StringUtils_copyString((char*) variable->data));
 
                 variable = LinkedList_getNext(variable);
             }
@@ -1322,7 +1322,7 @@ addVariablesWithFc(char* fc, char* lnName, LinkedList variables, LinkedList lnDi
                     char* nameEndPos = strchr(fcEndPos + 1, '$');
 
                     if (nameEndPos == NULL)
-                        addToStringSet(lnDirectory, copyString(fcEndPos + 1));
+                        addToStringSet(lnDirectory, StringUtils_copyString(fcEndPos + 1));
                 }
             }
         }
@@ -1363,7 +1363,7 @@ getLogicalNodeDirectoryLogs(IedConnection self, IedClientError* error, const cha
             logName += 1;
 
             if (strcmp(journalName, logicalNodeName) == 0) {
-                char* log = copyString(logName);
+                char* log = StringUtils_copyString(logName);
                 LinkedList_add(logs, (void*) log);
             }
         }
@@ -1405,7 +1405,7 @@ getLogicalNodeDirectoryDataSets(IedConnection self, IedClientError* error, const
             lnDataSetName += 1;
 
             if (strcmp(dataSetName, logicalNodeName) == 0) {
-                char* lnDataSet = copyString(lnDataSetName);
+                char* lnDataSet = StringUtils_copyString(lnDataSetName);
                 LinkedList_add(lnDataSets, (void*) lnDataSet);
             }
         }
@@ -1515,7 +1515,7 @@ IedConnection_getLogicalNodeDirectory(IedConnection self, IedClientError* error,
                             char* nameEndPos = strchr(fcEndPos + 1, '$');
 
                             if (nameEndPos == NULL) {
-                                char* dataObjectName = copyString(fcEndPos + 1);
+                                char* dataObjectName = StringUtils_copyString(fcEndPos + 1);
 
                                 if (!addToStringSet(lnDirectory, dataObjectName))
                                     GLOBAL_FREEMEM(dataObjectName);
@@ -1539,7 +1539,7 @@ IedConnection_getLogicalNodeDirectory(IedConnection self, IedClientError* error,
                 char* variableName = (char*) variable->data;
 
                 if (strcmp(variableName, "LLN0$SP$SGCB") == 0)
-                    LinkedList_add(lnDirectory, (void*) copyString("SGCB"));
+                    LinkedList_add(lnDirectory, (void*) StringUtils_copyString("SGCB"));
 
                 variable = LinkedList_getNext(variable);
             }
@@ -1647,7 +1647,7 @@ IedConnection_getLogicalNodeVariables(IedConnection self, IedClientError* error,
             int lnNameLen = fcPos - variableName;
 
             if (strncmp(variableName, logicalNodeName, lnNameLen) == 0) {
-                LinkedList_add(lnDirectory, copyString(fcPos + 1));
+                LinkedList_add(lnDirectory, StringUtils_copyString(fcPos + 1));
             }
         }
 
@@ -1788,7 +1788,7 @@ getDataDirectory(IedConnection self, IedClientError* error,
                                 elementName[elementNameLen + 4] = 0;
                             }
                             else
-                                elementName = copyString(subElementName);
+                                elementName = StringUtils_copyString(subElementName);
 
                             if (!addToStringSet(dataDirectory, elementName))
                                 GLOBAL_FREEMEM(elementName);
@@ -2018,7 +2018,7 @@ IedConnection_createDataSet(IedConnection self, IedClientError* error, const cha
                 goto exit_function;
             }
 
-            char* itemIdRef = copyStringToBuffer(dataSetReference + domainIdLength + 1, itemIdBuffer);
+            char* itemIdRef = StringUtils_copyStringToBuffer(dataSetReference + domainIdLength + 1, itemIdBuffer);
             StringUtils_replace(itemIdRef, '.', '$');
             itemId = itemIdRef;
         }
@@ -2100,7 +2100,7 @@ IedConnection_deleteDataSet(IedConnection self, IedClientError* error, const cha
                 goto exit_function;
             }
 
-            copyStringToBuffer(itemIdString, itemId);
+            StringUtils_copyStringToBuffer(itemIdString, itemId);
 
             StringUtils_replace(itemId, '.', '$');
         }
@@ -2168,7 +2168,7 @@ IedConnection_getDataSetDirectory(IedConnection self, IedClientError* error, con
                 goto exit_function;
             }
 
-            char* itemIdRefInBuffer = copyStringToBuffer(itemIdRef, itemIdBuffer);
+            char* itemIdRefInBuffer = StringUtils_copyStringToBuffer(itemIdRef, itemIdBuffer);
             StringUtils_replace(itemIdRefInBuffer, '.', '$');
             itemId = itemIdRefInBuffer;
         }
@@ -2254,7 +2254,7 @@ IedConnection_readDataSetValues(IedConnection self, IedClientError* error, const
                 goto exit_function;
             }
 
-            char* itemIdRef = copyStringToBuffer(itemIdRefOrig, itemIdBuffer);
+            char* itemIdRef = StringUtils_copyStringToBuffer(itemIdRefOrig, itemIdBuffer);
 
             StringUtils_replace(itemIdRef, '.', '$');
             itemId = itemIdRef;
@@ -2412,7 +2412,7 @@ FileDirectoryEntry_create(const char* fileName, uint32_t fileSize, uint64_t last
 {
     FileDirectoryEntry self = (FileDirectoryEntry) GLOBAL_CALLOC(1, sizeof(struct sFileDirectoryEntry));
 
-    self->fileName = copyString(fileName);
+    self->fileName = StringUtils_copyString(fileName);
     self->fileSize = fileSize;
     self->lastModified = lastModified;
 

@@ -321,7 +321,7 @@ mmsMsg_parseDataElement(Data_t* dataElement)
 char*
 mmsMsg_createStringFromAsnIdentifier(Identifier_t identifier)
 {
-    char* str = createStringFromBuffer(identifier.buf, identifier.size);
+    char* str = StringUtils_createStringFromBuffer(identifier.buf, identifier.size);
 
     return str;
 }

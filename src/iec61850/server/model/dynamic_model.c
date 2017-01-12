@@ -37,7 +37,7 @@ IedModel_setIedNameForDynamicModel(IedModel* self, const char* name)
     if (self->name != NULL)
         GLOBAL_FREEMEM(self->name);
 
-    self->name = copyString(name);
+    self->name = StringUtils_copyString(name);
 }
 
 IedModel*
@@ -46,7 +46,7 @@ IedModel_create(const char* name/*, MemoryAllocator allocator*/)
     IedModel* self = (IedModel*) GLOBAL_CALLOC(1, sizeof(IedModel));
 
     if (name)
-        self->name = copyString(name);
+        self->name = StringUtils_copyString(name);
     else
         self->name = NULL;
 
@@ -184,7 +184,7 @@ LogicalDevice_create(const char* name, IedModel* parent)
 {
     LogicalDevice* self = (LogicalDevice*) GLOBAL_CALLOC(1, sizeof(LogicalDevice));
 
-    self->name = copyString(name);
+    self->name = StringUtils_copyString(name);
     self->modelType = LogicalDeviceModelType;
     self->parent = (ModelNode*) parent;
     self->sibling = NULL;
@@ -226,7 +226,7 @@ LogicalNode_create(const char* name, LogicalDevice* parent)
 {
     LogicalNode* self = (LogicalNode*) GLOBAL_MALLOC(sizeof(LogicalNode));
 
-    self->name = copyString(name);
+    self->name = StringUtils_copyString(name);
     self->parent = (ModelNode*) parent;
     self->modelType = LogicalNodeModelType;
     self->firstChild = NULL;
@@ -278,7 +278,7 @@ Log_create(const char* name, LogicalNode* parent)
 {
     Log* self = (Log*) GLOBAL_MALLOC(sizeof(Log));
 
-    self->name = copyString(name);
+    self->name = StringUtils_copyString(name);
     self->parent = parent;
     self->sibling = NULL;
 
@@ -301,17 +301,17 @@ LogControlBlock_create(const char* name, LogicalNode* parent, char* dataSetName,
 {
     LogControlBlock* self = (LogControlBlock*) GLOBAL_MALLOC(sizeof(LogControlBlock));
 
-    self->name = copyString(name);
+    self->name = StringUtils_copyString(name);
     self->parent = parent;
     self->sibling = NULL;
 
     if (dataSetName)
-        self->dataSetName = copyString(dataSetName);
+        self->dataSetName = StringUtils_copyString(dataSetName);
     else
         self->dataSetName = NULL;
 
     if (logRef)
-        self->logRef = copyString(logRef);
+        self->logRef = StringUtils_copyString(logRef);
     else
         self->logRef = NULL;
 
@@ -339,18 +339,18 @@ ReportControlBlock_create(const char* name, LogicalNode* parent, char* rptId, bo
 {
     ReportControlBlock* self = (ReportControlBlock*) GLOBAL_MALLOC(sizeof(ReportControlBlock));
 
-    self->name = copyString(name);
+    self->name = StringUtils_copyString(name);
     self->parent = parent;
 
     if (rptId)
-        self->rptId = copyString(rptId);
+        self->rptId = StringUtils_copyString(rptId);
     else
         self->rptId = NULL;
 
     self->buffered = isBuffered;
 
     if (dataSetName)
-        self->dataSetName = copyString(dataSetName);
+        self->dataSetName = StringUtils_copyString(dataSetName);
     else
         self->dataSetName = NULL;
 
@@ -409,16 +409,16 @@ GSEControlBlock_create(const char* name, LogicalNode* parent, char* appId, char*
 {
     GSEControlBlock* self = (GSEControlBlock*) GLOBAL_MALLOC(sizeof(GSEControlBlock));
 
-    self->name = copyString(name);
+    self->name = StringUtils_copyString(name);
     self->parent = parent;
 
     if (appId)
-        self->appId = copyString(appId);
+        self->appId = StringUtils_copyString(appId);
     else
         self->appId = NULL;
 
     if (dataSet)
-        self->dataSetName = copyString(dataSet);
+        self->dataSetName = StringUtils_copyString(dataSet);
     else
         self->dataSetName = NULL;
 
@@ -443,13 +443,13 @@ SVControlBlock_create(const char* name, LogicalNode* parent, char* svID, char* d
 {
     SVControlBlock* self = (SVControlBlock*) GLOBAL_MALLOC(sizeof(SVControlBlock));
 
-    self->name = copyString(name);
+    self->name = StringUtils_copyString(name);
     self->parent = parent;
 
-    self->svId = copyString(svID); /* Is there a default value? */
+    self->svId = StringUtils_copyString(svID); /* Is there a default value? */
 
     if (dataSet)
-        self->dataSetName = copyString(dataSet);
+        self->dataSetName = StringUtils_copyString(dataSet);
     else
         self->dataSetName = NULL;
 
@@ -522,7 +522,7 @@ DataObject_create(const char* name, ModelNode* parent, int arrayElements)
 {
     DataObject* self = (DataObject*) GLOBAL_MALLOC(sizeof(DataObject));
 
-    self->name = copyString(name);
+    self->name = StringUtils_copyString(name);
     self->modelType = DataObjectModelType;
     self->elementCount = arrayElements;
     self->firstChild = NULL;
@@ -570,7 +570,7 @@ DataAttribute_create(const char* name, ModelNode* parent, DataAttributeType type
 {
     DataAttribute* self = (DataAttribute*) GLOBAL_MALLOC(sizeof(DataAttribute));
 
-    self->name = copyString(name);
+    self->name = StringUtils_copyString(name);
     self->elementCount = arrayElements;
     self->modelType = DataAttributeModelType;
     self->type = type;
@@ -597,7 +597,7 @@ DataSet_create(const char* name, LogicalNode* parent)
 
     LogicalDevice* ld = (LogicalDevice*) parent->parent;
 
-    self->name = createString(3, parent->name, "$", name);
+    self->name = StringUtils_createString(3, parent->name, "$", name);
     self->elementCount = 0;
     self->sibling = NULL;
     self->logicalDeviceName = ld->name;
@@ -662,18 +662,18 @@ DataSetEntry_create(DataSet* dataSet, const char* variable, int index, const cha
     if (separator != NULL) {
         *separator = 0;
 
-        self->variableName = copyString(separator + 1);
-        self->logicalDeviceName = copyString(variableName);
+        self->variableName = StringUtils_copyString(separator + 1);
+        self->logicalDeviceName = StringUtils_copyString(variableName);
         self->isLDNameDynamicallyAllocated = true;
     }
     else {
-        self->variableName = copyString(variable);
+        self->variableName = StringUtils_copyString(variable);
         self->logicalDeviceName = dataSet->logicalDeviceName;
         self->isLDNameDynamicallyAllocated = false;
     }
 
     if (component != NULL)
-        self->componentName = copyString(component);
+        self->componentName = StringUtils_copyString(component);
     else
         self->componentName = NULL;
 

@@ -90,7 +90,7 @@ GooseReceiver_setInterfaceId(GooseReceiver self, const char* interfaceId)
     if (self->interfaceId != NULL)
         GLOBAL_FREEMEM(self->interfaceId);
 
-    self->interfaceId = copyString(interfaceId);
+    self->interfaceId = StringUtils_copyString(interfaceId);
 }
 
 static void

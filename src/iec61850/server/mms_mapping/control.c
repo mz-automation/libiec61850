@@ -189,7 +189,7 @@ initialize(ControlObject* self)
 
         self->emptyString = MmsValue_newVisibleString(NULL);
 
-        char* ctlModelName = createString(4, self->lnName, "$CF$", self->name, "$ctlModel");
+        char* ctlModelName = StringUtils_createString(4, self->lnName, "$CF$", self->name, "$ctlModel");
 
         if (DEBUG_IED_SERVER)
             printf("initialize control for %s\n", ctlModelName);
@@ -204,7 +204,7 @@ initialize(ControlObject* self)
 
         GLOBAL_FREEMEM(ctlModelName);
 
-        char* sboClassName = createString(4, self->lnName, "$CF$", self->name, "$sboClass");
+        char* sboClassName = StringUtils_createString(4, self->lnName, "$CF$", self->name, "$sboClass");
 
         self->sboClass = MmsServer_getValueFromCache(mmsServer, self->mmsDomain, sboClassName);
 
@@ -227,9 +227,9 @@ initialize(ControlObject* self)
                 printf("  ctlModel: %i\n", ctlModelVal);
 
             if ((ctlModelVal == 2) || (ctlModelVal == 4)) { /* SBO */
-                char* sboTimeoutName = createString(4, self->lnName, "$CF$", self->name, "$sboTimeout");
+                char* sboTimeoutName = StringUtils_createString(4, self->lnName, "$CF$", self->name, "$sboTimeout");
 
-                char* controlObjectReference = createString(6, self->mmsDomain->domainName, "/", self->lnName, "$",
+                char* controlObjectReference = StringUtils_createString(6, self->mmsDomain->domainName, "/", self->lnName, "$",
                         self->name, "$SBO");
 
                 self->sbo = MmsValue_newVisibleString(controlObjectReference);
@@ -451,7 +451,7 @@ ControlObject_create(IedServer iedServer, MmsDomain* domain, char* lnName, char*
     }
 #endif
 
-    self->name = copyString(name);
+    self->name = StringUtils_copyString(name);
 
     if (self->name == NULL) {
         ControlObject_destroy(self);

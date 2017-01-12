@@ -59,7 +59,7 @@ MmsValueCache_insertValue(MmsValueCache self, char* itemId, MmsValue* value)
 		cacheEntry->value = value;
 		cacheEntry->typeSpec = typeSpec;
 
-		Map_addEntry(self->map, copyString(itemId), cacheEntry);
+		Map_addEntry(self->map, StringUtils_copyString(itemId), cacheEntry);
 	}
 	else
 		if (DEBUG) printf("Cannot insert value into cache %s : no typeSpec found!\n", itemId);
@@ -127,7 +127,7 @@ MmsValueCache_lookupValue(MmsValueCache self, char* itemId)
 	cacheEntry = (MmsValueCacheEntry*) Map_getEntry(self->map, itemId);
 
 	if (cacheEntry == NULL) {
-		char* itemIdCopy = copyString(itemId);
+		char* itemIdCopy = StringUtils_copyString(itemId);
 		char* parentItemId = getParentSubString(itemIdCopy);
 
 		if (parentItemId != NULL) {

@@ -62,7 +62,7 @@ ClientSVControlBlock_create(IedConnection connection, const char* reference)
 
     if (self) {
         self->connection = connection;
-        self->reference = copyString(reference);
+        self->reference = StringUtils_copyString(reference);
         self->isMulticast = isMulticast;
     }
 

@@ -39,7 +39,7 @@ MmsDomain_create(char* domainName)
 {
 	MmsDomain* self = (MmsDomain*) GLOBAL_CALLOC(1, sizeof(MmsDomain));
 
-	self->domainName = copyString(domainName);
+	self->domainName = StringUtils_copyString(domainName);
 	self->namedVariableLists = LinkedList_create();
 	self->journals = NULL;
 

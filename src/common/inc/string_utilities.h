@@ -28,20 +28,20 @@
 #include "linked_list.h"
 
 char*
-copyString(const char* string);
+StringUtils_copyString(const char* string);
 
 char*
-copyStringToBuffer(const char* string, char* buffer);
+StringUtils_copyStringToBuffer(const char* string, char* buffer);
 
 char*
-copySubString(char* startPos, char* endPos);
+StringUtils_copySubString(char* startPos, char* endPos);
 
 /**
  * \brief Concatenate strings. count indicates the number of strings
  * to concatenate.
  */
 char*
-createString(int count, ...);
+StringUtils_createString(int count, ...);
 
 /**
  * \brief Concatenate strings in user provided buffer. count indicates the number of strings
@@ -51,7 +51,7 @@ char*
 StringUtils_createStringInBuffer(char* buffer, int count, ...);
 
 char*
-createStringFromBuffer(const uint8_t* buf, int size);
+StringUtils_createStringFromBuffer(const uint8_t* buf, int size);
 
 char*
 StringUtils_createStringFromBufferInBuffer(char* newString, const uint8_t* buf, int size);

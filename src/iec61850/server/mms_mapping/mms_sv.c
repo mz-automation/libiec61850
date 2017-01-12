@@ -276,7 +276,7 @@ static MmsVariableSpecification*
 createSVControlBlockMmsStructure(char* gcbName, bool isUnicast)
 {
     MmsVariableSpecification* gcb = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    gcb->name = copyString(gcbName);
+    gcb->name = StringUtils_copyString(gcbName);
     gcb->type = MMS_STRUCTURE;
 
     int elementCount;
@@ -295,14 +295,14 @@ createSVControlBlockMmsStructure(char* gcbName, bool isUnicast)
     MmsVariableSpecification* namedVariable;
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("SvEna");
+    namedVariable->name = StringUtils_copyString("SvEna");
     namedVariable->type = MMS_BOOLEAN;
 
     gcb->typeSpec.structure.elements[currentElement++] = namedVariable;
 
     if (isUnicast) {
         namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-        namedVariable->name = copyString("Resv");
+        namedVariable->name = StringUtils_copyString("Resv");
         namedVariable->type = MMS_BOOLEAN;
 
         gcb->typeSpec.structure.elements[currentElement++] = namedVariable;
@@ -310,57 +310,57 @@ createSVControlBlockMmsStructure(char* gcbName, bool isUnicast)
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
     if (isUnicast)
-        namedVariable->name = copyString("UsvID");
+        namedVariable->name = StringUtils_copyString("UsvID");
     else
-        namedVariable->name = copyString("MsvID");
+        namedVariable->name = StringUtils_copyString("MsvID");
     namedVariable->typeSpec.visibleString = -129;
     namedVariable->type = MMS_VISIBLE_STRING;
 
     gcb->typeSpec.structure.elements[currentElement++] = namedVariable;
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("DatSet");
+    namedVariable->name = StringUtils_copyString("DatSet");
     namedVariable->typeSpec.visibleString = -129;
     namedVariable->type = MMS_VISIBLE_STRING;
 
     gcb->typeSpec.structure.elements[currentElement++] = namedVariable;
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("ConfRev");
+    namedVariable->name = StringUtils_copyString("ConfRev");
     namedVariable->type = MMS_INTEGER;
     namedVariable->typeSpec.integer = 32;
 
     gcb->typeSpec.structure.elements[currentElement++] = namedVariable;
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("SmpRate");
+    namedVariable->name = StringUtils_copyString("SmpRate");
     namedVariable->type = MMS_INTEGER;
     namedVariable->typeSpec.unsignedInteger = 32;
 
     gcb->typeSpec.structure.elements[currentElement++] = namedVariable;
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("OptFlds");
+    namedVariable->name = StringUtils_copyString("OptFlds");
     namedVariable->type = MMS_BIT_STRING;
     namedVariable->typeSpec.bitString = 5;
 
     gcb->typeSpec.structure.elements[currentElement++] = namedVariable;
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("SmpMod");
+    namedVariable->name = StringUtils_copyString("SmpMod");
     namedVariable->type = MMS_INTEGER;
     namedVariable->typeSpec.integer = 8;
 
     gcb->typeSpec.structure.elements[currentElement++] = namedVariable;
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("DstAddress");
+    namedVariable->name = StringUtils_copyString("DstAddress");
     MmsMapping_createPhyComAddrStructure(namedVariable);
 
     gcb->typeSpec.structure.elements[currentElement++] = namedVariable;
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("noASDU");
+    namedVariable->name = StringUtils_copyString("noASDU");
     namedVariable->type = MMS_INTEGER;
     namedVariable->typeSpec.integer = 32;
 
@@ -406,9 +406,9 @@ LIBIEC61850_SV_createSVControlBlocks(MmsMapping* self, MmsDomain* domain,
             sizeof(MmsVariableSpecification));
 
     if (unicast)
-        namedVariable->name = copyString("US");
+        namedVariable->name = StringUtils_copyString("US");
     else
-        namedVariable->name = copyString("MS");
+        namedVariable->name = StringUtils_copyString("MS");
 
     namedVariable->type = MMS_STRUCTURE;
 

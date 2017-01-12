@@ -311,16 +311,16 @@ mmsClient_createReadNamedVariableListRequest(uint32_t invokeId, const char* doma
 	if (domainId != NULL) {
         objectName->present = ObjectName_PR_domainspecific;
 
-        objectName->choice.domainspecific.domainId.buf = (uint8_t*) copyString(domainId);
+        objectName->choice.domainspecific.domainId.buf = (uint8_t*) StringUtils_copyString(domainId);
         objectName->choice.domainspecific.domainId.size = strlen(domainId);
 
-        objectName->choice.domainspecific.itemId.buf = (uint8_t*) copyString(itemId);
+        objectName->choice.domainspecific.itemId.buf = (uint8_t*) StringUtils_copyString(itemId);
         objectName->choice.domainspecific.itemId.size = strlen(itemId);
 	}
 	else {
         objectName->present = ObjectName_PR_vmdspecific;
 
-        objectName->choice.vmdspecific.buf = (uint8_t*) copyString(itemId);
+        objectName->choice.vmdspecific.buf = (uint8_t*) StringUtils_copyString(itemId);
         objectName->choice.vmdspecific.size = strlen(itemId);
 	}
 
@@ -358,7 +358,7 @@ mmsClient_createReadAssociationSpecificNamedVariableListRequest(
 
 	objectName->present = ObjectName_PR_aaspecific;
 
-	objectName->choice.aaspecific.buf = (uint8_t*) copyString(itemId);
+	objectName->choice.aaspecific.buf = (uint8_t*) StringUtils_copyString(itemId);
 	objectName->choice.aaspecific.size = strlen(itemId);
 
 	asn_enc_rval_t rval;

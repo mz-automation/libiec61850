@@ -101,19 +101,19 @@ GoosePublisher_destroy(GoosePublisher self)
 void
 GoosePublisher_setGoID(GoosePublisher self, char* goID)
 {
-    self->goID = copyString(goID);
+    self->goID = StringUtils_copyString(goID);
 }
 
 void
 GoosePublisher_setGoCbRef(GoosePublisher self, char* goCbRef)
 {
-    self->goCBRef = copyString(goCbRef);
+    self->goCBRef = StringUtils_copyString(goCbRef);
 }
 
 void
 GoosePublisher_setDataSetRef(GoosePublisher self, char* dataSetRef)
 {
-    self->dataSetRef = copyString(dataSetRef);
+    self->dataSetRef = StringUtils_copyString(dataSetRef);
 }
 
 void

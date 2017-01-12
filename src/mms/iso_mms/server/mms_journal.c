@@ -33,7 +33,7 @@ MmsJournal_create(const char* name)
 
     MmsJournal self = (MmsJournal) GLOBAL_MALLOC(sizeof(struct sMmsJournal));
 
-    self->name = copyString(name);
+    self->name = StringUtils_copyString(name);
 
     return self;
 }

@@ -49,7 +49,7 @@ ClientGooseControlBlock_create(const char* objectReference)
 {
     ClientGooseControlBlock self = (ClientGooseControlBlock) GLOBAL_CALLOC(1, sizeof(struct sClientGooseControlBlock));
 
-    self->objectReference = copyString(objectReference);
+    self->objectReference = StringUtils_copyString(objectReference);
 
     return self;
 }
@@ -414,56 +414,56 @@ IedConnection_setGoCBValues(IedConnection self, IedClientError* error, ClientGoo
     if (parametersMask & GOCB_ELEMENT_GO_ID) {
         strcpy(itemId + itemIdLen, "$GoID");
 
-        LinkedList_add(itemIds, copyString(itemId));
+        LinkedList_add(itemIds, StringUtils_copyString(itemId));
         LinkedList_add(values, goCB->goID);
     }
 
     if (parametersMask & GOCB_ELEMENT_DATSET) {
         strcpy(itemId + itemIdLen, "$DatSet");
 
-        LinkedList_add(itemIds, copyString(itemId));
+        LinkedList_add(itemIds, StringUtils_copyString(itemId));
         LinkedList_add(values, goCB->datSet);
     }
 
     if (parametersMask & GOCB_ELEMENT_CONF_REV) {
         strcpy(itemId + itemIdLen, "$ConfRev");
 
-        LinkedList_add(itemIds, copyString(itemId));
+        LinkedList_add(itemIds, StringUtils_copyString(itemId));
         LinkedList_add(values, goCB->confRev);
     }
 
     if (parametersMask & GOCB_ELEMENT_NDS_COMM) {
         strcpy(itemId + itemIdLen, "$NdsCom");
 
-        LinkedList_add(itemIds, copyString(itemId));
+        LinkedList_add(itemIds, StringUtils_copyString(itemId));
         LinkedList_add(values, goCB->ndsCom);
     }
 
     if (parametersMask & GOCB_ELEMENT_DST_ADDRESS) {
         strcpy(itemId + itemIdLen, "$DstAddress");
 
-        LinkedList_add(itemIds, copyString(itemId));
+        LinkedList_add(itemIds, StringUtils_copyString(itemId));
         LinkedList_add(values, goCB->dstAddress);
     }
 
     if (parametersMask & GOCB_ELEMENT_MIN_TIME) {
         strcpy(itemId + itemIdLen, "$MinTime");
 
-        LinkedList_add(itemIds, copyString(itemId));
+        LinkedList_add(itemIds, StringUtils_copyString(itemId));
         LinkedList_add(values, goCB->minTime);
     }
 
     if (parametersMask & GOCB_ELEMENT_MAX_TIME) {
         strcpy(itemId + itemIdLen, "$MaxTime");
 
-        LinkedList_add(itemIds, copyString(itemId));
+        LinkedList_add(itemIds, StringUtils_copyString(itemId));
         LinkedList_add(values, goCB->maxTime);
     }
 
     if (parametersMask & GOCB_ELEMENT_FIXED_OFFS) {
         strcpy(itemId + itemIdLen, "$FixedOffs");
 
-        LinkedList_add(itemIds, copyString(itemId));
+        LinkedList_add(itemIds, StringUtils_copyString(itemId));
         LinkedList_add(values, goCB->fixedOffs);
     }
 
@@ -471,7 +471,7 @@ IedConnection_setGoCBValues(IedConnection self, IedClientError* error, ClientGoo
     if (parametersMask & GOCB_ELEMENT_GO_ENA) {
         strcpy(itemId + itemIdLen, "$GoEna");
 
-        LinkedList_add(itemIds, copyString(itemId));
+        LinkedList_add(itemIds, StringUtils_copyString(itemId));
         LinkedList_add(values, goCB->goEna);
     }
 

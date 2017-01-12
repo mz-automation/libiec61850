@@ -71,7 +71,7 @@ createTypeSpecification (
 					(Identifier_t*) GLOBAL_CALLOC(1, sizeof(Identifier_t));
 
 			typeSpec->choice.structure.components.list.array[i]->componentName->buf =
-			        (uint8_t*) copyString(namedVariable->typeSpec.structure.elements[i]->name);
+			        (uint8_t*) StringUtils_copyString(namedVariable->typeSpec.structure.elements[i]->name);
 
 			typeSpec->choice.structure.components.list.array[i]->componentName->size =
 					strlen(namedVariable->typeSpec.structure.elements[i]->name);
@@ -302,8 +302,8 @@ mmsServer_handleGetVariableAccessAttributesRequest(
 				Identifier_t domainId = request->choice.name.choice.domainspecific.domainId;
 				Identifier_t nameId = request->choice.name.choice.domainspecific.itemId;
 
-				char* domainIdStr = createStringFromBuffer(domainId.buf, domainId.size);
-				char* nameIdStr = createStringFromBuffer(nameId.buf, nameId.size);
+				char* domainIdStr = StringUtils_createStringFromBuffer(domainId.buf, domainId.size);
+				char* nameIdStr = StringUtils_createStringFromBuffer(nameId.buf, nameId.size);
 
 				if (DEBUG_MMS_SERVER)
 				    printf("MMS_SERVER: getVariableAccessAttributes domainId: %s nameId: %s\n", domainIdStr, nameIdStr);
@@ -317,7 +317,7 @@ mmsServer_handleGetVariableAccessAttributesRequest(
 			else if (request->choice.name.present == ObjectName_PR_vmdspecific) {
 			    Identifier_t nameId = request->choice.name.choice.vmdspecific;
 
-			    char* nameIdStr = createStringFromBuffer(nameId.buf, nameId.size);
+			    char* nameIdStr = StringUtils_createStringFromBuffer(nameId.buf, nameId.size);
 
 			    if (DEBUG_MMS_SERVER) printf("MMS_SERVER: getVariableAccessAttributes (VMD specific) nameId: %s\n", nameIdStr);
 

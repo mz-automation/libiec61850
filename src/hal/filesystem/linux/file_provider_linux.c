@@ -125,7 +125,7 @@ FileSystem_openDirectory(char* directoryName)
 char*
 FileSystem_readDirectory(DirectoryHandle directory, bool* isDirectory)
 {
-    struct dirent *dir;
+    struct dirent* dir;
 
     dir = readdir(directory->handle);
 

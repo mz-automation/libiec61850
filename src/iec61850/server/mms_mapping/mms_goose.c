@@ -191,7 +191,7 @@ MmsGooseControlBlock_enable(MmsGooseControlBlock self)
 
         if (dataSetRef != NULL) {
 
-            self->dataSetRef = copyString(dataSetRef);
+            self->dataSetRef = StringUtils_copyString(dataSetRef);
 
             self->dataSet = IedModel_lookupDataSet(self->mmsMapping->model, self->dataSetRef);
 
@@ -363,7 +363,7 @@ static MmsVariableSpecification*
 createMmsGooseControlBlock(char* gcbName)
 {
     MmsVariableSpecification* gcb = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    gcb->name = copyString(gcbName);
+    gcb->name = StringUtils_copyString(gcbName);
     gcb->type = MMS_STRUCTURE;
     gcb->typeSpec.structure.elementCount = 9;
     gcb->typeSpec.structure.elements = (MmsVariableSpecification**) GLOBAL_CALLOC(9, sizeof(MmsVariableSpecification*));
@@ -371,60 +371,60 @@ createMmsGooseControlBlock(char* gcbName)
     MmsVariableSpecification* namedVariable;
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("GoEna");
+    namedVariable->name = StringUtils_copyString("GoEna");
     namedVariable->type = MMS_BOOLEAN;
 
     gcb->typeSpec.structure.elements[0] = namedVariable;
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("GoID");
+    namedVariable->name = StringUtils_copyString("GoID");
     namedVariable->typeSpec.visibleString = -129;
     namedVariable->type = MMS_VISIBLE_STRING;
 
     gcb->typeSpec.structure.elements[1] = namedVariable;
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("DatSet");
+    namedVariable->name = StringUtils_copyString("DatSet");
     namedVariable->typeSpec.visibleString = -129;
     namedVariable->type = MMS_VISIBLE_STRING;
 
     gcb->typeSpec.structure.elements[2] = namedVariable;
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("ConfRev");
+    namedVariable->name = StringUtils_copyString("ConfRev");
     namedVariable->type = MMS_UNSIGNED;
     namedVariable->typeSpec.unsignedInteger = 32;
 
     gcb->typeSpec.structure.elements[3] = namedVariable;
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("NdsCom");
+    namedVariable->name = StringUtils_copyString("NdsCom");
     namedVariable->type = MMS_BOOLEAN;
 
     gcb->typeSpec.structure.elements[4] = namedVariable;
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("DstAddress");
+    namedVariable->name = StringUtils_copyString("DstAddress");
     MmsMapping_createPhyComAddrStructure(namedVariable);
 
     gcb->typeSpec.structure.elements[5] = namedVariable;
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("MinTime");
+    namedVariable->name = StringUtils_copyString("MinTime");
     namedVariable->type = MMS_UNSIGNED;
     namedVariable->typeSpec.unsignedInteger = 32;
 
     gcb->typeSpec.structure.elements[6] = namedVariable;
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("MaxTime");
+    namedVariable->name = StringUtils_copyString("MaxTime");
     namedVariable->type = MMS_UNSIGNED;
     namedVariable->typeSpec.unsignedInteger = 32;
 
     gcb->typeSpec.structure.elements[7] = namedVariable;
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("FixedOffs");
+    namedVariable->name = StringUtils_copyString("FixedOffs");
     namedVariable->type = MMS_BOOLEAN;
 
     gcb->typeSpec.structure.elements[8] = namedVariable;
@@ -459,7 +459,7 @@ createDataSetReference(char* domainName, char* lnName, char* dataSetName)
 {
     char* dataSetReference;
 
-    dataSetReference = createString(5, domainName, "/", lnName, "$", dataSetName);
+    dataSetReference = StringUtils_createString(5, domainName, "/", lnName, "$", dataSetName);
 
     return dataSetReference;
 }
@@ -470,7 +470,7 @@ GOOSE_createGOOSEControlBlocks(MmsMapping* self, MmsDomain* domain,
 {
     MmsVariableSpecification* namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1,
             sizeof(MmsVariableSpecification));
-    namedVariable->name = copyString("GO");
+    namedVariable->name = StringUtils_copyString("GO");
     namedVariable->type = MMS_STRUCTURE;
 
     namedVariable->typeSpec.structure.elementCount = gseCount;
@@ -492,7 +492,7 @@ GOOSE_createGOOSEControlBlocks(MmsMapping* self, MmsDomain* domain,
         MmsGooseControlBlock mmsGCB = MmsGooseControlBlock_create();
 
 
-        mmsGCB->goCBRef = createString(5, MmsDomain_getName(domain), "/", logicalNode->name,
+        mmsGCB->goCBRef = StringUtils_createString(5, MmsDomain_getName(domain), "/", logicalNode->name,
                 "$GO$", gooseControlBlock->name);
 
         if (gooseControlBlock->appId != NULL) {
@@ -500,7 +500,7 @@ GOOSE_createGOOSEControlBlocks(MmsMapping* self, MmsDomain* domain,
 
             MmsValue_setVisibleString(goID, gooseControlBlock->appId);
 
-            mmsGCB->goId = copyString(gooseControlBlock->appId);
+            mmsGCB->goId = StringUtils_copyString(gooseControlBlock->appId);
         }
 
         if (gooseControlBlock->dataSetName != NULL)

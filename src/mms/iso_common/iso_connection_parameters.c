@@ -53,7 +53,7 @@ AcseAuthenticationParameter_destroy(AcseAuthenticationParameter self)
 void
 AcseAuthenticationParameter_setPassword(AcseAuthenticationParameter self, char* password)
 {
-    self->value.password.octetString = (uint8_t*) copyString(password);
+    self->value.password.octetString = (uint8_t*) StringUtils_copyString(password);
     self->value.password.passwordLength = strlen(password);
 }
 

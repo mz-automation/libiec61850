@@ -204,7 +204,7 @@ createMmsServerCache(IedServer self)
 
                    )
                 {
-                    char* variableName = createString(3, lnName, "$", fcName);
+                    char* variableName = StringUtils_createString(3, lnName, "$", fcName);
 
                     if (variableName == NULL) goto exit_function;
 

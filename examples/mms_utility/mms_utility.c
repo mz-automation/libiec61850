@@ -96,7 +96,7 @@ printRawMmsMessage(void* parameter, uint8_t* message, int messageLength, bool re
 
 int main(int argc, char** argv) {
 
-	char* hostname = copyString("localhost");
+	char* hostname = StringUtils_copyString("localhost");
 	int tcpPort = 102;
 	int maxPduSize = 65000;
 
@@ -124,7 +124,7 @@ int main(int argc, char** argv) {
 		    break;
 
 		case 'h':
-			hostname = copyString(optarg);
+			hostname = StringUtils_copyString(optarg);
 			break;
 		case 'p':
 			tcpPort = atoi(optarg);
@@ -140,27 +140,27 @@ int main(int argc, char** argv) {
 		    break;
 		case 't':
 			getDeviceDirectory = 1;
-			domainName = copyString(optarg);
+			domainName = StringUtils_copyString(optarg);
 			break;
 		case 'a':
 		    readWriteHasDomain = 1;
-		    domainName = copyString(optarg);
+		    domainName = StringUtils_copyString(optarg);
 		    break;
 		case 'r':
 		    readVariable = 1;
-		    variableName = copyString(optarg);
+		    variableName = StringUtils_copyString(optarg);
 		    break;
 		case 'f':
 		    showFileList = 1;
 		    break;
 		case 'g':
 		    getFileAttributes = 1;
-		    filename = copyString(optarg);
+		    filename = StringUtils_copyString(optarg);
 		    break;
 
 		case 'j':
 		    readJournal = 1;
-		    journalName = copyString(optarg);
+		    journalName = StringUtils_copyString(optarg);
 		    break;
 
 		default:

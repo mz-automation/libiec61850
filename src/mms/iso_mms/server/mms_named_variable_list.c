@@ -31,11 +31,11 @@ MmsNamedVariableListEntry_create(MmsAccessSpecifier accessSpecifier)
 	MmsNamedVariableListEntry listEntry = (MmsNamedVariableListEntry) GLOBAL_MALLOC(sizeof(MmsAccessSpecifier));
 
 	listEntry->domain = accessSpecifier.domain;
-	listEntry->variableName = copyString(accessSpecifier.variableName);
+	listEntry->variableName = StringUtils_copyString(accessSpecifier.variableName);
 	listEntry->arrayIndex = accessSpecifier.arrayIndex;
 
 	if (accessSpecifier.componentName != NULL)
-		listEntry->componentName = copyString(accessSpecifier.componentName);
+		listEntry->componentName = StringUtils_copyString(accessSpecifier.componentName);
 	else
 		listEntry->componentName = NULL;
 
@@ -67,7 +67,7 @@ MmsNamedVariableList_create(MmsDomain* domain, char* name, bool deletable)
 	MmsNamedVariableList self = (MmsNamedVariableList) GLOBAL_MALLOC(sizeof(struct sMmsNamedVariableList));
 
 	self->deletable = deletable;
-	self->name = copyString(name);
+	self->name = StringUtils_copyString(name);
 	self->listOfVariables = LinkedList_create();
 	self->domain = domain;
 

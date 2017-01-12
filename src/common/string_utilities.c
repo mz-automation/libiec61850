@@ -24,11 +24,11 @@
 #include "libiec61850_platform_includes.h"
 
 char*
-copySubString(char* startPos, char* endPos)
+StringUtils_copySubString(char* startPos, char* endPos)
 {
 	int newStringLength = endPos - startPos;
 
-	char* newString = (char*) GLOBAL_MALLOC(newStringLength) + 1;
+	char* newString = (char*) GLOBAL_MALLOC(newStringLength + 1);
 
 	memcpy(newString, startPos, newStringLength);
 
@@ -38,7 +38,7 @@ copySubString(char* startPos, char* endPos)
 }
 
 char*
-copyString(const char* string)
+StringUtils_copyString(const char* string)
 {
 	int newStringLength = strlen(string) + 1;
 
@@ -50,7 +50,7 @@ copyString(const char* string)
 }
 
 char*
-copyStringToBuffer(const char* string, char* buffer)
+StringUtils_copyStringToBuffer(const char* string, char* buffer)
 {
     int newStringLength = strlen(string) + 1;
 
@@ -61,7 +61,7 @@ copyStringToBuffer(const char* string, char* buffer)
 
 
 char*
-createStringFromBuffer(const uint8_t* buf, int size)
+StringUtils_createStringFromBuffer(const uint8_t* buf, int size)
 {
 	char* newStr = (char*) GLOBAL_MALLOC(size + 1);
 
@@ -102,7 +102,7 @@ StringUtils_createStringInBuffer(char* newStr, int count, ...)
 }
 
 char*
-createString(int count, ...)
+StringUtils_createString(int count, ...)
 {
 	va_list ap;
 	char* newStr;

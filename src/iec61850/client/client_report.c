@@ -275,10 +275,10 @@ IedConnection_installReportHandler(IedConnection self, const char* rcbReference,
     report = ClientReport_create();
     report->callback = handler;
     report->callbackParameter = handlerParameter;
-    report->rcbReference = copyString(rcbReference);
+    report->rcbReference = StringUtils_copyString(rcbReference);
 
     if (rptId != NULL)
-        report->rptId = copyString(rptId);
+        report->rptId = StringUtils_copyString(rptId);
     else
         report->rptId = NULL;
 

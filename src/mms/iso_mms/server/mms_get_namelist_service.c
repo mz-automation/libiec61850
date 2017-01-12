@@ -234,9 +234,9 @@ getNameListDomainSpecific(MmsServerConnection connection, char* domainName)
         for (i = 0; i < domain->namedVariablesCount; i++) {
 
 #if (CONFIG_MMS_SORT_NAME_LIST == 1)
-            element = LinkedList_insertAfter(element, copyString(variables[index[i]]->name));
+            element = LinkedList_insertAfter(element, StringUtils_copyString(variables[index[i]]->name));
 #else
-            element = LinkedList_insertAfter(element, copyString(variables[i]->name));
+            element = LinkedList_insertAfter(element, StringUtils_copyString(variables[i]->name));
 #endif
 
 #if (CONFIG_MMS_SUPPORT_FLATTED_NAME_SPACE == 1)
@@ -272,7 +272,7 @@ createStringsFromNamedVariableList(LinkedList nameList, LinkedList variableLists
                 (MmsNamedVariableList) variableListsElement->data;
 
         LinkedList_add(nameList,
-                copyString(MmsNamedVariableList_getName(variableList)));
+                StringUtils_copyString(MmsNamedVariableList_getName(variableList)));
 
         variableListsElement = LinkedList_getNext(variableListsElement);
     }

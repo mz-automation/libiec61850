@@ -46,7 +46,7 @@ mmsClient_createMmsGetNameListRequestVMDspecific(long invokeId, ByteBuffer* writ
 
 	if (continueAfter != NULL) {
 		request->continueAfter = (Identifier_t*) GLOBAL_CALLOC(1, sizeof(Identifier_t));
-		request->continueAfter->buf = (uint8_t*) copyString(continueAfter);
+		request->continueAfter->buf = (uint8_t*) StringUtils_copyString(continueAfter);
 		request->continueAfter->size = strlen(continueAfter);
 	}
 	else
@@ -84,7 +84,7 @@ mmsClient_createMmsGetNameListRequestAssociationSpecific(long invokeId, ByteBuff
 
 	if (continueAfter != NULL) {
 		request->continueAfter = (Identifier_t*) GLOBAL_CALLOC(1, sizeof(Identifier_t));
-		request->continueAfter->buf = (uint8_t*) copyString(continueAfter);
+		request->continueAfter->buf = (uint8_t*) StringUtils_copyString(continueAfter);
 		request->continueAfter->size = strlen(continueAfter);
 	}
 	else
@@ -166,7 +166,7 @@ mmsClient_parseGetNameListResponse(LinkedList* nameList, ByteBuffer* message, ui
         bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
         if (bufPos < 0) goto exit_error;
 
-        char* variableName = createStringFromBuffer(buffer + bufPos, length);
+        char* variableName = StringUtils_createStringFromBuffer(buffer + bufPos, length);
 
         element = LinkedList_insertAfter(element, variableName);
 
@@ -211,7 +211,7 @@ mmsClient_createGetNameListRequestDomainOrVMDSpecific(long invokeId, const char*
 
 	if (continueAfter != NULL) {
 		request->continueAfter = (Identifier_t*) GLOBAL_CALLOC(1, sizeof(Identifier_t));
-		request->continueAfter->buf = (uint8_t*) copyString(continueAfter);
+		request->continueAfter->buf = (uint8_t*) StringUtils_copyString(continueAfter);
 		request->continueAfter->size = strlen(continueAfter);
 	}
 	else

@@ -151,7 +151,7 @@ mmsServer_handleWriteRequest(
 
         if (varSpec->variableSpecification.choice.name.present == ObjectName_PR_domainspecific) {
             Identifier_t domainId = varSpec->variableSpecification.choice.name.choice.domainspecific.domainId;
-            char* domainIdStr = createStringFromBuffer(domainId.buf, domainId.size);
+            char* domainIdStr = StringUtils_createStringFromBuffer(domainId.buf, domainId.size);
 
             domain = MmsDevice_getDomain(device, domainIdStr);
 
@@ -163,7 +163,7 @@ mmsServer_handleWriteRequest(
             }
 
             Identifier_t nameId = varSpec->variableSpecification.choice.name.choice.domainspecific.itemId;
-            nameIdStr = createStringFromBuffer(nameId.buf, nameId.size);
+            nameIdStr = StringUtils_createStringFromBuffer(nameId.buf, nameId.size);
 
             variable = MmsDomain_getNamedVariable(domain, nameIdStr);
         }
@@ -172,7 +172,7 @@ mmsServer_handleWriteRequest(
         else if (varSpec->variableSpecification.choice.name.present == ObjectName_PR_vmdspecific) {
 
             Identifier_t nameId = varSpec->variableSpecification.choice.name.choice.vmdspecific;
-            nameIdStr = createStringFromBuffer(nameId.buf, nameId.size);
+            nameIdStr = StringUtils_createStringFromBuffer(nameId.buf, nameId.size);
 
             variable = MmsDevice_getNamedVariable(device, nameIdStr);
         }

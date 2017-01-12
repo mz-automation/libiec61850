@@ -50,7 +50,7 @@ createTypeSpecification(TypeSpecification_t* asnTypeSpec) {
 
 			for (i = 0; i < elementCount; i++) {
 
-				char* name = createStringFromBuffer(
+				char* name = StringUtils_createStringFromBuffer(
 						asnTypeSpec->choice.structure.components.list.array[i]->componentName->buf,
 						asnTypeSpec->choice.structure.components.list.array[i]->componentName->size);
 

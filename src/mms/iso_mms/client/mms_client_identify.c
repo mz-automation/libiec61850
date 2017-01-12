@@ -84,15 +84,15 @@ mmsClient_parseIdentifyResponse(MmsConnection self)
 
         switch (tag) {
         case 0x80: /* vendorName */
-            vendorName = createStringFromBuffer(buffer + bufPos, length);
+            vendorName = StringUtils_createStringFromBuffer(buffer + bufPos, length);
             bufPos += length;
             break;
         case 0x81: /* modelName */
-            modelName = createStringFromBuffer(buffer + bufPos, length);
+            modelName = StringUtils_createStringFromBuffer(buffer + bufPos, length);
             bufPos += length;
             break;
         case 0x82: /* revision */
-            revision = createStringFromBuffer(buffer + bufPos, length);
+            revision = StringUtils_createStringFromBuffer(buffer + bufPos, length);
             bufPos += length;
             break;
         case 0x83: /* list of abstract syntaxes */
