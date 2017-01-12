@@ -6,6 +6,7 @@ ARM_TOOLCHAIN_PREFIX=arm-linux-gnueabihf-
 #ARM_TOOLCHAIN_PREFIX=arm-poky-linux-gnueabi-
 #ARM_TOOLCHAIN_PREFIX=arm-linux-gnueabi-
 UCLINUX_ARM_TOOLCHAIN_PREFIX=arm-uclinux-elf-
+UCLINUX_XPORT_TOOLCHAIN_PREFIX=m68k-uclinux-
 MINGW_TOOLCHAIN_PREFIX=i586-mingw32msvc-
 #MINGW_TOOLCHAIN_PREFIX=x86_64-w64-mingw32-
 MINGW64_TOOLCHAIN_PREFIX=x86_64-w64-mingw32-
@@ -58,6 +59,14 @@ ifeq ($(TARGET), LINUX-ARM)
 TOOLCHAIN_PREFIX=$(ARM_TOOLCHAIN_PREFIX)
 CFLAGS += -mno-unaligned-access
 #CFLAGS += -mcpu=arm926ej-s
+endif
+
+ifeq ($(TARGET), UCLINUX-XPORT)
+TOOLCHAIN_PREFIX=$(UCLINUX_XPORT_TOOLCHAIN_PREFIX)
+CFLAGS += -DPLATFORM_BYTE_ORDER
+CFLAGS += -mcpu=5208  
+CFLAGS += -fno-builtin -fno-common 
+CFLAGS += -fno-dwarf2-cfi-asm -msep-data -DCONFIG_COLDFIRE -D__linux__ -Dunix -D__uClinux__
 endif
 
 ifeq ($(TARGET), UCLINUX-WAGO)
