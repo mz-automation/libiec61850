@@ -42,6 +42,8 @@ namespace server1
 			iedServer.Start (102);
 			Console.WriteLine ("Server started");
 
+			GC.Collect ();
+
 			while (running) {
 				Thread.Sleep (1);
 			}

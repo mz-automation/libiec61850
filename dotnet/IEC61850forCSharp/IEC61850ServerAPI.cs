@@ -779,11 +779,15 @@ namespace IEC61850
 			//    }
 			//}
 
+			private InternalConnectionHandler internalConnectionHandler = null;
 
 			/// <summary>Start MMS server</summary>
 			public void Start(int tcpPort)
 			{
-				IedServer_setConnectionIndicationHandler (self, connectionIndicationHandler, IntPtr.Zero);
+				if (internalConnectionHandler == null)
+					internalConnectionHandler = new InternalConnectionHandler (connectionIndicationHandler);					
+
+				IedServer_setConnectionIndicationHandler (self, internalConnectionHandler, IntPtr.Zero);
 
 				IedServer_start(self, tcpPort);
 			}
@@ -801,6 +805,7 @@ namespace IEC61850
 			public void Stop()
 			{
 				IedServer_stop(self);
+				internalConnectionHandler = null;
 			}
 
 			/// <summary>
@@ -811,6 +816,7 @@ namespace IEC61850
 			{
 				IedServer_destroy(self);
 				self = IntPtr.Zero;
+				internalConnectionHandler = null;
 			}
 
 			public bool IsRunning()

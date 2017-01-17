@@ -17,14 +17,19 @@ namespace example1
             if (args.Length > 0)
                 hostname = args[0];
             else
-                hostname = "10.0.2.2";
+                hostname = "127.0.0.1";
+
+			int port = 102;
+
+			if (args.Length > 1)
+				port = Int32.Parse(args [1]);
 
             Console.WriteLine("Connect to " + hostname);
 
 
             try
             {
-                con.Connect(hostname, 102);
+                con.Connect(hostname, port);
 
                 List<string> serverDirectory = con.GetServerDirectory(false);
 
