@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <signal.h>
+#define __STDC_FORMAT_MACROS         /* otherwise PRIu64 is not defined for MinGW */
 #include <inttypes.h>
 
 static int running = 1;

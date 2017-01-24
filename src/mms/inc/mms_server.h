@@ -124,14 +124,50 @@ typedef MmsError (*MmsNamedVariableListChangedHandler)(void* parameter, bool cre
 void
 MmsServer_installVariableListChangedHandler(MmsServer self, MmsNamedVariableListChangedHandler handler, void* parameter);
 
-
+/**
+ * \brief ObtainFile service callback handler
+ *
+ * This is invoked when the obtainFile service is requested by the client. It can be used to accept or deny the
+ * write access to the file system based on the client connection.
+ *
+ * \param parameter user provided parameter that is passed to the callback handler
+ * \param connection the connection that requested the service
+ * \param sourceFilename the source file name on the client side system
+ * \param destinationFilename the target file name on the server side system
+ */
 typedef bool (*MmsObtainFileHandler)(void* parameter, MmsServerConnection connection, const char* sourceFilename, const char* destinationFilename);
 
+/**
+ * \brief Install callback handler that is invoked when the file upload (obtainFile service) is invoked by the client
+ *
+ * This handler can be used to apply access restrictions on the file upload (obtainFile) service
+ *
+ * \param self the MmsServer instance to operate on
+ * \param handler the callback handler function
+ * \param parameter user provided parameter that is passed to the callback handler
+ */
 void
 MmsServer_installObtainFileHandler(MmsServer self, MmsObtainFileHandler handler, void* parameter);
 
+/**
+ * \brief Get file complete (obtainFile service terminated) callback handler
+ *
+ * This handler can be used to invoke some actions after a file upload is complete.
+ *
+ * \param parameter user provided parameter that is passed to the callback handler
+ * \param connection the connection that requested the service
+ * \param destinationFilename the target file name on the server side system
+ */
 typedef void (*MmsGetFileCompleteHandler)(void* parameter, MmsServerConnection connection, const char* destinationFilename);
 
+/**
+ * \brief Install callback handler that is invoked when the file upload (obtainFile service) is completed and the
+ *        file has been uploaded.
+ *
+ * \param self the MmsServer instance to operate on
+ * \param handler the callback handler function
+ * \param parameter user provided parameter that is passed to the callback handler
+ */
 void
 MmsServer_installGetFileCompleteHandler(MmsServer self, MmsGetFileCompleteHandler handler, void* parameter);
 
