@@ -17,7 +17,7 @@ EXECUTE_PROCESS ( #Finding python modules install path
 		"import site, sys; sys.stdout.write(site.getsitepackages()[-1])"
 		OUTPUT_VARIABLE PYTHON_SITE_DIR
 		)
-INSTALL ( FILES ${CMAKE_BINARY_DIR}/iec61850.py DESTINATION ${PYTHON_SITE_DIR})
+INSTALL ( FILES ${CMAKE_CURRENT_BINARY_DIR}/iec61850.py DESTINATION ${PYTHON_SITE_DIR})
 INSTALL ( TARGETS _iec61850   LIBRARY DESTINATION ${PYTHON_SITE_DIR})
 
 add_test(test_pyiec61850 ${PYTHON_EXECUTABLE} test_pyiec61850.py)
