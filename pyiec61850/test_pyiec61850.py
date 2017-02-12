@@ -1,11 +1,12 @@
 #!/usr/bin/python
 import sys
 import time
-import iec61850
 import threading
 import traceback
 import signal
 import sys
+sys.path.append('.')
+import iec61850
 def signal_handler(signal, frame):
 	global running
 	running =0

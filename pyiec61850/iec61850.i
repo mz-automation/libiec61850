@@ -18,6 +18,10 @@ ModelNode* toModelNode(DataObject * DO)
 {
     return (ModelNode*) DO;
 }
+char* toCharP(void * v)
+{
+    return (char *) v;
+}
 DataAttribute* toDataAttribute(DataObject * DO)
 { return (DataAttribute*)DO;}
 DataAttribute* toDataAttribute(ModelNode * MN)
@@ -40,3 +44,4 @@ ModelNode* toModelNode(LogicalNode *);
 ModelNode* toModelNode(DataObject *);
 DataAttribute* toDataAttribute(DataObject *);
 DataAttribute* toDataAttribute(ModelNode *);
+char* toCharP(void *);
