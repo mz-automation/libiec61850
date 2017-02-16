@@ -30,7 +30,9 @@
 #include "hal_ethernet.h"
 #include "ber_encoder.h"
 
+#ifndef DEBUG_SV_PUBLISHER
 #define DEBUG_SV_PUBLISHER 1
+#endif
 
 #define CONFIG_SV_DEFAULT_DST_ADDRESS CONFIG_GOOSE_DEFAULT_DST_ADDRESS
 
