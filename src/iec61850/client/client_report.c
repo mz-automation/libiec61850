@@ -359,11 +359,14 @@ private_IedConnection_handleReport(IedConnection self, MmsValue* value)
 
     while (element != NULL) {
         ClientReport report = (ClientReport) element->data;
-
+        char defaultRptId[129];
         char* rptId = report->rptId;
 
-        if (rptId == NULL)
-            rptId = report->rcbReference;
+        if ((rptId == NULL)  || (rptId && (strlen(rptId) == 0))) {
+            strncpy(defaultRptId, report->rcbReference, 129);
+            StringUtils_replace(defaultRptId, '.', '$');
+            rptId = defaultRptId;
+        }
 
         if (strcmp(MmsValue_toString(rptIdValue), rptId) == 0) {
             matchingReport = report;
