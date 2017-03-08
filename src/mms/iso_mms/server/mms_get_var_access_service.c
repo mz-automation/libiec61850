@@ -134,7 +134,7 @@ createTypeSpecification (
 			break;
 		default:
 			if (DEBUG_MMS_SERVER) 
-                            printf("MMS-SERVER: Unsupported type %i!\n", namedVariable->type);
+			    printf("MMS-SERVER: Unsupported type %i!\n", namedVariable->type);
 			return -1;
 			break;
 		}
