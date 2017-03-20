@@ -89,6 +89,9 @@ SV_ASDU_setFLOAT64(SV_ASDU self, int index, double value);
 void
 SV_ASDU_setSmpCnt(SV_ASDU self, uint16_t value);
 
+uint16_t
+SV_ASDU_getSmpCnt(SV_ASDU self);
+
 void
 SV_ASDU_increaseSmpCnt(SV_ASDU self);
 

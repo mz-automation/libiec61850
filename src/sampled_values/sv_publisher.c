@@ -30,7 +30,9 @@
 #include "hal_ethernet.h"
 #include "ber_encoder.h"
 
+#ifndef DEBUG_SV_PUBLISHER
 #define DEBUG_SV_PUBLISHER 1
+#endif
 
 #define CONFIG_SV_DEFAULT_DST_ADDRESS CONFIG_GOOSE_DEFAULT_DST_ADDRESS
 
@@ -567,6 +569,11 @@ SV_ASDU_setFLOAT64(SV_ASDU self, int index, double value)
     }
 }
 
+uint16_t
+SV_ASDU_getSmpCnt(SV_ASDU self)
+{
+    return self->smpCnt;
+}
 
 void
 SV_ASDU_setSmpCnt(SV_ASDU self, uint16_t value)
