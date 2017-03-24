@@ -352,6 +352,7 @@ int main(int argc, char** argv) {
 	}
 
 exit:
+	free(hostname);
 	MmsConnection_destroy(con);
 }
 

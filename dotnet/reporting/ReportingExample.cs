@@ -93,8 +93,6 @@ namespace reporting
                 rcb1.SetIntgPd(5000);
                 rcb1.SetRptEna(true);
 
-                rcb1.SetRCBValues();
-
                 rcb2.GetRCBValues();
 
                 if (rcb2.IsBuffered())

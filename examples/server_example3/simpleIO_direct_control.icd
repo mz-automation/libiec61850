@@ -87,9 +87,9 @@
 			  <TrgOps dchg="true" qchg="true"/>
 	    </LogControl>
 
-	    <LogControl name="GeneralLog" datSet="" logName="">
+	    <LogControl name="GeneralLog" logName="">
                           <TrgOps dchg="true" qchg="true"/>
-            </LogControl>
+        </LogControl>
 
 
 	    <Log />
