@@ -1999,6 +1999,7 @@ MmsValue_printToBuffer(const MmsValue* self, char* buffer, int bufferSize)
     case MMS_STRUCTURE:
     case MMS_ARRAY:
         {
+            if (bufferSize==0) break;
             buffer[0] = '{';
 
             int bufPos = 1;
