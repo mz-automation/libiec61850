@@ -21,7 +21,6 @@ namespace authenticate
 
             Console.WriteLine("Connect to " + hostname);
 
-
             try
             {
 				IsoConnectionParameters parameters = con.GetConnectionParameters();

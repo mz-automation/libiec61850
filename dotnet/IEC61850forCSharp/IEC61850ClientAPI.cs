@@ -434,17 +434,24 @@ namespace IEC61850
 				}
             }
 
+            private IsoConnectionParameters isoConnectionParameters = null;
+
 			/// <summary>
 			/// Gets the connection parameters
 			/// </summary>
 			/// <returns>The connection parameters</returns>
 			public IsoConnectionParameters GetConnectionParameters ()
 			{
-				IntPtr mmsConnection = IedConnection_getMmsConnection(connection);
+                if (isoConnectionParameters == null)
+                {
+                    IntPtr mmsConnection = IedConnection_getMmsConnection(connection);
 
-				IntPtr parameters = MmsConnection_getIsoConnectionParameters(mmsConnection);
+                    IntPtr parameters = MmsConnection_getIsoConnectionParameters(mmsConnection);
 
-				return new IsoConnectionParameters(parameters);
+                    isoConnectionParameters = new IsoConnectionParameters(parameters);
+                }
+
+                return isoConnectionParameters;
 			}
 
 			private void FreeHGlobaleDeleteFunction (IntPtr pointer)
