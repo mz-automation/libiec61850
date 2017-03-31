@@ -154,9 +154,6 @@ namespace IEC61850
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern void IedConnection_uninstallReportHandler(IntPtr connection, string rcbReference);
 
-            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-            static extern void IedConnection_triggerGIReport(IntPtr connection, out int error, string rcbReference);
-
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 			private delegate void InternalReportHandler (IntPtr parameter, IntPtr report);
 
@@ -301,19 +298,6 @@ namespace IEC61850
 				if (error != 0)
 					throw new IedConnectionException ("getRCBValues service failed", error);
 			}
-
-            /// <summary>
-            /// Trigger General Interrogation Report
-            /// </summary>
-            /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
-            public void TriggerGIReport()
-            {
-                int error;
-                IedConnection_triggerGIReport(connection, out error, objectReference);
-
-                if (error != 0)
-                    throw new IedConnectionException("triggerGIReport service failed", error);
-            }
 
             /// <summary>
             /// Write changed RCB values to the server.
