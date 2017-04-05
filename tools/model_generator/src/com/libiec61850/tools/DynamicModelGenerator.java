@@ -376,6 +376,7 @@ public class DynamicModelGenerator {
                case UNICODE_STRING_255:
                    output.print("=\"" + value.getValue()+ "\"");
                    break;
+               case CURRENCY:
                case VISIBLE_STRING_32:
                case VISIBLE_STRING_64:
                case VISIBLE_STRING_129:

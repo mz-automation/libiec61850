@@ -229,6 +229,10 @@ createNamedVariableFromDataAttribute(DataAttribute* attribute)
             namedVariable->typeSpec.octetString = -64;
             namedVariable->type = MMS_OCTET_STRING;
             break;
+        case IEC61850_CURRENCY:  /* mapping of Currency BasicType (see tissue 1047) */
+            namedVariable->typeSpec.visibleString = -3;
+            namedVariable->type = MMS_VISIBLE_STRING;
+            break;
         case IEC61850_VISIBLE_STRING_32:
             namedVariable->typeSpec.visibleString = -32;
             namedVariable->type = MMS_VISIBLE_STRING;

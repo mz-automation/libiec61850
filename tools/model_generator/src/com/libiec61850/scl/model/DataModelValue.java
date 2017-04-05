@@ -134,6 +134,7 @@ public class DataModelValue {
         case VISIBLE_STRING_65:
         case VISIBLE_STRING_129:
         case VISIBLE_STRING_255:
+        case CURRENCY:
             this.value = (Object) value;
             break;
         case CHECK:
