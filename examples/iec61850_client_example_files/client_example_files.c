@@ -29,6 +29,7 @@ downloadHandler(void* parameter, uint8_t* buffer, uint32_t bytesRead)
 
     if (bufferPosition + bytesRead < MAX_BUFFER_SIZE) {
         memcpy(downloadBuffer + bufferPosition, buffer, bytesRead);
+		bufferPosition = bufferPosition + bytesRead;
         return true;
     }
     else
@@ -81,7 +82,8 @@ int main(int argc, char** argv) {
             directoryEntry = LinkedList_getNext(directoryEntry);
         }
 
-
+		bufferPosition = 0;
+		
         /* Download a file from the server */
         IedConnection_getFile(con, &error, "IEDSERVER.BIN", downloadHandler, NULL);
 
