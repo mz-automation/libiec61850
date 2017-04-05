@@ -1944,13 +1944,13 @@ extern ReportControlBlock iedModel_GenericIO_LLN0_report4;
 extern ReportControlBlock iedModel_GenericIO_LLN0_report5;
 extern ReportControlBlock iedModel_GenericIO_LLN0_report6;
 
-ReportControlBlock iedModel_GenericIO_LLN0_report0 = {&iedModel_GenericIO_LLN0, "EventsRCB01", "Events1", false, "Events", 4294967295, 24, 111, 50, 1000, &iedModel_GenericIO_LLN0_report1};
-ReportControlBlock iedModel_GenericIO_LLN0_report1 = {&iedModel_GenericIO_LLN0, "EventsIndexed01", "Events2", false, "Events", 1, 24, 111, 50, 1000, &iedModel_GenericIO_LLN0_report2};
-ReportControlBlock iedModel_GenericIO_LLN0_report2 = {&iedModel_GenericIO_LLN0, "EventsIndexed02", "Events2", false, "Events", 1, 24, 111, 50, 1000, &iedModel_GenericIO_LLN0_report3};
-ReportControlBlock iedModel_GenericIO_LLN0_report3 = {&iedModel_GenericIO_LLN0, "EventsIndexed03", "Events2", false, "Events", 1, 24, 111, 50, 1000, &iedModel_GenericIO_LLN0_report4};
-ReportControlBlock iedModel_GenericIO_LLN0_report4 = {&iedModel_GenericIO_LLN0, "Measurements01", "Measurements", true, "Measurements", 1, 16, 111, 50, 1000, &iedModel_GenericIO_LLN0_report5};
-ReportControlBlock iedModel_GenericIO_LLN0_report5 = {&iedModel_GenericIO_LLN0, "Measurements02", "Measurements", true, "Measurements", 1, 16, 111, 50, 1000, &iedModel_GenericIO_LLN0_report6};
-ReportControlBlock iedModel_GenericIO_LLN0_report6 = {&iedModel_GenericIO_LLN0, "Measurements03", "Measurements", true, "Measurements", 1, 16, 111, 50, 1000, NULL};
+ReportControlBlock iedModel_GenericIO_LLN0_report0 = {&iedModel_GenericIO_LLN0, "EventsRCB01", "Events1", false, "Events", 4294967295, 24, 239, 50, 1000, &iedModel_GenericIO_LLN0_report1};
+ReportControlBlock iedModel_GenericIO_LLN0_report1 = {&iedModel_GenericIO_LLN0, "EventsIndexed01", "Events2", false, "Events", 1, 24, 239, 50, 1000, &iedModel_GenericIO_LLN0_report2};
+ReportControlBlock iedModel_GenericIO_LLN0_report2 = {&iedModel_GenericIO_LLN0, "EventsIndexed02", "Events2", false, "Events", 1, 24, 239, 50, 1000, &iedModel_GenericIO_LLN0_report3};
+ReportControlBlock iedModel_GenericIO_LLN0_report3 = {&iedModel_GenericIO_LLN0, "EventsIndexed03", "Events2", false, "Events", 1, 24, 239, 50, 1000, &iedModel_GenericIO_LLN0_report4};
+ReportControlBlock iedModel_GenericIO_LLN0_report4 = {&iedModel_GenericIO_LLN0, "Measurements01", "Measurements", true, "Measurements", 1, 16, 239, 50, 1000, &iedModel_GenericIO_LLN0_report5};
+ReportControlBlock iedModel_GenericIO_LLN0_report5 = {&iedModel_GenericIO_LLN0, "Measurements02", "Measurements", true, "Measurements", 1, 16, 239, 50, 1000, &iedModel_GenericIO_LLN0_report6};
+ReportControlBlock iedModel_GenericIO_LLN0_report6 = {&iedModel_GenericIO_LLN0, "Measurements03", "Measurements", true, "Measurements", 1, 16, 239, 50, 1000, NULL};
 
 
 

@@ -29,7 +29,9 @@ gooseListener(GooseSubscriber subscriber, void* parameter)
     printf("  stNum: %u sqNum: %u\n", GooseSubscriber_getStNum(subscriber),
             GooseSubscriber_getSqNum(subscriber));
     printf("  timeToLive: %u\n", GooseSubscriber_getTimeAllowedToLive(subscriber));
+#ifndef _WIN32
     printf("  timestamp: %"PRIu64"\n", GooseSubscriber_getTimestamp(subscriber));
+#endif
 
     MmsValue* values = GooseSubscriber_getDataSetValues(subscriber);
 

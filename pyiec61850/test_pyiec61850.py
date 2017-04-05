@@ -55,20 +55,20 @@ def testClient():
 		theVal = "testmodelSENSORS/TTMP1.TmpSp.setMag.f"
 		theValType = iec61850.IEC61850_FC_SP
 		temperatureSetpoint = iec61850.IedConnection_readFloatValue(con, theVal, theValType)
-		print temperatureSetpoint
+		print(temperatureSetpoint)
 		assert(temperatureValue[1]==0)
 		newValue= temperatureValue[0]+10
 		err = iec61850.IedConnection_writeFloatValue(con, theVal, theValType, newValue)
 		assert(err==0)
 		temperatureSetpoint = iec61850.IedConnection_readFloatValue(con, theVal, theValType)
-		print temperatureSetpoint
+		print(temperatureSetpoint)
 		assert(temperatureSetpoint[0]==newValue)
 		iec61850.IedConnection_close(con)
 	else:
-		print "Connection error"
+		print("Connection error")
 		sys.exit(-1)
 	iec61850.IedConnection_destroy(con)
-	print "client ok"
+	print("client ok")
 try:
 	srv=myIECServer()
 	srvThread = threading.Thread(target = srv.run)
@@ -78,6 +78,6 @@ try:
 	#signal.pause()
 except:
 	running = 0
-	print "Error :"
+	print("Error :")
 	traceback.print_exc(file=sys.stdout)
 	sys.exit(-1)

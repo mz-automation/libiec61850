@@ -90,11 +90,11 @@ public class OptionFields {
         if (boolVal != null)
             this.entryID = boolVal;
 
-        boolVal = ParserUtils.parseBooleanAttribute(optFieldsNode, "bufOvfl");
+        boolVal = ParserUtils.parseBooleanAttribute(optFieldsNode, "configRef");
         if (boolVal != null)
             this.configRef = boolVal;
 
-        boolVal = ParserUtils.parseBooleanAttribute(optFieldsNode, "reasonCode");
+        boolVal = ParserUtils.parseBooleanAttribute(optFieldsNode, "bufOvlf");
         if (boolVal != null)
             this.bufOvfl = boolVal;
     }

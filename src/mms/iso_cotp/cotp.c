@@ -123,10 +123,10 @@ writeStaticConnectResponseHeader(CotpConnection* self, int optionsLength)
 
     buffer[4] = 6 + optionsLength;
     buffer[5] = 0xd0;
-    buffer[6] = (uint8_t) (self->srcRef / 0x100);
-    buffer[7] = (uint8_t) (self->srcRef & 0xff);
-    buffer[8] = (uint8_t) (self->dstRef / 0x100);
-    buffer[9] = (uint8_t) (self->dstRef & 0xff);
+    buffer[6] = (uint8_t) (self->remoteRef / 0x100);
+    buffer[7] = (uint8_t) (self->remoteRef & 0xff);
+    buffer[8] = (uint8_t) (self->localRef / 0x100);
+    buffer[9] = (uint8_t) (self->localRef & 0xff);
     buffer[10] = (uint8_t) (self->protocolClass);
 
     self->writeBuffer->size = 11;
@@ -312,8 +312,8 @@ CotpConnection_sendConnectionRequestMessage(CotpConnection* self, IsoConnectionP
     buffer[7] = 0x00;
 
     /* SRC REF */
-    buffer[8] = 0x00;
-    buffer[9] = 0x02; /* or 0x01 ? */
+    buffer[8] = (uint8_t) (self->localRef / 0x100);
+    buffer[9] = (uint8_t) (self->localRef & 0xff);
 
     /* Class */
     buffer[10] = 0x00;
@@ -435,8 +435,8 @@ CotpConnection_init(CotpConnection* self, Socket socket,
 {
     self->state = 0;
     self->socket = socket;
-    self->srcRef = -1;
-    self->dstRef = -1;
+    self->remoteRef = -1;
+    self->localRef = 1;
     self->protocolClass = -1;
 	self->options.tpduSize = 0;
 
@@ -487,15 +487,15 @@ CotpConnection_getPayload(CotpConnection* self)
 }
 
 int
-CotpConnection_getSrcRef(CotpConnection* self)
+CotpConnection_getRemoteRef(CotpConnection* self)
 {
-    return self->srcRef;
+    return self->remoteRef;
 }
 
 int
-CotpConnection_getDstRef(CotpConnection* self)
+CotpConnection_getLocalRef(CotpConnection* self)
 {
-    return self->dstRef;
+    return self->localRef;
 }
 
 /*
@@ -515,8 +515,7 @@ parseConnectRequestTpdu(CotpConnection* self, uint8_t* buffer, uint8_t len)
     if (len < 6)
         return false;
 
-    self->dstRef = getUint16(buffer);
-    self->srcRef = getUint16(buffer + 2);
+    self->remoteRef = getUint16(buffer + 2);
     self->protocolClass = getUint8(buffer + 4);
 
     return parseOptions(self, buffer + 5, len - 6);
@@ -528,8 +527,7 @@ parseConnectConfirmTpdu(CotpConnection* self, uint8_t* buffer, uint8_t len)
     if (len < 6)
         return false;
 
-    self->srcRef = getUint16(buffer);
-    self->dstRef = getUint16(buffer + 2);
+    self->remoteRef = getUint16(buffer);
     self->protocolClass = getUint8(buffer + 4);
 
     return parseOptions(self, buffer + 5, len - 6);

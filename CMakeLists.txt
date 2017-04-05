@@ -79,10 +79,13 @@ set(API_HEADERS
     src/hal/inc/hal_time.h 
     src/hal/inc/hal_thread.h
     src/hal/inc/hal_filesystem.h 
+    src/hal/inc/platform_endian.h
     src/common/inc/libiec61850_common_api.h
+    src/common/inc/libiec61850_platform_includes.h
     src/common/inc/linked_list.h
     src/common/inc/byte_buffer.h
     src/common/inc/lib_memory.h
+    src/common/inc/string_utilities.h
     src/iec61850/inc/iec61850_client.h
     src/iec61850/inc/iec61850_common.h
     src/iec61850/inc/iec61850_server.h
@@ -108,6 +111,7 @@ set(API_HEADERS
     src/sampled_values/sv_subscriber.h
     src/sampled_values/sv_publisher.h
     src/logging/logging_api.h
+    ${CMAKE_CURRENT_BINARY_DIR}/config/stack_config.h
 )
 
 IF(MSVC)

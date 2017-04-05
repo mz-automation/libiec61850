@@ -42,8 +42,9 @@ printDataDirectory(char* doRef, IedConnection con, int spaces)
             sprintf(daRef, "%s.%s", doRef, daName);
             printDataDirectory(daRef, con, spaces + 2);
         }
-
     }
+
+    LinkedList_destroy(dataAttributes);
 }
 
 int
@@ -144,6 +145,8 @@ main(int argc, char** argv)
 
                         dataSetMemberRef = LinkedList_getNext(dataSetMemberRef);
                     }
+
+                    LinkedList_destroy(dataSetMembers);
 
                     dataSet = LinkedList_getNext(dataSet);
                 }

@@ -38,8 +38,8 @@ typedef struct {
 
 typedef struct {
     int state;
-    int srcRef;
-    int dstRef;
+    int remoteRef;
+    int localRef;
     int protocolClass;
     Socket socket;
     CotpOptions options;
@@ -97,9 +97,9 @@ ByteBuffer*
 CotpConnection_getPayload(CotpConnection* self);
 
 int
-CotpConnection_getSrcRef(CotpConnection* self);
+CotpConnection_getRemoteRef(CotpConnection* self);
 
 int
-CotpConnection_getDstRef(CotpConnection* self);
+CotpConnection_getLocalRef(CotpConnection* self);
 
 #endif /* COTP_H_ */

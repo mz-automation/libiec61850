@@ -102,8 +102,6 @@ namespace IEC61850
 			{	
 				if (authParameter != IntPtr.Zero)
 					AcseAuthenticationParameter_destroy(authParameter);
-
-				//IsoConnectionParameters_destroy(self);
 			}
 
             /// <summary>

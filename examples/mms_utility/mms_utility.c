@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include "string_utilities.h"
 #include "mms_client_connection.h"
+#include "conversions.h"
 
 static void
 print_help()
@@ -351,6 +352,7 @@ int main(int argc, char** argv) {
 	}
 
 exit:
+	free(hostname);
 	MmsConnection_destroy(con);
 }
 

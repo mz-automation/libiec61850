@@ -1,5 +1,10 @@
 Changes to version 1.0.1
 ------------------------
+- server: fixed problem in COTP src/dst reference handling (returning zero src reference)
+- client: fixed problem in report handling when RCB contains no rptID
+- Python: added pyiec61850 tutorial and example thanks to Cédric Boudinet
+- .NET API: fixed server side bug with connection indication handler
+- added Lantronix XPORT PRO uclinux make target
 - .NET API: fixed bug in client readValue functions
 - .NET API: added MmsValue.GetDataAccessError() method
 

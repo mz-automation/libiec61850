@@ -65,8 +65,8 @@ int main(int argc, char** argv) {
 
         if (error != IED_ERROR_OK)
             printf("failed to write simpleIOGenericIO/GGIO1.NamPlt.vendor!\n");
-        else
-            MmsValue_delete(value);
+
+        MmsValue_delete(value);
 
 
         /* read data set */
@@ -116,6 +116,8 @@ int main(int argc, char** argv) {
             printf("disable reporting failed (code: %i)\n", error);
 
         ClientDataSet_destroy(clientDataSet);
+
+        ClientReportControlBlock_destroy(rcb);
 
         close_connection:
 
