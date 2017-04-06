@@ -140,6 +140,203 @@ namespace IEC61850
 			}
 		}
 
+		/// <summary>
+		/// Timestamp (represents IEC 61850 timestamps e.g. "t" attribute)
+		/// </summary>
+		public class Timestamp
+		{
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr Timestamp_create ();
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern void Timestamp_destroy (IntPtr self);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern void Timestamp_clearFlags (IntPtr self);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			[return: MarshalAs(UnmanagedType.I1)]
+			static extern bool Timestamp_isLeapSecondKnown (IntPtr self);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern void Timestamp_setLeapSecondKnown (IntPtr self, bool value);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			[return: MarshalAs(UnmanagedType.I1)]
+			static extern bool Timestamp_hasClockFailure (IntPtr self);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern void Timestamp_setClockFailure (IntPtr self, bool value);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			[return: MarshalAs(UnmanagedType.I1)]
+			static extern bool Timestamp_isClockNotSynchronized (IntPtr self);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern void Timestamp_setClockNotSynchronized (IntPtr self, bool value);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern int Timestamp_getSubsecondPrecision (IntPtr self);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern void Timestamp_setSubsecondPrecision(IntPtr self, int subsecondPrecision);
+
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern void Timestamp_setTimeInSeconds (IntPtr self, UInt32 secondsSinceEpoch);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern void Timestamp_setTimeInMilliseconds (IntPtr self, UInt64 millisSinceEpoch);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern UInt32 Timestamp_getTimeInSeconds (IntPtr self);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern UInt64 Timestamp_getTimeInMs (IntPtr self);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern void Timestamp_setByMmsUtcTime (IntPtr self, IntPtr mmsValue);
+
+			internal IntPtr timestampRef = IntPtr.Zero;
+			private bool responsableForDeletion;
+
+			internal Timestamp(IntPtr timestampRef, bool selfAllocated)
+			{
+				this.timestampRef = timestampRef;
+				this.responsableForDeletion = selfAllocated;
+			}
+
+			public Timestamp (DateTime timestamp) : this ()
+			{
+				SetDateTime (timestamp);
+			}
+
+			public Timestamp (MmsValue mmsUtcTime) : this() 
+			{
+				SetByMmsUtcTime (mmsUtcTime);
+			}
+
+			public Timestamp()
+			{
+				timestampRef = Timestamp_create ();
+				LeapSecondKnown = true;
+				responsableForDeletion = true;
+			}
+
+			~Timestamp ()
+			{
+				if (responsableForDeletion)
+					Timestamp_destroy (timestampRef);
+			}
+
+			public void ClearFlags()
+			{
+				Timestamp_clearFlags (timestampRef);
+			}
+
+			public void SetDateTime(DateTime timestamp)
+			{
+				DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+				DateTime timestampUTC = timestamp.ToUniversalTime();
+
+				TimeSpan timeDiff = timestampUTC - epoch;
+				ulong timeVal = Convert.ToUInt64(timeDiff.TotalMilliseconds);
+
+				SetTimeInMilliseconds (timeVal);
+			}
+
+			public bool LeapSecondKnown {
+				get { return IsLeapSecondKnown ();}
+				set { SetLeapSecondKnow (value);}
+			}
+
+			public bool IsLeapSecondKnown()
+			{
+				return Timestamp_isLeapSecondKnown (timestampRef);
+			}
+
+			public void SetLeapSecondKnow(bool value)
+			{
+				Timestamp_setLeapSecondKnown (timestampRef, value);
+			}
+
+			public bool ClockFailure {
+				get { return HasClockFailure ();}
+				set { SetClockFailure (value);}
+			}
+
+			public bool HasClockFailure()
+			{
+				return Timestamp_hasClockFailure (timestampRef);
+			}
+
+			public void SetClockFailure(bool value)
+			{
+				Timestamp_setClockFailure (timestampRef, value);
+			}
+
+			public bool ClockNotSynchronized {
+				get { return IsClockNotSynchronized (); }
+				set { SetClockNotSynchronized (value); }
+			}
+
+			public bool IsClockNotSynchronized() {
+				return Timestamp_isClockNotSynchronized(timestampRef);
+			}
+
+			public void SetClockNotSynchronized(bool value) {
+				Timestamp_setClockNotSynchronized (timestampRef, value);
+			}
+
+			public int SubsecondPrecision {
+				get { return GetSubsecondPrecision (); }
+				set { SetSubsecondPrecision (value); }
+			}
+
+			public int GetSubsecondPrecision() {
+				return Timestamp_getSubsecondPrecision (timestampRef);
+			}
+
+			public void SetSubsecondPrecision(int subsecondPrecision) {
+				Timestamp_setSubsecondPrecision (timestampRef, subsecondPrecision);
+			}
+
+			public UInt32 TimeInSeconds {
+				get { return GetTimeInSeconds (); }
+				set { SetTimeInSeconds (value); }
+			}
+
+			public UInt32 GetTimeInSeconds()
+			{
+				return Timestamp_getTimeInSeconds (timestampRef);
+			}
+
+			public void SetTimeInSeconds(UInt32 secondsSinceEpoch)
+			{
+				Timestamp_setTimeInSeconds (timestampRef, secondsSinceEpoch);
+			}
+
+			public UInt64 TimeInMilliseconds {
+				get { return GetTimeInMilliseconds (); }
+				set { SetTimeInMilliseconds (value); }
+			}
+
+			public UInt64 GetTimeInMilliseconds()
+			{
+				return Timestamp_getTimeInMs (timestampRef);
+			}
+
+			public void SetTimeInMilliseconds(UInt64 millisSinceEpoch) {
+				Timestamp_setTimeInMilliseconds (timestampRef, millisSinceEpoch);
+			}
+
+			public void SetByMmsUtcTime(MmsValue mmsValue)
+			{
+				Timestamp_setByMmsUtcTime (timestampRef, mmsValue.valueReference);
+			}
+
+		}
+
 		public enum ACSIClass
 		{
 			/** data objects */
