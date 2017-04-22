@@ -336,6 +336,7 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
                             case IEC61850_VISIBLE_STRING_65:
                             case IEC61850_VISIBLE_STRING_64:
                             case IEC61850_VISIBLE_STRING_32:
+                            case IEC61850_CURRENCY:
                                 {
                                     char* stringStart = valueIndicator + 2;
                                     terminateString(stringStart, '"');

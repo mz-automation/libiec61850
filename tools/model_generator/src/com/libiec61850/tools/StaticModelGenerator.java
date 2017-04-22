@@ -767,6 +767,7 @@ public class StaticModelGenerator {
         case VISIBLE_STRING_129:
         case VISIBLE_STRING_255:
         case VISIBLE_STRING_65:
+        case CURRENCY:
             buffer.append("MmsValue_newVisibleString(\"" + value.getValue() + "\");");
             break;
         case FLOAT32:
