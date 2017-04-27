@@ -26,6 +26,7 @@
 #include "libiec61850_platform_includes.h"
 
 #include "conversions.h"
+#include "mms_value_internal.h"
 
 Validity
 Quality_getValidity(Quality* self)
@@ -223,6 +224,21 @@ FunctionalConstraint_fromString(const char* fcString)
     return IEC61850_FC_NONE;
 }
 
+Timestamp*
+Timestamp_create()
+{
+    Timestamp* self = (Timestamp*) GLOBAL_CALLOC(1, sizeof(Timestamp));
+
+    return self;
+}
+
+void
+Timestamp_destroy(Timestamp* self)
+{
+    if (self != NULL)
+        GLOBAL_FREEMEM(self);
+}
+
 void
 Timestamp_clearFlags(Timestamp* self)
 {
@@ -380,6 +396,13 @@ Timestamp_getTimeInMs(Timestamp* self)
     uint64_t msVal = (timeval32 * 1000LL) + remainder;
 
     return (uint64_t) msVal;
+}
+
+void
+Timestamp_setByMmsUtcTime(Timestamp* self, MmsValue* mmsValue)
+{
+    if (MmsValue_getType(mmsValue) == MMS_UTC_TIME)
+        memcpy(self->val, mmsValue->value.utcTime, 8);
 }
 
 char*

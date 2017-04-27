@@ -44,8 +44,18 @@ namespace server1
 
 			GC.Collect ();
 
+			DataObject ggio1AnIn1 = (DataObject)iedModel.GetModelNodeByShortObjectReference ("GenericIO/GGIO1.AnIn1");
+
+			DataAttribute ggio1AnIn1magF = (DataAttribute)ggio1AnIn1.GetChild ("mag.f");
+			DataAttribute ggio1AnIn1T = (DataAttribute)ggio1AnIn1.GetChild ("t");
+
+			float floatVal = 1.0f;
+
 			while (running) {
-				Thread.Sleep (1);
+				floatVal += 1f;
+				iedServer.UpdateTimestampAttributeValue (ggio1AnIn1T, new Timestamp (DateTime.Now));
+				iedServer.UpdateFloatAttributeValue (ggio1AnIn1magF, floatVal);
+				Thread.Sleep (100);
 			}
 
 			iedServer.Stop ();

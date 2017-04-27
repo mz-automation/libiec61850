@@ -106,6 +106,30 @@ namespace tests
 		}
 
 		[Test ()]
+		public void Timestamps()
+		{
+			Timestamp timestamp = new Timestamp ();
+
+			Assert.IsTrue (timestamp.LeapSecondKnown);
+			Assert.IsFalse (timestamp.ClockFailure);
+			Assert.IsFalse (timestamp.ClockNotSynchronized);
+
+			timestamp.LeapSecondKnown = false;
+			Assert.IsFalse (timestamp.LeapSecondKnown);
+
+			timestamp.ClockFailure = true;
+			Assert.IsTrue (timestamp.ClockFailure);
+
+			timestamp.ClockNotSynchronized = true;
+			Assert.IsTrue (timestamp.ClockNotSynchronized);
+
+			Assert.AreEqual (0, timestamp.SubsecondPrecision);
+
+			timestamp.SubsecondPrecision = 10;
+			Assert.AreEqual (10, timestamp.SubsecondPrecision);
+		}
+
+		[Test ()]
 		public void CreateModelFromNonExistingFile()
 		{
 			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("test.cfg");

@@ -558,3 +558,6 @@ EXPORTS
     MmsConnection_obtainFile
     IedConnection_setFile
     IedConnection_readInt64Value
+	Timestamp_create
+    Timestamp_destroy
+    Timestamp_setByMmsUtcTime
