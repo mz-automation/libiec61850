@@ -82,6 +82,43 @@ BerDecoder_decodeUint32(uint8_t* buffer, int intlen, int bufPos) {
     return value;
 }
 
+int32_t
+BerDecoder_decodeInt32(uint8_t* buffer, int intlen, int bufPos) 
+{
+    int32_t value = 0;
+
+    int flag = buffer[bufPos]&0x80;//flag=1表示负数，flag=0表示正数
+
+    int i=0;
+
+    if(flag)
+    {
+        for(i=0;i<4;i++)
+        {
+            value<<=8;
+            if(i<4-intlen)
+            {
+                value+=0xff;
+            }
+            else
+            {
+                value+=buffer[bufPos + i-(4-intlen)];
+            }
+        }
+    }
+    else
+    {
+        for (i = 0; i < intlen; i++) 
+        {
+            value <<= 8;
+            value += buffer[bufPos + i];
+        }
+    }
+    
+    return value;
+}
+
+
 float
 BerDecoder_decodeFloat(uint8_t* buffer, int bufPos)
 {

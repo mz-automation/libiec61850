@@ -34,6 +34,9 @@ BerDecoder_decodeString(uint8_t* buffer, int strlen, int bufPos, int maxBufPos);
 uint32_t
 BerDecoder_decodeUint32(uint8_t* buffer, int intlen, int bufPos);
 
+int32_t
+BerDecoder_decodeInt32(uint8_t* buffer, int intlen, int bufPos);
+
 float
 BerDecoder_decodeFloat(uint8_t* buffer, int bufPos);
 
