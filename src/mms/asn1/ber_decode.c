@@ -70,10 +70,65 @@ BerDecoder_decodeString(uint8_t* buffer, int strlen, int bufPos, int maxBufPos)
 }
 
 uint32_t
-BerDecoder_decodeUint32(uint8_t* buffer, int intlen, int bufPos) {
+BerDecoder_decodeUint32(uint8_t* buffer, int intLen, int bufPos)
+{
     uint32_t value = 0;
 
     int i;
+    for (i = 0; i < intLen; i++) {
+        value <<= 8;
+        value += buffer[bufPos + i];
+    }
+
+    return value;
+}
+
+#if 0
+int32_t
+BerDecoder_decodeInt32(uint8_t* buffer, int intlen, int bufPos)
+{
+    int32_t value = 0;
+
+    bool isNegative = ((buffer[bufPos] & 0x80) == 0x80);
+
+    int i = 0;
+
+    if (isNegative) {
+        for (i = 0; i < 4; i++) {
+
+            value <<= 8;
+
+            if (i < (4 - intlen))
+                value += 0xff;
+            else
+                value += buffer[bufPos + i - (4 - intlen)];
+        }
+    }
+    else {
+        for (i = 0; i < intlen; i++) {
+            value <<= 8;
+            value += buffer[bufPos + i];
+        }
+    }
+
+    return value;
+}
+#endif
+
+#if 1
+int32_t
+BerDecoder_decodeInt32(uint8_t* buffer, int intlen, int bufPos)
+{
+    int32_t value;
+    int i;
+
+    bool isNegative = ((buffer[bufPos] & 0x80) == 0x80);
+
+    if (isNegative)
+        value = -1;
+    else
+        value = 0;
+
     for (i = 0; i < intlen; i++) {
         value <<= 8;
         value += buffer[bufPos + i];
@@ -81,6 +136,7 @@ BerDecoder_decodeUint32(uint8_t* buffer, int intlen, int bufPos) {
 
     return value;
 }
+#endif
 
 float
 BerDecoder_decodeFloat(uint8_t* buffer, int bufPos)

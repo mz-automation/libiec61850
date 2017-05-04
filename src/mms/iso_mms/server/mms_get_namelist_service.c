@@ -330,7 +330,7 @@ getNamedVariableListAssociationSpecific(MmsServerConnection connection)
 static void
 createNameListResponse(
         MmsServerConnection connection,
-        int invokeId,
+        uint32_t invokeId,
         LinkedList nameList,
         ByteBuffer* response,
         char* continueAfter)
@@ -406,7 +406,7 @@ createNameListResponse(
     bufPos = BerEncoder_encodeTL(0xa1, confirmedResponsePDUSize, buffer, bufPos);
 
     bufPos = BerEncoder_encodeTL(0x02, invokeIdSize - 2, buffer, bufPos);
-    bufPos = BerEncoder_encodeUInt32((uint32_t) invokeId, buffer, bufPos);
+    bufPos = BerEncoder_encodeUInt32(invokeId, buffer, bufPos);
 
     bufPos = BerEncoder_encodeTL(0xa1, getNameListSize, buffer, bufPos);
     bufPos = BerEncoder_encodeTL(0xa0, identifierListSize, buffer, bufPos);

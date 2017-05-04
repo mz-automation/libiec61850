@@ -251,6 +251,33 @@ BerEncoder_encodeUInt32(uint32_t value, uint8_t* buffer, int bufPos)
 }
 
 int
+BerEncoder_encodeInt32(int32_t value, uint8_t* buffer, int bufPos)
+{
+    uint8_t* valueArray = (uint8_t*) &value;
+    uint8_t valueBuffer[4];
+
+    int i;
+
+#if (ORDER_LITTLE_ENDIAN == 1)
+    for (i = 0; i < 4; i++) {
+        valueBuffer[3 - i] = valueArray[i];
+    }
+#else
+    for (i = 0; i < 4; i++) {
+        valueBuffer[i] = valueArray[i];
+    }
+#endif
+
+    int size = BerEncoder_compressInteger(valueBuffer, 4);
+
+    for (i = 0; i < size; i++) {
+        buffer[bufPos++] = valueBuffer[i];
+    }
+
+    return bufPos;
+}
+
+int
 BerEncoder_encodeUInt32WithTL(uint8_t tag, uint32_t value, uint8_t* buffer, int bufPos)
 {
     uint8_t* valueArray = (uint8_t*) &value;

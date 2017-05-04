@@ -252,7 +252,7 @@ createDefineNamedVariableListResponse(uint32_t invokeId, ByteBuffer* response)
     bufPos = BerEncoder_encodeTL(0xa1, confirmedResponsePDUSize, buffer, bufPos);
 
     bufPos = BerEncoder_encodeTL(0x02, invokeIdSize - 2, buffer, bufPos);
-    bufPos = BerEncoder_encodeUInt32((uint32_t) invokeId, buffer, bufPos);
+    bufPos = BerEncoder_encodeUInt32(invokeId, buffer, bufPos);
 
     bufPos = BerEncoder_encodeTL(0x8b, 0, buffer, bufPos);
 

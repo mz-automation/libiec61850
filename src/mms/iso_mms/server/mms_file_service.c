@@ -213,7 +213,7 @@ mmsMsg_createFileOpenResponse(uint32_t invokeId, ByteBuffer* response, char* ful
     buffer[bufPos++] = 0xbf;
     bufPos = BerEncoder_encodeTL(0x48, openFileResponseSize, buffer, bufPos);
     bufPos = BerEncoder_encodeTL(0x80, frsmIdSize - 2, buffer, bufPos);
-    bufPos = BerEncoder_encodeUInt32(frsm->frsmId, buffer, bufPos);
+    bufPos = BerEncoder_encodeInt32(frsm->frsmId, buffer, bufPos);
     bufPos = encodeFileAttributes(0xa1, frsm->fileSize, gtString, buffer, bufPos);
 
     response->size = bufPos;
@@ -734,7 +734,7 @@ mmsServer_handleFileReadRequest(
     uint32_t invokeId,
     ByteBuffer* response)
 {
-    int32_t frsmId = (int32_t) BerDecoder_decodeUint32(buffer, maxBufPos - bufPos, bufPos);
+    int32_t frsmId = BerDecoder_decodeInt32(buffer, maxBufPos - bufPos, bufPos);
 
     if (DEBUG_MMS_SERVER)
         printf("MMS_SERVER: mmsServer_handleFileReadRequest read request for frsmId: %i\n", frsmId);
@@ -760,7 +760,7 @@ mmsServer_handleFileCloseRequest(
     uint32_t invokeId,
     ByteBuffer* response)
 {
-    int32_t frsmId = (int32_t) BerDecoder_decodeUint32(buffer, maxBufPos - bufPos, bufPos);
+    int32_t frsmId = BerDecoder_decodeInt32(buffer, maxBufPos - bufPos, bufPos);
 
     MmsFileReadStateMachine* frsm = getFrsm(connection, frsmId);
 
@@ -923,7 +923,7 @@ createFileDirectoryResponse(uint32_t invokeId, ByteBuffer* response, int maxPduS
     bufPos = BerEncoder_encodeTL(0xa1, confirmedResponsePDUSize, buffer, bufPos);
 
     bufPos = BerEncoder_encodeTL(0x02, invokeIdSize - 2, buffer, bufPos);
-    bufPos = BerEncoder_encodeUInt32((uint32_t) invokeId, buffer, bufPos);
+    bufPos = BerEncoder_encodeUInt32(invokeId, buffer, bufPos);
 
     buffer[bufPos++] = 0xbf;
     bufPos = BerEncoder_encodeTL(0x4d, fileDirectoryResponseSize, buffer, bufPos);

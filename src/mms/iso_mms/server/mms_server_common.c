@@ -181,7 +181,7 @@ mmsServer_createServiceErrorPduWithServiceSpecificInfo(uint32_t invokeId, ByteBu
     bufPos = BerEncoder_encodeTL(0xa2, confirmedErrorContentSize, buffer, bufPos);
 
     bufPos = BerEncoder_encodeTL(0x80, invokeIdSize - 2, buffer, bufPos); /* invokeID */
-    bufPos = BerEncoder_encodeUInt32((uint32_t) invokeId, buffer, bufPos);
+    bufPos = BerEncoder_encodeUInt32(invokeId, buffer, bufPos);
 
     bufPos = BerEncoder_encodeTL(0xa2, serviceErrorContentSize, buffer, bufPos); /* serviceError */
     bufPos = BerEncoder_encodeTL(0xa0, 3, buffer, bufPos); /* serviceError */

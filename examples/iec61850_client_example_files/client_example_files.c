@@ -29,6 +29,9 @@ downloadHandler(void* parameter, uint8_t* buffer, uint32_t bytesRead)
 
     if (bufferPosition + bytesRead < MAX_BUFFER_SIZE) {
         memcpy(downloadBuffer + bufferPosition, buffer, bytesRead);
+
+        bufferPosition += bytesRead;
+
         return true;
     }
     else
