@@ -405,6 +405,7 @@ IedServer_create(IedModel* iedModel)
     self->model = iedModel;
 
     // self->running = false; /* not required due to CALLOC */
+    // self->localIpAddress = NULL; /* not required due to CALLOC */
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     self->dataModelLock = Semaphore_create(1);
@@ -463,6 +464,9 @@ IedServer_destroy(IedServer self)
 
     MmsServer_destroy(self->mmsServer);
     IsoServer_destroy(self->isoServer);
+
+    if (self->localIpAddress != NULL)
+        GLOBAL_FREEMEM(self->localIpAddress);
 
 #if ((CONFIG_MMS_SINGLE_THREADED == 1) && (CONFIG_MMS_THREADLESS_STACK == 0))
 
@@ -599,6 +603,16 @@ IedServer_stop(IedServer self)
     }
 }
 #endif /* (CONFIG_MMS_THREADLESS_STACK != 1) */
+
+void
+IedServer_setLocalIpAddress(IedServer self, const char* localIpAddress)
+{
+    if (self->localIpAddress != NULL)
+        GLOBAL_FREEMEM(self->localIpAddress);
+
+    self->localIpAddress = StringUtils_copyString(localIpAddress);
+    IsoServer_setLocalIpAddress(self->isoServer, self->localIpAddress);
+}
 
 
 void

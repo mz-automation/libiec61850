@@ -561,6 +561,9 @@ namespace IEC61850
 			[DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
 			static extern IntPtr IedServer_create(IntPtr modelRef);
 
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern void IedServer_setLocalIpAddress(IntPtr self, string localIpAddress);
+
 			[DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
 			static extern void IedServer_start(IntPtr self, int tcpPort);
 
@@ -796,7 +799,28 @@ namespace IEC61850
 
 			private InternalConnectionHandler internalConnectionHandler = null;
 
+			/// <summary>
+			/// Sets the local ip address for listening
+			/// </summary>
+			/// <param name="localIpAddress">Local IP address.</param>
+			public void SetLocalIpAddress(string localIpAddress)
+			{
+				IedServer_setLocalIpAddress (self, localIpAddress);
+			}
+
+			/// <summary>
+			/// Start MMS server
+			/// </summary>
+			/// <param name="localIpAddress">Local IP address.</param>
+			/// <param name="tcpPort">TCP port to use</param>
+			public void Start(string localIpAddress, int tcpPort)
+			{
+				SetLocalIpAddress (localIpAddress);
+				Start (tcpPort);
+			}
+
 			/// <summary>Start MMS server</summary>
+			/// <param name="tcpPort">TCP port to use</param>
 			public void Start(int tcpPort)
 			{
 				if (internalConnectionHandler == null)

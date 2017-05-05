@@ -639,3 +639,4 @@ EXPORTS
     Timestamp_create
     Timestamp_destroy
     Timestamp_setByMmsUtcTime
+    IedServer_setLocalIpAddress

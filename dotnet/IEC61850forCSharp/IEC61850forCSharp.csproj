@@ -7,6 +7,8 @@
     <OutputType>Library</OutputType>
     <RootNamespace>iec61850dotnet</RootNamespace>
     <AssemblyName>iec61850dotnet</AssemblyName>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>

@@ -77,6 +77,15 @@ void
 IedServer_destroy(IedServer self);
 
 /**
+ * \brief Set the local IP address to listen on
+ *
+ *  \param self the IedServer instance
+ *  \param localIpAddress the local IP address as C string (an internal copy will be created)
+ */
+void
+IedServer_setLocalIpAddress(IedServer self, const char* localIpAddress);
+
+/**
  * \brief Start handling client connections
  *
  * \param self the instance of IedServer to operate on.
@@ -106,6 +115,19 @@ IedServer_stop(IedServer self);
 void
 IedServer_startThreadless(IedServer self, int tcpPort);
 
+/**
+ * \brief Wait until a server connection is ready (with timeout)
+ *
+ * The function will wait until a server connection is ready (data available) or the
+ * timeout elapsed. This function is intended for the non-threaded mode. Its use is optional.
+ * It is equivalent of using select on sockets on Linux. If the return value is != 0 the
+ * IedServer_processIncomingData function should be called.
+ *
+ * \param self the IedServer instance
+ * \param timeoutMs the timeout to wait when no connection is ready
+ *
+ * \return 0 if no connection is ready; otherwise at least one connection is ready
+ */
 int
 IedServer_waitReady(IedServer self, unsigned int timeoutMs);
 
