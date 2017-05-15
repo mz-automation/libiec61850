@@ -810,6 +810,8 @@ IedConnection_uninstallReportHandler(IedConnection self, const char* rcbReferenc
  *
  * The RCB must have been enabled and GI set as trigger option before this command can be performed.
  *
+ * \deprecated Use ClientReportControlBlock_setGI instead
+ *
  * \param connection the connection object
  * \param error the error code if an error occurs
  * \param rcbReference object reference of the report control block
