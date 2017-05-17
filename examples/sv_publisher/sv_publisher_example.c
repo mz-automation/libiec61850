@@ -20,7 +20,7 @@ void sigint_handler(int signalId)
 int
 main(int argc, char** argv)
 {
-    SampledValuesPublisher svPublisher = SampledValuesPublisher_create("vboxnet0");
+    SampledValuesPublisher svPublisher = SampledValuesPublisher_create("eth0");
 
     SV_ASDU asdu1 = SampledValuesPublisher_addASDU(svPublisher, "svpub1", NULL, 1);
 

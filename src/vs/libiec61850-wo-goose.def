@@ -562,3 +562,4 @@ EXPORTS
     Timestamp_destroy
     Timestamp_setByMmsUtcTime
     IedServer_setLocalIpAddress
+    Timestamp_toMmsValue

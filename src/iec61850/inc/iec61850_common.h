@@ -407,6 +407,15 @@ void
 Timestamp_setByMmsUtcTime(Timestamp* self, MmsValue* mmsValue);
 
 /**
+ * \brief Set an MmsValue instance of type UTCTime to the timestamp value
+ *
+ * \param self the Timestamp instance
+ * \param mmsValue the mmsValue instance, if NULL a new instance will be created
+ */
+MmsValue*
+Timestamp_toMmsValue(Timestamp* self, MmsValue* mmsValue);
+
+/**
  * \brief Get the version of the library as string
  *
  * \return the version of the library (e.g. "0.8.3")
