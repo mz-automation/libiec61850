@@ -947,7 +947,48 @@ MmsConnection_destroy(MmsConnection self)
 
     GLOBAL_FREEMEM(self->outstandingCalls);
 
+#if (MMS_OBTAIN_FILE_SERVICE == 1)
+#if (CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME == 1)
+    if (self->filestoreBasepath != NULL)
+        GLOBAL_FREEMEM(self->filestoreBasepath);
+#endif
+#endif
+
     GLOBAL_FREEMEM(self);
+}
+
+void
+MmsConnection_setFilestoreBasepath(MmsConnection self, const char* basepath)
+{
+#if (MMS_OBTAIN_FILE_SERVICE == 1)
+#if (CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME == 1)
+    if (self->filestoreBasepath != NULL) {
+        GLOBAL_FREEMEM(self->filestoreBasepath);
+        self->filestoreBasepath = NULL;
+    }
+
+    if (basepath != NULL)
+        self->filestoreBasepath = StringUtils_copyString(basepath);
+#endif
+#endif
+}
+
+char*
+MmsConnection_getFilestoreBasepath(MmsConnection self)
+{
+#if (MMS_OBTAIN_FILE_SERVICE == 1)
+#if (CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME == 1)
+    if (self->filestoreBasepath != NULL)
+        return self->filestoreBasepath;
+    else
+        return CONFIG_VIRTUAL_FILESTORE_BASEPATH;
+#else
+    return CONFIG_VIRTUAL_FILESTORE_BASEPATH;
+#endif
+
+#else
+    return CONFIG_VIRTUAL_FILESTORE_BASEPATH;
+#endif
 }
 
 void

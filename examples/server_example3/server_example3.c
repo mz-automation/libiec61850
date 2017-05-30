@@ -85,6 +85,10 @@ main(int argc, char** argv)
 
     iedServer = IedServer_create(&iedModel);
 
+    /* Set the base path for the MMS file services */
+    MmsServer mmsServer = IedServer_getMmsServer(iedServer);
+    MmsServer_setFilestoreBasepath(mmsServer, "./vmd-filestore/");
+
     /* Install handler for operate command */
     IedServer_setControlHandler(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO1,
             (ControlHandler) controlHandlerForBinaryOutput,

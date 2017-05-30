@@ -102,7 +102,12 @@ struct sMmsConnection {
 #if (MMS_OBTAIN_FILE_SERVICE == 1)
     int32_t nextFrsmId;
     MmsFileReadStateMachine frsms[CONFIG_MMS_MAX_NUMBER_OF_OPEN_FILES_PER_CONNECTION];
+
+#if (CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME == 1)
+    char* filestoreBasepath;
 #endif
+
+#endif /* (MMS_OBTAIN_FILE_SERVICE == 1) */
 };
 
 
@@ -115,6 +120,9 @@ typedef enum {
 	MMS_OBJECT_CLASS_JOURNAL = 8,
 	MMS_OBJECT_CLASS_DOMAIN = 9
 } MmsObjectClass;
+
+char*
+MmsConnection_getFilestoreBasepath(MmsConnection self);
 
 MmsValue*
 mmsClient_parseListOfAccessResults(AccessResult_t** accessResultList, int listSize, bool createArray);

@@ -86,6 +86,19 @@ void
 IedServer_setLocalIpAddress(IedServer self, const char* localIpAddress);
 
 /**
+ * \brief Set the virtual filestore basepath for the MMS file services
+ *
+ * All external file service accesses will be mapped to paths relative to the base directory.
+ * NOTE: This function is only available when the CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME
+ * option in stack_config.h is set.
+ *
+ * \param self the IedServer instance
+ * \param basepath the new virtual filestore basepath
+ */
+void
+IedServer_setFilestoreBasepath(IedServer self, const char* basepath);
+
+/**
  * \brief Start handling client connections
  *
  * \param self the instance of IedServer to operate on.

@@ -101,6 +101,9 @@ MmsServerConnection_getLastInvokeId(MmsServerConnection self);
 uint32_t
 MmsServerConnection_getNextRequestInvokeId(MmsServerConnection self);
 
+const char*
+MmsServerConnection_getFilesystemBasepath(MmsServerConnection self);
+
 #endif /* MMS_SERVER_CONNECTION_H_ */
 
 

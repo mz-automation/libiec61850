@@ -28,6 +28,7 @@
 #include "MmsPdu.h"
 #include "conversions.h"
 #include "byte_buffer.h"
+#include "mms_server.h"
 
 #if (MMS_FILE_SERVICE == 1)
 
@@ -60,8 +61,16 @@ void
 mmsMsg_createFileCloseResponse(uint32_t invokeId, ByteBuffer* response);
 
 void
-mmsMsg_createFileOpenResponse(uint32_t invokeId, ByteBuffer* response, char* fullPath, MmsFileReadStateMachine* frsm);
+mmsMsg_createFileOpenResponse(const char* basepath, uint32_t invokeId, ByteBuffer* response, char* fullPath, MmsFileReadStateMachine* frsm);
 
+bool
+mmsMsg_parseFileName(char* filename, uint8_t* buffer, int* bufPos, int maxBufPos , uint32_t invokeId, ByteBuffer* response);
+
+void
+mmsMsg_createExtendedFilename(const char* basepath, char* extendedFileName, char* fileName);
+
+FileHandle
+mmsMsg_openFile(const char* basepath, char* fileName, bool readWrite);
 
 #endif /* (MMS_FILE_SERVICE == 1) */
 

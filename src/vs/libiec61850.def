@@ -641,3 +641,8 @@ EXPORTS
     Timestamp_setByMmsUtcTime
     IedServer_setLocalIpAddress
     Timestamp_toMmsValue
+    MmsServer_installFileAccessHandler
+    MmsServer_setFilestoreBasepath
+    MmsConnection_setFilestoreBasepath
+    IedConnection_setFilestoreBasepath
+    IedServer_setFilestoreBasepath

@@ -634,3 +634,20 @@ MmsServerConnection_getNextRequestInvokeId(MmsServerConnection self)
     return self->lastRequestInvokeId;
 }
 #endif /* (MMS_OBTAIN_FILE_SERVICE == 1) */
+
+
+const char*
+MmsServerConnection_getFilesystemBasepath(MmsServerConnection self)
+{
+#if (CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME == 1)
+    if (self->server->filestoreBasepath != NULL)
+        return self->server->filestoreBasepath;
+    else
+        return CONFIG_VIRTUAL_FILESTORE_BASEPATH;
+#else
+    return CONFIG_VIRTUAL_FILESTORE_BASEPATH;
+#endif
+}
+
+
+

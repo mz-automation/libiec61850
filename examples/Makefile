@@ -25,6 +25,7 @@ EXAMPLE_DIRS += server_example_61400_25
 EXAMPLE_DIRS += server_example_threadless
 EXAMPLE_DIRS += server_example_setting_groups
 EXAMPLE_DIRS += server_example_logging
+EXAMPLE_DIRS += server_example_files
 EXAMPLE_DIRS += goose_subscriber
 EXAMPLE_DIRS += goose_publisher
 EXAMPLE_DIRS += sv_subscriber
@@ -47,6 +48,7 @@ MODEL_DIRS += server_example_61400_25
 MODEL_DIRS += server_example_threadless
 MODEL_DIRS += server_example_setting_groups
 MODEL_DIRS += server_example_logging
+MODEL_DIRS += server_example_files
 MODEL_DIRS += iec61850_9_2_LE_example
 
 all:	examples

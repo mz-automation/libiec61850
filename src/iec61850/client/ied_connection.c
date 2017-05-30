@@ -1131,6 +1131,32 @@ IedConnection_getFileDirectory(IedConnection self, IedClientError* error, const 
     return fileNames;
 }
 
+LinkedList /*<FileDirectoryEntry>*/
+IedConnection_getFileDirectoryEx(IedConnection self, IedClientError* error, const char* directoryName, const char* continueAfter,
+        bool* moreFollows)
+{
+    *error = IED_ERROR_OK;
+
+    MmsError mmsError = MMS_ERROR_NONE;
+
+    LinkedList fileNames = LinkedList_create();
+
+    bool moreFollowsInternal =  MmsConnection_getFileDirectory(self->connection, &mmsError, directoryName, continueAfter,
+                                    mmsFileDirectoryHandler, fileNames);
+
+    if (mmsError != MMS_ERROR_NONE) {
+        *error = iedConnection_mapMmsErrorToIedError(mmsError);
+        LinkedList_destroyDeep(fileNames, (LinkedListValueDeleteFunction) FileDirectoryEntry_destroy);
+
+        return NULL;
+    }
+
+    if (moreFollows != NULL)
+        *moreFollows = moreFollowsInternal;
+
+    return fileNames;
+}
+
 
 struct sClientProvidedFileReadHandler {
     IedClientGetFileHandler handler;
@@ -1199,6 +1225,13 @@ IedConnection_getFile(IedConnection self, IedClientError* error, const char* fil
     *error = iedConnection_mapMmsErrorToIedError(mmsError);
 
     return clientFileReadHandler.byteReceived;
+}
+
+void
+IedConnection_setFilestoreBasepath(IedConnection self, const char* basepath)
+{
+    /* simply pass the call to MMS client API */
+    MmsConnection_setFilestoreBasepath(self->connection, basepath);
 }
 
 void

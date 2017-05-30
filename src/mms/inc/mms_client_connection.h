@@ -107,6 +107,19 @@ void
 MmsConnection_setRawMessageHandler(MmsConnection self, MmsRawMessageHandler handler, void* parameter);
 
 /**
+ * \brief Set the virtual filestore basepath for the MMS obtain file services
+ *
+ * All external file service accesses will be mapped to paths relative to the base directory.
+ * NOTE: This function is only available when the CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME
+ * option in stack_config.h is set.
+ *
+ * \param self the MmsServer instance
+ * \param basepath the new virtual filestore basepath
+ */
+void
+MmsConnection_setFilestoreBasepath(MmsConnection self, const char* basepath);
+
+/**
  * \brief Set the request timeout in ms for this connection
  *
  * \param self MmsConnection instance to operate on

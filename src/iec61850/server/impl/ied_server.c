@@ -605,6 +605,13 @@ IedServer_stop(IedServer self)
 #endif /* (CONFIG_MMS_THREADLESS_STACK != 1) */
 
 void
+IedServer_setFilestoreBasepath(IedServer self, const char* basepath)
+{
+    /* simply pass to MMS server API */
+    MmsServer_setFilestoreBasepath(self->mmsServer, basepath);
+}
+
+void
 IedServer_setLocalIpAddress(IedServer self, const char* localIpAddress)
 {
     if (self->localIpAddress != NULL)
