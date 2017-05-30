@@ -39,7 +39,7 @@ static MmsError
 fileAccessHandler (void* parameter, MmsServerConnection connection, MmsFileServiceType service,
                                           const char* localFilename, const char* otherFilename)
 {
-    printf("fileAccessHanlder: service = %i, local-file: %s other-file: %s\n", service, localFilename, otherFilename);
+    printf("fileAccessHandler: service = %i, local-file: %s other-file: %s\n", service, localFilename, otherFilename);
 
     /* Don't allow client to rename files */
     if (service == MMS_FILE_ACCESS_TYPE_RENAME)

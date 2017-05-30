@@ -1,7 +1,7 @@
 LIBIEC_HOME=../..
 
-PROJECT_BINARY_NAME = client_example_files
-PROJECT_SOURCES = client_example_files.c
+PROJECT_BINARY_NAME = file-tool
+PROJECT_SOURCES = file-tool.c
 
 include $(LIBIEC_HOME)/make/target_system.mk
 include $(LIBIEC_HOME)/make/stack_includes.mk
