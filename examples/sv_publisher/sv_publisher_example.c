@@ -20,7 +20,16 @@ void sigint_handler(int signalId)
 int
 main(int argc, char** argv)
 {
-    SampledValuesPublisher svPublisher = SampledValuesPublisher_create("eth0");
+    char* interface;
+  
+    if (argc > 1)
+        interface = argv[1];
+    else
+        interface = "eth0";
+  
+    printf("Using interface %s\n", interface);
+
+    SampledValuesPublisher svPublisher = SampledValuesPublisher_create(interface);
 
     SV_ASDU asdu1 = SampledValuesPublisher_addASDU(svPublisher, "svpub1", NULL, 1);
 
