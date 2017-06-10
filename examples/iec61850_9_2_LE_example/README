@@ -1,0 +1,9 @@
+
+The default ethernet interface is eth0. You can specify another interface at the command line.
+
+  ./sv_9_2LE_example eth1
+
+In order for the SV publisher to start the SVCB has to be enabled by an MMS client.
+
+
+

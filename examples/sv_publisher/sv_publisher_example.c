@@ -20,13 +20,13 @@ void sigint_handler(int signalId)
 int
 main(int argc, char** argv)
 {
-    char * interface;
-    if (argc > 1) {
-        interface=argv[1];
-    }
-    else {
-        interface = "vboxnet0";
-    }
+    char* interface;
+  
+    if (argc > 1)
+        interface = argv[1];
+    else
+        interface = "eth0";
+  
     printf("Using interface %s\n", interface);
 
     SampledValuesPublisher svPublisher = SampledValuesPublisher_create(interface);

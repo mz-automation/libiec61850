@@ -29,6 +29,9 @@
 #cmakedefine01 DEBUG_MMS_SERVER
 #cmakedefine01 DEBUG_GOOSE_SUBSCRIBER
 #cmakedefine01 DEBUG_GOOSE_PUBLISHER
+#cmakedefine01 DEBUG_SV_SUBSCRIBER 0
+#cmakedefine01 DEBUG_SV_PUBLISHER 0
+#cmakedefine01 DEBUG_HAL_ETHERNET 0
 
 /* 1 ==> server runs in single threaded mode (one dedicated thread for the server)
  * 0 ==> server runs in multi threaded mode (one thread for each connection and
@@ -103,14 +106,14 @@
 #define CONFIG_GOOSE_EVENT_RETRANSMISSION_COUNT 2
 
 /* Define if GOOSE control block elements are writable (1) or read-only (0) */
-#define CONFIG_GOOSE_GOID_WRITABLE 1
-#define CONFIG_GOOSE_DATSET_WRITABLE 1
-#define CONFIG_GOOSE_CONFREV_WRITABLE 1
-#define CONFIG_GOOSE_NDSCOM_WRITABLE 1
-#define CONFIG_GOOSE_DSTADDRESS_WRITABLE 1
-#define CONFIG_GOOSE_MINTIME_WRITABLE 1
-#define CONFIG_GOOSE_MAXTIME_WRITABLE 1
-#define CONFIG_GOOSE_FIXEDOFFS_WRITABLE 1
+#define CONFIG_GOOSE_GOID_WRITABLE 0
+#define CONFIG_GOOSE_DATSET_WRITABLE 0
+#define CONFIG_GOOSE_CONFREV_WRITABLE 0
+#define CONFIG_GOOSE_NDSCOM_WRITABLE 0
+#define CONFIG_GOOSE_DSTADDRESS_WRITABLE 0
+#define CONFIG_GOOSE_MINTIME_WRITABLE 0
+#define CONFIG_GOOSE_MAXTIME_WRITABLE 0
+#define CONFIG_GOOSE_FIXEDOFFS_WRITABLE 0
 
 /* The default value for the priority field of the 802.1Q header (allowed range 0-7) */
 #define CONFIG_GOOSE_DEFAULT_PRIORITY 4
@@ -132,6 +135,9 @@
 
 /* include support for IEC 61850 reporting services */
 #cmakedefine01 CONFIG_IEC61850_REPORT_SERVICE
+
+/* support buffered report control blocks with ResvTms field */
+#define CONFIG_IEC61850_BRCB_WITH_RESVTMS 0
 
 /* The default buffer size of buffered RCBs in bytes */
 #cmakedefine CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE @CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE@
@@ -194,10 +200,21 @@
 #define CONFIG_IEC61850_CONTROL_SERVICE 0
 #endif
 
+/* Sort getNameList response according to the MMS specified collation order - this is required by the standard
+ * Set to 0 only for performance reasons and when no certification is required! */
+#define CONFIG_MMS_SORT_NAME_LIST 1
+
+#define CONFIG_INCLUDE_PLATFORM_SPECIFIC_HEADERS 0
+
 /* use short FC defines as in old API */
 #define CONFIG_PROVIDE_OLD_FC_DEFINES 0
 
 /* Support user acccess to raw messages */
 #cmakedefine01 CONFIG_MMS_RAW_MESSAGE_LOGGING
+
+/* Allow to set the virtual filestore basepath for MMS file services at runtime with the
+ * MmsServer_setFilestoreBasepath function
+ */
+#define CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME 1
 
 #endif /* STACK_CONFIG_H_ */

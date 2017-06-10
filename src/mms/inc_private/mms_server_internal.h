@@ -156,6 +156,15 @@ struct sMmsServer {
     struct sMmsObtainFileTask fileUploadTasks[CONFIG_MMS_SERVER_MAX_GET_FILE_TASKS];
 #endif
 
+#if (MMS_FILE_SERVICE == 1)
+    MmsFileAccessHandler fileAccessHandler;
+    void* fileAccessHandlerParameter;
+#endif
+
+#if (CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME == 1)
+    char* filestoreBasepath;
+#endif
+
 };
 
 struct sMmsServerConnection {

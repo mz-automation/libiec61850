@@ -36,7 +36,7 @@
 extern IedModel iedModel;
 
 static int running = 0;
-static int svcbEnabled = 0;
+static int svcbEnabled = 1;
 
 void sigint_handler(int signalId)
 {
@@ -57,9 +57,9 @@ static SampledValuesPublisher svPublisher;
 static SV_ASDU asdu;
 
 static void
-setupSVPublisher()
+setupSVPublisher(const char* svInterface)
 {
-    svPublisher = SampledValuesPublisher_create("eth1");
+    svPublisher = SampledValuesPublisher_create(svInterface);
 
     asdu = SampledValuesPublisher_addASDU(svPublisher, "xxxxMUnn01", NULL, 1);
 
@@ -87,6 +87,13 @@ static void sVCBEventHandler (SVControlBlock* svcb, int event, void* parameter)
 int 
 main(int argc, char** argv)
 {
+    char* svInterface;
+
+    if (argc > 1)
+        svInterface = argv[1];
+    else
+        svInterface = "eth0";
+
     IedServer iedServer = IedServer_create(&iedModel);
 
     /* MMS server will be instructed to start listening to client connections. */
@@ -102,7 +109,7 @@ main(int argc, char** argv)
 
     signal(SIGINT, sigint_handler);
 
-    setupSVPublisher();
+    setupSVPublisher(svInterface);
 
     int voltage = 1;
     int current = 1;

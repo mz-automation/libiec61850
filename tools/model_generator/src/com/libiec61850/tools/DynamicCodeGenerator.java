@@ -189,8 +189,8 @@ public class DynamicCodeGenerator {
             
             
             for (DataObjectDefinition dod : doType.getSubDataObjects()) {
-                out.print("    DO_" + dod.getType() + "_createInstance(\"" + dod.getName() + "\")");
-                out.println("(ModelNode*) newDo);");
+                out.print("    DO_" + dod.getType() + "_createInstance(\"" + dod.getName() + "\", ");
+                out.println("(ModelNode*) newDo, " + dod.getCount() + ");");
             }
             
             out.println("\n    return newDo;");

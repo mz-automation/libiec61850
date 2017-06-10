@@ -1,7 +1,7 @@
 /*
  *  mms_common_msg.c
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013 - 2017 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -25,6 +25,7 @@
 #include "mms_common_internal.h"
 #include "stack_config.h"
 #include "mms_value_internal.h"
+#include "ber_decode.h"
 
 static void
 mmsMsg_createFloatData(MmsValue* value, int* size, uint8_t** buf)
@@ -341,4 +342,73 @@ mmsMsg_copyAsn1IdentifierToStringBuffer(Identifier_t identifier, char* buffer, i
 
         buffer[0] = 0;
     }
+}
+
+void
+mmsMsg_createExtendedFilename(const char* basepath, char* extendedFileName, char* fileName)
+{
+#if (CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME == 1)
+   // strncpy(extendedFileName, MmsServerConnection_getFilesystemBasepath(self), 512);
+    strncpy(extendedFileName, basepath, 512);
+    strncat(extendedFileName, fileName, 512);
+#else
+    strcpy(extendedFileName, CONFIG_VIRTUAL_FILESTORE_BASEPATH);
+    strncat(extendedFileName, fileName, sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 256);
+#endif
+}
+
+
+
+FileHandle
+mmsMsg_openFile(const char* basepath, char* fileName, bool readWrite)
+{
+#if (CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME == 1)
+    char extendedFileName[512];
+#else
+    char extendedFileName[sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 256];
+#endif
+
+    mmsMsg_createExtendedFilename(basepath, extendedFileName, fileName);
+
+    return FileSystem_openFile(extendedFileName, readWrite);
+}
+
+
+bool
+mmsMsg_parseFileName(char* filename, uint8_t* buffer, int* bufPos, int maxBufPos , uint32_t invokeId, ByteBuffer* response)
+{
+    uint8_t tag = buffer[(*bufPos)++];
+    int length;
+
+    if (tag != 0x19) {
+      mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
+      return false;
+    }
+
+    *bufPos = BerDecoder_decodeLength(buffer, &length, *bufPos, maxBufPos);
+
+    if (*bufPos < 0)  {
+      mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
+      return false;
+    }
+
+    if (length > 255) {
+      mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
+      return false;
+    }
+
+    memcpy(filename, buffer + *bufPos, length);
+    filename[length] = 0;
+    *bufPos += length;
+
+    /* Check if path contains invalid characters (prevent escaping the virtual filestore by using "..")
+     * TODO this may be platform dependent. Also depending of the platform there might be other evil
+     * characters.
+     */
+    if (strstr(filename, "..") != NULL) {
+        mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_FILENAME_SYNTAX_ERROR);
+        return false;
+    }
+
+    return true;
 }

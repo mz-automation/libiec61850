@@ -1,3 +1,19 @@
+Changes to version 1.0.2
+------------------------
+- server: added MmsFileAccessHandler for server side monitoring and control of file services
+- file services: added support to set filestore basepath at runtime
+- added IedConnection_getFileDirectoryEx to better control receiving file directories
+- common: added timestamp handling functions Timestamp_create, Timestamp_destroy, Timestamp_setByMmsUtcTime, Timestamp_toMmsValue
+- .NET API: Added Timestamp class
+- .NET API: Added missing UpdateAttribute methods to IedServer
+- common: added support for Currency BasicType
+- MMS file services: fixed problem with negative frsmId
+- java scl tools: fixed bug with SDOs in dynamic code generator
+- java scl tools: fixed parsing bug in OptionFields.java
+- server: added functions to restrict local IP address IedServer_setLocalIpAddress, IedServer.SetLocalIpAddress
+- .NET: IedConnection: added internal reference to IsoConnectionParameters object to avoid deletion of internal AcseAuthenticationParameters by garbage collector
+
+
 Changes to version 1.0.1
 ------------------------
 - server: fixed problem in COTP src/dst reference handling (returning zero src reference)

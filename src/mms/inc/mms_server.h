@@ -164,12 +164,60 @@ typedef void (*MmsGetFileCompleteHandler)(void* parameter, MmsServerConnection c
  * \brief Install callback handler that is invoked when the file upload (obtainFile service) is completed and the
  *        file has been uploaded.
  *
- * \param self the MmsServer instance to operate on
+ * \param self the MmsServer instance
  * \param handler the callback handler function
  * \param parameter user provided parameter that is passed to the callback handler
  */
 void
 MmsServer_installGetFileCompleteHandler(MmsServer self, MmsGetFileCompleteHandler handler, void* parameter);
+
+
+typedef  enum {
+    MMS_FILE_ACCESS_TYPE_READ_DIRECTORY,
+    MMS_FILE_ACCESS_TYPE_OPEN,
+    MMS_FILE_ACCESS_TYPE_OBTAIN,
+    MMS_FILE_ACCESS_TYPE_DELETE,
+    MMS_FILE_ACCESS_TYPE_RENAME
+} MmsFileServiceType;
+
+/**
+ * \brief MmsFileAccessHandler callback function. Use to monitor and control file access
+ *
+ * \param parameter user provided parameter that is passed to the callback handler
+ * \param connection the connection that requested the service
+ * \param service the requested file service
+ * \param localFilename the requested file or directory name at the server
+ * \param otherFilename a second file name parameter (e.g. source file of the ObtainFile or new file of rename file)
+ *
+ * \return MMS_ERROR_NONE when the request is accepted, otherwise use the appropriate error code (e.g. MMS_ERROR_FILE_FILE_ACCESS_DENIED)
+ */
+typedef MmsError (*MmsFileAccessHandler) (void* parameter, MmsServerConnection connection, MmsFileServiceType service,
+                                          const char* localFilename, const char* otherFilename);
+
+
+/**
+ * \brief Install a callback handler this is invoked when the client requests a file server. This function can be
+ *        used to monitor and control file access
+ *
+ * \param self the MmsServer instance
+ * \param handler the callback handler function
+ * \param parameter user provided parameter that is passed to the callback handler
+ */
+void
+MmsServer_installFileAccessHandler(MmsServer self, MmsFileAccessHandler handler, void* parameter);
+
+/**
+ * \brief Set the virtual filestore basepath for the MMS file services
+ *
+ * All external file service accesses will be mapped to paths relative to the base directory.
+ * NOTE: This function is only available when the CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME
+ * option in stack_config.h is set.
+ *
+ * \param self the MmsServer instance
+ * \param basepath the new virtual filestore basepath
+ */
+void
+MmsServer_setFilestoreBasepath(MmsServer self, const char* basepath);
 
 /**
  * \brief lock the cached server data model
@@ -197,9 +245,6 @@ MmsServer_unlockModel(MmsServer self);
 void
 MmsServer_insertIntoCache(MmsServer self, MmsDomain* domain, char* itemId,
 		MmsValue* value);
-
-void
-MmsServer_setDevice(MmsServer self, MmsDevice* device);
 
 /***************************************************
  * Functions for multi-threaded operation mode
@@ -390,6 +435,7 @@ MmsServerConnection_getClientAddress(MmsServerConnection self);
 
 IsoConnection
 MmsServerConnection_getIsoConnection(MmsServerConnection self);
+
 
 /**@}*/
 

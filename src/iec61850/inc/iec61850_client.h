@@ -810,6 +810,8 @@ IedConnection_uninstallReportHandler(IedConnection self, const char* rcbReferenc
  *
  * The RCB must have been enabled and GI set as trigger option before this command can be performed.
  *
+ * \deprecated Use ClientReportControlBlock_setGI instead
+ *
  * \param connection the connection object
  * \param error the error code if an error occurs
  * \param rcbReference object reference of the report control block
@@ -1869,6 +1871,38 @@ FileDirectoryEntry_getLastModified(FileDirectoryEntry self);
 LinkedList /*<FileDirectoryEntry>*/
 IedConnection_getFileDirectory(IedConnection self, IedClientError* error, const char* directoryName);
 
+
+/**
+ * \brief returns the directory entries of the specified file directory returned by a single file directory request.
+ *
+ * This function will only create a single request and the result may only be the directory that fits
+ * into a single MMS PDU. If the server contains more directory entries, this will be indicated by setting
+ * the moreFollows variable (if provided by the caller). If the directory entry does not fit into a single MMS
+ * PDU the next part of the directory list can be requested by setting the continueAfter parameter with the value
+ * of the last filename of the received list.
+ *
+ * Requires the server to support file services.
+ *
+ * NOTE: the returned linked list has to be freed by the user. You can user the following statement
+ * to free the list of directory entries:
+ *
+ * LinkedList_destroyDeep(fileNames, (LinkedListValueDeleteFunction) FileDirectoryEntry_destroy);
+ *
+ * where fileNames is the return value of this function.
+ *
+ * \param self the connection object
+ * \param error the error code if an error occurs
+ * \param directoryName the name of the directory or NULL to get the entries of the root directory
+ * \param continueAfter last received filename to continue after, or NULL for the first request
+ * \param moreFollows if provided by the caller (non NULL) the function will indicate if more directory entries
+ *                    are available.
+ *
+ * \return the list of directory entries. The return type is a LinkedList with FileDirectoryEntry elements
+ */
+LinkedList /*<FileDirectoryEntry>*/
+IedConnection_getFileDirectoryEx(IedConnection self, IedClientError* error, const char* directoryName, const char* continueAfter,
+        bool* moreFollows);
+
 /**
  * \brief user provided handler to receive the data of the GetFile request
  *
@@ -1900,6 +1934,19 @@ typedef bool
 uint32_t
 IedConnection_getFile(IedConnection self, IedClientError* error, const char* fileName, IedClientGetFileHandler handler,
         void* handlerParameter);
+
+/**
+ * \brief Set the virtual filestore basepath for the setFile service
+ *
+ * All external file service accesses will be mapped to paths relative to the base directory.
+ * NOTE: This function is only available when the CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME
+ * option in stack_config.h is set.
+ *
+ * \param self the connection object
+ * \param basepath the new virtual filestore basepath
+ */
+void
+IedConnection_setFilestoreBasepath(IedConnection, const char* basepath);
 
 /**
  * \brief Implementation of the SetFile ACSI service

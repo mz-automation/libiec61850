@@ -405,6 +405,20 @@ Timestamp_setByMmsUtcTime(Timestamp* self, MmsValue* mmsValue)
         memcpy(self->val, mmsValue->value.utcTime, 8);
 }
 
+MmsValue*
+Timestamp_toMmsValue(Timestamp* self, MmsValue* mmsValue)
+{
+    MmsValue* convertedValue = mmsValue;
+
+    if (convertedValue == NULL)
+        convertedValue = MmsValue_newUtcTime(0);
+
+    if (convertedValue != NULL)
+        memcpy(convertedValue->value.utcTime, self->val, 8);
+
+    return convertedValue;
+}
+
 char*
 LibIEC61850_getVersionString()
 {
