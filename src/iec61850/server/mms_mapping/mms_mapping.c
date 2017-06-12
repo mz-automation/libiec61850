@@ -2032,7 +2032,7 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
             }
 #endif
 
-            /* Call writer access handlers */
+            /* Call write access handlers */
             LinkedList writeHandlerListElement = LinkedList_getNext(self->attributeAccessHandlers);
 
             while (writeHandlerListElement != NULL) {

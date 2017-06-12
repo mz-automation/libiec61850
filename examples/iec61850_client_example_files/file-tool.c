@@ -8,6 +8,8 @@
  *
  * Note: intended to be used with server_example3 or server_example_files
  *
+ * Note: DOES NOT WORK WITH VISUAL STUDIO because of libgen.h
+ *
  */
 
 #include "iec61850_client.h"

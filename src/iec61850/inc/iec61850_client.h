@@ -625,7 +625,7 @@ IedConnection_setGoCBValues(IedConnection self, IedClientError* error, ClientGoo
  *
  * The requested RCB has to be specified by its object reference. E.g.
  *
- * "simpleIOGernericIO/LLN0.RP.EventsRCB01"
+ * "simpleIOGenericIO/LLN0.RP.EventsRCB01"
  *
  * or
  *
@@ -1218,7 +1218,8 @@ IedConnection_readUnsigned32Value(IedConnection self, IedClientError* error, con
  * \brief read a functional constrained data attribute (FCDA) of type Timestamp (UTC Time)
  *
  *  NOTE: If the timestamp parameter is set to NULL the function allocates a new timestamp instance. Otherwise the
- *  return value is a pointer to the user provided timestamp instance.
+ *  return value is a pointer to the user provided timestamp instance. The new timestamp instance has to be freed by
+ *  the caller of the function.
  *
  * \param self  the connection object to operate on
  * \param error the error code if an error occurs

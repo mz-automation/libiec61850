@@ -646,3 +646,4 @@ EXPORTS
     MmsConnection_setFilestoreBasepath
     IedConnection_setFilestoreBasepath
     IedServer_setFilestoreBasepath
+    GooseReceiver_isRunning

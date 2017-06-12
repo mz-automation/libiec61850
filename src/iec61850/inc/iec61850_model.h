@@ -151,7 +151,8 @@ typedef enum {
     GENERIC_BITSTRING = 26,
     CONSTRUCTED = 27,
     ENTRY_TIME = 28,
-    PHYCOMADDR = 29
+    PHYCOMADDR = 29,
+    CURRENCY = 30
 #endif
 } DataAttributeType;
 
