@@ -59,7 +59,7 @@ static SV_ASDU asdu;
 static void
 setupSVPublisher(const char* svInterface)
 {
-    svPublisher = SampledValuesPublisher_create(svInterface);
+    svPublisher = SampledValuesPublisher_create(NULL, svInterface);
 
     asdu = SampledValuesPublisher_addASDU(svPublisher, "xxxxMUnn01", NULL, 1);
 

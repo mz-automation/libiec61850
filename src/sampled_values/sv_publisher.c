@@ -42,15 +42,6 @@
 
 #define SV_MAX_MESSAGE_SIZE 1518
 
-typedef struct sCommParameters {
-    uint8_t vlanPriority;
-    uint16_t vlanId;
-    uint16_t appId;
-    uint8_t dstAddress[6];
-} CommParameters;
-
-
-
 struct sSV_ASDU {
     char* svID;
     char* datset;
@@ -264,13 +255,13 @@ encodeUtcTime(uint64_t timeval, uint8_t* buffer, int bufPos)
 }
 
 SampledValuesPublisher
-SampledValuesPublisher_create(const char* interfaceId)
+SampledValuesPublisher_create(CommParameters* parameters, const char* interfaceId)
 {
 	SampledValuesPublisher self = (SampledValuesPublisher) GLOBAL_CALLOC(1, sizeof(struct sSampledValuesPublisher));
 
 	self->asduLIst = NULL;
 
-	preparePacketBuffer(self, NULL, interfaceId);
+	preparePacketBuffer(self, parameters, interfaceId);
 
 	return self;
 }

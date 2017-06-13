@@ -31,12 +31,17 @@
 extern "C" {
 #endif
 
+#ifndef GOOSE_SV_COMM_PARAMETERS
+#define GOOSE_SV_COMM_PARAMETERS
+
 typedef struct sCommParameters {
     uint8_t vlanPriority;
     uint16_t vlanId;
     uint16_t appId;
     uint8_t dstAddress[6];
 } CommParameters;
+
+#endif
 
 typedef struct sGoosePublisher* GoosePublisher;
 

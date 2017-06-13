@@ -29,7 +29,7 @@ main(int argc, char** argv)
   
     printf("Using interface %s\n", interface);
 
-    SampledValuesPublisher svPublisher = SampledValuesPublisher_create(interface);
+    SampledValuesPublisher svPublisher = SampledValuesPublisher_create(NULL, interface);
 
     SV_ASDU asdu1 = SampledValuesPublisher_addASDU(svPublisher, "svpub1", NULL, 1);
 
@@ -60,7 +60,7 @@ main(int argc, char** argv)
 
         SampledValuesPublisher_publish(svPublisher);
 
-        //Thread_sleep(50);
+        Thread_sleep(50);
     }
 
     SampledValuesPublisher_destroy(svPublisher);

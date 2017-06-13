@@ -154,6 +154,8 @@ exit_with_error:
 MmsValue*
 MmsValue_decodeMmsData(uint8_t* buffer, int bufPos, int bufferLength)
 {
+    MmsValue* value = NULL;
+
     int dataEndBufPos = bufPos + bufferLength;
 
     uint8_t tag = buffer[bufPos++];
@@ -164,8 +166,6 @@ MmsValue_decodeMmsData(uint8_t* buffer, int bufPos, int bufferLength)
 
     if (bufPos + dataLength > dataEndBufPos)
         goto exit_with_error;
-
-    MmsValue* value = NULL;
 
     switch (tag) {
 
