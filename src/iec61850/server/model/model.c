@@ -93,9 +93,9 @@ IedModel_getLogicalDeviceCount(IedModel* iedModel)
 }
 
 DataSet*
-IedModel_lookupDataSet(IedModel* model, const char* dataSetReference  /* e.g. ied1Inverter/LLN0$dataset1 */)
+IedModel_lookupDataSet(IedModel* self, const char* dataSetReference  /* e.g. ied1Inverter/LLN0$dataset1 */)
 {
-	DataSet* dataSet = model->dataSets;
+	DataSet* dataSet = self->dataSets;
 
 	const char* separator = strchr(dataSetReference, '/');
 
@@ -106,9 +106,9 @@ IedModel_lookupDataSet(IedModel* model, const char* dataSetReference  /* e.g. ie
 
 	char domainName[65];
 
-	int modelNameLen = strlen(model->name);
+	int modelNameLen = strlen(self->name);
 
-	memcpy(domainName, model->name, modelNameLen);
+	memcpy(domainName, self->name, modelNameLen);
 
 	while (dataSet != NULL) {
 
@@ -129,21 +129,37 @@ IedModel_lookupDataSet(IedModel* model, const char* dataSetReference  /* e.g. ie
 }
 
 LogicalDevice*
-IedModel_getDevice(IedModel* model, const char* deviceName)
+IedModel_getDevice(IedModel* self, const char* deviceName)
 {
-    LogicalDevice* device = model->firstChild;
+    LogicalDevice* device = self->firstChild;
 
     while (device != NULL) {
 
         char domainName[65];
 
-        strncpy(domainName, model->name, 64);
+        strncpy(domainName, self->name, 64);
         strncat(domainName, device->name, 64);
 
         if (strcmp(domainName, deviceName) == 0)
             return device;
 
         device = (LogicalDevice*) device->sibling;
+    }
+
+    return NULL;
+}
+
+LogicalDevice*
+IedModel_getDeviceByInst(IedModel* self, const char* ldInst)
+{
+    LogicalDevice* device = self->firstChild;
+
+    while (device != NULL) {
+
+      if (strcmp(device->name, ldInst) == 0)
+          return device;
+
+      device = (LogicalDevice*) device->sibling;
     }
 
     return NULL;

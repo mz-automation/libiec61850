@@ -389,7 +389,11 @@ char*
 ModelNode_getObjectReference(ModelNode* self, char* objectReference);
 
 /**
+ * \brief Get the type of the ModelNode
  *
+ * \param self the ModelNode instance
+ *
+ * \return the type of the ModelNode (one of LD, LN, DO, DA)
  */
 ModelNodeType
 ModelNode_getType(ModelNode* self);
@@ -413,13 +417,13 @@ IedModel_setIedName(IedModel* self, const char* iedName);
  * as it happens to appear on the wire. E.g. if IED name in SCL file would be "IED1"
  * and the logical device "WD1" the resulting LD name would be "IED1WD".
  *
- * \param model the IedModel instance that holds the model node
+ * \param self the IedModel instance that holds the model node
  * \param objectReference the IEC 61850 object reference
  *
  * \return the model node instance or NULL if model node does not exist.
  */
 ModelNode*
-IedModel_getModelNodeByObjectReference(IedModel* model, const char* objectReference);
+IedModel_getModelNodeByObjectReference(IedModel* self, const char* objectReference);
 
 SVControlBlock*
 IedModel_getSVControlBlock(IedModel* self, LogicalNode* parentLN, const char* svcbName);
@@ -431,13 +435,13 @@ IedModel_getSVControlBlock(IedModel* self, LogicalNode* parentLN, const char* sv
  * IED name as part of the logical device name. This function is useful for
  * devices where the IED name can be configured.
  *
- * \param model the IedModel instance that holds the model node
+ * \param self the IedModel instance that holds the model node
  * \param objectReference the IEC 61850 object reference
  *
  * \return the model node instance or NULL if model node does not exist.
  */
 ModelNode*
-IedModel_getModelNodeByShortObjectReference(IedModel* model, const char* objectReference);
+IedModel_getModelNodeByShortObjectReference(IedModel* self, const char* objectReference);
 
 /**
  * \brief Lookup a model node by its short address
@@ -445,13 +449,25 @@ IedModel_getModelNodeByShortObjectReference(IedModel* model, const char* objectR
  * Short address is a 32 bit unsigned integer as specified in the "sAddr" attribute of
  * the ICD file or in the configuration file.
  *
- * \param model the IedModel instance that holds the model node
+ * \param self the IedModel instance that holds the model node
  * \param shortAddress
  *
  * \return the model node instance or NULL if model node does not exist.
  */
 ModelNode*
-IedModel_getModelNodeByShortAddress(IedModel* model, uint32_t shortAddress);
+IedModel_getModelNodeByShortAddress(IedModel* self, uint32_t shortAddress);
+
+/**
+ * \brief Lookup logical device (LD) by device instance name (SCL attribute "inst")
+ *
+ * \param self IedModel instance
+ * \param ldInst the logical device instance name (SCL attribute "inst")
+ *
+ * \return The matching LogicalDevice instance
+ */
+LogicalDevice*
+IedModel_getDeviceByInst(IedModel* self, const char* ldInst);
+
 
 /**
  * \brief Lookup a logical node by name that is part of the given logical device
@@ -462,7 +478,7 @@ IedModel_getModelNodeByShortAddress(IedModel* model, uint32_t shortAddress);
  * \return the logical device instance or NULL if it does not exist
  */
 LogicalNode*
-LogicalDevice_getLogicalNode(LogicalDevice* device, const char* lnName);
+LogicalDevice_getLogicalNode(LogicalDevice* self, const char* lnName);
 
 /**
  * \brief Get the setting group control block (SGCB) of the logical device
@@ -472,7 +488,7 @@ LogicalDevice_getLogicalNode(LogicalDevice* device, const char* lnName);
  * \return the SGCB instance or NULL if no SGCB is available
  */
 SettingGroupControlBlock*
-LogicalDevice_getSettingGroupControlBlock(LogicalDevice* device);
+LogicalDevice_getSettingGroupControlBlock(LogicalDevice* self);
 
 /**@}*/
 
@@ -482,37 +498,69 @@ LogicalDevice_getSettingGroupControlBlock(LogicalDevice* device);
 /**
  * \brief unset all MmsValue references in the data model
  *
- * \param model the IedModel instance that holds the model node
+ * \param self the IedModel instance that holds the model node
  */
 void
-IedModel_setAttributeValuesToNull(IedModel* iedModel);
+IedModel_setAttributeValuesToNull(IedModel* self);
 
+/**
+ * \brief Lookup logical device (LD) by device name
+ *
+ * \param self IedModel instance
+ * \param ldInst the logical device name (as it is seen from the protocol side - MMS domain name)
+ *
+ * \return The matching LogicalDevice instance
+ */
 LogicalDevice*
-IedModel_getDevice(IedModel* model, const char* deviceName);
+IedModel_getDevice(IedModel* self, const char* ldName);
 
-/*
- *  \param dataSetReference MMS mapping object reference! e.g. ied1Inverter/LLN0$dataset1
+/**
+ * \brief Lookup a data set in the IED model
+ *
+ * \param self IedModel instance
+ * \param dataSetReference MMS mapping object reference! e.g. ied1Inverter/LLN0$dataset1
+ *
+ * \return The matching DataSet instance
  */
 DataSet*
-IedModel_lookupDataSet(IedModel* model, const char* dataSetReference);
+IedModel_lookupDataSet(IedModel* self, const char* dataSetReference);
+
+/**
+ * \brief Lookup a DataAttribute instance with the corresponding MmsValue instance
+ *
+ * \param self IedModel instance
+ * \param value the MmsValue instance (from the MMS value cache)
+ *
+ * \return the matching DataAttribute instance
+ */
+DataAttribute*
+IedModel_lookupDataAttributeByMmsValue(IedModel* self, MmsValue* value);
+
+
+/**
+ * \brief Get the number of logical devices
+ *
+ * \param self IedModel instance
+ *
+ * \return the number of logical devices
+ */
+int
+IedModel_getLogicalDeviceCount(IedModel* self);
 
 int
-IedModel_getLogicalDeviceCount(IedModel* iedModel);
-
-int
-LogicalDevice_getLogicalNodeCount(LogicalDevice* logicalDevice);
+LogicalDevice_getLogicalNodeCount(LogicalDevice* self);
 
 ModelNode*
-LogicalDevice_getChildByMmsVariableName(LogicalDevice* logicalDevice, const char* mmsVariableName);
+LogicalDevice_getChildByMmsVariableName(LogicalDevice* self, const char* mmsVariableName);
 
 bool
-LogicalNode_hasFCData(LogicalNode* node, FunctionalConstraint fc);
+LogicalNode_hasFCData(LogicalNode* self, FunctionalConstraint fc);
 
 bool
-LogicalNode_hasBufferedReports(LogicalNode* node);
+LogicalNode_hasBufferedReports(LogicalNode* self);
 
 bool
-LogicalNode_hasUnbufferedReports(LogicalNode* node);
+LogicalNode_hasUnbufferedReports(LogicalNode* self);
 
 /**
  * \brief get a data set instance
@@ -526,10 +574,8 @@ DataSet*
 LogicalNode_getDataSet(LogicalNode* self, const char* dataSetName);
 
 bool
-DataObject_hasFCData(DataObject* dataObject, FunctionalConstraint fc);
+DataObject_hasFCData(DataObject* self, FunctionalConstraint fc);
 
-DataAttribute*
-IedModel_lookupDataAttributeByMmsValue(IedModel* model, MmsValue* value);
 
 #ifdef __cplusplus
 }
