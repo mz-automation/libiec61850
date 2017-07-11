@@ -1640,13 +1640,12 @@ IedConnection_getServerDirectory(IedConnection self, IedClientError* error, bool
 /**
  * \brief Get the list of logical nodes (LN) of a logical device
  *
- * LGetLogicalDeviceDirectory ACSI service implementation. Returns the list of logical nodes present
- * in a logical device. The list is returned as a linked list of type LinkedList where the elements
- * are C style strings.
+ * GetLogicalDeviceDirectory ACSI service implementation. Returns the list of logical nodes names present
+ * in a logical device. The list is returned as a linked list of type LinkedList with c style string elements.
  *
  * \param self the connection object
  * \param error the error code if an error occurs
- * \param getFileNames get list of files instead of logical device names (TO BE IMPLEMENTED)
+ * \param logicalDeviceName the name of the logical device (LD) of interest
  *
  * \return  LinkedList with string elements representing the logical node names
  */
