@@ -659,7 +659,9 @@ namespace IEC61850
 
 			private IntPtr self = IntPtr.Zero;
 
-
+			private InternalControlHandler internalControlHandlerRef = null;
+			private InternalControlPerformCheckHandler internalControlPerformCheckHandlerRef = null;
+			private InternalControlWaitForExecutionHandler internalControlWaitForExecutionHandlerRef = null;
 
 			private class ControlHandlerInfo {
 				public DataObject controlObject = null;
@@ -884,7 +886,10 @@ namespace IEC61850
 				info.controlHandler = handler;
 				info.controlHandlerParameter = parameter;
 
-				IedServer_setControlHandler(self, controlObject.self, internalControlHandler, GCHandle.ToIntPtr(info.handle));
+				if (internalControlHandlerRef == null)
+					internalControlHandlerRef = new InternalControlHandler (internalControlHandler);
+
+				IedServer_setControlHandler(self, controlObject.self, internalControlHandlerRef, GCHandle.ToIntPtr(info.handle));
 			}
 
 			public void SetCheckHandler (DataObject controlObject, CheckHandler handler, object parameter)
@@ -894,7 +899,10 @@ namespace IEC61850
 				info.checkHandler = handler;
 				info.checkHandlerParameter = parameter;
 
-				IedServer_setPerformCheckHandler(self, controlObject.self, internalCheckHandler, GCHandle.ToIntPtr(info.handle));
+				if (internalControlPerformCheckHandlerRef == null)
+					internalControlPerformCheckHandlerRef = new InternalControlPerformCheckHandler (internalCheckHandler);
+
+				IedServer_setPerformCheckHandler(self, controlObject.self, internalControlPerformCheckHandlerRef, GCHandle.ToIntPtr(info.handle));
 			}
 
 			public void SetWaitForExecutionHandler (DataObject controlObject, ControlWaitForExecutionHandler handler, object parameter)
@@ -904,7 +912,10 @@ namespace IEC61850
 				info.waitForExecHandler = handler;
 				info.waitForExecHandlerParameter = parameter;
 
-				IedServer_setWaitForExecutionHandler(self, controlObject.self, internalControlWaitForExecutionHandler, GCHandle.ToIntPtr(info.handle));
+				if (internalControlWaitForExecutionHandlerRef == null)
+					internalControlWaitForExecutionHandlerRef = new InternalControlWaitForExecutionHandler (internalControlWaitForExecutionHandler);
+
+				IedServer_setWaitForExecutionHandler(self, controlObject.self, internalControlWaitForExecutionHandlerRef, GCHandle.ToIntPtr(info.handle));
 			}
 				
 			public void HandleWriteAccess (DataAttribute dataAttr, WriteAccessHandler handler, object parameter)
