@@ -253,7 +253,7 @@ ServerSocket_destroy(ServerSocket self)
 {
 	closesocket(self->fd);
 	WSACleanup();
-	free(self);
+	GLOBAL_FREEMEM(self);
 }
 
 Socket
@@ -401,5 +401,5 @@ Socket_destroy(Socket self)
 		closesocket(self->fd);
 	}
 
-	free(self);
+	GLOBAL_FREEMEM(self);
 }
