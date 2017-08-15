@@ -252,8 +252,6 @@ handleConfirmedErrorPdu(
     uint32_t invokeId;
     MmsServiceError serviceError;
 
-
-
     if (mmsMsg_parseConfirmedErrorPDU(buffer, bufPos, maxBufPos, &invokeId, &serviceError)) {
 
         if (DEBUG_MMS_SERVER)

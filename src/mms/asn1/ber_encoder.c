@@ -34,10 +34,17 @@ BerEncoder_encodeLength(uint32_t length, uint8_t* buffer, int bufPos)
         buffer[bufPos++] = 0x81;
         buffer[bufPos++] = (uint8_t) length;
     }
-    else {
+    else if (length < 65535) {
         buffer[bufPos++] = 0x82;
 
         buffer[bufPos++] = length / 256;
+        buffer[bufPos++] = length % 256;
+    }
+    else {
+        buffer[bufPos++] = 0x83;
+
+        buffer[bufPos++] = length / 0x10000;
+        buffer[bufPos++] = (length & 0xffff) / 0x100;
         buffer[bufPos++] = length % 256;
     }
 
@@ -362,8 +369,10 @@ BerEncoder_determineLengthSize(uint32_t length)
         return 1;
     if (length < 256)
         return 2;
-    else
+    if (length < 65536)
         return 3;
+    else
+        return 4;
 }
 
 int

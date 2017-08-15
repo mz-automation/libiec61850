@@ -28,7 +28,7 @@
 #define DEBUG_HAL_ETHERNET 0
 
 /* Maximum MMS PDU SIZE - default is 65000 */
-#define CONFIG_MMS_MAXIMUM_PDU_SIZE 65000
+#define CONFIG_MMS_MAXIMUM_PDU_SIZE 120000
 
 /*
  * Enable single threaded mode

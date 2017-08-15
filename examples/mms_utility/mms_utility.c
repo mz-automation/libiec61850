@@ -23,6 +23,7 @@ print_help()
     printf("-g <filename> get file attributes\n");
     printf("-x <filename> delete file\n");
     printf("-j <domainName/journalName> read journal\n");
+    printf("-v <variable list_name> read domain variable list\n");
     printf("-m print raw MMS messages\n");
 }
 
@@ -117,10 +118,11 @@ int main(int argc, char** argv) {
 	int readJournal = 0;
 	int printRawMmsMessages = 0;
 	int deleteFile = 0;
+	int readVariableList = 0;
 
 	int c;
 
-	while ((c = getopt(argc, argv, "mifdh:p:l:t:a:r:g:j:x:")) != -1)
+	while ((c = getopt(argc, argv, "mifdh:p:l:t:a:r:g:j:x:v:")) != -1)
 		switch (c) {
 		case 'm':
 		    printRawMmsMessages = 1;
@@ -153,6 +155,10 @@ int main(int argc, char** argv) {
 		    readVariable = 1;
 		    variableName = StringUtils_copyString(optarg);
 		    break;
+		case 'v':
+		    readVariableList = 1;
+		    variableName = StringUtils_copyString(optarg);
+            break;
 		case 'f':
 		    showFileList = 1;
 		    break;
@@ -340,6 +346,21 @@ int main(int argc, char** argv) {
 	    }
 	    else
 	        printf("Reading VMD scope variable not yet supported!\n");
+	}
+
+	if (readVariableList) {
+        if (readWriteHasDomain) {
+            MmsValue* variables = MmsConnection_readNamedVariableListValues(con, &error, domainName, variableName, true);
+
+            if (error != MMS_ERROR_NONE) {
+                printf("Reading variable failed: (ERROR %i)\n", error);
+            }
+            else {
+                printf("Read SUCCESS\n");
+            }
+        }
+        else
+            printf("Reading VMD scope variable list not yet supported!\n");
 	}
 
 	if (showFileList) {
