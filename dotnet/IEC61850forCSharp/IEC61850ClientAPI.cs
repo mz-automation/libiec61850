@@ -823,7 +823,7 @@ namespace IEC61850
 				return QueryLogByTime (logRef, startTimeMs, stopTimeMs, out moreFollows);
 			}
 
-			/// <summary>Read the variable specification (type description of a DA or FDCO</summary>
+			/// <summary>Read the variable specification (type description of a DA or FCDO</summary>
 			/// <param name="objectReference">The object reference of a DA or FCDO.</param>
 			/// <param name="fc">The functional constraint (FC) of the object</param>
 			/// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>

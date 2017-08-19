@@ -1981,13 +1981,9 @@ getDataDirectoryByFc(IedConnection self, IedClientError* error,
 
                             int elementNameLen = strlen(subElementName);
 
-                            char* elementName = (char*) GLOBAL_MALLOC(elementNameLen + 5);
+                            char* elementName = (char*) GLOBAL_MALLOC(elementNameLen + 1);
                             memcpy(elementName, subElementName, elementNameLen);
-                            elementName[elementNameLen] = '[';
-                            elementName[elementNameLen + 1] = *(fcPos + 1);
-                            elementName[elementNameLen + 2] = *(fcPos + 2);
-                            elementName[elementNameLen + 3] = ']';
-                            elementName[elementNameLen + 4] = 0;
+                            elementName[elementNameLen] = 0;
 
                             if (!addToStringSet(dataDirectory, elementName))
                                 GLOBAL_FREEMEM(elementName);
