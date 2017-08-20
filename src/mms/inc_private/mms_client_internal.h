@@ -133,7 +133,7 @@ mmsClient_getInvokeId(ConfirmedResponsePdu_t* confirmedResponse);
 int
 mmsClient_write_out(void *buffer, size_t size, void *app_key);
 
-int
+void
 mmsClient_createInitiateRequest(MmsConnection self, ByteBuffer* writeBuffer);
 
 MmsPdu_t*
