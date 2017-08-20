@@ -285,11 +285,9 @@ sendRequestAndWaitForResponse(MmsConnection self, uint32_t invokeId, ByteBuffer*
 {
     ByteBuffer* receivedMessage = NULL;
 
-    uint64_t startTime = Hal_getTimeInMs();
+    uint64_t currentTime = Hal_getTimeInMs();
 
-    uint64_t waitUntilTime = startTime + self->requestTimeout;
-
-    uint64_t currentTime = startTime;
+    uint64_t waitUntilTime = currentTime + self->requestTimeout;
 
     bool success = false;
 
@@ -311,14 +309,19 @@ sendRequestAndWaitForResponse(MmsConnection self, uint32_t invokeId, ByteBuffer*
             goto connection_lost;
 
         Semaphore_wait(self->lastResponseLock);
+
         receivedInvokeId = self->responseInvokeId;
-        Semaphore_post(self->lastResponseLock);
 
         if (receivedInvokeId == invokeId) {
+
             receivedMessage = self->lastResponse;
+            Semaphore_post(self->lastResponseLock);
+
             success = true;
             break;
         }
+
+        Semaphore_post(self->lastResponseLock);
 
         Thread_sleep(10);
 
@@ -331,7 +334,7 @@ sendRequestAndWaitForResponse(MmsConnection self, uint32_t invokeId, ByteBuffer*
         self->lastResponseError = MMS_ERROR_SERVICE_TIMEOUT;
     }
 
-    connection_lost:
+connection_lost:
 
     removeFromOutstandingCalls(self, invokeId);
 
@@ -662,7 +665,7 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
 
         self->concludeState = CONCLUDE_STATE_REQUESTED;
 
-        /* TODO block all new user requests */
+        /* TODO block all new user requests? */
 
         IsoClientConnection_releaseReceiveBuffer(self->isoClient);
     }
@@ -697,6 +700,7 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
         else {
             if (checkForOutstandingCall(self, invokeId)) {
 
+                /* wait for application thread to handle last received response */
                 waitUntilLastResponseHasBeenProcessed(self);
 
                 Semaphore_wait(self->lastResponseLock);
@@ -1047,11 +1051,9 @@ MmsConnection_getMmsConnectionParameters(MmsConnection self)
 static void
 waitForConnectResponse(MmsConnection self)
 {
-    uint64_t startTime = Hal_getTimeInMs();
+    uint64_t currentTime = Hal_getTimeInMs();
 
-    uint64_t waitUntilTime = startTime + self->requestTimeout;
-
-    uint64_t currentTime = startTime;
+    uint64_t waitUntilTime = currentTime + self->requestTimeout;
 
     while (currentTime < waitUntilTime) {
         if (self->connectionState != MMS_CON_WAITING)
@@ -1061,7 +1063,6 @@ waitForConnectResponse(MmsConnection self)
 
         currentTime = Hal_getTimeInMs();
     }
-
 }
 
 bool
