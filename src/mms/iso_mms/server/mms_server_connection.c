@@ -36,47 +36,98 @@
  * MMS Common support functions
  *********************************************************************************************/
 
+#define MMS_REJECT_CONFIRMED_REQUEST 1
+#define MMS_REJECT_CONFIRMED_RESPONSE 2
+#define MMS_REJECT_CONFIRMED_ERROR 3
+#define MMS_REJECT_UNCONFIRMED 4
+#define MMS_REJECT_PDU_ERROR 5
+#define MMS_REJECT_CANCEL_REQUEST 6
+#define MMS_REJECT_CANCEL_RESPONSE 7
+#define MMS_REJECT_CANCEL_ERROR 8
+#define MMS_REJECT_CONCLUDE_REQUEST 9
+#define MMS_REJECT_CONCLUDE_RESPONSE 10
+#define MMS_REJECT_CONCLUDE_ERROR 11
+
+#define MMS_REJECT_CONFIRMED_REQUEST_OTHER 0
+#define MMS_REJECT_CONFIRMED_REQUEST_UNRECOGNIZED_SERVICE 1
+#define MMS_REJECT_CONFIRMED_REQUEST_UNRECOGNIZED_MODIFIER 2
+#define MMS_REJECT_CONFIRMED_REQUEST_INVALID_INVOKE_ID 3
+#define MMS_REJECT_CONFIRMED_REQUEST_INVALID_ARGUMENT 4
+#define MMS_REJECT_CONFIRMED_REQUEST_INVALID_MODIFIER 5
+#define MMS_REJECT_CONFIRMED_REQUEST_MAX_SERV_OUTSTANDING_EXCEEDED 6
+#define MMS_REJECT_CONFIRMED_REQUEST_MAX_RECURSION_EXCEEDED 8
+#define MMS_REJECT_CONFIRMED_REQUEST_VALUE_OUT_OF_RANGE 9
+
+#define MMS_REJECT_PDU_ERROR_UNKNOWN_PDU_TYPE 0
+#define MMS_REJECT_PDU_ERROR_INVALID_PDU 1
+#define MMS_REJECT_PDU_ERROR_ILLEGAL_ACSI_MAPPING 2
+
+
+static void
+mmsMsg_encodeMmsRejectPdu(uint32_t* invokeId, int rejectType, int rejectReason, ByteBuffer* response)
+{
+    int bufPos = 0;
+    uint8_t* buffer = response->buffer;
+
+    uint32_t invokeIdLength = 0;
+
+    uint32_t rejectPduLength = 3;
+
+    if (invokeId != NULL) {
+        invokeIdLength = BerEncoder_UInt32determineEncodedSize(*invokeId);
+        rejectPduLength += 2 + invokeIdLength;
+    }
+
+    /* Encode reject PDU */
+    bufPos = BerEncoder_encodeTL(0xa4, rejectPduLength, buffer, bufPos);
+
+    if (invokeId != NULL) {
+        /* original invokeId */
+       bufPos = BerEncoder_encodeTL(0x80, invokeIdLength, buffer, bufPos);
+       bufPos = BerEncoder_encodeUInt32(*invokeId, buffer, bufPos);
+    }
+
+    buffer[bufPos++] = (uint8_t) (0x80 + rejectType);
+    buffer[bufPos++] = 0x01;
+    buffer[bufPos++] = (uint8_t) rejectReason;
+
+    response->size = bufPos;
+}
+
 void
 mmsMsg_createMmsRejectPdu(uint32_t* invokeId, int reason, ByteBuffer* response)
 {
-	MmsPdu_t* mmsPdu = (MmsPdu_t*) GLOBAL_CALLOC(1, sizeof(MmsPdu_t));
+    int rejectType = 0;
+    int rejectReason = 0;
 
-	mmsPdu->present = MmsPdu_PR_rejectPDU;
+    switch (reason) {
 
-	if (invokeId != NULL) {
-		mmsPdu->choice.rejectPDU.originalInvokeID = (Unsigned32_t*) GLOBAL_CALLOC(1, sizeof(Unsigned32_t));
-		asn_long2INTEGER(mmsPdu->choice.rejectPDU.originalInvokeID, *invokeId);
-	}
+    case MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE:
+        rejectType = MMS_REJECT_CONFIRMED_REQUEST;
+        rejectReason = MMS_REJECT_CONFIRMED_REQUEST_UNRECOGNIZED_SERVICE;
+        break;
 
-	if (reason == MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE) {
-		mmsPdu->choice.rejectPDU.rejectReason.present = RejectPDU__rejectReason_PR_confirmedRequestPDU;
-		mmsPdu->choice.rejectPDU.rejectReason.choice.confirmedResponsePDU =
-			RejectPDU__rejectReason__confirmedRequestPDU_unrecognizedService;
-	}
-	else if(reason == MMS_ERROR_REJECT_UNKNOWN_PDU_TYPE) {
-		mmsPdu->choice.rejectPDU.rejectReason.present = RejectPDU__rejectReason_PR_pduError;
-		asn_long2INTEGER(&mmsPdu->choice.rejectPDU.rejectReason.choice.pduError,
-				RejectPDU__rejectReason__pduError_unknownPduType);
-	}
-	else if (reason == MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT) {
-	    mmsPdu->choice.rejectPDU.rejectReason.present = RejectPDU__rejectReason_PR_confirmedRequestPDU;
-	    mmsPdu->choice.rejectPDU.rejectReason.choice.confirmedResponsePDU =
-	                RejectPDU__rejectReason__confirmedRequestPDU_invalidArgument;
-	}
-	else if (reason == MMS_ERROR_REJECT_INVALID_PDU) {
-		mmsPdu->choice.rejectPDU.rejectReason.present = RejectPDU__rejectReason_PR_pduError;
-		asn_long2INTEGER(&mmsPdu->choice.rejectPDU.rejectReason.choice.pduError,
-		                RejectPDU__rejectReason__pduError_invalidPdu);
-	}
-	else {
-		mmsPdu->choice.rejectPDU.rejectReason.present = RejectPDU__rejectReason_PR_confirmedRequestPDU;
-		mmsPdu->choice.rejectPDU.rejectReason.choice.confirmedResponsePDU =
-			RejectPDU__rejectReason__confirmedRequestPDU_other;
-	}
+    case MMS_ERROR_REJECT_UNKNOWN_PDU_TYPE:
+        rejectType = MMS_REJECT_PDU_ERROR;
+        rejectReason = MMS_REJECT_PDU_ERROR_UNKNOWN_PDU_TYPE;
+        break;
 
-	der_encode(&asn_DEF_MmsPdu, mmsPdu,	mmsServer_write_out, (void*) response);
+    case MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT:
+        rejectType = MMS_REJECT_CONFIRMED_REQUEST;
+        rejectReason = MMS_REJECT_CONFIRMED_REQUEST_INVALID_ARGUMENT;
+        break;
 
-	asn_DEF_MmsPdu.free_struct(&asn_DEF_MmsPdu, mmsPdu, 0);
+    case MMS_ERROR_REJECT_INVALID_PDU:
+        rejectType = MMS_REJECT_PDU_ERROR;
+        rejectReason = MMS_REJECT_PDU_ERROR_INVALID_PDU;
+        break;
+
+    default:
+        rejectType = MMS_REJECT_CONFIRMED_REQUEST;
+        rejectReason = MMS_REJECT_CONFIRMED_REQUEST_OTHER;
+    }
+
+    mmsMsg_encodeMmsRejectPdu(invokeId, rejectType, rejectReason, response);
 }
 
 /**********************************************************************************************

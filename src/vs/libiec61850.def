@@ -648,4 +648,7 @@ EXPORTS
     IedServer_setFilestoreBasepath
     GooseReceiver_isRunning
     IedModel_getDeviceByInst
- 
+    MmsConnection_writeNamedVariableList
+    SVClientASDU_hasRefrTm
+    SVClientASDU_getRefrTmAsMs
+    IedConnection_writeDataSetValues

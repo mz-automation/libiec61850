@@ -953,14 +953,28 @@ MmsValue_printToBuffer(const MmsValue* self, char* buffer, int bufferSize);
 /**
  * \brief create a new MmsValue instance from a BER encoded MMS Data element (deserialize)
  *
+ * WARNING: API changed with version 1.0.3 (added endBufPos parameter)
+ *
+ * \param buffer the buffer to read from
+ * \param bufPos the start position of the mms value data in the buffer
+ * \param bufferLength the length of the buffer
+ * \param endBufPos the position in the buffer after the read MMS data element (NULL if not required)
+ *
+ * \return the MmsValue instance created from the buffer
  */
 MmsValue*
-MmsValue_decodeMmsData(uint8_t* buffer, int bufPos, int bufferLength);
+MmsValue_decodeMmsData(uint8_t* buffer, int bufPos, int bufferLength, int* endBufPos);
 
 /**
  * \brief Serialize the MmsValue instance as BER encoded MMS Data element
  *
  * \param self the MmsValue instance
+ *
+ * \param buffer the buffer to encode the MMS data element
+ * \param bufPos the position in the buffer where to start encoding
+ * \param encode encode to buffer (true) or calculate length only (false)
+ *
+ * \return the encoded length of the corresponding MMS data element
  */
 int
 MmsValue_encodeMmsData(MmsValue* self, uint8_t* buffer, int bufPos, bool encode);

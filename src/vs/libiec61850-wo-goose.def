@@ -569,4 +569,5 @@ EXPORTS
     IedConnection_setFilestoreBasepath
     IedServer_setFilestoreBasepath
     IedModel_getDeviceByInst
- 
+    MmsConnection_writeNamedVariableList
+    IedConnection_writeDataSetValues

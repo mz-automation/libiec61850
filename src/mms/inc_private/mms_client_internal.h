@@ -195,7 +195,7 @@ mmsClient_createGetVariableAccessAttributesRequest(
 MmsVariableSpecification*
 mmsClient_parseGetVariableAccessAttributesResponse(ByteBuffer* message, uint32_t* invokeId);
 
-void
+MmsDataAccessError
 mmsClient_parseWriteResponse(ByteBuffer* message, int32_t bufPos, MmsError* mmsError);
 
 void
@@ -209,6 +209,15 @@ mmsClient_createWriteRequest(uint32_t invokeId, const char* domainId, const char
 int
 mmsClient_createWriteMultipleItemsRequest(uint32_t invokeId, const char* domainId, LinkedList itemIds, LinkedList values,
         ByteBuffer* writeBuffer);
+
+int
+mmsClient_createWriteRequestNamedVariableList(uint32_t invokeId, bool isAssociationSpecific, const char* domainId, const char* itemId,
+        LinkedList values, ByteBuffer* writeBuffer);
+
+int
+mmsClient_createWriteRequestArray(uint32_t invokeId, const char* domainId, const char* itemId,
+        int startIndex, int elementCount,
+        MmsValue* value, ByteBuffer* writeBuffer);
 
 void
 mmsClient_createDefineNamedVariableListRequest(uint32_t invokeId, ByteBuffer* writeBuffer,

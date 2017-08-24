@@ -2166,11 +2166,13 @@ MmsConnection_obtainFile(MmsConnection self, MmsError* mmsError, const char* sou
         *mmsError = MMS_ERROR_CONNECTION_LOST;
 }
 
-void
+MmsDataAccessError
 MmsConnection_writeVariable(MmsConnection self, MmsError* mmsError,
         const char* domainId, const char* itemId,
         MmsValue* value)
 {
+    MmsDataAccessError retVal = DATA_ACCESS_ERROR_UNKNOWN;
+
     ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
     *mmsError = MMS_ERROR_NONE;
@@ -2184,12 +2186,14 @@ MmsConnection_writeVariable(MmsConnection self, MmsError* mmsError,
     if (self->lastResponseError != MMS_ERROR_NONE)
         *mmsError = self->lastResponseError;
     else if (responseMessage != NULL)
-        mmsClient_parseWriteResponse(self->lastResponse, self->lastResponseBufPos, mmsError);
+        retVal = mmsClient_parseWriteResponse(self->lastResponse, self->lastResponseBufPos, mmsError);
 
     releaseResponse(self);
 
     if (self->associationState == MMS_STATE_CLOSED)
         *mmsError = MMS_ERROR_CONNECTION_LOST;
+
+    return retVal;
 }
 
 void
@@ -2213,6 +2217,67 @@ MmsConnection_writeMultipleVariables(MmsConnection self, MmsError* mmsError, con
     else if (responseMessage != NULL) {
 
         int numberOfItems = LinkedList_size(items);
+
+        mmsClient_parseWriteMultipleItemsResponse(self->lastResponse, self->lastResponseBufPos, mmsError,
+                numberOfItems, accessResults);
+    }
+
+    releaseResponse(self);
+
+    if (self->associationState == MMS_STATE_CLOSED)
+        *mmsError = MMS_ERROR_CONNECTION_LOST;
+}
+
+MmsDataAccessError
+MmsConnection_writeArrayElements(MmsConnection self, MmsError* mmsError,
+        const char* domainId, const char* itemId, int index, int numberOfElements,
+        MmsValue* value)
+{
+    MmsDataAccessError retVal = DATA_ACCESS_ERROR_UNKNOWN;
+
+    *mmsError = MMS_ERROR_NONE;
+
+    uint32_t invokeId = getNextInvokeId(self);
+
+    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
+
+    mmsClient_createWriteRequestArray(invokeId, domainId, itemId, index, numberOfElements, value, payload);
+
+    ByteBuffer* responseMessage = sendRequestAndWaitForResponse(self, invokeId, payload);
+
+    if (self->lastResponseError != MMS_ERROR_NONE)
+        *mmsError = self->lastResponseError;
+    else if (responseMessage != NULL)
+        retVal = mmsClient_parseWriteResponse(self->lastResponse, self->lastResponseBufPos, mmsError);
+
+    releaseResponse(self);
+
+    if (self->associationState == MMS_STATE_CLOSED)
+        *mmsError = MMS_ERROR_CONNECTION_LOST;
+
+    return retVal;
+}
+
+void
+MmsConnection_writeNamedVariableList(MmsConnection self, MmsError* mmsError, bool isAssociationSpecific,
+        const char* domainId, const char* itemId, LinkedList /* <MmsValue*> */values,
+        /* OUTPUT */LinkedList* /* <MmsValue*> */accessResults)
+{
+    *mmsError = MMS_ERROR_NONE;
+
+    uint32_t invokeId = getNextInvokeId(self);
+
+    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
+
+    mmsClient_createWriteRequestNamedVariableList(invokeId, isAssociationSpecific, domainId, itemId, values, payload);
+
+    ByteBuffer* responseMessage = sendRequestAndWaitForResponse(self, invokeId, payload);
+
+    if (self->lastResponseError != MMS_ERROR_NONE)
+        *mmsError = self->lastResponseError;
+    else if (responseMessage != NULL) {
+
+        int numberOfItems = LinkedList_size(values);
 
         mmsClient_parseWriteMultipleItemsResponse(self->lastResponse, self->lastResponseBufPos, mmsError,
                 numberOfItems, accessResults);

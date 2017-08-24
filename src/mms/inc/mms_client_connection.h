@@ -399,20 +399,47 @@ MmsConnection_readMultipleVariables(MmsConnection self, MmsError* mmsError, cons
 /**
  * \brief Write a single variable to the server.
  *
+ * NOTE: added return value in version 1.1
+ *
  * \param self MmsConnection instance to operate on
  * \param mmsError user provided variable to store error code
  * \param domainId the domain name of the variable to be written
  * \param itemId name of the variable to be written
  * \param value value of the variable to be written
+ *
+ * \return when successful, the data access error value returned by the server
  */
-void
+MmsDataAccessError
 MmsConnection_writeVariable(MmsConnection self, MmsError* mmsError,
         const char* domainId, const char* itemId, MmsValue* value);
 
 /**
+ * \brief Write a single array element or a sub array to an array type variable
+ *
+ *  When a single array element is address the MmsValue object value has to be of the type
+ *  of the array elements. When multiple array elements have to be written (index range) the
+ *  MmsValue object value has to be of type MMS_ARRAY containing "numberOfElements" elements.
+ *
+ * \param self MmsConnection instance to operate on
+ * \param mmsError user provided variable to store error code
+ * \param domainId the domain name of the variable to be written
+ * \param index the index of the array element or the start index of a index range
+ * \param numberOfElements the number of array elements to write starting with index. If 0 only one array element is written.
+ * \param itemId name of the variable to be written
+ * \param value value of the array element(s) to be written. Has to be of the type of
+ *        the array elements or of type MMS_ARRAY when it is a sub array (index range)
+ *
+ * \return when successful, the data access error value returned by the server
+ */
+MmsDataAccessError
+MmsConnection_writeArrayElements(MmsConnection self, MmsError* mmsError,
+        const char* domainId, const char* itemId, int index, int numberOfElements,
+        MmsValue* value);
+
+/**
  * \brief Write multiple variables to the server.
  *
- * This function will write multiple variables at the server.
+ * This function will write multiple variables to the server.
  *
  * The parameter accessResults is a pointer to a LinkedList reference. The methods will create a new LinkedList
  * object that contains the AccessResults of the single variable write attempts. It is up to the user to free this
@@ -430,6 +457,27 @@ void
 MmsConnection_writeMultipleVariables(MmsConnection self, MmsError* mmsError, const char* domainId,
         LinkedList /*<char*>*/ items, LinkedList /* <MmsValue*> */ values,
         LinkedList* /* <MmsValue*> */ accessResults);
+
+/**
+ * \brief Write named variable list values to the server.
+ *
+ * The parameter accessResults is a pointer to a LinkedList reference. The methods will create a new LinkedList
+ * object that contains the AccessResults of the single variable write attempts. It is in the responsibility of
+ * the user to free this objects properly (e.g. with LinkedList_destroyDeep(accessResults, MmsValue_delete)).
+ * If accessResult is the to NULL the result will not be stored.
+ *
+ * \param self MmsConnection instance to operate on
+ * \param mmsError user provided variable to store error code
+ * \param isAssociationSpecifc true if the named variable list is an association specific named variable list
+ * \param domainId the common domain name of all variables to be written
+ * \param values values of the variables to be written
+ * \param (OUTPUT) the MmsValue objects of type MMS_DATA_ACCESS_ERROR representing the write success of a single variable
+ *        write.
+ */
+void
+MmsConnection_writeNamedVariableList(MmsConnection self, MmsError* mmsError, bool isAssociationSpecific,
+        const char* domainId, const char* itemId, LinkedList /* <MmsValue*> */values,
+        /* OUTPUT */LinkedList* /* <MmsValue*> */accessResults);
 
 /**
  * \brief Get the variable access attributes of a MMS named variable of the server

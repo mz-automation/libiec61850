@@ -269,6 +269,26 @@ uint32_t
 SVClientASDU_getConfRev(SVClientASDU self);
 
 /**
+ * \brief Check if RefrTm value is included in the SV ASDU
+ *
+ * \param self ASDU object instance
+ *
+ * \return true if RefrTm value is present, false otherwise
+ */
+bool
+SVClientASDU_hasRefrTm(SVClientASDU self);
+
+/**
+ * \brief Get the RefrTim value included in SV ASDU as ms timestamp
+ *
+ * \param self ASDU object instance
+ *
+ * \return the time value as ms timestamp or 0 if RefrTm is not present in the SV ASDU
+ */
+uint64_t
+SVClientASDU_getRefrTmAsMs(SVClientASDU self);
+
+/**
  * \brief Get an INT8 data value in the data part of the ASDU
  *
  * \param self ASDU object instance

@@ -152,7 +152,7 @@ exit_with_error:
 }
 
 MmsValue*
-MmsValue_decodeMmsData(uint8_t* buffer, int bufPos, int bufferLength)
+MmsValue_decodeMmsData(uint8_t* buffer, int bufPos, int bufferLength, int* endBufPos)
 {
     MmsValue* value = NULL;
 
@@ -191,7 +191,7 @@ MmsValue_decodeMmsData(uint8_t* buffer, int bufPos, int bufferLength)
             if (newBufPos == -1)
                 goto exit_with_error;
 
-            MmsValue* elementValue = MmsValue_decodeMmsData(buffer, bufPos, dataLength);
+            MmsValue* elementValue = MmsValue_decodeMmsData(buffer, bufPos, dataLength, NULL);
 
             if (elementValue == NULL)
                 goto exit_with_error;
@@ -209,12 +209,12 @@ MmsValue_decodeMmsData(uint8_t* buffer, int bufPos, int bufferLength)
 
     case 0x80: /* MMS_DATA_ACCESS_ERROR */
         value = MmsValue_newDataAccessError((MmsDataAccessError) BerDecoder_decodeUint32(buffer, dataLength, bufPos));
-
+        bufPos += dataLength;
         break;
 
     case 0x83: /* MMS_BOOLEAN */
         value = MmsValue_newBoolean(BerDecoder_decodeBoolean(buffer, bufPos));
-
+        bufPos += dataLength;
         break;
 
     case 0x84: /* MMS_BIT_STRING */
@@ -223,6 +223,7 @@ MmsValue_decodeMmsData(uint8_t* buffer, int bufPos, int bufferLength)
         int bitStringLength = (8 * (dataLength - 1)) - padding;
         value = MmsValue_newBitString(bitStringLength);
         memcpy(value->value.bitString.buf, buffer + bufPos + 1, dataLength - 1);
+        bufPos += dataLength;
     }
         break;
 
@@ -230,12 +231,14 @@ MmsValue_decodeMmsData(uint8_t* buffer, int bufPos, int bufferLength)
         value = MmsValue_newInteger(dataLength * 8);
         memcpy(value->value.integer->octets, buffer + bufPos, dataLength);
         value->value.integer->size = dataLength;
+        bufPos += dataLength;
         break;
 
     case 0x86: /* MMS_UNSIGNED */
         value = MmsValue_newUnsigned(dataLength * 8);
         memcpy(value->value.integer->octets, buffer + bufPos, dataLength);
         value->value.integer->size = dataLength;
+        bufPos += dataLength;
         break;
 
     case 0x87: /* MMS_FLOAT */
@@ -243,15 +246,18 @@ MmsValue_decodeMmsData(uint8_t* buffer, int bufPos, int bufferLength)
             value = MmsValue_newDouble(BerDecoder_decodeDouble(buffer, bufPos));
         else if (dataLength == 5)
             value = MmsValue_newFloat(BerDecoder_decodeFloat(buffer, bufPos));
+        bufPos += dataLength;
         break;
 
     case 0x89: /* MMS_OCTET_STRING */
         value = MmsValue_newOctetString(dataLength, dataLength);
         memcpy(value->value.octetString.buf, buffer + bufPos, dataLength);
+        bufPos += dataLength;
         break;
 
     case 0x8a: /* MMS_VISIBLE_STRING */
         value = MmsValue_newVisibleStringFromByteArray(buffer + bufPos, dataLength);
+        bufPos += dataLength;
         break;
 
     case 0x8c: /* MMS_BINARY_TIME */
@@ -263,11 +269,14 @@ MmsValue_decodeMmsData(uint8_t* buffer, int bufPos, int bufferLength)
         if ((dataLength == 4) || (dataLength == 6))
             memcpy(value->value.binaryTime.buf, buffer + bufPos, dataLength);
 
+        bufPos += dataLength;
+
         break;
 
     case 0x90: /* MMS_STRING */
         value = MmsValue_newVisibleStringFromByteArray(buffer + bufPos, dataLength);
         value->type = MMS_STRING;
+        bufPos += dataLength;
 
         break;
 
@@ -275,6 +284,7 @@ MmsValue_decodeMmsData(uint8_t* buffer, int bufPos, int bufferLength)
         if (dataLength == 8) {
             value = MmsValue_newUtcTime(0);
             MmsValue_setUtcTimeByBuffer(value, buffer + bufPos);
+            bufPos += dataLength;
         }
         else
             goto exit_with_error;
@@ -284,6 +294,9 @@ MmsValue_decodeMmsData(uint8_t* buffer, int bufPos, int bufferLength)
     default: /* unknown tag -> decoding error */
         goto exit_with_error;
     }
+
+    if (endBufPos != NULL)
+        *endBufPos = bufPos;
 
     return value;
 

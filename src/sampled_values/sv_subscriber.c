@@ -67,6 +67,7 @@ struct sSVClientASDU {
 
     uint8_t* smpCnt;
     uint8_t* confRev;
+    uint8_t* refrTm;
     uint8_t* smpSynch;
 
 
@@ -230,6 +231,10 @@ parseASDU(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, int length)
 
         case 0x83:
             asdu.confRev = buffer + bufPos;
+            break;
+
+        case 0x84:
+            asdu.refrTm = buffer + bufPos;
             break;
 
         case 0x85:
@@ -490,6 +495,52 @@ SVClientASDU_getSmpCnt(SVClientASDU self)
 
     return retVal;
 }
+
+static uint64_t
+decodeUtcTime(uint8_t* buffer, uint8_t* timeQuality)
+{
+    uint32_t timeval32;
+
+    timeval32 = buffer[3];
+    timeval32 += buffer[2] * 0x100;
+    timeval32 += buffer[1] * 0x10000;
+    timeval32 += buffer[0] * 0x1000000;
+
+    uint32_t msVal;
+
+    uint32_t fractionOfSecond;
+
+    fractionOfSecond = buffer[6];
+    fractionOfSecond += buffer[5] * 0x100;
+    fractionOfSecond += buffer[4] * 0x10000;
+
+    msVal = (uint32_t) (((uint64_t) fractionOfSecond * 1000) / 16777215);
+
+    if (timeQuality != NULL)
+        *timeQuality = buffer[7];
+
+    uint64_t timeval64 = (uint64_t) timeval32 * 1000 + (uint64_t) msVal;
+
+    return timeval64;
+}
+
+uint64_t
+SVClientASDU_getRefrTmAsMs(SVClientASDU self)
+{
+    uint64_t msTime = 0;
+
+    if (self->refrTm != NULL)
+        msTime = decodeUtcTime(self->refrTm, NULL);
+
+    return msTime;
+}
+
+bool
+SVClientASDU_hasRefrTm(SVClientASDU self)
+{
+    return (self->refrTm != NULL);
+}
+
 
 const char*
 SVClientASDU_getSvId(SVClientASDU self)

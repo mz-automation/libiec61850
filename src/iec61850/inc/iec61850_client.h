@@ -1321,6 +1321,12 @@ IedConnection_writeOctetString(IedConnection self, IedClientError* error, const 
 /**
  * \brief get data set values from a server device
  *
+ * The parameter dataSetReference is the name of the data set to read. It is either in the form LDName/LNodeName.dataSetName
+ * for permanent domain or VMD scope data sets or @dataSetName for an association specific data set.
+ * If the LDName part of the reference is missing the resulting data set will be of VMD scope.
+ * The received data set values are stored in a container object of type ClientDataSet that can be reused in a further
+ * read request.
+ *
  * \param connection the connection object
  * \param error the error code if an error occurs
  * \param dataSetReference object reference of the data set
@@ -1385,6 +1391,26 @@ IedConnection_deleteDataSet(IedConnection self, IedClientError* error, const cha
  */
 LinkedList /* <char*> */
 IedConnection_getDataSetDirectory(IedConnection self, IedClientError* error, const char* dataSetReference, bool* isDeletable);
+
+/**
+ * \brief Write the data set values to the server
+ *
+ * The parameter dataSetReference is the name of the data set to write. It is either in the form LDName/LNodeName.dataSetName
+ * for permanent domain or VMD scope data sets or @dataSetName for an association specific data set.
+ * If the LDName part of the reference is missing the resulting data set will be of VMD scope.
+ * The values parameter has to be the same number of elements as are members in the data set. The accessResult return parameter
+ * contains a value for each data set member.
+ *
+ * \param connection the connection object
+ * \param error the error code if an error occurs
+ * \param dataSetReference object reference of the data set
+ * \param values the new data set values
+ * \param accessResults the access results for each data set member
+ */
+void
+IedConnection_writeDataSetValues(IedConnection self, IedClientError* error, const char* dataSetReference,
+        LinkedList/*<MmsValue*>*/ values, /* OUTPUT */LinkedList* /* <MmsValue*> */accessResults);
+
 
 /********************************************************
  * Data set object (local representation of a data set)

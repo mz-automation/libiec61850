@@ -370,9 +370,9 @@ mmsServer_setValue(MmsServer self, MmsDomain* domain, char* itemId, MmsValue* va
 MmsValue*
 mmsServer_getValue(MmsServer self, MmsDomain* domain, char* itemId, MmsServerConnection connection);
 
-int
+void
 mmsServer_createMmsWriteResponse(MmsServerConnection connection,
-        int invokeId, ByteBuffer* response, int numberOfItems, MmsDataAccessError* accessResults);
+        uint32_t invokeId, ByteBuffer* response, int numberOfItems, MmsDataAccessError* accessResults);
 
 void
 mmsMsg_createMmsRejectPdu(uint32_t* invokeId, int reason, ByteBuffer* response);
