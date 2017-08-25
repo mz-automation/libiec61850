@@ -10,6 +10,7 @@ Changes to version 1.1.0
 - IEC 61850 server: added IedModel_getDeviceByInst function
 - SV subscriber: added subscriber side handling for RefrTm
 - SV publisher: Changed SampledValuesPublisher_create to support setting of Communication parameters at runtime
+- socket-win32: updated WSA initialization handling
 - all: small fixes and code optimizations
 
 
