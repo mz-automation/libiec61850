@@ -172,7 +172,7 @@ mmsClient_parseWriteResponse(ByteBuffer* message, int32_t bufPos, MmsError* mmsE
             uint32_t dataAccessErrorCode =
                     BerDecoder_decodeUint32(buf, length, bufPos);
 
-            if ((dataAccessErrorCode >= 0) || (dataAccessErrorCode < 13)) {
+            if (dataAccessErrorCode < 13) {
                 *mmsError = mapDataAccessErrorToMmsError(dataAccessErrorCode);
                 retVal = (MmsDataAccessError) dataAccessErrorCode;
             }

@@ -1,3 +1,18 @@
+Changes to version 1.1.0
+------------------------
+
+- MMS client/server: added write support for named variable lists
+- IEC 61850 client/server: added support for SetDataSet service
+- C# API: client - added support to write data set values
+- IEC 61850 client: Changed result strings of IedConnection_getDataDirectoryByFC. Removed appended FC string.
+- MMS client/server: extended BER encoder to support MMS PDU sizes with more than 64k
+- C# API: server - keep references to internal control handler delegates to avoid garbage collection
+- IEC 61850 server: added IedModel_getDeviceByInst function
+- SV subscriber: added subscriber side handling for RefrTm
+- SV publisher: Changed SampledValuesPublisher_create to support setting of Communication parameters at runtime
+- all: small fixes and code optimizations
+
+
 Changes to version 1.0.2
 ------------------------
 - server: added MmsFileAccessHandler for server side monitoring and control of file services

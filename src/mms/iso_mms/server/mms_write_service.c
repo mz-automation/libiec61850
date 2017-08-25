@@ -95,7 +95,7 @@ MmsServerConnection_sendWriteResponse(MmsServerConnection self, uint32_t invokeI
     MmsServer_releaseTransmitBuffer(self->server);
 }
 
-
+#if 0
 typedef struct {
     uint8_t type; /* 0 = vmd-specific, 1 = domain-specific, 2 = association-specific */
     uint8_t* name;
@@ -319,6 +319,7 @@ mmsServer_handleWriteRequest2(
          bufPos += length;
     }
 }
+#endif
 
 static void
 createWriteNamedVariableListResponse(

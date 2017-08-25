@@ -15,7 +15,7 @@
 
 #include "platform_endian.h"
 
-#define LIBIEC61850_VERSION "1.1"
+#define LIBIEC61850_VERSION "1.1.0"
 
 #ifndef CONFIG_DEFAULT_MMS_VENDOR_NAME
 #define CONFIG_DEFAULT_MMS_VENDOR_NAME "libiec61850.com"

@@ -88,7 +88,6 @@ checkAuthentication(AcseConnection* self, uint8_t* authMechanism, int authMechLe
 }
 
 
-
 static int
 parseUserInformation(AcseConnection* self, uint8_t* buffer, int bufPos, int maxBufPos, bool* userInfoValid)
 {
