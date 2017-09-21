@@ -484,7 +484,7 @@ MmsConnection_writeNamedVariableList(MmsConnection self, MmsError* mmsError, boo
  *
  * \param self MmsConnection instance to operate on
  * \param mmsError user provided variable to store error code
- * \param domainId the domain name of the variable
+ * \param domainId the domain name of the variable or NULL for a VMD specific request
  * \param itemId name of the variable
  *
  * \return Returns a MmsTypeSpecification object or NULL if the request failed.
