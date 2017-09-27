@@ -390,6 +390,21 @@ waitUntilLastResponseHasBeenProcessed(MmsConnection self)
 }
 
 static MmsError
+convertRejectCodesToMmsError(int rejectType, int rejectReason)
+{
+    if ((rejectType == 1) && (rejectReason == 1))
+       return MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE;
+    else if ((rejectType == 5) && (rejectReason == 0))
+        return MMS_ERROR_REJECT_UNKNOWN_PDU_TYPE;
+    else if ((rejectType == 1) && (rejectReason == 4))
+        return MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT;
+    else if ((rejectType == 5) && (rejectReason == 1))
+        return MMS_ERROR_REJECT_INVALID_PDU;
+    else
+        return MMS_ERROR_REJECT_OTHER;
+}
+
+static MmsError
 convertServiceErrorToMmsError(MmsServiceError serviceError)
 {
     MmsError mmsError;
@@ -569,11 +584,8 @@ mmsMsg_parseConfirmedErrorPDU(uint8_t* buffer, int bufPos, int maxBufPos, uint32
 
     int endPos = bufPos + length;
 
-    if (endPos > maxBufPos) {
-        if (DEBUG_MMS_CLIENT)
-            printf("parseConfirmedErrorPDU: message to short!\n");
+    if (endPos > maxBufPos)
         goto exit_error;
-    }
 
     while (bufPos < endPos) {
         tag = buffer[bufPos++];
@@ -605,6 +617,63 @@ mmsMsg_parseConfirmedErrorPDU(uint8_t* buffer, int bufPos, int maxBufPos, uint32
     return bufPos;
 
 exit_error:
+    if (DEBUG_MMS_CLIENT)
+        printf("MMS_CLIENT: error parsing confirmed error PDU\n");
+
+    return -1;
+}
+
+int
+mmsMsg_parseRejectPDU(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t* invokeId, int* rejectType, int* rejectReason)
+{
+    int length;
+
+    uint8_t tag = buffer[bufPos++];
+
+    if (tag != 0xa4)
+        goto exit_error;
+
+    bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
+    if (bufPos < 0)
+        goto exit_error;
+
+    if (bufPos + length > maxBufPos)
+        goto exit_error;
+
+    int endPos = bufPos + length;
+
+    if (endPos > maxBufPos)
+        goto exit_error;
+
+    while (bufPos < endPos) {
+        tag = buffer[bufPos++];
+        bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
+
+        if (bufPos < 0)
+            goto exit_error;
+
+
+        if (tag == 0x80) { /* invoke id */
+            if (invokeId != NULL)
+                *invokeId = BerDecoder_decodeUint32(buffer, length, bufPos);
+        }
+        else if (tag > 0x80 && tag < 0x8c) {
+            *rejectType = tag - 0x80;
+            *rejectReason = BerDecoder_decodeInt32(buffer, length, bufPos);
+        }
+        else {
+             /* unknown - ignore */
+        }
+
+        bufPos += length;
+    }
+
+    return bufPos;
+
+exit_error:
+    if (DEBUG_MMS_CLIENT)
+        printf("MMS_CLIENT: error parsing reject PDU\n");
+
     return -1;
 }
 
@@ -710,6 +779,8 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
         if (mmsMsg_parseConfirmedErrorPDU(payload->buffer, 0, payload->size, &invokeId, &serviceError) < 0) {
             if (DEBUG_MMS_CLIENT)
                 printf("MMS_CLIENT: Error parsing confirmedErrorPDU!\n");
+
+            goto exit_with_error;
         }
         else {
             if (checkForOutstandingCall(self, invokeId)) {
@@ -729,6 +800,37 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
                 return;
             }
         }
+    }
+    else if (tag == 0xa4) { /* reject PDU */
+        if (DEBUG_MMS_CLIENT)
+            printf("MMS_CLIENT: reject PDU!\n");
+
+        uint32_t invokeId;
+        int rejectType;
+        int rejectReason;
+
+        if (mmsMsg_parseRejectPDU(payload->buffer, 0, payload->size, &invokeId, &rejectType, &rejectReason) >= 0) {
+
+            if (DEBUG_MMS_CLIENT)
+                printf("MMS_CLIENT: reject PDU invokeID: %i type: %i reason: %i\n", (int) invokeId, rejectType, rejectReason);
+
+            if (checkForOutstandingCall(self, invokeId)) {
+
+                /* wait for application thread to handle last received response */
+                waitUntilLastResponseHasBeenProcessed(self);
+
+                Semaphore_wait(self->lastResponseLock);
+                self->lastResponseError = convertRejectCodesToMmsError(rejectType, rejectReason);
+                self->responseInvokeId = invokeId;
+                Semaphore_post(self->lastResponseLock);
+            }
+            else {
+                IsoClientConnection_releaseReceiveBuffer(self->isoClient);
+                return;
+            }
+        }
+        else
+            goto exit_with_error;
     }
     else if (tag == 0xa1) { /* confirmed response PDU */
 
@@ -897,16 +999,16 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
 
     return;
 
-    exit_with_error:
+exit_with_error:
 
     if (DEBUG_MMS_CLIENT)
-        printf("received malformed message from server!\n");
+        printf("MMS_CLIENT: received malformed message from server!\n");
 
     IsoClientConnection_releaseReceiveBuffer(self->isoClient);
 
 
     if (DEBUG_MMS_CLIENT)
-        printf("LEAVE mmsIsoCallback - NOT OK!\n");
+        printf("MMS_CLIENT: LEAVE mmsIsoCallback - NOT OK!\n");
     return;
 }
 
