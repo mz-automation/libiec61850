@@ -306,13 +306,13 @@ LinkedList /* <char*> */
 MmsConnection_getDomainVariableNames(MmsConnection self, MmsError* mmsError, const char* domainId);
 
 /**
- * \brief Get the names of all named variable lists present in a MMS domain of the server.
+ * \brief Get the names of all named variable lists present in a MMS domain or VMD scope of the server.
  *
  * This will result in a domain specific GetNameList request.
  *
  * \param self MmsConnection instance to operate on
  * \param mmsError user provided variable to store error code
- * \param domainId the domain name for the domain specific request
+ * \param domainId the domain name for the domain specific request or NULL for a VMD scope request
  *
  * \return the domain specific named variable list names or NULL if the request failed.
  */
