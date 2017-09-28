@@ -84,8 +84,6 @@ SET_OF_decode_ber(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 	asn_dec_rval_t rval;	/* Return code from subparsers */
 
 	ssize_t consumed_myself = 0;	/* Consumed bytes from ptr */
-
-	ASN_DEBUG("Decoding %s as SET OF", td->name);
 	
 	/*
 	 * Create the target structure if it is not present already.
@@ -116,17 +114,12 @@ SET_OF_decode_ber(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 		rval = ber_check_tags(opt_codec_ctx, td, ctx, ptr, size,
 			tag_mode, 1, &ctx->left, 0);
 		if(rval.code != RC_OK) {
-			ASN_DEBUG("%s tagging check failed: %d",
-				td->name, rval.code);
 			return rval;
 		}
 
 		if(ctx->left >= 0)
 			ctx->left += rval.consumed; /* ?Substracted below! */
 		ADVANCE(rval.consumed);
-
-		ASN_DEBUG("Structure consumes %ld bytes, "
-			"buffer %ld", (long)ctx->left, (long)size);
 
 		NEXT_PHASE(ctx);
 		/* Fall through */
@@ -147,7 +140,6 @@ SET_OF_decode_ber(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 		 */
 
 		if(ctx->left == 0) {
-			ASN_DEBUG("End of SET OF %s", td->name);
 			/*
 			 * No more things to decode.
 			 * Exit out of here.
@@ -188,10 +180,6 @@ SET_OF_decode_ber(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 			 * The new list member of expected type has arrived.
 			 */
 		    } else {
-			ASN_DEBUG("Unexpected tag %s fixed SET OF %s",
-				ber_tlv_tag_string(tlv_tag), td->name);
-			ASN_DEBUG("%s SET OF has tag %s",
-				td->name, ber_tlv_tag_string(elm->tag));
 			RETURN(RC_FAIL);
 		    }
 		}
@@ -207,9 +195,7 @@ SET_OF_decode_ber(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 		 */
 		rval = elm->type->ber_decoder(opt_codec_ctx,
 				elm->type, &ctx->ptr, ptr, LEFT, 0);
-		ASN_DEBUG("In %s SET OF %s code %d consumed %d",
-			td->name, elm->type->name,
-			rval.code, (int)rval.consumed);
+
 		switch(rval.code) {
 		case RC_OK:
 			{
@@ -324,8 +310,6 @@ SET_OF_encode_der(asn_TYPE_descriptor_t *td, void *ptr,
 	int ret;
 	int edx;
 
-	ASN_DEBUG("Estimating size for SET OF %s", td->name);
-
 	/*
 	 * Gather the length of the underlying members sequence.
 	 */
@@ -373,8 +357,6 @@ SET_OF_encode_der(asn_TYPE_descriptor_t *td, void *ptr,
 		erval.structure_ptr = ptr;
 		return erval;
 	}
-
-	ASN_DEBUG("Encoding members of %s SET OF", td->name);
 
 	/*
 	 * Encode all members.
@@ -523,7 +505,6 @@ SET_OF_decode_xer(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 			asn_dec_rval_t tmprval;
 
 			/* Invoke the inner type decoder, m.b. multiple times */
-			ASN_DEBUG("XER/SET OF element [%s]", elm_tag);
 			tmprval = element->type->xer_decoder(opt_codec_ctx,
 					element->type, &ctx->ptr, elm_tag,
 					buf_ptr, size);
@@ -538,7 +519,6 @@ SET_OF_decode_xer(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 				RETURN(tmprval.code);
 			}
 			ctx->phase = 1;	/* Back to body processing */
-			ASN_DEBUG("XER/SET OF phase => %d", ctx->phase);
 			/* Fall through */
 		}
 
@@ -562,8 +542,7 @@ SET_OF_decode_xer(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 		}
 
 		tcv = xer_check_tag(buf_ptr, ch_size, xml_tag);
-		ASN_DEBUG("XER/SET OF: tcv = %d, ph=%d t=%s",
-			tcv, ctx->phase, xml_tag);
+
 		switch(tcv) {
 		case XCT_CLOSING:
 			if(ctx->phase == 0) break;
@@ -587,7 +566,6 @@ SET_OF_decode_xer(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 		case XCT_UNKNOWN_OP:
 		case XCT_UNKNOWN_BO:
 
-			ASN_DEBUG("XER/SET OF: tcv=%d, ph=%d", tcv, ctx->phase);
 			if(ctx->phase == 1) {
 				/*
 				 * Process a single possible member.
@@ -600,7 +578,6 @@ SET_OF_decode_xer(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 			break;
 		}
 
-		ASN_DEBUG("Unexpected XML tag in SET OF");
 		break;
 	}
 
@@ -819,9 +796,6 @@ SET_OF_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
 	int i;
 
 	if(!sptr) {
-		_ASN_CTFAIL(app_key, td,
-			"%s: value not given (%s:%d)",
-			td->name, __FILE__, __LINE__);
 		return -1;
 	}
 
@@ -890,8 +864,7 @@ SET_OF_decode_uper(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 	if(ct && ct->effective_bits >= 0) {
 		/* X.691, #19.5: No length determinant */
 		nelems = per_get_few_bits(pd, ct->effective_bits);
-		ASN_DEBUG("Preparing to fetch %ld+%ld elements from %s",
-			(long)nelems, ct->lower_bound, td->name);
+
 		if(nelems < 0)  _ASN_DECODE_STARVED;
 		nelems += ct->lower_bound;
 	} else {
@@ -908,20 +881,11 @@ SET_OF_decode_uper(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 
 		for(i = 0; i < nelems; i++) {
 			void *ptr = 0;
-			ASN_DEBUG("SET OF %s decoding", elm->type->name);
-			rv = elm->type->uper_decoder(opt_codec_ctx, elm->type,
-				elm->per_constraints, &ptr, pd);
-			ASN_DEBUG("%s SET OF %s decoded %d, %p",
-				td->name, elm->type->name, rv.code, ptr);
+
 			if(rv.code == RC_OK) {
 				if(ASN_SET_ADD(list, ptr) == 0)
 					continue;
-				ASN_DEBUG("Failed to add element into %s",
-					td->name);
 				/* Fall through */
-			} else {
-				ASN_DEBUG("Failed decoding %s of %s (SET OF)",
-					elm->type->name, td->name);
 			}
 			if(ptr) ASN_STRUCT_FREE(*elm->type, ptr);
 			return rv;
@@ -929,8 +893,6 @@ SET_OF_decode_uper(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 
 		nelems = -1;	/* Allow uper_get_length() */
 	} while(repeat);
-
-	ASN_DEBUG("Decoded %s as SET OF", td->name);
 
 	rv.code = RC_OK;
 	rv.consumed = 0;

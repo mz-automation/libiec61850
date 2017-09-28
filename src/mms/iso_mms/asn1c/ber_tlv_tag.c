@@ -56,50 +56,6 @@ ber_fetch_tag(const void *ptr, size_t size, ber_tlv_tag_t *tag_r) {
 
 	return 0;	/* Want more */
 }
-
-
-ssize_t
-ber_tlv_tag_fwrite(ber_tlv_tag_t tag, FILE *f) {
-	char buf[sizeof("[APPLICATION ]") + 32];
-	ssize_t ret;
-
-	ret = ber_tlv_tag_snprint(tag, buf, sizeof(buf));
-	if(ret >= (ssize_t)sizeof(buf) || ret < 2) {
-		errno = EPERM;
-		return -1;
-	}
-
-	return fwrite(buf, 1, ret, f);
-}
-
-ssize_t
-ber_tlv_tag_snprint(ber_tlv_tag_t tag, char *buf, size_t size) {
-	char *type = 0;
-	int ret;
-
-	switch(tag & 0x3) {
-	case ASN_TAG_CLASS_UNIVERSAL:	type = "UNIVERSAL ";	break;
-	case ASN_TAG_CLASS_APPLICATION:	type = "APPLICATION ";	break;
-	case ASN_TAG_CLASS_CONTEXT:	type = "";		break;
-	case ASN_TAG_CLASS_PRIVATE:	type = "PRIVATE ";	break;
-	}
-
-	ret = snprintf(buf, size, "[%s%u](%02x)", type, ((unsigned)tag) >> 2, tag);
-	if(ret <= 0 && size) buf[0] = '\0';	/* against broken libc's */
-
-	return ret;
-}
-
-char *
-ber_tlv_tag_string(ber_tlv_tag_t tag) {
-	static char buf[sizeof("[APPLICATION ]") + 32];
-
-	(void)ber_tlv_tag_snprint(tag, buf, sizeof(buf));
-
-	return buf;
-}
-
-
 size_t
 ber_tlv_tag_serialize(ber_tlv_tag_t tag, void *bufp, size_t size) {
 	int tclass = BER_TAG_CLASS(tag);

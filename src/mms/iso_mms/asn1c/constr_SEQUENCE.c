@@ -127,8 +127,6 @@ SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 
 	ssize_t consumed_myself = 0;	/* Consumed bytes from ptr */
 	int edx;			/* SEQUENCE element's index */
-
-	ASN_DEBUG("Decoding %s as SEQUENCE", td->name);
 	
 	/*
 	 * Create the target structure if it is not present already.
@@ -159,8 +157,6 @@ SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 		rval = ber_check_tags(opt_codec_ctx, td, ctx, ptr, size,
 			tag_mode, 1, &ctx->left, 0);
 		if(rval.code != RC_OK) {
-			ASN_DEBUG("%s tagging check failed: %d",
-				td->name, rval.code);
 			return rval;
 		}
 
@@ -169,9 +165,6 @@ SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 		ADVANCE(rval.consumed);
 
 		NEXT_PHASE(ctx);
-
-		ASN_DEBUG("Structure consumes %ld bytes, buffer %ld",
-			(long)ctx->left, (long)size);
 
 		/* Fall through */
 	case 1:
@@ -200,11 +193,6 @@ SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 		/*
 		 * MICROPHASE 1: Synchronize decoding.
 		 */
-		ASN_DEBUG("In %s SEQUENCE left %d, edx=%d flags=%d"
-				" opt=%d ec=%d",
-			td->name, (int)ctx->left, edx,
-			elements[edx].flags, elements[edx].optional,
-			td->elements_count);
 
 		if(ctx->left == 0	/* No more stuff is expected */
 		&& (
@@ -217,7 +205,6 @@ SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 				&& specs->ext_before > td->elements_count)
 		   )
 		) {
-			ASN_DEBUG("End of SEQUENCE %s", td->name);
 			/*
 			 * Found the legitimate end of the structure.
 			 */
@@ -229,10 +216,7 @@ SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 		 * Fetch the T from TLV.
 		 */
 		tag_len = ber_fetch_tag(ptr, LEFT, &tlv_tag);
-		ASN_DEBUG("Current tag in %s SEQUENCE for element %d "
-			"(%s) is %s encoded in %d bytes, of frame %ld",
-			td->name, edx, elements[edx].name,
-			ber_tlv_tag_string(tlv_tag), (int)tag_len, (long)LEFT);
+
 		switch(tag_len) {
 		case 0: if(!SIZE_VIOLATION) RETURN(RC_WMORE);
 			/* Fall through */
@@ -246,9 +230,7 @@ SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 				else
 					RETURN(RC_WMORE);
 			} else if(((const uint8_t *)ptr)[1] == 0) {
-			ASN_DEBUG("edx = %d, opt = %d, ec=%d",
-				edx, elements[edx].optional,
-				td->elements_count);
+
 				if((edx + elements[edx].optional
 					== td->elements_count)
 				|| (IN_EXTENSION_GROUP(specs, edx)
@@ -347,13 +329,6 @@ SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 			 * or an end of the indefinite-length structure.
 			 */
 			if(!IN_EXTENSION_GROUP(specs, edx)) {
-				ASN_DEBUG("Unexpected tag %s (at %d)",
-					ber_tlv_tag_string(tlv_tag), edx);
-				ASN_DEBUG("Expected tag %s (%s)%s",
-					ber_tlv_tag_string(elements[edx].tag),
-					elements[edx].name,
-					elements[edx].optional
-						?" or alternatives":"");
 				RETURN(RC_FAIL);
 			} else {
 				/* Skip this tag */
@@ -363,8 +338,7 @@ SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 					BER_TLV_CONSTRUCTED(ptr),
 					(const char *)ptr + tag_len,
 					LEFT - tag_len);
-				ASN_DEBUG("Skip length %d in %s",
-					(int)skip, td->name);
+
 				switch(skip) {
 				case 0: if(!SIZE_VIOLATION) RETURN(RC_WMORE);
 					/* Fall through */
@@ -383,7 +357,6 @@ SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 		 */
 		ctx->step |= 1;		/* Confirm entering next microphase */
 	microphase2:
-		ASN_DEBUG("Inside SEQUENCE %s MF2", td->name);
 		
 		/*
 		 * Compute the position of the member inside a structure,
@@ -408,10 +381,7 @@ SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 				elements[edx].type,
 				memb_ptr2, ptr, LEFT,
 				elements[edx].tag_mode);
-		ASN_DEBUG("In %s SEQUENCE decoded %d %s of %d "
-			"in %d bytes rval.code %d, size=%d",
-			td->name, edx, elements[edx].type->name,
-			(int)LEFT, (int)rval.consumed, rval.code, (int)size);
+
 		switch(rval.code) {
 		case RC_OK:
 			break;
@@ -420,8 +390,7 @@ SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 				ADVANCE(rval.consumed);
 				RETURN(RC_WMORE);
 			}
-			ASN_DEBUG("Size violation (c->l=%ld <= s=%ld)",
-				(long)ctx->left, (long)size);
+
 			/* Fall through */
 		case RC_FAIL: /* Fatal error */
 			RETURN(RC_FAIL);
@@ -434,9 +403,6 @@ SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 		ctx->phase = 3;
 	case 3:	/* 00 and other tags expected */
 	case 4:	/* only 00's expected */
-
-		ASN_DEBUG("SEQUENCE %s Leftover: %ld, size = %ld",
-			td->name, (long)ctx->left, (long)size);
 
 		/*
 		 * Skip everything until the end of the SEQUENCE.
@@ -474,11 +440,6 @@ SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 
 			if(!IN_EXTENSION_GROUP(specs, td->elements_count)
 			|| ctx->phase == 4) {
-				ASN_DEBUG("Unexpected continuation "
-					"of a non-extensible type "
-					"%s (SEQUENCE): %s",
-					td->name,
-					ber_tlv_tag_string(tlv_tag));
 				RETURN(RC_FAIL);
 			}
 
