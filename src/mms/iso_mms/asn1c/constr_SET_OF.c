@@ -213,6 +213,8 @@ SET_OF_decode_ber(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 			}
 			/* Fall through */
 		case RC_FAIL: /* Fatal error */
+			ASN_STRUCT_FREE(*elm->type, ctx->ptr);
+			ctx->ptr = 0;
 			RETURN(RC_FAIL);
 		} /* switch(rval) */
 		
@@ -764,8 +766,10 @@ SET_OF_print(asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
 void
 SET_OF_free(asn_TYPE_descriptor_t *td, void *ptr, int contents_only) {
 	if(td && ptr) {
+		asn_SET_OF_specifics_t *specs;
 		asn_TYPE_member_t *elm = td->elements;
 		asn_anonymous_set_ *list = _A_SET_FROM_VOID(ptr);
+		asn_struct_ctx_t *ctx;	/* Decoder context */
 		int i;
 
 		/*
@@ -780,6 +784,13 @@ SET_OF_free(asn_TYPE_descriptor_t *td, void *ptr, int contents_only) {
 		list->count = 0;	/* No meaningful elements left */
 
 		asn_set_empty(list);	/* Remove (list->array) */
+
+		specs = (asn_SET_OF_specifics_t *)td->specifics;
+		ctx = (asn_struct_ctx_t *)((char *)ptr + specs->ctx_offset);
+		if(ctx->ptr) {
+			ASN_STRUCT_FREE(*elm->type, ctx->ptr);
+			ctx->ptr = 0;
+		}
 
 		if(!contents_only) {
 			FREEMEM(ptr);

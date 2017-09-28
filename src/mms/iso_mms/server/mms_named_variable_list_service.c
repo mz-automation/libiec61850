@@ -233,9 +233,10 @@ mmsServer_handleDeleteNamedVariableListRequest(MmsServerConnection connection,
 		mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_ACCESS_UNSUPPORTED);
 	}
 
+exit_function:
+
     asn_DEF_MmsPdu.free_struct(&asn_DEF_MmsPdu, mmsPdu, 0);
 
-exit_function:
     return;
 }
 
@@ -420,7 +421,7 @@ mmsServer_handleDefineNamedVariableListRequest(
 
 	if (rval.code != RC_OK) {
 	    mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
-	    goto exit_function;
+	    goto exit_free_struct;
 	}
 
 	request = &(mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.choice.defineNamedVariableList);
@@ -666,7 +667,7 @@ mmsServer_handleGetNamedVariableListAttributesRequest(
 
 	if (rval.code != RC_OK) {
 	    mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
-	    return;
+	    goto exit_function;
 	}
 
 	if (request->present == ObjectName_PR_domainspecific) {

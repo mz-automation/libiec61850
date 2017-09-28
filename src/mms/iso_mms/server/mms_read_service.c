@@ -747,7 +747,7 @@ mmsServer_handleReadRequest(
 
 	if (rval.code != RC_OK) {
 	    mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
-	    return;
+	    goto exit_function;
 	}
 
 	request = &(mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.choice.read);
@@ -764,6 +764,7 @@ mmsServer_handleReadRequest(
 		mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_ACCESS_UNSUPPORTED);
 	}
 
+exit_function:	
 	asn_DEF_MmsPdu.free_struct(&asn_DEF_MmsPdu, mmsPdu, 0);
 }
 

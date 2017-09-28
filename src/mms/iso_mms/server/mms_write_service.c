@@ -481,7 +481,7 @@ mmsServer_handleWriteRequest(
 
 	if (rval.code != RC_OK) {
 	    mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
-	    return;
+	    goto exit_function;
 	}
 
 	WriteRequest_t* writeRequest = &(mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.choice.write);

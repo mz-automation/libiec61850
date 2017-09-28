@@ -33,7 +33,7 @@
 #undef	ADVANCE
 #define	ADVANCE(num_bytes)	do {		\
 		size_t num = num_bytes;		\
-		ptr = ((const char *)ptr) + num;\
+		ptr = ((const char *)ptr) + num; \
 		size -= num;			\
 		if(ctx->left >= 0)		\
 			ctx->left -= num;	\
@@ -328,11 +328,12 @@ SEQUENCE_decode_ber(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 			 * or an extension (...),
 			 * or an end of the indefinite-length structure.
 			 */
-			if(!IN_EXTENSION_GROUP(specs, edx)) {
+			if(!IN_EXTENSION_GROUP(specs, edx + elements[edx].optional)) {
 				RETURN(RC_FAIL);
 			} else {
 				/* Skip this tag */
 				ssize_t skip;
+				edx += elements[edx].optional;
 
 				skip = ber_skip_length(opt_codec_ctx,
 					BER_TLV_CONSTRUCTED(ptr),
@@ -1135,7 +1136,6 @@ SEQUENCE_encode_uper(asn_TYPE_descriptor_t *td,
 
 	er.encoded = 0;
 
-	ASN_DEBUG("Encoding %s as SEQUENCE (UPER)", td->name);
 	if(specs->ext_before >= 0)
 		_ASN_ENCODE_FAILED;	/* We don't encode extensions yet */
 
