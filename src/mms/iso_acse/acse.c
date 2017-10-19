@@ -69,7 +69,10 @@ authenticateClient(AcseConnection* self, AcseAuthenticationMechanism mechanism, 
         authParameter->value.password.passwordLength = authValueLen;
     }
 
-    return self->authenticator(self->authenticatorParameter, authParameter, &(self->securityToken));
+    //TODO Check if we are in a TLS connection: if mechanism == ACSE_AUTH_NONE provide client certificate if present
+    //       --> mechanism = ACSE_AUTH_TLS
+
+    return self->authenticator(self->authenticatorParameter, authParameter, &(self->securityToken), &(self->applicationReference));
 }
 
 static bool
@@ -241,10 +244,28 @@ parseAarqPdu(AcseConnection* self, uint8_t* buffer, int bufPos, int maxBufPos)
 			break;
 
 		case 0xa6: /* calling AP title */
-			bufPos += len;
+		    {
+		        if (buffer[bufPos] == 0x06) { /* ap-title-form2 */
+
+		            int innerLength = buffer[bufPos+1];
+
+		            if (innerLength == len - 2)
+		                BerDecoder_decodeOID(buffer, bufPos + 2, innerLength, &(self->applicationReference.apTitle));
+		        }
+		    }
+		    bufPos += len;
 			break;
 
 		case 0xa7: /* calling AE qualifier */
+		    {
+		        if (buffer[bufPos] == 0x02) { /* ae-qualifier-form2 */
+
+                    int innerLength = buffer[bufPos+1];
+
+                    if (innerLength == len - 2)
+                        self->applicationReference.aeQualifier = BerDecoder_decodeInt32(buffer + 2, buffer[bufPos+1], bufPos);
+		        }
+		    }
 			bufPos += len;
 			break;
 
@@ -315,6 +336,7 @@ AcseConnection_init(AcseConnection* self, AcseAuthenticator authenticator, void*
     self->userDataBufferSize = 0;
     self->authenticator= authenticator;
     self->authenticatorParameter = parameter;
+    memset(&(self->applicationReference), 0, sizeof(self->applicationReference));
 }
 
 void

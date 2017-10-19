@@ -46,4 +46,7 @@ BerDecoder_decodeDouble(uint8_t* buffer, int bufPos);
 bool
 BerDecoder_decodeBoolean(uint8_t* buffer, int bufPos);
 
+void
+BerDecoder_decodeOID(uint8_t* buffer, int bufPos, int length, ItuObjectIdentifier* oid);
+
 #endif /* BER_DECODER_H_ */

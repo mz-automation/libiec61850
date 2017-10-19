@@ -37,13 +37,34 @@ void sigint_handler(int signalId)
 static char* password1 = "user1@testpw";
 static char* password2 = "user2@testpw";
 
+static void printAppTitle(ItuObjectIdentifier* oid)
+{
+    int i;
+
+    for (i = 0; i < oid->arcCount; i++) {
+        printf("%i", oid->arc[i]);
+
+        if (i != (oid->arcCount - 1))
+            printf(".");
+    }
+
+    printf("\n");
+}
+
 /**
  * This is the AcseAuthenticator callback function that is invoked on each client connection attempt.
  * When returning true the server stack accepts the client. Otherwise the connection is rejected.
+ *
+ * The security token can be used to pass an application specific object to other library callbacks
  */
 static bool
-clientAuthenticator(void* parameter, AcseAuthenticationParameter authParameter, void** securityToken)
+clientAuthenticator(void* parameter, AcseAuthenticationParameter authParameter, void** securityToken, IsoApplicationReference* appRef)
 {
+    printf("ACSE Authenticator:\n");
+    printf("  client ap-title: "); printAppTitle(&(appRef->apTitle)); printf("\n");
+    printf("  client ae-qualifier: %i\n", appRef->aeQualifier);
+
+
     if (authParameter->mechanism == ACSE_AUTH_PASSWORD) {
         if (authParameter->value.password.passwordLength == strlen(password1)) {
             if (memcmp(authParameter->value.password.octetString, password1,

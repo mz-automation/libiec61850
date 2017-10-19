@@ -155,6 +155,17 @@ typedef struct
 typedef struct sMmsNamedVariableList* MmsNamedVariableList;
 typedef struct sMmsAccessSpecifier* MmsNamedVariableListEntry;
 
+
+typedef struct {
+    uint16_t arc[10];
+    int arcCount;
+} ItuObjectIdentifier;
+
+typedef struct {
+    ItuObjectIdentifier apTitle;
+    int aeQualifier;
+} IsoApplicationReference;
+
 /**@}*/
 
 
