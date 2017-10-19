@@ -34,10 +34,17 @@ extern "C" {
 /**@{*/
 
 
+/**
+ * \brief authentication mechanism úsed by AcseAuthenticator
+ */
 typedef enum
 {
     ACSE_AUTH_NONE = 0,
-    ACSE_AUTH_PASSWORD = 1
+    ACSE_AUTH_PASSWORD = 1,
+    ACSE_AUTH_CERTIFICATE = 2,
+
+    /** Use TLS certificate for client authentication */
+    ACSE_AUTH_TLS = 3
 } AcseAuthenticationMechanism;
 
 
@@ -63,6 +70,13 @@ struct sAcseAuthenticationParameter
             uint8_t* octetString;
             int passwordLength;
         } password;
+
+        struct
+        {
+            uint8_t* buf;
+            int length;
+        } certificate;
+
     } value;
 };
 

@@ -497,7 +497,7 @@ AcseConnection_createAssociateRequestMessage(AcseConnection* self,
 
         calledAEQualifierLength = BerEncoder_UInt32determineEncodedSize(isoParameters->remoteAEQualifier);
 
-        /* called AP qualifier */
+        /* called AE qualifier */
         contentLength += (4 + calledAEQualifierLength);
 	}
 
@@ -509,7 +509,7 @@ AcseConnection_createAssociateRequestMessage(AcseConnection* self,
 
         callingAEQualifierLength = BerEncoder_UInt32determineEncodedSize(isoParameters->localAEQualifier);
 
-        /* calling AP qualifier */
+        /* calling AE qualifier */
         contentLength += (4 + callingAEQualifierLength);
 	}
 
