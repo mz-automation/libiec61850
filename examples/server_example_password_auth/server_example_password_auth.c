@@ -47,8 +47,6 @@ static void printAppTitle(ItuObjectIdentifier* oid)
         if (i != (oid->arcCount - 1))
             printf(".");
     }
-
-    printf("\n");
 }
 
 /**
