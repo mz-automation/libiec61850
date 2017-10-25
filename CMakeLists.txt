@@ -62,7 +62,7 @@ option(DEBUG_MMS_CLIENT "Enable MMS CLIENT printf debugging" OFF)
 #				 DEBUG_IED_CLIENT DEBUG_MMS_SERVER DEBUG_MMS_CLIENT)
 
 include_directories(
-    ${CMAKE_CURRENT_LIST_DIR}/config
+    ${CMAKE_CURRENT_BINARY_DIR}/config
     ${CMAKE_CURRENT_LIST_DIR}/src/common/inc
     ${CMAKE_CURRENT_LIST_DIR}/src/goose
     ${CMAKE_CURRENT_LIST_DIR}/src/sampled_values
