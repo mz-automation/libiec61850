@@ -652,3 +652,4 @@ EXPORTS
     SVClientASDU_hasRefrTm
     SVClientASDU_getRefrTmAsMs
     IedConnection_writeDataSetValues
+    MmsVariableSpecification_isValueOfType

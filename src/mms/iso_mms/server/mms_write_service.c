@@ -657,7 +657,7 @@ mmsServer_handleWriteRequest(
             }
 
             /* Check for correct type */
-            if (MmsValue_getType(value) != MmsVariableSpecification_getType(variable)) {
+            if (MmsVariableSpecification_isValueOfType(variable, value) == false) {
                 accessResults[i] = DATA_ACCESS_ERROR_TYPE_INCONSISTENT;
                 goto end_of_main_loop;
             }

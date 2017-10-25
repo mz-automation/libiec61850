@@ -95,6 +95,64 @@ MmsVariableSpecification_getType(MmsVariableSpecification* self)
     return self->type;
 }
 
+bool
+MmsVariableSpecification_isValueOfType(MmsVariableSpecification* self, MmsValue* value)
+{
+    if ((self->type) == (value->type)) {
+
+        if ((self->type == MMS_STRUCTURE) || (self->type == MMS_ARRAY)) {
+
+            int componentCount = self->typeSpec.structure.elementCount;
+
+            if (componentCount != (int) MmsValue_getArraySize(value))
+                    return false;
+
+            if (self->type == MMS_STRUCTURE) {
+
+                int i;
+                for (i = 0; i < componentCount; i++) {
+
+                    if (MmsVariableSpecification_isValueOfType(self->typeSpec.structure.elements[i], MmsValue_getElement(value, i)) == false)
+                        return false;
+                }
+
+                return true;
+            }
+            else {
+                int i;
+                for (i = 0; i < componentCount; i++) {
+
+                    if (MmsVariableSpecification_isValueOfType(self->typeSpec.array.elementTypeSpec, MmsValue_getElement(value, i)) == false)
+                        return false;
+                }
+            }
+        }
+        else if (self->type == MMS_BIT_STRING) {
+            if (self->typeSpec.bitString == value->value.bitString.size)
+                return true;
+
+            if (self->typeSpec.bitString < 0) {
+                if (value->value.bitString.size <= (-self->typeSpec.bitString))
+                    return true;
+            }
+        }
+        else if (self->type == MMS_FLOAT) {
+            if ((self->typeSpec.floatingpoint.exponentWidth == value->value.floatingPoint.exponentWidth) &&
+                    (self->typeSpec.floatingpoint.formatWidth == value->value.floatingPoint.formatWidth))
+                return true;
+        }
+        else if (self->type == MMS_BINARY_TIME) {
+            if (self->typeSpec.binaryTime == value->value.binaryTime.size)
+                return true;
+        }
+        else
+            return true;
+
+    }
+
+    return false;
+}
+
 const char*
 MmsVariableSpecification_getName(MmsVariableSpecification* self)
 {

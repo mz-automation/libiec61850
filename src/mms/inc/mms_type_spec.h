@@ -92,6 +92,17 @@ MmsType
 MmsVariableSpecification_getType(MmsVariableSpecification* self);
 
 /**
+ * \brief Check if the value has exactly the same type as this variable specfication
+ *
+ * \param self the MmsVariableSpecification instance
+ * \param value the value to check
+ *
+ * \return true if type is matching, false otherwise
+ */
+bool
+MmsVariableSpecification_isValueOfType(MmsVariableSpecification* self, MmsValue* value);
+
+/**
  * \brief get the name of the variable
  *
  * Note: the return string is only valid as long as the MmsVariableSpecification
