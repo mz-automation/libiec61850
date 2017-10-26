@@ -653,3 +653,4 @@ EXPORTS
     SVClientASDU_getRefrTmAsMs
     IedConnection_writeDataSetValues
     MmsVariableSpecification_isValueOfType
+    IedServer_udpateDbposValue

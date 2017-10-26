@@ -561,6 +561,21 @@ void
 IedServer_updateInt32AttributeValue(IedServer self, DataAttribute* dataAttribute, int32_t value);
 
 /**
+ * \brief Update the value of an IEC 61850 Dbpos (double point/position) data attribute.
+ *
+ * Update the value of a integer data attribute without handling with MmsValue instances.
+ *
+ * This function will also check if a trigger condition is satisfied in the case when a report or GOOSE
+ * control block is enabled.
+ *
+ * \param self the instance of IedServer to operate on.
+ * \param dataAttribute the data attribute handle
+ * \param value the new Dbpos value of the data attribute.
+ */
+void
+IedServer_udpateDbposValue(IedServer self, DataAttribute* dataAttribute, Dbpos value);
+
+/**
  * \brief Update the value of an IEC 61850 integer64 data attribute (like BCR actVal)
  *
  * Update the value of a integer data attribute without handling with MmsValue instances.
@@ -820,7 +835,8 @@ typedef enum {
     CONTROL_HARDWARE_FAULT = 1, /** check failed due to hardware fault */
     CONTROL_TEMPORARILY_UNAVAILABLE = 2, /** control is already selected or operated */
     CONTROL_OBJECT_ACCESS_DENIED = 3, /** check failed due to access control reason - access denied for this client or state */
-    CONTROL_OBJECT_UNDEFINED = 4 /** object not visible in this security context ??? */
+    CONTROL_OBJECT_UNDEFINED = 4, /** object not visible in this security context ??? */
+    CONTROL_VALUE_INVALID = 11 /** ctlVal out of range */
 } CheckHandlerResult;
 
 /**

@@ -986,6 +986,27 @@ IedServer_updateInt32AttributeValue(IedServer self, DataAttribute* dataAttribute
 }
 
 void
+IedServer_udpateDbposValue(IedServer self, DataAttribute* dataAttribute, Dbpos value)
+{
+    Dbpos currentValue = Dbpos_fromMmsValue(dataAttribute->mmsValue);
+
+    if (currentValue == value) {
+        checkForUpdateTrigger(self, dataAttribute);
+    }
+    else {
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_wait(self->dataModelLock);
+#endif
+        Dbpos_toMmsValue(dataAttribute->mmsValue, value);
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_post(self->dataModelLock);
+#endif
+
+        checkForChangedTriggers(self, dataAttribute);
+    }
+}
+
+void
 IedServer_updateInt64AttributeValue(IedServer self, DataAttribute* dataAttribute, int64_t value)
 {
     assert(MmsValue_getType(dataAttribute->mmsValue) == MMS_INTEGER);
