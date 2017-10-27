@@ -377,6 +377,10 @@ mmsMsg_openFile(const char* basepath, char* fileName, bool readWrite)
 bool
 mmsMsg_parseFileName(char* filename, uint8_t* buffer, int* bufPos, int maxBufPos , uint32_t invokeId, ByteBuffer* response)
 {
+    if (*bufPos == maxBufPos) {
+      return true;
+    }
+	
     uint8_t tag = buffer[(*bufPos)++];
     int length;
 
