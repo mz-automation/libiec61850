@@ -98,6 +98,8 @@ mmsClient_handleFileOpenRequest(
 
         if (bufPos < 0) goto exit_reject_invalid_pdu;
 
+        if (bufPos + length > maxBufPos) goto exit_reject_invalid_pdu;
+
         switch(tag) {
         case 0xa0: /* filename */
 

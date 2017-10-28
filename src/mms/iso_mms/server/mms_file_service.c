@@ -316,6 +316,8 @@ mmsServer_handleFileOpenRequest(
 
         if (bufPos < 0) goto exit_reject_invalid_pdu;
 
+        if (bufPos + length > maxBufPos) goto exit_reject_invalid_pdu;
+
         switch(tag) {
         case 0xa0: /* filename */
 
@@ -574,6 +576,8 @@ mmsServer_handleObtainFileRequest(
         bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
 
         if (bufPos < 0) goto exit_reject_invalid_pdu;
+
+        if (bufPos + length > maxBufPos) goto exit_reject_invalid_pdu;
 
         switch(tag) {
 
@@ -987,7 +991,7 @@ mmsServer_handleFileRenameRequest(
 
         bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
 
-        if (bufPos < 0)  {
+        if ((bufPos < 0) || (bufPos + length > maxBufPos)) {
             mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
             return;
         }
@@ -1071,7 +1075,7 @@ mmsServer_handleFileDirectoryRequest(
 
         bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
 
-        if (bufPos < 0)  {
+        if ((bufPos < 0) || (bufPos + length > maxBufPos)) {
             mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
             return;
         }

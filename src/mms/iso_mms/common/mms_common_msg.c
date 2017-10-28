@@ -377,13 +377,17 @@ mmsMsg_openFile(const char* basepath, char* fileName, bool readWrite)
 bool
 mmsMsg_parseFileName(char* filename, uint8_t* buffer, int* bufPos, int maxBufPos , uint32_t invokeId, ByteBuffer* response)
 {
+    if (*bufPos == maxBufPos)
+        return false;
+
     uint8_t tag = buffer[(*bufPos)++];
-    int length;
 
     if (tag != 0x19) {
       mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
       return false;
     }
+
+    int length;
 
     *bufPos = BerDecoder_decodeLength(buffer, &length, *bufPos, maxBufPos);
 
