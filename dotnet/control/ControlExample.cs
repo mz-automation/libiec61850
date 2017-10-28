@@ -86,7 +86,10 @@ namespace control
 					Thread.Sleep(1000);
 				}
 
-                con.Abort();
+				// has to be called before IedConnection dispose method!
+				control.Dispose();
+
+             	con.Abort();
             }
             catch (IedConnectionException e)
             {

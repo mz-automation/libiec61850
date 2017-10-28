@@ -104,7 +104,7 @@ namespace IEC61850
         /// <summary>
         /// Control object.
         /// </summary>
-		public class ControlObject
+		public class ControlObject : IDisposable
 		{
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			private static extern LastApplErrorInternal ControlObjectClient_getLastApplError(IntPtr self);
@@ -181,12 +181,6 @@ namespace IEC61850
 				intCommandTerminationHandler = new InternalCommandTerminationHandler (MyCommandTerminationHandler);
 
 				ControlObjectClient_setCommandTerminationHandler(controlObject, intCommandTerminationHandler, controlObject);
-			}
-
-			~ControlObject ()
-			{
-				if (this.controlObject != System.IntPtr.Zero)
-					ControlObjectClient_destroy(controlObject);
 			}
 
             /// <summary>
@@ -442,6 +436,18 @@ namespace IEC61850
 				this.commandTerminationHandler = handler;
 				this.commandTerminationHandlerParameter = parameter;
 			}
+
+			protected virtual void Dispose(bool disposing) {
+				if (this.controlObject != System.IntPtr.Zero) {
+					ControlObjectClient_destroy (controlObject);
+					this.controlObject = System.IntPtr.Zero;
+				}
+			}
+
+			public void Dispose() {
+				Dispose (true);
+			}
+				
 
 		}
 
