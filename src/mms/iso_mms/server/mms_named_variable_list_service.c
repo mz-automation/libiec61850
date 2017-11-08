@@ -498,8 +498,7 @@ mmsServer_handleDefineNamedVariableListRequest(
 	        char variableListName[65];
 
 	        if (request->variableListName.choice.aaspecific.size > 64) {
-	            //TODO send reject PDU instead?
-                mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
+                mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
                 goto exit_free_struct;
             }
 
@@ -543,8 +542,7 @@ mmsServer_handleDefineNamedVariableListRequest(
 	        char variableListName[65];
 
 	        if (request->variableListName.choice.vmdspecific.size > 64) {
-	            //TODO send reject PDU instead?
-	            mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
+	            mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
                 goto exit_free_struct;
 	        }
 
@@ -583,7 +581,6 @@ mmsServer_handleDefineNamedVariableListRequest(
 exit_free_struct:
 	asn_DEF_MmsPdu.free_struct(&asn_DEF_MmsPdu, mmsPdu, 0);
 
-exit_function:
     return;
 }
 
