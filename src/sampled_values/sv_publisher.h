@@ -86,6 +86,12 @@ void
 SV_ASDU_setINT32(SV_ASDU self, int index, int32_t value);
 
 int
+SV_ASDU_addINT64(SV_ASDU self);
+
+void
+SV_ASDU_setINT64(SV_ASDU self, int index, int64_t value);
+
+int
 SV_ASDU_addFLOAT(SV_ASDU self);
 
 void

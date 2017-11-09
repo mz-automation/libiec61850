@@ -52,24 +52,25 @@ extern "C" {
  *
  *  | IEC 61850 type | required bytes |
  *  | -------------- | -------------- |
- *  | BOOLEAN | 1 byte |
- *  | INT8    | 1 byte |
- *  | INT16   | 2 byte |
- *  | INT32   | 4 byte |
- *  | INT64   | 8 byte |
- *  | INT8U   | 1 byte |
- *  | INT16U  | 2 byte |
- *  | INT24U  | 3 byte |
- *  | INT32U  | 4 byte |
- *  | FLOAT32 | 4 byte |
- *  | FLOAT64 | 8 byte |
- *  | ENUMERATED | 4 byte |
- *  | CODED ENUM | 4 byte |
- *  | OCTET STRING | 20 byte |
- *  | VISIBLE STRING | 35 byte |
- *  | TimeStamp | 8 byte |
- *  | EntryTime | 6 byte |
- *  | BITSTRING | 4 byte |
+ *  | BOOLEAN        | 1 byte         |
+ *  | INT8           | 1 byte         |
+ *  | INT16          | 2 byte         |
+ *  | INT32          | 4 byte         |
+ *  | INT64          | 8 byte         |
+ *  | INT8U          | 1 byte         |
+ *  | INT16U         | 2 byte         |
+ *  | INT24U         | 3 byte         |
+ *  | INT32U         | 4 byte         |
+ *  | INT64U         | 8 byte         |
+ *  | FLOAT32        | 4 byte         |
+ *  | FLOAT64        | 8 byte         |
+ *  | ENUMERATED     | 4 byte         |
+ *  | CODED ENUM     | 4 byte         |
+ *  | OCTET STRING   | 20 byte        |
+ *  | VISIBLE STRING | 35 byte        |
+ *  | TimeStamp      | 8 byte         |
+ *  | EntryTime      | 6 byte         |
+ *  | BITSTRING      | 4 byte         |
  *
  * The SV subscriber API can be used independent of the IEC 61850 client API. In order to access the SVCB via MMS you
  * have to use the IEC 61850 client API. Please see \ref ClientSVControlBlock object in section \ref IEC61850_CLIENT_SV.
@@ -322,6 +323,17 @@ int32_t
 SVClientASDU_getINT32(SVClientASDU self, int index);
 
 /**
+ * \brief Get an INT64 data value in the data part of the ASDU
+ *
+ * \param self ASDU object instance
+ * \param index the index (byte position of the start) of the data in the data part
+ *
+ * \return SV data
+ */
+int64_t
+SVClientASDU_getINT64(SVClientASDU self, int index);
+
+/**
  * \brief Get an INT8U data value in the data part of the ASDU
  *
  * \param self ASDU object instance
@@ -353,6 +365,17 @@ SVClientASDU_getINT16U(SVClientASDU self, int index);
  */
 uint32_t
 SVClientASDU_getINT32U(SVClientASDU self, int index);
+
+/**
+ * \brief Get an INT64U data value in the data part of the ASDU
+ *
+ * \param self ASDU object instance
+ * \param index the index (byte position of the start) of the data in the data part
+ *
+ * \return SV data
+ */
+uint64_t
+SVClientASDU_getINT64U(SVClientASDU self, int index);
 
 /**
  * \brief Get an FLOAT32 data value in the data part of the ASDU

@@ -637,6 +637,20 @@ SVClientASDU_getINT32(SVClientASDU self, int index)
     return retVal;
 }
 
+int64_t
+SVClientASDU_getINT64(SVClientASDU self, int index)
+{
+    int64_t retVal = *((int64_t*) (self->dataBuffer + index));
+
+#if (ORDER_LITTLE_ENDIAN == 1)
+    uint8_t* buf = (uint8_t*) (&retVal);
+
+    BerEncoder_revertByteOrder(buf, 8);
+#endif
+
+    return retVal;
+}
+
 uint8_t
 SVClientASDU_getINT8U(SVClientASDU self, int index)
 {
@@ -673,6 +687,19 @@ SVClientASDU_getINT32U(SVClientASDU self, int index)
     return retVal;
 }
 
+uint64_t
+SVClientASDU_getINT64U(SVClientASDU self, int index)
+{
+    uint64_t retVal = *((uint64_t*) (self->dataBuffer + index));
+
+#if (ORDER_LITTLE_ENDIAN == 1)
+    uint8_t* buf = (uint8_t*) (&retVal);
+
+    BerEncoder_revertByteOrder(buf, 8);
+#endif
+
+    return retVal;
+}
 
 float
 SVClientASDU_getFLOAT32(SVClientASDU self, int index)
