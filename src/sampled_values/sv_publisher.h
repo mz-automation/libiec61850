@@ -121,6 +121,18 @@ SV_ASDU_setRefrTm(SV_ASDU self, uint64_t refrTm);
 void
 SV_ASDU_setSmpMod(SV_ASDU self, uint8_t smpMod);
 
+/**
+ * \brief Set the sample rate of the ASDU.
+ *
+ * If not set the transmitted ASDU will not contain an smpRate value.
+ *
+ * \param self the SV_ASDU
+ *
+ * \param smpRate Amount of samples (default per nominal period, see SmpMod).
+ */
+void
+SV_ASDU_setSmpMod(SV_ASDU self, uint8_t smpMod);
+
 #ifdef __cplusplus
 }
 #endif

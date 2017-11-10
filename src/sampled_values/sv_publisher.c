@@ -59,6 +59,7 @@ struct sSV_ASDU {
 
     uint64_t refrTm;
     uint8_t smpMod;
+    uint16_t smpRate;
 
     uint8_t* smpCntBuf;
 
@@ -369,7 +370,8 @@ SV_ASDU_encodeToBuffer(SV_ASDU self, uint8_t* buffer, int bufPos)
     buffer[bufPos++] = self->smpSynch;
 
     /* SmpRate */
-    //TODO implement me
+    bufPos = BerEncoder_encodeTL(0x86, 2, buffer, bufPos);
+    bufPos = encodeUInt16FixedSize(self->smpRate, buffer, bufPos);
 
     /* Sample */
     bufPos = BerEncoder_encodeTL(0x87, self->dataSize, buffer, bufPos);
@@ -596,3 +598,9 @@ SV_ASDU_setSmpMod(SV_ASDU self, uint8_t smpMod)
     self->smpMod = smpMod;
 }
 
+void
+SV_ASDU_setSmpRate(SV_ASDU self, uint8_t smpRate)
+{
+    self->hasSmpRate = true;
+    self->smpRate = smpRate;
+}
