@@ -21,9 +21,9 @@ before_install:
       brew update;
       brew install swig python sqlite;
     fi
+  - mkdir -p build && cd build
 
 script:
-  - mkdir build && cd build
   - cmake .. -DBUILD_PYTHON_BINDINGS=ON
   - make
   - make test

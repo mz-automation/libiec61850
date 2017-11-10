@@ -13,13 +13,17 @@ set_property(SOURCE iec61850.i PROPERTY CPLUSPLUS ON)
 if(WIN32)
     set(LIBS iec61850 ws2_32)
 else()
-    set(LIBS iec61850 iec61850-shared)
+    set(LIBS iec61850-shared)
 endif()
 
-swig_add_library(iec61850
-    LANGUAGE python
-    SOURCES iec61850.i
-)
+if(${SWIG_VERSION} VERSION_LESS 3.0)
+    swig_add_module(iec61850 python iec61850.i)
+else()
+    swig_add_library(iec61850
+        LANGUAGE python
+        SOURCES iec61850.i
+    )
+endif()
 
 swig_link_libraries(iec61850 ${PYTHON_LIBRARIES} ${LIBS})
 
