@@ -29,9 +29,9 @@
 #cmakedefine01 DEBUG_MMS_SERVER
 #cmakedefine01 DEBUG_GOOSE_SUBSCRIBER
 #cmakedefine01 DEBUG_GOOSE_PUBLISHER
-#cmakedefine01 DEBUG_SV_SUBSCRIBER 0
-#cmakedefine01 DEBUG_SV_PUBLISHER 0
-#cmakedefine01 DEBUG_HAL_ETHERNET 0
+#cmakedefine01 DEBUG_SV_SUBSCRIBER
+#cmakedefine01 DEBUG_SV_PUBLISHER
+#cmakedefine01 DEBUG_HAL_ETHERNET
 
 /* 1 ==> server runs in single threaded mode (one dedicated thread for the server)
  * 0 ==> server runs in multi threaded mode (one thread for each connection and
