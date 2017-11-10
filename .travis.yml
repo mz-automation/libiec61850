@@ -23,4 +23,7 @@ before_install:
     fi
 
 script:
-  - mkdir build && cd build && cmake .. -DBUILD_PYTHON_BINDINGS=ON && make
+  - mkdir build && cd build
+  - cmake .. -DBUILD_PYTHON_BINDINGS=ON
+  - make
+  - make test
