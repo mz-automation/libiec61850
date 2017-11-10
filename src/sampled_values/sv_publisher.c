@@ -599,7 +599,7 @@ SV_ASDU_setSmpMod(SV_ASDU self, uint8_t smpMod)
 }
 
 void
-SV_ASDU_setSmpRate(SV_ASDU self, uint8_t smpRate)
+SV_ASDU_setSmpRate(SV_ASDU self, uint16_t smpRate)
 {
     self->hasSmpRate = true;
     self->smpRate = smpRate;

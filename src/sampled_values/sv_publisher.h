@@ -131,7 +131,7 @@ SV_ASDU_setSmpMod(SV_ASDU self, uint8_t smpMod);
  * \param smpRate Amount of samples (default per nominal period, see SmpMod).
  */
 void
-SV_ASDU_setSmpMod(SV_ASDU self, uint8_t smpMod);
+SV_ASDU_setSmpRate(SV_ASDU self, uint16_t smpRate);
 
 #ifdef __cplusplus
 }
