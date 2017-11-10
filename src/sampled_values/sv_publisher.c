@@ -221,6 +221,34 @@ encodeInt32FixedSize(int32_t value, uint8_t* buffer, int bufPos)
 }
 
 static int
+encodeInt64FixedSize(int64_t value, uint8_t* buffer, int bufPos)
+{
+    uint8_t* valueArray = (uint8_t*) &value;
+
+#if (ORDER_LITTLE_ENDIAN == 1)
+    buffer[bufPos++] = valueArray[7];
+    buffer[bufPos++] = valueArray[6];
+    buffer[bufPos++] = valueArray[5];
+    buffer[bufPos++] = valueArray[4];
+    buffer[bufPos++] = valueArray[3];
+    buffer[bufPos++] = valueArray[2];
+    buffer[bufPos++] = valueArray[1];
+    buffer[bufPos++] = valueArray[0];
+#else
+    buffer[bufPos++] = valueArray[0];
+    buffer[bufPos++] = valueArray[1];
+    buffer[bufPos++] = valueArray[2];
+    buffer[bufPos++] = valueArray[3];
+    buffer[bufPos++] = valueArray[4];
+    buffer[bufPos++] = valueArray[5];
+    buffer[bufPos++] = valueArray[6];
+    buffer[bufPos++] = valueArray[7];
+#endif
+
+    return bufPos;
+}
+
+static int
 encodeUtcTime(uint64_t timeval, uint8_t* buffer, int bufPos)
 {
     uint32_t timeval32 = (timeval / 1000LL);
@@ -509,6 +537,22 @@ SV_ASDU_setINT32(SV_ASDU self, int index, int32_t value)
 }
 
 int
+SV_ASDU_addINT64(SV_ASDU self)
+{
+    int index = self->dataSize;
+
+    self->dataSize += 8;
+
+    return index;
+}
+
+void
+SV_ASDU_setINT64(SV_ASDU self, int index, int64_t value)
+{
+    encodeInt64FixedSize(value, self->_dataBuffer, index);
+}
+
+int
 SV_ASDU_addFLOAT(SV_ASDU self)
 {
     int index = self->dataSize;
@@ -522,7 +566,6 @@ void
 SV_ASDU_setFLOAT(SV_ASDU self, int index, float value)
 {
     uint8_t* buf = (uint8_t*) &value;
-
 
 #if (ORDER_LITTLE_ENDIAN == 1)
     BerEncoder_revertByteOrder(buf, 4);
@@ -550,11 +593,15 @@ void
 SV_ASDU_setFLOAT64(SV_ASDU self, int index, double value)
 {
     uint8_t* buf = (uint8_t*) &value;
+
 #if (ORDER_LITTLE_ENDIAN == 1)
     BerEncoder_revertByteOrder(buf, 8);
 #endif
+
     int i;
+
     uint8_t* buffer = self->_dataBuffer + index;
+
     for (i = 0; i < 8; i++) {
         buffer[i] = buf[i];
     }
