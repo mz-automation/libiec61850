@@ -1,4 +1,9 @@
 language: c
+
+os:
+  - linux
+  - osx
+
 compiler:
   - clang
   - gcc
@@ -7,9 +12,15 @@ addons:
   apt:
     packages:
     - cmake
-    - time
+    - swig
+    - libsqlite3-dev
+    - python-dev
+
+before_install:
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
+      brew update;
+      brew install swig python sqlite;
+    fi
 
 script:
-  - cmake .
-  - make
-  - make examples
+  - mkdir build && cd build && cmake .. -DBUILD_PYTHON_BINDINGS=ON && make
