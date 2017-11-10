@@ -405,15 +405,11 @@ SV_ASDU_encodeToBuffer(SV_ASDU self, uint8_t* buffer, int bufPos)
     self->_dataBuffer = buffer + bufPos;
 
     bufPos += self->dataSize; /* data has to inserted by user before sending message */
-
+    
     /* SmpMod */
     if (self->hasSmpMod) {
-        bufPos = BerEncoder_encodeTL(0x84, 4, buffer, bufPos);
-        buffer[bufPos++] = 0;
-        buffer[bufPos++] = 0;
-        buffer[bufPos++] = 0;
-        buffer[bufPos++] = self->smpMod;
-
+        bufPos = BerEncoder_encodeTL(0x88, 4, buffer, bufPos);
+        bufPos = encodeUint16FixedSize(self->smpMod, buffer, bufPos);
     }
 
     return bufPos;
