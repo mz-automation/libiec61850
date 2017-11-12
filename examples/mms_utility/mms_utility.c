@@ -81,7 +81,7 @@ printJournalEntries(LinkedList journalEntries)
     }
 }
 
-void*
+void
 printRawMmsMessage(void* parameter, uint8_t* message, int messageLength, bool received)
 {
     if (received)
