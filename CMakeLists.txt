@@ -57,7 +57,7 @@ option(DEBUG_MMS_CLIENT "Enable MMS CLIENT printf debugging" OFF)
 #				 DEBUG_IED_CLIENT DEBUG_MMS_SERVER DEBUG_MMS_CLIENT)
 
 include_directories(
-    config
+    ${CMAKE_CURRENT_BINARY_DIR}/config
     src/common/inc
     src/goose
     src/sampled_values
@@ -116,7 +116,10 @@ if(MSVC)
 endif(MSVC)
 
 # write the detected stuff to this file
-configure_file(${CMAKE_CURRENT_LIST_DIR}/config/stack_config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config/stack_config.h)
+configure_file(
+    ${CMAKE_CURRENT_LIST_DIR}/config/stack_config.h.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/config/stack_config.h
+)
 
 if(BUILD_EXAMPLES)
     add_subdirectory(examples)
