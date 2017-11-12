@@ -248,6 +248,8 @@ main(int argc, char** argv)
         case FileOperationType_Set:
             setFile(con);
             break;
+        case FileOperationType_None:
+            break;
         }
 
 
