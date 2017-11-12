@@ -1,5 +1,7 @@
 # README libIEC61850
 
+[![Build Status](https://travis-ci.org/mz-automation/libiec61850.svg?branch=master)](https://travis-ci.org/mz-automation/libiec61850)
+
 This file is part of the documentation of **libIEC61850**. More documentation can be found online at http://libiec61850.com or in the provided doxygen documentation. Also consider to review the examples to understand how to use the library
 
 Content:
