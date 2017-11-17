@@ -351,7 +351,6 @@ IsoClientConnection_associate(IsoClientConnection self, IsoConnectionParameters 
         goto returnError;
     }
 
-
     ByteBuffer_wrap(self->receivePayloadBuffer, self->acseConnection.userDataBuffer,
             self->acseConnection.userDataBufferSize, self->acseConnection.userDataBufferSize);
 
