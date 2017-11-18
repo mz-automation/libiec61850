@@ -51,24 +51,24 @@ typedef struct sCommParameters {
 #define IEC61850_SV_SMPMOD_SAMPLES_PER_SECOND 1
 #define IEC61850_SV_SMPMOD_SECONDS_PER_SAMPLE 2
 
-typedef struct sSampledValuesPublisher* SampledValuesPublisher;
+typedef struct sSVPublisher* SVPublisher;
 
 typedef struct sSV_ASDU* SV_ASDU;
 
-SampledValuesPublisher
-SampledValuesPublisher_create(CommParameters* parameters, const char* interfaceId);
+SVPublisher
+SVPublisher_create(CommParameters* parameters, const char* interfaceId);
 
 SV_ASDU
-SampledValuesPublisher_addASDU(SampledValuesPublisher self, char* svID, char* datset, uint32_t confRev);
+SVPublisher_addASDU(SVPublisher self, char* svID, char* datset, uint32_t confRev);
 
 void
-SampledValuesPublisher_setupComplete(SampledValuesPublisher self);
+SVPublisher_setupComplete(SVPublisher self);
 
 void
-SampledValuesPublisher_publish(SampledValuesPublisher self);
+SVPublisher_publish(SVPublisher self);
 
 void
-SampledValuesPublisher_destroy(SampledValuesPublisher self);
+SVPublisher_destroy(SVPublisher self);
 
 void
 SV_ASDU_resetBuffer(SV_ASDU self);

@@ -68,7 +68,7 @@ struct sSV_ASDU {
 
 
 
-struct sSampledValuesPublisher {
+struct sSVPublisher {
     uint8_t* buffer;
     uint16_t appId;
     EthernetSocket ethernetSocket;
@@ -86,7 +86,7 @@ struct sSampledValuesPublisher {
 
 
 static void
-preparePacketBuffer(SampledValuesPublisher self, CommParameters* parameters, const char* interfaceID)
+preparePacketBuffer(SVPublisher self, CommParameters* parameters, const char* interfaceID)
 {
     uint8_t srcAddr[6];
 
@@ -283,10 +283,10 @@ encodeUtcTime(uint64_t timeval, uint8_t* buffer, int bufPos)
     return bufPos + 8;
 }
 
-SampledValuesPublisher
-SampledValuesPublisher_create(CommParameters* parameters, const char* interfaceId)
+SVPublisher
+SVPublisher_create(CommParameters* parameters, const char* interfaceId)
 {
-    SampledValuesPublisher self = (SampledValuesPublisher) GLOBAL_CALLOC(1, sizeof(struct sSampledValuesPublisher));
+    SVPublisher self = (SVPublisher) GLOBAL_CALLOC(1, sizeof(struct sSVPublisher));
 
     self->asduLIst = NULL;
 
@@ -296,7 +296,7 @@ SampledValuesPublisher_create(CommParameters* parameters, const char* interfaceI
 }
 
 SV_ASDU
-SampledValuesPublisher_addASDU(SampledValuesPublisher self, char* svID, char* datset, uint32_t confRev)
+SVPublisher_addASDU(SVPublisher self, char* svID, char* datset, uint32_t confRev)
 {
     SV_ASDU newAsdu = (SV_ASDU) GLOBAL_CALLOC(1, sizeof(struct sSV_ASDU));
 
@@ -418,7 +418,7 @@ SV_ASDU_encodeToBuffer(SV_ASDU self, uint8_t* buffer, int bufPos)
 }
 
 void
-SampledValuesPublisher_setupComplete(SampledValuesPublisher self)
+SVPublisher_setupComplete(SVPublisher self)
 {
     int numberOfAsdu = 0;
 
@@ -478,7 +478,7 @@ SampledValuesPublisher_setupComplete(SampledValuesPublisher self)
 
 
 void
-SampledValuesPublisher_publish(SampledValuesPublisher self)
+SVPublisher_publish(SVPublisher self)
 {
     if (DEBUG_SV_PUBLISHER)
         printf("SV_PUBLISHER: send SV message\n");
@@ -489,7 +489,7 @@ SampledValuesPublisher_publish(SampledValuesPublisher self)
 
 
 void
-SampledValuesPublisher_destroy(SampledValuesPublisher self)
+SVPublisher_destroy(SVPublisher self)
 {
     GLOBAL_FREEMEM(self->buffer);
 }
