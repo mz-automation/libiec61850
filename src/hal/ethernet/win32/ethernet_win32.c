@@ -47,11 +47,18 @@
 
 #define HAVE_REMOTE
 
+// Enable WinPcap specific extension: pcap_getevent()
+#define WPCAP
 #include "pcap.h"
 
 struct sEthernetSocket {
     pcap_t* rawSocket;
     struct bpf_program etherTypeFilter;
+};
+
+struct sEthernetHandleSet {
+    HANDLE *handles;
+    int nhandles;
 };
 
 #ifdef __GNUC__ /* detect MINGW */
@@ -90,7 +97,6 @@ typedef ULONG (WINAPI* pgetadaptersaddresses)(ULONG family, ULONG flags, PVOID r
 
 static pgetadaptersaddresses GetAdaptersAddresses;
 
-
 static bool dllLoaded = false;
 
 static void
@@ -114,6 +120,54 @@ loadDLLs(void)
 #endif /* __MINGW64_VERSION_MAJOR */
 
 #endif /* __GNUC__ */
+
+EthernetHandleSet
+EthernetHandleSet_new(void)
+{
+    EthernetHandleSet result = (EthernetHandleSet) GLOBAL_MALLOC(sizeof(struct sEthernetHandleSet));
+
+    if (result != NULL) {
+        result->handles = NULL;
+        result->nhandles = 0;
+    }
+
+    return result;
+}
+
+void
+EthernetHandleSet_addSocket(EthernetHandleSet self, const EthernetSocket sock)
+{
+    if (self != NULL && sock != NULL) {
+        int i = self->nhandles++;
+        self->handles = (HANDLE *) realloc(self->handles, self->nhandles * sizeof(HANDLE));
+            
+        self->handles[i] = pcap_getevent(sock->rawSocket);
+    }
+}
+
+int
+EthernetHandleSet_waitReady(EthernetHandleSet self, unsigned int timeoutMs)
+{
+    int result;
+
+    if ((self != NULL) && (self->nhandles > 0)) {
+        result = WaitForMultipleObjects(self->nhandles, self->handles, 0, timeoutMs);
+    }
+    else {
+       result = -1;
+    }
+
+    return result;
+}
+
+void
+EthernetHandleSet_destroy(EthernetHandleSet self)
+{
+    if (self->handles)
+        free(self->handles);
+
+    GLOBAL_FREEMEM(self);
+}
 
 static char*
 getInterfaceName(int interfaceIndex)
@@ -214,8 +268,6 @@ getAdapterMacAddress(char* pcapAdapterName, uint8_t* macAddress)
         printf("Error getting device addresses!\n");
     }
 }
-
-
 
 void
 Ethernet_getInterfaceMACAddress(const char* interfaceId, uint8_t* addr)
@@ -336,6 +388,28 @@ bool
 Ethernet_isSupported()
 {
     return false;
+}
+
+EthernetHandleSet
+EthernetHandleSet_new(void)
+{
+    return NULL;
+}
+
+void
+EthernetHandleSet_addSocket(EthernetHandleSet self, const EthernetSocket sock)
+{
+}
+
+int
+EthernetHandleSet_waitReady(EthernetHandleSet self, unsigned int timeoutMs)
+{
+    return 0;
+}
+
+void
+EthernetHandleSet_destroy(EthernetHandleSet self)
+{
 }
 
 void
