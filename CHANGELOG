@@ -1,3 +1,8 @@
+Unreleased
+----------
+
+- The 'SampledValuesPublisher_*' API has been refactored to 'SVPublisher_*'. The old version of the API is deprecated but still supported and will be removed in the next major version of the library.
+
 Changes to version 1.1.0
 ------------------------
 
