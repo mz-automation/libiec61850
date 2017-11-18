@@ -143,5 +143,6 @@ SV_ASDU_setSmpRate(SV_ASDU self, uint16_t smpRate);
 }
 #endif
 
+#include "sv_publisher_deprecated.h"
 
 #endif /* LIBIEC61850_SRC_SAMPLED_VALUES_SV_PUBLISHER_H_ */
