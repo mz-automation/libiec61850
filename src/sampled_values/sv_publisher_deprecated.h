@@ -37,7 +37,18 @@ extern "C" {
   #define DEPRECATED
 #endif
 
-typedef struct sSVPublisher* SampledValuesPublisher DEPRECATED;
+/**
+ * \addtogroup sv_publisher_deprecated_api_group Deprecated API
+ * \ingroup sv_publisher_api_group IEC 61850 Sampled Values (SV) publisher API
+ * \deprecated
+ * @{
+ */
+
+/**
+ * \brief An opaque type representing an IEC 61850-9-2 Sampled Values publisher.
+ * \deprecated
+ */
+typedef DEPRECATED struct sSVPublisher* SampledValuesPublisher;
 
 /**
  * \brief This function is deprecated and will be removed in the next major release. Use SVPublisher_create() instead.
@@ -93,6 +104,10 @@ SampledValuesPublisher_destroy(SampledValuesPublisher self)
 {
     SVPublisher_destroy(self);
 }
+
+/**
+ * @}
+ */
 
 #ifdef __cplusplus
 }

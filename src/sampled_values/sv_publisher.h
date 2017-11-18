@@ -43,6 +43,11 @@ typedef struct sCommParameters {
 
 #endif
 
+/**
+ * \defgroup sv_publisher_api_group IEC 61850 Sampled Values (SV) publisher API
+ */
+/**@{*/
+
 #define IEC61850_SV_SMPSYNC_NOT_SYNCHRONIZED 0
 #define IEC61850_SV_SMPSYNC_SYNCED_UNSPEC_LOCAL_CLOCK 1
 #define IEC61850_SV_SMPSYNC_SYNCED_GLOBAL_CLOCK 2
@@ -51,89 +56,230 @@ typedef struct sCommParameters {
 #define IEC61850_SV_SMPMOD_SAMPLES_PER_SECOND 1
 #define IEC61850_SV_SMPMOD_SECONDS_PER_SAMPLE 2
 
+/**
+ * \brief An opaque type representing an IEC 61850-9-2 Sampled Values publisher.
+ */
 typedef struct sSVPublisher* SVPublisher;
 
+/**
+ * \brief An opaque type representing an IEC 61850-9-2 Sampled Values Application Service Data Unit (ASDU).
+ */
 typedef struct sSV_ASDU* SV_ASDU;
 
+/**
+ * \brief Create a new IEC61850-9-2 Sampled Values publisher.
+ *
+ * \param[in] interfaceId the name of the interface over which the SV publisher should send SV packets.
+ * \param[in] parameters optional parameters for setting VLAN options and destination MAC address. Use NULL for default values.
+ * \return the new SV publisher instance.
+ */
 SVPublisher
 SVPublisher_create(CommParameters* parameters, const char* interfaceId);
 
+/**
+ * \brief Create an Application Service Data Unit (ASDU) and add it to an existing Sampled Values publisher.
+ *
+ * \param[in] svID
+ * \param[in] datset
+ * \param[in] confRev Configuration revision number. Should be incremented each time that the configuration of the logical device changes.
+ * \return the new ASDU instance.
+ */
 SV_ASDU
 SVPublisher_addASDU(SVPublisher self, char* svID, char* datset, uint32_t confRev);
 
+/**
+ * \brief Prepare the publisher for publishing.
+ *
+ * This method must be called before SVPublisher_publish().
+ *
+ * \param[in] self the Sampled Values publisher instance.
+ */
 void
 SVPublisher_setupComplete(SVPublisher self);
 
+/**
+ * \brief Publish all registered ASDUs
+ *
+ * \param[in] self the Sampled Values publisher instance.
+ */
 void
 SVPublisher_publish(SVPublisher self);
 
+/**
+ * \brief Destroy an IEC61850-9-2 Sampled Values instance.
+ *
+ * \param[in] self the Sampled Values publisher instance.
+ */
 void
 SVPublisher_destroy(SVPublisher self);
 
+/**
+ * \addtogroup sv_publisher_asdu_group Values Application Service Data Unit (ASDU)
+ *  @{
+ */
+
+/**
+ * \brief Reset the internal data buffer of an ASDU.
+ *
+ * All data elements added by SV_ASDU_add*() functions are removed.
+ * SVPublisher_setupComplete() must be called afterwards.
+ *
+ * \param[in] self the Sampled Values ASDU instance.
+ */
 void
 SV_ASDU_resetBuffer(SV_ASDU self);
 
+/**
+ * \brief Reserve memory for a signed 8-bit integer in the ASDU.
+ *
+ * \param[in] self the Sampled Values ASDU instance.
+ * \return the offset in bytes within the ASDU data block.
+ */
 int
 SV_ASDU_addINT8(SV_ASDU self);
 
+/**
+ * \brief Set the value of a 8-bit integer in the ASDU.
+ *
+ * \param[in] self the Sampled Values ASDU instance.
+ * \param[in] index The offset within the data block of the ASDU in bytes.
+ * \param[in] value The value which should be set.
+ */
 void
 SV_ASDU_setINT8(SV_ASDU self, int index, int8_t value);
 
+/**
+ * \brief Reserve memory for a signed 32-bit integer in the ASDU.
+ *
+ * \param[in] self the Sampled Values ASDU instance.
+ * \return the offset in bytes within the ASDU data block.
+ */
 int
 SV_ASDU_addINT32(SV_ASDU self);
 
+/**
+ * \brief Set the value of a 32-bit integer in the ASDU.
+ *
+ * \param[in] self the Sampled Values ASDU instance.
+ * \param[in] index The offset within the data block of the ASDU in bytes.
+ * \param[in] value The value which should be set.
+ */
 void
 SV_ASDU_setINT32(SV_ASDU self, int index, int32_t value);
 
+/**
+ * \brief Reserve memory for a signed 64-bit integer in the ASDU.
+ *
+ * \param[in] self the Sampled Values ASDU instance.
+ * \return the offset in bytes of the new element within the ASDU data block.
+ */
 int
 SV_ASDU_addINT64(SV_ASDU self);
 
+/**
+ * \brief Set the value of a 64-bit integer in the ASDU.
+ *
+ * \param[in] self the Sampled Values ASDU instance.
+ * \param[in] index The offset within the data block of the ASDU in bytes.
+ * \param[in] value The value which should be set.
+ */
 void
 SV_ASDU_setINT64(SV_ASDU self, int index, int64_t value);
 
+/**
+ * \brief Reserve memory for a single precission floating point number in the ASDU.
+ *
+ * \param[in] self the Sampled Values ASDU instance.
+ * \return the offset in bytes of the new element within the ASDU data block.
+ */
 int
 SV_ASDU_addFLOAT(SV_ASDU self);
 
+/**
+ * \brief Set the value of a single precission floating point number in the ASDU.
+ *
+ * \param[in] self the Sampled Values ASDU instance.
+ * \param[in] index The offset within the data block of the ASDU in bytes.
+ * \param[in] value The value which should be set.
+ */
 void
 SV_ASDU_setFLOAT(SV_ASDU self, int index, float value);
 
+/**
+ * \brief Reserve memory for a double precission floating point number in the ASDU.
+ *
+ * \param[in] self the Sampled Values ASDU instance.
+ * \return the offset in bytes of the new element within the ASDU data block.
+ */
 int
 SV_ASDU_addFLOAT64(SV_ASDU self);
 
+/**
+ * \brief Set the value of a double precission floating pointer number in the ASDU.
+ *
+ * \param[in] self the Sampled Values ASDU instance.
+ * \param[in] index The offset within the data block of the ASDU in bytes.
+ * \param[in] value The value which should be set.
+ */
 void
 SV_ASDU_setFLOAT64(SV_ASDU self, int index, double value);
 
+/**
+ * \brief Set the sample count attribute of the ASDU.
+ *
+ * \param[in] self the Sampled Values ASDU instance.
+ * \param[in] value the new value of the attribute.
+ */
 void
 SV_ASDU_setSmpCnt(SV_ASDU self, uint16_t value);
 
+/**
+ * \brief Get the sample count attribute of the ASDU.
+ *
+ * \param[in] self the Sampled Values ASDU instance.
+ */
 uint16_t
 SV_ASDU_getSmpCnt(SV_ASDU self);
 
+/**
+ * \brief Increment the sample count attribute of the ASDU.
+ *
+ * The parameter SmpCnt shall contain the values of a counter, which is incremented each time a new sample of the analogue value is taken.
+ * The sample values shall be kept in the right order.
+ * If the counter is used to indicate time consistency of various sampled values, the counter shall be reset by an external synchronization event.
+ *
+ * \param[in] self the Sampled Values ASDU instance.
+ */
 void
 SV_ASDU_increaseSmpCnt(SV_ASDU self);
 
+/**
+ * \brief Set the refresh time attribute of the ASDU.
+ *
+ * \param[in] self the Sampled Values ASDU instance.
+ */
 void
 SV_ASDU_setRefrTm(SV_ASDU self, uint64_t refrTm);
 
 /**
- * \brief Set the sample mode of the ASDU
+ * \brief Set the sample mode attribute of the ASDU.
  *
- * If not set the transmitted ASDU will not contain an sampleMod value
+ * The attribute SmpMod shall specify if the sample rate is defined in units of samples per nominal period, samples per second or seconds per sample.
+ * If it is missing, the default value is samples per period.
  *
- * \param self the SV_ASDU
- *
+ * \param[in] self the Sampled Values ASDU instance.
  * \param smpMod one of IEC61850_SV_SMPMOD_PER_NOMINAL_PERIOD, IEC61850_SV_SMPMOD_SAMPLES_PER_SECOND or IEC61850_SV_SMPMOD_SECONDS_PER_SAMPLE
  */
 void
 SV_ASDU_setSmpMod(SV_ASDU self, uint8_t smpMod);
 
 /**
- * \brief Set the sample rate of the ASDU.
+ * \brief Set the sample rate attribute of the ASDU.
  *
- * If not set the transmitted ASDU will not contain an smpRate value.
+ * The attribute SmpRate shall specify the sample rate.
+ * The value shall be interpreted depending on the value of the SmpMod attribute.
  *
- * \param self the SV_ASDU
- *
+ * \param[in] self the Sampled Values ASDU instance.
  * \param smpRate Amount of samples (default per nominal period, see SmpMod).
  */
 void
@@ -142,6 +288,8 @@ SV_ASDU_setSmpRate(SV_ASDU self, uint16_t smpRate);
 #ifdef __cplusplus
 }
 #endif
+
+/**@} @}*/
 
 #include "sv_publisher_deprecated.h"
 

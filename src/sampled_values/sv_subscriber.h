@@ -31,7 +31,7 @@ extern "C" {
 #endif
 
 /**
- * \defgroup sv_subscriber_api_group IEC 61850 sampled values (SV) subscriber API
+ * \defgroup sv_subscriber_api_group IEC 61850 Sampled Values (SV) subscriber API
  *
  * The sampled values (SV) subscriber API consists of three different objects.
  * The \ref SVReceiver object is responsible for handling all SV Ethernet messages
@@ -243,6 +243,11 @@ SVSubscriber_destroy(SVSubscriber self);
  **************************************************************************/
 
 /**
+ * \addtogroup sv_subscriber_asdu_group Values Application Service Data Unit (ASDU)
+ *  @{
+ */
+
+/**
  * \brief return the SmpCnt value included in the SV ASDU
  *
  * The SmpCnt (sample counter) is increased for each ASDU to
@@ -409,7 +414,7 @@ SVClientASDU_getFLOAT64(SVClientASDU self, int index);
 int
 SVClientASDU_getDataSize(SVClientASDU self);
 
-/**@}*/
+/**@} @}*/
 
 #ifdef __cplusplus
 }
