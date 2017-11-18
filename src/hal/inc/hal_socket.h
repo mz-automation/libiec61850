@@ -63,7 +63,7 @@ HandleSet
 Handleset_new(void);
 
 /**
- * \brief add a soecket to an existing handle set
+ * \brief add a socket to an existing handle set
  *
  * \param self the HandleSet instance
  * \param sock the socket to add
