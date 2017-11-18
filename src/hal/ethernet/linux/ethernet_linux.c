@@ -23,6 +23,7 @@
 
 #include <sys/socket.h>
 #include <sys/ioctl.h>
+#include <sys/select.h>
 #include <linux/if_packet.h>
 #include <linux/if_ether.h>
 #include <linux/if_arp.h>
@@ -39,6 +40,60 @@ struct sEthernetSocket {
     bool isBind;
     struct sockaddr_ll socketAddress;
 };
+
+struct sEthernetHandleSet {
+    fd_set handles;
+    int maxHandle;
+};
+
+EthernetHandleSet
+EthernetHandleSet_new(void)
+{
+    EthernetHandleSet result = (EthernetHandleSet) GLOBAL_MALLOC(sizeof(struct sEthernetHandleSet));
+
+    if (result != NULL) {
+        FD_ZERO(&result->handles);
+        result->maxHandle = -1;
+    }
+
+    return result;
+}
+
+void
+EthernetHandleSet_addSocket(EthernetHandleSet self, const EthernetSocket sock)
+{
+    if (self != NULL && sock != NULL && sock->rawSocket != -1) {
+        FD_SET(sock->rawSocket, &self->handles);
+        if (sock->rawSocket > self->maxHandle) {
+            self->maxHandle = sock->rawSocket;
+        }
+    }
+}
+
+int
+EthernetHandleSet_waitReady(EthernetHandleSet self, unsigned int timeoutMs)
+{
+    int result;
+
+    if ((self != NULL) && (self->maxHandle >= 0)) {
+        struct timeval timeout;
+
+        timeout.tv_sec = timeoutMs / 1000;
+        timeout.tv_usec = (timeoutMs % 1000) * 1000;
+        result = select(self->maxHandle + 1, &self->handles, NULL, NULL, &timeout);
+    }
+    else {
+       result = -1;
+    }
+
+    return result;
+}
+
+void
+EthernetHandleSet_destroy(EthernetHandleSet self)
+{
+    GLOBAL_FREEMEM(self);
+}
 
 static int
 getInterfaceIndex(int sock, const char* deviceName)
