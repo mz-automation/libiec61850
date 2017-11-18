@@ -22,6 +22,7 @@
  */
 #include <sys/socket.h>
 #include <sys/ioctl.h>
+#include <sys/select.h>
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <net/if.h>
@@ -47,6 +48,58 @@ struct sEthernetSocket {
 };
 
 int _Ethernet_activateBpdFilter(EthernetSocket self)
+struct sEthernetHandleSet {
+    fd_set handles;
+    int maxHandle;
+};
+
+EthernetHandleSet
+EthernetHandleSet_new(void)
+{
+    EthernetHandleSet result = (EthernetHandleSet) GLOBAL_MALLOC(sizeof(struct sEthernetHandleSet));
+
+    if (result != NULL) {
+        FD_ZERO(&result->handles);
+        result->maxHandle = -1;
+    }
+    return result;
+}
+
+void
+EthernetHandleSet_addSocket(EthernetHandleSet self, const EthernetSocket sock)
+{
+    if (self != NULL && sock != NULL && sock->bpf != -1) {
+        FD_SET(sock->bpf, &self->handles);
+        if (sock->bpf > self->maxHandle) {
+            self->maxHandle = sock->bpf;
+        }
+    }
+}
+
+int
+EthernetHandleSet_waitReady(EthernetHandleSet self, unsigned int timeoutMs)
+{
+    int result;
+
+    if ((self != NULL) && (self->maxHandle >= 0)) {
+        struct timeval timeout;
+
+        timeout.tv_sec = timeoutMs / 1000;
+        timeout.tv_usec = (timeoutMs % 1000) * 1000;
+        result = select(self->maxHandle + 1, &self->handles, NULL, NULL, &timeout);
+    } else {
+        result = -1;
+    }
+    
+    return result;
+}
+
+void
+EthernetHandleSet_destroy(EthernetHandleSet self)
+{
+    GLOBAL_FREEMEM(self);
+}
+
 {
     return ioctl(self->bpf, BIOCSETF, &self->bpfProgram);
 }
