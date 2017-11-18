@@ -47,7 +47,6 @@ struct sEthernetSocket {
     struct bpf_program bpfProgram;  // BPF filter machine code program.
 };
 
-int _Ethernet_activateBpdFilter(EthernetSocket self)
 struct sEthernetHandleSet {
     fd_set handles;
     int maxHandle;
@@ -100,11 +99,14 @@ EthernetHandleSet_destroy(EthernetHandleSet self)
     GLOBAL_FREEMEM(self);
 }
 
+int
+activateBpdFilter(EthernetSocket self)
 {
     return ioctl(self->bpf, BIOCSETF, &self->bpfProgram);
 }
 
-int _Ethernet_setBpfEthernetAddressFilter(EthernetSocket self, uint8_t *addr)
+static int
+setBpfEthernetAddressFilter(EthernetSocket self, uint8_t *addr)
 {
     if (addr)
     {
@@ -115,18 +117,19 @@ int _Ethernet_setBpfEthernetAddressFilter(EthernetSocket self, uint8_t *addr)
         memcpy((void *)&self->bpfProgram.bf_insns[3].k, &addr[2], 4);
         memcpy((void *)&self->bpfProgram.bf_insns[5].k, &addr, 2);
 
-        return _Ethernet_activateBpdFilter(self);
+        return activateBpdFilter(self);
     }
     else
     {
         // Disable Ethernet address filter.
         self->bpfProgram.bf_insns[0].k = 0;
 
-        return _Ethernet_activateBpdFilter(self);
+        return activateBpdFilter(self);
     }
 }
 
-int _Ethernet_setBpfEthertypeFilter(EthernetSocket self, uint16_t etherType)
+static int
+setBpfEthertypeFilter(EthernetSocket self, uint16_t etherType)
 {
     if (etherType)
     {
@@ -136,14 +139,14 @@ int _Ethernet_setBpfEthertypeFilter(EthernetSocket self, uint16_t etherType)
         // Set protocol.
         self->bpfProgram.bf_insns[9].k = etherType;
 
-        return _Ethernet_activateBpdFilter(self);
+        return activateBpdFilter(self);
     }
     else
     {
         // Disable Ethertype filter.
         self->bpfProgram.bf_insns[6].k = 0;
 
-        return _Ethernet_activateBpdFilter(self);
+        return activateBpdFilter(self);
     }
 }
 
@@ -336,13 +339,15 @@ Ethernet_createSocket(const char* interfaceId, uint8_t* destAddress)
     return self;
 }
 
-void Ethernet_setProtocolFilter(EthernetSocket self, uint16_t etherType)
+void
+Ethernet_setProtocolFilter(EthernetSocket self, uint16_t etherType)
 {
-    if (!self || !self->bpfProgram.bf_insns || _Ethernet_setBpfEthertypeFilter(self, etherType))
+    if (!self || !self->bpfProgram.bf_insns || setBpfEthertypeFilter(self, etherType))
         printf("Unable to set ethertype filter!\n");
 }
 
-int Ethernet_receivePacket(EthernetSocket self, uint8_t* buffer, int bufferSize)
+int
+Ethernet_receivePacket(EthernetSocket self, uint8_t* buffer, int bufferSize)
 {
     // If the actual buffer is empty, make a read call to the BSP device in order to get new data.
     if (self->bpfEnd - self->bpfPositon < 4)
@@ -388,13 +393,15 @@ int Ethernet_receivePacket(EthernetSocket self, uint8_t* buffer, int bufferSize)
         return 0;
 }
 
-void Ethernet_sendPacket(EthernetSocket self, uint8_t* buffer, int packetSize)
+void
+Ethernet_sendPacket(EthernetSocket self, uint8_t* buffer, int packetSize)
 {
     // Just send the packet as it is.
     write(self->bpf, buffer, packetSize);
 }
 
-void Ethernet_destroySocket(EthernetSocket self)
+void
+Ethernet_destroySocket(EthernetSocket self)
 {
     // Close the BPF device.
     close(self->bpf);
