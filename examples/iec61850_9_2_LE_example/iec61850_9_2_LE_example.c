@@ -53,15 +53,15 @@ static int vol2;
 static int vol3;
 static int vol4;
 
-static SampledValuesPublisher svPublisher;
+static SVPublisher svPublisher;
 static SV_ASDU asdu;
 
 static void
 setupSVPublisher(const char* svInterface)
 {
-    svPublisher = SampledValuesPublisher_create(NULL, svInterface);
+    svPublisher = SVPublisher_create(NULL, svInterface);
 
-    asdu = SampledValuesPublisher_addASDU(svPublisher, "xxxxMUnn01", NULL, 1);
+    asdu = SVPublisher_addASDU(svPublisher, "xxxxMUnn01", NULL, 1);
 
     amp1 = SV_ASDU_addINT32(asdu);
     amp2 = SV_ASDU_addINT32(asdu);
@@ -73,7 +73,7 @@ setupSVPublisher(const char* svInterface)
     vol3 = SV_ASDU_addINT32(asdu);
     vol4 = SV_ASDU_addINT32(asdu);
 
-    SampledValuesPublisher_setupComplete(svPublisher);
+    SVPublisher_setupComplete(svPublisher);
 }
 
 static void sVCBEventHandler (SVControlBlock* svcb, int event, void* parameter)
@@ -155,7 +155,7 @@ main(int argc, char** argv)
 
             SV_ASDU_increaseSmpCnt(asdu);
 
-            SampledValuesPublisher_publish(svPublisher);
+            SVPublisher_publish(svPublisher);
         }
 
         voltage++;
@@ -168,7 +168,7 @@ main(int argc, char** argv)
     IedServer_stop(iedServer);
 
     /* Cleanup - free all resources */
-    SampledValuesPublisher_destroy(svPublisher);
+    SVPublisher_destroy(svPublisher);
     IedServer_destroy(iedServer);
 
     return 0;
