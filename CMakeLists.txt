@@ -106,6 +106,7 @@ set(API_HEADERS
     src/goose/goose_publisher.h
     src/sampled_values/sv_subscriber.h
     src/sampled_values/sv_publisher.h
+    src/sampled_values/sv_publisher_deprecated.h
     src/logging/logging_api.h
     ${CMAKE_CURRENT_BINARY_DIR}/config/stack_config.h
 )
