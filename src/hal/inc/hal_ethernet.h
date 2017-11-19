@@ -69,6 +69,15 @@ void
 EthernetHandleSet_addSocket(EthernetHandleSet self, const EthernetSocket sock);
 
 /**
+ * \brief remove a socket from an existing handle set
+ *
+ * \param self the HandleSet instance
+ * \param sock the socket to add
+ */
+void
+EthernetHandleSet_removeSocket(EthernetHandleSet self, const EthernetSocket sock);
+
+/**
  * \brief wait for a socket to become ready
  *
  * This function is corresponding to the BSD socket select function.

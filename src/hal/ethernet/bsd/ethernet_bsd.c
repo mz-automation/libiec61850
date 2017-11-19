@@ -77,6 +77,20 @@ EthernetHandleSet_addSocket(EthernetHandleSet self, const EthernetSocket sock)
     }
 }
 
+void
+EthernetHandleSet_removeSocket(EthernetHandleSet self, const EthernetSocket sock)
+{
+    if ((self != NULL) && (sock != NULL)) {
+        for (unsigned i = 0; i < self->nhandles; i++) {
+            if (self->handles[i].fd == sock->bpf) {
+                memmove(&self->handles[i], &self->handles[i+1], sizeof(struct pollfd) * (self->nhandles - i - 1));
+                self->nhandles--;
+                return;
+            }
+        }
+    }
+}
+
 int
 EthernetHandleSet_waitReady(EthernetHandleSet self, unsigned int timeoutMs)
 {

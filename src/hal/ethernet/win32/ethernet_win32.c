@@ -145,6 +145,22 @@ EthernetHandleSet_addSocket(EthernetHandleSet self, const EthernetSocket sock)
     }
 }
 
+void
+EthernetHandleSet_removeSocket(EthernetHandleSet self, const EthernetSocket sock)
+{
+    if ((self != NULL) && (sock != NULL)) {
+        HANDLE h = pcap_getevent(socket->rawSocket);
+
+        for (unsigned i = 0; i < self->nhandles; i++) {
+            if (self->handles[i] == h) {
+                memmove(&self->handles[i], &self->handles[i+1], sizeof(HANDLE) * (self->nhandles - i - 1));
+                self->nhandles--;
+                return;
+            }
+        }
+    }
+}
+
 int
 EthernetHandleSet_waitReady(EthernetHandleSet self, unsigned int timeoutMs)
 {
