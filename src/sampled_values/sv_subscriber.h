@@ -210,6 +210,15 @@ SVReceiver_startThreadless(SVReceiver self);
 void
 SVReceiver_stopThreadless(SVReceiver self);
 
+/**
+ * \brief Parse SV messages if they are available.
+ *
+ * Call after reception of ethernet frame and periodically to to house keeping tasks
+ *
+ * \param self the receiver object
+ *
+ * \return true if a message was available and has been parsed, false otherwise
+ */
 bool
 SVReceiver_tick(SVReceiver self);
 
