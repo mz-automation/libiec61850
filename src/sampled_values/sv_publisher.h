@@ -64,7 +64,7 @@ typedef struct sSVPublisher* SVPublisher;
 /**
  * \brief An opaque type representing an IEC 61850-9-2 Sampled Values Application Service Data Unit (ASDU).
  */
-typedef struct sSV_ASDU* SV_ASDU;
+typedef struct sSVPublisher_ASDU* SVPublisher_ASDU;
 
 /**
  * \brief Create a new IEC61850-9-2 Sampled Values publisher.
@@ -84,7 +84,7 @@ SVPublisher_create(CommParameters* parameters, const char* interfaceId);
  * \param[in] confRev Configuration revision number. Should be incremented each time that the configuration of the logical device changes.
  * \return the new ASDU instance.
  */
-SV_ASDU
+SVPublisher_ASDU
 SVPublisher_addASDU(SVPublisher self, char* svID, char* datset, uint32_t confRev);
 
 /**
@@ -121,13 +121,13 @@ SVPublisher_destroy(SVPublisher self);
 /**
  * \brief Reset the internal data buffer of an ASDU.
  *
- * All data elements added by SV_ASDU_add*() functions are removed.
+ * All data elements added by SVPublisher_ASDU_add*() functions are removed.
  * SVPublisher_setupComplete() must be called afterwards.
  *
  * \param[in] self the Sampled Values ASDU instance.
  */
 void
-SV_ASDU_resetBuffer(SV_ASDU self);
+SVPublisher_ASDU_resetBuffer(SVPublisher_ASDU self);
 
 /**
  * \brief Reserve memory for a signed 8-bit integer in the ASDU.
@@ -136,7 +136,7 @@ SV_ASDU_resetBuffer(SV_ASDU self);
  * \return the offset in bytes within the ASDU data block.
  */
 int
-SV_ASDU_addINT8(SV_ASDU self);
+SVPublisher_ASDU_addINT8(SVPublisher_ASDU self);
 
 /**
  * \brief Set the value of a 8-bit integer in the ASDU.
@@ -146,7 +146,7 @@ SV_ASDU_addINT8(SV_ASDU self);
  * \param[in] value The value which should be set.
  */
 void
-SV_ASDU_setINT8(SV_ASDU self, int index, int8_t value);
+SVPublisher_ASDU_setINT8(SVPublisher_ASDU self, int index, int8_t value);
 
 /**
  * \brief Reserve memory for a signed 32-bit integer in the ASDU.
@@ -155,7 +155,7 @@ SV_ASDU_setINT8(SV_ASDU self, int index, int8_t value);
  * \return the offset in bytes within the ASDU data block.
  */
 int
-SV_ASDU_addINT32(SV_ASDU self);
+SVPublisher_ASDU_addINT32(SVPublisher_ASDU self);
 
 /**
  * \brief Set the value of a 32-bit integer in the ASDU.
@@ -165,7 +165,7 @@ SV_ASDU_addINT32(SV_ASDU self);
  * \param[in] value The value which should be set.
  */
 void
-SV_ASDU_setINT32(SV_ASDU self, int index, int32_t value);
+SVPublisher_ASDU_setINT32(SVPublisher_ASDU self, int index, int32_t value);
 
 /**
  * \brief Reserve memory for a signed 64-bit integer in the ASDU.
@@ -174,7 +174,7 @@ SV_ASDU_setINT32(SV_ASDU self, int index, int32_t value);
  * \return the offset in bytes of the new element within the ASDU data block.
  */
 int
-SV_ASDU_addINT64(SV_ASDU self);
+SVPublisher_ASDU_addINT64(SVPublisher_ASDU self);
 
 /**
  * \brief Set the value of a 64-bit integer in the ASDU.
@@ -184,7 +184,7 @@ SV_ASDU_addINT64(SV_ASDU self);
  * \param[in] value The value which should be set.
  */
 void
-SV_ASDU_setINT64(SV_ASDU self, int index, int64_t value);
+SVPublisher_ASDU_setINT64(SVPublisher_ASDU self, int index, int64_t value);
 
 /**
  * \brief Reserve memory for a single precission floating point number in the ASDU.
@@ -193,7 +193,7 @@ SV_ASDU_setINT64(SV_ASDU self, int index, int64_t value);
  * \return the offset in bytes of the new element within the ASDU data block.
  */
 int
-SV_ASDU_addFLOAT(SV_ASDU self);
+SVPublisher_ASDU_addFLOAT(SVPublisher_ASDU self);
 
 /**
  * \brief Set the value of a single precission floating point number in the ASDU.
@@ -203,7 +203,7 @@ SV_ASDU_addFLOAT(SV_ASDU self);
  * \param[in] value The value which should be set.
  */
 void
-SV_ASDU_setFLOAT(SV_ASDU self, int index, float value);
+SVPublisher_ASDU_setFLOAT(SVPublisher_ASDU self, int index, float value);
 
 /**
  * \brief Reserve memory for a double precission floating point number in the ASDU.
@@ -212,7 +212,7 @@ SV_ASDU_setFLOAT(SV_ASDU self, int index, float value);
  * \return the offset in bytes of the new element within the ASDU data block.
  */
 int
-SV_ASDU_addFLOAT64(SV_ASDU self);
+SVPublisher_ASDU_addFLOAT64(SVPublisher_ASDU self);
 
 /**
  * \brief Set the value of a double precission floating pointer number in the ASDU.
@@ -222,7 +222,7 @@ SV_ASDU_addFLOAT64(SV_ASDU self);
  * \param[in] value The value which should be set.
  */
 void
-SV_ASDU_setFLOAT64(SV_ASDU self, int index, double value);
+SVPublisher_ASDU_setFLOAT64(SVPublisher_ASDU self, int index, double value);
 
 /**
  * \brief Set the sample count attribute of the ASDU.
@@ -231,7 +231,7 @@ SV_ASDU_setFLOAT64(SV_ASDU self, int index, double value);
  * \param[in] value the new value of the attribute.
  */
 void
-SV_ASDU_setSmpCnt(SV_ASDU self, uint16_t value);
+SVPublisher_ASDU_setSmpCnt(SVPublisher_ASDU self, uint16_t value);
 
 /**
  * \brief Get the sample count attribute of the ASDU.
@@ -239,7 +239,7 @@ SV_ASDU_setSmpCnt(SV_ASDU self, uint16_t value);
  * \param[in] self the Sampled Values ASDU instance.
  */
 uint16_t
-SV_ASDU_getSmpCnt(SV_ASDU self);
+SVPublisher_ASDU_getSmpCnt(SVPublisher_ASDU self);
 
 /**
  * \brief Increment the sample count attribute of the ASDU.
@@ -251,7 +251,7 @@ SV_ASDU_getSmpCnt(SV_ASDU self);
  * \param[in] self the Sampled Values ASDU instance.
  */
 void
-SV_ASDU_increaseSmpCnt(SV_ASDU self);
+SVPublisher_ASDU_increaseSmpCnt(SVPublisher_ASDU self);
 
 /**
  * \brief Set the refresh time attribute of the ASDU.
@@ -259,7 +259,7 @@ SV_ASDU_increaseSmpCnt(SV_ASDU self);
  * \param[in] self the Sampled Values ASDU instance.
  */
 void
-SV_ASDU_setRefrTm(SV_ASDU self, uint64_t refrTm);
+SVPublisher_ASDU_setRefrTm(SVPublisher_ASDU self, uint64_t refrTm);
 
 /**
  * \brief Set the sample mode attribute of the ASDU.
@@ -271,7 +271,7 @@ SV_ASDU_setRefrTm(SV_ASDU self, uint64_t refrTm);
  * \param smpMod one of IEC61850_SV_SMPMOD_PER_NOMINAL_PERIOD, IEC61850_SV_SMPMOD_SAMPLES_PER_SECOND or IEC61850_SV_SMPMOD_SECONDS_PER_SAMPLE
  */
 void
-SV_ASDU_setSmpMod(SV_ASDU self, uint8_t smpMod);
+SVPublisher_ASDU_setSmpMod(SVPublisher_ASDU self, uint8_t smpMod);
 
 /**
  * \brief Set the sample rate attribute of the ASDU.
@@ -283,13 +283,13 @@ SV_ASDU_setSmpMod(SV_ASDU self, uint8_t smpMod);
  * \param smpRate Amount of samples (default per nominal period, see SmpMod).
  */
 void
-SV_ASDU_setSmpRate(SV_ASDU self, uint16_t smpRate);
+SVPublisher_ASDU_setSmpRate(SVPublisher_ASDU self, uint16_t smpRate);
+
+/**@} @}*/
 
 #ifdef __cplusplus
 }
 #endif
-
-/**@} @}*/
 
 #include "sv_publisher_deprecated.h"
 

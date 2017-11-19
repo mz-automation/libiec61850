@@ -44,18 +44,20 @@ extern "C" {
  * @{
  */
 
+typedef DEPRECATED struct sSVPublisher* SampledValuesPublisher;
+
 /**
- * \brief An opaque type representing an IEC 61850-9-2 Sampled Values publisher.
+ * \brief An opaque type representing an IEC 61850-9-2 Sampled Values Application Service Data Unit (ASDU).
  * \deprecated
  */
-typedef DEPRECATED struct sSVPublisher* SampledValuesPublisher;
+typedef DEPRECATED struct sSV_ASDU* SV_ASDU;
 
 /**
  * \brief This function is deprecated and will be removed in the next major release. Use SVPublisher_create() instead.
  * \deprecated
  */
 static DEPRECATED
-SampledValuesPublisher
+SVPublisher
 SampledValuesPublisher_create(CommParameters* parameters, const char* interfaceId)
 {
     return SVPublisher_create(parameters, interfaceId);
@@ -66,8 +68,8 @@ SampledValuesPublisher_create(CommParameters* parameters, const char* interfaceI
  * \deprecated
  */
 static DEPRECATED
-SV_ASDU
-SampledValuesPublisher_addASDU(SampledValuesPublisher self, char* svID, char* datset, uint32_t confRev)
+SVPublisher_ASDU
+SampledValuesPublisher_addASDU(SVPublisher self, char* svID, char* datset, uint32_t confRev)
 {
     return SVPublisher_addASDU(self, svID, datset, confRev);
 }
@@ -78,7 +80,7 @@ SampledValuesPublisher_addASDU(SampledValuesPublisher self, char* svID, char* da
  */
 static DEPRECATED
 void
-SampledValuesPublisher_setupComplete(SampledValuesPublisher self)
+SampledValuesPublisher_setupComplete(SVPublisher self)
 {
     SVPublisher_setupComplete(self);
 }
@@ -89,7 +91,7 @@ SampledValuesPublisher_setupComplete(SampledValuesPublisher self)
  */
 static DEPRECATED
 void
-SampledValuesPublisher_publish(SampledValuesPublisher self)
+SampledValuesPublisher_publish(SVPublisher self)
 {
     SVPublisher_publish(self);
 }
@@ -100,14 +102,131 @@ SampledValuesPublisher_publish(SampledValuesPublisher self)
  */
 static DEPRECATED
 void
-SampledValuesPublisher_destroy(SampledValuesPublisher self)
+SampledValuesPublisher_destroy(SVPublisher self)
 {
     SVPublisher_destroy(self);
 }
 
-/**
- * @}
- */
+static DEPRECATED
+void
+SV_ASDU_resetBuffer(SVPublisher_ASDU self)
+{
+    SVPublisher_ASDU_resetBuffer(self);
+}
+
+static DEPRECATED
+int
+SV_ASDU_addINT8(SVPublisher_ASDU self)
+{
+    return SVPublisher_ASDU_addINT8(self);
+}
+
+static DEPRECATED
+void
+SV_ASDU_setINT8(SVPublisher_ASDU self, int index, int8_t value)
+{
+    SVPublisher_ASDU_setINT8(self, index, value);
+}
+
+static DEPRECATED
+int
+SV_ASDU_addINT32(SVPublisher_ASDU self)
+{
+    return SVPublisher_ASDU_addINT32(self);
+}
+
+static DEPRECATED
+void
+SV_ASDU_setINT32(SVPublisher_ASDU self, int index, int32_t value)
+{
+    SVPublisher_ASDU_setINT32(self, index, value);
+}
+
+static DEPRECATED
+int
+SV_ASDU_addINT64(SVPublisher_ASDU self)
+{
+    return SVPublisher_ASDU_addINT64(self);
+}
+
+static DEPRECATED
+void
+SV_ASDU_setINT64(SVPublisher_ASDU self, int index, int64_t value)
+{
+    SVPublisher_ASDU_setINT64(self, index, value);
+}
+
+static DEPRECATED
+int
+SV_ASDU_addFLOAT(SVPublisher_ASDU self)
+{
+    return SVPublisher_ASDU_addFLOAT(self);
+}
+
+static DEPRECATED
+void
+SV_ASDU_setFLOAT(SVPublisher_ASDU self, int index, float value)
+{
+    SVPublisher_ASDU_setFLOAT(self, index, value);
+}
+
+static DEPRECATED
+int
+SV_ASDU_addFLOAT64(SVPublisher_ASDU self)
+{
+    return SVPublisher_ASDU_addFLOAT64(self);
+}
+
+static DEPRECATED
+void
+SV_ASDU_setFLOAT64(SVPublisher_ASDU self, int index, double value)
+{
+    SVPublisher_ASDU_setFLOAT64(self, index, value);
+}
+
+static DEPRECATED
+void
+SV_ASDU_setSmpCnt(SVPublisher_ASDU self, uint16_t value)
+{
+    SVPublisher_ASDU_setSmpCnt(self, value);
+}
+
+static DEPRECATED
+uint16_t
+SV_ASDU_getSmpCnt(SVPublisher_ASDU self)
+{
+    return SVPublisher_ASDU_getSmpCnt(self);
+}
+
+static DEPRECATED
+void
+SV_ASDU_increaseSmpCnt(SVPublisher_ASDU self)
+{
+    SVPublisher_ASDU_increaseSmpCnt(self);
+}
+
+static DEPRECATED
+void
+SV_ASDU_setRefrTm(SVPublisher_ASDU self, uint64_t refrTm)
+{
+    SVPublisher_ASDU_setRefrTm(self, refrTm);
+}
+
+static DEPRECATED
+void
+SV_ASDU_setSmpMod(SVPublisher_ASDU self, uint8_t smpMod)
+{
+    SVPublisher_ASDU_setSmpMod(self, smpMod);
+}
+
+static DEPRECATED
+void
+SV_ASDU_setSmpRate(SVPublisher_ASDU self, uint16_t smpRate)
+{
+    SVPublisher_ASDU_setSmpRate(self, smpRate);
+}
+
+/**@}*/
 
 #ifdef __cplusplus
 }
