@@ -24,11 +24,11 @@
 #ifndef GOOSE_RECEIVER_H_
 #define GOOSE_RECEIVER_H_
 
-#include <goose_subscriber.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include <stdbool.h>
 
 
 /**
@@ -36,6 +36,7 @@ extern "C" {
  */
 /**@{*/
 
+typedef struct sGooseSubscriber* GooseSubscriber;
 
 typedef struct sGooseReceiver* GooseReceiver;
 
