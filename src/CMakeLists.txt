@@ -367,10 +367,14 @@ if(MSVC)
 endif()
 ENDIF(WITH_WPCAP)
 
+configure_file(
+    ${CMAKE_CURRENT_LIST_DIR}/libiec61850.pc.in
+    ${CMAKE_CURRENT_BINARY_DIR}/libiec61850.pc @ONLY
+)
+install(FILES libiec61850.pc DESTINATION "${CMAKE_INSTALL_PREFIX}/share/pkgconfig")
 
 install (TARGETS iec61850 iec61850-shared
 	RUNTIME DESTINATION bin COMPONENT Applications
 	ARCHIVE DESTINATION lib COMPONENT Libraries
     LIBRARY DESTINATION lib COMPONENT Libraries
 )
-
