@@ -54,7 +54,7 @@ static int vol3;
 static int vol4;
 
 static SVPublisher svPublisher;
-static SV_ASDU asdu;
+static SVPublisher_ASDU asdu;
 
 static void
 setupSVPublisher(const char* svInterface)
@@ -63,15 +63,15 @@ setupSVPublisher(const char* svInterface)
 
     asdu = SVPublisher_addASDU(svPublisher, "xxxxMUnn01", NULL, 1);
 
-    amp1 = SV_ASDU_addINT32(asdu);
-    amp2 = SV_ASDU_addINT32(asdu);
-    amp3 = SV_ASDU_addINT32(asdu);
-    amp4 = SV_ASDU_addINT32(asdu);
+    amp1 = SVPublisher_ASDU_addINT32(asdu);
+    amp2 = SVPublisher_ASDU_addINT32(asdu);
+    amp3 = SVPublisher_ASDU_addINT32(asdu);
+    amp4 = SVPublisher_ASDU_addINT32(asdu);
 
-    vol1 = SV_ASDU_addINT32(asdu);
-    vol2 = SV_ASDU_addINT32(asdu);
-    vol3 = SV_ASDU_addINT32(asdu);
-    vol4 = SV_ASDU_addINT32(asdu);
+    vol1 = SVPublisher_ASDU_addINT32(asdu);
+    vol2 = SVPublisher_ASDU_addINT32(asdu);
+    vol3 = SVPublisher_ASDU_addINT32(asdu);
+    vol4 = SVPublisher_ASDU_addINT32(asdu);
 
     SVPublisher_setupComplete(svPublisher);
 }
@@ -143,17 +143,17 @@ main(int argc, char** argv)
 
         if (svcbEnabled) {
 
-            SV_ASDU_setINT32(asdu, amp1, current);
-            SV_ASDU_setINT32(asdu, amp2, current);
-            SV_ASDU_setINT32(asdu, amp3, current);
-            SV_ASDU_setINT32(asdu, amp4, current);
+            SVPublisher_ASDU_setINT32(asdu, amp1, current);
+            SVPublisher_ASDU_setINT32(asdu, amp2, current);
+            SVPublisher_ASDU_setINT32(asdu, amp3, current);
+            SVPublisher_ASDU_setINT32(asdu, amp4, current);
 
-            SV_ASDU_setINT32(asdu, vol1, voltage);
-            SV_ASDU_setINT32(asdu, vol2, voltage);
-            SV_ASDU_setINT32(asdu, vol3, voltage);
-            SV_ASDU_setINT32(asdu, vol4, voltage);
+            SVPublisher_ASDU_setINT32(asdu, vol1, voltage);
+            SVPublisher_ASDU_setINT32(asdu, vol2, voltage);
+            SVPublisher_ASDU_setINT32(asdu, vol3, voltage);
+            SVPublisher_ASDU_setINT32(asdu, vol4, voltage);
 
-            SV_ASDU_increaseSmpCnt(asdu);
+            SVPublisher_ASDU_increaseSmpCnt(asdu);
 
             SVPublisher_publish(svPublisher);
         }
