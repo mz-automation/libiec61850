@@ -81,7 +81,8 @@ void
 EthernetHandleSet_removeSocket(EthernetHandleSet self, const EthernetSocket sock)
 {
     if ((self != NULL) && (sock != NULL)) {
-        for (unsigned i = 0; i < self->nhandles; i++) {
+        unsigned i;
+        for (i = 0; i < self->nhandles; i++) {
             if (self->handles[i].fd == sock->bpf) {
                 memmove(&self->handles[i], &self->handles[i+1], sizeof(struct pollfd) * (self->nhandles - i - 1));
                 self->nhandles--;
