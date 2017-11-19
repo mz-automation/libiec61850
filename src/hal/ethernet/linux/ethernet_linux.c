@@ -23,7 +23,7 @@
 
 #include <sys/socket.h>
 #include <sys/ioctl.h>
-#include <sys/select.h>
+#include <sys/poll.h>
 #include <linux/if_packet.h>
 #include <linux/if_ether.h>
 #include <linux/if_arp.h>
@@ -42,8 +42,8 @@ struct sEthernetSocket {
 };
 
 struct sEthernetHandleSet {
-    fd_set handles;
-    int maxHandle;
+    struct pollfd *handles;
+    int nhandles;
 };
 
 EthernetHandleSet
@@ -52,8 +52,8 @@ EthernetHandleSet_new(void)
     EthernetHandleSet result = (EthernetHandleSet) GLOBAL_MALLOC(sizeof(struct sEthernetHandleSet));
 
     if (result != NULL) {
-        FD_ZERO(&result->handles);
-        result->maxHandle = -1;
+        result->handles = NULL;
+        result->nhandles = 0;
     }
 
     return result;
@@ -62,11 +62,12 @@ EthernetHandleSet_new(void)
 void
 EthernetHandleSet_addSocket(EthernetHandleSet self, const EthernetSocket sock)
 {
-    if (self != NULL && sock != NULL && sock->rawSocket != -1) {
-        FD_SET(sock->rawSocket, &self->handles);
-        if (sock->rawSocket > self->maxHandle) {
-            self->maxHandle = sock->rawSocket;
-        }
+    if (self != NULL && sock != NULL) {
+        int i = self->nhandles++;
+        self->handles = realloc(self->handles, self->nhandles * sizeof(struct pollfd));
+
+        self->handles[i].fd = sock->rawSocket;
+        self->handles[i].events = POLLIN;
     }
 }
 
@@ -75,12 +76,8 @@ EthernetHandleSet_waitReady(EthernetHandleSet self, unsigned int timeoutMs)
 {
     int result;
 
-    if ((self != NULL) && (self->maxHandle >= 0)) {
-        struct timeval timeout;
-
-        timeout.tv_sec = timeoutMs / 1000;
-        timeout.tv_usec = (timeoutMs % 1000) * 1000;
-        result = select(self->maxHandle + 1, &self->handles, NULL, NULL, &timeout);
+    if ((self != NULL) && (self->nhandles >= 0)) {
+        result = poll(self->handles, self->nhandles, timeoutMs);
     }
     else {
        result = -1;
@@ -92,6 +89,9 @@ EthernetHandleSet_waitReady(EthernetHandleSet self, unsigned int timeoutMs)
 void
 EthernetHandleSet_destroy(EthernetHandleSet self)
 {
+    if (self->nhandles)
+        free(self->handles);
+
     GLOBAL_FREEMEM(self);
 }
 
