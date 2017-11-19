@@ -46,16 +46,8 @@ extern "C" {
 
 typedef DEPRECATED struct sSVPublisher* SampledValuesPublisher;
 
-/**
- * \brief An opaque type representing an IEC 61850-9-2 Sampled Values Application Service Data Unit (ASDU).
- * \deprecated
- */
 typedef DEPRECATED struct sSV_ASDU* SV_ASDU;
 
-/**
- * \brief This function is deprecated and will be removed in the next major release. Use SVPublisher_create() instead.
- * \deprecated
- */
 static DEPRECATED
 SVPublisher
 SampledValuesPublisher_create(CommParameters* parameters, const char* interfaceId)
@@ -63,10 +55,6 @@ SampledValuesPublisher_create(CommParameters* parameters, const char* interfaceI
     return SVPublisher_create(parameters, interfaceId);
 }
 
-/**
- * \brief This function is deprecated and will be removed in the next major release. Use SVPublisher_addASDU() instead.
- * \deprecated
- */
 static DEPRECATED
 SVPublisher_ASDU
 SampledValuesPublisher_addASDU(SVPublisher self, char* svID, char* datset, uint32_t confRev)
@@ -74,10 +62,6 @@ SampledValuesPublisher_addASDU(SVPublisher self, char* svID, char* datset, uint3
     return SVPublisher_addASDU(self, svID, datset, confRev);
 }
 
-/**
- * \brief This function is deprecated and will be removed in the next major release. Use SVPublisher_setupComplete() instead.
- * \deprecated
- */
 static DEPRECATED
 void
 SampledValuesPublisher_setupComplete(SVPublisher self)
@@ -85,10 +69,6 @@ SampledValuesPublisher_setupComplete(SVPublisher self)
     SVPublisher_setupComplete(self);
 }
 
-/**
- * \brief This function is deprecated and will be removed in the next major release. Use SVPublisher_publish() instead.
- * \deprecated
- */
 static DEPRECATED
 void
 SampledValuesPublisher_publish(SVPublisher self)
@@ -96,10 +76,6 @@ SampledValuesPublisher_publish(SVPublisher self)
     SVPublisher_publish(self);
 }
 
-/**
- * \brief This function is deprecated and will be removed in the next major release. Use SVPublisher_destroy() instead.
- * \deprecated
- */
 static DEPRECATED
 void
 SampledValuesPublisher_destroy(SVPublisher self)

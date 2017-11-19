@@ -37,8 +37,8 @@ extern "C" {
 #endif
 
 /**
- * \addtogroup sv_publisher_deprecated_api_group Deprecated API
- * \ingroup sv_publisher_api_group IEC 61850 Sampled Values (SV) publisher API
+ * \addtogroup sv_subscriber_deprecated_api_group Deprecated API
+ * \ingroup sv_subscriber_api_group IEC 61850 Sampled Values (SV) publisher API
  * \deprecated
  * @{
  */
