@@ -74,6 +74,7 @@ set(API_HEADERS
     src/hal/inc/hal_time.h 
     src/hal/inc/hal_thread.h
     src/hal/inc/hal_filesystem.h 
+    src/hal/inc/hal_ethernet.h
     src/hal/inc/platform_endian.h
     src/common/inc/libiec61850_common_api.h
     src/common/inc/libiec61850_platform_includes.h
