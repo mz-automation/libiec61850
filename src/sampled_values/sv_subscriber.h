@@ -213,6 +213,20 @@ SVReceiver_stopThreadless(SVReceiver self);
 bool
 SVReceiver_tick(SVReceiver self);
 
+/* Forward declaration */
+typedef struct sEthernetHandleSet* EthernetHandleSet;
+
+/**
+ * \brief Add the receiver to a handleset for multiplexed asynchronous IO.
+ *
+ * Note: This function must only be called after SVReceiver_startThreadless().
+ *
+ * \param[in] self The SVReceiver instance.
+ * \param[inout] handles The EthernetHandleSet to which the EthernetSocket of this receiver should be added.
+ */
+void
+SVReceiver_addHandleSet(SVReceiver self, EthernetHandleSet handles);
+
 /*
  * Subscriber
  */
