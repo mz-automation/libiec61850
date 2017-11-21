@@ -367,6 +367,14 @@ if(MSVC)
 endif()
 ENDIF(WITH_WPCAP)
 
+if(UNIX)
+    configure_file(
+        ${CMAKE_CURRENT_LIST_DIR}/libiec61850.pc.in
+        ${CMAKE_CURRENT_BINARY_DIR}/libiec61850.pc @ONLY
+    )
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/libiec61850.pc" DESTINATION "${CMAKE_INSTALL_PREFIX}/share/pkgconfig")
+endif()
+
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
   configure_file(Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
@@ -378,4 +386,3 @@ install (TARGETS iec61850 iec61850-shared
 	ARCHIVE DESTINATION lib COMPONENT Libraries
     LIBRARY DESTINATION lib COMPONENT Libraries
 )
-
