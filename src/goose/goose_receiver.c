@@ -811,3 +811,10 @@ GooseReceiver_tick(GooseReceiver self)
     else
         return false;
 }
+
+void
+GooseReceiver_addHandleSet(GooseReceiver self, EthernetHandleSet handles)
+{
+    return EthernetHandleSet_addSocket(handles, self->ethSocket);
+}
+

@@ -23,6 +23,7 @@
 
 #include <sys/socket.h>
 #include <sys/ioctl.h>
+#include <sys/poll.h>
 #include <linux/if_packet.h>
 #include <linux/if_ether.h>
 #include <linux/if_arp.h>
@@ -39,6 +40,75 @@ struct sEthernetSocket {
     bool isBind;
     struct sockaddr_ll socketAddress;
 };
+
+struct sEthernetHandleSet {
+    struct pollfd *handles;
+    int nhandles;
+};
+
+EthernetHandleSet
+EthernetHandleSet_new(void)
+{
+    EthernetHandleSet result = (EthernetHandleSet) GLOBAL_MALLOC(sizeof(struct sEthernetHandleSet));
+
+    if (result != NULL) {
+        result->handles = NULL;
+        result->nhandles = 0;
+    }
+
+    return result;
+}
+
+void
+EthernetHandleSet_addSocket(EthernetHandleSet self, const EthernetSocket sock)
+{
+    if (self != NULL && sock != NULL) {
+        int i = self->nhandles++;
+        self->handles = realloc(self->handles, self->nhandles * sizeof(struct pollfd));
+
+        self->handles[i].fd = sock->rawSocket;
+        self->handles[i].events = POLLIN;
+    }
+}
+
+void
+EthernetHandleSet_removeSocket(EthernetHandleSet self, const EthernetSocket sock)
+{
+    if ((self != NULL) && (sock != NULL)) {
+        unsigned i;
+        for (i = 0; i < self->nhandles; i++) {
+            if (self->handles[i].fd == sock->rawSocket) {
+                memmove(&self->handles[i], &self->handles[i+1], sizeof(struct pollfd) * (self->nhandles - i - 1));
+                self->nhandles--;
+                return;
+            }
+        }
+    }
+}
+
+int
+EthernetHandleSet_waitReady(EthernetHandleSet self, unsigned int timeoutMs)
+{
+    int result;
+
+    if ((self != NULL) && (self->nhandles >= 0)) {
+        result = poll(self->handles, self->nhandles, timeoutMs);
+    }
+    else {
+       result = -1;
+    }
+
+    return result;
+}
+
+void
+EthernetHandleSet_destroy(EthernetHandleSet self)
+{
+    if (self->nhandles)
+        free(self->handles);
+
+    GLOBAL_FREEMEM(self);
+}
 
 static int
 getInterfaceIndex(int sock, const char* deviceName)

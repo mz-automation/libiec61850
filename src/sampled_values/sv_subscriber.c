@@ -229,6 +229,11 @@ SVReceiver_stopThreadless(SVReceiver self)
     self->running = false;
 }
 
+void
+SVReceiver_addHandleSet(SVReceiver self, EthernetHandleSet handles)
+{
+    return EthernetHandleSet_addSocket(handles, self->ethSocket);
+}
 
 static void
 parseASDU(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, int length)

@@ -210,8 +210,31 @@ SVReceiver_startThreadless(SVReceiver self);
 void
 SVReceiver_stopThreadless(SVReceiver self);
 
+/**
+ * \brief Parse SV messages if they are available.
+ *
+ * Call after reception of ethernet frame and periodically to to house keeping tasks
+ *
+ * \param self the receiver object
+ *
+ * \return true if a message was available and has been parsed, false otherwise
+ */
 bool
 SVReceiver_tick(SVReceiver self);
+
+/* Forward declaration */
+typedef struct sEthernetHandleSet* EthernetHandleSet;
+
+/**
+ * \brief Add the receiver to a handleset for multiplexed asynchronous IO.
+ *
+ * Note: This function must only be called after SVReceiver_startThreadless().
+ *
+ * \param[in] self The SVReceiver instance.
+ * \param[inout] handles The EthernetHandleSet to which the EthernetSocket of this receiver should be added.
+ */
+void
+SVReceiver_addHandleSet(SVReceiver self, EthernetHandleSet handles);
 
 /*
  * Subscriber

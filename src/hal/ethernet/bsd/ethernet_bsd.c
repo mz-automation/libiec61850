@@ -22,6 +22,7 @@
  */
 #include <sys/socket.h>
 #include <sys/ioctl.h>
+#include <sys/poll.h>
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <net/if.h>
@@ -46,12 +47,82 @@ struct sEthernetSocket {
     struct bpf_program bpfProgram;  // BPF filter machine code program.
 };
 
-int _Ethernet_activateBpdFilter(EthernetSocket self)
+struct sEthernetHandleSet {
+    struct pollfd *handles;
+    int nhandles;
+};
+
+EthernetHandleSet
+EthernetHandleSet_new(void)
+{
+    EthernetHandleSet result = (EthernetHandleSet) GLOBAL_MALLOC(sizeof(struct sEthernetHandleSet));
+
+    if (result != NULL) {
+        result->handles = NULL;
+        result->nhandles = 0;
+    }
+
+    return result;
+}
+
+void
+EthernetHandleSet_addSocket(EthernetHandleSet self, const EthernetSocket sock)
+{
+    if (self != NULL && sock != NULL) {
+        int i = self->nhandles++;
+        self->handles = realloc(self->handles, self->nhandles * sizeof(struct pollfd));
+            
+        self->handles[i].fd = sock->bpf;
+        self->handles[i].events = POLLIN;
+    }
+}
+
+void
+EthernetHandleSet_removeSocket(EthernetHandleSet self, const EthernetSocket sock)
+{
+    if ((self != NULL) && (sock != NULL)) {
+        unsigned i;
+        for (i = 0; i < self->nhandles; i++) {
+            if (self->handles[i].fd == sock->bpf) {
+                memmove(&self->handles[i], &self->handles[i+1], sizeof(struct pollfd) * (self->nhandles - i - 1));
+                self->nhandles--;
+                return;
+            }
+        }
+    }
+}
+
+int
+EthernetHandleSet_waitReady(EthernetHandleSet self, unsigned int timeoutMs)
+{
+    int result;
+
+    if ((self != NULL) && (self->nhandles >= 0)) {
+        result = poll(self->handles, self->nhandles, timeoutMs);
+    }
+    else {
+       result = -1;
+    }
+
+    return result;
+}
+
+void
+EthernetHandleSet_destroy(EthernetHandleSet self)
+{
+    if (self->nhandles)
+        free(self->handles);
+
+    GLOBAL_FREEMEM(self);
+}
+int
+activateBpdFilter(EthernetSocket self)
 {
     return ioctl(self->bpf, BIOCSETF, &self->bpfProgram);
 }
 
-int _Ethernet_setBpfEthernetAddressFilter(EthernetSocket self, uint8_t *addr)
+static int
+setBpfEthernetAddressFilter(EthernetSocket self, uint8_t *addr)
 {
     if (addr)
     {
@@ -62,18 +133,19 @@ int _Ethernet_setBpfEthernetAddressFilter(EthernetSocket self, uint8_t *addr)
         memcpy((void *)&self->bpfProgram.bf_insns[3].k, &addr[2], 4);
         memcpy((void *)&self->bpfProgram.bf_insns[5].k, &addr, 2);
 
-        return _Ethernet_activateBpdFilter(self);
+        return activateBpdFilter(self);
     }
     else
     {
         // Disable Ethernet address filter.
         self->bpfProgram.bf_insns[0].k = 0;
 
-        return _Ethernet_activateBpdFilter(self);
+        return activateBpdFilter(self);
     }
 }
 
-int _Ethernet_setBpfEthertypeFilter(EthernetSocket self, uint16_t etherType)
+static int
+setBpfEthertypeFilter(EthernetSocket self, uint16_t etherType)
 {
     if (etherType)
     {
@@ -83,14 +155,14 @@ int _Ethernet_setBpfEthertypeFilter(EthernetSocket self, uint16_t etherType)
         // Set protocol.
         self->bpfProgram.bf_insns[9].k = etherType;
 
-        return _Ethernet_activateBpdFilter(self);
+        return activateBpdFilter(self);
     }
     else
     {
         // Disable Ethertype filter.
         self->bpfProgram.bf_insns[6].k = 0;
 
-        return _Ethernet_activateBpdFilter(self);
+        return activateBpdFilter(self);
     }
 }
 
@@ -283,13 +355,15 @@ Ethernet_createSocket(const char* interfaceId, uint8_t* destAddress)
     return self;
 }
 
-void Ethernet_setProtocolFilter(EthernetSocket self, uint16_t etherType)
+void
+Ethernet_setProtocolFilter(EthernetSocket self, uint16_t etherType)
 {
-    if (!self || !self->bpfProgram.bf_insns || _Ethernet_setBpfEthertypeFilter(self, etherType))
+    if (!self || !self->bpfProgram.bf_insns || setBpfEthertypeFilter(self, etherType))
         printf("Unable to set ethertype filter!\n");
 }
 
-int Ethernet_receivePacket(EthernetSocket self, uint8_t* buffer, int bufferSize)
+int
+Ethernet_receivePacket(EthernetSocket self, uint8_t* buffer, int bufferSize)
 {
     // If the actual buffer is empty, make a read call to the BSP device in order to get new data.
     if (self->bpfEnd - self->bpfPositon < 4)
@@ -335,13 +409,15 @@ int Ethernet_receivePacket(EthernetSocket self, uint8_t* buffer, int bufferSize)
         return 0;
 }
 
-void Ethernet_sendPacket(EthernetSocket self, uint8_t* buffer, int packetSize)
+void
+Ethernet_sendPacket(EthernetSocket self, uint8_t* buffer, int packetSize)
 {
     // Just send the packet as it is.
     write(self->bpf, buffer, packetSize);
 }
 
-void Ethernet_destroySocket(EthernetSocket self)
+void
+Ethernet_destroySocket(EthernetSocket self)
 {
     // Close the BPF device.
     close(self->bpf);

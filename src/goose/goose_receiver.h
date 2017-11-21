@@ -24,11 +24,11 @@
 #ifndef GOOSE_RECEIVER_H_
 #define GOOSE_RECEIVER_H_
 
-#include <goose_subscriber.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include <stdbool.h>
 
 
 /**
@@ -36,6 +36,7 @@ extern "C" {
  */
 /**@{*/
 
+typedef struct sGooseSubscriber* GooseSubscriber;
 
 typedef struct sGooseReceiver* GooseReceiver;
 
@@ -132,6 +133,20 @@ GooseReceiver_stopThreadless(GooseReceiver self);
  */
 bool
 GooseReceiver_tick(GooseReceiver self);
+
+/* Forward declaration */
+typedef struct sEthernetHandleSet* EthernetHandleSet;
+
+/**
+ * \brief Add the receiver to a handleset for multiplexed asynchronous IO.
+ *
+ * Note: This function must only be called after GooseReceiver_startThreadless().
+ *
+ * \param[in] self The SVReceiver instance.
+ * \param[inout] handles The EthernetHandleSet to which the EthernetSocket of this receiver should be added.
+ */
+void
+GooseReceiver_addHandleSet(GooseReceiver self, EthernetHandleSet handles);
 
 /**@}*/
 
