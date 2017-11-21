@@ -67,7 +67,7 @@ struct sSVSubscriber {
     void* listenerParameter;
 };
 
-struct sSVClientASDU {
+struct sSVSubscriber_ASDU {
 
     char* svId;
 
@@ -229,14 +229,19 @@ SVReceiver_stopThreadless(SVReceiver self)
     self->running = false;
 }
 
+void
+SVReceiver_addHandleSet(SVReceiver self, EthernetHandleSet handles)
+{
+    return EthernetHandleSet_addSocket(handles, self->ethSocket);
+}
 
 static void
 parseASDU(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, int length)
 {
     int bufPos = 0;
 
-    struct sSVClientASDU asdu;
-    memset(&asdu, 0, sizeof(struct sSVClientASDU));
+    struct sSVSubscriber_ASDU asdu;
+    memset(&asdu, 0, sizeof(struct sSVSubscriber_ASDU));
 
     int svIdLength = 0;
 
@@ -519,7 +524,7 @@ SVSubscriber_setListener(SVSubscriber self,  SVUpdateListener listener, void* pa
 }
 
 uint16_t
-SVClientASDU_getSmpCnt(SVClientASDU self)
+SVSubscriber_ASDU_getSmpCnt(SVSubscriber_ASDU self)
 {
     uint16_t retVal;
     uint8_t* valBytes = (uint8_t*) &retVal;
@@ -564,7 +569,7 @@ decodeUtcTime(uint8_t* buffer, uint8_t* timeQuality)
 }
 
 uint64_t
-SVClientASDU_getRefrTmAsMs(SVClientASDU self)
+SVSubscriber_ASDU_getRefrTmAsMs(SVSubscriber_ASDU self)
 {
     uint64_t msTime = 0;
 
@@ -575,20 +580,20 @@ SVClientASDU_getRefrTmAsMs(SVClientASDU self)
 }
 
 bool
-SVClientASDU_hasRefrTm(SVClientASDU self)
+SVSubscriber_ASDU_hasRefrTm(SVSubscriber_ASDU self)
 {
     return (self->refrTm != NULL);
 }
 
 
 const char*
-SVClientASDU_getSvId(SVClientASDU self)
+SVSubscriber_ASDU_getSvId(SVSubscriber_ASDU self)
 {
     return self->svId;
 }
 
 uint32_t
-SVClientASDU_getConfRev(SVClientASDU self)
+SVSubscriber_ASDU_getConfRev(SVSubscriber_ASDU self)
 {
     uint32_t retVal = *((uint32_t*) (self->confRev));
 
@@ -602,7 +607,7 @@ SVClientASDU_getConfRev(SVClientASDU self)
 }
 
 int8_t
-SVClientASDU_getINT8(SVClientASDU self, int index)
+SVSubscriber_ASDU_getINT8(SVSubscriber_ASDU self, int index)
 {
     int8_t retVal = *((int8_t*) (self->dataBuffer + index));
 
@@ -610,7 +615,7 @@ SVClientASDU_getINT8(SVClientASDU self, int index)
 }
 
 int16_t
-SVClientASDU_getINT16(SVClientASDU self, int index)
+SVSubscriber_ASDU_getINT16(SVSubscriber_ASDU self, int index)
 {
     int16_t retVal = *((int16_t*) (self->dataBuffer + index));
 
@@ -624,7 +629,7 @@ SVClientASDU_getINT16(SVClientASDU self, int index)
 }
 
 int32_t
-SVClientASDU_getINT32(SVClientASDU self, int index)
+SVSubscriber_ASDU_getINT32(SVSubscriber_ASDU self, int index)
 {
     int32_t retVal = *((int32_t*) (self->dataBuffer + index));
 
@@ -638,7 +643,7 @@ SVClientASDU_getINT32(SVClientASDU self, int index)
 }
 
 int64_t
-SVClientASDU_getINT64(SVClientASDU self, int index)
+SVSubscriber_ASDU_getINT64(SVSubscriber_ASDU self, int index)
 {
     int64_t retVal = *((int64_t*) (self->dataBuffer + index));
 
@@ -652,7 +657,7 @@ SVClientASDU_getINT64(SVClientASDU self, int index)
 }
 
 uint8_t
-SVClientASDU_getINT8U(SVClientASDU self, int index)
+SVSubscriber_ASDU_getINT8U(SVSubscriber_ASDU self, int index)
 {
     uint8_t retVal = *((uint8_t*) (self->dataBuffer + index));
 
@@ -660,7 +665,7 @@ SVClientASDU_getINT8U(SVClientASDU self, int index)
 }
 
 uint16_t
-SVClientASDU_getINT16U(SVClientASDU self, int index)
+SVSubscriber_ASDU_getINT16U(SVSubscriber_ASDU self, int index)
 {
     uint16_t retVal = *((uint16_t*) (self->dataBuffer + index));
 
@@ -674,7 +679,7 @@ SVClientASDU_getINT16U(SVClientASDU self, int index)
 }
 
 uint32_t
-SVClientASDU_getINT32U(SVClientASDU self, int index)
+SVSubscriber_ASDU_getINT32U(SVSubscriber_ASDU self, int index)
 {
     uint32_t retVal = *((uint32_t*) (self->dataBuffer + index));
 
@@ -688,7 +693,7 @@ SVClientASDU_getINT32U(SVClientASDU self, int index)
 }
 
 uint64_t
-SVClientASDU_getINT64U(SVClientASDU self, int index)
+SVSubscriber_ASDU_getINT64U(SVSubscriber_ASDU self, int index)
 {
     uint64_t retVal = *((uint64_t*) (self->dataBuffer + index));
 
@@ -702,7 +707,7 @@ SVClientASDU_getINT64U(SVClientASDU self, int index)
 }
 
 float
-SVClientASDU_getFLOAT32(SVClientASDU self, int index)
+SVSubscriber_ASDU_getFLOAT32(SVSubscriber_ASDU self, int index)
 {
     float retVal = *((float*) (self->dataBuffer + index));
 
@@ -716,7 +721,7 @@ SVClientASDU_getFLOAT32(SVClientASDU self, int index)
 }
 
 double
-SVClientASDU_getFLOAT64(SVClientASDU self, int index)
+SVSubscriber_ASDU_getFLOAT64(SVSubscriber_ASDU self, int index)
 {
     double retVal = *((double*) (self->dataBuffer + index));
 
@@ -731,7 +736,7 @@ SVClientASDU_getFLOAT64(SVClientASDU self, int index)
 
 
 int
-SVClientASDU_getDataSize(SVClientASDU self)
+SVSubscriber_ASDU_getDataSize(SVSubscriber_ASDU self)
 {
     return self->dataBufferLength;
 }

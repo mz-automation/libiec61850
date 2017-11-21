@@ -7,6 +7,7 @@
  */
 
 #include "goose_receiver.h"
+#include "goose_subscriber.h"
 #include "hal_thread.h"
 
 #include <stdlib.h>

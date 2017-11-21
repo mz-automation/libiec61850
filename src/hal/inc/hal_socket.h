@@ -63,7 +63,7 @@ HandleSet
 Handleset_new(void);
 
 /**
- * \brief add a soecket to an existing handle set
+ * \brief add a socket to an existing handle set
  *
  * \param self the HandleSet instance
  * \param sock the socket to add
@@ -71,18 +71,17 @@ Handleset_new(void);
 void
 Handleset_addSocket(HandleSet self, const Socket sock);
 
-
 /**
  * \brief wait for a socket to become ready
  *
  * This function is corresponding to the BSD socket select function.
- * It returns the number of sockets on which data is pending or 0 if no data is pending
- * on any of the monitored connections. The function will return after "timeout" ms if no
- * data is pending.
- * The function shall return -1 if a socket error occures.
+ * The function will return after \p timeoutMs ms if no data is pending.
  *
- *  \param self the HandleSet instance
- *  \param timeout in milliseconds (ms)
+ * \param self the HandleSet instance
+ * \param timeout in milliseconds (ms)
+ * \return It returns the number of sockets on which data is pending
+ *   or 0 if no data is pending on any of the monitored connections.
+ *   The function shall return -1 if a socket error occures.
  */
 int
 Handleset_waitReady(HandleSet self, unsigned int timeoutMs);

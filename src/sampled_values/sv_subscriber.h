@@ -31,7 +31,7 @@ extern "C" {
 #endif
 
 /**
- * \defgroup sv_subscriber_api_group IEC 61850 sampled values (SV) subscriber API
+ * \defgroup sv_subscriber_api_group IEC 61850 Sampled Values (SV) subscriber API
  *
  * The sampled values (SV) subscriber API consists of three different objects.
  * The \ref SVReceiver object is responsible for handling all SV Ethernet messages
@@ -40,15 +40,15 @@ extern "C" {
  * An \ref SVSubscriber object is associated to a SV data stream that is identified by its appID
  * and destination Ethernet address. The \reg SVSubscriber object is used to install a callback
  * handler \ref SVUpdateListener that is invoked for each ASDU (application service data unit) received for the
- * associated stream. An \ref SVClientASDU is an object that represents a single ASDU. Each ASDU contains
+ * associated stream. An \ref SVSubscriber_ASDU is an object that represents a single ASDU. Each ASDU contains
  * some meta information that can be obtained by specific access functions like e.g.
- * \ref SVClientASDU_getSmpCnt to access the "SmpCnt" (sample count) attribute of the ASDU. The actual
+ * \ref SVSubscriber_ASDU_getSmpCnt to access the "SmpCnt" (sample count) attribute of the ASDU. The actual
  * measurement data contained in the ASDU does not consist of structured ASN.1 data but stored as raw binary
  * data. Without a priori knowledge of the dataset associated with the ASDU data stream it is not
  * possible to interpret the received data correctly. Therefore you have to provide the data access functions
  * with an index value to indicate the data type and the start of the data in the data block of the ASDU.
  * E.g. reading a data set consisting of two FLOAT32 values you can use two subsequent calls of
- * \ref SVClientASDU_getFLOAT32 one with index = 0 and the second one with index = 4.
+ * \ref SVSubscriber_ASDU_getFLOAT32 one with index = 0 and the second one with index = 4.
  *
  *  | IEC 61850 type | required bytes |
  *  | -------------- | -------------- |
@@ -86,18 +86,18 @@ extern "C" {
  * sampled value data. Each ASDU represents a single sample consisting of multiple measurement
  * values with a single dedicated timestamp.
  *
- * NOTE: SVClientASDU are statically allocated and are only valid inside of the SVUpdateListener
+ * NOTE: SVSubscriber_ASDU are statically allocated and are only valid inside of the SVUpdateListener
  * function when called by the library. If you need the data contained in the ASDU elsewhere
  * you have to copy and store the data by yourself!
  */
-typedef struct sSVClientASDU* SVClientASDU;
+typedef struct sSVSubscriber_ASDU* SVSubscriber_ASDU;
 
 /**
  * \brief opaque handle to a SV subscriber instance
  *
  * A subscriber is an instance associated with a single stream of measurement data.  It is identified
  * by the Ethernet destination address, the appID value (both are on SV message level) and the svID value
- * that is part of each ASDU (SVClientASDU object).
+ * that is part of each ASDU (SVSubscriber_ASDU object).
  */
 typedef struct sSVSubscriber* SVSubscriber;
 
@@ -110,7 +110,7 @@ typedef struct sSVSubscriber* SVSubscriber;
  * \param parameter a user provided parameter that is simply passed to the callback
  * \param asdu SV ASDU data structure. This structure is only valid inside of the  callback function
  */
-typedef void (*SVUpdateListener)(SVSubscriber subscriber, void* parameter, SVClientASDU asdu);
+typedef void (*SVUpdateListener)(SVSubscriber subscriber, void* parameter, SVSubscriber_ASDU asdu);
 
 /**
  * \brief opaque handle to a SV receiver instance
@@ -210,8 +210,31 @@ SVReceiver_startThreadless(SVReceiver self);
 void
 SVReceiver_stopThreadless(SVReceiver self);
 
+/**
+ * \brief Parse SV messages if they are available.
+ *
+ * Call after reception of ethernet frame and periodically to to house keeping tasks
+ *
+ * \param self the receiver object
+ *
+ * \return true if a message was available and has been parsed, false otherwise
+ */
 bool
 SVReceiver_tick(SVReceiver self);
+
+/* Forward declaration */
+typedef struct sEthernetHandleSet* EthernetHandleSet;
+
+/**
+ * \brief Add the receiver to a handleset for multiplexed asynchronous IO.
+ *
+ * Note: This function must only be called after SVReceiver_startThreadless().
+ *
+ * \param[in] self The SVReceiver instance.
+ * \param[inout] handles The EthernetHandleSet to which the EthernetSocket of this receiver should be added.
+ */
+void
+SVReceiver_addHandleSet(SVReceiver self, EthernetHandleSet handles);
 
 /*
  * Subscriber
@@ -239,8 +262,13 @@ void
 SVSubscriber_destroy(SVSubscriber self);
 
 /*************************************************************************
- * SVClientASDU object methods
+ * SVSubscriber_ASDU object methods
  **************************************************************************/
+
+/**
+ * \addtogroup sv_subscriber_asdu_group Values Application Service Data Unit (ASDU)
+ *  @{
+ */
 
 /**
  * \brief return the SmpCnt value included in the SV ASDU
@@ -251,7 +279,7 @@ SVSubscriber_destroy(SVSubscriber self);
  * \param self ASDU object instance
  */
 uint16_t
-SVClientASDU_getSmpCnt(SVClientASDU self);
+SVSubscriber_ASDU_getSmpCnt(SVSubscriber_ASDU self);
 
 /**
  * \brief return the SvID value included in the SV ASDU
@@ -259,7 +287,7 @@ SVClientASDU_getSmpCnt(SVClientASDU self);
  * \param self ASDU object instance
  */
 const char*
-SVClientASDU_getSvId(SVClientASDU self);
+SVSubscriber_ASDU_getSvId(SVSubscriber_ASDU self);
 
 /**
  * \brief return the ConfRev value included in the SV ASDU
@@ -267,7 +295,7 @@ SVClientASDU_getSvId(SVClientASDU self);
  * \param self ASDU object instance
  */
 uint32_t
-SVClientASDU_getConfRev(SVClientASDU self);
+SVSubscriber_ASDU_getConfRev(SVSubscriber_ASDU self);
 
 /**
  * \brief Check if RefrTm value is included in the SV ASDU
@@ -277,7 +305,7 @@ SVClientASDU_getConfRev(SVClientASDU self);
  * \return true if RefrTm value is present, false otherwise
  */
 bool
-SVClientASDU_hasRefrTm(SVClientASDU self);
+SVSubscriber_ASDU_hasRefrTm(SVSubscriber_ASDU self);
 
 /**
  * \brief Get the RefrTim value included in SV ASDU as ms timestamp
@@ -287,7 +315,7 @@ SVClientASDU_hasRefrTm(SVClientASDU self);
  * \return the time value as ms timestamp or 0 if RefrTm is not present in the SV ASDU
  */
 uint64_t
-SVClientASDU_getRefrTmAsMs(SVClientASDU self);
+SVSubscriber_ASDU_getRefrTmAsMs(SVSubscriber_ASDU self);
 
 /**
  * \brief Get an INT8 data value in the data part of the ASDU
@@ -298,7 +326,7 @@ SVClientASDU_getRefrTmAsMs(SVClientASDU self);
  * \return SV data
  */
 int8_t
-SVClientASDU_getINT8(SVClientASDU self, int index);
+SVSubscriber_ASDU_getINT8(SVSubscriber_ASDU self, int index);
 
 /**
  * \brief Get an INT16 data value in the data part of the ASDU
@@ -309,7 +337,7 @@ SVClientASDU_getINT8(SVClientASDU self, int index);
  * \return SV data
  */
 int16_t
-SVClientASDU_getINT16(SVClientASDU self, int index);
+SVSubscriber_ASDU_getINT16(SVSubscriber_ASDU self, int index);
 
 /**
  * \brief Get an INT32 data value in the data part of the ASDU
@@ -320,7 +348,7 @@ SVClientASDU_getINT16(SVClientASDU self, int index);
  * \return SV data
  */
 int32_t
-SVClientASDU_getINT32(SVClientASDU self, int index);
+SVSubscriber_ASDU_getINT32(SVSubscriber_ASDU self, int index);
 
 /**
  * \brief Get an INT64 data value in the data part of the ASDU
@@ -331,7 +359,7 @@ SVClientASDU_getINT32(SVClientASDU self, int index);
  * \return SV data
  */
 int64_t
-SVClientASDU_getINT64(SVClientASDU self, int index);
+SVSubscriber_ASDU_getINT64(SVSubscriber_ASDU self, int index);
 
 /**
  * \brief Get an INT8U data value in the data part of the ASDU
@@ -342,7 +370,7 @@ SVClientASDU_getINT64(SVClientASDU self, int index);
  * \return SV data
  */
 uint8_t
-SVClientASDU_getINT8U(SVClientASDU self, int index);
+SVSubscriber_ASDU_getINT8U(SVSubscriber_ASDU self, int index);
 
 /**
  * \brief Get an INT16U data value in the data part of the ASDU
@@ -353,7 +381,7 @@ SVClientASDU_getINT8U(SVClientASDU self, int index);
  * \return SV data
  */
 uint16_t
-SVClientASDU_getINT16U(SVClientASDU self, int index);
+SVSubscriber_ASDU_getINT16U(SVSubscriber_ASDU self, int index);
 
 /**
  * \brief Get an INT32U data value in the data part of the ASDU
@@ -364,7 +392,7 @@ SVClientASDU_getINT16U(SVClientASDU self, int index);
  * \return SV data
  */
 uint32_t
-SVClientASDU_getINT32U(SVClientASDU self, int index);
+SVSubscriber_ASDU_getINT32U(SVSubscriber_ASDU self, int index);
 
 /**
  * \brief Get an INT64U data value in the data part of the ASDU
@@ -375,7 +403,7 @@ SVClientASDU_getINT32U(SVClientASDU self, int index);
  * \return SV data
  */
 uint64_t
-SVClientASDU_getINT64U(SVClientASDU self, int index);
+SVSubscriber_ASDU_getINT64U(SVSubscriber_ASDU self, int index);
 
 /**
  * \brief Get an FLOAT32 data value in the data part of the ASDU
@@ -386,7 +414,7 @@ SVClientASDU_getINT64U(SVClientASDU self, int index);
  * \return SV data
  */
 float
-SVClientASDU_getFLOAT32(SVClientASDU self, int index);
+SVSubscriber_ASDU_getFLOAT32(SVSubscriber_ASDU self, int index);
 
 /**
  * \brief Get an FLOAT64 data value in the data part of the ASDU
@@ -397,7 +425,7 @@ SVClientASDU_getFLOAT32(SVClientASDU self, int index);
  * \return SV data
  */
 double
-SVClientASDU_getFLOAT64(SVClientASDU self, int index);
+SVSubscriber_ASDU_getFLOAT64(SVSubscriber_ASDU self, int index);
 
 /**
  * \brief Returns the size of the data part of the ASDU
@@ -407,13 +435,14 @@ SVClientASDU_getFLOAT64(SVClientASDU self, int index);
  * \return size of the ASDU data part in bytes.
  */
 int
-SVClientASDU_getDataSize(SVClientASDU self);
+SVSubscriber_ASDU_getDataSize(SVSubscriber_ASDU self);
 
-/**@}*/
+/**@} @}*/
 
 #ifdef __cplusplus
 }
 #endif
 
+#include "sv_subscriber_deprecated.h"
 
 #endif /* SAMPLED_VALUES_SV_SUBSCRIBER_ */

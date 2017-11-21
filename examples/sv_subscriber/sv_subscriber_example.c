@@ -21,17 +21,17 @@ void sigint_handler(int signalId)
 
 /* Callback handler for received SV messages */
 static void
-svUpdateListener (SVSubscriber subscriber, void* parameter, SVClientASDU asdu)
+svUpdateListener (SVSubscriber subscriber, void* parameter, SVSubscriber_ASDU asdu)
 {
     printf("svUpdateListener called\n");
 
-    const char* svID = SVClientASDU_getSvId(asdu);
+    const char* svID = SVSubscriber_ASDU_getSvId(asdu);
 
     if (svID != NULL)
         printf("  svID=(%s)\n", svID);
 
-    printf("  smpCnt: %i\n", SVClientASDU_getSmpCnt(asdu));
-    printf("  confRev: %u\n", SVClientASDU_getConfRev(asdu));
+    printf("  smpCnt: %i\n", SVSubscriber_ASDU_getSmpCnt(asdu));
+    printf("  confRev: %u\n", SVSubscriber_ASDU_getConfRev(asdu));
 
     /*
      * Access to the data requires a priori knowledge of the data set.
@@ -43,9 +43,9 @@ svUpdateListener (SVSubscriber subscriber, void* parameter, SVClientASDU asdu)
      * To prevent damages due configuration, please check the length of the
      * data block of the SV message before accessing the data.
      */
-    if (SVClientASDU_getDataSize(asdu) >= 8) {
-        printf("   DATA[0]: %f\n", SVClientASDU_getFLOAT32(asdu, 0));
-        printf("   DATA[1]: %f\n", SVClientASDU_getFLOAT32(asdu, 4));
+    if (SVSubscriber_ASDU_getDataSize(asdu) >= 8) {
+        printf("   DATA[0]: %f\n", SVSubscriber_ASDU_getFLOAT32(asdu, 0));
+        printf("   DATA[1]: %f\n", SVSubscriber_ASDU_getFLOAT32(asdu, 4));
     }
 }
 

@@ -13,6 +13,7 @@ ENABLE_TESTING()
 set(LIB_VERSION_MAJOR "1")
 set(LIB_VERSION_MINOR "1")
 set(LIB_VERSION_PATCH "0")
+set(LIB_VERSION "${LIB_VERSION_MAJOR}.${LIB_VERSION_MINOR}.${LIB_VERSION_PATCH}")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/third_party/cmake/modules/")
 
@@ -74,6 +75,7 @@ set(API_HEADERS
     src/hal/inc/hal_time.h 
     src/hal/inc/hal_thread.h
     src/hal/inc/hal_filesystem.h 
+    src/hal/inc/hal_ethernet.h
     src/hal/inc/platform_endian.h
     src/common/inc/libiec61850_common_api.h
     src/common/inc/libiec61850_platform_includes.h
@@ -105,6 +107,8 @@ set(API_HEADERS
     src/goose/goose_publisher.h
     src/sampled_values/sv_subscriber.h
     src/sampled_values/sv_publisher.h
+    src/sampled_values/sv_publisher_deprecated.h
+    src/sampled_values/sv_subscriber_deprecated.h
     src/logging/logging_api.h
     ${CMAKE_CURRENT_BINARY_DIR}/config/stack_config.h
 )
@@ -133,21 +137,21 @@ if(BUILD_PYTHON_BINDINGS)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/pyiec61850)
 endif(BUILD_PYTHON_BINDINGS)
 
+set(CPACK_PACKAGE_DESCRIPTION "IEC 61850 MMS/GOOSE client and server library")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "IEC 61850 MMS/GOOSE client and server library")
+set(CPACK_PACKAGE_VENDOR "MZ Automation GmbH")
+set(CPACK_PACKAGE_CONTACT "info@libiec61850.com")
+set(CPACK_PACKAGE_VERSION_MAJOR "${LIB_VERSION_MAJOR}")
+set(CPACK_PACKAGE_VERSION_MINOR "${LIB_VERSION_MINOR}")
+set(CPACK_PACKAGE_VERSION_PATCH "${LIB_VERSION_PATCH}")
+set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}_${LIB_VERSION_MAJOR}.${LIB_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}_${CMAKE_SYSTEM_PROCESSOR}")
+set(CPACK_SOURCE_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}_${LIB_VERSION_MAJOR}.${LIB_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
+
+set(CPACK_COMPONENTS_ALL Libraries Development Applications)
+#set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CMAKE_PROJECT_NAME}")
+
 if(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
     include(InstallRequiredSystemLibraries)
-    
-    set(CPACK_PACKAGE_DESCRIPTION "IEC 61850 MMS/GOOSE client and server library")
-    set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "IEC 61850 MMS/GOOSE client and server library")
-    set(CPACK_PACKAGE_VENDOR "MZ Automation GmbH")
-    set(CPACK_PACKAGE_CONTACT "info@libiec61850.com")
-    set(CPACK_PACKAGE_VERSION_MAJOR "${LIB_VERSION_MAJOR}")
-    set(CPACK_PACKAGE_VERSION_MINOR "${LIB_VERSION_MINOR}")
-    set(CPACK_PACKAGE_VERSION_PATCH "${LIB_VERSION_PATCH}")
-    set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}_${LIB_VERSION_MAJOR}.${LIB_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}_${CMAKE_SYSTEM_PROCESSOR}")
-    set(CPACK_SOURCE_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}_${LIB_VERSION_MAJOR}.${LIB_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
-    
-    set(CPACK_COMPONENTS_ALL Libraries Development Applications)
-    #set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CMAKE_PROJECT_NAME}")
 
     include(CPack)
 endif(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
