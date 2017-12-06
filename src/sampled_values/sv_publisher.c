@@ -410,7 +410,7 @@ SVPublisher_ASDU_encodeToBuffer(SVPublisher_ASDU self, uint8_t* buffer, int bufP
     
     /* SmpMod */
     if (self->hasSmpMod) {
-        bufPos = BerEncoder_encodeTL(0x88, 4, buffer, bufPos);
+        bufPos = BerEncoder_encodeTL(0x88, 2, buffer, bufPos);
         bufPos = encodeUInt16FixedSize(self->smpMod, buffer, bufPos);
     }
 
