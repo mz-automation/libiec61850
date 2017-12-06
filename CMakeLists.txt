@@ -46,16 +46,35 @@ set(CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE "8000" CACHE STRING "Default buf
 
 # advanced options
 option(DEBUG "Enable debugging mode (include assertions)" OFF)
-option(DEBUG_SOCKET "Enable printf debugging for socket layer" OFF)
-option(DEBUG_COTP "Enable COTP printf debugging" OFF)
-option(DEBUG_ISO_SERVER "Enable ISO SERVER printf debugging" OFF)
-option(DEBUG_ISO_CLIENT "Enable ISO CLIENT printf debugging" OFF)
-option(DEBUG_IED_SERVER "Enable IED SERVER printf debugging" OFF)
-option(DEBUG_IED_CLIENT "Enable IED CLIENT printf debugging" OFF)
-option(DEBUG_MMS_SERVER "Enable MMS SERVER printf debugging" OFF)
-option(DEBUG_MMS_CLIENT "Enable MMS CLIENT printf debugging" OFF)
-#mark_as_advanced(DEBUG DEBUG_COTP DEBUG_ISO_SERVER DEBUG_ISO_CLIENT DEBUG_IED_SERVER
-#				 DEBUG_IED_CLIENT DEBUG_MMS_SERVER DEBUG_MMS_CLIENT)
+option(DEBUG_SOCKET "Enable printf debugging for socket layer" ${DEBUG})
+option(DEBUG_COTP "Enable COTP printf debugging" ${DEBUG})
+option(DEBUG_ISO_SERVER "Enable ISO SERVER printf debugging" ${DEBUG})
+option(DEBUG_ISO_CLIENT "Enable ISO CLIENT printf debugging" ${DEBUG})
+option(DEBUG_IED_SERVER "Enable IED SERVER printf debugging" ${DEBUG})
+option(DEBUG_IED_CLIENT "Enable IED CLIENT printf debugging" ${DEBUG})
+option(DEBUG_MMS_SERVER "Enable MMS SERVER printf debugging" ${DEBUG})
+option(DEBUG_MMS_CLIENT "Enable MMS CLIENT printf debugging" ${DEBUG})
+option(DEBUG_GOOSE_SUBSCRIBER "Enable GOOSE subscriber printf debugging" ${DEBUG})
+option(DEBUG_GOOSE_PUBLISHER "Enable GOOSE publisher printf debugging" ${DEBUG})
+option(DEBUG_SV_SUBSCRIBER "Enable Sampled Values subscriber debugging" ${DEBUG})
+option(DEBUG_SV_PUBLISHER "Enable Sampled Values publisher debugging" ${DEBUG})
+option(DEBUG_HAL_ETHERNET "Enable Ethernet HAL printf debugging" ${DEBUG})
+
+#mark_as_advanced(
+#    DEBUG_SOCKET
+#    DEBUG_COTP
+#    DEBUG_ISO_SERVER
+#    DEBUG_ISO_CLIENT
+#    DEBUG_IED_SERVER
+#    DEBUG_IED_CLIENT
+#    DEBUG_MMS_SERVER
+#    DEBUG_MMS_CLIENT
+#    DEBUG_GOOSE_SUBSCRIBER
+#    DEBUG_GOOSE_PUBLISHER
+#    DEBUG_SV_SUBSCRIBER
+#    DEBUG_SV_PUBLISHER
+#    DEBUG_HAL_ETHERNET
+#)
 
 include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}/config
