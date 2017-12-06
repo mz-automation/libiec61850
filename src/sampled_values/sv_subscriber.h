@@ -1,5 +1,5 @@
 /*
- *  sv_subscriber_api.h
+ *  sv_subscriber.h
  *
  *  Copyright 2015 Michael Zillgith
  *
