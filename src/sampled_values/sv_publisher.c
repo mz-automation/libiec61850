@@ -43,8 +43,8 @@
 #define SV_MAX_MESSAGE_SIZE 1518
 
 struct sSVPublisher_ASDU {
-    char* svID;
-    char* datset;
+    const char* svID;
+    const char* datset;
     int dataSize;
 
     bool hasRefrTm;
@@ -296,7 +296,7 @@ SVPublisher_create(CommParameters* parameters, const char* interfaceId)
 }
 
 SVPublisher_ASDU
-SVPublisher_addASDU(SVPublisher self, char* svID, char* datset, uint32_t confRev)
+SVPublisher_addASDU(SVPublisher self, const char* svID, const char* datset, uint32_t confRev)
 {
     SVPublisher_ASDU newAsdu = (SVPublisher_ASDU) GLOBAL_CALLOC(1, sizeof(struct sSVPublisher_ASDU));
 
