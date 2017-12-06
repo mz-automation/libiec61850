@@ -294,6 +294,7 @@ parseASDU(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, int length)
             break;
 
         default: /* ignore unknown tag */
+            if (DEBUG_SV_SUBSCRIBER) printf("SV_SUBSCRIBER: found unknown tag %02x\n", tag);
             break;
         }
 
@@ -304,6 +305,23 @@ parseASDU(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, int length)
         asdu.svId[svIdLength] = 0;
     if (asdu.datSet != NULL)
         asdu.datSet[datSetLength] = 0;
+    
+    if (DEBUG_SV_SUBSCRIBER) {
+        printf("SV_SUBSCRIBER:   SV ASDU: ----------------\n");
+        printf("SV_SUBSCRIBER:     DataLength: %d\n", asdu.dataBufferLength);
+        printf("SV_SUBSCRIBER:     SvId: %s\n", asdu.svId);
+        printf("SV_SUBSCRIBER:     SmpCnt: %d\n", SVSubscriber_ASDU_getSmpCnt(&asdu));
+        printf("SV_SUBSCRIBER:     ConfRev: %d\n", SVSubscriber_ASDU_getConfRev(&asdu));
+        
+        if (SVSubscriber_ASDU_hasDatSet(&asdu))
+            printf("SV_SUBSCRIBER:     DatSet: %s\n", asdu.datSet);
+        if (SVSubscriber_ASDU_hasRefrTm(&asdu))
+            printf("SV_SUBSCRIBER:     RefrTm: %lu\n", SVSubscriber_ASDU_getRefrTmAsMs(&asdu));
+        if (SVSubscriber_ASDU_hasSmpMod(&asdu))
+            printf("SV_SUBSCRIBER:     SmpMod: %d\n", SVSubscriber_ASDU_getSmpMod(&asdu));
+        if (SVSubscriber_ASDU_hasSmpRate(&asdu))
+            printf("SV_SUBSCRIBER:     SmpRate: %d\n", SVSubscriber_ASDU_getSmpRate(&asdu));
+    }
 
     /* Call callback handler */
     if (subscriber->listener != NULL)
@@ -332,6 +350,7 @@ parseSequenceOfASDU(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, i
             break;
 
         default: /* ignore unknown tag */
+            if (DEBUG_SV_SUBSCRIBER) printf("SV_SUBSCRIBER: found unknown tag %02x\n", tag);
             break;
         }
 
@@ -384,6 +403,7 @@ parseSVPayload(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, int ap
                 break;
 
             default: /* ignore unknown tag */
+                if (DEBUG_SV_SUBSCRIBER) printf("SV_SUBSCRIBER: found unknown tag %02x\n", tag);
                 break;
             }
 
