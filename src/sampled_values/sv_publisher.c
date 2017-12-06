@@ -398,8 +398,10 @@ SVPublisher_ASDU_encodeToBuffer(SVPublisher_ASDU self, uint8_t* buffer, int bufP
     buffer[bufPos++] = self->smpSynch;
 
     /* SmpRate */
-    bufPos = BerEncoder_encodeTL(0x86, 2, buffer, bufPos);
-    bufPos = encodeUInt16FixedSize(self->smpRate, buffer, bufPos);
+    if (self->hasSmpRate) {
+        bufPos = BerEncoder_encodeTL(0x86, 2, buffer, bufPos);
+        bufPos = encodeUInt16FixedSize(self->smpRate, buffer, bufPos);
+    }
 
     /* Sample */
     bufPos = BerEncoder_encodeTL(0x87, self->dataSize, buffer, bufPos);
