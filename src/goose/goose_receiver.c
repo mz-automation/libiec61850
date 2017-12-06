@@ -774,7 +774,7 @@ GooseReceiver_destroy(GooseReceiver self)
 /***************************************
  * Functions for non-threaded operation
  ***************************************/
-void
+EthernetSocket
 GooseReceiver_startThreadless(GooseReceiver self)
 {
     if (self->interfaceId == NULL)
@@ -788,6 +788,8 @@ GooseReceiver_startThreadless(GooseReceiver self)
     }
     else
         self->running = false;
+    
+    return self->ethSocket;
 }
 
 void
@@ -811,10 +813,3 @@ GooseReceiver_tick(GooseReceiver self)
     else
         return false;
 }
-
-void
-GooseReceiver_addHandleSet(GooseReceiver self, EthernetHandleSet handles)
-{
-    return EthernetHandleSet_addSocket(handles, self->ethSocket);
-}
-

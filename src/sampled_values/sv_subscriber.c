@@ -208,7 +208,7 @@ SVReceiver_destroy(SVReceiver self)
     GLOBAL_FREEMEM(self);
 }
 
-void
+EthernetSocket
 SVReceiver_startThreadless(SVReceiver self)
 {
     if (self->interfaceId == NULL)
@@ -219,6 +219,8 @@ SVReceiver_startThreadless(SVReceiver self)
     Ethernet_setProtocolFilter(self->ethSocket, ETH_P_SV);
 
     self->running = true;
+    
+    return self->ethSocket;
 }
 
 void
@@ -227,12 +229,6 @@ SVReceiver_stopThreadless(SVReceiver self)
     Ethernet_destroySocket(self->ethSocket);
 
     self->running = false;
-}
-
-void
-SVReceiver_addHandleSet(SVReceiver self, EthernetHandleSet handles)
-{
-    return EthernetHandleSet_addSocket(handles, self->ethSocket);
 }
 
 static void
