@@ -235,12 +235,10 @@ static void
 parseASDU(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, int length)
 {
     int bufPos = 0;
+    int svIdLength = 0;
 
     struct sSVSubscriber_ASDU asdu;
     memset(&asdu, 0, sizeof(struct sSVSubscriber_ASDU));
-
-    int svIdLength = 0;
-
 
     while (bufPos < length) {
         int elementLength;
@@ -248,6 +246,10 @@ parseASDU(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, int length)
         uint8_t tag = buffer[bufPos++];
 
         bufPos = BerDecoder_decodeLength(buffer, &elementLength, bufPos, length);
+        if (bufPos < 0) {
+            if (DEBUG_SV_SUBSCRIBER) printf("SV_SUBSCRIBER: Malformed message: failed to decode BER length tag!\n");
+            return;
+        }
 
         switch (tag) {
 
@@ -303,6 +305,10 @@ parseSequenceOfASDU(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, i
         uint8_t tag = buffer[bufPos++];
 
         bufPos = BerDecoder_decodeLength(buffer, &elementLength, bufPos, length);
+        if (bufPos < 0) {
+            if (DEBUG_SV_SUBSCRIBER) printf("SV_SUBSCRIBER: Malformed message: failed to decode BER length tag!\n");
+            return;
+        }
 
         switch (tag) {
         case 0x30:
@@ -326,6 +332,10 @@ parseSVPayload(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, int ap
         int elementLength;
 
         bufPos = BerDecoder_decodeLength(buffer, &elementLength, bufPos, apduLength);
+        if (bufPos < 0) {
+            if (DEBUG_SV_SUBSCRIBER) printf("SV_SUBSCRIBER: Malformed message: failed to decode BER length tag!\n");
+            return;
+        }
 
         int svEnd = bufPos + elementLength;
 
@@ -333,6 +343,10 @@ parseSVPayload(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, int ap
             uint8_t tag = buffer[bufPos++];
 
             bufPos = BerDecoder_decodeLength(buffer, &elementLength, bufPos, svEnd);
+            if (bufPos < 0) {
+                if (DEBUG_SV_SUBSCRIBER) printf("SV_SUBSCRIBER: Malformed message: failed to decode BER length tag!\n");
+                return;
+            }
 
             if (bufPos + elementLength > apduLength) {
                 if (DEBUG_SV_SUBSCRIBER)

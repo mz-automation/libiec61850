@@ -129,6 +129,10 @@ parseAllData(uint8_t* buffer, int allDataLength, MmsValue* dataSetValues)
         MmsValue* value = MmsValue_getElement(dataSetValues, elementIndex);
 
         bufPos = BerDecoder_decodeLength(buffer, &elementLength, bufPos, allDataLength);
+        if (bufPos < 0) {
+            if (DEBUG_GOOSE_SUBSCRIBER) printf("GOOSE_SUBSCRIBER: Malformed message: failed to decode BER length tag!\n");
+            return 0;
+        }
 
         if (bufPos + elementLength > allDataLength) {
             if (DEBUG_GOOSE_SUBSCRIBER) printf("GOOSE_SUBSCRIBER: Malformed message: sub element is too large!\n");
@@ -277,6 +281,10 @@ parseAllDataUnknownValue(GooseSubscriber self, uint8_t* buffer, int allDataLengt
         uint8_t tag = buffer[bufPos++];
 
         bufPos = BerDecoder_decodeLength(buffer, &elementLength, bufPos, allDataLength);
+        if (bufPos < 0) {
+            if (DEBUG_GOOSE_SUBSCRIBER) printf("GOOSE_SUBSCRIBER: Malformed message: failed to decode BER length tag!\n");
+            return 0;
+        }
 
         if (bufPos + elementLength > allDataLength) {
             if (DEBUG_GOOSE_SUBSCRIBER) printf("GOOSE_SUBSCRIBER: Malformed message: sub element is too large!\n");
@@ -331,6 +339,10 @@ parseAllDataUnknownValue(GooseSubscriber self, uint8_t* buffer, int allDataLengt
         uint8_t tag = buffer[bufPos++];
 
         bufPos = BerDecoder_decodeLength(buffer, &elementLength, bufPos, allDataLength);
+        if (bufPos < 0) {
+            if (DEBUG_GOOSE_SUBSCRIBER) printf("GOOSE_SUBSCRIBER: Malformed message: failed to decode BER length tag!\n");
+            return 0;
+        }
 
         if (bufPos + elementLength > allDataLength) {
             if (DEBUG_GOOSE_SUBSCRIBER) printf("GOOSE_SUBSCRIBER: Malformed message: sub element is too large!\n");
@@ -461,6 +473,10 @@ parseGoosePayload(GooseReceiver self, uint8_t* buffer, int apduLength)
     if (buffer[bufPos++] == 0x61) {
         int gooseLength;
         bufPos = BerDecoder_decodeLength(buffer, &gooseLength, bufPos, apduLength);
+        if (bufPos < 0) {
+            if (DEBUG_GOOSE_SUBSCRIBER) printf("GOOSE_SUBSCRIBER: Malformed message: failed to decode BER length tag!\n");
+            return 0;
+        }
 
         int gooseEnd = bufPos + gooseLength;
 
@@ -469,6 +485,10 @@ parseGoosePayload(GooseReceiver self, uint8_t* buffer, int apduLength)
 
             uint8_t tag = buffer[bufPos++];
             bufPos = BerDecoder_decodeLength(buffer, &elementLength, bufPos, apduLength);
+            if (bufPos < 0) {
+                if (DEBUG_GOOSE_SUBSCRIBER) printf("GOOSE_SUBSCRIBER: Malformed message: failed to decode BER length tag!\n");
+                return 0;
+            }
 
             if (bufPos + elementLength > apduLength) {
                 if (DEBUG_GOOSE_SUBSCRIBER)
