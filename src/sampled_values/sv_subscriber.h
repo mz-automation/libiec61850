@@ -278,12 +278,46 @@ const char*
 SVSubscriber_ASDU_getSvId(SVSubscriber_ASDU self);
 
 /**
+ * \brief return the DatSet value included in the SV ASDU
+ *
+ * \param self ASDU object instance
+ */
+const char*
+SVSubscriber_ASDU_getDatSet(SVSubscriber_ASDU self);
+
+/**
  * \brief return the ConfRev value included in the SV ASDU
  *
  * \param self ASDU object instance
  */
 uint32_t
 SVSubscriber_ASDU_getConfRev(SVSubscriber_ASDU self);
+
+/**
+ * \brief return the SmpMod value included in the SV ASDU
+ *
+ * \param self ASDU object instance
+ */
+uint8_t
+SVSubscriber_ASDU_getSmpMod(SVSubscriber_ASDU self);
+
+/**
+ * \brief return the SmpRate value included in the SV ASDU
+ *
+ * \param self ASDU object instance
+ */
+uint16_t
+SVSubscriber_ASDU_getSmpRate(SVSubscriber_ASDU self);
+
+/**
+ * \brief Check if DatSet value is included in the SV ASDU
+ *
+ * \param self ASDU object instance
+ *
+ * \return true if DatSet value is present, false otherwise
+ */
+bool
+SVSubscriber_ASDU_hasDatSet(SVSubscriber_ASDU self);
 
 /**
  * \brief Check if RefrTm value is included in the SV ASDU
@@ -294,6 +328,26 @@ SVSubscriber_ASDU_getConfRev(SVSubscriber_ASDU self);
  */
 bool
 SVSubscriber_ASDU_hasRefrTm(SVSubscriber_ASDU self);
+
+/**
+ * \brief Check if SmpMod value is included in the SV ASDU
+ *
+ * \param self ASDU object instance
+ *
+ * \return true if SmpMod value is present, false otherwise
+ */
+bool
+SVSubscriber_ASDU_hasSmpMod(SVSubscriber_ASDU self);
+
+/**
+ * \brief Check if SmpRate value is included in the SV ASDU
+ *
+ * \param self ASDU object instance
+ *
+ * \return true if SmpRate value is present, false otherwise
+ */
+bool
+SVSubscriber_ASDU_hasSmpRate(SVSubscriber_ASDU self);
 
 /**
  * \brief Get the RefrTim value included in SV ASDU as ms timestamp

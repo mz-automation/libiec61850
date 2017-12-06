@@ -70,18 +70,18 @@ struct sSVSubscriber {
 struct sSVSubscriber_ASDU {
 
     char* svId;
+    char* datSet;
 
     uint8_t* smpCnt;
     uint8_t* confRev;
     uint8_t* refrTm;
     uint8_t* smpSynch;
-
+    uint8_t* smpMod;
+    uint8_t* smpRate;
 
     int dataBufferLength;
     uint8_t* dataBuffer;
 };
-
-
 
 
 SVReceiver
@@ -236,6 +236,7 @@ parseASDU(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, int length)
 {
     int bufPos = 0;
     int svIdLength = 0;
+    int datSetLength = 0;
 
     struct sSVSubscriber_ASDU asdu;
     memset(&asdu, 0, sizeof(struct sSVSubscriber_ASDU));
@@ -258,6 +259,11 @@ parseASDU(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, int length)
             svIdLength = elementLength;
             break;
 
+        case 0x81:
+            asdu.datSet = (char*) (buffer + bufPos);
+            datSetLength = elementLength;
+            break;
+
         case 0x82:
             asdu.smpCnt = buffer + bufPos;
             break;
@@ -274,9 +280,17 @@ parseASDU(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, int length)
             asdu.smpSynch = buffer + bufPos;
             break;
 
+        case 0x86:
+            asdu.smpRate = buffer + bufPos;
+            break;
+
         case 0x87:
             asdu.dataBuffer = buffer + bufPos;
             asdu.dataBufferLength = elementLength;
+            break;
+
+        case 0x88:
+            asdu.smpMod = buffer + bufPos;
             break;
 
         default: /* ignore unknown tag */
@@ -288,6 +302,8 @@ parseASDU(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, int length)
 
     if (asdu.svId != NULL)
         asdu.svId[svIdLength] = 0;
+    if (asdu.datSet != NULL)
+        asdu.datSet[datSetLength] = 0;
 
     /* Call callback handler */
     if (subscriber->listener != NULL)
@@ -595,11 +611,34 @@ SVSubscriber_ASDU_hasRefrTm(SVSubscriber_ASDU self)
     return (self->refrTm != NULL);
 }
 
+bool
+SVSubscriber_ASDU_hasDatSet(SVSubscriber_ASDU self)
+{
+    return (self->datSet != NULL);
+}
+
+bool
+SVSubscriber_ASDU_hasSmpRate(SVSubscriber_ASDU self)
+{
+    return (self->smpRate != NULL);
+}
+
+bool
+SVSubscriber_ASDU_hasSmpMod(SVSubscriber_ASDU self)
+{
+    return (self->smpMod != NULL);
+}
 
 const char*
 SVSubscriber_ASDU_getSvId(SVSubscriber_ASDU self)
 {
     return self->svId;
+}
+
+const char*
+SVSubscriber_ASDU_getDatSet(SVSubscriber_ASDU self)
+{
+    return self->datSet;
 }
 
 uint32_t
@@ -611,6 +650,28 @@ SVSubscriber_ASDU_getConfRev(SVSubscriber_ASDU self)
     uint8_t* buf = (uint8_t*) (&retVal);
 
     BerEncoder_revertByteOrder(buf, 4);
+#endif
+
+    return retVal;
+}
+
+uint8_t
+SVSubscriber_ASDU_getSmpMod(SVSubscriber_ASDU self)
+{
+    uint8_t retVal = *((uint8_t*) (self->smpMod));
+
+    return retVal;
+}
+
+uint16_t
+SVSubscriber_ASDU_getSmpRate(SVSubscriber_ASDU self)
+{
+    uint16_t retVal = *((uint16_t*) (self->smpRate));
+
+#if (ORDER_LITTLE_ENDIAN == 1)
+    uint8_t* buf = (uint8_t*) (&retVal);
+
+    BerEncoder_revertByteOrder(buf, 2);
 #endif
 
     return retVal;
