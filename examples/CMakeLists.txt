@@ -33,6 +33,11 @@ else()
     set(BUILD_SV_GOOSE_EXAMPLES ON)
 endif()
 
+if(WITH_MBEDTLS)
+add_subdirectory(tls_client_example)
+add_subdirectory(tls_server_example)
+endif(WITH_MBEDTLS)
+
 if(${BUILD_SV_GOOSE_EXAMPLES})
     add_subdirectory(server_example_goose)
     add_subdirectory(goose_subscriber)
