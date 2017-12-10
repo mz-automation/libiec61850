@@ -25,6 +25,7 @@
 #define ISO_SERVER_PRIVATE_H_
 
 #include "hal_socket.h"
+#include "tls_api.h"
 
 IsoConnection
 IsoConnection_create(Socket socket, IsoServer isoServer);

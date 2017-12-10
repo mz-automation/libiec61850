@@ -28,6 +28,8 @@
 #include "mms_client_internal.h"
 #include "stack_config.h"
 
+#include "tls_api.h"
+
 #include <MmsPdu.h>
 
 #include "byte_buffer.h"
@@ -1052,6 +1054,25 @@ MmsConnection_create()
     return self;
 }
 
+MmsConnection
+MmsConnection_createSecure(TLSConfiguration tlsConfig)
+{
+    MmsConnection self = MmsConnection_create();
+
+#if (CONFIG_MMS_SUPPORT_TLS == 1)
+    if (self != NULL) {
+        IsoConnectionParameters connectionParameters = MmsConnection_getIsoConnectionParameters(self);
+
+        TLSConfiguration_setClientMode(tlsConfig);
+
+        IsoConnectionParameters_setTlsConfiguration(connectionParameters, tlsConfig);
+    }
+#endif /* (CONFIG_MMS_SUPPORT_TLS == 1) */
+
+    return self;
+}
+
+
 void
 MmsConnection_destroy(MmsConnection self)
 {
@@ -1184,6 +1205,13 @@ waitForConnectResponse(MmsConnection self)
 bool
 MmsConnection_connect(MmsConnection self, MmsError* mmsError, const char* serverName, int serverPort)
 {
+    if (serverPort == -1) {
+        if (self->isoParameters->tlsConfiguration)
+            serverPort = 3782;
+        else
+            serverPort = 102;
+    }
+
     IsoConnectionParameters_setTcpParameters(self->isoParameters, serverName, serverPort);
 
     if (self->parameters.maxPduSize == -1)

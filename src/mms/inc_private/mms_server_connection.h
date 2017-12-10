@@ -1,5 +1,5 @@
 /*
- *  mms_connection.h
+ *  mms_server_connection.h
  *
  *  Copyright 2013 Michael Zillgith
  *
@@ -39,6 +39,10 @@
 #include "linked_list.h"
 #include "byte_buffer.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 MmsServerConnection
 MmsServerConnection_init(MmsServerConnection connection, MmsServer server, IsoConnection isoCon);
 
@@ -67,7 +71,7 @@ MmsServerConnection_parseMessage(MmsServerConnection connection, ByteBuffer* mes
  */
 void
 MmsServerConnection_sendInformationReportSingleVariableVMDSpecific(MmsServerConnection self,
-		char* itemId, MmsValue* value, bool handlerMode);
+    char* itemId, MmsValue* value, bool handlerMode);
 
 
 /** \brief send information report for a VMD specific named variable list
@@ -103,6 +107,10 @@ MmsServerConnection_getNextRequestInvokeId(MmsServerConnection self);
 
 const char*
 MmsServerConnection_getFilesystemBasepath(MmsServerConnection self);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* MMS_SERVER_CONNECTION_H_ */
 

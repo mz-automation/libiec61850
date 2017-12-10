@@ -68,9 +68,10 @@ authenticateClient(AcseConnection* self, AcseAuthenticationMechanism mechanism, 
         authParameter->value.password.octetString = authValue;
         authParameter->value.password.passwordLength = authValueLen;
     }
-
-    //TODO Check if we are in a TLS connection: if mechanism == ACSE_AUTH_NONE provide client certificate if present
-    //       --> mechanism = ACSE_AUTH_TLS
+    else if (mechanism == ACSE_AUTH_TLS) {
+        authParameter->value.certificate.buf = authValue;
+        authParameter->value.certificate.length = authValueLen;
+    }
 
     return self->authenticator(self->authenticatorParameter, authParameter, &(self->securityToken), &(self->applicationReference));
 }
@@ -83,6 +84,26 @@ checkAuthentication(AcseConnection* self, uint8_t* authMechanism, int authMechLe
     if (self->authenticator != NULL ) {
 
         AcseAuthenticationMechanism mechanism = checkAuthMechanismName(authMechanism, authMechLen);
+
+        if (mechanism == ACSE_AUTH_NONE) {
+
+#if (CONFIG_MMS_SUPPORT_TLS == 1)
+            if (self->tlsSocket) {
+
+                int certLen;
+
+                uint8_t* certBuf = TLSSocket_getPeerCertificate(self->tlsSocket, &certLen);
+
+                if (certBuf) {
+                    mechanism = ACSE_AUTH_TLS;
+                    authValue = certBuf;
+                    authValueLen = certLen;
+                }
+
+            }
+#endif /* (CONFIG_MMS_SUPPORT_TLS == 1) */
+
+        }
 
         return authenticateClient(self, mechanism, authValue, authValueLen);
     }
@@ -328,14 +349,19 @@ parseAarqPdu(AcseConnection* self, uint8_t* buffer, int bufPos, int maxBufPos)
 }
 
 void
-AcseConnection_init(AcseConnection* self, AcseAuthenticator authenticator, void* parameter)
+AcseConnection_init(AcseConnection* self, AcseAuthenticator authenticator, void* parameter, TLSSocket tlsSocket)
 {
     self->state = idle;
     self->nextReference = 0;
     self->userDataBuffer = NULL;
     self->userDataBufferSize = 0;
-    self->authenticator= authenticator;
+    self->authenticator = authenticator;
     self->authenticatorParameter = parameter;
+
+#if (CONFIG_MMS_SUPPORT_TLS == 1)
+    self->tlsSocket = tlsSocket;
+#endif
+
     memset(&(self->applicationReference), 0, sizeof(self->applicationReference));
 }
 

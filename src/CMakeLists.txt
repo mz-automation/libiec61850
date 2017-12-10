@@ -80,6 +80,15 @@ set (lib_common_SRCS
 ./logging/log_storage.c
 )
 
+if(WITH_MBEDTLS)
+set (lib_common_SRCS ${lib_common_SRCS}
+./tls/mbedtls/tls_mbedtls.c
+)
+
+list (APPEND lib_common_SRCS ${tls_SRCS})
+
+endif(WITH_MBEDTLS)
+
 set (lib_asn1c_SRCS
 ./mms/iso_mms/asn1c/DataAccessError.c
 ./mms/iso_mms/asn1c/DeleteNamedVariableListRequest.c

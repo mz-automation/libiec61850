@@ -69,6 +69,7 @@ include_directories(
     src/mms/inc_private
     src/mms/iso_mms/asn1c
     src/logging
+    src/tls
 )
 
 set(API_HEADERS 
@@ -110,6 +111,7 @@ set(API_HEADERS
     src/sampled_values/sv_publisher_deprecated.h
     src/sampled_values/sv_subscriber_deprecated.h
     src/logging/logging_api.h
+    src/tls/tls_api.h
     ${CMAKE_CURRENT_BINARY_DIR}/config/stack_config.h
 )
 
@@ -118,6 +120,23 @@ if(MSVC)
         src/vs
     )
 endif(MSVC)
+
+if(EXISTS ${CMAKE_CURRENT_LIST_DIR}/third_party/mbedtls/mbedtls-2.6.0)
+set(WITH_MBEDTLS 1)
+endif(EXISTS ${CMAKE_CURRENT_LIST_DIR}/third_party/mbedtls/mbedtls-2.6.0)
+
+if(WITH_MBEDTLS)
+include_directories(
+    src/tls/mbedtls
+    third_party/mbedtls/mbedtls-2.6.0/include
+)
+
+file(GLOB tls_SRCS ${CMAKE_CURRENT_LIST_DIR}/third_party/mbedtls/mbedtls-2.6.0/library/*.c)
+
+add_definitions(-DCONFIG_MMS_SUPPORT_TLS=1)
+add_definitions(-DMBEDTLS_CONFIG_FILE="mbedtls_config.h")
+
+endif(WITH_MBEDTLS)
 
 # write the detected stuff to this file
 configure_file(

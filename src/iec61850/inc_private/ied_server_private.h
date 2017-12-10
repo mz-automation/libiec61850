@@ -38,7 +38,7 @@ struct sIedServer
     IedModel* model;
     MmsDevice* mmsDevice;
     MmsServer mmsServer;
-    IsoServer isoServer;
+   // IsoServer isoServer;
     char* localIpAddress;
     MmsMapping* mmsMapping;
     LinkedList clientConnections;

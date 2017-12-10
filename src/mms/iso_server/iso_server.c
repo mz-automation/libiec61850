@@ -63,7 +63,9 @@ struct sIsoServer {
 
     Socket serverSocket;
     int tcpPort;
-    char* localIpAddress;
+    const char* localIpAddress;
+
+    TLSConfiguration tlsConfiguration;
 
 #if (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS == -1)
     LinkedList openClientConnections;
@@ -349,10 +351,14 @@ handleIsoConnections(IsoServer self)
 
         IsoConnection isoConnection = IsoConnection_create(connectionSocket, self);
 
-        addClientConnection(self, isoConnection);
+        if (isoConnection) {
 
-        self->connectionHandler(ISO_CONNECTION_OPENED, self->connectionHandlerParameter,
-                isoConnection);
+            addClientConnection(self, isoConnection);
+
+            self->connectionHandler(ISO_CONNECTION_OPENED, self->connectionHandlerParameter,
+                    isoConnection);
+
+        }
 
     }
 
@@ -385,11 +391,14 @@ handleIsoConnectionsThreadless(IsoServer self)
 
         IsoConnection isoConnection = IsoConnection_create(connectionSocket, self);
 
-        addClientConnection(self, isoConnection);
+        if (isoConnection) {
 
-        self->connectionHandler(ISO_CONNECTION_OPENED, self->connectionHandlerParameter,
-                isoConnection);
+            addClientConnection(self, isoConnection);
 
+            self->connectionHandler(ISO_CONNECTION_OPENED, self->connectionHandlerParameter,
+                    isoConnection);
+
+        }
     }
 
     handleClientConnections(self);
@@ -431,12 +440,18 @@ isoServerThread(void* isoServerParam)
 #endif
 
 IsoServer
-IsoServer_create()
+IsoServer_create(TLSConfiguration tlsConfiguration)
 {
     IsoServer self = (IsoServer) GLOBAL_CALLOC(1, sizeof(struct sIsoServer));
 
     self->state = ISO_SVR_STATE_IDLE;
-    self->tcpPort = TCP_PORT;
+
+    if (tlsConfiguration == NULL)
+        self->tcpPort = TCP_PORT;
+    else
+        self->tcpPort = SECURE_TCP_PORT;
+
+    self->tlsConfiguration = tlsConfiguration;
 
 #if (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS == -1)
     self->openClientConnections = LinkedList_create();
@@ -462,7 +477,7 @@ IsoServer_setTcpPort(IsoServer self, int port)
 }
 
 void
-IsoServer_setLocalIpAddress(IsoServer self, char* ipAddress)
+IsoServer_setLocalIpAddress(IsoServer self, const char* ipAddress)
 {
 	self->localIpAddress = ipAddress;
 }
@@ -490,6 +505,12 @@ void*
 IsoServer_getAuthenticatorParameter(IsoServer self)
 {
     return self->authenticatorParameter;
+}
+
+TLSConfiguration
+IsoServer_getTLSConfiguration(IsoServer self)
+{
+    return self->tlsConfiguration;
 }
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)

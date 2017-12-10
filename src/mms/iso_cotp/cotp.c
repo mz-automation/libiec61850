@@ -161,6 +161,20 @@ writeDataTpduHeader(CotpConnection* self, int isLastUnit)
     self->writeBuffer->size = 7;
 }
 
+static inline int
+writeToSocket(CotpConnection* self, uint8_t* buf, int size)
+{
+#if (CONFIG_MMS_SUPPORT_TLS == 1)
+    if (self->tlsSocket)
+        return TLSSocket_write(self->tlsSocket, buf, size);
+    else
+        return Socket_write(self->socket, buf, size);
+#else
+    return Socket_write(self->socket, buf, size);
+#endif
+}
+
+
 static bool
 sendBuffer(CotpConnection* self)
 {
@@ -171,7 +185,7 @@ sendBuffer(CotpConnection* self)
     int sentBytes;
 
     do {
-        sentBytes = Socket_write(self->socket, ByteBuffer_getBuffer(self->writeBuffer), writeBufferPosition);
+        sentBytes = writeToSocket(self, ByteBuffer_getBuffer(self->writeBuffer), writeBufferPosition);
 
         if (sentBytes == -1)
             goto exit_function;
@@ -435,6 +449,7 @@ CotpConnection_init(CotpConnection* self, Socket socket,
 {
     self->state = 0;
     self->socket = socket;
+    self->tlsSocket = NULL;
     self->remoteRef = -1;
     self->localRef = 1;
     self->protocolClass = -1;
@@ -634,6 +649,20 @@ CotpConnection_resetPayload(CotpConnection* self)
     self->payload->size = 0;
 }
 
+
+static inline int
+readFromSocket(CotpConnection* self, uint8_t* buf, int size)
+{
+#if (CONFIG_MMS_SUPPORT_TLS == 1)
+    if (self->tlsSocket)
+        return TLSSocket_read(self->tlsSocket, buf, size);
+    else
+        return Socket_read(self->socket, buf, size);
+#else
+    return Socket_read(self->socket, buf, size);
+#endif
+}
+
 TpktState
 CotpConnection_readToTpktBuffer(CotpConnection* self)
 {
@@ -647,7 +676,7 @@ CotpConnection_readToTpktBuffer(CotpConnection* self)
 
     if (bufPos < 4) {
 
-        readBytes = Socket_read(self->socket, buffer + bufPos, 4 - bufPos);
+        readBytes = readFromSocket(self, buffer + bufPos, 4 - bufPos);
 
         if (readBytes < 0)
             goto exit_closed;
@@ -680,7 +709,7 @@ CotpConnection_readToTpktBuffer(CotpConnection* self)
             goto exit_waiting;
     }
 
-    readBytes = Socket_read(self->socket, buffer + bufPos, self->packetSize - bufPos);
+    readBytes = readFromSocket(self, buffer + bufPos, self->packetSize - bufPos);
 
     if (readBytes < 0)
         goto exit_closed;

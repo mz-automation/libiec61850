@@ -34,6 +34,8 @@
 #include "iso_presentation.h"
 #include "iso_client_connection.h"
 #include "acse.h"
+#include "tls_api.h"
+
 
 #ifndef DEBUG_ISO_CLIENT
 #ifdef DEBUG
@@ -56,7 +58,13 @@ struct sIsoClientConnection
     IsoIndicationCallback callback;
     void* callbackParameter;
     volatile int state;
+
     Socket socket;
+
+#if (CONFIG_MMS_SUPPORT_TLS == 1)
+    TLSSocket tlsSocket;
+#endif
+
     CotpConnection* cotpConnection;
     IsoPresentation* presentation;
     IsoSession* session;
@@ -159,6 +167,11 @@ connectionHandlingThread(IsoClientConnection self)
 
     self->state = STATE_IDLE;
 
+#if (CONFIG_MMS_SUPPORT_TLS == 1)
+    if (self->cotpConnection->tlsSocket)
+        TLSSocket_close(self->cotpConnection->tlsSocket);
+#endif
+
     Socket_destroy(self->socket);
 
     if (DEBUG_ISO_CLIENT)
@@ -251,6 +264,27 @@ IsoClientConnection_associate(IsoClientConnection self, IsoConnectionParameters 
 
     /* COTP (ISO transport) handshake */
     CotpConnection_init(self->cotpConnection, self->socket, self->receiveBuffer, self->cotpReadBuffer, self->cotpWriteBuffer);
+
+#if (CONFIG_MMS_SUPPORT_TLS == 1)
+    if (params->tlsConfiguration) {
+
+        /* create TLSSocket and start TLS authentication */
+        TLSSocket tlsSocket = TLSSocket_create(self->socket, params->tlsConfiguration, false);
+
+        if (tlsSocket)
+            self->cotpConnection->tlsSocket = tlsSocket;
+        else {
+
+            if (DEBUG_ISO_CLIENT)
+                printf("TLS handshake failed!\n");
+
+            goto returnError;
+        }
+    }
+#endif /* (CONFIG_MMS_SUPPORT_TLS == 1) */
+
+
+    /* COTP (ISO transport) handshake */
     CotpIndication cotpIndication =
             CotpConnection_sendConnectionRequestMessage(self->cotpConnection, params);
 
@@ -280,7 +314,7 @@ IsoClientConnection_associate(IsoClientConnection self, IsoConnectionParameters 
     acsePayload->length = payload->size;
     acsePayload->nextPart = NULL;
 
-    AcseConnection_init(&(self->acseConnection), NULL, NULL);
+    AcseConnection_init(&(self->acseConnection), NULL, NULL, NULL);
 
     AcseAuthenticationParameter authParameter = params->acseAuthParameter;
 
@@ -383,7 +417,7 @@ returnError:
     Socket_destroy(self->socket);
     self->socket = NULL;
 
-    Semaphore_post(self->transmitBufferMutex); //TODO check
+    Semaphore_post(self->transmitBufferMutex);
 
     return;
 }

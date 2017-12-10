@@ -36,7 +36,7 @@ void
 MmsValueCache_insertValue(MmsValueCache self, char* itemId, MmsValue* value);
 
 MmsValue*
-MmsValueCache_lookupValue(MmsValueCache self, char* itemId);
+MmsValueCache_lookupValue(MmsValueCache self, const char* itemId);
 
 void
 MmsValueCache_destroy(MmsValueCache self);

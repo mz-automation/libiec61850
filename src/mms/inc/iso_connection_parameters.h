@@ -28,6 +28,8 @@
 extern "C" {
 #endif
 
+#include "tls_api.h"
+
 /**
  * \addtogroup mms_client_api_group
  */
@@ -39,8 +41,13 @@ extern "C" {
  */
 typedef enum
 {
+    /** Neither ACSE nor TLS authentication used */
     ACSE_AUTH_NONE = 0,
+
+    /** Use ACSE password for client authentication */
     ACSE_AUTH_PASSWORD = 1,
+
+    /** Use ACSE certificate for client authentication */
     ACSE_AUTH_CERTIFICATE = 2,
 
     /** Use TLS certificate for client authentication */
@@ -53,19 +60,20 @@ typedef struct sAcseAuthenticationParameter* AcseAuthenticationParameter;
 struct sAcseAuthenticationParameter
 {
     AcseAuthenticationMechanism mechanism;
+
     union
     {
         struct
         {
             uint8_t* octetString;
             int passwordLength;
-        } password;
+        } password; /* for mechanism = ACSE_AUTH_PASSWORD */
 
         struct
         {
             uint8_t* buf;
             int length;
-        } certificate;
+        } certificate; /* for mechanism = ACSE_AUTH_CERTIFICATE or ACSE_AUTH_TLS */
 
     } value;
 };
@@ -115,6 +123,10 @@ struct sIsoConnectionParameters
 {
     AcseAuthenticationParameter acseAuthParameter;
 
+//#if (CONFIG_MMS_SUPPORT_TLS == 1)
+    TLSConfiguration tlsConfiguration;
+//#endif
+
     const char* hostname;
     int tcpPort;
 
@@ -157,6 +169,10 @@ IsoConnectionParameters_create(void);
  */
 void
 IsoConnectionParameters_destroy(IsoConnectionParameters self);
+
+
+void
+IsoConnectionParameters_setTlsConfiguration(IsoConnectionParameters self, TLSConfiguration tlsConfig);
 
 /**
  * \brief set the authentication parameter
@@ -226,7 +242,7 @@ IsoConnectionParameters_setRemoteAddresses(IsoConnectionParameters self, uint32_
  * \param aeQualifier the AP-qualifier
  */
 void
-IsoConnectionParameters_setLocalApTitle(IsoConnectionParameters self, char* apTitle, int aeQualifier);
+IsoConnectionParameters_setLocalApTitle(IsoConnectionParameters self, const char* apTitle, int aeQualifier);
 
 /**
  * \brief set local addresses for the lower layers

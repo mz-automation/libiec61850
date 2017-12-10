@@ -61,12 +61,23 @@ typedef struct sClientConnection* ClientConnection;
 /**
  * \brief Create a new IedServer instance
  *
- * \param iedModel reference to the IedModel data structure to be used as IEC 61850 model of the device
+ * \param dataModel reference to the IedModel data structure to be used as IEC 61850 data model of the device
  *
- * \return the newly generated IedServer instance
+ * \return the new IedServer instance
  */
 IedServer
-IedServer_create(IedModel* iedModel);
+IedServer_create(IedModel* dataModel);
+
+/**
+ * \brief Create a new IedServer with TLS support
+ *
+ * \param dataModel reference to the IedModel data structure to be used as IEC 61850 data model of the device
+ * \param tlsConfiguration TLS configuration object, or NULL to not use TLS
+ *
+ * \return the new IedServer instance
+ */
+IedServer
+IedServer_createWithTlsSupport(IedModel* dataModel, TLSConfiguration tlsConfiguration);
 
 /**
  * \brief Destroy an IedServer instance and release all resources (memory, TCP sockets)
@@ -207,16 +218,6 @@ IedServer_isRunning(IedServer self);
  */
 MmsServer
 IedServer_getMmsServer(IedServer self);
-
-/**
- * \brief get the IsoServer instance for this IedServer object
- *
- * \param self the instance of IedServer to operate on.
- *
- * \return the IsoServer instance of this IedServer object
- */
-IsoServer
-IedServer_getIsoServer(IedServer self);
 
 /**
  * \brief Enable all GOOSE control blocks.

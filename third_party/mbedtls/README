@@ -1,0 +1,6 @@
+README
+------
+
+For TLS support with mbedtls download the source tarball of version 2.6.0 and extract here in the subfolder
+
+mbedtls-2.6.0

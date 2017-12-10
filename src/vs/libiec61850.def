@@ -187,7 +187,6 @@ EXPORTS
     IedServer_getAttributeValue @416
     IedServer_getDataModel @417
     IedServer_getFunctionalConstrainedData @418
-    IedServer_getIsoServer @419
     IedServer_getMmsServer @420
     IedServer_handleWriteAccess @421
     IedServer_isRunning @422
@@ -654,3 +653,6 @@ EXPORTS
     IedConnection_writeDataSetValues
     MmsVariableSpecification_isValueOfType
     IedServer_udpateDbposValue
+    MmsServer_setLocalIpAddress
+    MmsServer_isRunning
+    IedServer_createWithTlsSupport

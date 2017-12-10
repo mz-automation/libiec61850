@@ -277,6 +277,27 @@ MmsVariableSpecification_getChildSpecificationByIndex(MmsVariableSpecification* 
 }
 
 MmsVariableSpecification*
+MmsVariableSpecification_getChildSpecificationByName(MmsVariableSpecification* self, const char* name, int* index)
+{
+    if (self->type != MMS_STRUCTURE)
+        return NULL;
+
+    int i;
+
+    for (i = 0; i < self->typeSpec.structure.elementCount; i++) {
+        if (!strcmp(self->typeSpec.structure.elements[i]->name, name)) {
+
+            if (index != NULL)
+                *index = i;
+
+            return self->typeSpec.structure.elements[i];
+        }
+    }
+
+    return NULL;
+}
+
+MmsVariableSpecification*
 MmsVariableSpecification_getArrayElementSpecification(MmsVariableSpecification* self)
 {
     if (self->type != MMS_ARRAY)

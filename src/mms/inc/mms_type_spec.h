@@ -131,6 +131,18 @@ MmsVariableSpecification_getSize(MmsVariableSpecification* self);
 MmsVariableSpecification*
 MmsVariableSpecification_getChildSpecificationByIndex(MmsVariableSpecification* self, int index);
 
+/**
+ * \brief return the MmsVariableSpecification of a structure element with the given name
+ *
+ *  \param self the MmsVariableSpecification object
+ *  \param name the name of the component (structure element)
+ *  \param index (OUT) if not NULL the index of the structure element will be stored there
+ *
+ *  \return the type specification of the component or NULL if the component was not found
+ */
+MmsVariableSpecification*
+MmsVariableSpecification_getChildSpecificationByName(MmsVariableSpecification* self, const char* name, int* index);
+
 MmsVariableSpecification*
 MmsVariableSpecification_getArrayElementSpecification(MmsVariableSpecification* self);
 

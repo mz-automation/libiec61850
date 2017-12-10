@@ -64,7 +64,7 @@ typedef void (*MmsConnectionHandler)(void* parameter,
 		MmsServerConnection connection, MmsServerEvent event);
 
 MmsServer
-MmsServer_create(IsoServer isoServer, MmsDevice* device);
+MmsServer_create(MmsDevice* device, TLSConfiguration tlsConfiguration);
 
 void
 MmsServer_destroy(MmsServer self);
@@ -80,6 +80,12 @@ void
 MmsServer_installWriteHandler(MmsServer self, MmsWriteVariableHandler,
 		void* parameter);
 
+void
+MmsServer_setLocalIpAddress(MmsServer self, const char* localIpAddress);
+
+bool
+MmsServer_isRunning(MmsServer self);
+
 /**
  * A connection handler will be invoked whenever a new client connection is opened or closed
  */
@@ -94,7 +100,7 @@ MmsDevice*
 MmsServer_getDevice(MmsServer self);
 
 MmsValue*
-MmsServer_getValueFromCache(MmsServer self, MmsDomain* domain, char* itemId);
+MmsServer_getValueFromCache(MmsServer self, MmsDomain* domain, const char* itemId);
 
 bool
 MmsServer_isLocked(MmsServer self);
