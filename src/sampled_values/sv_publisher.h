@@ -85,7 +85,7 @@ SVPublisher_create(CommParameters* parameters, const char* interfaceId);
  * \return the new ASDU instance.
  */
 SVPublisher_ASDU
-SVPublisher_addASDU(SVPublisher self, char* svID, char* datset, uint32_t confRev);
+SVPublisher_addASDU(SVPublisher self, const char* svID, const char* datset, uint32_t confRev);
 
 /**
  * \brief Prepare the publisher for publishing.

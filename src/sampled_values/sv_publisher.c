@@ -43,8 +43,8 @@
 #define SV_MAX_MESSAGE_SIZE 1518
 
 struct sSVPublisher_ASDU {
-    char* svID;
-    char* datset;
+    const char* svID;
+    const char* datset;
     int dataSize;
 
     bool hasRefrTm;
@@ -296,7 +296,7 @@ SVPublisher_create(CommParameters* parameters, const char* interfaceId)
 }
 
 SVPublisher_ASDU
-SVPublisher_addASDU(SVPublisher self, char* svID, char* datset, uint32_t confRev)
+SVPublisher_addASDU(SVPublisher self, const char* svID, const char* datset, uint32_t confRev)
 {
     SVPublisher_ASDU newAsdu = (SVPublisher_ASDU) GLOBAL_CALLOC(1, sizeof(struct sSVPublisher_ASDU));
 
@@ -398,8 +398,10 @@ SVPublisher_ASDU_encodeToBuffer(SVPublisher_ASDU self, uint8_t* buffer, int bufP
     buffer[bufPos++] = self->smpSynch;
 
     /* SmpRate */
-    bufPos = BerEncoder_encodeTL(0x86, 2, buffer, bufPos);
-    bufPos = encodeUInt16FixedSize(self->smpRate, buffer, bufPos);
+    if (self->hasSmpRate) {
+        bufPos = BerEncoder_encodeTL(0x86, 2, buffer, bufPos);
+        bufPos = encodeUInt16FixedSize(self->smpRate, buffer, bufPos);
+    }
 
     /* Sample */
     bufPos = BerEncoder_encodeTL(0x87, self->dataSize, buffer, bufPos);
@@ -410,7 +412,7 @@ SVPublisher_ASDU_encodeToBuffer(SVPublisher_ASDU self, uint8_t* buffer, int bufP
     
     /* SmpMod */
     if (self->hasSmpMod) {
-        bufPos = BerEncoder_encodeTL(0x88, 4, buffer, bufPos);
+        bufPos = BerEncoder_encodeTL(0x88, 2, buffer, bufPos);
         bufPos = encodeUInt16FixedSize(self->smpMod, buffer, bufPos);
     }
 

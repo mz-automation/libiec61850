@@ -30,6 +30,7 @@ extern "C" {
 
 #include <stdbool.h>
 
+typedef struct sEthernetSocket* EthernetSocket;
 
 /**
  * \addtogroup goose_api_group
@@ -116,7 +117,7 @@ GooseReceiver_destroy(GooseReceiver self);
 /***************************************
  * Functions for non-threaded operation
  ***************************************/
-void
+EthernetSocket
 GooseReceiver_startThreadless(GooseReceiver self);
 
 void
@@ -133,20 +134,6 @@ GooseReceiver_stopThreadless(GooseReceiver self);
  */
 bool
 GooseReceiver_tick(GooseReceiver self);
-
-/* Forward declaration */
-typedef struct sEthernetHandleSet* EthernetHandleSet;
-
-/**
- * \brief Add the receiver to a handleset for multiplexed asynchronous IO.
- *
- * Note: This function must only be called after GooseReceiver_startThreadless().
- *
- * \param[in] self The SVReceiver instance.
- * \param[inout] handles The EthernetHandleSet to which the EthernetSocket of this receiver should be added.
- */
-void
-GooseReceiver_addHandleSet(GooseReceiver self, EthernetHandleSet handles);
 
 /**@}*/
 

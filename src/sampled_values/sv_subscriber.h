@@ -1,5 +1,5 @@
 /*
- *  sv_subscriber_api.h
+ *  sv_subscriber.h
  *
  *  Copyright 2015 Michael Zillgith
  *
@@ -29,6 +29,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+typedef struct sEthernetSocket* EthernetSocket;
 
 /**
  * \defgroup sv_subscriber_api_group IEC 61850 Sampled Values (SV) subscriber API
@@ -204,7 +206,7 @@ SVReceiver_destroy(SVReceiver self);
  * Functions for non-threaded operation
  ***************************************/
 
-void
+EthernetSocket
 SVReceiver_startThreadless(SVReceiver self);
 
 void
@@ -221,20 +223,6 @@ SVReceiver_stopThreadless(SVReceiver self);
  */
 bool
 SVReceiver_tick(SVReceiver self);
-
-/* Forward declaration */
-typedef struct sEthernetHandleSet* EthernetHandleSet;
-
-/**
- * \brief Add the receiver to a handleset for multiplexed asynchronous IO.
- *
- * Note: This function must only be called after SVReceiver_startThreadless().
- *
- * \param[in] self The SVReceiver instance.
- * \param[inout] handles The EthernetHandleSet to which the EthernetSocket of this receiver should be added.
- */
-void
-SVReceiver_addHandleSet(SVReceiver self, EthernetHandleSet handles);
 
 /*
  * Subscriber
@@ -290,12 +278,46 @@ const char*
 SVSubscriber_ASDU_getSvId(SVSubscriber_ASDU self);
 
 /**
+ * \brief return the DatSet value included in the SV ASDU
+ *
+ * \param self ASDU object instance
+ */
+const char*
+SVSubscriber_ASDU_getDatSet(SVSubscriber_ASDU self);
+
+/**
  * \brief return the ConfRev value included in the SV ASDU
  *
  * \param self ASDU object instance
  */
 uint32_t
 SVSubscriber_ASDU_getConfRev(SVSubscriber_ASDU self);
+
+/**
+ * \brief return the SmpMod value included in the SV ASDU
+ *
+ * \param self ASDU object instance
+ */
+uint8_t
+SVSubscriber_ASDU_getSmpMod(SVSubscriber_ASDU self);
+
+/**
+ * \brief return the SmpRate value included in the SV ASDU
+ *
+ * \param self ASDU object instance
+ */
+uint16_t
+SVSubscriber_ASDU_getSmpRate(SVSubscriber_ASDU self);
+
+/**
+ * \brief Check if DatSet value is included in the SV ASDU
+ *
+ * \param self ASDU object instance
+ *
+ * \return true if DatSet value is present, false otherwise
+ */
+bool
+SVSubscriber_ASDU_hasDatSet(SVSubscriber_ASDU self);
 
 /**
  * \brief Check if RefrTm value is included in the SV ASDU
@@ -306,6 +328,26 @@ SVSubscriber_ASDU_getConfRev(SVSubscriber_ASDU self);
  */
 bool
 SVSubscriber_ASDU_hasRefrTm(SVSubscriber_ASDU self);
+
+/**
+ * \brief Check if SmpMod value is included in the SV ASDU
+ *
+ * \param self ASDU object instance
+ *
+ * \return true if SmpMod value is present, false otherwise
+ */
+bool
+SVSubscriber_ASDU_hasSmpMod(SVSubscriber_ASDU self);
+
+/**
+ * \brief Check if SmpRate value is included in the SV ASDU
+ *
+ * \param self ASDU object instance
+ *
+ * \return true if SmpRate value is present, false otherwise
+ */
+bool
+SVSubscriber_ASDU_hasSmpRate(SVSubscriber_ASDU self);
 
 /**
  * \brief Get the RefrTim value included in SV ASDU as ms timestamp
