@@ -394,7 +394,10 @@ void
 MmsServer_startListeningThreadless(MmsServer self, int tcpPort)
 {
     IsoServer_setConnectionHandler(self->isoServer, isoConnectionIndicationHandler, (void*) self);
-    IsoServer_setTcpPort(self->isoServer, tcpPort);
+
+    if (tcpPort != -1)
+        IsoServer_setTcpPort(self->isoServer, tcpPort);
+
     IsoServer_startListeningThreadless(self->isoServer);
 }
 

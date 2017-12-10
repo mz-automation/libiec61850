@@ -113,7 +113,7 @@ IedServer_setFilestoreBasepath(IedServer self, const char* basepath);
  * \brief Start handling client connections
  *
  * \param self the instance of IedServer to operate on.
- * \param tcpPort the TCP port the server is listening
+ * \param tcpPort the TCP port the server is listening (-1 for using the default MMS or secure MMS port)
  */
 void
 IedServer_start(IedServer self, int tcpPort);
@@ -134,7 +134,7 @@ IedServer_stop(IedServer self);
  * be called periodically.
  *
  * \param self the instance of IedServer to operate on.
- * \param tcpPort the TCP port the server is listening
+ * \param tcpPort the TCP port the server is listening (-1 for using the default MMS or secure MMS port)
  */
 void
 IedServer_startThreadless(IedServer self, int tcpPort);
