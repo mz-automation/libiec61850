@@ -70,7 +70,7 @@ LIB_SOURCE_DIRS += third_party/mbedtls/mbedtls-2.6.0/library
 LIB_SOURCE_DIRS += src/tls/mbedtls
 LIB_INCLUDE_DIRS += third_party/mbedtls/mbedtls-2.6.0/include
 LIB_INCLUDE_DIRS += src/tls/mbedtls
-MBEDTLS_CONFIG_FILE = "mbedtls_config.h"
+CFLAGS += -D'MBEDTLS_CONFIG_FILE="mbedtls_config.h"'
 CFLAGS += -D'CONFIG_MMS_SUPPORT_TLS=1'
 endif
 

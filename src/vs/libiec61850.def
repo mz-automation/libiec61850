@@ -656,3 +656,4 @@ EXPORTS
     MmsServer_setLocalIpAddress
     MmsServer_isRunning
     IedServer_createWithTlsSupport
+    IedConnection_createWithTlsSupport
