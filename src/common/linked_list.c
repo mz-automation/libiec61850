@@ -116,6 +116,21 @@ LinkedList_add(LinkedList list, void* data)
 }
 
 bool
+LinkedList_contains(LinkedList list, void* data)
+{
+    LinkedList currentElement = list->next;
+
+    while (currentElement != NULL) {
+        if (currentElement->data == data)
+            return true;
+
+        currentElement = currentElement->next;
+    }
+
+    return false;
+}
+
+bool
 LinkedList_remove(LinkedList list, void* data)
 {
     LinkedList lastElement = list;
