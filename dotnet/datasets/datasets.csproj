@@ -35,9 +35,9 @@
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <ProjectReference Include="..\IEC61850forCSharp\IEC61850forCSharp.csproj">
+    <ProjectReference Include="..\IEC61850forCSharp\IEC61850.NET.csproj">
       <Project>{C35D624E-5506-4560-8074-1728F1FA1A4D}</Project>
-      <Name>IEC61850forCSharp</Name>
+      <Name>IEC61850.NET</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

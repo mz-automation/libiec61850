@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IEC61850forCSharp", "IEC61850forCSharp\IEC61850forCSharp.csproj", "{C35D624E-5506-4560-8074-1728F1FA1A4D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IEC61850.NET", "IEC61850forCSharp\IEC61850.NET.csproj", "{C35D624E-5506-4560-8074-1728F1FA1A4D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "example1", "example1\example1.csproj", "{C616A6DF-831E-443C-9310-3F343A6E3D1A}"
 EndProject
@@ -36,6 +36,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{0D2F61
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "server1", "server1\server1.csproj", "{9286D2AB-96ED-4631-AB3C-ED20FF5D6E6C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tls_client_example", "tls_client_example\tls_client_example.csproj", "{6734BF52-2D0D-476B-8EA2-C9C2D1D69B03}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -62,6 +64,10 @@ Global
 		{5E5D0FE0-DF44-48D8-A10E-1FB07D34DEA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5E5D0FE0-DF44-48D8-A10E-1FB07D34DEA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5E5D0FE0-DF44-48D8-A10E-1FB07D34DEA2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6734BF52-2D0D-476B-8EA2-C9C2D1D69B03}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6734BF52-2D0D-476B-8EA2-C9C2D1D69B03}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6734BF52-2D0D-476B-8EA2-C9C2D1D69B03}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6734BF52-2D0D-476B-8EA2-C9C2D1D69B03}.Release|Any CPU.Build.0 = Release|Any CPU
 		{71485F99-2976-45E6-B73D-4946E594C15C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{71485F99-2976-45E6-B73D-4946E594C15C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{71485F99-2976-45E6-B73D-4946E594C15C}.Release|Any CPU.ActiveCfg = Release|Any CPU

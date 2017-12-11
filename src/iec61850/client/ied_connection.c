@@ -504,7 +504,6 @@ IedConnection_create()
 
 IedConnection
 IedConnection_createWithTlsSupport(TLSConfiguration tlsConfig)
-
 {
     return createNewConnectionObject(tlsConfig);
 }
