@@ -123,9 +123,9 @@ struct sIsoConnectionParameters
 {
     AcseAuthenticationParameter acseAuthParameter;
 
-//#if (CONFIG_MMS_SUPPORT_TLS == 1)
+#if (CONFIG_MMS_SUPPORT_TLS == 1)
     TLSConfiguration tlsConfiguration;
-//#endif
+#endif
 
     const char* hostname;
     int tcpPort;
@@ -154,7 +154,7 @@ typedef struct sIsoConnectionParameters* IsoConnectionParameters;
  * NOTE: This function used internally by the MMS client library. When using the MMS or IEC 61850 API
  * there should be no reason for the user to call this function.
  *
- * \return new IsoConnectionParameters instanceextern "C" {
+ * \return new IsoConnectionParameters
  */
 IsoConnectionParameters
 IsoConnectionParameters_create(void);

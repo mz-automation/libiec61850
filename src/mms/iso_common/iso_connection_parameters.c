@@ -81,9 +81,9 @@ IsoConnectionParameters_destroy(IsoConnectionParameters self)
 void
 IsoConnectionParameters_setTlsConfiguration(IsoConnectionParameters self, TLSConfiguration tlsConfig)
 {
-//#if (CONFIG_MMS_SUPPORT_TLS == 1)
+#if (CONFIG_MMS_SUPPORT_TLS == 1)
     self->tlsConfiguration = tlsConfig;
-//#endif
+#endif
 }
 
 

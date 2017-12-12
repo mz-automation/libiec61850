@@ -1206,10 +1206,14 @@ bool
 MmsConnection_connect(MmsConnection self, MmsError* mmsError, const char* serverName, int serverPort)
 {
     if (serverPort == -1) {
+#if (CONFIG_MMS_SUPPORT_TLS == 1)
         if (self->isoParameters->tlsConfiguration)
             serverPort = 3782;
         else
             serverPort = 102;
+#else
+        serverPort = 102;
+#endif
     }
 
     IsoConnectionParameters_setTcpParameters(self->isoParameters, serverName, serverPort);

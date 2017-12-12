@@ -37,7 +37,8 @@ void sigint_handler(int signalId)
 static char* password1 = "user1@testpw";
 static char* password2 = "user2@testpw";
 
-static void printAppTitle(ItuObjectIdentifier* oid)
+static void
+printAppTitle(ItuObjectIdentifier* oid)
 {
     int i;
 

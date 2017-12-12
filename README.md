@@ -46,6 +46,15 @@ on the Linux command line.
 
 You can test the server examples by using a generic client or the provided client example applications.
 
+## Building the library with TLS support
+
+Download, unpack, and copy mbedtls-2.6.0 into the third_party/mbedtls folder.
+
+In the main libiec61850 folder run
+
+```
+make WITH_MBEDTLS=1
+``` 
 
 ## Installing the library and the API headers
 

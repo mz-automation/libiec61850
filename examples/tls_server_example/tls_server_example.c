@@ -77,6 +77,30 @@ connectionHandler (IedServer self, ClientConnection connection, bool connected, 
         printf("Connection closed\n");
 }
 
+static void
+printAppTitle(ItuObjectIdentifier* oid)
+{
+    int i;
+
+    for (i = 0; i < oid->arcCount; i++) {
+        printf("%i", oid->arc[i]);
+
+        if (i != (oid->arcCount - 1))
+            printf(".");
+    }
+}
+
+static bool
+clientAuthenticator(void* parameter, AcseAuthenticationParameter authParameter, void** securityToken, IsoApplicationReference* appRef)
+{
+    printf("ACSE Authenticator:\n");
+    printf("  client ap-title: "); printAppTitle(&(appRef->apTitle)); printf("\n");
+    printf("  client ae-qualifier: %i\n", appRef->aeQualifier);
+    printf("  auth-mechanism: %i\n", authParameter->mechanism);
+
+    return true;
+}
+
 int
 main(int argc, char** argv)
 {
@@ -117,6 +141,8 @@ main(int argc, char** argv)
     }
 
     iedServer = IedServer_createWithTlsSupport(&iedModel, tlsConfig);
+
+    IedServer_setAuthenticator(iedServer, clientAuthenticator, NULL);
 
     /* Install handler for operate command */
     IedServer_setControlHandler(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO1,
