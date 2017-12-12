@@ -2563,8 +2563,6 @@ MmsMapping_setConnectionIndicationHandler(MmsMapping* self, IedConnectionIndicat
     self->connectionIndicationHandlerParameter = parameter;
 }
 
-
-
 static bool
 isMemberValueRecursive(MmsValue* container, MmsValue* value)
 {
@@ -2702,10 +2700,11 @@ MmsMapping_triggerLogging(MmsMapping* self, MmsValue* value, LogInclusionFlag fl
                 if (lc->logInstance != NULL) {
                     LogInstance_logSingleData(lc->logInstance, dataRef, value, reasonCode);
                 }
-                else
-                    printf("No log instance available!\n");
+                else {
+                    if (DEBUG_IED_SERVER)
+                        printf("IED_SERVER: No log instance available!\n");
+                }
             }
-
 
         }
     }
