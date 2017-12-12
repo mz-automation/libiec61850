@@ -167,7 +167,6 @@ EXPORTS
     IedServer_handleWriteAccess @421
     IedServer_isRunning @422
     IedServer_lockDataModel @423
-    IedServer_observeDataAttribute @424
     IedServer_setAuthenticator @425
     IedServer_setConnectionIndicationHandler @426
     IedServer_setControlHandler @427

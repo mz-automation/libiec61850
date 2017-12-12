@@ -1,6 +1,8 @@
 Changes to version 1.2.0
 ------------------------
 
+- IEC 61850/MMS client/server: Added TLS support (TLS API and implementation for mbedtls)
+- IEC 61850/MMS server: removed deprecated AttributeChangedHandler
 - Added pkg-config file
 - The Sampled Values APIs have been renamed. The old version of the API is deprecated but still supported and will be removed in the next major version of the library.
 

@@ -51,7 +51,7 @@ struct sMmsMapping {
 #endif
 
     LinkedList controlObjects;
-    LinkedList observedObjects;
+
     LinkedList attributeAccessHandlers;
 
 #if (CONFIG_IEC61850_SETTING_GROUPS == 1)

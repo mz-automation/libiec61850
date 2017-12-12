@@ -417,8 +417,6 @@ IedServer_createWithTlsSupport(IedModel* dataModel, TLSConfiguration tlsConfigur
 
         self->mmsDevice = MmsMapping_getMmsDeviceModel(self->mmsMapping);
 
-       // self->isoServer = IsoServer_create();
-
         self->mmsServer = MmsServer_create(self->mmsDevice, tlsConfiguration);
 
         MmsMapping_setMmsServer(self->mmsMapping, self->mmsServer);
@@ -1236,13 +1234,6 @@ IedServer_disableGoosePublishing(IedServer self)
 #if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
     MmsMapping_disableGoosePublishing(self->mmsMapping);
 #endif /* (CONFIG_INCLUDE_GOOSE_SUPPORT == 1) */
-}
-
-void
-IedServer_observeDataAttribute(IedServer self, DataAttribute* dataAttribute,
-        AttributeChangedHandler handler)
-{
-    MmsMapping_addObservedAttribute(self->mmsMapping, dataAttribute, handler);
 }
 
 void

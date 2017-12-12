@@ -1001,36 +1001,6 @@ IedServer_setSVCBHandler(IedServer self, SVControlBlock* svcb, SVCBEventHandler 
  * @{
  */
 
-/**
- * \brief callback handler to monitor client access to data attributes
- *
- * User provided callback function to observe (monitor) MMS client access to
- * IEC 61850 data attributes. The application can install the same handler
- * multiple times and distinguish data attributes by the dataAttribute parameter.
- *
- * \param the data attribute that has been written by an MMS client.
- * \param connection the connection object of the client connection that invoked the write operation
- */
-typedef void (*AttributeChangedHandler) (DataAttribute* dataAttribute, ClientConnection connection);
-
-/**
- * \deprecated Please use IedServer_handleWriteAccess instead!
- * \brief Install an observer for a data attribute.
- *
- * This instructs the server to monitor write attempts by MMS clients to specific
- * data attributes. If a successful write attempt happens the server will call
- * the provided callback function to inform the application. This can be used to
- * monitor important configuration values.
- *
- * \param self the instance of IedServer to operate on.
- * \param dataAttribute the data attribute to monitor
- * \param handler the callback function that is invoked if a client has written to
- *        the monitored data attribute.
- */
-void
-IedServer_observeDataAttribute(IedServer self, DataAttribute* dataAttribute,
-        AttributeChangedHandler handler);
-
 /***************************************************************************
  * Access control
  **************************************************************************/
