@@ -271,8 +271,6 @@ installDefaultValuesForDataAttribute(IedServer self, DataAttribute* dataAttribut
             if (cacheValue == NULL) {
                 printf("IED_SERVER: exception: invalid initializer for %s\n", mmsVariableName);
                 exit(-1);
-
-                //TODO else call exception handler
             }
         #endif
 
@@ -1346,16 +1344,26 @@ IedServer_getFunctionalConstrainedData(IedServer self, DataObject* dataObject, F
 
     char domainName[65];
 
-    if ((strlen(self->model->name) + strlen(ld->name)) > 64)
-        goto exit_function; // TODO call exception handler!
+    if ((strlen(self->model->name) + strlen(ld->name)) > 64) {
+
+        if (DEBUG_IED_SERVER)
+            printf("IED_SERVER: LD name too long!\n");
+
+        goto exit_function;
+    }
 
     strncpy(domainName, self->model->name, 64);
     strncat(domainName, ld->name, 64);
 
     MmsDomain* domain = MmsDevice_getDomain(self->mmsDevice, domainName);
 
-    if (domain == NULL)
-        goto exit_function; // TODO call exception handler!
+    if (domain == NULL) {
+
+        if (DEBUG_IED_SERVER)
+            printf("IED_SERVER: internal error - domain does not exist!\n");
+
+        goto exit_function;
+    }
 
     value = MmsServer_getValueFromCache(self->mmsServer, domain, currentStart);
 
