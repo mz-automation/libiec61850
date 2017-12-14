@@ -1,3 +1,25 @@
+Changes to version 1.1.1
+------------------------
+
+- IEC 61850 client: fixed bug in APC control handling
+- IEC 61850 client: ClientReportControlBlock now accepts "$" and "." as seperator for RCB object reference
+- MMS client: fixed bug in MmsConnection_connect (COTP payload buffer was not reset in case of an error during connect -> connection failed in case of reuse of MmsConnection object
+- MMS client: delete named variable list service supports VMD specific lists
+- SV subscriber/publisher: additional features and bug fixes
+- SV: fixed data type for smpRate
+- SV: fixed encoding of optional smpMod attribute
+- SV receiver: Added semaphore to make subscriber list thread-safe
+- .NET API: ControlObject implements IDisposable interface
+- IED server: added new function IedServer_udpateDbposValue
+- fixed problem with cmake include folders
+- MMS client: file services -fixed encoding problem with long file names
+- MMS server: ACSE authenticator passes application reference (ap-title and ae-qualifier)
+- example directory cleanup
+- MMS: fixed potential memory leak in asn1 code that can be caused by malformed MMS messages
+- MMS client: MmsConnection_getVariableAccessAttributes support for VMD specific variables
+- Java SCL parser: added support for "Val" elements for Octet64 types
+
+
 Changes to version 1.1.0
 ------------------------
 
