@@ -32,12 +32,19 @@
 #include "libiec61850_platform_includes.h"
 
 static bool
-isBufferedRcb(const char* objectReference)
+isBufferedRcb(const char* objectReference, bool* isValid)
 {
     const char* separator = strchr(objectReference, '.');
 
     if (separator == NULL)
+        separator = strchr(objectReference, '$');
+
+    if (separator == NULL) {
+        *isValid = false;
         return false;
+    }
+
+    *isValid = true;
 
     if (*(separator + 1) == 'B')
         return true;
@@ -48,12 +55,24 @@ isBufferedRcb(const char* objectReference)
 ClientReportControlBlock
 ClientReportControlBlock_create(const char* objectReference)
 {
+    bool isReferenceValid;
+    bool isBuffered;
+
+    isBuffered = isBufferedRcb(objectReference, &isReferenceValid);
+
+    if (isReferenceValid == false) {
+        if (DEBUG_IED_CLIENT)
+            printf("DEBUG_IED_CLIENT: RCB reference invalid\n");
+
+        return NULL;
+    }
+
     ClientReportControlBlock self = (ClientReportControlBlock) GLOBAL_CALLOC(1, sizeof(struct sClientReportControlBlock));
 
-    //TODO check validity of object reference?!
-
-    self->objectReference = StringUtils_copyString(objectReference);
-    self->isBuffered = isBufferedRcb(objectReference);
+    if (self) {
+        self->objectReference = StringUtils_copyString(objectReference);
+        self->isBuffered = isBuffered;
+    }
 
     return self;
 }
