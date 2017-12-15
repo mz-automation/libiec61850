@@ -28,7 +28,7 @@
 #define DEBUG_HAL_ETHERNET 0
 
 /* Maximum MMS PDU SIZE - default is 65000 */
-#define CONFIG_MMS_MAXIMUM_PDU_SIZE 120000
+#define CONFIG_MMS_MAXIMUM_PDU_SIZE 65000
 
 /*
  * Enable single threaded mode
@@ -37,14 +37,14 @@
  * 0 ==> server runs in multi-threaded mode (one thread for each connection and
  * one server background thread )
  */
-#define CONFIG_MMS_SINGLE_THREADED 0
+#define CONFIG_MMS_SINGLE_THREADED 1
 
 /*
  * Optimize stack for threadless operation - don't use semaphores
  *
  * WARNING: If set to 1 normal single- and multi-threaded server are no longer working!
  */
-#define CONFIG_MMS_THREADLESS_STACK 1
+#define CONFIG_MMS_THREADLESS_STACK 0
 
 /* number of concurrent MMS client connections the server accepts, -1 for no limit */
 #define CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS 5
