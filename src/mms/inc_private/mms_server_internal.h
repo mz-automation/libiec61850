@@ -28,7 +28,6 @@
 
 #include "MmsPdu.h"
 #include "mms_common.h"
-#include "mms_indication.h"
 #include "mms_server_connection.h"
 #include "mms_device_model.h"
 #include "mms_common_internal.h"

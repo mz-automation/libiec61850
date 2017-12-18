@@ -507,15 +507,13 @@ handleConfirmedResponsePdu(
 } /* handleConfirmedResponsePdu */
 #endif /* (MMS_OBTAIN_FILE_SERVICE == 1) */
 
-MmsIndication
+static inline void
 MmsServerConnection_parseMessage(MmsServerConnection self, ByteBuffer* message, ByteBuffer* response)
 {
-	MmsIndication retVal;
-
-	uint8_t* buffer = message->buffer;
+    uint8_t* buffer = message->buffer;
 
 	if (message->size < 2)
-		return MMS_ERROR;
+		goto parsing_error;
 
 	int bufPos = 0;
 
@@ -525,7 +523,7 @@ MmsServerConnection_parseMessage(MmsServerConnection self, ByteBuffer* message, 
 	bufPos = BerDecoder_decodeLength(buffer, &pduLength, bufPos, message->size);
 
 	if (bufPos < 0)
-		return MMS_ERROR;
+		goto parsing_error;
 
 	if (DEBUG_MMS_SERVER)
 	    printf("MMS_SERVER: recvd MMS-PDU type: %02x size: %i\n", pduType, pduLength);
@@ -533,39 +531,43 @@ MmsServerConnection_parseMessage(MmsServerConnection self, ByteBuffer* message, 
 	switch (pduType) {
 	case 0xa8: /* Initiate request PDU */
 		mmsServer_handleInitiateRequest(self, buffer, bufPos, bufPos + pduLength, response);
-		retVal = MMS_INITIATE;
 		break;
+
 	case 0xa0: /* Confirmed request PDU */
 		handleConfirmedRequestPdu(self, buffer, bufPos, bufPos + pduLength, response);
-		retVal = MMS_CONFIRMED_REQUEST;
 		break;
+
 #if (MMS_OBTAIN_FILE_SERVICE == 1)
 	case 0xa1: /* Confirmed response PDU */
 	    handleConfirmedResponsePdu(self, buffer, bufPos, bufPos + pduLength, response);
-	    retVal = MMS_CONFIRMED_REQUEST;
 	    break;
+
 	case 0xa2: /* Confirmed error PDU */
 	    handleConfirmedErrorPdu(self, buffer, 0, bufPos + pduLength, response);
-	    retVal = MMS_CONFIRMED_REQUEST;
 	    break;
 
 #endif /* (MMS_OBTAIN_FILE_SERVICE == 1) */
 	case 0x8b: /* Conclude request PDU */
 		mmsServer_writeConcludeResponsePdu(response);
-		retVal = MMS_CONCLUDE;
 		break;
+
 	case 0xa4: /* Reject PDU - silently ignore */
 	    if (DEBUG_MMS_SERVER)
 	        printf("MMS_SERVER: received reject PDU!\n");
-		retVal = MMS_OK;
 		break;
+
 	default:
 		mmsMsg_createMmsRejectPdu(NULL, MMS_ERROR_REJECT_UNKNOWN_PDU_TYPE, response);
-		retVal = MMS_ERROR;
 		break;
 	}
 
-	return retVal;
+	return;
+
+parsing_error:
+    if (DEBUG_MMS_SERVER)
+        printf("MMS_SERVER: error parsing message\n");
+
+    return;
 }
 
 static void /* will be called by IsoConnection */

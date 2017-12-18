@@ -31,7 +31,6 @@
 #include "libiec61850_platform_includes.h"
 
 #include "mms_common.h"
-#include "mms_indication.h"
 #include "mms_device_model.h"
 #include "mms_value.h"
 #include "mms_server.h"
@@ -60,10 +59,6 @@ MmsServerConnection_getNamedVariableLists(MmsServerConnection self);
 
 void
 MmsServerConnection_deleteNamedVariableList(MmsServerConnection self, char* listName);
-
-MmsIndication
-MmsServerConnection_parseMessage(MmsServerConnection connection, ByteBuffer* message, ByteBuffer* response);
-
 
 /** \brief send information report for a single VMD specific variable
  *

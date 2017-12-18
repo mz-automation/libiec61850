@@ -30,6 +30,10 @@
 #include "byte_buffer.h"
 #include "mms_server.h"
 
+#define DEFAULT_MAX_SERV_OUTSTANDING_CALLING 5
+#define DEFAULT_MAX_SERV_OUTSTANDING_CALLED 5
+#define DEFAULT_DATA_STRUCTURE_NESTING_LEVEL 10
+
 #if (MMS_FILE_SERVICE == 1)
 
 #ifndef CONFIG_MMS_MAX_NUMBER_OF_OPEN_FILES_PER_CONNECTION
@@ -73,7 +77,6 @@ FileHandle
 mmsMsg_openFile(const char* basepath, char* fileName, bool readWrite);
 
 #endif /* (MMS_FILE_SERVICE == 1) */
-
 typedef struct sMmsServiceError
 {
     int errorClass;
