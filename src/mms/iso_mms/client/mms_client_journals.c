@@ -67,7 +67,7 @@ parseJournalVariable(uint8_t* buffer, int bufPos, int maxLength, MmsJournalVaria
         case 0xa1: /* valueSpec */
 
             if (journalVariable->value == NULL) {
-                journalVariable->value = MmsValue_decodeMmsData(buffer, bufPos, length);
+                journalVariable->value = MmsValue_decodeMmsData(buffer, bufPos, length, NULL);
             }
 
             break;

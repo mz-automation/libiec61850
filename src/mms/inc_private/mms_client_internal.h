@@ -102,7 +102,12 @@ struct sMmsConnection {
 #if (MMS_OBTAIN_FILE_SERVICE == 1)
     int32_t nextFrsmId;
     MmsFileReadStateMachine frsms[CONFIG_MMS_MAX_NUMBER_OF_OPEN_FILES_PER_CONNECTION];
+
+#if (CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME == 1)
+    char* filestoreBasepath;
 #endif
+
+#endif /* (MMS_OBTAIN_FILE_SERVICE == 1) */
 };
 
 
@@ -116,6 +121,9 @@ typedef enum {
 	MMS_OBJECT_CLASS_DOMAIN = 9
 } MmsObjectClass;
 
+char*
+MmsConnection_getFilestoreBasepath(MmsConnection self);
+
 MmsValue*
 mmsClient_parseListOfAccessResults(AccessResult_t** accessResultList, int listSize, bool createArray);
 
@@ -125,7 +133,7 @@ mmsClient_getInvokeId(ConfirmedResponsePdu_t* confirmedResponse);
 int
 mmsClient_write_out(void *buffer, size_t size, void *app_key);
 
-int
+void
 mmsClient_createInitiateRequest(MmsConnection self, ByteBuffer* writeBuffer);
 
 MmsPdu_t*
@@ -187,7 +195,7 @@ mmsClient_createGetVariableAccessAttributesRequest(
 MmsVariableSpecification*
 mmsClient_parseGetVariableAccessAttributesResponse(ByteBuffer* message, uint32_t* invokeId);
 
-void
+MmsDataAccessError
 mmsClient_parseWriteResponse(ByteBuffer* message, int32_t bufPos, MmsError* mmsError);
 
 void
@@ -201,6 +209,15 @@ mmsClient_createWriteRequest(uint32_t invokeId, const char* domainId, const char
 int
 mmsClient_createWriteMultipleItemsRequest(uint32_t invokeId, const char* domainId, LinkedList itemIds, LinkedList values,
         ByteBuffer* writeBuffer);
+
+int
+mmsClient_createWriteRequestNamedVariableList(uint32_t invokeId, bool isAssociationSpecific, const char* domainId, const char* itemId,
+        LinkedList values, ByteBuffer* writeBuffer);
+
+int
+mmsClient_createWriteRequestArray(uint32_t invokeId, const char* domainId, const char* itemId,
+        int startIndex, int elementCount,
+        MmsValue* value, ByteBuffer* writeBuffer);
 
 void
 mmsClient_createDefineNamedVariableListRequest(uint32_t invokeId, ByteBuffer* writeBuffer,

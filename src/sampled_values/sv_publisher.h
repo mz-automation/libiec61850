@@ -31,6 +31,17 @@
 extern "C" {
 #endif
 
+#ifndef GOOSE_SV_COMM_PARAMETERS
+#define GOOSE_SV_COMM_PARAMETERS
+
+typedef struct sCommParameters {
+    uint8_t vlanPriority;
+    uint16_t vlanId;
+    uint16_t appId;
+    uint8_t dstAddress[6];
+} CommParameters;
+
+#endif
 
 #define IEC61850_SV_SMPSYNC_NOT_SYNCHRONIZED 0
 #define IEC61850_SV_SMPSYNC_SYNCED_UNSPEC_LOCAL_CLOCK 1
@@ -45,7 +56,7 @@ typedef struct sSampledValuesPublisher* SampledValuesPublisher;
 typedef struct sSV_ASDU* SV_ASDU;
 
 SampledValuesPublisher
-SampledValuesPublisher_create(const char* interfaceId);
+SampledValuesPublisher_create(CommParameters* parameters, const char* interfaceId);
 
 SV_ASDU
 SampledValuesPublisher_addASDU(SampledValuesPublisher self, char* svID, char* datset, uint32_t confRev);
@@ -73,6 +84,12 @@ SV_ASDU_addINT32(SV_ASDU self);
 
 void
 SV_ASDU_setINT32(SV_ASDU self, int index, int32_t value);
+
+int
+SV_ASDU_addINT64(SV_ASDU self);
+
+void
+SV_ASDU_setINT64(SV_ASDU self, int index, int64_t value);
 
 int
 SV_ASDU_addFLOAT(SV_ASDU self);
@@ -109,6 +126,18 @@ SV_ASDU_setRefrTm(SV_ASDU self, uint64_t refrTm);
  */
 void
 SV_ASDU_setSmpMod(SV_ASDU self, uint8_t smpMod);
+
+/**
+ * \brief Set the sample rate of the ASDU.
+ *
+ * If not set the transmitted ASDU will not contain an smpRate value.
+ *
+ * \param self the SV_ASDU
+ *
+ * \param smpRate Amount of samples (default per nominal period, see SmpMod).
+ */
+void
+SV_ASDU_setSmpRate(SV_ASDU self, uint16_t smpRate);
 
 #ifdef __cplusplus
 }

@@ -47,21 +47,25 @@ MmsValue_getBitStringByteSize(const MmsValue* self)
    return bitStringByteSize(self);
 }
 
-static void
+static bool
 updateStructuredComponent(MmsValue* self, const MmsValue* update)
 {
-	int componentCount;
 	MmsValue** selfValues;
 	MmsValue** updateValues;
 
-    componentCount = self->value.structure.size;
+    if (self->value.structure.size != update->value.structure.size)
+        return false;
+
     selfValues = self->value.structure.components;
     updateValues = update->value.structure.components;
 
 	int i;
-	for (i = 0; i < componentCount; i++) {
-		MmsValue_update(selfValues[i], updateValues[i]);
+	for (i = 0; i < self->value.structure.size; i++) {
+	    if (MmsValue_update(selfValues[i], updateValues[i]) == false)
+	        return false;
 	}
+
+	return true;
 }
 
 MmsValue*
@@ -223,7 +227,8 @@ MmsValue_update(MmsValue* self, const MmsValue* update)
 		switch (self->type) {
 		case MMS_STRUCTURE:
 		case MMS_ARRAY:
-			updateStructuredComponent(self, update);
+		    if (updateStructuredComponent(self, update) == false)
+		        return false;
 			break;
 		case MMS_BOOLEAN:
 			self->value.boolean = update->value.boolean;
@@ -1010,9 +1015,7 @@ MmsValue_cloneToBuffer(const MmsValue* self, uint8_t* destinationAddress)
 
             int i;
             for (i = 0; i < self->value.structure.size; i++) {
-                newValue->value.structure.components[i] = (MmsValue*) destinationAddress;
-                //memcpy(&(newValue->value.structure.components[i]), &(destinationAddress), sizeof (MmsValue*));
-
+                memcpy(&(newValue->value.structure.components[i]), &(destinationAddress), sizeof (MmsValue*));
                 destinationAddress = MmsValue_cloneToBuffer(self->value.structure.components[i], destinationAddress);
             }
         }

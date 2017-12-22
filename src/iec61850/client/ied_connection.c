@@ -1131,6 +1131,32 @@ IedConnection_getFileDirectory(IedConnection self, IedClientError* error, const 
     return fileNames;
 }
 
+LinkedList /*<FileDirectoryEntry>*/
+IedConnection_getFileDirectoryEx(IedConnection self, IedClientError* error, const char* directoryName, const char* continueAfter,
+        bool* moreFollows)
+{
+    *error = IED_ERROR_OK;
+
+    MmsError mmsError = MMS_ERROR_NONE;
+
+    LinkedList fileNames = LinkedList_create();
+
+    bool moreFollowsInternal =  MmsConnection_getFileDirectory(self->connection, &mmsError, directoryName, continueAfter,
+                                    mmsFileDirectoryHandler, fileNames);
+
+    if (mmsError != MMS_ERROR_NONE) {
+        *error = iedConnection_mapMmsErrorToIedError(mmsError);
+        LinkedList_destroyDeep(fileNames, (LinkedListValueDeleteFunction) FileDirectoryEntry_destroy);
+
+        return NULL;
+    }
+
+    if (moreFollows != NULL)
+        *moreFollows = moreFollowsInternal;
+
+    return fileNames;
+}
+
 
 struct sClientProvidedFileReadHandler {
     IedClientGetFileHandler handler;
@@ -1199,6 +1225,13 @@ IedConnection_getFile(IedConnection self, IedClientError* error, const char* fil
     *error = iedConnection_mapMmsErrorToIedError(mmsError);
 
     return clientFileReadHandler.byteReceived;
+}
+
+void
+IedConnection_setFilestoreBasepath(IedConnection self, const char* basepath)
+{
+    /* simply pass the call to MMS client API */
+    MmsConnection_setFilestoreBasepath(self->connection, basepath);
 }
 
 void
@@ -1948,13 +1981,9 @@ getDataDirectoryByFc(IedConnection self, IedClientError* error,
 
                             int elementNameLen = strlen(subElementName);
 
-                            char* elementName = (char*) GLOBAL_MALLOC(elementNameLen + 5);
+                            char* elementName = (char*) GLOBAL_MALLOC(elementNameLen + 1);
                             memcpy(elementName, subElementName, elementNameLen);
-                            elementName[elementNameLen] = '[';
-                            elementName[elementNameLen + 1] = *(fcPos + 1);
-                            elementName[elementNameLen + 2] = *(fcPos + 2);
-                            elementName[elementNameLen + 3] = ']';
-                            elementName[elementNameLen + 4] = 0;
+                            elementName[elementNameLen] = 0;
 
                             if (!addToStringSet(dataDirectory, elementName))
                                 GLOBAL_FREEMEM(elementName);
@@ -2295,6 +2324,64 @@ IedConnection_readDataSetValues(IedConnection self, IedClientError* error, const
 
 exit_function:
     return dataSet;
+}
+
+void
+IedConnection_writeDataSetValues(IedConnection self, IedClientError* error, const char* dataSetReference,
+        LinkedList/*<MmsValue*>*/ values, /* OUTPUT */LinkedList* /* <MmsValue*> */accessResults)
+{
+    char domainIdBuffer[65];
+    char itemIdBuffer[DATA_SET_MAX_NAME_LENGTH + 1];
+
+    const char* domainId = NULL;
+    const char* itemId = NULL;
+
+    bool isAssociationSpecific = false;
+
+    if (dataSetReference[0] != '@') {
+
+        if ((dataSetReference[0] == '/') || (strchr(dataSetReference, '/') == NULL)) {
+            domainId = NULL;
+
+            if (dataSetReference[0] == '/')
+                itemId = dataSetReference + 1;
+            else
+                itemId = dataSetReference;
+        }
+        else {
+            domainId = MmsMapping_getMmsDomainFromObjectReference(dataSetReference, domainIdBuffer);
+
+            if (domainId == NULL) {
+                *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
+                goto exit_function;
+            }
+
+            const char* itemIdRefOrig = dataSetReference + strlen(domainId) + 1;
+
+            if (strlen(itemIdRefOrig) > DATA_SET_MAX_NAME_LENGTH) {
+                *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
+                goto exit_function;
+            }
+
+            char* itemIdRef = StringUtils_copyStringToBuffer(itemIdRefOrig, itemIdBuffer);
+
+            StringUtils_replace(itemIdRef, '.', '$');
+            itemId = itemIdRef;
+        }
+    }
+    else {
+        itemId = dataSetReference + 1;
+        isAssociationSpecific = true;
+    }
+
+    MmsError mmsError;
+
+    MmsConnection_writeNamedVariableList(self->connection, &mmsError, isAssociationSpecific, domainId, itemId, values, accessResults);
+
+    *error = iedConnection_mapMmsErrorToIedError(mmsError);
+
+exit_function:
+    return;
 }
 
 LinkedList /* <MmsJournalEntry> */

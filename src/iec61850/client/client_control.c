@@ -149,6 +149,7 @@ ControlObjectClient_create(const char* objectReference, IedConnection connection
     bool hasOper = false;
     bool hasTimeActivatedControl = false;
     bool hasCtlNum = false;
+    bool isAPC = false;
     MmsVariableSpecification* ctlVal = NULL;
     MmsVariableSpecification* t = NULL;
 
@@ -157,7 +158,12 @@ ControlObjectClient_create(const char* objectReference, IedConnection connection
 
     	if (oper)
     	{
-    		hasOper = true;
+            hasOper = true;
+
+            ctlVal = MmsVariableSpecification_getNamedVariableRecursive(oper, "ctlVal");
+
+            if (MmsVariableSpecification_getType(ctlVal) == MMS_STRUCTURE)
+                isAPC = true;
 
     		MmsVariableSpecification* operTm = MmsVariableSpecification_getNamedVariableRecursive(oper, "operTm");
 
@@ -169,7 +175,6 @@ ControlObjectClient_create(const char* objectReference, IedConnection connection
     		if (ctlNum)
     			hasCtlNum = true;
 
-    		ctlVal = MmsVariableSpecification_getNamedVariableRecursive(oper, "ctlVal");
     		t = MmsVariableSpecification_getNamedVariableRecursive(oper, "T");
     	}
     }
@@ -200,6 +205,11 @@ ControlObjectClient_create(const char* objectReference, IedConnection connection
     self->hasCtlNum = hasCtlNum;
     self->ctlVal = MmsValue_newDefaultValue(ctlVal);
 
+    if (isAPC)
+        self->analogValue = MmsValue_createEmptyStructure(1);
+    else
+        self->analogValue = NULL;
+
     /* Check for T element type (Binary time -> Ed.1,UTC time -> Ed.2) */
     if (MmsVariableSpecification_getType(t) == MMS_BINARY_TIME)
         self->edition = 1;
@@ -217,162 +227,6 @@ free_varspec:
 exit_function:
     return self;
 }
-
-
-#if 0
-ControlObjectClient
-ControlObjectClient_create(const char* objectReference, IedConnection connection)
-{
-    ControlObjectClient self = NULL;
-
-    /* request control model from server */
-    char domainId[65];
-    char itemId[129];
-
-    char* domainName = MmsMapping_getMmsDomainFromObjectReference(objectReference, domainId);
-
-    if (domainName == NULL)
-        goto exit_function;
-
-    convertToMmsAndInsertFC(itemId, objectReference + strlen(domainId) + 1, "CF");
-
-    int controlObjectItemIdLen = strlen(itemId);
-
-    strncat(itemId, "$ctlModel", 64 - controlObjectItemIdLen);
-
-    MmsError mmsError;
-
-    MmsValue* ctlModel = MmsConnection_readVariable(IedConnection_getMmsConnection(connection),
-            &mmsError, domainId, itemId);
-
-    if (ctlModel == NULL) {
-        if (DEBUG_IED_CLIENT)
-            printf("IED_CLIENT: ControlObjectClient_create: failed to get ctlModel from server\n");
-
-        goto exit_function;
-    }
-
-    int ctlModelVal = MmsValue_toUint32(ctlModel);
-
-    MmsValue_delete(ctlModel);
-
-    IedClientError error;
-
-    LinkedList dataDirectory =
-            IedConnection_getDataDirectory(connection, &error, objectReference);
-
-    if (dataDirectory == NULL) {
-        if (DEBUG_IED_CLIENT)
-            printf("IED_CLIENT: ControlObjectClient_create: failed to get data directory of control object\n");
-
-        goto exit_function;
-    }
-
-    /* check what control elements are available */
-    bool hasOper = false;
-
-    LinkedList element = LinkedList_getNext(dataDirectory);
-
-    while (element != NULL) {
-        char* objectName = (char*) element->data;
-
-        if (strcmp(objectName, "Oper") == 0)
-            hasOper = true;
-
-        element = LinkedList_getNext(element);
-    }
-
-    LinkedList_destroy(dataDirectory);
-
-    if (hasOper == false) {
-        if (DEBUG_IED_CLIENT)
-            printf("IED_CLIENT: control is missing required element \"Oper\"\n");
-
-        goto exit_function;
-    }
-
-    /* check for time activated control and ctlNum */
-    bool hasTimeActivatedControl = false;
-    bool hasCtlNum = false;
-
-    strcpy(itemId, objectReference);
-    strcat(itemId, ".Oper");
-    dataDirectory = IedConnection_getDataDirectory(connection, &error, itemId);
-
-    if (dataDirectory == NULL)
-        goto exit_function;
-
-    element = LinkedList_getNext(dataDirectory);
-
-    while (element != NULL) {
-        char* objectName = (char*) element->data;
-
-        if (strcmp(objectName, "operTm") == 0) {
-            hasTimeActivatedControl = true;
-        }
-        else if (strcmp(objectName, "ctlNum") == 0) {
-        	hasCtlNum = true;
-        }
-
-        element = LinkedList_getNext(element);
-    }
-
-    LinkedList_destroy(dataDirectory);
-
-    /* get default parameters for Oper control variable */
-
-    MmsValue* oper = IedConnection_readObject(connection, &error, itemId, IEC61850_FC_CO);
-
-    if (oper == NULL) {
-        if (DEBUG_IED_CLIENT)
-            printf("IED_CLIENT: reading \"Oper\" failed!\n");
-
-        goto exit_function;
-    }
-
-    self = (ControlObjectClient) GLOBAL_CALLOC(1, sizeof(struct sControlObjectClient));
-
-    if (self == NULL)
-        goto exit_function;
-
-    self->objectReference = StringUtils_copyString(objectReference);
-    self->connection = connection;
-    self->ctlModel = (ControlModel) ctlModelVal;
-    self->hasTimeActivatedMode = hasTimeActivatedControl;
-    self->hasCtlNum = hasCtlNum;
-    self->ctlVal = MmsValue_getElement(oper, 0);
-
-    if (MmsValue_getType(self->ctlVal) == MMS_STRUCTURE)
-    	self->analogValue = MmsValue_createEmptyStructure(1);
-    else
-    	self->analogValue = NULL;
-
-
-    /* Check for T element type (Binary time -> Ed.1,UTC time -> Ed.2) */
-    MmsValue* t;
-
-    if (hasTimeActivatedControl)
-        t = MmsValue_getElement(oper, 4);
-    else
-        t = MmsValue_getElement(oper, 3);
-
-    if (MmsValue_getType(t) == MMS_BINARY_TIME)
-        self->edition = 1;
-    else
-        self->edition = 2;
-
-    if (DEBUG_IED_CLIENT)
-        printf("IED_CLIENT: Detected edition %i control\n", self->edition);
-
-    MmsValue_setElement(oper, 0, NULL);
-    MmsValue_delete(oper);
-
-    private_IedConnection_addControlClient(connection, self);
-
-exit_function:
-    return self;
-}
-#endif
 
 void
 ControlObjectClient_destroy(ControlObjectClient self)

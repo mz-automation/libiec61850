@@ -50,9 +50,7 @@ createValueCaches(MmsDevice* device)
 MmsServer
 MmsServer_create(IsoServer isoServer, MmsDevice* device)
 {
-    MmsServer self = (MmsServer) GLOBAL_MALLOC(sizeof(struct sMmsServer));
-
-    memset(self, 0, sizeof(struct sMmsServer));
+    MmsServer self = (MmsServer) GLOBAL_CALLOC(1, sizeof(struct sMmsServer));
 
     self->isoServer = isoServer;
     self->device = device;
@@ -71,6 +69,22 @@ MmsServer_create(IsoServer isoServer, MmsDevice* device)
 
     return self;
 }
+
+
+void
+MmsServer_setFilestoreBasepath(MmsServer self, const char* basepath)
+{
+#if (CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME == 1)
+    if (self->filestoreBasepath != NULL) {
+        GLOBAL_FREEMEM(self->filestoreBasepath);
+        self->filestoreBasepath = NULL;
+    }
+
+    if (basepath != NULL)
+        self->filestoreBasepath = StringUtils_copyString(basepath);
+#endif /* (CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME == 1) */
+}
+
 
 void
 MmsServer_lockModel(MmsServer self)
@@ -169,6 +183,15 @@ MmsServer_setClientAuthenticator(MmsServer self, AcseAuthenticator authenticator
     IsoServer_setAuthenticator(self->isoServer, authenticator, authenticatorParameter);
 }
 
+#if (MMS_FILE_SERVICE == 1)
+void
+MmsServer_installFileAccessHandler(MmsServer self, MmsFileAccessHandler handler, void* parameter)
+{
+    self->fileAccessHandler = handler;
+    self->fileAccessHandlerParameter = parameter;
+}
+#endif /* (MMS_FILE_SERVICE == 1) */
+
 #if (MMS_OBTAIN_FILE_SERVICE == 1)
 void
 MmsServer_installObtainFileHandler(MmsServer self, MmsObtainFileHandler handler, void* parameter)
@@ -211,6 +234,11 @@ MmsServer_destroy(MmsServer self)
 #endif
 
     ByteBuffer_destroy(self->transmitBuffer);
+
+#if (CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME == 1)
+    if (self->filestoreBasepath != NULL)
+        GLOBAL_FREEMEM(self->filestoreBasepath);
+#endif
 
     GLOBAL_FREEMEM(self);
 }
@@ -271,7 +299,8 @@ mmsServer_getValue(MmsServer self, MmsDomain* domain, char* itemId, MmsServerCon
 
     if (self->readAccessHandler != NULL) {
         MmsDataAccessError accessError =
-                self->readAccessHandler(self->readAccessHandlerParameter, domain, itemId, connection);
+                self->readAccessHandler(self->readAccessHandlerParameter, (domain == (MmsDomain*) self->device) ? NULL : domain,
+                        itemId, connection);
 
         if (accessError != DATA_ACCESS_ERROR_SUCCESS) {
             value = MmsValue_newDataAccessError(accessError);
@@ -284,7 +313,7 @@ mmsServer_getValue(MmsServer self, MmsDomain* domain, char* itemId, MmsServerCon
 
     if (value == NULL)
         if (self->readHandler != NULL)
-            value = self->readHandler(self->readHandlerParameter, domain,
+            value = self->readHandler(self->readHandlerParameter, (domain == (MmsDomain*) self->device) ? NULL : domain,
                     itemId, connection);
 
 exit_function:
@@ -296,12 +325,6 @@ MmsDevice*
 MmsServer_getDevice(MmsServer self)
 {
     return self->device;
-}
-
-inline void
-MmsServer_setDevice(MmsServer server, MmsDevice* device)
-{
-    server->device = device;
 }
 
 static void /* will be called by ISO server stack */

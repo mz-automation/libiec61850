@@ -179,22 +179,35 @@ mmsClient_createGetVariableAccessAttributesRequest(
 
 	request->present = GetVariableAccessAttributesRequest_PR_name;
 
-	request->choice.name.present = ObjectName_PR_domainspecific;
+	if (domainId != NULL) {
+        request->choice.name.present = ObjectName_PR_domainspecific;
 
-	request->choice.name.choice.domainspecific.domainId.buf = (uint8_t*) domainId;
-	request->choice.name.choice.domainspecific.domainId.size = strlen(domainId);
-	request->choice.name.choice.domainspecific.itemId.buf = (uint8_t*) itemId;
-	request->choice.name.choice.domainspecific.itemId.size = strlen(itemId);
+        request->choice.name.choice.domainspecific.domainId.buf = (uint8_t*) domainId;
+        request->choice.name.choice.domainspecific.domainId.size = strlen(domainId);
+        request->choice.name.choice.domainspecific.itemId.buf = (uint8_t*) itemId;
+        request->choice.name.choice.domainspecific.itemId.size = strlen(itemId);
+	}
+	else {
+	    request->choice.name.present = ObjectName_PR_vmdspecific;
+	    request->choice.name.choice.vmdspecific.buf = (uint8_t*) itemId;
+	    request->choice.name.choice.vmdspecific.size = strlen(itemId);
+	}
 
 	asn_enc_rval_t rval;
 
 	rval = der_encode(&asn_DEF_MmsPdu, mmsPdu,
 		(asn_app_consume_bytes_f*) mmsClient_write_out, (void*) writeBuffer);
 
-	request->choice.name.choice.domainspecific.domainId.buf = 0;
-	request->choice.name.choice.domainspecific.domainId.size = 0;
-	request->choice.name.choice.domainspecific.itemId.buf = 0;
-	request->choice.name.choice.domainspecific.itemId.size = 0;
+	if (domainId != NULL) {
+        request->choice.name.choice.domainspecific.domainId.buf = 0;
+        request->choice.name.choice.domainspecific.domainId.size = 0;
+        request->choice.name.choice.domainspecific.itemId.buf = 0;
+        request->choice.name.choice.domainspecific.itemId.size = 0;
+	}
+	else {
+	    request->choice.name.choice.vmdspecific.buf = 0;
+	    request->choice.name.choice.vmdspecific.size = 0;
+	}
 
 	asn_DEF_MmsPdu.free_struct(&asn_DEF_MmsPdu, mmsPdu, 0);
 

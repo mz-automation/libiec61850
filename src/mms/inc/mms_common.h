@@ -46,6 +46,7 @@ typedef enum
     MMS_ERROR_HARDWARE_FAULT = 5,
     MMS_ERROR_CONCLUDE_REJECTED = 6,
     MMS_ERROR_INVALID_ARGUMENTS = 7,
+    MMS_ERROR_OUTSTANDING_CALL_LIMIT = 8,
 
     MMS_ERROR_OTHER = 9,
 
@@ -153,6 +154,17 @@ typedef struct
 
 typedef struct sMmsNamedVariableList* MmsNamedVariableList;
 typedef struct sMmsAccessSpecifier* MmsNamedVariableListEntry;
+
+
+typedef struct {
+    uint16_t arc[10];
+    int arcCount;
+} ItuObjectIdentifier;
+
+typedef struct {
+    ItuObjectIdentifier apTitle;
+    int aeQualifier;
+} IsoApplicationReference;
 
 /**@}*/
 

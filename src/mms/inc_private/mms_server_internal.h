@@ -156,6 +156,15 @@ struct sMmsServer {
     struct sMmsObtainFileTask fileUploadTasks[CONFIG_MMS_SERVER_MAX_GET_FILE_TASKS];
 #endif
 
+#if (MMS_FILE_SERVICE == 1)
+    MmsFileAccessHandler fileAccessHandler;
+    void* fileAccessHandlerParameter;
+#endif
+
+#if (CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME == 1)
+    char* filestoreBasepath;
+#endif
+
 };
 
 struct sMmsServerConnection {
@@ -271,7 +280,7 @@ mmsServer_handleWriteRequest(
 void
 mmsServer_handleIdentifyRequest(
         MmsServerConnection connection,
-        int invokeId,
+        uint32_t invokeId,
         ByteBuffer* response);
 
 void
@@ -279,7 +288,7 @@ mmsServer_handleStatusRequest(
         MmsServerConnection connection,
         uint8_t* requestBuffer,
         int bufPos,
-        int invokeId,
+        uint32_t invokeId,
         ByteBuffer* response);
 
 void
@@ -361,9 +370,9 @@ mmsServer_setValue(MmsServer self, MmsDomain* domain, char* itemId, MmsValue* va
 MmsValue*
 mmsServer_getValue(MmsServer self, MmsDomain* domain, char* itemId, MmsServerConnection connection);
 
-int
+void
 mmsServer_createMmsWriteResponse(MmsServerConnection connection,
-        int invokeId, ByteBuffer* response, int numberOfItems, MmsDataAccessError* accessResults);
+        uint32_t invokeId, ByteBuffer* response, int numberOfItems, MmsDataAccessError* accessResults);
 
 void
 mmsMsg_createMmsRejectPdu(uint32_t* invokeId, int reason, ByteBuffer* response);

@@ -336,6 +336,9 @@ namespace IEC61850
 			static extern IntPtr IedConnection_readDataSetValues (IntPtr self, out int error, [MarshalAs(UnmanagedType.LPStr)] string dataSetReference, IntPtr dataSet);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern void IedConnection_writeDataSetValues (IntPtr self, out int error, [MarshalAs(UnmanagedType.LPStr)] string dataSetReference, IntPtr values, out IntPtr accessResults);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern IntPtr IedConnection_createDataSet (IntPtr self, out int error, [MarshalAs(UnmanagedType.LPStr)] string dataSetReference, IntPtr dataSet);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
@@ -823,7 +826,7 @@ namespace IEC61850
 				return QueryLogByTime (logRef, startTimeMs, stopTimeMs, out moreFollows);
 			}
 
-			/// <summary>Read the variable specification (type description of a DA or FDCO</summary>
+			/// <summary>Read the variable specification (type description of a DA or FCDO</summary>
 			/// <param name="objectReference">The object reference of a DA or FCDO.</param>
 			/// <param name="fc">The functional constraint (FC) of the object</param>
 			/// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
@@ -1239,6 +1242,56 @@ namespace IEC61850
 					dataSet = new DataSet (nativeClientDataSet);
 
 				return dataSet;
+			}
+
+			/// <summary>
+			/// Writes the values of a data set (SetDataSetValues service).
+			/// </summary>
+			/// <returns>The list of access results</returns>
+			/// <param name="dataSetReference">The object reference of the data set</param>
+			/// <param name="values">The new values for the data set members. The values have to be of the same number and type as the data set members</param>
+			public List<MmsDataAccessError> WriteDataSetValues(string dataSetReference, List<MmsValue> values)
+			{
+				int error;
+				IntPtr accessResults = IntPtr.Zero;
+
+				IntPtr valueList = LinkedList_create ();
+
+				foreach (MmsValue mmsValue in values) {
+					LinkedList_add (valueList, mmsValue.valueReference);
+				}
+
+				IedConnection_writeDataSetValues (connection, out error, dataSetReference, valueList, out accessResults);
+
+				LinkedList_destroyStatic (valueList);
+
+				/* handle access results */
+
+				List<MmsDataAccessError> accessResultList = null;
+
+				if (accessResults != IntPtr.Zero) {
+
+					IntPtr element = LinkedList_getNext (accessResults);
+
+					while (element != IntPtr.Zero) {
+						IntPtr elementData = LinkedList_getData (element);
+
+						MmsValue accessResultValue = new MmsValue (elementData, true);
+
+						MmsDataAccessError dataAccessError = accessResultValue.GetDataAccessError ();
+
+						accessResultList.Add (dataAccessError);
+
+						element = LinkedList_getNext (element);
+					}
+
+					LinkedList_destroyStatic (accessResults);
+				}
+
+				if (error != 0)
+					throw new IedConnectionException ("Writing data set failed", error);
+
+				return accessResultList;
 			}
 
 			/// <summary>

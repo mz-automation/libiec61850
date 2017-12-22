@@ -24,6 +24,7 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <windows.h>
+#include <stdbool.h>
 
 #pragma comment (lib, "Ws2_32.lib")
 
@@ -104,6 +105,9 @@ Handleset_destroy(HandleSet self)
    GLOBAL_FREEMEM(self);
 }
 
+static bool wsaStartupCalled = false;
+static int socketCount = 0;
+
 static void
 activateKeepAlive(SOCKET s)
 {
@@ -162,19 +166,47 @@ prepareServerAddress(const char* address, int port, struct sockaddr_in* sockaddr
     return true;
 }
 
+static bool wsaStartUp()
+{
+	if (wsaStartupCalled == false) {
+		int ec;
+		WSADATA wsa;
+
+		if ((ec = WSAStartup(MAKEWORD(2, 0), &wsa)) != 0) {
+			if (DEBUG_SOCKET)
+				printf("WIN32_SOCKET: winsock error: code %i\n", ec);
+			return false;
+		}
+		else {
+			wsaStartupCalled = true;
+			return true;
+		}
+			
+	}
+	else
+		return true;
+}
+
+static void wsaShutdown()
+{
+	if (wsaStartupCalled) {
+		if (socketCount == 0) {
+			WSACleanup();
+			wsaStartupCalled = false;
+		}
+
+	}
+}
+
 ServerSocket
 TcpServerSocket_create(const char* address, int port)
 {
 	ServerSocket serverSocket = NULL;
 	int ec;
-	WSADATA wsa;
 	SOCKET listen_socket = INVALID_SOCKET;
 
-	if ((ec = WSAStartup(MAKEWORD(2,0), &wsa)) != 0) {
-	    if (DEBUG_SOCKET)
-	        printf("WIN32_SOCKET: winsock error: code %i\n", ec);
+	if (wsaStartUp() == false)
 		return NULL;
-	}
 
 	struct sockaddr_in server_addr;
 
@@ -190,7 +222,9 @@ TcpServerSocket_create(const char* address, int port)
 	if (listen_socket == INVALID_SOCKET) {
 	    if (DEBUG_SOCKET)
 	        printf("WIN32_SOCKET: socket failed with error: %i\n", WSAGetLastError());
-		WSACleanup();
+
+		wsaShutdown();
+
 		return NULL;
 	}
 
@@ -203,7 +237,9 @@ TcpServerSocket_create(const char* address, int port)
 	    if (DEBUG_SOCKET)
 	        printf("WIN32_SOCKET: bind failed with error:%i\n", WSAGetLastError());
 		closesocket(listen_socket);
-		WSACleanup();
+
+		wsaShutdown();
+
 		return NULL;
 	}
 
@@ -213,6 +249,8 @@ TcpServerSocket_create(const char* address, int port)
 	serverSocket->backLog = 10;
 
     setSocketNonBlocking((Socket) serverSocket);
+
+	socketCount++;
 
 	return serverSocket;
 }
@@ -252,8 +290,9 @@ void
 ServerSocket_destroy(ServerSocket self)
 {
 	closesocket(self->fd);
-	WSACleanup();
-	free(self);
+	socketCount--;
+	wsaShutdown();
+	GLOBAL_FREEMEM(self);
 }
 
 Socket
@@ -263,6 +302,8 @@ TcpSocket_create()
 
 	self->fd = INVALID_SOCKET;
 	self->connectTimeout = 5000;
+
+	socketCount++;
 
 	return self;
 }
@@ -277,14 +318,10 @@ bool
 Socket_connect(Socket self, const char* address, int port)
 {
 	struct sockaddr_in serverAddress;
-	WSADATA wsa;
 	int ec;
 
-	if ((ec = WSAStartup(MAKEWORD(2,0), &wsa)) != 0) {
-	    if (DEBUG_SOCKET)
-	        printf("WIN32_SOCKET: winsock error: code %i\n", ec);
+	if (wsaStartUp() == false)
 		return false;
-	}
 
 	if (!prepareServerAddress(address, port, &serverAddress))
 	    return false;
@@ -401,5 +438,8 @@ Socket_destroy(Socket self)
 		closesocket(self->fd);
 	}
 
-	free(self);
+	socketCount--;
+	wsaShutdown();
+
+	GLOBAL_FREEMEM(self);
 }

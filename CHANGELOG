@@ -1,3 +1,57 @@
+Changes to version 1.1.1
+------------------------
+
+- IEC 61850 client: fixed bug in APC control handling
+- IEC 61850 client: ClientReportControlBlock now accepts "$" and "." as seperator for RCB object reference
+- MMS client: fixed bug in MmsConnection_connect (COTP payload buffer was not reset in case of an error during connect -> connection failed in case of reuse of MmsConnection object
+- MMS client: delete named variable list service supports VMD specific lists
+- SV subscriber/publisher: additional features and bug fixes
+- SV: fixed data type for smpRate
+- SV: fixed encoding of optional smpMod attribute
+- SV receiver: Added semaphore to make subscriber list thread-safe
+- .NET API: ControlObject implements IDisposable interface
+- IED server: added new function IedServer_udpateDbposValue
+- fixed problem with cmake include folders
+- MMS client: file services -fixed encoding problem with long file names
+- MMS server: ACSE authenticator passes application reference (ap-title and ae-qualifier)
+- example directory cleanup
+- MMS: fixed potential memory leak in asn1 code that can be caused by malformed MMS messages
+- MMS client: MmsConnection_getVariableAccessAttributes support for VMD specific variables
+- Java SCL parser: added support for "Val" elements for Octet64 types
+
+
+Changes to version 1.1.0
+------------------------
+
+- MMS client/server: added write support for named variable lists
+- IEC 61850 client/server: added support for SetDataSet service
+- C# API: client - added support to write data set values
+- IEC 61850 client: Changed result strings of IedConnection_getDataDirectoryByFC. Removed appended FC string.
+- MMS client/server: extended BER encoder to support MMS PDU sizes with more than 64k
+- C# API: server - keep references to internal control handler delegates to avoid garbage collection
+- IEC 61850 server: added IedModel_getDeviceByInst function
+- SV subscriber: added subscriber side handling for RefrTm
+- SV publisher: Changed SampledValuesPublisher_create to support setting of Communication parameters at runtime
+- socket-win32: updated WSA initialization handling
+- all: small fixes and code optimizations
+
+
+Changes to version 1.0.2
+------------------------
+- server: added MmsFileAccessHandler for server side monitoring and control of file services
+- file services: added support to set filestore basepath at runtime
+- added IedConnection_getFileDirectoryEx to better control receiving file directories
+- common: added timestamp handling functions Timestamp_create, Timestamp_destroy, Timestamp_setByMmsUtcTime, Timestamp_toMmsValue
+- .NET API: Added Timestamp class
+- .NET API: Added missing UpdateAttribute methods to IedServer
+- common: added support for Currency BasicType
+- MMS file services: fixed problem with negative frsmId
+- java scl tools: fixed bug with SDOs in dynamic code generator
+- java scl tools: fixed parsing bug in OptionFields.java
+- server: added functions to restrict local IP address IedServer_setLocalIpAddress, IedServer.SetLocalIpAddress
+- .NET: IedConnection: added internal reference to IsoConnectionParameters object to avoid deletion of internal AcseAuthenticationParameters by garbage collector
+
+
 Changes to version 1.0.1
 ------------------------
 - server: fixed problem in COTP src/dst reference handling (returning zero src reference)

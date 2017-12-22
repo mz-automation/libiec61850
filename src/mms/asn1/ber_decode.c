@@ -56,6 +56,12 @@ BerDecoder_decodeLength(uint8_t* buffer, int* length, int bufPos, int maxBufPos)
         *length = len1;
     }
 
+    if (*length < 0)
+        return -1;
+
+    if (bufPos + (*length) > maxBufPos)
+        return -1;
+
     return bufPos;
 }
 
@@ -70,10 +76,32 @@ BerDecoder_decodeString(uint8_t* buffer, int strlen, int bufPos, int maxBufPos)
 }
 
 uint32_t
-BerDecoder_decodeUint32(uint8_t* buffer, int intlen, int bufPos) {
+BerDecoder_decodeUint32(uint8_t* buffer, int intLen, int bufPos)
+{
     uint32_t value = 0;
 
     int i;
+    for (i = 0; i < intLen; i++) {
+        value <<= 8;
+        value += buffer[bufPos + i];
+    }
+
+    return value;
+}
+
+int32_t
+BerDecoder_decodeInt32(uint8_t* buffer, int intlen, int bufPos)
+{
+    int32_t value;
+    int i;
+
+    bool isNegative = ((buffer[bufPos] & 0x80) == 0x80);
+
+    if (isNegative)
+        value = -1;
+    else
+        value = 0;
+
     for (i = 0; i < intlen; i++) {
         value <<= 8;
         value += buffer[bufPos + i];
@@ -134,4 +162,39 @@ BerDecoder_decodeBoolean(uint8_t* buffer, int bufPos) {
         return true;
     else
         return false;
+}
+
+void
+BerDecoder_decodeOID(uint8_t* buffer, int bufPos, int length, ItuObjectIdentifier* oid)
+{
+    int startPos = bufPos;
+    int currentArc = 0;
+
+    /* clear all arcs */
+    int i;
+    for (i = 0; i < 10; i++)
+        oid->arc[i] = 0;
+
+    /* parse first two arcs */
+    if (length > 0) {
+        oid->arc[0] = buffer[bufPos] / 40;
+        oid->arc[1] = buffer[bufPos] % 40;
+
+        currentArc = 2;
+        bufPos++;
+    }
+
+    /* parse remaining arcs */
+    while ((bufPos - startPos < length) && (currentArc < 10)) {
+        oid->arc[currentArc] = oid->arc[currentArc]<<7;
+
+        if (buffer[bufPos] < 0x80)
+            oid->arc[currentArc++] += buffer[bufPos];
+        else
+            oid->arc[currentArc] += (buffer[bufPos] & 0x7f);
+
+        bufPos++;
+    }
+
+    oid->arcCount = currentArc;
 }

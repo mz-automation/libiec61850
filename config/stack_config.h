@@ -37,7 +37,7 @@
  * 0 ==> server runs in multi-threaded mode (one thread for each connection and
  * one server background thread )
  */
-#define CONFIG_MMS_SINGLE_THREADED 0
+#define CONFIG_MMS_SINGLE_THREADED 1
 
 /*
  * Optimize stack for threadless operation - don't use semaphores
@@ -223,5 +223,10 @@
 
 /* Support user access to raw messages */
 #define CONFIG_MMS_RAW_MESSAGE_LOGGING 1
+
+/* Allow to set the virtual filestore basepath for MMS file services at runtime with the
+ * MmsServer_setFilestoreBasepath function
+ */
+#define CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME 1
 
 #endif /* STACK_CONFIG_H_ */

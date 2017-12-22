@@ -639,3 +639,18 @@ EXPORTS
     Timestamp_create
     Timestamp_destroy
     Timestamp_setByMmsUtcTime
+    IedServer_setLocalIpAddress
+    Timestamp_toMmsValue
+    MmsServer_installFileAccessHandler
+    MmsServer_setFilestoreBasepath
+    MmsConnection_setFilestoreBasepath
+    IedConnection_setFilestoreBasepath
+    IedServer_setFilestoreBasepath
+    GooseReceiver_isRunning
+    IedModel_getDeviceByInst
+    MmsConnection_writeNamedVariableList
+    SVClientASDU_hasRefrTm
+    SVClientASDU_getRefrTmAsMs
+    IedConnection_writeDataSetValues
+    MmsVariableSpecification_isValueOfType
+    IedServer_udpateDbposValue

@@ -50,6 +50,8 @@ int main(int argc, char** argv) {
 
     if (error == IED_ERROR_OK) {
 
+        IedConnection_getServerDirectory(con, &error, false);
+
         /* read an analog measurement value from server */
         MmsValue* value = IedConnection_readObject(con, &error, "simpleIOGenericIO/GGIO1.AnIn1.mag.f", IEC61850_FC_MX);
 

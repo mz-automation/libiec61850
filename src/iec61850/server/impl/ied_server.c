@@ -405,6 +405,7 @@ IedServer_create(IedModel* iedModel)
     self->model = iedModel;
 
     // self->running = false; /* not required due to CALLOC */
+    // self->localIpAddress = NULL; /* not required due to CALLOC */
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     self->dataModelLock = Semaphore_create(1);
@@ -463,6 +464,9 @@ IedServer_destroy(IedServer self)
 
     MmsServer_destroy(self->mmsServer);
     IsoServer_destroy(self->isoServer);
+
+    if (self->localIpAddress != NULL)
+        GLOBAL_FREEMEM(self->localIpAddress);
 
 #if ((CONFIG_MMS_SINGLE_THREADED == 1) && (CONFIG_MMS_THREADLESS_STACK == 0))
 
@@ -599,6 +603,23 @@ IedServer_stop(IedServer self)
     }
 }
 #endif /* (CONFIG_MMS_THREADLESS_STACK != 1) */
+
+void
+IedServer_setFilestoreBasepath(IedServer self, const char* basepath)
+{
+    /* simply pass to MMS server API */
+    MmsServer_setFilestoreBasepath(self->mmsServer, basepath);
+}
+
+void
+IedServer_setLocalIpAddress(IedServer self, const char* localIpAddress)
+{
+    if (self->localIpAddress != NULL)
+        GLOBAL_FREEMEM(self->localIpAddress);
+
+    self->localIpAddress = StringUtils_copyString(localIpAddress);
+    IsoServer_setLocalIpAddress(self->isoServer, self->localIpAddress);
+}
 
 
 void
@@ -965,6 +986,27 @@ IedServer_updateInt32AttributeValue(IedServer self, DataAttribute* dataAttribute
 }
 
 void
+IedServer_udpateDbposValue(IedServer self, DataAttribute* dataAttribute, Dbpos value)
+{
+    Dbpos currentValue = Dbpos_fromMmsValue(dataAttribute->mmsValue);
+
+    if (currentValue == value) {
+        checkForUpdateTrigger(self, dataAttribute);
+    }
+    else {
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_wait(self->dataModelLock);
+#endif
+        Dbpos_toMmsValue(dataAttribute->mmsValue, value);
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_post(self->dataModelLock);
+#endif
+
+        checkForChangedTriggers(self, dataAttribute);
+    }
+}
+
+void
 IedServer_updateInt64AttributeValue(IedServer self, DataAttribute* dataAttribute, int64_t value)
 {
     assert(MmsValue_getType(dataAttribute->mmsValue) == MMS_INTEGER);
@@ -1253,8 +1295,13 @@ IedServer_setWriteAccessPolicy(IedServer self, FunctionalConstraint fc, AccessPo
 void
 IedServer_handleWriteAccess(IedServer self, DataAttribute* dataAttribute, WriteAccessHandler handler, void* parameter)
 {
-    if (dataAttribute == NULL)
-        *((int*) NULL) = 1;
+    if (dataAttribute == NULL) {
+        if (DEBUG_IED_SERVER)
+            printf("IED_SERVER: IedServer_handleWriteAccess - dataAttribute == NULL!\n");
+
+        /* Cause a trap */
+        *((volatile int*) NULL) = 1;
+    }
 
     MmsMapping_installWriteAccessHandler(self->mmsMapping, dataAttribute, handler, parameter);
 }

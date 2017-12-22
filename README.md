@@ -1,5 +1,7 @@
 # README libIEC61850
 
+[![Build Status](https://travis-ci.org/mz-automation/libiec61850.svg?branch=master)](https://travis-ci.org/mz-automation/libiec61850)
+
 This file is part of the documentation of **libIEC61850**. More documentation can be found online at http://libiec61850.com or in the provided doxygen documentation. Also consider to review the examples to understand how to use the library
 
 Content:
@@ -73,15 +75,17 @@ To build the library and run libiec61850 applications with GOOSE support on Wind
 
 ## Building with the cmake build script
 
-With the help of the cmake build script it is possible to create platform independet project descriptions and let cmake create specific project or build files for other tools like Make or Visual Studio.
+With the help of the cmake build script it is possible to create platform independent project descriptions and let cmake create specific project or build files for other tools like Make or Visual Studio.
 
-If you have cmake installed fire up a command line (cmd.exe) and create a new subdirectory in the libiec61850 folder. Change to this subdirectory. Then you can invoke cmake. As an command line argument you have to supply a "generator" that is used by cmake to create the project file for the actual build tool (in our case Visual Studio).
+If you have cmake installed fire up a command line (cmd.exe) and create a new subdirectory in the libiec61850 folder. Change to this subdirectory. Then you can invoke cmake. As an command line argument you have to supply a "generator" that is used by cmake to create the project file for the actual build tool (in our case Visual Studio 2015).
 
-`cmake -G "Visual Studio 11" ..`
+`cmake -G "Visual Studio 14 2015" ..`
 
-will instruct cmake to create a "solution" for Visual Studio 2012. To do the same thing for Visual Studio 2010 type
+will instruct cmake to create a "solution" for Visual Studio 2015. The resulting project files will be 32 bit. 
 
-`cmake -G "Visual Studio 10" ..` 
+To build 64 bit libraries the "Win64" generator option has to be added.
+
+`cmake -G "Visual Studio 14 2015 Win64" ..` 
 
 Note: The ".." at the end of the command line tells cmake where to find the main build script file (called CMakeLists.txt). This should point to the folder libiec61850 which is in our case the parent directory (..).
 

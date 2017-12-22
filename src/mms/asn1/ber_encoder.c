@@ -34,10 +34,17 @@ BerEncoder_encodeLength(uint32_t length, uint8_t* buffer, int bufPos)
         buffer[bufPos++] = 0x81;
         buffer[bufPos++] = (uint8_t) length;
     }
-    else {
+    else if (length < 65535) {
         buffer[bufPos++] = 0x82;
 
         buffer[bufPos++] = length / 256;
+        buffer[bufPos++] = length % 256;
+    }
+    else {
+        buffer[bufPos++] = 0x83;
+
+        buffer[bufPos++] = length / 0x10000;
+        buffer[bufPos++] = (length & 0xffff) / 0x100;
         buffer[bufPos++] = length % 256;
     }
 
@@ -251,6 +258,33 @@ BerEncoder_encodeUInt32(uint32_t value, uint8_t* buffer, int bufPos)
 }
 
 int
+BerEncoder_encodeInt32(int32_t value, uint8_t* buffer, int bufPos)
+{
+    uint8_t* valueArray = (uint8_t*) &value;
+    uint8_t valueBuffer[4];
+
+    int i;
+
+#if (ORDER_LITTLE_ENDIAN == 1)
+    for (i = 0; i < 4; i++) {
+        valueBuffer[3 - i] = valueArray[i];
+    }
+#else
+    for (i = 0; i < 4; i++) {
+        valueBuffer[i] = valueArray[i];
+    }
+#endif
+
+    int size = BerEncoder_compressInteger(valueBuffer, 4);
+
+    for (i = 0; i < size; i++) {
+        buffer[bufPos++] = valueBuffer[i];
+    }
+
+    return bufPos;
+}
+
+int
 BerEncoder_encodeUInt32WithTL(uint8_t tag, uint32_t value, uint8_t* buffer, int bufPos)
 {
     uint8_t* valueArray = (uint8_t*) &value;
@@ -335,8 +369,10 @@ BerEncoder_determineLengthSize(uint32_t length)
         return 1;
     if (length < 256)
         return 2;
-    else
+    if (length < 65536)
         return 3;
+    else
+        return 4;
 }
 
 int

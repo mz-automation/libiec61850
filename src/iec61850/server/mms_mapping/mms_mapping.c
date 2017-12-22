@@ -1993,12 +1993,16 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
     FunctionalConstraint fc = getFunctionalConstraintForWritableNode(self, separator);
 
 #if (CONFIG_IEC61850_SETTING_GROUPS == 1)
-	if (fc == IEC61850_FC_SE) {
-		SettingGroup* sg = getSettingGroupByMmsDomain(self, domain);
+     if (fc == IEC61850_FC_SE) {
+         SettingGroup* sg = getSettingGroupByMmsDomain(self, domain);
 
-		if (sg->editingClient != (ClientConnection) connection)
-		    return DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
-	}
+         if (sg != NULL) {
+             if (sg->editingClient != (ClientConnection) connection)
+                 return DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
+         }
+         else
+             return DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT;
+    }
 #endif /* (CONFIG_IEC61850_SETTING_GROUPS == 1) */
 
     /* writable data model elements - SP, SV, CF, DC */
@@ -2032,7 +2036,7 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
             }
 #endif
 
-            /* Call writer access handlers */
+            /* Call write access handlers */
             LinkedList writeHandlerListElement = LinkedList_getNext(self->attributeAccessHandlers);
 
             while (writeHandlerListElement != NULL) {

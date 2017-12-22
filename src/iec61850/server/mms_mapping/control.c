@@ -1211,27 +1211,6 @@ checkValidityOfOriginParameter(MmsValue* origin)
     return true;
 }
 
-static MmsDataAccessError
-getDataAccessErrorFromCheckHandlerResult(CheckHandlerResult checkResult)
-{
-    MmsDataAccessError indication;
-
-    if (checkResult == CONTROL_HARDWARE_FAULT)
-        indication = DATA_ACCESS_ERROR_HARDWARE_FAULT;
-    else
-    if (checkResult == CONTROL_TEMPORARILY_UNAVAILABLE)
-        indication = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
-    else
-    if (checkResult == CONTROL_OBJECT_UNDEFINED)
-        indication = DATA_ACCESS_ERROR_OBJECT_UNDEFINED;
-    else if (checkResult == CONTROL_OBJECT_ACCESS_DENIED)
-        indication = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
-    else
-        indication = DATA_ACCESS_ERROR_SUCCESS;
-
-    return indication;
-}
-
 MmsDataAccessError
 Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* variableIdOrig,
         MmsValue* value, MmsServerConnection connection)
@@ -1378,7 +1357,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                             printf("SBOw: selected successful\n");
                     }
                     else {
-                        indication = getDataAccessErrorFromCheckHandlerResult(checkResult);
+                        indication = (MmsDataAccessError) checkResult;
 
                         ControlObject_sendLastApplError(controlObject, connection, "SBOw", 0,
                                 ADD_CAUSE_SELECT_FAILED, ctlNum, origin, true);
@@ -1523,7 +1502,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
 
                 }
                 else {
-                    indication = getDataAccessErrorFromCheckHandlerResult(checkResult);
+                    indication = (MmsDataAccessError) checkResult;
 
                     abortControlOperation(controlObject);
                 }

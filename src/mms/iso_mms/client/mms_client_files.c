@@ -80,57 +80,6 @@ getNextFrsmId(MmsConnection connection)
     return nextFrsmId;
 }
 
-//TODO remove redundancy (with server implementation)
-static void
-createExtendedFilename(char* extendedFileName, char* fileName)
-{
-    strcpy(extendedFileName, CONFIG_VIRTUAL_FILESTORE_BASEPATH);
-    strncat(extendedFileName, fileName, sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 256);
-}
-
-//TODO remove redundancy (with server implementation)
-static FileHandle
-openFile(char* fileName, bool readWrite)
-{
-    char extendedFileName[sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 256];
-
-    createExtendedFilename(extendedFileName, fileName);
-
-    return FileSystem_openFile(extendedFileName, readWrite);
-}
-
-//TODO remove redundancy (with server implementation)
-static bool
-parseFileName(char* filename, uint8_t* buffer, int* bufPos, int maxBufPos , uint32_t invokeId, ByteBuffer* response)
-{
-    uint8_t tag = buffer[(*bufPos)++];
-    int length;
-
-    if (tag != 0x19) {
-      mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
-      return false;
-    }
-
-    *bufPos = BerDecoder_decodeLength(buffer, &length, *bufPos, maxBufPos);
-
-    if (*bufPos < 0)  {
-      mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
-      return false;
-    }
-
-    if (length > 255) {
-      mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
-      return false;
-    }
-
-    memcpy(filename, buffer + *bufPos, length);
-    filename[length] = 0;
-    *bufPos += length;
-
-    return true;
-}
-
-
 void
 mmsClient_handleFileOpenRequest(
     MmsConnection connection,
@@ -149,10 +98,12 @@ mmsClient_handleFileOpenRequest(
 
         if (bufPos < 0) goto exit_reject_invalid_pdu;
 
+        if (bufPos + length > maxBufPos) goto exit_reject_invalid_pdu;
+
         switch(tag) {
         case 0xa0: /* filename */
 
-            if (!parseFileName(filename, buffer, &bufPos, bufPos + length, invokeId, response))
+            if (!mmsMsg_parseFileName(filename, buffer, &bufPos, bufPos + length, invokeId, response))
                 return;
 
             hasFileName = true;
@@ -175,14 +126,15 @@ mmsClient_handleFileOpenRequest(
         MmsFileReadStateMachine* frsm = getFreeFrsm(connection);
 
         if (frsm != NULL) {
-            FileHandle fileHandle = openFile(filename, false);
+            FileHandle fileHandle = mmsMsg_openFile(MmsConnection_getFilestoreBasepath(connection), filename, false);
 
             if (fileHandle != NULL) {
                 frsm->fileHandle = fileHandle;
                 frsm->readPosition = filePosition;
                 frsm->frsmId = getNextFrsmId(connection);
 
-                mmsMsg_createFileOpenResponse(invokeId, response, filename, frsm);
+                mmsMsg_createFileOpenResponse(MmsConnection_getFilestoreBasepath(connection),
+                        invokeId, response, filename, frsm);
             }
             else
                 mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_FILE_NON_EXISTENT);
@@ -212,7 +164,7 @@ mmsClient_handleFileReadRequest(
     uint32_t invokeId,
     ByteBuffer* response)
 {
-    int32_t frsmId = (int32_t) BerDecoder_decodeUint32(buffer, maxBufPos - bufPos, bufPos);
+    int32_t frsmId = BerDecoder_decodeInt32(buffer, maxBufPos - bufPos, bufPos);
 
     if (DEBUG_MMS_CLIENT)
         printf("MMS_CLIENT: mmsClient_handleFileReadRequest read request for frsmId: %i\n", frsmId);
@@ -232,7 +184,7 @@ mmsClient_handleFileCloseRequest(
     uint32_t invokeId,
     ByteBuffer* response)
 {
-    int32_t frsmId = (int32_t) BerDecoder_decodeUint32(buffer, maxBufPos - bufPos, bufPos);
+    int32_t frsmId = BerDecoder_decodeInt32(buffer, maxBufPos - bufPos, bufPos);
 
     MmsFileReadStateMachine* frsm = getFrsm(connection, frsmId);
 
@@ -252,13 +204,13 @@ mmsClient_createFileOpenRequest(uint32_t invokeId, ByteBuffer* request, const ch
     uint32_t invokeIdSize = BerEncoder_UInt32determineEncodedSize(invokeId);
 
     uint32_t fileNameStringSize = strlen(fileName);
-    uint32_t fileNameSize = 1+ BerEncoder_determineLengthSize(fileNameStringSize) + fileNameStringSize;
+    uint32_t fileNameSize = 1 + BerEncoder_determineLengthSize(fileNameStringSize) + fileNameStringSize;
 
     uint32_t fileNameSeqSize = fileNameSize;
 
-    uint32_t fileOpenRequestSize = fileNameSeqSize + 2 + BerEncoder_UInt32determineEncodedSize(initialPosition) + 2;
+    uint32_t fileOpenRequestSize = 1 + BerEncoder_determineLengthSize(fileNameSeqSize) + fileNameSeqSize + 2 + BerEncoder_UInt32determineEncodedSize(initialPosition);
 
-    uint32_t confirmedRequestPduSize = 1 + 2 + 2  + invokeIdSize + fileOpenRequestSize;
+    uint32_t confirmedRequestPduSize = 2  + invokeIdSize + 2 + BerEncoder_determineLengthSize(fileOpenRequestSize) + fileOpenRequestSize;
 
     int bufPos = 0;
     uint8_t* buffer = request->buffer;
@@ -271,9 +223,10 @@ mmsClient_createFileOpenRequest(uint32_t invokeId, ByteBuffer* request, const ch
     buffer[bufPos++] = 0xbf;
     buffer[bufPos++] = 0x48;
     bufPos = BerEncoder_encodeLength(fileOpenRequestSize, buffer, bufPos);
-    bufPos = BerEncoder_encodeTL(0xa0, fileNameSeqSize, buffer, bufPos);
 
+    bufPos = BerEncoder_encodeTL(0xa0, fileNameSeqSize, buffer, bufPos);
     bufPos = BerEncoder_encodeOctetString(0x19, (uint8_t*) fileName, fileNameStringSize, buffer, bufPos);
+
     bufPos = BerEncoder_encodeUInt32WithTL(0x81, initialPosition, buffer, bufPos);
 
     request->size = bufPos;
@@ -287,11 +240,9 @@ mmsClient_createFileDeleteRequest(uint32_t invokeId, ByteBuffer* request, const 
     uint32_t fileNameStringSize = strlen(fileName);
     uint32_t fileNameSize = 1 + BerEncoder_determineLengthSize(fileNameStringSize) + fileNameStringSize;
 
-    uint32_t fileNameSeqSize = fileNameSize;
+    uint32_t fileDeleteRequestSize = fileNameSize;
 
-    uint32_t fileDeleteRequestSize = fileNameSeqSize; //  + 2;
-
-    uint32_t confirmedRequestPduSize = 1 + 2 + 2 + invokeIdSize + fileDeleteRequestSize;
+    uint32_t confirmedRequestPduSize = 1 + 2 + invokeIdSize + 1 + BerEncoder_determineLengthSize(fileDeleteRequestSize) + fileDeleteRequestSize;
 
     int bufPos = 0;
     uint8_t* buffer = request->buffer;
@@ -364,7 +315,7 @@ mmsClient_createFileDirectoryRequest(uint32_t invokeId, ByteBuffer* request, con
 {
     uint32_t invokeIdSize = BerEncoder_UInt32determineEncodedSize(invokeId);
 
-    uint32_t confirmedRequestPduSize = 1 + 2 + 2  + invokeIdSize + 0;
+    uint32_t confirmedRequestPduSize = 1 + 2 + 1  + invokeIdSize;
 
     uint32_t parameterSize = 0;
 
@@ -374,7 +325,7 @@ mmsClient_createFileDirectoryRequest(uint32_t invokeId, ByteBuffer* request, con
     if (continueAfter)
         parameterSize += encodeFileSpecification(0xa1, continueAfter, NULL, 0);
 
-    confirmedRequestPduSize += parameterSize;
+    confirmedRequestPduSize += BerEncoder_determineLengthSize(parameterSize) + parameterSize;
 
     int bufPos = 0;
     uint8_t* buffer = request->buffer;
@@ -403,15 +354,13 @@ mmsClient_createFileRenameRequest(uint32_t invokeId, ByteBuffer* request, const 
 {
     uint32_t invokeIdSize = BerEncoder_UInt32determineEncodedSize(invokeId);
 
-    uint32_t confirmedRequestPduSize = 1 + 2 + 2  + invokeIdSize;
-
     uint32_t parameterSize = 0;
 
     parameterSize += encodeFileSpecification(0xa0, currentFileName, NULL, 0);
 
     parameterSize += encodeFileSpecification(0xa1, newFileName, NULL, 0);
 
-    confirmedRequestPduSize += parameterSize;
+    uint32_t confirmedRequestPduSize = 2  + invokeIdSize + 2 + BerEncoder_determineLengthSize(parameterSize) + parameterSize;
 
     int bufPos = 0;
     uint8_t* buffer = request->buffer;
@@ -437,15 +386,13 @@ mmsClient_createObtainFileRequest(uint32_t invokeId, ByteBuffer* request, const 
 {
     uint32_t invokeIdSize = BerEncoder_UInt32determineEncodedSize(invokeId);
 
-    uint32_t confirmedRequestPduSize = 1 + 2 + 2 + invokeIdSize;
-
     uint32_t parameterSize = 0;
 
     parameterSize += encodeFileSpecification(0xa0, sourceFile, NULL, 0);
 
     parameterSize += encodeFileSpecification(0xa1, destinationFile, NULL, 0);
 
-    confirmedRequestPduSize += parameterSize;
+    uint32_t confirmedRequestPduSize = 2  + invokeIdSize + 2 + BerEncoder_determineLengthSize(parameterSize) + parameterSize;
 
     int bufPos = 0;
     uint8_t* buffer = request->buffer;
@@ -698,7 +645,7 @@ mmsMsg_parseFileOpenResponse(uint8_t* buffer, int bufPos, int maxBufPos, int32_t
 
         switch (tag) {
         case 0x80: /* frsmId */
-            *frsmId = (int32_t) BerDecoder_decodeUint32(buffer, length, bufPos);
+            *frsmId = BerDecoder_decodeInt32(buffer, length, bufPos);
 
             bufPos += length;
             break;

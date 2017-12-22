@@ -122,69 +122,85 @@ encodeFileAttributes(uint8_t tag, uint32_t fileSize, char* gtString, uint8_t* bu
     }
 }
 
-static void
-createExtendedFilename(char* extendedFileName, char* fileName)
-{
-    strcpy(extendedFileName, CONFIG_VIRTUAL_FILESTORE_BASEPATH);
-    strncat(extendedFileName, fileName, sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 256);
-}
-
 static bool
-getFileInfo(char* filename, uint32_t* fileSize, uint64_t* lastModificationTimestamp)
+getFileInfo(const char* basepath, char* filename, uint32_t* fileSize, uint64_t* lastModificationTimestamp)
 {
+#if (CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME == 1)
+    char extendedFileName[512];
+#else
     char extendedFileName[sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 256];
+#endif
 
-    createExtendedFilename(extendedFileName, filename);
+    mmsMsg_createExtendedFilename(basepath, extendedFileName, filename);
 
     return FileSystem_getFileInfo(extendedFileName, fileSize, lastModificationTimestamp);
 }
 
 static FileHandle
-openFile(char* fileName, bool readWrite)
+openFile(const char* basepath, char* fileName, bool readWrite)
 {
+#if (CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME == 1)
+    char extendedFileName[512];
+#else
     char extendedFileName[sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 256];
+#endif
 
-    createExtendedFilename(extendedFileName, fileName);
+    mmsMsg_createExtendedFilename(basepath, extendedFileName, fileName);
 
     return FileSystem_openFile(extendedFileName, readWrite);
 }
 
 static DirectoryHandle
-openDirectory(char* directoryName)
+openDirectory(const char* basepath, char* directoryName)
 {
+#if (CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME == 1)
+    char extendedFileName[512];
+#else
     char extendedFileName[sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 256];
+#endif
 
-    createExtendedFilename(extendedFileName, directoryName);
+    mmsMsg_createExtendedFilename(basepath, extendedFileName, directoryName);
 
     return FileSystem_openDirectory(extendedFileName);
 }
 
 static bool
-renameFile(char* oldFilename, char* newFilename) {
+renameFile(const char* basepath, char* oldFilename, char* newFilename) {
+
+#if (CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME == 1)
+    char extendedOldFileName[512];
+    char extendedNewFileName[512];
+#else
     char extendedOldFileName[sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 256];
     char extendedNewFileName[sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 256];
+#endif
 
-    createExtendedFilename(extendedOldFileName, oldFilename);
-    createExtendedFilename(extendedNewFileName, newFilename);
+    mmsMsg_createExtendedFilename(basepath, extendedOldFileName, oldFilename);
+    mmsMsg_createExtendedFilename(basepath, extendedNewFileName, newFilename);
 
     return FileSystem_renameFile(extendedOldFileName, extendedNewFileName);
 }
 
 static bool
-deleteFile(char* fileName) {
+deleteFile(const char* basepath, char* fileName) {
+#if (CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME == 1)
+    char extendedFileName[512];
+#else
     char extendedFileName[sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 256];
+#endif
 
-    createExtendedFilename(extendedFileName, fileName);
+    mmsMsg_createExtendedFilename(basepath, extendedFileName, fileName);
 
     return FileSystem_deleteFile(extendedFileName);
 }
 
 void
-mmsMsg_createFileOpenResponse(uint32_t invokeId, ByteBuffer* response, char* fullPath, MmsFileReadStateMachine* frsm)
+mmsMsg_createFileOpenResponse(const char* basepath, uint32_t invokeId, ByteBuffer* response,
+        char* filename, MmsFileReadStateMachine* frsm)
 {
     uint64_t msTime;
 
-    getFileInfo(fullPath, &(frsm->fileSize), &msTime);
+    getFileInfo(basepath, filename, &(frsm->fileSize), &msTime);
 
     char gtString[30];
 
@@ -213,41 +229,13 @@ mmsMsg_createFileOpenResponse(uint32_t invokeId, ByteBuffer* response, char* ful
     buffer[bufPos++] = 0xbf;
     bufPos = BerEncoder_encodeTL(0x48, openFileResponseSize, buffer, bufPos);
     bufPos = BerEncoder_encodeTL(0x80, frsmIdSize - 2, buffer, bufPos);
-    bufPos = BerEncoder_encodeUInt32(frsm->frsmId, buffer, bufPos);
+    bufPos = BerEncoder_encodeInt32(frsm->frsmId, buffer, bufPos);
     bufPos = encodeFileAttributes(0xa1, frsm->fileSize, gtString, buffer, bufPos);
 
     response->size = bufPos;
 }
 
-static bool
-parseFileName(char* filename, uint8_t* buffer, int* bufPos, int maxBufPos , uint32_t invokeId, ByteBuffer* response)
-{
-    uint8_t tag = buffer[(*bufPos)++];
-    int length;
 
-    if (tag != 0x19) {
-      mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
-      return false;
-    }
-
-    *bufPos = BerDecoder_decodeLength(buffer, &length, *bufPos, maxBufPos);
-
-    if (*bufPos < 0)  {
-      mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
-      return false;
-    }
-
-    if (length > 255) {
-      mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
-      return false;
-    }
-
-    memcpy(filename, buffer + *bufPos, length);
-    filename[length] = 0;
-    *bufPos += length;
-
-    return true;
-}
 
 void
 mmsServer_handleFileDeleteRequest(
@@ -263,6 +251,11 @@ mmsServer_handleFileDeleteRequest(
 
     bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
 
+    if (length > 255) {
+        mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
+        return;
+    }
+
     char filename[256];
 
     memcpy(filename, buffer + bufPos, length);
@@ -271,7 +264,17 @@ mmsServer_handleFileDeleteRequest(
     if (DEBUG_MMS_SERVER)
         printf("MMS_SERVER: mms_file_service.c: Delete file (%s)\n", filename);
 
-    if (!getFileInfo(filename, NULL, NULL)) {
+    if (connection->server->fileAccessHandler != NULL) {
+        MmsError access = connection->server->fileAccessHandler(connection->server->fileAccessHandlerParameter,
+                            connection, MMS_FILE_ACCESS_TYPE_DELETE, filename, NULL);
+
+        if (access != MMS_ERROR_NONE) {
+            mmsMsg_createServiceErrorPdu(invokeId, response, access);
+            return;
+        }
+    }
+
+    if (!getFileInfo(MmsServerConnection_getFilesystemBasepath(connection), filename, NULL, NULL)) {
         if (DEBUG_MMS_SERVER)
             printf("MMS_SERVER: mms_file_service.c:  File (%s) not found\n", filename);
 
@@ -279,7 +282,7 @@ mmsServer_handleFileDeleteRequest(
         return;
     }
 
-    if (!deleteFile(filename)) {
+    if (!deleteFile(MmsServerConnection_getFilesystemBasepath(connection), filename)) {
         if (DEBUG_MMS_SERVER)
             printf("MMS_SERVER: mms_file_service.c:  Delete file (%s) failed\n", filename);
 
@@ -313,10 +316,12 @@ mmsServer_handleFileOpenRequest(
 
         if (bufPos < 0) goto exit_reject_invalid_pdu;
 
+        if (bufPos + length > maxBufPos) goto exit_reject_invalid_pdu;
+
         switch(tag) {
         case 0xa0: /* filename */
 
-            if (!parseFileName(filename, buffer, &bufPos, bufPos + length, invokeId, response))
+            if (!mmsMsg_parseFileName(filename, buffer, &bufPos, bufPos + length, invokeId, response))
                 return;
 
             hasFileName = true;
@@ -336,17 +341,28 @@ mmsServer_handleFileOpenRequest(
 
     if (hasFileName) {
 
+        if (connection->server->fileAccessHandler != NULL) {
+            MmsError access = connection->server->fileAccessHandler(connection->server->fileAccessHandlerParameter,
+                                connection, MMS_FILE_ACCESS_TYPE_OPEN, filename, NULL);
+
+            if (access != MMS_ERROR_NONE) {
+                mmsMsg_createServiceErrorPdu(invokeId, response, access);
+                return;
+            }
+        }
+
         MmsFileReadStateMachine* frsm = getFreeFrsm(connection);
 
         if (frsm != NULL) {
-            FileHandle fileHandle = openFile(filename, false);
+            FileHandle fileHandle = openFile(MmsServerConnection_getFilesystemBasepath(connection), filename, false);
 
             if (fileHandle != NULL) {
                 frsm->fileHandle = fileHandle;
                 frsm->readPosition = filePosition;
                 frsm->frsmId = getNextFrsmId(connection);
 
-                mmsMsg_createFileOpenResponse(invokeId, response, filename, frsm);
+                mmsMsg_createFileOpenResponse(MmsServerConnection_getFilesystemBasepath(connection),
+                        invokeId, response, filename, frsm);
             }
             else
                 mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_FILE_NON_EXISTENT);
@@ -394,9 +410,6 @@ createObtainFileResponse(uint32_t invokeId, ByteBuffer* response)
 void
 mmsServer_fileUploadTask(MmsServer self, MmsObtainFileTask task)
 {
-
-    //printf("mmsServer_fileUploadTask: state: %i\n", task->state);
-
     switch (task->state) {
 
         case MMS_FILE_UPLOAD_STATE_NOT_USED:
@@ -412,7 +425,7 @@ mmsServer_fileUploadTask(MmsServer self, MmsObtainFileTask task)
                     task->state = MMS_FILE_UPLOAD_STATE_SEND_OBTAIN_FILE_ERROR_SOURCE;
 
                     FileSystem_closeFile(task->fileHandle);
-                    deleteFile(task->destinationFilename);
+                    deleteFile(MmsServerConnection_getFilesystemBasepath(task->connection), task->destinationFilename);
                 }
             }
             break;
@@ -446,7 +459,7 @@ mmsServer_fileUploadTask(MmsServer self, MmsObtainFileTask task)
                 task->state = MMS_FILE_UPLOAD_STATE_SEND_OBTAIN_FILE_ERROR_SOURCE;
 
                 FileSystem_closeFile(task->fileHandle);
-                deleteFile(task->destinationFilename);
+                deleteFile(MmsServerConnection_getFilesystemBasepath(task->connection), task->destinationFilename);
             }
 
             break;
@@ -479,7 +492,7 @@ mmsServer_fileUploadTask(MmsServer self, MmsObtainFileTask task)
                 task->state = MMS_FILE_UPLOAD_STATE_SEND_OBTAIN_FILE_ERROR_SOURCE;
 
                 FileSystem_closeFile(task->fileHandle);
-                deleteFile(task->destinationFilename);
+                deleteFile(MmsServerConnection_getFilesystemBasepath(task->connection), task->destinationFilename);
             }
 
             break;
@@ -564,11 +577,13 @@ mmsServer_handleObtainFileRequest(
 
         if (bufPos < 0) goto exit_reject_invalid_pdu;
 
+        if (bufPos + length > maxBufPos) goto exit_reject_invalid_pdu;
+
         switch(tag) {
 
         case 0xa1: /* source filename */
 
-            if (!parseFileName(sourceFilename, buffer, &bufPos, bufPos + length, invokeId, response))
+            if (!mmsMsg_parseFileName(sourceFilename, buffer, &bufPos, bufPos + length, invokeId, response))
                 return;
 
             hasSourceFileName = true;
@@ -577,7 +592,7 @@ mmsServer_handleObtainFileRequest(
 
         case 0xa2: /* destination filename */
 
-            if (!parseFileName(destinationFilename, buffer, &bufPos, bufPos + length, invokeId, response))
+            if (!mmsMsg_parseFileName(destinationFilename, buffer, &bufPos, bufPos + length, invokeId, response))
                 return;
 
             hasDestinationFilename = true;
@@ -592,14 +607,31 @@ mmsServer_handleObtainFileRequest(
 
     if (hasSourceFileName && hasDestinationFilename) {
 
-        /* call callback to check if access is allowed */
+        /* Call user to check if access is allowed */
+        if (connection->server->fileAccessHandler != NULL) {
+            MmsError access = connection->server->fileAccessHandler(connection->server->fileAccessHandlerParameter,
+                                connection, MMS_FILE_ACCESS_TYPE_OBTAIN, destinationFilename, sourceFilename);
+
+            if (access != MMS_ERROR_NONE) {
+                mmsMsg_createServiceErrorPdu(invokeId, response, access);
+                return;
+            }
+        }
+
+        /* call callback to check if access is allowed -- DEPRECATED */
         if (connection->server->obtainFileHandler)
             if (connection->server->obtainFileHandler(connection->server->obtainFileHandlerParameter, connection, sourceFilename, destinationFilename) == false)
                 goto exit_access_denied;
 
         /*  check if destination file already exists. If exists return error message */
+
+#if (CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME == 1)
+        char extendedFileName[512];
+#else
         char extendedFileName[sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 256];
-        createExtendedFilename(extendedFileName, destinationFilename);
+#endif
+        mmsMsg_createExtendedFilename(MmsServerConnection_getFilesystemBasepath(connection),
+                extendedFileName, destinationFilename);
 
         if (FileSystem_getFileInfo(extendedFileName, NULL, NULL)) {
             if (DEBUG_MMS_SERVER)
@@ -614,7 +646,8 @@ mmsServer_handleObtainFileRequest(
 
         if (task != NULL) {
 
-            FileHandle fileHandle = openFile(destinationFilename, true);
+            FileHandle fileHandle = openFile(MmsServerConnection_getFilesystemBasepath(connection),
+                    destinationFilename, true);
 
             if (fileHandle == NULL) {
                 task->state = MMS_FILE_UPLOAD_STATE_SEND_OBTAIN_FILE_ERROR_DESTINATION;
@@ -734,7 +767,7 @@ mmsServer_handleFileReadRequest(
     uint32_t invokeId,
     ByteBuffer* response)
 {
-    int32_t frsmId = (int32_t) BerDecoder_decodeUint32(buffer, maxBufPos - bufPos, bufPos);
+    int32_t frsmId = BerDecoder_decodeInt32(buffer, maxBufPos - bufPos, bufPos);
 
     if (DEBUG_MMS_SERVER)
         printf("MMS_SERVER: mmsServer_handleFileReadRequest read request for frsmId: %i\n", frsmId);
@@ -760,7 +793,7 @@ mmsServer_handleFileCloseRequest(
     uint32_t invokeId,
     ByteBuffer* response)
 {
-    int32_t frsmId = (int32_t) BerDecoder_decodeUint32(buffer, maxBufPos - bufPos, bufPos);
+    int32_t frsmId = BerDecoder_decodeInt32(buffer, maxBufPos - bufPos, bufPos);
 
     MmsFileReadStateMachine* frsm = getFrsm(connection, frsmId);
 
@@ -792,11 +825,11 @@ encodeFileSpecification(uint8_t tag, char* fileSpecification, uint8_t* buffer, i
 }
 
 static int
-addFileEntriesToResponse(uint8_t* buffer, int bufPos, int maxBufSize, char* directoryName, char** continueAfterFileName, bool* moreFollows)
+addFileEntriesToResponse(const char* basepath, uint8_t* buffer, int bufPos, int maxBufSize, char* directoryName, char** continueAfterFileName, bool* moreFollows)
 {
 	int directoryNameLength = strlen(directoryName);
 
-    DirectoryHandle directory = openDirectory(directoryName);
+    DirectoryHandle directory = openDirectory(basepath, directoryName);
 
     if (directory != NULL) {
 
@@ -813,7 +846,7 @@ addFileEntriesToResponse(uint8_t* buffer, int bufPos, int maxBufSize, char* dire
 
         	strcat(directoryName, fileName);
 
-            bufPos = addFileEntriesToResponse(buffer, bufPos, maxBufSize, directoryName, continueAfterFileName, moreFollows);
+            bufPos = addFileEntriesToResponse(basepath, buffer, bufPos, maxBufSize, directoryName, continueAfterFileName, moreFollows);
 
             if (*moreFollows == true)
                 break;
@@ -835,7 +868,7 @@ addFileEntriesToResponse(uint8_t* buffer, int bufPos, int maxBufSize, char* dire
 
             uint32_t fileSize;
 
-            if (getFileInfo(directoryName, &fileSize, &msTime)) {
+            if (getFileInfo(basepath, directoryName, &fileSize, &msTime)) {
                 char gtString[30];
 
                 Conversions_msTimeToGeneralizedTime(msTime, (uint8_t*) gtString);
@@ -873,7 +906,7 @@ addFileEntriesToResponse(uint8_t* buffer, int bufPos, int maxBufSize, char* dire
 }
 
 static void
-createFileDirectoryResponse(uint32_t invokeId, ByteBuffer* response, int maxPduSize, char* directoryName, char* continueAfterFileName)
+createFileDirectoryResponse(const char* basepath, uint32_t invokeId, ByteBuffer* response, int maxPduSize, char* directoryName, char* continueAfterFileName)
 {
     int maxSize = maxPduSize - 3; /* reserve space for moreFollows */
     uint8_t* buffer = response->buffer;
@@ -889,7 +922,7 @@ createFileDirectoryResponse(uint32_t invokeId, ByteBuffer* response, int maxPduS
             continueAfterFileName = NULL;
     }
 
-    tempCurPos = addFileEntriesToResponse(buffer, tempCurPos, maxSize, directoryName, &continueAfterFileName, &moreFollows);
+    tempCurPos = addFileEntriesToResponse(basepath, buffer, tempCurPos, maxSize, directoryName, &continueAfterFileName, &moreFollows);
 
 	if (tempCurPos < 0) {
 
@@ -923,7 +956,7 @@ createFileDirectoryResponse(uint32_t invokeId, ByteBuffer* response, int maxPduS
     bufPos = BerEncoder_encodeTL(0xa1, confirmedResponsePDUSize, buffer, bufPos);
 
     bufPos = BerEncoder_encodeTL(0x02, invokeIdSize - 2, buffer, bufPos);
-    bufPos = BerEncoder_encodeUInt32((uint32_t) invokeId, buffer, bufPos);
+    bufPos = BerEncoder_encodeUInt32(invokeId, buffer, bufPos);
 
     buffer[bufPos++] = 0xbf;
     bufPos = BerEncoder_encodeTL(0x4d, fileDirectoryResponseSize, buffer, bufPos);
@@ -958,14 +991,14 @@ mmsServer_handleFileRenameRequest(
 
         bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
 
-        if (bufPos < 0)  {
+        if ((bufPos < 0) || (bufPos + length > maxBufPos)) {
             mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
             return;
         }
 
         switch(tag) {
         case 0xa0: /* currentFilename */
-            if (!parseFileName(currentFileName, buffer, &bufPos, bufPos + length, invokeId, response))
+            if (!mmsMsg_parseFileName(currentFileName, buffer, &bufPos, bufPos + length, invokeId, response))
                 return;
 
             if (DEBUG_MMS_SERVER)
@@ -974,7 +1007,7 @@ mmsServer_handleFileRenameRequest(
             break;
 
         case 0xa1: /* newFilename */
-            if (!parseFileName(newFileName, buffer, &bufPos, bufPos + length, invokeId, response))
+            if (!mmsMsg_parseFileName(newFileName, buffer, &bufPos, bufPos + length, invokeId, response))
                 return;
 
             if (DEBUG_MMS_SERVER)
@@ -991,7 +1024,19 @@ mmsServer_handleFileRenameRequest(
     }
 
     if ((strlen(currentFileName) != 0) && (strlen(newFileName) != 0)) {
-        if (renameFile(currentFileName, newFileName)){
+
+        /* Call user to check if access is allowed */
+        if (connection->server->fileAccessHandler != NULL) {
+            MmsError access = connection->server->fileAccessHandler(connection->server->fileAccessHandlerParameter,
+                                connection, MMS_FILE_ACCESS_TYPE_RENAME, currentFileName, newFileName);
+
+            if (access != MMS_ERROR_NONE) {
+                mmsMsg_createServiceErrorPdu(invokeId, response, access);
+                return;
+            }
+        }
+
+        if (renameFile(MmsServerConnection_getFilesystemBasepath(connection), currentFileName, newFileName)){
             /* send positive response */
             createNullResponseExtendedTag(invokeId, response, 0x4b);
         }
@@ -1030,14 +1075,14 @@ mmsServer_handleFileDirectoryRequest(
 
         bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
 
-        if (bufPos < 0)  {
+        if ((bufPos < 0) || (bufPos + length > maxBufPos)) {
             mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
             return;
         }
 
         switch(tag) {
         case 0xa0: /* filename */
-            if (!parseFileName(filename, buffer, &bufPos, bufPos + length, invokeId, response))
+            if (!mmsMsg_parseFileName(filename, buffer, &bufPos, bufPos + length, invokeId, response))
                 return;
 
             /* check for wildcard character(*) */
@@ -1047,7 +1092,7 @@ mmsServer_handleFileDirectoryRequest(
             break;
 
         case 0xa1: /* continue-after */
-            if (!parseFileName(continueAfterFileName, buffer, &bufPos, bufPos + length, invokeId, response))
+            if (!mmsMsg_parseFileName(continueAfterFileName, buffer, &bufPos, bufPos + length, invokeId, response))
                 return;
 
             continueAfter = continueAfterFileName;
@@ -1066,7 +1111,19 @@ mmsServer_handleFileDirectoryRequest(
 
     int maxPduSize = connection->maxPduSize;
 
-    createFileDirectoryResponse(invokeId, response, maxPduSize, filename, continueAfter);
+    /* Call user to check if access is allowed */
+    if (connection->server->fileAccessHandler != NULL) {
+        MmsError access = connection->server->fileAccessHandler(connection->server->fileAccessHandlerParameter,
+                            connection, MMS_FILE_ACCESS_TYPE_READ_DIRECTORY, filename, continueAfter);
+
+        if (access != MMS_ERROR_NONE) {
+            mmsMsg_createServiceErrorPdu(invokeId, response, access);
+            return;
+        }
+    }
+
+    createFileDirectoryResponse(MmsServerConnection_getFilesystemBasepath(connection),
+            invokeId, response, maxPduSize, filename, continueAfter);
 }
 
 #endif /* MMS_FILE_SERVICE == 1 */

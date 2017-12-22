@@ -233,9 +233,10 @@ mmsServer_handleDeleteNamedVariableListRequest(MmsServerConnection connection,
 		mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_ACCESS_UNSUPPORTED);
 	}
 
+exit_function:
+
     asn_DEF_MmsPdu.free_struct(&asn_DEF_MmsPdu, mmsPdu, 0);
 
-exit_function:
     return;
 }
 
@@ -252,7 +253,7 @@ createDefineNamedVariableListResponse(uint32_t invokeId, ByteBuffer* response)
     bufPos = BerEncoder_encodeTL(0xa1, confirmedResponsePDUSize, buffer, bufPos);
 
     bufPos = BerEncoder_encodeTL(0x02, invokeIdSize - 2, buffer, bufPos);
-    bufPos = BerEncoder_encodeUInt32((uint32_t) invokeId, buffer, bufPos);
+    bufPos = BerEncoder_encodeUInt32(invokeId, buffer, bufPos);
 
     bufPos = BerEncoder_encodeTL(0x8b, 0, buffer, bufPos);
 
@@ -420,7 +421,7 @@ mmsServer_handleDefineNamedVariableListRequest(
 
 	if (rval.code != RC_OK) {
 	    mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
-	    goto exit_function;
+	    goto exit_free_struct;
 	}
 
 	request = &(mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.choice.defineNamedVariableList);
@@ -497,8 +498,7 @@ mmsServer_handleDefineNamedVariableListRequest(
 	        char variableListName[65];
 
 	        if (request->variableListName.choice.aaspecific.size > 64) {
-	            //TODO send reject PDU instead?
-                mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
+                mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
                 goto exit_free_struct;
             }
 
@@ -542,8 +542,7 @@ mmsServer_handleDefineNamedVariableListRequest(
 	        char variableListName[65];
 
 	        if (request->variableListName.choice.vmdspecific.size > 64) {
-	            //TODO send reject PDU instead?
-	            mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
+	            mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
                 goto exit_free_struct;
 	        }
 
@@ -582,7 +581,6 @@ mmsServer_handleDefineNamedVariableListRequest(
 exit_free_struct:
 	asn_DEF_MmsPdu.free_struct(&asn_DEF_MmsPdu, mmsPdu, 0);
 
-exit_function:
     return;
 }
 
@@ -666,7 +664,7 @@ mmsServer_handleGetNamedVariableListAttributesRequest(
 
 	if (rval.code != RC_OK) {
 	    mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
-	    return;
+	    goto exit_function;
 	}
 
 	if (request->present == ObjectName_PR_domainspecific) {

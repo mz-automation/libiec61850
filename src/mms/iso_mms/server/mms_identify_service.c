@@ -29,7 +29,7 @@
 void
 mmsServer_handleIdentifyRequest(
         MmsServerConnection connection,
-        int invokeId,
+        uint32_t invokeId,
         ByteBuffer* response)
 {
     int bufPos = 0;

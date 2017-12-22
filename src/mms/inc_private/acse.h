@@ -54,6 +54,7 @@ typedef struct sAcseConnection
     int userDataBufferSize;
     AcseAuthenticationParameter authentication;
     AcseAuthenticator authenticator;
+    IsoApplicationReference applicationReference;
     void* authenticatorParameter;
     void* securityToken;
 } AcseConnection;

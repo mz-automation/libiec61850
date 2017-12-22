@@ -132,7 +132,9 @@ int main(int argc, char** argv) {
 
         Thread_sleep(1000);
 
-        IedConnection_triggerGIReport(con, &error, "simpleIOGenericIO/LLN0.RP.EventsRCB01");
+        /* Trigger GI Report */
+        ClientReportControlBlock_setGI(rcb, true);
+        IedConnection_setRCBValues(con, &error, rcb, RCB_ELEMENT_GI, true);
 
         if (error != IED_ERROR_OK) {
             printf("Error triggering a GI report (code: %i)\n", error);

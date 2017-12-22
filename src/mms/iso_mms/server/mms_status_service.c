@@ -31,7 +31,7 @@ mmsServer_handleStatusRequest(
         MmsServerConnection connection,
         uint8_t* requestBuffer,
         int bufPos,
-        int invokeId,
+        uint32_t invokeId,
         ByteBuffer* response)
 {
     /* check for extended derivation */

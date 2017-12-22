@@ -727,6 +727,20 @@ public class StaticModelGenerator {
         }
 
     }
+    
+    private void appendHexArrayString(StringBuffer buffer, byte[] byteArray) {
+        
+        buffer.append("{");
+        for (int i = 0; i < byteArray.length; i++) {
+            
+            if (i == 0)
+                buffer.append(String.format("0x%02X", byteArray[i]));
+            else
+                buffer.append(String.format(", 0x%02X", byteArray[i]));
+        }
+        buffer.append("}");
+
+    }
 
     private void printValue(String daName, DataAttribute dataAttribute, DataModelValue value) {
 
@@ -759,6 +773,21 @@ public class StaticModelGenerator {
         case BOOLEAN:
             buffer.append("MmsValue_newBoolean(" + value.getValue() + ");");
             break;
+            
+        case OCTET_STRING_64:
+            {
+                String daValName = daName + "__val";
+                
+                buffer.append("MmsValue_newOctetString(0, 64);\n");
+                buffer.append("uint8_t " + daValName + "[] = ");
+                appendHexArrayString(buffer, (byte[]) value.getValue());
+                buffer.append(";\n");
+                buffer.append("MmsValue_setOctetString(");
+                buffer.append(daName);
+                buffer.append(".mmsValue, " + daValName + ", " + ((byte[])value.getValue()).length  + ");\n");
+            }
+            break;
+            
         case UNICODE_STRING_255:
             buffer.append("MmsValue_newMmsString(\"" + value.getValue() + "\");");
             break;

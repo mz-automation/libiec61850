@@ -625,7 +625,7 @@ IedConnection_setGoCBValues(IedConnection self, IedClientError* error, ClientGoo
  *
  * The requested RCB has to be specified by its object reference. E.g.
  *
- * "simpleIOGernericIO/LLN0.RP.EventsRCB01"
+ * "simpleIOGenericIO/LLN0.RP.EventsRCB01"
  *
  * or
  *
@@ -809,6 +809,8 @@ IedConnection_uninstallReportHandler(IedConnection self, const char* rcbReferenc
  * \brief Trigger a general interrogation (GI) report for the specified report control block (RCB)
  *
  * The RCB must have been enabled and GI set as trigger option before this command can be performed.
+ *
+ * \deprecated Use ClientReportControlBlock_setGI instead
  *
  * \param connection the connection object
  * \param error the error code if an error occurs
@@ -1216,7 +1218,8 @@ IedConnection_readUnsigned32Value(IedConnection self, IedClientError* error, con
  * \brief read a functional constrained data attribute (FCDA) of type Timestamp (UTC Time)
  *
  *  NOTE: If the timestamp parameter is set to NULL the function allocates a new timestamp instance. Otherwise the
- *  return value is a pointer to the user provided timestamp instance.
+ *  return value is a pointer to the user provided timestamp instance. The new timestamp instance has to be freed by
+ *  the caller of the function.
  *
  * \param self  the connection object to operate on
  * \param error the error code if an error occurs
@@ -1318,6 +1321,12 @@ IedConnection_writeOctetString(IedConnection self, IedClientError* error, const 
 /**
  * \brief get data set values from a server device
  *
+ * The parameter dataSetReference is the name of the data set to read. It is either in the form LDName/LNodeName.dataSetName
+ * for permanent domain or VMD scope data sets or @dataSetName for an association specific data set.
+ * If the LDName part of the reference is missing the resulting data set will be of VMD scope.
+ * The received data set values are stored in a container object of type ClientDataSet that can be reused in a further
+ * read request.
+ *
  * \param connection the connection object
  * \param error the error code if an error occurs
  * \param dataSetReference object reference of the data set
@@ -1382,6 +1391,26 @@ IedConnection_deleteDataSet(IedConnection self, IedClientError* error, const cha
  */
 LinkedList /* <char*> */
 IedConnection_getDataSetDirectory(IedConnection self, IedClientError* error, const char* dataSetReference, bool* isDeletable);
+
+/**
+ * \brief Write the data set values to the server
+ *
+ * The parameter dataSetReference is the name of the data set to write. It is either in the form LDName/LNodeName.dataSetName
+ * for permanent domain or VMD scope data sets or @dataSetName for an association specific data set.
+ * If the LDName part of the reference is missing the resulting data set will be of VMD scope.
+ * The values parameter has to be the same number of elements as are members in the data set. The accessResult return parameter
+ * contains a value for each data set member.
+ *
+ * \param connection the connection object
+ * \param error the error code if an error occurs
+ * \param dataSetReference object reference of the data set
+ * \param values the new data set values
+ * \param accessResults the access results for each data set member
+ */
+void
+IedConnection_writeDataSetValues(IedConnection self, IedClientError* error, const char* dataSetReference,
+        LinkedList/*<MmsValue*>*/ values, /* OUTPUT */LinkedList* /* <MmsValue*> */accessResults);
+
 
 /********************************************************
  * Data set object (local representation of a data set)
@@ -1637,13 +1666,12 @@ IedConnection_getServerDirectory(IedConnection self, IedClientError* error, bool
 /**
  * \brief Get the list of logical nodes (LN) of a logical device
  *
- * LGetLogicalDeviceDirectory ACSI service implementation. Returns the list of logical nodes present
- * in a logical device. The list is returned as a linked list of type LinkedList where the elements
- * are C style strings.
+ * GetLogicalDeviceDirectory ACSI service implementation. Returns the list of logical nodes names present
+ * in a logical device. The list is returned as a linked list of type LinkedList with c style string elements.
  *
  * \param self the connection object
  * \param error the error code if an error occurs
- * \param getFileNames get list of files instead of logical device names (TO BE IMPLEMENTED)
+ * \param logicalDeviceName the name of the logical device (LD) of interest
  *
  * \return  LinkedList with string elements representing the logical node names
  */
@@ -1738,8 +1766,10 @@ IedConnection_getDataDirectoryFC(IedConnection self, IedClientError* error, cons
  * \brief returns the directory of the given data object/data attribute with the given FC
  *
  * Implementation of the GetDataDirectory ACSI service. This will return the list of
- * C strings with all data attributes or sub data objects as elements. The returned
- * strings will contain the functional constraint appended in square brackets when appropriate.
+ * C strings with all data attributes or sub data objects as elements.
+ *
+ * WARNING: Starting with version 1.0.3 the functional constraint will no longer be appended to
+ * the name string.
  *
  * \param self the connection object
  * \param error the error code if an error occurs
@@ -1869,6 +1899,38 @@ FileDirectoryEntry_getLastModified(FileDirectoryEntry self);
 LinkedList /*<FileDirectoryEntry>*/
 IedConnection_getFileDirectory(IedConnection self, IedClientError* error, const char* directoryName);
 
+
+/**
+ * \brief returns the directory entries of the specified file directory returned by a single file directory request.
+ *
+ * This function will only create a single request and the result may only be the directory that fits
+ * into a single MMS PDU. If the server contains more directory entries, this will be indicated by setting
+ * the moreFollows variable (if provided by the caller). If the directory entry does not fit into a single MMS
+ * PDU the next part of the directory list can be requested by setting the continueAfter parameter with the value
+ * of the last filename of the received list.
+ *
+ * Requires the server to support file services.
+ *
+ * NOTE: the returned linked list has to be freed by the user. You can user the following statement
+ * to free the list of directory entries:
+ *
+ * LinkedList_destroyDeep(fileNames, (LinkedListValueDeleteFunction) FileDirectoryEntry_destroy);
+ *
+ * where fileNames is the return value of this function.
+ *
+ * \param self the connection object
+ * \param error the error code if an error occurs
+ * \param directoryName the name of the directory or NULL to get the entries of the root directory
+ * \param continueAfter last received filename to continue after, or NULL for the first request
+ * \param moreFollows if provided by the caller (non NULL) the function will indicate if more directory entries
+ *                    are available.
+ *
+ * \return the list of directory entries. The return type is a LinkedList with FileDirectoryEntry elements
+ */
+LinkedList /*<FileDirectoryEntry>*/
+IedConnection_getFileDirectoryEx(IedConnection self, IedClientError* error, const char* directoryName, const char* continueAfter,
+        bool* moreFollows);
+
 /**
  * \brief user provided handler to receive the data of the GetFile request
  *
@@ -1900,6 +1962,19 @@ typedef bool
 uint32_t
 IedConnection_getFile(IedConnection self, IedClientError* error, const char* fileName, IedClientGetFileHandler handler,
         void* handlerParameter);
+
+/**
+ * \brief Set the virtual filestore basepath for the setFile service
+ *
+ * All external file service accesses will be mapped to paths relative to the base directory.
+ * NOTE: This function is only available when the CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME
+ * option in stack_config.h is set.
+ *
+ * \param self the connection object
+ * \param basepath the new virtual filestore basepath
+ */
+void
+IedConnection_setFilestoreBasepath(IedConnection, const char* basepath);
 
 /**
  * \brief Implementation of the SetFile ACSI service

@@ -882,7 +882,7 @@ Logging_processIntegrityLogs(MmsMapping* self, uint64_t currentTimeInMs)
 
                 if (currentTimeInMs >= logControl->nextIntegrityScan) {
 
-                    //if (DEBUG_IED_SERVER)
+                    if (DEBUG_IED_SERVER)
                         printf("IED_SERVER: INTEGRITY SCAN for log %s\n", logControl->name);
 
                     LogControl_logAllDatasetEntries(logControl, self->mmsDevice->deviceName);

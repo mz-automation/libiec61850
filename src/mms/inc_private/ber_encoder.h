@@ -56,6 +56,9 @@ int
 BerEncoder_encodeUInt32(uint32_t value, uint8_t* buffer, int bufPos);
 
 int
+BerEncoder_encodeInt32(int32_t value, uint8_t* buffer, int bufPos);
+
+int
 BerEncoder_encodeUInt32WithTL(uint8_t tag, uint32_t value, uint8_t* buffer, int bufPos);
 
 int

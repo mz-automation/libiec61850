@@ -92,7 +92,7 @@ void
 GooseReceiver_start(GooseReceiver self);
 
 /**
- * \brief stop the GOOSE receiver running in a speparate thread
+ * \brief stop the GOOSE receiver running in a separate thread
  *
  * This function is used to stop the receiver thread started with GooseReceiver_start
  *
@@ -101,6 +101,14 @@ GooseReceiver_start(GooseReceiver self);
 void
 GooseReceiver_stop(GooseReceiver self);
 
+bool
+GooseReceiver_isRunning(GooseReceiver self);
+
+/**
+ * \brief Free all resource of the GooseReceiver and all installed GooseSubscribers
+ *
+ * \param self the GooseReceiver instance
+ */
 void
 GooseReceiver_destroy(GooseReceiver self);
 

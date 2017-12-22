@@ -23,6 +23,8 @@ package com.libiec61850.scl.model;
  *	See COPYING file for the complete license text.
  */
 
+import java.util.Base64;
+
 import com.libiec61850.scl.types.EnumerationType;
 import com.libiec61850.scl.types.IllegalValueException;
 import com.libiec61850.scl.types.SclType;
@@ -128,6 +130,15 @@ public class DataModelValue {
         case UNICODE_STRING_255:
         	this.value = value;
         	break;
+        	
+        case OCTET_STRING_64:
+            try {
+                this.value = Base64.getDecoder().decode(value);
+            }
+            catch (IllegalArgumentException e) {
+                throw new IllegalValueException("Val element for Octet64 type does not contain a valid base64 encoded string");
+            }
+            break;
             
         case VISIBLE_STRING_32:
         case VISIBLE_STRING_64:

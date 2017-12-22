@@ -1,7 +1,7 @@
 /*
  *  goose_receiver.c
  *
- *  Copyright 2014, 2015 Michael Zillgith
+ *  Copyright 2014-2017 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -52,6 +52,9 @@ struct sGooseReceiver {
     uint8_t* buffer;
     EthernetSocket ethSocket;
     LinkedList subscriberList;
+#if (CONFIG_MMS_THREADLESS_STACK == 0)
+    Thread thread;
+#endif
 };
 
 
@@ -66,6 +69,9 @@ GooseReceiver_create()
         self->buffer = (uint8_t*) GLOBAL_MALLOC(ETH_BUFFER_LENGTH);
         self->ethSocket = NULL;
         self->subscriberList = LinkedList_create();
+#if (CONFIG_MMS_THREADLESS_STACK == 0)
+        self->thread = NULL;
+#endif
     }
 
     return self;
@@ -712,33 +718,52 @@ gooseReceiverLoop(void* threadParameter)
 void
 GooseReceiver_start(GooseReceiver self)
 {
-    Thread thread = Thread_create((ThreadExecutionFunction) gooseReceiverLoop, (void*) self, true);
+#if (CONFIG_MMS_THREADLESS_STACK == 0)
+    self->thread = Thread_create((ThreadExecutionFunction) gooseReceiverLoop, (void*) self, false);
 
-    if (thread != NULL) {
+    if (self->thread != NULL) {
         if (DEBUG_GOOSE_SUBSCRIBER)
             printf("GOOSE_SUBSCRIBER: GOOSE receiver started for interface %s\n", self->interfaceId);
 
-        Thread_start(thread);
+        Thread_start(self->thread);
     }
     else {
         if (DEBUG_GOOSE_SUBSCRIBER)
             printf("GOOSE_SUBSCRIBER: Starting GOOSE receiver failed for interface %s\n", self->interfaceId);
     }
+#endif
+}
 
+bool
+GooseReceiver_isRunning(GooseReceiver self)
+{
+    return self->running;
 }
 
 void
 GooseReceiver_stop(GooseReceiver self)
 {
+#if (CONFIG_MMS_THREADLESS_STACK == 0)
     self->running = false;
+
+    Thread_destroy(self->thread);
 
     while (self->stopped == false)
         Thread_sleep(1);
+#endif
 }
 
 void
 GooseReceiver_destroy(GooseReceiver self)
 {
+#if (CONFIG_MMS_THREADLESS_STACK == 0)
+    if ((self->thread != NULL) && (GooseReceiver_isRunning(self)))
+        GooseReceiver_stop(self);
+#endif
+
+    if (self->interfaceId != NULL)
+        GLOBAL_FREEMEM(self->interfaceId);
+
     LinkedList_destroyDeep(self->subscriberList,
             (LinkedListValueDeleteFunction) GooseSubscriber_destroy);
 
@@ -757,9 +782,12 @@ GooseReceiver_startThreadless(GooseReceiver self)
     else
         self->ethSocket = Ethernet_createSocket(self->interfaceId, NULL);
 
-    Ethernet_setProtocolFilter(self->ethSocket, ETH_P_GOOSE);
-
-    self->running = true;
+    if (self->ethSocket != NULL) {
+        Ethernet_setProtocolFilter(self->ethSocket, ETH_P_GOOSE);
+        self->running = true;
+    }
+    else
+        self->running = false;
 }
 
 void
@@ -770,7 +798,7 @@ GooseReceiver_stopThreadless(GooseReceiver self)
     self->running = false;
 }
 
-// call after reception of ethernet frame and periodically to to house keeping tasks
+// call after reception of ethernet frame
 bool
 GooseReceiver_tick(GooseReceiver self)
 {

@@ -35,45 +35,48 @@
 
 void
 mmsClient_createDeleteNamedVariableListRequest(long invokeId, ByteBuffer* writeBuffer,
-		const char* domainId, const char* listNameId)
+        const char* domainId, const char* listNameId)
 {
-	MmsPdu_t* mmsPdu = mmsClient_createConfirmedRequestPdu(invokeId);
+    MmsPdu_t* mmsPdu = mmsClient_createConfirmedRequestPdu(invokeId);
 
-	mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.present =
-				ConfirmedServiceRequest_PR_deleteNamedVariableList;
+    mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.present =
+            ConfirmedServiceRequest_PR_deleteNamedVariableList;
 
-	DeleteNamedVariableListRequest_t* request =
-			&(mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.choice.deleteNamedVariableList);
+    DeleteNamedVariableListRequest_t* request =
+            &(mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.choice.deleteNamedVariableList);
 
-	request->listOfVariableListName = (struct DeleteNamedVariableListRequest__listOfVariableListName*) GLOBAL_CALLOC(1,
-			sizeof(struct DeleteNamedVariableListRequest__listOfVariableListName));
+    request->listOfVariableListName = (struct DeleteNamedVariableListRequest__listOfVariableListName*) GLOBAL_CALLOC(1,
+            sizeof(struct DeleteNamedVariableListRequest__listOfVariableListName));
 
-	request->listOfVariableListName->list.count = 1;
-	request->listOfVariableListName->list.size = 1;
+    request->listOfVariableListName->list.count = 1;
+    request->listOfVariableListName->list.size = 1;
 
-	request->listOfVariableListName->list.array = (ObjectName_t**) GLOBAL_CALLOC(1, sizeof(ObjectName_t*));
-	request->listOfVariableListName->list.array[0] = (ObjectName_t*) GLOBAL_CALLOC(1, sizeof(ObjectName_t));
+    request->listOfVariableListName->list.array = (ObjectName_t**) GLOBAL_CALLOC(1, sizeof(ObjectName_t*));
+    request->listOfVariableListName->list.array[0] = (ObjectName_t*) GLOBAL_CALLOC(1, sizeof(ObjectName_t));
 
-	if (domainId != NULL) {
+    if (domainId != NULL) {
         request->listOfVariableListName->list.array[0]->present = ObjectName_PR_domainspecific;
         request->listOfVariableListName->list.array[0]->choice.domainspecific.domainId.size = strlen(domainId);
-        request->listOfVariableListName->list.array[0]->choice.domainspecific.domainId.buf = (uint8_t*) StringUtils_copyString(domainId);
+        request->listOfVariableListName->list.array[0]->choice.domainspecific.domainId.buf =
+                (uint8_t*) StringUtils_copyString(domainId);
         request->listOfVariableListName->list.array[0]->choice.domainspecific.itemId.size = strlen(listNameId);
-        request->listOfVariableListName->list.array[0]->choice.domainspecific.itemId.buf = (uint8_t*) StringUtils_copyString(listNameId);
-	}
-	else {
-	    request->listOfVariableListName->list.array[0]->present = ObjectName_PR_vmdspecific;
-	    request->listOfVariableListName->list.array[0]->choice.vmdspecific.size = strlen(listNameId);
-	    request->listOfVariableListName->list.array[0]->choice.vmdspecific.buf = (uint8_t*) StringUtils_copyString(listNameId);
-	}
+        request->listOfVariableListName->list.array[0]->choice.domainspecific.itemId.buf =
+                (uint8_t*) StringUtils_copyString(listNameId);
+    }
+    else {
+        request->listOfVariableListName->list.array[0]->present = ObjectName_PR_vmdspecific;
+        request->listOfVariableListName->list.array[0]->choice.vmdspecific.size = strlen(listNameId);
+        request->listOfVariableListName->list.array[0]->choice.vmdspecific.buf =
+                (uint8_t*) StringUtils_copyString(listNameId);
+    }
 
-	request->scopeOfDelete = (INTEGER_t*) GLOBAL_CALLOC(1, sizeof(INTEGER_t));
-	asn_long2INTEGER(request->scopeOfDelete, DeleteNamedVariableListRequest__scopeOfDelete_specific);
+    request->scopeOfDelete = (INTEGER_t*) GLOBAL_CALLOC(1, sizeof(INTEGER_t));
+    asn_long2INTEGER(request->scopeOfDelete, DeleteNamedVariableListRequest__scopeOfDelete_specific);
 
     der_encode(&asn_DEF_MmsPdu, mmsPdu,
-			(asn_app_consume_bytes_f*) mmsClient_write_out, (void*) writeBuffer);
+            (asn_app_consume_bytes_f*) mmsClient_write_out, (void*) writeBuffer);
 
-	asn_DEF_MmsPdu.free_struct(&asn_DEF_MmsPdu, mmsPdu, 0);
+    asn_DEF_MmsPdu.free_struct(&asn_DEF_MmsPdu, mmsPdu, 0);
 }
 
 void
@@ -220,11 +223,25 @@ parseNamedVariableAttributes(GetNamedVariableListAttributesResponse_t* response,
 	LinkedList attributes = LinkedList_create();
 
 	for (i = 0; i < attributesCount; i++) {
-	    char* domainId = mmsMsg_createStringFromAsnIdentifier(response->listOfVariable.list.array[i]->
+
+	    char* domainId;
+	    char* itemId;
+
+
+	    if (response->listOfVariable.list.array[i]->variableSpecification.choice.name.present == ObjectName_PR_vmdspecific) {
+
+	        domainId = NULL;
+
+	        itemId = mmsMsg_createStringFromAsnIdentifier(response->listOfVariable.list.array[i]->
+	                variableSpecification.choice.name.choice.vmdspecific);
+	    }
+	    else {
+	        domainId = mmsMsg_createStringFromAsnIdentifier(response->listOfVariable.list.array[i]->
 	            variableSpecification.choice.name.choice.domainspecific.domainId);
 
-		char* itemId = mmsMsg_createStringFromAsnIdentifier(response->listOfVariable.list.array[i]->
+	        itemId = mmsMsg_createStringFromAsnIdentifier(response->listOfVariable.list.array[i]->
 				variableSpecification.choice.name.choice.domainspecific.itemId);
+	    }
 
 		MmsVariableAccessSpecification* listEntry = MmsVariableAccessSpecification_create(domainId, itemId);
 

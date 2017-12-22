@@ -21,7 +21,9 @@ print_help()
     printf("-a <domain_name> specify domain for read or write command\n");
     printf("-f show file list\n");
     printf("-g <filename> get file attributes\n");
+    printf("-x <filename> delete file\n");
     printf("-j <domainName/journalName> read journal\n");
+    printf("-v <variable list_name> read domain variable list\n");
     printf("-m print raw MMS messages\n");
 }
 
@@ -79,7 +81,7 @@ printJournalEntries(LinkedList journalEntries)
     }
 }
 
-void*
+void
 printRawMmsMessage(void* parameter, uint8_t* message, int messageLength, bool received)
 {
     if (received)
@@ -115,10 +117,12 @@ int main(int argc, char** argv) {
 	int getFileAttributes = 0;
 	int readJournal = 0;
 	int printRawMmsMessages = 0;
+	int deleteFile = 0;
+	int readVariableList = 0;
 
 	int c;
 
-	while ((c = getopt(argc, argv, "mifdh:p:l:t:a:r:g:j:")) != -1)
+	while ((c = getopt(argc, argv, "mifdh:p:l:t:a:r:g:j:x:v:")) != -1)
 		switch (c) {
 		case 'm':
 		    printRawMmsMessages = 1;
@@ -151,11 +155,19 @@ int main(int argc, char** argv) {
 		    readVariable = 1;
 		    variableName = StringUtils_copyString(optarg);
 		    break;
+		case 'v':
+		    readVariableList = 1;
+		    variableName = StringUtils_copyString(optarg);
+            break;
 		case 'f':
 		    showFileList = 1;
 		    break;
 		case 'g':
 		    getFileAttributes = 1;
+		    filename = StringUtils_copyString(optarg);
+		    break;
+		case 'x':
+		    deleteFile = 1;
 		    filename = StringUtils_copyString(optarg);
 		    break;
 
@@ -336,6 +348,21 @@ int main(int argc, char** argv) {
 	        printf("Reading VMD scope variable not yet supported!\n");
 	}
 
+	if (readVariableList) {
+        if (readWriteHasDomain) {
+            MmsValue* variables = MmsConnection_readNamedVariableListValues(con, &error, domainName, variableName, true);
+
+            if (error != MMS_ERROR_NONE) {
+                printf("Reading variable failed: (ERROR %i)\n", error);
+            }
+            else {
+                printf("Read SUCCESS\n");
+            }
+        }
+        else
+            printf("Reading VMD scope variable list not yet supported!\n");
+	}
+
 	if (showFileList) {
 	    char lastName[300];
 	    lastName[0] = 0;
@@ -349,6 +376,17 @@ int main(int argc, char** argv) {
 
 	if (getFileAttributes) {
 	    MmsConnection_getFileDirectory(con, &error, filename, NULL, mmsGetFileAttributeHandler, NULL);
+	}
+
+	if (deleteFile) {
+	    MmsConnection_fileDelete(con, &error, filename);
+
+        if (error != MMS_ERROR_NONE) {
+            printf("Delete file failed: (ERROR %i)\n", error);
+        }
+        else {
+            printf("File deleted\n");
+        }
 	}
 
 exit:

@@ -34,22 +34,19 @@ extern "C" {
 /**@{*/
 
 
+/**
+ * \brief authentication mechanism úsed by AcseAuthenticator
+ */
 typedef enum
 {
     ACSE_AUTH_NONE = 0,
-    ACSE_AUTH_PASSWORD = 1
+    ACSE_AUTH_PASSWORD = 1,
+    ACSE_AUTH_CERTIFICATE = 2,
+
+    /** Use TLS certificate for client authentication */
+    ACSE_AUTH_TLS = 3
 } AcseAuthenticationMechanism;
 
-
-/* --> for compatibility with older versions (libiec61850 < 0.7.7) */
-#ifndef AUTH_NONE
-#define AUTH_NONE ACSE_AUTH_NONE
-#endif
-
-#ifndef AUTH_PASSWORD
-#define AUTH_PASSWORD ACSE_AUTH_PASSWORD
-#endif
-/* <-- for compatibility with older versions (libiec61850 < 0.7.7) */
 
 typedef struct sAcseAuthenticationParameter* AcseAuthenticationParameter;
 
@@ -63,6 +60,13 @@ struct sAcseAuthenticationParameter
             uint8_t* octetString;
             int passwordLength;
         } password;
+
+        struct
+        {
+            uint8_t* buf;
+            int length;
+        } certificate;
+
     } value;
 };
 
@@ -85,11 +89,12 @@ AcseAuthenticationParameter_setPassword(AcseAuthenticationParameter self, char* 
  * \param parameter user provided parameter - set when user registers the authenticator
  * \param authParameter the authentication parameters provided by the client
  * \param securityToken pointer where to store an application specific security token - can be ignored if not used.
+ * \param appReference ISO application reference (ap-title + ae-qualifier)
  *
  * \return true if client connection is accepted, false otherwise
  */
 typedef bool
-(*AcseAuthenticator)(void* parameter, AcseAuthenticationParameter authParameter, void** securityToken);
+(*AcseAuthenticator)(void* parameter, AcseAuthenticationParameter authParameter, void** securityToken, IsoApplicationReference* appReference);
 
 /**
  * \brief COTP T selector

@@ -449,6 +449,8 @@ CotpConnection_init(CotpConnection* self, Socket socket,
 	self->options.tSelDst = tsel;
     self->payload = payloadBuffer;
 
+    CotpConnection_resetPayload(self);
+
     /* default TPDU size is maximum size */
     CotpConnection_setTpduSize(self, COTP_MAX_TPDU_SIZE);
 

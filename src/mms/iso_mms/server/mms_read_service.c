@@ -115,8 +115,8 @@ appendValueToResultList(MmsValue* value, LinkedList values)
 }
 
 static void
-appendErrorToResultList(LinkedList values, uint32_t errorCode) {
-    MmsValue* value = MmsValue_newDataAccessError((MmsDataAccessError) errorCode);
+appendErrorToResultList(LinkedList values, MmsDataAccessError errorType) {
+    MmsValue* value = MmsValue_newDataAccessError(errorType);
     MmsValue_setDeletable(value);
     appendValueToResultList(value, values);
 }
@@ -246,13 +246,13 @@ alternateArrayAccess(MmsServerConnection connection,
 
 		}
 		else  /* access error */
-			appendErrorToResultList(values, 10 /* object-non-existant*/);
+			appendErrorToResultList(values, DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT);
 
 	}
 	else { // invalid access
 		if (DEBUG_MMS_SERVER) printf("Invalid alternate access\n");
 
-        appendErrorToResultList(values, 10 /* object-non-existant*/);
+        appendErrorToResultList(values, DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT);
 	}
 }
 
@@ -295,7 +295,7 @@ addNamedVariableToResultList(MmsVariableSpecification* namedVariable, MmsDomain*
 			    if (DEBUG_MMS_SERVER)
 			        printf("MMS read: value of known variable is not found. Maybe illegal access to array element!\n");
 
-			    appendErrorToResultList(values, 10 /* object-non-existant*/);
+			    appendErrorToResultList(values, DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT);
 			}
 			else
 			    appendValueToResultList(value, values);
@@ -303,7 +303,7 @@ addNamedVariableToResultList(MmsVariableSpecification* namedVariable, MmsDomain*
 
 	}
 	else
-		appendErrorToResultList(values, 10 /* object-non-existant*/);
+		appendErrorToResultList(values, DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT);
 }
 
 
@@ -479,6 +479,14 @@ exit_function:
     return;
 }
 
+/**
+ * \brief implements access to list of variables (multiple MMS variables)
+ *
+ * \param connection the client connection that received the request
+ * \param read read request information
+ * \param invokeId the invoke ID of the confirmed request PDU
+ * \param response byte buffer to encode the response
+ */
 static void
 handleReadListOfVariablesRequest(
 		MmsServerConnection connection,
@@ -524,13 +532,13 @@ handleReadListOfVariablesRequest(
 					if (DEBUG_MMS_SERVER)
 					    printf("MMS_SERVER: READ domain %s not found!\n", domainIdStr);
 
-					appendErrorToResultList(values, (uint32_t) DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT /* object-non-existent*/);
+					appendErrorToResultList(values, DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT);
 				}
 				else {
                     MmsVariableSpecification* namedVariable = MmsDomain_getNamedVariable(domain, nameIdStr);
 
                     if (namedVariable == NULL)
-                        appendErrorToResultList(values, (uint32_t) DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT /* object-non-existent*/);
+                        appendErrorToResultList(values, DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT);
                     else
                         addNamedVariableToResultList(namedVariable, domain, nameIdStr,
                             values, connection, alternateAccess);
@@ -549,7 +557,7 @@ handleReadListOfVariablesRequest(
 			    MmsVariableSpecification* namedVariable = MmsDevice_getNamedVariable(MmsServer_getDevice(connection->server), nameIdStr);
 
                 if (namedVariable == NULL)
-                    appendErrorToResultList(values, 10 /* object-non-existent*/);
+                    appendErrorToResultList(values, DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT);
                 else
                     addNamedVariableToResultList(namedVariable, (MmsDomain*) MmsServer_getDevice(connection->server), nameIdStr,
                             values, connection, alternateAccess);
@@ -558,7 +566,7 @@ handleReadListOfVariablesRequest(
 #endif /* (CONFIG_MMS_SUPPORT_VMD_SCOPE_NAMED_VARIABLES == 1) */
 
 			else {
-                appendErrorToResultList(values, (uint32_t) DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT /* object-non-existent*/);
+                appendErrorToResultList(values, DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT);
 
 				if (DEBUG_MMS_SERVER) printf("MMS_SERVER: READ object name type not supported!\n");
 			}
@@ -617,6 +625,14 @@ createNamedVariableListResponse(MmsServerConnection connection, MmsNamedVariable
 	deleteValueList(values);
 }
 
+/**
+ * \brief implements access to named variable lists (data sets)
+ *
+ * \param connection the client connection that received the request
+ * \param read read request information
+ * \param invokeId the invoke ID of the confirmed request PDU
+ * \param response byte buffer to encode the response
+ */
 static void
 handleReadNamedVariableListRequest(
 		MmsServerConnection connection,
@@ -731,7 +747,7 @@ mmsServer_handleReadRequest(
 
 	if (rval.code != RC_OK) {
 	    mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
-	    return;
+	    goto exit_function;
 	}
 
 	request = &(mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.choice.read);
@@ -748,6 +764,7 @@ mmsServer_handleReadRequest(
 		mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_ACCESS_UNSUPPORTED);
 	}
 
+exit_function:	
 	asn_DEF_MmsPdu.free_struct(&asn_DEF_MmsPdu, mmsPdu, 0);
 }
 

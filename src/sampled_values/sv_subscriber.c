@@ -50,7 +50,13 @@ struct sSVReceiver {
 
     uint8_t* buffer;
     EthernetSocket ethSocket;
+
     LinkedList subscriberList;
+
+#if (CONFIG_MMS_THREADLESS_STACK == 0)
+    Semaphore subscriberListLock;
+#endif
+
 };
 
 struct sSVSubscriber {
@@ -67,6 +73,7 @@ struct sSVClientASDU {
 
     uint8_t* smpCnt;
     uint8_t* confRev;
+    uint8_t* refrTm;
     uint8_t* smpSynch;
 
 
@@ -87,6 +94,10 @@ SVReceiver_create(void)
         self->buffer = (uint8_t*) GLOBAL_MALLOC(ETH_BUFFER_LENGTH);
 
         self->checkDestAddr = false;
+
+#if (CONFIG_MMS_THREADLESS_STACK == 0)
+        self->subscriberListLock = Semaphore_create(1);
+#endif
     }
 
     return self;
@@ -110,13 +121,29 @@ SVReceiver_disableDestAddrCheck(SVReceiver self)
 void
 SVReceiver_addSubscriber(SVReceiver self, SVSubscriber subscriber)
 {
+#if (CONFIG_MMS_THREADLESS_STACK == 0)
+    Semaphore_wait(self->subscriberListLock);
+#endif
+
     LinkedList_add(self->subscriberList, (void*) subscriber);
+
+#if (CONFIG_MMS_THREADLESS_STACK == 0)
+    Semaphore_post(self->subscriberListLock);
+#endif
 }
 
 void
 SVReceiver_removeSubscriber(SVReceiver self, SVSubscriber subscriber)
 {
+#if (CONFIG_MMS_THREADLESS_STACK == 0)
+    Semaphore_wait(self->subscriberListLock);
+#endif
+
     LinkedList_remove(self->subscriberList, (void*) subscriber);
+
+#if (CONFIG_MMS_THREADLESS_STACK == 0)
+    Semaphore_post(self->subscriberListLock);
+#endif
 }
 
 static void
@@ -172,6 +199,10 @@ SVReceiver_destroy(SVReceiver self)
 {
     LinkedList_destroyDeep(self->subscriberList,
             (LinkedListValueDeleteFunction) SVSubscriber_destroy);
+
+#if (CONFIG_MMS_THREADLESS_STACK == 0)
+        Semaphore_destroy(self->subscriberListLock);
+#endif
 
     GLOBAL_FREEMEM(self->buffer);
     GLOBAL_FREEMEM(self);
@@ -230,6 +261,10 @@ parseASDU(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, int length)
 
         case 0x83:
             asdu.confRev = buffer + bufPos;
+            break;
+
+        case 0x84:
+            asdu.refrTm = buffer + bufPos;
             break;
 
         case 0x85:
@@ -393,6 +428,11 @@ parseSVMessage(SVReceiver self, int numbytes)
 
 
     /* check if there is a matching subscriber */
+
+#if (CONFIG_MMS_THREADLESS_STACK == 0)
+    Semaphore_wait(self->subscriberListLock);
+#endif
+
     LinkedList element = LinkedList_getNext(self->subscriberList);
 
     SVSubscriber subscriber;
@@ -421,6 +461,10 @@ parseSVMessage(SVReceiver self, int numbytes)
 
         element = LinkedList_getNext(element);
     }
+
+#if (CONFIG_MMS_THREADLESS_STACK == 0)
+    Semaphore_post(self->subscriberListLock);
+#endif
 
 
     if (subscriberFound)
@@ -491,6 +535,52 @@ SVClientASDU_getSmpCnt(SVClientASDU self)
     return retVal;
 }
 
+static uint64_t
+decodeUtcTime(uint8_t* buffer, uint8_t* timeQuality)
+{
+    uint32_t timeval32;
+
+    timeval32 = buffer[3];
+    timeval32 += buffer[2] * 0x100;
+    timeval32 += buffer[1] * 0x10000;
+    timeval32 += buffer[0] * 0x1000000;
+
+    uint32_t msVal;
+
+    uint32_t fractionOfSecond;
+
+    fractionOfSecond = buffer[6];
+    fractionOfSecond += buffer[5] * 0x100;
+    fractionOfSecond += buffer[4] * 0x10000;
+
+    msVal = (uint32_t) (((uint64_t) fractionOfSecond * 1000) / 16777215);
+
+    if (timeQuality != NULL)
+        *timeQuality = buffer[7];
+
+    uint64_t timeval64 = (uint64_t) timeval32 * 1000 + (uint64_t) msVal;
+
+    return timeval64;
+}
+
+uint64_t
+SVClientASDU_getRefrTmAsMs(SVClientASDU self)
+{
+    uint64_t msTime = 0;
+
+    if (self->refrTm != NULL)
+        msTime = decodeUtcTime(self->refrTm, NULL);
+
+    return msTime;
+}
+
+bool
+SVClientASDU_hasRefrTm(SVClientASDU self)
+{
+    return (self->refrTm != NULL);
+}
+
+
 const char*
 SVClientASDU_getSvId(SVClientASDU self)
 {
@@ -547,6 +637,20 @@ SVClientASDU_getINT32(SVClientASDU self, int index)
     return retVal;
 }
 
+int64_t
+SVClientASDU_getINT64(SVClientASDU self, int index)
+{
+    int64_t retVal = *((int64_t*) (self->dataBuffer + index));
+
+#if (ORDER_LITTLE_ENDIAN == 1)
+    uint8_t* buf = (uint8_t*) (&retVal);
+
+    BerEncoder_revertByteOrder(buf, 8);
+#endif
+
+    return retVal;
+}
+
 uint8_t
 SVClientASDU_getINT8U(SVClientASDU self, int index)
 {
@@ -583,6 +687,19 @@ SVClientASDU_getINT32U(SVClientASDU self, int index)
     return retVal;
 }
 
+uint64_t
+SVClientASDU_getINT64U(SVClientASDU self, int index)
+{
+    uint64_t retVal = *((uint64_t*) (self->dataBuffer + index));
+
+#if (ORDER_LITTLE_ENDIAN == 1)
+    uint8_t* buf = (uint8_t*) (&retVal);
+
+    BerEncoder_revertByteOrder(buf, 8);
+#endif
+
+    return retVal;
+}
 
 float
 SVClientASDU_getFLOAT32(SVClientASDU self, int index)
