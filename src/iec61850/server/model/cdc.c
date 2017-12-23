@@ -379,7 +379,23 @@ CDC_SEC_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
 }
 
 
+DataObject*
+CDC_VSS_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
+{
+    DataObject* newSPS = DataObject_create(dataObjectName, parent, 0);
 
+    CDC_addStatusToDataObject(newSPS, IEC61850_VISIBLE_STRING_255);
+
+    if (options & CDC_OPTION_PICS_SUBST)
+        CDC_addOptionPicsSubst(newSPS, IEC61850_BOOLEAN);
+
+    if (options & CDC_OPTION_BLK_ENA)
+        DataAttribute_create("blkEna", (ModelNode*) newSPS, IEC61850_BOOLEAN, IEC61850_FC_BL, 0, 0, 0);
+
+    CDC_addStandardOptions(newSPS, options);
+
+    return newSPS;
+}
 
 /**
  * CDC_OPTION_INST_MAG
@@ -930,6 +946,19 @@ CDC_SPG_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
 
     return newSPG;
 }
+
+DataObject*
+CDC_VSG_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
+{
+    DataObject* newSPG = DataObject_create(dataObjectName, parent, 0);
+
+    DataAttribute_create("setVal", (ModelNode*) newSPG, IEC61850_VISIBLE_STRING_255, IEC61850_FC_SP, TRG_OPT_DATA_CHANGED, 0, 0);
+
+    CDC_addStandardOptions(newSPG, options);
+
+    return newSPG;
+}
+
 
 DataObject*
 CDC_ENG_create(const char* dataObjectName, ModelNode* parent, uint32_t options)

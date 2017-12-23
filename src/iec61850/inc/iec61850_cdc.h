@@ -184,7 +184,8 @@ CDC_ENS_create(const char* dataObjectName, ModelNode* parent, uint32_t options);
 DataObject*
 CDC_BCR_create(const char* dataObjectName, ModelNode* parent, uint32_t options);
 
-
+DataObject*
+CDC_VSS_create(const char* dataObjectName, ModelNode* parent, uint32_t options);
 
 /**
  * \brief create a new SEC (Security violation) CDC instance (data object)
@@ -339,6 +340,16 @@ CDC_ACT_create(const char* dataObjectName, ModelNode* parent, uint32_t options);
  */
 DataObject*
 CDC_SPG_create(const char* dataObjectName, ModelNode* parent, uint32_t options);
+
+/**
+ * \brief Visible string setting (VSG)
+ *
+ * \param dataObjectName the name of the new object
+ * \param parent the parent of the new data object (either a LogicalNode or another DataObject)
+ * \param options bit mask to encode required optional elements
+ */
+DataObject*
+CDC_VSG_create(const char* dataObjectName, ModelNode* parent, uint32_t options);
 
 /**
  * \brief Enumerated status setting (ENG)
