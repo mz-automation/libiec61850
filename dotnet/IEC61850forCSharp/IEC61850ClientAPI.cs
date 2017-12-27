@@ -1037,6 +1037,18 @@ namespace IEC61850
 					throw new IedConnectionException ("Write value failed", error);
 			}
 
+			/// <summary>Delete file</summary>
+			/// <param name="fileName">The name of the file.</param>
+			/// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
+			public void DeleteFile (string fileName)
+			{
+				int error;
+				IedConnection_deleteFile (connection, out error, fileName);
+
+				if (error != 0)
+					throw new IedConnectionException ("Deleting file " + fileName + " failed", error);
+			}
+
             /// <summary>Read the content of a file directory.</summary>
             /// <param name="directoryName">The name of the directory.</param>
             /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
