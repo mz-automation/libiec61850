@@ -398,6 +398,17 @@ TLSSocket_getPeerCertificate(TLSSocket self, int* certSize)
     return self->peerCert;
 }
 
+bool
+TLSSocket_performHandshake(TLSSocket self)
+{
+    //TODO evaluate return value
+
+    if (mbedtls_ssl_renegotiate(&(self->ssl)) == 0)
+        return true;
+    else
+        return false;
+}
+
 int
 TLSSocket_read(TLSSocket self, uint8_t* buf, int size)
 {
