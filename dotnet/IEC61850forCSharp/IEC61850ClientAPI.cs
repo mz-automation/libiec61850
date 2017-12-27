@@ -1038,7 +1038,7 @@ namespace IEC61850
 			}
 
             /// <summary>Delete file</summary>
-            /// <param name="directoryName">The name of the file.</param>
+            /// <param name="fileName">The name of the file.</param>
             /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
             public void DeleteFile(string fileName) 
             {
