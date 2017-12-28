@@ -46,6 +46,19 @@ namespace IEC61850
 
 			}
 
+			/// <summary>
+			/// Creates a new SampledValuesControlBlock instance.
+			/// </summary>
+			/// <description>>
+			/// This function will also read the SVCB values from the server.
+			/// </description>
+			/// <returns>The new SVCB instamce</returns>
+			/// <param name="svcbObjectReference">The object reference of the SVCB</param>
+			public SampledValuesControlBlock GetSvControlBlock (string svcbObjectReference)
+			{
+				return new SampledValuesControlBlock (connection, svcbObjectReference);
+			}
+
 			public ReportControlBlock GetReportControlBlock (string rcbObjectReference)
 			{
 				var newRCB = new ReportControlBlock (rcbObjectReference, this, connection);

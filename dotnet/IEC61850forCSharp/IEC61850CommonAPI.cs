@@ -85,6 +85,29 @@ namespace IEC61850
 			GI = 16
 		}
 
+		/// <summary>
+		/// SmpMod values
+		/// </summary>
+		public enum SmpMod {
+			SAMPLES_PER_PERIOD = 0,
+			SAMPLES_PER_SECOND = 1,
+			SECONDS_PER_SAMPLE = 2
+		}
+
+		/// <summary>
+		/// Values for Sampled Values (SV) OptFlds
+		/// </summary>
+		[Flags]
+		public enum SVOptions {
+			NONE = 0,
+			REFRESH_TIME = 1,
+			SAMPLE_SYNC = 2,
+			SAMPLE_RATE = 4,
+			DATA_SET = 8,
+			SECURITY = 16,
+			ALL = 31
+		}
+
 		[Flags]
 		public enum ReportOptions {
 			NONE = 0,

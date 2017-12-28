@@ -46,6 +46,7 @@
     <Compile Include="IEC61850ServerAPI.cs" />
     <Compile Include="IEC61850CommonAPI.cs" />
     <Compile Include="TLS.cs" />
+    <Compile Include="SampledValuesControlBlock.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

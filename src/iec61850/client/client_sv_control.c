@@ -115,16 +115,16 @@ setBooleanVariable(ClientSVControlBlock self, const char* varName, bool value)
 }
 
 bool
-ClientSVControlBlock_setSvEna(ClientSVControlBlock self, bool svEna)
+ClientSVControlBlock_setSvEna(ClientSVControlBlock self, bool value)
 {
-    return setBooleanVariable(self, "SvEna", svEna);
+    return setBooleanVariable(self, "SvEna", value);
 }
 
 bool
-ClientSVControlBlock_setResv(ClientSVControlBlock self, bool svEna)
+ClientSVControlBlock_setResv(ClientSVControlBlock self, bool value)
 {
     if (self->isMulticast == false)
-        return setBooleanVariable(self, "SvEna", svEna);
+        return setBooleanVariable(self, "SvEna", value);
     else
         return false;
 }

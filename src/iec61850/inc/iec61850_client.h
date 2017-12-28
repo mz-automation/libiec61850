@@ -344,6 +344,12 @@ IedConnection_getMmsConnection(IedConnection self);
 /** SV ASDU contains attribute Security */
 #define IEC61850_SV_OPT_SECURITY 16
 
+#define IEC61850_SV_SMPMOD_SAMPLES_PER_PERIOD 0
+
+#define IEC61850_SV_SMPMOD_SAMPLES_PER_SECOND 1
+
+#define IEC61850_SV_SMPMOD_SECONDS_PER_SAMPLE 2
+
 
 /** an opaque handle to the instance data of a ClientSVControlBlock object */
 typedef struct sClientSVControlBlock* ClientSVControlBlock;
@@ -385,13 +391,13 @@ ClientSVControlBlock_getLastComError(ClientSVControlBlock self);
 
 
 bool
-ClientSVControlBlock_setSvEna(ClientSVControlBlock self, bool svEna);
+ClientSVControlBlock_setSvEna(ClientSVControlBlock self, bool value);
 
 bool
 ClientSVControlBlock_getSvEna(ClientSVControlBlock self);
 
 bool
-ClientSVControlBlock_setResv(ClientSVControlBlock self, bool svEna);
+ClientSVControlBlock_setResv(ClientSVControlBlock self, bool value);
 
 bool
 ClientSVControlBlock_getResv(ClientSVControlBlock self);
