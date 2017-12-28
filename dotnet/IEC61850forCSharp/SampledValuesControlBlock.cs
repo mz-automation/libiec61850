@@ -88,6 +88,9 @@ namespace IEC61850
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern int ClientSVControlBlock_getNoASDU (IntPtr self);
 
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern PhyComAddress ClientSVControlBlock_getDstAddress (IntPtr self);
+
 			private IntPtr self;
 			private string objectReference;
 
@@ -172,6 +175,11 @@ namespace IEC61850
 			public int GetNoASDU ()
 			{
 				return ClientSVControlBlock_getNoASDU (self);
+			}
+
+			public PhyComAddress GetDstAddress()
+			{
+				return ClientSVControlBlock_getDstAddress (self);
 			}
 
 			public void Dispose()

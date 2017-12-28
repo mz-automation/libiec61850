@@ -72,6 +72,17 @@ namespace IEC61850
 			}
 		}
 
+		[StructLayout(LayoutKind.Sequential)]
+		public class PhyComAddress
+		{
+			public byte vlanPriority;
+			public UInt16 vlanId;
+			public UInt16 appId;
+
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst=6)]
+			public byte[] dstAddress = new byte[6];
+		}
+
 		/// <summary>
 		/// MMS data access error for MmsValue type MMS_DATA_ACCESS_ERROR
 		/// </summary>

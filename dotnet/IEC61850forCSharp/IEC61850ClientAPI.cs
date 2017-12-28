@@ -531,10 +531,28 @@ namespace IEC61850
 				return controlObject;
 			}
 
+			/// <summary>
+			/// Creates a new SampledValuesControlBlock instance.
+			/// </summary>
+			/// <description>>
+			/// This function will also read the SVCB values from the server.
+			/// </description>
+			/// <returns>The new SVCB instance</returns>
+			/// <param name="svcbObjectReference">The object reference of the SVCB</param>
+			public SampledValuesControlBlock GetSvControlBlock (string svcbObjectReference)
+			{
+				return new SampledValuesControlBlock (connection, svcbObjectReference);
+			}
 
-		
-
-
+			/// <summary>
+			/// Creates a new SampledValuesControlBlock instance.
+			/// </summary>
+			/// <returns>The new GoCB instance</returns>
+			/// <param name="gocbObjectReference">The object reference of the GoCB</param>
+			public GooseControlBlock GetGooseControlBlock (string gocbObjectReference)
+			{
+				return new GooseControlBlock (gocbObjectReference, connection);
+			}
 
 			/// <summary>
 			/// Updates the device model by quering the server.
