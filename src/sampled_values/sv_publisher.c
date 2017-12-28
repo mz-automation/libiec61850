@@ -649,3 +649,140 @@ SVPublisher_ASDU_setSmpRate(SVPublisher_ASDU self, uint16_t smpRate)
     self->hasSmpRate = true;
     self->smpRate = smpRate;
 }
+
+
+/*******************************************************************
+ * Wrapper functions to support old API (remove in future versions)
+ *******************************************************************/
+
+SVPublisher
+SampledValuesPublisher_create(CommParameters* parameters, const char* interfaceId)
+{
+    return SVPublisher_create(parameters, interfaceId);
+}
+
+SVPublisher_ASDU
+SampledValuesPublisher_addASDU(SVPublisher self, char* svID, char* datset, uint32_t confRev)
+{
+    return SVPublisher_addASDU(self, svID, datset, confRev);
+}
+
+void
+SampledValuesPublisher_setupComplete(SVPublisher self)
+{
+    SVPublisher_setupComplete(self);
+}
+
+void
+SampledValuesPublisher_publish(SVPublisher self)
+{
+    SVPublisher_publish(self);
+}
+
+void
+SampledValuesPublisher_destroy(SVPublisher self)
+{
+    SVPublisher_destroy(self);
+}
+
+void
+SV_ASDU_resetBuffer(SVPublisher_ASDU self)
+{
+    SVPublisher_ASDU_resetBuffer(self);
+}
+
+int
+SV_ASDU_addINT8(SVPublisher_ASDU self)
+{
+    return SVPublisher_ASDU_addINT8(self);
+}
+
+void
+SV_ASDU_setINT8(SVPublisher_ASDU self, int index, int8_t value)
+{
+    SVPublisher_ASDU_setINT8(self, index, value);
+}
+
+int
+SV_ASDU_addINT32(SVPublisher_ASDU self)
+{
+    return SVPublisher_ASDU_addINT32(self);
+}
+
+void
+SV_ASDU_setINT32(SVPublisher_ASDU self, int index, int32_t value)
+{
+    SVPublisher_ASDU_setINT32(self, index, value);
+}
+
+int
+SV_ASDU_addINT64(SVPublisher_ASDU self)
+{
+    return SVPublisher_ASDU_addINT64(self);
+}
+
+void
+SV_ASDU_setINT64(SVPublisher_ASDU self, int index, int64_t value)
+{
+    SVPublisher_ASDU_setINT64(self, index, value);
+}
+
+int
+SV_ASDU_addFLOAT(SVPublisher_ASDU self)
+{
+    return SVPublisher_ASDU_addFLOAT(self);
+}
+
+void
+SV_ASDU_setFLOAT(SVPublisher_ASDU self, int index, float value)
+{
+    SVPublisher_ASDU_setFLOAT(self, index, value);
+}
+
+int
+SV_ASDU_addFLOAT64(SVPublisher_ASDU self)
+{
+    return SVPublisher_ASDU_addFLOAT64(self);
+}
+
+void
+SV_ASDU_setFLOAT64(SVPublisher_ASDU self, int index, double value)
+{
+    SVPublisher_ASDU_setFLOAT64(self, index, value);
+}
+
+void
+SV_ASDU_setSmpCnt(SVPublisher_ASDU self, uint16_t value)
+{
+    SVPublisher_ASDU_setSmpCnt(self, value);
+}
+
+uint16_t
+SV_ASDU_getSmpCnt(SVPublisher_ASDU self)
+{
+    return SVPublisher_ASDU_getSmpCnt(self);
+}
+
+void
+SV_ASDU_increaseSmpCnt(SVPublisher_ASDU self)
+{
+    SVPublisher_ASDU_increaseSmpCnt(self);
+}
+
+void
+SV_ASDU_setRefrTm(SVPublisher_ASDU self, uint64_t refrTm)
+{
+    SVPublisher_ASDU_setRefrTm(self, refrTm);
+}
+
+void
+SV_ASDU_setSmpMod(SVPublisher_ASDU self, uint8_t smpMod)
+{
+    SVPublisher_ASDU_setSmpMod(self, smpMod);
+}
+
+void
+SV_ASDU_setSmpRate(SVPublisher_ASDU self, uint16_t smpRate)
+{
+    SVPublisher_ASDU_setSmpRate(self, smpRate);
+}

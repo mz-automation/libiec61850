@@ -832,3 +832,99 @@ SVSubscriber_ASDU_getDataSize(SVSubscriber_ASDU self)
     return self->dataBufferLength;
 }
 
+uint16_t
+SVClientASDU_getSmpCnt(SVSubscriber_ASDU self)
+{
+    return SVSubscriber_ASDU_getSmpCnt(self);
+}
+
+const char*
+SVClientASDU_getSvId(SVSubscriber_ASDU self)
+{
+    return SVSubscriber_ASDU_getSvId(self);
+}
+
+uint32_t
+SVClientASDU_getConfRev(SVSubscriber_ASDU self)
+{
+    return SVSubscriber_ASDU_getConfRev(self);
+}
+
+bool
+SVClientASDU_hasRefrTm(SVSubscriber_ASDU self)
+{
+    return SVSubscriber_ASDU_hasRefrTm(self);
+}
+
+uint64_t
+SVClientASDU_getRefrTmAsMs(SVSubscriber_ASDU self)
+{
+    return SVSubscriber_ASDU_getRefrTmAsMs(self);
+}
+
+int8_t
+SVClientASDU_getINT8(SVSubscriber_ASDU self, int index)
+{
+    return SVSubscriber_ASDU_getINT8(self, index);
+}
+
+int16_t
+SVClientASDU_getINT16(SVSubscriber_ASDU self, int index)
+{
+    return SVSubscriber_ASDU_getINT16(self, index);
+}
+
+int32_t
+SVClientASDU_getINT32(SVSubscriber_ASDU self, int index)
+{
+    return SVSubscriber_ASDU_getINT32(self, index);
+}
+
+int64_t
+SVClientASDU_getINT64(SVSubscriber_ASDU self, int index)
+{
+    return SVSubscriber_ASDU_getINT64(self, index);
+}
+
+uint8_t
+SVClientASDU_getINT8U(SVSubscriber_ASDU self, int index)
+{
+    return SVSubscriber_ASDU_getINT8U(self, index);
+}
+
+uint16_t
+SVClientASDU_getINT16U(SVSubscriber_ASDU self, int index)
+{
+    return SVSubscriber_ASDU_getINT16U(self, index);
+}
+
+uint32_t
+SVClientASDU_getINT32U(SVSubscriber_ASDU self, int index)
+{
+    return SVSubscriber_ASDU_getINT32U(self, index);
+}
+
+uint64_t
+SVClientASDU_getINT64U(SVSubscriber_ASDU self, int index)
+{
+    return SVSubscriber_ASDU_getINT64U(self, index);
+}
+
+float
+SVClientASDU_getFLOAT32(SVSubscriber_ASDU self, int index)
+{
+    return SVSubscriber_ASDU_getFLOAT32(self, index);
+}
+
+double
+SVClientASDU_getFLOAT64(SVSubscriber_ASDU self, int index)
+{
+    return SVSubscriber_ASDU_getFLOAT64(self, index);
+}
+
+int
+SVClientASDU_getDataSize(SVSubscriber_ASDU self)
+{
+    return SVSubscriber_ASDU_getDataSize(self);
+}
+

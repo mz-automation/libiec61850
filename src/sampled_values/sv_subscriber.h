@@ -479,12 +479,75 @@ SVSubscriber_ASDU_getFLOAT64(SVSubscriber_ASDU self, int index);
 int
 SVSubscriber_ASDU_getDataSize(SVSubscriber_ASDU self);
 
+#ifndef DEPRECATED
+#if defined(__GNUC__) || defined(__clang__)
+  #define DEPRECATED __attribute__((deprecated))
+#else
+  #define DEPRECATED
+#endif
+#endif
+
+/**
+ * \addtogroup sv_subscriber_deprecated_api_group Deprecated API
+ * \ingroup sv_subscriber_api_group IEC 61850 Sampled Values (SV) publisher API
+ * \deprecated
+ * @{
+ */
+
+typedef struct sSVSubscriberASDU* SVClientASDU;
+
+DEPRECATED uint16_t
+SVClientASDU_getSmpCnt(SVSubscriber_ASDU self);
+
+DEPRECATED const char*
+SVClientASDU_getSvId(SVSubscriber_ASDU self);
+
+DEPRECATED uint32_t
+SVClientASDU_getConfRev(SVSubscriber_ASDU self);
+
+DEPRECATED bool
+SVClientASDU_hasRefrTm(SVSubscriber_ASDU self);
+
+DEPRECATED uint64_t
+SVClientASDU_getRefrTmAsMs(SVSubscriber_ASDU self);
+
+DEPRECATED int8_t
+SVClientASDU_getINT8(SVSubscriber_ASDU self, int index);
+
+DEPRECATED int16_t
+SVClientASDU_getINT16(SVSubscriber_ASDU self, int index);
+
+DEPRECATED int32_t
+SVClientASDU_getINT32(SVSubscriber_ASDU self, int index);
+
+DEPRECATED int64_t
+SVClientASDU_getINT64(SVSubscriber_ASDU self, int index);
+
+DEPRECATED uint8_t
+SVClientASDU_getINT8U(SVSubscriber_ASDU self, int index);
+
+DEPRECATED uint16_t
+SVClientASDU_getINT16U(SVSubscriber_ASDU self, int index);
+
+DEPRECATED uint32_t
+SVClientASDU_getINT32U(SVSubscriber_ASDU self, int index);
+
+DEPRECATED uint64_t
+SVClientASDU_getINT64U(SVSubscriber_ASDU self, int index);
+
+DEPRECATED float
+SVClientASDU_getFLOAT32(SVSubscriber_ASDU self, int index);
+
+DEPRECATED double
+SVClientASDU_getFLOAT64(SVSubscriber_ASDU self, int index);
+
+DEPRECATED int
+SVClientASDU_getDataSize(SVSubscriber_ASDU self);
+
 /**@} @}*/
 
 #ifdef __cplusplus
 }
 #endif
-
-#include "sv_subscriber_deprecated.h"
 
 #endif /* SAMPLED_VALUES_SV_SUBSCRIBER_ */

@@ -287,10 +287,95 @@ SVPublisher_ASDU_setSmpRate(SVPublisher_ASDU self, uint16_t smpRate);
 
 /**@} @}*/
 
+#ifndef DEPRECATED
+#if defined(__GNUC__) || defined(__clang__)
+  #define DEPRECATED __attribute__((deprecated))
+#else
+  #define DEPRECATED
+#endif
+#endif
+
+/**
+ * \addtogroup sv_publisher_deprecated_api_group Deprecated API
+ * \ingroup sv_publisher_api_group IEC 61850 Sampled Values (SV) publisher API
+ * \deprecated
+ * @{
+ */
+
+typedef struct sSVPublisher* SampledValuesPublisher;
+
+typedef struct sSV_ASDU* SV_ASDU;
+
+DEPRECATED SVPublisher
+SampledValuesPublisher_create(CommParameters* parameters, const char* interfaceId);
+
+DEPRECATED SVPublisher_ASDU
+SampledValuesPublisher_addASDU(SVPublisher self, char* svID, char* datset, uint32_t confRev);
+
+DEPRECATED void
+SampledValuesPublisher_setupComplete(SVPublisher self);
+
+DEPRECATED void
+SampledValuesPublisher_publish(SVPublisher self);
+
+DEPRECATED void
+SampledValuesPublisher_destroy(SVPublisher self);
+
+DEPRECATED void
+SV_ASDU_resetBuffer(SVPublisher_ASDU self);
+
+DEPRECATED int
+SV_ASDU_addINT8(SVPublisher_ASDU self);
+
+DEPRECATED void
+SV_ASDU_setINT8(SVPublisher_ASDU self, int index, int8_t value);
+
+DEPRECATED int
+SV_ASDU_addINT32(SVPublisher_ASDU self);
+
+DEPRECATED void
+SV_ASDU_setINT32(SVPublisher_ASDU self, int index, int32_t value);
+
+DEPRECATED int
+SV_ASDU_addINT64(SVPublisher_ASDU self);
+
+DEPRECATED void
+SV_ASDU_setINT64(SVPublisher_ASDU self, int index, int64_t value);
+
+DEPRECATED int
+SV_ASDU_addFLOAT(SVPublisher_ASDU self);
+
+DEPRECATED void
+SV_ASDU_setFLOAT(SVPublisher_ASDU self, int index, float value);
+
+DEPRECATED int
+SV_ASDU_addFLOAT64(SVPublisher_ASDU self);
+
+DEPRECATED void
+SV_ASDU_setFLOAT64(SVPublisher_ASDU self, int index, double value);
+
+void DEPRECATED
+SV_ASDU_setSmpCnt(SVPublisher_ASDU self, uint16_t value);
+
+DEPRECATED uint16_t
+SV_ASDU_getSmpCnt(SVPublisher_ASDU self);
+
+DEPRECATED void
+SV_ASDU_increaseSmpCnt(SVPublisher_ASDU self);
+
+DEPRECATED void
+SV_ASDU_setRefrTm(SVPublisher_ASDU self, uint64_t refrTm);
+
+DEPRECATED void
+SV_ASDU_setSmpMod(SVPublisher_ASDU self, uint8_t smpMod);
+
+DEPRECATED void
+SV_ASDU_setSmpRate(SVPublisher_ASDU self, uint16_t smpRate);
+
+/**@}*/
+
 #ifdef __cplusplus
 }
 #endif
-
-#include "sv_publisher_deprecated.h"
 
 #endif /* LIBIEC61850_SRC_SAMPLED_VALUES_SV_PUBLISHER_H_ */
