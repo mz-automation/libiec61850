@@ -81,6 +81,12 @@ namespace IEC61850
 			[return: MarshalAs(UnmanagedType.I1)]
 			static extern bool ClientGooseControlBlock_getFixedOffs (IntPtr self);
 
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern PhyComAddress ClientGooseControlBlock_getDstAddress (IntPtr self);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern void ClientGooseControlBlock_setDstAddress (IntPtr self, PhyComAddress value);
+			
 
 			private IntPtr self;
 			private IntPtr connection;
@@ -219,6 +225,18 @@ namespace IEC61850
 			public bool GetFixedOffs()
 			{
 				return ClientGooseControlBlock_getFixedOffs (self);
+			}
+
+			public PhyComAddress GetDstAddress()
+			{
+				return ClientGooseControlBlock_getDstAddress (self);
+			}
+
+			public void SetDstAddress(PhyComAddress value)
+			{
+				ClientGooseControlBlock_setDstAddress (self, value);
+
+				flagDstAddress = true;
 			}
 
 			public void Dispose()
