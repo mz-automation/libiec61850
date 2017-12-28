@@ -577,3 +577,5 @@ EXPORTS
     IedConnection_createWithTlsSupport
     ClientGooseControlBlock_getDstAddress
     ClientGooseControlBlock_setDstAddress
+    CDC_VSS_create
+    CDC_VSG_create
