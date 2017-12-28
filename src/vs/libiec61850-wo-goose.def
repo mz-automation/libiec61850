@@ -575,3 +575,5 @@ EXPORTS
     MmsServer_isRunning
     IedServer_createWithTlsSupport
     IedConnection_createWithTlsSupport
+    ClientGooseControlBlock_getDstAddress
+    ClientGooseControlBlock_setDstAddress

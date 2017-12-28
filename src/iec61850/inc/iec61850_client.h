@@ -34,6 +34,14 @@ extern "C" {
 #include "mms_client_connection.h"
 #include "linked_list.h"
 
+#ifndef DEPRECATED
+#if defined(__GNUC__) || defined(__clang__)
+  #define DEPRECATED __attribute__((deprecated))
+#else
+  #define DEPRECATED
+#endif
+#endif
+
 /**
  *  * \defgroup iec61850_client_api_group IEC 61850/MMS client API
  */
@@ -545,28 +553,34 @@ ClientGooseControlBlock_getMaxTime(ClientGooseControlBlock self);
 bool
 ClientGooseControlBlock_getFixedOffs(ClientGooseControlBlock self);
 
-MmsValue* /* MMS_OCTET_STRING */
+PhyComAddress
+ClientGooseControlBlock_getDstAddress(ClientGooseControlBlock self);
+
+void
+ClientGooseControlBlock_setDstAddress(ClientGooseControlBlock self, PhyComAddress value);
+
+DEPRECATED MmsValue* /* MMS_OCTET_STRING */
 ClientGooseControlBlock_getDstAddress_addr(ClientGooseControlBlock self);
 
-void
+DEPRECATED void
 ClientGooseControlBlock_setDstAddress_addr(ClientGooseControlBlock self, MmsValue* macAddr);
 
-uint8_t
+DEPRECATED uint8_t
 ClientGooseControlBlock_getDstAddress_priority(ClientGooseControlBlock self);
 
-void
+DEPRECATED void
 ClientGooseControlBlock_setDstAddress_priority(ClientGooseControlBlock self, uint8_t priorityValue);
 
-uint16_t
+DEPRECATED uint16_t
 ClientGooseControlBlock_getDstAddress_vid(ClientGooseControlBlock self);
 
-void
+DEPRECATED void
 ClientGooseControlBlock_setDstAddress_vid(ClientGooseControlBlock self, uint16_t vidValue);
 
-uint16_t
+DEPRECATED uint16_t
 ClientGooseControlBlock_getDstAddress_appid(ClientGooseControlBlock self);
 
-void
+DEPRECATED void
 ClientGooseControlBlock_setDstAddress_appid(ClientGooseControlBlock self, uint16_t appidValue);
 
 
