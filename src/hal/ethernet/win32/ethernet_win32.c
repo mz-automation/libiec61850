@@ -138,7 +138,9 @@ void
 EthernetHandleSet_addSocket(EthernetHandleSet self, const EthernetSocket sock)
 {
     if (self != NULL && sock != NULL) {
+
         int i = self->nhandles++;
+
         self->handles = (HANDLE *) realloc(self->handles, self->nhandles * sizeof(HANDLE));
             
         self->handles[i] = pcap_getevent(sock->rawSocket);
@@ -149,9 +151,10 @@ void
 EthernetHandleSet_removeSocket(EthernetHandleSet self, const EthernetSocket sock)
 {
     if ((self != NULL) && (sock != NULL)) {
-        HANDLE h = pcap_getevent(socket->rawSocket);
+        HANDLE h = pcap_getevent(sock->rawSocket);
 
-        unsigned i;
+        int i;
+
         for (i = 0; i < self->nhandles; i++) {
             if (self->handles[i] == h) {
                 memmove(&self->handles[i], &self->handles[i+1], sizeof(HANDLE) * (self->nhandles - i - 1));

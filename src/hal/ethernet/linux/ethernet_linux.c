@@ -63,7 +63,9 @@ void
 EthernetHandleSet_addSocket(EthernetHandleSet self, const EthernetSocket sock)
 {
     if (self != NULL && sock != NULL) {
+
         int i = self->nhandles++;
+
         self->handles = realloc(self->handles, self->nhandles * sizeof(struct pollfd));
 
         self->handles[i].fd = sock->rawSocket;
@@ -75,7 +77,9 @@ void
 EthernetHandleSet_removeSocket(EthernetHandleSet self, const EthernetSocket sock)
 {
     if ((self != NULL) && (sock != NULL)) {
-        unsigned i;
+
+        int i;
+
         for (i = 0; i < self->nhandles; i++) {
             if (self->handles[i].fd == sock->rawSocket) {
                 memmove(&self->handles[i], &self->handles[i+1], sizeof(struct pollfd) * (self->nhandles - i - 1));
