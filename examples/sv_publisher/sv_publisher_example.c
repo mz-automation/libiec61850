@@ -46,11 +46,12 @@ main(int argc, char** argv)
     float fVal1 = 1234.5678f;
     float fVal2 = 0.12345f;
 
-    int i;
-
     while (running) {
         SVPublisher_ASDU_setFLOAT(asdu1, float1, fVal1);
         SVPublisher_ASDU_setFLOAT(asdu1, float2, fVal2);
+
+        SVPublisher_ASDU_setFLOAT(asdu2, float3, fVal1 * 2);
+        SVPublisher_ASDU_setFLOAT(asdu2, float4, fVal2 * 2);
 
         SVPublisher_ASDU_increaseSmpCnt(asdu1);
         SVPublisher_ASDU_increaseSmpCnt(asdu2);
