@@ -722,13 +722,16 @@ gooseReceiverLoop(void* threadParameter)
 
     GooseReceiver_startThreadless(self);
 
-    while (self->running) {
+    if (self->running) {
 
-        if (GooseReceiver_tick(self) == false)
-            Thread_sleep(1);
+        while (self->running) {
+
+            if (GooseReceiver_tick(self) == false)
+                Thread_sleep(1);
+        }
+
+        GooseReceiver_stopThreadless(self);
     }
-
-   GooseReceiver_stopThreadless(self);
 
    self->stopped = true;
 }
@@ -815,7 +818,8 @@ GooseReceiver_startThreadless(GooseReceiver self)
 void
 GooseReceiver_stopThreadless(GooseReceiver self)
 {
-    Ethernet_destroySocket(self->ethSocket);
+    if (self->ethSocket)
+        Ethernet_destroySocket(self->ethSocket);
 
     self->running = false;
 }

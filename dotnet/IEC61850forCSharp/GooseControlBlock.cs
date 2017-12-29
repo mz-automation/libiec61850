@@ -147,6 +147,9 @@ namespace IEC61850
 				if (flagDatSet)
 					parametersMask += 4;
 
+				if (flagDstAddress)
+					parametersMask += 32;
+
 				int error;
 
 				IedConnection_setGoCBValues (connection, out error, self, parametersMask, singleRequest);
