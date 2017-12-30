@@ -137,6 +137,9 @@ namespace IEC61850
 				private static extern IntPtr SVSubscriber_create([Out] byte[] ethAddr, UInt16 appID);
 
 				[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+				private static extern IntPtr SVSubscriber_create(IntPtr ethAddr, UInt16 appID);
+
+				[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 				private static extern void SVSubscriber_setListener(IntPtr self,  InternalSVUpdateListener listener, IntPtr parameter);
 
 				[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
@@ -168,10 +171,15 @@ namespace IEC61850
 
 				public SVSubscriber(byte[] ethAddr, UInt16 appID)
 				{
-					if (ethAddr.Length != 6)
-						throw new ArgumentException ("ethAddr argument has to be of 6 byte size");
+					if (ethAddr == null) {
+						self = SVSubscriber_create (IntPtr.Zero, appID);
+					} else {
 
-					self = SVSubscriber_create (ethAddr, appID);
+						if (ethAddr.Length != 6)
+							throw new ArgumentException ("ethAddr argument has to be of 6 byte size");
+
+						self = SVSubscriber_create (ethAddr, appID);
+					}
 				}
 
 				public void SetListener(SVUpdateListener listener, object parameter)
@@ -369,6 +377,16 @@ namespace IEC61850
 				public UInt64 GetINT64U(int index)
 				{
 					return SVSubscriber_ASDU_getINT64U (self, index);
+				}
+
+				public float GetFLOAT32(int index)
+				{
+					return SVSubscriber_ASDU_getFLOAT32 (self, index);
+				}
+
+				public double GetFLOAT64(int index)
+				{
+					return SVSubscriber_ASDU_getFLOAT64 (self, index);
 				}
 
 				/// <summary>
