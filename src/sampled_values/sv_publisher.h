@@ -26,6 +26,7 @@
 #define LIBIEC61850_SRC_SAMPLED_VALUES_SV_PUBLISHER_H_
 
 #include "libiec61850_platform_includes.h"
+#include "iec61850_common.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -187,7 +188,7 @@ void
 SVPublisher_ASDU_setINT64(SVPublisher_ASDU self, int index, int64_t value);
 
 /**
- * \brief Reserve memory for a single precission floating point number in the ASDU.
+ * \brief Reserve memory for a single precision floating point number in the ASDU.
  *
  * \param[in] self the Sampled Values ASDU instance.
  * \return the offset in bytes of the new element within the ASDU data block.
@@ -196,7 +197,7 @@ int
 SVPublisher_ASDU_addFLOAT(SVPublisher_ASDU self);
 
 /**
- * \brief Set the value of a single precission floating point number in the ASDU.
+ * \brief Set the value of a single precision floating point number in the ASDU.
  *
  * \param[in] self the Sampled Values ASDU instance.
  * \param[in] index The offset within the data block of the ASDU in bytes.
@@ -206,7 +207,7 @@ void
 SVPublisher_ASDU_setFLOAT(SVPublisher_ASDU self, int index, float value);
 
 /**
- * \brief Reserve memory for a double precission floating point number in the ASDU.
+ * \brief Reserve memory for a double precision floating point number in the ASDU.
  *
  * \param[in] self the Sampled Values ASDU instance.
  * \return the offset in bytes of the new element within the ASDU data block.
@@ -215,7 +216,7 @@ int
 SVPublisher_ASDU_addFLOAT64(SVPublisher_ASDU self);
 
 /**
- * \brief Set the value of a double precission floating pointer number in the ASDU.
+ * \brief Set the value of a double precision floating pointer number in the ASDU.
  *
  * \param[in] self the Sampled Values ASDU instance.
  * \param[in] index The offset within the data block of the ASDU in bytes.
@@ -223,6 +224,25 @@ SVPublisher_ASDU_addFLOAT64(SVPublisher_ASDU self);
  */
 void
 SVPublisher_ASDU_setFLOAT64(SVPublisher_ASDU self, int index, double value);
+
+/**
+ * \brief Reserve memory for a 64 bit time stamp in the ASDU
+ *
+ * \param[in] self the Sampled Values ASDU instance.
+ * \return the offset in bytes of the new element within the ASDU data block.
+ */
+int
+SVPublisher_ASDU_addTimestamp(SVPublisher_ASDU self);
+
+/**
+ * \brief Set the value of a 64 bit time stamp in the ASDU.
+ *
+ * \param[in] self the Sampled Values ASDU instance.
+ * \param[in] index The offset within the data block of the ASDU in bytes.
+ * \param[in] value The value which should be set.
+ */
+void
+SVPublisher_ASDU_setTimestamp(SVPublisher_ASDU self, int index, Timestamp value);
 
 /**
  * \brief Set the sample count attribute of the ASDU.

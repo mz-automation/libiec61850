@@ -832,6 +832,15 @@ SVSubscriber_ASDU_getFLOAT64(SVSubscriber_ASDU self, int index)
     return retVal;
 }
 
+Timestamp
+SVSubscriber_ASDU_getTimestamp(SVSubscriber_ASDU self, int index)
+{
+    Timestamp retVal;
+
+    memcpy(retVal.val, self->dataBuffer + index, sizeof(retVal.val));
+
+    return retVal;
+}
 
 int
 SVSubscriber_ASDU_getDataSize(SVSubscriber_ASDU self)

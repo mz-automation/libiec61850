@@ -25,6 +25,7 @@
 #define SAMPLED_VALUES_SV_SUBSCRIBER_H_
 
 #include "libiec61850_common_api.h"
+#include "iec61850_common.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -480,6 +481,17 @@ SVSubscriber_ASDU_getFLOAT32(SVSubscriber_ASDU self, int index);
  */
 double
 SVSubscriber_ASDU_getFLOAT64(SVSubscriber_ASDU self, int index);
+
+/**
+ * \brief Get a timestamp data value in the data part of the ASDU
+ *
+ * \param self ASDU object instance
+ * \param index the index (byte position of the start) of the data in the data part
+ *
+ * \return SV data
+ */
+Timestamp
+SVSubscriber_ASDU_getTimestamp(SVSubscriber_ASDU self, int index);
 
 /**
  * \brief Returns the size of the data part of the ASDU

@@ -699,3 +699,6 @@ EXPORTS
     CDC_VSS_create
     CDC_VSG_create
     SVReceiver_isRunning
+    SVSubscriber_ASDU_getTimestamp
+    SVPublisher_ASDU_addTimestamp
+    SVPublisher_ASDU_setTimestamp
