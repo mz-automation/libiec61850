@@ -215,7 +215,7 @@ getInterfaceName(int interfaceIndex)
             interfaceName = (char*) malloc(strlen(device->name) + 1);
             strcpy(interfaceName, device->name);
             if (DEBUG_HAL_ETHERNET)
-            printf("Use interface (%s)\n", interfaceName);
+                printf("Use interface (%s)\n", interfaceName);
             ifaceFound = true;
             break;
         }
@@ -226,7 +226,7 @@ getInterfaceName(int interfaceIndex)
     if (!ifaceFound)
     {
         if (DEBUG_HAL_ETHERNET)
-        printf("No ethernet interfaces found! Make sure WinPcap is installed.\n");
+            printf("No ethernet interfaces found! Make sure WinPcap is installed.\n");
         return NULL;
     }
 
@@ -269,7 +269,7 @@ getAdapterMacAddress(char* pcapAdapterName, uint8_t* macAddress)
 
                 if (strstr(pcapAdapterName, pAddress->AdapterName) != 0) {
                     if (DEBUG_HAL_ETHERNET)
-                    printf(" requested found!");
+                        printf(" requested found!");
 
                     for (i = 0; i < (int) addressLength; i++) {
                         macAddress[i] = pAddress->PhysicalAddress[i];

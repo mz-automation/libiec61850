@@ -49,6 +49,7 @@
     <Compile Include="SampledValuesControlBlock.cs" />
     <Compile Include="GooseControlBlock.cs" />
     <Compile Include="GooseSubscriber.cs" />
+    <Compile Include="SampledValuesSubscriber.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

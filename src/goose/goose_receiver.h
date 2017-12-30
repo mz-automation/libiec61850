@@ -103,6 +103,15 @@ GooseReceiver_start(GooseReceiver self);
 void
 GooseReceiver_stop(GooseReceiver self);
 
+/**
+ * \brief Check if GOOSE receiver is running
+ *
+ * Can be used to check if \ref GooseReceiver_start has been successful.
+ *
+ * \param self the GooseReceiver instance
+ *
+ * \return true if GOOSE receiver is running, false otherwise
+ */
 bool
 GooseReceiver_isRunning(GooseReceiver self);
 

@@ -185,6 +185,13 @@ SVReceiver_start(SVReceiver self)
     }
 }
 
+bool
+SVReceiver_isRunning(SVReceiver self)
+{
+    return self->running;
+}
+
+
 void
 SVReceiver_stop(SVReceiver self)
 {

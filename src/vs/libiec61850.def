@@ -698,3 +698,4 @@ EXPORTS
     SVSubscriber_ASDU_getDataSize
     CDC_VSS_create
     CDC_VSG_create
+    SVReceiver_isRunning

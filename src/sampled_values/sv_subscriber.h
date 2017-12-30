@@ -195,6 +195,18 @@ void
 SVReceiver_stop(SVReceiver self);
 
 /**
+ * \brief Check if SV receiver is running
+ *
+ * Can be used to check if \ref SVReceiver_start has been successful.
+ *
+ * \param self the receiver instance reference
+ *
+ * \return true if SV receiver is running, false otherwise
+ */
+bool
+SVReceiver_isRunning(SVReceiver self);
+
+/**
  * \brief Destroy receiver instance (cleanup resources)
  *
  * \param self the receiver instance reference
