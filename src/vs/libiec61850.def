@@ -705,3 +705,4 @@ EXPORTS
     SVSubscriber_ASDU_getQuality
     SVPublisher_ASDU_addQuality
     SVPublisher_ASDU_setQuality
+    Timestamp_createFromByteArray

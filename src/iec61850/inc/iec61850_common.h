@@ -356,6 +356,9 @@ typedef union {
 Timestamp*
 Timestamp_create(void);
 
+Timestamp*
+Timestamp_createFromByteArray(uint8_t* byteArray);
+
 void
 Timestamp_destroy(Timestamp* self);
 

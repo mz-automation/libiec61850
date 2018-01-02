@@ -275,6 +275,9 @@ namespace IEC61850
 				private static extern double SVSubscriber_ASDU_getFLOAT64(IntPtr self, int index);
 
 				[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+				private static extern UInt16 SVSubscriber_ASDU_getQuality(IntPtr self, int index);
+
+				[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 				private static extern int SVSubscriber_ASDU_getDataSize(IntPtr self);
 
 				private IntPtr self;
@@ -387,6 +390,29 @@ namespace IEC61850
 				public double GetFLOAT64(int index)
 				{
 					return SVSubscriber_ASDU_getFLOAT64 (self, index);
+				}
+
+				private struct PTimestamp
+				{
+					[MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.I1, SizeConst = 8)]
+					public byte[] val;
+				}
+
+				[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+				private static extern PTimestamp SVSubscriber_ASDU_getTimestamp(IntPtr self, int index);
+
+				public Timestamp GetTimestamp(int index)
+				{
+					PTimestamp retVal = SVSubscriber_ASDU_getTimestamp (self, index);
+
+					return new Timestamp (retVal.val);
+				}
+
+				public Quality GetQuality(int index)
+				{
+					UInt16 qValue = SVSubscriber_ASDU_getQuality (self, index);
+
+					return new Quality (qValue);
 				}
 
 				/// <summary>

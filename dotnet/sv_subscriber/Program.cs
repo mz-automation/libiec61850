@@ -10,7 +10,7 @@ namespace sv_subscriber
 	{
 		private static void svUpdateListener(SVSubscriber subscriber, object parameter, SVSubscriberASDU asdu)
 		{
-			Console.WriteLine ("svUpdateListener called");
+			Console.WriteLine ("RECV ASDU:");
 
 			string svID = asdu.GetSvId ();
 
@@ -22,7 +22,11 @@ namespace sv_subscriber
 
 			if (asdu.GetDataSize () >= 8) {
 				Console.WriteLine ("  DATA[0]: " + asdu.GetFLOAT32(0));
-				Console.WriteLine ("  DATA[1]: " + asdu.GetFLOAT32(4));
+				Console.WriteLine ("  DATA[1]: " + asdu.GetFLOAT32 (4));
+			}
+
+			if (asdu.GetDataSize () >= 16) {
+				Console.WriteLine ("  DATA[2]: " + asdu.GetTimestamp (8).AsDateTime().ToString());
 			}
 
 		}

@@ -350,6 +350,9 @@ namespace IEC61850
 			static extern IntPtr Timestamp_create ();
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr Timestamp_createFromByteArray(byte[] byteArry);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern void Timestamp_destroy (IntPtr self);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
@@ -399,12 +402,12 @@ namespace IEC61850
 			static extern void Timestamp_setByMmsUtcTime (IntPtr self, IntPtr mmsValue);
 
 			internal IntPtr timestampRef = IntPtr.Zero;
-			private bool responsableForDeletion;
+			private bool responsibleForDeletion;
 
 			internal Timestamp(IntPtr timestampRef, bool selfAllocated)
 			{
 				this.timestampRef = timestampRef;
-				this.responsableForDeletion = selfAllocated;
+				this.responsibleForDeletion = selfAllocated;
 			}
 
 			public Timestamp (DateTime timestamp) : this ()
@@ -421,12 +424,18 @@ namespace IEC61850
 			{
 				timestampRef = Timestamp_create ();
 				LeapSecondKnown = true;
-				responsableForDeletion = true;
+				responsibleForDeletion = true;
+			}
+
+			public Timestamp(byte[] value)
+			{
+				timestampRef = Timestamp_createFromByteArray (value);
+				responsibleForDeletion = true;
 			}
 
 			~Timestamp ()
 			{
-				if (responsableForDeletion)
+				if (responsibleForDeletion)
 					Timestamp_destroy (timestampRef);
 			}
 
@@ -534,6 +543,15 @@ namespace IEC61850
 			public void SetByMmsUtcTime(MmsValue mmsValue)
 			{
 				Timestamp_setByMmsUtcTime (timestampRef, mmsValue.valueReference);
+			}
+
+			public DateTime AsDateTime()
+			{
+				DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+				DateTime retVal = epoch.AddMilliseconds ((double) GetTimeInMilliseconds ());
+
+				return retVal;
 			}
 
 		}
