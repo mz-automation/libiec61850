@@ -842,6 +842,19 @@ SVSubscriber_ASDU_getTimestamp(SVSubscriber_ASDU self, int index)
     return retVal;
 }
 
+Quality
+SVSubscriber_ASDU_getQuality(SVSubscriber_ASDU self, int index)
+{
+    Quality retVal;
+
+    uint8_t* buffer = self->dataBuffer + index;
+
+    retVal = buffer[3];
+    retVal += (buffer[2] * 0x100);
+
+    return retVal;
+}
+
 int
 SVSubscriber_ASDU_getDataSize(SVSubscriber_ASDU self)
 {

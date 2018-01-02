@@ -74,6 +74,7 @@ typedef struct sEthernetSocket* EthernetSocket;
  *  | TimeStamp      | 8 byte         |
  *  | EntryTime      | 6 byte         |
  *  | BITSTRING      | 4 byte         |
+ *  | Quality        | 4 byte         |
  *
  * The SV subscriber API can be used independent of the IEC 61850 client API. In order to access the SVCB via MMS you
  * have to use the IEC 61850 client API. Please see \ref ClientSVControlBlock object in section \ref IEC61850_CLIENT_SV.
@@ -492,6 +493,19 @@ SVSubscriber_ASDU_getFLOAT64(SVSubscriber_ASDU self, int index);
  */
 Timestamp
 SVSubscriber_ASDU_getTimestamp(SVSubscriber_ASDU self, int index);
+
+/**
+ * \brief Get a quality value in the data part of the ASDU
+ *
+ * NOTE: Quality is encoded as BITSTRING (4 byte)
+ *
+ * \param self ASDU object instance
+ * \param index the index (byte position of the start) of the data in the data part
+ *
+ * \return SV data
+ */
+Quality
+SVSubscriber_ASDU_getQuality(SVSubscriber_ASDU self, int index);
 
 /**
  * \brief Returns the size of the data part of the ASDU

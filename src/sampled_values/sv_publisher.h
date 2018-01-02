@@ -245,6 +245,27 @@ void
 SVPublisher_ASDU_setTimestamp(SVPublisher_ASDU self, int index, Timestamp value);
 
 /**
+ * \brief Reserve memory for a quality value in the ASDU
+ *
+ * NOTE: Quality is encoded as BITSTRING (4 byte)
+ *
+ * \param[in] self the Sampled Values ASDU instance.
+ * \return the offset in bytes of the new element within the ASDU data block.
+ */
+int
+SVPublisher_ASDU_addQuality(SVPublisher_ASDU self);
+
+/**
+ * \brief Set the value of a quality attribute in the ASDU.
+ *
+ * \param[in] self the Sampled Values ASDU instance.
+ * \param[in] index The offset within the data block of the ASDU in bytes.
+ * \param[in] value The value which should be set.
+ */
+void
+SVPublisher_ASDU_setQuality(SVPublisher_ASDU self, int index, Quality value);
+
+/**
  * \brief Set the sample count attribute of the ASDU.
  *
  * \param[in] self the Sampled Values ASDU instance.

@@ -702,3 +702,6 @@ EXPORTS
     SVSubscriber_ASDU_getTimestamp
     SVPublisher_ASDU_addTimestamp
     SVPublisher_ASDU_setTimestamp
+    SVSubscriber_ASDU_getQuality
+    SVPublisher_ASDU_addQuality
+    SVPublisher_ASDU_setQuality

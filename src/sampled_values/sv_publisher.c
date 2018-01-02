@@ -627,6 +627,24 @@ SVPublisher_ASDU_setTimestamp(SVPublisher_ASDU self, int index, Timestamp value)
     }
 }
 
+int
+SVPublisher_ASDU_addQuality(SVPublisher_ASDU self)
+{
+    int index = self->dataSize;
+    self->dataSize += 4;
+    return index;
+}
+
+void
+SVPublisher_ASDU_setQuality(SVPublisher_ASDU self, int index, Quality value)
+{
+    uint8_t* buffer = self->_dataBuffer + index;
+    buffer[0] = 0;
+    buffer[1] = 0;
+    buffer[2] = value / 0x100;
+    buffer[3] = value % 0x100;
+}
+
 uint16_t
 SVPublisher_ASDU_getSmpCnt(SVPublisher_ASDU self)
 {
