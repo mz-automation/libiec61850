@@ -30,14 +30,13 @@ extern "C" {
 
 #include <stdbool.h>
 
-typedef struct sEthernetSocket* EthernetSocket;
+#include "hal_ethernet.h"
+#include "goose_subscriber.h"
 
 /**
  * \addtogroup goose_api_group
  */
 /**@{*/
-
-typedef struct sGooseSubscriber* GooseSubscriber;
 
 typedef struct sGooseReceiver* GooseReceiver;
 

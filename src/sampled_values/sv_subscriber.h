@@ -26,12 +26,11 @@
 
 #include "libiec61850_common_api.h"
 #include "iec61850_common.h"
+#include "hal_ethernet.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-typedef struct sEthernetSocket* EthernetSocket;
 
 /**
  * \defgroup sv_subscriber_api_group IEC 61850 Sampled Values (SV) subscriber API
