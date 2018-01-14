@@ -1,7 +1,7 @@
 /*
  *  iso_server.c
  *
- *  Copyright 2013, 2014 Michael Zillgith
+ *  Copyright 2013-2018 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -51,6 +51,11 @@
 
 struct sIsoServer {
     IsoServerState state;
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore stateLock;
+#endif
+
     ConnectionIndicationHandler connectionHandler;
     void* connectionHandlerParameter;
 
@@ -84,6 +89,34 @@ struct sIsoServer {
 
     int connectionCounter;
 };
+
+static void
+setState(IsoServer self, IsoServerState newState)
+{
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_wait(self->stateLock);
+#endif
+    self->state = newState;
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_post(self->stateLock);
+#endif
+}
+
+static IsoServerState
+getState(IsoServer self)
+{
+    IsoServerState state;
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_wait(self->stateLock);
+#endif
+    state = self->state;
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_post(self->stateLock);
+#endif
+
+    return state;
+}
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1) && (CONFIG_MMS_SINGLE_THREADED == 0)
 static inline void
@@ -303,7 +336,7 @@ setupIsoServer(IsoServer self)
     self->serverSocket = (Socket) TcpServerSocket_create(self->localIpAddress, self->tcpPort);
 
     if (self->serverSocket == NULL) {
-        self->state = ISO_SVR_STATE_ERROR;
+        setState(self, ISO_SVR_STATE_ERROR);
         success = false;
 
         goto exit_function;
@@ -313,7 +346,7 @@ setupIsoServer(IsoServer self)
 
     ServerSocket_listen((ServerSocket) self->serverSocket);
 
-    self->state = ISO_SVR_STATE_RUNNING;
+    setState(self, ISO_SVR_STATE_RUNNING);
 
 #if (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS != -1)
     if (DEBUG_ISO_SERVER)
@@ -453,6 +486,10 @@ IsoServer_create(TLSConfiguration tlsConfiguration)
 
     self->tlsConfiguration = tlsConfiguration;
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    self->stateLock = Semaphore_create(1);
+#endif
+
 #if (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS == -1)
     self->openClientConnections = LinkedList_create();
 #else
@@ -485,7 +522,7 @@ IsoServer_setLocalIpAddress(IsoServer self, const char* ipAddress)
 IsoServerState
 IsoServer_getState(IsoServer self)
 {
-    return self->state;
+    return getState(self);
 }
 
 void
@@ -552,7 +589,7 @@ IsoServer_startListeningThreadless(IsoServer self)
         self->serverSocket = NULL;
     }
     else {
-        self->state = ISO_SVR_STATE_RUNNING;
+        setState(self, ISO_SVR_STATE_RUNNING);
 
         if (DEBUG_ISO_SERVER)
             printf("ISO_SERVER: new iso server (threadless) started\n");
@@ -564,7 +601,7 @@ IsoServer_waitReady(IsoServer self, unsigned int timeoutMs)
 {
    int result;
 
-   if (self->state == ISO_SVR_STATE_RUNNING) {
+   if (getState(self) == ISO_SVR_STATE_RUNNING) {
        HandleSet handles;
 
        handles = Handleset_new();
@@ -634,14 +671,15 @@ IsoServer_waitReady(IsoServer self, unsigned int timeoutMs)
 void
 IsoServer_processIncomingMessages(IsoServer self)
 {
-    if (self->state == ISO_SVR_STATE_RUNNING)
+    if (getState(self) == ISO_SVR_STATE_RUNNING)
         handleIsoConnectionsThreadless(self);
 }
 
 static void
 stopListening(IsoServer self)
 {
-    self->state = ISO_SVR_STATE_STOPPED;
+    setState(self, ISO_SVR_STATE_STOPPED);
+
     if (self->serverSocket != NULL) {
         ServerSocket_destroy((ServerSocket) self->serverSocket);
         self->serverSocket = NULL;
@@ -682,7 +720,7 @@ IsoServer_stopListening(IsoServer self)
 void
 IsoServer_closeConnection(IsoServer self, IsoConnection isoConnection)
 {
-    if (self->state != ISO_SVR_STATE_IDLE) {
+    if (getState(self) != ISO_SVR_STATE_IDLE) {
         self->connectionHandler(ISO_CONNECTION_CLOSED, self->connectionHandlerParameter,
                 isoConnection);
     }
@@ -728,6 +766,10 @@ IsoServer_destroy(IsoServer self)
 #if (CONFIG_MMS_THREADLESS_STACK != 1) && (CONFIG_MMS_SINGLE_THREADED == 0)
     Semaphore_destroy(self->connectionCounterMutex);
     Semaphore_destroy(self->openClientConnectionsMutex);
+#endif
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_destroy(self->stateLock);
 #endif
 
     GLOBAL_FREEMEM(self);
