@@ -264,7 +264,7 @@ MmsValue_update(MmsValue* self, const MmsValue* update)
 
                 if (size > self->value.octetString.maxSize) {
                     GLOBAL_FREEMEM(self->value.octetString.buf);
-                    self->value.octetString.buf = GLOBAL_MALLOC(size);
+                    self->value.octetString.buf = (uint8_t*) GLOBAL_MALLOC(size);
                     self->value.octetString.maxSize = size;
                 }
                     size = self->value.octetString.maxSize;
