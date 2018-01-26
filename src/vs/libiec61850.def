@@ -706,3 +706,4 @@ EXPORTS
     SVPublisher_ASDU_addQuality
     SVPublisher_ASDU_setQuality
     Timestamp_createFromByteArray
+    IedModel_getDeviceByIndex

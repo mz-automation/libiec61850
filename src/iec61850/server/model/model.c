@@ -75,12 +75,12 @@ IedModel_setAttributeValuesToNull(IedModel* iedModel)
 
 
 int
-IedModel_getLogicalDeviceCount(IedModel* iedModel)
+IedModel_getLogicalDeviceCount(IedModel* self)
 {
-	if (iedModel->firstChild == NULL)
+	if (self->firstChild == NULL)
 		return 0;
 
-	LogicalDevice* logicalDevice = iedModel->firstChild;
+	LogicalDevice* logicalDevice = self->firstChild;
 
 	int ldCount = 1;
 
@@ -160,6 +160,27 @@ IedModel_getDeviceByInst(IedModel* self, const char* ldInst)
           return device;
 
       device = (LogicalDevice*) device->sibling;
+    }
+
+    return NULL;
+}
+
+
+LogicalDevice*
+IedModel_getDeviceByIndex(IedModel* self, int index)
+{
+    LogicalDevice* logicalDevice = self->firstChild;
+
+    int currentIndex = 0;
+
+    while (logicalDevice) {
+
+        if (currentIndex == index)
+            return logicalDevice;
+
+        currentIndex++;
+
+        logicalDevice = (LogicalDevice*) logicalDevice->sibling;
     }
 
     return NULL;

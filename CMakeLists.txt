@@ -91,10 +91,10 @@ include_directories(
     ${CMAKE_CURRENT_LIST_DIR}/src/tls
 )
 
-set(API_HEADERS 
-    src/hal/inc/hal_time.h 
+set(API_HEADERS
+    src/hal/inc/hal_time.h
     src/hal/inc/hal_thread.h
-    src/hal/inc/hal_filesystem.h 
+    src/hal/inc/hal_filesystem.h
     src/hal/inc/hal_ethernet.h
     src/hal/inc/platform_endian.h
     src/common/inc/libiec61850_common_api.h
@@ -162,7 +162,7 @@ configure_file(
 )
 
 if(BUILD_EXAMPLES)
-    add_subdirectory(examples)
+    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/examples)
 endif(BUILD_EXAMPLES)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/src)
