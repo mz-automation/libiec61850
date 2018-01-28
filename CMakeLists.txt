@@ -78,23 +78,23 @@ option(DEBUG_HAL_ETHERNET "Enable Ethernet HAL printf debugging" ${DEBUG})
 
 include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}/config
-    src/common/inc
-    src/goose
-    src/sampled_values
-    src/hal/inc
-    src/iec61850/inc
-    src/iec61850/inc_private
-    src/mms/inc
-    src/mms/inc_private
-    src/mms/iso_mms/asn1c
-    src/logging
-    src/tls
+    ${CMAKE_CURRENT_LIST_DIR}/src/common/inc
+    ${CMAKE_CURRENT_LIST_DIR}/src/goose
+    ${CMAKE_CURRENT_LIST_DIR}/src/sampled_values
+    ${CMAKE_CURRENT_LIST_DIR}/src/hal/inc
+    ${CMAKE_CURRENT_LIST_DIR}/src/iec61850/inc
+    ${CMAKE_CURRENT_LIST_DIR}/src/iec61850/inc_private
+    ${CMAKE_CURRENT_LIST_DIR}/src/mms/inc
+    ${CMAKE_CURRENT_LIST_DIR}/src/mms/inc_private
+    ${CMAKE_CURRENT_LIST_DIR}/src/mms/iso_mms/asn1c
+    ${CMAKE_CURRENT_LIST_DIR}/src/logging
+    ${CMAKE_CURRENT_LIST_DIR}/src/tls
 )
 
-set(API_HEADERS 
-    src/hal/inc/hal_time.h 
+set(API_HEADERS
+    src/hal/inc/hal_time.h
     src/hal/inc/hal_thread.h
-    src/hal/inc/hal_filesystem.h 
+    src/hal/inc/hal_filesystem.h
     src/hal/inc/hal_ethernet.h
     src/hal/inc/platform_endian.h
     src/common/inc/libiec61850_common_api.h
@@ -134,7 +134,7 @@ set(API_HEADERS
 
 if(MSVC)
     include_directories(
-        src/vs
+        ${CMAKE_CURRENT_LIST_DIR}/src/vs
     )
 endif(MSVC)
 
@@ -144,8 +144,8 @@ endif(EXISTS ${CMAKE_CURRENT_LIST_DIR}/third_party/mbedtls/mbedtls-2.6.0)
 
 if(WITH_MBEDTLS)
 include_directories(
-    src/tls/mbedtls
-    third_party/mbedtls/mbedtls-2.6.0/include
+    ${CMAKE_CURRENT_LIST_DIR}/src/tls/mbedtls
+    ${CMAKE_CURRENT_LIST_DIR}/third_party/mbedtls/mbedtls-2.6.0/include
 )
 
 file(GLOB tls_SRCS ${CMAKE_CURRENT_LIST_DIR}/third_party/mbedtls/mbedtls-2.6.0/library/*.c)
@@ -162,7 +162,7 @@ configure_file(
 )
 
 if(BUILD_EXAMPLES)
-    add_subdirectory(examples)
+    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/examples)
 endif(BUILD_EXAMPLES)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/src)

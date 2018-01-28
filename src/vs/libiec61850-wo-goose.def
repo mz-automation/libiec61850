@@ -580,3 +580,4 @@ EXPORTS
     CDC_VSS_create
     CDC_VSG_create
     Timestamp_createFromByteArray
+    IedModel_getDeviceByIndex
