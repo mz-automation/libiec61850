@@ -42,11 +42,13 @@ parseJournalVariable(uint8_t* buffer, int bufPos, int maxLength, MmsJournalVaria
 
     while (bufPos < maxBufPos) {
 
-        int length;
         uint8_t tag = buffer[bufPos++];
+
+        int length;
+
         bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
 
-        if ((bufPos + length) > maxBufPos) { /* check length field for validity */
+        if  ((bufPos < 0) || ((bufPos + length) > maxBufPos)) { /* check length field for validity */
             if (DEBUG_MMS_CLIENT)
                 printf("MMS_CLIENT: parseReadJournalResponse: invalid length field\n");
 
@@ -94,7 +96,7 @@ parseJournalVariables(uint8_t* buffer, int bufPos, int maxLength, MmsJournalEntr
         uint8_t tag = buffer[bufPos++];
         bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
 
-        if ((bufPos + length) > maxBufPos) { /* check length field for validity */
+        if ((bufPos < 0) || ((bufPos + length) > maxBufPos)) { /* check length field for validity */
             if (DEBUG_MMS_CLIENT)
                 printf("MMS_CLIENT: parseReadJournalResponse: invalid length field\n");
 
@@ -137,7 +139,7 @@ parseData(uint8_t* buffer, int bufPos, int maxLength, MmsJournalEntry journalEnt
         uint8_t tag = buffer[bufPos++];
         bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
 
-        if ((bufPos + length) > maxBufPos) { /* check length field for validity */
+        if ((bufPos < 0) || ((bufPos + length) > maxBufPos)) { /* check length field for validity */
             if (DEBUG_MMS_CLIENT)
                 printf("MMS_CLIENT: parseReadJournalResponse: invalid length field\n");
 
@@ -175,7 +177,7 @@ parseEntryContent(uint8_t* buffer, int bufPos, int maxLength, MmsJournalEntry jo
        uint8_t tag = buffer[bufPos++];
        bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
 
-       if ((bufPos + length) > maxBufPos) { /* check length field for validity */
+       if ((bufPos < 0) ||((bufPos + length) > maxBufPos)) { /* check length field for validity */
            if (DEBUG_MMS_CLIENT)
                printf("MMS_CLIENT: parseReadJournalResponse: invalid length field\n");
 
@@ -276,7 +278,7 @@ parseListOfJournalEntries(uint8_t* buffer, int bufPos, int maxLength, LinkedList
         uint8_t tag = buffer[bufPos++];
         bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
 
-        if ((bufPos + length) > maxBufPos) { /* check length field for validity */
+        if ((bufPos < 0) || ((bufPos + length) > maxBufPos)) { /* check length field for validity */
             if (DEBUG_MMS_CLIENT)
                 printf("MMS_CLIENT: parseReadJournalResponse: invalid length field\n");
 
@@ -330,8 +332,7 @@ mmsClient_parseReadJournalResponse(MmsConnection self, bool* moreFollows, Linked
     }
 
     bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
-    if (bufPos < 0)
-        return false;
+    if (bufPos < 0) return false;
 
     int endPos = bufPos + length;
 
@@ -346,6 +347,7 @@ mmsClient_parseReadJournalResponse(MmsConnection self, bool* moreFollows, Linked
     while (bufPos < endPos) {
         tag = buffer[bufPos++];
         bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
+        if (bufPos < 0) return false;
 
         switch (tag) {
         case 0xa0: /* listOfJournalEntry */

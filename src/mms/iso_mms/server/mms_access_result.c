@@ -107,7 +107,7 @@ getNumberOfElements(uint8_t* buffer, int bufPos, int elementLength)
 
          bufPos = BerDecoder_decodeLength(buffer, &elementLength, bufPos, elementEndBufPos);
 
-         if (bufPos + elementLength > elementEndBufPos) {
+         if ((bufPos < 0) || (bufPos + elementLength > elementEndBufPos)) {
              goto exit_with_error;
          }
 

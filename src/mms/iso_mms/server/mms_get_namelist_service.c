@@ -472,6 +472,11 @@ mmsServer_handleGetNameListRequest(
 				uint8_t objectScopeTag = buffer[bufPos++];
 				bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
 
+		        if (bufPos < 0)  {
+		            mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
+		            return;
+		        }
+
 				switch (objectScopeTag) {
 				case 0x80: /* vmd-specific */
 					objectScope = OBJECT_SCOPE_VMD;

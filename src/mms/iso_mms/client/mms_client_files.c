@@ -463,7 +463,13 @@ parseDirectoryEntry(uint8_t* buffer, int bufPos, int maxBufPos, MmsFileDirectory
     while (bufPos < maxBufPos) {
         uint8_t tag = buffer[bufPos++];
         int length;
+
         bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
+        if (bufPos < 0) {
+            if (DEBUG_MMS_CLIENT)
+                printf("MMS_CLIENT: message contains unknown tag!\n");
+            return false;
+        }
 
         switch (tag) {
         case 0xa0: /* file-name */
@@ -471,7 +477,14 @@ parseDirectoryEntry(uint8_t* buffer, int bufPos, int maxBufPos, MmsFileDirectory
             filename = fileNameMemory;
 
             tag = buffer[bufPos++];
+
             bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
+            if (bufPos < 0) {
+                if (DEBUG_MMS_CLIENT)
+                    printf("MMS_CLIENT: message contains unknown tag!\n");
+                return false;
+            }
+
             memcpy(filename, buffer + bufPos, length);
             filename[length] = 0;
 
@@ -485,7 +498,7 @@ parseDirectoryEntry(uint8_t* buffer, int bufPos, int maxBufPos, MmsFileDirectory
         default:
             bufPos += length;
             if (DEBUG_MMS_CLIENT)
-                printf("mmsClient_parseFileDirectoryResponse: message contains unknown tag!\n");
+                printf("MMS_CLIENT: message contains unknown tag!\n");
 
             return false;
         }
@@ -511,7 +524,6 @@ parseListOfDirectoryEntries(uint8_t* buffer, int bufPos, int maxBufPos,
     int length;
 
     bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
-
     if (bufPos < 0) return false;
 
     int endPos = bufPos + length;
@@ -524,7 +536,9 @@ parseListOfDirectoryEntries(uint8_t* buffer, int bufPos, int maxBufPos,
 
     while (bufPos < endPos) {
         tag = buffer[bufPos++];
+
         bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
+        if (bufPos < 0) return false;
 
         switch (tag) {
         case 0x30: /* Sequence */
@@ -583,7 +597,9 @@ mmsClient_parseFileDirectoryResponse(MmsConnection self, MmsFileDirectoryHandler
 
     while (bufPos < endPos) {
         tag = buffer[bufPos++];
+
         bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
+        if (bufPos < 0) return false;
 
         switch (tag) {
         case 0xa0: /* listOfDirectoryEntries */
@@ -641,7 +657,10 @@ mmsMsg_parseFileOpenResponse(uint8_t* buffer, int bufPos, int maxBufPos, int32_t
 
     while (bufPos < endPos) {
         tag = buffer[bufPos++];
+
         bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
+        if (bufPos < 0)
+            return false;
 
         switch (tag) {
         case 0x80: /* frsmId */
@@ -704,6 +723,8 @@ mmsMsg_parseFileReadResponse(uint8_t* buffer, int bufPos, int maxBufPos, int frs
     while (bufPos < endPos) {
         tag = buffer[bufPos++];
         bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
+        if (bufPos < 0)
+            return false;
 
         switch (tag) {
         case 0x80: /* fileData */

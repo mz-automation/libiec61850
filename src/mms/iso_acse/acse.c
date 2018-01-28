@@ -126,6 +126,11 @@ parseUserInformation(AcseConnection* self, uint8_t* buffer, int bufPos, int maxB
 
 		bufPos = BerDecoder_decodeLength(buffer, &len, bufPos, maxBufPos);
 
+		if (bufPos < 0) {
+		    *userInfoValid = false;
+		    return -1;
+		}
+
 		switch (tag) {
 
 		case 0x02: /* indirect-reference */
@@ -178,6 +183,8 @@ parseAarePdu(AcseConnection* self, uint8_t* buffer, int bufPos, int maxBufPos)
 		int len;
 
 		bufPos = BerDecoder_decodeLength(buffer, &len, bufPos, maxBufPos);
+		if (bufPos < 0)
+		    return ACSE_ERROR;
 
 		switch (tag) {
 		case 0xa1: /* application context name */
@@ -188,6 +195,9 @@ parseAarePdu(AcseConnection* self, uint8_t* buffer, int bufPos, int maxBufPos)
 			bufPos++;
 
 			bufPos = BerDecoder_decodeLength(buffer, &len, bufPos, maxBufPos);
+	        if (bufPos < 0)
+	            return ACSE_ERROR;
+
 			result = BerDecoder_decodeUint32(buffer, len, bufPos);
 
 			bufPos += len;
@@ -206,8 +216,12 @@ parseAarePdu(AcseConnection* self, uint8_t* buffer, int bufPos, int maxBufPos)
 				bufPos++;
 
 				bufPos = BerDecoder_decodeLength(buffer, &len, bufPos, maxBufPos);
+		        if (bufPos < 0)
+		            return ACSE_ERROR;
 
 				bufPos = parseUserInformation(self, buffer, bufPos, bufPos + len, &userInfoValid);
+		        if (bufPos < 0)
+		            return ACSE_ERROR;
 			}
 			break;
 
@@ -247,8 +261,7 @@ parseAarqPdu(AcseConnection* self, uint8_t* buffer, int bufPos, int maxBufPos)
 		bufPos = BerDecoder_decodeLength(buffer, &len, bufPos, maxBufPos);
 
 		if (bufPos < 0) {
-		    if (DEBUG_ACSE)
-	            printf("ACSE: parseAarqPdu: user info invalid!\n");
+		    if (DEBUG_ACSE) printf("ACSE: Invalid PDU!\n");
 	        return ACSE_ASSOCIATE_FAILED;
 		}
 
@@ -302,7 +315,13 @@ parseAarqPdu(AcseConnection* self, uint8_t* buffer, int bufPos, int maxBufPos)
 
 		case 0xac: /* authentication value */
 			bufPos++;
+
 			bufPos = BerDecoder_decodeLength(buffer, &len, bufPos, maxBufPos);
+	        if (bufPos < 0) {
+	            if (DEBUG_ACSE) printf("ACSE: Invalid PDU!\n");
+	            return ACSE_ASSOCIATE_FAILED;
+	        }
+
 			authValueLen = len;
 			authValue = buffer + bufPos;
 			bufPos += len;
@@ -318,7 +337,17 @@ parseAarqPdu(AcseConnection* self, uint8_t* buffer, int bufPos, int maxBufPos)
 
 				bufPos = BerDecoder_decodeLength(buffer, &len, bufPos, maxBufPos);
 
+		        if (bufPos < 0) {
+		            if (DEBUG_ACSE) printf("ACSE: Invalid PDU!\n");
+		            return ACSE_ASSOCIATE_FAILED;
+		        }
+
 				bufPos = parseUserInformation(self, buffer, bufPos, bufPos + len, &userInfoValid);
+
+		        if (bufPos < 0) {
+		            if (DEBUG_ACSE) printf("ACSE: Invalid PDU!\n");
+		            return ACSE_ASSOCIATE_FAILED;
+		        }
 			}
 			break;
 
