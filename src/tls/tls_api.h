@@ -15,15 +15,13 @@
 #ifndef SRC_TLS_TLS_API_H_
 #define SRC_TLS_TLS_API_H_
 
-#include "hal_socket.h"
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 typedef struct sTLSConfiguration* TLSConfiguration;
-
-typedef struct sTLSSocket* TLSSocket;
 
 /**
  * \brief Create a new \ref TLSConfiguration object to represent TLS configuration and certificates
@@ -107,62 +105,6 @@ TLSConfiguration_setRenegotiationTime(TLSConfiguration self, int timeInMs);
 
 void
 TLSConfiguration_destroy(TLSConfiguration self);
-
-TLSSocket
-TLSSocket_create(Socket socket, TLSConfiguration configuration, bool storeClientCert);
-
-/**
- * \brief Perform a new TLS handshake/session renegotiation
- */
-bool
-TLSSocket_performHandshake(TLSSocket self);
-
-/**
- * \brief Access the certificate used by the peer
- *
- * \param[out] certSize the size of the certificate in bytes
- *
- * \return the certificate byte buffer
- */
-uint8_t*
-TLSSocket_getPeerCertificate(TLSSocket self, int* certSize);
-
-/**
- * \brief read from socket to local buffer (non-blocking)
- *
- * The function shall return immediately if no data is available. In this case
- * the function returns 0. If an error happens the function shall return -1.
- *
- * Implementation of this function is MANDATORY
- *
- * NOTE: The behaviour of this function changed with version 0.8!
- *
- * \param self the client, connection or server socket instance
- * \param buf the buffer where the read bytes are copied to
- * \param size the maximum number of bytes to read (size of the provided buffer)
- *
- * \return the number of bytes read or -1 if an error occurred
- */
-int
-TLSSocket_read(TLSSocket self, uint8_t* buf, int size);
-
-/**
- * \brief send a message through the socket
- *
- * Implementation of this function is MANDATORY
- *
- * \param self client, connection or server socket instance
- *
- * \return number of bytes transmitted of -1 in case of an error
- */
-int
-TLSSocket_write(TLSSocket self, uint8_t* buf, int size);
-
-/**
- * \brief Close the TLS socket and release all resources
- */
-void
-TLSSocket_close(TLSSocket self);
 
 #ifdef __cplusplus
 }

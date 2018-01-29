@@ -29,7 +29,7 @@
 #include "buffer_chain.h"
 #include "hal_socket.h"
 #include "iso_connection_parameters.h"
-#include "tls_api.h"
+#include "tls_socket.h"
 
 typedef struct {
     TSelector tSelSrc;

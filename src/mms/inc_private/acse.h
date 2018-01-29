@@ -26,7 +26,7 @@
 #include "byte_buffer.h"
 #include "buffer_chain.h"
 #include "iso_connection_parameters.h"
-#include "tls_api.h"
+#include "tls_socket.h"
 
 #ifndef ACSE_H_
 #define ACSE_H_
