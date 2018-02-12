@@ -430,9 +430,13 @@ namespace IEC61850
 
 			public MmsDataAccessError GetDataAccessError ()
 			{
-				int errorCode = MmsValue_getDataAccessError (valueReference);
+				if (GetType () == MmsType.MMS_DATA_ACCESS_ERROR) {
+					int errorCode = MmsValue_getDataAccessError (valueReference);
 
-				return (MmsDataAccessError)errorCode;
+					return (MmsDataAccessError)errorCode;
+				}
+				else
+					throw new MmsValueException ("Value is of wrong type");
 			}
 
             /// <summary>

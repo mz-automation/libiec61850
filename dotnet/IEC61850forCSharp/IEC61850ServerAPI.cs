@@ -474,9 +474,9 @@ namespace IEC61850
 			public IntPtr self = IntPtr.Zero;
 
 			public ReportControlBlock(string name, LogicalNode parent, string rptId, bool isBuffered,
-				string dataSetName, uint confRef, byte trgOps, byte options, uint bufTm, uint intgPd)
+				string dataSetName, uint confRev, byte trgOps, byte options, uint bufTm, uint intgPd)
 			{
-				self = ReportControlBlock_create(name, parent.self, rptId, isBuffered, dataSetName, confRef, trgOps, options, bufTm, intgPd);
+				self = ReportControlBlock_create(name, parent.self, rptId, isBuffered, dataSetName, confRev, trgOps, options, bufTm, intgPd);
 			}
 		}
 
