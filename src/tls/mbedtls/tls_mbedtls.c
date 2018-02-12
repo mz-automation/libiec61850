@@ -12,6 +12,7 @@
 #include <string.h>
 
 #include "tls_api.h"
+#include "tls_socket.h"
 #include "hal_thread.h"
 #include "lib_memory.h"
 #include "linked_list.h"
