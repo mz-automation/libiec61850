@@ -856,6 +856,8 @@ typedef enum {
  * a control operation has been invoked by the client. This callback function is
  * intended to perform the static tests. It should check if the interlock conditions
  * are met if the interlockCheck parameter is true.
+ * This handler can also be check if the client has the required permissions to execute the
+ * operation and allow or deny the operation accordingly.
  *
  * \param parameter the parameter that was specified when setting the control handler
  * \param ctlVal the control value of the control operation.

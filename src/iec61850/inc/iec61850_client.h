@@ -1823,6 +1823,8 @@ IedConnection_getDataDirectoryByFC(IedConnection self, IedClientError* error, co
  * This function can be used to get the MMS variable type specification for an IEC 61850 data attribute. It is an extension
  * of the ACSI that may be required by generic client applications.
  *
+ * NOTE: API user is responsible to free the resources (see \ref MmsVariableSpecification_destroy)
+ *
  * \param self the connection object
  * \param error the error code if an error occurs
  * \param dataAttributeReference string that represents the DA reference
