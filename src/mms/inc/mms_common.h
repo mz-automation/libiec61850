@@ -102,7 +102,7 @@ typedef enum
 
 } MmsError;
 
-typedef enum ATTRIBUTE_PACKED
+typedef enum
 {
     /*! this represents all MMS array types (arrays contain uniform elements) */
     MMS_ARRAY = 0,
