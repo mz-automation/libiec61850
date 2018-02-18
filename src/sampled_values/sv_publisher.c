@@ -66,8 +66,6 @@ struct sSVPublisher_ASDU {
     SVPublisher_ASDU _next;
 };
 
-
-
 struct sSVPublisher {
     uint8_t* buffer;
     uint16_t appId;
@@ -79,9 +77,7 @@ struct sSVPublisher {
     int payloadLength; /* length of payload buffer */
 
     int asduCount; /* number of ASDUs in the APDU */
-    SVPublisher_ASDU asduLIst;
-
-
+    SVPublisher_ASDU asduList;
 };
 
 
@@ -288,7 +284,7 @@ SVPublisher_create(CommParameters* parameters, const char* interfaceId)
 {
     SVPublisher self = (SVPublisher) GLOBAL_CALLOC(1, sizeof(struct sSVPublisher));
 
-    self->asduLIst = NULL;
+    self->asduList = NULL;
 
     preparePacketBuffer(self, parameters, interfaceId);
 
@@ -307,10 +303,10 @@ SVPublisher_addASDU(SVPublisher self, const char* svID, const char* datset, uint
     newAsdu->_next = NULL;
 
     /* append new ASDU to list */
-    if (self->asduLIst == NULL)
-        self->asduLIst = newAsdu;
+    if (self->asduList == NULL)
+        self->asduList = newAsdu;
     else {
-        SVPublisher_ASDU lastAsdu = self->asduLIst;
+        SVPublisher_ASDU lastAsdu = self->asduList;
 
         while (lastAsdu->_next != NULL)
             lastAsdu = lastAsdu->_next;
@@ -376,8 +372,6 @@ SVPublisher_ASDU_encodeToBuffer(SVPublisher_ASDU self, uint8_t* buffer, int bufP
     if (self->datset != NULL)
         bufPos = BerEncoder_encodeStringWithTag(0x81, self->datset, buffer, bufPos);
 
-    //uint8_t octetString[4];
-
     /* SmpCnt */
     bufPos = BerEncoder_encodeTL(0x82, 2, buffer, bufPos);
     self->smpCntBuf = buffer + bufPos;
@@ -408,7 +402,7 @@ SVPublisher_ASDU_encodeToBuffer(SVPublisher_ASDU self, uint8_t* buffer, int bufP
 
     self->_dataBuffer = buffer + bufPos;
 
-    bufPos += self->dataSize; /* data has to inserted by user before sending message */
+    bufPos += self->dataSize; /* data has to be inserted by user before sending message */
     
     /* SmpMod */
     if (self->hasSmpMod) {
@@ -425,7 +419,7 @@ SVPublisher_setupComplete(SVPublisher self)
     int numberOfAsdu = 0;
 
     /* determine number of ASDUs and length of all ASDUs */
-    SVPublisher_ASDU nextAsdu = self->asduLIst;
+    SVPublisher_ASDU nextAsdu = self->asduList;
     int totalASDULength = 0;
 
     while (nextAsdu != NULL) {
@@ -456,7 +450,7 @@ SVPublisher_setupComplete(SVPublisher self)
     /* seqASDU */
     bufPos = BerEncoder_encodeTL(0xa2, totalASDULength, buffer, bufPos);
 
-    nextAsdu = self->asduLIst;
+    nextAsdu = self->asduList;
 
     while (nextAsdu != NULL) {
         bufPos = SVPublisher_ASDU_encodeToBuffer(nextAsdu, buffer, bufPos);
@@ -486,7 +480,6 @@ SVPublisher_publish(SVPublisher self)
         printf("SV_PUBLISHER: send SV message\n");
 
     Ethernet_sendPacket(self->ethernetSocket, self->buffer, self->payloadStart + self->payloadLength);
-
 }
 
 
