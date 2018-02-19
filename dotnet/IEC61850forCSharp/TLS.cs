@@ -90,6 +90,11 @@ namespace IEC61850
 				self = TLSConfiguration_create ();
 			}
 
+			~TLSConfiguration() 
+			{
+				Dispose ();
+			}
+
 			internal IntPtr GetNativeInstance()
 			{
 				return self;
@@ -197,7 +202,12 @@ namespace IEC61850
 
 			public void Dispose()
 			{
-				TLSConfiguration_destroy (self);
+				lock (self) {
+					if (self != IntPtr.Zero) {
+						TLSConfiguration_destroy (self);
+						self = IntPtr.Zero;
+					}
+				}
 			}
 
 		}
