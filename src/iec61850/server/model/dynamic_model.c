@@ -681,6 +681,8 @@ DataSetEntry_create(DataSet* dataSet, const char* variable, int index, const cha
 
     self->sibling = NULL;
 
+    self->value = NULL;
+
     DataSet_addEntry(dataSet, self);
 
     return self;

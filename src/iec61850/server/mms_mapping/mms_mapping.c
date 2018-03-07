@@ -267,6 +267,15 @@ createNamedVariableFromDataAttribute(DataAttribute* attribute)
         case IEC61850_PHYCOMADDR:
             MmsMapping_createPhyComAddrStructure(namedVariable);
             break;
+        case IEC61850_OPTFLDS:
+            namedVariable->typeSpec.bitString = 10;
+            namedVariable->type = MMS_BIT_STRING;
+            break;
+        case IEC61850_TRGOPS:
+            namedVariable->typeSpec.bitString = 6;
+            namedVariable->type = MMS_BIT_STRING;
+            break;
+
         default:
             if (DEBUG_IED_SERVER)
                 printf("MMS-MAPPING: type cannot be mapped %i\n", attribute->type);
