@@ -392,6 +392,16 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
                                 }
                                 break;
 
+                            case IEC61850_OPTFLDS:
+                            case IEC61850_TRGOPS:
+                                {
+                                    int value;
+                                    if (sscanf(valueIndicator + 1, "%i", &value) != 1) goto exit_error;
+                                    dataAttribute->mmsValue = MmsValue_newBitString(2);
+                                    MmsValue_setBitStringFromIntegerBigEndian(dataAttribute->mmsValue, value);
+                                }
+                                break;
+
                             default:
                                 break;
 

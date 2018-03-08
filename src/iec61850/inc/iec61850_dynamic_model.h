@@ -303,6 +303,9 @@ DataSetEntry_getNext(DataSetEntry* self);
  * that have to contain the LN name, the FC and subsequent path elements separated by "$" instead of ".".
  * This is due to efficiency reasons to avoid the creation of additional strings.
  *
+ * If the variable parameter does not contain a logical device name (separated from the remaining variable
+ * name by the "/" character) the logical device where the data set resides is used automatically.
+ *
  * \param dataSet the data set to which the new entry will be added
  * \param variable the name of the variable as MMS variable name  including FC ("$" used as separator!)
  * \param index the index if the FCDA is an array element, otherwise -1
