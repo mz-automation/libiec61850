@@ -32,8 +32,8 @@ MemoryAllocator_init(MemoryAllocator* self, char* memoryBlock, int size)
     self->size = size;
 }
 
-static int
-getAlignedSize(int size)
+int inline
+MemoryAllocator_getAlignedSize(int size)
 {
     if ((size % sizeof(void*)) > 0)
         return sizeof(void*) * ((size + sizeof(void*) - 1) / sizeof(void*));
@@ -44,7 +44,7 @@ getAlignedSize(int size)
 char*
 MemoryAllocator_allocate(MemoryAllocator* self, int size)
 {
-    size = getAlignedSize(size);
+    size = MemoryAllocator_getAlignedSize(size);
 
     if (((self->currentPtr - self->memoryBlock) + size) <= self->size) {
         char* ptr = self->currentPtr;

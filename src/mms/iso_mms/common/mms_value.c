@@ -1,7 +1,7 @@
 /*
  *  mms_value.c
  *
- *  Copyright 2013-2016 Michael Zillgith
+ *  Copyright 2013-2018 Michael Zillgith
  *
  *	This file is part of libIEC61850.
  *
@@ -31,6 +31,8 @@
 #include "mms_value_internal.h"
 
 #include "conversions.h"
+
+#include "simple_allocator.h"
 
 #include <time.h> /* for ctime_r */
 
@@ -962,13 +964,13 @@ MmsValue_toUnixTimestamp(const MmsValue* self)
 int
 MmsValue_getSizeInMemory(const MmsValue* self)
 {
-    int memorySize = sizeof(MmsValue);
+    int memorySize = MemoryAllocator_getAlignedSize(sizeof(MmsValue));
 
     switch(self->type) {
     case MMS_ARRAY:
     case MMS_STRUCTURE:
         {
-            memorySize += (sizeof(MmsValue*) * self->value.structure.size);
+            memorySize += (MemoryAllocator_getAlignedSize(sizeof(MmsValue*)) * self->value.structure.size);
 
             int i;
             for (i = 0; i < self->value.structure.size; i++)
@@ -977,27 +979,26 @@ MmsValue_getSizeInMemory(const MmsValue* self)
         break;
 
     case MMS_BIT_STRING:
-        memorySize += bitStringByteSize(self);
+        memorySize += MemoryAllocator_getAlignedSize(bitStringByteSize(self));
         break;
 
     case MMS_INTEGER:
     case MMS_UNSIGNED:
-        memorySize += sizeof(Asn1PrimitiveValue);
-        memorySize += self->value.integer->maxSize;
+        memorySize += MemoryAllocator_getAlignedSize(sizeof(Asn1PrimitiveValue));
+        memorySize += MemoryAllocator_getAlignedSize(self->value.integer->maxSize);
         break;
 
     case MMS_FLOAT:
-        memorySize += (self->value.floatingPoint.formatWidth / 8);
+        memorySize += MemoryAllocator_getAlignedSize(self->value.floatingPoint.formatWidth / 8);
         break;
 
     case MMS_OCTET_STRING:
-        memorySize += self->value.octetString.maxSize;
+        memorySize += MemoryAllocator_getAlignedSize(self->value.octetString.maxSize);
         break;
 
     case MMS_STRING:
     case MMS_VISIBLE_STRING:
-        memorySize += strlen(self->value.visibleString.buf);
-        memorySize += 1; /* add space for 0 character */
+        memorySize += MemoryAllocator_getAlignedSize(strlen(self->value.visibleString.buf) + 1); /* add space for 0 character */
         break;
 
     default:
@@ -1013,7 +1014,7 @@ MmsValue_cloneToBuffer(const MmsValue* self, uint8_t* destinationAddress)
     MmsValue* newValue = (MmsValue*) destinationAddress;
 
     memcpy(destinationAddress, self, sizeof(MmsValue));
-    destinationAddress += sizeof(MmsValue);
+    destinationAddress += MemoryAllocator_getAlignedSize(sizeof(MmsValue));
 
     switch (self->type) {
     case MMS_ARRAY:
@@ -1033,7 +1034,7 @@ MmsValue_cloneToBuffer(const MmsValue* self, uint8_t* destinationAddress)
     case MMS_BIT_STRING:
         memcpy(destinationAddress, self->value.bitString.buf, bitStringByteSize(self));
         newValue->value.bitString.buf = destinationAddress;
-        destinationAddress += bitStringByteSize(self);
+        destinationAddress += MemoryAllocator_getAlignedSize(bitStringByteSize(self));
         break;
 
     case MMS_INTEGER:
@@ -1042,10 +1043,10 @@ MmsValue_cloneToBuffer(const MmsValue* self, uint8_t* destinationAddress)
             newValue->value.integer = (Asn1PrimitiveValue*) destinationAddress;
             Asn1PrimitiveValue* newAsn1Value = (Asn1PrimitiveValue*) destinationAddress;
             memcpy(destinationAddress, self->value.integer, sizeof(Asn1PrimitiveValue));
-            destinationAddress += sizeof(Asn1PrimitiveValue);
+            destinationAddress += MemoryAllocator_getAlignedSize(sizeof(Asn1PrimitiveValue));
             newAsn1Value->octets = destinationAddress;
             memcpy(destinationAddress, self->value.integer->octets, self->value.integer->maxSize);
-            destinationAddress += self->value.integer->maxSize;
+            destinationAddress += MemoryAllocator_getAlignedSize(self->value.integer->maxSize);
         }
         break;
 
@@ -1055,14 +1056,14 @@ MmsValue_cloneToBuffer(const MmsValue* self, uint8_t* destinationAddress)
 
             newValue->value.floatingPoint.buf = destinationAddress;
             memcpy(destinationAddress, self->value.floatingPoint.buf, floatSizeInBytes);
-            destinationAddress += floatSizeInBytes;
+            destinationAddress += MemoryAllocator_getAlignedSize(floatSizeInBytes);
         }
         break;
 
     case MMS_OCTET_STRING:
         newValue->value.octetString.buf = destinationAddress;
         memcpy(destinationAddress, self->value.octetString.buf, self->value.octetString.maxSize);
-        destinationAddress += self->value.octetString.maxSize;
+        destinationAddress += MemoryAllocator_getAlignedSize(self->value.octetString.maxSize);
         break;
 
     case MMS_STRING:
@@ -1070,7 +1071,7 @@ MmsValue_cloneToBuffer(const MmsValue* self, uint8_t* destinationAddress)
         newValue->value.visibleString.buf = (char*) destinationAddress;
         newValue->value.visibleString.size = self->value.visibleString.size;
         strcpy((char*) destinationAddress, self->value.visibleString.buf);
-        destinationAddress += (strlen(self->value.visibleString.buf) + 1);
+        destinationAddress += MemoryAllocator_getAlignedSize(strlen(self->value.visibleString.buf) + 1);
         break;
 
     default:
