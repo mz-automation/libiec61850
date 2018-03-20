@@ -38,8 +38,8 @@ If the build succeeds you can find a few binary files in the projects root direc
 Run the sample applications in the example folders. E.g.:
 
 ```
-cd examples/server_example1
-sudo ./server_example1
+cd examples/server_example_basic_io
+sudo ./server_example_basic_io
 ```
 
 on the Linux command line.
