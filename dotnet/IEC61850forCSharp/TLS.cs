@@ -202,7 +202,7 @@ namespace IEC61850
 
 			public void Dispose()
 			{
-				lock (self) {
+				lock (this) {
 					if (self != IntPtr.Zero) {
 						TLSConfiguration_destroy (self);
 						self = IntPtr.Zero;
