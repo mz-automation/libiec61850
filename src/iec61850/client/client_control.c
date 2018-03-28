@@ -105,7 +105,7 @@ static void
 resetLastApplError(ControlObjectClient self)
 {
     self->lastApplError.error = 0;
-	self->lastApplError.addCause = ADD_CAUSE_UNKNOWN;
+    self->lastApplError.addCause = ADD_CAUSE_UNKNOWN;
     self->lastApplError.ctlNum = 0;
 }
 
@@ -118,11 +118,11 @@ ControlObjectClient_create(const char* objectReference, IedConnection connection
     char reference[129];
 
     if (strlen(objectReference) < 121) {
-    	strcpy(reference, objectReference);
-    	strcat(reference, ".ctlModel");
+        strcpy(reference, objectReference);
+        strcat(reference, ".ctlModel");
     }
     else
-    	goto exit_function;
+        goto exit_function;
 
     IedClientError error;
 
@@ -136,7 +136,7 @@ ControlObjectClient_create(const char* objectReference, IedConnection connection
     }
 
     MmsVariableSpecification* ctlVarSpec =
-    		IedConnection_getVariableSpecification(connection, &error, objectReference, IEC61850_FC_CO);
+            IedConnection_getVariableSpecification(connection, &error, objectReference, IEC61850_FC_CO);
 
     if (error != IED_ERROR_OK) {
         if (DEBUG_IED_CLIENT)
@@ -154,10 +154,10 @@ ControlObjectClient_create(const char* objectReference, IedConnection connection
     MmsVariableSpecification* t = NULL;
 
     if (MmsVariableSpecification_getType(ctlVarSpec) == MMS_STRUCTURE) {
-    	MmsVariableSpecification* oper = MmsVariableSpecification_getNamedVariableRecursive(ctlVarSpec, "Oper");
+        MmsVariableSpecification* oper = MmsVariableSpecification_getNamedVariableRecursive(ctlVarSpec, "Oper");
 
-    	if (oper)
-    	{
+        if (oper)
+        {
             hasOper = true;
 
             ctlVal = MmsVariableSpecification_getNamedVariableRecursive(oper, "ctlVal");
@@ -165,18 +165,18 @@ ControlObjectClient_create(const char* objectReference, IedConnection connection
             if (MmsVariableSpecification_getType(ctlVal) == MMS_STRUCTURE)
                 isAPC = true;
 
-    		MmsVariableSpecification* operTm = MmsVariableSpecification_getNamedVariableRecursive(oper, "operTm");
+            MmsVariableSpecification* operTm = MmsVariableSpecification_getNamedVariableRecursive(oper, "operTm");
 
-    		if (operTm)
-    			hasTimeActivatedControl = true;
+            if (operTm)
+                hasTimeActivatedControl = true;
 
-    		MmsVariableSpecification* ctlNum = MmsVariableSpecification_getNamedVariableRecursive(oper, "ctlNum");
+            MmsVariableSpecification* ctlNum = MmsVariableSpecification_getNamedVariableRecursive(oper, "ctlNum");
 
-    		if (ctlNum)
-    			hasCtlNum = true;
+            if (ctlNum)
+                hasCtlNum = true;
 
-    		t = MmsVariableSpecification_getNamedVariableRecursive(oper, "T");
-    	}
+            t = MmsVariableSpecification_getNamedVariableRecursive(oper, "T");
+        }
     }
 
     if (hasOper == false) {
@@ -187,10 +187,10 @@ ControlObjectClient_create(const char* objectReference, IedConnection connection
     }
 
     if ((ctlVal == NULL) || (t == NULL)) {
-    	if (DEBUG_IED_CLIENT)
-    		printf("IED_CLIENT:   \"Oper\" is missing required element\n");
+        if (DEBUG_IED_CLIENT)
+            printf("IED_CLIENT:   \"Oper\" is missing required element\n");
 
-    	goto free_varspec;
+        goto free_varspec;
     }
 
     self = (ControlObjectClient) GLOBAL_CALLOC(1, sizeof(struct sControlObjectClient));
@@ -221,10 +221,10 @@ ControlObjectClient_create(const char* objectReference, IedConnection connection
 
     private_IedConnection_addControlClient(connection, self);
 
-free_varspec:
+    free_varspec:
     MmsVariableSpecification_destroy(ctlVarSpec);
 
-exit_function:
+    exit_function:
     return self;
 }
 
@@ -241,7 +241,7 @@ ControlObjectClient_destroy(ControlObjectClient self)
             MmsValue_delete(self->ctlVal);
 
         if (self->analogValue != NULL)
-        	MmsValue_delete(self->analogValue);
+            MmsValue_delete(self->analogValue);
 
         if (self->orIdent != NULL)
             GLOBAL_FREEMEM(self->orIdent);
@@ -320,11 +320,11 @@ createOriginValue(ControlObjectClient self)
 
     goto exit_function;
 
-cleanup_on_error:
+    cleanup_on_error:
     MmsValue_delete(origin);
     origin = NULL;
 
-exit_function:
+    exit_function:
     return origin;
 }
 
@@ -347,20 +347,20 @@ ControlObjectClient_operate(ControlObjectClient self, MmsValue* ctlVal, uint64_t
     int operElementCount = 5;
 
     if (self->hasTimeActivatedMode)
-    	operElementCount++;
+        operElementCount++;
 
     if (self->hasCtlNum)
-    	operElementCount++;
+        operElementCount++;
 
-	operParameters = MmsValue_createEmptyStructure(operElementCount);
+    operParameters = MmsValue_createEmptyStructure(operElementCount);
 
-	/* support simplified usage of APC controls - user doesn't need to create the structure */
-	if (self->analogValue != NULL) {
-		if (MmsValue_getType(ctlVal) != MMS_STRUCTURE) {
-			MmsValue_setElement(self->analogValue, 0, ctlVal);
-			ctlVal = self->analogValue;
-		}
-	}
+    /* support simplified usage of APC controls - user doesn't need to create the structure */
+    if (self->analogValue != NULL) {
+        if (MmsValue_getType(ctlVal) != MMS_STRUCTURE) {
+            MmsValue_setElement(self->analogValue, 0, ctlVal);
+            ctlVal = self->analogValue;
+        }
+    }
 
     MmsValue_setElement(operParameters, 0, ctlVal);
 
@@ -381,19 +381,19 @@ ControlObjectClient_operate(ControlObjectClient self, MmsValue* ctlVal, uint64_t
     }
 
     if (self->hasCtlNum) {
-    	MmsValue* ctlNum = MmsValue_newUnsignedFromUint32(self->ctlNum);
-    	MmsValue_setElement(operParameters, index++, ctlNum);
+        MmsValue* ctlNum = MmsValue_newUnsignedFromUint32(self->ctlNum);
+        MmsValue_setElement(operParameters, index++, ctlNum);
     }
 
     uint64_t timestamp;
 
     if ((self->ctlModel == CONTROL_MODEL_SBO_ENHANCED) && (self->useConstantT))
-    	timestamp = self->constantT;
+        timestamp = self->constantT;
     else
-    	timestamp = Hal_getTimeInMs();
+        timestamp = Hal_getTimeInMs();
 
     if (self->useConstantT)
-    	self->constantT = timestamp;
+        self->constantT = timestamp;
 
     MmsValue* ctlTime;
 
@@ -446,13 +446,13 @@ ControlObjectClient_operate(ControlObjectClient self, MmsValue* ctlVal, uint64_t
     MmsValue_update(self->ctlVal, ctlVal);
 
     if (self->analogValue)
-    	MmsValue_setElement(self->analogValue, 0, NULL);
+        MmsValue_setElement(self->analogValue, 0, NULL);
 
     self->opertime = operTime;
 
     success = true;
 
-exit_function:
+    exit_function:
     return success;
 }
 
@@ -478,20 +478,20 @@ ControlObjectClient_selectWithValue(ControlObjectClient self, MmsValue* ctlVal)
     int selValElementCount = 5;
 
     if (self->hasTimeActivatedMode)
-    	selValElementCount++;
+        selValElementCount++;
 
     if (self->hasCtlNum)
-    	selValElementCount++;
+        selValElementCount++;
 
     MmsValue* selValParameters = MmsValue_createEmptyStructure(selValElementCount);
 
-	/* support simplified usage of APC controls - user doesn't need to create the structure */
-	if (self->analogValue != NULL) {
-		if (MmsValue_getType(ctlVal) != MMS_STRUCTURE) {
-			MmsValue_setElement(self->analogValue, 0, ctlVal);
-			ctlVal = self->analogValue;
-		}
-	}
+    /* support simplified usage of APC controls - user doesn't need to create the structure */
+    if (self->analogValue != NULL) {
+        if (MmsValue_getType(ctlVal) != MMS_STRUCTURE) {
+            MmsValue_setElement(self->analogValue, 0, ctlVal);
+            ctlVal = self->analogValue;
+        }
+    }
 
     MmsValue_setElement(selValParameters, 0, ctlVal);
 
@@ -508,15 +508,15 @@ ControlObjectClient_selectWithValue(ControlObjectClient self, MmsValue* ctlVal)
     self->ctlNum++;
 
     if (self->hasCtlNum) {
-		MmsValue* ctlNum = MmsValue_newUnsignedFromUint32(self->ctlNum);
-		MmsValue_setElement(selValParameters, index++, ctlNum);
+        MmsValue* ctlNum = MmsValue_newUnsignedFromUint32(self->ctlNum);
+        MmsValue_setElement(selValParameters, index++, ctlNum);
     }
 
     uint64_t timestamp = Hal_getTimeInMs();
     MmsValue* ctlTime;
 
     if (self->useConstantT)
-    	self->constantT = timestamp;
+        self->constantT = timestamp;
 
     if (self->edition == 2)
         ctlTime = MmsValue_newUtcTimeByMsTime(timestamp);
@@ -550,7 +550,7 @@ ControlObjectClient_selectWithValue(ControlObjectClient self, MmsValue* ctlVal)
     MmsValue_update(self->ctlVal, ctlVal);
 
     if (self->analogValue)
-    	MmsValue_setElement(self->analogValue, 0, NULL);
+        MmsValue_setElement(self->analogValue, 0, NULL);
 
     return true;
 }
@@ -592,7 +592,7 @@ ControlObjectClient_select(ControlObjectClient self)
     snprintf(sboReference, 129, "%s/%s", domainId, itemId);
 
     if (MmsValue_getType(value) == MMS_VISIBLE_STRING) {
-        if (strcmp(MmsValue_toString(value),  "") == 0) {
+        if (strcmp(MmsValue_toString(value), "") == 0) {
             if (DEBUG_IED_CLIENT)
                 printf("select-response-\n");
         }
@@ -613,7 +613,7 @@ ControlObjectClient_select(ControlObjectClient self)
 
     MmsValue_delete(value);
 
-exit_function:
+    exit_function:
     return selected;
 }
 
@@ -648,9 +648,9 @@ ControlObjectClient_cancel(ControlObjectClient self)
     uint64_t timestamp;
 
     if (self->useConstantT)
-    	timestamp = self->constantT;
+        timestamp = self->constantT;
     else
-    	timestamp = Hal_getTimeInMs();
+        timestamp = Hal_getTimeInMs();
 
     MmsValue* ctlTime;
 
@@ -697,7 +697,7 @@ ControlObjectClient_cancel(ControlObjectClient self)
 void
 ControlObjectClient_useConstantT(ControlObjectClient self, bool useConstantT)
 {
-	self->useConstantT = useConstantT;
+    self->useConstantT = useConstantT;
 }
 
 void
@@ -711,7 +711,6 @@ ControlObjectClient_setInterlockCheck(ControlObjectClient self, bool value)
 {
     self->interlockCheck = value;
 }
-
 
 void
 ControlObjectClient_enableSynchroCheck(ControlObjectClient self)

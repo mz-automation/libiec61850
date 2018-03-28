@@ -43,7 +43,7 @@ checkAuthMechanismName(uint8_t* authMechanism, int authMechLen)
 {
     AcseAuthenticationMechanism authenticationMechanism = ACSE_AUTH_NONE;
 
-    if (authMechanism != NULL ) {
+    if (authMechanism != NULL) {
 
         if (authMechLen == 3) {
             if (memcmp(auth_mech_password_oid, authMechanism, 3) == 0) {
@@ -81,7 +81,7 @@ checkAuthentication(AcseConnection* self, uint8_t* authMechanism, int authMechLe
 {
     self->securityToken = NULL;
 
-    if (self->authenticator != NULL ) {
+    if (self->authenticator != NULL) {
 
         AcseAuthenticationMechanism mechanism = checkAuthMechanismName(authMechanism, authMechLen);
 
@@ -111,134 +111,139 @@ checkAuthentication(AcseConnection* self, uint8_t* authMechanism, int authMechLe
         return true;
 }
 
-
 static int
 parseUserInformation(AcseConnection* self, uint8_t* buffer, int bufPos, int maxBufPos, bool* userInfoValid)
 {
-	if (DEBUG_ACSE) printf("ACSE: parseUserInformation %i %i\n", bufPos, maxBufPos);
+    if (DEBUG_ACSE)
+        printf("ACSE: parseUserInformation %i %i\n", bufPos, maxBufPos);
 
-	bool hasindirectReference = false;
-	bool isDataValid = false;
+    bool hasindirectReference = false;
+    bool isDataValid = false;
 
-	while (bufPos < maxBufPos) {
-		uint8_t tag = buffer[bufPos++];
-		int len;
+    while (bufPos < maxBufPos) {
+        uint8_t tag = buffer[bufPos++];
+        int len;
 
-		bufPos = BerDecoder_decodeLength(buffer, &len, bufPos, maxBufPos);
+        bufPos = BerDecoder_decodeLength(buffer, &len, bufPos, maxBufPos);
 
-		if (bufPos < 0) {
-		    *userInfoValid = false;
-		    return -1;
-		}
+        if (bufPos < 0) {
+            *userInfoValid = false;
+            return -1;
+        }
 
-		switch (tag) {
+        switch (tag)
+        {
 
-		case 0x02: /* indirect-reference */
-			self->nextReference = BerDecoder_decodeUint32(buffer, len, bufPos);
-			bufPos += len;
-			hasindirectReference = true;
-			break;
+        case 0x02: /* indirect-reference */
+            self->nextReference = BerDecoder_decodeUint32(buffer, len, bufPos);
+            bufPos += len;
+            hasindirectReference = true;
+            break;
 
-		case 0xa0: /* encoding */
-			isDataValid = true;
+        case 0xa0: /* encoding */
+            isDataValid = true;
 
-			self->userDataBufferSize = len;
-			self->userDataBuffer = buffer + bufPos;
+            self->userDataBufferSize = len;
+            self->userDataBuffer = buffer + bufPos;
 
-			bufPos += len;
+            bufPos += len;
 
-			break;
+            break;
 
-		default: /* ignore unknown tag */
-			bufPos += len;
-		}
-	}
+        default: /* ignore unknown tag */
+            bufPos += len;
+        }
+    }
 
+    if (DEBUG_ACSE) {
+        if (!hasindirectReference)
+            printf("ACSE: User data has no indirect reference!\n");
 
-	if (DEBUG_ACSE) {
-		if (!hasindirectReference) printf("ACSE: User data has no indirect reference!\n");
+        if (!isDataValid)
+            printf("ACSE: No valid user data\n");
+    }
 
-		if (!isDataValid) printf("ACSE: No valid user data\n");
-	}
+    if (hasindirectReference && isDataValid)
+        *userInfoValid = true;
+    else
+        *userInfoValid = false;
 
-	if (hasindirectReference && isDataValid)
-		*userInfoValid = true;
-	else
-		*userInfoValid = false;
-
-	return bufPos;
+    return bufPos;
 }
 
 static AcseIndication
 parseAarePdu(AcseConnection* self, uint8_t* buffer, int bufPos, int maxBufPos)
 {
-	if (DEBUG_ACSE) printf("ACSE: parse AARE PDU\n");
+    if (DEBUG_ACSE)
+        printf("ACSE: parse AARE PDU\n");
 
-	bool userInfoValid = false;
+    bool userInfoValid = false;
 
-	uint32_t result = 99;
+    uint32_t result = 99;
 
-	while (bufPos < maxBufPos) {
-		uint8_t tag = buffer[bufPos++];
-		int len;
+    while (bufPos < maxBufPos) {
+        uint8_t tag = buffer[bufPos++];
+        int len;
 
-		bufPos = BerDecoder_decodeLength(buffer, &len, bufPos, maxBufPos);
-		if (bufPos < 0)
-		    return ACSE_ERROR;
+        bufPos = BerDecoder_decodeLength(buffer, &len, bufPos, maxBufPos);
+        if (bufPos < 0)
+            return ACSE_ERROR;
 
-		switch (tag) {
-		case 0xa1: /* application context name */
-			bufPos += len;
-			break;
+        switch (tag)
+        {
+        case 0xa1: /* application context name */
+            bufPos += len;
+            break;
 
-		case 0xa2: /* result */
-			bufPos++;
+        case 0xa2: /* result */
+            bufPos++;
 
-			bufPos = BerDecoder_decodeLength(buffer, &len, bufPos, maxBufPos);
-	        if (bufPos < 0)
-	            return ACSE_ERROR;
+            bufPos = BerDecoder_decodeLength(buffer, &len, bufPos, maxBufPos);
+            if (bufPos < 0)
+                return ACSE_ERROR;
 
-			result = BerDecoder_decodeUint32(buffer, len, bufPos);
+            result = BerDecoder_decodeUint32(buffer, len, bufPos);
 
-			bufPos += len;
-			break;
+            bufPos += len;
+            break;
 
-		case 0xa3: /* result source diagnostic */
-			bufPos += len;
-			break;
+        case 0xa3: /* result source diagnostic */
+            bufPos += len;
+            break;
 
-		case 0xbe: /* user information */
-			if (buffer[bufPos]  != 0x28) {
-				if (DEBUG_ACSE) printf("ACSE: invalid user info\n");
-				bufPos += len;
-			}
-			else {
-				bufPos++;
+        case 0xbe: /* user information */
+            if (buffer[bufPos] != 0x28) {
+                if (DEBUG_ACSE)
+                    printf("ACSE: invalid user info\n");
+                bufPos += len;
+            }
+            else {
+                bufPos++;
 
-				bufPos = BerDecoder_decodeLength(buffer, &len, bufPos, maxBufPos);
-		        if (bufPos < 0)
-		            return ACSE_ERROR;
+                bufPos = BerDecoder_decodeLength(buffer, &len, bufPos, maxBufPos);
+                if (bufPos < 0)
+                    return ACSE_ERROR;
 
-				bufPos = parseUserInformation(self, buffer, bufPos, bufPos + len, &userInfoValid);
-		        if (bufPos < 0)
-		            return ACSE_ERROR;
-			}
-			break;
+                bufPos = parseUserInformation(self, buffer, bufPos, bufPos + len, &userInfoValid);
+                if (bufPos < 0)
+                    return ACSE_ERROR;
+            }
+            break;
 
-		default: /* ignore unknown tag */
-		    if (DEBUG_ACSE)
-		        printf("ACSE: parseAarePdu: unknown tag %02x\n", tag);
+        default: /* ignore unknown tag */
+            if (DEBUG_ACSE)
+                printf("ACSE: parseAarePdu: unknown tag %02x\n", tag);
 
-			bufPos += len;
-			break;
-		}
-	}
+            bufPos += len;
+            break;
+        }
+    }
 
-	if (!userInfoValid)
-		return ACSE_ERROR;
+    if (!userInfoValid)
+        return ACSE_ERROR;
 
-	if (result != 0)
-		return ACSE_ASSOCIATE_FAILED;
+    if (result != 0)
+        return ACSE_ASSOCIATE_FAILED;
 
     return ACSE_ASSOCIATE;
 }
@@ -246,119 +251,126 @@ parseAarePdu(AcseConnection* self, uint8_t* buffer, int bufPos, int maxBufPos)
 static AcseIndication
 parseAarqPdu(AcseConnection* self, uint8_t* buffer, int bufPos, int maxBufPos)
 {
-	if (DEBUG_ACSE) printf("ACSE: parse AARQ PDU\n");
+    if (DEBUG_ACSE)
+        printf("ACSE: parse AARQ PDU\n");
 
-	uint8_t* authValue = NULL;
-	int authValueLen = 0;
-	uint8_t* authMechanism = NULL;
-	int authMechLen = 0;
-	bool userInfoValid = false;
+    uint8_t* authValue = NULL;
+    int authValueLen = 0;
+    uint8_t* authMechanism = NULL;
+    int authMechLen = 0;
+    bool userInfoValid = false;
 
-	while (bufPos < maxBufPos) {
-		uint8_t tag = buffer[bufPos++];
-		int len;
+    while (bufPos < maxBufPos) {
+        uint8_t tag = buffer[bufPos++];
+        int len;
 
-		bufPos = BerDecoder_decodeLength(buffer, &len, bufPos, maxBufPos);
+        bufPos = BerDecoder_decodeLength(buffer, &len, bufPos, maxBufPos);
 
-		if (bufPos < 0) {
-		    if (DEBUG_ACSE) printf("ACSE: Invalid PDU!\n");
-	        return ACSE_ASSOCIATE_FAILED;
-		}
+        if (bufPos < 0) {
+            if (DEBUG_ACSE)
+                printf("ACSE: Invalid PDU!\n");
+            return ACSE_ASSOCIATE_FAILED;
+        }
 
-		switch (tag) {
-		case 0xa1: /* application context name */
-			bufPos += len;
-			break;
+        switch (tag)
+        {
+        case 0xa1: /* application context name */
+            bufPos += len;
+            break;
 
-		case 0xa2: /* called AP title */
-			bufPos += len;
-			break;
-		case 0xa3: /* called AE qualifier */
-			bufPos += len;
-			break;
+        case 0xa2: /* called AP title */
+            bufPos += len;
+            break;
+        case 0xa3: /* called AE qualifier */
+            bufPos += len;
+            break;
 
-		case 0xa6: /* calling AP title */
-		    {
-		        if (buffer[bufPos] == 0x06) { /* ap-title-form2 */
+        case 0xa6: /* calling AP title */
+            {
+                if (buffer[bufPos] == 0x06) { /* ap-title-form2 */
 
-		            int innerLength = buffer[bufPos+1];
-
-		            if (innerLength == len - 2)
-		                BerDecoder_decodeOID(buffer, bufPos + 2, innerLength, &(self->applicationReference.apTitle));
-		        }
-		    }
-		    bufPos += len;
-			break;
-
-		case 0xa7: /* calling AE qualifier */
-		    {
-		        if (buffer[bufPos] == 0x02) { /* ae-qualifier-form2 */
-
-                    int innerLength = buffer[bufPos+1];
+                    int innerLength = buffer[bufPos + 1];
 
                     if (innerLength == len - 2)
-                        self->applicationReference.aeQualifier = BerDecoder_decodeInt32(buffer + 2, buffer[bufPos+1], bufPos);
-		        }
-		    }
-			bufPos += len;
-			break;
-
-		case 0x8a: /* sender ACSE requirements */
+                        BerDecoder_decodeOID(buffer, bufPos + 2, innerLength, &(self->applicationReference.apTitle));
+                }
+            }
             bufPos += len;
-			break;
+            break;
 
-		case 0x8b: /* (authentication) mechanism name */
-			authMechLen = len;
-			authMechanism = buffer + bufPos;
-			bufPos += len;
-			break;
+        case 0xa7: /* calling AE qualifier */
+            {
+                if (buffer[bufPos] == 0x02) { /* ae-qualifier-form2 */
 
-		case 0xac: /* authentication value */
-			bufPos++;
+                    int innerLength = buffer[bufPos + 1];
 
-			bufPos = BerDecoder_decodeLength(buffer, &len, bufPos, maxBufPos);
-	        if (bufPos < 0) {
-	            if (DEBUG_ACSE) printf("ACSE: Invalid PDU!\n");
-	            return ACSE_ASSOCIATE_FAILED;
-	        }
+                    if (innerLength == len - 2)
+                        self->applicationReference.aeQualifier = BerDecoder_decodeInt32(buffer + 2, buffer[bufPos + 1], bufPos);
+                }
+            }
+            bufPos += len;
+            break;
 
-			authValueLen = len;
-			authValue = buffer + bufPos;
-			bufPos += len;
-			break;
+        case 0x8a: /* sender ACSE requirements */
+            bufPos += len;
+            break;
 
-		case 0xbe: /* user information */
-			if (buffer[bufPos]  != 0x28) {
-				if (DEBUG_ACSE) printf("ACSE: invalid user info\n");
-				bufPos += len;
-			}
-			else {
-				bufPos++;
+        case 0x8b: /* (authentication) mechanism name */
+            authMechLen = len;
+            authMechanism = buffer + bufPos;
+            bufPos += len;
+            break;
 
-				bufPos = BerDecoder_decodeLength(buffer, &len, bufPos, maxBufPos);
+        case 0xac: /* authentication value */
+            bufPos++;
 
-		        if (bufPos < 0) {
-		            if (DEBUG_ACSE) printf("ACSE: Invalid PDU!\n");
-		            return ACSE_ASSOCIATE_FAILED;
-		        }
+            bufPos = BerDecoder_decodeLength(buffer, &len, bufPos, maxBufPos);
+            if (bufPos < 0) {
+                if (DEBUG_ACSE)
+                    printf("ACSE: Invalid PDU!\n");
+                return ACSE_ASSOCIATE_FAILED;
+            }
 
-				bufPos = parseUserInformation(self, buffer, bufPos, bufPos + len, &userInfoValid);
+            authValueLen = len;
+            authValue = buffer + bufPos;
+            bufPos += len;
+            break;
 
-		        if (bufPos < 0) {
-		            if (DEBUG_ACSE) printf("ACSE: Invalid PDU!\n");
-		            return ACSE_ASSOCIATE_FAILED;
-		        }
-			}
-			break;
+        case 0xbe: /* user information */
+            if (buffer[bufPos] != 0x28) {
+                if (DEBUG_ACSE)
+                    printf("ACSE: invalid user info\n");
+                bufPos += len;
+            }
+            else {
+                bufPos++;
 
-		default: /* ignore unknown tag */
-		    if (DEBUG_ACSE)
-		        printf("ACSE: parseAarqPdu: unknown tag %02x\n", tag);
+                bufPos = BerDecoder_decodeLength(buffer, &len, bufPos, maxBufPos);
 
-			bufPos += len;
-			break;
-		}
-	}
+                if (bufPos < 0) {
+                    if (DEBUG_ACSE)
+                        printf("ACSE: Invalid PDU!\n");
+                    return ACSE_ASSOCIATE_FAILED;
+                }
+
+                bufPos = parseUserInformation(self, buffer, bufPos, bufPos + len, &userInfoValid);
+
+                if (bufPos < 0) {
+                    if (DEBUG_ACSE)
+                        printf("ACSE: Invalid PDU!\n");
+                    return ACSE_ASSOCIATE_FAILED;
+                }
+            }
+            break;
+
+        default: /* ignore unknown tag */
+            if (DEBUG_ACSE)
+                printf("ACSE: parseAarqPdu: unknown tag %02x\n", tag);
+
+            bufPos += len;
+            break;
+        }
+    }
 
     if (checkAuthentication(self, authMechanism, authMechLen, authValue, authValueLen) == false) {
         if (DEBUG_ACSE)
@@ -371,7 +383,7 @@ parseAarqPdu(AcseConnection* self, uint8_t* buffer, int bufPos, int maxBufPos)
         if (DEBUG_ACSE)
             printf("ACSE: parseAarqPdu: user info invalid!\n");
 
-    	return ACSE_ASSOCIATE_FAILED;
+        return ACSE_ASSOCIATE_FAILED;
     }
 
     return ACSE_ASSOCIATE;
@@ -391,7 +403,8 @@ AcseConnection_init(AcseConnection* self, AcseAuthenticator authenticator, void*
     self->tlsSocket = tlsSocket;
 #endif
 
-    memset(&(self->applicationReference), 0, sizeof(self->applicationReference));
+    memset(&(self->applicationReference), 0,
+            sizeof(self->applicationReference));
 }
 
 void
@@ -416,20 +429,22 @@ AcseConnection_parseMessage(AcseConnection* self, ByteBuffer* message)
 
     bufPos = BerDecoder_decodeLength(buffer, &len, bufPos, messageSize);
 
-    if (bufPos < 0) {
+    if (bufPos < 0)
+    {
         if (DEBUG_ACSE)
             printf("ACSE: AcseConnection_parseMessage: invalid ACSE message!\n");
 
         return ACSE_ERROR;
     }
 
-    switch (messageType) {
+    switch (messageType)
+    {
     case 0x60:
-    	indication = parseAarqPdu(self, buffer, bufPos, messageSize);
-    	break;
+        indication = parseAarqPdu(self, buffer, bufPos, messageSize);
+        break;
     case 0x61:
-    	indication = parseAarePdu(self, buffer, bufPos, messageSize);
-		break;
+        indication = parseAarePdu(self, buffer, bufPos, messageSize);
+        break;
     case 0x62: /* A_RELEASE.request RLRQ-apdu */
         indication = ACSE_RELEASE_REQUEST;
         break;
@@ -440,9 +455,10 @@ AcseConnection_parseMessage(AcseConnection* self, ByteBuffer* message)
         indication = ACSE_ABORT;
         break;
     default:
-    	if (DEBUG_ACSE) printf("ACSE: Unknown ACSE message\n");
-    	indication = ACSE_ERROR;
-    	break;
+        if (DEBUG_ACSE)
+            printf("ACSE: Unknown ACSE message\n");
+        indication = ACSE_ERROR;
+        break;
     }
 
     return indication;
@@ -451,7 +467,7 @@ AcseConnection_parseMessage(AcseConnection* self, ByteBuffer* message)
 void
 AcseConnection_createAssociateFailedMessage(AcseConnection* self, BufferChain writeBuffer)
 {
-	AcseConnection_createAssociateResponseMessage(self, ACSE_RESULT_REJECT_PERMANENT, writeBuffer, NULL);
+    AcseConnection_createAssociateResponseMessage(self, ACSE_RESULT_REJECT_PERMANENT, writeBuffer, NULL);
 }
 
 void
@@ -469,7 +485,8 @@ AcseConnection_createAssociateResponseMessage(AcseConnection* self,
     int resultLength = 5;
     int resultDiagnosticLength = 5;
 
-    int fixedContentLength = appContextLength + resultLength + resultDiagnosticLength;
+    int fixedContentLength = appContextLength + resultLength
+            + resultDiagnosticLength;
 
     int variableContentLength = 0;
 
@@ -554,156 +571,181 @@ AcseConnection_createAssociateRequestMessage(AcseConnection* self,
     assert(writeBuffer != NULL);
     assert(payload != NULL);
 
-	int payloadLength = payload->length;
-	int authValueLength;
-	int authValueStringLength = 0;
+    int payloadLength = payload->length;
+    int authValueLength;
+    int authValueStringLength = 0;
 
-	int passwordLength = 0;
+    int passwordLength = 0;
 
-	int contentLength = 0;
+    int contentLength = 0;
 
-	/* application context name */
-	contentLength += 9;
+    /* application context name */
+    contentLength += 9;
 
-	int calledAEQualifierLength = 0;
+    int calledAEQualifierLength = 0;
 
-	if (isoParameters->remoteApTitleLen > 0) {
-
+    if (isoParameters->remoteApTitleLen > 0)
+    {
         /* called AP title */
         contentLength += (4 + isoParameters->remoteApTitleLen);
 
-        calledAEQualifierLength = BerEncoder_UInt32determineEncodedSize(isoParameters->remoteAEQualifier);
+        calledAEQualifierLength = BerEncoder_UInt32determineEncodedSize(
+                isoParameters->remoteAEQualifier);
 
         /* called AE qualifier */
         contentLength += (4 + calledAEQualifierLength);
-	}
+    }
 
-	int callingAEQualifierLength = 0;
+    int callingAEQualifierLength = 0;
 
-	if (isoParameters->localApTitleLen > 0) {
+    if (isoParameters->localApTitleLen > 0)
+    {
         /* calling AP title */
         contentLength += (4 + isoParameters->localApTitleLen);
 
-        callingAEQualifierLength = BerEncoder_UInt32determineEncodedSize(isoParameters->localAEQualifier);
+        callingAEQualifierLength = BerEncoder_UInt32determineEncodedSize(
+                isoParameters->localAEQualifier);
 
         /* calling AE qualifier */
         contentLength += (4 + callingAEQualifierLength);
-	}
+    }
 
-	if (authParameter != NULL) {
+    if (authParameter != NULL)
+    {
+        /* sender ACSE requirements */
+        contentLength += 4;
 
-		/* sender ACSE requirements */
-		contentLength += 4;
+        /* mechanism name */
+        contentLength += 5;
 
-		/* mechanism name */
-		contentLength += 5;
+        /* authentication value */
+        if (authParameter->mechanism == ACSE_AUTH_PASSWORD)
+        {
+            contentLength += 2;
 
-		/* authentication value */
-		if (authParameter->mechanism == ACSE_AUTH_PASSWORD) {
-			contentLength += 2;
+            //if (authParameter->value.password.passwordLength == 0)
 
-			//if (authParameter->value.password.passwordLength == 0)
+            passwordLength = authParameter->value.password.passwordLength;
 
-			passwordLength = authParameter->value.password.passwordLength;
+            authValueStringLength = BerEncoder_determineLengthSize(
+                    passwordLength);
 
-			authValueStringLength = BerEncoder_determineLengthSize(passwordLength);
+            contentLength += passwordLength + authValueStringLength;
 
-			contentLength += passwordLength  + authValueStringLength;
+            authValueLength = BerEncoder_determineLengthSize(
+                    passwordLength + authValueStringLength + 1);
 
-			authValueLength = BerEncoder_determineLengthSize(passwordLength + authValueStringLength + 1);
+            contentLength += authValueLength;
+        }
+        else
+        {
+            contentLength += 2;
+        }
+    }
 
-			contentLength += authValueLength;
-		}
-		else {
-			contentLength += 2;
-		}
-	}
+    /* user information */
+    int userInfoLength = 0;
 
-	/* user information */
-	int userInfoLength = 0;
+    /* single ASN1 type tag */
+    userInfoLength += payloadLength;
+    userInfoLength += 1;
+    userInfoLength += BerEncoder_determineLengthSize(payloadLength);
 
-	/* single ASN1 type tag */
-	userInfoLength += payloadLength;
-	userInfoLength += 1;
-	userInfoLength += BerEncoder_determineLengthSize(payloadLength);
+    /* indirect reference */
+    userInfoLength += 1;
+    userInfoLength += 2;
 
-	/* indirect reference */
-	userInfoLength += 1;
-	userInfoLength += 2;
+    /* association data */
+    int assocDataLength = userInfoLength;
+    userInfoLength += BerEncoder_determineLengthSize(assocDataLength);
+    userInfoLength += 1;
 
-	/* association data */
-	int assocDataLength = userInfoLength;
-	userInfoLength += BerEncoder_determineLengthSize(assocDataLength);
-	userInfoLength += 1;
+    /* user information */
+    int userInfoLen = userInfoLength;
+    userInfoLength += BerEncoder_determineLengthSize(userInfoLength);
+    userInfoLength += 1;
 
-	/* user information */
-	int userInfoLen = userInfoLength;
-	userInfoLength += BerEncoder_determineLengthSize(userInfoLength);
-	userInfoLength += 1;
+    contentLength += userInfoLength;
 
-	contentLength += userInfoLength;
+    uint8_t* buffer = writeBuffer->buffer;
+    int bufPos = 0;
 
-	uint8_t* buffer = writeBuffer->buffer;
-	int bufPos = 0;
+    bufPos = BerEncoder_encodeTL(0x60, contentLength, buffer, bufPos);
 
-	bufPos = BerEncoder_encodeTL(0x60, contentLength, buffer, bufPos);
+    /* application context name */
+    bufPos = BerEncoder_encodeTL(0xa1, 7, buffer, bufPos);
+    bufPos = BerEncoder_encodeTL(0x06, 5, buffer, bufPos);
+    memcpy(buffer + bufPos, appContextNameMms, 5);
+    bufPos += 5;
 
-	/* application context name */
-	bufPos = BerEncoder_encodeTL(0xa1, 7, buffer, bufPos);
-	bufPos = BerEncoder_encodeTL(0x06, 5, buffer, bufPos);
-	memcpy(buffer + bufPos, appContextNameMms, 5);
-	bufPos += 5;
+    if (isoParameters->remoteApTitleLen > 0)
+    {
+        /* called AP title */
+        bufPos = BerEncoder_encodeTL(0xa2, isoParameters->remoteApTitleLen + 2,
+                buffer, bufPos);
+        bufPos = BerEncoder_encodeTL(0x06, isoParameters->remoteApTitleLen,
+                buffer, bufPos);
 
-	if (isoParameters->remoteApTitleLen > 0) {
-
-	    /* called AP title */
-        bufPos = BerEncoder_encodeTL(0xa2, isoParameters->remoteApTitleLen + 2, buffer, bufPos);
-        bufPos = BerEncoder_encodeTL(0x06, isoParameters->remoteApTitleLen, buffer, bufPos);
-
-        memcpy(buffer + bufPos, isoParameters->remoteApTitle, isoParameters->remoteApTitleLen);
-	    bufPos += isoParameters->remoteApTitleLen;
+        memcpy(buffer + bufPos, isoParameters->remoteApTitle,
+                isoParameters->remoteApTitleLen);
+        bufPos += isoParameters->remoteApTitleLen;
 
         /* called AE qualifier */
-        bufPos = BerEncoder_encodeTL(0xa3, calledAEQualifierLength + 2, buffer, bufPos);
-        bufPos = BerEncoder_encodeTL(0x02, calledAEQualifierLength, buffer, bufPos);
-        bufPos = BerEncoder_encodeUInt32(isoParameters->remoteAEQualifier, buffer, bufPos);
-	}
+        bufPos = BerEncoder_encodeTL(0xa3, calledAEQualifierLength + 2, buffer,
+                bufPos);
+        bufPos = BerEncoder_encodeTL(0x02, calledAEQualifierLength, buffer,
+                bufPos);
+        bufPos = BerEncoder_encodeUInt32(isoParameters->remoteAEQualifier,
+                buffer, bufPos);
+    }
 
-	if (isoParameters->localApTitleLen > 0) {
+    if (isoParameters->localApTitleLen > 0)
+    {
         /* calling AP title */
-        bufPos = BerEncoder_encodeTL(0xa6, isoParameters->localApTitleLen + 2, buffer, bufPos);
-        bufPos = BerEncoder_encodeTL(0x06, isoParameters->localApTitleLen, buffer, bufPos);
-        memcpy(buffer + bufPos, isoParameters->localApTitle, isoParameters->localApTitleLen);
+        bufPos = BerEncoder_encodeTL(0xa6, isoParameters->localApTitleLen + 2,
+                buffer, bufPos);
+        bufPos = BerEncoder_encodeTL(0x06, isoParameters->localApTitleLen,
+                buffer, bufPos);
+        memcpy(buffer + bufPos, isoParameters->localApTitle,
+                isoParameters->localApTitleLen);
         bufPos += isoParameters->localApTitleLen;
 
         /* calling AE qualifier */
-        bufPos = BerEncoder_encodeTL(0xa7, callingAEQualifierLength + 2, buffer, bufPos);
-        bufPos = BerEncoder_encodeTL(0x02, callingAEQualifierLength, buffer, bufPos);
-        bufPos = BerEncoder_encodeUInt32(isoParameters->localAEQualifier, buffer, bufPos);
-	}
+        bufPos = BerEncoder_encodeTL(0xa7, callingAEQualifierLength + 2, buffer,
+                bufPos);
+        bufPos = BerEncoder_encodeTL(0x02, callingAEQualifierLength, buffer,
+                bufPos);
+        bufPos = BerEncoder_encodeUInt32(isoParameters->localAEQualifier,
+                buffer, bufPos);
+    }
 
-	if (authParameter != NULL) {
-		/* sender requirements */
-		bufPos = BerEncoder_encodeTL(0x8a, 2, buffer, bufPos);
-		buffer[bufPos++] = 0x04;
+    if (authParameter != NULL)
+    {
+        /* sender requirements */
+        bufPos = BerEncoder_encodeTL(0x8a, 2, buffer, bufPos);
+        buffer[bufPos++] = 0x04;
 
-		if (authParameter->mechanism == ACSE_AUTH_PASSWORD) {
-		    buffer[bufPos++] = requirements_authentication[0];
+        if (authParameter->mechanism == ACSE_AUTH_PASSWORD)
+        {
+            buffer[bufPos++] = requirements_authentication[0];
 
-			bufPos = BerEncoder_encodeTL(0x8b, 3, buffer, bufPos);
-			memcpy(buffer + bufPos, auth_mech_password_oid, 3);
-			bufPos += 3;
+            bufPos = BerEncoder_encodeTL(0x8b, 3, buffer, bufPos);
+            memcpy(buffer + bufPos, auth_mech_password_oid, 3);
+            bufPos += 3;
 
-			/* authentication value */
-			bufPos = BerEncoder_encodeTL(0xac, authValueStringLength + passwordLength + 1, buffer, bufPos);
-			bufPos = BerEncoder_encodeTL(0x80, passwordLength, buffer, bufPos);
-			memcpy(buffer + bufPos, authParameter->value.password.octetString, passwordLength);
-			bufPos += passwordLength;
-		}
-		else { /* AUTH_NONE */
-		    buffer[bufPos++] = 0;
-		}
-	}
+            /* authentication value */
+            bufPos = BerEncoder_encodeTL(0xac,
+                    authValueStringLength + passwordLength + 1, buffer, bufPos);
+            bufPos = BerEncoder_encodeTL(0x80, passwordLength, buffer, bufPos);
+            memcpy(buffer + bufPos, authParameter->value.password.octetString,
+                    passwordLength);
+            bufPos += passwordLength;
+        }
+        else
+        { /* AUTH_NONE */
+            buffer[bufPos++] = 0;
+        }
+    }
 
     /* user information */
     bufPos = BerEncoder_encodeTL(0xbe, userInfoLen, buffer, bufPos);
@@ -718,9 +760,9 @@ AcseConnection_createAssociateRequestMessage(AcseConnection* self,
     /* single ASN1 type */
     bufPos = BerEncoder_encodeTL(0xa0, payloadLength, buffer, bufPos);
 
-	writeBuffer->partLength = bufPos;
-	writeBuffer->length = bufPos + payload->length;
-	writeBuffer->nextPart = payload;
+    writeBuffer->partLength = bufPos;
+    writeBuffer->length = bufPos + payload->length;
+    writeBuffer->nextPart = payload;
 }
 
 /**

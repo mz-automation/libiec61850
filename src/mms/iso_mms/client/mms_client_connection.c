@@ -110,7 +110,7 @@ handleUnconfirmedMmsPdu(MmsConnection self, ByteBuffer* message)
         if (DEBUG_MMS_CLIENT)
             printf("MMS_CLIENT: report handler rcvd size:%i\n", ByteBuffer_getSize(message));
 
-        asn_dec_rval_t  rval = ber_decode(NULL, &asn_DEF_MmsPdu,
+        asn_dec_rval_t rval = ber_decode(NULL, &asn_DEF_MmsPdu,
                 (void**) &mmsPdu, ByteBuffer_getBuffer(message), ByteBuffer_getSize(message));
 
         if (rval.code == RC_OK) {
@@ -121,7 +121,7 @@ handleUnconfirmedMmsPdu(MmsConnection self, ByteBuffer* message)
 
                 if (mmsPdu->choice.unconfirmedPDU.unconfirmedService.present ==
                         UnconfirmedService_PR_informationReport)
-                {
+                        {
                     char* domainId = NULL;
 
                     InformationReport_t* report =
@@ -155,7 +155,7 @@ handleUnconfirmedMmsPdu(MmsConnection self, ByteBuffer* message)
 
                     }
                     else if (report->variableAccessSpecification.present == VariableAccessSpecification_PR_listOfVariable)
-                    {
+                            {
                         int listSize = report->listOfAccessResult.list.count;
                         int variableSpecSize = report->variableAccessSpecification.choice.listOfVariable.list.count;
 
@@ -172,10 +172,10 @@ handleUnconfirmedMmsPdu(MmsConnection self, ByteBuffer* message)
                         for (i = 0; i < variableSpecSize; i++) {
                             if (report->variableAccessSpecification.choice.listOfVariable.list.array[i]->variableSpecification.present
                                     == VariableSpecification_PR_name)
-                            {
+                                    {
                                 if (report->variableAccessSpecification.choice.listOfVariable.list.array[i]
                                         ->variableSpecification.choice.name.present == ObjectName_PR_vmdspecific)
-                                {
+                                        {
                                     int nameSize =
                                             report->variableAccessSpecification.choice.listOfVariable.list.array[i]
                                                     ->variableSpecification.choice.name.choice.vmdspecific.size;
@@ -208,24 +208,24 @@ handleUnconfirmedMmsPdu(MmsConnection self, ByteBuffer* message)
                                         ->variableSpecification.choice.name.present == ObjectName_PR_domainspecific) {
 
                                     int domainNameSize =
-                                        report->variableAccessSpecification.choice.listOfVariable.list.array[i]
-                                            ->variableSpecification.choice.name.choice.domainspecific.domainId.size;
+                                            report->variableAccessSpecification.choice.listOfVariable.list.array[i]
+                                                    ->variableSpecification.choice.name.choice.domainspecific.domainId.size;
 
                                     int itemNameSize =
-                                         report->variableAccessSpecification.choice.listOfVariable.list.array[i]
-                                             ->variableSpecification.choice.name.choice.domainspecific.itemId.size;
+                                            report->variableAccessSpecification.choice.listOfVariable.list.array[i]
+                                                    ->variableSpecification.choice.name.choice.domainspecific.itemId.size;
 
                                     if (domainNameSize < 65 && itemNameSize < 65) {
                                         char domainNameStr[65];
                                         char itemNameStr[65];
 
                                         uint8_t* domainNameBuffer =
-                                            report->variableAccessSpecification.choice.listOfVariable.list.array[i]
-                                                   ->variableSpecification.choice.name.choice.domainspecific.domainId.buf;
+                                                report->variableAccessSpecification.choice.listOfVariable.list.array[i]
+                                                        ->variableSpecification.choice.name.choice.domainspecific.domainId.buf;
 
                                         uint8_t* itemNamebuffer =
                                                 report->variableAccessSpecification.choice.listOfVariable.list.array[i]
-                                                       ->variableSpecification.choice.name.choice.domainspecific.itemId.buf;
+                                                        ->variableSpecification.choice.name.choice.domainspecific.itemId.buf;
 
                                         memcpy(domainNameStr, domainNameBuffer, domainNameSize);
                                         domainNameStr[domainNameSize] = 0;
@@ -235,7 +235,7 @@ handleUnconfirmedMmsPdu(MmsConnection self, ByteBuffer* message)
                                         MmsValue* value = values;
 
                                         if (variableSpecSize != 1)
-                                           value = MmsValue_getElement(values, i);
+                                            value = MmsValue_getElement(values, i);
 
                                         self->reportHandler(self->reportHandlerParameter, domainNameStr, itemNameStr,
                                                 value, false);
@@ -410,7 +410,7 @@ sendRequestAndWaitForResponse(MmsConnection self, uint32_t invokeId, ByteBuffer*
             receivedMessage = NULL;
     }
 
-connection_lost:
+    connection_lost:
 
     removeFromOutstandingCalls(self, invokeId);
 
@@ -455,7 +455,7 @@ static MmsError
 convertRejectCodesToMmsError(int rejectType, int rejectReason)
 {
     if ((rejectType == 1) && (rejectReason == 1))
-       return MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE;
+        return MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE;
     else if ((rejectType == 5) && (rejectReason == 0))
         return MMS_ERROR_REJECT_UNKNOWN_PDU_TYPE;
     else if ((rejectType == 1) && (rejectReason == 4))
@@ -471,7 +471,8 @@ convertServiceErrorToMmsError(MmsServiceError serviceError)
 {
     MmsError mmsError;
 
-    switch (serviceError.errorClass) {
+    switch (serviceError.errorClass)
+    {
     case 0: /* class: vmd-state */
         mmsError = MMS_ERROR_VMDSTATE_OTHER;
         break;
@@ -481,7 +482,8 @@ convertServiceErrorToMmsError(MmsServiceError serviceError)
         break;
 
     case 2: /* class: definition */
-        switch (serviceError.errorCode) {
+        switch (serviceError.errorCode)
+        {
         case 1:
             mmsError = MMS_ERROR_DEFINITION_OBJECT_UNDEFINED;
             break;
@@ -523,7 +525,8 @@ convertServiceErrorToMmsError(MmsServiceError serviceError)
         break;
 
     case 7: /* class: access */
-        switch (serviceError.errorCode) {
+        switch (serviceError.errorCode)
+        {
         case 1:
             mmsError = MMS_ERROR_ACCESS_OBJECT_ACCESS_UNSUPPORTED;
             break;
@@ -543,7 +546,8 @@ convertServiceErrorToMmsError(MmsServiceError serviceError)
         break;
 
     case 11: /* class: file */
-        switch (serviceError.errorCode) {
+        switch (serviceError.errorCode)
+        {
         case 1:
             mmsError = MMS_ERROR_FILE_FILENAME_AMBIGUOUS;
             break;
@@ -577,7 +581,6 @@ convertServiceErrorToMmsError(MmsServiceError serviceError)
         }
         break;
 
-
     default:
         mmsError = MMS_ERROR_OTHER;
     }
@@ -598,7 +601,8 @@ parseServiceError(uint8_t* buffer, int bufPos, int maxLength, MmsServiceError* e
         if (bufPos < 0)
             return -1;
 
-        switch (tag) {
+        switch (tag)
+        {
         case 0xa0: /* errorClass */
             {
                 uint8_t errorClassTag = buffer[bufPos++];
@@ -656,7 +660,8 @@ mmsMsg_parseConfirmedErrorPDU(uint8_t* buffer, int bufPos, int maxBufPos, uint32
         if (bufPos < 0)
             goto exit_error;
 
-        switch (tag) {
+        switch (tag)
+        {
         case 0x80: /* invoke Id */
             if (invokeId != NULL)
                 *invokeId = BerDecoder_decodeUint32(buffer, length, bufPos);
@@ -678,7 +683,7 @@ mmsMsg_parseConfirmedErrorPDU(uint8_t* buffer, int bufPos, int maxBufPos, uint32
 
     return bufPos;
 
-exit_error:
+    exit_error:
     if (DEBUG_MMS_CLIENT)
         printf("MMS_CLIENT: error parsing confirmed error PDU\n");
 
@@ -714,7 +719,6 @@ mmsMsg_parseRejectPDU(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t* invo
         if (bufPos < 0)
             goto exit_error;
 
-
         if (tag == 0x80) { /* invoke id */
             if (invokeId != NULL)
                 *invokeId = BerDecoder_decodeUint32(buffer, length, bufPos);
@@ -724,7 +728,7 @@ mmsMsg_parseRejectPDU(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t* invo
             *rejectReason = BerDecoder_decodeInt32(buffer, length, bufPos);
         }
         else {
-             /* unknown - ignore */
+            /* unknown - ignore */
         }
 
         bufPos += length;
@@ -732,7 +736,7 @@ mmsMsg_parseRejectPDU(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t* invo
 
     return bufPos;
 
-exit_error:
+    exit_error:
     if (DEBUG_MMS_CLIENT)
         printf("MMS_CLIENT: error parsing reject PDU\n");
 
@@ -836,7 +840,8 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
         if (DEBUG_MMS_CLIENT)
             printf("MMS_CLIENT: Confirmed error PDU!\n");
         uint32_t invokeId;
-        MmsServiceError serviceError = {0, 0};
+        MmsServiceError serviceError =
+        { 0, 0 };
 
         if (mmsMsg_parseConfirmedErrorPDU(payload->buffer, 0, payload->size, &invokeId, &serviceError) < 0) {
             if (DEBUG_MMS_CLIENT)
@@ -972,7 +977,8 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
                 goto exit_with_error;
 
             if (extendedTag) {
-                switch(nestedTag) {
+                switch (nestedTag)
+                {
 
 #if (MMS_FILE_SERVICE == 1)
                 case 0x48: /* file-open-request */
@@ -1022,7 +1028,7 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
 #endif /* MMS_FILE_SERVICE == 1 */
 
                 default:
-                   // mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE, response);
+                    // mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE, response);
                     if (DEBUG_MMS_CLIENT)
                         printf("MMS_CLIENT: unexpected message from server!\n");
 
@@ -1032,7 +1038,8 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
                 }
             }
             else {
-                switch(nestedTag) {
+                switch (nestedTag)
+                {
                 case 0x02: /* invoke Id */
                     invokeId = BerDecoder_decodeUint32(buf, length, bufPos);
                     if (DEBUG_MMS_CLIENT)
@@ -1040,9 +1047,8 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
                     self->lastInvokeId = invokeId;
                     break;
 
-
                 default:
-                  //  mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE, response);
+                    //  mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE, response);
                     if (DEBUG_MMS_CLIENT)
                         printf("MMS_CLIENT: unexpected message from server!\n");
 
@@ -1057,7 +1063,6 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
             bufPos += length;
         }
 
-
     }
 #endif /* (MMS_OBTAIN_FILE_SERVICE == 1) */
 
@@ -1066,13 +1071,12 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
 
     return;
 
-exit_with_error:
+    exit_with_error:
 
     if (DEBUG_MMS_CLIENT)
         printf("MMS_CLIENT: received malformed message from server!\n");
 
     IsoClientConnection_releaseReceiveBuffer(self->isoClient);
-
 
     if (DEBUG_MMS_CLIENT)
         printf("MMS_CLIENT: LEAVE mmsIsoCallback - NOT OK!\n");
@@ -1108,8 +1112,8 @@ MmsConnection_create()
     self->isoParameters = IsoConnectionParameters_create();
 
     /* Load default values for connection parameters */
-	TSelector tSelector = { 2, { 0, 1 } };
-	SSelector sSelector = {2, { 0, 1 } };
+    TSelector tSelector = { 2, { 0, 1 } };
+    SSelector sSelector = { 2, { 0, 1 } };
 
     IsoConnectionParameters_setLocalAddresses(self->isoParameters, 1, sSelector, tSelector);
     IsoConnectionParameters_setLocalApTitle(self->isoParameters, "1.1.1.999", 12);
@@ -1140,7 +1144,6 @@ MmsConnection_createSecure(TLSConfiguration tlsConfig)
 
     return self;
 }
-
 
 void
 MmsConnection_destroy(MmsConnection self)
@@ -1214,7 +1217,6 @@ MmsConnection_setRawMessageHandler(MmsConnection self, MmsRawMessageHandler hand
 #endif
 }
 
-
 void
 MmsConnection_setConnectionLostHandler(MmsConnection self, MmsConnectionLostHandler handler, void* handlerParameter)
 {
@@ -1281,9 +1283,9 @@ MmsConnection_connect(MmsConnection self, MmsError* mmsError, const char* server
     if (serverPort == -1) {
 #if (CONFIG_MMS_SUPPORT_TLS == 1)
         if (self->isoParameters->tlsConfiguration)
-            serverPort = 3782;
+        serverPort = 3782;
         else
-            serverPort = 102;
+        serverPort = 102;
 #else
         serverPort = 102;
 #endif
@@ -1407,7 +1409,7 @@ sendConcludeRequestAndWaitForResponse(MmsConnection self)
         self->lastResponseError = MMS_ERROR_SERVICE_TIMEOUT;
     }
 
-exit_function:
+    exit_function:
     return;
 }
 
@@ -1439,7 +1441,7 @@ MmsConnection_conclude(MmsConnection self, MmsError* mmsError)
 
     self->connectionLostHandler = NULL;
 
-exit_function:
+    exit_function:
     return;
 }
 
@@ -1492,7 +1494,7 @@ mmsClient_getNameListSingleRequest(
 
     releaseResponse(self);
 
-exit_function:
+    exit_function:
     return moreFollows;
 }
 
@@ -1584,7 +1586,7 @@ MmsConnection_readVariable(MmsConnection self, MmsError* mmsError,
 
     releaseResponse(self);
 
-exit_function:
+    exit_function:
     return value;
 }
 
@@ -1614,7 +1616,7 @@ MmsConnection_readArrayElements(MmsConnection self, MmsError* mmsError,
 
     releaseResponse(self);
 
-exit_function:
+    exit_function:
     return value;
 }
 
@@ -1642,7 +1644,7 @@ MmsConnection_readMultipleVariables(MmsConnection self, MmsError* mmsError,
 
     releaseResponse(self);
 
-exit_function:
+    exit_function:
     return value;
 }
 
@@ -1672,7 +1674,7 @@ MmsConnection_readNamedVariableListValues(MmsConnection self, MmsError* mmsError
 
     releaseResponse(self);
 
-exit_function:
+    exit_function:
     return value;
 }
 
@@ -1703,7 +1705,7 @@ MmsConnection_readNamedVariableListValuesAssociationSpecific(
 
     releaseResponse(self);
 
-exit_function:
+    exit_function:
     return value;
 }
 
@@ -1733,7 +1735,7 @@ MmsConnection_readNamedVariableListDirectory(MmsConnection self, MmsError* mmsEr
 
     releaseResponse(self);
 
-exit_function:
+    exit_function:
     return attributes;
 }
 
@@ -1763,7 +1765,7 @@ MmsConnection_readNamedVariableListDirectoryAssociationSpecific(MmsConnection se
 
     releaseResponse(self);
 
-exit_function:
+    exit_function:
     return attributes;
 }
 
@@ -1791,7 +1793,7 @@ MmsConnection_defineNamedVariableList(MmsConnection self, MmsError* mmsError,
 
     releaseResponse(self);
 
-exit_function:
+    exit_function:
     return;
 }
 
@@ -1819,8 +1821,7 @@ MmsConnection_defineNamedVariableListAssociationSpecific(MmsConnection self,
 
     releaseResponse(self);
 
-
-exit_function:
+    exit_function:
     return;
 }
 
@@ -1849,7 +1850,7 @@ MmsConnection_deleteNamedVariableList(MmsConnection self, MmsError* mmsError,
 
     releaseResponse(self);
 
-exit_function:
+    exit_function:
     return isDeleted;
 }
 
@@ -1879,7 +1880,7 @@ MmsConnection_deleteAssociationSpecificNamedVariableList(MmsConnection self,
 
     releaseResponse(self);
 
-exit_function:
+    exit_function:
     return isDeleted;
 }
 
@@ -1907,7 +1908,7 @@ MmsConnection_getVariableAccessAttributes(MmsConnection self, MmsError* mmsError
 
     releaseResponse(self);
 
-exit_function:
+    exit_function:
     return typeSpec;
 }
 
@@ -1934,13 +1935,13 @@ MmsConnection_identify(MmsConnection self, MmsError* mmsError)
 
     releaseResponse(self);
 
-exit_function:
+    exit_function:
     return identity;
 }
 
 void
 MmsConnection_getServerStatus(MmsConnection self, MmsError* mmsError, int* vmdLogicalStatus, int* vmdPhysicalStatus,
-        bool extendedDerivation)
+bool extendedDerivation)
 {
     ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
@@ -1951,15 +1952,15 @@ MmsConnection_getServerStatus(MmsConnection self, MmsError* mmsError, int* vmdLo
     ByteBuffer* responseMessage = sendRequestAndWaitForResponse(self, invokeId, payload, mmsError);
 
     if (responseMessage != NULL) {
-       if (mmsClient_parseStatusResponse(self, vmdLogicalStatus, vmdPhysicalStatus) == false)
-           *mmsError = MMS_ERROR_PARSING_RESPONSE;
-   }
+        if (mmsClient_parseStatusResponse(self, vmdLogicalStatus, vmdPhysicalStatus) == false)
+            *mmsError = MMS_ERROR_PARSING_RESPONSE;
+    }
 
-   releaseResponse(self);
+    releaseResponse(self);
 }
 
 static LinkedList
-readJournal(MmsConnection self, MmsError* mmsError, uint32_t invokeId,  ByteBuffer* payload, bool* moreFollows)
+readJournal(MmsConnection self, MmsError* mmsError, uint32_t invokeId, ByteBuffer* payload, bool* moreFollows)
 {
     ByteBuffer* responseMessage = sendRequestAndWaitForResponse(self, invokeId, payload, mmsError);
 
@@ -1997,7 +1998,6 @@ MmsJournalEntry_destroy(MmsJournalEntry self)
         GLOBAL_FREEMEM(self);
     }
 }
-
 
 const MmsValue*
 MmsJournalEntry_getEntryID(MmsJournalEntry self)
@@ -2158,7 +2158,6 @@ MmsConnection_fileRead(MmsConnection self, MmsError* mmsError, int32_t frsmId, M
     return moreFollows;
 }
 
-
 bool
 MmsConnection_getFileDirectory(MmsConnection self, MmsError* mmsError, const char* fileSpecification, const char* continueAfter,
         MmsFileDirectoryHandler handler, void* handlerParameter)
@@ -2198,7 +2197,6 @@ MmsConnection_fileRename(MmsConnection self, MmsError* mmsError, const char* cur
 
     releaseResponse(self);
 }
-
 
 void
 MmsConnection_obtainFile(MmsConnection self, MmsError* mmsError, const char* sourceFile, const char* destinationFile)
@@ -2359,13 +2357,13 @@ void
 MmsVariableAccessSpecification_destroy(MmsVariableAccessSpecification* self)
 {
     if (self->domainId != NULL)
-        GLOBAL_FREEMEM((void*) self->domainId);
+        GLOBAL_FREEMEM((void* ) self->domainId);
 
     if (self->itemId != NULL)
-        GLOBAL_FREEMEM((void*) self->itemId);
+        GLOBAL_FREEMEM((void* ) self->itemId);
 
     if (self->componentName != NULL)
-        GLOBAL_FREEMEM((void*) self->componentName);
+        GLOBAL_FREEMEM((void* ) self->componentName);
 
     GLOBAL_FREEMEM(self);
 }
