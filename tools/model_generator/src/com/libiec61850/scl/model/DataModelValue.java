@@ -102,35 +102,39 @@ public class DataModelValue {
                 this.value = new Boolean(false);
             break;
         case FLOAT32:
-        	
-        	trimmedValue = value.trim();
-        	
-        	if (trimmedValue != value) {
-        		System.out.println("WARNING: value initializer contains leading or trailing whitespace");
-        	}
-        	
-        	if (trimmedValue.isEmpty())
-        		this.value = new Float(0);
-        	else
-        		this.value = new Float(trimmedValue);
-        	break;
+
+            trimmedValue = value.trim();
+
+            if (trimmedValue != value) {
+                System.out.println("WARNING: value initializer contains leading or trailing whitespace");
+            }
+
+            trimmedValue.replace(',', '.');
+
+            if (trimmedValue.isEmpty())
+                this.value = new Float(0);
+            else
+                this.value = new Float(trimmedValue);
+            break;
         case FLOAT64:
-        	
-        	trimmedValue = value.trim();
-        	
-        	if (trimmedValue != value) {
-        		System.out.println("WARNING: value initializer contains leading or trailing whitespace");
-        	}
-        	
-        	if (trimmedValue.isEmpty())
-        		this.value = new Double(0);
-        	else
-        		this.value = new Double(trimmedValue);
-        	break;
+
+            trimmedValue = value.trim();
+
+            if (trimmedValue != value) {
+                System.out.println("WARNING: value initializer contains leading or trailing whitespace");
+            }
+
+            trimmedValue.replace(',', '.');
+
+            if (trimmedValue.isEmpty())
+                this.value = new Double(0);
+            else
+                this.value = new Double(trimmedValue);
+            break;
         case UNICODE_STRING_255:
-        	this.value = value;
-        	break;
-        	
+            this.value = value;
+            break;
+
         case OCTET_STRING_64:
             try {
                 this.value = Base64.getDecoder().decode(value);
