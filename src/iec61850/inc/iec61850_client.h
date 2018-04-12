@@ -841,7 +841,7 @@ void
 IedConnection_uninstallReportHandler(IedConnection self, const char* rcbReference);
 
 /**
- * \brief Trigger a general interrogation (GI) report for the specified report control block (RCB)
+ * \brief trigger a general interrogation (GI) report for the specified report control block (RCB)
  *
  * The RCB must have been enabled and GI set as trigger option before this command can be performed.
  *
@@ -859,7 +859,7 @@ IedConnection_triggerGIReport(IedConnection self, IedClientError* error, const c
  ****************************************/
 
 /**
- * \brief Get the name of the report data set
+ * \brief get the name of the report data set
  *
  * NOTE: the returned string is only valid as long as the ClientReport instance exists!
  *
@@ -871,6 +871,10 @@ ClientReport_getDataSetName(ClientReport self);
 
 /**
  * \brief return the received data set values of the report
+ *
+ * NOTE: The returned MmsValue instance is handled by the library and only valid as long as the
+ * ClientReport instance exists! It should not be used outside the report callback handler to
+ * avoid concurrency issues.
  *
  * \param self the ClientReport instance
  * \return an MmsValue array instance containing the data set values
@@ -929,26 +933,72 @@ ClientReport_getEntryId(ClientReport self);
 bool
 ClientReport_hasTimestamp(ClientReport self);
 
+/**
+ * \brief determine if the last received report contains a sequence number
+ *
+ * \param self the ClientReport instance
+ *
+ * \return true if the report contains a sequence number, false otherwise
+ */
 bool
 ClientReport_hasSeqNum(ClientReport self);
 
+/**
+ * \brief get the value of the sequence number
+ *
+ * NOTE: The returned value is undefined if the sequence number is not present in report
+ *
+ * \param self the ClientReport instance
+ *
+ * \returns the number of the sequence number when present
+ */
 uint16_t
 ClientReport_getSeqNum(ClientReport self);
 
+/**
+ * \brief determine if the last received report contains the data set name
+ *
+ * \param self the ClientReport instance
+ *
+ * \return true if the report contains the data set name, false otherwise
+ */
 bool
 ClientReport_hasDataSetName(ClientReport self);
 
+/**
+ * \brief determine if the last received report contains reason-for-inclusion information
+ *
+ * \param self the ClientReport instance
+ *
+ * \return true if the report contains reason-for-inclusion information, false otherwise
+ */
 bool
 ClientReport_hasReasonForInclusion(ClientReport self);
 
+/**
+ * \brief determine if the last received report contains the configuration revision
+ *
+ * \param self the ClientReport instance
+ *
+ * \return true if the report contains the configuration revision, false otherwise
+ */
 bool
 ClientReport_hasConfRev(ClientReport self);
 
+/**
+ * \brief get the value of the configuration revision
+ *
+ * NOTE: The returned value is undefined if configuration revision is not present in report
+ *
+ * \param self the ClientReport instance
+ *
+ * \returns the number of the configuration revision
+ */
 uint32_t
 ClientReport_getConfRev(ClientReport self);
 
 /**
- * \brief Indicates if the report contains the bufOvfl (buffer overflow) flag
+ * \brief indicates if the report contains the bufOvfl (buffer overflow) flag
  *
  * \param self the ClientReport instance
  *
@@ -958,7 +1008,7 @@ bool
 ClientReport_hasBufOvfl(ClientReport self);
 
 /**
- * \brief Get the value of the bufOvfl flag
+ * \brief get the value of the bufOvfl flag
  *
  * \param self the ClientReport instance
  *
@@ -968,7 +1018,7 @@ bool
 ClientReport_getBufOvfl(ClientReport self);
 
 /**
- * \brief Indicates if the report contains data references for the reported data set members
+ * \brief indicates if the report contains data references for the reported data set members
  *
  * \param self the ClientReport instance
  *
