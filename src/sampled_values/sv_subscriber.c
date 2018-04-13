@@ -668,15 +668,24 @@ SVSubscriber_ASDU_getDatSet(SVSubscriber_ASDU self)
     return self->datSet;
 }
 
+static inline void
+memcpy_reverse(void* to, const void* from, size_t size)
+{
+    size_t i;
+
+    for (i = 0; i < size; i++)
+        ((uint8_t*)to)[size - 1 - i] = ((uint8_t*)from)[i];
+}
+
 uint32_t
 SVSubscriber_ASDU_getConfRev(SVSubscriber_ASDU self)
 {
-    uint32_t retVal = *((uint32_t*) (self->confRev));
+    uint32_t retVal;
 
 #if (ORDER_LITTLE_ENDIAN == 1)
-    uint8_t* buf = (uint8_t*) (&retVal);
-
-    BerEncoder_revertByteOrder(buf, 4);
+    memcpy_reverse(&retVal, self->confRev, sizeof(uint32_t));
+#else
+    memcpy(&retVal, self->confRev, sizeof(uint32_t));
 #endif
 
     return retVal;
@@ -693,12 +702,12 @@ SVSubscriber_ASDU_getSmpMod(SVSubscriber_ASDU self)
 uint16_t
 SVSubscriber_ASDU_getSmpRate(SVSubscriber_ASDU self)
 {
-    uint16_t retVal = *((uint16_t*) (self->smpRate));
+    uint16_t retVal;
 
 #if (ORDER_LITTLE_ENDIAN == 1)
-    uint8_t* buf = (uint8_t*) (&retVal);
-
-    BerEncoder_revertByteOrder(buf, 2);
+    memcpy_reverse(&retVal, self->smpRate, sizeof(uint16_t));
+#else
+    memcpy(&retVal, self->smpRate, sizeof(uint16_t));
 #endif
 
     return retVal;
@@ -715,12 +724,12 @@ SVSubscriber_ASDU_getINT8(SVSubscriber_ASDU self, int index)
 int16_t
 SVSubscriber_ASDU_getINT16(SVSubscriber_ASDU self, int index)
 {
-    int16_t retVal = *((int16_t*) (self->dataBuffer + index));
+    int16_t retVal;
 
 #if (ORDER_LITTLE_ENDIAN == 1)
-    uint8_t* buf = (uint8_t*) (&retVal);
-
-    BerEncoder_revertByteOrder(buf, 2);
+    memcpy_reverse(&retVal, (self->dataBuffer + index), sizeof(uint16_t));
+#else
+    memcpy(&retVal, (self->dataBuffer + index), sizeof(uint16_t));
 #endif
 
     return retVal;
@@ -729,12 +738,12 @@ SVSubscriber_ASDU_getINT16(SVSubscriber_ASDU self, int index)
 int32_t
 SVSubscriber_ASDU_getINT32(SVSubscriber_ASDU self, int index)
 {
-    int32_t retVal = *((int32_t*) (self->dataBuffer + index));
+    int32_t retVal;
 
 #if (ORDER_LITTLE_ENDIAN == 1)
-    uint8_t* buf = (uint8_t*) (&retVal);
-
-    BerEncoder_revertByteOrder(buf, 4);
+    memcpy_reverse(&retVal, (self->dataBuffer + index), sizeof(int32_t));
+#else
+    memcpy(&retVal, (self->dataBuffer + index), sizeof(int32_t));
 #endif
 
     return retVal;
@@ -743,12 +752,12 @@ SVSubscriber_ASDU_getINT32(SVSubscriber_ASDU self, int index)
 int64_t
 SVSubscriber_ASDU_getINT64(SVSubscriber_ASDU self, int index)
 {
-    int64_t retVal = *((int64_t*) (self->dataBuffer + index));
+    int64_t retVal;
 
 #if (ORDER_LITTLE_ENDIAN == 1)
-    uint8_t* buf = (uint8_t*) (&retVal);
-
-    BerEncoder_revertByteOrder(buf, 8);
+    memcpy_reverse(&retVal, (self->dataBuffer + index), sizeof(int64_t));
+#else
+    memcpy(&retVal, (self->dataBuffer + index), sizeof(int64_t));
 #endif
 
     return retVal;
@@ -765,12 +774,12 @@ SVSubscriber_ASDU_getINT8U(SVSubscriber_ASDU self, int index)
 uint16_t
 SVSubscriber_ASDU_getINT16U(SVSubscriber_ASDU self, int index)
 {
-    uint16_t retVal = *((uint16_t*) (self->dataBuffer + index));
+    uint16_t retVal;
 
 #if (ORDER_LITTLE_ENDIAN == 1)
-    uint8_t* buf = (uint8_t*) (&retVal);
-
-    BerEncoder_revertByteOrder(buf, 2);
+    memcpy_reverse(&retVal, (self->dataBuffer + index), sizeof(uint16_t));
+#else
+    memcpy(&retVal, (self->dataBuffer + index), sizeof(uint16_t));
 #endif
 
     return retVal;
@@ -779,12 +788,12 @@ SVSubscriber_ASDU_getINT16U(SVSubscriber_ASDU self, int index)
 uint32_t
 SVSubscriber_ASDU_getINT32U(SVSubscriber_ASDU self, int index)
 {
-    uint32_t retVal = *((uint32_t*) (self->dataBuffer + index));
+    uint32_t retVal;
 
 #if (ORDER_LITTLE_ENDIAN == 1)
-    uint8_t* buf = (uint8_t*) (&retVal);
-
-    BerEncoder_revertByteOrder(buf, 4);
+    memcpy_reverse(&retVal, (self->dataBuffer + index), sizeof(uint32_t));
+#else
+    memcpy(&retVal, (self->dataBuffer + index), sizeof(uint32_t));
 #endif
 
     return retVal;
@@ -793,12 +802,12 @@ SVSubscriber_ASDU_getINT32U(SVSubscriber_ASDU self, int index)
 uint64_t
 SVSubscriber_ASDU_getINT64U(SVSubscriber_ASDU self, int index)
 {
-    uint64_t retVal = *((uint64_t*) (self->dataBuffer + index));
+    uint64_t retVal;
 
 #if (ORDER_LITTLE_ENDIAN == 1)
-    uint8_t* buf = (uint8_t*) (&retVal);
-
-    BerEncoder_revertByteOrder(buf, 8);
+    memcpy_reverse(&retVal, (self->dataBuffer + index), sizeof(uint64_t));
+#else
+    memcpy(&retVal, (self->dataBuffer + index), sizeof(uint64_t));
 #endif
 
     return retVal;
@@ -807,12 +816,12 @@ SVSubscriber_ASDU_getINT64U(SVSubscriber_ASDU self, int index)
 float
 SVSubscriber_ASDU_getFLOAT32(SVSubscriber_ASDU self, int index)
 {
-    float retVal = *((float*) (self->dataBuffer + index));
+    float retVal;
 
 #if (ORDER_LITTLE_ENDIAN == 1)
-    uint8_t* buf = (uint8_t*) (&retVal);
-
-    BerEncoder_revertByteOrder(buf, 4);
+    memcpy_reverse(&retVal, (self->dataBuffer + index), sizeof(float));
+#else
+    memcpy(&retVal, (self->dataBuffer + index), sizeof(float));
 #endif
 
     return retVal;
@@ -821,12 +830,12 @@ SVSubscriber_ASDU_getFLOAT32(SVSubscriber_ASDU self, int index)
 double
 SVSubscriber_ASDU_getFLOAT64(SVSubscriber_ASDU self, int index)
 {
-    double retVal = *((double*) (self->dataBuffer + index));
+    double retVal;
 
 #if (ORDER_LITTLE_ENDIAN == 1)
-    uint8_t* buf = (uint8_t*) (&retVal);
-
-    BerEncoder_revertByteOrder(buf, 8);
+    memcpy_reverse(&retVal, (self->dataBuffer + index), sizeof(double));
+#else
+    memcpy(&retVal, (self->dataBuffer + index), sizeof(double));
 #endif
 
     return retVal;
