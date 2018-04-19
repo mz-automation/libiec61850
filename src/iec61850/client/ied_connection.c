@@ -2530,7 +2530,7 @@ FileDirectoryEntry_destroy(FileDirectoryEntry self)
     GLOBAL_FREEMEM(self);
 }
 
-char*
+const char*
 FileDirectoryEntry_getFileName(FileDirectoryEntry self)
 {
     return self->fileName;

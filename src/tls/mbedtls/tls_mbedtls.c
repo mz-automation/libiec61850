@@ -51,6 +51,9 @@ struct sTLSConfiguration {
 
     bool chainValidation;
     bool allowOnlyKnownCertificates;
+
+    /* TLS session renegotioation time in milliseconds */
+    int renegotiationTimeInMs;
 };
 
 struct sTLSSocket {
@@ -306,6 +309,12 @@ TLSConfiguration_addCACertificateFromFile(TLSConfiguration self, const char* fil
 }
 
 void
+TLSConfiguration_setRenegotiationTime(TLSConfiguration self, int timeInMs)
+{
+    self->renegotiationTimeInMs = timeInMs;
+}
+
+void
 TLSConfiguration_destroy(TLSConfiguration self)
 {
     mbedtls_x509_crt_free(&(self->ownCertificate));
@@ -402,8 +411,6 @@ TLSSocket_getPeerCertificate(TLSSocket self, int* certSize)
 bool
 TLSSocket_performHandshake(TLSSocket self)
 {
-    //TODO evaluate return value
-
     if (mbedtls_ssl_renegotiate(&(self->ssl)) == 0)
         return true;
     else

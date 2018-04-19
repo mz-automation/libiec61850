@@ -1,7 +1,7 @@
 /*
  *  iec61850_client.h
  *
- *  Copyright 2013, 2014, 2015 Michael Zillgith
+ *  Copyright 2013-2018 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -1949,18 +1949,49 @@ IedConnection_queryLogAfter(IedConnection self, IedClientError* error, const cha
 
 typedef struct sFileDirectoryEntry* FileDirectoryEntry;
 
+/**
+ * @deprecated Will be removed from API
+ */
 FileDirectoryEntry
 FileDirectoryEntry_create(const char* fileName, uint32_t fileSize, uint64_t lastModified);
 
+/**
+ * \brief Destroy a FileDirectoryEntry object (free all resources)
+ *
+ * NOTE: Usually is called as a parameter of the \ref LinkedList_destroyDeep function.
+ *
+ * \param self the FileDirectoryEntry object
+ */
 void
 FileDirectoryEntry_destroy(FileDirectoryEntry self);
 
-char*
+/**
+ * \brief Get the name of the file
+ *
+ * \param self the FileDirectoryEntry object
+ *
+ * \return name of the file as null terminated string
+ */
+const char*
 FileDirectoryEntry_getFileName(FileDirectoryEntry self);
 
+/**
+ * \brief Get the file size in bytes
+ *
+ * \param self the FileDirectoryEntry object
+ *
+ * \return size of the file in bytes, or 0 if file size is unknown
+ */
 uint32_t
 FileDirectoryEntry_getFileSize(FileDirectoryEntry self);
 
+/**
+ * \brief Get the timestamp of last modification of the file
+ *
+ * \param self the FileDirectoryEntry object
+ *
+ * \return UTC timestamp in milliseconds
+ */
 uint64_t
 FileDirectoryEntry_getLastModified(FileDirectoryEntry self);
 
