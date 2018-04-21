@@ -148,6 +148,9 @@ purgeBuf(ReportControl* rc)
 {
     if (DEBUG_IED_SERVER) printf("IED_SERVER: reporting.c: run purgeBuf\n");
 
+    /* reset trigger */
+    rc->triggered = false;
+
     ReportBuffer* reportBuffer = rc->reportBuffer;
 
     reportBuffer->lastEnqueuedReport = NULL;
@@ -522,8 +525,50 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
     else
         dataSetValue = ReportControl_getRCBValue(rc, "DatSet");
 
+
+    bool dataSetChanged = true;
+
+    /* check if old and new data sets are the same */
+    if (rc->dataSet && dataSetValue) {
+
+        const char* dataSetLdName = rc->dataSet->logicalDeviceName;
+        const char* dataSetName = rc->dataSet->name;
+        const char* newDataSetName = MmsValue_toString(dataSetValue);
+
+        if (newDataSetName[0] == '@') {
+            if ((dataSetLdName == NULL) && (!strcmp(dataSetName, newDataSetName + 1))) {
+                dataSetChanged = false;
+            }
+        }
+        else if (newDataSetName[0] == '/') {
+            if ((dataSetLdName == NULL) && (!strcmp(dataSetName, newDataSetName + 1))) {
+                dataSetChanged = false;
+            }
+        }
+        else {
+            if (dataSetLdName && dataSetName) {
+
+                char externalVisibleName[256];
+
+                /* Construct external visible name */
+                strcpy(externalVisibleName, mapping->model->name);
+                strcat(externalVisibleName, dataSetLdName);
+                strcat(externalVisibleName, "/");
+                strcat(externalVisibleName, dataSetName);
+
+                if (!(strcmp(externalVisibleName, newDataSetName))) {
+                    dataSetChanged = false;
+                }
+            }
+        }
+
+        if (dataSetChanged)
+            purgeBuf(rc);
+    }
+
+
     if (rc->isDynamicDataSet) {
-        if (rc->dataSet != NULL) {
+        if (rc->dataSet && dataSetChanged) {
             deleteDataSetValuesShadowBuffer(rc);
             MmsMapping_freeDynamicallyCreatedDataSet(rc->dataSet);
             rc->isDynamicDataSet = false;
@@ -531,7 +576,7 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
         }
     }
 
-    if (dataSetValue != NULL) {
+    if (dataSetValue && dataSetChanged) {
         const char* dataSetName = MmsValue_toString(dataSetValue);
 
         DataSet* dataSet = IedModel_lookupDataSet(mapping->model, dataSetName);
@@ -592,6 +637,8 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
 
         rc->inclusionField = MmsValue_newBitString(dataSet->elementCount);
 
+        rc->triggered = false;
+
         if (rc->inclusionFlags != NULL)
             GLOBAL_FREEMEM(rc->inclusionFlags);
 
@@ -603,6 +650,9 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
             rc->isBuffering = true;
 
         goto exit_function;
+    }
+    else {
+        success = true;
     }
 
 exit_function:
