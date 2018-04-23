@@ -1,7 +1,7 @@
 /*
  *  sv_subscriber.h
  *
- *  Copyright 2015 Michael Zillgith
+ *  Copyright 2015-2018 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -98,7 +98,7 @@ typedef struct sSVSubscriber_ASDU* SVSubscriber_ASDU;
 /**
  * \brief opaque handle to a SV subscriber instance
  *
- * A subscriber is an instance associated with a single stream of measurement data.  It is identified
+ * A subscriber is an instance associated with a single stream of measurement data. It is identified
  * by the Ethernet destination address, the appID value (both are on SV message level) and the svID value
  * that is part of each ASDU (SVSubscriber_ASDU object).
  */
@@ -135,14 +135,23 @@ SVReceiver_create(void);
 /**
  * \brief Disable check for destination address of the received SV messages
  *
- * Per default both the appID and the destination address are checked to identify
- * relevant SV messages. Destination address check can be disabled for performance
- * reason when the appIDs are unique in the local system.
- *
  * \param self the receiver instance reference
  */
 void
 SVReceiver_disableDestAddrCheck(SVReceiver self);
+
+/**
+ * \brief Enable check for destination address of the received SV messages
+ *
+ * Per default only the appID is checked to identify relevant SV messages and the
+ * destination address is ignored for performance reasons. This only works when the
+ * appIDs are unique in the local system. Otherwise the destination address check
+ * has to be enabled.
+ *
+ * \param self the receiver instance reference
+ */
+void
+SVReceiver_enableDestAddrCheck(SVReceiver self);
 
 /**
  * \brief Set the Ethernet interface ID for the receiver instance

@@ -119,6 +119,12 @@ SVReceiver_disableDestAddrCheck(SVReceiver self)
 }
 
 void
+SVReceiver_enableDestAddrCheck(SVReceiver self)
+{
+    self->checkDestAddr = false;
+}
+
+void
 SVReceiver_addSubscriber(SVReceiver self, SVSubscriber subscriber)
 {
 #if (CONFIG_MMS_THREADLESS_STACK == 0)

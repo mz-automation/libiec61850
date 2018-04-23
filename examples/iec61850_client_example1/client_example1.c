@@ -1,7 +1,7 @@
 /*
  * client_example1.c
  *
- * This example is intended to be used with server_example3 or server_example_goose.
+ * This example is intended to be used with server_example_basic_io or server_example_goose.
  */
 
 #include "iec61850_client.h"

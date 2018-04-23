@@ -32,14 +32,22 @@ namespace IEC61850
 
 		namespace Subscriber 
 		{
+			/// <summary>
+			/// SV receiver.
+			/// </summary>
+			/// A receiver is responsible for processing all SV message for a single Ethernet interface.
+			/// In order to process messages from multiple Ethernet interfaces you have to create multiple
+			/// instances.
 			public class SVReceiver : IDisposable
 			{
 				[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 				private static extern IntPtr SVReceiver_create ();
 
-
 				[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 				private static extern void SVReceiver_disableDestAddrCheck(IntPtr self);
+
+				[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+				private static extern void SVReceiver_enableDestAddrCheck(IntPtr self);
 
 				[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 				private static extern void SVReceiver_addSubscriber(IntPtr self, IntPtr subscriber);
@@ -67,6 +75,10 @@ namespace IEC61850
 
 				private bool isDisposed = false;
 
+				/// <summary>
+				/// Initializes a new instance of the <see cref="IEC61850.SV.Subscriber.SVReceiver"/> class.
+				/// </summary>
+
 				public SVReceiver()
 				{
 					self = SVReceiver_create ();
@@ -81,22 +93,38 @@ namespace IEC61850
 				{
 					SVReceiver_disableDestAddrCheck (self);
 				}
+
+				public void EnableDestAddrCheck()
+				{
+					SVReceiver_enableDestAddrCheck (self);
+				}
 					
+				/// <summary>
+				/// Add a subscriber to handle
+				/// </summary>
+				/// <param name="subscriber">Subscriber.</param>
 				public void AddSubscriber(SVSubscriber subscriber)
 				{
 					SVReceiver_addSubscriber (self, subscriber.self);
 				}
+
 
 				public void RemoveSubscriber(SVSubscriber subscriber)
 				{
 					SVReceiver_removeSubscriber (self, subscriber.self);
 				}
 
+				/// <summary>
+				/// Start handling SV messages
+				/// </summary>
 				public void Start()
 				{
 					SVReceiver_start (self);
 				}
 
+				/// <summary>
+				/// Stop handling SV messges
+				/// </summary>
 				public void Stop()
 				{
 					SVReceiver_stop (self);
@@ -107,6 +135,14 @@ namespace IEC61850
 					return SVReceiver_isRunning (self);
 				}
 
+				/// <summary>
+				/// Releases all resource used by the <see cref="IEC61850.SV.Subscriber.SVReceiver"/> object.
+				/// </summary>
+				/// <remarks>Call <see cref="Dispose"/> when you are finished using the <see cref="IEC61850.SV.Subscriber.SVReceiver"/>. The
+				/// <see cref="Dispose"/> method leaves the <see cref="IEC61850.SV.Subscriber.SVReceiver"/> in an unusable state.
+				/// After calling <see cref="Dispose"/>, you must release all references to the
+				/// <see cref="IEC61850.SV.Subscriber.SVReceiver"/> so the garbage collector can reclaim the memory that the
+				/// <see cref="IEC61850.SV.Subscriber.SVReceiver"/> was occupying.</remarks>
 				public void Dispose()
 				{
 					if (isDisposed == false) {
@@ -128,6 +164,13 @@ namespace IEC61850
 			/// </summary>
 			public delegate void SVUpdateListener (SVSubscriber report, object parameter, SVSubscriberASDU asdu);
 
+			/// <summary>
+			/// Sampled Values (SV) Subscriber
+			/// 
+			/// A subscriber is an instance associated with a single stream of measurement data. It is identified
+			/// by the Ethernet destination address, the appID value (both are on SV message level) and the svID value
+			/// that is part of each ASDU.
+			/// </summary>
 			public class SVSubscriber : IDisposable
 			{
 				[UnmanagedFunctionPointer(CallingConvention.Cdecl)]

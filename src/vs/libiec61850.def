@@ -707,3 +707,4 @@ EXPORTS
     SVPublisher_ASDU_setQuality
     Timestamp_createFromByteArray
     IedModel_getDeviceByIndex
+    SVReceiver_enableDestAddrCheck
