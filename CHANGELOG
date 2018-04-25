@@ -5,6 +5,45 @@ Changes to version 1.2.0
 - IEC 61850/MMS server: removed deprecated AttributeChangedHandler
 - Added pkg-config file
 - The Sampled Values APIs have been renamed. The old version of the API is deprecated but still supported and will be removed in the next major version of the library.
+- SV Publisher/Subscriber: a lot of small fixed and improvements
+- .NET API: Added support for sampled values (SV) subscriber
+- .NET API: Added support for GOOSE subscriber
+- SV subscriber: added function SVReceiver_enableDestAddrCheck
+- IEC 61850 server: fixed bug in buffered report module - report can be lost under some circumstances when BRCB is enabled
+- SV subscriber: replaced code that caused unaligned memory access
+- IEC 61850 server: added memory alignement for buffered reporting
+
+
+Changes to version 1.1.2
+------------------------
+
+- MMS client: fixed parsing initiate response message
+- SV publisher: conditional encoding for SmpRate
+- MmsValue_update function now allows adjusting octet-string size of target object
+- .NET API: Added DeleteFile 
+- CDC helper functions: added helper functions for VSS and VSG CDC
+- added additional locks in client and server
+
+Changes to version 1.1.1
+------------------------
+
+- IEC 61850 client: fixed bug in APC control handling
+- IEC 61850 client: ClientReportControlBlock now accepts "$" and "." as seperator for RCB object reference
+- MMS client: fixed bug in MmsConnection_connect (COTP payload buffer was not reset in case of an error during connect -> connection failed in case of reuse of MmsConnection object
+- MMS client: delete named variable list service supports VMD specific lists
+- SV subscriber/publisher: additional features and bug fixes
+- SV: fixed data type for smpRate
+- SV: fixed encoding of optional smpMod attribute
+- SV receiver: Added semaphore to make subscriber list thread-safe
+- .NET API: ControlObject implements IDisposable interface
+- IED server: added new function IedServer_udpateDbposValue
+- fixed problem with cmake include folders
+- MMS client: file services -fixed encoding problem with long file names
+- MMS server: ACSE authenticator passes application reference (ap-title and ae-qualifier)
+- example directory cleanup
+- MMS: fixed potential memory leak in asn1 code that can be caused by malformed MMS messages
+- MMS client: MmsConnection_getVariableAccessAttributes support for VMD specific variables
+- Java SCL parser: added support for "Val" elements for Octet64 types
 
 Changes to version 1.1.0
 ------------------------

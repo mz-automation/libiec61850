@@ -25,9 +25,33 @@ libiec61850 is an open-source (GPLv3) implementation of an IEC 61850 client and 
 
 For commercial projects licenses and support is provided by MZ Automation GmbH. Please contact info@mz-automation.de for more details on licensing options.
 
+
+## Features
+
+The library support the following IEC 61850 protocol features:
+
+* MMS client/server, GOOSE (IEC 61850-8-1)
+* Sampled Values (SV - IEC 61850-9-2)
+* Support for buffered and unbuffered reports
+* Online report control block configuration
+* Data access service (get data, set data)
+* online data model discovery and browsing
+* all data set services (get values, set values, browse)
+* dynamic data set services (create and delete)
+* log service
+** flexible API to connect custom data bases
+** comes with sqlite implementation
+* MMS file services (browse, get file, set file, delete/rename file)
+** required to download COMTRADE files
+* Setting group handling
+* GOOSE and SV control block handling
+* TLS support
+* C and C#/.NET API
+
+
 ## Building and running the examples with the provided makefiles
 
-In the project root directoy type
+In the project root directory type
 
 ```
 make examples
