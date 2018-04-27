@@ -33,7 +33,7 @@ MemoryAllocator_init(MemoryAllocator* self, char* memoryBlock, int size)
     self->size = size;
 }
 
-int inline
+int
 MemoryAllocator_getAlignedSize(int size)
 {
 #if (CONFIG_IEC61850_FORCE_MEMORY_ALIGNMENT == 1)
