@@ -290,6 +290,14 @@ ReportControl_getRCBValue(ReportControl* rc, char* elementName)
     return NULL ;
 }
 
+static inline void
+clearInclusionFlags(ReportControl* reportControl)
+{
+    int i;
+    for (i = 0; i < reportControl->dataSet->elementCount; i++)
+        reportControl->inclusionFlags[i] = REPORT_CONTROL_NONE;
+}
+
 static void
 updateTimeOfEntry(ReportControl* self, uint64_t currentTime)
 {
@@ -562,8 +570,10 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
             }
         }
 
-        if (dataSetChanged)
-            purgeBuf(rc);
+        if (rc->buffered) {
+            if (dataSetChanged)
+                purgeBuf(rc);
+        }
     }
 
 
@@ -1396,8 +1406,8 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
                 rc->isResync = false;
             }
             else {
-                GLOBAL_FREEMEM(rc->inclusionFlags);
-                rc->inclusionFlags = NULL;
+                if (rc->dataSet)
+                    clearInclusionFlags(rc);
 
                 MmsValue* resv = ReportControl_getRCBValue(rc, "Resv");
                 MmsValue_setBoolean(resv, false);
@@ -1617,11 +1627,6 @@ Reporting_deactivateReportsForConnection(MmsMapping* self, MmsServerConnection c
             MmsValue_setBoolean(rptEna, false);
 
             if (rc->buffered == false) {
-
-                if (rc->inclusionField != NULL) {
-                    MmsValue_delete(rc->inclusionField);
-                    rc->inclusionField = NULL;
-                }
 
                 MmsValue* resv = ReportControl_getRCBValue(rc, "Resv");
                 MmsValue_setBoolean(resv, false);
@@ -2042,11 +2047,7 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
         }
     }
 
-    /* clear inclusion flags */
-    int i;
-
-    for (i = 0; i < reportControl->dataSet->elementCount; i++)
-        reportControl->inclusionFlags[i] = REPORT_CONTROL_NONE;
+    clearInclusionFlags(reportControl);
 
     if (DEBUG_IED_SERVER)
         printf("IED_SERVER: enqueueReport: encoded %i bytes for report (estimated %i) at buffer offset %i\n",
