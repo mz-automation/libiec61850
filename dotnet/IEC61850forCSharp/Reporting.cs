@@ -35,17 +35,6 @@ namespace IEC61850
 
 			private List<ReportControlBlock> activeRCBs = null;
 
-			private void cleanupRCBs() 
-			{
-				if (activeRCBs != null) {
-
-					foreach (ReportControlBlock rcb in activeRCBs) {
-						rcb.DisposeInternal ();
-					}
-				}
-
-			}
-
 			public ReportControlBlock GetReportControlBlock (string rcbObjectReference)
 			{
 				var newRCB = new ReportControlBlock (rcbObjectReference, this, connection);

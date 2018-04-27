@@ -1,7 +1,7 @@
 /*
  *  ReportControlBlock.cs
  *
- *  Copyright 2014 Michael Zillgith
+ *  Copyright 2014-2018 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -36,6 +36,9 @@ namespace IEC61850
         /// </summary>
 		public delegate void ReportHandler (Report report, object parameter);
 
+		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+		internal delegate void InternalReportHandler (IntPtr parameter, IntPtr report);
+
         /// <summary>
         /// Report control block (RCB) representation.
         /// </summary>
@@ -44,16 +47,13 @@ namespace IEC61850
         /// Values from the server will only be read when the GetRCBValues method is called.
         /// Values at the server are only affected when the SetRCBValues method is called.
         /// </description>
-		public class ReportControlBlock
+		public class ReportControlBlock : IDisposable
 		{
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern IntPtr ClientReportControlBlock_create (string dataAttributeReference);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr IedConnection_getRCBValues (IntPtr connection, out int error, string rcbReference, IntPtr updateRcb);
-
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern void IedConnection_setRCBValues (IntPtr connection, out int error, IntPtr rcb, UInt32 parametersMask, bool singleRequest);
+			static extern void ClientReportControlBlock_destroy (IntPtr self);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.I1)]
@@ -147,18 +147,7 @@ namespace IEC61850
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern IntPtr ClientReportControlBlock_getOwner (IntPtr self);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern void IedConnection_installReportHandler (IntPtr connection, string rcbReference, string rptId, InternalReportHandler handler,
-        		IntPtr handlerParameter);
-
-            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-            static extern void IedConnection_uninstallReportHandler(IntPtr connection, string rcbReference);
-
-            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-			private delegate void InternalReportHandler (IntPtr parameter, IntPtr report);
-
 			private IntPtr self;
-			private IntPtr connection;
 			private IedConnection iedConnection = null;
 			private string objectReference;
 			private bool flagRptId = false;
@@ -221,14 +210,11 @@ namespace IEC61850
 			internal ReportControlBlock (string objectReference, IedConnection iedConnection, IntPtr connection)
 			{
 				self = ClientReportControlBlock_create (objectReference);
-				this.iedConnection = iedConnection;
-				this.connection = connection;
-				this.objectReference = objectReference;
-			}
 
-			internal void DisposeInternal() 
-			{
-				IedConnection_uninstallReportHandler(connection, objectReference);
+				if (self != IntPtr.Zero) {
+					this.iedConnection = iedConnection;
+					this.objectReference = objectReference;
+				}
 			}
 
 			/// <summary>
@@ -239,11 +225,25 @@ namespace IEC61850
 			/// After calling <see cref="Dispose"/>, you must release all references to the
 			/// <see cref="IEC61850.Client.ReportControlBlock"/> so the garbage collector can reclaim the memory that the
 			/// <see cref="IEC61850.Client.ReportControlBlock"/> was occupying.</remarks>
-			public void Dispose() 
+			public void Dispose()
 			{
-				DisposeInternal ();
+				lock (this) {
+					if (self != IntPtr.Zero) {
 
-				iedConnection.RemoveRCB (this);
+						iedConnection.UninstallReportHandler (objectReference);
+
+						iedConnection.RemoveRCB (this);
+
+						ClientReportControlBlock_destroy (self);
+
+						self = IntPtr.Zero;
+					}
+				}
+			}
+
+			~ReportControlBlock() 
+			{
+				Dispose ();
 			}
 
 			public string GetObjectReference ()
@@ -279,9 +279,10 @@ namespace IEC61850
                     {
                         internalHandler =  new InternalReportHandler(internalReportHandler);
                     }
+						
+					iedConnection.InstallReportHandler (objectReference, reportId, internalHandler);
 
-                    IedConnection_installReportHandler(this.connection, objectReference, reportId, internalHandler, IntPtr.Zero);
-					reportHandlerInstalled = true;
+                	reportHandlerInstalled = true;
 				}
 			}
 
@@ -293,7 +294,7 @@ namespace IEC61850
 			{
 				int error;
 
-				IedConnection_getRCBValues (connection, out error, objectReference, self);
+				iedConnection.GetRCBValues (out error, objectReference, self);
 
 				if (error != 0)
 					throw new IedConnectionException ("getRCBValues service failed", error);
@@ -370,7 +371,7 @@ namespace IEC61850
 
                 int error;
 
-                IedConnection_setRCBValues (connection, out error, self, parametersMask, singleRequest);
+				iedConnection.SetRCBValues (out error, self, parametersMask, singleRequest);
 
 				resetSendFlags();
 

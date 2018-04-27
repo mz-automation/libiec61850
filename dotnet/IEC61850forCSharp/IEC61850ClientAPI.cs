@@ -372,6 +372,20 @@ namespace IEC61850
                   ulong startTime, ulong endTime, out bool moreFollows);
 
 
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr IedConnection_getRCBValues (IntPtr connection, out int error, string rcbReference, IntPtr updateRcb);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern void IedConnection_setRCBValues (IntPtr connection, out int error, IntPtr rcb, UInt32 parametersMask, bool singleRequest);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern void IedConnection_installReportHandler (IntPtr connection, string rcbReference, string rptId, InternalReportHandler handler,
+				IntPtr handlerParameter);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern void IedConnection_uninstallReportHandler(IntPtr connection, string rcbReference);
+
+
             /********************
             * FileDirectoryEntry
             *********************/
@@ -436,7 +450,6 @@ namespace IEC61850
 			public void Dispose()
 			{
 				if (connection != IntPtr.Zero) {
-					cleanupRCBs ();
 
 					IedConnection_destroy (connection);
 
@@ -446,11 +459,7 @@ namespace IEC61850
 
             ~IedConnection ()
             {
-				if (connection != IntPtr.Zero) {
-					cleanupRCBs ();
-
-					IedConnection_destroy (connection);
-				}
+				Dispose ();
             }
 
             private IsoConnectionParameters isoConnectionParameters = null;
@@ -1436,6 +1445,39 @@ namespace IEC61850
 
 				return newList;
 			}
+
+			internal void UninstallReportHandler (string objectReference)
+			{
+				if (connection != IntPtr.Zero) {
+					IedConnection_uninstallReportHandler (connection, objectReference);
+				}
+			}
+
+			internal void InstallReportHandler (string objectReference, string reportId, InternalReportHandler internalHandler)
+			{
+				if (connection != IntPtr.Zero) {
+					IedConnection_installReportHandler (connection, objectReference, reportId, internalHandler, IntPtr.Zero);
+				}
+			}
+
+			internal void GetRCBValues(out int error, string objectReference, IntPtr updateRcb)
+			{
+				if (connection != IntPtr.Zero) {
+					IedConnection_getRCBValues (connection, out error, objectReference, updateRcb);
+				} else {
+					error = 1; /* not connected */
+				}
+			}
+
+			internal void SetRCBValues(out int error, IntPtr rcb, UInt32 parametersMask, bool singleRequest)
+			{
+				if (connection != IntPtr.Zero) {
+					IedConnection_setRCBValues (connection, out error, rcb, parametersMask, singleRequest);
+				} else {
+					error = 1; /* not connected */
+				}
+			}
+
 		}
 
 		public class IedConnectionException : Exception
