@@ -1,14 +1,12 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 
 using IEC61850.Client;
 using IEC61850.Common;
-using System.Runtime.Remoting.Metadata.W3cXsd2001;
 
 namespace reporting
 {
-	class ReportingExample
+    class ReportingExample
 	{
 
 		private static void reportHandler (Report report, object parameter)
@@ -25,9 +23,7 @@ namespace reporting
 			byte[] entryId = report.GetEntryId ();
 
 			if (entryId != null) {
-				SoapHexBinary shb = new SoapHexBinary(entryId);
-
-				Console.WriteLine ("  entryID: " + shb.ToString ());
+                Console.WriteLine ("  entryID: " + BitConverter.ToString(entryId));
 			}
 
 			if (report.HasDataSetName ()) {

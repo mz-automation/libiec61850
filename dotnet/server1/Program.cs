@@ -17,7 +17,7 @@ namespace server1
 				running = false;
 			};
 
-			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../model.cfg");
+			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("model.cfg");
 
 			if (iedModel == null) {
 				Console.WriteLine ("No valid data model found!");

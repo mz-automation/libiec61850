@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\..\IEC61850forCSharp\Control.cs" Link="Control.cs" />
+    <Compile Include="..\..\..\IEC61850forCSharp\DataSet.cs" Link="DataSet.cs" />
+    <Compile Include="..\..\..\IEC61850forCSharp\GooseControlBlock.cs" Link="GooseControlBlock.cs" />
+    <Compile Include="..\..\..\IEC61850forCSharp\GooseSubscriber.cs" Link="GooseSubscriber.cs" />
+    <Compile Include="..\..\..\IEC61850forCSharp\IEC61850ClientAPI.cs" Link="IEC61850ClientAPI.cs" />
+    <Compile Include="..\..\..\IEC61850forCSharp\IEC61850CommonAPI.cs" Link="IEC61850CommonAPI.cs" />
+    <Compile Include="..\..\..\IEC61850forCSharp\IEC61850ServerAPI.cs" Link="IEC61850ServerAPI.cs" />
+    <Compile Include="..\..\..\IEC61850forCSharp\IsoConnectionParameters.cs" Link="IsoConnectionParameters.cs" />
+    <Compile Include="..\..\..\IEC61850forCSharp\MmsValue.cs" Link="MmsValue.cs" />
+    <Compile Include="..\..\..\IEC61850forCSharp\MmsVariableSpecification.cs" Link="MmsVariableSpecification.cs" />
+    <Compile Include="..\..\..\IEC61850forCSharp\ReportControlBlock.cs" Link="ReportControlBlock.cs" />
+    <Compile Include="..\..\..\IEC61850forCSharp\Reporting.cs" Link="Reporting.cs" />
+    <Compile Include="..\..\..\IEC61850forCSharp\SampledValuesControlBlock.cs" Link="SampledValuesControlBlock.cs" />
+    <Compile Include="..\..\..\IEC61850forCSharp\SampledValuesSubscriber.cs" Link="SampledValuesSubscriber.cs" />
+    <Compile Include="..\..\..\IEC61850forCSharp\TLS.cs" Link="TLS.cs" />
+  </ItemGroup>
+
+</Project>
