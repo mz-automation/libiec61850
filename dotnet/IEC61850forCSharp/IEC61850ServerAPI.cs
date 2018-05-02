@@ -43,7 +43,7 @@ namespace IEC61850
 		{
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr FileSystem_openFile(string filePath, bool readWrite);
+			static extern IntPtr FileSystem_openFile(string filePath, [MarshalAs(UnmanagedType.I1)] bool readWrite);
 
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
@@ -260,7 +260,7 @@ namespace IEC61850
 			static extern IntPtr CDC_INS_create(string name, IntPtr parent, uint options);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr CDC_MV_create(string name, IntPtr parent, uint options, bool isIntegerNotFloat);
+			static extern IntPtr CDC_MV_create(string name, IntPtr parent, uint options, [MarshalAs(UnmanagedType.I1)] bool isIntegerNotFloat);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern IntPtr CDC_INC_create(string name, IntPtr parent, uint options, uint controlOptions);
@@ -468,7 +468,7 @@ namespace IEC61850
 		public class ReportControlBlock
 		{
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr ReportControlBlock_create(string name, IntPtr parent, string rptId, bool isBuffered,
+			static extern IntPtr ReportControlBlock_create(string name, IntPtr parent, string rptId, [MarshalAs(UnmanagedType.I1)] bool isBuffered,
 				string dataSetName, uint confRef, byte trgOps, byte options, uint bufTm, uint intgPd);
 
 			public IntPtr self = IntPtr.Zero;
@@ -574,6 +574,7 @@ namespace IEC61850
 			static extern void IedServer_destroy(IntPtr self);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			[return: MarshalAs(UnmanagedType.Bool)]
 			static extern bool IedServer_isRunning(IntPtr self);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
@@ -586,7 +587,7 @@ namespace IEC61850
 			static extern void IedServer_updateAttributeValue(IntPtr self, IntPtr DataAttribute, IntPtr MmsValue);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern void IedServer_updateBooleanAttributeValue(IntPtr self, IntPtr dataAttribute, bool value);
+			static extern void IedServer_updateBooleanAttributeValue(IntPtr self, IntPtr dataAttribute, [MarshalAs(UnmanagedType.I1)] bool value);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern void IedServer_updateInt32AttributeValue(IntPtr self, IntPtr dataAttribute, int value);
@@ -613,13 +614,13 @@ namespace IEC61850
 			static extern IntPtr IedServer_getAttributeValue(IntPtr self, IntPtr dataAttribute);
 
 			[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-			private delegate int InternalControlPerformCheckHandler (IntPtr parameter, IntPtr ctlVal, bool test, bool interlockCheck, IntPtr connection);
+			private delegate int InternalControlPerformCheckHandler (IntPtr parameter, IntPtr ctlVal, [MarshalAs(UnmanagedType.I1)] bool test, [MarshalAs(UnmanagedType.I1)] bool interlockCheck, IntPtr connection);
 
 			[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-			private delegate int InternalControlWaitForExecutionHandler (IntPtr parameter, IntPtr ctlVal, bool test, bool synchoCheck);
+			private delegate int InternalControlWaitForExecutionHandler (IntPtr parameter, IntPtr ctlVal, [MarshalAs(UnmanagedType.I1)] bool test, [MarshalAs(UnmanagedType.I1)] bool synchoCheck);
 
 			[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-			private delegate int InternalControlHandler (IntPtr parameter, IntPtr ctlVal, bool test);
+			private delegate int InternalControlHandler (IntPtr parameter, IntPtr ctlVal, [MarshalAs(UnmanagedType.I1)] bool test);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern void IedServer_setWaitForExecutionHandler(IntPtr self, IntPtr node, InternalControlWaitForExecutionHandler handler, IntPtr parameter);
@@ -652,7 +653,7 @@ namespace IEC61850
 			}
 
 			[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-			private delegate void InternalConnectionHandler (IntPtr iedServer, IntPtr clientConnection, bool connected, IntPtr parameter);
+			private delegate void InternalConnectionHandler (IntPtr iedServer, IntPtr clientConnection, [MarshalAs(UnmanagedType.I1)] bool connected, IntPtr parameter);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern void IedServer_setConnectionIndicationHandler(IntPtr self, InternalConnectionHandler handler, IntPtr parameter);

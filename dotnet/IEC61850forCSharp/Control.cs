@@ -138,13 +138,13 @@ namespace IEC61850
             private static extern void ControlObjectClient_setOrigin(IntPtr self, string orIdent, int orCat);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			private static extern void ControlObjectClient_setInterlockCheck(IntPtr self, bool value);
+			private static extern void ControlObjectClient_setInterlockCheck(IntPtr self, [MarshalAs(UnmanagedType.I1)] bool value);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			private static extern void ControlObjectClient_setSynchroCheck(IntPtr self, bool value);
+			private static extern void ControlObjectClient_setSynchroCheck(IntPtr self, [MarshalAs(UnmanagedType.I1)] bool value);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			private static extern void ControlObjectClient_setTestMode(IntPtr self, bool value);
+			private static extern void ControlObjectClient_setTestMode(IntPtr self, [MarshalAs(UnmanagedType.I1)] bool value);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 			private delegate void InternalCommandTerminationHandler(IntPtr parameter,IntPtr controlClient);

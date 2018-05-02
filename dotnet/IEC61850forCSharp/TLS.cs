@@ -54,36 +54,44 @@ namespace IEC61850
 			static extern void TLSConfiguration_destroy(IntPtr self);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern void TLSConfiguration_setAllowOnlyKnownCertificates(IntPtr self, bool value);
+			static extern void TLSConfiguration_setAllowOnlyKnownCertificates(IntPtr self, [MarshalAs(UnmanagedType.I1)] bool value);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern void TLSConfiguration_setChainValidation (IntPtr self, bool value);
+			static extern void TLSConfiguration_setChainValidation (IntPtr self, [MarshalAs(UnmanagedType.I1)] bool value);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern void TLSConfiguration_setClientMode(IntPtr self);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			[return: MarshalAs(UnmanagedType.I1)]
 			static extern bool TLSConfiguration_setOwnCertificate(IntPtr self, byte[] certificate, int certLen);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			[return: MarshalAs(UnmanagedType.I1)]
 			static extern bool TLSConfiguration_setOwnCertificateFromFile(IntPtr self, string filename);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			[return: MarshalAs(UnmanagedType.I1)]
 			static extern bool TLSConfiguration_setOwnKey(IntPtr self, byte[] key, int keyLen, string keyPassword);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			[return: MarshalAs(UnmanagedType.I1)]
 			static extern bool TLSConfiguration_setOwnKeyFromFile (IntPtr self, string filename, string keyPassword);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			[return: MarshalAs(UnmanagedType.I1)]
 			static extern bool TLSConfiguration_addAllowedCertificate(IntPtr self, byte[] certificate, int certLen);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			[return: MarshalAs(UnmanagedType.I1)]
 			static extern bool TLSConfiguration_addAllowedCertificateFromFile(IntPtr self, string filename);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			[return: MarshalAs(UnmanagedType.I1)]
 			static extern bool TLSConfiguration_addCACertificate(IntPtr self, byte[] certificate, int certLen);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			[return: MarshalAs(UnmanagedType.I1)]
 			static extern bool TLSConfiguration_addCACertificateFromFile(IntPtr self, string filename);
 
 			public TLSConfiguration() {

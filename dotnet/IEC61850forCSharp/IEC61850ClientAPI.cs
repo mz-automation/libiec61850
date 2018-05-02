@@ -317,7 +317,7 @@ namespace IEC61850
 			static extern IntPtr IedConnection_getLogicalNodeDirectory (IntPtr self, out int error, string logicalNodeReference, int acsiClass);
         
 			[DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
-			static extern IntPtr IedConnection_getServerDirectory (IntPtr self, out int error, bool getFileNames);
+			static extern IntPtr IedConnection_getServerDirectory (IntPtr self, out int error, [MarshalAs(UnmanagedType.I1)] bool getFileNames);
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern void IedConnection_getDeviceModelFromServer(IntPtr self, out int error);
@@ -346,6 +346,7 @@ namespace IEC61850
 			static extern IntPtr IedConnection_createDataSet (IntPtr self, out int error, [MarshalAs(UnmanagedType.LPStr)] string dataSetReference, IntPtr dataSet);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			[return: MarshalAs(UnmanagedType.Bool)]
 			static extern bool IedConnection_deleteDataSet (IntPtr self, out int error, string dataSetReference);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
@@ -365,18 +366,18 @@ namespace IEC61850
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern IntPtr IedConnection_queryLogAfter(IntPtr self, out int error, string logReference,
-				IntPtr entryID, ulong timeStamp, out bool moreFollows);
+				IntPtr entryID, ulong timeStamp, [MarshalAs(UnmanagedType.I1)] out bool moreFollows);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern IntPtr IedConnection_queryLogByTime (IntPtr self, out int error, string logReference,
-                  ulong startTime, ulong endTime, out bool moreFollows);
+				ulong startTime, ulong endTime, [MarshalAs(UnmanagedType.I1)] out bool moreFollows);
 
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern IntPtr IedConnection_getRCBValues (IntPtr connection, out int error, string rcbReference, IntPtr updateRcb);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern void IedConnection_setRCBValues (IntPtr connection, out int error, IntPtr rcb, UInt32 parametersMask, bool singleRequest);
+			static extern void IedConnection_setRCBValues (IntPtr connection, out int error, IntPtr rcb, UInt32 parametersMask, [MarshalAs(UnmanagedType.I1)] bool singleRequest);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern void IedConnection_installReportHandler (IntPtr connection, string rcbReference, string rptId, InternalReportHandler handler,

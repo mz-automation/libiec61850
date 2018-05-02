@@ -53,11 +53,11 @@ namespace IEC61850
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			[return: MarshalAs(UnmanagedType.I1)]
-			static extern bool ClientSVControlBlock_setSvEna (IntPtr self, bool value);
+			static extern bool ClientSVControlBlock_setSvEna (IntPtr self, [MarshalAs(UnmanagedType.I1)] bool value);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			[return: MarshalAs(UnmanagedType.I1)]
-			static extern bool ClientSVControlBlock_setResv (IntPtr self, bool value);
+			static extern bool ClientSVControlBlock_setResv (IntPtr self, [MarshalAs(UnmanagedType.I1)] bool value);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			[return: MarshalAs(UnmanagedType.I1)]

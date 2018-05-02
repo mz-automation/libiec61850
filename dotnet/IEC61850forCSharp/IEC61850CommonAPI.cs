@@ -365,21 +365,21 @@ namespace IEC61850
 			static extern bool Timestamp_isLeapSecondKnown (IntPtr self);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern void Timestamp_setLeapSecondKnown (IntPtr self, bool value);
+			static extern void Timestamp_setLeapSecondKnown (IntPtr self, [MarshalAs(UnmanagedType.I1)] bool value);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			[return: MarshalAs(UnmanagedType.I1)]
 			static extern bool Timestamp_hasClockFailure (IntPtr self);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern void Timestamp_setClockFailure (IntPtr self, bool value);
+			static extern void Timestamp_setClockFailure (IntPtr self, [MarshalAs(UnmanagedType.I1)] bool value);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			[return: MarshalAs(UnmanagedType.I1)]
 			static extern bool Timestamp_isClockNotSynchronized (IntPtr self);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern void Timestamp_setClockNotSynchronized (IntPtr self, bool value);
+			static extern void Timestamp_setClockNotSynchronized (IntPtr self, [MarshalAs(UnmanagedType.I1)] bool value);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern int Timestamp_getSubsecondPrecision (IntPtr self);

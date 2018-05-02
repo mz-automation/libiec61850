@@ -70,14 +70,14 @@ namespace IEC61850
 			static extern bool ClientReportControlBlock_getRptEna (IntPtr self);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-            static extern void ClientReportControlBlock_setRptEna(IntPtr self, bool rptEna);
+			static extern void ClientReportControlBlock_setRptEna(IntPtr self, [MarshalAs(UnmanagedType.I1)] bool rptEna);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.I1)]
 			static extern bool ClientReportControlBlock_getResv (IntPtr self);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern void ClientReportControlBlock_setResv (IntPtr self, bool resv);
+			static extern void ClientReportControlBlock_setResv (IntPtr self, [MarshalAs(UnmanagedType.I1)] bool resv);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern IntPtr ClientReportControlBlock_getDataSetReference (IntPtr self);
@@ -120,14 +120,14 @@ namespace IEC61850
 			static extern bool ClientReportControlBlock_getGI (IntPtr self);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern void ClientReportControlBlock_setGI (IntPtr self, bool gi);
+			static extern void ClientReportControlBlock_setGI (IntPtr self, [MarshalAs(UnmanagedType.I1)] bool gi);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.I1)]
 			static extern bool ClientReportControlBlock_getPurgeBuf (IntPtr self);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern void ClientReportControlBlock_setPurgeBuf (IntPtr self, bool purgeBuf);
+			static extern void ClientReportControlBlock_setPurgeBuf (IntPtr self, [MarshalAs(UnmanagedType.I1)] bool purgeBuf);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern Int32 ClientReportControlBlock_getResvTms (IntPtr self);
