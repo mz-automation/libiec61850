@@ -43,14 +43,14 @@ namespace IEC61850
 			static extern IntPtr IedConnection_getGoCBValues (IntPtr connection, out int error, string rcbReference, IntPtr updateRcb);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern void IedConnection_setGoCBValues (IntPtr connection, out int error, IntPtr rcb, UInt32 parametersMask, bool singleRequest);
+			static extern void IedConnection_setGoCBValues (IntPtr connection, out int error, IntPtr rcb, UInt32 parametersMask, [MarshalAs(UnmanagedType.I1)] bool singleRequest);
 		
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			[return: MarshalAs(UnmanagedType.I1)]
 			static extern bool ClientGooseControlBlock_getGoEna (IntPtr self);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern void ClientGooseControlBlock_setGoEna(IntPtr self, bool rptEna);
+			static extern void ClientGooseControlBlock_setGoEna(IntPtr self, [MarshalAs(UnmanagedType.I1)] bool rptEna);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern IntPtr ClientGooseControlBlock_getGoID (IntPtr self);
