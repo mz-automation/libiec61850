@@ -204,23 +204,19 @@ createMmsServerCache(IedServer self)
 
                    )
                 {
-                    char* variableName = StringUtils_createString(3, lnName, "$", fcName);
+                    char variableName[65];
 
-                    if (variableName == NULL) goto exit_function;
+                    StringUtils_createStringInBuffer(variableName, 3, lnName, "$", fcName);
 
                     MmsValue* defaultValue = MmsValue_newDefaultValue(fcSpec);
 
-                    if (defaultValue == NULL) {
-                        GLOBAL_FREEMEM(variableName);
+                    if (defaultValue == NULL)
                         goto exit_function;
-                    }
 
                     if (DEBUG_IED_SERVER)
                         printf("ied_server.c: Insert into cache %s - %s\n", logicalDevice->domainName, variableName);
 
                     MmsServer_insertIntoCache(self->mmsServer, logicalDevice, variableName, defaultValue);
-
-                    GLOBAL_FREEMEM(variableName);
                 }
             }
         }

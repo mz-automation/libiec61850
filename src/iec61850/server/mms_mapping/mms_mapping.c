@@ -1303,6 +1303,7 @@ MmsMapping_create(IedModel* model)
 
     self->attributeAccessHandlers = LinkedList_create();
 
+    /* create data model specification */
     self->mmsDevice = createMmsModelFromIedModel(self, model);
 
     return self;
