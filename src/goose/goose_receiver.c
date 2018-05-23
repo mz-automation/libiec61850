@@ -766,6 +766,7 @@ parseGooseMessage(GooseReceiver self, int numbytes)
     }
 }
 
+#if (CONFIG_MMS_THREADLESS_STACK == 0)
 static void
 gooseReceiverLoop(void* threadParameter)
 {
@@ -789,6 +790,7 @@ gooseReceiverLoop(void* threadParameter)
 
     self->stopped = true;
 }
+#endif
 
 // start GOOSE receiver in a separate thread
 void

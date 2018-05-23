@@ -823,6 +823,8 @@ countSVControlBlocksForLogicalNode(MmsMapping* self, LogicalNode* logicalNode, b
 
 #endif /* (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1) */
 
+#if (CONFIG_IEC61850_SETTING_GROUPS == 1)
+
 static SettingGroupControlBlock*
 checkForSgcb(MmsMapping* self, LogicalNode* logicalNode)
 {
@@ -838,6 +840,9 @@ checkForSgcb(MmsMapping* self, LogicalNode* logicalNode)
     return NULL;
 }
 
+#endif /* (CONFIG_IEC61850_SETTING_GROUPS == 1) */
+
+
 static MmsVariableSpecification*
 createNamedVariableFromLogicalNode(MmsMapping* self, MmsDomain* domain,
         LogicalNode* logicalNode)
@@ -851,9 +856,8 @@ createNamedVariableFromLogicalNode(MmsMapping* self, MmsDomain* domain,
 
     int componentCount = determineLogicalNodeComponentCount(logicalNode);
 
-    SettingGroupControlBlock* sgControlBlock = NULL;
-
 #if (CONFIG_IEC61850_SETTING_GROUPS == 1)
+    SettingGroupControlBlock* sgControlBlock = NULL;
 
     sgControlBlock = checkForSgcb(self, logicalNode);
 

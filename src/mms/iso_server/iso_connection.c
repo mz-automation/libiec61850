@@ -432,7 +432,7 @@ exit_function:
     return;
 }
 
-#if (CONFIG_MMS_SINGLE_THREADED == 0)
+#if ((CONFIG_MMS_SINGLE_THREADED == 0) && (CONFIG_MMS_THREADLESS_STACK == 0))
 static void
 handleTcpConnection(void* parameter)
 {

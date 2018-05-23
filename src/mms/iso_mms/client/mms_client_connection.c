@@ -2074,6 +2074,7 @@ int32_t
 MmsConnection_fileOpen(MmsConnection self, MmsError* mmsError, const char* filename, uint32_t initialPosition,
         uint32_t* fileSize, uint64_t* lastModified)
 {
+#if (MMS_FILE_SERVICE == 1)
     ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
     uint32_t invokeId = getNextInvokeId(self);
@@ -2097,11 +2098,19 @@ MmsConnection_fileOpen(MmsConnection self, MmsError* mmsError, const char* filen
     releaseResponse(self);
 
     return frsmId;
+#else
+    if (DEBUG_MMS_CLIENT)
+        printf("MMS_CLIENT: service not supported\n");
+
+    *mmsError = MMS_ERROR_OTHER;
+    return 0;
+#endif
 }
 
 void
 MmsConnection_fileClose(MmsConnection self, MmsError* mmsError, int32_t frsmId)
 {
+#if (MMS_FILE_SERVICE == 1)
     ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
     uint32_t invokeId = getNextInvokeId(self);
@@ -2113,11 +2122,18 @@ MmsConnection_fileClose(MmsConnection self, MmsError* mmsError, int32_t frsmId)
     /* nothing to do - response contains no data to evaluate */
 
     releaseResponse(self);
+#else
+    if (DEBUG_MMS_CLIENT)
+        printf("MMS_CLIENT: service not supported\n");
+
+    *mmsError = MMS_ERROR_OTHER;
+#endif
 }
 
 void
 MmsConnection_fileDelete(MmsConnection self, MmsError* mmsError, const char* fileName)
 {
+#if (MMS_FILE_SERVICE == 1)
     ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
     uint32_t invokeId = getNextInvokeId(self);
@@ -2129,12 +2145,19 @@ MmsConnection_fileDelete(MmsConnection self, MmsError* mmsError, const char* fil
     /* nothing to do - response contains no data to evaluate */
 
     releaseResponse(self);
+#else
+    if (DEBUG_MMS_CLIENT)
+        printf("MMS_CLIENT: service not supported\n");
+
+    *mmsError = MMS_ERROR_OTHER;
+#endif
 }
 
 bool
 MmsConnection_fileRead(MmsConnection self, MmsError* mmsError, int32_t frsmId, MmsFileReadHandler handler,
         void* handlerParameter)
 {
+#if (MMS_FILE_SERVICE == 1)
     ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
     uint32_t invokeId = getNextInvokeId(self);
@@ -2156,12 +2179,20 @@ MmsConnection_fileRead(MmsConnection self, MmsError* mmsError, int32_t frsmId, M
     releaseResponse(self);
 
     return moreFollows;
+#else
+    if (DEBUG_MMS_CLIENT)
+        printf("MMS_CLIENT: service not supported\n");
+
+    *mmsError = MMS_ERROR_OTHER;
+    return false;
+#endif
 }
 
 bool
 MmsConnection_getFileDirectory(MmsConnection self, MmsError* mmsError, const char* fileSpecification, const char* continueAfter,
         MmsFileDirectoryHandler handler, void* handlerParameter)
 {
+#if (MMS_FILE_SERVICE == 1)
     ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
     uint32_t invokeId = getNextInvokeId(self);
@@ -2180,11 +2211,19 @@ MmsConnection_getFileDirectory(MmsConnection self, MmsError* mmsError, const cha
     releaseResponse(self);
 
     return moreFollows;
+#else
+    if (DEBUG_MMS_CLIENT)
+        printf("MMS_CLIENT: service not supported\n");
+
+    *mmsError = MMS_ERROR_OTHER;
+    return false;
+#endif
 }
 
 void
 MmsConnection_fileRename(MmsConnection self, MmsError* mmsError, const char* currentFileName, const char* newFileName)
 {
+#if (MMS_FILE_SERVICE == 1)
     ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
     uint32_t invokeId = getNextInvokeId(self);
@@ -2196,11 +2235,18 @@ MmsConnection_fileRename(MmsConnection self, MmsError* mmsError, const char* cur
     /* nothing to do - response contains no data to evaluate */
 
     releaseResponse(self);
+#else
+    if (DEBUG_MMS_CLIENT)
+        printf("MMS_CLIENT: service not supported\n");
+
+    *mmsError = MMS_ERROR_OTHER;
+#endif
 }
 
 void
 MmsConnection_obtainFile(MmsConnection self, MmsError* mmsError, const char* sourceFile, const char* destinationFile)
 {
+#if ((MMS_FILE_SERVICE == 1) && (MMS_OBTAIN_FILE_SERVICE == 1))
     ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
     uint32_t invokeId = getNextInvokeId(self);
@@ -2212,6 +2258,12 @@ MmsConnection_obtainFile(MmsConnection self, MmsError* mmsError, const char* sou
     /* nothing to do - response contains no data to evaluate */
 
     releaseResponse(self);
+#else
+    if (DEBUG_MMS_CLIENT)
+        printf("MMS_CLIENT: service not supported\n");
+
+    *mmsError = MMS_ERROR_OTHER;
+#endif
 }
 
 MmsDataAccessError

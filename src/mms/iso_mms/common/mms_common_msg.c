@@ -1,7 +1,7 @@
 /*
  *  mms_common_msg.c
  *
- *  Copyright 2013 - 2017 Michael Zillgith
+ *  Copyright 2013-2018 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -344,6 +344,8 @@ mmsMsg_copyAsn1IdentifierToStringBuffer(Identifier_t identifier, char* buffer, i
     }
 }
 
+#if (MMS_FILE_SERVICE == 1)
+
 void
 mmsMsg_createExtendedFilename(const char* basepath, char* extendedFileName, char* fileName)
 {
@@ -356,7 +358,6 @@ mmsMsg_createExtendedFilename(const char* basepath, char* extendedFileName, char
     strncat(extendedFileName, fileName, sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 256);
 #endif
 }
-
 
 
 FileHandle
@@ -416,3 +417,6 @@ mmsMsg_parseFileName(char* filename, uint8_t* buffer, int* bufPos, int maxBufPos
 
     return true;
 }
+
+#endif /* (MMS_FILE_SERVICE == 1) */
+

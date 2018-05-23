@@ -198,6 +198,8 @@ mmsClient_handleFileCloseRequest(
 
 #endif /* (MMS_OBTAIN_FILE_SERVICE == 1) */
 
+#if (MMS_FILE_SERVICE == 1)
+
 void
 mmsClient_createFileOpenRequest(uint32_t invokeId, ByteBuffer* request, const char* fileName, uint32_t initialPosition)
 {
@@ -777,4 +779,4 @@ mmsClient_createFileCloseRequest(uint32_t invokeId, ByteBuffer* request, int32_t
     request->size = bufPos;
 }
 
-
+#endif /* (MMS_FILE_SERVICE == 1) */

@@ -28,7 +28,7 @@
 #define DEBUG_HAL_ETHERNET 0
 
 /* Maximum MMS PDU SIZE - default is 65000 */
-#define CONFIG_MMS_MAXIMUM_PDU_SIZE 120000
+#define CONFIG_MMS_MAXIMUM_PDU_SIZE 65000
 
 /*
  * Enable single threaded mode
@@ -201,13 +201,9 @@
 #define MMS_STATUS_SERVICE 1
 #define MMS_IDENTIFY_SERVICE 1
 #define MMS_FILE_SERVICE 1
-#define MMS_OBTAIN_FILE_SERVICE 1
+#define MMS_OBTAIN_FILE_SERVICE 1 /* requires MMS_FILE_SERVICE */
 #endif /* MMS_DEFAULT_PROFILE */
 
-#if (MMS_WRITE_SERVICE != 1)
-#undef CONFIG_IEC61850_CONTROL_SERVICE
-#define CONFIG_IEC61850_CONTROL_SERVICE 0
-#endif
 
 /* support flat named variable name space required by IEC 61850-8-1 MMS mapping */
 #define CONFIG_MMS_SUPPORT_FLATTED_NAME_SPACE 1
@@ -227,9 +223,44 @@
 /* Support user access to raw messages */
 #define CONFIG_MMS_RAW_MESSAGE_LOGGING 1
 
-/* Allow to set the virtual filestore basepath for MMS file services at runtime with the
- * MmsServer_setFilestoreBasepath function
+/* Allow to set the virtual file store base path for MMS file services at runtime with the
+ * MmsServer_setFilestoreBasepath function.
  */
 #define CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME 1
+
+/************************************************************************************
+ * Check configuration for consistency - DO NOT MODIFY THIS PART!
+ ************************************************************************************/
+
+#if (MMS_JOURNAL_SERVICE != 1)
+
+#if (CONFIG_IEC61850_LOG_SERVICE == 1)
+#warning "Invalid configuration: CONFIG_IEC61850_LOG_SERVICE requires MMS_JOURNAL_SERVICE!"
+#endif
+
+#undef CONFIG_IEC61850_LOG_SERVICE
+#define CONFIG_IEC61850_LOG_SERVICE 0
+
+#endif
+
+#if (MMS_WRITE_SERVICE != 1)
+
+#if (CONFIG_IEC61850_CONTROL_SERVICE == 1)
+#warning "Invalid configuration: CONFIG_IEC61850_CONTROL_SERVICE requires MMS_WRITE_SERVICE!"
+#endif
+
+#undef CONFIG_IEC61850_CONTROL_SERVICE
+#define CONFIG_IEC61850_CONTROL_SERVICE 0
+#endif
+
+#if (MMS_FILE_SERVICE != 1)
+
+#if (MMS_OBTAIN_FILE_SERVICE == 1)
+#warning "Invalid configuration: MMS_OBTAIN_FILE_SERVICE requires MMS_FILE_SERVICE!"
+#endif
+
+#undef MMS_OBTAIN_FILE_SERVICE
+#define MMS_OBTAIN_FILE_SERVICE 0
+#endif
 
 #endif /* STACK_CONFIG_H_ */
