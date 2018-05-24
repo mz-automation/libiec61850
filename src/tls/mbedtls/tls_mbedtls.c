@@ -343,8 +343,10 @@ readFunction(void* ctx, unsigned char* buf, size_t len)
 {
     int ret = Socket_read((Socket) ctx, buf, len);
 
-    if ((ret == 0) && (len > 0))
+    if ((ret == 0) && (len > 0)) {
+        Thread_sleep(1);
         return MBEDTLS_ERR_SSL_WANT_READ;
+    }
 
     return ret;
 }

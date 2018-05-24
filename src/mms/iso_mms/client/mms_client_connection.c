@@ -1283,9 +1283,9 @@ MmsConnection_connect(MmsConnection self, MmsError* mmsError, const char* server
     if (serverPort == -1) {
 #if (CONFIG_MMS_SUPPORT_TLS == 1)
         if (self->isoParameters->tlsConfiguration)
-        serverPort = 3782;
+            serverPort = 3782;
         else
-        serverPort = 102;
+            serverPort = 102;
 #else
         serverPort = 102;
 #endif

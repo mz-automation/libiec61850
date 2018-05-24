@@ -39,6 +39,10 @@
  */
 #define CONFIG_MMS_SINGLE_THREADED 0
 
+#if (WITH_MBEDTLS == 1)
+#define CONFIG_MMS_SUPPORT_TLS 1
+#endif
+
 /*
  * Optimize stack for threadless operation - don't use semaphores
  *
