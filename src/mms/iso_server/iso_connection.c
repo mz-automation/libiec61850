@@ -1,7 +1,7 @@
 /*
  *  iso_connection.c
  *
- *  Copyright 2013, 2014 Michael Zillgith
+ *  Copyright 2013-2018 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -86,8 +86,6 @@ struct sIsoConnection
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     Thread thread;
     Semaphore conMutex;
-
-    bool isInsideCallback;
 #endif
 };
 
@@ -211,17 +209,8 @@ IsoConnection_handleTcpConnection(IsoConnection self)
                         ByteBuffer_wrap(&mmsResponseBuffer, self->sendBuffer, 0, SEND_BUF_SIZE);
 
                         if (self->msgRcvdHandler != NULL) {
-
-#if (CONFIG_MMS_THREADLESS_STACK != 1)
-                            self->isInsideCallback = true;
-#endif
-
                             self->msgRcvdHandler(self->msgRcvdHandlerParameter,
                                     &mmsRequest, &mmsResponseBuffer);
-
-#if (CONFIG_MMS_THREADLESS_STACK != 1)
-                            self->isInsideCallback = false;
-#endif
                         }
 
                         struct sBufferChain mmsBufferPartStruct;
@@ -306,16 +295,9 @@ IsoConnection_handleTcpConnection(IsoConnection self)
                     ByteBuffer_wrap(&mmsResponseBuffer, self->sendBuffer, 0, SEND_BUF_SIZE);
 
                     if (self->msgRcvdHandler != NULL) {
-#if (CONFIG_MMS_THREADLESS_STACK != 1)
-                        self->isInsideCallback = true;
-#endif
 
                         self->msgRcvdHandler(self->msgRcvdHandlerParameter,
                                 mmsRequest, &mmsResponseBuffer);
-
-#if (CONFIG_MMS_THREADLESS_STACK != 1)
-                        self->isInsideCallback = false;
-#endif
                     }
 
                     /* send a response if required */
@@ -365,6 +347,11 @@ IsoConnection_handleTcpConnection(IsoConnection self)
                     if (DEBUG_ISO_SERVER)
                         printf("ISO_SERVER: iso_connection: presentation ok\n");
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+                    IsoServer_userLock(self->isoServer);
+                    Semaphore_wait(self->conMutex);
+#endif
+
                     struct sBufferChain acseBufferPartStruct;
                     BufferChain acseBufferPart = &acseBufferPartStruct;
                     acseBufferPart->buffer = self->sendBuffer;
@@ -387,6 +374,11 @@ IsoConnection_handleTcpConnection(IsoConnection self)
                     IsoSession_createDisconnectSpdu(self->session, sessionBufferPart, presentationBufferPart);
 
                     CotpConnection_sendDataMessage(self->cotpConnection, sessionBufferPart);
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+                    Semaphore_post(self->conMutex);
+                    IsoServer_userUnlock(self->isoServer);
+#endif
                 }
 
                 self->state = ISO_CON_STATE_STOPPED;
@@ -476,7 +468,6 @@ IsoConnection_create(Socket socket, IsoServer isoServer)
     self->clientAddress = Socket_getPeerAddress(self->socket);
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
-    self->isInsideCallback = false;
     self->conMutex = Semaphore_create(1);
 #endif
 
@@ -550,9 +541,13 @@ IsoConnection_sendMessage(IsoConnection self, ByteBuffer* message, bool handlerM
         goto exit_error;
     }
 
+    bool locked = false;
+
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
-    if (self->isInsideCallback == false)
+    if (handlerMode == false) {
         Semaphore_wait(self->conMutex);
+        locked = true;
+    }
 #endif
 
     struct sBufferChain payloadBufferStruct;
@@ -589,7 +584,7 @@ IsoConnection_sendMessage(IsoConnection self, ByteBuffer* message, bool handlerM
     }
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
-    if (self->isInsideCallback == false)
+    if (locked)
         Semaphore_post(self->conMutex);
 #endif
 
