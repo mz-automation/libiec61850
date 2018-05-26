@@ -1,7 +1,7 @@
 /*
  *  mms_mapping.h
  *
- *  Copyright 2013-2016 Michael Zillgith
+ *  Copyright 2013-2018 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -46,7 +46,7 @@ typedef enum {
 typedef struct sMmsMapping MmsMapping;
 
 MmsMapping*
-MmsMapping_create(IedModel* model);
+MmsMapping_create(IedModel* model, IedServer iedServer);
 
 MmsDevice*
 MmsMapping_getMmsDeviceModel(MmsMapping* mapping);
@@ -137,9 +137,6 @@ MmsMapping_ObjectReferenceToVariableAccessSpec(char* objectReference);
 
 char*
 MmsMapping_varAccessSpecToObjectReference(MmsVariableAccessSpecification* varAccessSpec);
-
-void
-MmsMapping_setIedServer(MmsMapping* self, IedServer iedServer);
 
 void
 MmsMapping_setConnectionIndicationHandler(MmsMapping* self, IedConnectionIndicationHandler handler, void* parameter);

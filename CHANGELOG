@@ -1,3 +1,9 @@
+Changes to version 1.2.2
+------------------------
+
+- IEC 61850 server: added support to configure report buffer at runtime
+- IEC 61850 server: new IedServerConfig type and new IedServer constructor
+
 Changes to version 1.2.1
 ------------------------
 

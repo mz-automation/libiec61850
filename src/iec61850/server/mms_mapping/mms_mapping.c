@@ -1272,11 +1272,12 @@ createMmsModelFromIedModel(MmsMapping* self, IedModel* iedModel)
 }
 
 MmsMapping*
-MmsMapping_create(IedModel* model)
+MmsMapping_create(IedModel* model, IedServer iedServer)
 {
     MmsMapping* self = (MmsMapping*) GLOBAL_CALLOC(1, sizeof(struct sMmsMapping));
 
     self->model = model;
+    self->iedServer = iedServer;
 
 #if (CONFIG_IEC61850_REPORT_SERVICE == 1)
     self->reportControls = LinkedList_create();
@@ -2562,12 +2563,6 @@ MmsMapping_installHandlers(MmsMapping* self)
     MmsServer_installReadAccessHandler(self->mmsServer, mmsReadAccessHandler, (void*) self);
     MmsServer_installConnectionHandler(self->mmsServer, mmsConnectionHandler, (void*) self);
     MmsServer_installVariableListChangedHandler(self->mmsServer, variableListChangedHandler, (void*) self);
-}
-
-void
-MmsMapping_setIedServer(MmsMapping* self, IedServer iedServer)
-{
-    self->iedServer = iedServer;
 }
 
 void

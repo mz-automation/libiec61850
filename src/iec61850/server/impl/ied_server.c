@@ -391,8 +391,9 @@ updateDataSetsWithCachedValues(IedServer self)
     }
 }
 
+
 IedServer
-IedServer_createWithTlsSupport(IedModel* dataModel, TLSConfiguration tlsConfiguration)
+IedServer_createWithConfig(IedModel* dataModel, TLSConfiguration tlsConfiguration, IedServerConfig serverConfiguration)
 {
     IedServer self = (IedServer) GLOBAL_CALLOC(1, sizeof(struct sIedServer));
 
@@ -407,7 +408,14 @@ IedServer_createWithTlsSupport(IedModel* dataModel, TLSConfiguration tlsConfigur
         self->dataModelLock = Semaphore_create(1);
 #endif
 
-        self->mmsMapping = MmsMapping_create(dataModel);
+#if (CONFIG_IEC61850_REPORT_SERVICE == 1)
+        if (serverConfiguration)
+            self->reportBufferSize = serverConfiguration->reportBufferSize;
+        else
+            self->reportBufferSize = CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE;
+#endif
+
+        self->mmsMapping = MmsMapping_create(dataModel, self);
 
         self->mmsDevice = MmsMapping_getMmsDeviceModel(self->mmsMapping);
 
@@ -416,8 +424,6 @@ IedServer_createWithTlsSupport(IedModel* dataModel, TLSConfiguration tlsConfigur
         MmsMapping_setMmsServer(self->mmsMapping, self->mmsServer);
 
         MmsMapping_installHandlers(self->mmsMapping);
-
-        MmsMapping_setIedServer(self->mmsMapping, self);
 
         createMmsServerCache(self);
 
@@ -447,7 +453,13 @@ IedServer_createWithTlsSupport(IedModel* dataModel, TLSConfiguration tlsConfigur
 IedServer
 IedServer_create(IedModel* dataModel)
 {
-    return IedServer_createWithTlsSupport(dataModel, NULL);
+    return IedServer_createWithConfig(dataModel, NULL, NULL);
+}
+
+IedServer
+IedServer_createWithTlsSupport(IedModel* dataModel, TLSConfiguration tlsConfiguration)
+{
+    return IedServer_createWithConfig(dataModel, tlsConfiguration, NULL);
 }
 
 void

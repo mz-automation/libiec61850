@@ -581,3 +581,8 @@ EXPORTS
     CDC_VSG_create
     Timestamp_createFromByteArray
     IedModel_getDeviceByIndex
+    IedServerConfig_create
+    IedServerConfig_destroy
+    IedServerConfig_setReportBufferSize
+    IedServerConfig_getReportBufferSize
+    IedServer_createWithConfig

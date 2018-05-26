@@ -421,11 +421,10 @@ Timestamp_toMmsValue(Timestamp* self, MmsValue* mmsValue);
 /**
  * \brief Get the version of the library as string
  *
- * \return the version of the library (e.g. "0.8.3")
+ * \return the version of the library (e.g. "1.2.2")
  */
 char*
 LibIEC61850_getVersionString(void);
-
 
 /** @} */
 

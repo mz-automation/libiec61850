@@ -66,6 +66,7 @@ set (lib_common_SRCS
 ./iec61850/client/ied_connection.c
 ./iec61850/common/iec61850_common.c
 ./iec61850/server/impl/ied_server.c
+./iec61850/server/impl/ied_server_config.c
 ./iec61850/server/impl/client_connection.c
 ./iec61850/server/model/model.c
 ./iec61850/server/model/dynamic_model.c

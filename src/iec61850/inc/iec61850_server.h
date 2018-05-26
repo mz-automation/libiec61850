@@ -3,7 +3,7 @@
  *
  *  IEC 61850 server API for libiec61850.
  *
- *  Copyright 2013, 2014 Michael Zillgith
+ *  Copyright 2013-2018 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -42,6 +42,49 @@ extern "C" {
 #include "iec61850_config_file_parser.h"
 
 /**
+ * \brief Configuration object to configure IEC 61850 stack features
+ */
+typedef struct sIedServerConfig* IedServerConfig;
+
+struct sIedServerConfig
+{
+    /** size of the report buffer associated with a buffered report control block */
+    int reportBufferSize;
+};
+
+/**
+ * \brief Create a new configuration object
+ *
+ * \return a new configuration object with default configuration values
+ */
+IedServerConfig
+IedServerConfig_create(void);
+
+/**
+ * \brief Destroy the configuration object
+ */
+void
+IedServerConfig_destroy(IedServerConfig self);
+
+/**
+ * \brief Set the report buffer size for buffered reporting
+ *
+ * \param reportBufferSize the buffer size for each buffered report control block
+ */
+void
+IedServerConfig_setReportBufferSize(IedServerConfig self, int reportBufferSize);
+
+/**
+ * \brief Gets the report buffer size for buffered reporting
+ *
+ * \return the buffer size for each buffered report control block
+ */
+int
+IedServerConfig_getReportBufferSize(IedServerConfig self);
+
+
+
+/**
  * An opaque handle for an IED server instance
  */
 typedef struct sIedServer* IedServer;
@@ -78,6 +121,16 @@ IedServer_create(IedModel* dataModel);
  */
 IedServer
 IedServer_createWithTlsSupport(IedModel* dataModel, TLSConfiguration tlsConfiguration);
+
+/**
+ * \brief Create new new IedServer with extended configurations parameters
+ *
+ * \param dataModel reference to the IedModel data structure to be used as IEC 61850 data model of the device
+ * \param tlsConfiguration TLS configuration object, or NULL to not use TLS
+ * \param serverConfiguration IED server configuration object for advanced server configuration
+ */
+IedServer
+IedServer_createWithConfig(IedModel* dataModel, TLSConfiguration tlsConfiguration, IedServerConfig serverConfiguration);
 
 /**
  * \brief Destroy an IedServer instance and release all resources (memory, TCP sockets)

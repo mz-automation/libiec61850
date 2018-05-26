@@ -708,3 +708,8 @@ EXPORTS
     Timestamp_createFromByteArray
     IedModel_getDeviceByIndex
     SVReceiver_enableDestAddrCheck
+    IedServerConfig_create
+    IedServerConfig_destroy
+    IedServerConfig_setReportBufferSize
+    IedServerConfig_getReportBufferSize
+    IedServer_createWithConfig

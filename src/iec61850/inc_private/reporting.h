@@ -97,7 +97,7 @@ typedef struct {
 } ReportControl;
 
 ReportControl*
-ReportControl_create(bool buffered, LogicalNode* parentLN);
+ReportControl_create(bool buffered, LogicalNode* parentLN, int reportBufferSize);
 
 void
 ReportControl_destroy(ReportControl* self);

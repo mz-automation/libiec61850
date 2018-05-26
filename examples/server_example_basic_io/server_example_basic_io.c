@@ -83,7 +83,17 @@ main(int argc, char** argv)
 {
     printf("Using libIEC61850 version %s\n", LibIEC61850_getVersionString());
 
-    iedServer = IedServer_create(&iedModel);
+    /* Create new server configuration object */
+    IedServerConfig config = IedServerConfig_create();
+
+    /* Set buffer size for buffered report control blocks to 200000 bytes */
+    IedServerConfig_setReportBufferSize(config, 200000);
+
+    /* Create a new IEC 61850 server instance */
+    iedServer = IedServer_createWithConfig(&iedModel, NULL, config);
+
+    /* configuration object is no longer required */
+    IedServerConfig_destroy(config);
 
     /* Set the base path for the MMS file services */
     MmsServer mmsServer = IedServer_getMmsServer(iedServer);
@@ -108,7 +118,7 @@ main(int argc, char** argv)
 
     IedServer_setConnectionIndicationHandler(iedServer, (IedConnectionIndicationHandler) connectionHandler, NULL);
 
-    /* MMS server will be instructed to start listening to client connections. */
+    /* MMS server will be instructed to start listening for client connections. */
     IedServer_start(iedServer, 102);
 
     if (!IedServer_isRunning(iedServer)) {

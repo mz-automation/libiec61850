@@ -35,6 +35,7 @@
 #include "mms_value_internal.h"
 #include "conversions.h"
 #include "reporting.h"
+#include "ied_server_private.h"
 #include <string.h>
 
 #ifndef DEBUG_IED_SERVER
@@ -62,16 +63,25 @@
 
 
 static ReportBuffer*
-ReportBuffer_create(void)
+ReportBuffer_create(int bufferSize)
 {
     ReportBuffer* self = (ReportBuffer*) GLOBAL_MALLOC(sizeof(ReportBuffer));
-    self->lastEnqueuedReport = NULL;
-    self->oldestReport = NULL;
-    self->nextToTransmit = NULL;
-    self->memoryBlockSize = CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE;
-    self->memoryBlock = (uint8_t*) GLOBAL_MALLOC(self->memoryBlockSize);
-    self->reportsCount = 0;
-    self->isOverflow = true;
+
+    if (self) {
+        self->lastEnqueuedReport = NULL;
+        self->oldestReport = NULL;
+        self->nextToTransmit = NULL;
+        self->reportsCount = 0;
+        self->isOverflow = true;
+
+        self->memoryBlockSize = bufferSize;
+        self->memoryBlock = (uint8_t*) GLOBAL_MALLOC(self->memoryBlockSize);
+
+        if (self->memoryBlock == NULL) {
+            GLOBAL_FREEMEM(self);
+            self = NULL;
+        }
+    }
 
     return self;
 }
@@ -84,7 +94,7 @@ ReportBuffer_destroy(ReportBuffer* self)
 }
 
 ReportControl*
-ReportControl_create(bool buffered, LogicalNode* parentLN)
+ReportControl_create(bool buffered, LogicalNode* parentLN, int reportBufferSize)
 {
     ReportControl* self = (ReportControl*) GLOBAL_MALLOC(sizeof(ReportControl));
     self->name = NULL;
@@ -120,7 +130,7 @@ ReportControl_create(bool buffered, LogicalNode* parentLN)
     self->lastEntryId = 0;
 
     if (buffered) {
-        self->reportBuffer = ReportBuffer_create();
+        self->reportBuffer = ReportBuffer_create(reportBufferSize);
     }
 
     return self;
@@ -1156,7 +1166,7 @@ Reporting_createMmsBufferedRCBs(MmsMapping* self, MmsDomain* domain,
     int currentReport = 0;
 
     while (currentReport < reportsCount) {
-        ReportControl* rc = ReportControl_create(true, logicalNode);
+        ReportControl* rc = ReportControl_create(true, logicalNode, self->iedServer->reportBufferSize);
 
         rc->domain = domain;
 
@@ -1193,7 +1203,7 @@ Reporting_createMmsUnbufferedRCBs(MmsMapping* self, MmsDomain* domain,
     int currentReport = 0;
 
     while (currentReport < reportsCount) {
-        ReportControl* rc = ReportControl_create(false, logicalNode);
+        ReportControl* rc = ReportControl_create(false, logicalNode, self->iedServer->reportBufferSize);
 
         rc->domain = domain;
 
