@@ -6,16 +6,19 @@ This file is part of the documentation of **libIEC61850**. More documentation ca
 
 Content:
 
-* Overview
-* Building and running the examples
-* Installing the library and the API headers
-* Building on Windows with GOOSE support
-* Building with the cmake build script
-* Using the log service with sqlite
-* C# API
-* Licensing
-* Contributing
-* Third-party contributions
+* [Overview](#overview)
+* [Features](#features)
+* [Building and running the examples](#building-and-running-the-examples-with-the-provided-makefiles)
+* [Building the library with TLS support](#building-the-library-with-tls-support)
+* [Installing the library and the API headers](#installing-the-library-and-the-api-headers)
+* [Building on Windows with GOOSE support](#building-on-windows-with-goose-support)
+* [Building with the cmake build script](#building-with-the-cmake-build-script)
+* [Using the log service with sqlite](#using-the-log-service-with-sqlite)
+* [C# API](#c-api)
+* [Experimental Python bindings](#experimental-python-bindings)
+* [Licensing](#commercial-licenses-and-support)
+* [Contributing](#contributing)
+* [Third-party contributions](#third-party-contributions)
 
 
 ## Overview
