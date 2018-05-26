@@ -2757,7 +2757,10 @@ MmsMapping_triggerReportObservers(MmsMapping* self, MmsValue* value, ReportInclu
             }
 
             if (DataSet_isMemberValue(rc->dataSet, value, &index)) {
-                ReportControl_valueUpdated(rc, index, flag);
+
+                bool modelLocked = self->isModelLocked;
+
+                ReportControl_valueUpdated(rc, index, flag, modelLocked);
             }
         }
     }

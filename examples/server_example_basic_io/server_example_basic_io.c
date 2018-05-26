@@ -133,8 +133,6 @@ main(int argc, char** argv)
         float an3 = sinf(t + 2.f);
         float an4 = sinf(t + 3.f);
 
-        IedServer_lockDataModel(iedServer);
-
         Timestamp iecTimestamp;
 
         Timestamp_clearFlags(&iecTimestamp);
@@ -144,6 +142,8 @@ main(int argc, char** argv)
         /* toggle clock-not-synchronized flag in timestamp */
         if (((int) t % 2) == 0)
             Timestamp_setClockNotSynchronized(&iecTimestamp, true);
+
+        IedServer_lockDataModel(iedServer);
 
         IedServer_updateTimestampAttributeValue(iedServer, IEDMODEL_GenericIO_GGIO1_AnIn1_t, &iecTimestamp);
         IedServer_updateFloatAttributeValue(iedServer, IEDMODEL_GenericIO_GGIO1_AnIn1_mag_f, an1);

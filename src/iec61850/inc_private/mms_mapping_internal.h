@@ -1,7 +1,7 @@
 /*
  *  mms_mapping_internal.h
  *
- *  Copyright 2013-2016 Michael Zillgith
+ *  Copyright 2013-2018 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -63,6 +63,9 @@ struct sMmsMapping {
     bool reportThreadFinished;
     Thread reportWorkerThread;
 #endif
+
+    /* flag indicates if data model is locked --> prevents reports to be sent */
+    bool isModelLocked;
 
     IedServer iedServer;
 

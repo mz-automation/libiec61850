@@ -338,8 +338,10 @@ IedServer_setConnectionIndicationHandler(IedServer self, IedConnectionIndication
 
 
 /**
- * \brief Lock the MMS server data model.
+ * \brief Lock the data model for data update.
  *
+ * This function should be called before the data model is updated.
+ * After updating the data model the function \ref IedServer_unlockDataModel should be called.
  * Client requests will be postponed until the lock is removed.
  *
  * NOTE: This method should never be called inside of a library callback function. In the context of
@@ -352,7 +354,7 @@ void
 IedServer_lockDataModel(IedServer self);
 
 /**
- * \brief Unlock the MMS server data model and process pending client requests.
+ * \brief Unlock the data model and process pending client requests.
  *
  * NOTE: This method should never be called inside of a library callback function. In the context of
  * a library callback the data model is always already locked!

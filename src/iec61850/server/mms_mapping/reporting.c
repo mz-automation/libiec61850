@@ -2514,36 +2514,95 @@ processEventsForReport(ReportControl* rc, uint64_t currentTimeInMs)
 void
 Reporting_processReportEvents(MmsMapping* self, uint64_t currentTimeInMs)
 {
+    if (self->isModelLocked == false) {
+
+        LinkedList element = self->reportControls;
+
+        while ((element = LinkedList_getNext(element)) != NULL ) {
+            ReportControl* rc = (ReportControl*) element->data;
+
+            ReportControl_lockNotify(rc);
+
+            processEventsForReport(rc, currentTimeInMs);
+
+            ReportControl_unlockNotify(rc);
+        }
+    }
+}
+
+static inline void
+copySingleValueToReportBuffer(ReportControl* self, int dataSetEntryIndex)
+{
+    if (self->bufferedDataSetValues[dataSetEntryIndex] == NULL)
+        self->bufferedDataSetValues[dataSetEntryIndex] = MmsValue_clone(self->valueReferences[dataSetEntryIndex]);
+    else
+        MmsValue_update(self->bufferedDataSetValues[dataSetEntryIndex], self->valueReferences[dataSetEntryIndex]);
+}
+
+static void
+copyValuesToReportBuffer(ReportControl* self)
+{
+    int i;
+    for (i = 0; i < self->dataSet->elementCount; i++) {
+        if (self->inclusionFlags[i] & REPORT_CONTROL_NOT_UPDATED) {
+            copySingleValueToReportBuffer(self, i);
+
+            /* clear not-updated flag */
+            self->inclusionFlags[i] &= (~REPORT_CONTROL_NOT_UPDATED);
+        }
+    }
+}
+
+/* check if report have to be sent after data model update */
+void
+Reporting_processReportEventsAfterUnlock(MmsMapping* self)
+{
     LinkedList element = self->reportControls;
+
+    uint64_t currentTime = Hal_getTimeInMs();
 
     while ((element = LinkedList_getNext(element)) != NULL ) {
         ReportControl* rc = (ReportControl*) element->data;
 
         ReportControl_lockNotify(rc);
 
-        processEventsForReport(rc, currentTimeInMs);
+        if ((rc->enabled) || (rc->isBuffering)) {
+            copyValuesToReportBuffer(rc);
+
+            processEventsForReport(rc, currentTime);
+        }
 
         ReportControl_unlockNotify(rc);
     }
 }
 
 void
-ReportControl_valueUpdated(ReportControl* self, int dataSetEntryIndex, ReportInclusionFlag flag)
+ReportControl_valueUpdated(ReportControl* self, int dataSetEntryIndex, ReportInclusionFlag flag, bool modelLocked)
 {
     ReportControl_lockNotify(self);
 
     if (self->inclusionFlags[dataSetEntryIndex] != 0) { /* report for this data set entry is already pending (bypass BufTm) */
         self->reportTime = Hal_getTimeInMs();
+
+        if (modelLocked) {
+            /* buffer all relevant values */
+            copyValuesToReportBuffer(self);
+        }
+
         processEventsForReport(self, self->reportTime);
     }
 
-    self->inclusionFlags[dataSetEntryIndex] = flag;
+    if (modelLocked) {
+        /* set flag to update values when report is to be sent or data model unlocked */
+        self->inclusionFlags[dataSetEntryIndex] = flag | REPORT_CONTROL_NOT_UPDATED;
 
-    /* buffer value for report */
-    if (self->bufferedDataSetValues[dataSetEntryIndex] == NULL)
-        self->bufferedDataSetValues[dataSetEntryIndex] = MmsValue_clone(self->valueReferences[dataSetEntryIndex]);
-    else
-        MmsValue_update(self->bufferedDataSetValues[dataSetEntryIndex], self->valueReferences[dataSetEntryIndex]);
+    }
+    else {
+        self->inclusionFlags[dataSetEntryIndex] = flag;
+
+        /* buffer value for report */
+        copySingleValueToReportBuffer(self, dataSetEntryIndex);
+    }
 
     if (self->triggered == false) {
         uint64_t currentTime = Hal_getTimeInMs();

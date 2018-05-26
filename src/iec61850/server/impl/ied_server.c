@@ -649,11 +649,18 @@ void
 IedServer_lockDataModel(IedServer self)
 {
     MmsServer_lockModel(self->mmsServer);
+
+    self->mmsMapping->isModelLocked = true;
 }
 
 void
 IedServer_unlockDataModel(IedServer self)
 {
+    /* check if reports have to be sent! */
+    Reporting_processReportEventsAfterUnlock(self->mmsMapping);
+
+    self->mmsMapping->isModelLocked = false;
+
     MmsServer_unlockModel(self->mmsServer);
 }
 
