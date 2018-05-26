@@ -50,6 +50,9 @@ struct sIedServerConfig
 {
     /** size of the report buffer associated with a buffered report control block */
     int reportBufferSize;
+
+    /** Base path (directory where the file service serves files */
+    char* fileServiceBasepath;
 };
 
 /**
@@ -81,6 +84,20 @@ IedServerConfig_setReportBufferSize(IedServerConfig self, int reportBufferSize);
  */
 int
 IedServerConfig_getReportBufferSize(IedServerConfig self);
+
+/**
+ * \brief Set the basepath of the file services
+ *
+ * \param basepath new file service base path
+ */
+void
+IedServerConfig_setFileServiceBasePath(IedServerConfig self, const char* basepath);
+
+/**
+ * \brief Get the basepath of the file services
+ */
+const char*
+IedServerConfig_getFileServiceBasePath(IedServerConfig self);
 
 
 

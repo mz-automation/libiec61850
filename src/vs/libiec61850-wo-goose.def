@@ -586,3 +586,5 @@ EXPORTS
     IedServerConfig_setReportBufferSize
     IedServerConfig_getReportBufferSize
     IedServer_createWithConfig
+    IedServerConfig_setFileServiceBasePath
+    IedServerConfig_getFileServiceBasePath

@@ -31,6 +31,7 @@ IedServerConfig_create()
 
     if (self) {
         self->reportBufferSize = CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE;
+        self->fileServiceBasepath = StringUtils_copyString(CONFIG_VIRTUAL_FILESTORE_BASEPATH);
     }
 
     return self;
@@ -39,6 +40,7 @@ IedServerConfig_create()
 void
 IedServerConfig_destroy(IedServerConfig self)
 {
+    GLOBAL_FREEMEM(self->fileServiceBasepath);
     GLOBAL_FREEMEM(self);
 }
 
@@ -52,4 +54,22 @@ int
 IedServerConfig_getReportBufferSize(IedServerConfig self)
 {
     return self->reportBufferSize;
+}
+
+void
+IedServerConfig_setFileServiceBasePath(IedServerConfig self, const char* basepath)
+{
+#if (CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME == 1)
+    GLOBAL_FREEMEM(self->fileServiceBasepath);
+    self->fileServiceBasepath = StringUtils_copyString(basepath);
+#else
+    if (DEBUG_IED_SERVER)
+        printf("IED_SERVER_CONFIG: Cannot set file service basepath (enable CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME)!\n");
+#endif
+}
+
+const char*
+IedServerConfig_getFileServiceBasePath(IedServerConfig self)
+{
+    return self->fileServiceBasepath;
 }

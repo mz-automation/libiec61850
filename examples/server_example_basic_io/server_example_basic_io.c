@@ -3,6 +3,7 @@
  *
  *  - How to use simple control models
  *  - How to serve analog measurement data
+ *  - Using the IedServerConfig object to configure stack features
  */
 
 #include "iec61850_server.h"
@@ -89,15 +90,14 @@ main(int argc, char** argv)
     /* Set buffer size for buffered report control blocks to 200000 bytes */
     IedServerConfig_setReportBufferSize(config, 200000);
 
+    /* Set the base path for the MMS file services */
+    IedServerConfig_setFileServiceBasePath(config, "./vmd-filestore/");
+
     /* Create a new IEC 61850 server instance */
     iedServer = IedServer_createWithConfig(&iedModel, NULL, config);
 
     /* configuration object is no longer required */
     IedServerConfig_destroy(config);
-
-    /* Set the base path for the MMS file services */
-    MmsServer mmsServer = IedServer_getMmsServer(iedServer);
-    MmsServer_setFilestoreBasepath(mmsServer, "./vmd-filestore/");
 
     /* Install handler for operate command */
     IedServer_setControlHandler(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO1,
