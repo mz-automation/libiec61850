@@ -80,7 +80,7 @@ typedef struct {
     Semaphore createNotificationsMutex;  /* { covered by mutex } */
 #endif
 
-    ReportInclusionFlag* inclusionFlags; /* { covered by mutex } */
+    uint8_t* inclusionFlags; /* { covered by mutex } */
     bool triggered;                      /* { covered by mutex } */
     uint64_t reportTime;                 /* { covered by mutex } */
 
@@ -103,7 +103,7 @@ void
 ReportControl_destroy(ReportControl* self);
 
 void
-ReportControl_valueUpdated(ReportControl* self, int dataSetEntryIndex, ReportInclusionFlag flag, bool modelLocked);
+ReportControl_valueUpdated(ReportControl* self, int dataSetEntryIndex, int flag, bool modelLocked);
 
 MmsValue*
 ReportControl_getRCBValue(ReportControl* rc, char* elementName);

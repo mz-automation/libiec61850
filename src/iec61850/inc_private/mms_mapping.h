@@ -28,13 +28,11 @@
 #include "mms_device_model.h"
 #include "control.h"
 
-typedef enum {
-    REPORT_CONTROL_NONE = 0,
-    REPORT_CONTROL_VALUE_UPDATE = 1,
-    REPORT_CONTROL_VALUE_CHANGED = 2,
-    REPORT_CONTROL_QUALITY_CHANGED = 4,
-    REPORT_CONTROL_NOT_UPDATED = 8
-} ReportInclusionFlag;
+#define REPORT_CONTROL_NONE 0U
+#define REPORT_CONTROL_VALUE_UPDATE 1U
+#define REPORT_CONTROL_VALUE_CHANGED 2U
+#define REPORT_CONTROL_QUALITY_CHANGED 4U
+#define REPORT_CONTROL_NOT_UPDATED 8U
 
 typedef enum {
     LOG_CONTROL_NONE,
@@ -91,7 +89,7 @@ DataSet*
 MmsMapping_createDataSetByNamedVariableList(MmsMapping* self, MmsNamedVariableList variableList);
 
 void
-MmsMapping_triggerReportObservers(MmsMapping* self, MmsValue* value, ReportInclusionFlag flag);
+MmsMapping_triggerReportObservers(MmsMapping* self, MmsValue* value, int flag);
 
 void
 MmsMapping_triggerLogging(MmsMapping* self, MmsValue* value, LogInclusionFlag flag);

@@ -662,7 +662,7 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
         if (rc->inclusionFlags != NULL)
             GLOBAL_FREEMEM(rc->inclusionFlags);
 
-        rc->inclusionFlags = (ReportInclusionFlag*) GLOBAL_CALLOC(dataSet->elementCount, sizeof(ReportInclusionFlag));
+        rc->inclusionFlags = (uint8_t*) GLOBAL_CALLOC(dataSet->elementCount, sizeof(uint8_t));
 
         success = true;
 
@@ -2368,7 +2368,7 @@ sendNextReportEntry(ReportControl* self)
 
                 MmsValue_deleteAllBitStringBits(reason);
 
-                switch((ReportInclusionFlag) *currentReportBufferPos) {
+                switch((int) *currentReportBufferPos) {
                 case REPORT_CONTROL_QUALITY_CHANGED:
                     MmsValue_setBitStringBit(reason, 2, true);
                     break;
@@ -2587,7 +2587,7 @@ Reporting_processReportEventsAfterUnlock(MmsMapping* self)
 }
 
 void
-ReportControl_valueUpdated(ReportControl* self, int dataSetEntryIndex, ReportInclusionFlag flag, bool modelLocked)
+ReportControl_valueUpdated(ReportControl* self, int dataSetEntryIndex, int flag, bool modelLocked)
 {
     ReportControl_lockNotify(self);
 
