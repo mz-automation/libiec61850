@@ -1,8 +1,13 @@
 Changes to version 1.2.2
 ------------------------
 
-- IEC 61850 server: added support to configure report buffer at runtime
+- IEC 61850 server: added support to configure report buffer size at runtime
 - IEC 61850 server: new IedServerConfig type and new IedServer constructor
+- .NET API: added support for IedServerConfig
+- IEC 61850 server: prevent sending reports when data model is locked (updated)
+- TLS client: fixed problem with high CPU load
+- ISO connection: fixed race condition that can cause corrupted messages
+- .NET API: added project files for .NET core 2.0
 
 Changes to version 1.2.1
 ------------------------
