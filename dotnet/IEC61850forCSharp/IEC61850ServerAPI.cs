@@ -561,6 +561,9 @@ namespace IEC61850
 			[DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
 			static extern IntPtr IedServer_create(IntPtr modelRef);
 
+			[DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
+			static extern IntPtr IedServer_createWithConfig(IntPtr modelRef, IntPtr tlsConfiguration, IntPtr serverConfiguratio);
+
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern void IedServer_setLocalIpAddress(IntPtr self, string localIpAddress);
 
@@ -789,6 +792,16 @@ namespace IEC61850
 			public IedServer(IedModel iedModel)
 			{
 				self = IedServer_create(iedModel.self);
+			}
+
+			public IedServer(IedModel iedModel, IedServerConfig config)
+			{
+				IntPtr nativeConfig = IntPtr.Zero;
+
+				if (config != null)
+					nativeConfig = config.self;
+
+				self = IedServer_createWithConfig (iedModel.self, IntPtr.Zero, nativeConfig);
 			}
 
 			// causes undefined behavior

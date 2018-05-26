@@ -26,7 +26,10 @@ namespace server1
 
 			DataObject spcso1 = (DataObject)iedModel.GetModelNodeByShortObjectReference ("GenericIO/GGIO1.SPCSO1");
 
-			IedServer iedServer = new IedServer (iedModel);
+			IedServerConfig config = new IedServerConfig ();
+			config.ReportBufferSize = 100000;
+
+			IedServer iedServer = new IedServer (iedModel, config);
 
 			iedServer.SetControlHandler (spcso1, delegate(DataObject controlObject, object parameter, MmsValue ctlVal, bool test) {
                 bool val = ctlVal.GetBoolean();
