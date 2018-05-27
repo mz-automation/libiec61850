@@ -27,6 +27,7 @@ using System.Collections.Generic;
 using System.Collections;
 
 using IEC61850.Common;
+using IEC61850.TLS;
 
 /// <summary>
 /// IEC 61850 API for the libiec61850 .NET wrapper library
@@ -559,9 +560,6 @@ namespace IEC61850
 		public class IedServer
 		{
 			[DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
-			static extern IntPtr IedServer_create(IntPtr modelRef);
-
-			[DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
 			static extern IntPtr IedServer_createWithConfig(IntPtr modelRef, IntPtr tlsConfiguration, IntPtr serverConfiguratio);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
@@ -789,12 +787,9 @@ namespace IEC61850
 
 			private Dictionary<IntPtr, ClientConnection> clientConnections = new Dictionary<IntPtr, ClientConnection> ();
 
-			public IedServer(IedModel iedModel)
-			{
-				self = IedServer_create(iedModel.self);
-			}
 
-			public IedServer(IedModel iedModel, IedServerConfig config)
+
+			public IedServer(IedModel iedModel, IedServerConfig config = null)
 			{
 				IntPtr nativeConfig = IntPtr.Zero;
 
@@ -802,6 +797,20 @@ namespace IEC61850
 					nativeConfig = config.self;
 
 				self = IedServer_createWithConfig (iedModel.self, IntPtr.Zero, nativeConfig);
+			}
+
+			public IedServer(IedModel iedModel, TLSConfiguration tlsConfig, IedServerConfig config = null)
+			{
+				IntPtr nativeConfig = IntPtr.Zero;
+				IntPtr nativeTLSConfig = IntPtr.Zero;
+
+				if (config != null)
+					nativeConfig = config.self;
+
+				if (tlsConfig != null)
+					nativeTLSConfig = tlsConfig.GetNativeInstance ();
+
+				self = IedServer_createWithConfig (iedModel.self, nativeTLSConfig, nativeConfig);
 			}
 
 			// causes undefined behavior
@@ -850,7 +859,7 @@ namespace IEC61850
 			/// <summary>Start MMS server</summary>
 			public void Start ()
 			{
-				Start(102);
+				Start(-1);
 			}
 
 			/// <summary>

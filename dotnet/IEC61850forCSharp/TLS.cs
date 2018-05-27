@@ -139,7 +139,6 @@ namespace IEC61850
 			public void SetOwnCertificate(string filename)
 			{
 				if (TLSConfiguration_setOwnCertificateFromFile (self, filename) == false) {
-					Console.WriteLine ("Failed to read certificate from file!");
 					throw new CryptographicException ("Failed to read certificate from file");
 				}
 			}
@@ -149,7 +148,6 @@ namespace IEC61850
 				byte[] certBytes = cert.GetRawCertData ();
 
 				if (TLSConfiguration_setOwnCertificate (self, certBytes, certBytes.Length) == false) {
-					Console.WriteLine ("Failed to set certificate!");
 					throw new CryptographicException ("Failed to set certificate");
 				}
 			}
@@ -157,7 +155,6 @@ namespace IEC61850
 			public void AddAllowedCertificate(string filename)
 			{
 				if (TLSConfiguration_addAllowedCertificateFromFile (self, filename) == false) {
-					Console.WriteLine ("Failed to read allowed certificate from file!");
 					throw new CryptographicException ("Failed to read allowed certificate from file");
 				}
 			}
@@ -167,7 +164,6 @@ namespace IEC61850
 				byte[] certBytes = cert.GetRawCertData ();
 
 				if (TLSConfiguration_addAllowedCertificate (self, certBytes, certBytes.Length) == false) {
-					Console.WriteLine ("Failed to add allowed certificate!");
 					throw new CryptographicException ("Failed to add allowed certificate");
 				}
 			}
@@ -175,7 +171,6 @@ namespace IEC61850
 			public void AddCACertificate(string filename)
 			{
 				if (TLSConfiguration_addCACertificateFromFile (self, filename) == false) {
-					Console.WriteLine ("Failed to read CA certificate from file!");
 					throw new CryptographicException ("Failed to read CA certificate from file");
 				}
 			}
@@ -185,7 +180,6 @@ namespace IEC61850
 				byte[] certBytes = cert.GetRawCertData ();
 
 				if (TLSConfiguration_addCACertificate (self, certBytes, certBytes.Length) == false) {
-					Console.WriteLine ("Failed to add CA certificate!");
 					throw new CryptographicException ("Failed to add CA certificate");
 				}
 			}
@@ -193,7 +187,6 @@ namespace IEC61850
 			public void SetOwnKey (string filename, string password)
 			{
 				if (TLSConfiguration_setOwnKeyFromFile (self, filename, password) == false) {
-					Console.WriteLine ("Failed to read own key from file!");
 					throw new CryptographicException ("Failed to read own key from file");
 				}
 			}
@@ -203,7 +196,6 @@ namespace IEC61850
 				byte[] certBytes = key.Export (X509ContentType.Pkcs12);
 
 				if (TLSConfiguration_setOwnKey (self, certBytes, certBytes.Length, password) == false) {
-					Console.WriteLine ("Failed to set own key!");
 					throw new CryptographicException ("Failed to set own key");
 				}
 			}

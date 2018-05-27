@@ -42,6 +42,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "goose_subscriber", "goose_s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sv_subscriber", "sv_subscriber\sv_subscriber.csproj", "{44651D2D-3252-4FD5-8B8B-5552DBE1B499}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tls_server_example", "tls_server_example\tls_server_example.csproj", "{B63F7A81-1D3A-4F2F-A7C2-D6F77E5BD307}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -96,6 +98,10 @@ Global
 		{9E29B4CE-EE5F-4CA6-85F6-5D1FF8B27BF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9E29B4CE-EE5F-4CA6-85F6-5D1FF8B27BF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9E29B4CE-EE5F-4CA6-85F6-5D1FF8B27BF8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B63F7A81-1D3A-4F2F-A7C2-D6F77E5BD307}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B63F7A81-1D3A-4F2F-A7C2-D6F77E5BD307}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B63F7A81-1D3A-4F2F-A7C2-D6F77E5BD307}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B63F7A81-1D3A-4F2F-A7C2-D6F77E5BD307}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C351CFA4-E54E-49A1-86CE-69643535541A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C351CFA4-E54E-49A1-86CE-69643535541A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C351CFA4-E54E-49A1-86CE-69643535541A}.Release|Any CPU.ActiveCfg = Release|Any CPU
