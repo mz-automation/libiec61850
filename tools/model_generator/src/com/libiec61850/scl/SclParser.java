@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
+import java.util.stream.Stream;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -118,6 +119,15 @@ public class SclParser {
     public Communication getCommunication() {
         return communication;
     }
+    
+    public Stream<IED> getIeds() {
+        return ieds.stream();
+    }
+
+    public int getIedsCount() {
+        return ieds.size();
+    }
+
 
     public static Document parseXmlWithLineNumberInformation(InputStream xmlInputStream) throws IOException, SAXException {
         final Document xmlDocument;
