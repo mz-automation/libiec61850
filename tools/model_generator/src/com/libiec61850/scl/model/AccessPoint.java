@@ -42,10 +42,11 @@ public class AccessPoint {
 
 		Node serverNode = ParserUtils.getChildNodeWithTag(apNode, "Server");
 		
-		if (serverNode != null)
-	                this.server = new Server(serverNode, typeDeclarations);
-		
-	}
+        if (serverNode == null) {
+            server = null;
+        } else {
+            server = new Server(serverNode, typeDeclarations);
+        }
 
 	public String getName() {
 		return name;
