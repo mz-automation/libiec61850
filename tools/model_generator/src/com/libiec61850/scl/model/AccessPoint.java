@@ -42,10 +42,8 @@ public class AccessPoint {
 
 		Node serverNode = ParserUtils.getChildNodeWithTag(apNode, "Server");
 		
-		if (serverNode == null)
-			throw new SclParserException(apNode, "AccessPoint has no server defined!");
-			
-		this.server = new Server(serverNode, typeDeclarations);
+		if (serverNode != null)
+	                this.server = new Server(serverNode, typeDeclarations);
 		
 	}
 
