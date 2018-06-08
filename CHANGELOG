@@ -8,6 +8,7 @@ Changes to version 1.2.2
 - TLS client: fixed problem with high CPU load
 - ISO connection: fixed race condition that can cause corrupted messages
 - .NET API: added project files for .NET core 2.0
+- .NET API: added server side support for TLS
 
 Changes to version 1.2.1
 ------------------------

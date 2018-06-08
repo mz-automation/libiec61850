@@ -41,9 +41,6 @@ public class IED {
 		
 		List<Node> accessPointNodes = ParserUtils.getChildNodesWithTag(iedNode, "AccessPoint");
 
-		if (accessPointNodes.size() == 0)
-			throw new SclParserException(iedNode, "no AccessPoint defined in IED " + name);
-
 		this.accessPoints = new LinkedList<AccessPoint>();
 		
 		for (Node accessPointNode : accessPointNodes) {
