@@ -377,7 +377,14 @@ if(MSVC)
 endif()
 ENDIF(WITH_WPCAP)
 
+set(BINDIR "bin")
+set(LIBDIR "lib")
 if(UNIX)
+    # GNUInstallDirs is required for Debian multiarch
+    include(GNUInstallDirs)
+    set(LIBDIR ${CMAKE_INSTALL_LIBDIR})
+    set(BINDIR ${CMAKE_INSTALL_BINDIR})
+
     configure_file(
         ${CMAKE_CURRENT_LIST_DIR}/libiec61850.pc.in
         ${CMAKE_CURRENT_BINARY_DIR}/libiec61850.pc @ONLY
@@ -392,7 +399,7 @@ if(DOXYGEN_FOUND)
 endif(DOXYGEN_FOUND)
 
 install (TARGETS iec61850 iec61850-shared
-	RUNTIME DESTINATION bin COMPONENT Applications
-	ARCHIVE DESTINATION lib COMPONENT Libraries
-    LIBRARY DESTINATION lib COMPONENT Libraries
+	RUNTIME DESTINATION ${BINDIR} COMPONENT Applications
+	ARCHIVE DESTINATION ${LIBDIR} COMPONENT Libraries
+    LIBRARY DESTINATION ${LIBDIR} COMPONENT Libraries
 )
