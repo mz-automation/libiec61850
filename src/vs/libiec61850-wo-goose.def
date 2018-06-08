@@ -588,3 +588,18 @@ EXPORTS
     IedServer_createWithConfig
     IedServerConfig_setFileServiceBasePath
     IedServerConfig_getFileServiceBasePath
+    ClientGooseControlBlock_create
+    ClientGooseControlBlock_destroy
+    IedConnection_getGoCBValues
+    IedConnection_setGoCBValues
+    ClientGooseControlBlock_getGoEna
+    ClientGooseControlBlock_setGoEna
+    ClientGooseControlBlock_getGoID
+    ClientGooseControlBlock_setGoID
+    ClientGooseControlBlock_getDatSet
+    ClientGooseControlBlock_setDatSet
+    ClientGooseControlBlock_getConfRev
+    ClientGooseControlBlock_getNdsComm
+    ClientGooseControlBlock_getMinTime
+    ClientGooseControlBlock_getMaxTime
+    ClientGooseControlBlock_getFixedOffs
