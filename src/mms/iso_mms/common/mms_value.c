@@ -270,7 +270,6 @@ MmsValue_update(MmsValue* self, const MmsValue* update)
                     self->value.octetString.buf = (uint8_t*) GLOBAL_MALLOC(size);
                     self->value.octetString.maxSize = size;
                 }
-                size = self->value.octetString.maxSize;
 
                 memcpy(self->value.octetString.buf, update->value.octetString.buf, size);
 
