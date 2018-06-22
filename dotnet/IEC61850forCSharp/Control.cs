@@ -119,6 +119,9 @@ namespace IEC61850
 			private static extern int ControlObjectClient_getControlModel(IntPtr self);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			private static extern int ControlObjectClient_getCtlValType(IntPtr self);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.I1)]
 			private static extern bool ControlObjectClient_operate(IntPtr self, IntPtr ctlVal, UInt64 operTime);
 
@@ -194,6 +197,17 @@ namespace IEC61850
 				ControlModel controlModel = (ControlModel) ControlObjectClient_getControlModel(controlObject);
 
 				return controlModel;
+			}
+
+			/// <summary>
+			/// Get the type of ctlVal.
+			/// </summary>
+			/// <returns>MmsType required for the ctlVal value.</returns>
+			public MmsType GetCtlValType ()
+			{
+				MmsType ctlValType = (MmsType) ControlObjectClient_getCtlValType (controlObject);
+
+				return ctlValType;
 			}
 
             /// <summary>

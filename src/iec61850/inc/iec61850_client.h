@@ -1596,6 +1596,19 @@ ControlModel
 ControlObjectClient_getControlModel(ControlObjectClient self);
 
 /**
+ * \brief Get the type of ctlVal.
+ *
+ * This type is required for the ctlVal parameter of the \ref ControlObjectClient_operate
+ * and \ref  ControlObjectClient_selectWithValue functions.
+ *
+ * \param self the control object instance to use
+ *
+ * \return MmsType required for the ctlVal value.
+ */
+MmsType
+ControlObjectClient_getCtlValType(ControlObjectClient self);
+
+/**
  * \brief Send an operate command to the server
  *
  * \param self the control object instance to use
@@ -1607,11 +1620,24 @@ ControlObjectClient_getControlModel(ControlObjectClient self);
 bool
 ControlObjectClient_operate(ControlObjectClient self, MmsValue* ctlVal, uint64_t operTime);
 
+/**
+ * \brief Send a select command to the server
+ *
+ * The select command is only used for the control model "select-before-operate with normal security"
+ * (CONTROL_MODEL_SBO_NORMAL). The select command has to be sent before the operate command can be used.
+ *
+ * \param self the control object instance to use
+ *
+ * \return true if operation has been successful, false otherwise.
+ */
 bool
 ControlObjectClient_select(ControlObjectClient self);
 
 /**
  * \brief Send an select with value command to the server
+ *
+ * The select-with-value command is only used for the control model "select-before-operate with enhanced security"
+ * (CONTROL_MODEL_SBO_ENHANCED). The select-with-value command has to be sent before the operate command can be used.
  *
  * \param self the control object instance to use
  * \param ctlVal the control value (for APC the value may be either AnalogueValue (MMS_STRUCT) or MMS_FLOAT/MMS_INTEGER
@@ -1621,6 +1647,16 @@ ControlObjectClient_select(ControlObjectClient self);
 bool
 ControlObjectClient_selectWithValue(ControlObjectClient self, MmsValue* ctlVal);
 
+/**
+ * \brief Send a cancel command to the server
+ *
+ * The cancel command can be used to stop an ongoing operation (when the server and application
+ * support this) and to cancel a former select command.
+ *
+ * \param self the control object instance to use
+ *
+ * \return true if operation has been successful, false otherwise.
+ */
 bool
 ControlObjectClient_cancel(ControlObjectClient self);
 
@@ -1630,9 +1666,25 @@ ControlObjectClient_setLastApplError(ControlObjectClient self, LastApplError las
 LastApplError
 ControlObjectClient_getLastApplError(ControlObjectClient self);
 
+/**
+ * \brief Send commands in test mode.
+ *
+ * When the server supports test mode the commands that are sent with the test flag set
+ * are not executed (will have no effect on the attached physical process).
+ *
+ * \param self the control object instance to use
+ * \param value value if the test flag (true = test mode).
+ */
 void
 ControlObjectClient_setTestMode(ControlObjectClient self, bool value);
 
+/**
+ * \brief Set the origin parameter for control commands
+ *
+ * The origin parameter is used to identify the client/application that sent a control
+ * command. It is intended for later analysis.
+ *
+ */
 void
 ControlObjectClient_setOrigin(ControlObjectClient self, const char* orIdent, int orCat);
 

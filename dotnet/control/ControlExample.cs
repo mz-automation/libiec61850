@@ -40,6 +40,7 @@ namespace control
 				ControlModel controlModel = control.GetControlModel();
 
 				Console.WriteLine(objectReference + " has control model " + controlModel.ToString());
+				Console.WriteLine("  type of ctlVal: " + control.GetCtlValType().ToString());
 
 
 				switch (controlModel) {

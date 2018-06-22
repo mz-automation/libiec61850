@@ -270,6 +270,15 @@ ControlObjectClient_getControlModel(ControlObjectClient self)
     return self->ctlModel;
 }
 
+MmsType
+ControlObjectClient_getCtlValType(ControlObjectClient self)
+{
+    if (self->analogValue != NULL)
+        return MmsValue_getType(self->analogValue);
+    else
+        return MmsValue_getType(self->ctlVal);
+}
+
 void
 ControlObjectClient_setOrigin(ControlObjectClient self, const char* orIdent, int orCat)
 {

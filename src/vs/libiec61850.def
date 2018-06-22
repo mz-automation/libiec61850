@@ -730,3 +730,5 @@ EXPORTS
     ClientGooseControlBlock_getMinTime
     ClientGooseControlBlock_getMaxTime
     ClientGooseControlBlock_getFixedOffs
+    ControlObjectClient_getCtlValType
+
