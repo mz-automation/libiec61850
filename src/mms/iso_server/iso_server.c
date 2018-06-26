@@ -623,7 +623,9 @@ IsoServer_waitReady(IsoServer self, unsigned int timeoutMs)
                    IsoConnection_addHandleSet(isoConnection, handles);
                    openConnection = LinkedList_getNext(openConnection);
                } else {
+#if ((CONFIG_MMS_SINGLE_THREADED == 1) || (CONFIG_MMS_THREADLESS_STACK == 1))
                    IsoConnection_destroy(isoConnection);
+#endif
                    lastConnection->next = openConnection->next;
                    GLOBAL_FREEMEM(openConnection);
                    openConnection = lastConnection->next;
@@ -649,11 +651,12 @@ IsoServer_waitReady(IsoServer self, unsigned int timeoutMs)
                }
            }
 
+#endif /* (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS == -1) */
+
 #if (CONFIG_MMS_THREADLESS_STACK != 1) && (CONFIG_MMS_SINGLE_THREADED == 0)
            unlockClientConnections(self);
 #endif
 
-#endif /* (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS == -1) */
            Handleset_addSocket(handles, self->serverSocket);
            result = Handleset_waitReady(handles, timeoutMs);
            Handleset_destroy(handles);
