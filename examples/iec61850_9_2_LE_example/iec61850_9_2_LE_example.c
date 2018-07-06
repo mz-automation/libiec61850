@@ -157,7 +157,7 @@ main(int argc, char** argv)
         IedServer_updateQuality(iedServer, IEDMODEL_MUnn_TCTR2_Amp_q, q);
         IedServer_updateInt32AttributeValue(iedServer, IEDMODEL_MUnn_TCTR3_Amp_instMag_i, current);
         IedServer_updateQuality(iedServer, IEDMODEL_MUnn_TCTR3_Amp_q, q);
-        IedServer_updateInt32AttributeValue(iedServer, IEDMODEL_MUnn_TCTR3_Amp_instMag_i, current);
+        IedServer_updateInt32AttributeValue(iedServer, IEDMODEL_MUnn_TCTR4_Amp_instMag_i, current);
         IedServer_updateQuality(iedServer, IEDMODEL_MUnn_TCTR4_Amp_q, q);
 
         IedServer_updateInt32AttributeValue(iedServer, IEDMODEL_MUnn_TVTR1_Vol_instMag_i, voltage);

@@ -13,7 +13,7 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "../server_example_basic_io/static_model.h"
+#include "static_model.h"
 
 /* import IEC 61850 device model created from SCL-File */
 extern IedModel iedModel;

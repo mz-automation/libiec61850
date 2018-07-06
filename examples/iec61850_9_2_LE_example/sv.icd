@@ -74,21 +74,21 @@ SCL.xsd">
 						<DataSet name="PhsMeas1">
 
 							<FCDA ldInst="MUnn" lnClass="TCTR" lnInst="1" fc="MX"
-								doName="Amp" daName="instMag.i"/>
+								doName="Amp" />
 							<FCDA ldInst="MUnn" lnClass="TCTR" lnInst="2" fc="MX"
-								doName="Amp" daName="instMag.i"/>
+								doName="Amp" />
 							<FCDA ldInst="MUnn" lnClass="TCTR" lnInst="3" fc="MX"
-								doName="Amp" daName="instMag.i"/>
+								doName="Amp" />
 							<FCDA ldInst="MUnn" lnClass="TCTR" lnInst="4" fc="MX"
-								doName="Amp" daName="instMag.i"/>
+								doName="Amp" />
 							<FCDA ldInst="MUnn" lnClass="TVTR" lnInst="1" fc="MX"
-								doName="Vol" daName="instMag.i"/>
+								doName="Vol" />
 							<FCDA ldInst="MUnn" lnClass="TVTR" lnInst="2" fc="MX"
-								doName="Vol" daName="instMag.i"/>
+								doName="Vol" />
 							<FCDA ldInst="MUnn" lnClass="TVTR" lnInst="3" fc="MX"
-								doName="Vol"  daName="instMag.i"/>
+								doName="Vol" />
 							<FCDA ldInst="MUnn" lnClass="TVTR" lnInst="4" fc="MX"
-								doName="Vol" daName="instMag.i"/>
+								doName="Vol" />
 
 						</DataSet>
 
