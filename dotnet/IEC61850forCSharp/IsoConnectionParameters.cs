@@ -142,6 +142,9 @@ namespace IEC61850
                 for (int i = 0; i < tSelector.Length; i++) 
                     nativeTSelector.value[i] = tSelector[i];
 
+				if (sSelector.Length > 16)
+					throw new ArgumentOutOfRangeException("sSelector", "maximum size (16) exceeded");
+
 				NativeSSelector nativeSSelector;
 				nativeSSelector.size = (byte) sSelector.Length;
 				nativeSSelector.value = new byte[16];
@@ -189,6 +192,9 @@ namespace IEC61850
 
                 for (int i = 0; i < tSelector.Length; i++) 
                     nativeTSelector.value[i] = tSelector[i];
+
+				if (sSelector.Length > 16)
+					throw new ArgumentOutOfRangeException("sSelector", "maximum size (16) exceeded");
 
 				NativeSSelector nativeSSelector;
 				nativeSSelector.size = (byte) sSelector.Length;
