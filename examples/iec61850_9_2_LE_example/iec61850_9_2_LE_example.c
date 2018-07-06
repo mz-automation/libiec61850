@@ -48,10 +48,20 @@ static int amp2;
 static int amp3;
 static int amp4;
 
+static int amp1q;
+static int amp2q;
+static int amp3q;
+static int amp4q;
+
 static int vol1;
 static int vol2;
 static int vol3;
 static int vol4;
+
+static int vol1q;
+static int vol2q;
+static int vol3q;
+static int vol4q;
 
 static SVPublisher svPublisher;
 static SVPublisher_ASDU asdu;
@@ -64,14 +74,24 @@ setupSVPublisher(const char* svInterface)
     asdu = SVPublisher_addASDU(svPublisher, "xxxxMUnn01", NULL, 1);
 
     amp1 = SVPublisher_ASDU_addINT32(asdu);
+    amp1q = SVPublisher_ASDU_addQuality(asdu);
     amp2 = SVPublisher_ASDU_addINT32(asdu);
+    amp2q = SVPublisher_ASDU_addQuality(asdu);
     amp3 = SVPublisher_ASDU_addINT32(asdu);
+    amp3q = SVPublisher_ASDU_addQuality(asdu);
     amp4 = SVPublisher_ASDU_addINT32(asdu);
+    amp4q = SVPublisher_ASDU_addQuality(asdu);
 
     vol1 = SVPublisher_ASDU_addINT32(asdu);
+    vol1q = SVPublisher_ASDU_addQuality(asdu);
     vol2 = SVPublisher_ASDU_addINT32(asdu);
+    vol2q = SVPublisher_ASDU_addQuality(asdu);
     vol3 = SVPublisher_ASDU_addINT32(asdu);
+    vol3q = SVPublisher_ASDU_addQuality(asdu);
     vol4 = SVPublisher_ASDU_addINT32(asdu);
+    vol4q = SVPublisher_ASDU_addQuality(asdu);
+
+    SVPublisher_ASDU_setSmpCntWrap(asdu, 4000);
 
     SVPublisher_setupComplete(svPublisher);
 }
@@ -123,6 +143,8 @@ main(int argc, char** argv)
 
     IedServer_setSVCBHandler(iedServer, svcb, sVCBEventHandler, NULL);
 
+    Quality q = QUALITY_VALIDITY_GOOD;
+
     while (running) {
 
         uint64_t timeval = Hal_getTimeInMs();
@@ -130,28 +152,44 @@ main(int argc, char** argv)
         IedServer_lockDataModel(iedServer);
 
         IedServer_updateInt32AttributeValue(iedServer, IEDMODEL_MUnn_TCTR1_Amp_instMag_i, current);
+        IedServer_updateQuality(iedServer, IEDMODEL_MUnn_TCTR1_Amp_q, q);
         IedServer_updateInt32AttributeValue(iedServer, IEDMODEL_MUnn_TCTR2_Amp_instMag_i, current);
+        IedServer_updateQuality(iedServer, IEDMODEL_MUnn_TCTR2_Amp_q, q);
         IedServer_updateInt32AttributeValue(iedServer, IEDMODEL_MUnn_TCTR3_Amp_instMag_i, current);
+        IedServer_updateQuality(iedServer, IEDMODEL_MUnn_TCTR3_Amp_q, q);
         IedServer_updateInt32AttributeValue(iedServer, IEDMODEL_MUnn_TCTR3_Amp_instMag_i, current);
+        IedServer_updateQuality(iedServer, IEDMODEL_MUnn_TCTR4_Amp_q, q);
 
         IedServer_updateInt32AttributeValue(iedServer, IEDMODEL_MUnn_TVTR1_Vol_instMag_i, voltage);
+        IedServer_updateQuality(iedServer, IEDMODEL_MUnn_TVTR1_Vol_q, q);
         IedServer_updateInt32AttributeValue(iedServer, IEDMODEL_MUnn_TVTR2_Vol_instMag_i, voltage);
+        IedServer_updateQuality(iedServer, IEDMODEL_MUnn_TVTR2_Vol_q, q);
         IedServer_updateInt32AttributeValue(iedServer, IEDMODEL_MUnn_TVTR3_Vol_instMag_i, voltage);
+        IedServer_updateQuality(iedServer, IEDMODEL_MUnn_TVTR3_Vol_q, q);
         IedServer_updateInt32AttributeValue(iedServer, IEDMODEL_MUnn_TVTR4_Vol_instMag_i, voltage);
+        IedServer_updateQuality(iedServer, IEDMODEL_MUnn_TVTR4_Vol_q, q);
 
         IedServer_unlockDataModel(iedServer);
 
         if (svcbEnabled) {
 
             SVPublisher_ASDU_setINT32(asdu, amp1, current);
+            SVPublisher_ASDU_setQuality(asdu, amp1q, q);
             SVPublisher_ASDU_setINT32(asdu, amp2, current);
+            SVPublisher_ASDU_setQuality(asdu, amp2q, q);
             SVPublisher_ASDU_setINT32(asdu, amp3, current);
+            SVPublisher_ASDU_setQuality(asdu, amp3q, q);
             SVPublisher_ASDU_setINT32(asdu, amp4, current);
+            SVPublisher_ASDU_setQuality(asdu, amp4q, q);
 
             SVPublisher_ASDU_setINT32(asdu, vol1, voltage);
+            SVPublisher_ASDU_setQuality(asdu, vol1q, q);
             SVPublisher_ASDU_setINT32(asdu, vol2, voltage);
+            SVPublisher_ASDU_setQuality(asdu, vol2q, q);
             SVPublisher_ASDU_setINT32(asdu, vol3, voltage);
+            SVPublisher_ASDU_setQuality(asdu, vol3q, q);
             SVPublisher_ASDU_setINT32(asdu, vol4, voltage);
+            SVPublisher_ASDU_setQuality(asdu, vol4q, q);
 
             SVPublisher_ASDU_increaseSmpCnt(asdu);
 
@@ -161,7 +199,7 @@ main(int argc, char** argv)
         voltage++;
         current++;
 
-        Thread_sleep(500);
+        Thread_sleep(1);
     }
 
     /* stop MMS server - close TCP server socket and all client sockets */

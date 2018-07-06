@@ -731,4 +731,4 @@ EXPORTS
     ClientGooseControlBlock_getMaxTime
     ClientGooseControlBlock_getFixedOffs
     ControlObjectClient_getCtlValType
-
+    SVPublisher_ASDU_setSmpCntWrap

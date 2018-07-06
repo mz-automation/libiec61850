@@ -55,6 +55,7 @@ struct sSVPublisher_ASDU {
 
     uint8_t smpSynch;
     uint16_t smpCnt;
+    uint16_t smpCntLimit;
     uint32_t confRev;
 
     uint64_t refrTm;
@@ -299,6 +300,7 @@ SVPublisher_addASDU(SVPublisher self, const char* svID, const char* datset, uint
     newAsdu->svID = svID;
     newAsdu->datset = datset;
     newAsdu->confRev = confRev;
+    newAsdu->smpCntLimit = UINT16_MAX;
 
     newAsdu->_next = NULL;
 
@@ -653,9 +655,15 @@ SVPublisher_ASDU_setSmpCnt(SVPublisher_ASDU self, uint16_t value)
 }
 
 void
+SVPublisher_ASDU_setSmpCntWrap(SVPublisher_ASDU self, uint16_t value)
+{
+    self->smpCntLimit = value;
+}
+
+void
 SVPublisher_ASDU_increaseSmpCnt(SVPublisher_ASDU self)
 {
-    self->smpCnt++;
+    self->smpCnt = ((self->smpCnt + 1) % self->smpCntLimit);
 
     encodeUInt16FixedSize(self->smpCnt, self->smpCntBuf, 0);
 }

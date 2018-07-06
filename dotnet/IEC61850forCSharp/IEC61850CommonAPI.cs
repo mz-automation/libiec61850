@@ -184,6 +184,7 @@ namespace IEC61850
 			private const UInt16 QUALITY_SOURCE_SUBSTITUTED = 1024;
 			private const UInt16 QUALITY_TEST = 2048;
 			private const UInt16 QUALITY_OPERATOR_BLOCKED = 4096;
+			private const UInt16 QUALITY_DERIVED = 8192;
 
 			public override string ToString ()
 			{
@@ -339,6 +340,17 @@ namespace IEC61850
 						this.value |= QUALITY_OPERATOR_BLOCKED;
 					else
 						this.value = (ushort) ((int) this.value & (~QUALITY_OPERATOR_BLOCKED));
+				}
+			}
+
+			public bool Derived
+			{
+				get { return ((this.value & QUALITY_DERIVED) != 0); }
+				set {
+					if (value)
+						this.value |= QUALITY_DERIVED;
+					else
+						this.value = (ushort) ((int) this.value & (~QUALITY_DERIVED));
 				}
 			}
 		}

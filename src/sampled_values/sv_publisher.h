@@ -295,6 +295,16 @@ void
 SVPublisher_ASDU_increaseSmpCnt(SVPublisher_ASDU self);
 
 /**
+ * \brief Set the roll-over (wrap) limit for the sample counter. When reaching the limit the
+ *        sample counter will be reset to 0 (default is no limit)
+ *
+ * \param[in] self the Sampled Values ASDU instance.
+ * \param[in] value the new sample counter limit
+ */
+void
+SVPublisher_ASDU_setSmpCntWrap(SVPublisher_ASDU self, uint16_t value);
+
+/**
  * \brief Set the refresh time attribute of the ASDU.
  *
  * \param[in] self the Sampled Values ASDU instance.

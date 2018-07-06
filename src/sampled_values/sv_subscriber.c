@@ -1,7 +1,7 @@
 /*
  *  sv_receiver.c
  *
- *  Copyright 2015 Michael Zillgith
+ *  Copyright 2015-2018 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -337,8 +337,10 @@ parseASDU(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, int length)
     }
 
     /* Call callback handler */
-    if (subscriber->listener != NULL)
-        subscriber->listener(subscriber, subscriber->listenerParameter, &asdu);
+    if (subscriber) {
+        if (subscriber->listener != NULL)
+            subscriber->listener(subscriber, subscriber->listenerParameter, &asdu);
+    }
 }
 
 static void

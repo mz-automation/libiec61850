@@ -286,6 +286,8 @@ typedef uint16_t Validity;
 
 #define QUALITY_OPERATOR_BLOCKED  4096
 
+#define QUALITY_DERIVED 8192
+
 Validity
 Quality_getValidity(Quality* self);
 
