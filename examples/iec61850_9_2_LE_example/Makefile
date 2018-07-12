@@ -9,6 +9,8 @@ PROJECT_ICD_FILE = sv.icd
 include $(LIBIEC_HOME)/make/target_system.mk
 include $(LIBIEC_HOME)/make/stack_includes.mk
 
+LDFLAGS += -lm
+
 all:	$(PROJECT_BINARY_NAME)
 
 include $(LIBIEC_HOME)/make/common_targets.mk
