@@ -3,7 +3,7 @@
  *
  * automatically generated from simpleIO_direct_control.icd
  */
-#include "../server_example_password_auth/static_model.h"
+#include "static_model.h"
 
 static void initializeValues();
 
@@ -227,7 +227,7 @@ DataObject iedModel_GenericIO_LLN0_NamPlt = {
     DataObjectModelType,
     "NamPlt",
     (ModelNode*) &iedModel_GenericIO_LLN0,
-    NULL,
+    (ModelNode*) &iedModel_GenericIO_LLN0_ModAuto,
     (ModelNode*) &iedModel_GenericIO_LLN0_NamPlt_vendor,
     0
 };
@@ -294,6 +294,28 @@ DataAttribute iedModel_GenericIO_LLN0_NamPlt_ldNs = {
     IEC61850_FC_EX,
     IEC61850_VISIBLE_STRING_255,
     0,
+    NULL,
+    0};
+
+DataObject iedModel_GenericIO_LLN0_ModAuto = {
+    DataObjectModelType,
+    "ModAuto",
+    (ModelNode*) &iedModel_GenericIO_LLN0,
+    NULL,
+    (ModelNode*) &iedModel_GenericIO_LLN0_ModAuto_setVal,
+    0
+};
+
+DataAttribute iedModel_GenericIO_LLN0_ModAuto_setVal = {
+    DataAttributeModelType,
+    "setVal",
+    (ModelNode*) &iedModel_GenericIO_LLN0_ModAuto,
+    NULL,
+    NULL,
+    0,
+    IEC61850_FC_SP,
+    IEC61850_BOOLEAN,
+    0 + TRG_OPT_DATA_CHANGED,
     NULL,
     0};
 
@@ -1773,7 +1795,7 @@ DataAttribute iedModel_GenericIO_GGIO1_Ind4_t = {
 
 extern ReportControlBlock iedModel_GenericIO_LLN0_report0;
 
-ReportControlBlock iedModel_GenericIO_LLN0_report0 = {&iedModel_GenericIO_LLN0, "EventsRCB01", "Events", false, "Events", 1, 24, 111, 50, 1000, NULL};
+ReportControlBlock iedModel_GenericIO_LLN0_report0 = {&iedModel_GenericIO_LLN0, "EventsRCB01", "Events", false, "Events", 1, 24, 239, 50, 1000, NULL};
 
 
 

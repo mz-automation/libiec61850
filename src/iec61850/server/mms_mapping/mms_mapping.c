@@ -2062,8 +2062,12 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
                     MmsValue* matchingValue = checkIfValueBelongsToModelNode(dataAttribute, cachedValue, value);
 
                     if (matchingValue != NULL) {
+
+                        ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer,
+                                connection);
+
                         MmsDataAccessError handlerResult =
-                            accessHandler->handler(dataAttribute, matchingValue, (ClientConnection) connection,
+                            accessHandler->handler(dataAttribute, matchingValue, clientConnection,
                             		accessHandler->parameter);
 
                         if (handlerResult == DATA_ACCESS_ERROR_SUCCESS)

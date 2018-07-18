@@ -126,6 +126,20 @@ controlHandlerForBinaryOutput(void* parameter, MmsValue* value, bool test)
     MmsValue_delete(timeStamp);
 }
 
+
+static MmsDataAccessError
+writeAccessHandler (DataAttribute* dataAttribute, MmsValue* value, ClientConnection connection, void* parameter)
+{
+    void* securityToken = ClientConnection_getSecurityToken(connection);
+
+    if (securityToken != password2)
+        return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+
+    return DATA_ACCESS_ERROR_SUCCESS;
+}
+
+
+
 int main(int argc, char** argv) {
 
 	iedServer = IedServer_create(&iedModel);
@@ -152,6 +166,9 @@ int main(int argc, char** argv) {
             (ControlHandler) controlHandlerForBinaryOutput, IEDMODEL_GenericIO_GGIO1_SPCSO3);
     IedServer_setControlHandler(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO4,
             (ControlHandler) controlHandlerForBinaryOutput, IEDMODEL_GenericIO_GGIO1_SPCSO4);
+
+    /* Set write access handler */
+    IedServer_handleWriteAccess(iedServer, IEDMODEL_GenericIO_LLN0_ModAuto_setVal, writeAccessHandler, NULL);
 
 	/* MMS server will be instructed to start listening to client connections. */
 	IedServer_start(iedServer, 102);

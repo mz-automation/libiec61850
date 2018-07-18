@@ -270,7 +270,7 @@
 	</DOType>
 
 	<DOType cdc="SPG" id="SPG_0">
-		<DA name="setVal" bType="BOOLEAN" fc="SG" dchg="true" />
+		<DA name="setVal" bType="BOOLEAN" fc="SP" dchg="true" />
 	</DOType>
 
 	<DOType cdc="TSG" id="TSG_0">

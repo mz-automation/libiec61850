@@ -94,6 +94,7 @@
       <DO name="Beh" type="INS_1_Beh" />
       <DO name="Health" type="INS_1_Beh" />
       <DO name="NamPlt" type="LPL_1_NamPlt" />
+      <DO name="ModAuto" type="SPG_0" />
     </LNodeType>
     <LNodeType id="LPHD1" lnClass="LPHD">
       <DO name="PhyNam" type="DPL_1_PhyNam" />
@@ -186,6 +187,9 @@
       <DA name="ctlModel" type="CtlModels" bType="Enum" fc="CF" />
       <DA name="t" bType="Timestamp" fc="ST" />
     </DOType>
+	<DOType cdc="SPG" id="SPG_0">
+	  <DA name="setVal" bType="BOOLEAN" fc="SP" dchg="true" />
+	</DOType>
     <DAType id="AnalogueValue_1">
       <BDA name="f" bType="FLOAT32" />
     </DAType>

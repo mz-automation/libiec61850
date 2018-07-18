@@ -31,6 +31,8 @@ extern DataAttribute iedModel_GenericIO_LLN0_NamPlt_swRev;
 extern DataAttribute iedModel_GenericIO_LLN0_NamPlt_d;
 extern DataAttribute iedModel_GenericIO_LLN0_NamPlt_configRev;
 extern DataAttribute iedModel_GenericIO_LLN0_NamPlt_ldNs;
+extern DataObject    iedModel_GenericIO_LLN0_ModAuto;
+extern DataAttribute iedModel_GenericIO_LLN0_ModAuto_setVal;
 extern LogicalNode   iedModel_GenericIO_LPHD1;
 extern DataObject    iedModel_GenericIO_LPHD1_PhyNam;
 extern DataAttribute iedModel_GenericIO_LPHD1_PhyNam_vendor;
@@ -174,6 +176,8 @@ extern DataAttribute iedModel_GenericIO_GGIO1_Ind4_t;
 #define IEDMODEL_GenericIO_LLN0_NamPlt_d (&iedModel_GenericIO_LLN0_NamPlt_d)
 #define IEDMODEL_GenericIO_LLN0_NamPlt_configRev (&iedModel_GenericIO_LLN0_NamPlt_configRev)
 #define IEDMODEL_GenericIO_LLN0_NamPlt_ldNs (&iedModel_GenericIO_LLN0_NamPlt_ldNs)
+#define IEDMODEL_GenericIO_LLN0_ModAuto (&iedModel_GenericIO_LLN0_ModAuto)
+#define IEDMODEL_GenericIO_LLN0_ModAuto_setVal (&iedModel_GenericIO_LLN0_ModAuto_setVal)
 #define IEDMODEL_GenericIO_LPHD1 (&iedModel_GenericIO_LPHD1)
 #define IEDMODEL_GenericIO_LPHD1_PhyNam (&iedModel_GenericIO_LPHD1_PhyNam)
 #define IEDMODEL_GenericIO_LPHD1_PhyNam_vendor (&iedModel_GenericIO_LPHD1_PhyNam_vendor)
