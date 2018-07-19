@@ -2079,8 +2079,12 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
                 }
                 else { /* if ACCESS_POLICY_DENY only allow direct access to handled data attribute */
                     if (dataAttribute->mmsValue == cachedValue) {
+
+                        ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer,
+                                connection);
+
                         MmsDataAccessError handlerResult =
-                            accessHandler->handler(dataAttribute, value, (ClientConnection) connection,
+                            accessHandler->handler(dataAttribute, value, clientConnection,
                             		accessHandler->parameter);
 
                         if (handlerResult == DATA_ACCESS_ERROR_SUCCESS) {

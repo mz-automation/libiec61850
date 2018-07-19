@@ -132,8 +132,13 @@ writeAccessHandler (DataAttribute* dataAttribute, MmsValue* value, ClientConnect
 {
     void* securityToken = ClientConnection_getSecurityToken(connection);
 
-    if (securityToken != password2)
+    if (dataAttribute == IEDMODEL_GenericIO_LLN0_ModAuto_setVal)
+        printf("Write access to LLN0.ModAuto.setVal: %i\n", MmsValue_getBoolean(value));
+
+    if (securityToken != password2) {
+        printf("  Access denied\n");
         return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+    }
 
     return DATA_ACCESS_ERROR_SUCCESS;
 }
@@ -166,6 +171,9 @@ int main(int argc, char** argv) {
             (ControlHandler) controlHandlerForBinaryOutput, IEDMODEL_GenericIO_GGIO1_SPCSO3);
     IedServer_setControlHandler(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO4,
             (ControlHandler) controlHandlerForBinaryOutput, IEDMODEL_GenericIO_GGIO1_SPCSO4);
+
+    /* Allow only write access to settings that have a handler */
+    IedServer_setWriteAccessPolicy(iedServer, IEC61850_FC_SP, ACCESS_POLICY_DENY);
 
     /* Set write access handler */
     IedServer_handleWriteAccess(iedServer, IEDMODEL_GenericIO_LLN0_ModAuto_setVal, writeAccessHandler, NULL);
