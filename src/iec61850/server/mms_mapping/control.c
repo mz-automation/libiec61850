@@ -1494,12 +1494,6 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                     setState(controlObject, STATE_WAIT_FOR_EXECUTION);
 
                     initiateControlTask(controlObject);
-
-#if (CONFIG_MMS_THREADLESS_STACK == 1)
-                    //TODO call this in single threaded version to increase response time!?
-                    //executeControlTask(controlObject);
-#endif
-
                 }
                 else {
                     indication = (MmsDataAccessError) checkResult;

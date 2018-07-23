@@ -15,7 +15,7 @@ add_subdirectory(server_example_substitution)
 
 add_subdirectory(iec61850_client_example1)
 add_subdirectory(iec61850_client_example2)
-add_subdirectory(iec61850_client_example3)
+add_subdirectory(iec61850_client_example_control)
 add_subdirectory(iec61850_client_example4)
 add_subdirectory(iec61850_client_example5)
 add_subdirectory(iec61850_client_example_reporting)
