@@ -1,7 +1,7 @@
 /*
  *  socket_hal.h
  *
- *  Copyright 2013, 2014 Michael Zillgith
+ *  Copyright 2013-2018 Michael Zillgith
  *
  *	This file is part of libIEC61850.
  *
@@ -27,11 +27,21 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+/**
+ * \file hal_socket.h
+ * \brief Abstraction layer TCP/IP sockets
+ * Has to be implemented for CS 104 TCP/IP.
+ */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/*! \addtogroup hal Platform (Hardware/OS) abstraction layer
+/*! \defgroup hal Platform (Hardware/OS) abstraction layer
+   *
+   *  Platform abstraction layer. These functions have to be implemented when the library is
+   *  to be ported to new platforms. It might not be required to implement all interfaces
+   *  depending on the required library features.
    *
    *  @{
    */
@@ -40,7 +50,7 @@ extern "C" {
  * @defgroup HAL_SOCKET Interface to the TCP/IP stack (abstract socket layer)
  *
  *  Thread and Socket abstraction layer. This functions have to be implemented to
- *  port libIEC61850 to a new hardware/OS platform.
+ *  port lib60870 to a new hardware/OS platform when TCP/IP is required.
  *
  * @{
  */
@@ -63,7 +73,13 @@ HandleSet
 Handleset_new(void);
 
 /**
- * \brief add a socket to an existing handle set
+ * \brief Reset the handle set for reuse
+ */
+void
+Handleset_reset(HandleSet self);
+
+/**
+ * \brief add a soecket to an existing handle set
  *
  * \param self the HandleSet instance
  * \param sock the socket to add
@@ -75,7 +91,10 @@ Handleset_addSocket(HandleSet self, const Socket sock);
  * \brief wait for a socket to become ready
  *
  * This function is corresponding to the BSD socket select function.
- * The function will return after \p timeoutMs ms if no data is pending.
+ * It returns the number of sockets on which data is pending or 0 if no data is pending
+ * on any of the monitored connections. The function will return after "timeout" ms if no
+ * data is pending.
+ * The function shall return -1 if a socket error occures.
  *
  * \param self the HandleSet instance
  * \param timeout in milliseconds (ms)
@@ -188,7 +207,7 @@ Socket_setConnectTimeout(Socket self, uint32_t timeoutInMs);
  * \param address the IP address or hostname as C string
  * \param port the TCP port of the application to connect to
  *
- * \return a new client socket instance.
+ * \return true if the connection was established successfully, false otherwise
  */
 bool
 Socket_connect(Socket self, const char* address, int port);
@@ -229,7 +248,7 @@ Socket_write(Socket self, uint8_t* buf, int size);
  *
  * The peer address has to be returned as
  *
- * Implementation of this function is MANDATORY
+ * Implementation of this function is MANDATORY (libiec61850)
  *
  * \param self the client, connection or server socket instance
  *
@@ -237,6 +256,23 @@ Socket_write(Socket self, uint8_t* buf, int size);
  */
 char*
 Socket_getPeerAddress(Socket self);
+
+/**
+ * \brief Get the address of the peer application (IP address and port number)
+ *
+ * The peer address has to be returned as
+ *
+ * Implementation of this function is MANDATORY (lib60870)
+ *
+ * \param self the client, connection or server socket instance
+ * \param peerAddressString a string to store the peer address (the string should have space
+ *        for at least 60 characters)
+ *
+ * \return the IP address and port number as strings separated by the ':' character. If the
+ *         address is an IPv6 address the IP part is encapsulated in square brackets.
+ */
+char*
+Socket_getPeerAddressStatic(Socket self, char* peerAddressString);
 
 /**
  * \brief destroy a socket (close the socket if a connection is established)

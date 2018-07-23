@@ -32,6 +32,10 @@
 extern "C" {
 #endif
 
+/**
+ * \file hal_thread.h
+ * \brief Abstraction layer for threading and synchronization
+ */
 
 /*! \addtogroup hal
    *

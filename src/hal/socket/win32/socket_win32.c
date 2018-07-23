@@ -71,6 +71,13 @@ Handleset_new(void)
 }
 
 void
+Handleset_reset(HandleSet self)
+{
+    FD_ZERO(&self->handles);
+    self->maxHandle = INVALID_SOCKET;
+}
+
+void
 Handleset_addSocket(HandleSet self, const Socket sock)
 {
    if (self != NULL && sock != NULL && sock->fd != INVALID_SOCKET) {
@@ -394,6 +401,47 @@ Socket_getPeerAddress(Socket self)
         sprintf(clientConnection, "%s:%i", addrString, port);
 
 	return clientConnection;
+}
+
+char*
+Socket_getPeerAddressStatic(Socket self, char* peerAddressString)
+{
+    struct sockaddr_storage addr;
+    int addrLen = sizeof(addr);
+
+    getpeername(self->fd, (struct sockaddr*) &addr, &addrLen);
+
+    char addrString[INET6_ADDRSTRLEN + 7];
+    int addrStringLen = INET6_ADDRSTRLEN + 7;
+    int port;
+
+    bool isIPv6;
+
+    if (addr.ss_family == AF_INET) {
+        struct sockaddr_in* ipv4Addr = (struct sockaddr_in*) &addr;
+        port = ntohs(ipv4Addr->sin_port);
+        ipv4Addr->sin_port = 0;
+        WSAAddressToString((LPSOCKADDR) ipv4Addr, sizeof(struct sockaddr_storage), NULL,
+                (LPSTR) addrString, (LPDWORD) & addrStringLen);
+        isIPv6 = false;
+    }
+    else if (addr.ss_family == AF_INET6) {
+        struct sockaddr_in6* ipv6Addr = (struct sockaddr_in6*) &addr;
+        port = ntohs(ipv6Addr->sin6_port);
+        ipv6Addr->sin6_port = 0;
+        WSAAddressToString((LPSOCKADDR) ipv6Addr, sizeof(struct sockaddr_storage), NULL,
+                (LPSTR) addrString, (LPDWORD) & addrStringLen);
+        isIPv6 = true;
+    }
+    else
+        return NULL;
+
+    if (isIPv6)
+        sprintf(peerAddressString, "[%s]:%i", addrString, port);
+    else
+        sprintf(peerAddressString, "%s:%i", addrString, port);
+
+    return peerAddressString;
 }
 
 int

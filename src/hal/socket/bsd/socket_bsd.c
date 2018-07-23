@@ -71,6 +71,14 @@ Handleset_new(void)
 }
 
 void
+Handleset_reset(HandleSet self)
+{
+    FD_ZERO(&self->handles);
+    self->maxHandle = -1;
+}
+
+
+void
 Handleset_addSocket(HandleSet self, const Socket sock)
 {
    if (self != NULL && sock != NULL && sock->fd != -1) {
@@ -105,6 +113,7 @@ Handleset_destroy(HandleSet self)
    GLOBAL_FREEMEM(self);
 }
 
+#if (CONFIG_ACTIVATE_TCP_KEEPALIVE == 1)
 static void
 activateKeepAlive(int sd)
 {
@@ -127,6 +136,7 @@ activateKeepAlive(int sd)
 
 #endif /* SO_KEEPALIVE */
 }
+#endif /* (CONFIG_ACTIVATE_TCP_KEEPALIVE == 1) */
 
 static bool
 prepareServerAddress(const char* address, int port, struct sockaddr_in* sockaddr)
@@ -348,11 +358,45 @@ Socket_getPeerAddress(Socket self)
     return clientConnection;
 }
 
+char*
+Socket_getPeerAddressStatic(Socket self, char* peerAddressString)
+{
+    struct sockaddr_storage addr;
+    socklen_t addrLen = sizeof(addr);
+
+    getpeername(self->fd, (struct sockaddr*) &addr, &addrLen);
+
+    char addrString[INET6_ADDRSTRLEN + 7];
+    int port;
+
+    bool isIPv6;
+
+    if (addr.ss_family == AF_INET) {
+        struct sockaddr_in* ipv4Addr = (struct sockaddr_in*) &addr;
+        port = ntohs(ipv4Addr->sin_port);
+        inet_ntop(AF_INET, &(ipv4Addr->sin_addr), addrString, INET_ADDRSTRLEN);
+        isIPv6 = false;
+    }
+    else if (addr.ss_family == AF_INET6) {
+        struct sockaddr_in6* ipv6Addr = (struct sockaddr_in6*) &addr;
+        port = ntohs(ipv6Addr->sin6_port);
+        inet_ntop(AF_INET6, &(ipv6Addr->sin6_addr), addrString, INET6_ADDRSTRLEN);
+        isIPv6 = true;
+    }
+    else
+        return NULL ;
+
+    if (isIPv6)
+        sprintf(peerAddressString, "[%s]:%i", addrString, port);
+    else
+        sprintf(peerAddressString, "%s:%i", addrString, port);
+
+    return peerAddressString;
+}
+
 int
 Socket_read(Socket self, uint8_t* buf, int size)
 {
-    assert(self != NULL);
-
     if (self->fd == -1)
         return -1;
 

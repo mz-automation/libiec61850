@@ -28,6 +28,10 @@
 extern "C" {
 #endif
 
+/**
+ * \file hal_time.h
+ * \brief Abstraction layer for system time access
+ */
 
 /*! \addtogroup hal
    *
@@ -48,7 +52,8 @@ extern "C" {
  *
  * \return the system time with millisecond resolution.
  */
-uint64_t Hal_getTimeInMs(void);
+uint64_t
+Hal_getTimeInMs(void);
 
 /*! @} */
 
