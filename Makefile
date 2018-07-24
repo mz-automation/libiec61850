@@ -31,30 +31,32 @@ LIB_SOURCE_DIRS += src/iec61850/server/model
 LIB_SOURCE_DIRS += src/iec61850/server/mms_mapping
 LIB_SOURCE_DIRS += src/iec61850/server/impl
 ifeq ($(HAL_IMPL), WIN32)
-LIB_SOURCE_DIRS += src/hal/socket/win32
-LIB_SOURCE_DIRS += src/hal/thread/win32
-LIB_SOURCE_DIRS += src/hal/ethernet/win32
-LIB_SOURCE_DIRS += src/hal/filesystem/win32
-LIB_SOURCE_DIRS += src/hal/time/win32
+LIB_SOURCE_DIRS += hal/socket/win32
+LIB_SOURCE_DIRS += hal/thread/win32
+LIB_SOURCE_DIRS += hal/ethernet/win32
+LIB_SOURCE_DIRS += hal/filesystem/win32
+LIB_SOURCE_DIRS += hal/time/win32
+LIB_SOURCE_DIRS += hal/serial/win32
 else ifeq ($(HAL_IMPL), POSIX)
-LIB_SOURCE_DIRS += src/hal/socket/linux
-LIB_SOURCE_DIRS += src/hal/thread/linux
-LIB_SOURCE_DIRS += src/hal/ethernet/linux
-LIB_SOURCE_DIRS += src/hal/filesystem/linux
-LIB_SOURCE_DIRS += src/hal/time/unix
+LIB_SOURCE_DIRS += hal/socket/linux
+LIB_SOURCE_DIRS += hal/thread/linux
+LIB_SOURCE_DIRS += hal/ethernet/linux
+LIB_SOURCE_DIRS += hal/filesystem/linux
+LIB_SOURCE_DIRS += hal/time/unix
+LIB_SOURCE_DIRS += hal/serial/linux
 else ifeq ($(HAL_IMPL), BSD)
-LIB_SOURCE_DIRS += src/hal/socket/bsd
-LIB_SOURCE_DIRS += src/hal/thread/bsd
-LIB_SOURCE_DIRS += src/hal/ethernet/bsd
-LIB_SOURCE_DIRS += src/hal/filesystem/linux
-LIB_SOURCE_DIRS += src/hal/time/unix
+LIB_SOURCE_DIRS += hal/socket/bsd
+LIB_SOURCE_DIRS += hal/thread/bsd
+LIB_SOURCE_DIRS += hal/ethernet/bsd
+LIB_SOURCE_DIRS += hal/filesystem/linux
+LIB_SOURCE_DIRS += hal/time/unix
 endif
 LIB_INCLUDE_DIRS += config
+LIB_INCLUDE_DIRS += hal/inc
 LIB_INCLUDE_DIRS += src/common/inc
 LIB_INCLUDE_DIRS += src/mms/iso_mms/asn1c
 LIB_INCLUDE_DIRS += src/mms/inc
 LIB_INCLUDE_DIRS += src/mms/inc_private
-LIB_INCLUDE_DIRS += src/hal/inc
 LIB_INCLUDE_DIRS += src/goose
 LIB_INCLUDE_DIRS += src/sampled_values
 LIB_INCLUDE_DIRS += src/iec61850/inc
@@ -80,9 +82,9 @@ ifndef INSTALL_PREFIX
 INSTALL_PREFIX = ./.install
 endif
 
-LIB_API_HEADER_FILES = src/hal/inc/hal_time.h 
-LIB_API_HEADER_FILES += src/hal/inc/hal_thread.h
-LIB_API_HEADER_FILES += src/hal/inc/hal_filesystem.h 
+LIB_API_HEADER_FILES = hal/inc/hal_time.h 
+LIB_API_HEADER_FILES += hal/inc/hal_thread.h
+LIB_API_HEADER_FILES += hal/inc/hal_filesystem.h 
 LIB_API_HEADER_FILES += src/common/inc/libiec61850_common_api.h
 LIB_API_HEADER_FILES += src/common/inc/linked_list.h
 LIB_API_HEADER_FILES += src/common/inc/byte_buffer.h
