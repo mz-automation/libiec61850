@@ -92,11 +92,11 @@ include_directories(
 )
 
 set(API_HEADERS
-    src/hal/inc/hal_time.h
-    src/hal/inc/hal_thread.h
-    src/hal/inc/hal_filesystem.h
-    src/hal/inc/hal_ethernet.h
-    src/hal/inc/platform_endian.h
+    hal/inc/hal_time.h
+    hal/inc/hal_thread.h
+    hal/inc/hal_filesystem.h
+    hal/inc/hal_ethernet.h
+    hal/inc/platform_endian.h
     src/common/inc/libiec61850_common_api.h
     src/common/inc/libiec61850_platform_includes.h
     src/common/inc/linked_list.h
@@ -160,6 +160,8 @@ configure_file(
     ${CMAKE_CURRENT_LIST_DIR}/config/stack_config.h.cmake
     ${CMAKE_CURRENT_BINARY_DIR}/config/stack_config.h
 )
+
+include("${CMAKE_CURRENT_LIST_DIR}/hal/CMakeLists.txt")
 
 if(BUILD_EXAMPLES)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/examples)

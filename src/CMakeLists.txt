@@ -195,27 +195,12 @@ set (lib_sv_SRCS
 )
 
 set (lib_linux_SRCS
-./hal/socket/linux/socket_linux.c
-./hal/ethernet/linux/ethernet_linux.c
-./hal/thread/linux/thread_linux.c
-./hal/filesystem/linux/file_provider_linux.c
-./hal/time/unix/time.c
 )
 
 set (lib_windows_SRCS
-./hal/socket/win32/socket_win32.c
-./hal/ethernet/win32/ethernet_win32.c
-./hal/thread/win32/thread_win32.c
-./hal/filesystem/win32/file_provider_win32.c
-./hal/time/win32/time.c
 )
 
 set (lib_bsd_SRCS
-./hal/socket/bsd/socket_bsd.c
-./hal/ethernet/bsd/ethernet_bsd.c
-./hal/thread/bsd/thread_bsd.c
-./hal/filesystem/linux/file_provider_linux.c
-./hal/time/unix/time.c
 )
 
 IF(WIN32)
@@ -324,6 +309,9 @@ set_target_properties(iec61850-shared PROPERTIES
            SOVERSION "${LIB_VERSION_MAJOR}.${LIB_VERSION_MINOR}.${LIB_VERSION_PATCH}"
 )
 
+target_link_libraries(iec61850-shared
+	hal-shared
+)
 
 GENERATE_EXPORT_HEADER(iec61850-shared
 			BASE_NAME iec61850-shared
@@ -333,6 +321,10 @@ GENERATE_EXPORT_HEADER(iec61850-shared
 )
 
 add_library (iec61850 STATIC ${library_SRCS})
+
+target_link_libraries(iec61850
+	hal
+)
 
 IF(UNIX)
   IF (CONFIG_SYSTEM_HAS_CLOCK_GETTIME)
