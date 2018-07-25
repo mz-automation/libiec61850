@@ -26,7 +26,6 @@
 #include "mms_mapping.h"
 #include "logging.h"
 #include "linked_list.h"
-#include "array_list.h"
 #include "hal_thread.h"
 
 #include "simple_allocator.h"

@@ -1,7 +1,6 @@
 
 set (lib_common_SRCS
 ./common/string_map.c
-./common/array_list.c
 ./common/map.c
 ./common/linked_list.c
 ./common/byte_buffer.c

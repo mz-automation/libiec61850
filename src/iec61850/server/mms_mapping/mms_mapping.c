@@ -24,7 +24,6 @@
 #include "libiec61850_platform_includes.h"
 #include "mms_mapping.h"
 #include "mms_mapping_internal.h"
-#include "array_list.h"
 #include "stack_config.h"
 
 #include "mms_goose.h"
