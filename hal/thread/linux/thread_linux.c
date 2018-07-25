@@ -27,7 +27,7 @@
 #include <unistd.h>
 #include "hal_thread.h"
 
-#include "libiec61850_platform_includes.h"
+#include "lib_memory.h"
 
 struct sThread {
 	ThreadExecutionFunction function;

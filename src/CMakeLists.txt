@@ -5,7 +5,6 @@ set (lib_common_SRCS
 ./common/map.c
 ./common/linked_list.c
 ./common/byte_buffer.c
-./common/lib_memory.c
 ./common/string_utilities.c
 ./common/buffer_chain.c
 ./common/conversions.c

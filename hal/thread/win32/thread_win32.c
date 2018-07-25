@@ -22,7 +22,7 @@
  */
 
 #include <windows.h>
-#include "libiec61850_platform_includes.h"
+#include "lib_memory.h"
 #include "hal_thread.h"
 
 struct sThread {

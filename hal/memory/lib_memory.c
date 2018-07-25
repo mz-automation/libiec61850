@@ -1,7 +1,7 @@
 /*
  *  lib_memory.c
  *
- *  Copyright 2014 Michael Zillgith
+ *  Copyright 2014-2018 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -21,7 +21,8 @@
  *  See COPYING file for the complete license text.
  */
 
-#include "libiec61850_platform_includes.h"
+#include <stdlib.h>
+#include "lib_memory.h"
 
 static MemoryExceptionHandler exceptionHandler = NULL;
 static void* exceptionHandlerParameter = NULL;

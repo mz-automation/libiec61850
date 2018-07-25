@@ -24,10 +24,10 @@
 #include "stack_config.h"
 
 #include <string.h>
+#include <stdio.h>
 
 #include "hal_ethernet.h"
-
-#include "libiec61850_platform_includes.h"
+#include "lib_memory.h"
 
 #ifndef DEBUG_HAL_ETHERNET
 #define DEBUG_HAL_ETHERNET 1

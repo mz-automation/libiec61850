@@ -29,10 +29,11 @@
 #include <linux/if_arp.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <stdio.h>
 
 #include <string.h>
 
-#include "libiec61850_platform_includes.h"
+#include "lib_memory.h"
 #include "hal_ethernet.h"
 
 struct sEthernetSocket {

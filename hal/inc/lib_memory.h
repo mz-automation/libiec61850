@@ -1,5 +1,5 @@
 /*
- *  memory.h
+ *  lib_memory.h
  *
  *  Copyright 2014 Michael Zillgith
  *

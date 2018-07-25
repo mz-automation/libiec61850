@@ -1,7 +1,7 @@
 /*
  *  socket_linux.c
  *
- *  Copyright 2013, 2014 Michael Zillgith
+ *  Copyright 2013-2018 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -31,6 +31,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <errno.h>
+#include <stdio.h>
 
 #include <fcntl.h>
 
@@ -38,7 +39,8 @@
 
 #include "hal_thread.h"
 
-#include "libiec61850_platform_includes.h"
+#include "stack_config.h"
+#include "lib_memory.h"
 
 #ifndef DEBUG_SOCKET
 #define DEBUG_SOCKET 0

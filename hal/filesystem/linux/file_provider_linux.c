@@ -1,7 +1,7 @@
 /*
  *  file_provider_linux.c
  *
- *  Copyright 2014 Michael Zillgith
+ *  Copyright 2014-2018 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -23,16 +23,16 @@
 
 #include <string.h>
 #include <dirent.h>
-
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "libiec61850_platform_includes.h"
-
 #include "hal_filesystem.h"
-
 #include "stack_config.h"
+#include "lib_memory.h"
 
 struct sDirectoryHandle {
     DIR* handle;

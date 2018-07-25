@@ -25,10 +25,11 @@
 #include <ws2tcpip.h>
 #include <windows.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 #pragma comment (lib, "Ws2_32.lib")
 
-#include "libiec61850_platform_includes.h"
+#include "lib_memory.h"
 #include "hal_socket.h"
 #include "stack_config.h"
 

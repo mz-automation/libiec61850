@@ -42,7 +42,7 @@ option(CONFIG_IEC61850_REPORT_SERVICE "Build with support for IEC 61850 reportin
 option(CONFIG_IEC61850_LOG_SERVICE "Build with support for IEC 61850 logging services" ON)
 option(CONFIG_IEC61850_SETTING_GROUPS "Build with support for IEC 61850 setting group services" ON)
 
-set(CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE "8000" CACHE STRING "Default buffer size for buffered reports in byte" )
+set(CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE "65536" CACHE STRING "Default buffer size for buffered reports in byte" )
 
 # advanced options
 option(DEBUG "Enable debugging mode (include assertions)" OFF)
@@ -59,22 +59,6 @@ option(DEBUG_GOOSE_PUBLISHER "Enable GOOSE publisher printf debugging" ${DEBUG})
 option(DEBUG_SV_SUBSCRIBER "Enable Sampled Values subscriber debugging" ${DEBUG})
 option(DEBUG_SV_PUBLISHER "Enable Sampled Values publisher debugging" ${DEBUG})
 option(DEBUG_HAL_ETHERNET "Enable Ethernet HAL printf debugging" ${DEBUG})
-
-#mark_as_advanced(
-#    DEBUG_SOCKET
-#    DEBUG_COTP
-#    DEBUG_ISO_SERVER
-#    DEBUG_ISO_CLIENT
-#    DEBUG_IED_SERVER
-#    DEBUG_IED_CLIENT
-#    DEBUG_MMS_SERVER
-#    DEBUG_MMS_CLIENT
-#    DEBUG_GOOSE_SUBSCRIBER
-#    DEBUG_GOOSE_PUBLISHER
-#    DEBUG_SV_SUBSCRIBER
-#    DEBUG_SV_PUBLISHER
-#    DEBUG_HAL_ETHERNET
-#)
 
 include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}/config
@@ -161,7 +145,12 @@ configure_file(
     ${CMAKE_CURRENT_BINARY_DIR}/config/stack_config.h
 )
 
-include("${CMAKE_CURRENT_LIST_DIR}/hal/CMakeLists.txt")
+#include("${CMAKE_CURRENT_LIST_DIR}/hal/CMakeLists.txt")
+include_directories(
+	${CMAKE_CURRENT_LIST_DIR}/hal/inc
+)
+
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/hal")
 
 if(BUILD_EXAMPLES)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/examples)
