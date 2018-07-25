@@ -326,7 +326,6 @@ bool
 Socket_connect(Socket self, const char* address, int port)
 {
 	struct sockaddr_in serverAddress;
-	int ec;
 
 	if (wsaStartUp() == false)
 		return false;

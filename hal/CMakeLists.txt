@@ -13,6 +13,17 @@ set(LIBHAL_VERSION_MAJOR "2")
 set(LIBHAL_VERSION_MINOR "0")
 set(LIBHAL_VERSION_PATCH "0")
 
+if(WIN32)
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../third_party/winpcap/Lib/wpcap.lib")
+message("Found winpcap -> compile ethernet HAL layer (required for GOOSE/SV support)")
+set(WITH_WPCAP 1)
+else()
+message("winpcap not found -> skip ethernet HAL layer (no GOOSE/SV support)")
+endif()
+
+endif(WIN32)
+
 include_directories(
     ${CMAKE_CURRENT_LIST_DIR}/inc
 )
@@ -29,13 +40,18 @@ set (libhal_linux_SRCS
 
 set (libhal_windows_SRCS
  ${CMAKE_CURRENT_LIST_DIR}/socket/win32/socket_win32.c
- ${CMAKE_CURRENT_LIST_DIR}/ethernet/win32/ethernet_win32.c
  ${CMAKE_CURRENT_LIST_DIR}/thread/win32/thread_win32.c
  ${CMAKE_CURRENT_LIST_DIR}/filesystem/win32/file_provider_win32.c
  ${CMAKE_CURRENT_LIST_DIR}/time/win32/time.c
  ${CMAKE_CURRENT_LIST_DIR}/serial/win32/serial_port_win32.c
  ${CMAKE_CURRENT_LIST_DIR}/memory/lib_memory.c
 )
+
+if(WITH_WPCAP)
+set (libhal_windows_SRCS ${libhal_windows_SRCS}
+ ${CMAKE_CURRENT_LIST_DIR}/ethernet/win32/ethernet_win32.c
+)
+endif(WITH_WPCAP)
 
 set (libhal_bsd_SRCS
  ${CMAKE_CURRENT_LIST_DIR}/socket/bsd/socket_bsd.c
@@ -53,7 +69,10 @@ message("Found winpcap -> can compile with GOOSE support")
 set(WITH_WPCAP 1)
 endif()
 
-
+IF(MSVC)
+set_source_files_properties(${libhal_windows_SRCS}
+                                       PROPERTIES LANGUAGE CXX)
+ENDIF()
 
 set (libhal_SRCS
     ${libhal_windows_SRCS}
