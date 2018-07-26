@@ -93,6 +93,9 @@ main(int argc, char** argv)
     /* Set the base path for the MMS file services */
     IedServerConfig_setFileServiceBasePath(config, "./vmd-filestore/");
 
+    /* disable MMS file service */
+    IedServerConfig_enableFileService(config, false);
+
     /* Create a new IEC 61850 server instance */
     iedServer = IedServer_createWithConfig(&iedModel, NULL, config);
 
