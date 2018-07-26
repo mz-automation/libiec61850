@@ -171,9 +171,22 @@ handleConfirmedRequestPdu(
             {
 
 #if (MMS_OBTAIN_FILE_SERVICE == 1)
+
+
+#if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
+            case 0x2e: /* obtain-file */
+                if (self->server->fileServiceEnabled)
+                    mmsServer_handleObtainFileRequest(self, buffer, bufPos, bufPos + length, invokeId, response);
+                else
+                    mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE, response);
+                break;
+#else
             case 0x2e: /* obtain-file */
                 mmsServer_handleObtainFileRequest(self, buffer, bufPos, bufPos + length, invokeId, response);
                 break;
+#endif /* (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1) */
+
+
 #endif /* MMS_OBTAIN_FILE_SERVICE == 1 */
 
 #if (MMS_JOURNAL_SERVICE == 1)
@@ -183,29 +196,86 @@ handleConfirmedRequestPdu(
 #endif /* (MMS_JOURNAL_SERVICE == 1) */
 
 #if (MMS_FILE_SERVICE == 1)
+
+#if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
+            case 0x48: /* file-open-request */
+                if (self->server->fileServiceEnabled)
+                    mmsServer_handleFileOpenRequest(self, buffer, bufPos, bufPos + length, invokeId, response);
+                else
+                    mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE, response);
+                break;
+
+#else
             case 0x48: /* file-open-request */
                 mmsServer_handleFileOpenRequest(self, buffer, bufPos, bufPos + length, invokeId, response);
                 break;
+#endif /* (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1) */
 
+#if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
+            case 0x49: /* file-read-request */
+                if (self->server->fileServiceEnabled)
+                    mmsServer_handleFileReadRequest(self, buffer, bufPos, bufPos + length, invokeId, response);
+                else
+                    mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE, response);
+                break;
+#else
             case 0x49: /* file-read-request */
                 mmsServer_handleFileReadRequest(self, buffer, bufPos, bufPos + length, invokeId, response);
                 break;
+#endif /* (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1) */
 
+#if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
+            case 0x4a: /* file-close-request */
+                if (self->server->fileServiceEnabled)
+                    mmsServer_handleFileCloseRequest(self, buffer, bufPos, bufPos + length, invokeId, response);
+                else
+                    mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE, response);
+                break;
+#else
             case 0x4a: /* file-close-request */
                 mmsServer_handleFileCloseRequest(self, buffer, bufPos, bufPos + length, invokeId, response);
                 break;
+#endif /* (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1) */
 
+#if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
+            case 0x4b: /* file-rename-request */
+                if (self->server->fileServiceEnabled)
+                    mmsServer_handleFileRenameRequest(self, buffer, bufPos, bufPos + length, invokeId, response);
+                else
+                    mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE, response);
+                break;
+#else
             case 0x4b: /* file-rename-request */
                 mmsServer_handleFileRenameRequest(self, buffer, bufPos, bufPos + length, invokeId, response);
                 break;
+#endif /* (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1) */
 
+#if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
+            case 0x4c: /* file-delete-request */
+                if (self->server->fileServiceEnabled)
+                    mmsServer_handleFileDeleteRequest(self, buffer, bufPos, bufPos + length, invokeId, response);
+                else
+                    mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE, response);
+                break;
+#else
             case 0x4c: /* file-delete-request */
                 mmsServer_handleFileDeleteRequest(self, buffer, bufPos, bufPos + length, invokeId, response);
                 break;
+#endif /* (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1) */
 
+#if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
+            case 0x4d: /* file-directory-request */
+                if (self->server->fileServiceEnabled)
+                    mmsServer_handleFileDirectoryRequest(self, buffer, bufPos, bufPos + length, invokeId, response);
+                else
+                    mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE, response);
+                break;
+#else
             case 0x4d: /* file-directory-request */
                 mmsServer_handleFileDirectoryRequest(self, buffer, bufPos, bufPos + length, invokeId, response);
                 break;
+#endif /* (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1) */
+
 #endif /* MMS_FILE_SERVICE == 1 */
 
             default:

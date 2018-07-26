@@ -232,6 +232,9 @@
  */
 #define CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME 1
 
+/* enable to configure MmsServer at runtime */
+#define CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME 1
+
 /************************************************************************************
  * Check configuration for consistency - DO NOT MODIFY THIS PART!
  ************************************************************************************/

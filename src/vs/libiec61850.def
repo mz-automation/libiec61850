@@ -732,3 +732,5 @@ EXPORTS
     ClientGooseControlBlock_getFixedOffs
     ControlObjectClient_getCtlValType
     SVPublisher_ASDU_setSmpCntWrap
+    IedServerConfig_enableFileService
+    IedServerConfig_isFileServiceEnabled

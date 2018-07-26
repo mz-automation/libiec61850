@@ -604,3 +604,5 @@ EXPORTS
     ClientGooseControlBlock_getMaxTime
     ClientGooseControlBlock_getFixedOffs
     ControlObjectClient_getCtlValType
+    IedServerConfig_enableFileService
+    IedServerConfig_isFileServiceEnabled

@@ -164,6 +164,10 @@ struct sMmsServer {
     char* filestoreBasepath;
 #endif
 
+#if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
+    bool fileServiceEnabled;
+#endif /* (CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME == 1) */
+
 };
 
 struct sMmsServerConnection {

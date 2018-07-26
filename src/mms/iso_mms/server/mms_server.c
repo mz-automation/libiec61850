@@ -67,6 +67,10 @@ MmsServer_create(MmsDevice* device, TLSConfiguration tlsConfiguration)
     IsoServer_setUserLock(self->isoServer, self->modelMutex);
 #endif
 
+#if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
+    self->fileServiceEnabled = true;
+#endif /* (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1) */
+
     return self;
 }
 
@@ -99,6 +103,15 @@ MmsServer_setFilestoreBasepath(MmsServer self, const char* basepath)
 #endif /* (CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME == 1) */
 }
 
+#if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
+
+void
+MmsServer_enableFileService(MmsServer self, bool enable)
+{
+    self->fileServiceEnabled = enable;
+}
+
+#endif /* (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1) */
 
 void
 MmsServer_lockModel(MmsServer self)

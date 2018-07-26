@@ -421,6 +421,11 @@ IedServer_createWithConfig(IedModel* dataModel, TLSConfiguration tlsConfiguratio
 
         self->mmsServer = MmsServer_create(self->mmsDevice, tlsConfiguration);
 
+#if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
+        if (serverConfiguration)
+            MmsServer_enableFileService(self->mmsServer, serverConfiguration->enableFileService);
+#endif
+
         if (serverConfiguration)
             MmsServer_setFilestoreBasepath(self->mmsServer, serverConfiguration->fileServiceBasepath);
 

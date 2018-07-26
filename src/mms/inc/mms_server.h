@@ -226,6 +226,17 @@ void
 MmsServer_setFilestoreBasepath(MmsServer self, const char* basepath);
 
 /**
+ * \brief Enable/disable MMS file services at runtime
+ *
+ * NOTE: requires CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME = 1 in stack configuration
+ *
+ * \param[in] self the MmsServer instance
+ * \param[in] enable true to enable file services, false to disable
+ */
+void
+MmsServer_enableFileService(MmsServer self, bool enable);
+
+/**
  * \brief lock the cached server data model
  *
  * NOTE: This method should never be called inside of a library callback function. In the context of

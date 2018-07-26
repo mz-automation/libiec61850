@@ -32,6 +32,7 @@ IedServerConfig_create()
     if (self) {
         self->reportBufferSize = CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE;
         self->fileServiceBasepath = StringUtils_copyString(CONFIG_VIRTUAL_FILESTORE_BASEPATH);
+        self->enableFileService = true;
     }
 
     return self;
@@ -73,3 +74,16 @@ IedServerConfig_getFileServiceBasePath(IedServerConfig self)
 {
     return self->fileServiceBasepath;
 }
+
+void
+IedServerConfig_enableFileService(IedServerConfig self, bool enable)
+{
+    self->enableFileService = enable;
+}
+
+bool
+IedServerConfig_isFileServiceEnabled(IedServerConfig self)
+{
+    return self->enableFileService;
+}
+

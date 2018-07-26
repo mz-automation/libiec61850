@@ -53,6 +53,9 @@ struct sIedServerConfig
 
     /** Base path (directory where the file service serves files */
     char* fileServiceBasepath;
+
+    /** when true (default) enable MMS file service */
+    bool enableFileService;
 };
 
 /**
@@ -99,7 +102,21 @@ IedServerConfig_setFileServiceBasePath(IedServerConfig self, const char* basepat
 const char*
 IedServerConfig_getFileServiceBasePath(IedServerConfig self);
 
+/**
+ * \brief Enable/disable the MMS file service support
+ *
+ * \param[in] enable set true to enable the file services, otherwise false
+ */
+void
+IedServerConfig_enableFileService(IedServerConfig self, bool enable);
 
+/**
+ * \brief Is the MMS file service enabled or disabled
+ *
+ * \return true if enabled, false otherwise
+ */
+bool
+IedServerConfig_isFileServiceEnabled(IedServerConfig self);
 
 /**
  * An opaque handle for an IED server instance
