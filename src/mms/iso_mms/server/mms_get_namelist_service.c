@@ -615,11 +615,10 @@ mmsServer_handleGetNameListRequest(
 #endif /* (MMS_DATA_SET_SERVICE == 1) */
 
         else if (objectClass == OBJECT_CLASS_JOURNAL) {
-            LinkedList nameList = LinkedList_create();
 
-#if (CONFIG_MMS_SORT_NAME_LIST == 1)
-            StringUtils_sortList(nameList);
-#endif
+            /* response with empty list */
+
+            LinkedList nameList = LinkedList_create();
 
             createNameListResponse(connection, invokeId, nameList, response, continueAfter);
 

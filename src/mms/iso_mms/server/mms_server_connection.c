@@ -190,9 +190,21 @@ handleConfirmedRequestPdu(
 #endif /* MMS_OBTAIN_FILE_SERVICE == 1 */
 
 #if (MMS_JOURNAL_SERVICE == 1)
+
+#if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
+            case 0x41: /* read-journal */
+                if (self->server->journalServiceEnabled)
+                    mmsServer_handleReadJournalRequest(self, buffer, bufPos, bufPos + length, invokeId, response);
+                else
+                    mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE, response);
+                break;
+
+#else
             case 0x41: /* read-journal */
                 mmsServer_handleReadJournalRequest(self, buffer, bufPos, bufPos + length, invokeId, response);
                 break;
+#endif /* (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1) */
+
 #endif /* (MMS_JOURNAL_SERVICE == 1) */
 
 #if (MMS_FILE_SERVICE == 1)

@@ -34,6 +34,7 @@ IedServerConfig_create()
         self->fileServiceBasepath = StringUtils_copyString(CONFIG_VIRTUAL_FILESTORE_BASEPATH);
         self->enableFileService = true;
         self->enableDynamicDataSetService = true;
+        self->enableLogService = true;
     }
 
     return self;
@@ -98,4 +99,16 @@ bool
 IedServerConfig_isDynamicDataSetServiceEnabled(IedServerConfig self)
 {
     return self->enableDynamicDataSetService;
+}
+
+void
+IedServerConfig_enableLogService(IedServerConfig self, bool enable)
+{
+    self->enableLogService = enable;
+}
+
+bool
+IedServerConfig_isLogServiceEnabled(IedServerConfig self)
+{
+    return self->enableLogService;
 }

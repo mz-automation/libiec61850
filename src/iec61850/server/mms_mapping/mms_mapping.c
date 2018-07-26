@@ -1010,12 +1010,22 @@ createNamedVariableFromLogicalNode(MmsMapping* self, MmsDomain* domain,
 #endif /* (CONFIG_IEC61850_REPORT_SERVICE == 1) */
 
 #if (CONFIG_IEC61850_LOG_SERVICE == 1)
-    if (lcbCount > 0) {
-        namedVariable->typeSpec.structure.elements[currentComponent] =
-                Logging_createLCBs(self, domain, logicalNode, lcbCount);
 
-        currentComponent++;
+#if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
+    if (self->iedServer->logServiceEnabled) {
+#endif
+
+        if (lcbCount > 0) {
+            namedVariable->typeSpec.structure.elements[currentComponent] =
+                    Logging_createLCBs(self, domain, logicalNode, lcbCount);
+
+            currentComponent++;
+        }
+
+#if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
     }
+#endif
+
 #endif /* (CONFIG_IEC61850_LOG_SERVICE == 1) */
 
 
@@ -1118,33 +1128,42 @@ createMmsDomainFromIedDevice(MmsMapping* self, LogicalDevice* logicalDevice)
         goto exit_function;
 
 #if (CONFIG_IEC61850_LOG_SERVICE == 1)
-    /* add logs (journals) */
-    Log* log = self->model->logs;
 
-    while (log != NULL) {
+#if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
+    if (self->iedServer->logServiceEnabled) {
+#endif
+        /* add logs (journals) */
+        Log* log = self->model->logs;
 
-        char journalName[65];
+        while (log != NULL) {
 
-        int nameLength = strlen(log->parent->name) + strlen(log->name);
+            char journalName[65];
 
-        if (nameLength > 63) {
-            if (DEBUG_IED_SERVER)
-                printf("IED_SERVER: Log name %s invalid! Resulting journal name too long! Skip log\n", log->name);
+            int nameLength = strlen(log->parent->name) + strlen(log->name);
+
+            if (nameLength > 63) {
+                if (DEBUG_IED_SERVER)
+                    printf("IED_SERVER: Log name %s invalid! Resulting journal name too long! Skip log\n", log->name);
+            }
+            else {
+                strcpy(journalName, log->parent->name);
+                strcat(journalName, "$");
+                strcat(journalName, log->name);
+
+                MmsDomain_addJournal(domain, journalName);
+
+                LogInstance* logInstance = LogInstance_create(log->parent, log->name);
+
+                LinkedList_add(self->logInstances, (void*) logInstance);
+            }
+
+            log = log->sibling;
         }
-        else {
-            strcpy(journalName, log->parent->name);
-            strcat(journalName, "$");
-            strcat(journalName, log->name);
 
-            MmsDomain_addJournal(domain, journalName);
-
-            LogInstance* logInstance = LogInstance_create(log->parent, log->name);
-
-            LinkedList_add(self->logInstances, (void*) logInstance);
-        }
-
-        log = log->sibling;
+#if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
     }
+#endif
+
 #endif /* (CONFIG_IEC61850_LOG_SERVICE == 1) */
 
     int nodesCount = LogicalDevice_getLogicalNodeCount(logicalDevice);

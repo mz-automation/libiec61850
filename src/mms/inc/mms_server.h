@@ -248,6 +248,17 @@ void
 MmsServer_enableDynamicNamedVariableListService(MmsServer self, bool enable);
 
 /**
+ * \brief Enable/disable journal service
+ *
+ * NOTE: requires CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME = 1 in stack configuration
+ *
+ * \param[in] self the MmsServer instance
+ * \param[in] enable true to enable journal service, false to disable
+ */
+void
+MmsServer_enableJournalService(MmsServer self, bool enable);
+
+/**
  * \brief lock the cached server data model
  *
  * NOTE: This method should never be called inside of a library callback function. In the context of

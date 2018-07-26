@@ -112,15 +112,10 @@ encodeInitResponseDetail(MmsServerConnection self, uint8_t* buffer, int bufPos, 
             0x00,
             0x00,
             0x00,
-            0x00
-            ,
             0x00,
             0x00,
-            0x00
-    #if (MMS_JOURNAL_SERVICE == 1)
-            | MMS_SERVICE_READ_JOURNAL
-    #endif
-            ,
+            0x00,
+            0x00,
             0x00
             | MMS_SERVICE_INFORMATION_REPORT
             ,
@@ -154,6 +149,12 @@ encodeInitResponseDetail(MmsServerConnection self, uint8_t* buffer, int bufPos, 
         servicesSupported[1] |= MMS_SERVICE_DELETE_NAMED_VARIABLE_LIST;
 #endif
 
+    }
+
+    if (self->server->journalServiceEnabled) {
+#if (MMS_JOURNAL_SERVICE == 1)
+        servicesSupported[8] |= MMS_SERVICE_READ_JOURNAL;
+#endif
     }
 
 

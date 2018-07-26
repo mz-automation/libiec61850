@@ -51,6 +51,10 @@ struct sIedServer
     Semaphore dataModelLock;
 #endif
 
+#if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
+    bool logServiceEnabled;
+#endif
+
     bool running;
 };
 

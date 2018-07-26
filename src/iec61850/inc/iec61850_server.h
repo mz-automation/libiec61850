@@ -59,6 +59,9 @@ struct sIedServerConfig
 
     /** when true (default) enable dynamic data set services for MMS */
     bool enableDynamicDataSetService;
+
+    /** when true (default) enable log service */
+    bool enableLogService;
 };
 
 /**
@@ -136,6 +139,22 @@ IedServerConfig_enableDynamicDataSetService(IedServerConfig self, bool enable);
  */
 bool
 IedServerConfig_isDynamicDataSetServiceEnabled(IedServerConfig self);
+
+/**
+ * \brief Enable/disable the log service for MMS
+ *
+ * \param[in] enable set true to enable dynamic data set service, otherwise false
+ */
+void
+IedServerConfig_enableLogService(IedServerConfig self, bool enable);
+
+/**
+ * \brief Is the log service for MMS enabled or disabled
+ *
+ * \return true if enabled, false otherwise
+ */
+bool
+IedServerConfig_isLogServiceEnabled(IedServerConfig self);
 
 /**
  * An opaque handle for an IED server instance

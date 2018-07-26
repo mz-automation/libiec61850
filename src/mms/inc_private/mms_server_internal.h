@@ -167,6 +167,7 @@ struct sMmsServer {
 #if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
     bool fileServiceEnabled;
     bool dynamicVariableListServiceEnabled;
+    bool journalServiceEnabled;
 #endif /* (CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME == 1) */
 
 };

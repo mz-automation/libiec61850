@@ -736,3 +736,5 @@ EXPORTS
     IedServerConfig_isFileServiceEnabled
     IedServerConfig_enableDynamicDataSetService
     IedServerConfig_isDynamicDataSetServiceEnabled
+    IedServerConfig_enableLogService
+    IedServerConfig_isLogServiceEnabled

@@ -404,9 +404,17 @@ IedServer_createWithConfig(IedModel* dataModel, TLSConfiguration tlsConfiguratio
         self->running = false;
         self->localIpAddress = NULL;
 
+#if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
+        self->logServiceEnabled = true;
+
+        if (serverConfiguration) {
+            self->logServiceEnabled = serverConfiguration->enableLogService;
+        }
+#endif /* (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1) */
+
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
         self->dataModelLock = Semaphore_create(1);
-#endif
+#endif /* (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1) */
 
 #if (CONFIG_IEC61850_REPORT_SERVICE == 1)
         if (serverConfiguration)
@@ -425,6 +433,7 @@ IedServer_createWithConfig(IedModel* dataModel, TLSConfiguration tlsConfiguratio
         if (serverConfiguration) {
             MmsServer_enableFileService(self->mmsServer, serverConfiguration->enableFileService);
             MmsServer_enableDynamicNamedVariableListService(self->mmsServer, serverConfiguration->enableDynamicDataSetService);
+            MmsServer_enableJournalService(self->mmsServer, serverConfiguration->enableLogService);
         }
 #endif
 

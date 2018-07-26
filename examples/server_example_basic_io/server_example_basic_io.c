@@ -97,7 +97,9 @@ main(int argc, char** argv)
     IedServerConfig_enableFileService(config, false);
 
     /* disable dynamic data set service */
-    IedServerConfig_enableDynamicDataSetService(config, true);
+    IedServerConfig_enableDynamicDataSetService(config, false);
+
+    IedServerConfig_enableLogService(config, true);
 
     /* Create a new IEC 61850 server instance */
     iedServer = IedServer_createWithConfig(&iedModel, NULL, config);
