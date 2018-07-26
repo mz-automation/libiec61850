@@ -33,6 +33,7 @@ IedServerConfig_create()
         self->reportBufferSize = CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE;
         self->fileServiceBasepath = StringUtils_copyString(CONFIG_VIRTUAL_FILESTORE_BASEPATH);
         self->enableFileService = true;
+        self->enableDynamicDataSetService = true;
     }
 
     return self;
@@ -87,3 +88,14 @@ IedServerConfig_isFileServiceEnabled(IedServerConfig self)
     return self->enableFileService;
 }
 
+void
+IedServerConfig_enableDynamicDataSetService(IedServerConfig self, bool enable)
+{
+    self->enableDynamicDataSetService = enable;
+}
+
+bool
+IedServerConfig_isDynamicDataSetServiceEnabled(IedServerConfig self)
+{
+    return self->enableDynamicDataSetService;
+}

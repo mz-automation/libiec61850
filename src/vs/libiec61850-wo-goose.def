@@ -606,3 +606,5 @@ EXPORTS
     ControlObjectClient_getCtlValType
     IedServerConfig_enableFileService
     IedServerConfig_isFileServiceEnabled
+    IedServerConfig_enableDynamicDataSetService
+    IedServerConfig_isDynamicDataSetServiceEnabled

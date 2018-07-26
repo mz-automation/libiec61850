@@ -1,7 +1,7 @@
 /*
  *  mms_server_connection.c
  *
- *  Copyright 2013-2016 Michael Zillgith
+ *  Copyright 2013-2018 Michael Zillgith
  *
  *	This file is part of libIEC61850.
  *
@@ -334,11 +334,42 @@ handleConfirmedRequestPdu(
 #endif /* MMS_GET_VARIABLE_ACCESS_ATTRIBUTES == 1 */
 
 #if (MMS_DYNAMIC_DATA_SETS == 1)
+
+#if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
+
+            case 0xab: /* define-named-variable-list */
+                if (self->server->dynamicVariableListServiceEnabled)
+                    mmsServer_handleDefineNamedVariableListRequest(self,
+                            buffer, bufPos, bufPos + length,
+                            invokeId, response);
+                else
+                    mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE, response);
+                break;
+
+            case 0xad: /* delete-named-variable-list-request */
+                if (self->server->dynamicVariableListServiceEnabled)
+                    mmsServer_handleDeleteNamedVariableListRequest(self,
+                            buffer, bufPos, bufPos + length,
+                            invokeId, response);
+                else
+                    mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE, response);
+                break;
+
+#else
             case 0xab: /* define-named-variable-list */
                 mmsServer_handleDefineNamedVariableListRequest(self,
                         buffer, bufPos, bufPos + length,
                         invokeId, response);
                 break;
+
+            case 0xad: /* delete-named-variable-list-request */
+                mmsServer_handleDeleteNamedVariableListRequest(self,
+                        buffer, bufPos, bufPos + length,
+                        invokeId, response);
+                break;
+
+#endif /* (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1) */
+
 #endif /* (MMS_DYNAMIC_DATA_SETS == 1) */
 
 #if (MMS_GET_DATA_SET_ATTRIBUTES == 1)
@@ -348,14 +379,6 @@ handleConfirmedRequestPdu(
                         invokeId, response);
                 break;
 #endif /* (MMS_GET_DATA_SET_ATTRIBUTES == 1) */
-
-#if (MMS_DYNAMIC_DATA_SETS == 1)
-            case 0xad: /* delete-named-variable-list-request */
-                mmsServer_handleDeleteNamedVariableListRequest(self,
-                        buffer, bufPos, bufPos + length,
-                        invokeId, response);
-                break;
-#endif /* (MMS_DYNAMIC_DATA_SETS == 1) */
 
             default:
                 mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE, response);

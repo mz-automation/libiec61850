@@ -96,6 +96,9 @@ main(int argc, char** argv)
     /* disable MMS file service */
     IedServerConfig_enableFileService(config, false);
 
+    /* disable dynamic data set service */
+    IedServerConfig_enableDynamicDataSetService(config, true);
+
     /* Create a new IEC 61850 server instance */
     iedServer = IedServer_createWithConfig(&iedModel, NULL, config);
 

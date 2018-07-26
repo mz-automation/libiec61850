@@ -422,8 +422,10 @@ IedServer_createWithConfig(IedModel* dataModel, TLSConfiguration tlsConfiguratio
         self->mmsServer = MmsServer_create(self->mmsDevice, tlsConfiguration);
 
 #if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
-        if (serverConfiguration)
+        if (serverConfiguration) {
             MmsServer_enableFileService(self->mmsServer, serverConfiguration->enableFileService);
+            MmsServer_enableDynamicNamedVariableListService(self->mmsServer, serverConfiguration->enableDynamicDataSetService);
+        }
 #endif
 
         if (serverConfiguration)

@@ -734,3 +734,5 @@ EXPORTS
     SVPublisher_ASDU_setSmpCntWrap
     IedServerConfig_enableFileService
     IedServerConfig_isFileServiceEnabled
+    IedServerConfig_enableDynamicDataSetService
+    IedServerConfig_isDynamicDataSetServiceEnabled

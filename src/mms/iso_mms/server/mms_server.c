@@ -69,6 +69,7 @@ MmsServer_create(MmsDevice* device, TLSConfiguration tlsConfiguration)
 
 #if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
     self->fileServiceEnabled = true;
+    self->dynamicVariableListServiceEnabled = true;
 #endif /* (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1) */
 
     return self;
@@ -109,6 +110,12 @@ void
 MmsServer_enableFileService(MmsServer self, bool enable)
 {
     self->fileServiceEnabled = enable;
+}
+
+void
+MmsServer_enableDynamicNamedVariableListService(MmsServer self, bool enable)
+{
+    self->dynamicVariableListServiceEnabled = enable;
 }
 
 #endif /* (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1) */

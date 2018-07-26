@@ -105,10 +105,6 @@ encodeInitResponseDetail(MmsServerConnection self, uint8_t* buffer, int bufPos, 
             | MMS_SERVICE_GET_VARIABLE_ACCESS_ATTRIBUTES
             ,
             0x00
-    #if ((MMS_DATA_SET_SERVICE == 1) && (MMS_DYNAMIC_DATA_SETS == 1))
-            | MMS_SERVICE_DEFINE_NAMED_VARIABLE_LIST
-            | MMS_SERVICE_DELETE_NAMED_VARIABLE_LIST
-    #endif
     #if ((MMS_DATA_SET_SERVICE == 1) && (MMS_GET_DATA_SET_ATTRIBUTES == 1))
             | MMS_SERVICE_GET_NAMED_VARIABLE_LIST_ATTRIBUTES
     #endif
@@ -148,6 +144,15 @@ encodeInitResponseDetail(MmsServerConnection self, uint8_t* buffer, int bufPos, 
         servicesSupported[9] |= MMS_SERVICE_FILE_DELETE;
         servicesSupported[9] |= MMS_SERVICE_FILE_DIRECTORY;
 #endif /* (MMS_FILE_SERVICE == 1) */
+
+    }
+
+    if (self->server->dynamicVariableListServiceEnabled) {
+
+#if ((MMS_DATA_SET_SERVICE == 1) && (MMS_DYNAMIC_DATA_SETS == 1))
+        servicesSupported[1] |= MMS_SERVICE_DEFINE_NAMED_VARIABLE_LIST;
+        servicesSupported[1] |= MMS_SERVICE_DELETE_NAMED_VARIABLE_LIST;
+#endif
 
     }
 
