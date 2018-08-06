@@ -63,7 +63,7 @@ namespace IEC61850
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern int MmsVariableSpecification_getExponentWidth(IntPtr self);
 
-			private IntPtr self;
+			internal IntPtr self;
 			private bool responsableForDeletion;
 
 			internal MmsVariableSpecification (IntPtr self)

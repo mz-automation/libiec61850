@@ -105,6 +105,50 @@ namespace tests
 			Assert.AreEqual (val.ToFloat (), (float)0.1234);
 		}
 
+		[Test()]
+		public void MmsValueArray()
+		{
+			MmsValue val = MmsValue.NewEmptyArray (3);
+
+			val.SetElement (0, new MmsValue (1));
+			val.SetElement (1, new MmsValue (2));
+			val.SetElement (2, new MmsValue (3));
+
+			Assert.AreEqual (val.GetType (), MmsType.MMS_ARRAY);
+			Assert.AreEqual (val.Size (), 3);
+
+			MmsValue elem0 = val.GetElement (0);
+
+			Assert.AreEqual (elem0.GetType (), MmsType.MMS_INTEGER);
+			Assert.AreEqual (elem0.ToInt32 (), 1);
+
+			MmsValue elem2 = val.GetElement (2);
+
+			Assert.AreEqual (elem2.GetType (), MmsType.MMS_INTEGER);
+			Assert.AreEqual (elem2.ToInt32 (), 3);
+		}
+
+		[Test()]
+		public void MmsValueStructure()
+		{
+			MmsValue val = MmsValue.NewEmptyStructure (2);
+
+			val.SetElement (0, new MmsValue(true));
+			val.SetElement (1, MmsValue.NewBitString (10));
+
+			Assert.AreEqual (val.GetType (), MmsType.MMS_STRUCTURE);
+			Assert.AreEqual (val.Size (), 2);
+
+			MmsValue elem0 = val.GetElement (0);
+
+			Assert.AreEqual (elem0.GetType (), MmsType.MMS_BOOLEAN);
+			Assert.AreEqual (elem0.GetBoolean(), true);
+
+			MmsValue elem1 = val.GetElement (1);
+
+			Assert.AreEqual (elem1.GetType (), MmsType.MMS_BIT_STRING);
+		}
+
 		[Test ()]
 		public void Timestamps()
 		{
