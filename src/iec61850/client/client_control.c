@@ -605,7 +605,7 @@ ControlObjectClient_select(ControlObjectClient self)
             if (DEBUG_IED_CLIENT)
                 printf("select-response-\n");
         }
-        else if (strcmp(MmsValue_toString(value), sboReference)) {
+        else if (strcmp(MmsValue_toString(value), sboReference) == 0) {
             if (DEBUG_IED_CLIENT)
                 printf("select-response+: (%s)\n", MmsValue_toString(value));
             selected = true;
