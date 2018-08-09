@@ -1,26 +1,39 @@
 /*
- * tls_api.h
+ * tls_config.h
  *
- * TLS API for TCP/IP protocol stacks
+ * TLS Configuration API for protocol stacks using TCP/IP
  *
- * Copyright 2017 MZ Automation GmbH
+ * Copyright 2017-2018 MZ Automation GmbH
  *
- * Abstraction layer for different TLS implementations
- *
- * Implementation connects the TLS API layer with the socket API layer
- * and performs all TLS tasks like handshake, encryption/decryption.
+ * Abstraction layer for configuration of different TLS implementations
  *
  */
 
-#ifndef SRC_TLS_TLS_API_H_
-#define SRC_TLS_TLS_API_H_
-
-#include <stdbool.h>
-#include <stdint.h>
+#ifndef SRC_TLS_CONFIG_H_
+#define SRC_TLS_CONFIG_H_
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include <stdbool.h>
+#include <stdint.h>
+
+/**
+ * \file tls_config.h
+ * \brief TLS API functions
+ */
+
+/*! \addtogroup hal Platform (Hardware/OS) abstraction layer
+   *
+   *  @{
+   */
+
+/**
+ * @defgroup TLS_CONFIG_API TLS configuration
+ *
+ * @{
+ */
 
 typedef struct sTLSConfiguration* TLSConfiguration;
 
@@ -107,8 +120,12 @@ TLSConfiguration_setRenegotiationTime(TLSConfiguration self, int timeInMs);
 void
 TLSConfiguration_destroy(TLSConfiguration self);
 
+/** @} */
+
+/** @} */
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* SRC_TLS_TLS_API_H_ */
+#endif /* SRC_TLS_CONFIG_H_ */

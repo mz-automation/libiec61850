@@ -1,6 +1,6 @@
 Changes to version 1.3.0
 ------------------------
-- HAL: unified platform abstraction layer (to simply use together with lib60870)
+- HAL: unified platform abstraction layer (to simplify using the library together with lib60870)
 - IEC 61850 server: fixed bug when calling write access handler (wrong pointer for ClientConnection object)
 - updated IEC 61850-9-2 LE example to be more realistic
 - added server side example for the substitution service

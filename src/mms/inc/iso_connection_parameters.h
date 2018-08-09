@@ -28,7 +28,7 @@
 extern "C" {
 #endif
 
-#include "tls_api.h"
+#include "tls_config.h"
 
 /**
  * \addtogroup mms_client_api_group

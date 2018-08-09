@@ -28,14 +28,13 @@
 #include "mms_client_internal.h"
 #include "stack_config.h"
 
-#include "tls_api.h"
-
 #include <MmsPdu.h>
 
 #include "byte_buffer.h"
 #include "ber_decode.h"
 
 #include <assert.h>
+#include "tls_config.h"
 
 #define CONFIG_MMS_CONNECTION_DEFAULT_TIMEOUT 5000
 #define CONFIG_MMS_CONNECTION_DEFAULT_CONNECT_TIMEOUT 10000

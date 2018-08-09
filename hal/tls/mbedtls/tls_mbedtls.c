@@ -11,13 +11,11 @@
 
 #include <string.h>
 
-#include "tls_api.h"
 #include "tls_socket.h"
 #include "hal_thread.h"
 #include "lib_memory.h"
 #include "linked_list.h"
 
-//#include "mbedtls/config.h"
 #include "mbedtls/platform.h"
 #include "mbedtls/entropy.h"
 #include "mbedtls/ctr_drbg.h"
@@ -28,10 +26,10 @@
 #include "mbedtls/error.h"
 #include "mbedtls/debug.h"
 
-#define CONFIG_DEBUG_TLS 0
-
 #if (CONFIG_DEBUG_TLS == 1)
-#define DEBUG_PRINT(appId, fmt, ...) fprintf(stderr, "%s: " fmt, appId, ## __VA_ARGS__)
+#define DEBUG_PRINT(appId, fmt, ...) fprintf(stderr, "%s: " fmt, \
+    appId, \
+    __VA_ARGS__)
 #else
 #define DEBUG_PRINT(fmt, ...) {do {} while(0);}
 #endif
@@ -212,7 +210,7 @@ TLSConfiguration_setOwnCertificate(TLSConfiguration self, uint8_t* certificate, 
     int ret = mbedtls_x509_crt_parse(&(self->ownCertificate), certificate, certLen);
 
     if (ret != 0)
-        printf("mbedtls_x509_crt_parse returned %d\n", ret);
+        DEBUG_PRINT("mbedtls_x509_crt_parse returned %d\n", ret);
 
     return (ret == 0);
 }
@@ -344,7 +342,6 @@ readFunction(void* ctx, unsigned char* buf, size_t len)
     int ret = Socket_read((Socket) ctx, buf, len);
 
     if ((ret == 0) && (len > 0)) {
-        Thread_sleep(1);
         return MBEDTLS_ERR_SSL_WANT_READ;
     }
 
@@ -422,47 +419,30 @@ TLSSocket_performHandshake(TLSSocket self)
 int
 TLSSocket_read(TLSSocket self, uint8_t* buf, int size)
 {
-    int ret;
-    int len = size;
+    int ret = mbedtls_ssl_read(&(self->ssl), buf, size);
 
-    do
-     {
-         ret = mbedtls_ssl_read( &(self->ssl), buf, len );
+    if ((ret == MBEDTLS_ERR_SSL_WANT_READ) || (ret == MBEDTLS_ERR_SSL_WANT_WRITE))
+        return 0;
 
-         if( ret == MBEDTLS_ERR_SSL_WANT_READ || ret == MBEDTLS_ERR_SSL_WANT_WRITE )
-             continue;
+    if (ret < 0) {
 
-         if( ret <= 0 )
-         {
-             switch( ret )
-             {
-                 case MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY:
-                     DEBUG_PRINT("TLS", " connection was closed gracefully\n" );
-                     len = -1;
-                     break;
+        switch (ret)
+        {
+        case MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY:
+            DEBUG_PRINT("TLS", " connection was closed gracefully\n");
+            return -1;
 
-                 case MBEDTLS_ERR_NET_CONN_RESET:
-                     len = -1;
-                     DEBUG_PRINT("TLS", " connection was reset by peer\n" );
-                     break;
+        case MBEDTLS_ERR_NET_CONN_RESET:
+            DEBUG_PRINT("TLS", " connection was reset by peer\n");
+            return -1;
 
-                 default:
-                     DEBUG_PRINT("TLS", " mbedtls_ssl_read returned -0x%x\n", -ret );
-                     len = -1; //TODO is this the correct return value?
-                     break;
-             }
+        default:
+            DEBUG_PRINT("TLS", " mbedtls_ssl_read returned -0x%x\n", -ret);
+            return -1;
+        }
+    }
 
-             break;
-         }
-
-         len = ret;
-
-         if( ret > 0 )
-             break;
-     }
-     while( 1 );
-
-    return len;
+    return ret;
 }
 
 int
@@ -471,18 +451,17 @@ TLSSocket_write(TLSSocket self, uint8_t* buf, int size)
     int ret;
     int len = size;
 
-
-    while( ( ret = mbedtls_ssl_write( &(self->ssl), buf, len ) ) <= 0 )
+    while ((ret = mbedtls_ssl_write(&(self->ssl), buf, len)) <= 0)
     {
-        if( ret == MBEDTLS_ERR_NET_CONN_RESET )
+        if (ret == MBEDTLS_ERR_NET_CONN_RESET)
         {
-            DEBUG_PRINT("TLS", "peer closed the connection\n" );
+            DEBUG_PRINT("TLS", "peer closed the connection\n");
             return -1;
         }
 
-        if( ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE )
+        if ((ret != MBEDTLS_ERR_SSL_WANT_READ) && (ret != MBEDTLS_ERR_SSL_WANT_WRITE))
         {
-            DEBUG_PRINT("TLS", "mbedtls_ssl_write returned %d\n", ret );
+            DEBUG_PRINT("TLS", "mbedtls_ssl_write returned %d\n", ret);
             return -1;
         }
     }
@@ -499,12 +478,11 @@ TLSSocket_close(TLSSocket self)
 
     //TODO add timeout?
 
-    while( ( ret = mbedtls_ssl_close_notify( &(self->ssl) ) ) < 0 )
+    while ((ret = mbedtls_ssl_close_notify(&(self->ssl))) < 0)
     {
-        if( ret != MBEDTLS_ERR_SSL_WANT_READ &&
-            ret != MBEDTLS_ERR_SSL_WANT_WRITE )
+        if ((ret != MBEDTLS_ERR_SSL_WANT_READ) && (ret != MBEDTLS_ERR_SSL_WANT_WRITE))
         {
-            DEBUG_PRINT("TLS", "mbedtls_ssl_close_notify returned %d\n", ret );
+            DEBUG_PRINT("TLS", "mbedtls_ssl_close_notify returned %d\n", ret);
             break;
         }
     }

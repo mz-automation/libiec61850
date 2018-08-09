@@ -33,8 +33,9 @@
 #include "iso_session.h"
 #include "iso_presentation.h"
 #include "iso_client_connection.h"
+
+#include "tls_config.h"
 #include "acse.h"
-#include "tls_api.h"
 
 
 #ifndef DEBUG_ISO_CLIENT

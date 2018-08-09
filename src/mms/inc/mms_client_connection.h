@@ -40,8 +40,7 @@ extern "C" {
 #include "mms_value.h"
 #include "iso_connection_parameters.h"
 #include "linked_list.h"
-
-#include "tls_api.h"
+#include "tls_config.h"
 
 /**
  * Contains MMS layer specific parameters

@@ -72,7 +72,6 @@ include_directories(
     ${CMAKE_CURRENT_LIST_DIR}/src/mms/inc_private
     ${CMAKE_CURRENT_LIST_DIR}/src/mms/iso_mms/asn1c
     ${CMAKE_CURRENT_LIST_DIR}/src/logging
-    ${CMAKE_CURRENT_LIST_DIR}/src/tls
 )
 
 set(API_HEADERS
@@ -80,12 +79,13 @@ set(API_HEADERS
     hal/inc/hal_thread.h
     hal/inc/hal_filesystem.h
     hal/inc/hal_ethernet.h
+    hal/inc/tls_config.h
     hal/inc/platform_endian.h
+    hal/inc/lib_memory.h
     src/common/inc/libiec61850_common_api.h
     src/common/inc/libiec61850_platform_includes.h
     src/common/inc/linked_list.h
     src/common/inc/byte_buffer.h
-    src/common/inc/lib_memory.h
     src/common/inc/string_utilities.h
     src/iec61850/inc/iec61850_client.h
     src/iec61850/inc/iec61850_common.h
@@ -112,7 +112,6 @@ set(API_HEADERS
     src/sampled_values/sv_subscriber.h
     src/sampled_values/sv_publisher.h
     src/logging/logging_api.h
-    src/tls/tls_api.h
     ${CMAKE_CURRENT_BINARY_DIR}/config/stack_config.h
 )
 
@@ -145,7 +144,6 @@ configure_file(
     ${CMAKE_CURRENT_BINARY_DIR}/config/stack_config.h
 )
 
-#include("${CMAKE_CURRENT_LIST_DIR}/hal/CMakeLists.txt")
 include_directories(
 	${CMAKE_CURRENT_LIST_DIR}/hal/inc
 )
