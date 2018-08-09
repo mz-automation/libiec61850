@@ -1371,7 +1371,7 @@ IedServer_getFunctionalConstrainedData(IedServer self, DataObject* dataObject, F
     }
 
     strncpy(domainName, self->model->name, 64);
-    strncat(domainName, ld->name, 64);
+    strncat(domainName, ld->name, 64 - strlen(domainName));
 
     MmsDomain* domain = MmsDevice_getDomain(self->mmsDevice, domainName);
 
