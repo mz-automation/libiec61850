@@ -21,11 +21,10 @@
  *  See COPYING file for the complete license text.
  */
 
+#include "stack_config.h"
 #include "libiec61850_platform_includes.h"
 
 #include "iec61850_client.h"
-
-#include "stack_config.h"
 
 #include "mms_client_connection.h"
 

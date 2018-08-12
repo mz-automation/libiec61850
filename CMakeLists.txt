@@ -126,15 +126,8 @@ set(WITH_MBEDTLS 1)
 endif(EXISTS ${CMAKE_CURRENT_LIST_DIR}/third_party/mbedtls/mbedtls-2.6.0)
 
 if(WITH_MBEDTLS)
-include_directories(
-    ${CMAKE_CURRENT_LIST_DIR}/src/tls/mbedtls
-    ${CMAKE_CURRENT_LIST_DIR}/third_party/mbedtls/mbedtls-2.6.0/include
-)
-
-file(GLOB tls_SRCS ${CMAKE_CURRENT_LIST_DIR}/third_party/mbedtls/mbedtls-2.6.0/library/*.c)
 
 add_definitions(-DCONFIG_MMS_SUPPORT_TLS=1)
-add_definitions(-DMBEDTLS_CONFIG_FILE="mbedtls_config.h")
 
 endif(WITH_MBEDTLS)
 

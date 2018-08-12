@@ -1,7 +1,7 @@
 /*
  *  socket_win32.c
  *
- *  Copyright 2013, 2014 Michael Zillgith
+ *  Copyright 2013-2018 Michael Zillgith
  *
  *	This file is part of libIEC61850.
  *
@@ -116,24 +116,25 @@ Handleset_destroy(HandleSet self)
 static bool wsaStartupCalled = false;
 static int socketCount = 0;
 
-static void
-activateKeepAlive(SOCKET s)
+void
+Socket_activateTcpKeepAlive(Socket self, int idleTime, int interval, int count)
 {
-	struct tcp_keepalive keepalive;
-	DWORD retVal=0;
+    struct tcp_keepalive keepalive;
+    DWORD retVal=0;
 
-	keepalive.onoff = 1;
-	keepalive.keepalivetime = CONFIG_TCP_KEEPALIVE_IDLE * 1000;
-	keepalive.keepaliveinterval = CONFIG_TCP_KEEPALIVE_INTERVAL * 1000;
+    keepalive.onoff = 1;
+    keepalive.keepalivetime = CONFIG_TCP_KEEPALIVE_IDLE * 1000;
+    keepalive.keepaliveinterval = CONFIG_TCP_KEEPALIVE_INTERVAL * 1000;
 
-	 if (WSAIoctl(s, SIO_KEEPALIVE_VALS, &keepalive, sizeof(keepalive),
-	            NULL, 0, &retVal, NULL, NULL) == SOCKET_ERROR)
-	 {
-	     if (DEBUG_SOCKET)
+     if (WSAIoctl(self->fd, SIO_KEEPALIVE_VALS, &keepalive, sizeof(keepalive),
+                NULL, 0, &retVal, NULL, NULL) == SOCKET_ERROR)
+     {
+         if (DEBUG_SOCKET)
                 printf("WIN32_SOCKET: WSAIotcl(SIO_KEEPALIVE_VALS) failed: %d\n",
                     WSAGetLastError());
-	 }
+     }
 }
+
 
 static void
 setSocketNonBlocking(Socket self)
@@ -222,10 +223,6 @@ TcpServerSocket_create(const char* address, int port)
 	    return NULL;
 
 	listen_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-
-#if CONFIG_ACTIVATE_TCP_KEEPALIVE == 1
-    activateKeepAlive(listen_socket);
-#endif
 
 	if (listen_socket == INVALID_SOCKET) {
 	    if (DEBUG_SOCKET)
@@ -334,10 +331,6 @@ Socket_connect(Socket self, const char* address, int port)
 	    return false;
 
 	self->fd = socket(AF_INET, SOCK_STREAM, 0);
-
-#if CONFIG_ACTIVATE_TCP_KEEPALIVE == 1
-    activateKeepAlive(self->fd);
-#endif
 
     setSocketNonBlocking(self);
 

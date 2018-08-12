@@ -1,7 +1,7 @@
 /*
- *  endian.h
+ *  platform_endian.h
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013-2018 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -23,8 +23,6 @@
 
 #ifndef ENDIAN_H_
 #define ENDIAN_H_
-
-#include "stack_config.h"
 
 #ifndef PLATFORM_IS_BIGENDIAN
 #ifdef __GNUC__

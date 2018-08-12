@@ -13,6 +13,14 @@ set(LIBHAL_VERSION_MAJOR "2")
 set(LIBHAL_VERSION_MINOR "0")
 set(LIBHAL_VERSION_PATCH "0")
 
+# feature checks
+include(CheckLibraryExists)
+check_library_exists(rt clock_gettime "time.h" CONFIG_SYSTEM_HAS_CLOCK_GETTIME)
+
+# check if we are on a little or a big endian
+include (TestBigEndian)
+test_big_endian(PLATFORM_IS_BIGENDIAN)
+
 if(WIN32)
 
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../third_party/winpcap/Lib/wpcap.lib")

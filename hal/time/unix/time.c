@@ -21,10 +21,7 @@
  *  See COPYING file for the complete license text.
  */
 
-
-#include "libiec61850_platform_includes.h"
-
-#include "stack_config.h"
+#include "hal_time.h"
 
 #include <time.h>
 

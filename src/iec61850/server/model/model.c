@@ -23,6 +23,7 @@
 
 #include "iec61850_model.h"
 
+#include "stack_config.h"
 #include "libiec61850_platform_includes.h"
 
 static void

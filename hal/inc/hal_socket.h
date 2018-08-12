@@ -147,9 +147,21 @@ ServerSocket_listen(ServerSocket self);
 Socket
 ServerSocket_accept(ServerSocket self);
 
+/**
+ * \brief active TCP keep alive for socket and set keep alive parameters
+ *
+ * NOTE: implementation is mandatory for IEC 61850 MMS
+ *
+ * \param self server socket instance
+ * \param idleTime time (in s) between last received message and first keep alive message
+ * \param interval time (in s) between subsequent keep alive messages if no ACK received
+ * \param count number of not missing keep alive ACKs until socket is considered dead
+ */
+void
+Socket_activateTcpKeepAlive(Socket self, int idleTime, int interval, int count);
 
 /**
- * \brief set the maximum number of pending connection in the queue
+ * \brief set the maximum number of pending connections in the queue
  *
  * Implementation of this function is OPTIONAL.
  *

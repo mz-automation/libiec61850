@@ -31,7 +31,6 @@
 #include <unistd.h>
 
 #include "hal_filesystem.h"
-#include "stack_config.h"
 #include "lib_memory.h"
 
 struct sDirectoryHandle {

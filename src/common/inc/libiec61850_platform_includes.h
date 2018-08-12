@@ -5,6 +5,8 @@
 #ifndef LIBIEC61850_PLATFORM_INCLUDES_H_
 #define LIBIEC61850_PLATFORM_INCLUDES_H_
 
+#include "stack_config.h"
+
 #include "libiec61850_common_api.h"
 
 #include "string_utilities.h"

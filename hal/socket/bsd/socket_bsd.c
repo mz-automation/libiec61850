@@ -1,7 +1,8 @@
 /*
  *  socket_bsd.c
  *
- *  Copyright 2013, 2014 Michael Zillgith, contributions by Michael Clausen (School of engineering Valais).
+ *  Copyright 2013-2018 Michael Zillgith
+ *  contributions by Michael Clausen (School of engineering Valais).
  *
  *  This file is part of libIEC61850.
  *
@@ -36,8 +37,7 @@
 #include <netinet/tcp.h> // required for TCP keepalive
 
 #include "hal_thread.h"
-
-#include "libiec61850_platform_includes.h"
+#include "lib_memory.h"
 
 #ifndef DEBUG_SOCKET
 #define DEBUG_SOCKET 0
@@ -113,30 +113,28 @@ Handleset_destroy(HandleSet self)
    GLOBAL_FREEMEM(self);
 }
 
-#if (CONFIG_ACTIVATE_TCP_KEEPALIVE == 1)
-static void
-activateKeepAlive(int sd)
+void
+Socket_activateTcpKeepAlive(Socket self, int idleTime, int interval, int count)
 {
 #if defined SO_KEEPALIVE
     int optval;
     socklen_t optlen = sizeof(optval);
 
-    optval = CONFIG_TCP_KEEPALIVE_IDLE;
-    setsockopt(sd, SOL_SOCKET, SO_KEEPALIVE, &optval, optlen);
+    optval = idleTime;
+    setsockopt(self->fd, SOL_SOCKET, SO_KEEPALIVE, &optval, optlen);
     optval = 1;
-    setsockopt(sd, SOL_SOCKET, SO_NOSIGPIPE, &optval, optlen);
+    setsockopt(self->fd, SOL_SOCKET, SO_NOSIGPIPE, &optval, optlen);
 
 #if defined TCP_KEEPCNT
-    optval = CONFIG_TCP_KEEPALIVE_INTERVAL;
-    setsockopt(sd, IPPROTO_TCP, TCP_KEEPINTVL, &optval, optlen);
+    optval = interval;
+    setsockopt(self->fd, IPPROTO_TCP, TCP_KEEPINTVL, &optval, optlen);
 
-    optval = CONFIG_TCP_KEEPALIVE_CNT;
-    setsockopt(sd, IPPROTO_TCP, TCP_KEEPCNT, &optval, optlen);
+    optval = count;
+    setsockopt(self->fd, IPPROTO_TCP, TCP_KEEPCNT, &optval, optlen);
 #endif /* TCP_KEEPCNT */
 
 #endif /* SO_KEEPALIVE */
 }
-#endif /* (CONFIG_ACTIVATE_TCP_KEEPALIVE == 1) */
 
 static bool
 prepareServerAddress(const char* address, int port, struct sockaddr_in* sockaddr)
@@ -195,10 +193,6 @@ TcpServerSocket_create(const char* address, int port)
             close(fd);
             return NULL ;
         }
-
-#if CONFIG_ACTIVATE_TCP_KEEPALIVE == 1
-        activateKeepAlive(fd);
-#endif
 
         setSocketNonBlocking((Socket) serverSocket);
     }
@@ -293,10 +287,6 @@ Socket_connect(Socket self, const char* address, int port)
         return false;
 
     self->fd = socket(AF_INET, SOCK_STREAM, 0);
-
-#if CONFIG_ACTIVATE_TCP_KEEPALIVE == 1
-    activateKeepAlive(self->fd);
-#endif
 
     fd_set fdSet;
     FD_ZERO(&fdSet);

@@ -289,6 +289,13 @@ IsoClientConnection_associate(IsoClientConnection self, IsoConnectionParameters 
 
     Socket_setConnectTimeout(self->socket, connectTimeoutInMs);
 
+#if (CONFIG_ACTIVATE_TCP_KEEPALIVE == 1)
+    Socket_activateTcpKeepAlive(self->socket,
+            CONFIG_TCP_KEEPALIVE_IDLE,
+            CONFIG_TCP_KEEPALIVE_INTERVAL,
+            CONFIG_TCP_KEEPALIVE_CNT);
+#endif
+
     if (!Socket_connect(self->socket, params->hostname, params->tcpPort))
         goto returnError;
 

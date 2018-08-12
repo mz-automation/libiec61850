@@ -32,7 +32,6 @@
 #include "hal_filesystem.h"
 
 #include "platform_endian.h"
-#include "stack_config.h"
 #include "lib_memory.h"
 
 #include <malloc.h>

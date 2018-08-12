@@ -32,14 +32,10 @@
 #include <netdb.h>
 #include <errno.h>
 #include <stdio.h>
-
 #include <fcntl.h>
-
 #include <netinet/tcp.h> // required for TCP keepalive
 
 #include "hal_thread.h"
-
-#include "stack_config.h"
 #include "lib_memory.h"
 
 #ifndef DEBUG_SOCKET
@@ -115,25 +111,25 @@ Handleset_destroy(HandleSet self)
    GLOBAL_FREEMEM(self);
 }
 
-static void
-activateKeepAlive(int sd)
+void
+Socket_activateTcpKeepAlive(Socket self, int idleTime, int interval, int count)
 {
 #if defined SO_KEEPALIVE
     int optval;
     socklen_t optlen = sizeof(optval);
 
     optval = 1;
-    setsockopt(sd, SOL_SOCKET, SO_KEEPALIVE, &optval, optlen);
+    setsockopt(self->fd, SOL_SOCKET, SO_KEEPALIVE, &optval, optlen);
 
 #if defined TCP_KEEPCNT
-    optval = CONFIG_TCP_KEEPALIVE_IDLE;
-    setsockopt(sd, IPPROTO_TCP, TCP_KEEPIDLE, &optval, optlen);
+    optval = idleTime;
+    setsockopt(self->fd, IPPROTO_TCP, TCP_KEEPIDLE, &optval, optlen);
 
-    optval = CONFIG_TCP_KEEPALIVE_INTERVAL;
-    setsockopt(sd, IPPROTO_TCP, TCP_KEEPINTVL, &optval, optlen);
+    optval = interval;
+    setsockopt(self->fd, IPPROTO_TCP, TCP_KEEPINTVL, &optval, optlen);
 
-    optval = CONFIG_TCP_KEEPALIVE_CNT;
-    setsockopt(sd, IPPROTO_TCP, TCP_KEEPCNT, &optval, optlen);
+    optval = count;
+    setsockopt(self->fd, IPPROTO_TCP, TCP_KEEPCNT, &optval, optlen);
 #endif /* TCP_KEEPCNT */
 
 #endif /* SO_KEEPALIVE */
@@ -217,10 +213,6 @@ TcpServerSocket_create(const char* address, int port)
             close(fd);
             return NULL ;
         }
-
-#if CONFIG_ACTIVATE_TCP_KEEPALIVE == 1
-        activateKeepAlive(fd);
-#endif
     }
 
     return serverSocket;
@@ -325,10 +317,6 @@ Socket_connect(Socket self, const char* address, int port)
     FD_SET(self->fd, &fdSet);
 
     activateTcpNoDelay(self);
-
-#if (CONFIG_ACTIVATE_TCP_KEEPALIVE == 1)
-    activateKeepAlive(self->fd);
-#endif
 
     fcntl(self->fd, F_SETFL, O_NONBLOCK);
 

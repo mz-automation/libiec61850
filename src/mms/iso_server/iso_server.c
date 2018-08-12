@@ -342,6 +342,13 @@ setupIsoServer(IsoServer self)
         goto exit_function;
     }
 
+#if (CONFIG_ACTIVATE_TCP_KEEPALIVE == 1)
+    Socket_activateTcpKeepAlive(self->serverSocket,
+            CONFIG_TCP_KEEPALIVE_IDLE,
+            CONFIG_TCP_KEEPALIVE_INTERVAL,
+            CONFIG_TCP_KEEPALIVE_CNT);
+#endif
+
     ServerSocket_setBacklog((ServerSocket) self->serverSocket, BACKLOG);
 
     ServerSocket_listen((ServerSocket) self->serverSocket);
