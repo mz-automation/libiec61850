@@ -145,6 +145,9 @@ MmsMapping_setLogStorage(MmsMapping* self, const char* logRef, LogStorage logSto
 void
 MmsMapping_installWriteAccessHandler(MmsMapping* self, DataAttribute* dataAttribute, WriteAccessHandler handler, void* parameter);
 
+void
+MmsMapping_installReadAccessHandler(MmsMapping* self, ReadAccessHandler handler, void* paramter);
+
 MmsDataAccessError
 Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* variableIdOrig,
                          MmsValue* value, MmsServerConnection connection);

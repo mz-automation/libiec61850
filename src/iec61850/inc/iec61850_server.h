@@ -94,6 +94,12 @@ IedServerConfig_setReportBufferSize(IedServerConfig self, int reportBufferSize);
 int
 IedServerConfig_getReportBufferSize(IedServerConfig self);
 
+void
+IedServerConfig_setMaxMmsConnections(IedServerConfig self, int maxConnections);
+
+int
+IedServerConfig_getMaxMmsConnections(IedServerConfig self);
+
 /**
  * \brief Set the basepath of the file services
  *
@@ -124,6 +130,12 @@ IedServerConfig_enableFileService(IedServerConfig self, bool enable);
 bool
 IedServerConfig_isFileServiceEnabled(IedServerConfig self);
 
+void
+IedServerConfig_enableFileWriteService(IedServerConfig self, bool enable);
+
+bool
+IedServerConfig_isFileWriteServiceEnabled(IedServerConfig self);
+
 /**
  * \brief Enable/disable the dynamic data set service for MMS
  *
@@ -139,6 +151,22 @@ IedServerConfig_enableDynamicDataSetService(IedServerConfig self, bool enable);
  */
 bool
 IedServerConfig_isDynamicDataSetServiceEnabled(IedServerConfig self);
+
+
+void
+IedServerConfig_setMaxAssociationSpecificDataSets(IedServerConfig self, int maxDataSets);
+
+void
+IedServerConfig_setMaxDomainSpecificDataSets(IedServerConfig self, int maxDataSets);
+
+void
+IedServerConfig_setMaxDataSetEntries(IedServerConfig self, int maxDataSetEntries);
+
+void
+IedServerConfig_enableWriteDataSetService(IedServerConfig self, bool enable);
+
+bool
+IedServerConfig_isWriteDataSetServiceEnabled(IedServerConfig self);
 
 /**
  * \brief Enable/disable the log service for MMS
@@ -1135,7 +1163,7 @@ IedServer_setSVCBHandler(IedServer self, SVControlBlock* svcb, SVCBEventHandler 
  **************************************************************************/
 
 /**
- * \brief callback handler to intercept/control client access to data attributes
+ * \brief callback handler to intercept/control client write access to data attributes
  *
  * User provided callback function to intercept/control MMS client access to
  * IEC 61850 data attributes. The application can install the same handler
@@ -1150,7 +1178,7 @@ IedServer_setSVCBHandler(IedServer self, SVControlBlock* svcb, SVCBEventHandler 
  * \param connection the connection object of the client connection that invoked the write operation
  * \param parameter the user provided parameter
  *
- * \return true if access is accepted, false if access is denied.
+ * \return DATA_ACCESS_ERROR_SUCCESS if access is accepted, DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED if access is denied.
  */
 typedef MmsDataAccessError
 (*WriteAccessHandler) (DataAttribute* dataAttribute, MmsValue* value, ClientConnection connection, void* parameter);
@@ -1189,6 +1217,37 @@ typedef enum {
  */
 void
 IedServer_setWriteAccessPolicy(IedServer self, FunctionalConstraint fc, AccessPolicy policy);
+
+/**
+ * \brief callback handler to control client read access to data attributes
+ *
+ * User provided callback function to control MMS client read access to IEC 61850
+ * data objects. The application is to allow read access to data objects for specific clients only.
+ * It can be used to implement a role based access control (RBAC).
+ *
+ * \param ld the logical device the client wants to access
+ * \param ln the logical node the client wants to access
+ * \param dataObject the data object the client wants to access
+ * \param fc the functional constraint of the access
+ * \param connection the client connection that causes the access
+ * \param parameter the user provided parameter
+ *
+ * \return DATA_ACCESS_ERROR_SUCCESS if access is accepted, DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED if access is denied.
+ */
+typedef MmsDataAccessError
+(*ReadAccessHandler) (LogicalDevice* ld, LogicalNode* ln, DataObject* dataObject, FunctionalConstraint fc, ClientConnection connection, void* parameter);
+
+/**
+ * \brief Install the global read access handler
+ *
+ * The read access handler will be called for every read access before the server grants access to the client.
+ *
+ * \param self the instance of IedServer to operate on.
+ * \param handler the callback function that is invoked if a client tries to read a data object.
+ * \param parameter a user provided parameter that is passed to the callback function.
+ */
+void
+IedServer_setReadAccessHandler(IedServer self, ReadAccessHandler handler, void* parameter);
 
 /**@}*/
 

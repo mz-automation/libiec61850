@@ -143,6 +143,21 @@ writeAccessHandler (DataAttribute* dataAttribute, MmsValue* value, ClientConnect
     return DATA_ACCESS_ERROR_SUCCESS;
 }
 
+static MmsDataAccessError
+readAccessHandler(LogicalDevice* ld, LogicalNode* ln, DataObject* dataObject, FunctionalConstraint fc, ClientConnection connection, void* parameter)
+{
+    void* securityToken = ClientConnection_getSecurityToken(connection);
+
+    if (securityToken != password2) {
+
+        if ((dataObject == IEDMODEL_GenericIO_GGIO1_Ind1) || (dataObject == IEDMODEL_GenericIO_GGIO1_Ind2)) {
+            printf("  Access denied\n");
+            return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+        }
+    }
+
+    return DATA_ACCESS_ERROR_SUCCESS;
+}
 
 
 int main(int argc, char** argv) {
@@ -177,6 +192,9 @@ int main(int argc, char** argv) {
 
     /* Set write access handler */
     IedServer_handleWriteAccess(iedServer, IEDMODEL_GenericIO_LLN0_ModAuto_setVal, writeAccessHandler, NULL);
+
+    /* Set read access handler */
+    IedServer_setReadAccessHandler(iedServer, readAccessHandler, NULL);
 
 	/* MMS server will be instructed to start listening to client connections. */
 	IedServer_start(iedServer, 102);

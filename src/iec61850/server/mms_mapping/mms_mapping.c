@@ -2175,6 +2175,15 @@ MmsMapping_installWriteAccessHandler(MmsMapping* self, DataAttribute* dataAttrib
     accessHandler->handler = handler;
 }
 
+void
+MmsMapping_installReadAccessHandler(MmsMapping* self, ReadAccessHandler handler, void* parameter)
+{
+#if (CONFIG_IEC61850_SUPPORT_USER_READ_ACCESS_CONTROL == 1)
+    self->readAccessHandler = handler;
+    self->readAccessHandlerParameter = parameter;
+#endif
+}
+
 #if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
 
 static MmsValue*
@@ -2334,6 +2343,9 @@ mmsReadHandler(void* parameter, MmsDomain* domain, char* variableId, MmsServerCo
     }
 #endif /* (CONFIG_IEC61850_REPORT_SERVICE == 1) */
 
+    /* handle read access to other objects */
+
+
 exit_function:
     return retValue;
 }
@@ -2419,9 +2431,6 @@ mmsReadAccessHandler (void* parameter, MmsDomain* domain, char* variableId, MmsS
 
     char* separator = strchr(variableId, '$');
 
-    if (separator == NULL)
-        return DATA_ACCESS_ERROR_SUCCESS;
-
 #if (CONFIG_IEC61850_SETTING_GROUPS == 1)
 
     if (isFunctionalConstraintSE(separator)) {
@@ -2436,6 +2445,76 @@ mmsReadAccessHandler (void* parameter, MmsDomain* domain, char* variableId, MmsS
     }
 
 #endif /* (CONFIG_IEC61850_SETTING_GROUPS == 1) */
+
+#if (CONFIG_IEC61850_SUPPORT_USER_READ_ACCESS_CONTROL == 1)
+    if (self->readAccessHandler != NULL)
+    {
+        char* ldName = MmsDomain_getName(domain);
+
+        LogicalDevice* ld = IedModel_getDevice(self->model, ldName);
+
+        if (ld != NULL) {
+
+            char str[65];
+
+            FunctionalConstraint fc;
+
+            if (separator != NULL) {
+                fc = FunctionalConstraint_fromString(separator + 1);
+
+                if (fc == IEC61850_FC_BR || fc == IEC61850_FC_US ||
+                        fc == IEC61850_FC_MS || fc == IEC61850_FC_RP ||
+                        fc == IEC61850_FC_LG)
+                {
+                    return DATA_ACCESS_ERROR_SUCCESS;
+                }
+                else {
+
+                    StringUtils_createStringFromBufferInBuffer(str, (uint8_t*) variableId, separator - variableId);
+
+                    LogicalNode* ln = LogicalDevice_getLogicalNode(ld, str);
+
+                    if (ln != NULL) {
+
+
+                        char* doStart = strchr(separator + 1, '$');
+
+
+                        if (doStart != NULL) {
+
+                            char* doEnd = strchr(doStart + 1, '$');
+
+                            if (doEnd == NULL) {
+                                StringUtils_copyStringToBuffer(doStart + 1, str);
+                            }
+                            else {
+                                doEnd--;
+
+                                StringUtils_createStringFromBufferInBuffer(str, (uint8_t*) (doStart + 1), doEnd - doStart);
+                            }
+
+                            ModelNode* dobj = ModelNode_getChild((ModelNode*) ln, str);
+
+                            if (dobj != NULL) {
+
+                                if (dobj->modelType == DataObjectModelType) {
+
+                                    ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer,
+                                                                                                                      connection);
+
+                                    return self->readAccessHandler(ld, ln, (DataObject*) dobj, fc, clientConnection,
+                                            self->readAccessHandlerParameter);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return DATA_ACCESS_ERROR_OBJECT_ACCESS_UNSUPPORTED;
+    }
+#endif /* CONFIG_IEC61850_SUPPORT_USER_READ_ACCESS_CONTROL */
 
     return DATA_ACCESS_ERROR_SUCCESS;
 }

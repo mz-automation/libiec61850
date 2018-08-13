@@ -151,6 +151,9 @@
 /* include support for IEC 61850 log services */
 #cmakedefine01 CONFIG_IEC61850_LOG_SERVICE
 
+/* allow user to control read access by callback */
+#cmakedefine01 CONFIG_IEC61850_SUPPORT_USER_READ_ACCESS_CONTROL
+
 /* Force memory alignment - required for some platforms (required more memory for buffered reporting) */
 #define CONFIG_IEC61850_FORCE_MEMORY_ALIGNMENT 1
 

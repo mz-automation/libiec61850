@@ -54,6 +54,11 @@ struct sMmsMapping {
 
     LinkedList attributeAccessHandlers;
 
+#if (CONFIG_IEC61850_SUPPORT_USER_READ_ACCESS_CONTROL == 1)
+    ReadAccessHandler readAccessHandler;
+    void* readAccessHandlerParameter;
+#endif
+
 #if (CONFIG_IEC61850_SETTING_GROUPS == 1)
     LinkedList settingGroups;
 #endif

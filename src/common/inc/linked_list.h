@@ -1,7 +1,7 @@
 /*
  *  linked_list.h
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013-2018 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -24,7 +24,8 @@
 #ifndef LINKED_LIST_H_
 #define LINKED_LIST_H_
 
-#include "libiec61850_common_api.h"
+#include <stdint.h>
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {

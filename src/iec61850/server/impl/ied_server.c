@@ -1330,6 +1330,12 @@ IedServer_handleWriteAccess(IedServer self, DataAttribute* dataAttribute, WriteA
 }
 
 void
+IedServer_setReadAccessHandler(IedServer self, ReadAccessHandler handler, void* parameter)
+{
+    MmsMapping_installReadAccessHandler(self->mmsMapping, handler, parameter);
+}
+
+void
 IedServer_setConnectionIndicationHandler(IedServer self, IedConnectionIndicationHandler handler, void* parameter)
 {
     MmsMapping_setConnectionIndicationHandler(self->mmsMapping, handler, parameter);
