@@ -130,9 +130,10 @@ mmsServer_handleDeleteNamedVariableListRequest(MmsServerConnection connection,
 
     request = &(mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.choice.deleteNamedVariableList);
 
-	long scopeOfDelete;
+	long scopeOfDelete = DeleteNamedVariableListRequest__scopeOfDelete_specific;
 
-	asn_INTEGER2long(request->scopeOfDelete, &scopeOfDelete);
+	if (request->scopeOfDelete)
+	    asn_INTEGER2long(request->scopeOfDelete, &scopeOfDelete);
 
 	MmsDevice* device = MmsServer_getDevice(connection->server);
 
