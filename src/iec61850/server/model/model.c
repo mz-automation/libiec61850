@@ -3,7 +3,7 @@
  *
  *  Copyright 2013 Michael Zillgith
  *
- *	This file is part of libIEC61850.
+ *  This file is part of libIEC61850.
  *
  *  libIEC61850 is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -302,14 +302,15 @@ IedModel_getModelNodeByObjectReference(IedModel* model, const char* objectRefere
 
     char* separator = strchr(objRef, '/');
 
-    if (separator == NULL)
-        return NULL;
-
-    *separator = 0;
+    if (separator != NULL)
+        *separator = 0;
 
     LogicalDevice* ld = IedModel_getDevice(model, objRef);
 
     if (ld == NULL) return NULL;
+
+    if ((separator == NULL) || (*(separator + 1) == 0))
+        return (ModelNode*) ld;
 
     return ModelNode_getChild((ModelNode*) ld, separator + 1);
 }
@@ -350,10 +351,8 @@ IedModel_getModelNodeByShortObjectReference(IedModel* model, const char* objectR
 
     char* separator = strchr(objRef, '/');
 
-    if (separator == NULL)
-        return NULL;
-
-    *separator = 0;
+    if (separator != NULL)
+        *separator = 0;
 
     char ldName[65];
     strcpy(ldName, model->name);
@@ -362,6 +361,9 @@ IedModel_getModelNodeByShortObjectReference(IedModel* model, const char* objectR
     LogicalDevice* ld = IedModel_getDevice(model, ldName);
 
     if (ld == NULL) return NULL;
+
+    if ((separator == NULL) || (*(separator + 1) == 0))
+        return (ModelNode*) ld;
 
     return ModelNode_getChild((ModelNode*) ld, separator + 1);
 }
