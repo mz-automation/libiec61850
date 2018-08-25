@@ -119,18 +119,13 @@ createControlObjects(IedServer self, MmsDomain* domain, char* lnName, MmsVariabl
 
                     ControlObject_setTypeSpec(controlObject, coSpec);
 
-                    MmsValue* operVal = MmsValue_getElement(structure, operIndex);
-                    ControlObject_setOper(controlObject, operVal);
+                    controlObject->oper = MmsValue_getElement(structure, operIndex);
 
-                    if  (hasCancel) {
-                        MmsValue* cancelVal = MmsValue_getElement(structure, cancelIndex);
-                        ControlObject_setCancel(controlObject, cancelVal);
-                    }
+                    if (hasCancel)
+                        controlObject->cancel = MmsValue_getElement(structure, cancelIndex);
 
-                    if (hasSBOw) {
-                        MmsValue* sbowVal = MmsValue_getElement(structure, sBOwIndex);
-                        ControlObject_setSBOw(controlObject, sbowVal);
-                    }
+                    if (hasSBOw)
+                        controlObject->sbow = MmsValue_getElement(structure, sBOwIndex);
 
                     MmsMapping_addControlObject(mapping, controlObject);
                 }
@@ -456,6 +451,8 @@ IedServer_createWithConfig(IedModel* dataModel, TLSConfiguration tlsConfiguratio
 
         /* default write access policy allows access to SP, SE and SV FCDAs but denies access to DC and CF FCDAs */
         self->writeAccessPolicies = ALLOW_WRITE_ACCESS_SP | ALLOW_WRITE_ACCESS_SV | ALLOW_WRITE_ACCESS_SE;
+
+        MmsMapping_initializeControlObjects(self->mmsMapping);
 
 #if (CONFIG_IEC61850_REPORT_SERVICE == 1)
         Reporting_activateBufferedReports(self->mmsMapping);

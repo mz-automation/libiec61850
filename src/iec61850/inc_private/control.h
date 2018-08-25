@@ -25,29 +25,89 @@
 #define CONTROL_H_
 
 #include "iec61850_model.h"
+#include "iec61850_server.h"
 #include "mms_server_connection.h"
 #include "mms_device_model.h"
-#include "iec61850_server.h"
+
+#include "mms_mapping_internal.h"
+#include "mms_client_connection.h"
+
+#include "libiec61850_platform_includes.h"
 
 typedef struct sControlObject ControlObject;
+
+struct sControlObject
+{
+    MmsDomain* mmsDomain;
+    IedServer iedServer;
+    char* lnName;
+    char* name;
+
+    int state;
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore stateLock;
+#endif
+
+    MmsValue* mmsValue;
+    MmsVariableSpecification* typeSpec;
+
+    MmsValue* oper;
+    MmsValue* sbo;
+    MmsValue* sbow;
+    MmsValue* cancel;
+
+    MmsValue* ctlVal;
+    MmsValue* ctlNum;
+    MmsValue* origin;
+    MmsValue* timestamp;
+
+    char ctlObjectName[130];
+
+    /* for LastAppIError */
+    MmsValue* error;
+    MmsValue* addCause;
+
+    bool selected;
+    uint64_t selectTime;
+    uint32_t selectTimeout;
+    MmsValue* sboClass;
+    MmsValue* sboTimeout;
+
+    bool timeActivatedOperate;
+    uint64_t operateTime;
+
+    bool operateOnce;
+    MmsServerConnection mmsConnection;
+
+    MmsValue* emptyString;
+
+    uint32_t ctlModel;
+
+    bool testMode;
+    bool interlockCheck;
+    bool synchroCheck;
+
+    uint32_t operateInvokeId;
+
+    ControlHandler operateHandler;
+    void* operateHandlerParameter;
+
+    ControlPerformCheckHandler checkHandler;
+    void* checkHandlerParameter;
+
+    ControlWaitForExecutionHandler waitForExecutionHandler;
+    void* waitForExecutionHandlerParameter;
+};
 
 ControlObject*
 ControlObject_create(IedServer iedServer, MmsDomain* domain, char* lnName, char* name);
 
 void
+ControlObject_initialize(ControlObject* self);
+
+void
 ControlObject_destroy(ControlObject* self);
-
-void
-ControlObject_setOper(ControlObject* self, MmsValue* oper);
-
-void
-ControlObject_setCancel(ControlObject* self, MmsValue* cancel);
-
-void
-ControlObject_setSBO(ControlObject* self, MmsValue* sbo);
-
-void
-ControlObject_setSBOw(ControlObject* self, MmsValue* sbow);
 
 void
 ControlObject_setMmsValue(ControlObject* self, MmsValue* value);
@@ -60,21 +120,6 @@ ControlObject_setTypeSpec(ControlObject* self, MmsVariableSpecification* typeSpe
 
 MmsVariableSpecification*
 ControlObject_getTypeSpec(ControlObject* self);
-
-MmsValue*
-ControlObject_getOper(ControlObject* self);
-
-MmsValue*
-ControlObject_getSBOw(ControlObject* self);
-
-MmsValue*
-ControlObject_getSBO(ControlObject* self);
-
-MmsValue*
-ControlObject_getCancel(ControlObject* self);
-
-void
-ControlObject_setCtlVal(ControlObject* self, MmsValue* ctlVal);
 
 char*
 ControlObject_getName(ControlObject* self);

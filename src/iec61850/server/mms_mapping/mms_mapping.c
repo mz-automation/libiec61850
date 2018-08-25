@@ -600,6 +600,20 @@ MmsMapping_checkForSettingGroupReservationTimeouts(MmsMapping* self, uint64_t cu
 }
 
 void
+MmsMapping_initializeControlObjects(MmsMapping* self)
+{
+    LinkedList element = LinkedList_getNext(self->controlObjects);
+
+    while (element) {
+        ControlObject* controlObject = (ControlObject*) LinkedList_getData(element);
+
+        ControlObject_initialize(controlObject);
+
+        element = LinkedList_getNext(element);
+    }
+}
+
+void
 MmsMapping_configureSettingGroups(MmsMapping* self)
 {
 

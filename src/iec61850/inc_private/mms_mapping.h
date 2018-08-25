@@ -50,6 +50,9 @@ MmsDevice*
 MmsMapping_getMmsDeviceModel(MmsMapping* mapping);
 
 void
+MmsMapping_initializeControlObjects(MmsMapping* self);
+
+void
 MmsMapping_configureSettingGroups(MmsMapping* self);
 
 void
