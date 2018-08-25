@@ -110,82 +110,6 @@ updateSboTimeoutValue(ControlObject* self)
         self->selectTimeout = CONFIG_CONTROL_DEFAULT_SBO_TIMEOUT;
 }
 
-void
-ControlObject_initialize(ControlObject* self)
-{
-    MmsServer mmsServer = IedServer_getMmsServer(self->iedServer);
-
-    self->emptyString = MmsValue_newVisibleString(NULL);
-
-    char strBuf[129];
-
-    char* ctlModelName = StringUtils_createStringInBuffer(strBuf, 4, self->lnName, "$CF$", self->name, "$ctlModel");
-
-    if (DEBUG_IED_SERVER)
-        printf("initialize control for %s\n", ctlModelName);
-
-    MmsValue* ctlModel = MmsServer_getValueFromCache(mmsServer,
-            self->mmsDomain, ctlModelName);
-
-    if (ctlModel == NULL) {
-        if (DEBUG_IED_SERVER)
-            printf("No control model found for variable %s\n", ctlModelName);
-    }
-
-    char* sboClassName = StringUtils_createStringInBuffer(strBuf, 4, self->lnName, "$CF$", self->name, "$sboClass");
-
-    self->sboClass = MmsServer_getValueFromCache(mmsServer, self->mmsDomain, sboClassName);
-
-    StringUtils_createStringInBuffer(self->ctlObjectName, 5, MmsDomain_getName(self->mmsDomain), "/",
-            self->lnName, "$CO$", self->name);
-
-    char* ctlNumName = StringUtils_createStringInBuffer(strBuf, 4, self->lnName, "$ST$", self->name, "$ctlNum");
-
-    self->ctlNumSt = MmsServer_getValueFromCache(mmsServer, self->mmsDomain, ctlNumName);
-
-    char* originName = StringUtils_createStringInBuffer(strBuf, 4, self->lnName, "$ST$", self->name, "$origin");
-
-    self->originSt = MmsServer_getValueFromCache(mmsServer, self->mmsDomain, originName);
-
-    self->error = MmsValue_newIntegerFromInt32(0);
-    self->addCause = MmsValue_newIntegerFromInt32(0);
-
-    if (ctlModel != NULL) {
-        uint32_t ctlModelVal = MmsValue_toInt32(ctlModel);
-
-        self->ctlModel = ctlModelVal;
-
-        if (DEBUG_IED_SERVER)
-            printf("  ctlModel: %i\n", ctlModelVal);
-
-        if ((ctlModelVal == 2) || (ctlModelVal == 4)) { /* SBO */
-
-
-            char* controlObjectReference = StringUtils_createStringInBuffer(strBuf, 6, self->mmsDomain->domainName,
-                    "/", self->lnName, "$", self->name, "$SBO");
-
-            self->sbo = MmsValue_newVisibleString(controlObjectReference);
-
-            char* sboTimeoutName = StringUtils_createStringInBuffer(strBuf, 4, self->lnName, "$CF$", self->name, "$sboTimeout");
-
-            self->sboTimeout = MmsServer_getValueFromCache(mmsServer,
-                    self->mmsDomain, sboTimeoutName);
-
-            updateSboTimeoutValue(self);
-
-            setState(self, STATE_UNSELECTED);
-
-            if (DEBUG_IED_SERVER)
-                printf("timeout for %s is %i\n", sboTimeoutName, self->selectTimeout);
-        }
-        else {
-            self->sbo = MmsValue_newVisibleString(NULL);
-
-            setState(self, STATE_READY);
-        }
-    }
-}
-
 static bool
 isSboClassOperateOnce(ControlObject* self)
 {
@@ -359,7 +283,7 @@ executeStateMachine:
 }
 
 ControlObject*
-ControlObject_create(IedServer iedServer, MmsDomain* domain, char* lnName, char* name)
+ControlObject_create(IedServer iedServer, MmsDomain* domain, char* lnName, char* name, MmsVariableSpecification* operSpec)
 {
     ControlObject* self = (ControlObject*) GLOBAL_CALLOC(1, sizeof(ControlObject));
 
@@ -391,8 +315,92 @@ ControlObject_create(IedServer iedServer, MmsDomain* domain, char* lnName, char*
     self->mmsDomain = domain;
     self->iedServer = iedServer;
 
+    MmsVariableSpecification* ctlValSpec = MmsVariableSpecification_getChildSpecificationByName(operSpec, "ctlVal", NULL);
+    self->ctlVal = MmsValue_newDefaultValue(ctlValSpec);
+
+    MmsVariableSpecification* originSpec = MmsVariableSpecification_getChildSpecificationByName(operSpec, "origin", NULL);
+    self->origin = MmsValue_newDefaultValue(originSpec);
+
+    self->ctlNum = MmsValue_newUnsigned(8);
+
 exit_function:
     return self;
+}
+
+void
+ControlObject_initialize(ControlObject* self)
+{
+    MmsServer mmsServer = IedServer_getMmsServer(self->iedServer);
+
+    self->emptyString = MmsValue_newVisibleString(NULL);
+
+    char strBuf[129];
+
+    char* ctlModelName = StringUtils_createStringInBuffer(strBuf, 4, self->lnName, "$CF$", self->name, "$ctlModel");
+
+    if (DEBUG_IED_SERVER)
+        printf("initialize control for %s\n", ctlModelName);
+
+    MmsValue* ctlModel = MmsServer_getValueFromCache(mmsServer,
+            self->mmsDomain, ctlModelName);
+
+    if (ctlModel == NULL) {
+        if (DEBUG_IED_SERVER)
+            printf("No control model found for variable %s\n", ctlModelName);
+    }
+
+    char* sboClassName = StringUtils_createStringInBuffer(strBuf, 4, self->lnName, "$CF$", self->name, "$sboClass");
+
+    self->sboClass = MmsServer_getValueFromCache(mmsServer, self->mmsDomain, sboClassName);
+
+    StringUtils_createStringInBuffer(self->ctlObjectName, 5, MmsDomain_getName(self->mmsDomain), "/",
+            self->lnName, "$CO$", self->name);
+
+    char* ctlNumName = StringUtils_createStringInBuffer(strBuf, 4, self->lnName, "$ST$", self->name, "$ctlNum");
+
+    self->ctlNumSt = MmsServer_getValueFromCache(mmsServer, self->mmsDomain, ctlNumName);
+
+    char* originName = StringUtils_createStringInBuffer(strBuf, 4, self->lnName, "$ST$", self->name, "$origin");
+
+    self->originSt = MmsServer_getValueFromCache(mmsServer, self->mmsDomain, originName);
+
+    self->error = MmsValue_newIntegerFromInt32(0);
+    self->addCause = MmsValue_newIntegerFromInt32(0);
+
+    if (ctlModel != NULL) {
+        uint32_t ctlModelVal = MmsValue_toInt32(ctlModel);
+
+        self->ctlModel = ctlModelVal;
+
+        if (DEBUG_IED_SERVER)
+            printf("  ctlModel: %i\n", ctlModelVal);
+
+        if ((ctlModelVal == 2) || (ctlModelVal == 4)) { /* SBO */
+
+
+            char* controlObjectReference = StringUtils_createStringInBuffer(strBuf, 6, self->mmsDomain->domainName,
+                    "/", self->lnName, "$", self->name, "$SBO");
+
+            self->sbo = MmsValue_newVisibleString(controlObjectReference);
+
+            char* sboTimeoutName = StringUtils_createStringInBuffer(strBuf, 4, self->lnName, "$CF$", self->name, "$sboTimeout");
+
+            self->sboTimeout = MmsServer_getValueFromCache(mmsServer,
+                    self->mmsDomain, sboTimeoutName);
+
+            updateSboTimeoutValue(self);
+
+            setState(self, STATE_UNSELECTED);
+
+            if (DEBUG_IED_SERVER)
+                printf("timeout for %s is %i\n", sboTimeoutName, self->selectTimeout);
+        }
+        else {
+            self->sbo = MmsValue_newVisibleString(NULL);
+
+            setState(self, STATE_READY);
+        }
+    }
 }
 
 void
@@ -890,18 +898,9 @@ ControlObject_sendLastApplError(ControlObject* self, MmsServerConnection connect
 static void
 updateControlParameters(ControlObject* controlObject, MmsValue* ctlVal, MmsValue* ctlNum, MmsValue* origin)
 {
-    if (controlObject->ctlVal != NULL)
-        MmsValue_delete(controlObject->ctlVal);
-
-    if (controlObject->ctlNum != NULL)
-        MmsValue_delete(controlObject->ctlNum);
-
-    if (controlObject->origin != NULL)
-        MmsValue_delete(controlObject->origin);
-
-    controlObject->ctlVal = MmsValue_clone(ctlVal);
-    controlObject->ctlNum = MmsValue_clone(ctlNum);
-    controlObject->origin = MmsValue_clone(origin);
+    MmsValue_update(controlObject->ctlVal, ctlVal);
+    MmsValue_update(controlObject->ctlNum, ctlNum);
+    MmsValue_update(controlObject->origin, origin);
 
     if (controlObject->ctlNumSt)
         MmsValue_update(controlObject->ctlNumSt, ctlNum);
@@ -998,8 +997,6 @@ Control_readAccessControlObject(MmsMapping* self, MmsDomain* domain, char* varia
     ControlObject* controlObject = Control_lookupControlObject(self, domain, lnName, objectName);
 
     if (controlObject != NULL) {
-
-        //initialize(controlObject);
 
         if (varName != NULL) {
             if (strcmp(varName, "Oper") == 0)
@@ -1165,8 +1162,6 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
         indication = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
         goto free_and_return;
     }
-
-    //initialize(controlObject);
 
     if (strcmp(varName, "SBOw") == 0) { /* select with value */
 

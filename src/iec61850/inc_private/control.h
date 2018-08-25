@@ -104,7 +104,7 @@ struct sControlObject
 };
 
 ControlObject*
-ControlObject_create(IedServer iedServer, MmsDomain* domain, char* lnName, char* name);
+ControlObject_create(IedServer iedServer, MmsDomain* domain, char* lnName, char* name, MmsVariableSpecification* operSpec);
 
 void
 ControlObject_initialize(ControlObject* self);

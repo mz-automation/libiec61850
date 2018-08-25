@@ -59,7 +59,6 @@ createControlObjects(IedServer self, MmsDomain* domain, char* lnName, MmsVariabl
                 strcat(objectName, "$");
             }
 
-            bool isControlObject = false;
             bool hasCancel = false;
             int cancelIndex = 0;
             bool hasSBOw = false;
@@ -72,12 +71,14 @@ createControlObjects(IedServer self, MmsDomain* domain, char* lnName, MmsVariabl
 
                 int coElementCount = coSpec->typeSpec.structure.elementCount;
 
+                MmsVariableSpecification* operSpec = NULL;
+
                 int j;
                 for (j = 0; j < coElementCount; j++) {
                     MmsVariableSpecification* coElementSpec = coSpec->typeSpec.structure.elements[j];
 
                     if (strcmp(coElementSpec->name, "Oper") == 0) {
-                        isControlObject = true;
+                        operSpec = coElementSpec;
                         operIndex = j;
                     }
                     else if (strcmp(coElementSpec->name, "Cancel") == 0) {
@@ -96,14 +97,14 @@ createControlObjects(IedServer self, MmsDomain* domain, char* lnName, MmsVariabl
                     }
                 }
 
-                if (isControlObject) {
+                if (operSpec) {
 
                     strcat(objectName, coSpec->name);
 
                     if (DEBUG_IED_SERVER)
                         printf("IED_SERVER: create control object LN:%s DO:%s\n", lnName, objectName);
 
-                    ControlObject* controlObject = ControlObject_create(self, domain, lnName, objectName);
+                    ControlObject* controlObject = ControlObject_create(self, domain, lnName, objectName, operSpec);
 
                     if (controlObject == NULL)
                         goto exit_function;
