@@ -110,8 +110,8 @@ updateSboTimeoutValue(ControlObject* self)
         self->selectTimeout = CONFIG_CONTROL_DEFAULT_SBO_TIMEOUT;
 }
 
-static void
-initialize(ControlObject* self)
+void
+ControlObject_initialize(ControlObject* self)
 {
     MmsServer mmsServer = IedServer_getMmsServer(self->iedServer);
 
@@ -138,6 +138,14 @@ initialize(ControlObject* self)
 
     StringUtils_createStringInBuffer(self->ctlObjectName, 5, MmsDomain_getName(self->mmsDomain), "/",
             self->lnName, "$CO$", self->name);
+
+    char* ctlNumName = StringUtils_createStringInBuffer(strBuf, 4, self->lnName, "$ST$", self->name, "$ctlNum");
+
+    self->ctlNumSt = MmsServer_getValueFromCache(mmsServer, self->mmsDomain, ctlNumName);
+
+    char* originName = StringUtils_createStringInBuffer(strBuf, 4, self->lnName, "$ST$", self->name, "$origin");
+
+    self->originSt = MmsServer_getValueFromCache(mmsServer, self->mmsDomain, originName);
 
     self->error = MmsValue_newIntegerFromInt32(0);
     self->addCause = MmsValue_newIntegerFromInt32(0);
@@ -385,12 +393,6 @@ ControlObject_create(IedServer iedServer, MmsDomain* domain, char* lnName, char*
 
 exit_function:
     return self;
-}
-
-void
-ControlObject_initialize(ControlObject* self)
-{
-    initialize(self);
 }
 
 void
@@ -900,6 +902,12 @@ updateControlParameters(ControlObject* controlObject, MmsValue* ctlVal, MmsValue
     controlObject->ctlVal = MmsValue_clone(ctlVal);
     controlObject->ctlNum = MmsValue_clone(ctlNum);
     controlObject->origin = MmsValue_clone(origin);
+
+    if (controlObject->ctlNumSt)
+        MmsValue_update(controlObject->ctlNumSt, ctlNum);
+
+    if (controlObject->originSt)
+        MmsValue_update(controlObject->originSt, origin);
 }
 
 static bool

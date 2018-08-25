@@ -212,11 +212,13 @@
       <DA name="t" bType="Timestamp" fc="MX" />
     </DOType>
     <DOType id="SPC_1_SPCSO1" cdc="SPC">
+      <DA name="origin" fc="ST" type="Originator_1" bType="Struct" />
+      <DA name="ctlNum" fc="ST" bType="INT8U" />
       <DA name="stVal" bType="BOOLEAN" fc="ST" dchg="true" />
       <DA name="q" bType="Quality" fc="ST" qchg="true" />
-      <DA name="Oper" type="SPCOperate_1" bType="Struct" fc="CO" />
-      <DA name="ctlModel" type="CtlModels" bType="Enum" fc="CF" />
       <DA name="t" bType="Timestamp" fc="ST" />
+      <DA name="ctlModel" type="CtlModels" bType="Enum" fc="CF" />
+      <DA name="Oper" type="SPCOperate_1" bType="Struct" fc="CO" />
     </DOType>
     <DOType id="INC_2_Mod" cdc="INC">
       <DA name="q" bType="Quality" fc="ST" qchg="true" />

@@ -62,6 +62,9 @@ struct sControlObject
     MmsValue* origin;
     MmsValue* timestamp;
 
+    MmsValue* ctlNumSt;
+    MmsValue* originSt;
+
     char ctlObjectName[130];
 
     /* for LastAppIError */
