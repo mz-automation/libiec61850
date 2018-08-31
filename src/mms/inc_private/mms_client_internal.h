@@ -165,6 +165,10 @@ mmsClient_createReadRequestAlternateAccessIndex(uint32_t invokeId, const char* d
 		uint32_t index, uint32_t elementCount, ByteBuffer* writeBuffer);
 
 int
+mmsClient_createReadRequestAlternateAccessSingleIndexComponent(uint32_t invokeId, const char* domainId, const char* itemId,
+        uint32_t index, const char* component, ByteBuffer* writeBuffer);
+
+int
 mmsClient_createReadRequestMultipleValues(uint32_t invokeId, const char* domainId, LinkedList /*<char*>*/ items,
 		ByteBuffer* writeBuffer);
 

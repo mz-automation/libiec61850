@@ -694,7 +694,35 @@ IedConnection_readObject(IedConnection self, IedClientError* error, const char* 
 
     MmsError mmsError;
 
-    value = MmsConnection_readVariable(self->connection, &mmsError, domainId, itemId);
+    /* check if item ID contains an array "(..)" */
+    char* brace = strchr(itemId, '(');
+
+    if (brace) {
+        char* secondBrace = strchr(brace, ')');
+
+        if (secondBrace) {
+            char* endPtr;
+
+            int index = (int) strtol(brace + 1, &endPtr, 10);
+
+            if (endPtr == secondBrace) {
+                char* component = NULL;
+
+                if (strlen(secondBrace + 1) > 1)
+                    component = secondBrace + 2; /* skip "." after array element specifier */
+
+                *brace = 0;
+
+                value = MmsConnection_readSingleArrayElementWithComponent(self->connection, &mmsError, domainId, itemId, index, component);
+            }
+            else
+                *error = IED_ERROR_USER_PROVIDED_INVALID_ARGUMENT;
+        }
+        else
+            *error = IED_ERROR_USER_PROVIDED_INVALID_ARGUMENT;
+    }
+    else
+        value = MmsConnection_readVariable(self->connection, &mmsError, domainId, itemId);
 
     if (value != NULL)
         *error = IED_ERROR_OK;

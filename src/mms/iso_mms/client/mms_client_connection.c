@@ -1615,7 +1615,36 @@ MmsConnection_readArrayElements(MmsConnection self, MmsError* mmsError,
 
     releaseResponse(self);
 
-    exit_function:
+exit_function:
+    return value;
+}
+
+MmsValue*
+MmsConnection_readSingleArrayElementWithComponent(MmsConnection self, MmsError* mmsError,
+        const char* domainId, const char* itemId, uint32_t index, const char* componentId)
+{
+    MmsValue* value = NULL;
+
+    if (getAssociationState(self) != MMS_STATE_CONNECTED) {
+        *mmsError = MMS_ERROR_CONNECTION_LOST;
+        goto exit_function;
+    }
+
+    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
+
+    uint32_t invokeId = getNextInvokeId(self);
+
+    mmsClient_createReadRequestAlternateAccessSingleIndexComponent(invokeId, domainId, itemId, index, componentId,
+            payload);
+
+    ByteBuffer* responseMessage = sendRequestAndWaitForResponse(self, invokeId, payload, mmsError);
+
+    if (responseMessage != NULL)
+        value = mmsClient_parseReadResponse(self->lastResponse, NULL, false);
+
+    releaseResponse(self);
+
+exit_function:
     return value;
 }
 

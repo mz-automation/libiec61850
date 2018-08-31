@@ -461,6 +461,85 @@ createAlternateAccess(uint32_t index, uint32_t elementCount)
     return alternateAccess;
 }
 
+static AlternateAccess_t*
+createAlternateAccessComponent(const char* componentName)
+{
+    AlternateAccess_t* alternateAccess = (AlternateAccess_t*) GLOBAL_CALLOC(1, sizeof(AlternateAccess_t));
+    alternateAccess->list.count = 1;
+    alternateAccess->list.array = (struct AlternateAccess__Member**) GLOBAL_CALLOC(1, sizeof(struct AlternateAccess__Member*));
+    alternateAccess->list.array[0] = (struct AlternateAccess__Member*) GLOBAL_CALLOC(1, sizeof(struct AlternateAccess__Member));
+    alternateAccess->list.array[0]->present = AlternateAccess__Member_PR_unnamed;
+
+    alternateAccess->list.array[0]->choice.unnamed = (AlternateAccessSelection_t*) GLOBAL_CALLOC(1, sizeof(AlternateAccessSelection_t));
+
+    char* separator = strchr(componentName, '$');
+
+    if (separator) {
+        int size = separator - componentName;
+
+        alternateAccess->list.array[0]->choice.unnamed->present = AlternateAccessSelection_PR_selectAlternateAccess;
+        alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.accessSelection.present =
+                AlternateAccessSelection__selectAlternateAccess__accessSelection_PR_component;
+
+        alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.accessSelection.choice.component.buf = (uint8_t*) strndup(componentName, size);
+        alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.accessSelection.choice.component.size = size;
+
+        alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess = createAlternateAccessComponent(separator + 1);
+    }
+    else {
+        int size = strlen(componentName);
+
+        alternateAccess->list.array[0]->choice.unnamed->present = AlternateAccessSelection_PR_selectAccess;
+
+        alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.present =
+                AlternateAccessSelection__selectAccess_PR_component;
+
+        alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.choice.component.buf = (uint8_t*) strndup(componentName, size);
+        alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.choice.component.size = size;
+    }
+
+    return alternateAccess;
+}
+
+static AlternateAccess_t*
+createAlternateAccessIndexComponent(uint32_t index, const char* componentName)
+{
+    AlternateAccess_t* alternateAccess = (AlternateAccess_t*) GLOBAL_CALLOC(1, sizeof(AlternateAccess_t));
+    alternateAccess->list.count = 1;
+    alternateAccess->list.array = (struct AlternateAccess__Member**) GLOBAL_CALLOC(1, sizeof(struct AlternateAccess__Member*));
+    alternateAccess->list.array[0] = (struct AlternateAccess__Member*) GLOBAL_CALLOC(1, sizeof(struct AlternateAccess__Member));
+    alternateAccess->list.array[0]->present = AlternateAccess__Member_PR_unnamed;
+
+    alternateAccess->list.array[0]->choice.unnamed = (AlternateAccessSelection_t*) GLOBAL_CALLOC(1, sizeof(AlternateAccessSelection_t));
+
+    if (componentName) {
+        alternateAccess->list.array[0]->choice.unnamed->present = AlternateAccessSelection_PR_selectAlternateAccess;
+
+        alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.accessSelection.present =
+                AlternateAccessSelection__selectAlternateAccess__accessSelection_PR_index;
+
+        INTEGER_t* asnIndex =
+                &(alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.choice.index);
+
+        asn_long2INTEGER(asnIndex, index);
+
+        alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess = createAlternateAccessComponent(componentName);
+    }
+    else {
+        alternateAccess->list.array[0]->choice.unnamed->present = AlternateAccessSelection_PR_selectAccess;
+
+        alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.present =
+                        AlternateAccessSelection__selectAccess_PR_index;
+
+        INTEGER_t* asnIndex =
+                &(alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.choice.index);
+
+        asn_long2INTEGER(asnIndex, index);
+    }
+
+    return alternateAccess;
+}
+
 static ListOfVariableSeq_t*
 createVariableIdentifier(const char* domainId, const char* itemId)
 {
@@ -495,6 +574,41 @@ mmsClient_createReadRequestAlternateAccessIndex(uint32_t invokeId, const char* d
     readRequest->variableAccessSpecification.choice.listOfVariable.list.array[0] = variableIdentifier;
 
     variableIdentifier->alternateAccess = createAlternateAccess(index, elementCount);
+
+    asn_enc_rval_t rval;
+
+    rval = der_encode(&asn_DEF_MmsPdu, mmsPdu,
+            (asn_app_consume_bytes_f*) mmsClient_write_out, (void*) writeBuffer);
+
+    variableIdentifier->variableSpecification.choice.name.choice.domainspecific.domainId.buf = 0;
+    variableIdentifier->variableSpecification.choice.name.choice.domainspecific.domainId.size = 0;
+    variableIdentifier->variableSpecification.choice.name.choice.domainspecific.itemId.buf = 0;
+    variableIdentifier->variableSpecification.choice.name.choice.domainspecific.itemId.size = 0;
+
+    asn_DEF_MmsPdu.free_struct(&asn_DEF_MmsPdu, mmsPdu, 0);
+
+    return rval.encoded;
+}
+
+int
+mmsClient_createReadRequestAlternateAccessSingleIndexComponent(uint32_t invokeId, const char* domainId, const char* itemId,
+        uint32_t index, const char* component, ByteBuffer* writeBuffer)
+{
+    MmsPdu_t* mmsPdu = mmsClient_createConfirmedRequestPdu(invokeId);
+    ReadRequest_t* readRequest = createReadRequest(mmsPdu);
+
+    readRequest->specificationWithResult = NULL;
+
+    readRequest->variableAccessSpecification.present = VariableAccessSpecification_PR_listOfVariable;
+
+    readRequest->variableAccessSpecification.choice.listOfVariable.list.array = (ListOfVariableSeq_t**) GLOBAL_CALLOC(1, sizeof(ListOfVariableSeq_t*));
+    readRequest->variableAccessSpecification.choice.listOfVariable.list.count = 1;
+
+    ListOfVariableSeq_t* variableIdentifier = createVariableIdentifier(domainId, itemId);
+
+    readRequest->variableAccessSpecification.choice.listOfVariable.list.array[0] = variableIdentifier;
+
+    variableIdentifier->alternateAccess = createAlternateAccessIndexComponent(index, component);
 
     asn_enc_rval_t rval;
 

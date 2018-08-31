@@ -374,7 +374,7 @@ MmsValue*
 MmsConnection_readVariable(MmsConnection self, MmsError* mmsError, const char* domainId, const char* itemId);
 
 /**
- * \brief Read an element of a single array variable from the server.
+ * \brief Read one or more elements of a single array variable from the server.
  *
  * \param self MmsConnection instance to operate on
  * \param mmsError user provided variable to store error code
@@ -390,6 +390,23 @@ MmsConnection_readVariable(MmsConnection self, MmsError* mmsError, const char* d
 MmsValue*
 MmsConnection_readArrayElements(MmsConnection self, MmsError* mmsError, const char* domainId, const char* itemId,
 		uint32_t startIndex, uint32_t numberOfElements);
+
+
+/**
+ * \brief Read a single element (with optional component specification) from the server
+ *
+ * \param self MmsConnection instance to operate on
+ * \param mmsError user provided variable to store error code
+ * \param domainId the domain name of the variable to be read
+ * \param itemId name of the variable to be read
+ * \param index array element index
+ * \param componentId array element component name
+ *
+ * \return Returns a MmsValue object or NULL if the request failed.
+ */
+MmsValue*
+MmsConnection_readSingleArrayElementWithComponent(MmsConnection self, MmsError* mmsError,
+        const char* domainId, const char* itemId, uint32_t index, const char* componentId);
 
 /**
  * \brief Read multiple variables of a domain from the server with one request message.
