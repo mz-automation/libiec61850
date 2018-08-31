@@ -62,6 +62,9 @@ struct sIedServerConfig
 
     /** when true (default) enable log service */
     bool enableLogService;
+
+    /** IEC 61850 edition (0 = edition 1, 1 = edition 2, 2 = edition 2.1, ...) */
+    uint8_t edition;
 };
 
 /**
@@ -77,6 +80,22 @@ IedServerConfig_create(void);
  */
 void
 IedServerConfig_destroy(IedServerConfig self);
+
+/**
+ * \brief Set the IEC 61850 standard edition to use (default is edition 2)
+ *
+ * \param edition IEC_61850_EDITION_1, IEC_61850_EDITION_2, or IEC_61850_EDITION_2_1
+ */
+void
+IedServerConfig_setEdition(IedServerConfig self, uint8_t edition);
+
+/**
+ * \brief Get the configued IEC 61850 standard edition
+ *
+ * \returns IEC_61850_EDITION_1, IEC_61850_EDITION_2, or IEC_61850_EDITION_2_1
+ */
+uint8_t
+IedServerConfig_getEdition(IedServerConfig self);
 
 /**
  * \brief Set the report buffer size for buffered reporting

@@ -35,6 +35,7 @@ IedServerConfig_create()
         self->enableFileService = true;
         self->enableDynamicDataSetService = true;
         self->enableLogService = true;
+        self->edition = IEC_61850_EDITION_2;
     }
 
     return self;
@@ -45,6 +46,18 @@ IedServerConfig_destroy(IedServerConfig self)
 {
     GLOBAL_FREEMEM(self->fileServiceBasepath);
     GLOBAL_FREEMEM(self);
+}
+
+void
+IedServerConfig_setEdition(IedServerConfig self, uint8_t edition)
+{
+    self->edition = edition;
+}
+
+uint8_t
+IedServerConfig_getEdition(IedServerConfig self)
+{
+    return self->edition;
 }
 
 void

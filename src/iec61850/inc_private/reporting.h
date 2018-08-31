@@ -94,10 +94,12 @@ typedef struct {
 
     ReportBuffer* reportBuffer;
     MmsValue* timeOfEntry;
+
+    IedServer server;
 } ReportControl;
 
 ReportControl*
-ReportControl_create(bool buffered, LogicalNode* parentLN, int reportBufferSize);
+ReportControl_create(bool buffered, LogicalNode* parentLN, int reportBufferSize, IedServer server);
 
 void
 ReportControl_destroy(ReportControl* self);

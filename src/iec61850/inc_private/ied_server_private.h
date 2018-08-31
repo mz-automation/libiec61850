@@ -55,6 +55,8 @@ struct sIedServer
     bool logServiceEnabled;
 #endif
 
+    uint8_t edition;
+
     bool running;
 };
 

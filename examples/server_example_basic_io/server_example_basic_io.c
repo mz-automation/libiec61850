@@ -90,6 +90,8 @@ main(int argc, char** argv)
     /* Set buffer size for buffered report control blocks to 200000 bytes */
     IedServerConfig_setReportBufferSize(config, 200000);
 
+    IedServerConfig_setEdition(config, IEC_61850_EDITION_2);
+
     /* Set the base path for the MMS file services */
     IedServerConfig_setFileServiceBasePath(config, "./vmd-filestore/");
 

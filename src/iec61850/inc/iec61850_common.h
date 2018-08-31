@@ -37,6 +37,15 @@ extern "C" {
  */
 /**@{*/
 
+/** IEC 61850 edition 1 */
+#define IEC_61850_EDITION_1   0
+
+/** IEC 61850 edition 2 */
+#define IEC_61850_EDITION_2   1
+
+/** IEC 61850 edition 2.1 */
+#define IEC_61850_EDITION_2_1 2
+
 /** PhyComAddress type contains Ethernet address and VLAN attributes */
 typedef struct {
     uint8_t vlanPriority;

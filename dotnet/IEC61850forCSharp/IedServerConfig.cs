@@ -23,6 +23,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using IEC61850.Common;
 
 namespace IEC61850.Server
 {
@@ -48,6 +49,12 @@ namespace IEC61850.Server
 
 		[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 		static extern IntPtr IedServerConfig_getFileServiceBasePath(IntPtr self);
+
+		[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+		static extern void IedServerConfig_setEdition(IntPtr self, byte edition);
+
+		[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+		static extern byte IedServerConfig_getEdition(IntPtr self);
 
 		internal IntPtr self;
 
@@ -81,6 +88,16 @@ namespace IEC61850.Server
 			}
 			set {
 				IedServerConfig_setFileServiceBasePath (self, value);
+			}
+		}
+
+		public Iec61850Edition Edition
+		{
+			get {
+				return (Iec61850Edition)IedServerConfig_getEdition (self);
+			}
+			set {
+				IedServerConfig_setEdition (self, (byte) value);
 			}
 		}
 
