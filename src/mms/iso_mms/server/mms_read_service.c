@@ -1,7 +1,7 @@
 /*
  *  mms_read_service.c
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013-2018 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -140,9 +140,17 @@ deleteValueList(LinkedList values)
 static bool
 isAccessToArrayComponent(AlternateAccess_t* alternateAccess)
 {
-    if (alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.
-                alternateAccess != NULL)
-        return true;
+    if (alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess != NULL)
+    {
+        if (alternateAccess->list.array[0]->choice.unnamed->
+                choice.selectAlternateAccess.alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.accessSelection.present ==
+                        AlternateAccessSelection__selectAlternateAccess__accessSelection_PR_component)
+        {
+            return true;
+        }
+        else
+            return false;
+    }
     else
         return false;
 }
@@ -161,19 +169,28 @@ getComponentOfArrayElement(AlternateAccess_t* alternateAccess, MmsVariableSpecif
         if (component.size > 129)
             goto exit_function;
 
-        int elementCount = namedVariable->typeSpec.structure.elementCount;
+        MmsVariableSpecification* structSpec;
 
-
-        MmsVariableSpecification* structSpec = namedVariable->typeSpec.array.elementTypeSpec;
+        if (namedVariable->type == MMS_ARRAY)
+            structSpec = namedVariable->typeSpec.array.elementTypeSpec;
+        else if (namedVariable->type == MMS_STRUCTURE)
+            structSpec = namedVariable;
+        else
+            goto exit_function;
 
         int i;
-        for (i = 0; i < elementCount; i++) {
+        for (i = 0; i < structSpec->typeSpec.structure.elementCount; i++) {
             if (strncmp (structSpec->typeSpec.structure.elements[i]->name, (char*) component.buf,
                     component.size) == 0)
             {
                 MmsValue* value = MmsValue_getElement(structuredValue, i);
 
-                retValue = value;
+                if (isAccessToArrayComponent(alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess)) {
+                    retValue = getComponentOfArrayElement(alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess,
+                            structSpec->typeSpec.structure.elements[i], value);
+                }
+                else
+                    retValue = value;
 
                 goto exit_function;
             }
@@ -242,8 +259,10 @@ alternateArrayAccess(MmsServerConnection connection,
 				}
 			}
 
-			appendValueToResultList(value, values);
-
+			if (value)
+			    appendValueToResultList(value, values);
+			else
+			    appendErrorToResultList(values, DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT);
 		}
 		else  /* access error */
 			appendErrorToResultList(values, DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT);
