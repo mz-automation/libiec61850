@@ -52,15 +52,6 @@
 #define CONFIG_IEC61850_EDITION_1 0
 #endif
 
-#if (CONFIG_IEC61850_EDITION_1 == 1)
-#define CONFIG_REPORTING_SUPPORTS_OWNER 0
-#endif
-
-#ifndef CONFIG_REPORTING_SUPPORTS_OWNER
-#define CONFIG_REPORTING_SUPPORTS_OWNER 1
-#endif
-
-
 static ReportBuffer*
 ReportBuffer_create(int bufferSize)
 {
@@ -260,6 +251,7 @@ ReportControl_getRCBValue(ReportControl* rc, char* elementName)
             return MmsValue_getElement(rc->rcbValues, 11);
         else if (strcmp(elementName, "TimeofEntry") == 0)
             return MmsValue_getElement(rc->rcbValues, 12);
+#if (CONFIG_IEC61850_EDITION_1 == 0)
 #if (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1)
         else if (strcmp(elementName, "ResvTms") == 0)
             return MmsValue_getElement(rc->rcbValues, 13);
@@ -268,6 +260,7 @@ ReportControl_getRCBValue(ReportControl* rc, char* elementName)
 #else
         else if (strcmp(elementName, "Owner") == 0)
             return MmsValue_getElement(rc->rcbValues, 13);
+#endif
 #endif
     } else {
         if (strcmp(elementName, "RptID") == 0)
@@ -826,7 +819,7 @@ createUnbufferedReportControlBlock(ReportControlBlock* reportControlBlock,
     mmsValue->deleteValue = false;
     mmsValue->type = MMS_STRUCTURE;
 
-#if (CONFIG_REPORTING_SUPPORTS_OWNER == 1)
+#if ((CONFIG_IEC61850_EDITION_1 == 0))
     int structSize = 12;
 #else
     int structSize = 11;
@@ -932,14 +925,14 @@ createUnbufferedReportControlBlock(ReportControlBlock* reportControlBlock,
     rcb->typeSpec.structure.elements[10] = namedVariable;
     mmsValue->value.structure.components[10] = MmsValue_newBoolean(false);
 
-#if (CONFIG_REPORTING_SUPPORTS_OWNER == 1)
+#if (CONFIG_IEC61850_EDITION_1 == 0)
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
     namedVariable->name = StringUtils_copyString("Owner");
     namedVariable->type = MMS_OCTET_STRING;
     namedVariable->typeSpec.octetString = -64;
     rcb->typeSpec.structure.elements[11] = namedVariable;
     mmsValue->value.structure.components[11] = MmsValue_newOctetString(0, 128);
-#endif /* (CONFIG_REPORTING_SUPPORTS_OWNER == 1) */
+#endif /* (CONFIG_IEC61850_EDITION_1 == 0) */
 
     reportControl->rcbValues = mmsValue;
 
@@ -962,13 +955,13 @@ createBufferedReportControlBlock(ReportControlBlock* reportControlBlock,
 
     int brcbElementCount = 13;
 
+#if (CONFIG_IEC61850_EDITION_1 == 0)
 #if (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1)
     brcbElementCount++;
 #endif
 
-#if (CONFIG_REPORTING_SUPPORTS_OWNER == 1)
     brcbElementCount++;
-#endif
+#endif /* (CONFIG_IEC61850_EDITION_1 == 0) */
 
     MmsValue* mmsValue = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
     mmsValue->deleteValue = false;
@@ -1090,11 +1083,11 @@ createBufferedReportControlBlock(ReportControlBlock* reportControlBlock,
 
     reportControl->timeOfEntry = mmsValue->value.structure.components[12];
 
-#if ((CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1) || (CONFIG_REPORTING_SUPPORTS_OWNER == 1))
+#if (CONFIG_IEC61850_EDITION_1 == 0)
     int currentIndex = 13;
 #endif
 
-#if (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1)
+#if ((CONFIG_IEC61850_EDITION_1 == 0) && (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1))
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
     namedVariable->name = StringUtils_copyString("ResvTms");
     namedVariable->type = MMS_INTEGER;
@@ -1104,14 +1097,14 @@ createBufferedReportControlBlock(ReportControlBlock* reportControlBlock,
     currentIndex++;
 #endif /* (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1) */
 
-#if (CONFIG_REPORTING_SUPPORTS_OWNER == 1)
+#if (CONFIG_IEC61850_EDITION_1 == 0)
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
     namedVariable->name = StringUtils_copyString("Owner");
     namedVariable->type = MMS_OCTET_STRING;
     namedVariable->typeSpec.octetString = -64;
     rcb->typeSpec.structure.elements[currentIndex] = namedVariable;
     mmsValue->value.structure.components[currentIndex] = MmsValue_newOctetString(0, 128); /* size 4 is enough to store client IPv4 address */
-#endif /* (CONFIG_REPORTING_SUPPORTS_OWNER == 1) */
+#endif /* (CONFIG_IEC61850_EDITION_1 == 0) */
 
     reportControl->rcbValues = mmsValue;
 
@@ -1228,7 +1221,7 @@ updateOwner(ReportControl* rc, MmsServerConnection connection)
 {
     rc->clientConnection = connection;
 
-#if (CONFIG_REPORTING_SUPPORTS_OWNER == 1)
+#if (CONFIG_IEC61850_EDITION_1 == 0)
     MmsValue* owner = ReportControl_getRCBValue(rc, "Owner");
 
     if (owner != NULL) {
@@ -1279,7 +1272,7 @@ updateOwner(ReportControl* rc, MmsServerConnection connection)
         }
     }
 
-#endif /* CONFIG_REPORTING_SUPPORTS_OWNER == 1*/
+#endif /* (CONFIG_IEC61850_EDITION_1 == 0) */
 }
 
 

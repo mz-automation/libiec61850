@@ -215,9 +215,6 @@
 /* support flat named variable name space required by IEC 61850-8-1 MMS mapping */
 #define CONFIG_MMS_SUPPORT_FLATTED_NAME_SPACE 1
 
-/* VMD scope named variables are not used by IEC 61850 (one application is ICCP) */
-#define CONFIG_MMS_SUPPORT_VMD_SCOPE_NAMED_VARIABLES 0
-
 /* Sort getNameList response according to the MMS specified collation order - this is required by the standard
  * Set to 0 only for performance reasons and when no certification is required! */
 #define CONFIG_MMS_SORT_NAME_LIST 1
