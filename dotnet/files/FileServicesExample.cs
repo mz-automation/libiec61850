@@ -7,6 +7,10 @@ using System.IO;
 
 namespace files
 {
+	/// <summary>
+	/// This example connects to an IEC 61850 device, list the available files, and then
+	/// tries to read the file "IEDSERVER.BIN" from the server.
+	/// </summary>
 	class MainClass
 	{
 		public static void printFiles (IedConnection con, string prefix, string parent)
@@ -14,11 +18,11 @@ namespace files
 			List<FileDirectoryEntry> files = con.GetFileDirectory (parent);
 
 			foreach (FileDirectoryEntry file in files) {
-				Console.WriteLine(prefix + file.GetFileName() + "\t" + file.GetFileSize() + "\t" + 
-				                  MmsValue.MsTimeToDateTimeOffset(file.GetLastModified()));
+				Console.WriteLine (prefix + file.GetFileName () + "\t" + file.GetFileSize () + "\t" +
+				MmsValue.MsTimeToDateTimeOffset (file.GetLastModified ()));
 
-				if (file.GetFileName().EndsWith("/")) {
-					printFiles (con, prefix + "  ", parent + file.GetFileName());
+				if (file.GetFileName ().EndsWith ("/")) {
+					printFiles (con, prefix + "  ", parent + file.GetFileName ());
 				}
 			}
 
@@ -26,64 +30,60 @@ namespace files
 
 		static bool getFileHandler (object parameter, byte[] data)
 		{
-			Console.WriteLine("received " + data.Length + " bytes");
+			Console.WriteLine ("received " + data.Length + " bytes");
 
-			BinaryWriter binWriter = (BinaryWriter) parameter;
+			BinaryWriter binWriter = (BinaryWriter)parameter;
 
-			binWriter.Write(data);
+			binWriter.Write (data);
 
 			return true;
 		}
-
 
 		public static void Main (string[] args)
 		{
 			IedConnection con = new IedConnection ();
 
-            string hostname;
+			string hostname;
 
-            if (args.Length > 0)
-                hostname = args[0];
-            else
-                hostname = "10.0.2.2";
+			if (args.Length > 0)
+				hostname = args [0];
+			else
+				hostname = "10.0.2.2";
 
-            Console.WriteLine("Connect to " + hostname);
+			Console.WriteLine ("Connect to " + hostname);
 
-            try
-            {
-                con.Connect(hostname, 102);
+			try {
+				con.Connect (hostname, 102);
 
 				Console.WriteLine ("Files in server root directory:");
-                List<string> serverDirectory = con.GetServerDirectory(true);
+				List<string> serverDirectory = con.GetServerDirectory (true);
 
 				foreach (string entry in serverDirectory) {
-					Console.WriteLine(entry);
+					Console.WriteLine (entry);
 				}
 
-				Console.WriteLine();
+				Console.WriteLine ();
 
 				Console.WriteLine ("File directory tree at server:");
-				printFiles(con, "", "");
-				Console.WriteLine();
+				printFiles (con, "", "");
+				Console.WriteLine ();
 
 				string filename = "IEDSERVER.BIN";
 
-				Console.WriteLine("Download file " + filename);
+				Console.WriteLine ("Download file " + filename);
 
 				/* Download file from server and write it to a new local file */
-				FileStream fs = new FileStream(filename, FileMode.Create);
-            	BinaryWriter w = new BinaryWriter(fs);
+				FileStream fs = new FileStream (filename, FileMode.Create);
+				BinaryWriter w = new BinaryWriter (fs);
 
-				con.GetFile(filename, new IedConnection.GetFileHandler(getFileHandler), w);
+				con.GetFile (filename, new IedConnection.GetFileHandler (getFileHandler), w);
 
-				fs.Close();
+				fs.Close ();
 
-                con.Abort();
-            }
-            catch (IedConnectionException e)
-            {
-				Console.WriteLine(e.Message);
-            }
+				con.Abort ();
+			} catch (IedConnectionException e) {
+				Console.WriteLine (e.Message);
+			}
 
 			// release all resources - do NOT use the object after this call!!
 			con.Dispose ();
