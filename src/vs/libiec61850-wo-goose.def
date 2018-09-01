@@ -612,3 +612,5 @@ EXPORTS
     IedServerConfig_isLogServiceEnabled
     IedServerConfig_setEdition
     IedServerConfig_getEdition
+    IedServerConfig_setMaxMmsConnections
+    IedServerConfig_getMaxMmsConnections

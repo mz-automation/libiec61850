@@ -226,6 +226,14 @@ void
 MmsServer_setFilestoreBasepath(MmsServer self, const char* basepath);
 
 /**
+ * \brief Set the maximum number of TCP client connections
+ *
+ * \param[in] maxConnections the maximum number of TCP client connections to accept
+ */
+void
+MmsServer_setMaxConnections(MmsServer self, int maxConnections);
+
+/**
  * \brief Enable/disable MMS file services at runtime
  *
  * NOTE: requires CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME = 1 in stack configuration

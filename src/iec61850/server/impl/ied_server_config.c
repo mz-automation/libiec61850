@@ -125,3 +125,15 @@ IedServerConfig_isLogServiceEnabled(IedServerConfig self)
 {
     return self->enableLogService;
 }
+
+void
+IedServerConfig_setMaxMmsConnections(IedServerConfig self, int maxConnections)
+{
+    self->maxMmsConnections = maxConnections;
+}
+
+int
+IedServerConfig_getMaxMmsConnections(IedServerConfig self)
+{
+    return self->maxMmsConnections;
+}

@@ -90,6 +90,7 @@ main(int argc, char** argv)
     /* Set buffer size for buffered report control blocks to 200000 bytes */
     IedServerConfig_setReportBufferSize(config, 200000);
 
+    /* Set stack compliance to a specific edition of the standard (WARNING: data model has also to be checked for compliance) */
     IedServerConfig_setEdition(config, IEC_61850_EDITION_2);
 
     /* Set the base path for the MMS file services */
@@ -102,6 +103,9 @@ main(int argc, char** argv)
     IedServerConfig_enableDynamicDataSetService(config, false);
 
     IedServerConfig_enableLogService(config, true);
+
+    /* set maximum number of clients */
+    IedServerConfig_setMaxMmsConnections(config, 2);
 
     /* Create a new IEC 61850 server instance */
     iedServer = IedServer_createWithConfig(&iedModel, NULL, config);
@@ -132,7 +136,7 @@ main(int argc, char** argv)
     IedServer_start(iedServer, 102);
 
     if (!IedServer_isRunning(iedServer)) {
-        printf("Starting server failed! Exit.\n");
+        printf("Starting server failed (maybe need root permissions or another server is already using the port)! Exit.\n");
         IedServer_destroy(iedServer);
         exit(-1);
     }

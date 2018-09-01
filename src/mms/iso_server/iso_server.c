@@ -72,10 +72,14 @@ struct sIsoServer {
 
     TLSConfiguration tlsConfiguration;
 
+#if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
+    int maxConnections;
+#endif
+
 #if (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS == -1)
     LinkedList openClientConnections;
 #else
-    IsoConnection* openClientConnections;
+    IsoConnection openClientConnections[CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS];
 #endif /* (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS == -1) */
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
@@ -355,11 +359,6 @@ setupIsoServer(IsoServer self)
 
     setState(self, ISO_SVR_STATE_RUNNING);
 
-#if (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS != -1)
-    if (DEBUG_ISO_SERVER)
-        printf("ISO_SERVER: server is limited to %i client connections.\n", (int) CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS);
-#endif
-
 exit_function:
     return success;
 }
@@ -373,6 +372,17 @@ handleIsoConnections(IsoServer self)
     Socket connectionSocket;
 
     if ((connectionSocket = ServerSocket_accept((ServerSocket) self->serverSocket)) != NULL) {
+
+#if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
+        if (private_IsoServer_getConnectionCounter(self) >= self->maxConnections) {
+            if (DEBUG_ISO_SERVER)
+                printf("ISO_SERVER: maximum number of connections reached -> reject connection attempt.\n");
+
+            Socket_destroy(connectionSocket);
+
+            return;
+        }
+#endif /* (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1) */
 
 #if (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS != -1)
         if (private_IsoServer_getConnectionCounter(self) >= CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS) {
@@ -415,6 +425,17 @@ handleIsoConnectionsThreadless(IsoServer self)
     Socket connectionSocket;
 
     if ((connectionSocket = ServerSocket_accept((ServerSocket) self->serverSocket)) != NULL) {
+
+#if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
+        if (private_IsoServer_getConnectionCounter(self) >= self->maxConnections) {
+            if (DEBUG_ISO_SERVER)
+                printf("ISO_SERVER: maximum number of connections reached -> reject connection attempt.\n");
+
+            Socket_destroy(connectionSocket);
+
+            return;
+        }
+#endif /* (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1) */
 
 #if (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS != -1)
         if (private_IsoServer_getConnectionCounter(self) >= CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS) {
@@ -499,9 +520,6 @@ IsoServer_create(TLSConfiguration tlsConfiguration)
 
 #if (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS == -1)
     self->openClientConnections = LinkedList_create();
-#else
-    self->openClientConnections = (IsoConnection*)
-            GLOBAL_CALLOC(CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS, sizeof(IsoConnection));
 #endif
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1) && (CONFIG_MMS_SINGLE_THREADED == 0)
@@ -513,6 +531,14 @@ IsoServer_create(TLSConfiguration tlsConfiguration)
 
     return self;
 }
+
+#if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
+void
+IsoServer_setMaxConnections(IsoServer self, int maxConnections)
+{
+    self->maxConnections = maxConnections;
+}
+#endif /* (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1) */
 
 void
 IsoServer_setTcpPort(IsoServer self, int port)
@@ -769,8 +795,6 @@ IsoServer_destroy(IsoServer self)
     lockClientConnections(self);
 #endif
 
-#else
-    GLOBAL_FREEMEM(self->openClientConnections);
 #endif /* (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS == -1) */
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1) && (CONFIG_MMS_SINGLE_THREADED == 0)

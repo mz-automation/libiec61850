@@ -439,6 +439,7 @@ IedServer_createWithConfig(IedModel* dataModel, TLSConfiguration tlsConfiguratio
             MmsServer_enableDynamicNamedVariableListService(self->mmsServer, serverConfiguration->enableDynamicDataSetService);
             MmsServer_enableJournalService(self->mmsServer, serverConfiguration->enableLogService);
             MmsServer_setFilestoreBasepath(self->mmsServer, serverConfiguration->fileServiceBasepath);
+            MmsServer_setMaxConnections(self->mmsServer, serverConfiguration->maxMmsConnections);
         }
 #endif
 

@@ -65,6 +65,9 @@ struct sIedServerConfig
 
     /** IEC 61850 edition (0 = edition 1, 1 = edition 2, 2 = edition 2.1, ...) */
     uint8_t edition;
+
+    /** maximum number of MMS (TCP) connections */
+    int maxMmsConnections;
 };
 
 /**
@@ -113,9 +116,22 @@ IedServerConfig_setReportBufferSize(IedServerConfig self, int reportBufferSize);
 int
 IedServerConfig_getReportBufferSize(IedServerConfig self);
 
+/**
+ * \brief Set the maximum number of MMS (TCP) connections the server accepts
+ *
+ * NOTE: Parameter has to be smaller than CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS if
+ * CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS != -1
+ *
+ * \param maxConnection maximum number of TCP connections
+ */
 void
 IedServerConfig_setMaxMmsConnections(IedServerConfig self, int maxConnections);
 
+/**
+ * \brief Get the maximum number of MMS (TCP) connections the server accepts
+ *
+ * \return maximum number of TCP connections
+ */
 int
 IedServerConfig_getMaxMmsConnections(IedServerConfig self);
 
@@ -150,10 +166,10 @@ bool
 IedServerConfig_isFileServiceEnabled(IedServerConfig self);
 
 void
-IedServerConfig_enableFileWriteService(IedServerConfig self, bool enable);
+IedServerConfig_enableSetFileService(IedServerConfig self, bool enable);
 
 bool
-IedServerConfig_isFileWriteServiceEnabled(IedServerConfig self);
+IedServerConfig_isSetFileServiceEnabled(IedServerConfig self);
 
 /**
  * \brief Enable/disable the dynamic data set service for MMS

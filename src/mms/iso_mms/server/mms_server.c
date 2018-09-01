@@ -108,6 +108,12 @@ MmsServer_setFilestoreBasepath(MmsServer self, const char* basepath)
 #if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
 
 void
+MmsServer_setMaxConnections(MmsServer self, int maxConnections)
+{
+    IsoServer_setMaxConnections(self->isoServer, maxConnections);
+}
+
+void
 MmsServer_enableFileService(MmsServer self, bool enable)
 {
     self->fileServiceEnabled = enable;

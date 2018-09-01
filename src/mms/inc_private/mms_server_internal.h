@@ -165,6 +165,7 @@ struct sMmsServer {
 #endif
 
 #if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
+    int maxConnections;
     bool fileServiceEnabled;
     bool dynamicVariableListServiceEnabled;
     bool journalServiceEnabled;

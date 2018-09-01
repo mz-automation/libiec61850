@@ -95,6 +95,9 @@ void
 IsoServer_setTcpPort(IsoServer self, int port);
 
 void
+IsoServer_setMaxConnections(IsoServer self, int maxConnections);
+
+void
 IsoServer_setLocalIpAddress(IsoServer self, const char* ipAddress);
 
 IsoServerState

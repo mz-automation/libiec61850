@@ -56,6 +56,19 @@ namespace IEC61850.Server
 		[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 		static extern byte IedServerConfig_getEdition(IntPtr self);
 
+		[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+		static extern void IedServerConfig_setMaxMmsConnections(IntPtr self, int maxConnections);
+
+		[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+		static extern int IedServerConfig_getMaxMmsConnections(IntPtr self);
+
+		[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+		[return: MarshalAs(UnmanagedType.I1)]
+		static extern bool IedServerConfig_isDynamicDataSetServiceEnabled(IntPtr self);
+
+		[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+		static extern void IedServerConfig_enableDynamicDataSetService(IntPtr self, [MarshalAs(UnmanagedType.I1)] bool enable);
+
 		internal IntPtr self;
 
 		public IedServerConfig ()
@@ -91,6 +104,10 @@ namespace IEC61850.Server
 			}
 		}
 
+		/// <summary>
+		/// Gets or sets the edition of the IEC 61850 standard to use
+		/// </summary>
+		/// <value>The IEC 61850 edition to use.</value>
 		public Iec61850Edition Edition
 		{
 			get {
@@ -98,6 +115,30 @@ namespace IEC61850.Server
 			}
 			set {
 				IedServerConfig_setEdition (self, (byte) value);
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets maximum number of MMS clients
+		/// </summary>
+		/// <value>The max number of MMS client connections.</value>
+		public int MaxMmsConnections
+		{
+			get {
+				return IedServerConfig_getMaxMmsConnections (self);
+			}
+			set {
+				IedServerConfig_setMaxMmsConnections (self, value);
+			}
+		}
+
+		public bool DynamicDataSetServiceEnabled
+		{
+			get {
+				return IedServerConfig_isDynamicDataSetServiceEnabled (self);
+			}
+			set {
+				IedServerConfig_enableDynamicDataSetService (self, value);
 			}
 		}
 
