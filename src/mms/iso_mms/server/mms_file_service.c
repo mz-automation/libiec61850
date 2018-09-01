@@ -667,7 +667,7 @@ mmsServer_handleObtainFileRequest(
 
                 mmsClient_createFileOpenRequest(task->lastRequestInvokeId, request, sourceFilename, 0);
 
-                IsoConnection_sendMessage(task->connection->isoConnection, request, false);
+                IsoConnection_sendMessage(task->connection->isoConnection, request, true);
 
                 MmsServer_releaseTransmitBuffer(connection->server);
 
