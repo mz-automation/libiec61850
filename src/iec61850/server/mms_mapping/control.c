@@ -379,7 +379,7 @@ ControlObject_initialize(ControlObject* self)
 
 
             char* controlObjectReference = StringUtils_createStringInBuffer(strBuf, 6, self->mmsDomain->domainName,
-                    "/", self->lnName, "$", self->name, "$SBO");
+                    "/", self->lnName, "$CO$", self->name, "$SBO");
 
             self->sbo = MmsValue_newVisibleString(controlObjectReference);
 
