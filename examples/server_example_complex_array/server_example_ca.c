@@ -62,11 +62,6 @@ int main(int argc, char** argv) {
     DataObject* mhai1_ha_phsAHar = (DataObject*)
             IedModel_getModelNodeByObjectReference(&iedModel, "testComplexArray/MHAI1.HA.phsAHar");
 
-    /* alternative: only for static model */
-//    DataObject* mhai1_ha_phsAHar = IEDMODEL_ComplexArray_MHAI1_HA_phsAHar;
-
-    assert(mhai1_ha_phsAHar != NULL);
-
     /* Get access to the corresponding MMS value data structure - the MX(FC) part of the data object */
     MmsValue* mhai1_ha_phsAHar_mx = IedServer_getFunctionalConstrainedData(iedServer, mhai1_ha_phsAHar, IEC61850_FC_MX);
 
