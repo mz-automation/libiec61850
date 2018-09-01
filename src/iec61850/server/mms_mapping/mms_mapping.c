@@ -1,7 +1,7 @@
 /*
  *  mms_mapping.c
  *
- *  Copyright 2013-2017 Michael Zillgith
+ *  Copyright 2013-2018 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -2447,15 +2447,17 @@ mmsReadAccessHandler (void* parameter, MmsDomain* domain, char* variableId, MmsS
 
 #if (CONFIG_IEC61850_SETTING_GROUPS == 1)
 
-    if (isFunctionalConstraintSE(separator)) {
-        SettingGroup* sg = getSettingGroupByMmsDomain(self, domain);
+    if (separator) {
+        if (isFunctionalConstraintSE(separator)) {
+            SettingGroup* sg = getSettingGroupByMmsDomain(self, domain);
 
-        if (sg != NULL) {
-            if (sg->sgcb->editSG == 0)
-                return DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
+            if (sg != NULL) {
+                if (sg->sgcb->editSG == 0)
+                    return DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
+            }
+            else
+                return DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT;
         }
-        else
-            return DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT;
     }
 
 #endif /* (CONFIG_IEC61850_SETTING_GROUPS == 1) */

@@ -1,11 +1,11 @@
 
 EXAMPLE_DIRS = iec61850_client_example1
 EXAMPLE_DIRS += iec61850_client_example2
-EXAMPLE_DIRS += iec61850_client_example3
 EXAMPLE_DIRS += iec61850_client_example4
 EXAMPLE_DIRS += iec61850_client_example5
 EXAMPLE_DIRS += iec61850_client_example_reporting
-EXAMPLE_DIRS += iec61850_client_example_log
+EXAMPLE_DIRS += iec61850_client_example_array
+EXAMPLE_DIRS += iec61850_client_example_control
 EXAMPLE_DIRS += server_example_simple
 EXAMPLE_DIRS += server_example_basic_io
 EXAMPLE_DIRS += server_example_password_auth
@@ -18,7 +18,6 @@ EXAMPLE_DIRS += server_example_complex_array
 EXAMPLE_DIRS += server_example_61400_25
 EXAMPLE_DIRS += server_example_threadless
 EXAMPLE_DIRS += server_example_setting_groups
-EXAMPLE_DIRS += server_example_logging
 EXAMPLE_DIRS += server_example_files
 EXAMPLE_DIRS += server_example_substitution
 EXAMPLE_DIRS += goose_subscriber
