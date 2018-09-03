@@ -8,15 +8,73 @@
  *
  * Note: intended to be used with server_example3 or server_example_files
  *
- * Note: DOES NOT WORK WITH VISUAL STUDIO because of libgen.h
- *
  */
 
 #include "iec61850_client.h"
 
 #include <stdlib.h>
 #include <stdio.h>
+#ifdef _WIN32
+#include <Windows.h>
+#else
 #include <libgen.h>
+#endif
+
+#ifdef _WIN32
+static char _dirname[1000];
+
+static char*
+dirname(char* path)
+{
+        char* lastSep = NULL;
+
+        int len = strlen(path);
+        int i = 0;
+
+        while (i < len) {
+                if (path[i] == '/' || path[i] == ':' || path[i] == '\\')
+                        lastSep = path + i;
+
+                i++;
+        }
+
+        if (lastSep) {
+                strcpy(_dirname, path);
+                _dirname[lastSep - path] = 0;
+        }
+        else
+                strcpy("", path);
+
+        return _dirname;
+}
+
+
+static char _basename[1000];
+
+static char*
+basename(char* path)
+{
+        char* lastSep = NULL;
+
+        int len = strlen(path);
+        int i = 0;
+
+        while (i < len) {
+                if (path[i] == '/' || path[i] == ':' || path[i] == '\\')
+                        lastSep = path + i;
+
+                i++;
+        }
+
+        if (lastSep)
+                strcpy(_basename, lastSep + 1);
+        else
+                strcpy(_basename, path);
+
+        return _basename;
+}
+
+#endif
 
 static char* hostname = "localhost";
 static int tcpPort = 102;

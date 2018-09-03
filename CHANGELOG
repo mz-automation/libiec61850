@@ -1,5 +1,10 @@
 Changes to version 1.3.0
 ------------------------
+- IEC 61850 server: more features configurable at runtime
+- IEC 61850 server: control objects - fixed bug in select response for SBO control model
+- IEC 61850 client: add support for single array element access (with component specification)
+- IEC 61850 server: made IEC 61850 edition configurable at runtime
+- IEC 61850 server: added ReadAccessHandler to control read access
 - HAL: unified platform abstraction layer (to simplify using the library together with lib60870)
 - IEC 61850 server: fixed bug when calling write access handler (wrong pointer for ClientConnection object)
 - updated IEC 61850-9-2 LE example to be more realistic
