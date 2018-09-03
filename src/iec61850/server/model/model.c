@@ -114,7 +114,7 @@ IedModel_lookupDataSet(IedModel* self, const char* dataSetReference  /* e.g. ied
 
 	    domainName[modelNameLen] = 0;
 
-	    strncat(domainName, dataSet->logicalDeviceName, 64);
+	    strncat(domainName, dataSet->logicalDeviceName, 64 - modelNameLen);
 
 		if (strncmp(domainName, dataSetReference, ldNameLen) == 0) {
 			if (strcmp(dataSet->name, separator + 1) == 0) {
@@ -138,7 +138,7 @@ IedModel_getDevice(IedModel* self, const char* deviceName)
         char domainName[65];
 
         strncpy(domainName, self->name, 64);
-        strncat(domainName, device->name, 64);
+        strncat(domainName, device->name, 64 - strlen(domainName));
 
         if (strcmp(domainName, deviceName) == 0)
             return device;
