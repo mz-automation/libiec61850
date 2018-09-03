@@ -472,7 +472,7 @@ createAlternateAccessComponent(const char* componentName)
 
     alternateAccess->list.array[0]->choice.unnamed = (AlternateAccessSelection_t*) GLOBAL_CALLOC(1, sizeof(AlternateAccessSelection_t));
 
-    char* separator = strchr(componentName, '$');
+    const char* separator = strchr(componentName, '$');
 
     if (separator) {
         int size = separator - componentName;
@@ -481,7 +481,8 @@ createAlternateAccessComponent(const char* componentName)
         alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.accessSelection.present =
                 AlternateAccessSelection__selectAlternateAccess__accessSelection_PR_component;
 
-        alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.accessSelection.choice.component.buf = (uint8_t*) strndup(componentName, size);
+        alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.accessSelection.choice.component.buf = 
+			(uint8_t*) StringUtils_copySubString((char*) componentName, (char*) separator);
         alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.accessSelection.choice.component.size = size;
 
         alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess = createAlternateAccessComponent(separator + 1);
@@ -494,7 +495,8 @@ createAlternateAccessComponent(const char* componentName)
         alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.present =
                 AlternateAccessSelection__selectAccess_PR_component;
 
-        alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.choice.component.buf = (uint8_t*) strndup(componentName, size);
+		alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.choice.component.buf = 
+			(uint8_t*) StringUtils_copyString(componentName);
         alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.choice.component.size = size;
     }
 
