@@ -66,6 +66,8 @@ main(int argc, char** argv)
 	}
 
 	GoosePublisher_destroy(publisher);
+
+	LinkedList_destroyDeep(dataSetValues, (LinkedListValueDeleteFunction) MmsValue_delete);
 }
 
 
