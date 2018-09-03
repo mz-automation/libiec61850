@@ -639,23 +639,28 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
 
 #endif /* (MMS_DYNAMIC_DATA_SETS == 1) */
 
-        deleteDataSetValuesShadowBuffer(rc);
+        if ((dataSet == NULL) || (dataSetChanged == true)) {
 
-        rc->dataSet = dataSet;
+            /* delete pending event and create buffer for new data set */
+            deleteDataSetValuesShadowBuffer(rc);
 
-        createDataSetValuesShadowBuffer(rc);
+            rc->dataSet = dataSet;
 
-        if (rc->inclusionField != NULL)
-            MmsValue_delete(rc->inclusionField);
+            createDataSetValuesShadowBuffer(rc);
 
-        rc->inclusionField = MmsValue_newBitString(dataSet->elementCount);
+            if (rc->inclusionField != NULL)
+                MmsValue_delete(rc->inclusionField);
 
-        rc->triggered = false;
+            rc->inclusionField = MmsValue_newBitString(dataSet->elementCount);
 
-        if (rc->inclusionFlags != NULL)
-            GLOBAL_FREEMEM(rc->inclusionFlags);
+            rc->triggered = false;
 
-        rc->inclusionFlags = (uint8_t*) GLOBAL_CALLOC(dataSet->elementCount, sizeof(uint8_t));
+            if (rc->inclusionFlags != NULL)
+                GLOBAL_FREEMEM(rc->inclusionFlags);
+
+            rc->inclusionFlags = (uint8_t*) GLOBAL_CALLOC(dataSet->elementCount, sizeof(uint8_t));
+
+        }
 
         success = true;
 
