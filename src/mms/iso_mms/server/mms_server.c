@@ -71,6 +71,7 @@ MmsServer_create(MmsDevice* device, TLSConfiguration tlsConfiguration)
     self->fileServiceEnabled = true;
     self->dynamicVariableListServiceEnabled = true;
     self->journalServiceEnabled = true;
+    self->maxDataSetEntries = CONFIG_MMS_MAX_NUMBER_OF_DATA_SET_MEMBERS;
 #endif /* (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1) */
 
     return self;
@@ -123,6 +124,12 @@ void
 MmsServer_enableDynamicNamedVariableListService(MmsServer self, bool enable)
 {
     self->dynamicVariableListServiceEnabled = enable;
+}
+
+void
+MmsServer_setMaxDataSetEntries(MmsServer self, int maxDataSetEntries)
+{
+    self->maxDataSetEntries = maxDataSetEntries;
 }
 
 void

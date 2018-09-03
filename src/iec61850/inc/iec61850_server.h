@@ -60,6 +60,9 @@ struct sIedServerConfig
     /** when true (default) enable dynamic data set services for MMS */
     bool enableDynamicDataSetService;
 
+    /** maximum number of data set entries of dynamic data sets */
+    int maxDataSetEntries;
+
     /** when true (default) enable log service */
     bool enableLogService;
 
@@ -194,8 +197,16 @@ IedServerConfig_setMaxAssociationSpecificDataSets(IedServerConfig self, int maxD
 void
 IedServerConfig_setMaxDomainSpecificDataSets(IedServerConfig self, int maxDataSets);
 
+/**
+ * \brief Set the maximum number of entries in a dynamic data set
+ *
+ * \param maxDataSetEntries the maximum number of entries allowed in a data set
+ */
 void
 IedServerConfig_setMaxDataSetEntries(IedServerConfig self, int maxDataSetEntries);
+
+int
+IedServerConfig_getMaxDatasSetEntries(IedServerConfig self);
 
 void
 IedServerConfig_enableWriteDataSetService(IedServerConfig self, bool enable);

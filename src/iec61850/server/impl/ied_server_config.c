@@ -24,6 +24,10 @@
 #include "iec61850_server.h"
 #include "libiec61850_platform_includes.h"
 
+#ifndef CONFIG_MMS_MAX_NUMBER_OF_DATA_SET_MEMBERS
+#define CONFIG_MMS_MAX_NUMBER_OF_DATA_SET_MEMBERS 100
+#endif
+
 IedServerConfig
 IedServerConfig_create()
 {
@@ -34,6 +38,7 @@ IedServerConfig_create()
         self->fileServiceBasepath = StringUtils_copyString(CONFIG_VIRTUAL_FILESTORE_BASEPATH);
         self->enableFileService = true;
         self->enableDynamicDataSetService = true;
+        self->maxDataSetEntries = CONFIG_MMS_MAX_NUMBER_OF_DATA_SET_MEMBERS;
         self->enableLogService = true;
         self->edition = IEC_61850_EDITION_2;
     }
@@ -112,6 +117,18 @@ bool
 IedServerConfig_isDynamicDataSetServiceEnabled(IedServerConfig self)
 {
     return self->enableDynamicDataSetService;
+}
+
+void
+IedServerConfig_setMaxDataSetEntries(IedServerConfig self, int maxDataSetEntries)
+{
+    self->maxDataSetEntries = maxDataSetEntries;
+}
+
+int
+IedServerConfig_getMaxDatasSetEntries(IedServerConfig self)
+{
+    return self->maxDataSetEntries;
 }
 
 void

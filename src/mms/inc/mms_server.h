@@ -256,6 +256,15 @@ void
 MmsServer_enableDynamicNamedVariableListService(MmsServer self, bool enable);
 
 /**
+ * \brief Set the maximum number of data set entries (for dynamic data sets)
+ *
+ * \param[in] self the MmsServer instance
+ * \param[in] maximum number of dynamic data set entires
+ */
+void
+MmsServer_setMaxDataSetEntries(MmsServer self, int maxDataSetEntries);
+
+/**
  * \brief Enable/disable journal service
  *
  * NOTE: requires CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME = 1 in stack configuration

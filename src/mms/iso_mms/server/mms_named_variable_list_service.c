@@ -291,7 +291,7 @@ checkIfVariableExists(MmsDevice* device, MmsAccessSpecifier* accessSpecifier)
 
 
 static MmsNamedVariableList
-createNamedVariableList(MmsDomain* domain, MmsDevice* device,
+createNamedVariableList(MmsServer server, MmsDomain* domain, MmsDevice* device,
 		DefineNamedVariableListRequest_t* request,
 		char* variableListName, MmsError* mmsError)
 {
@@ -299,7 +299,11 @@ createNamedVariableList(MmsDomain* domain, MmsDevice* device,
 
 	int variableCount = request->listOfVariable.list.count;
 
+#if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
+	if ((variableCount == 0 ) || (variableCount > server->maxDataSetEntries)) {
+#else
 	if ((variableCount == 0 ) || (variableCount > CONFIG_MMS_MAX_NUMBER_OF_DATA_SET_MEMBERS)) {
+#endif
 	    *mmsError = MMS_ERROR_DEFINITION_OTHER;
 	    goto exit_function;
 	}
@@ -467,7 +471,7 @@ mmsServer_handleDefineNamedVariableListRequest(
             else {
                 MmsError mmsError;
 
-                MmsNamedVariableList namedVariableList = createNamedVariableList(domain, device,
+                MmsNamedVariableList namedVariableList = createNamedVariableList(connection->server, domain, device,
                                 request, variableListName, &mmsError);
 
                 if (namedVariableList != NULL) {
@@ -513,7 +517,7 @@ mmsServer_handleDefineNamedVariableListRequest(
             else {
                 MmsError mmsError;
 
-                MmsNamedVariableList namedVariableList = createNamedVariableList(NULL, device,
+                MmsNamedVariableList namedVariableList = createNamedVariableList(connection->server, NULL, device,
                         request, variableListName, &mmsError);
 
                 if (namedVariableList != NULL) {
@@ -557,7 +561,7 @@ mmsServer_handleDefineNamedVariableListRequest(
 	        else {
 	            MmsError mmsError;
 
-                MmsNamedVariableList namedVariableList = createNamedVariableList(NULL, device,
+                MmsNamedVariableList namedVariableList = createNamedVariableList(connection->server, NULL, device,
                         request, variableListName, &mmsError);
 
                 if (namedVariableList != NULL) {

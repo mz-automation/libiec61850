@@ -614,3 +614,5 @@ EXPORTS
     IedServerConfig_getEdition
     IedServerConfig_setMaxMmsConnections
     IedServerConfig_getMaxMmsConnections
+    IedServerConfig_setMaxDataSetEntries
+    IedServerConfig_getMaxDatasSetEntries
