@@ -374,13 +374,15 @@ handleIsoConnections(IsoServer self)
     if ((connectionSocket = ServerSocket_accept((ServerSocket) self->serverSocket)) != NULL) {
 
 #if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
-        if (private_IsoServer_getConnectionCounter(self) >= self->maxConnections) {
-            if (DEBUG_ISO_SERVER)
-                printf("ISO_SERVER: maximum number of connections reached -> reject connection attempt.\n");
+        if (self->maxConnections > -1) {
+            if (private_IsoServer_getConnectionCounter(self) >= self->maxConnections) {
+                if (DEBUG_ISO_SERVER)
+                    printf("ISO_SERVER: maximum number of connections reached -> reject connection attempt.\n");
 
-            Socket_destroy(connectionSocket);
+                Socket_destroy(connectionSocket);
 
-            return;
+                return;
+            }
         }
 #endif /* (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1) */
 
@@ -427,13 +429,15 @@ handleIsoConnectionsThreadless(IsoServer self)
     if ((connectionSocket = ServerSocket_accept((ServerSocket) self->serverSocket)) != NULL) {
 
 #if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
-        if (private_IsoServer_getConnectionCounter(self) >= self->maxConnections) {
-            if (DEBUG_ISO_SERVER)
-                printf("ISO_SERVER: maximum number of connections reached -> reject connection attempt.\n");
+        if (self->maxConnections > -1) {
+            if (private_IsoServer_getConnectionCounter(self) >= self->maxConnections) {
+                if (DEBUG_ISO_SERVER)
+                    printf("ISO_SERVER: maximum number of connections reached -> reject connection attempt.\n");
 
-            Socket_destroy(connectionSocket);
+                Socket_destroy(connectionSocket);
 
-            return;
+                return;
+            }
         }
 #endif /* (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1) */
 
@@ -520,6 +524,10 @@ IsoServer_create(TLSConfiguration tlsConfiguration)
 
 #if (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS == -1)
     self->openClientConnections = LinkedList_create();
+#endif
+
+#if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
+    self->maxConnections = CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS;
 #endif
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1) && (CONFIG_MMS_SINGLE_THREADED == 0)
