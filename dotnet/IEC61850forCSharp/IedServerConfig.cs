@@ -69,6 +69,24 @@ namespace IEC61850.Server
 		[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 		static extern void IedServerConfig_enableDynamicDataSetService(IntPtr self, [MarshalAs(UnmanagedType.I1)] bool enable);
 
+		[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+		static extern void IedServerConfig_setMaxAssociationSpecificDataSets(IntPtr self, int maxDataSets);
+
+		[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+		static extern int IedServerConfig_getMaxAssociationSpecificDataSets(IntPtr self);
+
+		[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+		static extern void IedServerConfig_setMaxDomainSpecificDataSets(IntPtr self, int maxDataSets);
+
+		[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+		static extern int IedServerConfig_getMaxDomainSpecificDataSets(IntPtr self);
+
+		[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+		static extern void IedServerConfig_setMaxDataSetEntries(IntPtr self, int maxDataSetEntries);
+
+		[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+		static extern int IedServerConfig_getMaxDatasSetEntries(IntPtr self);
+
 		internal IntPtr self;
 
 		public IedServerConfig ()
@@ -132,6 +150,10 @@ namespace IEC61850.Server
 			}
 		}
 
+		/// <summary>
+		/// Enable/Disable dynamic data set service for MMS
+		/// </summary>
+		/// <value><c>true</c> if dynamic data set service enabled; otherwise, <c>false</c>.</value>
 		public bool DynamicDataSetServiceEnabled
 		{
 			get {
@@ -139,6 +161,48 @@ namespace IEC61850.Server
 			}
 			set {
 				IedServerConfig_enableDynamicDataSetService (self, value);
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets the maximum number of data set entries for dynamic data sets
+		/// </summary>
+		/// <value>The max. number data set entries.</value>
+		public int MaxDataSetEntries
+		{
+			get {
+				return IedServerConfig_getMaxDatasSetEntries (self);
+			}
+			set {
+				IedServerConfig_setMaxDataSetEntries (self, value);
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets the maximum number of association specific (non-permanent) data sets.
+		/// </summary>
+		/// <value>The max. number of association specific data sets.</value>
+		public int MaxAssociationSpecificDataSets
+		{
+			get {
+				return IedServerConfig_getMaxAssociationSpecificDataSets (self);
+			}
+			set {
+				IedServerConfig_setMaxAssociationSpecificDataSets (self, value);
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets the maximum number of domain specific (permanent) data sets.
+		/// </summary>
+		/// <value>The max. numebr of domain specific data sets.</value>
+		public int MaxDomainSpecificDataSets
+		{
+			get {
+				return IedServerConfig_getMaxDomainSpecificDataSets (self);
+			}
+			set {
+				IedServerConfig_setMaxDomainSpecificDataSets (self, value);
 			}
 		}
 

@@ -72,6 +72,8 @@ MmsServer_create(MmsDevice* device, TLSConfiguration tlsConfiguration)
     self->dynamicVariableListServiceEnabled = true;
     self->journalServiceEnabled = true;
     self->maxDataSetEntries = CONFIG_MMS_MAX_NUMBER_OF_DATA_SET_MEMBERS;
+    self->maxAssociationSpecificDataSets = CONFIG_MMS_MAX_NUMBER_OF_ASSOCIATION_SPECIFIC_DATA_SETS;
+    self->maxDomainSpecificDataSets = CONFIG_MMS_MAX_NUMBER_OF_DOMAIN_SPECIFIC_DATA_SETS;
 #endif /* (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1) */
 
     return self;
@@ -136,6 +138,18 @@ void
 MmsServer_enableJournalService(MmsServer self, bool enable)
 {
     self->journalServiceEnabled = enable;
+}
+
+void
+MmsServer_setMaxAssociationSpecificDataSets(MmsServer self, int maxDataSets)
+{
+    self->maxAssociationSpecificDataSets = maxDataSets;
+}
+
+void
+MmsServer_setMaxDomainSpecificDataSets(MmsServer self, int maxDataSets)
+{
+    self->maxDomainSpecificDataSets = maxDataSets;
 }
 
 #endif /* (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1) */

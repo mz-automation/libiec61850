@@ -60,6 +60,12 @@ struct sIedServerConfig
     /** when true (default) enable dynamic data set services for MMS */
     bool enableDynamicDataSetService;
 
+    /** the maximum number of allowed association specific data sets */
+    int maxAssociationSpecificDataSets;
+
+    /** the maximum number of allowed domain specific data sets */
+    int maxDomainSpecificDataSets;
+
     /** maximum number of data set entries of dynamic data sets */
     int maxDataSetEntries;
 
@@ -141,6 +147,8 @@ IedServerConfig_getMaxMmsConnections(IedServerConfig self);
 /**
  * \brief Set the basepath of the file services
  *
+ * NOTE: the basepath specifies the local directory that is served by MMS file services
+ *
  * \param basepath new file service base path
  */
 void
@@ -168,12 +176,6 @@ IedServerConfig_enableFileService(IedServerConfig self, bool enable);
 bool
 IedServerConfig_isFileServiceEnabled(IedServerConfig self);
 
-void
-IedServerConfig_enableSetFileService(IedServerConfig self, bool enable);
-
-bool
-IedServerConfig_isSetFileServiceEnabled(IedServerConfig self);
-
 /**
  * \brief Enable/disable the dynamic data set service for MMS
  *
@@ -190,29 +192,60 @@ IedServerConfig_enableDynamicDataSetService(IedServerConfig self, bool enable);
 bool
 IedServerConfig_isDynamicDataSetServiceEnabled(IedServerConfig self);
 
-
+/**
+ * \brief Set the maximum allowed number of association specific (non-permanent) data sets
+ *
+ * NOTE: This specifies the maximum number of non-permanent data sets per connection. When
+ * the connection is closed these data sets are deleted automatically.
+ *
+ * \param maxDataSets maximum number of allowed data sets.
+ */
 void
 IedServerConfig_setMaxAssociationSpecificDataSets(IedServerConfig self, int maxDataSets);
 
+/**
+ * \brief Get the maximum allowed number of association specific (non-permanent) data sets
+ *
+ * \return maximum number of allowed data sets.
+ */
+int
+IedServerConfig_getMaxAssociationSpecificDataSets(IedServerConfig self);
+
+/**
+ * \brief Set the maximum allowed number of domain specific (permanent) data sets
+ *
+ * \param maxDataSets maximum number of allowed data sets.
+ */
 void
 IedServerConfig_setMaxDomainSpecificDataSets(IedServerConfig self, int maxDataSets);
 
 /**
- * \brief Set the maximum number of entries in a dynamic data set
+ * \brief Get the maximum allowed number of domain specific (permanent) data sets
+ *
+ * \return maximum number of allowed data sets.
+ */
+int
+IedServerConfig_getMaxDomainSpecificDataSets(IedServerConfig self);
+
+/**
+ * \brief Set the maximum number of entries in dynamic data sets
+ *
+ * NOTE: this comprises the base data set entries (can be simple or complex variables).
+ * When the client tries to create a data set with more member the request will be
+ * rejected and the data set will not be created.
  *
  * \param maxDataSetEntries the maximum number of entries allowed in a data set
  */
 void
 IedServerConfig_setMaxDataSetEntries(IedServerConfig self, int maxDataSetEntries);
 
+/**
+ * \brief Get the maximum number of entries in dynamic data sets
+ *
+ * \return the maximum number of entries allowed in a data sets
+ */
 int
 IedServerConfig_getMaxDatasSetEntries(IedServerConfig self);
-
-void
-IedServerConfig_enableWriteDataSetService(IedServerConfig self, bool enable);
-
-bool
-IedServerConfig_isWriteDataSetServiceEnabled(IedServerConfig self);
 
 /**
  * \brief Enable/disable the log service for MMS

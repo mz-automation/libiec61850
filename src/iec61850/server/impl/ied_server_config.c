@@ -28,6 +28,14 @@
 #define CONFIG_MMS_MAX_NUMBER_OF_DATA_SET_MEMBERS 100
 #endif
 
+#ifndef CONFIG_MMS_MAX_NUMBER_OF_ASSOCIATION_SPECIFIC_DATA_SETS
+#define CONFIG_MMS_MAX_NUMBER_OF_ASSOCIATION_SPECIFIC_DATA_SETS 10
+#endif
+
+#ifndef CONFIG_MMS_MAX_NUMBER_OF_DOMAIN_SPECIFIC_DATA_SETS
+#define CONFIG_MMS_MAX_NUMBER_OF_DOMAIN_SPECIFIC_DATA_SETS 10
+#endif
+
 IedServerConfig
 IedServerConfig_create()
 {
@@ -38,6 +46,8 @@ IedServerConfig_create()
         self->fileServiceBasepath = StringUtils_copyString(CONFIG_VIRTUAL_FILESTORE_BASEPATH);
         self->enableFileService = true;
         self->enableDynamicDataSetService = true;
+        self->maxAssociationSpecificDataSets = CONFIG_MMS_MAX_NUMBER_OF_ASSOCIATION_SPECIFIC_DATA_SETS;
+        self->maxDomainSpecificDataSets = CONFIG_MMS_MAX_NUMBER_OF_DOMAIN_SPECIFIC_DATA_SETS;
         self->maxDataSetEntries = CONFIG_MMS_MAX_NUMBER_OF_DATA_SET_MEMBERS;
         self->enableLogService = true;
         self->edition = IEC_61850_EDITION_2;
@@ -117,6 +127,30 @@ bool
 IedServerConfig_isDynamicDataSetServiceEnabled(IedServerConfig self)
 {
     return self->enableDynamicDataSetService;
+}
+
+void
+IedServerConfig_setMaxAssociationSpecificDataSets(IedServerConfig self, int maxDataSets)
+{
+    self->maxAssociationSpecificDataSets = maxDataSets;
+}
+
+int
+IedServerConfig_getMaxAssociationSpecificDataSets(IedServerConfig self)
+{
+    return self->maxAssociationSpecificDataSets;
+}
+
+void
+IedServerConfig_setMaxDomainSpecificDataSets(IedServerConfig self, int maxDataSets)
+{
+    self->maxDomainSpecificDataSets = maxDataSets;
+}
+
+int
+IedServerConfig_getMaxDomainSpecificDataSets(IedServerConfig self)
+{
+    return self->maxDomainSpecificDataSets;
 }
 
 void

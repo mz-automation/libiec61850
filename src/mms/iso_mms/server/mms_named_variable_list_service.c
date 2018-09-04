@@ -453,7 +453,11 @@ mmsServer_handleDefineNamedVariableListRequest(
 			goto exit_free_struct;
 		}
 
+#if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
+		if (LinkedList_size(domain->namedVariableLists) < connection->server->maxDomainSpecificDataSets) {
+#else
 		if (LinkedList_size(domain->namedVariableLists) < CONFIG_MMS_MAX_NUMBER_OF_DOMAIN_SPECIFIC_DATA_SETS) {
+#endif
 		    char variableListName[65];
 
 		    if (request->variableListName.choice.domainspecific.itemId.size > 64) {
@@ -498,7 +502,11 @@ mmsServer_handleDefineNamedVariableListRequest(
 	}
 	else if (request->variableListName.present == ObjectName_PR_aaspecific) {
 
+#if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
+	    if (LinkedList_size(connection->namedVariableLists) < connection->server->maxAssociationSpecificDataSets) {
+#else
 	    if (LinkedList_size(connection->namedVariableLists) < CONFIG_MMS_MAX_NUMBER_OF_ASSOCIATION_SPECIFIC_DATA_SETS) {
+#endif
 
 	        char variableListName[65];
 

@@ -170,6 +170,8 @@ struct sMmsServer {
     bool dynamicVariableListServiceEnabled;
     int maxDataSetEntries;
     bool journalServiceEnabled;
+    int maxAssociationSpecificDataSets;
+    int maxDomainSpecificDataSets;
 #endif /* (CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME == 1) */
 
 };

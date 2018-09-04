@@ -256,10 +256,28 @@ void
 MmsServer_enableDynamicNamedVariableListService(MmsServer self, bool enable);
 
 /**
+ * \brief Set the maximum number of association specific data sets (per connection)
+ *
+ * \param[in] self the MmsServer instance
+ * \param[in] maxDataSets maximum number association specific data sets
+ */
+void
+MmsServer_setMaxAssociationSpecificDataSets(MmsServer self, int maxDataSets);
+
+/**
+ * \brief Set the maximum number of domain specific data sets
+ *
+ * \param[in] self the MmsServer instance
+ * \param[in] maxDataSets maximum number domain specific data sets
+ */
+void
+MmsServer_setMaxDomainSpecificDataSets(MmsServer self, int maxDataSets);
+
+/**
  * \brief Set the maximum number of data set entries (for dynamic data sets)
  *
  * \param[in] self the MmsServer instance
- * \param[in] maximum number of dynamic data set entires
+ * \param[in] maxDataSetEntries maximum number of dynamic data set entries
  */
 void
 MmsServer_setMaxDataSetEntries(MmsServer self, int maxDataSetEntries);
