@@ -620,4 +620,4 @@ EXPORTS
     IedServerConfig_getMaxAssociationSpecificDataSets
     IedServerConfig_setMaxDomainSpecificDataSets
     IedServerConfig_getMaxDomainSpecificDataSets
- 
+    IedServer_setReadAccessHandler
