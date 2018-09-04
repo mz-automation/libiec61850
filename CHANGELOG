@@ -3,6 +3,7 @@ Changes to version 1.3.0
 - IEC 61850 server: more features configurable at runtime
 - IEC 61850 server: control objects - fixed bug in select response for SBO control model
 - IEC 61850 client: add support for single array element access (with component specification)
+- MMS server: add support for array element (index) access with nested component
 - IEC 61850 server: made IEC 61850 edition configurable at runtime
 - IEC 61850 server: added ReadAccessHandler to control read access
 - HAL: unified platform abstraction layer (to simplify using the library together with lib60870)
@@ -11,7 +12,10 @@ Changes to version 1.3.0
 - added server side example for the substitution service
 - MMS server: fixed wrong preprocessor defines that can cause problems in some configurations (unlimited number of client connections/ multi-threaded server)
 - IEC 61850 client: added new function ControlObjectClient_getCtlValType to simplify control handling
+- IEC 61850 server: reporting - don't delete pending events when buffered report is enabled and dataset didn't change
 - fixed bug in MmsValue_update
+- MMS server: fixed bug in delete variable list service - scope of delete was not considered optional
+- some more small bug fixes and optimizations
 
 
 Changes to version 1.2.2
