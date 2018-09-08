@@ -61,6 +61,25 @@ typedef enum {
 #define CONCLUDE_STATE_REJECTED 2
 #define CONCLUDE_STATE_ACCEPTED 3
 
+typedef enum {
+    MMS_CALL_TYPE_NONE,
+    MMS_CALL_TYPE_READ_VARIABLE,
+    MMS_CALL_TYPE_WRITE_VARIABLE,
+    MMS_CALL_TYPE_WRITE_MULTIPLE_VARIABLES
+} eMmsOutstandingCallType;
+
+struct sMmsOutstandingCall
+{
+    bool isUsed;
+    uint32_t invokeId;
+    eMmsOutstandingCallType type;
+    void* userCallback;
+    void* userParameter;
+    uint64_t timeout;
+};
+
+typedef struct sMmsOutstandingCall* MmsOutstandingCall;
+
 /* private instance variables */
 struct sMmsConnection {
     Semaphore lastInvokeIdLock;
@@ -73,7 +92,7 @@ struct sMmsConnection {
 	volatile MmsError lastResponseError;
 
 	Semaphore outstandingCallsLock;
-	uint32_t* outstandingCalls;
+	MmsOutstandingCall outstandingCalls;
 
 	uint32_t requestTimeout;
 	uint32_t connectTimeout;

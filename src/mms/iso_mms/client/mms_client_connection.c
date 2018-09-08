@@ -285,7 +285,7 @@ getNextInvokeId(MmsConnection self)
     return nextInvokeId;
 }
 
-static bool
+static MmsOutstandingCall
 checkForOutstandingCall(MmsConnection self, uint32_t invokeId)
 {
     int i = 0;
@@ -293,27 +293,34 @@ checkForOutstandingCall(MmsConnection self, uint32_t invokeId)
     Semaphore_wait(self->outstandingCallsLock);
 
     for (i = 0; i < OUTSTANDING_CALLS; i++) {
-        if (self->outstandingCalls[i] == invokeId) {
-            Semaphore_post(self->outstandingCallsLock);
-            return true;
+        if (self->outstandingCalls[i].isUsed) {
+            if (self->outstandingCalls[i].invokeId == invokeId) {
+                Semaphore_post(self->outstandingCallsLock);
+                return &(self->outstandingCalls[i]);
+            }
         }
     }
 
     Semaphore_post(self->outstandingCallsLock);
 
-    return false;
+    return NULL;
 }
 
 static bool
-addToOutstandingCalls(MmsConnection self, uint32_t invokeId)
+addToOutstandingCalls(MmsConnection self, uint32_t invokeId, eMmsOutstandingCallType type, void* userCallback, void* userParameter)
 {
     int i = 0;
 
     Semaphore_wait(self->outstandingCallsLock);
 
     for (i = 0; i < OUTSTANDING_CALLS; i++) {
-        if (self->outstandingCalls[i] == 0) {
-            self->outstandingCalls[i] = invokeId;
+        if (self->outstandingCalls[i].isUsed == false) {
+            self->outstandingCalls[i].isUsed = true;
+            self->outstandingCalls[i].invokeId = invokeId;
+            self->outstandingCalls[i].timeout = Hal_getTimeInMs() + self->requestTimeout;
+            self->outstandingCalls[i].type = type;
+            self->outstandingCalls[i].userCallback = userCallback;
+            self->outstandingCalls[i].userParameter = userParameter;
             Semaphore_post(self->outstandingCallsLock);
             return true;
         }
@@ -332,33 +339,20 @@ removeFromOutstandingCalls(MmsConnection self, uint32_t invokeId)
     Semaphore_wait(self->outstandingCallsLock);
 
     for (i = 0; i < OUTSTANDING_CALLS; i++) {
-        if (self->outstandingCalls[i] == invokeId) {
-            self->outstandingCalls[i] = 0;
-            break;
+        if (self->outstandingCalls[i].isUsed) {
+            if (self->outstandingCalls[i].invokeId == invokeId) {
+                self->outstandingCalls[i].isUsed = false;
+                break;
+            }
         }
     }
 
     Semaphore_post(self->outstandingCallsLock);
 }
 
-static ByteBuffer*
-sendRequestAndWaitForResponse(MmsConnection self, uint32_t invokeId, ByteBuffer* message, MmsError* mmsError)
+static void
+sendMessage(MmsConnection self, ByteBuffer* message)
 {
-    ByteBuffer* receivedMessage = NULL;
-
-    uint64_t currentTime = Hal_getTimeInMs();
-
-    uint64_t waitUntilTime = currentTime + self->requestTimeout;
-
-    bool success = false;
-
-    if (addToOutstandingCalls(self, invokeId) == false) {
-        *mmsError = MMS_ERROR_OUTSTANDING_CALL_LIMIT;
-        return NULL;
-    }
-
-    *mmsError = MMS_ERROR_NONE;
-
 #if (CONFIG_MMS_RAW_MESSAGE_LOGGING == 1)
     if (self->rawMmsMessageHandler != NULL) {
         MmsRawMessageHandler handler = (MmsRawMessageHandler) self->rawMmsMessageHandler;
@@ -367,6 +361,44 @@ sendRequestAndWaitForResponse(MmsConnection self, uint32_t invokeId, ByteBuffer*
 #endif /* (CONFIG_MMS_RAW_MESSAGE_LOGGING == 1) */
 
     IsoClientConnection_sendMessage(self->isoClient, message);
+}
+
+static MmsError
+sendAsyncRequest(MmsConnection self, uint32_t invokeId, ByteBuffer* message, eMmsOutstandingCallType type,
+        void* userCallback, void* userParameter)
+{
+    if (addToOutstandingCalls(self, invokeId, type, userCallback, userParameter) == false) {
+
+        /* message cannot be sent - release resources */
+        IsoClientConnection_releaseTransmitBuffer(self->isoClient);
+
+        return MMS_ERROR_OUTSTANDING_CALL_LIMIT;
+    }
+
+    sendMessage(self, message);
+
+    return MMS_ERROR_NONE;
+}
+
+static ByteBuffer*
+sendRequestAndWaitForResponse(MmsConnection self, uint32_t invokeId, ByteBuffer* message, MmsError* mmsError)
+{
+    if (addToOutstandingCalls(self, invokeId, MMS_CALL_TYPE_NONE, NULL, NULL) == false) {
+        *mmsError = MMS_ERROR_OUTSTANDING_CALL_LIMIT;
+        return NULL;
+    }
+
+    ByteBuffer* receivedMessage = NULL;
+
+    uint64_t currentTime = Hal_getTimeInMs();
+
+    uint64_t waitUntilTime = currentTime + self->requestTimeout;
+
+    bool success = false;
+
+    *mmsError = MMS_ERROR_NONE;
+
+    sendMessage(self, message);
 
     while (currentTime < waitUntilTime) {
         uint32_t receivedInvokeId;
@@ -743,12 +775,100 @@ mmsMsg_parseRejectPDU(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t* invo
 }
 
 static void
+handleAsyncResponse(MmsConnection self, ByteBuffer* response, uint32_t bufPos, MmsOutstandingCall outstandingCall, MmsError err)
+{
+
+    if (outstandingCall->type == MMS_CALL_TYPE_READ_VARIABLE) {
+
+        MmsConnection_ReadVariableHandler handler =
+                (MmsConnection_ReadVariableHandler) outstandingCall->userCallback;
+
+        if (err != MMS_ERROR_NONE)
+            handler(outstandingCall->invokeId, outstandingCall->userParameter, err, NULL);
+        else {
+            if (response) {
+                MmsValue* value = mmsClient_parseReadResponse(response, NULL, false);
+
+                handler(outstandingCall->invokeId, outstandingCall->userParameter, MMS_ERROR_NONE, value);
+            }
+
+        }
+    }
+    else if (outstandingCall->type == MMS_CALL_TYPE_WRITE_VARIABLE) {
+
+        MmsConnection_WriteVariableHandler handler =
+                (MmsConnection_WriteVariableHandler) outstandingCall->userCallback;
+
+        if (err != MMS_ERROR_NONE) {
+            handler(outstandingCall->invokeId, outstandingCall->userParameter, err, DATA_ACCESS_ERROR_NO_RESPONSE);
+        }
+        else {
+            if (response) {
+                MmsDataAccessError daError = mmsClient_parseWriteResponse(response, bufPos, &err);
+
+                handler(outstandingCall->invokeId, outstandingCall->userParameter, err, daError);
+            }
+        }
+
+    }
+    else if (outstandingCall->type == MMS_CALL_TYPE_WRITE_MULTIPLE_VARIABLES) {
+
+        MmsConnection_WriteMultipleVariablesHandler handler =
+                (MmsConnection_WriteMultipleVariablesHandler) outstandingCall->userCallback;
+
+        if (err != MMS_ERROR_NONE) {
+            handler(outstandingCall->invokeId, outstandingCall->userParameter, err, NULL);
+        }
+        else {
+            if (response) {
+                LinkedList accessResults = NULL;
+
+                mmsClient_parseWriteMultipleItemsResponse(response, bufPos, &err, -1, &accessResults);
+
+                handler(outstandingCall->invokeId, outstandingCall->userParameter, err, accessResults);
+            }
+        }
+    }
+
+    removeFromOutstandingCalls(self, outstandingCall->invokeId);
+
+    releaseResponse(self);
+}
+
+static void
 mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
 {
     MmsConnection self = (MmsConnection) parameter;
 
     if (DEBUG_MMS_CLIENT)
         printf("MMS_CLIENT: mmsIsoCallback called with indication %i\n", indication);
+
+    if (indication == ISO_IND_TICK) {
+        //TODO check timeouts
+
+        uint64_t currentTime = Hal_getTimeInMs();
+
+        int i = 0;
+
+        Semaphore_wait(self->outstandingCallsLock);
+
+        for (i = 0; i < OUTSTANDING_CALLS; i++) {
+            if (self->outstandingCalls[i].isUsed) {
+                if (currentTime > self->outstandingCalls[i].timeout) {
+
+                    if (self->outstandingCalls[i].type != MMS_CALL_TYPE_NONE)
+                        handleAsyncResponse(self, NULL, 0, &(self->outstandingCalls[i]), MMS_ERROR_SERVICE_TIMEOUT);
+
+                    self->outstandingCalls[i].isUsed = false;
+                    break;
+                }
+            }
+        }
+
+        Semaphore_post(self->outstandingCallsLock);
+
+        return;
+    }
 
     if (indication == ISO_IND_CLOSED) {
         if (DEBUG_MMS_CLIENT)
@@ -849,15 +969,25 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
             goto exit_with_error;
         }
         else {
-            if (checkForOutstandingCall(self, invokeId)) {
 
-                /* wait for application thread to handle last received response */
-                waitUntilLastResponseHasBeenProcessed(self);
+            MmsOutstandingCall call = checkForOutstandingCall(self, invokeId);
 
-                Semaphore_wait(self->lastResponseLock);
-                self->lastResponseError = convertServiceErrorToMmsError(serviceError);
-                self->responseInvokeId = invokeId;
-                Semaphore_post(self->lastResponseLock);
+            if (call) {
+
+                MmsError err = convertServiceErrorToMmsError(serviceError);
+
+                if (call->type != MMS_CALL_TYPE_NONE) {
+                    handleAsyncResponse(self, NULL, 0, call, err);
+                }
+                else {
+                    /* wait for application thread to handle last received response */
+                    waitUntilLastResponseHasBeenProcessed(self);
+
+                    Semaphore_wait(self->lastResponseLock);
+                    self->lastResponseError = err;
+                    self->responseInvokeId = invokeId;
+                    Semaphore_post(self->lastResponseLock);
+                }
             }
             else {
                 if (DEBUG_MMS_CLIENT)
@@ -880,15 +1010,24 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
             if (DEBUG_MMS_CLIENT)
                 printf("MMS_CLIENT: reject PDU invokeID: %i type: %i reason: %i\n", (int) invokeId, rejectType, rejectReason);
 
-            if (checkForOutstandingCall(self, invokeId)) {
+            MmsOutstandingCall call = checkForOutstandingCall(self, invokeId);
 
-                /* wait for application thread to handle last received response */
-                waitUntilLastResponseHasBeenProcessed(self);
+            if (call) {
 
-                Semaphore_wait(self->lastResponseLock);
-                self->lastResponseError = convertRejectCodesToMmsError(rejectType, rejectReason);
-                self->responseInvokeId = invokeId;
-                Semaphore_post(self->lastResponseLock);
+                MmsError err = convertRejectCodesToMmsError(rejectType, rejectReason);
+
+                if (call->type != MMS_CALL_TYPE_NONE) {
+                    handleAsyncResponse(self, NULL, 0, call, err);
+                }
+                else {
+                    /* wait for application thread to handle last received response */
+                    waitUntilLastResponseHasBeenProcessed(self);
+
+                    Semaphore_wait(self->lastResponseLock);
+                    self->lastResponseError = err;
+                    self->responseInvokeId = invokeId;
+                    Semaphore_post(self->lastResponseLock);
+                }
             }
             else {
                 IsoClientConnection_releaseReceiveBuffer(self->isoClient);
@@ -923,15 +1062,22 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
 
             bufPos += invokeIdLength;
 
-            if (checkForOutstandingCall(self, invokeId)) {
+            MmsOutstandingCall call = checkForOutstandingCall(self, invokeId);
 
-                waitUntilLastResponseHasBeenProcessed(self);
+            if (call) {
 
-                Semaphore_wait(self->lastResponseLock);
-                self->lastResponse = payload;
-                self->lastResponseBufPos = bufPos;
-                self->responseInvokeId = invokeId;
-                Semaphore_post(self->lastResponseLock);
+                if (call->type != MMS_CALL_TYPE_NONE) {
+                    handleAsyncResponse(self, payload, bufPos, call, MMS_ERROR_NONE);
+                }
+                else {
+                    waitUntilLastResponseHasBeenProcessed(self);
+
+                    Semaphore_wait(self->lastResponseLock);
+                    self->lastResponse = payload;
+                    self->lastResponseBufPos = bufPos;
+                    self->responseInvokeId = invokeId;
+                    Semaphore_post(self->lastResponseLock);
+                }
             }
             else {
                 if (DEBUG_MMS_CLIENT)
@@ -1106,7 +1252,7 @@ MmsConnection_create()
 
     self->lastResponseError = MMS_ERROR_NONE;
 
-    self->outstandingCalls = (uint32_t*) GLOBAL_CALLOC(OUTSTANDING_CALLS, sizeof(uint32_t));
+    self->outstandingCalls = (MmsOutstandingCall) GLOBAL_CALLOC(OUTSTANDING_CALLS, sizeof(struct sMmsOutstandingCall));
 
     self->isoParameters = IsoConnectionParameters_create();
 
@@ -1589,6 +1735,33 @@ MmsConnection_readVariable(MmsConnection self, MmsError* mmsError,
     return value;
 }
 
+uint32_t
+MmsConnection_readVariableAsync(MmsConnection self, MmsError* mmsError, const char* domainId, const char* itemId,
+        MmsConnection_ReadVariableHandler handler, void* parameter)
+{
+    uint32_t invokeId = 0;
+
+    if (getAssociationState(self) != MMS_STATE_CONNECTED) {
+        if (mmsError)
+            *mmsError = MMS_ERROR_CONNECTION_LOST;
+        goto exit_function;
+    }
+
+    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
+
+    invokeId = getNextInvokeId(self);
+
+    mmsClient_createReadRequest(invokeId, domainId, itemId, payload);
+
+    MmsError err = sendAsyncRequest(self, invokeId, payload, MMS_CALL_TYPE_READ_VARIABLE, handler, parameter);
+
+    if (mmsError)
+        *mmsError = err;
+
+exit_function:
+    return invokeId;
+}
+
 MmsValue*
 MmsConnection_readArrayElements(MmsConnection self, MmsError* mmsError,
         const char* domainId, const char* itemId,
@@ -1617,6 +1790,35 @@ MmsConnection_readArrayElements(MmsConnection self, MmsError* mmsError,
 
 exit_function:
     return value;
+}
+
+uint32_t
+MmsConnection_readArrayElementsAsync(MmsConnection self, MmsError* mmsError, const char* domainId, const char* itemId,
+        uint32_t startIndex, uint32_t numberOfElements,
+        MmsConnection_ReadVariableHandler handler, void* parameter)
+{
+    uint32_t invokeId = 0;
+
+    if (getAssociationState(self) != MMS_STATE_CONNECTED) {
+        if (mmsError)
+            *mmsError = MMS_ERROR_CONNECTION_LOST;
+        goto exit_function;
+    }
+
+    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
+
+    invokeId = getNextInvokeId(self);
+
+    mmsClient_createReadRequestAlternateAccessIndex(invokeId, domainId, itemId, startIndex,
+            numberOfElements, payload);
+
+    MmsError err = sendAsyncRequest(self, invokeId, payload, MMS_CALL_TYPE_READ_VARIABLE, handler, parameter);
+
+    if (mmsError)
+        *mmsError = err;
+
+exit_function:
+    return invokeId;
 }
 
 MmsValue*
@@ -1648,6 +1850,36 @@ exit_function:
     return value;
 }
 
+uint32_t
+MmsConnection_readSingleArrayElementWithComponentAsync(MmsConnection self, MmsError* mmsError,
+        const char* domainId, const char* itemId,
+        uint32_t index, const char* componentId,
+        MmsConnection_ReadVariableHandler handler, void* parameter)
+{
+    uint32_t invokeId = 0;
+
+    if (getAssociationState(self) != MMS_STATE_CONNECTED) {
+        if (mmsError)
+            *mmsError = MMS_ERROR_CONNECTION_LOST;
+        goto exit_function;
+    }
+
+    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
+
+    invokeId = getNextInvokeId(self);
+
+    mmsClient_createReadRequestAlternateAccessSingleIndexComponent(invokeId, domainId, itemId, index, componentId,
+            payload);
+
+    MmsError err = sendAsyncRequest(self, invokeId, payload, MMS_CALL_TYPE_READ_VARIABLE, handler, parameter);
+
+    if (mmsError)
+        *mmsError = err;
+
+exit_function:
+    return invokeId;
+}
+
 MmsValue*
 MmsConnection_readMultipleVariables(MmsConnection self, MmsError* mmsError,
         const char* domainId, LinkedList /*<char*>*/items)
@@ -1675,6 +1907,35 @@ MmsConnection_readMultipleVariables(MmsConnection self, MmsError* mmsError,
     exit_function:
     return value;
 }
+
+uint32_t
+MmsConnection_readMultipleVariablesAsync(MmsConnection self, MmsError* mmsError,
+        const char* domainId, LinkedList /*<char*>*/items,
+        MmsConnection_ReadVariableHandler handler, void* parameter)
+{
+    uint32_t invokeId = 0;
+
+    if (getAssociationState(self) != MMS_STATE_CONNECTED) {
+        if (mmsError)
+            *mmsError = MMS_ERROR_CONNECTION_LOST;
+        goto exit_function;
+    }
+
+    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
+
+    invokeId = getNextInvokeId(self);
+
+    mmsClient_createReadRequestMultipleValues(invokeId, domainId, items, payload);
+
+    MmsError err = sendAsyncRequest(self, invokeId, payload, MMS_CALL_TYPE_READ_VARIABLE, handler, parameter);
+
+    if (mmsError)
+        *mmsError = err;
+
+exit_function:
+    return invokeId;
+}
+
 
 MmsValue*
 MmsConnection_readNamedVariableListValues(MmsConnection self, MmsError* mmsError,
@@ -1706,6 +1967,36 @@ MmsConnection_readNamedVariableListValues(MmsConnection self, MmsError* mmsError
     return value;
 }
 
+uint32_t
+MmsConnection_readNamedVariableListValuesAsync(MmsConnection self, MmsError* mmsError,
+        const char* domainId, const char* listName, bool specWithResult,
+        MmsConnection_ReadVariableHandler handler, void* parameter)
+{
+    uint32_t invokeId = 0;
+
+    if (getAssociationState(self) != MMS_STATE_CONNECTED) {
+        if (mmsError)
+            *mmsError = MMS_ERROR_CONNECTION_LOST;
+        goto exit_function;
+    }
+
+    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
+
+    invokeId = getNextInvokeId(self);
+
+    mmsClient_createReadNamedVariableListRequest(invokeId, domainId, listName,
+            payload, specWithResult);
+
+    MmsError err = sendAsyncRequest(self, invokeId, payload, MMS_CALL_TYPE_READ_VARIABLE, handler, parameter);
+
+    if (mmsError)
+        *mmsError = err;
+
+exit_function:
+    return invokeId;
+}
+
+
 MmsValue*
 MmsConnection_readNamedVariableListValuesAssociationSpecific(
         MmsConnection self, MmsError* mmsError,
@@ -1735,6 +2026,35 @@ MmsConnection_readNamedVariableListValuesAssociationSpecific(
 
     exit_function:
     return value;
+}
+
+uint32_t
+MmsConnection_readNamedVariableListValuesAssociationSpecificAsync(MmsConnection self, MmsError* mmsError,
+        const char* listName, bool specWithResult,
+        MmsConnection_ReadVariableHandler handler, void* parameter)
+{
+    uint32_t invokeId = 0;
+
+    if (getAssociationState(self) != MMS_STATE_CONNECTED) {
+        if (mmsError)
+            *mmsError = MMS_ERROR_CONNECTION_LOST;
+        goto exit_function;
+    }
+
+    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
+
+    invokeId = getNextInvokeId(self);
+
+    mmsClient_createReadAssociationSpecificNamedVariableListRequest(invokeId, listName,
+            payload, specWithResult);
+
+    MmsError err = sendAsyncRequest(self, invokeId, payload, MMS_CALL_TYPE_READ_VARIABLE, handler, parameter);
+
+    if (mmsError)
+        *mmsError = err;
+
+exit_function:
+    return invokeId;
 }
 
 LinkedList /* <MmsVariableAccessSpecification*> */
@@ -2317,6 +2637,34 @@ MmsConnection_writeVariable(MmsConnection self, MmsError* mmsError,
     return retVal;
 }
 
+uint32_t
+MmsConnection_writeVariableAsync(MmsConnection self, MmsError* mmsError,
+        const char* domainId, const char* itemId, MmsValue* value,
+        MmsConnection_WriteVariableHandler handler, void* parameter)
+{
+    uint32_t invokeId = 0;
+
+    if (getAssociationState(self) != MMS_STATE_CONNECTED) {
+        if (mmsError)
+            *mmsError = MMS_ERROR_CONNECTION_LOST;
+        goto exit_function;
+    }
+
+    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
+
+    invokeId = getNextInvokeId(self);
+
+    mmsClient_createWriteRequest(invokeId, domainId, itemId, value, payload);
+
+    MmsError err = sendAsyncRequest(self, invokeId, payload, MMS_CALL_TYPE_WRITE_VARIABLE, handler, parameter);
+
+    if (mmsError)
+        *mmsError = err;
+
+exit_function:
+    return invokeId;
+}
+
 void
 MmsConnection_writeMultipleVariables(MmsConnection self, MmsError* mmsError, const char* domainId,
         LinkedList /*<char*>*/items,
@@ -2342,6 +2690,34 @@ MmsConnection_writeMultipleVariables(MmsConnection self, MmsError* mmsError, con
     releaseResponse(self);
 }
 
+uint32_t
+MmsConnection_writeMultipleVariablesAsync(MmsConnection self, MmsError* mmsError, const char* domainId,
+        LinkedList /*<char*>*/ items, LinkedList /* <MmsValue*> */ values,
+        MmsConnection_WriteMultipleVariablesHandler handler, void* parameter)
+{
+    uint32_t invokeId = 0;
+
+    if (getAssociationState(self) != MMS_STATE_CONNECTED) {
+        if (mmsError)
+            *mmsError = MMS_ERROR_CONNECTION_LOST;
+        goto exit_function;
+    }
+
+    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
+
+    invokeId = getNextInvokeId(self);
+
+    mmsClient_createWriteMultipleItemsRequest(invokeId, domainId, items, values, payload);
+
+    MmsError err = sendAsyncRequest(self, invokeId, payload, MMS_CALL_TYPE_WRITE_MULTIPLE_VARIABLES, handler, parameter);
+
+    if (mmsError)
+        *mmsError = err;
+
+exit_function:
+    return invokeId;
+}
+
 MmsDataAccessError
 MmsConnection_writeArrayElements(MmsConnection self, MmsError* mmsError,
         const char* domainId, const char* itemId, int index, int numberOfElements,
@@ -2363,6 +2739,35 @@ MmsConnection_writeArrayElements(MmsConnection self, MmsError* mmsError,
     releaseResponse(self);
 
     return retVal;
+}
+
+uint32_t
+MmsConnection_writeArrayElementsAsync(MmsConnection self, MmsError* mmsError,
+        const char* domainId, const char* itemId, int index, int numberOfElements,
+        MmsValue* value,
+        MmsConnection_WriteVariableHandler handler, void* parameter)
+{
+    uint32_t invokeId = 0;
+
+    if (getAssociationState(self) != MMS_STATE_CONNECTED) {
+        if (mmsError)
+            *mmsError = MMS_ERROR_CONNECTION_LOST;
+        goto exit_function;
+    }
+
+    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
+
+    invokeId = getNextInvokeId(self);
+
+    mmsClient_createWriteRequestArray(invokeId, domainId, itemId, index, numberOfElements, value, payload);
+
+    MmsError err = sendAsyncRequest(self, invokeId, payload, MMS_CALL_TYPE_WRITE_VARIABLE, handler, parameter);
+
+    if (mmsError)
+        *mmsError = err;
+
+exit_function:
+    return invokeId;
 }
 
 void
@@ -2387,6 +2792,34 @@ MmsConnection_writeNamedVariableList(MmsConnection self, MmsError* mmsError, boo
     }
 
     releaseResponse(self);
+}
+
+uint32_t
+MmsConnection_writeNamedVariableListAsync(MmsConnection self, MmsError* mmsError, bool isAssociationSpecific,
+        const char* domainId, const char* itemId, LinkedList /* <MmsValue*> */values,
+        MmsConnection_WriteMultipleVariablesHandler handler, void* parameter)
+{
+    uint32_t invokeId = 0;
+
+    if (getAssociationState(self) != MMS_STATE_CONNECTED) {
+        if (mmsError)
+            *mmsError = MMS_ERROR_CONNECTION_LOST;
+        goto exit_function;
+    }
+
+    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
+
+    invokeId = getNextInvokeId(self);
+
+    mmsClient_createWriteRequestNamedVariableList(invokeId, isAssociationSpecific, domainId, itemId, values, payload);
+
+    MmsError err = sendAsyncRequest(self, invokeId, payload, MMS_CALL_TYPE_WRITE_MULTIPLE_VARIABLES, handler, parameter);
+
+    if (mmsError)
+        *mmsError = err;
+
+exit_function:
+    return invokeId;
 }
 
 void

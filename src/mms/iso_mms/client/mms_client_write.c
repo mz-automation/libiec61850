@@ -119,8 +119,10 @@ mmsClient_parseWriteMultipleItemsResponse(ByteBuffer* message, int32_t bufPos, M
            numberOfAccessResults++;
        }
 
-       if (itemCount != numberOfAccessResults)
-           goto exit_with_error;
+       if (itemCount != -1) {
+           if (itemCount != numberOfAccessResults)
+               goto exit_with_error;
+       }
     }
     else
        *mmsError = MMS_ERROR_PARSING_RESPONSE;

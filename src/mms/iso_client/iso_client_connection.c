@@ -144,6 +144,8 @@ connectionHandlingThread(IsoClientConnection self)
                 packetState = TPKT_ERROR;
                 break;
             }
+
+            self->callback(ISO_IND_TICK, self->callbackParameter, NULL);
         }
 
         if (packetState == TPKT_ERROR)
@@ -653,6 +655,12 @@ IsoClientConnection_allocateTransmitBuffer(IsoClientConnection self)
     self->transmitPayloadBuffer->size = 0;
     self->transmitPayloadBuffer->maxSize = ISO_CLIENT_BUFFER_SIZE;
     return self->transmitPayloadBuffer;
+}
+
+void
+IsoClientConnection_releaseTransmitBuffer(IsoClientConnection self)
+{
+    Semaphore_post(self->transmitBufferMutex);
 }
 
 void

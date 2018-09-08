@@ -373,6 +373,24 @@ MmsConnection_getVariableListNamesAssociationSpecific(MmsConnection self, MmsErr
 MmsValue*
 MmsConnection_readVariable(MmsConnection self, MmsError* mmsError, const char* domainId, const char* itemId);
 
+
+typedef void
+(*MmsConnection_ReadVariableHandler) (int invokeId, void* parameter, MmsError mmsError, MmsValue* value);
+
+/**
+ * \brief Read a single variable from the server (asynchronous version)
+ *
+ * \param self MmsConnection instance to operate on
+ * \param mmsError user provided variable to store error code
+ * \param domainId the domain name of the variable to be read or NULL to read a VMD specific named variable
+ * \param itemId name of the variable to be read
+ *
+ * \return invoke ID of the request when the request was sent successfully
+ */
+uint32_t
+MmsConnection_readVariableAsync(MmsConnection self, MmsError* mmsError, const char* domainId, const char* itemId,
+        MmsConnection_ReadVariableHandler handler, void* parameter);
+
 /**
  * \brief Read one or more elements of a single array variable from the server.
  *
@@ -391,6 +409,26 @@ MmsValue*
 MmsConnection_readArrayElements(MmsConnection self, MmsError* mmsError, const char* domainId, const char* itemId,
 		uint32_t startIndex, uint32_t numberOfElements);
 
+/**
+ * \brief Read one or more elements of a single array variable from the server (asynchronous version)
+ *
+ * NOTE: The MmsValue object received by the callback function is either a simple or complex type if numberOfElements is 0, or an array
+ * containing the selected array elements of numberOfElements > 0.
+ *
+ * \param self MmsConnection instance to operate on
+ * \param mmsError user provided variable to store error code
+ * \param domainId the domain name of the variable to be read
+ * \param itemId name of the variable to be read
+ * \param startIndex index of element to read or start index if a element range is to be read
+ * \param numberOfElements Number of elements to read or 0 if a single element is to be read
+ *
+ * \return invoke ID of the request when the request was sent successfully
+ */
+uint32_t
+MmsConnection_readArrayElementsAsync(MmsConnection self, MmsError* mmsError, const char* domainId, const char* itemId,
+        uint32_t startIndex, uint32_t numberOfElements,
+        MmsConnection_ReadVariableHandler handler, void* parameter);
+
 
 /**
  * \brief Read a single element (with optional component specification) from the server
@@ -408,6 +446,12 @@ MmsValue*
 MmsConnection_readSingleArrayElementWithComponent(MmsConnection self, MmsError* mmsError,
         const char* domainId, const char* itemId, uint32_t index, const char* componentId);
 
+uint32_t
+MmsConnection_readSingleArrayElementWithComponentAsync(MmsConnection self, MmsError* mmsError,
+        const char* domainId, const char* itemId,
+        uint32_t index, const char* componentId,
+        MmsConnection_ReadVariableHandler handler, void* parameter);
+
 /**
  * \brief Read multiple variables of a domain from the server with one request message.
  *
@@ -423,6 +467,11 @@ MmsConnection_readSingleArrayElementWithComponent(MmsConnection self, MmsError* 
 MmsValue*
 MmsConnection_readMultipleVariables(MmsConnection self, MmsError* mmsError, const char* domainId,
 		LinkedList /*<char*>*/ items);
+
+uint32_t
+MmsConnection_readMultipleVariablesAsync(MmsConnection self, MmsError* mmsError,
+        const char* domainId, LinkedList /*<char*>*/items,
+        MmsConnection_ReadVariableHandler handler, void* parameter);
 
 /**
  * \brief Write a single variable to the server.
@@ -440,6 +489,14 @@ MmsConnection_readMultipleVariables(MmsConnection self, MmsError* mmsError, cons
 MmsDataAccessError
 MmsConnection_writeVariable(MmsConnection self, MmsError* mmsError,
         const char* domainId, const char* itemId, MmsValue* value);
+
+typedef void
+(*MmsConnection_WriteVariableHandler) (int invokeId, void* parameter, MmsError mmsError, MmsDataAccessError accessError);
+
+uint32_t
+MmsConnection_writeVariableAsync(MmsConnection self, MmsError* mmsError,
+        const char* domainId, const char* itemId, MmsValue* value,
+        MmsConnection_WriteVariableHandler handler, void* parameter);
 
 /**
  * \brief Write a single array element or a sub array to an array type variable
@@ -464,6 +521,17 @@ MmsConnection_writeArrayElements(MmsConnection self, MmsError* mmsError,
         const char* domainId, const char* itemId, int index, int numberOfElements,
         MmsValue* value);
 
+uint32_t
+MmsConnection_writeArrayElementsAsync(MmsConnection self, MmsError* mmsError,
+        const char* domainId, const char* itemId, int index, int numberOfElements,
+        MmsValue* value,
+        MmsConnection_WriteVariableHandler handler, void* parameter);
+
+
+typedef void
+(*MmsConnection_WriteMultipleVariablesHandler) (int invokeId, void* parameter, MmsError mmsError, LinkedList /* <MmsValue*> */ accessResults);
+
+
 /**
  * \brief Write multiple variables to the server.
  *
@@ -473,18 +541,23 @@ MmsConnection_writeArrayElements(MmsConnection self, MmsError* mmsError,
  * object that contains the AccessResults of the single variable write attempts. It is up to the user to free this
  * objects properly (e.g. with LinkedList_destroyDeep(accessResults, MmsValue_delete)).
  *
- * \param self MmsConnection instance to operate on
- * \param mmsError user provided variable to store error code
- * \param domainId the common domain name of all variables to be written
- * \param items a linked list containing the names of the variables to be written. The names are C strings.
- * \param values values of the variables to be written
- * \param (OUTPUT) the MmsValue objects of type MMS_DATA_ACCESS_ERROR representing the write success of a single variable
+ * \param[in] self MmsConnection instance to operate on
+ * \param[out] mmsError user provided variable to store error code
+ * \param[in] domainId the common domain name of all variables to be written
+ * \param[in] items a linked list containing the names of the variables to be written. The names are C strings.
+ * \param[out] values values of the variables to be written
+ * \param[out] the MmsValue objects of type MMS_DATA_ACCESS_ERROR representing the write success of a single variable
  *        write.
  */
 void
 MmsConnection_writeMultipleVariables(MmsConnection self, MmsError* mmsError, const char* domainId,
         LinkedList /*<char*>*/ items, LinkedList /* <MmsValue*> */ values,
         LinkedList* /* <MmsValue*> */ accessResults);
+
+uint32_t
+MmsConnection_writeMultipleVariablesAsync(MmsConnection self, MmsError* mmsError, const char* domainId,
+        LinkedList /*<char*>*/ items, LinkedList /* <MmsValue*> */ values,
+        MmsConnection_WriteMultipleVariablesHandler handler, void* parameter);
 
 /**
  * \brief Write named variable list values to the server.
@@ -494,18 +567,24 @@ MmsConnection_writeMultipleVariables(MmsConnection self, MmsError* mmsError, con
  * the user to free this objects properly (e.g. with LinkedList_destroyDeep(accessResults, MmsValue_delete)).
  * If accessResult is the to NULL the result will not be stored.
  *
- * \param self MmsConnection instance to operate on
- * \param mmsError user provided variable to store error code
- * \param isAssociationSpecifc true if the named variable list is an association specific named variable list
- * \param domainId the common domain name of all variables to be written
- * \param values values of the variables to be written
- * \param (OUTPUT) the MmsValue objects of type MMS_DATA_ACCESS_ERROR representing the write success of a single variable
+ * \param[in] self MmsConnection instance to operate on
+ * \param[out] mmsError user provided variable to store error code
+ * \param[in] isAssociationSpecifc true if the named variable list is an association specific named variable list
+ * \param[in] domainId the common domain name of all variables to be written
+ * \param[out] values values of the variables to be written
+ * \param[out] the MmsValue objects of type MMS_DATA_ACCESS_ERROR representing the write success of a single variable
  *        write.
  */
 void
 MmsConnection_writeNamedVariableList(MmsConnection self, MmsError* mmsError, bool isAssociationSpecific,
         const char* domainId, const char* itemId, LinkedList /* <MmsValue*> */values,
-        /* OUTPUT */LinkedList* /* <MmsValue*> */accessResults);
+        LinkedList* /* <MmsValue*> */accessResults);
+
+
+uint32_t
+MmsConnection_writeNamedVariableListAsync(MmsConnection self, MmsError* mmsError, bool isAssociationSpecific,
+        const char* domainId, const char* itemId, LinkedList /* <MmsValue*> */values,
+        MmsConnection_WriteMultipleVariablesHandler handler, void* parameter);
 
 /**
  * \brief Get the variable access attributes of a MMS named variable of the server
@@ -539,7 +618,12 @@ MmsConnection_getVariableAccessAttributes(MmsConnection self, MmsError* mmsError
  */
 MmsValue*
 MmsConnection_readNamedVariableListValues(MmsConnection self, MmsError* mmsError, const char* domainId,
-        const char* listName,	bool specWithResult);
+        const char* listName, bool specWithResult);
+
+uint32_t
+MmsConnection_readNamedVariableListValuesAsync(MmsConnection self, MmsError* mmsError,
+        const char* domainId, const char* listName, bool specWithResult,
+        MmsConnection_ReadVariableHandler handler, void* parameter);
 
 
 /**
@@ -556,7 +640,12 @@ MmsConnection_readNamedVariableListValues(MmsConnection self, MmsError* mmsError
  */
 MmsValue*
 MmsConnection_readNamedVariableListValuesAssociationSpecific(MmsConnection self, MmsError* mmsError,
-        const char* listName,	bool specWithResult);
+        const char* listName, bool specWithResult);
+
+uint32_t
+MmsConnection_readNamedVariableListValuesAssociationSpecificAsync(MmsConnection self, MmsError* mmsError,
+        const char* listName, bool specWithResult,
+        MmsConnection_ReadVariableHandler handler, void* parameter);
 
 /**
  * \brief Define a new VMD or domain scoped named variable list at the server.

@@ -5,7 +5,7 @@
  *  protocol stack. It is used as an abstraction layer to isolate the MMS code from the lower
  *  protocol layers.
  *
- *  Copyright 2013, 2014 Michael Zillgith
+ *  Copyright 2013-2018 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -40,7 +40,8 @@ typedef enum
     ISO_IND_ASSOCIATION_SUCCESS,
     ISO_IND_ASSOCIATION_FAILED,
     ISO_IND_CLOSED,
-    ISO_IND_DATA
+    ISO_IND_DATA,
+    ISO_IND_TICK
 } IsoIndication;
 
 typedef void*
@@ -84,6 +85,13 @@ IsoClientConnection_close(IsoClientConnection self);
  */
 ByteBuffer*
 IsoClientConnection_allocateTransmitBuffer(IsoClientConnection self);
+
+/**
+ * This function is used to release the transmit buffer in case a formerly allocated transmit buffer cannot
+ * be sent.
+ */
+void
+IsoClientConnection_releaseTransmitBuffer(IsoClientConnection self);
 
 /*
  * The client should release the receive buffer in order for the IsoClientConnection to
