@@ -274,6 +274,8 @@ MmsConnection_abort(MmsConnection self, MmsError* mmsError);
 void
 MmsConnection_conclude(MmsConnection self, MmsError* mmsError);
 
+typedef void
+(*MmsConnection_GenericServiceHandler) (int invokeId, void* parameter, MmsError mmsError, bool success);
 
 /**
  * \brief Get the names of all VMD scope variables of the server.
@@ -664,6 +666,12 @@ void
 MmsConnection_defineNamedVariableList(MmsConnection self, MmsError* mmsError, const char* domainId,
         const char* listName,	LinkedList variableSpecs);
 
+uint32_t
+MmsConnection_defineNamedVariableListAsync(MmsConnection self, MmsError* mmsError, const char* domainId,
+        const char* listName, LinkedList variableSpecs,
+        MmsConnection_GenericServiceHandler handler, void* parameter);
+
+
 
 /**
  * \brief Define a new association specific named variable list at the server.
@@ -677,6 +685,11 @@ MmsConnection_defineNamedVariableList(MmsConnection self, MmsError* mmsError, co
 void
 MmsConnection_defineNamedVariableListAssociationSpecific(MmsConnection self, MmsError* mmsError,
         const char* listName,	LinkedList variableSpecs);
+
+uint32_t
+MmsConnection_defineNamedVariableListAssociationSpecificAsync(MmsConnection self, MmsError* mmsError,
+        const char* listName, LinkedList variableSpecs,
+        MmsConnection_GenericServiceHandler handler, void* parameter);
 
 /**
  * \brief Read the entry list of a named variable list at the server.
@@ -698,6 +711,15 @@ MmsConnection_readNamedVariableListDirectory(MmsConnection self, MmsError* mmsEr
         const char* domainId, const char* listName, bool* deletable);
 
 
+typedef void
+(*MmsConnection_ReadNVLDirectoryHandler) (int invokeId, void* parameter, MmsError mmsError, LinkedList /* <MmsVariableAccessSpecification*> */ specs, bool deletable);
+
+
+uint32_t
+MmsConnection_readNamedVariableListDirectoryAsync(MmsConnection self, MmsError* mmsError,
+        const char* domainId, const char* listName,
+        MmsConnection_ReadNVLDirectoryHandler handler, void* parameter);
+
 
 /**
  * \brief Read the entry list of an association specific named variable list at the server.
@@ -711,6 +733,11 @@ MmsConnection_readNamedVariableListDirectory(MmsConnection self, MmsError* mmsEr
 LinkedList /* <MmsVariableAccessSpecification*> */
 MmsConnection_readNamedVariableListDirectoryAssociationSpecific(MmsConnection self, MmsError* mmsError,
         const char* listName, bool* deletable);
+
+uint32_t
+MmsConnection_readNamedVariableListDirectoryAssociationSpecificAsync(MmsConnection self, MmsError* mmsError,
+        const char* listName,
+        MmsConnection_ReadNVLDirectoryHandler handler, void* parameter);
 
 /**
  * \brief Delete a named variable list at the server.

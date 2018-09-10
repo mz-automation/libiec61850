@@ -262,8 +262,11 @@ mmsClient_parseGetNamedVariableListAttributesResponse(ByteBuffer* message, uint3
     if (rval.code == RC_OK) {
         if (mmsPdu->present == MmsPdu_PR_confirmedResponsePdu) {
 
+#if 0
+            //TODO remove
             if (invokeId != NULL)
                 *invokeId = mmsClient_getInvokeId(&mmsPdu->choice.confirmedResponsePdu);
+#endif
 
             if (mmsPdu->choice.confirmedResponsePdu.confirmedServiceResponse.present ==
                     ConfirmedServiceResponse_PR_getNamedVariableListAttributes)
