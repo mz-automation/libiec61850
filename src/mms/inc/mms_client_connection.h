@@ -865,15 +865,22 @@ MmsServerIdentity_destroy(MmsServerIdentity* self);
  * This function will return the status of the connected server by invoking the MMS status service.
  * The services returns the logical and physical states of the server.
  *
- * \param self MmsConnection instance to operate on
- * \param mmsError user provided variable to store error code
- * \param vmdLogicalStatus user provided variable to store the logical state of the VMD
- * \param vmdPhysicalStatus user provided variable to store the physical state of the VMD
- * \param extendedDerivation instructs the server to invoke self-diagnosis routines to determine server status
+ * \param[in] self MmsConnection instance to operate on
+ * \param[out] mmsError user provided variable to store error code
+ * \param[out] vmdLogicalStatus user provided variable to store the logical state of the VMD
+ * \param[out] vmdPhysicalStatus user provided variable to store the physical state of the VMD
+ * \param[in] extendedDerivation instructs the server to invoke self-diagnosis routines to determine server status
  */
 void
 MmsConnection_getServerStatus(MmsConnection self, MmsError* mmsError, int* vmdLogicalStatus, int* vmdPhysicalStatus,
         bool extendedDerivation);
+
+typedef void
+(*MmsConnection_GetServerStatusHandler) (int invokeId, void* parameter, MmsError mmsError, int vmdLogicalStatus, int vmdPhysicalStatus);
+
+uint32_t
+MmsConnection_getServerStatusAsync(MmsConnection self, MmsError* mmsError, bool extendedDerivation,
+        MmsConnection_GetServerStatusHandler handler, void* parameter);
 
 /*******************************************************************************
  * functions for MMS file services

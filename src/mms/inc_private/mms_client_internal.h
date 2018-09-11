@@ -70,7 +70,8 @@ typedef enum {
     MMS_CALL_TYPE_READ_NVL_DIRECTORY,
     MMS_CALL_TYPE_DEFINE_NVL,
     MMS_CALL_TYPE_DELETE_NVL,
-    MMS_CALL_TYPE_GET_VAR_ACCESS_ATTR
+    MMS_CALL_TYPE_GET_VAR_ACCESS_ATTR,
+    MMS_CALL_TYPE_GET_SERVER_STATUS
 } eMmsOutstandingCallType;
 
 struct sMmsOutstandingCall
@@ -283,7 +284,7 @@ void
 mmsClient_createStatusRequest(uint32_t invokeId, ByteBuffer* request, bool extendedDerivation);
 
 bool
-mmsClient_parseStatusResponse(MmsConnection self, int* vmdLogicalStatus, int* vmdPhysicalStatus);
+mmsClient_parseStatusResponse(MmsConnection self, ByteBuffer* response, int bufPos, int* vmdLogicalStatus, int* vmdPhysicalStatus);
 
 void
 mmsClient_createFileOpenRequest(uint32_t invokeId, ByteBuffer* request, const char* fileName, uint32_t initialPosition);

@@ -913,7 +913,23 @@ handleAsyncResponse(MmsConnection self, ByteBuffer* response, uint32_t bufPos, M
 
             handler(outstandingCall->invokeId, outstandingCall->userParameter, err, typeSpec);
         }
+    }
+    else if (outstandingCall->type == MMS_CALL_TYPE_GET_SERVER_STATUS) {
+        MmsConnection_GetServerStatusHandler handler =
+                (MmsConnection_GetServerStatusHandler) outstandingCall->userCallback;
 
+        if (err != MMS_ERROR_NONE) {
+            handler(outstandingCall->invokeId, outstandingCall->userParameter, err, 0, 0);
+        }
+        else {
+            int vmdLogicalStatus;
+            int vmdPhysicalStatus;
+
+            if (mmsClient_parseStatusResponse(self, response, bufPos, &vmdLogicalStatus, &vmdPhysicalStatus) == false)
+                err = MMS_ERROR_PARSING_RESPONSE;
+
+            handler(outstandingCall->invokeId, outstandingCall->userParameter, err, vmdLogicalStatus, vmdPhysicalStatus);
+        }
     }
 
     removeFromOutstandingCalls(self, outstandingCall->invokeId);
@@ -2690,25 +2706,90 @@ MmsConnection_identify(MmsConnection self, MmsError* mmsError)
     return identity;
 }
 
+struct getServerStatusParameters
+{
+    Semaphore waitForResponse;
+    MmsError err;
+    int vmdLogicalStatus;
+    int vmdPhysicalStatus;
+};
+
+static void
+getServerStatusHandler(int invokeId, void* parameter, MmsError mmsError, int vmdLogicalStatus, int vmdPhysicalStatus)
+{
+    struct getServerStatusParameters* parameters = (struct getServerStatusParameters*) parameter;
+
+    parameters->err = mmsError;
+    parameters->vmdLogicalStatus = vmdLogicalStatus;
+    parameters->vmdPhysicalStatus = vmdPhysicalStatus;
+
+    /* unblock user thread */
+    Semaphore_post(parameters->waitForResponse);
+}
+
+
 void
 MmsConnection_getServerStatus(MmsConnection self, MmsError* mmsError, int* vmdLogicalStatus, int* vmdPhysicalStatus,
-bool extendedDerivation)
+        bool extendedDerivation)
 {
+    struct getServerStatusParameters parameter;
+
+    MmsError err = MMS_ERROR_NONE;
+
+    parameter.waitForResponse = Semaphore_create(1);
+    parameter.err = MMS_ERROR_NONE;
+    parameter.vmdLogicalStatus = 0;
+    parameter.vmdPhysicalStatus = 0;
+
+    Semaphore_wait(parameter.waitForResponse);
+
+    MmsConnection_getServerStatusAsync(self, &err, extendedDerivation, getServerStatusHandler, &parameter);
+
+    if (err == MMS_ERROR_NONE) {
+        Semaphore_wait(parameter.waitForResponse);
+        err = parameter.err;
+
+        if (vmdLogicalStatus)
+            *vmdLogicalStatus = parameter.vmdLogicalStatus;
+
+        if (vmdPhysicalStatus)
+            *vmdPhysicalStatus = parameter.vmdPhysicalStatus;
+    }
+
+    Semaphore_destroy(parameter.waitForResponse);
+
+    if (mmsError)
+        *mmsError = err;
+
+}
+
+uint32_t
+MmsConnection_getServerStatusAsync(MmsConnection self, MmsError* mmsError, bool extendedDerivation,
+        MmsConnection_GetServerStatusHandler handler, void* parameter)
+{
+    uint32_t invokeId = 0;
+
+    if (getAssociationState(self) != MMS_STATE_CONNECTED) {
+        if (mmsError)
+            *mmsError = MMS_ERROR_CONNECTION_LOST;
+        goto exit_function;
+    }
+
     ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
-    uint32_t invokeId = getNextInvokeId(self);
+    invokeId = getNextInvokeId(self);
 
     mmsClient_createStatusRequest(invokeId, payload, extendedDerivation);
 
-    ByteBuffer* responseMessage = sendRequestAndWaitForResponse(self, invokeId, payload, mmsError);
+    MmsError err = sendAsyncRequest(self, invokeId, payload, MMS_CALL_TYPE_GET_SERVER_STATUS, handler, parameter);
 
-    if (responseMessage != NULL) {
-        if (mmsClient_parseStatusResponse(self, vmdLogicalStatus, vmdPhysicalStatus) == false)
-            *mmsError = MMS_ERROR_PARSING_RESPONSE;
-    }
+    if (mmsError)
+        *mmsError = err;
 
-    releaseResponse(self);
+exit_function:
+    return invokeId;
 }
+
 
 static LinkedList
 readJournal(MmsConnection self, MmsError* mmsError, uint32_t invokeId, ByteBuffer* payload, bool* moreFollows)
