@@ -794,6 +794,22 @@ handleAsyncResponse(MmsConnection self, ByteBuffer* response, uint32_t bufPos, M
 
         }
     }
+    else if (outstandingCall->type == MMS_CALL_TYPE_READ_MULTIPLE_VARIABLES) {
+
+        MmsConnection_ReadVariableHandler handler =
+                (MmsConnection_ReadVariableHandler) outstandingCall->userCallback;
+
+        if (err != MMS_ERROR_NONE)
+            handler(outstandingCall->invokeId, outstandingCall->userParameter, err, NULL);
+        else {
+            if (response) {
+                MmsValue* value = mmsClient_parseReadResponse(response, NULL, true);
+
+                handler(outstandingCall->invokeId, outstandingCall->userParameter, MMS_ERROR_NONE, value);
+            }
+
+        }
+    }
     else if (outstandingCall->type == MMS_CALL_TYPE_WRITE_VARIABLE) {
 
         MmsConnection_WriteVariableHandler handler =
@@ -867,6 +883,37 @@ handleAsyncResponse(MmsConnection self, ByteBuffer* response, uint32_t bufPos, M
 
             handler(outstandingCall->invokeId, outstandingCall->userParameter, err, success);
         }
+    }
+    else if (outstandingCall->type == MMS_CALL_TYPE_DELETE_NVL) {
+
+        MmsConnection_GenericServiceHandler handler =
+                (MmsConnection_GenericServiceHandler) outstandingCall->userCallback;
+
+        if (err != MMS_ERROR_NONE) {
+            handler(outstandingCall->invokeId, outstandingCall->userParameter, err, false);
+        }
+        else {
+            bool success = false;
+
+            if (mmsClient_parseDeleteNamedVariableListResponse(response, NULL))
+                success = true;
+
+            handler(outstandingCall->invokeId, outstandingCall->userParameter, err, success);
+        }
+    }
+    else if (outstandingCall->type == MMS_CALL_TYPE_GET_VAR_ACCESS_ATTR) {
+        MmsConnection_GetVariableAccessAttributesHandler handler =
+                (MmsConnection_GetVariableAccessAttributesHandler) outstandingCall->userCallback;
+
+        if (err != MMS_ERROR_NONE) {
+            handler(outstandingCall->invokeId, outstandingCall->userParameter, err, NULL);
+        }
+        else {
+            MmsVariableSpecification* typeSpec = mmsClient_parseGetVariableAccessAttributesResponse(response, NULL);
+
+            handler(outstandingCall->invokeId, outstandingCall->userParameter, err, typeSpec);
+        }
+
     }
 
     removeFromOutstandingCalls(self, outstandingCall->invokeId);
@@ -1746,27 +1793,23 @@ MmsConnection_getVariableListNamesAssociationSpecific(MmsConnection self, MmsErr
     return mmsClient_getNameList(self, mmsError, NULL, MMS_OBJECT_CLASS_NAMED_VARIABLE_LIST, true);
 }
 
-struct threeParameters
+struct readNVParameters
 {
-    void* param1;
-    void* param2;
-    void* param3;
+    Semaphore sem;
+    MmsError err;
+    MmsValue* value;
 };
 
 static void
 readVariableHandler(int invokeId, void* parameter, MmsError mmsError, MmsValue* value)
 {
-    struct threeParameters* parameters = (struct threeParameters*) parameter;
+    struct readNVParameters* parameters = (struct readNVParameters*) parameter;
 
-    Semaphore waitForResponse = (Semaphore) parameters->param1;
-    MmsError* err = (MmsError*) parameters->param3;
-
-    parameters->param2 = value;
-
-    *err = mmsError;
+    parameters->err = mmsError;
+    parameters->value = value;
 
     /* unblock user thread */
-    Semaphore_post(waitForResponse);
+    Semaphore_post(parameters->sem);
 }
 
 uint32_t
@@ -1801,31 +1844,29 @@ MmsConnection_readVariable(MmsConnection self, MmsError* mmsError,
         const char* domainId, const char* itemId)
 {
     MmsValue* value = NULL;
+    MmsError err = MMS_ERROR_NONE;
 
-    Semaphore waitForResponse = Semaphore_create(1);
+    struct readNVParameters parameter;
 
-    Semaphore_wait(waitForResponse);
+    parameter.sem = Semaphore_create(1);;
+    parameter.value = NULL;
+    parameter.err = MMS_ERROR_NONE;
 
-    struct threeParameters parameter;
+    Semaphore_wait(parameter.sem);
 
-    MmsError respErr = MMS_ERROR_NONE;
+    MmsConnection_readVariableAsync(self, &err, domainId, itemId, readVariableHandler, &parameter);
 
-    parameter.param1 = waitForResponse;
-    parameter.param2 = NULL;
-    parameter.param3 = &respErr;
+    if (err == MMS_ERROR_NONE) {
+        Semaphore_wait(parameter.sem);
 
-    MmsConnection_readVariableAsync(self, &respErr, domainId, itemId, readVariableHandler, &parameter);
-
-    if (respErr == MMS_ERROR_NONE) {
-        Semaphore_wait(waitForResponse);
-
-        value = (MmsValue*) parameter.param2;
+        value = parameter.value;
+        err = parameter.err;
     }
 
-    Semaphore_destroy(waitForResponse);
+    Semaphore_destroy(parameter.sem);
 
     if (mmsError)
-        *mmsError = respErr;
+        *mmsError = err;
 
     return value;
 }
@@ -1836,32 +1877,30 @@ MmsConnection_readArrayElements(MmsConnection self, MmsError* mmsError,
         uint32_t startIndex, uint32_t numberOfElements)
 {
     MmsValue* value = NULL;
+    MmsError err = MMS_ERROR_NONE;
 
-    Semaphore waitForResponse = Semaphore_create(1);
+    struct readNVParameters parameter;
 
-    Semaphore_wait(waitForResponse);
+    parameter.sem = Semaphore_create(1);;
+    parameter.value = NULL;
+    parameter.err = MMS_ERROR_NONE;
 
-    struct threeParameters parameter;
+    Semaphore_wait(parameter.sem);
 
-    MmsError respErr = MMS_ERROR_NONE;
-
-    parameter.param1 = waitForResponse;
-    parameter.param2 = NULL;
-    parameter.param3 = &respErr;
-
-    MmsConnection_readArrayElementsAsync(self, &respErr, domainId, itemId, startIndex, numberOfElements,
+    MmsConnection_readArrayElementsAsync(self, &err, domainId, itemId, startIndex, numberOfElements,
             readVariableHandler, &parameter);
 
-    if (respErr == MMS_ERROR_NONE) {
-        Semaphore_wait(waitForResponse);
+    if (err == MMS_ERROR_NONE) {
+        Semaphore_wait(parameter.sem);
 
-        value = (MmsValue*) parameter.param2;
+        value = parameter.value;
+        err = parameter.err;
     }
 
-    Semaphore_destroy(waitForResponse);
+    Semaphore_destroy(parameter.sem);
 
     if (mmsError)
-        *mmsError = respErr;
+        *mmsError = err;
 
     return value;
 }
@@ -1900,32 +1939,30 @@ MmsConnection_readSingleArrayElementWithComponent(MmsConnection self, MmsError* 
         const char* domainId, const char* itemId, uint32_t index, const char* componentId)
 {
     MmsValue* value = NULL;
+    MmsError err = MMS_ERROR_NONE;
 
-    Semaphore waitForResponse = Semaphore_create(1);
+    struct readNVParameters parameter;
 
-    Semaphore_wait(waitForResponse);
+    parameter.sem = Semaphore_create(1);;
+    parameter.value = NULL;
+    parameter.err = MMS_ERROR_NONE;
 
-    struct threeParameters parameter;
+    Semaphore_wait(parameter.sem);
 
-    MmsError respErr = MMS_ERROR_NONE;
-
-    parameter.param1 = waitForResponse;
-    parameter.param2 = NULL;
-    parameter.param3 = &respErr;
-
-    MmsConnection_readSingleArrayElementWithComponentAsync(self, &respErr, domainId, itemId, index, componentId,
+    MmsConnection_readSingleArrayElementWithComponentAsync(self, &err, domainId, itemId, index, componentId,
             readVariableHandler, &parameter);
 
-    if (respErr == MMS_ERROR_NONE) {
-        Semaphore_wait(waitForResponse);
+    if (err == MMS_ERROR_NONE) {
+        Semaphore_wait(parameter.sem);
 
-        value = (MmsValue*) parameter.param2;
+        value = parameter.value;
+        err = parameter.err;
     }
 
-    Semaphore_destroy(waitForResponse);
+    Semaphore_destroy(parameter.sem);
 
     if (mmsError)
-        *mmsError = respErr;
+        *mmsError = err;
 
     return value;
 }
@@ -1965,32 +2002,30 @@ MmsConnection_readMultipleVariables(MmsConnection self, MmsError* mmsError,
         const char* domainId, LinkedList /*<char*>*/items)
 {
     MmsValue* value = NULL;
+    MmsError err = MMS_ERROR_NONE;
 
-    Semaphore waitForResponse = Semaphore_create(1);
+    struct readNVParameters parameter;
 
-    Semaphore_wait(waitForResponse);
+    parameter.sem = Semaphore_create(1);;
+    parameter.value = NULL;
+    parameter.err = MMS_ERROR_NONE;
 
-    struct threeParameters parameter;
+    Semaphore_wait(parameter.sem);
 
-    MmsError respErr = MMS_ERROR_NONE;
-
-    parameter.param1 = waitForResponse;
-    parameter.param2 = NULL;
-    parameter.param3 = &respErr;
-
-    MmsConnection_readMultipleVariablesAsync(self, &respErr, domainId, items,
+    MmsConnection_readMultipleVariablesAsync(self, &err, domainId, items,
             readVariableHandler, &parameter);
 
-    if (respErr == MMS_ERROR_NONE) {
-        Semaphore_wait(waitForResponse);
+    if (err == MMS_ERROR_NONE) {
+        Semaphore_wait(parameter.sem);
 
-        value = (MmsValue*) parameter.param2;
+        value = parameter.value;
+        err = parameter.err;
     }
 
-    Semaphore_destroy(waitForResponse);
+    Semaphore_destroy(parameter.sem);
 
     if (mmsError)
-        *mmsError = respErr;
+        *mmsError = err;
 
     return value;
 }
@@ -2014,7 +2049,7 @@ MmsConnection_readMultipleVariablesAsync(MmsConnection self, MmsError* mmsError,
 
     mmsClient_createReadRequestMultipleValues(invokeId, domainId, items, payload);
 
-    MmsError err = sendAsyncRequest(self, invokeId, payload, MMS_CALL_TYPE_READ_VARIABLE, handler, parameter);
+    MmsError err = sendAsyncRequest(self, invokeId, payload, MMS_CALL_TYPE_READ_MULTIPLE_VARIABLES, handler, parameter);
 
     if (mmsError)
         *mmsError = err;
@@ -2030,32 +2065,30 @@ MmsConnection_readNamedVariableListValues(MmsConnection self, MmsError* mmsError
         bool specWithResult)
 {
     MmsValue* value = NULL;
+    MmsError err = MMS_ERROR_NONE;
 
-    Semaphore waitForResponse = Semaphore_create(1);
+    struct readNVParameters parameter;
 
-    Semaphore_wait(waitForResponse);
+    parameter.sem = Semaphore_create(1);;
+    parameter.value = NULL;
+    parameter.err = MMS_ERROR_NONE;
 
-    struct threeParameters parameter;
+    Semaphore_wait(parameter.sem);
 
-    MmsError respErr = MMS_ERROR_NONE;
-
-    parameter.param1 = waitForResponse;
-    parameter.param2 = NULL;
-    parameter.param3 = &respErr;
-
-    MmsConnection_readNamedVariableListValuesAsync(self, &respErr, domainId, listName, specWithResult,
+    MmsConnection_readNamedVariableListValuesAsync(self, &err, domainId, listName, specWithResult,
             readVariableHandler, &parameter);
 
-    if (respErr == MMS_ERROR_NONE) {
-        Semaphore_wait(waitForResponse);
+    if (err == MMS_ERROR_NONE) {
+        Semaphore_wait(parameter.sem);
 
-        value = (MmsValue*) parameter.param2;
+        value = parameter.value;
+        err = parameter.err;
     }
 
-    Semaphore_destroy(waitForResponse);
+    Semaphore_destroy(parameter.sem);
 
     if (mmsError)
-        *mmsError = respErr;
+        *mmsError = err;
 
     return value;
 }
@@ -2080,7 +2113,7 @@ MmsConnection_readNamedVariableListValuesAsync(MmsConnection self, MmsError* mms
     mmsClient_createReadNamedVariableListRequest(invokeId, domainId, listName,
             payload, specWithResult);
 
-    MmsError err = sendAsyncRequest(self, invokeId, payload, MMS_CALL_TYPE_READ_VARIABLE, handler, parameter);
+    MmsError err = sendAsyncRequest(self, invokeId, payload, MMS_CALL_TYPE_READ_MULTIPLE_VARIABLES, handler, parameter);
 
     if (mmsError)
         *mmsError = err;
@@ -2096,33 +2129,32 @@ MmsConnection_readNamedVariableListValuesAssociationSpecific(
         const char* listName,
         bool specWithResult)
 {
+
     MmsValue* value = NULL;
+    MmsError err = MMS_ERROR_NONE;
 
-    Semaphore waitForResponse = Semaphore_create(1);
+    struct readNVParameters parameter;
 
-    Semaphore_wait(waitForResponse);
+    parameter.sem = Semaphore_create(1);;
+    parameter.value = NULL;
+    parameter.err = MMS_ERROR_NONE;
 
-    struct threeParameters parameter;
+    Semaphore_wait(parameter.sem);
 
-    MmsError respErr = MMS_ERROR_NONE;
-
-    parameter.param1 = waitForResponse;
-    parameter.param2 = NULL;
-    parameter.param3 = &respErr;
-
-    MmsConnection_readNamedVariableListValuesAssociationSpecificAsync(self, &respErr, listName, specWithResult,
+    MmsConnection_readNamedVariableListValuesAssociationSpecificAsync(self, &err, listName, specWithResult,
             readVariableHandler, &parameter);
 
-    if (respErr == MMS_ERROR_NONE) {
-        Semaphore_wait(waitForResponse);
+    if (err == MMS_ERROR_NONE) {
+        Semaphore_wait(parameter.sem);
 
-        value = (MmsValue*) parameter.param2;
+        value = parameter.value;
+        err = parameter.err;
     }
 
-    Semaphore_destroy(waitForResponse);
+    Semaphore_destroy(parameter.sem);
 
     if (mmsError)
-        *mmsError = respErr;
+        *mmsError = err;
 
     return value;
 }
@@ -2147,7 +2179,7 @@ MmsConnection_readNamedVariableListValuesAssociationSpecificAsync(MmsConnection 
     mmsClient_createReadAssociationSpecificNamedVariableListRequest(invokeId, listName,
             payload, specWithResult);
 
-    MmsError err = sendAsyncRequest(self, invokeId, payload, MMS_CALL_TYPE_READ_VARIABLE, handler, parameter);
+    MmsError err = sendAsyncRequest(self, invokeId, payload, MMS_CALL_TYPE_READ_MULTIPLE_VARIABLES, handler, parameter);
 
     if (mmsError)
         *mmsError = err;
@@ -2307,32 +2339,50 @@ exit_function:
     return invokeId;
 }
 
+struct defineNVLParameters
+{
+    Semaphore waitForResponse;
+    MmsError err;
+    bool success;
+};
+
+static void
+defineNVLHandler(int invokeId, void* parameter, MmsError mmsError, bool success)
+{
+    struct defineNVLParameters* parameters = (struct defineNVLParameters*) parameter;
+
+    parameters->err = mmsError;
+    parameters->success = success;
+
+    /* unblock user thread */
+    Semaphore_post(parameters->waitForResponse);
+}
+
+
 void
 MmsConnection_defineNamedVariableList(MmsConnection self, MmsError* mmsError,
         const char* domainId, const char* listName, LinkedList variableSpecs)
 {
-    if (getAssociationState(self) != MMS_STATE_CONNECTED) {
-        *mmsError = MMS_ERROR_CONNECTION_LOST;
-        goto exit_function;
+    struct defineNVLParameters parameter;
+
+    MmsError err;
+
+    parameter.waitForResponse = Semaphore_create(1);
+
+    Semaphore_wait(parameter.waitForResponse);
+
+    MmsConnection_defineNamedVariableListAsync(self, &err, domainId, listName, variableSpecs,
+            defineNVLHandler, &parameter);
+
+    if (err == MMS_ERROR_NONE) {
+        Semaphore_wait(parameter.waitForResponse);
+        err = parameter.err;
     }
 
-    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
+    Semaphore_destroy(parameter.waitForResponse);
 
-    uint32_t invokeId = getNextInvokeId(self);
-
-    mmsClient_createDefineNamedVariableListRequest(invokeId, payload, domainId,
-            listName, variableSpecs, false);
-
-    ByteBuffer* responseMessage = sendRequestAndWaitForResponse(self, invokeId, payload, mmsError);
-
-    if (responseMessage != NULL)
-        if (!mmsClient_parseDefineNamedVariableResponse(self->lastResponse, NULL))
-            *mmsError = MMS_ERROR_PARSING_RESPONSE;
-
-    releaseResponse(self);
-
-    exit_function:
-    return;
+    if (mmsError)
+        *mmsError = err;
 }
 
 uint32_t
@@ -2369,28 +2419,26 @@ void
 MmsConnection_defineNamedVariableListAssociationSpecific(MmsConnection self,
         MmsError* mmsError, const char* listName, LinkedList variableSpecs)
 {
-    if (getAssociationState(self) != MMS_STATE_CONNECTED) {
-        *mmsError = MMS_ERROR_CONNECTION_LOST;
-        goto exit_function;
+    struct defineNVLParameters parameter;
+
+    MmsError err;
+
+    parameter.waitForResponse = Semaphore_create(1);
+
+    Semaphore_wait(parameter.waitForResponse);
+
+    MmsConnection_defineNamedVariableListAssociationSpecificAsync(self, &err, listName, variableSpecs,
+            defineNVLHandler, &parameter);
+
+    if (err == MMS_ERROR_NONE) {
+        Semaphore_wait(parameter.waitForResponse);
+        err = parameter.err;
     }
 
-    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
+    Semaphore_destroy(parameter.waitForResponse);
 
-    uint32_t invokeId = getNextInvokeId(self);
-
-    mmsClient_createDefineNamedVariableListRequest(invokeId, payload, NULL,
-            listName, variableSpecs, true);
-
-    ByteBuffer* responseMessage = sendRequestAndWaitForResponse(self, invokeId, payload, mmsError);
-
-    if (responseMessage != NULL)
-        if (!mmsClient_parseDefineNamedVariableResponse(self->lastResponse, NULL))
-            *mmsError = MMS_ERROR_PARSING_RESPONSE;
-
-    releaseResponse(self);
-
-    exit_function:
-    return;
+    if (mmsError)
+        *mmsError = err;
 }
 
 uint32_t
@@ -2411,7 +2459,7 @@ MmsConnection_defineNamedVariableListAssociationSpecificAsync(MmsConnection self
     invokeId = getNextInvokeId(self);
 
     mmsClient_createDefineNamedVariableListRequest(invokeId, payload, NULL,
-            listName, variableSpecs, false);
+            listName, variableSpecs, true);
 
     MmsError err = sendAsyncRequest(self, invokeId, payload, MMS_CALL_TYPE_DEFINE_NVL, handler, parameter);
 
@@ -2429,27 +2477,55 @@ MmsConnection_deleteNamedVariableList(MmsConnection self, MmsError* mmsError,
 {
     bool isDeleted = false;
 
+    struct defineNVLParameters parameter;
+
+    MmsError err;
+
+    parameter.waitForResponse = Semaphore_create(1);
+
+    Semaphore_wait(parameter.waitForResponse);
+
+    MmsConnection_deleteNamedVariableListAsync(self, &err, domainId, listName, defineNVLHandler, &parameter);
+
+    if (err == MMS_ERROR_NONE) {
+        Semaphore_wait(parameter.waitForResponse);
+        err = parameter.err;
+        isDeleted = parameter.success;
+    }
+
+    Semaphore_destroy(parameter.waitForResponse);
+
+    if (mmsError)
+        *mmsError = err;
+
+    return isDeleted;
+}
+
+uint32_t
+MmsConnection_deleteNamedVariableListAsync(MmsConnection self, MmsError* mmsError, const char* domainId, const char* listName,
+        MmsConnection_GenericServiceHandler handler, void* parameter)
+{
+    uint32_t invokeId = 0;
+
     if (getAssociationState(self) != MMS_STATE_CONNECTED) {
-        *mmsError = MMS_ERROR_CONNECTION_LOST;
+        if (mmsError)
+            *mmsError = MMS_ERROR_CONNECTION_LOST;
         goto exit_function;
     }
 
     ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
-    uint32_t invokeId = getNextInvokeId(self);
+    invokeId = getNextInvokeId(self);
 
     mmsClient_createDeleteNamedVariableListRequest(invokeId, payload, domainId, listName);
 
-    ByteBuffer* responseMessage = sendRequestAndWaitForResponse(self, invokeId, payload, mmsError);
+    MmsError err = sendAsyncRequest(self, invokeId, payload, MMS_CALL_TYPE_DELETE_NVL, handler, parameter);
 
-    if (responseMessage != NULL)
-        if (mmsClient_parseDeleteNamedVariableListResponse(self->lastResponse, NULL))
-            isDeleted = true;
+    if (mmsError)
+        *mmsError = err;
 
-    releaseResponse(self);
-
-    exit_function:
-    return isDeleted;
+exit_function:
+    return invokeId;
 }
 
 bool
@@ -2458,28 +2534,75 @@ MmsConnection_deleteAssociationSpecificNamedVariableList(MmsConnection self,
 {
     bool isDeleted = false;
 
+    struct defineNVLParameters parameter;
+
+    MmsError err;
+
+    parameter.waitForResponse = Semaphore_create(1);
+
+    Semaphore_wait(parameter.waitForResponse);
+
+    MmsConnection_deleteAssociationSpecificNamedVariableListAsync(self, &err, listName, defineNVLHandler, &parameter);
+
+    if (err == MMS_ERROR_NONE) {
+        Semaphore_wait(parameter.waitForResponse);
+        err = parameter.err;
+        isDeleted = parameter.success;
+    }
+
+    Semaphore_destroy(parameter.waitForResponse);
+
+    if (mmsError)
+        *mmsError = err;
+
+    return isDeleted;
+}
+
+uint32_t
+MmsConnection_deleteAssociationSpecificNamedVariableListAsync(MmsConnection self, MmsError* mmsError, const char* listName,
+        MmsConnection_GenericServiceHandler handler, void* parameter)
+{
+    uint32_t invokeId = 0;
+
     if (getAssociationState(self) != MMS_STATE_CONNECTED) {
-        *mmsError = MMS_ERROR_CONNECTION_LOST;
+        if (mmsError)
+            *mmsError = MMS_ERROR_CONNECTION_LOST;
         goto exit_function;
     }
 
     ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
-    uint32_t invokeId = getNextInvokeId(self);
+    invokeId = getNextInvokeId(self);
 
     mmsClient_createDeleteAssociationSpecificNamedVariableListRequest(
             invokeId, payload, listName);
 
-    ByteBuffer* responseMessage = sendRequestAndWaitForResponse(self, invokeId, payload, mmsError);
+    MmsError err = sendAsyncRequest(self, invokeId, payload, MMS_CALL_TYPE_DELETE_NVL, handler, parameter);
 
-    if (responseMessage != NULL)
-        if (mmsClient_parseDeleteNamedVariableListResponse(self->lastResponse, NULL))
-            isDeleted = true;
+    if (mmsError)
+        *mmsError = err;
 
-    releaseResponse(self);
+exit_function:
+    return invokeId;
+}
 
-    exit_function:
-    return isDeleted;
+struct getVarAccessAttrParameters
+{
+    Semaphore waitForResponse;
+    MmsError err;
+    MmsVariableSpecification* typeSpec;
+};
+
+static void
+getAccessAttrHandler(int invokeId, void* parameter, MmsError mmsError, MmsVariableSpecification* typeSpec)
+{
+    struct getVarAccessAttrParameters* parameters = (struct getVarAccessAttrParameters*) parameter;
+
+    parameters->err = mmsError;
+    parameters->typeSpec = typeSpec;
+
+    /* unblock user thread */
+    Semaphore_post(parameters->waitForResponse);
 }
 
 MmsVariableSpecification*
@@ -2488,26 +2611,56 @@ MmsConnection_getVariableAccessAttributes(MmsConnection self, MmsError* mmsError
 {
     MmsVariableSpecification* typeSpec = NULL;
 
+    struct getVarAccessAttrParameters parameter;
+
+    MmsError err;
+
+    parameter.waitForResponse = Semaphore_create(1);
+
+    Semaphore_wait(parameter.waitForResponse);
+
+    MmsConnection_getVariableAccessAttributesAsync(self, &err, domainId, itemId, getAccessAttrHandler, &parameter);
+
+    if (err == MMS_ERROR_NONE) {
+        Semaphore_wait(parameter.waitForResponse);
+        err = parameter.err;
+        typeSpec = parameter.typeSpec;
+    }
+
+    Semaphore_destroy(parameter.waitForResponse);
+
+    if (mmsError)
+        *mmsError = err;
+
+    return typeSpec;
+}
+
+uint32_t
+MmsConnection_getVariableAccessAttributesAsync(MmsConnection self, MmsError* mmsError,
+        const char* domainId, const char* itemId,
+        MmsConnection_GetVariableAccessAttributesHandler handler, void* parameter)
+{
+    uint32_t invokeId = 0;
+
     if (getAssociationState(self) != MMS_STATE_CONNECTED) {
-        *mmsError = MMS_ERROR_CONNECTION_LOST;
+        if (mmsError)
+            *mmsError = MMS_ERROR_CONNECTION_LOST;
         goto exit_function;
     }
 
     ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
-    uint32_t invokeId = getNextInvokeId(self);
+    invokeId = getNextInvokeId(self);
 
     mmsClient_createGetVariableAccessAttributesRequest(invokeId, domainId, itemId, payload);
 
-    ByteBuffer* responseMessage = sendRequestAndWaitForResponse(self, invokeId, payload, mmsError);
+    MmsError err = sendAsyncRequest(self, invokeId, payload, MMS_CALL_TYPE_GET_VAR_ACCESS_ATTR, handler, parameter);
 
-    if (responseMessage != NULL)
-        typeSpec = mmsClient_parseGetVariableAccessAttributesResponse(self->lastResponse, NULL);
+    if (mmsError)
+        *mmsError = err;
 
-    releaseResponse(self);
-
-    exit_function:
-    return typeSpec;
+exit_function:
+    return invokeId;
 }
 
 MmsServerIdentity*
@@ -2915,47 +3068,23 @@ exit_function:
     return invokeId;
 }
 
-#if 0
-void
-MmsConnection_writeMultipleVariables(MmsConnection self, MmsError* mmsError, const char* domainId,
-        LinkedList /*<char*>*/items,
-        LinkedList /* <MmsValue*> */values,
-        /* OUTPUT */LinkedList* /* <MmsValue*> */accessResults)
+struct writeMultipleVariablesParameter
 {
-    uint32_t invokeId = getNextInvokeId(self);
-
-    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
-
-    mmsClient_createWriteMultipleItemsRequest(invokeId, domainId, items, values, payload);
-
-    ByteBuffer* responseMessage = sendRequestAndWaitForResponse(self, invokeId, payload, mmsError);
-
-    if (responseMessage != NULL) {
-
-        int numberOfItems = LinkedList_size(items);
-
-        mmsClient_parseWriteMultipleItemsResponse(self->lastResponse, self->lastResponseBufPos, mmsError,
-                numberOfItems, accessResults);
-    }
-
-    releaseResponse(self);
-}
-#endif
+    Semaphore sem;
+    MmsError err;
+    LinkedList result;
+};
 
 static void
 writeMultipleVariablesHandler(int invokeId, void* parameter, MmsError mmsError, LinkedList /* <MmsValue*> */ accessResults)
 {
-    struct threeParameters* parameters = (struct threeParameters*) parameter;
+    struct writeMultipleVariablesParameter* parameters = (struct writeMultipleVariablesParameter*) parameter;
 
-    Semaphore waitForResponse = (Semaphore) parameters->param1;
-    MmsError* err = (MmsError*) parameters->param3;
-
-    parameters->param2 = accessResults;
-
-    *err = mmsError;
+    parameters->err = mmsError;
+    parameters->result = accessResults;
 
     /* unblock user thread */
-    Semaphore_post(waitForResponse);
+    Semaphore_post(parameters->sem);
 }
 
 void
@@ -2964,35 +3093,33 @@ MmsConnection_writeMultipleVariables(MmsConnection self, MmsError* mmsError, con
         LinkedList /* <MmsValue*> */values,
         /* OUTPUT */LinkedList* /* <MmsValue*> */accessResults)
 {
-    Semaphore waitForResponse = Semaphore_create(1);
+    MmsError err = MMS_ERROR_NONE;
 
-    Semaphore_wait(waitForResponse);
+    struct writeMultipleVariablesParameter parameter;
 
-    struct threeParameters parameter;
+    parameter.sem = Semaphore_create(1);;
+    parameter.err = MMS_ERROR_NONE;
+    parameter.result = NULL;
 
-    MmsError respErr = MMS_ERROR_NONE;
+    Semaphore_wait(parameter.sem);
 
-    parameter.param1 = waitForResponse;
-    parameter.param2 = NULL;
-    parameter.param3 = &respErr;
+    MmsConnection_writeMultipleVariablesAsync(self, &err, domainId, items, values, writeMultipleVariablesHandler, &parameter);
 
-    MmsConnection_writeMultipleVariablesAsync(self, &respErr, domainId, items, values, writeMultipleVariablesHandler, &parameter);
+    if (err == MMS_ERROR_NONE) {
 
-    if (respErr == MMS_ERROR_NONE) {
+        Semaphore_wait(parameter.sem);
 
-        Semaphore_wait(waitForResponse);
-
-        *accessResults = (LinkedList) parameter.param2;
+        err = parameter.err;
+        *accessResults = parameter.result;
     }
     else
         *accessResults = NULL;
 
     if (mmsError)
-        *mmsError = respErr;
+        *mmsError = err;
 
-    Semaphore_destroy(waitForResponse);
+    Semaphore_destroy(parameter.sem);
 }
-
 
 uint32_t
 MmsConnection_writeMultipleVariablesAsync(MmsConnection self, MmsError* mmsError, const char* domainId,

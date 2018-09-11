@@ -602,6 +602,15 @@ MmsVariableSpecification*
 MmsConnection_getVariableAccessAttributes(MmsConnection self, MmsError* mmsError,
         const char* domainId, const char* itemId);
 
+typedef void
+(*MmsConnection_GetVariableAccessAttributesHandler) (int invokeId, void* parameter, MmsError mmsError, MmsVariableSpecification* spec);
+
+
+uint32_t
+MmsConnection_getVariableAccessAttributesAsync(MmsConnection self, MmsError* mmsError,
+        const char* domainId, const char* itemId,
+        MmsConnection_GetVariableAccessAttributesHandler, void* parameter);
+
 /**
  * \brief Read the values of a domain specific named variable list
  *
@@ -755,6 +764,11 @@ MmsConnection_readNamedVariableListDirectoryAssociationSpecificAsync(MmsConnecti
 bool
 MmsConnection_deleteNamedVariableList(MmsConnection self, MmsError* mmsError, const char* domainId, const char* listName);
 
+
+uint32_t
+MmsConnection_deleteNamedVariableListAsync(MmsConnection self, MmsError* mmsError, const char* domainId, const char* listName,
+        MmsConnection_GenericServiceHandler handler, void* parameter);
+
 /**
  * \brief Delete an association specific named variable list at the server.
  *
@@ -767,6 +781,11 @@ MmsConnection_deleteNamedVariableList(MmsConnection self, MmsError* mmsError, co
 bool
 MmsConnection_deleteAssociationSpecificNamedVariableList(MmsConnection self, MmsError* mmsError,
         const char* listName);
+
+
+uint32_t
+MmsConnection_deleteAssociationSpecificNamedVariableListAsync(MmsConnection self, MmsError* mmsError, const char* listName,
+        MmsConnection_GenericServiceHandler handler, void* parameter);
 
 /**
  * \brief Create a new MmsVariableSpecification that can be used to define named variable lists.
