@@ -931,6 +931,24 @@ handleAsyncResponse(MmsConnection self, ByteBuffer* response, uint32_t bufPos, M
             handler(outstandingCall->invokeId, outstandingCall->userParameter, err, vmdLogicalStatus, vmdPhysicalStatus);
         }
     }
+    else if (outstandingCall->type == MMS_CALL_TYPE_IDENTIFY) {
+        MmsConnection_IdentifyHandler handler =
+                (MmsConnection_IdentifyHandler) outstandingCall->userCallback;
+
+        if (err != MMS_ERROR_NONE) {
+            handler(outstandingCall->invokeId, outstandingCall->userParameter, err, NULL, NULL, NULL);
+        }
+        else {
+
+            if (mmsClient_parseIdentifyResponse(self, response, bufPos, outstandingCall->invokeId, handler,
+                        outstandingCall->userParameter) == false)
+            {
+                handler(outstandingCall->invokeId, outstandingCall->userParameter, MMS_ERROR_PARSING_RESPONSE,
+                        NULL, NULL, NULL);
+            }
+
+        }
+    }
 
     removeFromOutstandingCalls(self, outstandingCall->invokeId);
 
@@ -2679,31 +2697,86 @@ exit_function:
     return invokeId;
 }
 
+struct identifyParameters
+{
+    Semaphore waitForResponse;
+    MmsError err;
+    MmsServerIdentity* identify;
+};
+
+static void
+identifyHandler(int invokeId, void* parameter, MmsError mmsError, char* vendorName, char* modelName, char* revision)
+{
+    struct identifyParameters* parameters = (struct identifyParameters*) parameter;
+
+    parameters->err = mmsError;
+
+    parameters->identify = (MmsServerIdentity*) GLOBAL_MALLOC(sizeof(MmsServerIdentity));
+    parameters->identify->vendorName = StringUtils_copyString(vendorName);
+    parameters->identify->modelName = StringUtils_copyString(modelName);
+    parameters->identify->revision = StringUtils_copyString(revision);
+
+    /* unblock user thread */
+    Semaphore_post(parameters->waitForResponse);
+}
+
+
 MmsServerIdentity*
 MmsConnection_identify(MmsConnection self, MmsError* mmsError)
 {
     MmsServerIdentity* identity = NULL;
 
+    struct identifyParameters parameter;
+
+    MmsError err = MMS_ERROR_NONE;
+
+    parameter.waitForResponse = Semaphore_create(1);
+    parameter.err = MMS_ERROR_NONE;
+    parameter.identify = NULL;
+
+    Semaphore_wait(parameter.waitForResponse);
+
+    MmsConnection_identifyAsync(self, &err, identifyHandler, &parameter);
+
+    if (err == MMS_ERROR_NONE) {
+        Semaphore_wait(parameter.waitForResponse);
+        err = parameter.err;
+        identity = parameter.identify;
+    }
+
+    Semaphore_destroy(parameter.waitForResponse);
+
+    if (mmsError)
+        *mmsError = err;
+
+    return identity;
+}
+
+uint32_t
+MmsConnection_identifyAsync(MmsConnection self, MmsError* mmsError,
+        MmsConnection_IdentifyHandler handler, void* parameter)
+{
+    uint32_t invokeId = 0;
+
     if (getAssociationState(self) != MMS_STATE_CONNECTED) {
-        *mmsError = MMS_ERROR_CONNECTION_LOST;
+        if (mmsError)
+            *mmsError = MMS_ERROR_CONNECTION_LOST;
         goto exit_function;
     }
 
     ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
-    uint32_t invokeId = getNextInvokeId(self);
+    invokeId = getNextInvokeId(self);
 
     mmsClient_createIdentifyRequest(invokeId, payload);
 
-    ByteBuffer* responseMessage = sendRequestAndWaitForResponse(self, invokeId, payload, mmsError);
+    MmsError err = sendAsyncRequest(self, invokeId, payload, MMS_CALL_TYPE_IDENTIFY, handler, parameter);
 
-    if (responseMessage != NULL)
-        identity = mmsClient_parseIdentifyResponse(self);
+    if (mmsError)
+        *mmsError = err;
 
-    releaseResponse(self);
-
-    exit_function:
-    return identity;
+exit_function:
+    return invokeId;
 }
 
 struct getServerStatusParameters

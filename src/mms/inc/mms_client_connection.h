@@ -856,6 +856,14 @@ MmsConnection_getLocalDetail(MmsConnection self);
 MmsServerIdentity*
 MmsConnection_identify(MmsConnection self, MmsError* mmsError);
 
+typedef void
+(*MmsConnection_IdentifyHandler) (int invokeId, void* parameter, MmsError mmsError,
+        char* vendorName, char* modelName, char* revision);
+
+uint32_t
+MmsConnection_identifyAsync(MmsConnection self, MmsError* mmsError,
+        MmsConnection_IdentifyHandler handler, void* parameter);
+
 void
 MmsServerIdentity_destroy(MmsServerIdentity* self);
 

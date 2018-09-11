@@ -49,14 +49,12 @@ mmsClient_createIdentifyRequest(uint32_t invokeId, ByteBuffer* request)
     request->size = bufPos;
 }
 
-MmsServerIdentity*
-mmsClient_parseIdentifyResponse(MmsConnection self)
+bool
+mmsClient_parseIdentifyResponse(MmsConnection self, ByteBuffer* response, uint32_t bufPos, uint32_t invokeId, MmsConnection_IdentifyHandler handler, void* parameter)
 {
-    uint8_t* buffer = self->lastResponse->buffer;
-    int maxBufPos = self->lastResponse->size;
-    int bufPos = self->lastResponseBufPos;
+    uint8_t* buffer = ByteBuffer_getBuffer(response);
+    int maxBufPos = ByteBuffer_getSize(response);
     int length;
-    MmsServerIdentity* identityInfo = NULL;
 
     uint8_t tag = buffer[bufPos++];
     if (tag != 0xa2)
@@ -73,6 +71,10 @@ mmsClient_parseIdentifyResponse(MmsConnection self)
         goto exit_error;
     }
 
+    char vendorNameBuf[100];
+    char modelNameBuf[100];
+    char revisionBuf[100];
+
     char* vendorName = NULL;
     char* modelName = NULL;
     char* revision = NULL;
@@ -85,15 +87,15 @@ mmsClient_parseIdentifyResponse(MmsConnection self)
 
         switch (tag) {
         case 0x80: /* vendorName */
-            vendorName = StringUtils_createStringFromBuffer(buffer + bufPos, length);
+            vendorName = StringUtils_createStringFromBufferInBuffer(vendorNameBuf, buffer + bufPos, length);
             bufPos += length;
             break;
         case 0x81: /* modelName */
-            modelName = StringUtils_createStringFromBuffer(buffer + bufPos, length);
+            modelName = StringUtils_createStringFromBufferInBuffer(modelNameBuf, buffer + bufPos, length);
             bufPos += length;
             break;
         case 0x82: /* revision */
-            revision = StringUtils_createStringFromBuffer(buffer + bufPos, length);
+            revision = StringUtils_createStringFromBufferInBuffer(revisionBuf, buffer + bufPos, length);
             bufPos += length;
             break;
         case 0x83: /* list of abstract syntaxes */
@@ -105,14 +107,18 @@ mmsClient_parseIdentifyResponse(MmsConnection self)
         }
     }
 
-    identityInfo = (MmsServerIdentity*) GLOBAL_MALLOC(sizeof(MmsServerIdentity));
+//    identityInfo = (MmsServerIdentity*) GLOBAL_MALLOC(sizeof(MmsServerIdentity));
+//
+//    identityInfo->vendorName = vendorName;
+//    identityInfo->modelName = modelName;
+//    identityInfo->revision = revision;
 
-    identityInfo->vendorName = vendorName;
-    identityInfo->modelName = modelName;
-    identityInfo->revision = revision;
+    handler(invokeId, parameter, MMS_ERROR_NONE, vendorName, modelName, revision);
+
+    return true;
 
 exit_error:
-    return identityInfo;
+    return false;
 }
 
 

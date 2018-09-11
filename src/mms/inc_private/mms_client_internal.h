@@ -71,7 +71,8 @@ typedef enum {
     MMS_CALL_TYPE_DEFINE_NVL,
     MMS_CALL_TYPE_DELETE_NVL,
     MMS_CALL_TYPE_GET_VAR_ACCESS_ATTR,
-    MMS_CALL_TYPE_GET_SERVER_STATUS
+    MMS_CALL_TYPE_GET_SERVER_STATUS,
+    MMS_CALL_TYPE_IDENTIFY
 } eMmsOutstandingCallType;
 
 struct sMmsOutstandingCall
@@ -277,8 +278,8 @@ mmsClient_createDeleteAssociationSpecificNamedVariableListRequest(
 void
 mmsClient_createIdentifyRequest(uint32_t invokeId, ByteBuffer* request);
 
-MmsServerIdentity*
-mmsClient_parseIdentifyResponse(MmsConnection self);
+bool
+mmsClient_parseIdentifyResponse(MmsConnection self, ByteBuffer* response, uint32_t bufPos, uint32_t invokeId, MmsConnection_IdentifyHandler handler, void* parameter);
 
 void
 mmsClient_createStatusRequest(uint32_t invokeId, ByteBuffer* request, bool extendedDerivation);
