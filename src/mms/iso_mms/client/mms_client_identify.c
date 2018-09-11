@@ -50,11 +50,12 @@ mmsClient_createIdentifyRequest(uint32_t invokeId, ByteBuffer* request)
 }
 
 bool
-mmsClient_parseIdentifyResponse(MmsConnection self, ByteBuffer* response, uint32_t bufPos, uint32_t invokeId, MmsConnection_IdentifyHandler handler, void* parameter)
+mmsClient_parseIdentifyResponse(MmsConnection self, ByteBuffer* response, uint32_t respBufPos, uint32_t invokeId, MmsConnection_IdentifyHandler handler, void* parameter)
 {
     uint8_t* buffer = ByteBuffer_getBuffer(response);
     int maxBufPos = ByteBuffer_getSize(response);
     int length;
+    int bufPos = (int) respBufPos;
 
     uint8_t tag = buffer[bufPos++];
     if (tag != 0xa2)
@@ -106,12 +107,6 @@ mmsClient_parseIdentifyResponse(MmsConnection self, ByteBuffer* response, uint32
         	break;
         }
     }
-
-//    identityInfo = (MmsServerIdentity*) GLOBAL_MALLOC(sizeof(MmsServerIdentity));
-//
-//    identityInfo->vendorName = vendorName;
-//    identityInfo->modelName = modelName;
-//    identityInfo->revision = revision;
 
     handler(invokeId, parameter, MMS_ERROR_NONE, vendorName, modelName, revision);
 

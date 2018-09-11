@@ -1,7 +1,7 @@
 /*
  *  mms_client_connection.h
  *
- *  Copyright 2013-2016 Michael Zillgith
+ *  Copyright 2013-2018 Michael Zillgith
  *
  *	This file is part of libIEC61850.
  *
@@ -1036,14 +1036,25 @@ MmsJournalVariable_getTag(MmsJournalVariable self);
 const MmsValue*
 MmsJournalVariable_getValue(MmsJournalVariable self);
 
+typedef void
+(*MmsConnection_ReadJournalHandler) (int invokeId, void* parameter, MmsError mmsError, LinkedList /* <MmsJournalEntry> */ journalEntries, bool moreFollows);
 
-LinkedList
+
+LinkedList /* <MmsJournalEntry> */
 MmsConnection_readJournalTimeRange(MmsConnection self, MmsError* mmsError, const char* domainId, const char* itemId,
-        MmsValue* startingTime, MmsValue* endingTime, bool* moreFollows);
+        MmsValue* startTime, MmsValue* endTime, bool* moreFollows);
 
-LinkedList
+uint32_t
+MmsConnection_readJournalTimeRangeAsync(MmsConnection self, MmsError* mmsError, const char* domainId, const char* itemId,
+        MmsValue* startTime, MmsValue* endTime, MmsConnection_ReadJournalHandler handler, void* parameter);
+
+LinkedList /* <MmsJournalEntry> */
 MmsConnection_readJournalStartAfter(MmsConnection self, MmsError* mmsError, const char* domainId, const char* itemId,
         MmsValue* timeSpecification, MmsValue* entrySpecification, bool* moreFollows);
+
+uint32_t
+MmsConnection_readJournalStartAfterAsync(MmsConnection self, MmsError* mmsError, const char* domainId, const char* itemId,
+        MmsValue* timeSpecification, MmsValue* entrySpecification, MmsConnection_ReadJournalHandler handler, void* parameter);
 
 /**
  * \brief Destroy (free) an MmsServerIdentity object

@@ -949,6 +949,26 @@ handleAsyncResponse(MmsConnection self, ByteBuffer* response, uint32_t bufPos, M
 
         }
     }
+    else if (outstandingCall->type == MMS_CALL_TYPE_READ_JOURNAL) {
+
+        MmsConnection_ReadJournalHandler handler =
+                (MmsConnection_ReadJournalHandler) outstandingCall->userCallback;
+
+        if (err != MMS_ERROR_NONE) {
+            handler(outstandingCall->invokeId, outstandingCall->userParameter, err, NULL, false);
+        }
+        else {
+            bool moreFollows = false;
+            LinkedList entries = NULL;
+
+            if (mmsClient_parseReadJournalResponse(self, response, bufPos, &moreFollows, &entries) == false) {
+                handler(outstandingCall->invokeId, outstandingCall->userParameter, MMS_ERROR_PARSING_RESPONSE, NULL, false);
+            }
+            else {
+                handler(outstandingCall->invokeId, outstandingCall->userParameter, err, entries, moreFollows);
+            }
+        }
+    }
 
     removeFromOutstandingCalls(self, outstandingCall->invokeId);
 
@@ -964,7 +984,8 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
         printf("MMS_CLIENT: mmsIsoCallback called with indication %i\n", indication);
 
     if (indication == ISO_IND_TICK) {
-        //TODO check timeouts
+
+        /* check timeouts */
 
         uint64_t currentTime = Hal_getTimeInMs();
 
@@ -2833,7 +2854,6 @@ MmsConnection_getServerStatus(MmsConnection self, MmsError* mmsError, int* vmdLo
 
     if (mmsError)
         *mmsError = err;
-
 }
 
 uint32_t
@@ -2861,25 +2881,6 @@ MmsConnection_getServerStatusAsync(MmsConnection self, MmsError* mmsError, bool 
 
 exit_function:
     return invokeId;
-}
-
-
-static LinkedList
-readJournal(MmsConnection self, MmsError* mmsError, uint32_t invokeId, ByteBuffer* payload, bool* moreFollows)
-{
-    ByteBuffer* responseMessage = sendRequestAndWaitForResponse(self, invokeId, payload, mmsError);
-
-    LinkedList response = NULL;
-
-    if (responseMessage != NULL) {
-
-        if (mmsClient_parseReadJournalResponse(self, moreFollows, &response) == false)
-            *mmsError = MMS_ERROR_PARSING_RESPONSE;
-    }
-
-    releaseResponse(self);
-
-    return response;
 }
 
 static void
@@ -2934,45 +2935,162 @@ MmsJournalVariable_getValue(MmsJournalVariable self)
     return self->value;
 }
 
+struct readJournalParameters
+{
+    Semaphore waitForResponse;
+    MmsError err;
+    LinkedList entries;
+    bool moreFollows;
+};
+
+static void
+readJournalHandler(int invokeId, void* parameter, MmsError mmsError, LinkedList entries, bool moreFollows)
+{
+    struct readJournalParameters* parameters = (struct readJournalParameters*) parameter;
+
+    parameters->err = mmsError;
+    parameters->entries = entries;
+    parameters->moreFollows = moreFollows;
+
+    /* unblock user thread */
+    Semaphore_post(parameters->waitForResponse);
+}
+
+
 LinkedList
 MmsConnection_readJournalTimeRange(MmsConnection self, MmsError* mmsError, const char* domainId, const char* itemId,
-        MmsValue* startingTime, MmsValue* endingTime, bool* moreFollows)
+        MmsValue* startTime, MmsValue* endTime, bool* moreFollows)
 {
-    if ((MmsValue_getType(startingTime) != MMS_BINARY_TIME) ||
-            (MmsValue_getType(endingTime) != MMS_BINARY_TIME)) {
+    struct readJournalParameters parameter;
+
+    MmsError err = MMS_ERROR_NONE;
+
+    parameter.waitForResponse = Semaphore_create(1);
+    parameter.err = MMS_ERROR_NONE;
+    parameter.entries = NULL;
+    parameter.moreFollows = false;
+
+    Semaphore_wait(parameter.waitForResponse);
+
+    MmsConnection_readJournalTimeRangeAsync(self, &err, domainId, itemId, startTime, endTime, readJournalHandler, &parameter);
+
+    if (err == MMS_ERROR_NONE) {
+        Semaphore_wait(parameter.waitForResponse);
+
+        err = parameter.err;
+
+        if (moreFollows)
+            *moreFollows = parameter.moreFollows;
+    }
+
+    Semaphore_destroy(parameter.waitForResponse);
+
+    if (mmsError)
+        *mmsError = err;
+
+    return parameter.entries;
+}
+
+uint32_t
+MmsConnection_readJournalTimeRangeAsync(MmsConnection self, MmsError* mmsError, const char* domainId, const char* itemId,
+        MmsValue* startTime, MmsValue* endTime, MmsConnection_ReadJournalHandler handler, void* parameter)
+{
+    uint32_t invokeId = 0;
+
+    if (getAssociationState(self) != MMS_STATE_CONNECTED) {
+        if (mmsError)
+            *mmsError = MMS_ERROR_CONNECTION_LOST;
+        goto exit_function;
+    }
+
+    if ((MmsValue_getType(startTime) != MMS_BINARY_TIME) ||
+            (MmsValue_getType(endTime) != MMS_BINARY_TIME)) {
 
         *mmsError = MMS_ERROR_INVALID_ARGUMENTS;
-        return NULL;
+        goto exit_function;
     }
 
     ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
-    uint32_t invokeId = getNextInvokeId(self);
+    invokeId = getNextInvokeId(self);
 
-    mmsClient_createReadJournalRequestWithTimeRange(invokeId, payload, domainId, itemId, startingTime, endingTime);
+    mmsClient_createReadJournalRequestWithTimeRange(invokeId, payload, domainId, itemId, startTime, endTime);
 
-    return readJournal(self, mmsError, invokeId, payload, moreFollows);
+    MmsError err = sendAsyncRequest(self, invokeId, payload, MMS_CALL_TYPE_READ_JOURNAL, handler, parameter);
+
+    if (mmsError)
+        *mmsError = err;
+
+exit_function:
+    return invokeId;
 }
 
 LinkedList
 MmsConnection_readJournalStartAfter(MmsConnection self, MmsError* mmsError, const char* domainId, const char* itemId,
         MmsValue* timeSpecification, MmsValue* entrySpecification, bool* moreFollows)
 {
+    struct readJournalParameters parameter;
+
+    MmsError err = MMS_ERROR_NONE;
+
+    parameter.waitForResponse = Semaphore_create(1);
+    parameter.err = MMS_ERROR_NONE;
+    parameter.entries = NULL;
+    parameter.moreFollows = false;
+
+    Semaphore_wait(parameter.waitForResponse);
+
+    MmsConnection_readJournalStartAfterAsync(self, &err, domainId, itemId, timeSpecification, entrySpecification, readJournalHandler, &parameter);
+
+    if (err == MMS_ERROR_NONE) {
+        Semaphore_wait(parameter.waitForResponse);
+
+        err = parameter.err;
+
+        if (moreFollows)
+            *moreFollows = parameter.moreFollows;
+    }
+
+    Semaphore_destroy(parameter.waitForResponse);
+
+    if (mmsError)
+        *mmsError = err;
+
+    return parameter.entries;
+}
+
+uint32_t
+MmsConnection_readJournalStartAfterAsync(MmsConnection self, MmsError* mmsError, const char* domainId, const char* itemId,
+        MmsValue* timeSpecification, MmsValue* entrySpecification, MmsConnection_ReadJournalHandler handler, void* parameter)
+{
+    uint32_t invokeId = 0;
+
+    if (getAssociationState(self) != MMS_STATE_CONNECTED) {
+        if (mmsError)
+            *mmsError = MMS_ERROR_CONNECTION_LOST;
+        goto exit_function;
+    }
 
     if ((MmsValue_getType(timeSpecification) != MMS_BINARY_TIME) ||
             (MmsValue_getType(entrySpecification) != MMS_OCTET_STRING)) {
 
         *mmsError = MMS_ERROR_INVALID_ARGUMENTS;
-        return NULL;
+        goto exit_function;
     }
 
     ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
-    uint32_t invokeId = getNextInvokeId(self);
+    invokeId = getNextInvokeId(self);
 
     mmsClient_createReadJournalRequestStartAfter(invokeId, payload, domainId, itemId, timeSpecification, entrySpecification);
 
-    return readJournal(self, mmsError, invokeId, payload, moreFollows);
+    MmsError err = sendAsyncRequest(self, invokeId, payload, MMS_CALL_TYPE_READ_JOURNAL, handler, parameter);
+
+    if (mmsError)
+        *mmsError = err;
+
+exit_function:
+    return invokeId;
 }
 
 int32_t

@@ -72,7 +72,8 @@ typedef enum {
     MMS_CALL_TYPE_DELETE_NVL,
     MMS_CALL_TYPE_GET_VAR_ACCESS_ATTR,
     MMS_CALL_TYPE_GET_SERVER_STATUS,
-    MMS_CALL_TYPE_IDENTIFY
+    MMS_CALL_TYPE_IDENTIFY,
+    MMS_CALL_TYPE_READ_JOURNAL
 } eMmsOutstandingCallType;
 
 struct sMmsOutstandingCall
@@ -331,7 +332,8 @@ mmsClient_createReadJournalRequestStartAfter(uint32_t invokeId, ByteBuffer* requ
         MmsValue* timeSpecification, MmsValue* entrySpecification);
 
 bool
-mmsClient_parseReadJournalResponse(MmsConnection self, bool* moreFollows, LinkedList* result);
+mmsClient_parseReadJournalResponse(MmsConnection self, ByteBuffer* response, int respBufPos, bool* moreFollows, LinkedList* result);
+
 
 void
 mmsClient_handleFileOpenRequest(MmsConnection connection,
