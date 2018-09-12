@@ -223,25 +223,30 @@ int main(int argc, char** argv) {
 		LinkedList variableList = MmsConnection_getDomainVariableNames(con, &error,
 				domainName);
 
-		LinkedList element = LinkedList_getNext(variableList);
+		if (variableList) {
+            LinkedList element = LinkedList_getNext(variableList);
 
-		printf("\nMMS domain variables for domain %s\n", domainName);
+            printf("\nMMS domain variables for domain %s\n", domainName);
 
-		while (element != NULL) {
-			char* name = (char*) element->data;
+            while (element != NULL) {
+                char* name = (char*) element->data;
 
-			printf("  %s\n", name);
+                printf("  %s\n", name);
 
-			element = LinkedList_getNext(element);
+                element = LinkedList_getNext(element);
+            }
+
+            LinkedList_destroy(variableList);
 		}
-
-		LinkedList_destroy(variableList);
+		else {
+		    printf("\nFailed to read domain directory (error=%d)\n", error);
+		}
 
 		variableList = MmsConnection_getDomainJournals(con, &error, domainName);
 
-		if (variableList != NULL) {
+		if (variableList) {
 
-            element = variableList;
+            LinkedList element = variableList;
 
             printf("\nMMS journals for domain %s\n", domainName);
 
@@ -253,6 +258,10 @@ int main(int argc, char** argv) {
 
             LinkedList_destroy(variableList);
 		}
+        else {
+            printf("\nFailed to read domain journals (error=%d)\n", error);
+        }
+
 	}
 
 	if (readJournal) {
@@ -391,6 +400,10 @@ int main(int argc, char** argv) {
 
 exit:
 	free(hostname);
+	free(domainName);
+	free(variableName);
+	free(journalName);
+
 	MmsConnection_destroy(con);
 }
 

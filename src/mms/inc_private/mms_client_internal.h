@@ -73,7 +73,8 @@ typedef enum {
     MMS_CALL_TYPE_GET_VAR_ACCESS_ATTR,
     MMS_CALL_TYPE_GET_SERVER_STATUS,
     MMS_CALL_TYPE_IDENTIFY,
-    MMS_CALL_TYPE_READ_JOURNAL
+    MMS_CALL_TYPE_READ_JOURNAL,
+    MMS_CALL_TYPE_GET_NAME_LIST
 } eMmsOutstandingCallType;
 
 struct sMmsOutstandingCall
@@ -83,6 +84,7 @@ struct sMmsOutstandingCall
     eMmsOutstandingCallType type;
     void* userCallback;
     void* userParameter;
+    void* internalParameter;
     uint64_t timeout;
 };
 
@@ -175,7 +177,7 @@ int
 mmsClient_createMmsGetNameListRequestVMDspecific(long invokeId, ByteBuffer* writeBuffer, const char* continueAfter);
 
 bool
-mmsClient_parseGetNameListResponse(LinkedList* nameList, ByteBuffer* message, uint32_t* invokeId);
+mmsClient_parseGetNameListResponse(LinkedList* nameList, ByteBuffer* message);
 
 int
 mmsClient_createGetNameListRequestDomainOrVMDSpecific(long invokeId, const char* domainName,

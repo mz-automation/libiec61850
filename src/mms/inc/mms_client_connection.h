@@ -277,6 +277,9 @@ MmsConnection_conclude(MmsConnection self, MmsError* mmsError);
 typedef void
 (*MmsConnection_GenericServiceHandler) (int invokeId, void* parameter, MmsError mmsError, bool success);
 
+typedef void
+(*MmsConnection_GetNameListHandler) (int invokeId, void* parameter, MmsError mmsError, LinkedList nameList, bool moreFollows);
+
 /**
  * \brief Get the names of all VMD scope variables of the server.
  *
@@ -289,6 +292,10 @@ typedef void
  */
 LinkedList /* <char*> */
 MmsConnection_getVMDVariableNames(MmsConnection self, MmsError* mmsError);
+
+uint32_t
+MmsConnection_getVMDVariableNamesAsync(MmsConnection self, MmsError* mmsError, const char* continueAfter,
+        MmsConnection_GetNameListHandler handler, void* parameter);
 
 /**
  * \brief Get the domains names for all domains of the server.
@@ -304,6 +311,10 @@ MmsConnection_getVMDVariableNames(MmsConnection self, MmsError* mmsError);
 LinkedList /* <char*> */
 MmsConnection_getDomainNames(MmsConnection self, MmsError* mmsError);
 
+uint32_t
+MmsConnection_getDomainNamesAsync(MmsConnection self, MmsError* mmsError, const char* continueAfter,
+        MmsConnection_GetNameListHandler handler, void* parameter);
+
 /**
  * \brief Get the names of all variables present in a MMS domain of the server.
  *
@@ -317,6 +328,10 @@ MmsConnection_getDomainNames(MmsConnection self, MmsError* mmsError);
  */
 LinkedList /* <char*> */
 MmsConnection_getDomainVariableNames(MmsConnection self, MmsError* mmsError, const char* domainId);
+
+uint32_t
+MmsConnection_getDomainVariableNamesAsync(MmsConnection self, MmsError* mmsError, const char* domainId,
+        const char* continueAfter, MmsConnection_GetNameListHandler handler, void* parameter);
 
 /**
  * \brief Get the names of all named variable lists present in a MMS domain or VMD scope of the server.
@@ -332,6 +347,10 @@ MmsConnection_getDomainVariableNames(MmsConnection self, MmsError* mmsError, con
 LinkedList /* <char*> */
 MmsConnection_getDomainVariableListNames(MmsConnection self, MmsError* mmsError, const char* domainId);
 
+uint32_t
+MmsConnection_getDomainVariableListNamesAsync(MmsConnection self, MmsError* mmsError, const char* domainId,
+        const char* continueAfter, MmsConnection_GetNameListHandler handler, void* parameter);
+
 /**
  * \brief Get the names of all journals present in a MMS domain of the server
  *
@@ -346,6 +365,10 @@ MmsConnection_getDomainVariableListNames(MmsConnection self, MmsError* mmsError,
 LinkedList /* <char*> */
 MmsConnection_getDomainJournals(MmsConnection self, MmsError* mmsError, const char* domainId);
 
+uint32_t
+MmsConnection_getDomainJournalsAsync(MmsConnection self, MmsError* mmsError, const char* domainId,
+        const char* continueAfter, MmsConnection_GetNameListHandler handler, void* parameter);
+
 /**
  * \brief Get the names of all named variable lists associated with this client connection.
  *
@@ -358,6 +381,10 @@ MmsConnection_getDomainJournals(MmsConnection self, MmsError* mmsError, const ch
  */
 LinkedList /* <char*> */
 MmsConnection_getVariableListNamesAssociationSpecific(MmsConnection self, MmsError* mmsError);
+
+uint32_t
+MmsConnection_getVariableListNamesAssociationSpecificAsync(MmsConnection self, MmsError* mmsError,
+        const char* continueAfter, MmsConnection_GetNameListHandler handler, void* parameter);
 
 
 /**
