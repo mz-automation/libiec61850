@@ -86,7 +86,7 @@ public class DataModelValue {
         	if (trimmedValue.isEmpty())
         		this.value = new Long(0);
         	else
-        		this.value = Long.decode(trimmedValue);
+        		this.value = Long.parseLong(trimmedValue);
             break;
         case BOOLEAN:
         	
