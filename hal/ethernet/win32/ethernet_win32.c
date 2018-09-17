@@ -313,6 +313,8 @@ Ethernet_getInterfaceMACAddress(const char* interfaceId, uint8_t* addr)
     char* interfaceName = getInterfaceName((int) interfaceIndex);
 
     getAdapterMacAddress(interfaceName, addr);
+
+    free(interfaceName);
 }
 
 
@@ -329,8 +331,11 @@ Ethernet_createSocket(const char* interfaceId, uint8_t* destAddress)
     if ((pcapSocket = pcap_open_live(interfaceName, 65536, PCAP_OPENFLAG_PROMISCUOUS, 10, errbuf)) == NULL)
     {
         printf("Open ethernet socket failed for device %s\n", interfaceName);
+        free(interfaceName);
         return NULL;
     }
+
+    free(interfaceName);
 
     EthernetSocket ethernetSocket = (EthernetSocket) calloc(1, sizeof(struct sEthernetSocket));
 
