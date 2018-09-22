@@ -538,8 +538,12 @@ handleConfirmedResponsePdu(
                     if (fileTask != NULL) {
 
                         bool moreFollows;
+                        uint8_t* dataBuffer = NULL;
+                        int dataLength = 0;
 
-                        if (mmsMsg_parseFileReadResponse(buffer, startBufPos, maxBufPos, fileTask->frmsId, &moreFollows, mmsFileReadHandler, (void*) fileTask)) {
+                        if (mmsMsg_parseFileReadResponse(buffer, startBufPos, maxBufPos, &moreFollows, &dataBuffer, &dataLength)) {
+
+                            mmsFileReadHandler((void*) fileTask, fileTask->frmsId, dataBuffer, dataLength);
 
                             if (moreFollows) {
                                 fileTask->state = MMS_FILE_UPLOAD_STATE_SEND_FILE_READ;

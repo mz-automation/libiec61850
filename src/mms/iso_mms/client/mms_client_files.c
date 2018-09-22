@@ -455,7 +455,7 @@ parseFileAttributes(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t* fileSi
 }
 
 static bool
-parseDirectoryEntry(uint8_t* buffer, int bufPos, int maxBufPos, MmsFileDirectoryHandler handler, void* handlerParameter)
+parseDirectoryEntry(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t invokeId, MmsConnection_FileDirectoryHandler handler, void* parameter)
 {
     char fileNameMemory[400];
     char* filename = NULL;
@@ -507,7 +507,7 @@ parseDirectoryEntry(uint8_t* buffer, int bufPos, int maxBufPos, MmsFileDirectory
     }
 
     if (filename != NULL)
-        handler(handlerParameter, filename, fileSize, lastModified);
+        handler(invokeId, parameter, MMS_ERROR_NONE, filename, fileSize, lastModified, true);
     else
         return false;
 
@@ -515,8 +515,8 @@ parseDirectoryEntry(uint8_t* buffer, int bufPos, int maxBufPos, MmsFileDirectory
 }
 
 static bool
-parseListOfDirectoryEntries(uint8_t* buffer, int bufPos, int maxBufPos,
-        MmsFileDirectoryHandler handler, void* handlerParameter)
+parseListOfDirectoryEntries(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t invokeId,
+        MmsConnection_FileDirectoryHandler handler, void* parameter)
 {
     uint8_t tag = buffer[bufPos++];
 
@@ -544,7 +544,7 @@ parseListOfDirectoryEntries(uint8_t* buffer, int bufPos, int maxBufPos,
 
         switch (tag) {
         case 0x30: /* Sequence */
-            parseDirectoryEntry(buffer, bufPos, bufPos + length, handler, handlerParameter);
+            parseDirectoryEntry(buffer, bufPos, bufPos + length, invokeId, handler, parameter);
             bufPos += length;
             break;
         default:
@@ -560,12 +560,10 @@ parseListOfDirectoryEntries(uint8_t* buffer, int bufPos, int maxBufPos,
 
 
 bool
-mmsClient_parseFileDirectoryResponse(MmsConnection self, MmsFileDirectoryHandler handler, void* handlerParameter,
-        bool* moreFollows)
+mmsClient_parseFileDirectoryResponse(ByteBuffer* response, int bufPos, uint32_t invokeId, MmsConnection_FileDirectoryHandler handler, void* parameter)
 {
-    uint8_t* buffer = self->lastResponse->buffer;
-    int maxBufPos = self->lastResponse->size;
-    int bufPos = self->lastResponseBufPos;
+    uint8_t* buffer = response->buffer;
+    int maxBufPos = response->size;
     int length;
 
     uint8_t tag = buffer[bufPos++];
@@ -595,7 +593,7 @@ mmsClient_parseFileDirectoryResponse(MmsConnection self, MmsFileDirectoryHandler
         return false;
     }
 
-    *moreFollows = false;
+    bool moreFollows = false;
 
     while (bufPos < endPos) {
         tag = buffer[bufPos++];
@@ -605,12 +603,12 @@ mmsClient_parseFileDirectoryResponse(MmsConnection self, MmsFileDirectoryHandler
 
         switch (tag) {
         case 0xa0: /* listOfDirectoryEntries */
-            parseListOfDirectoryEntries(buffer, bufPos, bufPos + length, handler, handlerParameter);
+            parseListOfDirectoryEntries(buffer, bufPos, bufPos + length, invokeId, handler, parameter);
 
             bufPos += length;
             break;
         case 0x81: /* moreFollows */
-            *moreFollows = BerDecoder_decodeBoolean(buffer, bufPos);
+            moreFollows = BerDecoder_decodeBoolean(buffer, bufPos);
             bufPos += length;
             break;
         default:
@@ -620,6 +618,8 @@ mmsClient_parseFileDirectoryResponse(MmsConnection self, MmsFileDirectoryHandler
             break;
         }
     }
+
+    handler(invokeId, parameter, MMS_ERROR_NONE, NULL, 0, 0, moreFollows);
 
     return true;
 }
@@ -632,7 +632,7 @@ mmsMsg_parseFileOpenResponse(uint8_t* buffer, int bufPos, int maxBufPos, int32_t
     uint8_t tag = buffer[bufPos++];
 
     if (tag != 0xbf) {
-        //if (DEBUG_MMS_CLIENT)
+        if (DEBUG_MMS_CLIENT)
             printf("MMS: mmsClient_parseFileOpenResponse: unknown tag %02x\n", tag);
         return false;
     }
@@ -640,7 +640,7 @@ mmsMsg_parseFileOpenResponse(uint8_t* buffer, int bufPos, int maxBufPos, int32_t
     tag = buffer[bufPos++];
 
     if (tag != 0x48) {
-        //if (DEBUG_MMS_CLIENT)
+        if (DEBUG_MMS_CLIENT)
             printf("MMS_CLIENT: mmsClient_parseFileOpenResponse: unknown tag %02x\n", tag);
         return false;
     }
@@ -686,9 +686,8 @@ mmsMsg_parseFileOpenResponse(uint8_t* buffer, int bufPos, int maxBufPos, int32_t
     return true;
 }
 
-
 bool
-mmsMsg_parseFileReadResponse(uint8_t* buffer, int bufPos, int maxBufPos, int frsmId, bool* moreFollows, MmsFileReadHandler handler, void* handlerParameter)
+mmsMsg_parseFileReadResponse(uint8_t* buffer, int bufPos, int maxBufPos, bool* moreFollows, uint8_t** dataBuffer, int* dataLength)
 {
     int length;
 
@@ -703,6 +702,8 @@ mmsMsg_parseFileReadResponse(uint8_t* buffer, int bufPos, int maxBufPos, int frs
     tag = buffer[bufPos++];
 
     *moreFollows = true;
+    *dataBuffer = NULL;
+    *dataLength = 0;
 
     if (tag != 0x49) {
         if (DEBUG_MMS_CLIENT)
@@ -728,16 +729,19 @@ mmsMsg_parseFileReadResponse(uint8_t* buffer, int bufPos, int maxBufPos, int frs
         if (bufPos < 0)
             return false;
 
-        switch (tag) {
+        switch (tag)
+        {
         case 0x80: /* fileData */
-            handler(handlerParameter, frsmId, buffer + bufPos, length);
-
+            *dataBuffer = buffer + bufPos;
+            *dataLength = length;
             bufPos += length;
             break;
+
         case 0x81: /* moreFollows */
             *moreFollows = BerDecoder_decodeBoolean(buffer, bufPos);
             bufPos += length;
             break;
+
         default:
             bufPos += length;
             if (DEBUG_MMS_CLIENT)
@@ -746,6 +750,9 @@ mmsMsg_parseFileReadResponse(uint8_t* buffer, int bufPos, int maxBufPos, int frs
             return false;
         }
     }
+
+    if (*dataBuffer == NULL)
+        return false;
 
     return true;
 }

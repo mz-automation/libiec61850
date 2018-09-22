@@ -924,8 +924,23 @@ MmsConnection_getServerStatusAsync(MmsConnection self, MmsError* mmsError, bool 
 typedef void
 (*MmsFileDirectoryHandler) (void* parameter, char* filename, uint32_t size, uint64_t lastModified);
 
+/**
+ * \brief Callback handler for the get file directory service
+ *
+ * Will be called once for each file directory entry and after the last entry with \ref filename = NULL to indicate
+ * with \ref moreFollows if more data is available at the server. In case of an error the callback will be called with
+ * \ref mmsError != MMS_ERROR_NONE and moreFollows = false.
+ */
+typedef void
+(*MmsConnection_FileDirectoryHandler) (int invokeId, void* parameter, MmsError mmsError, char* filename, uint32_t size, uint64_t lastModfified,
+        bool moreFollows);
+
 typedef void
 (*MmsFileReadHandler) (void* parameter, int32_t frsmId, uint8_t* buffer, uint32_t bytesReceived);
+
+typedef void
+(*MmsConnection_FileReadHandler) (int invokeId, void* parameter, MmsError mmsError, uint8_t* buffer, uint32_t byteReceived,
+        bool moreFollows);
 
 
 /**
@@ -939,6 +954,14 @@ typedef void
 int32_t
 MmsConnection_fileOpen(MmsConnection self, MmsError* mmsError, const char* filename, uint32_t initialPosition,
         uint32_t* fileSize, uint64_t* lastModified);
+
+typedef void
+(*MmsConnection_FileOpenHandler) (int invokeId, void* parameter, MmsError mmsError, int32_t frsmId, uint32_t fileSize, uint64_t lastModified);
+
+uint32_t
+MmsConnection_fileOpenAsync(MmsConnection self, MmsError* mmsError, const char* filename, uint32_t initialPosition, MmsConnection_FileOpenHandler handler,
+        void* parameter);
+
 
 /**
  * \brief read the next data block from the file
@@ -954,6 +977,9 @@ MmsConnection_fileOpen(MmsConnection self, MmsError* mmsError, const char* filen
 bool
 MmsConnection_fileRead(MmsConnection self, MmsError* mmsError, int32_t frsmId, MmsFileReadHandler handler, void* handlerParameter);
 
+uint32_t
+MmsConnection_fileReadAsync(MmsConnection self, MmsError* mmsError, int32_t frsmId, MmsConnection_FileReadHandler handler, void* parameter);
+
 /**
  * \brief close the file with the specified frsmID
  *
@@ -964,6 +990,9 @@ MmsConnection_fileRead(MmsConnection self, MmsError* mmsError, int32_t frsmId, M
 void
 MmsConnection_fileClose(MmsConnection self, MmsError* mmsError, int32_t frsmId);
 
+uint32_t
+MmsConnection_fileCloseAsync(MmsConnection self, MmsError* mmsError, uint32_t frsmId, MmsConnection_GenericServiceHandler handler, void* parameter);
+
 /**
  * \brief delete the file with the specified name
  *
@@ -973,6 +1002,10 @@ MmsConnection_fileClose(MmsConnection self, MmsError* mmsError, int32_t frsmId);
  */
 void
 MmsConnection_fileDelete(MmsConnection self, MmsError* mmsError, const char* fileName);
+
+uint32_t
+MmsConnection_fileDeleteAsync(MmsConnection self, MmsError* mmsError, const char* fileName,
+        MmsConnection_GenericServiceHandler handler, void* parameter);
 
 /**
  * \brief rename the file with the specified name
@@ -985,6 +1018,9 @@ MmsConnection_fileDelete(MmsConnection self, MmsError* mmsError, const char* fil
 void
 MmsConnection_fileRename(MmsConnection self, MmsError* mmsError, const char* currentFileName, const char* newFileName);
 
+uint32_t
+MmsConnection_fileRenameAsync(MmsConnection self, MmsError* mmsError, const char* currentFileName, const char* newFileName,
+        MmsConnection_GenericServiceHandler handler, void* parameter);
 
 /**
  * \brief Send an obtainFile request to the server (used to initiate file download to server)
@@ -996,6 +1032,10 @@ MmsConnection_fileRename(MmsConnection self, MmsError* mmsError, const char* cur
  */
 void
 MmsConnection_obtainFile(MmsConnection self, MmsError* mmsError, const char* sourceFile, const char* destinationFile);
+
+uint32_t
+MmsConnection_obtainFileAsync(MmsConnection self, MmsError* mmsError, const char* sourceFile, const char* destinationFile,
+        MmsConnection_GenericServiceHandler handler, void* parameter);
 
 /**
  * \brief get the file directory of the server.
@@ -1016,6 +1056,10 @@ MmsConnection_obtainFile(MmsConnection self, MmsError* mmsError, const char* sou
 bool
 MmsConnection_getFileDirectory(MmsConnection self, MmsError* mmsError, const char* fileSpecification, const char* continueAfter,
         MmsFileDirectoryHandler handler, void* handlerParameter);
+
+uint32_t
+MmsConnection_getFileDirectoryAsync(MmsConnection self, MmsError* mmsError, const char* fileSpecification, const char* continueAfter,
+        MmsConnection_FileDirectoryHandler handler, void* parameter);
 
 typedef struct sMmsJournalEntry* MmsJournalEntry;
 

@@ -56,7 +56,7 @@ bool
 mmsMsg_parseFileOpenResponse(uint8_t* buffer, int bufPos, int maxBufPos, int32_t* frsmId, uint32_t* fileSize, uint64_t* lastModified);
 
 bool
-mmsMsg_parseFileReadResponse(uint8_t* buffer, int bufPos, int maxBufPos, int32_t frsmId,  bool* moreFollows, MmsFileReadHandler handler, void* handlerParameter);
+mmsMsg_parseFileReadResponse(uint8_t* buffer, int bufPos, int maxBufPos, bool* moreFollows, uint8_t** dataBuffer, int* dataLength);
 
 void
 mmsMsg_createFileReadResponse(int maxPduSize, uint32_t invokeId, ByteBuffer* response,  MmsFileReadStateMachine* frsm);

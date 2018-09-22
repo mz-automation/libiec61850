@@ -990,7 +990,78 @@ handleAsyncResponse(MmsConnection self, ByteBuffer* response, uint32_t bufPos, M
                 handler(outstandingCall->invokeId, outstandingCall->userParameter, err, nameList, moreFollows);
             }
         }
+    }
+    else if (outstandingCall->type == MMS_CALL_TYPE_FILE_OPEN) {
 
+        MmsConnection_FileOpenHandler handler =
+                (MmsConnection_FileOpenHandler) outstandingCall->userCallback;
+
+        if (err != MMS_ERROR_NONE) {
+            handler(outstandingCall->invokeId, outstandingCall->userParameter, err, 0, 0, 0);
+        }
+        else {
+            int32_t frsmId;
+            uint32_t fileSize;
+            uint64_t lastModified;
+
+
+            if (mmsMsg_parseFileOpenResponse(ByteBuffer_getBuffer(response), bufPos, ByteBuffer_getSize(response),
+                    &frsmId, &fileSize, &lastModified) == false)
+            {
+                handler(outstandingCall->invokeId, outstandingCall->userParameter, MMS_ERROR_PARSING_RESPONSE, 0, 0, 0);
+            }
+            else {
+                handler(outstandingCall->invokeId, outstandingCall->userParameter, err, frsmId, fileSize, lastModified);
+            }
+        }
+    }
+    else if (outstandingCall->type == MMS_CALL_TYPE_FILE_READ) {
+        MmsConnection_FileReadHandler handler =
+                (MmsConnection_FileReadHandler) outstandingCall->userCallback;
+
+        if (err != MMS_ERROR_NONE) {
+            handler(outstandingCall->invokeId, outstandingCall->userParameter, err, NULL, 0, false);
+        }
+        else {
+            bool moreFollows;
+            uint8_t* dataBuffer;
+            int dataLength;
+
+            if (mmsMsg_parseFileReadResponse(ByteBuffer_getBuffer(response), bufPos, ByteBuffer_getSize(response), &moreFollows, &dataBuffer, &dataLength) == false)
+            {
+                handler(outstandingCall->invokeId, outstandingCall->userParameter, MMS_ERROR_PARSING_RESPONSE, NULL, 0, false);
+            }
+            else {
+                handler(outstandingCall->invokeId, outstandingCall->userParameter, err, dataBuffer, dataLength, moreFollows);
+            }
+        }
+    }
+    else if ((outstandingCall->type == MMS_CALL_TYPE_FILE_CLOSE) ||
+             (outstandingCall->type == MMS_CALL_TYPE_FILE_DELETE) ||
+             (outstandingCall->type == MMS_CALL_TYPE_FILE_RENAME) ||
+             (outstandingCall->type == MMS_CALL_TYPE_OBTAIN_FILE))
+    {
+        MmsConnection_GenericServiceHandler handler =
+                (MmsConnection_GenericServiceHandler) outstandingCall->userCallback;
+
+        if (err != MMS_ERROR_NONE) {
+            handler(outstandingCall->invokeId, outstandingCall->userParameter, err, false);
+        }
+        else {
+            handler(outstandingCall->invokeId, outstandingCall->userParameter, err, true);
+        }
+    }
+    else if (outstandingCall->type == MMS_CALL_TYPE_GET_FILE_DIR) {
+        MmsConnection_FileDirectoryHandler handler =
+                (MmsConnection_FileDirectoryHandler) outstandingCall->userCallback;
+
+        if (err != MMS_ERROR_NONE) {
+            handler(outstandingCall->invokeId, outstandingCall->userParameter, err, NULL, 0, 0, false);
+        }
+        else {
+            if (mmsClient_parseFileDirectoryResponse(response, bufPos, outstandingCall->invokeId, handler, outstandingCall->userParameter) == false)
+                handler(outstandingCall->invokeId, outstandingCall->userParameter, MMS_ERROR_PARSING_RESPONSE, NULL, 0, 0, false);
+        }
     }
 
     removeFromOutstandingCalls(self, outstandingCall->invokeId);
@@ -3220,34 +3291,192 @@ exit_function:
     return invokeId;
 }
 
+struct fileOpenParameters
+{
+    Semaphore waitForResponse;
+    MmsError err;
+    int32_t frsmId;
+    uint32_t fileSize;
+    uint64_t lastModified;
+};
+
+static void
+fileOpenHandler(int invokeId, void* parameter, MmsError mmsError, int32_t frsmId, uint32_t fileSize, uint64_t lastModified)
+{
+    struct fileOpenParameters* parameters = (struct fileOpenParameters*) parameter;
+
+    parameters->err = mmsError;
+    parameters->frsmId = frsmId;
+    parameters->fileSize = fileSize;
+    parameters->lastModified = lastModified;
+
+    /* unblock user thread */
+    Semaphore_post(parameters->waitForResponse);
+}
+
+
 int32_t
 MmsConnection_fileOpen(MmsConnection self, MmsError* mmsError, const char* filename, uint32_t initialPosition,
         uint32_t* fileSize, uint64_t* lastModified)
 {
 #if (MMS_FILE_SERVICE == 1)
+
+    struct fileOpenParameters parameter;
+
+    MmsError err = MMS_ERROR_NONE;
+
+    parameter.waitForResponse = Semaphore_create(1);
+    parameter.err = MMS_ERROR_NONE;
+    parameter.frsmId = 0;
+    parameter.fileSize = 0;
+    parameter.lastModified = 0;
+
+    Semaphore_wait(parameter.waitForResponse);
+
+    MmsConnection_fileOpenAsync(self, &err, filename, initialPosition, fileOpenHandler, &parameter);
+
+    if (err == MMS_ERROR_NONE) {
+        Semaphore_wait(parameter.waitForResponse);
+
+        err = parameter.err;
+    }
+
+    Semaphore_destroy(parameter.waitForResponse);
+
+    if (fileSize)
+        *fileSize = parameter.fileSize;
+
+    if (lastModified)
+        *lastModified = parameter.lastModified;
+
+    if (mmsError)
+        *mmsError = err;
+
+    return parameter.frsmId;
+#else
+    if (DEBUG_MMS_CLIENT)
+        printf("MMS_CLIENT: service not supported\n");
+
+    *mmsError = MMS_ERROR_OTHER;
+    return 0;
+#endif
+}
+
+uint32_t
+MmsConnection_fileOpenAsync(MmsConnection self, MmsError* mmsError, const char* filename, uint32_t initialPosition, MmsConnection_FileOpenHandler handler,
+        void* parameter)
+{
+#if (MMS_FILE_SERVICE == 1)
+    uint32_t invokeId = 0;
+
+    if (getAssociationState(self) != MMS_STATE_CONNECTED) {
+        if (mmsError)
+            *mmsError = MMS_ERROR_CONNECTION_LOST;
+        goto exit_function;
+    }
+
     ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
-    uint32_t invokeId = getNextInvokeId(self);
-
-    int32_t frsmId = -1;
+    invokeId = getNextInvokeId(self);
 
     mmsClient_createFileOpenRequest(invokeId, payload, filename, initialPosition);
 
-    ByteBuffer* responseMessage = sendRequestAndWaitForResponse(self, invokeId, payload, mmsError);
+    MmsError err = sendAsyncRequest(self, invokeId, payload, MMS_CALL_TYPE_FILE_OPEN, handler, parameter, NULL);
 
-    if (responseMessage != NULL) {
+    if (mmsError)
+        *mmsError = err;
 
-        uint8_t* buffer = self->lastResponse->buffer;
-        int maxBufPos = self->lastResponse->size;
-        int bufPos = self->lastResponseBufPos;
+exit_function:
+    return invokeId;
+#else
+    if (DEBUG_MMS_CLIENT)
+        printf("MMS_CLIENT: service not supported\n");
 
-        if (mmsMsg_parseFileOpenResponse(buffer, bufPos, maxBufPos, &frsmId, fileSize, lastModified) == false)
-            *mmsError = MMS_ERROR_PARSING_RESPONSE;
+    *mmsError = MMS_ERROR_OTHER;
+    return 0;
+#endif
+}
+
+struct fileOperationParameters
+{
+    Semaphore waitForResponse;
+    MmsError err;
+    bool success;
+};
+
+static void
+fileOperationHandler(int invokeId, void* parameter, MmsError mmsError, bool success)
+{
+    struct fileOperationParameters* parameters = (struct fileOperationParameters*) parameter;
+
+    parameters->err = mmsError;
+    parameters->success = success;
+
+    /* unblock user thread */
+    Semaphore_post(parameters->waitForResponse);
+}
+
+void
+MmsConnection_fileClose(MmsConnection self, MmsError* mmsError, int32_t frsmId)
+{
+#if (MMS_FILE_SERVICE == 1)
+
+    struct fileOperationParameters parameter;
+
+    MmsError err = MMS_ERROR_NONE;
+
+    parameter.waitForResponse = Semaphore_create(1);
+    parameter.err = MMS_ERROR_NONE;
+    parameter.success = false;
+
+    Semaphore_wait(parameter.waitForResponse);
+
+    MmsConnection_fileCloseAsync(self, &err, frsmId, fileOperationHandler, &parameter);
+
+    if (err == MMS_ERROR_NONE) {
+        Semaphore_wait(parameter.waitForResponse);
+
+        err = parameter.err;
     }
 
-    releaseResponse(self);
+    Semaphore_destroy(parameter.waitForResponse);
 
-    return frsmId;
+    if (mmsError)
+        *mmsError = err;
+
+#else
+    if (DEBUG_MMS_CLIENT)
+        printf("MMS_CLIENT: service not supported\n");
+
+    *mmsError = MMS_ERROR_OTHER;
+#endif
+}
+
+uint32_t
+MmsConnection_fileCloseAsync(MmsConnection self, MmsError* mmsError, uint32_t frsmId, MmsConnection_GenericServiceHandler handler, void* parameter)
+{
+#if (MMS_FILE_SERVICE == 1)
+    uint32_t invokeId = 0;
+
+    if (getAssociationState(self) != MMS_STATE_CONNECTED) {
+        if (mmsError)
+            *mmsError = MMS_ERROR_CONNECTION_LOST;
+        goto exit_function;
+    }
+
+    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
+
+    invokeId = getNextInvokeId(self);
+
+    mmsClient_createFileCloseRequest(invokeId, payload, frsmId);
+
+    MmsError err = sendAsyncRequest(self, invokeId, payload, MMS_CALL_TYPE_FILE_CLOSE, handler, parameter, NULL);
+
+    if (mmsError)
+        *mmsError = err;
+
+exit_function:
+    return invokeId;
 #else
     if (DEBUG_MMS_CLIENT)
         printf("MMS_CLIENT: service not supported\n");
@@ -3258,20 +3487,33 @@ MmsConnection_fileOpen(MmsConnection self, MmsError* mmsError, const char* filen
 }
 
 void
-MmsConnection_fileClose(MmsConnection self, MmsError* mmsError, int32_t frsmId)
+MmsConnection_fileDelete(MmsConnection self, MmsError* mmsError, const char* fileName)
 {
 #if (MMS_FILE_SERVICE == 1)
-    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
-    uint32_t invokeId = getNextInvokeId(self);
+    struct fileOperationParameters parameter;
 
-    mmsClient_createFileCloseRequest(invokeId, payload, frsmId);
+    MmsError err = MMS_ERROR_NONE;
 
-    sendRequestAndWaitForResponse(self, invokeId, payload, mmsError);
+    parameter.waitForResponse = Semaphore_create(1);
+    parameter.err = MMS_ERROR_NONE;
+    parameter.success = false;
 
-    /* nothing to do - response contains no data to evaluate */
+    Semaphore_wait(parameter.waitForResponse);
 
-    releaseResponse(self);
+    MmsConnection_fileDeleteAsync(self, &err, fileName, fileOperationHandler, &parameter);
+
+    if (err == MMS_ERROR_NONE) {
+        Semaphore_wait(parameter.waitForResponse);
+
+        err = parameter.err;
+    }
+
+    Semaphore_destroy(parameter.waitForResponse);
+
+    if (mmsError)
+        *mmsError = err;
+
 #else
     if (DEBUG_MMS_CLIENT)
         printf("MMS_CLIENT: service not supported\n");
@@ -3280,27 +3522,66 @@ MmsConnection_fileClose(MmsConnection self, MmsError* mmsError, int32_t frsmId)
 #endif
 }
 
-void
-MmsConnection_fileDelete(MmsConnection self, MmsError* mmsError, const char* fileName)
+uint32_t
+MmsConnection_fileDeleteAsync(MmsConnection self, MmsError* mmsError, const char* fileName,
+        MmsConnection_GenericServiceHandler handler, void* parameter)
 {
 #if (MMS_FILE_SERVICE == 1)
+    uint32_t invokeId = 0;
+
+    if (getAssociationState(self) != MMS_STATE_CONNECTED) {
+        if (mmsError)
+            *mmsError = MMS_ERROR_CONNECTION_LOST;
+        goto exit_function;
+    }
+
     ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
-    uint32_t invokeId = getNextInvokeId(self);
+    invokeId = getNextInvokeId(self);
 
     mmsClient_createFileDeleteRequest(invokeId, payload, fileName);
 
-    sendRequestAndWaitForResponse(self, invokeId, payload, mmsError);
+    MmsError err = sendAsyncRequest(self, invokeId, payload, MMS_CALL_TYPE_FILE_DELETE, handler, parameter, NULL);
 
-    /* nothing to do - response contains no data to evaluate */
+    if (mmsError)
+        *mmsError = err;
 
-    releaseResponse(self);
+exit_function:
+    return invokeId;
 #else
     if (DEBUG_MMS_CLIENT)
         printf("MMS_CLIENT: service not supported\n");
 
     *mmsError = MMS_ERROR_OTHER;
+    return 0;
 #endif
+}
+
+struct fileReadParameters
+{
+    Semaphore waitForResponse;
+    MmsError err;
+    int32_t frsmId;
+    MmsFileReadHandler handler;
+    void* handlerParameter;
+    bool moreFollows;
+};
+
+static void
+fileReadHandler(int invokeId, void* parameter, MmsError mmsError, uint8_t* buffer, uint32_t byteReceived,
+        bool moreFollows)
+{
+    struct fileReadParameters* parameters = (struct fileReadParameters*) parameter;
+
+    parameters->err = mmsError;
+
+    if (mmsError == MMS_ERROR_NONE)
+        parameters->handler(parameters->handlerParameter, parameters->frsmId, buffer, byteReceived);
+
+    parameters->moreFollows = moreFollows;
+
+    /* unblock user thread */
+    Semaphore_post(parameters->waitForResponse);
 }
 
 bool
@@ -3308,27 +3589,35 @@ MmsConnection_fileRead(MmsConnection self, MmsError* mmsError, int32_t frsmId, M
         void* handlerParameter)
 {
 #if (MMS_FILE_SERVICE == 1)
-    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
-    uint32_t invokeId = getNextInvokeId(self);
+    struct fileReadParameters parameter;
 
-    bool moreFollows = false;
-    mmsClient_createFileReadRequest(invokeId, payload, frsmId);
+    MmsError err = MMS_ERROR_NONE;
 
-    ByteBuffer* responseMessage = sendRequestAndWaitForResponse(self, invokeId, payload, mmsError);
+    parameter.waitForResponse = Semaphore_create(1);
+    parameter.err = MMS_ERROR_NONE;
+    parameter.frsmId = frsmId;
+    parameter.handler = handler;
+    parameter.handlerParameter = handlerParameter;
+    parameter.moreFollows = false;
 
-    if (responseMessage != NULL) {
-        uint8_t* buffer = self->lastResponse->buffer;
-        int maxBufPos = self->lastResponse->size;
-        int bufPos = self->lastResponseBufPos;
+    Semaphore_wait(parameter.waitForResponse);
 
-        if (mmsMsg_parseFileReadResponse(buffer, bufPos, maxBufPos, frsmId, &moreFollows, handler, handlerParameter) == false)
-            *mmsError = MMS_ERROR_PARSING_RESPONSE;
+    MmsConnection_fileReadAsync(self, &err, frsmId, fileReadHandler, &parameter);
+
+    if (err == MMS_ERROR_NONE) {
+        Semaphore_wait(parameter.waitForResponse);
+
+        err = parameter.err;
     }
 
-    releaseResponse(self);
+    Semaphore_destroy(parameter.waitForResponse);
 
-    return moreFollows;
+    if (mmsError)
+        *mmsError = err;
+
+    return parameter.moreFollows;
+
 #else
     if (DEBUG_MMS_CLIENT)
         printf("MMS_CLIENT: service not supported\n");
@@ -3336,6 +3625,68 @@ MmsConnection_fileRead(MmsConnection self, MmsError* mmsError, int32_t frsmId, M
     *mmsError = MMS_ERROR_OTHER;
     return false;
 #endif
+}
+
+uint32_t
+MmsConnection_fileReadAsync(MmsConnection self, MmsError* mmsError, int32_t frsmId, MmsConnection_FileReadHandler handler, void* parameter)
+{
+#if (MMS_FILE_SERVICE == 1)
+    uint32_t invokeId = 0;
+
+    if (getAssociationState(self) != MMS_STATE_CONNECTED) {
+        if (mmsError)
+            *mmsError = MMS_ERROR_CONNECTION_LOST;
+        goto exit_function;
+    }
+
+    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
+
+    invokeId = getNextInvokeId(self);
+
+    mmsClient_createFileReadRequest(invokeId, payload, frsmId);
+
+    MmsError err = sendAsyncRequest(self, invokeId, payload, MMS_CALL_TYPE_FILE_READ, handler, parameter, NULL);
+
+    if (mmsError)
+        *mmsError = err;
+
+exit_function:
+    return invokeId;
+#else
+    if (DEBUG_MMS_CLIENT)
+        printf("MMS_CLIENT: service not supported\n");
+
+    *mmsError = MMS_ERROR_OTHER;
+    return 0;
+#endif
+}
+
+struct getFileDirParameters
+{
+    Semaphore waitForResponse;
+    MmsError err;
+    bool moreFollows;
+    MmsFileDirectoryHandler handler;
+    void* handlerParameter;
+};
+
+static void
+getFileDirHandler(int invokeId, void* parameter, MmsError mmsError, char* filename, uint32_t size, uint64_t lastModified,
+        bool moreFollows)
+{
+    struct getFileDirParameters* parameters = (struct getFileDirParameters*) parameter;
+
+    parameters->err = mmsError;
+
+    if ((mmsError != MMS_ERROR_NONE) || (filename == NULL)) {
+        parameters->moreFollows = moreFollows;
+
+        /* last call --> unblock user thread */
+        Semaphore_post(parameters->waitForResponse);
+    }
+    else {
+        parameters->handler(parameters->handlerParameter, filename, size, lastModified);
+    }
 }
 
 bool
@@ -3343,22 +3694,31 @@ MmsConnection_getFileDirectory(MmsConnection self, MmsError* mmsError, const cha
         MmsFileDirectoryHandler handler, void* handlerParameter)
 {
 #if (MMS_FILE_SERVICE == 1)
-    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
-
-    uint32_t invokeId = getNextInvokeId(self);
-
-    mmsClient_createFileDirectoryRequest(invokeId, payload, fileSpecification, continueAfter);
-
-    ByteBuffer* responseMessage = sendRequestAndWaitForResponse(self, invokeId, payload, mmsError);
 
     bool moreFollows = false;
 
-    if (responseMessage != NULL) {
-        if (mmsClient_parseFileDirectoryResponse(self, handler, handlerParameter, &moreFollows) == false)
-            *mmsError = MMS_ERROR_PARSING_RESPONSE;
+    struct getFileDirParameters parameter;
+    parameter.handler = handler;
+    parameter.handlerParameter = handlerParameter;
+
+    MmsError err;
+
+    parameter.waitForResponse = Semaphore_create(1);
+
+    Semaphore_wait(parameter.waitForResponse);
+
+    MmsConnection_getFileDirectoryAsync(self, &err, fileSpecification, continueAfter, getFileDirHandler, &parameter);
+
+    if (err == MMS_ERROR_NONE) {
+        Semaphore_wait(parameter.waitForResponse);
+        err = parameter.err;
+        moreFollows = parameter.moreFollows;
     }
 
-    releaseResponse(self);
+    Semaphore_destroy(parameter.waitForResponse);
+
+    if (mmsError)
+        *mmsError = err;
 
     return moreFollows;
 #else
@@ -3370,21 +3730,68 @@ MmsConnection_getFileDirectory(MmsConnection self, MmsError* mmsError, const cha
 #endif
 }
 
+uint32_t
+MmsConnection_getFileDirectoryAsync(MmsConnection self, MmsError* mmsError, const char* fileSpecification, const char* continueAfter,
+        MmsConnection_FileDirectoryHandler handler, void* parameter)
+{
+#if (MMS_FILE_SERVICE == 1)
+    uint32_t invokeId = 0;
+
+    if (getAssociationState(self) != MMS_STATE_CONNECTED) {
+        if (mmsError)
+            *mmsError = MMS_ERROR_CONNECTION_LOST;
+        goto exit_function;
+    }
+
+    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
+
+    invokeId = getNextInvokeId(self);
+
+    mmsClient_createFileDirectoryRequest(invokeId, payload, fileSpecification, continueAfter);
+
+    MmsError err = sendAsyncRequest(self, invokeId, payload, MMS_CALL_TYPE_GET_FILE_DIR, handler, parameter, NULL);
+
+    if (mmsError)
+        *mmsError = err;
+
+exit_function:
+    return invokeId;
+#else
+    if (DEBUG_MMS_CLIENT)
+        printf("MMS_CLIENT: service not supported\n");
+
+    *mmsError = MMS_ERROR_OTHER;
+    return 0;
+#endif
+}
+
 void
 MmsConnection_fileRename(MmsConnection self, MmsError* mmsError, const char* currentFileName, const char* newFileName)
 {
 #if (MMS_FILE_SERVICE == 1)
-    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
-    uint32_t invokeId = getNextInvokeId(self);
+    struct fileOperationParameters parameter;
 
-    mmsClient_createFileRenameRequest(invokeId, payload, currentFileName, newFileName);
+    MmsError err = MMS_ERROR_NONE;
 
-    sendRequestAndWaitForResponse(self, invokeId, payload, mmsError);
+    parameter.waitForResponse = Semaphore_create(1);
+    parameter.err = MMS_ERROR_NONE;
+    parameter.success = false;
 
-    /* nothing to do - response contains no data to evaluate */
+    Semaphore_wait(parameter.waitForResponse);
 
-    releaseResponse(self);
+    MmsConnection_fileRenameAsync(self, &err, currentFileName, newFileName, fileOperationHandler, &parameter);
+
+    if (err == MMS_ERROR_NONE) {
+        Semaphore_wait(parameter.waitForResponse);
+
+        err = parameter.err;
+    }
+
+    Semaphore_destroy(parameter.waitForResponse);
+
+    if (mmsError)
+        *mmsError = err;
 #else
     if (DEBUG_MMS_CLIENT)
         printf("MMS_CLIENT: service not supported\n");
@@ -3393,21 +3800,69 @@ MmsConnection_fileRename(MmsConnection self, MmsError* mmsError, const char* cur
 #endif
 }
 
+uint32_t
+MmsConnection_fileRenameAsync(MmsConnection self, MmsError* mmsError, const char* currentFileName, const char* newFileName,
+        MmsConnection_GenericServiceHandler handler, void* parameter)
+{
+#if (MMS_FILE_SERVICE == 1)
+    uint32_t invokeId = 0;
+
+    if (getAssociationState(self) != MMS_STATE_CONNECTED) {
+        if (mmsError)
+            *mmsError = MMS_ERROR_CONNECTION_LOST;
+        goto exit_function;
+    }
+
+    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
+
+    invokeId = getNextInvokeId(self);
+
+    mmsClient_createFileRenameRequest(invokeId, payload, currentFileName, newFileName);
+
+    MmsError err = sendAsyncRequest(self, invokeId, payload, MMS_CALL_TYPE_FILE_RENAME, handler, parameter, NULL);
+
+    if (mmsError)
+        *mmsError = err;
+
+exit_function:
+    return invokeId;
+#else
+    if (DEBUG_MMS_CLIENT)
+        printf("MMS_CLIENT: service not supported\n");
+
+    *mmsError = MMS_ERROR_OTHER;
+    return 0;
+#endif
+}
+
 void
 MmsConnection_obtainFile(MmsConnection self, MmsError* mmsError, const char* sourceFile, const char* destinationFile)
 {
 #if ((MMS_FILE_SERVICE == 1) && (MMS_OBTAIN_FILE_SERVICE == 1))
-    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
-    uint32_t invokeId = getNextInvokeId(self);
+    struct fileOperationParameters parameter;
 
-    mmsClient_createObtainFileRequest(invokeId, payload, sourceFile, destinationFile);
+    MmsError err = MMS_ERROR_NONE;
 
-    sendRequestAndWaitForResponse(self, invokeId, payload, mmsError);
+    parameter.waitForResponse = Semaphore_create(1);
+    parameter.err = MMS_ERROR_NONE;
+    parameter.success = false;
 
-    /* nothing to do - response contains no data to evaluate */
+    Semaphore_wait(parameter.waitForResponse);
 
-    releaseResponse(self);
+    MmsConnection_obtainFileAsync(self, &err, sourceFile, destinationFile, fileOperationHandler, &parameter);
+
+    if (err == MMS_ERROR_NONE) {
+        Semaphore_wait(parameter.waitForResponse);
+
+        err = parameter.err;
+    }
+
+    Semaphore_destroy(parameter.waitForResponse);
+
+    if (mmsError)
+        *mmsError = err;
+
 #else
     if (DEBUG_MMS_CLIENT)
         printf("MMS_CLIENT: service not supported\n");
@@ -3422,6 +3877,41 @@ struct writeVariableParameters
     MmsError err;
     MmsDataAccessError accessError;
 };
+
+uint32_t
+MmsConnection_obtainFileAsync(MmsConnection self, MmsError* mmsError, const char* sourceFile, const char* destinationFile,
+        MmsConnection_GenericServiceHandler handler, void* parameter)
+{
+#if (MMS_FILE_SERVICE == 1)
+    uint32_t invokeId = 0;
+
+    if (getAssociationState(self) != MMS_STATE_CONNECTED) {
+        if (mmsError)
+            *mmsError = MMS_ERROR_CONNECTION_LOST;
+        goto exit_function;
+    }
+
+    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
+
+    invokeId = getNextInvokeId(self);
+
+    mmsClient_createObtainFileRequest(invokeId, payload, sourceFile, destinationFile);
+
+    MmsError err = sendAsyncRequest(self, invokeId, payload, MMS_CALL_TYPE_OBTAIN_FILE, handler, parameter, NULL);
+
+    if (mmsError)
+        *mmsError = err;
+
+exit_function:
+    return invokeId;
+#else
+    if (DEBUG_MMS_CLIENT)
+        printf("MMS_CLIENT: service not supported\n");
+
+    *mmsError = MMS_ERROR_OTHER;
+    return 0;
+#endif
+}
 
 static void
 writeVariableHandler(int invokeId, void* parameter, MmsError mmsError, MmsDataAccessError accessError)

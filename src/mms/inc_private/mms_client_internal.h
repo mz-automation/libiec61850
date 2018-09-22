@@ -74,7 +74,14 @@ typedef enum {
     MMS_CALL_TYPE_GET_SERVER_STATUS,
     MMS_CALL_TYPE_IDENTIFY,
     MMS_CALL_TYPE_READ_JOURNAL,
-    MMS_CALL_TYPE_GET_NAME_LIST
+    MMS_CALL_TYPE_GET_NAME_LIST,
+    MMS_CALL_TYPE_FILE_OPEN,
+    MMS_CALL_TYPE_FILE_READ,
+    MMS_CALL_TYPE_FILE_CLOSE,
+    MMS_CALL_TYPE_FILE_DELETE,
+    MMS_CALL_TYPE_FILE_RENAME,
+    MMS_CALL_TYPE_OBTAIN_FILE,
+    MMS_CALL_TYPE_GET_FILE_DIR
 } eMmsOutstandingCallType;
 
 struct sMmsOutstandingCall
@@ -312,8 +319,7 @@ void
 mmsClient_createFileDirectoryRequest(uint32_t invokeId, ByteBuffer* request, const char* fileSpecification, const char* continueAfter);
 
 bool
-mmsClient_parseFileDirectoryResponse(MmsConnection self, MmsFileDirectoryHandler handler, void* handlerParameter,
-        bool* moreFollows);
+mmsClient_parseFileDirectoryResponse(ByteBuffer* response, int bufPos, uint32_t invokeId, MmsConnection_FileDirectoryHandler handler, void* parameter);
 
 bool
 mmsClient_parseInitiateResponse(MmsConnection self);
