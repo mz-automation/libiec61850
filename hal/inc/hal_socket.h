@@ -64,6 +64,15 @@ typedef struct sSocket* Socket;
 /** Opaque reference for a set of server and socket handles */
 typedef struct sHandleSet* HandleSet;
 
+/** State of an asynchronous connect */
+typedef enum
+{
+    SOCKET_STATE_CONNECTING = 0,
+    SOCKET_STATE_FAILED = 1,
+    SOCKET_STATE_CONNECTED = 2
+} SocketState;
+
+
 /**
  * \brief Create a new connection handle set (HandleSet)
  *
@@ -223,6 +232,12 @@ Socket_setConnectTimeout(Socket self, uint32_t timeoutInMs);
  */
 bool
 Socket_connect(Socket self, const char* address, int port);
+
+bool
+Socket_connectAsync(Socket self, const char* address, int port);
+
+SocketState
+Socket_checkAsyncConnectState(Socket self);
 
 /**
  * \brief read from socket to local buffer (non-blocking)

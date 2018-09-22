@@ -320,6 +320,81 @@ Socket_setConnectTimeout(Socket self, uint32_t timeoutInMs)
 }
 
 bool
+Socket_connectAsync(Socket self, const char* address, int port)
+{
+    if (DEBUG_SOCKET)
+        printf("Socket_connect: %s:%i\n", address, port);
+
+    struct sockaddr_in serverAddress;
+    WSADATA wsa;
+    int ec;
+
+    if ((ec = WSAStartup(MAKEWORD(2,0), &wsa)) != 0) {
+        if (DEBUG_SOCKET)
+            printf("WIN32_SOCKET: winsock error: code %i\n", ec);
+        return false;
+    }
+
+
+
+    if (!prepareServerAddress(address, port, &serverAddress))
+        return false;
+
+    self->fd = socket(AF_INET, SOCK_STREAM, 0);
+
+#if CONFIG_ACTIVATE_TCP_KEEPALIVE == 1
+    activateKeepAlive(self->fd);
+#endif
+
+    setSocketNonBlocking(self);
+
+    if (connect(self->fd, (struct sockaddr *) &serverAddress, sizeof(serverAddress)) == SOCKET_ERROR) {
+        if (WSAGetLastError() != WSAEWOULDBLOCK) {
+            self->fd = INVALID_SOCKET;
+            return false;
+        }
+    }
+
+    return true; /* is connecting or already connected */
+}
+
+SocketState
+Socket_checkAsyncConnectState(Socket self)
+{
+    struct timeval timeout;
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 0;
+
+    fd_set fdSet;
+    FD_ZERO(&fdSet);
+    FD_SET(self->fd, &fdSet);
+
+    int selectVal = select(self->fd + 1, NULL, &fdSet , NULL, &timeout);
+
+    if (selectVal == 1) {
+
+        /* Check if connection is established */
+
+        int so_error;
+        int len = sizeof so_error;
+
+        if (getsockopt(self->fd, SOL_SOCKET, SO_ERROR, (char*) (&so_error), &len) >= 0) {
+
+            if (so_error == 0)
+                return SOCKET_STATE_CONNECTED;
+        }
+
+        return SOCKET_STATE_FAILED;
+    }
+    else if (selectVal == 0) {
+        return SOCKET_STATE_CONNECTING;
+    }
+    else {
+        return SOCKET_STATE_FAILED;
+    }
+}
+
+bool
 Socket_connect(Socket self, const char* address, int port)
 {
 	struct sockaddr_in serverAddress;

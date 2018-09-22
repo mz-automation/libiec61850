@@ -297,9 +297,11 @@ IsoClientConnection_associate(IsoClientConnection self, IsoConnectionParameters 
             CONFIG_TCP_KEEPALIVE_INTERVAL,
             CONFIG_TCP_KEEPALIVE_CNT);
 #endif
-
+    // (1) Function blocks
     if (!Socket_connect(self->socket, params->hostname, params->tcpPort))
         goto returnError;
+
+    // (2) Send connection request message
 
     /* COTP (ISO transport) handshake */
     CotpConnection_init(self->cotpConnection, self->socket, self->receiveBuffer, self->cotpReadBuffer, self->cotpWriteBuffer);
@@ -331,6 +333,7 @@ IsoClientConnection_associate(IsoClientConnection self, IsoConnectionParameters 
 
     uint64_t timeout = Hal_getTimeInMs() + CONFIG_TCP_READ_TIMEOUT_MS;
 
+    // (3) Waiting for response (blocking)
     while (((packetState = CotpConnection_readToTpktBuffer(self->cotpConnection)) == TPKT_WAITING)
         && (Hal_getTimeInMs() < timeout))
     {
@@ -344,6 +347,8 @@ IsoClientConnection_associate(IsoClientConnection self, IsoConnectionParameters 
 
     if (cotpIndication != COTP_CONNECT_INDICATION)
         goto returnError;
+
+    // (4) Send ACSE Initiate request
 
     /* Upper layers handshake */
     struct sBufferChain sAcsePayload;
@@ -415,6 +420,8 @@ IsoClientConnection_associate(IsoClientConnection self, IsoConnectionParameters 
     }
 
     AcseIndication acseIndication;
+
+    // (5) Wait for ACSE initiate response message
 
     acseIndication = AcseConnection_parseMessage(&(self->acseConnection), &self->presentation->nextPayload);
 

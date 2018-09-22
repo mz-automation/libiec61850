@@ -298,9 +298,8 @@ Socket_setConnectTimeout(Socket self, uint32_t timeoutInMs)
     self->connectTimeout = timeoutInMs;
 }
 
-
 bool
-Socket_connect(Socket self, const char* address, int port)
+Socket_connectAsync(Socket self, const char* address, int port)
 {
     struct sockaddr_in serverAddress;
 
@@ -312,37 +311,95 @@ Socket_connect(Socket self, const char* address, int port)
 
     self->fd = socket(AF_INET, SOCK_STREAM, 0);
 
-    fd_set fdSet;
-    FD_ZERO(&fdSet);
-    FD_SET(self->fd, &fdSet);
-
     activateTcpNoDelay(self);
+
+#if (CONFIG_ACTIVATE_TCP_KEEPALIVE == 1)
+    activateKeepAlive(self->fd);
+#endif
 
     fcntl(self->fd, F_SETFL, O_NONBLOCK);
 
     if (connect(self->fd, (struct sockaddr *) &serverAddress, sizeof(serverAddress)) < 0) {
-        if (errno != EINPROGRESS)
+
+        if (errno != EINPROGRESS) {
+            self->fd = -1;
             return false;
+        }
     }
+
+    return true; /* is connecting or already connected */
+}
+
+SocketState
+Socket_checkAsyncConnectState(Socket self)
+{
+    struct timeval timeout;
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 0;
+
+    fd_set fdSet;
+    FD_ZERO(&fdSet);
+    FD_SET(self->fd, &fdSet);
+
+    int selectVal = select(self->fd + 1, NULL, &fdSet , NULL, &timeout);
+
+    if (selectVal == 1) {
+
+        /* Check if connection is established */
+
+        int so_error;
+        socklen_t len = sizeof so_error;
+
+        if (getsockopt(self->fd, SOL_SOCKET, SO_ERROR, &so_error, &len) >= 0) {
+
+            if (so_error == 0)
+                return SOCKET_STATE_CONNECTED;
+        }
+
+        return SOCKET_STATE_FAILED;
+    }
+    else if (selectVal == 0) {
+        return SOCKET_STATE_CONNECTING;
+    }
+    else {
+        return SOCKET_STATE_FAILED;
+    }
+}
+
+bool
+Socket_connect(Socket self, const char* address, int port)
+{
+    if (Socket_connectAsync(self, address, port) == false)
+        return false;
 
     struct timeval timeout;
     timeout.tv_sec = self->connectTimeout / 1000;
     timeout.tv_usec = (self->connectTimeout % 1000) * 1000;
 
+    fd_set fdSet;
+    FD_ZERO(&fdSet);
+    FD_SET(self->fd, &fdSet);
+
     if (select(self->fd + 1, NULL, &fdSet , NULL, &timeout) == 1) {
+
+        /* Check if connection is established */
+
         int so_error;
         socklen_t len = sizeof so_error;
 
-        getsockopt(self->fd, SOL_SOCKET, SO_ERROR, &so_error, &len);
+        if (getsockopt(self->fd, SOL_SOCKET, SO_ERROR, &so_error, &len) >= 0) {
 
-        if (so_error == 0)
-            return true;
+            if (so_error == 0)
+                return true;
+        }
     }
 
     close (self->fd);
+    self->fd = -1;
 
     return false;
 }
+
 
 char*
 Socket_getPeerAddress(Socket self)
