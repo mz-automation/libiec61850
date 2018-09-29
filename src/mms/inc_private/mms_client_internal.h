@@ -1,7 +1,7 @@
 /*
  *  mms_msg_internal.h
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013-2018 Michael Zillgith
  *
  *	This file is part of libIEC61850.
  *
@@ -42,12 +42,7 @@
 #define DEBUG_MMS_CLIENT 0
 #endif
 
-typedef enum {
-	MMS_STATE_CLOSED,
-	MMS_STATE_CONNECTING,
-	MMS_STATE_CONNECTED
-} AssociationState;
-
+#if 0
 typedef enum {
 	MMS_CON_IDLE,
 	MMS_CON_WAITING,
@@ -55,6 +50,7 @@ typedef enum {
 	MMS_CON_ASSOCIATED,
 	MMS_CON_RESPONSE_PENDING
 } ConnectionState;
+#endif
 
 #define CONCLUDE_STATE_CONNECTION_ACTIVE 0
 #define CONCLUDE_STATE_REQUESTED 1
@@ -102,12 +98,6 @@ struct sMmsConnection {
     Semaphore lastInvokeIdLock;
     uint32_t lastInvokeId;
 
-	Semaphore lastResponseLock;
-    volatile uint32_t responseInvokeId;
-	ByteBuffer* lastResponse;
-	volatile uint32_t lastResponseBufPos;
-	volatile MmsError lastResponseError;
-
 	Semaphore outstandingCallsLock;
 	MmsOutstandingCall outstandingCalls;
 
@@ -116,14 +106,20 @@ struct sMmsConnection {
 
 	IsoClientConnection isoClient;
 
-	volatile AssociationState associationState;
-	Semaphore associationStateLock;
+#if (CONFIG_MMS_THREADLESS_STACK == 0)
+	Thread connectionHandlingThread;
+	bool createThread;
+	bool connectionThreadRunning;
+#endif
 
-	volatile ConnectionState connectionState;
-	Semaphore connectionStateLock;
+	volatile MmsConnectionState connectionState;
+	Semaphore associationStateLock;
 
 	MmsConnectionParameters parameters;
 	IsoConnectionParameters isoParameters;
+
+	MmsConnectionStateChangedHandler stateChangedHandler;
+	void* stateChangedHandlerParameter;
 
 	MmsInformationReportHandler reportHandler;
 	void* reportHandlerParameter;
@@ -131,14 +127,14 @@ struct sMmsConnection {
 	MmsConnectionLostHandler connectionLostHandler;
 	void* connectionLostHandlerParameter;
 
+	MmsConnection_ConcludeAbortHandler concludeHandler;
+	void* concludeHandlerParameter;
+	uint64_t concludeTimeout;
+
 #if (CONFIG_MMS_RAW_MESSAGE_LOGGING == 1)
 	void* rawMmsMessageHandler;
 	void* rawMmsMessageHandlerParameter;
 #endif
-
-	/* state of an active connection conclude/release process */
-	volatile int concludeState;
-	Semaphore concludeStateLock;
 
 #if (MMS_OBTAIN_FILE_SERVICE == 1)
     int32_t nextFrsmId;
@@ -322,7 +318,7 @@ bool
 mmsClient_parseFileDirectoryResponse(ByteBuffer* response, int bufPos, uint32_t invokeId, MmsConnection_FileDirectoryHandler handler, void* parameter);
 
 bool
-mmsClient_parseInitiateResponse(MmsConnection self);
+mmsClient_parseInitiateResponse(MmsConnection self, ByteBuffer* response);
 
 int
 mmsClient_createConcludeRequest(MmsConnection self, ByteBuffer* message);

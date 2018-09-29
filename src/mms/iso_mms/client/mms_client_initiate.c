@@ -160,10 +160,8 @@ parseInitResponseDetail(MmsConnection self, uint8_t* buffer, int bufPos, int max
 }
 
 bool
-mmsClient_parseInitiateResponse(MmsConnection self)
+mmsClient_parseInitiateResponse(MmsConnection self, ByteBuffer* response)
 {
-    bool result = false;
-
     self->parameters.maxPduSize = CONFIG_MMS_MAXIMUM_PDU_SIZE;
     self->parameters.dataStructureNestingLevel = DEFAULT_DATA_STRUCTURE_NESTING_LEVEL;
     self->parameters.maxServOutstandingCalled = DEFAULT_MAX_SERV_OUTSTANDING_CALLED;
@@ -171,8 +169,8 @@ mmsClient_parseInitiateResponse(MmsConnection self)
 
     int bufPos = 1; /* ignore tag - already checked */
 
-    int maxBufPos = ByteBuffer_getSize(self->lastResponse);
-    uint8_t* buffer = ByteBuffer_getBuffer(self->lastResponse);
+    int maxBufPos = ByteBuffer_getSize(response);
+    uint8_t* buffer = ByteBuffer_getBuffer(response);
 
     int length;
     bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
@@ -237,5 +235,5 @@ mmsClient_parseInitiateResponse(MmsConnection self)
     }
 
 
-    return result;
+    return true;
 }

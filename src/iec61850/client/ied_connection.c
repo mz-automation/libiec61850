@@ -562,17 +562,20 @@ IedConnection_connect(IedConnection self, IedClientError* error, const char* hos
 
     if (IedConnection_getState(self) != IED_STATE_CONNECTED) {
 
-        MmsConnection_setConnectionLostHandler(self->connection, connectionLostHandler, (void*) self);
+        MmsConnection_setConnectionLostHandler(self->connection, NULL, NULL);
         MmsConnection_setInformationReportHandler(self->connection, informationReportHandler, self);
 
         MmsConnection_setConnectTimeout(self->connection, self->connectionTimeout);
 
         if (MmsConnection_connect(self->connection, &mmsError, hostname, tcpPort)) {
+            MmsConnection_setConnectionLostHandler(self->connection, connectionLostHandler, (void*) self);
             *error = IED_ERROR_OK;
             IedConnection_setState(self, IED_STATE_CONNECTED);
         }
-        else
+        else {
+            IedConnection_setState(self, IED_STATE_IDLE);
             *error = iedConnection_mapMmsErrorToIedError(mmsError);
+        }
     }
     else
         *error = IED_ERROR_ALREADY_CONNECTED;

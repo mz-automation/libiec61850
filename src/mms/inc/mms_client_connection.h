@@ -59,6 +59,13 @@ typedef struct {
     char* revision;
 } MmsServerIdentity;
 
+typedef enum {
+    MMS_CONNECTION_STATE_CLOSED,
+    MMS_CONNECTION_STATE_CONNECTING,
+    MMS_CONNECTION_STATE_CONNECTED,
+    MMS_CONNECTION_STATE_CLOSING
+} MmsConnectionState;
+
 typedef void (*MmsInformationReportHandler) (void* parameter, char* domainName,
         char* variableListName, MmsValue* value, bool isVariableListName);
 
@@ -89,6 +96,20 @@ MmsConnection_create(void);
  */
 MmsConnection
 MmsConnection_createSecure(TLSConfiguration tlsConfig);
+
+/**
+ * \brief Create a new MmsConnection instance configured for non-threaded mode
+ *
+ * NOTE: This constructor doesn't create a background thread for connection handling.
+ * The user has to call the MmsConnection_tick function periodically to ensure that
+ * the MMS connection can be handled properly.
+ *
+ * \param tlsConfig TLS configuration parameters and certificates or NULL for non-TLS mode.
+ *
+ * \return  the newly created instance.
+ */
+MmsConnection
+MmsConnection_createNonThreaded(TLSConfiguration tlsConfig);
 
 /**
  * \brief Callback function to intercept raw MMS messages
@@ -181,6 +202,11 @@ MmsConnection_getIsoConnectionParameters(MmsConnection self);
 MmsConnectionParameters
 MmsConnection_getMmsConnectionParameters(MmsConnection self);
 
+typedef void (*MmsConnectionStateChangedHandler) (MmsConnection connection, void* parameter, MmsConnectionState newState);
+
+void
+MmsConnection_setConnectionStateChangedHandler(MmsConnection self, MmsConnectionStateChangedHandler handler, void* parameter);
+
 /**
  * \brief User provided handler function that will be called if the connection to the server is lost
  *
@@ -235,6 +261,23 @@ MmsConnection_destroy(MmsConnection self);
 bool
 MmsConnection_connect(MmsConnection self, MmsError* mmsError, const char* serverName, int serverPort);
 
+void
+MmsConnection_connectAsync(MmsConnection self, MmsError* mmsError, const char* serverName, int serverPort);
+
+
+// return value indicates that connection is currently waiting and calling thread can be suspended
+
+/**
+ * \brief Call MmsConnection state machine and connection handling code (for non-threaded mode only)
+ *
+ * This function has to be called periodically by the user application in non-threaded mode.
+ *
+ * \return true when connection is currently waiting and calling thread can be suspended, false means
+ *         connection is busy and the tick function should be called again as soon as possible.
+ */
+bool
+MmsConnection_tick(MmsConnection self);
+
 /**
  * \brief Close the connection - not recommended
  *
@@ -245,6 +288,9 @@ MmsConnection_connect(MmsConnection self, MmsError* mmsError, const char* server
  */
 void
 MmsConnection_close(MmsConnection self);
+
+typedef void
+(*MmsConnection_ConcludeAbortHandler) (void* parameter, MmsError mmsError, bool success);
 
 /**
  * \brief Uses the MMS/ACSE abort service to close the connection to the server
@@ -260,6 +306,9 @@ MmsConnection_close(MmsConnection self);
 void
 MmsConnection_abort(MmsConnection self, MmsError* mmsError);
 
+void
+MmsConnection_abortAsync(MmsConnection self, MmsError* mmsError);
+
 /**
  * \brief Uses the MMS conclude service to close the connection to the server
  *
@@ -273,6 +322,9 @@ MmsConnection_abort(MmsConnection self, MmsError* mmsError);
  */
 void
 MmsConnection_conclude(MmsConnection self, MmsError* mmsError);
+
+void
+MmsConnection_concludeAsync(MmsConnection self, MmsError* mmsError, MmsConnection_ConcludeAbortHandler handler, void* parameter);
 
 typedef void
 (*MmsConnection_GenericServiceHandler) (int invokeId, void* parameter, MmsError mmsError, bool success);

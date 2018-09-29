@@ -3,7 +3,7 @@
  *
  *  Client side representation of the ISO stack (COTP, session, presentation, ACSE)
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013-2018 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -47,20 +47,37 @@
 #endif /* DEBUG_ISO_SERVER */
 
 #define STATE_IDLE 0
-#define STATE_ASSOCIATED 1
+#define STATE_CONNECTED 1
 #define STATE_ERROR 2
+#define STATE_CONNECTING 3
 
 #define TPKT_RFC1006_HEADER_SIZE 4
 
 #define ISO_CLIENT_BUFFER_SIZE CONFIG_MMS_MAXIMUM_PDU_SIZE + 100
 
+typedef enum {
+    INT_STATE_IDLE,
+    INT_STATE_TCP_CONNECTING,
+    INT_STATE_WAIT_FOR_COTP_CONNECT_RESP,
+    INT_STATE_WAIT_FOR_ACSE_RESP,
+    INT_STATE_WAIT_FOR_DATA_MSG,
+    INT_STATE_CLOSING_CONNECTION,
+    INT_STATE_CLOSE_ON_ERROR,
+    INT_STATE_ERROR
+} eIsoClientInternalState;
+
 struct sIsoClientConnection
 {
+    IsoConnectionParameters parameters;
+
     IsoIndicationCallback callback;
     void* callbackParameter;
 
+    volatile eIsoClientInternalState intState;
     volatile int state;
     Semaphore stateMutex;
+
+    uint64_t nextReadTimeout;
 
     Socket socket;
 
@@ -81,20 +98,14 @@ struct sIsoClientConnection
     Semaphore transmitBufferMutex;
 
     ByteBuffer* receivePayloadBuffer;
-    Semaphore receiveBufferMutex;
+
+    Semaphore tickMutex;
 
     uint8_t* cotpReadBuf;
     uint8_t* cotpWriteBuf;
 
     ByteBuffer* cotpReadBuffer;
     ByteBuffer* cotpWriteBuffer;
-
-    volatile bool handlingThreadRunning;
-    volatile bool stopHandlingThread;
-    volatile bool destroyHandlingThread;
-    volatile bool startHandlingThread;
-
-    Thread thread;
 };
 
 static void
@@ -117,192 +128,73 @@ getState(IsoClientConnection self)
     return stateVal;
 }
 
-static void
-connectionHandlingThread(IsoClientConnection self)
+static inline void
+setIntState(IsoClientConnection self, eIsoClientInternalState newState)
 {
-    IsoSessionIndication sessionIndication;
-
-    self->handlingThreadRunning = true;
-
-    if (DEBUG_ISO_CLIENT)
-        printf("ISO_CLIENT_CONNECTION: new connection %p\n", self);
-
-    /* Wait until lower layer association is finished */
-    Semaphore_wait(self->receiveBufferMutex);
-
-    CotpConnection_resetPayload(self->cotpConnection);
-
-    while (true) {
-
-        TpktState packetState;
-
-        while ((packetState = CotpConnection_readToTpktBuffer(self->cotpConnection)) == TPKT_WAITING)
-        {
-            Thread_sleep(1);
-
-            if (self->stopHandlingThread) {
-                packetState = TPKT_ERROR;
-                break;
-            }
-
-            self->callback(ISO_IND_TICK, self->callbackParameter, NULL);
-        }
-
-        if (packetState == TPKT_ERROR)
-            break;
-
-        CotpIndication cotpIndication = CotpConnection_parseIncomingMessage(self->cotpConnection);
-
-        if (cotpIndication == COTP_MORE_FRAGMENTS_FOLLOW)
-            continue;
-
-        if (cotpIndication != COTP_DATA_INDICATION)
-            break;
-
-        if (DEBUG_ISO_CLIENT)
-            printf("ISO_CLIENT_CONNECTION: parse message\n");
-
-        sessionIndication =
-                IsoSession_parseMessage(self->session,
-                        CotpConnection_getPayload(self->cotpConnection));
-
-        if (sessionIndication != SESSION_DATA) {
-            if (DEBUG_ISO_CLIENT)
-                printf("ISO_CLIENT_CONNECTION: Invalid session message\n");
-            break;
-        }
-
-        if (!IsoPresentation_parseUserData(self->presentation, IsoSession_getUserData(self->session))) {
-            if (DEBUG_ISO_CLIENT)
-                printf("ISO_CLIENT_CONNECTION: Invalid presentation message\n");
-            break;
-        }
-
-        self->callback(ISO_IND_DATA, self->callbackParameter,
-                &(self->presentation->nextPayload));
-
-        /* wait for user to release the buffer */
-        Semaphore_wait(self->receiveBufferMutex);
-
-        CotpConnection_resetPayload(self->cotpConnection);
-    }
-
-    self->callback(ISO_IND_CLOSED, self->callbackParameter, NULL);;
-
-    setState(self, STATE_IDLE);
-
-#if (CONFIG_MMS_SUPPORT_TLS == 1)
-    if (self->cotpConnection->tlsSocket)
-        TLSSocket_close(self->cotpConnection->tlsSocket);
-#endif
-
-    Socket_destroy(self->socket);
-
-    if (DEBUG_ISO_CLIENT)
-        printf("ISO_CLIENT_CONNECTION: exit connection %p\n", self);
-
-    /* release buffer to enable reuse of client connection */
-    Semaphore_post(self->receiveBufferMutex);
-
-    self->handlingThreadRunning = false;
+    self->intState = newState;
 }
 
-
-static void*
-connectionThreadFunction(void* parameter)
+static inline eIsoClientInternalState
+getIntState(IsoClientConnection self)
 {
-    IsoClientConnection self = (IsoClientConnection) parameter;
-
-    while (self->destroyHandlingThread == false) {
-
-        if (self->startHandlingThread) {
-            self->startHandlingThread = false;
-            connectionHandlingThread(self);
-        }
-
-        Thread_sleep(1);
-    }
-
-    self->destroyHandlingThread = false;
-
-    return NULL;
+    return self->intState;
 }
-
 
 IsoClientConnection
-IsoClientConnection_create(IsoIndicationCallback callback, void* callbackParameter)
+IsoClientConnection_create(IsoConnectionParameters parameters, IsoIndicationCallback callback, void* callbackParameter)
 {
     IsoClientConnection self = (IsoClientConnection) GLOBAL_CALLOC(1, sizeof(struct sIsoClientConnection));
 
-    if (self == NULL)
-        return NULL;
+    if (self) {
 
-    self->callback = callback;
-    self->callbackParameter = callbackParameter;
+        self->parameters = parameters;
+        self->callback = callback;
+        self->callbackParameter = callbackParameter;
 
-    self->state = STATE_IDLE;
-    self->stateMutex = Semaphore_create(1);
+        self->intState = INT_STATE_IDLE;
+        self->state = STATE_IDLE;
+        self->stateMutex = Semaphore_create(1);
 
-    self->sendBuffer = (uint8_t*) GLOBAL_MALLOC(ISO_CLIENT_BUFFER_SIZE);
+        self->sendBuffer = (uint8_t*) GLOBAL_MALLOC(ISO_CLIENT_BUFFER_SIZE);
 
-    self->transmitPayloadBuffer = (ByteBuffer*) GLOBAL_CALLOC(1, sizeof(ByteBuffer));
-    self->transmitPayloadBuffer->buffer = self->sendBuffer;
-    self->transmitPayloadBuffer->maxSize = ISO_CLIENT_BUFFER_SIZE;
+        self->transmitPayloadBuffer = (ByteBuffer*) GLOBAL_CALLOC(1, sizeof(ByteBuffer));
+        self->transmitPayloadBuffer->buffer = self->sendBuffer;
+        self->transmitPayloadBuffer->maxSize = ISO_CLIENT_BUFFER_SIZE;
 
-    self->receivePayloadBuffer = (ByteBuffer*) GLOBAL_CALLOC(1, sizeof(ByteBuffer));
+        self->receivePayloadBuffer = (ByteBuffer*) GLOBAL_CALLOC(1, sizeof(ByteBuffer));
 
-    self->transmitBufferMutex = Semaphore_create(1);
+        self->transmitBufferMutex = Semaphore_create(1);
 
-    self->receiveBufferMutex = Semaphore_create(1);
+        self->tickMutex = Semaphore_create(1);
 
-    self->receiveBuf = (uint8_t*) GLOBAL_MALLOC(ISO_CLIENT_BUFFER_SIZE);
-    self->receiveBuffer = (ByteBuffer*) GLOBAL_CALLOC(1, sizeof(ByteBuffer));
-    ByteBuffer_wrap(self->receiveBuffer, self->receiveBuf, 0, ISO_CLIENT_BUFFER_SIZE);
+        self->receiveBuf = (uint8_t*) GLOBAL_MALLOC(ISO_CLIENT_BUFFER_SIZE);
+        self->receiveBuffer = (ByteBuffer*) GLOBAL_CALLOC(1, sizeof(ByteBuffer));
+        ByteBuffer_wrap(self->receiveBuffer, self->receiveBuf, 0, ISO_CLIENT_BUFFER_SIZE);
 
-    self->presentation = (IsoPresentation*) GLOBAL_CALLOC(1, sizeof(IsoPresentation));
+        self->presentation = (IsoPresentation*) GLOBAL_CALLOC(1, sizeof(IsoPresentation));
 
-    self->session = (IsoSession*) GLOBAL_CALLOC(1, sizeof(IsoSession));
+        self->session = (IsoSession*) GLOBAL_CALLOC(1, sizeof(IsoSession));
 
-    self->cotpReadBuf = (uint8_t*) GLOBAL_MALLOC(CONFIG_COTP_MAX_TPDU_SIZE + TPKT_RFC1006_HEADER_SIZE);
-    self->cotpWriteBuf = (uint8_t*) GLOBAL_MALLOC(CONFIG_COTP_MAX_TPDU_SIZE + TPKT_RFC1006_HEADER_SIZE);
+        self->cotpReadBuf = (uint8_t*) GLOBAL_MALLOC(CONFIG_COTP_MAX_TPDU_SIZE + TPKT_RFC1006_HEADER_SIZE);
+        self->cotpWriteBuf = (uint8_t*) GLOBAL_MALLOC(CONFIG_COTP_MAX_TPDU_SIZE + TPKT_RFC1006_HEADER_SIZE);
 
-    self->cotpReadBuffer = (ByteBuffer*) GLOBAL_CALLOC(1, sizeof(ByteBuffer));
-    ByteBuffer_wrap(self->cotpReadBuffer, self->cotpReadBuf, 0, CONFIG_COTP_MAX_TPDU_SIZE + TPKT_RFC1006_HEADER_SIZE);
+        self->cotpReadBuffer = (ByteBuffer*) GLOBAL_CALLOC(1, sizeof(ByteBuffer));
+        ByteBuffer_wrap(self->cotpReadBuffer, self->cotpReadBuf, 0, CONFIG_COTP_MAX_TPDU_SIZE + TPKT_RFC1006_HEADER_SIZE);
 
-    self->cotpWriteBuffer = (ByteBuffer*) GLOBAL_CALLOC(1, sizeof(ByteBuffer));
-    ByteBuffer_wrap(self->cotpWriteBuffer, self->cotpWriteBuf, 0, CONFIG_COTP_MAX_TPDU_SIZE + TPKT_RFC1006_HEADER_SIZE);
+        self->cotpWriteBuffer = (ByteBuffer*) GLOBAL_CALLOC(1, sizeof(ByteBuffer));
+        ByteBuffer_wrap(self->cotpWriteBuffer, self->cotpWriteBuf, 0, CONFIG_COTP_MAX_TPDU_SIZE + TPKT_RFC1006_HEADER_SIZE);
 
-    self->cotpConnection = (CotpConnection*) GLOBAL_CALLOC(1, sizeof(CotpConnection));
-
-    self->handlingThreadRunning = false;
-
-    self->stopHandlingThread = false;
-    self->destroyHandlingThread = false;
-    self->startHandlingThread = false;
+        self->cotpConnection = (CotpConnection*) GLOBAL_CALLOC(1, sizeof(CotpConnection));
+    }
 
     return self;
 }
 
-void
-IsoClientConnection_associate(IsoClientConnection self, IsoConnectionParameters params,
-        ByteBuffer* payload, uint32_t connectTimeoutInMs)
+
+
+static bool
+sendConnectionRequestMessage(IsoClientConnection self)
 {
-    self->socket = TcpSocket_create();
-
-    Socket_setConnectTimeout(self->socket, connectTimeoutInMs);
-
-#if (CONFIG_ACTIVATE_TCP_KEEPALIVE == 1)
-    Socket_activateTcpKeepAlive(self->socket,
-            CONFIG_TCP_KEEPALIVE_IDLE,
-            CONFIG_TCP_KEEPALIVE_INTERVAL,
-            CONFIG_TCP_KEEPALIVE_CNT);
-#endif
-    // (1) Function blocks
-    if (!Socket_connect(self->socket, params->hostname, params->tcpPort))
-        goto returnError;
-
-    // (2) Send connection request message
-
     /* COTP (ISO transport) handshake */
     CotpConnection_init(self->cotpConnection, self->socket, self->receiveBuffer, self->cotpReadBuffer, self->cotpWriteBuffer);
 
@@ -327,48 +219,36 @@ IsoClientConnection_associate(IsoClientConnection self, IsoConnectionParameters 
 
     /* COTP (ISO transport) handshake */
     CotpIndication cotpIndication =
-            CotpConnection_sendConnectionRequestMessage(self->cotpConnection, params);
+            CotpConnection_sendConnectionRequestMessage(self->cotpConnection, self->parameters);
 
-    TpktState packetState;
+    if (cotpIndication != COTP_OK)
+        return false;
+    else
+        return true;
+}
 
-    uint64_t timeout = Hal_getTimeInMs() + CONFIG_TCP_READ_TIMEOUT_MS;
-
-    // (3) Waiting for response (blocking)
-    while (((packetState = CotpConnection_readToTpktBuffer(self->cotpConnection)) == TPKT_WAITING)
-        && (Hal_getTimeInMs() < timeout))
-    {
-        Thread_sleep(1);
-    }
-
-    if (packetState != TPKT_PACKET_COMPLETE)
-        goto returnError;
-
-    cotpIndication = CotpConnection_parseIncomingMessage(self->cotpConnection);
-
-    if (cotpIndication != COTP_CONNECT_INDICATION)
-        goto returnError;
-
-    // (4) Send ACSE Initiate request
-
+static void
+sendAcseInitiateRequest(IsoClientConnection self)
+{
     /* Upper layers handshake */
     struct sBufferChain sAcsePayload;
     BufferChain acsePayload = &sAcsePayload;
-    acsePayload->buffer = payload->buffer;
-    acsePayload->partLength = payload->size;
-    acsePayload->length = payload->size;
+    acsePayload->buffer = self->transmitPayloadBuffer->buffer;
+    acsePayload->partLength = self->transmitPayloadBuffer->size;
+    acsePayload->length = self->transmitPayloadBuffer->size;
     acsePayload->nextPart = NULL;
 
     AcseConnection_init(&(self->acseConnection), NULL, NULL, NULL);
 
-    AcseAuthenticationParameter authParameter = params->acseAuthParameter;
+    AcseAuthenticationParameter authParameter = self->parameters->acseAuthParameter;
 
     struct sBufferChain sAcseBuffer;
     BufferChain acseBuffer = &sAcseBuffer;
 
-    acseBuffer->buffer = self->sendBuffer + payload->size;
+    acseBuffer->buffer = self->sendBuffer + self->transmitPayloadBuffer->size;
     acseBuffer->partMaxLength = ISO_CLIENT_BUFFER_SIZE - acsePayload->length;
 
-    AcseConnection_createAssociateRequestMessage(&(self->acseConnection), params, acseBuffer, acsePayload,
+    AcseConnection_createAssociateRequestMessage(&(self->acseConnection), self->parameters, acseBuffer, acsePayload,
             authParameter);
 
     struct sBufferChain sPresentationBuffer;
@@ -378,126 +258,435 @@ IsoClientConnection_associate(IsoClientConnection self, IsoConnectionParameters 
     presentationBuffer->partMaxLength = ISO_CLIENT_BUFFER_SIZE - acseBuffer->length;
 
     IsoPresentation_init(self->presentation);
-    IsoPresentation_createConnectPdu(self->presentation, params, presentationBuffer, acseBuffer);
+    IsoPresentation_createConnectPdu(self->presentation, self->parameters, presentationBuffer, acseBuffer);
 
     struct sBufferChain sSessionBuffer;
     BufferChain sessionBuffer = &sSessionBuffer;
     sessionBuffer->buffer = self->sendBuffer + presentationBuffer->length;
 
     IsoSession_init(self->session);
-    IsoSession_createConnectSpdu(self->session, params, sessionBuffer,
+    IsoSession_createConnectSpdu(self->session, self->parameters, sessionBuffer,
             presentationBuffer);
 
     CotpConnection_sendDataMessage(self->cotpConnection, sessionBuffer);
 
     Semaphore_post(self->transmitBufferMutex);
+}
 
-    while ((packetState = CotpConnection_readToTpktBuffer(self->cotpConnection)) == TPKT_WAITING)
-    {
-        Thread_sleep(1);
+
+static void
+releaseSocket(IsoClientConnection self)
+{
+    if (self->socket) {
+
+#if (CONFIG_MMS_SUPPORT_TLS == 1)
+    if (self->cotpConnection->tlsSocket)
+        TLSSocket_close(self->cotpConnection->tlsSocket);
+#endif
+
+        Socket_destroy(self->socket);
+        self->socket = NULL;
+    }
+}
+
+/*
+ * Connection state machine
+ *
+ * called by tick function
+ *
+ * \return value indicates that connection is currently waiting and calling thread can be suspended
+ */
+bool
+IsoClientConnection_handleConnection(IsoClientConnection self)
+{
+    Semaphore_wait(self->tickMutex);
+
+    bool waits = false;
+
+    eIsoClientInternalState currentState = getIntState(self);
+
+    eIsoClientInternalState nextState = currentState;
+
+    switch (currentState) {
+
+    case INT_STATE_IDLE:
+    case INT_STATE_ERROR:
+        waits = true;
+        break;
+
+    case INT_STATE_TCP_CONNECTING:
+        {
+            SocketState socketState = Socket_checkAsyncConnectState(self->socket);
+
+            if (socketState == SOCKET_STATE_CONNECTED) {
+                if (sendConnectionRequestMessage(self)) {
+                    self->nextReadTimeout = Hal_getTimeInMs() + CONFIG_TCP_READ_TIMEOUT_MS;
+                    nextState = INT_STATE_WAIT_FOR_COTP_CONNECT_RESP;
+                }
+                else {
+                    IsoClientConnection_releaseTransmitBuffer(self);
+                    self->callback(ISO_IND_ASSOCIATION_FAILED, self->callbackParameter, NULL);
+                    nextState = INT_STATE_CLOSE_ON_ERROR;
+                }
+            }
+            else if (socketState == SOCKET_STATE_FAILED) {
+                IsoClientConnection_releaseTransmitBuffer(self);
+                self->callback(ISO_IND_ASSOCIATION_FAILED, self->callbackParameter, NULL);
+                nextState = INT_STATE_CLOSE_ON_ERROR;
+            }
+            else {
+                waits = true;
+            }
+
+        }
+        break;
+
+    case INT_STATE_WAIT_FOR_COTP_CONNECT_RESP:
+        {
+            uint64_t currentTime = Hal_getTimeInMs();
+
+            if (currentTime > self->nextReadTimeout) {
+
+                if (DEBUG_ISO_CLIENT)
+                    printf("Timeout waiting for COTP CR\n");
+
+                IsoClientConnection_releaseTransmitBuffer(self);
+
+                self->callback(ISO_IND_ASSOCIATION_FAILED, self->callbackParameter, NULL);
+
+                nextState = INT_STATE_CLOSE_ON_ERROR;
+            }
+            else {
+
+                TpktState packetState = CotpConnection_readToTpktBuffer(self->cotpConnection);
+
+                if (packetState == TPKT_PACKET_COMPLETE) {
+
+                    CotpIndication cotpIndication = CotpConnection_parseIncomingMessage(self->cotpConnection);
+
+                    if (cotpIndication != COTP_CONNECT_INDICATION) {
+                        if (DEBUG_ISO_CLIENT)
+                            printf("Unexpected COTP state (%i)\n", cotpIndication);
+
+                        IsoClientConnection_releaseTransmitBuffer(self);
+
+                        self->callback(ISO_IND_ASSOCIATION_FAILED, self->callbackParameter, NULL);
+
+                        nextState = INT_STATE_CLOSE_ON_ERROR;
+                    }
+                    else {
+                        sendAcseInitiateRequest(self);
+
+                        self->nextReadTimeout = Hal_getTimeInMs() + CONFIG_TCP_READ_TIMEOUT_MS;
+
+                        nextState = INT_STATE_WAIT_FOR_ACSE_RESP;
+                    }
+                }
+                else if (packetState == TPKT_ERROR) {
+                    if (DEBUG_ISO_CLIENT)
+                        printf("Error receiving COTP message\n");
+
+                    IsoClientConnection_releaseTransmitBuffer(self);
+
+                    self->callback(ISO_IND_ASSOCIATION_FAILED, self->callbackParameter, NULL);
+
+                    nextState = INT_STATE_CLOSE_ON_ERROR;
+                }
+                else {
+                    waits = true;
+                }
+
+            }
+        }
+        break;
+
+    case INT_STATE_WAIT_FOR_ACSE_RESP:
+        {
+            uint64_t currentTime = Hal_getTimeInMs();
+
+            if (currentTime > self->nextReadTimeout) {
+
+                if (DEBUG_ISO_CLIENT)
+                    printf("Timeout waiting for ACSE initiate response\n");
+
+                self->callback(ISO_IND_ASSOCIATION_FAILED, self->callbackParameter, NULL);
+
+                nextState = INT_STATE_ERROR;
+            }
+            else {
+
+                TpktState packetState = CotpConnection_readToTpktBuffer(self->cotpConnection);
+
+                if (packetState == TPKT_PACKET_COMPLETE) {
+
+                    CotpIndication cotpIndication = CotpConnection_parseIncomingMessage(self->cotpConnection);
+
+                    if (cotpIndication != COTP_DATA_INDICATION) {
+                        if (DEBUG_ISO_CLIENT)
+                            printf("Unexpected COTP state (%i)\n", cotpIndication);
+
+                        self->callback(ISO_IND_ASSOCIATION_FAILED, self->callbackParameter, NULL);
+
+                        nextState = INT_STATE_CLOSE_ON_ERROR;
+                    }
+                    else {
+
+                        /* parse ACSE response */
+
+                       IsoSessionIndication sessionIndication;
+
+                       sessionIndication =
+                               IsoSession_parseMessage(self->session, CotpConnection_getPayload(self->cotpConnection));
+
+                       if (sessionIndication != SESSION_CONNECT) {
+                           if (DEBUG_ISO_CLIENT)
+                               printf("IsoClientConnection_associate: no session connect indication\n");
+
+                           self->callback(ISO_IND_ASSOCIATION_FAILED, self->callbackParameter, NULL);
+
+                           nextState = INT_STATE_CLOSE_ON_ERROR;
+                       }
+                       else {
+
+                           if (IsoPresentation_parseAcceptMessage(self->presentation, IsoSession_getUserData(self->session)) == false) {
+
+                               if (DEBUG_ISO_CLIENT)
+                                   printf("IsoClientConnection_associate: no presentation ok indication\n");
+
+                               self->callback(ISO_IND_ASSOCIATION_FAILED, self->callbackParameter, NULL);
+
+                               nextState = INT_STATE_CLOSE_ON_ERROR;
+                           }
+                           else {
+
+                               AcseIndication acseIndication = AcseConnection_parseMessage(&(self->acseConnection), &self->presentation->nextPayload);
+
+                               if (acseIndication != ACSE_ASSOCIATE) {
+                                   if (DEBUG_ISO_CLIENT)
+                                       printf("IsoClientConnection_associate: no ACSE_ASSOCIATE indication\n");
+
+                                   self->callback(ISO_IND_ASSOCIATION_FAILED, self->callbackParameter, NULL);
+
+                                   nextState = INT_STATE_CLOSE_ON_ERROR;
+                               }
+                               else {
+
+                               }
+
+                           }
+
+                           ByteBuffer_wrap(self->receivePayloadBuffer, self->acseConnection.userDataBuffer,
+                                   self->acseConnection.userDataBufferSize, self->acseConnection.userDataBufferSize);
+
+                           setState(self, STATE_CONNECTED);
+                           nextState = INT_STATE_WAIT_FOR_DATA_MSG;
+
+                           self->callback(ISO_IND_ASSOCIATION_SUCCESS, self->callbackParameter, self->receivePayloadBuffer);
+
+                           CotpConnection_resetPayload(self->cotpConnection);
+                       }
+                    }
+                }
+                else if (packetState == TPKT_ERROR) {
+                    if (DEBUG_ISO_CLIENT)
+                        printf("Error receiving COTP message\n");
+
+                    self->callback(ISO_IND_ASSOCIATION_FAILED, self->callbackParameter, NULL);
+
+                    nextState = INT_STATE_CLOSE_ON_ERROR;
+                }
+                else {
+                    waits = true;
+                }
+
+            }
+        }
+        break;
+
+    case INT_STATE_WAIT_FOR_DATA_MSG:
+        {
+            TpktState packetState = CotpConnection_readToTpktBuffer(self->cotpConnection);
+
+            if (packetState == TPKT_ERROR) {
+                nextState = INT_STATE_CLOSE_ON_ERROR;
+            }
+            else if (packetState == TPKT_PACKET_COMPLETE) {
+
+                CotpIndication cotpIndication = CotpConnection_parseIncomingMessage(self->cotpConnection);
+
+                switch (cotpIndication) {
+
+                case COTP_MORE_FRAGMENTS_FOLLOW:
+                    break;
+
+                case COTP_DISCONNECT_INDICATION:
+                    {
+                        nextState = INT_STATE_CLOSING_CONNECTION;
+                    }
+                    break;
+
+                case COTP_DATA_INDICATION:
+                    {
+                        if (DEBUG_ISO_CLIENT)
+                            printf("ISO_CLIENT_CONNECTION: parse message\n");
+
+                        IsoSessionIndication sessionIndication =
+                                IsoSession_parseMessage(self->session,
+                                        CotpConnection_getPayload(self->cotpConnection));
+
+                        if (sessionIndication != SESSION_DATA) {
+                            if (DEBUG_ISO_CLIENT)
+                                printf("ISO_CLIENT_CONNECTION: Invalid session message\n");
+
+                            nextState = INT_STATE_CLOSE_ON_ERROR;
+                        }
+                        else {
+
+                            if (!IsoPresentation_parseUserData(self->presentation, IsoSession_getUserData(self->session))) {
+
+                                if (DEBUG_ISO_CLIENT)
+                                    printf("ISO_CLIENT_CONNECTION: Invalid presentation message\n");
+
+                                nextState = INT_STATE_CLOSE_ON_ERROR;
+                            }
+                            else {
+
+                                self->callback(ISO_IND_DATA, self->callbackParameter,
+                                        &(self->presentation->nextPayload));
+
+                                CotpConnection_resetPayload(self->cotpConnection);
+                            }
+                        }
+                    }
+                    break;
+
+                default:
+                    {
+                        nextState = INT_STATE_CLOSE_ON_ERROR;
+                    }
+                    break;
+
+                }
+            }
+            else {
+                waits = true;
+            }
+
+        }
+        break;
+
+    case INT_STATE_CLOSE_ON_ERROR:
+        {
+            setState(self, STATE_ERROR);
+
+            self->callback(ISO_IND_CLOSED, self->callbackParameter, NULL);;
+
+            releaseSocket(self);
+
+            nextState = INT_STATE_ERROR;
+        }
+        break;
+
+    case INT_STATE_CLOSING_CONNECTION:
+        {
+            setState(self, STATE_IDLE);
+
+            self->callback(ISO_IND_CLOSED, self->callbackParameter, NULL);;
+
+            releaseSocket(self);
+
+            nextState = INT_STATE_IDLE;
+        }
+        break;
+
     }
 
-    cotpIndication = CotpConnection_parseIncomingMessage(self->cotpConnection);
+    self->callback(ISO_IND_TICK, self->callbackParameter, NULL);
 
-    if (cotpIndication != COTP_DATA_INDICATION)
-        goto returnError;
+    setIntState(self, nextState);
 
-    IsoSessionIndication sessionIndication;
+    Semaphore_post(self->tickMutex);
 
-    sessionIndication =
-            IsoSession_parseMessage(self->session, CotpConnection_getPayload(self->cotpConnection));
+    return waits;
+}
 
-    if (sessionIndication != SESSION_CONNECT) {
-        if (DEBUG_ISO_CLIENT)
-            printf("IsoClientConnection_associate: no session connect indication\n");
-        goto returnError;
+
+bool
+IsoClientConnection_associateAsync(IsoClientConnection self, uint32_t connectTimeoutInMs)
+{
+    bool success = true;
+
+    /* Create socket and start connect */
+    setState(self, STATE_CONNECTING);
+
+    Semaphore_wait(self->tickMutex);
+
+    self->socket = TcpSocket_create();
+
+    Socket_setConnectTimeout(self->socket, connectTimeoutInMs);
+
+#if (CONFIG_ACTIVATE_TCP_KEEPALIVE == 1)
+    Socket_activateTcpKeepAlive(self->socket,
+            CONFIG_TCP_KEEPALIVE_IDLE,
+            CONFIG_TCP_KEEPALIVE_INTERVAL,
+            CONFIG_TCP_KEEPALIVE_CNT);
+#endif
+
+    setIntState(self, INT_STATE_TCP_CONNECTING);
+
+    if (Socket_connectAsync(self->socket, self->parameters->hostname, self->parameters->tcpPort) == false) {
+
+        Socket_destroy(self->socket);
+        self->socket = NULL;
+
+        setIntState(self, INT_STATE_ERROR);
+        setState(self, STATE_ERROR);
+
+        IsoClientConnection_releaseTransmitBuffer(self);
+
+        success = false;
     }
 
-    if (!IsoPresentation_parseAcceptMessage(self->presentation, IsoSession_getUserData(self->session))) {
-        if (DEBUG_ISO_CLIENT)
-            printf("IsoClientConnection_associate: no presentation ok indication\n");
-        goto returnError;
-    }
+    Semaphore_post(self->tickMutex);
 
-    AcseIndication acseIndication;
-
-    // (5) Wait for ACSE initiate response message
-
-    acseIndication = AcseConnection_parseMessage(&(self->acseConnection), &self->presentation->nextPayload);
-
-    if (acseIndication != ACSE_ASSOCIATE) {
-        if (DEBUG_ISO_CLIENT)
-            printf("IsoClientConnection_associate: no ACSE_ASSOCIATE indication\n");
-        goto returnError;
-    }
-
-    ByteBuffer_wrap(self->receivePayloadBuffer, self->acseConnection.userDataBuffer,
-            self->acseConnection.userDataBufferSize, self->acseConnection.userDataBufferSize);
-
-    Semaphore_wait(self->receiveBufferMutex);
-
-    self->callback(ISO_IND_ASSOCIATION_SUCCESS, self->callbackParameter, self->receivePayloadBuffer);
-
-    /* wait for upper layer to release buffer */
-    Semaphore_wait(self->receiveBufferMutex);
-
-    setState(self, STATE_ASSOCIATED);
-
-    if (self->thread == NULL) {
-        self->thread = Thread_create(connectionThreadFunction, self, false);
-        Thread_start(self->thread);
-    }
-
-    self->startHandlingThread = true;
-
-    while (self->handlingThreadRunning == false)
-        Thread_sleep(1);
-
-    return;
-
-returnError:
-    self->callback(ISO_IND_ASSOCIATION_FAILED, self->callbackParameter, NULL);
-
-    setState(self, STATE_ERROR);
-
-    Socket_destroy(self->socket);
-    self->socket = NULL;
-
-    Semaphore_post(self->transmitBufferMutex);
-
-    return;
+    return success;
 }
 
 void
 IsoClientConnection_sendMessage(IsoClientConnection self, ByteBuffer* payloadBuffer)
 {
+    if (getState(self) == STATE_CONNECTED) {
+        struct sBufferChain payloadBCMemory;
+        BufferChain payload = &payloadBCMemory;
 
-    struct sBufferChain payloadBCMemory;
-    BufferChain payload = &payloadBCMemory;
+        BufferChain_init(payload, payloadBuffer->size, payloadBuffer->size, NULL, payloadBuffer->buffer);
 
-    BufferChain_init(payload, payloadBuffer->size, payloadBuffer->size, NULL, payloadBuffer->buffer);
+        struct sBufferChain presentationBCMemory;
+        BufferChain presentationBuffer = &presentationBCMemory;
 
-    struct sBufferChain presentationBCMemory;
-    BufferChain presentationBuffer = &presentationBCMemory;
+        presentationBuffer->buffer = self->sendBuffer + payload->length;
+        presentationBuffer->partMaxLength = ISO_CLIENT_BUFFER_SIZE;
 
-    presentationBuffer->buffer = self->sendBuffer + payload->length;
-    presentationBuffer->partMaxLength = ISO_CLIENT_BUFFER_SIZE;
+        IsoPresentation_createUserData(self->presentation, presentationBuffer, payload);
 
-    IsoPresentation_createUserData(self->presentation, presentationBuffer, payload);
+        struct sBufferChain sessionBufferBCMemory;
+        BufferChain sessionBuffer = &sessionBufferBCMemory;
 
-    struct sBufferChain sessionBufferBCMemory;
-    BufferChain sessionBuffer = &sessionBufferBCMemory;
+        IsoSession_createDataSpdu(self->session, sessionBuffer, presentationBuffer);
 
-    IsoSession_createDataSpdu(self->session, sessionBuffer, presentationBuffer);
+        CotpIndication indication = CotpConnection_sendDataMessage(self->cotpConnection, sessionBuffer);
 
-    CotpIndication indication = CotpConnection_sendDataMessage(self->cotpConnection, sessionBuffer);
+        if (indication != COTP_OK)
+            if (DEBUG_ISO_CLIENT)
+                printf("ISO_CLIENT: IsoClientConnection_sendMessage: send message failed!\n");
+    }
+    else {
+        if (DEBUG_ISO_CLIENT)
+            printf("ISO_CLIENT: Not connected --> cannot send message\n");
+    }
 
     /* release transmit buffer for use by API client */
     Semaphore_post(self->transmitBufferMutex);
-
-    if (indication != COTP_OK)
-        if (DEBUG_ISO_CLIENT)
-            printf("ISO_CLIENT: IsoClientConnection_sendMessage: send message failed!\n");
 }
 
 void
@@ -506,13 +695,21 @@ IsoClientConnection_close(IsoClientConnection self)
     if (DEBUG_ISO_CLIENT)
         printf("ISO_CLIENT: IsoClientConnection_close\n");
 
-    if (self->handlingThreadRunning) {
-        self->stopHandlingThread = true;
-        while (self->handlingThreadRunning)
-            Thread_sleep(1);
-    }
+    Semaphore_wait(self->tickMutex);
 
-    setState(self, STATE_IDLE);
+    eIsoClientInternalState intState = getIntState(self);
+
+    if ((intState != INT_STATE_IDLE) && (intState != INT_STATE_ERROR) && (intState != INT_STATE_CLOSE_ON_ERROR)) {
+        setIntState(self, INT_STATE_CLOSING_CONNECTION);
+
+        Semaphore_post(self->tickMutex);
+
+        IsoClientConnection_handleConnection(self);
+        setState(self, STATE_IDLE);
+    }
+    else {
+        Semaphore_post(self->tickMutex);
+    }
 }
 
 
@@ -522,22 +719,14 @@ IsoClientConnection_destroy(IsoClientConnection self)
     if (DEBUG_ISO_CLIENT)
         printf("ISO_CLIENT: IsoClientConnection_destroy\n");
 
-    if (getState(self) == STATE_ASSOCIATED) {
+    int state = getState(self);
+
+    if (state == STATE_CONNECTED) {
 
         if (DEBUG_ISO_CLIENT)
             printf("ISO_CLIENT: call IsoClientConnection_close\n");
 
         IsoClientConnection_close(self);
-    }
-
-    /* stop handling thread */
-    self->destroyHandlingThread = true;
-
-    if (self->thread != NULL) {
-        while (self->destroyHandlingThread)
-            Thread_sleep(1);
-
-        Thread_destroy(self->thread);
     }
 
     if (self->receiveBuf != NULL)
@@ -567,18 +756,17 @@ IsoClientConnection_destroy(IsoClientConnection self)
     GLOBAL_FREEMEM(self->transmitPayloadBuffer);
     GLOBAL_FREEMEM(self->receivePayloadBuffer);
 
-    Semaphore_destroy(self->receiveBufferMutex);
     Semaphore_destroy(self->transmitBufferMutex);
     Semaphore_destroy(self->stateMutex);
+    Semaphore_destroy(self->tickMutex);
 
     GLOBAL_FREEMEM(self->sendBuffer);
     GLOBAL_FREEMEM(self);
 }
 
-bool
-IsoClientConnection_abort(IsoClientConnection self)
+static void
+sendAbortMessage(IsoClientConnection self)
 {
-    //TODO block other messages from being sent
     IsoClientConnection_allocateTransmitBuffer(self);
 
     struct sBufferChain sAcseBuffer;
@@ -608,15 +796,12 @@ IsoClientConnection_abort(IsoClientConnection self)
     CotpConnection_sendDataMessage(self->cotpConnection, sessionBuffer);
 
     Semaphore_post(self->transmitBufferMutex);
+}
 
-    uint64_t timeout = Hal_getTimeInMs() + CONFIG_TCP_READ_TIMEOUT_MS;
-
-    while ((self->handlingThreadRunning == true) && (Hal_getTimeInMs() < timeout));
-
-    if (self->handlingThreadRunning)
-        return false;
-    else
-        return true;
+void
+IsoClientConnection_abortAsync(IsoClientConnection self)
+{
+    sendAbortMessage(self);
 }
 
 void
@@ -668,10 +853,4 @@ void
 IsoClientConnection_releaseTransmitBuffer(IsoClientConnection self)
 {
     Semaphore_post(self->transmitBufferMutex);
-}
-
-void
-IsoClientConnection_releaseReceiveBuffer(IsoClientConnection self)
-{
-    Semaphore_post(self->receiveBufferMutex);
 }
