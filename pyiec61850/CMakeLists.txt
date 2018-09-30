@@ -15,8 +15,7 @@ if(WIN32)
 else()
     set(LIBS iec61850-shared)
 endif()
-
-if(${SWIG_VERSION} VERSION_LESS 3.0)
+if(${CMAKE_VERSION} VERSION_LESS 3.8)
     swig_add_module(iec61850 python iec61850.i)
 else()
     swig_add_library(iec61850
