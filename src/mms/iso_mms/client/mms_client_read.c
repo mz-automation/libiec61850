@@ -421,127 +421,6 @@ mmsClient_createReadRequest(uint32_t invokeId, const char* domainId, const char*
     return rval.encoded;
 }
 
-static AlternateAccess_t*
-createAlternateAccess(uint32_t index, uint32_t elementCount)
-{
-    AlternateAccess_t* alternateAccess = (AlternateAccess_t*) GLOBAL_CALLOC(1, sizeof(AlternateAccess_t));
-    alternateAccess->list.count = 1;
-    alternateAccess->list.array = (struct AlternateAccess__Member**) GLOBAL_CALLOC(1, sizeof(struct AlternateAccess__Member*));
-    alternateAccess->list.array[0] = (struct AlternateAccess__Member*) GLOBAL_CALLOC(1, sizeof(struct AlternateAccess__Member));
-    alternateAccess->list.array[0]->present = AlternateAccess__Member_PR_unnamed;
-
-    alternateAccess->list.array[0]->choice.unnamed = (AlternateAccessSelection_t*) GLOBAL_CALLOC(1, sizeof(AlternateAccessSelection_t));
-
-    alternateAccess->list.array[0]->choice.unnamed->present = AlternateAccessSelection_PR_selectAccess;
-
-    if (elementCount > 0) {
-        alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.present =
-                AlternateAccessSelection__selectAccess_PR_indexRange;
-
-        INTEGER_t* asnIndex =
-                &(alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.choice.indexRange.lowIndex);
-
-        asn_long2INTEGER(asnIndex, index);
-
-        asnIndex =
-                &(alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.choice.indexRange.numberOfElements);
-
-        asn_long2INTEGER(asnIndex, elementCount);
-    }
-    else {
-        alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.present =
-                AlternateAccessSelection__selectAccess_PR_index;
-
-        INTEGER_t* asnIndex =
-                &(alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.choice.index);
-
-        asn_long2INTEGER(asnIndex, index);
-    }
-
-    return alternateAccess;
-}
-
-static AlternateAccess_t*
-createAlternateAccessComponent(const char* componentName)
-{
-    AlternateAccess_t* alternateAccess = (AlternateAccess_t*) GLOBAL_CALLOC(1, sizeof(AlternateAccess_t));
-    alternateAccess->list.count = 1;
-    alternateAccess->list.array = (struct AlternateAccess__Member**) GLOBAL_CALLOC(1, sizeof(struct AlternateAccess__Member*));
-    alternateAccess->list.array[0] = (struct AlternateAccess__Member*) GLOBAL_CALLOC(1, sizeof(struct AlternateAccess__Member));
-    alternateAccess->list.array[0]->present = AlternateAccess__Member_PR_unnamed;
-
-    alternateAccess->list.array[0]->choice.unnamed = (AlternateAccessSelection_t*) GLOBAL_CALLOC(1, sizeof(AlternateAccessSelection_t));
-
-    const char* separator = strchr(componentName, '$');
-
-    if (separator) {
-        int size = separator - componentName;
-
-        alternateAccess->list.array[0]->choice.unnamed->present = AlternateAccessSelection_PR_selectAlternateAccess;
-        alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.accessSelection.present =
-                AlternateAccessSelection__selectAlternateAccess__accessSelection_PR_component;
-
-        alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.accessSelection.choice.component.buf = 
-			(uint8_t*) StringUtils_copySubString((char*) componentName, (char*) separator);
-        alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.accessSelection.choice.component.size = size;
-
-        alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess = createAlternateAccessComponent(separator + 1);
-    }
-    else {
-        int size = strlen(componentName);
-
-        alternateAccess->list.array[0]->choice.unnamed->present = AlternateAccessSelection_PR_selectAccess;
-
-        alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.present =
-                AlternateAccessSelection__selectAccess_PR_component;
-
-		alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.choice.component.buf = 
-			(uint8_t*) StringUtils_copyString(componentName);
-        alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.choice.component.size = size;
-    }
-
-    return alternateAccess;
-}
-
-static AlternateAccess_t*
-createAlternateAccessIndexComponent(uint32_t index, const char* componentName)
-{
-    AlternateAccess_t* alternateAccess = (AlternateAccess_t*) GLOBAL_CALLOC(1, sizeof(AlternateAccess_t));
-    alternateAccess->list.count = 1;
-    alternateAccess->list.array = (struct AlternateAccess__Member**) GLOBAL_CALLOC(1, sizeof(struct AlternateAccess__Member*));
-    alternateAccess->list.array[0] = (struct AlternateAccess__Member*) GLOBAL_CALLOC(1, sizeof(struct AlternateAccess__Member));
-    alternateAccess->list.array[0]->present = AlternateAccess__Member_PR_unnamed;
-
-    alternateAccess->list.array[0]->choice.unnamed = (AlternateAccessSelection_t*) GLOBAL_CALLOC(1, sizeof(AlternateAccessSelection_t));
-
-    if (componentName) {
-        alternateAccess->list.array[0]->choice.unnamed->present = AlternateAccessSelection_PR_selectAlternateAccess;
-
-        alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.accessSelection.present =
-                AlternateAccessSelection__selectAlternateAccess__accessSelection_PR_index;
-
-        INTEGER_t* asnIndex =
-                &(alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.choice.index);
-
-        asn_long2INTEGER(asnIndex, index);
-
-        alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess = createAlternateAccessComponent(componentName);
-    }
-    else {
-        alternateAccess->list.array[0]->choice.unnamed->present = AlternateAccessSelection_PR_selectAccess;
-
-        alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.present =
-                        AlternateAccessSelection__selectAccess_PR_index;
-
-        INTEGER_t* asnIndex =
-                &(alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.choice.index);
-
-        asn_long2INTEGER(asnIndex, index);
-    }
-
-    return alternateAccess;
-}
-
 static ListOfVariableSeq_t*
 createVariableIdentifier(const char* domainId, const char* itemId)
 {
@@ -575,7 +454,7 @@ mmsClient_createReadRequestAlternateAccessIndex(uint32_t invokeId, const char* d
 
     readRequest->variableAccessSpecification.choice.listOfVariable.list.array[0] = variableIdentifier;
 
-    variableIdentifier->alternateAccess = createAlternateAccess(index, elementCount);
+    variableIdentifier->alternateAccess = mmsClient_createAlternateAccess(index, elementCount);
 
     asn_enc_rval_t rval;
 
@@ -594,7 +473,7 @@ mmsClient_createReadRequestAlternateAccessIndex(uint32_t invokeId, const char* d
 
 int
 mmsClient_createReadRequestAlternateAccessSingleIndexComponent(uint32_t invokeId, const char* domainId, const char* itemId,
-        uint32_t index, const char* component, ByteBuffer* writeBuffer)
+        uint32_t arrayIndex, const char* component, ByteBuffer* writeBuffer)
 {
     MmsPdu_t* mmsPdu = mmsClient_createConfirmedRequestPdu(invokeId);
     ReadRequest_t* readRequest = createReadRequest(mmsPdu);
@@ -610,7 +489,7 @@ mmsClient_createReadRequestAlternateAccessSingleIndexComponent(uint32_t invokeId
 
     readRequest->variableAccessSpecification.choice.listOfVariable.list.array[0] = variableIdentifier;
 
-    variableIdentifier->alternateAccess = createAlternateAccessIndexComponent(index, component);
+    variableIdentifier->alternateAccess = mmsClient_createAlternateAccessIndexComponent(arrayIndex, component);
 
     asn_enc_rval_t rval;
 

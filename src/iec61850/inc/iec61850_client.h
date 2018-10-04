@@ -106,6 +106,9 @@ typedef enum {
     /** Connection rejected by server */
     IED_ERROR_CONNECTION_REJECTED = 5,
 
+    /** Cannot send request because outstanding call limit is reached */
+    IED_ERROR_OUTSTANDING_CALL_LIMIT_REACHED = 6,
+
     /* client side errors */
 
     /** API function has been called with an invalid argument */
@@ -303,7 +306,8 @@ LastApplError
 IedConnection_getLastApplError(IedConnection self);
 
 
-typedef void (*IedConnectionClosedHandler) (void* parameter, IedConnection connection);
+typedef void
+(*IedConnectionClosedHandler) (void* parameter, IedConnection connection);
 
 /**
  * \brief Install a handler function that will be called when the connection is lost.
@@ -315,6 +319,12 @@ typedef void (*IedConnectionClosedHandler) (void* parameter, IedConnection conne
 void
 IedConnection_installConnectionClosedHandler(IedConnection self, IedConnectionClosedHandler handler,
         void* parameter);
+
+typedef void
+(*IedConnectionStateChangedHandler) (void* parameter, IedConnection connection, IedConnectionState newState);
+
+void
+IedConnection_installStateChangedHandler(IedConnection self, IedConnectionStateChangedHandler handler, void* parameter);
 
 /**
  * \brief get a handle to the underlying MmsConnection
@@ -1208,6 +1218,13 @@ ClientReportControlBlock_getOwner(ClientReportControlBlock self);
  */
 MmsValue*
 IedConnection_readObject(IedConnection self, IedClientError* error, const char* dataAttributeReference, FunctionalConstraint fc);
+
+typedef void
+(*IedConnection_ReadObjectHandler) (int invokeId, void* parameter, IedClientError err, MmsValue* value);
+
+uint32_t
+IedConnection_readObjectAsync(IedConnection self, IedClientError* error, const char* objRef, FunctionalConstraint fc,
+        IedConnection_ReadObjectHandler handler, void* parameter);
 
 /**
  * \brief write a functional constrained data attribute (FCDA) or functional constrained data (FCD).

@@ -579,10 +579,35 @@ MmsConnection_writeVariableAsync(MmsConnection self, MmsError* mmsError,
         const char* domainId, const char* itemId, MmsValue* value,
         MmsConnection_WriteVariableHandler handler, void* parameter);
 
+
+/**
+ * \brief Write a single array element with a component to an array type variable
+ *
+ * \param self MmsConnection instance to operate on
+ * \param mmsError user provided variable to store error code
+ * \param domainId the domain name of the variable to be written
+ * \param itemId name of the variable to be written
+ * \param arrayIndex the index of the array element.
+ * \param componentId the name of the component of the array element
+ * \param value value of the array element component to be written.
+ *
+ * \return when successful, the data access error value returned by the server
+ */
+MmsDataAccessError
+MmsConnection_writeSingleArrayElementWithComponent(MmsConnection self, MmsError* mmsError,
+        const char* domainId, const char* itemId,
+        uint32_t arrayIndex, const char* componentId, MmsValue* value);
+
+uint32_t
+MmsConnection_writeSingleArrayElementWithComponentAsync(MmsConnection self, MmsError* mmsError,
+        const char* domainId, const char* itemId,
+        uint32_t arrayIndex, const char* componentId, MmsValue* value,
+        MmsConnection_WriteVariableHandler handler, void* parameter);
+
 /**
  * \brief Write a single array element or a sub array to an array type variable
  *
- *  When a single array element is address the MmsValue object value has to be of the type
+ *  When a single array element is addressed the MmsValue object value has to be of the type
  *  of the array elements. When multiple array elements have to be written (index range) the
  *  MmsValue object value has to be of type MMS_ARRAY containing "numberOfElements" elements.
  *

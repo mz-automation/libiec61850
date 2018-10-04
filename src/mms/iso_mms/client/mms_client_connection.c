@@ -3953,6 +3953,67 @@ exit_function:
     return invokeId;
 }
 
+MmsDataAccessError
+MmsConnection_writeSingleArrayElementWithComponent(MmsConnection self, MmsError* mmsError,
+        const char* domainId, const char* itemId,
+        uint32_t arrayIndex, const char* componentId, MmsValue* value)
+{
+    struct writeVariableParameters parameter;
+
+    MmsError err = MMS_ERROR_NONE;
+
+    parameter.waitForResponse = Semaphore_create(1);
+    parameter.err = MMS_ERROR_NONE;
+    parameter.accessError = DATA_ACCESS_ERROR_SUCCESS;
+
+    Semaphore_wait(parameter.waitForResponse);
+
+    MmsConnection_writeSingleArrayElementWithComponentAsync(self, &err, domainId, itemId, arrayIndex, componentId, value, writeVariableHandler, &parameter);
+
+    if (err == MMS_ERROR_NONE) {
+        Semaphore_wait(parameter.waitForResponse);
+
+        err = parameter.err;
+    }
+
+    Semaphore_destroy(parameter.waitForResponse);
+
+    if (mmsError)
+        *mmsError = err;
+
+    return parameter.accessError;
+}
+
+uint32_t
+MmsConnection_writeSingleArrayElementWithComponentAsync(MmsConnection self, MmsError* mmsError,
+        const char* domainId, const char* itemId,
+        uint32_t arrayIndex, const char* componentId, MmsValue* value,
+        MmsConnection_WriteVariableHandler handler, void* parameter)
+{
+    uint32_t invokeId = 0;
+
+    if (getConnectionState(self) != MMS_CONNECTION_STATE_CONNECTED) {
+        if (mmsError)
+            *mmsError = MMS_ERROR_CONNECTION_LOST;
+        goto exit_function;
+    }
+
+    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
+
+    invokeId = getNextInvokeId(self);
+
+    mmsClient_createWriteRequestAlternateAccessSingleIndexComponent(invokeId, domainId, itemId, arrayIndex,
+            componentId, value, payload);
+
+    MmsError err = sendAsyncRequest(self, invokeId, payload, MMS_CALL_TYPE_WRITE_VARIABLE, handler, parameter, NULL);
+
+    if (mmsError)
+        *mmsError = err;
+
+exit_function:
+    return invokeId;
+}
+
 struct writeMultipleVariablesParameter
 {
     Semaphore sem;

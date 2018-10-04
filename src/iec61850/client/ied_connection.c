@@ -33,6 +33,7 @@
 
 #define DEFAULT_CONNECTION_TIMEOUT 10000
 #define DATA_SET_MAX_NAME_LENGTH 64 /* is 32 according to standard! */
+#define OUTSTANDING_CALLS 12
 
 typedef struct sICLogicalDevice
 {
@@ -489,6 +490,9 @@ createNewConnectionObject(TLSConfiguration tlsConfig)
         self->stateMutex = Semaphore_create(1);
         self->reportHandlerMutex = Semaphore_create(1);
 
+        self->outstandingCallsLock = Semaphore_create(1);
+        self->outstandingCalls = (IedConnectionOutstandingCall) GLOBAL_CALLOC(OUTSTANDING_CALLS, sizeof(struct sIedConnectionOutstandingCall));
+
         self->connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
     }
 
@@ -633,8 +637,11 @@ IedConnection_destroy(IedConnection self)
     if (self->enabledReports != NULL)
         LinkedList_destroyDeep(self->enabledReports, (LinkedListValueDeleteFunction) ClientReport_destroy);
 
+    GLOBAL_FREEMEM(self->outstandingCalls);
+
     LinkedList_destroyStatic(self->clientControls);
 
+    Semaphore_destroy(self->outstandingCallsLock);
     Semaphore_destroy(self->stateMutex);
     Semaphore_destroy(self->reportHandlerMutex);
 
@@ -675,6 +682,161 @@ IedConnection_getVariableSpecification(IedConnection self, IedClientError* error
 
     return varSpec;
 }
+
+static IedConnectionOutstandingCall
+allocateOutstandingCall(IedConnection self)
+{
+    Semaphore_wait(self->outstandingCallsLock);
+
+    IedConnectionOutstandingCall call = NULL;
+
+    int i = 0;
+
+    for (i = 0; i < OUTSTANDING_CALLS; i++) {
+        if (self->outstandingCalls[i].used == false) {
+            self->outstandingCalls[i].used = true;
+            call = &(self->outstandingCalls[i]);
+            break;
+        }
+    }
+
+    Semaphore_post(self->outstandingCallsLock);
+
+    return call;
+}
+
+static void
+releaseOutstandingCall(IedConnection self, IedConnectionOutstandingCall call)
+{
+    Semaphore_wait(self->outstandingCallsLock);
+
+    call->used = false;
+
+    Semaphore_post(self->outstandingCallsLock);
+}
+
+static IedConnectionOutstandingCall
+lookupOutstandingCall(IedConnection self, uint32_t invokeId)
+{
+    Semaphore_wait(self->outstandingCallsLock);
+
+    IedConnectionOutstandingCall call = NULL;
+
+    int i = 0;
+
+    for (i = 0; i < OUTSTANDING_CALLS; i++) {
+
+        printf("%d: used: %d invokeId: %d\n", i, self->outstandingCalls[i].used, self->outstandingCalls[i].invokeId);
+
+        if ((self->outstandingCalls[i].used) && (self->outstandingCalls[i].invokeId == invokeId)) {
+            call = &(self->outstandingCalls[i]);
+            break;
+        }
+    }
+
+    Semaphore_post(self->outstandingCallsLock);
+
+    return call;
+}
+
+static void
+readObjectHandlerInternal(int invokeId, void* parameter, MmsError err, MmsValue* value)
+{
+    printf("readObjectHandlerInternal %i\n", invokeId);
+
+    IedConnection self = (IedConnection) parameter;
+
+    IedConnectionOutstandingCall call = lookupOutstandingCall(self, invokeId);
+
+    if (call) {
+
+        IedConnection_ReadObjectHandler handler =  (IedConnection_ReadObjectHandler) call->callback;
+
+        handler(invokeId, call->callbackParameter, iedConnection_mapMmsErrorToIedError(err), value);
+
+        releaseOutstandingCall(self, call);
+    }
+    else {
+      //  if (DEBUG_IED_CLIENT)
+            printf("IED_CLIENT: internal error - no matching outstanding call!\n");
+    }
+}
+
+uint32_t
+IedConnection_readObjectAsync(IedConnection self, IedClientError* error, const char* objRef, FunctionalConstraint fc,
+        IedConnection_ReadObjectHandler handler, void* parameter)
+{
+    *error = IED_ERROR_OK;
+
+    char domainIdBuffer[65];
+    char itemIdBuffer[65];
+
+    char* domainId;
+    char* itemId;
+
+    domainId = MmsMapping_getMmsDomainFromObjectReference(objRef, domainIdBuffer);
+    itemId = MmsMapping_createMmsVariableNameFromObjectReference(objRef, fc, itemIdBuffer);
+
+    if ((domainId == NULL) || (itemId == NULL)) {
+        *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
+        return 0;
+    }
+
+    IedConnectionOutstandingCall call = allocateOutstandingCall(self);
+
+    if (call == NULL) {
+        *error = IED_ERROR_OUTSTANDING_CALL_LIMIT_REACHED;
+        return 0;
+    }
+
+    call->callback = handler;
+    call->callbackParameter = parameter;
+
+    MmsError err = MMS_ERROR_NONE;
+
+    /* check if item ID contains an array "(..)" */
+    char* brace = strchr(itemId, '(');
+
+    if (brace) {
+        char* secondBrace = strchr(brace, ')');
+
+        if (secondBrace) {
+            char* endPtr;
+
+            int index = (int) strtol(brace + 1, &endPtr, 10);
+
+            if (endPtr == secondBrace) {
+                char* component = NULL;
+
+                if (strlen(secondBrace + 1) > 1)
+                    component = secondBrace + 2; /* skip "." after array element specifier */
+
+                *brace = 0;
+
+                call->invokeId = MmsConnection_readSingleArrayElementWithComponentAsync(self->connection, &err, domainId, itemId, index, component, readObjectHandlerInternal, self);
+            }
+            else
+                *error = IED_ERROR_USER_PROVIDED_INVALID_ARGUMENT;
+        }
+        else
+            *error = IED_ERROR_USER_PROVIDED_INVALID_ARGUMENT;
+    }
+    else
+        call->invokeId = MmsConnection_readVariableAsync(self->connection, &err, domainId, itemId, readObjectHandlerInternal, self);
+
+    if ((err != MMS_ERROR_NONE) || (*error != IED_ERROR_OK)) {
+
+        if (err != MMS_ERROR_NONE)
+            *error = iedConnection_mapMmsErrorToIedError(err);
+
+        releaseOutstandingCall(self, call);
+
+        return 0;
+    }
+
+    return call->invokeId;
+}
+
 
 MmsValue*
 IedConnection_readObject(IedConnection self, IedClientError* error, const char* objectReference,
@@ -949,7 +1111,35 @@ IedConnection_writeObject(IedConnection self, IedClientError* error, const char*
 
     MmsError mmsError;
 
-    MmsConnection_writeVariable(self->connection, &mmsError, domainId, itemId, value);
+    /* check if item ID contains an array "(..)" */
+    char* brace = strchr(itemId, '(');
+
+    if (brace) {
+        char* secondBrace = strchr(brace, ')');
+
+        if (secondBrace) {
+            char* endPtr;
+
+            int index = (int) strtol(brace + 1, &endPtr, 10);
+
+            if (endPtr == secondBrace) {
+                char* component = NULL;
+
+                if (strlen(secondBrace + 1) > 1)
+                    component = secondBrace + 2; /* skip "." after array element specifier */
+
+                *brace = 0;
+
+                MmsConnection_writeSingleArrayElementWithComponent(self->connection, &mmsError, domainId, itemId, index, component, value);
+            }
+            else
+                *error = IED_ERROR_USER_PROVIDED_INVALID_ARGUMENT;
+        }
+        else
+            *error = IED_ERROR_USER_PROVIDED_INVALID_ARGUMENT;
+    }
+    else
+        MmsConnection_writeVariable(self->connection, &mmsError, domainId, itemId, value);
 
     *error = iedConnection_mapMmsErrorToIedError(mmsError);
 }

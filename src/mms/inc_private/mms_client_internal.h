@@ -176,6 +176,18 @@ mmsClient_createInitiateRequest(MmsConnection self, ByteBuffer* writeBuffer);
 MmsPdu_t*
 mmsClient_createConfirmedRequestPdu(uint32_t invokeId);
 
+AlternateAccess_t*
+mmsClient_createAlternateAccess(uint32_t index, uint32_t elementCount);
+
+void
+mmsClient_deleteAlternateAccess(AlternateAccess_t* alternateAccess);
+
+void
+mmsClient_deleteAlternateAccessIndexComponent(AlternateAccess_t* alternateAccess);
+
+AlternateAccess_t*
+mmsClient_createAlternateAccessIndexComponent(uint32_t index, const char* componentName);
+
 int
 mmsClient_createMmsGetNameListRequestVMDspecific(long invokeId, ByteBuffer* writeBuffer, const char* continueAfter);
 
@@ -259,6 +271,12 @@ int
 mmsClient_createWriteRequestArray(uint32_t invokeId, const char* domainId, const char* itemId,
         int startIndex, int elementCount,
         MmsValue* value, ByteBuffer* writeBuffer);
+
+int
+mmsClient_createWriteRequestAlternateAccessSingleIndexComponent(uint32_t invokeId, const char* domainId, const char* itemId,
+        uint32_t arrayIndex, const char* component,
+        MmsValue* value,
+        ByteBuffer* writeBuffer);
 
 void
 mmsClient_createDefineNamedVariableListRequest(uint32_t invokeId, ByteBuffer* writeBuffer,

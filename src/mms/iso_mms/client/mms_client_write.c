@@ -197,74 +197,6 @@ exit_function:
     return retVal;
 }
 
-//TODO remove redundant code (see mms_client_read.c)
-
-static AlternateAccess_t*
-createAlternateAccess(uint32_t index, uint32_t elementCount)
-{
-    AlternateAccess_t* alternateAccess = (AlternateAccess_t*) GLOBAL_CALLOC(1, sizeof(AlternateAccess_t));
-    alternateAccess->list.count = 1;
-    alternateAccess->list.array = (struct AlternateAccess__Member**) GLOBAL_CALLOC(1, sizeof(struct AlternateAccess__Member*));
-    alternateAccess->list.array[0] = (struct AlternateAccess__Member*) GLOBAL_CALLOC(1, sizeof(struct AlternateAccess__Member));
-    alternateAccess->list.array[0]->present = AlternateAccess__Member_PR_unnamed;
-
-    alternateAccess->list.array[0]->choice.unnamed = (AlternateAccessSelection_t*) GLOBAL_CALLOC(1, sizeof(AlternateAccessSelection_t));
-
-    alternateAccess->list.array[0]->choice.unnamed->present = AlternateAccessSelection_PR_selectAccess;
-
-    if (elementCount > 0) {
-        alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.present =
-                AlternateAccessSelection__selectAccess_PR_indexRange;
-
-        INTEGER_t* asnIndex =
-            &(alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.choice.indexRange.lowIndex);
-
-        asn_long2INTEGER(asnIndex, index);
-
-        asnIndex =
-            &(alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.choice.indexRange.numberOfElements);
-
-        asn_long2INTEGER(asnIndex, elementCount);
-    }
-    else {
-        alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.present =
-                AlternateAccessSelection__selectAccess_PR_index;
-
-        INTEGER_t* asnIndex =
-            &(alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.choice.index);
-
-        asn_long2INTEGER(asnIndex, index);
-    }
-
-    return alternateAccess;
-}
-
-static void
-deleteAlternateAccess(AlternateAccess_t* alternateAccess)
-{
-    if (alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.choice.indexRange.lowIndex.buf != NULL) {
-         GLOBAL_FREEMEM(alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.choice.indexRange.lowIndex.buf);
-         alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.choice.indexRange.lowIndex.buf = NULL;
-    }
-
-    if (alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.choice.indexRange.numberOfElements.buf != NULL) {
-        GLOBAL_FREEMEM(alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.choice.indexRange.numberOfElements.buf);
-        alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.choice.indexRange.numberOfElements.buf = NULL;
-    }
-
-    if (alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.choice.index.buf != NULL) {
-        GLOBAL_FREEMEM(alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.choice.index.buf);
-        alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.choice.index.buf = NULL;
-    }
-
-    GLOBAL_FREEMEM(alternateAccess->list.array[0]->choice.unnamed);
-    GLOBAL_FREEMEM(alternateAccess->list.array[0]);
-    GLOBAL_FREEMEM(alternateAccess->list.array);
-    GLOBAL_FREEMEM(alternateAccess);
-
-}
-
-
 static ListOfVariableSeq_t*
 createNewDomainVariableSpecification(const char* domainId, const char* itemId)
 {
@@ -556,7 +488,7 @@ mmsClient_createWriteRequestArray(uint32_t invokeId, const char* domainId, const
             (ListOfVariableSeq_t**) GLOBAL_CALLOC(1, sizeof(ListOfVariableSeq_t*));
 
     ListOfVariableSeq_t* variableIdentifier = createNewDomainVariableSpecification(domainId, itemId);
-    variableIdentifier->alternateAccess = createAlternateAccess(startIndex, elementCount);
+    variableIdentifier->alternateAccess = mmsClient_createAlternateAccess(startIndex, elementCount);
     request->variableAccessSpecification.choice.listOfVariable.list.array[0] = variableIdentifier;
 
     /* Create list of typed data values */
@@ -573,7 +505,7 @@ mmsClient_createWriteRequestArray(uint32_t invokeId, const char* domainId, const
             (asn_app_consume_bytes_f*) mmsClient_write_out, (void*) writeBuffer);
 
     /* Free ASN structure */
-    deleteAlternateAccess(variableIdentifier->alternateAccess);
+    mmsClient_deleteAlternateAccess(variableIdentifier->alternateAccess);
 
     request->variableAccessSpecification.choice.listOfVariable.list.count = 0;
 
@@ -581,6 +513,67 @@ mmsClient_createWriteRequestArray(uint32_t invokeId, const char* domainId, const
     GLOBAL_FREEMEM(request->variableAccessSpecification.choice.listOfVariable.list.array);
     request->variableAccessSpecification.choice.listOfVariable.list.array = 0;
 
+
+    request->listOfData.list.count = 0;
+
+    deleteDataElement(request->listOfData.list.array[0]);
+
+    GLOBAL_FREEMEM(request->listOfData.list.array);
+    request->listOfData.list.array = 0;
+
+    asn_DEF_MmsPdu.free_struct(&asn_DEF_MmsPdu, mmsPdu, 0);
+
+    return rval.encoded;
+}
+
+int
+mmsClient_createWriteRequestAlternateAccessSingleIndexComponent(uint32_t invokeId, const char* domainId, const char* itemId,
+        uint32_t arrayIndex, const char* component,
+        MmsValue* value,
+        ByteBuffer* writeBuffer)
+{
+    MmsPdu_t* mmsPdu = mmsClient_createConfirmedRequestPdu(invokeId);
+
+    mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.present =
+            ConfirmedServiceRequest_PR_write;
+    WriteRequest_t* request =
+            &(mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.choice.write);
+
+    /* Create list of variable specifications */
+    request->variableAccessSpecification.present = VariableAccessSpecification_PR_listOfVariable;
+    request->variableAccessSpecification.choice.listOfVariable.list.count = 1;
+    //request->variableAccessSpecification.choice.listOfVariable.list.size = 1;
+    request->variableAccessSpecification.choice.listOfVariable.list.array =
+            (ListOfVariableSeq_t**) GLOBAL_CALLOC(1, sizeof(ListOfVariableSeq_t*));
+
+    ListOfVariableSeq_t* variableIdentifier = createNewDomainVariableSpecification(domainId, itemId);
+
+    request->variableAccessSpecification.choice.listOfVariable.list.array[0] = variableIdentifier;
+
+    variableIdentifier->alternateAccess = mmsClient_createAlternateAccessIndexComponent(arrayIndex, component);
+
+
+    /* Create list of typed data values */
+    request->listOfData.list.count = 1;
+    request->listOfData.list.size = 1;
+    request->listOfData.list.array = (Data_t**) GLOBAL_CALLOC(1, sizeof(struct Data*));
+    request->listOfData.list.array[0] = mmsMsg_createBasicDataElement(value);
+
+    /* Encode complete ASN1 structure */
+
+    asn_enc_rval_t rval;
+
+    rval = der_encode(&asn_DEF_MmsPdu, mmsPdu,
+            (asn_app_consume_bytes_f*) mmsClient_write_out, (void*) writeBuffer);
+
+    /* Free ASN structure */
+   // mmsClient_deleteAlternateAccessIndexComponent(variableIdentifier->alternateAccess);
+    mmsClient_deleteAlternateAccess(variableIdentifier->alternateAccess);
+    request->variableAccessSpecification.choice.listOfVariable.list.count = 0;
+
+    GLOBAL_FREEMEM(request->variableAccessSpecification.choice.listOfVariable.list.array[0]);
+    GLOBAL_FREEMEM(request->variableAccessSpecification.choice.listOfVariable.list.array);
+    request->variableAccessSpecification.choice.listOfVariable.list.array = 0;
 
     request->listOfData.list.count = 0;
 

@@ -30,6 +30,15 @@
 
 #include "hal_thread.h"
 
+typedef struct sIedConnectionOutstandingCall* IedConnectionOutstandingCall;
+
+struct sIedConnectionOutstandingCall {
+    bool used;
+    uint32_t invokeId;
+    void* callback;
+    void* callbackParameter;
+};
+
 struct sIedConnection
 {
     MmsConnection connection;
@@ -41,6 +50,9 @@ struct sIedConnection
 
     Semaphore stateMutex;
     Semaphore reportHandlerMutex;
+
+    Semaphore outstandingCallsLock;
+    IedConnectionOutstandingCall outstandingCalls;
 
     IedConnectionClosedHandler connectionCloseHandler;
     void* connectionClosedParameter;
