@@ -567,7 +567,6 @@ mmsClient_createWriteRequestAlternateAccessSingleIndexComponent(uint32_t invokeI
             (asn_app_consume_bytes_f*) mmsClient_write_out, (void*) writeBuffer);
 
     /* Free ASN structure */
-   // mmsClient_deleteAlternateAccessIndexComponent(variableIdentifier->alternateAccess);
     mmsClient_deleteAlternateAccess(variableIdentifier->alternateAccess);
     request->variableAccessSpecification.choice.listOfVariable.list.count = 0;
 

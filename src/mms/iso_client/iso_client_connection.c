@@ -199,10 +199,10 @@ sendConnectionRequestMessage(IsoClientConnection self)
     CotpConnection_init(self->cotpConnection, self->socket, self->receiveBuffer, self->cotpReadBuffer, self->cotpWriteBuffer);
 
 #if (CONFIG_MMS_SUPPORT_TLS == 1)
-    if (params->tlsConfiguration) {
+    if (self->parameters->tlsConfiguration) {
 
         /* create TLSSocket and start TLS authentication */
-        TLSSocket tlsSocket = TLSSocket_create(self->socket, params->tlsConfiguration, false);
+        TLSSocket tlsSocket = TLSSocket_create(self->socket, self->parameters->tlsConfiguration, false);
 
         if (tlsSocket)
             self->cotpConnection->tlsSocket = tlsSocket;
@@ -211,7 +211,7 @@ sendConnectionRequestMessage(IsoClientConnection self)
             if (DEBUG_ISO_CLIENT)
                 printf("TLS handshake failed!\n");
 
-            goto returnError;
+            return false;
         }
     }
 #endif /* (CONFIG_MMS_SUPPORT_TLS == 1) */
