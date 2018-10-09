@@ -235,6 +235,8 @@ IedConnection_setConnectTimeout(IedConnection self, uint32_t timeoutInMs);
 /**
  * \brief Connect to a server
  *
+ * NOTE: Function will block until connection is up or timeout happened.
+ *
  * \param self the connection object
  * \param error the error code if an error occurs
  * \param hostname the host name or IP address of the server to connect to
@@ -242,6 +244,17 @@ IedConnection_setConnectTimeout(IedConnection self, uint32_t timeoutInMs);
  */
 void
 IedConnection_connect(IedConnection self, IedClientError* error, const char* hostname, int tcpPort);
+
+/**
+ * \brief Asynchronously connect to a server
+ *
+ * \param self the connection object
+ * \param error the error code if an error occurs
+ * \param hostname the host name or IP address of the server to connect to
+ * \param tcpPort the TCP port number of the server to connect to
+ */
+void
+IedConnection_connectAsync(IedConnection self, IedClientError* error, const char* hostname, int tcpPort);
 
 /**
  * \brief Abort the connection
@@ -259,6 +272,22 @@ void
 IedConnection_abort(IedConnection self, IedClientError* error);
 
 /**
+ * \brief Asynchronously abort the connection
+ *
+ * This will close the MMS association by sending an ACSE abort message to the server.
+ * After sending the abort message the connection is closed immediately.
+ * If the connection is not in "connected" state an IED_ERROR_NOT_CONNECTED error will be reported.
+ *
+ * NOTE: This function works asynchronously. The IedConnection object should not be destroyed before the
+ * connection state changes to IED_STATE_CLOSED.
+ *
+ * \param self the connection object
+ * \param error the error code if an error occurs
+ */
+void
+IedConnection_abortAsync(IedConnection self, IedClientError* error);
+
+/**
  * \brief Release the connection
  *
  * This will release the MMS association by sending an MMS conclude message to the server.
@@ -272,6 +301,21 @@ IedConnection_abort(IedConnection self, IedClientError* error);
  */
 void
 IedConnection_release(IedConnection self, IedClientError* error);
+
+/**
+ * \brief Asynchronously release the connection
+ *
+ * This will release the MMS association by sending an MMS conclude message to the server.
+ * The client can NOT assume the connection to be closed when the function returns, It can
+ * also fail if the server returns with a negative response. To be sure that the connection
+ * will be close the close or abort methods should be used. If the connection is not in "connected" state an
+ * IED_ERROR_NOT_CONNECTED error will be reported.
+ *
+ * \param self the connection object
+ * \param error the error code if an error occurs
+ */
+void
+IedConnection_releaseAsync(IedConnection self, IedClientError* error);
 
 /**
  * \brief Close the connection
@@ -1239,6 +1283,13 @@ void
 IedConnection_writeObject(IedConnection self, IedClientError* error, const char* dataAttributeReference, FunctionalConstraint fc,
         MmsValue* value);
 
+typedef void
+(*IedConnection_WriteObjectHandler) (int invokeId, void* parameter, IedClientError err);
+
+uint32_t
+IedConnection_writeObjectAsync(IedConnection self, IedClientError* error, const char* objectReference,
+        FunctionalConstraint fc, MmsValue* value, IedConnection_WriteObjectHandler handler, void* parameter);
+
 
 /**
  * \brief read a functional constrained data attribute (FCDA) of type boolean
@@ -1955,6 +2006,13 @@ IedConnection_getDataDirectoryByFC(IedConnection self, IedClientError* error, co
 MmsVariableSpecification*
 IedConnection_getVariableSpecification(IedConnection self, IedClientError* error, const char* dataAttributeReference,
         FunctionalConstraint fc);
+
+typedef void
+(*IedConnection_GetVariableSpecificationHandler) (int invokeId, void* parameter, IedClientError err, MmsVariableSpecification* spec);
+
+uint32_t
+IedConnection_getVariableSpecificationAsync(IedConnection self, IedClientError* error, const char* dataAttributeReference,
+        FunctionalConstraint fc, IedConnection_GetVariableSpecificationHandler handler, void* parameter);
 
 /** @} */
 

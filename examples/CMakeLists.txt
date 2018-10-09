@@ -22,6 +22,7 @@ add_subdirectory(iec61850_client_example_reporting)
 add_subdirectory(iec61850_client_example_log)
 add_subdirectory(iec61850_client_example_array)
 add_subdirectory(iec61850_client_example_files)
+add_subdirectory(iec61850_client_example_async)
 
 if(WIN32)
     if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../third_party/winpcap/Lib/wpcap.lib")

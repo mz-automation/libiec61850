@@ -1779,6 +1779,8 @@ MmsConnection_concludeAsync(MmsConnection self, MmsError* mmsError, MmsConnectio
         goto exit_function;
     }
 
+    *mmsError = MMS_ERROR_NONE;
+
     ByteBuffer* concludeMessage = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
 
     mmsClient_createConcludeRequest(self, concludeMessage);
