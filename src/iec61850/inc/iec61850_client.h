@@ -746,6 +746,13 @@ ClientReportControlBlock
 IedConnection_getRCBValues(IedConnection self, IedClientError* error, const char* rcbReference,
         ClientReportControlBlock updateRcb);
 
+typedef void
+(*IedConnection_GetRCBValuesHandler) (int invokeId, void* parameter, IedClientError err, ClientReportControlBlock rcb);
+
+uint32_t
+IedConnection_getRCBValuesAsync(IedConnection self, IedClientError* error, const char* rcbReference,
+        IedConnection_GetRCBValuesHandler handler, void* parameter);
+
 /** Describes the reason for the inclusion of the element in the report */
 typedef enum {
     /** the element is not included in the received report */
@@ -853,6 +860,10 @@ typedef enum {
 void
 IedConnection_setRCBValues(IedConnection self, IedClientError* error, ClientReportControlBlock rcb,
         uint32_t parametersMask, bool singleRequest);
+
+uint32_t
+IedConnection_setRCBValues(IedConnection self, IedClientError* error, ClientReportControlBlock rcb,
+        uint32_t parametersMask, bool singleRequest, IedConnection_WriteObjectHandler handler, void* parameter);
 
 /**
  * \brief Callback function for receiving reports
@@ -2201,6 +2212,21 @@ IedConnection_getFileDirectory(IedConnection self, IedClientError* error, const 
 LinkedList /*<FileDirectoryEntry>*/
 IedConnection_getFileDirectoryEx(IedConnection self, IedClientError* error, const char* directoryName, const char* continueAfter,
         bool* moreFollows);
+
+/**
+ * \brief Callback handler for the get file directory service
+ *
+ * Will be called once for each file directory entry and after the last entry with \ref filename = NULL to indicate
+ * with \ref moreFollows if more data is available at the server. In case of an error the callback will be called with
+ * \ref err != IED_ERROR_OK and moreFollows = false.
+ */
+typedef void
+(*IedConnection_FileDirectoryHandler) (int invokeId, void* parameter, IedClientError err, char* filename, uint32_t size, uint64_t lastModfified,
+        bool moreFollows);
+
+uint32_t
+IedConnection_getFileDirectoryAsync(IedConnection self, IedClientError* error, const char* directoryName, const char* continueAfter,
+        IedConnection_FileDirectoryHandler handler, void* parameter);
 
 /**
  * \brief user provided handler to receive the data of the GetFile request

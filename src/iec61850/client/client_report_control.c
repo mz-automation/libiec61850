@@ -441,7 +441,15 @@ private_ClientReportControlBlock_updateValues(ClientReportControlBlock self, Mms
 	return true;
 }
 
+typedef void
+(*IedConnection_GetRCBValuesHandler) (int invokeId, void* parameter, IedClientError err, ClientReportControlBlock rcb);
 
+uint32_t
+IedConnection_getRCBValuesAsync(IedConnection self, IedClientError* error, const char* rcbReference,
+        IedConnection_GetRCBValuesHandler handler, void* parameter)
+{
+    //TODO implement
+}
 
 ClientReportControlBlock
 IedConnection_getRCBValues(IedConnection self, IedClientError* error, const char* rcbReference,
@@ -509,6 +517,13 @@ IedConnection_getRCBValues(IedConnection self, IedClientError* error, const char
     *error = IED_ERROR_OK;
 
     return returnRcb;
+}
+
+uint32_t
+IedConnection_setRCBValues(IedConnection self, IedClientError* error, ClientReportControlBlock rcb,
+        uint32_t parametersMask, bool singleRequest, IedConnection_WriteObjectHandler handler, void* parameter)
+{
+    //TODO implement
 }
 
 void

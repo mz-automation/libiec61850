@@ -1,7 +1,7 @@
 /*
  *  ied_connection.c
  *
- *  Copyright 2013, 2014 Michael Zillgith
+ *  Copyright 2013-2018 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -1639,6 +1639,59 @@ struct sClientProvidedFileReadHandler {
     bool retVal;
     uint32_t byteReceived;
 };
+
+typedef void
+(*IedConnection_FileDirectoryHandler) (int invokeId, void* parameter, IedClientError err, char* filename, uint32_t size, uint64_t lastModfified,
+        bool moreFollows);
+
+static void
+fileDirectoryHandler(int invokeId, void* parameter, MmsError err, char* filename, uint32_t size, uint64_t lastModfified,
+        bool moreFollows)
+{
+    IedConnection self = (IedConnection) parameter;
+
+    IedConnectionOutstandingCall call = lookupOutstandingCall(self, invokeId);
+
+    if (call) {
+
+        IedConnection_FileDirectoryHandler handler =  (IedConnection_FileDirectoryHandler) call->callback;
+
+        handler(invokeId, call->callbackParameter, iedConnection_mapMmsErrorToIedError(err), filename, size, lastModfified, moreFollows);
+
+        if (filename == NULL)
+            releaseOutstandingCall(self, call);
+    }
+    else {
+        if (DEBUG_IED_CLIENT)
+            printf("IED_CLIENT: internal error - no matching outstanding call!\n");
+    }
+}
+
+uint32_t
+IedConnection_getFileDirectoryAsync(IedConnection self, IedClientError* error, const char* directoryName, const char* continueAfter,
+        IedConnection_FileDirectoryHandler handler, void* parameter)
+{
+
+    MmsError err = MMS_ERROR_NONE;
+
+    IedConnectionOutstandingCall call = allocateOutstandingCall(self);
+
+    if (call == NULL) {
+       *error = IED_ERROR_OUTSTANDING_CALL_LIMIT_REACHED;
+       return 0;
+    }
+
+    call->callback = handler;
+    call->callbackParameter = parameter;
+
+
+    call->invokeId = MmsConnection_getFileDirectoryAsync(self->connection, &err, directoryName, continueAfter,
+            fileDirectoryHandler, self);
+
+    *error = iedConnection_mapMmsErrorToIedError(err);
+
+    return call->invokeId;
+}
 
 static void
 mmsFileReadHandler(void* parameter, int32_t frsmId, uint8_t* buffer, uint32_t bytesReceived)
