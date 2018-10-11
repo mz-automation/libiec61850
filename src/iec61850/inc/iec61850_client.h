@@ -2007,6 +2007,22 @@ MmsVariableSpecification*
 IedConnection_getVariableSpecification(IedConnection self, IedClientError* error, const char* dataAttributeReference,
         FunctionalConstraint fc);
 
+/*****************************************
+ * Asynchronous model discovery functions
+ *****************************************/
+
+typedef void
+(*IedConnection_GetNameListHandler) (int invokeId, void* parameter, IedClientError err, LinkedList nameList, bool moreFollows);
+
+uint32_t
+IedConnection_getServerDirectoryAsync(IedConnection self, IedClientError* error, const char* continueAfter, bool getFileNames,
+        IedConnection_GetNameListHandler handler, void* parameter);
+
+uint32_t
+IedConnection_getLogicalDeviceVariables(IedConnection self, IedClientError* error, const char* continueAfter,
+        IedConnection_GetNameListHandler handler, void* parameter);
+
+
 typedef void
 (*IedConnection_GetVariableSpecificationHandler) (int invokeId, void* parameter, IedClientError err, MmsVariableSpecification* spec);
 
@@ -2065,6 +2081,16 @@ IedConnection_queryLogAfter(IedConnection self, IedClientError* error, const cha
         MmsValue* entryID, uint64_t timeStamp, bool* moreFollows);
 
 
+typedef void
+(*IedConnection_QueryLogHandler) (int invokeId, void* parameter, IedClientError mmsError, LinkedList /* <MmsJournalEntry> */ journalEntries, bool moreFollows);
+
+uint32_t
+IedConnection_queryLogByTimeAsync(IedConnection self, IedClientError* error, const char* logReference,
+        uint64_t startTime, uint64_t endTime, IedConnection_QueryLogHandler handler, void* parameter);
+
+uint32_t
+IedConnection_queryLogAfterAsync(IedConnection self, IedClientError* error, const char* logReference,
+        MmsValue* entryID, uint64_t timeStamp, IedConnection_QueryLogHandler handler, void* parameter);
 
 /** @} */
 

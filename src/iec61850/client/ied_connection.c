@@ -873,6 +873,20 @@ cleanup_and_exit:
     return invokeId;
 }
 
+uint32_t
+IedConnection_getServerDirectoryAsync(IedConnection self, IedClientError* error, const char* continueAfter, bool getFileNames,
+        IedConnection_GetNameListHandler handler, void* parameter)
+{
+    //TODO implement me
+}
+
+uint32_t
+IedConnection_getLogicalDeviceVariables(IedConnection self, IedClientError* error, const char* continueAfter,
+        IedConnection_GetNameListHandler handler, void* parameter)
+{
+    //TODO implement me
+}
+
 static void
 readObjectHandlerInternal(int invokeId, void* parameter, MmsError err, MmsValue* value)
 {
@@ -1302,9 +1316,6 @@ writeVariableHandler(int invokeId, void* parameter, MmsError err, MmsDataAccessE
     }
 }
 
-typedef void
-(*IedConnection_WriteObjectHandler) (int invokeId, void* parameter, IedClientError err);
-
 uint32_t
 IedConnection_writeObjectAsync(IedConnection self, IedClientError* error, const char* objectReference,
         FunctionalConstraint fc, MmsValue* value, IedConnection_WriteObjectHandler handler, void* parameter)
@@ -1547,7 +1558,6 @@ IedConnection_getLogicalDeviceList(IedConnection self, IedClientError* error)
         return NULL;
     }
 }
-
 
 static void
 mmsFileDirectoryHandler(void* parameter, char* filename, uint32_t size, uint64_t lastModified)
@@ -2893,6 +2903,126 @@ IedConnection_queryLogByTime(IedConnection self, IedClientError* error, const ch
 
 }
 
+typedef void
+(*IedConnection_QueryLogHandler) (int invokeId, void* parameter, IedClientError mmsError, LinkedList /* <MmsJournalEntry> */ journalEntries, bool moreFollows);
+
+static void
+readJournalHandler(int invokeId, void* parameter, MmsError err, LinkedList /* <MmsJournalEntry> */ journalEntries, bool moreFollows)
+{
+    IedConnection self = (IedConnection) parameter;
+
+    IedConnectionOutstandingCall call = lookupOutstandingCall(self, invokeId);
+
+    if (call) {
+
+        IedConnection_QueryLogHandler handler =  (IedConnection_QueryLogHandler) call->callback;
+
+        handler(invokeId, call->callbackParameter, iedConnection_mapMmsErrorToIedError(err), journalEntries, moreFollows);
+
+        releaseOutstandingCall(self, call);
+    }
+    else {
+        if (DEBUG_IED_CLIENT)
+            printf("IED_CLIENT: internal error - no matching outstanding call!\n");
+    }
+}
+
+uint32_t
+IedConnection_queryLogByTimeAsync(IedConnection self, IedClientError* error, const char* logReference,
+        uint64_t startTime, uint64_t endTime, IedConnection_QueryLogHandler handler, void* parameter)
+{
+    char logRef[130];
+
+    strncpy(logRef, logReference, 129);
+
+    char* logDomain = logRef;
+    char* logName = strchr(logRef, '/');
+
+    if (logName != NULL) {
+
+        logName[0] = 0;
+        logName++;
+
+        IedConnectionOutstandingCall call = allocateOutstandingCall(self);
+
+        if (call == NULL) {
+            *error = IED_ERROR_OUTSTANDING_CALL_LIMIT_REACHED;
+            return 0;
+        }
+
+        call->callback = handler;
+        call->callbackParameter = parameter;
+
+        MmsError err = MMS_ERROR_NONE;
+
+        MmsValue* startTimeMms = MmsValue_newBinaryTime(false);
+        MmsValue_setBinaryTime(startTimeMms, startTime);
+
+        MmsValue* endTimeMms = MmsValue_newBinaryTime(false);
+        MmsValue_setBinaryTime(endTimeMms, endTime);
+
+        call->invokeId = MmsConnection_readJournalTimeRangeAsync(self->connection, &err, logDomain, logName,
+                startTimeMms, endTimeMms, readJournalHandler, self);
+
+        MmsValue_delete(startTimeMms);
+        MmsValue_delete(endTimeMms);
+
+        *error = iedConnection_mapMmsErrorToIedError(err);
+
+        return call->invokeId;
+    }
+    else {
+        *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
+        return 0;
+    }
+
+}
+
+uint32_t
+IedConnection_queryLogAfterAsync(IedConnection self, IedClientError* error, const char* logReference,
+        MmsValue* entryID, uint64_t timeStamp, IedConnection_QueryLogHandler handler, void* parameter)
+{
+    char logRef[130];
+
+    strncpy(logRef, logReference, 129);
+
+    char* logDomain = logRef;
+    char* logName = strchr(logRef, '/');
+
+    if (logName != NULL) {
+
+        logName[0] = 0;
+        logName++;
+
+        IedConnectionOutstandingCall call = allocateOutstandingCall(self);
+
+        if (call == NULL) {
+            *error = IED_ERROR_OUTSTANDING_CALL_LIMIT_REACHED;
+            return 0;
+        }
+
+        call->callback = handler;
+        call->callbackParameter = parameter;
+
+        MmsError err = MMS_ERROR_NONE;
+
+        MmsValue* timeStampMms = MmsValue_newBinaryTime(false);
+        MmsValue_setBinaryTime(timeStampMms, timeStamp);
+
+        call->invokeId = MmsConnection_readJournalStartAfterAsync(self->connection, &err, logDomain, logName,
+               timeStampMms, entryID, readJournalHandler, self);
+
+        MmsValue_delete(timeStampMms);
+
+        *error = iedConnection_mapMmsErrorToIedError(err);
+
+        return call->invokeId;
+    }
+    else {
+        *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
+        return 0;
+    }
+}
 
 LinkedList /* <MmsJournalEntry> */
 IedConnection_queryLogAfter(IedConnection self, IedClientError* error, const char* logReference,
