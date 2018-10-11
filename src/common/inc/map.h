@@ -1,7 +1,7 @@
 /*
  *  map.h
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013-2018 Michael Zillgith
  *
  *	This file is part of libIEC61850.
  *
@@ -24,7 +24,7 @@
 #ifndef MAP_H_
 #define MAP_H_
 
-#include "libiec61850_platform_includes.h"
+#include "libiec61850_common_api.h"
 #include "linked_list.h"
 
 typedef struct sMap* Map;
@@ -36,28 +36,28 @@ struct sMap {
 	int (*compareKeys)(void* key1, void* key2);
 };
 
-Map
+LIB61850_INTERNAL Map
 Map_create(void);
 
-int
+LIB61850_INTERNAL int
 Map_size(Map map);
 
-void*
+LIB61850_INTERNAL void*
 Map_addEntry(Map map, void* key, void* value);
 
-void*
+LIB61850_INTERNAL void*
 Map_removeEntry(Map map, void* key, bool deleteKey);
 
-void*
+LIB61850_INTERNAL void*
 Map_getEntry(Map map, void* key);
 
-void
+LIB61850_INTERNAL void
 Map_delete(Map map, bool deleteKey);
 
-void
+LIB61850_INTERNAL void
 Map_deleteStatic(Map map, bool deleteKey);
 
-void
+LIB61850_INTERNAL void
 Map_deleteDeep(Map map, bool deleteKey, void (*valueDeleteFunction) (void*));
 
 

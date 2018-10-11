@@ -30,6 +30,7 @@
 #include "mms_client_internal.h"
 #include "ber_encoder.h"
 #include "ber_decode.h"
+#include "ber_integer.h"
 #include "conversions.h"
 
 #if (MMS_OBTAIN_FILE_SERVICE == 1)

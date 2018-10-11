@@ -37,7 +37,7 @@ typedef struct UnconfirmedService {
 } UnconfirmedService_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_UnconfirmedService;
+LIB61850_INTERNAL extern asn_TYPE_descriptor_t asn_DEF_UnconfirmedService;
 
 #ifdef __cplusplus
 }

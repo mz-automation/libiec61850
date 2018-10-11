@@ -31,7 +31,7 @@
 extern "C" {
 #endif
 
-/** \defgroup server_api_group IEC 61850 server API
+/** \defgroup server_api_group IEC 61850/MMS server API
  *  @{
  */
 
@@ -84,13 +84,13 @@ struct sIedServerConfig
  *
  * \return a new configuration object with default configuration values
  */
-IedServerConfig
+LIB61850_API IedServerConfig
 IedServerConfig_create(void);
 
 /**
  * \brief Destroy the configuration object
  */
-void
+LIB61850_API void
 IedServerConfig_destroy(IedServerConfig self);
 
 /**
@@ -98,7 +98,7 @@ IedServerConfig_destroy(IedServerConfig self);
  *
  * \param edition IEC_61850_EDITION_1, IEC_61850_EDITION_2, or IEC_61850_EDITION_2_1
  */
-void
+LIB61850_API void
 IedServerConfig_setEdition(IedServerConfig self, uint8_t edition);
 
 /**
@@ -106,7 +106,7 @@ IedServerConfig_setEdition(IedServerConfig self, uint8_t edition);
  *
  * \returns IEC_61850_EDITION_1, IEC_61850_EDITION_2, or IEC_61850_EDITION_2_1
  */
-uint8_t
+LIB61850_API uint8_t
 IedServerConfig_getEdition(IedServerConfig self);
 
 /**
@@ -114,7 +114,7 @@ IedServerConfig_getEdition(IedServerConfig self);
  *
  * \param reportBufferSize the buffer size for each buffered report control block
  */
-void
+LIB61850_API void
 IedServerConfig_setReportBufferSize(IedServerConfig self, int reportBufferSize);
 
 /**
@@ -122,7 +122,7 @@ IedServerConfig_setReportBufferSize(IedServerConfig self, int reportBufferSize);
  *
  * \return the buffer size for each buffered report control block
  */
-int
+LIB61850_API int
 IedServerConfig_getReportBufferSize(IedServerConfig self);
 
 /**
@@ -133,7 +133,7 @@ IedServerConfig_getReportBufferSize(IedServerConfig self);
  *
  * \param maxConnection maximum number of TCP connections
  */
-void
+LIB61850_API void
 IedServerConfig_setMaxMmsConnections(IedServerConfig self, int maxConnections);
 
 /**
@@ -141,7 +141,7 @@ IedServerConfig_setMaxMmsConnections(IedServerConfig self, int maxConnections);
  *
  * \return maximum number of TCP connections
  */
-int
+LIB61850_API int
 IedServerConfig_getMaxMmsConnections(IedServerConfig self);
 
 /**
@@ -151,13 +151,13 @@ IedServerConfig_getMaxMmsConnections(IedServerConfig self);
  *
  * \param basepath new file service base path
  */
-void
+LIB61850_API void
 IedServerConfig_setFileServiceBasePath(IedServerConfig self, const char* basepath);
 
 /**
  * \brief Get the basepath of the file services
  */
-const char*
+LIB61850_API const char*
 IedServerConfig_getFileServiceBasePath(IedServerConfig self);
 
 /**
@@ -165,7 +165,7 @@ IedServerConfig_getFileServiceBasePath(IedServerConfig self);
  *
  * \param[in] enable set true to enable the file services, otherwise false
  */
-void
+LIB61850_API void
 IedServerConfig_enableFileService(IedServerConfig self, bool enable);
 
 /**
@@ -173,7 +173,7 @@ IedServerConfig_enableFileService(IedServerConfig self, bool enable);
  *
  * \return true if enabled, false otherwise
  */
-bool
+LIB61850_API bool
 IedServerConfig_isFileServiceEnabled(IedServerConfig self);
 
 /**
@@ -181,7 +181,7 @@ IedServerConfig_isFileServiceEnabled(IedServerConfig self);
  *
  * \param[in] enable set true to enable dynamic data set service, otherwise false
  */
-void
+LIB61850_API void
 IedServerConfig_enableDynamicDataSetService(IedServerConfig self, bool enable);
 
 /**
@@ -189,7 +189,7 @@ IedServerConfig_enableDynamicDataSetService(IedServerConfig self, bool enable);
  *
  * \return true if enabled, false otherwise
  */
-bool
+LIB61850_API bool
 IedServerConfig_isDynamicDataSetServiceEnabled(IedServerConfig self);
 
 /**
@@ -200,7 +200,7 @@ IedServerConfig_isDynamicDataSetServiceEnabled(IedServerConfig self);
  *
  * \param maxDataSets maximum number of allowed data sets.
  */
-void
+LIB61850_API void
 IedServerConfig_setMaxAssociationSpecificDataSets(IedServerConfig self, int maxDataSets);
 
 /**
@@ -208,7 +208,7 @@ IedServerConfig_setMaxAssociationSpecificDataSets(IedServerConfig self, int maxD
  *
  * \return maximum number of allowed data sets.
  */
-int
+LIB61850_API int
 IedServerConfig_getMaxAssociationSpecificDataSets(IedServerConfig self);
 
 /**
@@ -216,7 +216,7 @@ IedServerConfig_getMaxAssociationSpecificDataSets(IedServerConfig self);
  *
  * \param maxDataSets maximum number of allowed data sets.
  */
-void
+LIB61850_API void
 IedServerConfig_setMaxDomainSpecificDataSets(IedServerConfig self, int maxDataSets);
 
 /**
@@ -224,7 +224,7 @@ IedServerConfig_setMaxDomainSpecificDataSets(IedServerConfig self, int maxDataSe
  *
  * \return maximum number of allowed data sets.
  */
-int
+LIB61850_API int
 IedServerConfig_getMaxDomainSpecificDataSets(IedServerConfig self);
 
 /**
@@ -236,7 +236,7 @@ IedServerConfig_getMaxDomainSpecificDataSets(IedServerConfig self);
  *
  * \param maxDataSetEntries the maximum number of entries allowed in a data set
  */
-void
+LIB61850_API void
 IedServerConfig_setMaxDataSetEntries(IedServerConfig self, int maxDataSetEntries);
 
 /**
@@ -244,7 +244,7 @@ IedServerConfig_setMaxDataSetEntries(IedServerConfig self, int maxDataSetEntries
  *
  * \return the maximum number of entries allowed in a data sets
  */
-int
+LIB61850_API int
 IedServerConfig_getMaxDatasSetEntries(IedServerConfig self);
 
 /**
@@ -252,7 +252,7 @@ IedServerConfig_getMaxDatasSetEntries(IedServerConfig self);
  *
  * \param[in] enable set true to enable dynamic data set service, otherwise false
  */
-void
+LIB61850_API void
 IedServerConfig_enableLogService(IedServerConfig self, bool enable);
 
 /**
@@ -260,7 +260,7 @@ IedServerConfig_enableLogService(IedServerConfig self, bool enable);
  *
  * \return true if enabled, false otherwise
  */
-bool
+LIB61850_API bool
 IedServerConfig_isLogServiceEnabled(IedServerConfig self);
 
 /**
@@ -287,7 +287,7 @@ typedef struct sClientConnection* ClientConnection;
  *
  * \return the new IedServer instance
  */
-IedServer
+LIB61850_API IedServer
 IedServer_create(IedModel* dataModel);
 
 /**
@@ -298,7 +298,7 @@ IedServer_create(IedModel* dataModel);
  *
  * \return the new IedServer instance
  */
-IedServer
+LIB61850_API IedServer
 IedServer_createWithTlsSupport(IedModel* dataModel, TLSConfiguration tlsConfiguration);
 
 /**
@@ -308,7 +308,7 @@ IedServer_createWithTlsSupport(IedModel* dataModel, TLSConfiguration tlsConfigur
  * \param tlsConfiguration TLS configuration object, or NULL to not use TLS
  * \param serverConfiguration IED server configuration object for advanced server configuration
  */
-IedServer
+LIB61850_API IedServer
 IedServer_createWithConfig(IedModel* dataModel, TLSConfiguration tlsConfiguration, IedServerConfig serverConfiguration);
 
 /**
@@ -316,7 +316,7 @@ IedServer_createWithConfig(IedModel* dataModel, TLSConfiguration tlsConfiguratio
  *
  * \param self the instance of IedServer to operate on.
  */
-void
+LIB61850_API void
 IedServer_destroy(IedServer self);
 
 /**
@@ -325,7 +325,7 @@ IedServer_destroy(IedServer self);
  *  \param self the IedServer instance
  *  \param localIpAddress the local IP address as C string (an internal copy will be created)
  */
-void
+LIB61850_API void
 IedServer_setLocalIpAddress(IedServer self, const char* localIpAddress);
 
 /**
@@ -338,7 +338,7 @@ IedServer_setLocalIpAddress(IedServer self, const char* localIpAddress);
  * \param self the IedServer instance
  * \param basepath the new virtual filestore basepath
  */
-void
+LIB61850_API void
 IedServer_setFilestoreBasepath(IedServer self, const char* basepath);
 
 /**
@@ -347,7 +347,7 @@ IedServer_setFilestoreBasepath(IedServer self, const char* basepath);
  * \param self the instance of IedServer to operate on.
  * \param tcpPort the TCP port the server is listening (-1 for using the default MMS or secure MMS port)
  */
-void
+LIB61850_API void
 IedServer_start(IedServer self, int tcpPort);
 
 /**
@@ -355,7 +355,7 @@ IedServer_start(IedServer self, int tcpPort);
  *
  * \param self the instance of IedServer to operate on.
  */
-void
+LIB61850_API void
 IedServer_stop(IedServer self);
 
 /**
@@ -368,7 +368,7 @@ IedServer_stop(IedServer self);
  * \param self the instance of IedServer to operate on.
  * \param tcpPort the TCP port the server is listening (-1 for using the default MMS or secure MMS port)
  */
-void
+LIB61850_API void
 IedServer_startThreadless(IedServer self, int tcpPort);
 
 /**
@@ -384,7 +384,7 @@ IedServer_startThreadless(IedServer self, int tcpPort);
  *
  * \return 0 if no connection is ready; otherwise at least one connection is ready
  */
-int
+LIB61850_API int
 IedServer_waitReady(IedServer self, unsigned int timeoutMs);
 
 /**
@@ -396,7 +396,7 @@ IedServer_waitReady(IedServer self, unsigned int timeoutMs);
  *
  * \param self the instance of IedServer to operate on.
  */
-void
+LIB61850_API void
 IedServer_processIncomingData(IedServer self);
 
 /**
@@ -407,7 +407,7 @@ IedServer_processIncomingData(IedServer self);
  *
  * \param self the instance of IedServer to operate on.
  */
-void
+LIB61850_API void
 IedServer_performPeriodicTasks(IedServer self);
 
 /**
@@ -415,7 +415,7 @@ IedServer_performPeriodicTasks(IedServer self);
  *
  * \param self the instance of IedServer to operate on.
  */
-void
+LIB61850_API void
 IedServer_stopThreadless(IedServer self);
 
 /**
@@ -425,7 +425,7 @@ IedServer_stopThreadless(IedServer self);
  *
  * \return the IedModel* instance of the server
  */
-IedModel*
+LIB61850_API IedModel*
 IedServer_getDataModel(IedServer self);
 
 /**
@@ -435,7 +435,7 @@ IedServer_getDataModel(IedServer self);
  *
  * \return true if IedServer instance is listening for client connections
  */
-bool
+LIB61850_API bool
 IedServer_isRunning(IedServer self);
 
 /**
@@ -448,7 +448,7 @@ IedServer_isRunning(IedServer self);
  *
  * \return MmsServer instance that is used by the IedServer
  */
-MmsServer
+LIB61850_API MmsServer
 IedServer_getMmsServer(IedServer self);
 
 /**
@@ -461,7 +461,7 @@ IedServer_getMmsServer(IedServer self);
  *
  * \param self the instance of IedServer to operate on.
  */
-void
+LIB61850_API void
 IedServer_enableGoosePublishing(IedServer self);
 
 /**
@@ -472,7 +472,7 @@ IedServer_enableGoosePublishing(IedServer self);
  *
  * \param self the instance of IedServer to operate on.
  */
-void
+LIB61850_API void
 IedServer_disableGoosePublishing(IedServer self);
 
 /**
@@ -485,7 +485,7 @@ IedServer_disableGoosePublishing(IedServer self);
  * \param self the instance of IedServer to operate on.
  * \param interfaceId the ID of the ethernet interface to be used for GOOSE publishing
  */
-void
+LIB61850_API void
 IedServer_setGooseInterfaceId(IedServer self, const char* interfaceId);
 
 /**@}*/
@@ -508,7 +508,7 @@ IedServer_setGooseInterfaceId(IedServer self, const char* interfaceId);
  * \param authenticator the user provided authenticator callback
  * \param authenticatorParameter user provided parameter that is passed to the authenticator
  */
-void
+LIB61850_API void
 IedServer_setAuthenticator(IedServer self, AcseAuthenticator authenticator, void* authenticatorParameter);
 
 
@@ -522,7 +522,7 @@ IedServer_setAuthenticator(IedServer self, AcseAuthenticator authenticator, void
  * \param self the ClientConnection instance
  * \return peer address as C string.
  */
-const char*
+LIB61850_API const char*
 ClientConnection_getPeerAddress(ClientConnection self);
 
 /**
@@ -535,7 +535,7 @@ ClientConnection_getPeerAddress(ClientConnection self);
  *
  * \return the security token or NULL
  */
-void*
+LIB61850_API void*
 ClientConnection_getSecurityToken(ClientConnection self);
 
 /**
@@ -556,7 +556,7 @@ typedef void (*IedConnectionIndicationHandler) (IedServer self, ClientConnection
  * \param handler the user provided callback function
  * \param parameter a user provided parameter that is passed to the callback function.
  */
-void
+LIB61850_API void
 IedServer_setConnectionIndicationHandler(IedServer self, IedConnectionIndicationHandler handler, void* parameter);
 
 
@@ -582,7 +582,7 @@ IedServer_setConnectionIndicationHandler(IedServer self, IedConnectionIndication
  *
  * \param self the instance of IedServer to operate on.
  */
-void
+LIB61850_API void
 IedServer_lockDataModel(IedServer self);
 
 /**
@@ -593,7 +593,7 @@ IedServer_lockDataModel(IedServer self);
  *
  * \param self the instance of IedServer to operate on.
  */
-void
+LIB61850_API void
 IedServer_unlockDataModel(IedServer self);
 
 /**
@@ -608,7 +608,7 @@ IedServer_unlockDataModel(IedServer self);
  *
  * \return MmsValue object of the MMS Named Variable or NULL if the value does not exist.
  */
-MmsValue*
+LIB61850_API MmsValue*
 IedServer_getAttributeValue(IedServer self, DataAttribute* dataAttribute);
 
 /**
@@ -622,7 +622,7 @@ IedServer_getAttributeValue(IedServer self, DataAttribute* dataAttribute);
  *
  * \return true or false
  */
-bool
+LIB61850_API bool
 IedServer_getBooleanAttributeValue(IedServer self, const DataAttribute* dataAttribute);
 
 /**
@@ -636,7 +636,7 @@ IedServer_getBooleanAttributeValue(IedServer self, const DataAttribute* dataAttr
  *
  * \return the value as 32 bit integer
  */
-int32_t
+LIB61850_API int32_t
 IedServer_getInt32AttributeValue(IedServer self, const DataAttribute* dataAttribute);
 
 /**
@@ -650,7 +650,7 @@ IedServer_getInt32AttributeValue(IedServer self, const DataAttribute* dataAttrib
  *
  * \return the value as 64 bit integer
  */
-int64_t
+LIB61850_API int64_t
 IedServer_getInt64AttributeValue(IedServer self, const DataAttribute* dataAttribute);
 
 /**
@@ -664,7 +664,7 @@ IedServer_getInt64AttributeValue(IedServer self, const DataAttribute* dataAttrib
  *
  * \return the value as 32 bit unsigned integer
  */
-uint32_t
+LIB61850_API uint32_t
 IedServer_getUInt32AttributeValue(IedServer self, const DataAttribute* dataAttribute);
 
 /**
@@ -678,7 +678,7 @@ IedServer_getUInt32AttributeValue(IedServer self, const DataAttribute* dataAttri
  *
  * \return the value as 32 bit float
  */
-float
+LIB61850_API float
 IedServer_getFloatAttributeValue(IedServer self, const DataAttribute* dataAttribute);
 
 /**
@@ -692,7 +692,7 @@ IedServer_getFloatAttributeValue(IedServer self, const DataAttribute* dataAttrib
  *
  * \return the value as 32 bit float
  */
-uint64_t
+LIB61850_API uint64_t
 IedServer_getUTCTimeAttributeValue(IedServer self, const DataAttribute* dataAttribute);
 
 /**
@@ -710,7 +710,7 @@ IedServer_getUTCTimeAttributeValue(IedServer self, const DataAttribute* dataAttr
  *
  * \return the value a 32 bit integer.
  */
-uint32_t
+LIB61850_API uint32_t
 IedServer_getBitStringAttributeValue(IedServer self, const DataAttribute* dataAttribute);
 
 /**
@@ -724,7 +724,7 @@ IedServer_getBitStringAttributeValue(IedServer self, const DataAttribute* dataAt
  *
  * \return the value as a C string (null terminated string)
  */
-const char*
+LIB61850_API const char*
 IedServer_getStringAttributeValue(IedServer self, const DataAttribute* dataAttribute);
 
 
@@ -743,7 +743,7 @@ IedServer_getStringAttributeValue(IedServer self, const DataAttribute* dataAttri
  *
  * \return MmsValue object cached by the server.
  */
-MmsValue*
+LIB61850_API MmsValue*
 IedServer_getFunctionalConstrainedData(IedServer self, DataObject* dataObject, FunctionalConstraint fc);
 
 /**
@@ -762,7 +762,7 @@ IedServer_getFunctionalConstrainedData(IedServer self, DataObject* dataObject, F
  * \param dataAttribute the data attribute handle
  * \param value MmsValue object used to update the value cached by the server.
  */
-void
+LIB61850_API void
 IedServer_updateAttributeValue(IedServer self, DataAttribute* dataAttribute, MmsValue* value);
 
 /**
@@ -777,7 +777,7 @@ IedServer_updateAttributeValue(IedServer self, DataAttribute* dataAttribute, Mms
  * \param dataAttribute the data attribute handle
  * \param value the new float value of the data attribute.
  */
-void
+LIB61850_API void
 IedServer_updateFloatAttributeValue(IedServer self, DataAttribute* dataAttribute, float value);
 
 /**
@@ -792,7 +792,7 @@ IedServer_updateFloatAttributeValue(IedServer self, DataAttribute* dataAttribute
  * \param dataAttribute the data attribute handle
  * \param value the new integer value of the data attribute.
  */
-void
+LIB61850_API void
 IedServer_updateInt32AttributeValue(IedServer self, DataAttribute* dataAttribute, int32_t value);
 
 /**
@@ -807,7 +807,7 @@ IedServer_updateInt32AttributeValue(IedServer self, DataAttribute* dataAttribute
  * \param dataAttribute the data attribute handle
  * \param value the new Dbpos value of the data attribute.
  */
-void
+LIB61850_API void
 IedServer_udpateDbposValue(IedServer self, DataAttribute* dataAttribute, Dbpos value);
 
 /**
@@ -822,7 +822,7 @@ IedServer_udpateDbposValue(IedServer self, DataAttribute* dataAttribute, Dbpos v
  * \param dataAttribute the data attribute handle
  * \param value the new 64 bit integer value of the data attribute.
  */
-void
+LIB61850_API void
 IedServer_updateInt64AttributeValue(IedServer self, DataAttribute* dataAttribute, int64_t value);
 
 /**
@@ -837,7 +837,7 @@ IedServer_updateInt64AttributeValue(IedServer self, DataAttribute* dataAttribute
  * \param dataAttribute the data attribute handle
  * \param value the new unsigned integer value of the data attribute.
  */
-void
+LIB61850_API void
 IedServer_updateUnsignedAttributeValue(IedServer self, DataAttribute* dataAttribute, uint32_t value);
 
 /**
@@ -852,7 +852,7 @@ IedServer_updateUnsignedAttributeValue(IedServer self, DataAttribute* dataAttrib
  * \param dataAttribute the data attribute handle
  * \param value the new bit string integer value of the data attribute.
  */
-void
+LIB61850_API void
 IedServer_updateBitStringAttributeValue(IedServer self, DataAttribute* dataAttribute, uint32_t value);
 
 /**
@@ -867,7 +867,7 @@ IedServer_updateBitStringAttributeValue(IedServer self, DataAttribute* dataAttri
  * \param dataAttribute the data attribute handle
  * \param value the new boolean value of the data attribute.
  */
-void
+LIB61850_API void
 IedServer_updateBooleanAttributeValue(IedServer self, DataAttribute* dataAttribute, bool value);
 
 /**
@@ -882,7 +882,7 @@ IedServer_updateBooleanAttributeValue(IedServer self, DataAttribute* dataAttribu
  * \param dataAttribute the data attribute handle
  * \param value the new visible string value of the data attribute.
  */
-void
+LIB61850_API void
 IedServer_updateVisibleStringAttributeValue(IedServer self, DataAttribute* dataAttribute, char *value);
 
 /**
@@ -897,7 +897,7 @@ IedServer_updateVisibleStringAttributeValue(IedServer self, DataAttribute* dataA
  * \param dataAttribute the data attribute handle
  * \param value the new UTC time value of the data attribute as a ms timestamp
  */
-void
+LIB61850_API void
 IedServer_updateUTCTimeAttributeValue(IedServer self, DataAttribute* dataAttribute, uint64_t value);
 
 /**
@@ -912,7 +912,7 @@ IedServer_updateUTCTimeAttributeValue(IedServer self, DataAttribute* dataAttribu
  * \param dataAttribute the data attribute handle
  * \param value the new UTC time value of the data attribute as a Timestamp
  */
-void
+LIB61850_API void
 IedServer_updateTimestampAttributeValue(IedServer self, DataAttribute* dataAttribute, Timestamp* timestamp);
 
 /**
@@ -929,13 +929,13 @@ IedServer_updateTimestampAttributeValue(IedServer self, DataAttribute* dataAttri
  * \param quality the new quality value
  *
  */
-void
+LIB61850_API void
 IedServer_updateQuality(IedServer self, DataAttribute* dataAttribute, Quality quality);
 
 /**@}*/
 
 
-void
+LIB61850_API void
 IedServer_setLogStorage(IedServer self, const char* logRef, LogStorage logStorage);
 
 /**
@@ -954,7 +954,7 @@ IedServer_setLogStorage(IedServer self, const char* logRef, LogStorage logStorag
  * \param sgcb the handle of the setting group control block of the setting group
  * \param newActiveSg the number of the new active setting group
  */
-void
+LIB61850_API void
 IedServer_changeActiveSettingGroup(IedServer self, SettingGroupControlBlock* sgcb, uint8_t newActiveSg);
 
 /**
@@ -965,7 +965,7 @@ IedServer_changeActiveSettingGroup(IedServer self, SettingGroupControlBlock* sgc
  *
  * \return the number of the active setting group
  */
-uint8_t
+LIB61850_API uint8_t
 IedServer_getActiveSettingGroup(IedServer self, SettingGroupControlBlock* sgcb);
 
 /**
@@ -994,7 +994,7 @@ typedef bool (*ActiveSettingGroupChangedHandler) (void* parameter, SettingGroupC
  * \param handler the user provided callback handler.
  * \param parameter a user provided parameter that is passed to the control handler.
  */
-void
+LIB61850_API void
 IedServer_setActiveSettingGroupChangedHandler(IedServer self, SettingGroupControlBlock* sgcb,
         ActiveSettingGroupChangedHandler handler, void* parameter);
 
@@ -1026,7 +1026,7 @@ typedef bool (*EditSettingGroupChangedHandler) (void* parameter, SettingGroupCon
  * \param handler the user provided callback handler.
  * \param parameter a user provided parameter that is passed to the control handler.
  */
-void
+LIB61850_API void
 IedServer_setEditSettingGroupChangedHandler(IedServer self, SettingGroupControlBlock* sgcb,
         EditSettingGroupChangedHandler handler, void* parameter);
 
@@ -1050,7 +1050,7 @@ typedef void (*EditSettingGroupConfirmationHandler) (void* parameter, SettingGro
  * \param handler the user provided callback handler.
  * \param parameter a user provided parameter that is passed to the control handler.
  */
-void
+LIB61850_API void
 IedServer_setEditSettingGroupConfirmationHandler(IedServer self, SettingGroupControlBlock* sgcb,
         EditSettingGroupConfirmationHandler handler, void* parameter);
 
@@ -1157,7 +1157,7 @@ typedef ControlHandlerResult (*ControlHandler) (void* parameter, MmsValue* ctlVa
  * \param handler a callback function of type ControlHandler
  * \param parameter a user provided parameter that is passed to the control handler.
  */
-void
+LIB61850_API void
 IedServer_setControlHandler(IedServer self, DataObject* node, ControlHandler handler, void* parameter);
 
 /**
@@ -1174,7 +1174,7 @@ IedServer_setControlHandler(IedServer self, DataObject* node, ControlHandler han
  * \param parameter a user provided parameter that is passed to the control handler.
  *
  */
-void
+LIB61850_API void
 IedServer_setPerformCheckHandler(IedServer self, DataObject* node, ControlPerformCheckHandler handler, void* parameter);
 
 /**
@@ -1192,7 +1192,7 @@ IedServer_setPerformCheckHandler(IedServer self, DataObject* node, ControlPerfor
  * \param parameter a user provided parameter that is passed to the control handler.
  *
  */
-void
+LIB61850_API void
 IedServer_setWaitForExecutionHandler(IedServer self, DataObject* node, ControlWaitForExecutionHandler handler, void* parameter);
 
 /**@}*/
@@ -1226,7 +1226,7 @@ typedef void (*SVCBEventHandler) (SVControlBlock* svcb, int event, void* paramet
  * \param handler the event handler to be used
  * \param parameter a user provided parameter that is passed to the handler.
  */
-void
+LIB61850_API void
 IedServer_setSVCBHandler(IedServer self, SVControlBlock* svcb, SVCBEventHandler handler, void* parameter);
 
 /**@}*/
@@ -1277,7 +1277,7 @@ typedef MmsDataAccessError
  *        the monitored data attribute.
  * \param parameter a user provided parameter that is passed to the WriteAccessHandler when called.
  */
-void
+LIB61850_API void
 IedServer_handleWriteAccess(IedServer self, DataAttribute* dataAttribute,
         WriteAccessHandler handler, void* parameter);
 
@@ -1294,7 +1294,7 @@ typedef enum {
  * \param policy the new policy to apply.
  *
  */
-void
+LIB61850_API void
 IedServer_setWriteAccessPolicy(IedServer self, FunctionalConstraint fc, AccessPolicy policy);
 
 /**
@@ -1325,7 +1325,7 @@ typedef MmsDataAccessError
  * \param handler the callback function that is invoked if a client tries to read a data object.
  * \param parameter a user provided parameter that is passed to the callback function.
  */
-void
+LIB61850_API void
 IedServer_setReadAccessHandler(IedServer self, ReadAccessHandler handler, void* parameter);
 
 /**@}*/

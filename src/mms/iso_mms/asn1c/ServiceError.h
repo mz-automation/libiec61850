@@ -159,7 +159,7 @@ typedef struct ServiceError {
 } ServiceError_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_ServiceError;
+LIB61850_INTERNAL extern asn_TYPE_descriptor_t asn_DEF_ServiceError;
 
 #ifdef __cplusplus
 }

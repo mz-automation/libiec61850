@@ -1,7 +1,7 @@
 /*
  *  control.h
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013-2018 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -103,49 +103,49 @@ struct sControlObject
     void* waitForExecutionHandlerParameter;
 };
 
-ControlObject*
+LIB61850_INTERNAL ControlObject*
 ControlObject_create(IedServer iedServer, MmsDomain* domain, char* lnName, char* name, MmsVariableSpecification* operSpec);
 
-void
+LIB61850_INTERNAL void
 ControlObject_initialize(ControlObject* self);
 
-void
+LIB61850_INTERNAL void
 ControlObject_destroy(ControlObject* self);
 
-void
+LIB61850_INTERNAL void
 ControlObject_setMmsValue(ControlObject* self, MmsValue* value);
 
-MmsValue*
+LIB61850_INTERNAL MmsValue*
 ControlObject_getMmsValue(ControlObject* self);
 
-void
+LIB61850_INTERNAL void
 ControlObject_setTypeSpec(ControlObject* self, MmsVariableSpecification* typeSpec);
 
-MmsVariableSpecification*
+LIB61850_INTERNAL MmsVariableSpecification*
 ControlObject_getTypeSpec(ControlObject* self);
 
-char*
+LIB61850_INTERNAL char*
 ControlObject_getName(ControlObject* self);
 
-char*
+LIB61850_INTERNAL char*
 ControlObject_getLNName(ControlObject* self);
 
-MmsDomain*
+LIB61850_INTERNAL MmsDomain*
 ControlObject_getDomain(ControlObject* self);
 
-bool
+LIB61850_INTERNAL bool
 ControlObject_select(ControlObject* self, MmsServerConnection connection);
 
-bool
+LIB61850_INTERNAL bool
 ControlObject_unselect(ControlObject* self, MmsServerConnection connection);
 
-void
+LIB61850_INTERNAL void
 ControlObject_installListener(ControlObject* self, ControlHandler listener, void* parameter);
 
-void
+LIB61850_INTERNAL void
 ControlObject_installCheckHandler(ControlObject* self, ControlPerformCheckHandler handler, void* parameter);
 
-void
+LIB61850_INTERNAL void
 ControlObject_installWaitForExecutionHandler(ControlObject* self, ControlWaitForExecutionHandler handler, void* parameter);
 
 #endif /* CONTROL_H_ */

@@ -29,16 +29,16 @@
 
 typedef struct sMmsValueCache* MmsValueCache;
 
-MmsValueCache
+LIB61850_INTERNAL MmsValueCache
 MmsValueCache_create(MmsDomain* domain);
 
-void
+LIB61850_INTERNAL void
 MmsValueCache_insertValue(MmsValueCache self, char* itemId, MmsValue* value);
 
-MmsValue*
+LIB61850_INTERNAL MmsValue*
 MmsValueCache_lookupValue(MmsValueCache self, const char* itemId);
 
-void
+LIB61850_INTERNAL void
 MmsValueCache_destroy(MmsValueCache self);
 
 #endif /* MMS_VARIABLE_CACHE_H_ */

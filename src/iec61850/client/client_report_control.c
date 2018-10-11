@@ -520,7 +520,7 @@ IedConnection_getRCBValues(IedConnection self, IedClientError* error, const char
 }
 
 uint32_t
-IedConnection_setRCBValues(IedConnection self, IedClientError* error, ClientReportControlBlock rcb,
+IedConnection_setRCBValuesAsync(IedConnection self, IedClientError* error, ClientReportControlBlock rcb,
         uint32_t parametersMask, bool singleRequest, IedConnection_WriteObjectHandler handler, void* parameter)
 {
     //TODO implement

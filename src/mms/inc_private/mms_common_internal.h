@@ -52,28 +52,28 @@ typedef struct {
 /* include for MmsFileReadHandler definition */
 #include "mms_client_connection.h"
 
-bool
+LIB61850_INTERNAL bool
 mmsMsg_parseFileOpenResponse(uint8_t* buffer, int bufPos, int maxBufPos, int32_t* frsmId, uint32_t* fileSize, uint64_t* lastModified);
 
-bool
+LIB61850_INTERNAL bool
 mmsMsg_parseFileReadResponse(uint8_t* buffer, int bufPos, int maxBufPos, bool* moreFollows, uint8_t** dataBuffer, int* dataLength);
 
-void
+LIB61850_INTERNAL void
 mmsMsg_createFileReadResponse(int maxPduSize, uint32_t invokeId, ByteBuffer* response,  MmsFileReadStateMachine* frsm);
 
-void
+LIB61850_INTERNAL void
 mmsMsg_createFileCloseResponse(uint32_t invokeId, ByteBuffer* response);
 
-void
+LIB61850_INTERNAL void
 mmsMsg_createFileOpenResponse(const char* basepath, uint32_t invokeId, ByteBuffer* response, char* fullPath, MmsFileReadStateMachine* frsm);
 
-bool
+LIB61850_INTERNAL bool
 mmsMsg_parseFileName(char* filename, uint8_t* buffer, int* bufPos, int maxBufPos , uint32_t invokeId, ByteBuffer* response);
 
-void
+LIB61850_INTERNAL void
 mmsMsg_createExtendedFilename(const char* basepath, char* extendedFileName, char* fileName);
 
-FileHandle
+LIB61850_INTERNAL FileHandle
 mmsMsg_openFile(const char* basepath, char* fileName, bool readWrite);
 
 #endif /* (MMS_FILE_SERVICE == 1) */
@@ -84,34 +84,34 @@ typedef struct sMmsServiceError
 } MmsServiceError;
 
 
-void /* Confirmed service error (ServiceError) */
+LIB61850_INTERNAL void /* Confirmed service error (ServiceError) */
 mmsMsg_createServiceErrorPdu(uint32_t invokeId, ByteBuffer* response, MmsError errorType);
 
-void
+LIB61850_INTERNAL void
 mmsMsg_createMmsRejectPdu(uint32_t* invokeId, int reason, ByteBuffer* response);
 
-int
+LIB61850_INTERNAL int
 mmsMsg_parseConfirmedErrorPDU(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t* invokeId, MmsServiceError* serviceError);
 
-int
+LIB61850_INTERNAL int
 mmsMsg_parseRejectPDU(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t* invokeId, int* rejectType, int* rejectReason);
 
-MmsValue*
+LIB61850_INTERNAL MmsValue*
 mmsMsg_parseDataElement(Data_t* dataElement);
 
-Data_t*
+LIB61850_INTERNAL Data_t*
 mmsMsg_createBasicDataElement(MmsValue* value);
 
-AccessResult_t**
+LIB61850_INTERNAL AccessResult_t**
 mmsMsg_createAccessResultsList(MmsPdu_t* mmsPdu, int resultsCount);
 
-char*
+LIB61850_INTERNAL char*
 mmsMsg_createStringFromAsnIdentifier(Identifier_t identifier);
 
-void
+LIB61850_INTERNAL void
 mmsMsg_copyAsn1IdentifierToStringBuffer(Identifier_t identifier, char* buffer, int bufSize);
 
-void
+LIB61850_INTERNAL void
 mmsMsg_deleteAccessResultList(AccessResult_t** accessResult, int variableCount);
 
 #endif /* MMS_COMMON_INTERNAL */

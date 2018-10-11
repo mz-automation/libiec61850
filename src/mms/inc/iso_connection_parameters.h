@@ -78,16 +78,16 @@ struct sAcseAuthenticationParameter
     } value;
 };
 
-AcseAuthenticationParameter
+LIB61850_API AcseAuthenticationParameter
 AcseAuthenticationParameter_create(void);
 
-void
+LIB61850_API void
 AcseAuthenticationParameter_destroy(AcseAuthenticationParameter self);
 
-void
+LIB61850_API void
 AcseAuthenticationParameter_setAuthMechanism(AcseAuthenticationParameter self, AcseAuthenticationMechanism mechanism);
 
-void
+LIB61850_API void
 AcseAuthenticationParameter_setPassword(AcseAuthenticationParameter self, char* password);
 
 
@@ -156,7 +156,7 @@ typedef struct sIsoConnectionParameters* IsoConnectionParameters;
  *
  * \return new IsoConnectionParameters
  */
-IsoConnectionParameters
+LIB61850_API IsoConnectionParameters
 IsoConnectionParameters_create(void);
 
 /**
@@ -167,11 +167,11 @@ IsoConnectionParameters_create(void);
  *
  * \param self the IsoConnectionParameters instance
  */
-void
+LIB61850_API void
 IsoConnectionParameters_destroy(IsoConnectionParameters self);
 
 
-void
+LIB61850_API void
 IsoConnectionParameters_setTlsConfiguration(IsoConnectionParameters self, TLSConfiguration tlsConfig);
 
 /**
@@ -182,7 +182,7 @@ IsoConnectionParameters_setTlsConfiguration(IsoConnectionParameters self, TLSCon
  * \param self the IsoConnectionParameters instance
  * \param acseAuthParameter
  */
-void
+LIB61850_API void
 IsoConnectionParameters_setAcseAuthenticationParameter(IsoConnectionParameters self,
         AcseAuthenticationParameter acseAuthParameter);
 
@@ -196,7 +196,7 @@ IsoConnectionParameters_setAcseAuthenticationParameter(IsoConnectionParameters s
  * \param hostname the hostname of IP address if the server
  * \param tcpPort the TCP port number of the server
  */
-void
+LIB61850_API void
 IsoConnectionParameters_setTcpParameters(IsoConnectionParameters self, const char* hostname, int tcpPort);
 
 /**
@@ -211,7 +211,7 @@ IsoConnectionParameters_setTcpParameters(IsoConnectionParameters self, const cha
  * \param apTitle the AP-Title OID as string.
  * \param aeQualifier the AP-qualifier
  */
-void
+LIB61850_API void
 IsoConnectionParameters_setRemoteApTitle(IsoConnectionParameters self, const char* apTitle, int aeQualifier);
 
 /**
@@ -226,7 +226,7 @@ IsoConnectionParameters_setRemoteApTitle(IsoConnectionParameters self, const cha
  *  \param sSelector the S-Selector (session layer address)
  *  \param tSelector the T-Selector (ISO transport layer address)
  */
-void
+LIB61850_API void
 IsoConnectionParameters_setRemoteAddresses(IsoConnectionParameters self, uint32_t pSelector, SSelector sSelector, TSelector tSelector);
 
 /**
@@ -241,7 +241,7 @@ IsoConnectionParameters_setRemoteAddresses(IsoConnectionParameters self, uint32_
  * \param apTitle the AP-Title OID as string.
  * \param aeQualifier the AP-qualifier
  */
-void
+LIB61850_API void
 IsoConnectionParameters_setLocalApTitle(IsoConnectionParameters self, const char* apTitle, int aeQualifier);
 
 /**
@@ -256,7 +256,7 @@ IsoConnectionParameters_setLocalApTitle(IsoConnectionParameters self, const char
  *  \param sSelector the S-Selector (session layer address)
  *  \param tSelector the T-Selector (ISO transport layer address)
  */
-void
+LIB61850_API void
 IsoConnectionParameters_setLocalAddresses(IsoConnectionParameters self, uint32_t pSelector, SSelector sSelector, TSelector tSelector);
 
 /**@}*/

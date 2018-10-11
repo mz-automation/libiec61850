@@ -24,8 +24,7 @@
 #ifndef LINKED_LIST_H_
 #define LINKED_LIST_H_
 
-#include <stdint.h>
-#include <stdbool.h>
+#include "libiec61850_common_api.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -57,7 +56,7 @@ typedef struct sLinkedList* LinkedList;
  *
  * \return the newly created LinkedList instance
  */
-LinkedList
+LIB61850_API LinkedList
 LinkedList_create(void);
 
 /**
@@ -69,7 +68,7 @@ LinkedList_create(void);
  *
  * \param self the LinkedList instance
  */
-void
+LIB61850_API void
 LinkedList_destroy(LinkedList self);
 
 
@@ -86,7 +85,7 @@ typedef void (*LinkedListValueDeleteFunction) (void*);
  * \param valueDeleteFunction a function that is called for each data element of the LinkedList with the pointer
  *         to the linked list data element.
  */
-void
+LIB61850_API void
 LinkedList_destroyDeep(LinkedList self, LinkedListValueDeleteFunction valueDeleteFunction);
 
 /**
@@ -97,7 +96,7 @@ LinkedList_destroyDeep(LinkedList self, LinkedListValueDeleteFunction valueDelet
  *
  * \param self the LinkedList instance
  */
-void
+LIB61850_API void
 LinkedList_destroyStatic(LinkedList self);
 
 /**
@@ -109,7 +108,7 @@ LinkedList_destroyStatic(LinkedList self);
  * \param self the LinkedList instance
  * \param data data to append to the LinkedList instance
  */
-void
+LIB61850_API void
 LinkedList_add(LinkedList self, void* data);
 
 /**
@@ -120,7 +119,7 @@ LinkedList_add(LinkedList self, void* data);
  *
  * \return true if data is part of the list, false otherwise
  */
-bool
+LIB61850_API bool
 LinkedList_contains(LinkedList self, void* data);
 
 /**
@@ -131,7 +130,7 @@ LinkedList_contains(LinkedList self, void* data);
  *
  *  \return true if data has been removed from the list, false otherwise
  */
-bool
+LIB61850_API bool
 LinkedList_remove(LinkedList self, void* data);
 
 /**
@@ -140,7 +139,7 @@ LinkedList_remove(LinkedList self, void* data);
  * \param self the LinkedList instance
  * \param index index of the requested element.
  */
-LinkedList
+LIB61850_API LinkedList
 LinkedList_get(LinkedList self, int index);
 
 /**
@@ -148,7 +147,7 @@ LinkedList_get(LinkedList self, int index);
  *
  * \param self the LinkedList instance
  */
-LinkedList
+LIB61850_API LinkedList
 LinkedList_getNext(LinkedList self);
 
 /**
@@ -156,7 +155,7 @@ LinkedList_getNext(LinkedList self);
  *
  * \param listElement the LinkedList instance
  */
-LinkedList
+LIB61850_API LinkedList
 LinkedList_getLastElement(LinkedList self);
 
 /**
@@ -164,7 +163,7 @@ LinkedList_getLastElement(LinkedList self);
  *
  * \param listElement the LinkedList instance
  */
-LinkedList
+LIB61850_API LinkedList
 LinkedList_insertAfter(LinkedList listElement, void* data);
 
 /**
@@ -174,13 +173,13 @@ LinkedList_insertAfter(LinkedList listElement, void* data);
  *
  * \return number of data elements stored in the list
  */
-int
+LIB61850_API int
 LinkedList_size(LinkedList self);
 
-void*
+LIB61850_API void*
 LinkedList_getData(LinkedList self);
 
-void
+LIB61850_API void
 LinkedList_printStringList(LinkedList self);
 
 /**@}*/

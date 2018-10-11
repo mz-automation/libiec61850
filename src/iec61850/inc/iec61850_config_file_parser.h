@@ -40,7 +40,7 @@ extern "C" {
  * @{
  */
 
-IedModel*
+LIB61850_API IedModel*
 ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle);
 
 /**@}*/

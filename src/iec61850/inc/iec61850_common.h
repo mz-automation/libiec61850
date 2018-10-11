@@ -254,13 +254,13 @@ typedef enum eFunctionalConstraint {
 /**extern "C" {
  * \brief convert a function constraint to a static string
  */
-char*
+LIB61850_API char*
 FunctionalConstraint_toString(FunctionalConstraint fc);
 
 /**
  * \brief parse a string treated as a functional constraint representation
  */
-FunctionalConstraint
+LIB61850_API FunctionalConstraint
 FunctionalConstraint_fromString(const char* fcString);
 
 /** @} */
@@ -297,22 +297,22 @@ typedef uint16_t Validity;
 
 #define QUALITY_DERIVED 8192
 
-Validity
+LIB61850_API Validity
 Quality_getValidity(Quality* self);
 
-void
+LIB61850_API void
 Quality_setValidity(Quality* self, Validity validity);
 
-void
+LIB61850_API void
 Quality_setFlag(Quality* self, int flag);
 
-void
+LIB61850_API void
 Quality_unsetFlag(Quality* self, int flag);
 
-bool
+LIB61850_API bool
 Quality_isFlagSet(Quality* self, int flag);
 
-Quality
+LIB61850_API Quality
 Quality_fromMmsValue(const MmsValue* mmsValue);
 
 /** @} */
@@ -338,7 +338,7 @@ typedef enum {
  *
  * \return the corresponding Dbpos value
  */
-Dbpos
+LIB61850_API Dbpos
 Dbpos_fromMmsValue(const MmsValue* mmsValue);
 
 /**
@@ -349,7 +349,7 @@ Dbpos_fromMmsValue(const MmsValue* mmsValue);
  *
  * \return the corresponding MmsValue instance
  */
-MmsValue*
+LIB61850_API MmsValue*
 Dbpos_toMmsValue(MmsValue* mmsValue, Dbpos dbpos);
 
 /** @} */
@@ -364,43 +364,43 @@ typedef union {
     uint8_t val[8];
 } Timestamp;
 
-Timestamp*
+LIB61850_API Timestamp*
 Timestamp_create(void);
 
-Timestamp*
+LIB61850_API Timestamp*
 Timestamp_createFromByteArray(uint8_t* byteArray);
 
-void
+LIB61850_API void
 Timestamp_destroy(Timestamp* self);
 
-void
+LIB61850_API void
 Timestamp_clearFlags(Timestamp* self);
 
-uint32_t
+LIB61850_API uint32_t
 Timestamp_getTimeInSeconds(Timestamp* self);
 
-uint64_t
+LIB61850_API uint64_t
 Timestamp_getTimeInMs(Timestamp* self);
 
-bool
+LIB61850_API bool
 Timestamp_isLeapSecondKnown(Timestamp* self);
 
-void
+LIB61850_API void
 Timestamp_setLeapSecondKnown(Timestamp* self, bool value);
 
-bool
+LIB61850_API bool
 Timestamp_hasClockFailure(Timestamp* self);
 
-void
+LIB61850_API void
 Timestamp_setClockFailure(Timestamp* self, bool value);
 
-bool
+LIB61850_API bool
 Timestamp_isClockNotSynchronized(Timestamp* self);
 
-void
+LIB61850_API void
 Timestamp_setClockNotSynchronized(Timestamp* self, bool value);
 
-int
+LIB61850_API int
 Timestamp_getSubsecondPrecision(Timestamp* self);
 
 /**
@@ -408,16 +408,16 @@ Timestamp_getSubsecondPrecision(Timestamp* self);
  *
  * \param subsecondPrecision the number of significant bits of the fractionOfSecond part of the time stamp
  */
-void
+LIB61850_API void
 Timestamp_setSubsecondPrecision(Timestamp* self, int subsecondPrecision);
 
-void
+LIB61850_API void
 Timestamp_setTimeInSeconds(Timestamp* self, uint32_t secondsSinceEpoch);
 
-void
+LIB61850_API void
 Timestamp_setTimeInMilliseconds(Timestamp* self, uint64_t millisSinceEpoch);
 
-void
+LIB61850_API void
 Timestamp_setByMmsUtcTime(Timestamp* self, MmsValue* mmsValue);
 
 /**
@@ -426,7 +426,7 @@ Timestamp_setByMmsUtcTime(Timestamp* self, MmsValue* mmsValue);
  * \param self the Timestamp instance
  * \param mmsValue the mmsValue instance, if NULL a new instance will be created
  */
-MmsValue*
+LIB61850_API MmsValue*
 Timestamp_toMmsValue(Timestamp* self, MmsValue* mmsValue);
 
 /**
@@ -434,7 +434,7 @@ Timestamp_toMmsValue(Timestamp* self, MmsValue* mmsValue);
  *
  * \return the version of the library (e.g. "1.2.2")
  */
-char*
+LIB61850_API char*
 LibIEC61850_getVersionString(void);
 
 /** @} */

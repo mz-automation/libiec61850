@@ -55,7 +55,7 @@ typedef struct ConfirmedServiceRequest {
 } ConfirmedServiceRequest_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_ConfirmedServiceRequest;
+LIB61850_INTERNAL extern asn_TYPE_descriptor_t asn_DEF_ConfirmedServiceRequest;
 
 #ifdef __cplusplus
 }

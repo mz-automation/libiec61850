@@ -98,42 +98,42 @@ typedef struct {
     IedServer server;
 } ReportControl;
 
-ReportControl*
+LIB61850_INTERNAL ReportControl*
 ReportControl_create(bool buffered, LogicalNode* parentLN, int reportBufferSize, IedServer server);
 
-void
+LIB61850_INTERNAL void
 ReportControl_destroy(ReportControl* self);
 
-void
+LIB61850_INTERNAL void
 ReportControl_valueUpdated(ReportControl* self, int dataSetEntryIndex, int flag, bool modelLocked);
 
-MmsValue*
+LIB61850_INTERNAL MmsValue*
 ReportControl_getRCBValue(ReportControl* rc, char* elementName);
 
-MmsVariableSpecification*
+LIB61850_INTERNAL MmsVariableSpecification*
 Reporting_createMmsBufferedRCBs(MmsMapping* self, MmsDomain* domain,
         LogicalNode* logicalNode, int reportsCount);
 
-MmsVariableSpecification*
+LIB61850_INTERNAL MmsVariableSpecification*
 Reporting_createMmsUnbufferedRCBs(MmsMapping* self, MmsDomain* domain,
         LogicalNode* logicalNode, int reportsCount);
 
-MmsDataAccessError
+LIB61850_INTERNAL MmsDataAccessError
 Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* elementName, MmsValue* value,
         MmsServerConnection connection);
 
-void
+LIB61850_INTERNAL void
 Reporting_activateBufferedReports(MmsMapping* self);
 
 /* periodic check if reports have to be sent */
-void
+LIB61850_INTERNAL void
 Reporting_processReportEvents(MmsMapping* self, uint64_t currentTimeInMs);
 
 /* check if report have to be sent after data model update */
-void
+LIB61850_INTERNAL void
 Reporting_processReportEventsAfterUnlock(MmsMapping* self);
 
-void
+LIB61850_INTERNAL void
 Reporting_deactivateReportsForConnection(MmsMapping* self, MmsServerConnection connection);
 
 #endif /* REPORTING_H_ */

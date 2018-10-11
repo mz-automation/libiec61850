@@ -30,7 +30,7 @@ typedef struct ReadRequest {
 } ReadRequest_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_ReadRequest;
+LIB61850_INTERNAL extern asn_TYPE_descriptor_t asn_DEF_ReadRequest;
 
 #ifdef __cplusplus
 }

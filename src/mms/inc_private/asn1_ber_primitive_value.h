@@ -1,7 +1,7 @@
 /*
  *  asn1_ber_primitive_value.h
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013-2018 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -37,22 +37,22 @@ typedef struct ATTRIBUTE_PACKED {
 	uint8_t* octets;
 } Asn1PrimitiveValue;
 
-Asn1PrimitiveValue*
+LIB61850_INTERNAL Asn1PrimitiveValue*
 Asn1PrimitiveValue_create(int size);
 
-int
+LIB61850_INTERNAL int
 Asn1PrimitiveValue_getSize(Asn1PrimitiveValue* self);
 
-int
+LIB61850_INTERNAL int
 Asn1PrimitiveValue_getMaxSize(Asn1PrimitiveValue* self);
 
-Asn1PrimitiveValue*
+LIB61850_INTERNAL Asn1PrimitiveValue*
 Asn1PrimitiveValue_clone(Asn1PrimitiveValue* self);
 
-bool
+LIB61850_INTERNAL bool
 Asn1PrimitivaValue_compare(Asn1PrimitiveValue* self, Asn1PrimitiveValue* otherValue);
 
-void
+LIB61850_INTERNAL void
 Asn1PrimitiveValue_destroy(Asn1PrimitiveValue* self);
 
 #ifdef __cplusplus

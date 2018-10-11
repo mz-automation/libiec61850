@@ -99,7 +99,7 @@ typedef struct AlternateAccessSelection {
 } AlternateAccessSelection_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_AlternateAccessSelection;
+LIB61850_INTERNAL extern asn_TYPE_descriptor_t asn_DEF_AlternateAccessSelection;
 
 #ifdef __cplusplus
 }

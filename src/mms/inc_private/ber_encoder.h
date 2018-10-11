@@ -1,7 +1,7 @@
 /*
  *  ber_encoder.h
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013-2018 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -34,40 +34,40 @@
  * of the next entity to encode.
  */
 
-int
+LIB61850_INTERNAL int
 BerEncoder_encodeLength(uint32_t length, uint8_t* buffer, int bufPos);
 
-int
+LIB61850_INTERNAL int
 BerEncoder_encodeTL(uint8_t tag, uint32_t length, uint8_t* buffer, int bufPos);
 
-int
+LIB61850_INTERNAL int
 BerEncoder_encodeBoolean(uint8_t tag, bool value, uint8_t* buffer, int bufPos);
 
-int
+LIB61850_INTERNAL int
 BerEncoder_encodeStringWithTag(uint8_t tag, const char* string, uint8_t* buffer, int bufPos);
 
-int
+LIB61850_INTERNAL int
 BerEncoder_encodeOctetString(uint8_t tag, uint8_t* octetString, uint32_t octetStringSize, uint8_t* buffer, int bufPos);
 
-int
+LIB61850_INTERNAL int
 BerEncoder_encodeAsn1PrimitiveValue(uint8_t tag, Asn1PrimitiveValue* value, uint8_t* buffer, int bufPos);
 
-int
+LIB61850_INTERNAL int
 BerEncoder_encodeUInt32(uint32_t value, uint8_t* buffer, int bufPos);
 
-int
+LIB61850_INTERNAL int
 BerEncoder_encodeInt32(int32_t value, uint8_t* buffer, int bufPos);
 
-int
+LIB61850_INTERNAL int
 BerEncoder_encodeUInt32WithTL(uint8_t tag, uint32_t value, uint8_t* buffer, int bufPos);
 
-int
+LIB61850_INTERNAL int
 BerEncoder_encodeBitString(uint8_t tag, int bitStringSize, uint8_t* bitString, uint8_t* buffer, int bufPos);
 
-int
+LIB61850_INTERNAL int
 BerEncoder_determineEncodedBitStringSize(int bitStringSize);
 
-int
+LIB61850_INTERNAL int
 BerEncoder_encodeFloat(uint8_t* floatValue, uint8_t formatWidth, uint8_t exponentWidth,
         uint8_t* buffer, int bufPos);
 
@@ -75,29 +75,29 @@ BerEncoder_encodeFloat(uint8_t* floatValue, uint8_t formatWidth, uint8_t exponen
  * functions to determine size of encoded entities.
  */
 
-int
+LIB61850_INTERNAL int
 BerEncoder_UInt32determineEncodedSize(uint32_t value);
 
-int
+LIB61850_INTERNAL int
 BerEncoder_determineLengthSize(uint32_t length);
 
-int
+LIB61850_INTERNAL int
 BerEncoder_determineEncodedStringSize(const char* string);
 
-int
+LIB61850_INTERNAL int
 BerEncoder_determineEncodedBitStringSize(int bitStringSize);
 
 /*
  * helper functions
  */
 
-int
+LIB61850_INTERNAL int
 BerEncoder_encodeOIDToBuffer(const char* oidString, uint8_t* buffer, int maxBufLen);
 
-void
+LIB61850_INTERNAL void
 BerEncoder_revertByteOrder(uint8_t* octets, const int size);
 
-int
+LIB61850_INTERNAL int
 BerEncoder_compressInteger(uint8_t* integer, int originalSize);
 
 #endif /* BER_ENCODER_H_ */

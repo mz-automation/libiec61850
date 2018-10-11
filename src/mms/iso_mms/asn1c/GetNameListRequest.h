@@ -51,7 +51,7 @@ typedef struct GetNameListRequest {
 } GetNameListRequest_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GetNameListRequest;
+LIB61850_INTERNAL extern asn_TYPE_descriptor_t asn_DEF_GetNameListRequest;
 
 #ifdef __cplusplus
 }

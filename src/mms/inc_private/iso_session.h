@@ -48,31 +48,31 @@ typedef enum {
 	SESSION_NOT_FINISHED
 } IsoSessionIndication;
 
-void
+LIB61850_INTERNAL void
 IsoSession_init(IsoSession* session);
 
-ByteBuffer*
+LIB61850_INTERNAL ByteBuffer*
 IsoSession_getUserData(IsoSession* session);
 
-void
+LIB61850_INTERNAL void
 IsoSession_createConnectSpdu(IsoSession* self, IsoConnectionParameters isoParameters, BufferChain buffer, BufferChain payload);
 
-IsoSessionIndication
+LIB61850_INTERNAL IsoSessionIndication
 IsoSession_parseMessage(IsoSession* session, ByteBuffer* message);
 
-void
+LIB61850_INTERNAL void
 IsoSession_createDataSpdu(IsoSession* session, BufferChain buffer, BufferChain payload);
 
-void
+LIB61850_INTERNAL void
 IsoSession_createAcceptSpdu(IsoSession* self, BufferChain buffer, BufferChain payload);
 
-void
+LIB61850_INTERNAL void
 IsoSession_createAbortSpdu(IsoSession* self, BufferChain buffer, BufferChain payload);
 
-void
+LIB61850_INTERNAL void
 IsoSession_createFinishSpdu(IsoSession* self, BufferChain buffer, BufferChain payload);
 
-void
+LIB61850_INTERNAL void
 IsoSession_createDisconnectSpdu(IsoSession* self, BufferChain buffer, BufferChain payload);
 
 #endif /* ISE_SESSION_H_ */

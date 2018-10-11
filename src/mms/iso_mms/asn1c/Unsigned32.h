@@ -22,14 +22,14 @@ extern "C" {
 typedef INTEGER_t	 Unsigned32_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_Unsigned32;
-asn_struct_free_f Unsigned32_free;
-asn_struct_print_f Unsigned32_print;
-asn_constr_check_f Unsigned32_constraint;
-ber_type_decoder_f Unsigned32_decode_ber;
-der_type_encoder_f Unsigned32_encode_der;
-xer_type_decoder_f Unsigned32_decode_xer;
-xer_type_encoder_f Unsigned32_encode_xer;
+LIB61850_INTERNAL extern asn_TYPE_descriptor_t asn_DEF_Unsigned32;
+LIB61850_INTERNAL asn_struct_free_f Unsigned32_free;
+LIB61850_INTERNAL asn_struct_print_f Unsigned32_print;
+LIB61850_INTERNAL asn_constr_check_f Unsigned32_constraint;
+LIB61850_INTERNAL ber_type_decoder_f Unsigned32_decode_ber;
+LIB61850_INTERNAL der_type_encoder_f Unsigned32_encode_der;
+LIB61850_INTERNAL xer_type_decoder_f Unsigned32_decode_xer;
+LIB61850_INTERNAL xer_type_encoder_f Unsigned32_encode_xer;
 
 #ifdef __cplusplus
 }

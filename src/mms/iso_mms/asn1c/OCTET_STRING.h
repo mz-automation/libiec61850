@@ -18,20 +18,20 @@ typedef struct OCTET_STRING {
 	asn_struct_ctx_t _asn_ctx;	/* Parsing across buffer boundaries */
 } OCTET_STRING_t;
 
-extern asn_TYPE_descriptor_t asn_DEF_OCTET_STRING;
+LIB61850_INTERNAL extern asn_TYPE_descriptor_t asn_DEF_OCTET_STRING;
 
-asn_struct_free_f OCTET_STRING_free;
-asn_struct_print_f OCTET_STRING_print;
-asn_struct_print_f OCTET_STRING_print_utf8;
-ber_type_decoder_f OCTET_STRING_decode_ber;
-der_type_encoder_f OCTET_STRING_encode_der;
-xer_type_decoder_f OCTET_STRING_decode_xer_hex;		/* Hexadecimal */
-xer_type_decoder_f OCTET_STRING_decode_xer_binary;	/* 01010111010 */
-xer_type_decoder_f OCTET_STRING_decode_xer_utf8;	/* ASCII/UTF-8 */
-xer_type_encoder_f OCTET_STRING_encode_xer;
-xer_type_encoder_f OCTET_STRING_encode_xer_utf8;
-per_type_decoder_f OCTET_STRING_decode_uper;
-per_type_encoder_f OCTET_STRING_encode_uper;
+LIB61850_INTERNAL asn_struct_free_f OCTET_STRING_free;
+LIB61850_INTERNAL asn_struct_print_f OCTET_STRING_print;
+LIB61850_INTERNAL asn_struct_print_f OCTET_STRING_print_utf8;
+LIB61850_INTERNAL ber_type_decoder_f OCTET_STRING_decode_ber;
+LIB61850_INTERNAL der_type_encoder_f OCTET_STRING_encode_der;
+LIB61850_INTERNAL xer_type_decoder_f OCTET_STRING_decode_xer_hex;		/* Hexadecimal */
+LIB61850_INTERNAL xer_type_decoder_f OCTET_STRING_decode_xer_binary;	/* 01010111010 */
+LIB61850_INTERNAL xer_type_decoder_f OCTET_STRING_decode_xer_utf8;	/* ASCII/UTF-8 */
+LIB61850_INTERNAL xer_type_encoder_f OCTET_STRING_encode_xer;
+LIB61850_INTERNAL xer_type_encoder_f OCTET_STRING_encode_xer_utf8;
+LIB61850_INTERNAL per_type_decoder_f OCTET_STRING_decode_uper;
+LIB61850_INTERNAL per_type_encoder_f OCTET_STRING_encode_uper;
 
 /******************************
  * Handy conversion routines. *
@@ -46,6 +46,7 @@ per_type_encoder_f OCTET_STRING_encode_uper;
  * current contents of the OCTET STRING.
  * Returns 0 if it was possible to perform operation, -1 otherwise.
  */
+LIB61850_INTERNAL
 int OCTET_STRING_fromBuf(OCTET_STRING_t *s, const char *str, int size);
 
 /* Handy conversion from the C string into the OCTET STRING. */
@@ -56,6 +57,7 @@ int OCTET_STRING_fromBuf(OCTET_STRING_t *s, const char *str, int size);
  * allocated object. NULL is permitted in str: the function will just allocate
  * empty OCTET STRING.
  */
+LIB61850_INTERNAL
 OCTET_STRING_t *OCTET_STRING_new_fromBuf(asn_TYPE_descriptor_t *td,
 	const char *str, int size);
 

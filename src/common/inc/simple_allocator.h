@@ -1,7 +1,7 @@
 /*
  *  simple_allocator.h
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013-2018 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -30,13 +30,13 @@ typedef struct {
     int size;
 } MemoryAllocator;
 
-void
+LIB61850_INTERNAL void
 MemoryAllocator_init(MemoryAllocator* self, char* memoryBlock, int size);
 
-int
+LIB61850_INTERNAL int
 MemoryAllocator_getAlignedSize(int size);
 
-char*
+LIB61850_INTERNAL char*
 MemoryAllocator_allocate(MemoryAllocator* self, int size);
 
 #endif /* SIMPLE_ALLOCATOR_H_ */

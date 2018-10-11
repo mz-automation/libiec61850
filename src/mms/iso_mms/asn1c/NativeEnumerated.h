@@ -19,11 +19,11 @@
 extern "C" {
 #endif
 
-extern asn_TYPE_descriptor_t asn_DEF_NativeEnumerated;
+LIB61850_INTERNAL extern asn_TYPE_descriptor_t asn_DEF_NativeEnumerated;
 
-xer_type_encoder_f NativeEnumerated_encode_xer;
-per_type_decoder_f NativeEnumerated_decode_uper;
-per_type_encoder_f NativeEnumerated_encode_uper;
+LIB61850_INTERNAL xer_type_encoder_f NativeEnumerated_encode_xer;
+LIB61850_INTERNAL per_type_decoder_f NativeEnumerated_decode_uper;
+LIB61850_INTERNAL per_type_encoder_f NativeEnumerated_encode_uper;
 
 #ifdef __cplusplus
 }

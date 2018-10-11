@@ -133,7 +133,7 @@ extern "C" {
  * Constructed Attribute Classes (CAC)
  ***************************************************/
 
-DataAttribute*
+LIB61850_API DataAttribute*
 CAC_AnalogueValue_create(const char* name, ModelNode* parent, FunctionalConstraint fc, uint8_t triggerOptions,
         bool isIntegerNotFloat);
 
@@ -143,48 +143,48 @@ CAC_AnalogueValue_create(const char* name, ModelNode* parent, FunctionalConstrai
  *
  * \param hasTransInd
  */
-DataAttribute*
+LIB61850_API DataAttribute*
 CAC_ValWithTrans_create(const char* name, ModelNode* parent, FunctionalConstraint fc, uint8_t triggerOptions, bool hasTransientIndicator);
 
 
 /**
  * CDC_OPTION_AC_CLC_O
  */
-DataAttribute*
+LIB61850_API DataAttribute*
 CAC_Vector_create(const char* name, ModelNode* parent, uint32_t options, FunctionalConstraint fc, uint8_t triggerOptions);
 
-DataAttribute*
+LIB61850_API DataAttribute*
 CAC_Point_create(const char* name, ModelNode* parent, FunctionalConstraint fc, uint8_t triggerOptions, bool hasZVal);
 
-DataAttribute*
+LIB61850_API DataAttribute*
 CAC_ScaledValueConfig_create(const char* name, ModelNode* parent);
 
-DataAttribute*
+LIB61850_API DataAttribute*
 CAC_Unit_create(const char* name, ModelNode* parent, bool hasMagnitude);
 
-DataAttribute*
+LIB61850_API DataAttribute*
 CDA_OperBoolean(ModelNode* parent, bool isTImeActivated);
 
 /****************************************************
  * Common Data Classes (CDC)
  ***************************************************/
 
-DataObject*
+LIB61850_API DataObject*
 CDC_SPS_create(const char* dataObjectName, ModelNode* parent, uint32_t options);
 
-DataObject*
+LIB61850_API DataObject*
 CDC_DPS_create(const char* dataObjectName, ModelNode* parent, uint32_t options);
 
-DataObject*
+LIB61850_API DataObject*
 CDC_INS_create(const char* dataObjectName, ModelNode* parent, uint32_t options);
 
-DataObject*
+LIB61850_API DataObject*
 CDC_ENS_create(const char* dataObjectName, ModelNode* parent, uint32_t options);
 
-DataObject*
+LIB61850_API DataObject*
 CDC_BCR_create(const char* dataObjectName, ModelNode* parent, uint32_t options);
 
-DataObject*
+LIB61850_API DataObject*
 CDC_VSS_create(const char* dataObjectName, ModelNode* parent, uint32_t options);
 
 /**
@@ -202,7 +202,7 @@ CDC_VSS_create(const char* dataObjectName, ModelNode* parent, uint32_t options);
  * \param parent the parent of the new data object (either a LogicalNode or another DataObject)
  * \param options bit mask to encode required optional elements
  */
-DataObject*
+LIB61850_API DataObject*
 CDC_SEC_create(const char* dataObjectName, ModelNode* parent, uint32_t options);
 
 /**
@@ -222,14 +222,14 @@ CDC_SEC_create(const char* dataObjectName, ModelNode* parent, uint32_t options);
  * \param isIntegerNotFloat if true the AnalogueValue instance have integer instead of float
  *
  */
-DataObject*
+LIB61850_API DataObject*
 CDC_MV_create(const char* dataObjectName, ModelNode* parent, uint32_t options, bool isIntegerNotFloat);
 
 /**
  * CDC_OPTION_INST_MAG
  * CDC_OPTION_RANGE
  */
-DataObject*
+LIB61850_API DataObject*
 CDC_CMV_create(const char* dataObjectName, ModelNode* parent, uint32_t options);
 
 /**
@@ -250,7 +250,7 @@ CDC_CMV_create(const char* dataObjectName, ModelNode* parent, uint32_t options);
  * \param isIntegerNotFloat if true the AnalogueValue instance have integer instead of float
  *
  */
-DataObject*
+LIB61850_API DataObject*
 CDC_SAV_create(const char* dataObjectName, ModelNode* parent, uint32_t options, bool isIntegerNotFloat);
 
 /**
@@ -274,7 +274,7 @@ CDC_SAV_create(const char* dataObjectName, ModelNode* parent, uint32_t options, 
  *
  * \return new DataObject instance
  */
-DataObject*
+LIB61850_API DataObject*
 CDC_LPL_create(const char* dataObjectName, ModelNode* parent, uint32_t options);
 
 /**
@@ -298,10 +298,10 @@ CDC_LPL_create(const char* dataObjectName, ModelNode* parent, uint32_t options);
  *
  * \return new DataObject instance
  */
-DataObject*
+LIB61850_API DataObject*
 CDC_DPL_create(const char* dataObjectName, ModelNode* parent, uint32_t options);
 
-DataObject*
+LIB61850_API DataObject*
 CDC_HST_create(const char* dataObjectName, ModelNode* parent, uint32_t options, uint16_t maxPts);
 
 /**
@@ -322,13 +322,13 @@ CDC_HST_create(const char* dataObjectName, ModelNode* parent, uint32_t options, 
  * \param parent the parent of the new data object (either a LogicalNode or another DataObject)
  * \param options bit mask to encode required optional elements
  */
-DataObject*
+LIB61850_API DataObject*
 CDC_ACD_create(const char* dataObjectName, ModelNode* parent, uint32_t options);
 
 /**
  * \brief Protection activation information (ACT)
  */
-DataObject*
+LIB61850_API DataObject*
 CDC_ACT_create(const char* dataObjectName, ModelNode* parent, uint32_t options);
 
 /**
@@ -338,7 +338,7 @@ CDC_ACT_create(const char* dataObjectName, ModelNode* parent, uint32_t options);
  * \param parent the parent of the new data object (either a LogicalNode or another DataObject)
  * \param options bit mask to encode required optional elements
  */
-DataObject*
+LIB61850_API DataObject*
 CDC_SPG_create(const char* dataObjectName, ModelNode* parent, uint32_t options);
 
 /**
@@ -348,7 +348,7 @@ CDC_SPG_create(const char* dataObjectName, ModelNode* parent, uint32_t options);
  * \param parent the parent of the new data object (either a LogicalNode or another DataObject)
  * \param options bit mask to encode required optional elements
  */
-DataObject*
+LIB61850_API DataObject*
 CDC_VSG_create(const char* dataObjectName, ModelNode* parent, uint32_t options);
 
 /**
@@ -358,7 +358,7 @@ CDC_VSG_create(const char* dataObjectName, ModelNode* parent, uint32_t options);
  * \param parent the parent of the new data object (either a LogicalNode or another DataObject)
  * \param options bit mask to encode required optional elements
  */
-DataObject*
+LIB61850_API DataObject*
 CDC_ENG_create(const char* dataObjectName, ModelNode* parent, uint32_t options);
 
 /**
@@ -372,7 +372,7 @@ CDC_ENG_create(const char* dataObjectName, ModelNode* parent, uint32_t options);
  *   standard (include standard optional elements like extension namespaces and descriptions (d, dU).
  *
  */
-DataObject*
+LIB61850_API DataObject*
 CDC_ING_create(const char* dataObjectName, ModelNode* parent, uint32_t options);
 
 /**
@@ -386,7 +386,7 @@ CDC_ING_create(const char* dataObjectName, ModelNode* parent, uint32_t options);
  *   standard (include standard optional elements like extension namespaces and descriptions (d, dU).
  *
  */
-DataObject*
+LIB61850_API DataObject*
 CDC_ASG_create(const char* dataObjectName, ModelNode* parent, uint32_t options, bool isIntegerNotFloat);
 
 /**
@@ -395,7 +395,7 @@ CDC_ASG_create(const char* dataObjectName, ModelNode* parent, uint32_t options, 
  * possible options:
  *   CDC_OPTION_ANGLE_REF
  */
-DataObject*
+LIB61850_API DataObject*
 CDC_WYE_create(const char* dataObjectName, ModelNode* parent, uint32_t options);
 
 /**
@@ -404,7 +404,7 @@ CDC_WYE_create(const char* dataObjectName, ModelNode* parent, uint32_t options);
  * possible options:
  *   CDC_OPTION_ANGLE_REF
  */
-DataObject*
+LIB61850_API DataObject*
 CDC_DEL_create(const char* dataObjectName, ModelNode* parent, uint32_t options);
 
 /***************************
@@ -416,7 +416,7 @@ CDC_DEL_create(const char* dataObjectName, ModelNode* parent, uint32_t options);
  *
  * \param controlOptions specify which control model to set as default and other control related options
  */
-DataObject*
+LIB61850_API DataObject*
 CDC_SPC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, uint32_t controlOptions);
 
 /**
@@ -434,7 +434,7 @@ CDC_SPC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, 
  * \param defaultControlModel specify which control model to set as default.
  *
  */
-DataObject*
+LIB61850_API DataObject*
 CDC_DPC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, uint32_t controlOptions);
 
 /**
@@ -456,7 +456,7 @@ CDC_DPC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, 
  * \param defaultControlModel specify which control model to set as default.
  *
  */
-DataObject*
+LIB61850_API DataObject*
 CDC_INC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, uint32_t controlOptions);
 
 /**
@@ -474,7 +474,7 @@ CDC_INC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, 
  * \param defaultControlModel specify which control model to set as default.
  *
  */
-DataObject*
+LIB61850_API DataObject*
 CDC_ENC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, uint32_t controlOptions);
 
 /**
@@ -493,7 +493,7 @@ CDC_ENC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, 
  * \param hasTransientIndicator specifies if the step position information contains the transient indicator
  *
  */
-DataObject*
+LIB61850_API DataObject*
 CDC_BSC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, uint32_t controlOptions, bool hasTransientIndicator);
 
 /**
@@ -511,7 +511,7 @@ CDC_BSC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, 
  * \param controlOptions specify which control model to set as default and other control specific options
  * \param isIntegerNotFloat
  */
-DataObject*
+LIB61850_API DataObject*
 CDC_APC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, uint32_t controlOptions, bool isIntegerNotFloat);
 
 /** Minimum measured value */
@@ -559,21 +559,21 @@ CDC_APC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, 
 /** All counting data */
 #define CDC_OPTION_61400_COUNTING_ALL (CDC_OPTION_61400_COUNTING_DAILY | CDC_OPTION_61400_COUNTING_MONTHLY | CDC_OPTION_61400_COUNTING_YEARLY | CDC_OPTION_61400_COUNTING_TOTAL)
 
-DataObject*
+LIB61850_API DataObject*
 CDC_SPV_create(const char* dataObjectName, ModelNode* parent,
         uint32_t options,
         uint32_t controlOptions,
         uint32_t wpOptions,
         bool hasChaManRs);
 
-DataObject*
+LIB61850_API DataObject*
 CDC_STV_create(const char* dataObjectName, ModelNode* parent,
         uint32_t options,
         uint32_t controlOptions,
         uint32_t wpOptions,
         bool hasOldStatus);
 
-DataObject*
+LIB61850_API DataObject*
 CDC_CMD_create(const char* dataObjectName, ModelNode* parent,
         uint32_t options,
         uint32_t controlOptions,
@@ -582,21 +582,21 @@ CDC_CMD_create(const char* dataObjectName, ModelNode* parent,
         bool hasCmTm,
         bool hasCmCt);
 
-DataObject*
+LIB61850_API DataObject*
 CDC_ALM_create(const char* dataObjectName, ModelNode* parent,
         uint32_t options,
         uint32_t controlOptions,
         uint32_t wpOptions,
         bool hasOldStatus);
 
-DataObject*
+LIB61850_API DataObject*
 CDC_CTE_create(const char* dataObjectName, ModelNode* parent,
         uint32_t options,
         uint32_t controlOptions,
         uint32_t wpOptions,
         bool hasHisRs);
 
-DataObject*
+LIB61850_API DataObject*
 CDC_TMS_create(const char* dataObjectName, ModelNode* parent,
         uint32_t options,
         uint32_t controlOptions,

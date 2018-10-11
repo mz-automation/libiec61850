@@ -37,32 +37,32 @@ typedef struct {
 	ByteBuffer nextPayload;
 } IsoPresentation;
 
-void
+LIB61850_INTERNAL void
 IsoPresentation_init(IsoPresentation* session);
 
-int
+LIB61850_INTERNAL int
 IsoPresentation_parseUserData(IsoPresentation* session, ByteBuffer* message);
 
-int
+LIB61850_INTERNAL int
 IsoPresentation_parseConnect(IsoPresentation* session, ByteBuffer* message);
 
-void
+LIB61850_INTERNAL void
 IsoPresentation_createConnectPdu(IsoPresentation* self, IsoConnectionParameters parameters,
         BufferChain buffer, BufferChain payload);
 
-void
+LIB61850_INTERNAL void
 IsoPresentation_createCpaMessage(IsoPresentation* self, BufferChain writeBuffer, BufferChain payload);
 
-void
+LIB61850_INTERNAL void
 IsoPresentation_createUserData(IsoPresentation* self, BufferChain writeBuffer, BufferChain payload);
 
-void
+LIB61850_INTERNAL void
 IsoPresentation_createUserDataACSE(IsoPresentation* self, BufferChain writeBuffer, BufferChain payload);
 
-int
+LIB61850_INTERNAL int
 IsoPresentation_parseAcceptMessage(IsoPresentation* self, ByteBuffer* byteBuffer);
 
-void
+LIB61850_INTERNAL void
 IsoPresentation_createAbortUserMessage(IsoPresentation* self, BufferChain writeBuffer, BufferChain payload);
 
 #endif /* ISO_PRESENTATION_H_ */

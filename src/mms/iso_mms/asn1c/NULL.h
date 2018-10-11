@@ -17,14 +17,14 @@ extern "C" {
  */
 typedef int NULL_t;
 
-extern asn_TYPE_descriptor_t asn_DEF_NULL;
+LIB61850_INTERNAL extern asn_TYPE_descriptor_t asn_DEF_NULL;
 
-asn_struct_print_f NULL_print;
-der_type_encoder_f NULL_encode_der;
-xer_type_decoder_f NULL_decode_xer;
-xer_type_encoder_f NULL_encode_xer;
-per_type_decoder_f NULL_decode_uper;
-per_type_encoder_f NULL_encode_uper;
+LIB61850_INTERNAL asn_struct_print_f NULL_print;
+LIB61850_INTERNAL der_type_encoder_f NULL_encode_der;
+LIB61850_INTERNAL xer_type_decoder_f NULL_decode_xer;
+LIB61850_INTERNAL xer_type_encoder_f NULL_encode_xer;
+LIB61850_INTERNAL per_type_decoder_f NULL_decode_uper;
+LIB61850_INTERNAL per_type_encoder_f NULL_encode_uper;
 
 #ifdef __cplusplus
 }

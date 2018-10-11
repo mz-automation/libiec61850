@@ -50,7 +50,7 @@ typedef struct ObjectName {
 } ObjectName_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_ObjectName;
+LIB61850_INTERNAL extern asn_TYPE_descriptor_t asn_DEF_ObjectName;
 
 #ifdef __cplusplus
 }

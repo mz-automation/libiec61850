@@ -3,7 +3,7 @@
  *
  *  Multi-threading abstraction layer
  *
- *  Copyright 2013, 2014 Michael Zillgith
+ *  Copyright 2013-2018 Michael Zillgith
  *
  *	This file is part of libIEC61850.
  *
@@ -26,7 +26,7 @@
 #ifndef THREAD_HAL_H_
 #define THREAD_HAL_H_
 
-#include <stdbool.h>
+#include "hal_base.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -66,7 +66,7 @@ typedef void* (*ThreadExecutionFunction) (void*);
  *
  * \return the newly created Thread instance
  */
-Thread
+PAL_API Thread
 Thread_create(ThreadExecutionFunction function, void* parameter, bool autodestroy);
 
 /**
@@ -77,7 +77,7 @@ Thread_create(ThreadExecutionFunction function, void* parameter, bool autodestro
  *
  * \param thread the Thread instance to start
  */
-void
+PAL_API void
 Thread_start(Thread thread);
 
 /**
@@ -85,26 +85,26 @@ Thread_start(Thread thread);
  *
  * \param thread the Thread instance to destroy
  */
-void
+PAL_API void
 Thread_destroy(Thread thread);
 
 /**
  * \brief Suspend execution of the Thread for the specified number of milliseconds
  */
-void
+PAL_API void
 Thread_sleep(int millies);
 
-Semaphore
+PAL_API Semaphore
 Semaphore_create(int initialValue);
 
 /* Wait until semaphore value is greater than zero. Then decrease the semaphore value. */
-void
+PAL_API void
 Semaphore_wait(Semaphore self);
 
-void
+PAL_API void
 Semaphore_post(Semaphore self);
 
-void
+PAL_API void
 Semaphore_destroy(Semaphore self);
 
 /*! @} */

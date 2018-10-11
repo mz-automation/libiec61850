@@ -1,7 +1,7 @@
 /*
  *  mms_named_variable_list.h
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013-2018 Michael Zillgith
  *
  *	This file is part of libIEC61850.
  *
@@ -43,37 +43,37 @@ struct sMmsNamedVariableList {
 	LinkedList listOfVariables;
 };
 
-MmsNamedVariableListEntry
+LIB61850_INTERNAL MmsNamedVariableListEntry
 MmsNamedVariableListEntry_create(MmsAccessSpecifier accessSpecifier);
 
-void
+LIB61850_INTERNAL void
 MmsNamedVariableListEntry_destroy(MmsNamedVariableListEntry self);
 
-MmsDomain*
+LIB61850_INTERNAL MmsDomain*
 MmsNamedVariableListEntry_getDomain(MmsNamedVariableListEntry self);
 
-char*
+LIB61850_INTERNAL char*
 MmsNamedVariableListEntry_getVariableName(MmsNamedVariableListEntry self);
 
-MmsNamedVariableList
+LIB61850_INTERNAL MmsNamedVariableList
 MmsNamedVariableList_create(MmsDomain* domain, char* name, bool deletable);
 
-char*
+LIB61850_INTERNAL char*
 MmsNamedVariableList_getName(MmsNamedVariableList self);
 
-MmsDomain*
+LIB61850_INTERNAL MmsDomain*
 MmsNamedVariableList_getDomain(MmsNamedVariableList self);
 
-bool
+LIB61850_INTERNAL bool
 MmsNamedVariableList_isDeletable(MmsNamedVariableList self);
 
-void
+LIB61850_INTERNAL void
 MmsNamedVariableList_addVariable(MmsNamedVariableList self, MmsNamedVariableListEntry variable);
 
-LinkedList
+LIB61850_INTERNAL LinkedList
 MmsNamedVariableList_getVariableList(MmsNamedVariableList self);
 
-void
+LIB61850_INTERNAL void
 MmsNamedVariableList_destroy(MmsNamedVariableList self);
 
 /**@}*/

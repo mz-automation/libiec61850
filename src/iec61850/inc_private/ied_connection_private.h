@@ -1,7 +1,7 @@
 /*
  *  ied_connection_private.h
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013-2018 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -81,52 +81,52 @@ struct sClientReportControlBlock {
     MmsValue* owner;
 };
 
-IedClientError
+LIB61850_INTERNAL IedClientError
 private_IedConnection_mapMmsErrorToIedError(MmsError mmsError);
 
-bool
+LIB61850_INTERNAL bool
 private_IedConnection_doesControlObjectMatch(const char* objRef, const char* cntrlObj);
 
-void
+LIB61850_INTERNAL void
 private_IedConnection_addControlClient(IedConnection self, ControlObjectClient control);
 
-void
+LIB61850_INTERNAL void
 private_IedConnection_removeControlClient(IedConnection self, ControlObjectClient control);
 
-bool
+LIB61850_INTERNAL bool
 private_ClientReportControlBlock_updateValues(ClientReportControlBlock self, MmsValue* values);
 
-void
+LIB61850_INTERNAL void
 private_IedConnection_handleReport(IedConnection self, MmsValue* value);
 
-IedClientError
+LIB61850_INTERNAL IedClientError
 iedConnection_mapMmsErrorToIedError(MmsError mmsError);
 
-IedClientError
+LIB61850_INTERNAL IedClientError
 iedConnection_mapDataAccessErrorToIedError(MmsDataAccessError mmsError);
 
-ClientReport
+LIB61850_INTERNAL ClientReport
 ClientReport_create(void);
 
-void
+LIB61850_INTERNAL void
 ClientReport_destroy(ClientReport self);
 
-void
+LIB61850_INTERNAL void
 private_ControlObjectClient_invokeCommandTerminationHandler(ControlObjectClient self);
 
 /* some declarations that are shared with server side ! */
 
-char*
+LIB61850_INTERNAL char*
 MmsMapping_getMmsDomainFromObjectReference(const char* objectReference, char* buffer);
 
-char*
+LIB61850_INTERNAL char*
 MmsMapping_createMmsVariableNameFromObjectReference(const char* objectReference, FunctionalConstraint fc, char* buffer);
 
 
-char*
+LIB61850_INTERNAL char*
 MmsMapping_varAccessSpecToObjectReference(MmsVariableAccessSpecification* varAccessSpec);
 
-MmsVariableAccessSpecification*
+LIB61850_INTERNAL MmsVariableAccessSpecification*
 MmsMapping_ObjectReferenceToVariableAccessSpec(char* objectReference);
 
 #endif /* IED_CONNECTION_PRIVATE_H_ */

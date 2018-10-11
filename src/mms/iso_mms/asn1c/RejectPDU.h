@@ -120,7 +120,7 @@ typedef struct RejectPDU {
 } RejectPDU_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_RejectPDU;
+LIB61850_INTERNAL extern asn_TYPE_descriptor_t asn_DEF_RejectPDU;
 
 #ifdef __cplusplus
 }

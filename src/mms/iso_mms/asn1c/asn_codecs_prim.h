@@ -16,9 +16,9 @@ typedef struct ASN__PRIMITIVE_TYPE_s {
 	int size;	/* Size of the buffer */
 } ASN__PRIMITIVE_TYPE_t;	/* Do not use this type directly! */
 
-asn_struct_free_f ASN__PRIMITIVE_TYPE_free;
-ber_type_decoder_f ber_decode_primitive;
-der_type_encoder_f der_encode_primitive;
+LIB61850_INTERNAL asn_struct_free_f ASN__PRIMITIVE_TYPE_free;
+LIB61850_INTERNAL ber_type_decoder_f ber_decode_primitive;
+LIB61850_INTERNAL der_type_encoder_f der_encode_primitive;
 
 /*
  * A callback specification for the xer_decode_primitive() function below.
@@ -38,7 +38,7 @@ typedef enum xer_pbd_rval (xer_primitive_body_decoder_f)
  * Specific function to decode simple primitive types.
  * Also see xer_decode_general() in xer_decoder.h
  */
-asn_dec_rval_t xer_decode_primitive(asn_codec_ctx_t *opt_codec_ctx,
+LIB61850_INTERNAL asn_dec_rval_t xer_decode_primitive(asn_codec_ctx_t *opt_codec_ctx,
 	asn_TYPE_descriptor_t *type_descriptor,
 	void **struct_ptr, size_t struct_size,
 	const char *opt_mname,

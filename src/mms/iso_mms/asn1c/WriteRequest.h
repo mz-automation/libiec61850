@@ -41,7 +41,7 @@ typedef struct WriteRequest {
 } WriteRequest_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_WriteRequest;
+LIB61850_INTERNAL extern asn_TYPE_descriptor_t asn_DEF_WriteRequest;
 
 #ifdef __cplusplus
 }

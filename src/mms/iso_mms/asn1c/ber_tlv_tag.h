@@ -31,9 +31,9 @@ typedef unsigned ber_tlv_tag_t;	/* BER TAG from Tag-Length-Value */
  * (i.e. "[PRIVATE 0]").
  * Return values correspond to their libc counterparts (if any).
  */
-ssize_t ber_tlv_tag_snprint(ber_tlv_tag_t tag, char *buf, size_t buflen);
-ssize_t ber_tlv_tag_fwrite(ber_tlv_tag_t tag, FILE *);
-char *ber_tlv_tag_string(ber_tlv_tag_t tag);
+LIB61850_INTERNAL ssize_t ber_tlv_tag_snprint(ber_tlv_tag_t tag, char *buf, size_t buflen);
+LIB61850_INTERNAL ssize_t ber_tlv_tag_fwrite(ber_tlv_tag_t tag, FILE *);
+LIB61850_INTERNAL char *ber_tlv_tag_string(ber_tlv_tag_t tag);
 
 
 /*
@@ -43,7 +43,7 @@ char *ber_tlv_tag_string(ber_tlv_tag_t tag);
  * 	-1:	Fatal error deciphering tag.
  *	>0:	Number of bytes used from bufptr. tag_r will contain the tag.
  */
-ssize_t ber_fetch_tag(const void *bufptr, size_t size, ber_tlv_tag_t *tag_r);
+LIB61850_INTERNAL ssize_t ber_fetch_tag(const void *bufptr, size_t size, ber_tlv_tag_t *tag_r);
 
 /*
  * This function serializes the tag (T from TLV) in BER format.
@@ -51,7 +51,7 @@ ssize_t ber_fetch_tag(const void *bufptr, size_t size, ber_tlv_tag_t *tag_r);
  * it is a caller's responsibility to check the return value
  * against the supplied buffer's size.
  */
-size_t ber_tlv_tag_serialize(ber_tlv_tag_t tag, void *bufptr, size_t size);
+LIB61850_INTERNAL size_t ber_tlv_tag_serialize(ber_tlv_tag_t tag, void *bufptr, size_t size);
 
 #ifdef __cplusplus
 }

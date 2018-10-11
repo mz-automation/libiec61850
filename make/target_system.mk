@@ -94,7 +94,7 @@ CFLAGS+=-m64
 endif
 
 LDLIBS=-lws2_32
-DYNLIB_LDFLAGS=-Wl,-no-undefined -Wl,--enable-runtime-pseudo-reloc -Wl,--output-def,libiec61850.def,--out-implib,libiec61850.a
+DYNLIB_LDFLAGS=-Wl,-no-undefined -Wl,--enable-runtime-pseudo-reloc -Wl,--out-implib,libiec61850.a
 
 
 # on Windows: only compile with ethernet support if winpcap files are in third_party/winpcap!

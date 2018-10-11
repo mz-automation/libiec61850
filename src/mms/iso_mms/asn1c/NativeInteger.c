@@ -161,7 +161,6 @@ NativeInteger_encode_der(asn_TYPE_descriptor_t *sd, void *ptr,
 }
 
 
-
 asn_dec_rval_t
 NativeInteger_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
 	asn_TYPE_descriptor_t *td,
@@ -215,7 +214,6 @@ NativeInteger_encode_uper(asn_TYPE_descriptor_t *td,
 	ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_INTEGER, &tmpint);
 	return er;
 }
-
 
 void
 NativeInteger_free(asn_TYPE_descriptor_t *td, void *ptr, int contents_only) {

@@ -30,7 +30,7 @@ typedef struct ConfirmedErrorPDU {
 } ConfirmedErrorPDU_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_ConfirmedErrorPDU;
+LIB61850_INTERNAL extern asn_TYPE_descriptor_t asn_DEF_ConfirmedErrorPDU;
 
 #ifdef __cplusplus
 }

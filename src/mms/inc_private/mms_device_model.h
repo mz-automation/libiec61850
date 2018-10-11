@@ -1,7 +1,7 @@
 /*
  *  mms_model.h
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013-2018 Michael Zillgith
  *
  *	This file is part of libIEC61850.
  *
@@ -84,16 +84,16 @@ struct sMmsDomain {
  *
  * \return the new MmsDomain instance
  */
-MmsDomain*
+LIB61850_INTERNAL MmsDomain*
 MmsDomain_create(char* domainName);
 
-char*
+LIB61850_INTERNAL char*
 MmsDomain_getName(MmsDomain* self);
 
-void
+LIB61850_INTERNAL void
 MmsDomain_addJournal(MmsDomain* self, const char* name);
 
-MmsJournal
+LIB61850_INTERNAL MmsJournal
 MmsDomain_getJournal(MmsDomain* self, const char* name);
 
 /**
@@ -101,7 +101,7 @@ MmsDomain_getJournal(MmsDomain* self, const char* name);
  *
  * This method should not be invoked by client code!
  */
-void
+LIB61850_INTERNAL void
 MmsDomain_destroy(MmsDomain* self);
 
 /**
@@ -116,7 +116,7 @@ MmsDomain_destroy(MmsDomain* self);
  *
  * \return true if operation was successful.
  */
-bool
+LIB61850_INTERNAL bool
 MmsDomain_addNamedVariableList(MmsDomain* self, MmsNamedVariableList variableList);
 
 /**
@@ -128,19 +128,19 @@ MmsDomain_addNamedVariableList(MmsDomain* self, MmsNamedVariableList variableLis
  * \param variableListName the name of the variable list to delete.
  *
  */
-void
+LIB61850_INTERNAL void
 MmsDomain_deleteNamedVariableList(MmsDomain* self, char* variableListName);
 
-MmsNamedVariableList
+LIB61850_INTERNAL MmsNamedVariableList
 MmsDomain_getNamedVariableList(MmsDomain* self, const char* variableListName);
 
-LinkedList
+LIB61850_INTERNAL LinkedList
 MmsDomain_getNamedVariableLists(MmsDomain* self);
 
-LinkedList
+LIB61850_INTERNAL LinkedList
 MmsDomain_getNamedVariableListValues(MmsDomain* self, char* variableListName);
 
-LinkedList
+LIB61850_INTERNAL LinkedList
 MmsDomain_createNamedVariableListValues(MmsDomain* self, char* variableListName);
 
 /**
@@ -151,7 +151,7 @@ MmsDomain_createNamedVariableListValues(MmsDomain* self, char* variableListName)
  *
  * \return MmsTypeSpecification instance of the named variable
  */
-MmsVariableSpecification*
+LIB61850_INTERNAL MmsVariableSpecification*
 MmsDomain_getNamedVariable(MmsDomain* self, char* nameId);
 
 /**
@@ -165,13 +165,13 @@ MmsDomain_getNamedVariable(MmsDomain* self, char* nameId);
  *
  * \return the new MmsDevice instance
  */
-MmsDevice*
+LIB61850_INTERNAL MmsDevice*
 MmsDevice_create(char* deviceName);
 
 /**
  * \brief Delete the MmsDevice instance
  */
-void
+LIB61850_INTERNAL void
 MmsDevice_destroy(MmsDevice* self);
 
 /**
@@ -181,7 +181,7 @@ MmsDevice_destroy(MmsDevice* self);
  *
  * \return the new MmsDevice instance
  */
-MmsDomain*
+LIB61850_INTERNAL MmsDomain*
 MmsDevice_getDomain(MmsDevice* self, const char* domainId);
 
 /**
@@ -192,19 +192,19 @@ MmsDevice_getDomain(MmsDevice* self, const char* domainId);
  *
  * \return MmsTypeSpecification instance of the named variable
  */
-MmsVariableSpecification*
+LIB61850_INTERNAL MmsVariableSpecification*
 MmsDevice_getNamedVariable(MmsDevice* self, char* variableName);
 
-LinkedList
+LIB61850_INTERNAL LinkedList
 MmsDevice_getNamedVariableLists(MmsDevice* self);
 
-MmsNamedVariableList
+LIB61850_INTERNAL MmsNamedVariableList
 MmsDevice_getNamedVariableListWithName(MmsDevice* self, const char* variableListName);
 
-MmsJournal
+LIB61850_INTERNAL MmsJournal
 MmsJournal_create(const char* name);
 
-void
+LIB61850_INTERNAL void
 MmsJournal_destroy(MmsJournal self);
 
 /**@}*/

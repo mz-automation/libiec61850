@@ -24,11 +24,11 @@
 #ifndef HAL_C_
 #define HAL_C_
 
+#include "hal_base.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include <stdint.h>
 
 /**
  * \file hal_time.h
@@ -54,7 +54,7 @@ extern "C" {
  *
  * \return the system time with millisecond resolution.
  */
-uint64_t
+PAL_API uint64_t
 Hal_getTimeInMs(void);
 
 /*! @} */

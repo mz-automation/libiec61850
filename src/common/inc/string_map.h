@@ -23,6 +23,6 @@
 
 #include "map.h"
 
-Map
+LIB61850_INTERNAL Map
 StringMap_create(void);
 

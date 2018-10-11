@@ -25,7 +25,7 @@ struct asn_TYPE_descriptor_s;		/* Forward declaration */
  * This function returns 0 in case all ASN.1 constraints are met
  * and -1 if one or more constraints were failed.
  */
-int
+LIB61850_INTERNAL int
 asn_check_constraints(struct asn_TYPE_descriptor_s *type_descriptor,
 	const void *struct_ptr,	/* Target language's structure */
 	char *errbuf,		/* Returned error description */
@@ -48,8 +48,8 @@ typedef int (asn_constr_check_f)(
  * INTERNALLY USEFUL FUNCTIONS *
  *******************************/
 
-asn_constr_check_f asn_generic_no_constraint;	/* No constraint whatsoever */
-asn_constr_check_f asn_generic_unknown_constraint; /* Not fully supported */
+LIB61850_INTERNAL asn_constr_check_f asn_generic_no_constraint;	/* No constraint whatsoever */
+LIB61850_INTERNAL asn_constr_check_f asn_generic_unknown_constraint; /* Not fully supported */
 
 /*
  * Invoke the callback with a complete error message.

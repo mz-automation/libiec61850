@@ -71,41 +71,41 @@ typedef enum {
     TPKT_ERROR = 2
 } TpktState;
 
-int /* in byte */
+LIB61850_INTERNAL int /* in byte */
 CotpConnection_getTpduSize(CotpConnection* self);
 
-void
+LIB61850_INTERNAL void
 CotpConnection_setTpduSize(CotpConnection* self, int tpduSize /* in byte */);
 
-void
+LIB61850_INTERNAL void
 CotpConnection_init(CotpConnection* self, Socket socket,
         ByteBuffer* payloadBuffer, ByteBuffer* readBuffer, ByteBuffer* writeBuffer);
 
-CotpIndication
+LIB61850_INTERNAL CotpIndication
 CotpConnection_parseIncomingMessage(CotpConnection* self);
 
-void
+LIB61850_INTERNAL void
 CotpConnection_resetPayload(CotpConnection* self);
 
-TpktState
+LIB61850_INTERNAL TpktState
 CotpConnection_readToTpktBuffer(CotpConnection* self);
 
-CotpIndication
+LIB61850_INTERNAL CotpIndication
 CotpConnection_sendConnectionRequestMessage(CotpConnection* self, IsoConnectionParameters isoParameters);
 
-CotpIndication
+LIB61850_INTERNAL CotpIndication
 CotpConnection_sendConnectionResponseMessage(CotpConnection* self);
 
-CotpIndication
+LIB61850_INTERNAL CotpIndication
 CotpConnection_sendDataMessage(CotpConnection* self, BufferChain payload);
 
-ByteBuffer*
+LIB61850_INTERNAL ByteBuffer*
 CotpConnection_getPayload(CotpConnection* self);
 
-int
+LIB61850_INTERNAL int
 CotpConnection_getRemoteRef(CotpConnection* self);
 
-int
+LIB61850_INTERNAL int
 CotpConnection_getLocalRef(CotpConnection* self);
 
 #endif /* COTP_H_ */

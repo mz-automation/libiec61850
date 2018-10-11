@@ -25,6 +25,7 @@
 #define MMS_VALUE_INTERNAL_H_
 
 #include "mms_value.h"
+#include "ber_integer.h"
 
 struct ATTRIBUTE_PACKED sMmsValue {
     MmsType type;
@@ -63,5 +64,11 @@ struct ATTRIBUTE_PACKED sMmsValue {
     } value;
 };
 
+
+LIB61850_INTERNAL MmsValue*
+MmsValue_newIntegerFromBerInteger(Asn1PrimitiveValue* berInteger);
+
+LIB61850_INTERNAL MmsValue*
+MmsValue_newUnsignedFromBerInteger(Asn1PrimitiveValue* berInteger);
 
 #endif /* MMS_VALUE_INTERNAL_H_ */

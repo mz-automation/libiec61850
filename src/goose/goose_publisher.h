@@ -1,7 +1,7 @@
 /*
  *  goose_publisher.h
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013-2018 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -24,6 +24,7 @@
 #ifndef GOOSE_PUBLISHER_H_
 #define GOOSE_PUBLISHER_H_
 
+#include "libiec61850_platform_includes.h"
 #include "linked_list.h"
 #include "mms_value.h"
 
@@ -45,40 +46,40 @@ typedef struct sCommParameters {
 
 typedef struct sGoosePublisher* GoosePublisher;
 
-GoosePublisher
+LIB61850_API GoosePublisher
 GoosePublisher_create(CommParameters* parameters, const char* interfaceID);
 
-void
+LIB61850_API void
 GoosePublisher_destroy(GoosePublisher self);
 
-int
+LIB61850_API int
 GoosePublisher_publish(GoosePublisher self, LinkedList dataSet);
 
-void
+LIB61850_API void
 GoosePublisher_setGoID(GoosePublisher self, char* goID);
 
-void
+LIB61850_API void
 GoosePublisher_setGoCbRef(GoosePublisher self, char* goCbRef);
 
-void
+LIB61850_API void
 GoosePublisher_setTimeAllowedToLive(GoosePublisher self, uint32_t timeAllowedToLive);
 
-void
+LIB61850_API void
 GoosePublisher_setDataSetRef(GoosePublisher self, char* dataSetRef);
 
-void
+LIB61850_API void
 GoosePublisher_setConfRev(GoosePublisher self, uint32_t confRev);
 
-void
+LIB61850_API void
 GoosePublisher_setSimulation(GoosePublisher self, bool simulation);
 
-void
+LIB61850_API void
 GoosePublisher_setNeedsCommission(GoosePublisher self, bool ndsCom);
 
-uint64_t
+LIB61850_API uint64_t
 GoosePublisher_increaseStNum(GoosePublisher self);
 
-void
+LIB61850_API void
 GoosePublisher_reset(GoosePublisher self);
 
 #ifdef __cplusplus

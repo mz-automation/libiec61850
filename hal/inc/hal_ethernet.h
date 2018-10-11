@@ -24,8 +24,7 @@
 #ifndef ETHERNET_HAL_H_
 #define ETHERNET_HAL_H_
 
-#include <stdint.h>
-#include <stdbool.h>
+#include "hal_base.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -56,7 +55,7 @@ typedef struct sEthernetHandleSet* EthernetHandleSet;
  *
  * \return new EthernetHandleSet instance
  */
-EthernetHandleSet
+PAL_API EthernetHandleSet
 EthernetHandleSet_new(void);
 
 /**
@@ -65,7 +64,7 @@ EthernetHandleSet_new(void);
  * \param self the HandleSet instance
  * \param sock the socket to add
  */
-void
+PAL_API void
 EthernetHandleSet_addSocket(EthernetHandleSet self, const EthernetSocket sock);
 
 /**
@@ -74,7 +73,7 @@ EthernetHandleSet_addSocket(EthernetHandleSet self, const EthernetSocket sock);
  * \param self the HandleSet instance
  * \param sock the socket to add
  */
-void
+PAL_API void
 EthernetHandleSet_removeSocket(EthernetHandleSet self, const EthernetSocket sock);
 
 /**
@@ -89,7 +88,7 @@ EthernetHandleSet_removeSocket(EthernetHandleSet self, const EthernetSocket sock
  *   or 0 if no data is pending on any of the monitored connections.
  *   The function shall return -1 if a socket error occures.
  */
-int
+PAL_API int
 EthernetHandleSet_waitReady(EthernetHandleSet self, unsigned int timeoutMs);
 
 /**
@@ -97,7 +96,7 @@ EthernetHandleSet_waitReady(EthernetHandleSet self, unsigned int timeoutMs);
  *
  * \param self the HandleSet instance to destroy
  */
-void
+PAL_API void
 EthernetHandleSet_destroy(EthernetHandleSet self);
 
 /**
@@ -108,7 +107,7 @@ EthernetHandleSet_destroy(EthernetHandleSet self);
  * \param interfaceId the ID of the Ethernet interface
  * \param addr pointer to a buffer to store the MAC address
  */
-void
+PAL_API void
 Ethernet_getInterfaceMACAddress(const char* interfaceId, uint8_t* addr);
 
 /**
@@ -118,7 +117,7 @@ Ethernet_getInterfaceMACAddress(const char* interfaceId, uint8_t* addr);
  * \param interfaceId the ID of the Ethernet interface
  * \param destAddress byte array that contains the Ethernet MAC address
  */
-EthernetSocket
+PAL_API EthernetSocket
 Ethernet_createSocket(const char* interfaceId, uint8_t* destAddress);
 
 /**
@@ -126,10 +125,10 @@ Ethernet_createSocket(const char* interfaceId, uint8_t* destAddress);
  *
  * \param ethSocket the ethernet socket handle
  */
-void
+PAL_API void
 Ethernet_destroySocket(EthernetSocket ethSocket);
 
-void
+PAL_API void
 Ethernet_sendPacket(EthernetSocket ethSocket, uint8_t* buffer, int packetSize);
 
 /*
@@ -138,7 +137,7 @@ Ethernet_sendPacket(EthernetSocket ethSocket, uint8_t* buffer, int packetSize);
  * \param ethSocket the ethernet socket handle
  * \param etherType the ether type of messages to accept
  */
-void
+PAL_API void
 Ethernet_setProtocolFilter(EthernetSocket ethSocket, uint16_t etherType);
 
 /**
@@ -150,7 +149,7 @@ Ethernet_setProtocolFilter(EthernetSocket ethSocket, uint16_t etherType);
  *
  * \return size of message received in bytes
  */
-int
+PAL_API int
 Ethernet_receivePacket(EthernetSocket ethSocket, uint8_t* buffer, int bufferSize);
 
 /**
@@ -158,7 +157,7 @@ Ethernet_receivePacket(EthernetSocket ethSocket, uint8_t* buffer, int bufferSize
  *
  * \return true if Ethernet support is available, false otherwise
  */
-bool
+PAL_API bool
 Ethernet_isSupported(void);
 
 /*! @} */

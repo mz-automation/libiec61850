@@ -19,15 +19,31 @@
 extern "C" {
 #endif
 
+LIB61850_INTERNAL
 extern asn_TYPE_descriptor_t asn_DEF_NativeInteger;
 
+LIB61850_INTERNAL
 asn_struct_free_f  NativeInteger_free;
+
+LIB61850_INTERNAL
 asn_struct_print_f NativeInteger_print;
+
+LIB61850_INTERNAL
 ber_type_decoder_f NativeInteger_decode_ber;
+
+LIB61850_INTERNAL
 der_type_encoder_f NativeInteger_encode_der;
+
+LIB61850_INTERNAL
 xer_type_decoder_f NativeInteger_decode_xer;
+
+LIB61850_INTERNAL
 xer_type_encoder_f NativeInteger_encode_xer;
+
+LIB61850_INTERNAL
 per_type_decoder_f NativeInteger_decode_uper;
+
+LIB61850_INTERNAL
 per_type_encoder_f NativeInteger_encode_uper;
 
 #ifdef __cplusplus

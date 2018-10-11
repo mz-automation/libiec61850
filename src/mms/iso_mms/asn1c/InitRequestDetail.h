@@ -32,7 +32,7 @@ typedef struct InitRequestDetail {
 } InitRequestDetail_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_InitRequestDetail;
+LIB61850_INTERNAL extern asn_TYPE_descriptor_t asn_DEF_InitRequestDetail;
 
 #ifdef __cplusplus
 }

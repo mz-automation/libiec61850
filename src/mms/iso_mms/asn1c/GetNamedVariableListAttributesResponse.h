@@ -50,7 +50,7 @@ typedef struct GetNamedVariableListAttributesResponse {
 } GetNamedVariableListAttributesResponse_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GetNamedVariableListAttributesResponse;
+LIB61850_INTERNAL extern asn_TYPE_descriptor_t asn_DEF_GetNamedVariableListAttributesResponse;
 
 #ifdef __cplusplus
 }

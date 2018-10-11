@@ -24,6 +24,8 @@
 #ifndef FILESYSTEM_HAL_H_
 #define FILESYSTEM_HAL_H_
 
+#include "hal_base.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -55,7 +57,7 @@ typedef struct sDirectoryHandle* DirectoryHandle;
  * \return a handle for the file. Has to be used by subsequent calls to file functions to identify the file or
  *         NULL if opening fails
  */
-FileHandle
+PAL_API FileHandle
 FileSystem_openFile(char* pathName, bool readWrite);
 
 /**
@@ -72,7 +74,7 @@ FileSystem_openFile(char* pathName, bool readWrite);
  *
  * \return the number of bytes actually read
  */
-int
+PAL_API int
 FileSystem_readFile(FileHandle handle, uint8_t* buffer, int maxSize);
 
 /**
@@ -84,7 +86,7 @@ FileSystem_readFile(FileHandle handle, uint8_t* buffer, int maxSize);
  *
  * \return the number of bytes actually written
  */
-int
+PAL_API int
 FileSystem_writeFile(FileHandle handle, uint8_t* buffer, int size);
 
 /**
@@ -92,7 +94,7 @@ FileSystem_writeFile(FileHandle handle, uint8_t* buffer, int size);
  *
  * \param handle the file handle to identify the file
  */
-void
+PAL_API void
 FileSystem_closeFile(FileHandle handle);
 
 /**
@@ -108,7 +110,7 @@ FileSystem_closeFile(FileHandle handle);
  *
  * \return true if file exists, false if not
  */
-bool
+PAL_API bool
 FileSystem_getFileInfo(char* filename, uint32_t* fileSize, uint64_t* lastModificationTimestamp);
 
 /**
@@ -118,7 +120,7 @@ FileSystem_getFileInfo(char* filename, uint32_t* fileSize, uint64_t* lastModific
  *
  * \return true on success, false on error
  */
-bool
+PAL_API bool
 FileSystem_deleteFile(char* filename);
 
 /**
@@ -129,7 +131,7 @@ FileSystem_deleteFile(char* filename);
  *
  * \return true on success, false on error
  */
-bool
+PAL_API bool
 FileSystem_renameFile(char* oldFilename, char* newFilename);
 
 /**
@@ -139,7 +141,7 @@ FileSystem_renameFile(char* oldFilename, char* newFilename);
  *
  * \return a handle for the opened directory to be used in subsequent calls to identify the directory
  */
-DirectoryHandle
+PAL_API DirectoryHandle
 FileSystem_openDirectory(char* directoryName);
 
 /**
@@ -154,7 +156,7 @@ FileSystem_openDirectory(char* directoryName);
  *
  * \return the name of the directory entry
  */
-char*
+PAL_API char*
 FileSystem_readDirectory(DirectoryHandle directory, bool* isDirectory);
 
 
@@ -163,7 +165,7 @@ FileSystem_readDirectory(DirectoryHandle directory, bool* isDirectory);
  *
  * \param directory the handle to identify the directory
  */
-void
+PAL_API void
 FileSystem_closeDirectory(DirectoryHandle directory);
 
 

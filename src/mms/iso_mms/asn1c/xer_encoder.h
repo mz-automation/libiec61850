@@ -23,6 +23,7 @@ enum xer_encoder_flags_e {
 /*
  * The XER encoder of any type. May be invoked by the application.
  */
+LIB61850_INTERNAL
 asn_enc_rval_t xer_encode(struct asn_TYPE_descriptor_s *type_descriptor,
 		void *struct_ptr,	/* Structure to be encoded */
 		enum xer_encoder_flags_e xer_flags,
@@ -38,6 +39,7 @@ asn_enc_rval_t xer_encode(struct asn_TYPE_descriptor_s *type_descriptor,
  * 	-1: Problem printing the structure.
  * WARNING: No sensible errno value is returned.
  */
+LIB61850_INTERNAL
 int xer_fprint(FILE *stream, struct asn_TYPE_descriptor_s *td, void *sptr);
 
 /*

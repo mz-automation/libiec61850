@@ -43,7 +43,7 @@ typedef struct Address {
 } Address_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_Address;
+LIB61850_INTERNAL extern asn_TYPE_descriptor_t asn_DEF_Address;
 
 #ifdef __cplusplus
 }

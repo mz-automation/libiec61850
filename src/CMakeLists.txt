@@ -218,8 +218,6 @@ ELSE()
 add_definitions(-DEXCLUDE_ETHERNET_WINDOWS)
 ENDIF()
 
-set (CMAKE_MODULE_LINKER_FLAGS   "${CMAKE_MODULE_LINKER_FLAGS}\"/DEF:${CMAKE_CURRENT_SOURCE_DIR}/vs/libiec61850.def\"") 
-
 include_directories(
   ../third_party/winpcap/include
 )
@@ -333,6 +331,7 @@ IF(MINGW)
   target_link_libraries(iec61850-shared ws2_32 iphlpapi)
   target_link_libraries(iec61850 ws2_32 iphlpapi)
 ENDIF(MINGW)
+
 iF(WITH_WPCAP)
 target_link_libraries(iec61850
    ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/winpcap/lib/wpcap.lib
@@ -343,19 +342,6 @@ target_link_libraries(iec61850-shared
    ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/winpcap/lib/packet.lib
 )
 
-
-if(MSVC)
-		set_target_properties(iec61850-shared PROPERTIES
-           	LINK_FLAGS "/DEF:\"${CMAKE_CURRENT_SOURCE_DIR}/vs/libiec61850.def\""
-       	)
-endif()
-
-ELSE(WITH_WPCAP)
-if(MSVC)
-		set_target_properties(iec61850-shared PROPERTIES
-           	LINK_FLAGS "/DEF:\"${CMAKE_CURRENT_SOURCE_DIR}/vs/libiec61850-wo-goose.def\""
-       	)
-endif()
 ENDIF(WITH_WPCAP)
 
 set(BINDIR "bin")

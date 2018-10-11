@@ -58,7 +58,7 @@ typedef struct AlternateAccess {
 } AlternateAccess_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_AlternateAccess;
+LIB61850_INTERNAL extern asn_TYPE_descriptor_t asn_DEF_AlternateAccess;
 
 #ifdef __cplusplus
 }

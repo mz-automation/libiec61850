@@ -24,8 +24,7 @@
 #ifndef SRC_IEC60870_LINK_LAYER_SERIAL_PORT_H_
 #define SRC_IEC60870_LINK_LAYER_SERIAL_PORT_H_
 
-#include <stdint.h>
-#include <stdbool.h>
+#include "hal_base.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -72,13 +71,13 @@ typedef enum {
  *
  * \return the new SerialPort instance
  */
-SerialPort
+PAL_API SerialPort
 SerialPort_create(const char* interfaceName, int baudRate, uint8_t dataBits, char parity, uint8_t stopBits);
 
 /**
  * \brief Destroy the SerialPort instance and release all resources
  */
-void
+PAL_API void
 SerialPort_destroy(SerialPort self);
 
 /**
@@ -86,13 +85,13 @@ SerialPort_destroy(SerialPort self);
  *
  * \return true in case of success, false otherwise (use \ref SerialPort_getLastError for a detailed error code)
  */
-bool
+PAL_API bool
 SerialPort_open(SerialPort self);
 
 /**
  * \brief Close (release) the serial interface
  */
-void
+PAL_API void
 SerialPort_close(SerialPort self);
 
 /**
@@ -100,7 +99,7 @@ SerialPort_close(SerialPort self);
  *
  * \return the baud rate in baud
  */
-int
+PAL_API int
 SerialPort_getBaudRate(SerialPort self);
 
 /**
@@ -108,13 +107,13 @@ SerialPort_getBaudRate(SerialPort self);
  *
  * \param timeout the timeout value in ms.
  */
-void
+PAL_API void
 SerialPort_setTimeout(SerialPort self, int timeout);
 
 /**
  * \brief Discard all data in the input buffer of the serial interface
  */
-void
+PAL_API void
 SerialPort_discardInBuffer(SerialPort self);
 
 /**
@@ -122,7 +121,7 @@ SerialPort_discardInBuffer(SerialPort self);
  *
  * \return number of read bytes of -1 in case of an error
  */
-int
+PAL_API int
 SerialPort_readByte(SerialPort self);
 
 /**
@@ -134,13 +133,13 @@ SerialPort_readByte(SerialPort self);
  *
  * \return number of bytes written, or -1 in case of an error
  */
-int
+PAL_API int
 SerialPort_write(SerialPort self, uint8_t* buffer, int startPos, int numberOfBytes);
 
 /**
  * \brief Get the error code of the last operation
  */
-SerialPortError
+PAL_API SerialPortError
 SerialPort_getLastError(SerialPort self);
 
 /*! @} */

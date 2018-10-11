@@ -35,7 +35,7 @@ extern "C" {
  * If _do_free is given AND the (*free) is initialized, the element
  * will be freed using the custom (*free) function as well.
  */
-void asn_sequence_del(void *asn_sequence_of_x, int number, int _do_free);
+LIB61850_INTERNAL void asn_sequence_del(void *asn_sequence_of_x, int number, int _do_free);
 
 /*
  * Cope with different conversions requirements to/from void in C and C++.

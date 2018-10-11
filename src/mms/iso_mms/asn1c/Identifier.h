@@ -22,14 +22,14 @@ extern "C" {
 typedef VisibleString_t	 Identifier_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_Identifier;
-asn_struct_free_f Identifier_free;
-asn_struct_print_f Identifier_print;
-asn_constr_check_f Identifier_constraint;
-ber_type_decoder_f Identifier_decode_ber;
-der_type_encoder_f Identifier_encode_der;
-xer_type_decoder_f Identifier_decode_xer;
-xer_type_encoder_f Identifier_encode_xer;
+LIB61850_INTERNAL extern asn_TYPE_descriptor_t asn_DEF_Identifier;
+LIB61850_INTERNAL asn_struct_free_f Identifier_free;
+LIB61850_INTERNAL asn_struct_print_f Identifier_print;
+LIB61850_INTERNAL asn_constr_check_f Identifier_constraint;
+LIB61850_INTERNAL ber_type_decoder_f Identifier_decode_ber;
+LIB61850_INTERNAL der_type_encoder_f Identifier_encode_der;
+LIB61850_INTERNAL xer_type_decoder_f Identifier_decode_xer;
+LIB61850_INTERNAL xer_type_encoder_f Identifier_encode_xer;
 
 #ifdef __cplusplus
 }

@@ -1,7 +1,7 @@
 /*
  *  iso_server_private.h
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013-2018 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -27,40 +27,40 @@
 #include "tls_config.h"
 #include "hal_socket.h"
 
-IsoConnection
+LIB61850_INTERNAL IsoConnection
 IsoConnection_create(Socket socket, IsoServer isoServer);
 
-void
+LIB61850_INTERNAL void
 IsoConnection_destroy(IsoConnection self);
 
-void
+LIB61850_INTERNAL void
 IsoConnection_handleTcpConnection(IsoConnection self);
 
-void
+LIB61850_INTERNAL void
 IsoConnection_addHandleSet(const IsoConnection self, HandleSet handles);
 
-void
+LIB61850_INTERNAL void
 private_IsoServer_increaseConnectionCounter(IsoServer self);
 
-void
+LIB61850_INTERNAL void
 private_IsoServer_decreaseConnectionCounter(IsoServer self);
 
-int
+LIB61850_INTERNAL int
 private_IsoServer_getConnectionCounter(IsoServer self);
 
 /**
  * \brief User provided lock that will be called when higher layer (MMS) is called
  */
-void
+LIB61850_INTERNAL void
 IsoServer_setUserLock(IsoServer self, Semaphore userLock);
 
-void
+LIB61850_INTERNAL void
 IsoServer_userLock(IsoServer self);
 
-void
+LIB61850_INTERNAL void
 IsoServer_userUnlock(IsoServer self);
 
-bool
+LIB61850_INTERNAL bool
 IsoConnection_isRunning(IsoConnection self);
 
 #endif /* ISO_SERVER_PRIVATE_H_ */

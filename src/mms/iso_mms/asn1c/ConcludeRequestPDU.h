@@ -22,14 +22,14 @@ extern "C" {
 typedef NULL_t	 ConcludeRequestPDU_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_ConcludeRequestPDU;
-asn_struct_free_f ConcludeRequestPDU_free;
-asn_struct_print_f ConcludeRequestPDU_print;
-asn_constr_check_f ConcludeRequestPDU_constraint;
-ber_type_decoder_f ConcludeRequestPDU_decode_ber;
-der_type_encoder_f ConcludeRequestPDU_encode_der;
-xer_type_decoder_f ConcludeRequestPDU_decode_xer;
-xer_type_encoder_f ConcludeRequestPDU_encode_xer;
+LIB61850_INTERNAL extern asn_TYPE_descriptor_t asn_DEF_ConcludeRequestPDU;
+LIB61850_INTERNAL asn_struct_free_f ConcludeRequestPDU_free;
+LIB61850_INTERNAL asn_struct_print_f ConcludeRequestPDU_print;
+LIB61850_INTERNAL asn_constr_check_f ConcludeRequestPDU_constraint;
+LIB61850_INTERNAL ber_type_decoder_f ConcludeRequestPDU_decode_ber;
+LIB61850_INTERNAL der_type_encoder_f ConcludeRequestPDU_encode_der;
+LIB61850_INTERNAL xer_type_decoder_f ConcludeRequestPDU_decode_xer;
+LIB61850_INTERNAL xer_type_encoder_f ConcludeRequestPDU_encode_xer;
 
 #ifdef __cplusplus
 }

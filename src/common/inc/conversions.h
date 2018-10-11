@@ -3,7 +3,7 @@
  *
  *  Some helper functions to convert data.
  *
- *  Copyright 2014 Michael Zillgith
+ *  Copyright 2014-2018 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -26,18 +26,18 @@
 #ifndef CONVERSIONS_H_
 #define CONVERSIONS_H_
 
-#include "libiec61850_platform_includes.h"
+#include "libiec61850_common_api.h"
 
-void
+LIB61850_INTERNAL void
 Conversions_intToStringBuffer(int intValue, int numberOfDigits, uint8_t* buffer);
 
-void
+LIB61850_INTERNAL void
 Conversions_msTimeToGeneralizedTime(uint64_t msTime, uint8_t* buffer);
 
-uint64_t
+LIB61850_INTERNAL uint64_t
 Conversions_generalizedTimeToMsTime(const char* gtString);
 
-void
+LIB61850_INTERNAL void
 memcpyReverseByteOrder(uint8_t* dst, const uint8_t* src, int size);
 
 #endif /* CONVERSIONS_H_ */

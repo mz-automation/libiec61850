@@ -28,7 +28,7 @@ typedef struct UnconfirmedPDU {
 } UnconfirmedPDU_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_UnconfirmedPDU;
+LIB61850_INTERNAL extern asn_TYPE_descriptor_t asn_DEF_UnconfirmedPDU;
 
 #ifdef __cplusplus
 }

@@ -66,17 +66,17 @@ typedef void
 typedef void
 (*MessageReceivedHandler)(void* parameter, ByteBuffer* message, ByteBuffer* response);
 
-char*
+LIB61850_INTERNAL char*
 IsoConnection_getPeerAddress(IsoConnection self);
 
-void
+LIB61850_INTERNAL void
 IsoConnection_close(IsoConnection self);
 
-void
+LIB61850_INTERNAL void
 IsoConnection_installListener(IsoConnection self, MessageReceivedHandler handler,
         void* parameter);
 
-void*
+LIB61850_INTERNAL void*
 IsoConnection_getSecurityToken(IsoConnection self);
 
 /**
@@ -85,66 +85,65 @@ IsoConnection_getSecurityToken(IsoConnection self);
  * \param handlerMode specifies if this function is used in the context of the connection handling thread
  *        (handlerMode)
  */
-void
+LIB61850_INTERNAL void
 IsoConnection_sendMessage(IsoConnection self, ByteBuffer* message, bool handlerMode);
 
-IsoServer
+LIB61850_INTERNAL IsoServer
 IsoServer_create(TLSConfiguration tlsConfiguration);
 
-void
+LIB61850_INTERNAL void
 IsoServer_setTcpPort(IsoServer self, int port);
 
-void
+LIB61850_INTERNAL void
 IsoServer_setMaxConnections(IsoServer self, int maxConnections);
 
-void
+LIB61850_INTERNAL void
 IsoServer_setLocalIpAddress(IsoServer self, const char* ipAddress);
 
-IsoServerState
+LIB61850_INTERNAL IsoServerState
 IsoServer_getState(IsoServer self);
 
-void
+LIB61850_INTERNAL void
 IsoServer_setConnectionHandler(IsoServer self, ConnectionIndicationHandler handler,
         void* parameter);
 
-void
+LIB61850_INTERNAL void
 IsoServer_setAuthenticator(IsoServer self, AcseAuthenticator authenticator, void* authenticatorParameter);
 
-AcseAuthenticator
+LIB61850_INTERNAL AcseAuthenticator
 IsoServer_getAuthenticator(IsoServer self);
 
-void*
+LIB61850_INTERNAL void*
 IsoServer_getAuthenticatorParameter(IsoServer self);
 
-TLSConfiguration
+LIB61850_INTERNAL TLSConfiguration
 IsoServer_getTLSConfiguration(IsoServer self);
 
-void
+LIB61850_INTERNAL void
 IsoServer_startListening(IsoServer self);
 
-void
+LIB61850_INTERNAL void
 IsoServer_stopListening(IsoServer self);
 
-
-void
+LIB61850_INTERNAL void
 IsoServer_startListeningThreadless(IsoServer self);
 
 /**
  * for non-threaded operation
  */
-void
+LIB61850_INTERNAL void
 IsoServer_processIncomingMessages(IsoServer self);
 
-int
+LIB61850_INTERNAL int
 IsoServer_waitReady(IsoServer self, unsigned int timeoutMs);
 
-void
+LIB61850_INTERNAL void
 IsoServer_stopListeningThreadless(IsoServer self);
 
-void
+LIB61850_INTERNAL void
 IsoServer_closeConnection(IsoServer self, IsoConnection isoConnection);
 
-void
+LIB61850_INTERNAL void
 IsoServer_destroy(IsoServer self);
 
 #ifdef __cplusplus

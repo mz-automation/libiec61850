@@ -52,7 +52,7 @@ extern "C" {
  *
  * \return
  */
-IedModel*
+LIB61850_API IedModel*
 IedModel_create(const char* name/*, MemoryAllocator allocator*/);
 
 /**
@@ -66,7 +66,7 @@ IedModel_create(const char* name/*, MemoryAllocator allocator*/);
  * \param model the IedModel instance
  * \param the name of the configured IED
  */
-void
+LIB61850_API void
 IedModel_setIedNameForDynamicModel(IedModel* self, const char* name);
 
 /**
@@ -78,7 +78,7 @@ IedModel_setIedNameForDynamicModel(IedModel* self, const char* name);
  *
  * \param model the model instance to destroy
  */
-void
+LIB61850_API void
 IedModel_destroy(IedModel* model);
 
 /**
@@ -89,7 +89,7 @@ IedModel_destroy(IedModel* model);
  *
  * \return the newly created LogicalDevice instance
  */
-LogicalDevice*
+LIB61850_API LogicalDevice*
 LogicalDevice_create(const char* name, IedModel* parent);
 
 
@@ -101,7 +101,7 @@ LogicalDevice_create(const char* name, IedModel* parent);
  *
  * \return the newly created LogicalNode instance
  */
-LogicalNode*
+LIB61850_API LogicalNode*
 LogicalNode_create(const char* name, LogicalDevice* parent);
 
 /**
@@ -115,7 +115,7 @@ LogicalNode_create(const char* name, LogicalDevice* parent);
  *
  * \return the newly create DataObject instance
  */
-DataObject*
+LIB61850_API DataObject*
 DataObject_create(const char* name, ModelNode* parent, int arrayElements);
 
 /**
@@ -133,7 +133,7 @@ DataObject_create(const char* name, ModelNode* parent, int arrayElements);
  *
  * \return the newly create DataAttribute instance
  */
-DataAttribute*
+LIB61850_API DataAttribute*
 DataAttribute_create(const char* name, ModelNode* parent, DataAttributeType type, FunctionalConstraint fc,
         uint8_t triggerOptions, int arrayElements, uint32_t sAddr);
 
@@ -156,7 +156,7 @@ DataAttribute_create(const char* name, ModelNode* parent, DataAttributeType type
  *
  * \return the new RCB instance.
  */
-ReportControlBlock*
+LIB61850_API ReportControlBlock*
 ReportControlBlock_create(const char* name, LogicalNode* parent, char* rptId, bool isBuffered, char*
         dataSetName, uint32_t confRef, uint8_t trgOps, uint8_t options, uint32_t bufTm, uint32_t intgPd);
 
@@ -177,7 +177,7 @@ ReportControlBlock_create(const char* name, LogicalNode* parent, char* rptId, bo
  *
  * \return the new LCB instance
  */
-LogControlBlock*
+LIB61850_API LogControlBlock*
 LogControlBlock_create(const char* name, LogicalNode* parent, char* dataSetName, char* logRef, uint8_t trgOps,
         uint32_t intgPd, bool logEna, bool reasonCode);
 
@@ -189,7 +189,7 @@ LogControlBlock_create(const char* name, LogicalNode* parent, char* dataSetName,
  *
  * \return the new LOG instance
  */
-Log*
+LIB61850_API Log*
 Log_create(const char* name, LogicalNode* parent);
 
 /**
@@ -203,7 +203,7 @@ Log_create(const char* name, LogicalNode* parent);
  *
  * \return the new SGCB instance
  */
-SettingGroupControlBlock*
+LIB61850_API SettingGroupControlBlock*
 SettingGroupControlBlock_create(LogicalNode* parent, uint8_t actSG, uint8_t numOfSGs);
 
 /**
@@ -222,7 +222,7 @@ SettingGroupControlBlock_create(LogicalNode* parent, uint8_t actSG, uint8_t numO
  *
  * \return the new GoCB instance
  */
-GSEControlBlock*
+LIB61850_API GSEControlBlock*
 GSEControlBlock_create(const char* name, LogicalNode* parent, char* appId, char* dataSet, uint32_t confRev,
         bool fixedOffs, int minTime, int maxTime);
 
@@ -242,14 +242,14 @@ GSEControlBlock_create(const char* name, LogicalNode* parent, char* appId, char*
  *
  * \return the new SvCB instance
  */
-SVControlBlock*
+LIB61850_API SVControlBlock*
 SVControlBlock_create(const char* name, LogicalNode* parent, char* svID, char* dataSet, uint32_t confRev, uint8_t smpMod,
         uint16_t smpRate, uint8_t optFlds, bool isUnicast);
 
-void
+LIB61850_API void
 SVControlBlock_addPhyComAddress(SVControlBlock* self, PhyComAddress* phyComAddress);
 
-void
+LIB61850_API void
 GSEControlBlock_addPhyComAddress(GSEControlBlock* self, PhyComAddress* phyComAddress);
 
 /**
@@ -264,7 +264,7 @@ GSEControlBlock_addPhyComAddress(GSEControlBlock* self, PhyComAddress* phyComAdd
  *
  * \return the new PhyComAddress object
  */
-PhyComAddress*
+LIB61850_API PhyComAddress*
 PhyComAddress_create(uint8_t vlanPriority, uint16_t vlanId, uint16_t appId, uint8_t dstAddress[]);
 
 /**
@@ -275,7 +275,7 @@ PhyComAddress_create(uint8_t vlanPriority, uint16_t vlanId, uint16_t appId, uint
  *
  * \return the new data set instance
  */
-DataSet*
+LIB61850_API DataSet*
 DataSet_create(const char* name, LogicalNode* parent);
 
 /**
@@ -285,13 +285,13 @@ DataSet_create(const char* name, LogicalNode* parent);
  *
  * \returns the number of data set elements
  */
-int
+LIB61850_API int
 DataSet_getSize(DataSet* self);
 
-DataSetEntry*
+LIB61850_API DataSetEntry*
 DataSet_getFirstEntry(DataSet* self);
 
-DataSetEntry*
+LIB61850_API DataSetEntry*
 DataSetEntry_getNext(DataSetEntry* self);
 
 /**
@@ -314,7 +314,7 @@ DataSetEntry_getNext(DataSetEntry* self);
  *
  * \return the new data set entry instance
  */
-DataSetEntry*
+LIB61850_API DataSetEntry*
 DataSetEntry_create(DataSet* dataSet, const char* variable, int index, const char* component);
 
 /**@}*/

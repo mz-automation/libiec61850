@@ -17,6 +17,7 @@
 #include <string.h>	/* For memcpy(3) */
 
 #include "stack_config.h"
+#include "libiec61850_platform_includes.h"
 #if CONFIG_INCLUDE_PLATFORM_SPECIFIC_HEADERS
 #include "libiec61850_platform_specific.h"
 #else

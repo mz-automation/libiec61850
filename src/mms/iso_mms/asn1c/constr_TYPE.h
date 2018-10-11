@@ -169,7 +169,7 @@ typedef struct asn_TYPE_tag2member_s {
  * 	-1: Problem dumping the structure.
  * (See also xer_fprint() in xer_encoder.h)
  */
-int asn_fprint(FILE *stream,		/* Destination stream descriptor */
+LIB61850_INTERNAL int asn_fprint(FILE *stream,		/* Destination stream descriptor */
 	asn_TYPE_descriptor_t *td,	/* ASN.1 type descriptor */
 	const void *struct_ptr);	/* Structure to be printed */
 

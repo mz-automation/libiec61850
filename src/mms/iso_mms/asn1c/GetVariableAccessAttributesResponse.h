@@ -34,7 +34,7 @@ typedef struct GetVariableAccessAttributesResponse {
 } GetVariableAccessAttributesResponse_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GetVariableAccessAttributesResponse;
+LIB61850_INTERNAL extern asn_TYPE_descriptor_t asn_DEF_GetVariableAccessAttributesResponse;
 
 #ifdef __cplusplus
 }

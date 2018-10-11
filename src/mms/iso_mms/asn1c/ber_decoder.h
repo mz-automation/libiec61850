@@ -18,7 +18,7 @@ struct asn_codec_ctx_s;		/* Forward declaration */
  * The BER decoder of any type.
  * This function may be invoked directly from the application.
  */
-asn_dec_rval_t ber_decode(struct asn_codec_ctx_s *opt_codec_ctx,
+LIB61850_INTERNAL asn_dec_rval_t ber_decode(struct asn_codec_ctx_s *opt_codec_ctx,
 	struct asn_TYPE_descriptor_s *type_descriptor,
 	void **struct_ptr,	/* Pointer to a target structure's pointer */
 	const void *buffer,	/* Data to be decoded */
@@ -45,7 +45,7 @@ typedef asn_dec_rval_t (ber_type_decoder_f)(
  * "end of content" sequences. The number may only be negative if the
  * head->last_tag_form is non-zero.
  */
-asn_dec_rval_t ber_check_tags(
+LIB61850_INTERNAL asn_dec_rval_t ber_check_tags(
 		struct asn_codec_ctx_s *opt_codec_ctx,	/* codec options */
 		struct asn_TYPE_descriptor_s *type_descriptor,
 		asn_struct_ctx_t *opt_ctx,	/* saved decoding context */

@@ -32,13 +32,13 @@ typedef struct asn_INTEGER_specifics_s {
 	int strict_enumeration;			/* Enumeration set is fixed */
 } asn_INTEGER_specifics_t;
 
-asn_struct_print_f INTEGER_print;
-ber_type_decoder_f INTEGER_decode_ber;
-der_type_encoder_f INTEGER_encode_der;
-xer_type_decoder_f INTEGER_decode_xer;
-xer_type_encoder_f INTEGER_encode_xer;
-per_type_decoder_f INTEGER_decode_uper;
-per_type_encoder_f INTEGER_encode_uper;
+LIB61850_INTERNAL asn_struct_print_f INTEGER_print;
+LIB61850_INTERNAL ber_type_decoder_f INTEGER_decode_ber;
+LIB61850_INTERNAL der_type_encoder_f INTEGER_encode_der;
+LIB61850_INTERNAL xer_type_decoder_f INTEGER_decode_xer;
+LIB61850_INTERNAL xer_type_encoder_f INTEGER_encode_xer;
+LIB61850_INTERNAL per_type_decoder_f INTEGER_decode_uper;
+LIB61850_INTERNAL per_type_encoder_f INTEGER_encode_uper;
 
 /***********************************
  * Some handy conversion routines. *
@@ -50,13 +50,13 @@ per_type_encoder_f INTEGER_encode_uper;
  * -1/ERANGE: Value encoded is out of range for long representation
  * -1/ENOMEM: Memory allocation failed (in asn_long2INTEGER()).
  */
-int asn_INTEGER2long(const INTEGER_t *i, long *l);
-int asn_long2INTEGER(INTEGER_t *i, long l);
+LIB61850_INTERNAL int asn_INTEGER2long(const INTEGER_t *i, long *l);
+LIB61850_INTERNAL int asn_long2INTEGER(INTEGER_t *i, long l);
 
 /*
  * Convert the integer value into the corresponding enumeration map entry.
  */
-const asn_INTEGER_enum_map_t *INTEGER_map_value2enum(asn_INTEGER_specifics_t *specs, long value);
+LIB61850_INTERNAL const asn_INTEGER_enum_map_t *INTEGER_map_value2enum(asn_INTEGER_specifics_t *specs, long value);
 
 #ifdef __cplusplus
 }

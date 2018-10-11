@@ -32,7 +32,7 @@ typedef struct InitResponseDetail {
 } InitResponseDetail_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_InitResponseDetail;
+LIB61850_INTERNAL extern asn_TYPE_descriptor_t asn_DEF_InitResponseDetail;
 
 #ifdef __cplusplus
 }

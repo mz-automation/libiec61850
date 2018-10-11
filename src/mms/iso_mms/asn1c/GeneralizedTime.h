@@ -13,12 +13,12 @@ extern "C" {
 
 typedef OCTET_STRING_t GeneralizedTime_t;  /* Implemented via OCTET STRING */
 
-extern asn_TYPE_descriptor_t asn_DEF_GeneralizedTime;
+LIB61850_INTERNAL extern asn_TYPE_descriptor_t asn_DEF_GeneralizedTime;
 
-asn_struct_print_f GeneralizedTime_print;
-asn_constr_check_f GeneralizedTime_constraint;
-der_type_encoder_f GeneralizedTime_encode_der;
-xer_type_encoder_f GeneralizedTime_encode_xer;
+LIB61850_INTERNAL asn_struct_print_f GeneralizedTime_print;
+LIB61850_INTERNAL asn_constr_check_f GeneralizedTime_constraint;
+LIB61850_INTERNAL der_type_encoder_f GeneralizedTime_encode_der;
+LIB61850_INTERNAL xer_type_encoder_f GeneralizedTime_encode_xer;
 
 /***********************
  * Some handy helpers. *
@@ -33,11 +33,11 @@ struct tm;	/* <time.h> */
  * instead of default local one.
  * On error returns -1 and errno set to EINVAL
  */
-time_t asn_GT2time(const GeneralizedTime_t *, struct tm *_optional_tm4fill,
+LIB61850_INTERNAL time_t asn_GT2time(const GeneralizedTime_t *, struct tm *_optional_tm4fill,
 	int as_gmt);
 
 /* A version of the above function also returning the fractions of seconds */
-time_t asn_GT2time_frac(const GeneralizedTime_t *,
+LIB61850_INTERNAL time_t asn_GT2time_frac(const GeneralizedTime_t *,
 	int *frac_value, int *frac_digits,	/* (value / (10 ^ digits)) */
 	struct tm *_optional_tm4fill, int as_gmt);
 
@@ -46,7 +46,7 @@ time_t asn_GT2time_frac(const GeneralizedTime_t *,
  * For example, parsing of the time ending with ".1" seconds
  * with frac_digits=3 (msec) would yield frac_value = 100.
  */
-time_t asn_GT2time_prec(const GeneralizedTime_t *,
+LIB61850_INTERNAL time_t asn_GT2time_prec(const GeneralizedTime_t *,
 	int *frac_value, int frac_digits,
 	struct tm *_optional_tm4fill, int as_gmt);
 
@@ -57,9 +57,9 @@ time_t asn_GT2time_prec(const GeneralizedTime_t *,
  * into a GMT time zone (encoding ends with a "Z").
  * On error, this function returns 0 and sets errno.
  */
-GeneralizedTime_t *asn_time2GT(GeneralizedTime_t *_optional_gt,
+LIB61850_INTERNAL GeneralizedTime_t *asn_time2GT(GeneralizedTime_t *_optional_gt,
 	const struct tm *, int force_gmt);
-GeneralizedTime_t *asn_time2GT_frac(GeneralizedTime_t *_optional_gt,
+LIB61850_INTERNAL GeneralizedTime_t *asn_time2GT_frac(GeneralizedTime_t *_optional_gt,
 	const struct tm *, int frac_value, int frac_digits, int force_gmt);
 
 #ifdef __cplusplus

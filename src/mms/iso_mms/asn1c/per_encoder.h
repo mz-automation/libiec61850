@@ -17,6 +17,7 @@ struct asn_TYPE_descriptor_s;	/* Forward declaration */
 /*
  * Unaligned PER encoder of any ASN.1 type. May be invoked by the application.
  */
+LIB61850_INTERNAL
 asn_enc_rval_t uper_encode(struct asn_TYPE_descriptor_s *type_descriptor,
 	void *struct_ptr,	/* Structure to be encoded */
 	asn_app_consume_bytes_f *consume_bytes_cb,	/* Data collector */
@@ -24,6 +25,7 @@ asn_enc_rval_t uper_encode(struct asn_TYPE_descriptor_s *type_descriptor,
 );
 
 /* A variant of uper_encode() which encodes data into the existing buffer */
+LIB61850_INTERNAL
 asn_enc_rval_t uper_encode_to_buffer(
 	struct asn_TYPE_descriptor_s *type_descriptor,
 	void *struct_ptr,	/* Structure to be encoded */

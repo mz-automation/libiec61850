@@ -22,14 +22,14 @@ extern "C" {
 typedef long	 Integer32_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_Integer32;
-asn_struct_free_f Integer32_free;
-asn_struct_print_f Integer32_print;
-asn_constr_check_f Integer32_constraint;
-ber_type_decoder_f Integer32_decode_ber;
-der_type_encoder_f Integer32_encode_der;
-xer_type_decoder_f Integer32_decode_xer;
-xer_type_encoder_f Integer32_encode_xer;
+LIB61850_INTERNAL extern asn_TYPE_descriptor_t asn_DEF_Integer32;
+LIB61850_INTERNAL asn_struct_free_f Integer32_free;
+LIB61850_INTERNAL asn_struct_print_f Integer32_print;
+LIB61850_INTERNAL asn_constr_check_f Integer32_constraint;
+LIB61850_INTERNAL ber_type_decoder_f Integer32_decode_ber;
+LIB61850_INTERNAL der_type_encoder_f Integer32_encode_der;
+LIB61850_INTERNAL xer_type_decoder_f Integer32_decode_xer;
+LIB61850_INTERNAL xer_type_encoder_f Integer32_encode_xer;
 
 #ifdef __cplusplus
 }

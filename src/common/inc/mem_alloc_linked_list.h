@@ -37,10 +37,10 @@ extern "C" {
 
 typedef struct sMemAllocLinkedList* MemAllocLinkedList;
 
-MemAllocLinkedList
+LIB61850_INTERNAL MemAllocLinkedList
 MemAllocLinkedList_create(MemoryAllocator* ma);
 
-LinkedList
+LIB61850_INTERNAL LinkedList
 MemAllocLinkedList_add(MemAllocLinkedList list, void* data);
 
 #endif /* MEM_ALLOC_LINKED_LIST_H_ */

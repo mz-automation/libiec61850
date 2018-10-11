@@ -61,31 +61,31 @@ struct sIedServer
 };
 
 
-ClientConnection
+LIB61850_INTERNAL ClientConnection
 private_IedServer_getClientConnectionByHandle(IedServer self, void* serverConnectionHandle);
 
-ClientConnection
+LIB61850_INTERNAL ClientConnection
 private_ClientConnection_create(void* serverConnectionHandle);
 
-void
+LIB61850_INTERNAL void
 private_ClientConnection_destroy(ClientConnection self);
 
-int
+LIB61850_INTERNAL int
 private_ClientConnection_getTasksCount(ClientConnection self);
 
-void
+LIB61850_INTERNAL void
 private_ClientConnection_increaseTasksCount(ClientConnection self);
 
-void
+LIB61850_INTERNAL void
 private_ClientConnection_decreaseTasksCount(ClientConnection self);
 
-void*
+LIB61850_INTERNAL void*
 private_ClientConnection_getServerConnectionHandle(ClientConnection self);
 
-void
+LIB61850_INTERNAL void
 private_IedServer_addNewClientConnection(IedServer self, ClientConnection newClientConnection);
 
-void
+LIB61850_INTERNAL void
 private_IedServer_removeClientConnection(IedServer self, ClientConnection clientConnection);
 
 #endif /* IED_SERVER_PRIVATE_H_ */

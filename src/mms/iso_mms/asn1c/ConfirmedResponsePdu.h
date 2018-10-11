@@ -30,7 +30,7 @@ typedef struct ConfirmedResponsePdu {
 } ConfirmedResponsePdu_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_ConfirmedResponsePdu;
+LIB61850_INTERNAL extern asn_TYPE_descriptor_t asn_DEF_ConfirmedResponsePdu;
 
 #ifdef __cplusplus
 }

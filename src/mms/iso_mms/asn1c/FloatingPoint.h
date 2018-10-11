@@ -22,14 +22,14 @@ extern "C" {
 typedef OCTET_STRING_t	 FloatingPoint_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_FloatingPoint;
-asn_struct_free_f FloatingPoint_free;
-asn_struct_print_f FloatingPoint_print;
-asn_constr_check_f FloatingPoint_constraint;
-ber_type_decoder_f FloatingPoint_decode_ber;
-der_type_encoder_f FloatingPoint_encode_der;
-xer_type_decoder_f FloatingPoint_decode_xer;
-xer_type_encoder_f FloatingPoint_encode_xer;
+LIB61850_INTERNAL extern asn_TYPE_descriptor_t asn_DEF_FloatingPoint;
+LIB61850_INTERNAL asn_struct_free_f FloatingPoint_free;
+LIB61850_INTERNAL asn_struct_print_f FloatingPoint_print;
+LIB61850_INTERNAL asn_constr_check_f FloatingPoint_constraint;
+LIB61850_INTERNAL ber_type_decoder_f FloatingPoint_decode_ber;
+LIB61850_INTERNAL der_type_encoder_f FloatingPoint_encode_der;
+LIB61850_INTERNAL xer_type_decoder_f FloatingPoint_decode_xer;
+LIB61850_INTERNAL xer_type_encoder_f FloatingPoint_encode_xer;
 
 #ifdef __cplusplus
 }

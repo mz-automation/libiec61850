@@ -73,50 +73,50 @@ typedef struct {
 } LogControl;
 
 
-LogInstance*
+LIB61850_INTERNAL LogInstance*
 LogInstance_create(LogicalNode* parentLN, const char* name);
 
-void
+LIB61850_INTERNAL void
 LogInstance_setLogStorage(LogInstance* self, LogStorage logStorage);
 
-void
+LIB61850_INTERNAL void
 LogInstance_logSingleData(LogInstance* self, const char* dataRef, MmsValue* value, uint8_t flag);
 
-uint64_t
+LIB61850_INTERNAL uint64_t
 LogInstance_logEntryStart(LogInstance* self);
 
-void
+LIB61850_INTERNAL void
 LogInstance_logEntryData(LogInstance* self, uint64_t entryID, const char* dataRef, MmsValue* value, uint8_t flag);
 
-void
+LIB61850_INTERNAL void
 LogInstance_logEntryFinished(LogInstance* self, uint64_t entryID);
 
-void
+LIB61850_INTERNAL void
 LogInstance_destroy(LogInstance* self);
 
-LogControl*
+LIB61850_INTERNAL LogControl*
 LogControl_create(LogicalNode* parentLN, MmsMapping* mmsMapping);
 
-void
+LIB61850_INTERNAL void
 LogControl_setLog(LogControl* self, LogInstance* logInstance);
 
-void
+LIB61850_INTERNAL void
 LogControl_destroy(LogControl* self);
 
-void
+LIB61850_INTERNAL void
 LogControl_setLogStorage(LogControl* self, LogStorage logStorage);
 
-MmsVariableSpecification*
+LIB61850_INTERNAL MmsVariableSpecification*
 Logging_createLCBs(MmsMapping* self, MmsDomain* domain, LogicalNode* logicalNode,
         int lcbCount);
 
-void
+LIB61850_INTERNAL void
 Logging_processIntegrityLogs(MmsMapping* self, uint64_t currentTimeInMs);
 
-MmsValue*
+LIB61850_INTERNAL MmsValue*
 LIBIEC61850_LOG_SVC_readAccessControlBlock(MmsMapping* self, MmsDomain* domain, char* variableIdOrig);
 
-MmsDataAccessError
+LIB61850_INTERNAL MmsDataAccessError
 LIBIEC61850_LOG_SVC_writeAccessLogControlBlock(MmsMapping* self, MmsDomain* domain, char* variableIdOrig,
         MmsValue* value, MmsServerConnection connection);
 

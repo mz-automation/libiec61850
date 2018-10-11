@@ -32,7 +32,7 @@ typedef struct StructComponent {
 } StructComponent_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_StructComponent;
+LIB61850_INTERNAL extern asn_TYPE_descriptor_t asn_DEF_StructComponent;
 
 #ifdef __cplusplus
 }

@@ -25,15 +25,15 @@ typedef struct asn_SET_OF_specifics_s {
 /*
  * A set specialized functions dealing with the SET OF type.
  */
-asn_struct_free_f SET_OF_free;
-asn_struct_print_f SET_OF_print;
-asn_constr_check_f SET_OF_constraint;
-ber_type_decoder_f SET_OF_decode_ber;
-der_type_encoder_f SET_OF_encode_der;
-xer_type_decoder_f SET_OF_decode_xer;
-xer_type_encoder_f SET_OF_encode_xer;
-per_type_decoder_f SET_OF_decode_uper;
-per_type_encoder_f SET_OF_encode_uper;
+LIB61850_INTERNAL asn_struct_free_f SET_OF_free;
+LIB61850_INTERNAL asn_struct_print_f SET_OF_print;
+LIB61850_INTERNAL asn_constr_check_f SET_OF_constraint;
+LIB61850_INTERNAL ber_type_decoder_f SET_OF_decode_ber;
+LIB61850_INTERNAL der_type_encoder_f SET_OF_encode_der;
+LIB61850_INTERNAL xer_type_decoder_f SET_OF_decode_xer;
+LIB61850_INTERNAL xer_type_encoder_f SET_OF_encode_xer;
+LIB61850_INTERNAL per_type_decoder_f SET_OF_decode_uper;
+LIB61850_INTERNAL per_type_encoder_f SET_OF_encode_uper;
 
 #ifdef __cplusplus
 }

@@ -22,14 +22,14 @@ extern "C" {
 typedef UTF8String_t	 MMSString_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_MMSString;
-asn_struct_free_f MMSString_free;
-asn_struct_print_f MMSString_print;
-asn_constr_check_f MMSString_constraint;
-ber_type_decoder_f MMSString_decode_ber;
-der_type_encoder_f MMSString_encode_der;
-xer_type_decoder_f MMSString_decode_xer;
-xer_type_encoder_f MMSString_encode_xer;
+LIB61850_INTERNAL extern asn_TYPE_descriptor_t asn_DEF_MMSString;
+LIB61850_INTERNAL asn_struct_free_f MMSString_free;
+LIB61850_INTERNAL asn_struct_print_f MMSString_print;
+LIB61850_INTERNAL asn_constr_check_f MMSString_constraint;
+LIB61850_INTERNAL ber_type_decoder_f MMSString_decode_ber;
+LIB61850_INTERNAL der_type_encoder_f MMSString_encode_der;
+LIB61850_INTERNAL xer_type_decoder_f MMSString_decode_xer;
+LIB61850_INTERNAL xer_type_encoder_f MMSString_encode_xer;
 
 #ifdef __cplusplus
 }

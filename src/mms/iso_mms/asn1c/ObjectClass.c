@@ -33,6 +33,7 @@ static asn_CHOICE_specifics_t asn_SPC_ObjectClass_specs_1 = {
 	0,
 	-1	/* Extensions start */
 };
+
 asn_TYPE_descriptor_t asn_DEF_ObjectClass = {
 	"ObjectClass",
 	"ObjectClass",

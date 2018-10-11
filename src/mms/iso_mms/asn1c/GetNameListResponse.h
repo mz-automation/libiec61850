@@ -37,7 +37,7 @@ typedef struct GetNameListResponse {
 } GetNameListResponse_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_GetNameListResponse;
+LIB61850_INTERNAL extern asn_TYPE_descriptor_t asn_DEF_GetNameListResponse;
 
 #ifdef __cplusplus
 }

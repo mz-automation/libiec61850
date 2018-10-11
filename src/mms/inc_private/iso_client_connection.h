@@ -52,13 +52,13 @@ typedef void*
  */
 typedef struct sIsoClientConnection* IsoClientConnection;
 
-IsoClientConnection
+LIB61850_INTERNAL IsoClientConnection
 IsoClientConnection_create(IsoConnectionParameters parameters, IsoIndicationCallback callback, void* callbackParameter);
 
-void
+LIB61850_INTERNAL void
 IsoClientConnection_destroy(IsoClientConnection self);
 
-bool
+LIB61850_INTERNAL bool
 IsoClientConnection_associateAsync(IsoClientConnection self, uint32_t connectTimeoutInMs);
 
 /**
@@ -66,10 +66,10 @@ IsoClientConnection_associateAsync(IsoClientConnection self, uint32_t connectTim
  *
  * \return value indicates that connection is currently waiting and calling thread can be suspended
  */
-bool
+LIB61850_INTERNAL bool
 IsoClientConnection_handleConnection(IsoClientConnection self);
 
-void
+LIB61850_INTERNAL void
 IsoClientConnection_associate(IsoClientConnection self, uint32_t connectTimeoutInMs);
 
 /**
@@ -77,37 +77,35 @@ IsoClientConnection_associate(IsoClientConnection self, uint32_t connectTimeoutI
  *
  * \param payload message to send
  */
-void
+LIB61850_INTERNAL void
 IsoClientConnection_sendMessage(IsoClientConnection self, ByteBuffer* payload);
 
-void
+LIB61850_INTERNAL void
 IsoClientConnection_release(IsoClientConnection self);
 
 /**
  * \brief Send ACSE abort message and wait until connection is closed by server or timeout occurred
  */
-void
+LIB61850_INTERNAL void
 IsoClientConnection_abortAsync(IsoClientConnection self);
 
-void
+LIB61850_INTERNAL void
 IsoClientConnection_close(IsoClientConnection self);
 
 /**
  * This function should be called by the API client (usually the MmsConnection) to reserve(allocate)
  * the payload buffer. This is used to prevent concurrent access to the send buffer of the IsoClientConnection
  */
-ByteBuffer*
+LIB61850_INTERNAL ByteBuffer*
 IsoClientConnection_allocateTransmitBuffer(IsoClientConnection self);
 
 /**
  * This function is used to release the transmit buffer in case a formerly allocated transmit buffer cannot
  * be sent.
  */
-void
+LIB61850_INTERNAL void
 IsoClientConnection_releaseTransmitBuffer(IsoClientConnection self);
 
-void*
-IsoClientConnection_getSecurityToken(IsoClientConnection self);
 
 #ifdef __cplusplus
 }

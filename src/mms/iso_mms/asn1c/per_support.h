@@ -47,6 +47,7 @@ typedef struct asn_per_data_s {
  * This function returns -1 if the specified number of bits could not be
  * extracted due to EOD or other conditions.
  */
+LIB61850_INTERNAL
 int32_t per_get_few_bits(asn_per_data_t *per_data, int get_nbits);
 
 /*
@@ -54,12 +55,14 @@ int32_t per_get_few_bits(asn_per_data_t *per_data, int get_nbits);
  * This function returns -1 if the specified number of bits could not be
  * extracted due to EOD or other conditions.
  */
+LIB61850_INTERNAL
 int per_get_many_bits(asn_per_data_t *pd, uint8_t *dst, int right_align,
 			int get_nbits);
 
 /*
  * Get the length "n" from the Unaligned PER stream.
  */
+LIB61850_INTERNAL
 ssize_t uper_get_length(asn_per_data_t *pd,
 			int effective_bound_bits,
 			int *repeat);
@@ -67,6 +70,7 @@ ssize_t uper_get_length(asn_per_data_t *pd,
 /*
  * Get the normally small non-negative whole number.
  */
+LIB61850_INTERNAL
 ssize_t uper_get_nsnnwn(asn_per_data_t *pd);
 
 /*
@@ -83,9 +87,11 @@ typedef struct asn_per_outp_s {
 } asn_per_outp_t;
 
 /* Output a small number of bits (<= 31) */
+LIB61850_INTERNAL
 int per_put_few_bits(asn_per_outp_t *per_data, uint32_t bits, int obits);
 
 /* Output a large number of bits */
+LIB61850_INTERNAL
 int per_put_many_bits(asn_per_outp_t *po, const uint8_t *src, int put_nbits);
 
 /*
@@ -93,11 +99,13 @@ int per_put_many_bits(asn_per_outp_t *po, const uint8_t *src, int put_nbits);
  * This function returns the number of units which may be flushed
  * in the next units saving iteration.
  */
+LIB61850_INTERNAL
 ssize_t uper_put_length(asn_per_outp_t *po, size_t whole_length);
 
 /*
  * Put the normally small non-negative whole number.
  */
+LIB61850_INTERNAL
 int uper_put_nsnnwn(asn_per_outp_t *po, int n);
 
 #ifdef __cplusplus

@@ -16,6 +16,7 @@ struct asn_TYPE_descriptor_s;	/* Forward declaration */
 /*
  * The XER decoder of any ASN.1 type. May be invoked by the application.
  */
+LIB61850_INTERNAL
 asn_dec_rval_t xer_decode(struct asn_codec_ctx_s *opt_codec_ctx,
 	struct asn_TYPE_descriptor_s *type_descriptor,
 	void **struct_ptr,	/* Pointer to a target structure's pointer */
@@ -43,6 +44,7 @@ typedef asn_dec_rval_t (xer_type_decoder_f)(asn_codec_ctx_t *opt_codec_ctx,
  * and others. This function should not be used by applications, as its API
  * is subject to changes.
  */
+LIB61850_INTERNAL
 asn_dec_rval_t xer_decode_general(asn_codec_ctx_t *opt_codec_ctx,
 	asn_struct_ctx_t *ctx,	/* Type decoder context */
 	void *struct_key,	/* Treated as opaque pointer */
@@ -67,6 +69,8 @@ asn_dec_rval_t xer_decode_general(asn_codec_ctx_t *opt_codec_ctx,
 	PXER_TEXT,	/* Plain text between XER tags */
 	PXER_COMMENT	/* A comment, may be part of */
   } pxer_chunk_type_e;
+
+LIB61850_INTERNAL
 ssize_t xer_next_token(int *stateContext,
 	const void *buffer, size_t size, pxer_chunk_type_e *_ch_type);
 
@@ -83,6 +87,8 @@ ssize_t xer_next_token(int *stateContext,
 	XCT_UNKNOWN_CL	= 6,	/* Unexpected </closing> tag */
 	XCT_UNKNOWN_BO	= 7	/* Unexpected <modified/> tag */
   } xer_check_tag_e;
+
+LIB61850_INTERNAL
 xer_check_tag_e xer_check_tag(const void *buf_ptr, int size,
 		const char *need_tag);
 
@@ -92,11 +98,13 @@ xer_check_tag_e xer_check_tag(const void *buf_ptr, int size,
  * 1:	Whitespace or empty string
  * 0:	Non-whitespace
  */
+LIB61850_INTERNAL
 int xer_is_whitespace(const void *chunk_buf, size_t chunk_size);
 
 /*
  * Skip the series of anticipated extensions.
  */
+LIB61850_INTERNAL
 int xer_skip_unknown(xer_check_tag_e tcv, ber_tlv_len_t *depth);
 
 #ifdef __cplusplus

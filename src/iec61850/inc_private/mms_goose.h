@@ -1,7 +1,7 @@
 /*
  *  mms_goose.h
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013-2018 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -26,49 +26,49 @@
 
 typedef struct sMmsGooseControlBlock* MmsGooseControlBlock;
 
-MmsGooseControlBlock
+LIB61850_INTERNAL MmsGooseControlBlock
 MmsGooseControlBlock_create(void);
 
-void
+LIB61850_INTERNAL void
 MmsGooseControlBlock_destroy(MmsGooseControlBlock self);
 
-MmsDomain*
+LIB61850_INTERNAL MmsDomain*
 MmsGooseControlBlock_getDomain(MmsGooseControlBlock self);
 
-char*
+LIB61850_INTERNAL char*
 MmsGooseControlBlock_getLogicalNodeName(MmsGooseControlBlock self);
 
-char*
+LIB61850_INTERNAL char*
 MmsGooseControlBlock_getName(MmsGooseControlBlock self);
 
-MmsValue*
+LIB61850_INTERNAL MmsValue*
 MmsGooseControlBlock_getGCBValue(MmsGooseControlBlock self, char* elementName);
 
-MmsValue*
+LIB61850_INTERNAL MmsValue*
 MmsGooseControlBlock_getMmsValues(MmsGooseControlBlock self);
 
-MmsVariableSpecification*
+LIB61850_INTERNAL MmsVariableSpecification*
 MmsGooseControlBlock_getVariableSpecification(MmsGooseControlBlock self);
 
-DataSet*
+LIB61850_INTERNAL DataSet*
 MmsGooseControlBlock_getDataSet(MmsGooseControlBlock self);
 
-bool
+LIB61850_INTERNAL bool
 MmsGooseControlBlock_isEnabled(MmsGooseControlBlock self);
 
-void
+LIB61850_INTERNAL void
 MmsGooseControlBlock_checkAndPublish(MmsGooseControlBlock self, uint64_t currentTime);
 
-void
+LIB61850_INTERNAL void
 MmsGooseControlBlock_observedObjectChanged(MmsGooseControlBlock self);
 
-void
+LIB61850_INTERNAL void
 MmsGooseControlBlock_enable(MmsGooseControlBlock self);
 
-void
+LIB61850_INTERNAL void
 MmsGooseControlBlock_disable(MmsGooseControlBlock self);
 
-MmsVariableSpecification*
+LIB61850_INTERNAL MmsVariableSpecification*
 GOOSE_createGOOSEControlBlocks(MmsMapping* self, MmsDomain* domain,
         LogicalNode* logicalNode, int gseCount);
 

@@ -30,7 +30,7 @@ typedef struct ConfirmedRequestPdu {
 } ConfirmedRequestPdu_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_ConfirmedRequestPdu;
+LIB61850_INTERNAL extern asn_TYPE_descriptor_t asn_DEF_ConfirmedRequestPdu;
 
 #ifdef __cplusplus
 }

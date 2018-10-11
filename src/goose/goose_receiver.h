@@ -1,7 +1,7 @@
 /*
  *  goose_receiver.h
  *
- *  Copyright 2014 Michael Zillgith
+ *  Copyright 2014-2018 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -48,7 +48,7 @@ typedef struct sGooseReceiver* GooseReceiver;
  *
  * \return the new GooseReceiver instance
  */
-GooseReceiver
+LIB61850_API GooseReceiver
 GooseReceiver_create(void);
 
 /**
@@ -57,7 +57,7 @@ GooseReceiver_create(void);
  * \param self the GooseReceiver instance
  * \param interfaceId
  */
-void
+LIB61850_API void
 GooseReceiver_setInterfaceId(GooseReceiver self, const char* interfaceId);
 
 /**
@@ -69,7 +69,7 @@ GooseReceiver_setInterfaceId(GooseReceiver self, const char* interfaceId);
  * \param self the GooseReceiver instance
  * \param subscriber the GooseSubscriber instance to add
  */
-void
+LIB61850_API void
 GooseReceiver_addSubscriber(GooseReceiver self, GooseSubscriber subscriber);
 
 /**
@@ -81,7 +81,7 @@ GooseReceiver_addSubscriber(GooseReceiver self, GooseSubscriber subscriber);
  * \param self the GooseReceiver instance
  * \param subscriber the GooseSubscriber instance to remove
  */
-void
+LIB61850_API void
 GooseReceiver_removeSubscriber(GooseReceiver self, GooseSubscriber subscriber);
 
 /**
@@ -89,7 +89,7 @@ GooseReceiver_removeSubscriber(GooseReceiver self, GooseSubscriber subscriber);
  *
  * \param self the GooseReceiver instance
  */
-void
+LIB61850_API void
 GooseReceiver_start(GooseReceiver self);
 
 /**
@@ -99,7 +99,7 @@ GooseReceiver_start(GooseReceiver self);
  *
  * \param self the GooseReceiver instance
  */
-void
+LIB61850_API void
 GooseReceiver_stop(GooseReceiver self);
 
 /**
@@ -111,7 +111,7 @@ GooseReceiver_stop(GooseReceiver self);
  *
  * \return true if GOOSE receiver is running, false otherwise
  */
-bool
+LIB61850_API bool
 GooseReceiver_isRunning(GooseReceiver self);
 
 /**
@@ -119,16 +119,16 @@ GooseReceiver_isRunning(GooseReceiver self);
  *
  * \param self the GooseReceiver instance
  */
-void
+LIB61850_API void
 GooseReceiver_destroy(GooseReceiver self);
 
 /***************************************
  * Functions for non-threaded operation
  ***************************************/
-EthernetSocket
+LIB61850_API EthernetSocket
 GooseReceiver_startThreadless(GooseReceiver self);
 
-void
+LIB61850_API void
 GooseReceiver_stopThreadless(GooseReceiver self);
 
 /**
@@ -140,7 +140,7 @@ GooseReceiver_stopThreadless(GooseReceiver self);
  *
  * \return true if a message was available and has been parsed, false otherwise
  */
-bool
+LIB61850_API bool
 GooseReceiver_tick(GooseReceiver self);
 
 /**@}*/

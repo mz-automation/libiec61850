@@ -24,6 +24,8 @@
 #ifndef MEMORY_H_
 #define MEMORY_H_
 
+#include "hal_base.h"
+
 #define CALLOC(nmemb, size) Memory_calloc(nmemb, size)
 #define MALLOC(size)        Memory_malloc(size)
 #define REALLOC(oldptr, size)   Memory_realloc(oldptr, size)
@@ -38,24 +40,22 @@
 extern "C" {
 #endif
 
-#include <stdlib.h>
-
 typedef void
 (*MemoryExceptionHandler) (void* parameter);
 
-void
+PAL_API void
 Memory_installExceptionHandler(MemoryExceptionHandler handler, void* parameter);
 
-void*
+PAL_API void*
 Memory_malloc(size_t size);
 
-void*
+PAL_API void*
 Memory_calloc(size_t nmemb, size_t size);
 
-void *
+PAL_API void *
 Memory_realloc(void *ptr, size_t size);
 
-void
+PAL_API void
 Memory_free(void* memb);
 
 #ifdef __cplusplus

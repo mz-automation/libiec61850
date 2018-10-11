@@ -24,8 +24,7 @@
 #ifndef SOCKET_HAL_H_
 #define SOCKET_HAL_H_
 
-#include <stdint.h>
-#include <stdbool.h>
+#include "hal_base.h"
 
 /**
  * \file hal_socket.h
@@ -78,13 +77,13 @@ typedef enum
  *
  * \return new HandleSet instance
  */
-HandleSet
+PAL_API HandleSet
 Handleset_new(void);
 
 /**
  * \brief Reset the handle set for reuse
  */
-void
+PAL_API void
 Handleset_reset(HandleSet self);
 
 /**
@@ -93,7 +92,7 @@ Handleset_reset(HandleSet self);
  * \param self the HandleSet instance
  * \param sock the socket to add
  */
-void
+PAL_API void
 Handleset_addSocket(HandleSet self, const Socket sock);
 
 /**
@@ -111,7 +110,7 @@ Handleset_addSocket(HandleSet self, const Socket sock);
  *   or 0 if no data is pending on any of the monitored connections.
  *   The function shall return -1 if a socket error occures.
  */
-int
+PAL_API int
 Handleset_waitReady(HandleSet self, unsigned int timeoutMs);
 
 /**
@@ -119,7 +118,7 @@ Handleset_waitReady(HandleSet self, unsigned int timeoutMs);
  *
  * \param self the HandleSet instance to destroy
  */
-void
+PAL_API void
 Handleset_destroy(HandleSet self);
 
 /**
@@ -132,11 +131,11 @@ Handleset_destroy(HandleSet self);
  *
  * \return the newly create TcpServerSocket instance
  */
-ServerSocket
+PAL_API ServerSocket
 TcpServerSocket_create(const char* address, int port);
 
 
-void
+PAL_API void
 ServerSocket_listen(ServerSocket self);
 
 /**
@@ -153,7 +152,7 @@ ServerSocket_listen(ServerSocket self);
  *
  * \return handle of the new connection socket or NULL if no new connection is available
  */
-Socket
+PAL_API Socket
 ServerSocket_accept(ServerSocket self);
 
 /**
@@ -166,7 +165,7 @@ ServerSocket_accept(ServerSocket self);
  * \param interval time (in s) between subsequent keep alive messages if no ACK received
  * \param count number of not missing keep alive ACKs until socket is considered dead
  */
-void
+PAL_API void
 Socket_activateTcpKeepAlive(Socket self, int idleTime, int interval, int count);
 
 /**
@@ -178,7 +177,7 @@ Socket_activateTcpKeepAlive(Socket self, int idleTime, int interval, int count);
  * \param backlog the number of pending connections in the queue
  *
  */
-void
+PAL_API void
 ServerSocket_setBacklog(ServerSocket self, int backlog);
 
 /**
@@ -190,7 +189,7 @@ ServerSocket_setBacklog(ServerSocket self, int backlog);
  *
  * \param self server socket instance
  */
-void
+PAL_API void
 ServerSocket_destroy(ServerSocket self);
 
 /**
@@ -200,7 +199,7 @@ ServerSocket_destroy(ServerSocket self);
  *
  * \return a new client socket instance.
  */
-Socket
+PAL_API Socket
 TcpSocket_create(void);
 
 /**
@@ -209,7 +208,7 @@ TcpSocket_create(void);
  * \param self the client socket instance
  * \param timeoutInMs the timeout in ms
  */
-void
+PAL_API void
 Socket_setConnectTimeout(Socket self, uint32_t timeoutInMs);
 
 /**
@@ -230,13 +229,13 @@ Socket_setConnectTimeout(Socket self, uint32_t timeoutInMs);
  *
  * \return true if the connection was established successfully, false otherwise
  */
-bool
+PAL_API bool
 Socket_connect(Socket self, const char* address, int port);
 
-bool
+PAL_API bool
 Socket_connectAsync(Socket self, const char* address, int port);
 
-SocketState
+PAL_API SocketState
 Socket_checkAsyncConnectState(Socket self);
 
 /**
@@ -255,7 +254,7 @@ Socket_checkAsyncConnectState(Socket self);
  *
  * \return the number of bytes read or -1 if an error occurred
  */
-int
+PAL_API int
 Socket_read(Socket self, uint8_t* buf, int size);
 
 /**
@@ -267,7 +266,7 @@ Socket_read(Socket self, uint8_t* buf, int size);
  *
  * \return number of bytes transmitted of -1 in case of an error
  */
-int
+PAL_API int
 Socket_write(Socket self, uint8_t* buf, int size);
 
 /**
@@ -281,7 +280,7 @@ Socket_write(Socket self, uint8_t* buf, int size);
  *
  * \return the IP address and port number as strings separated by the ':' character.
  */
-char*
+PAL_API char*
 Socket_getPeerAddress(Socket self);
 
 /**
@@ -298,7 +297,7 @@ Socket_getPeerAddress(Socket self);
  * \return the IP address and port number as strings separated by the ':' character. If the
  *         address is an IPv6 address the IP part is encapsulated in square brackets.
  */
-char*
+PAL_API char*
 Socket_getPeerAddressStatic(Socket self, char* peerAddressString);
 
 /**
@@ -311,7 +310,7 @@ Socket_getPeerAddressStatic(Socket self, char* peerAddressString);
  *
  * \param self the client, connection or server socket instance
  */
-void
+PAL_API void
 Socket_destroy(Socket self);
 
 /*! @} */

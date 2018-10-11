@@ -1,7 +1,7 @@
 /*
  *  goose_subscriber.h
  *
- *  Copyright 2013, 2014 Michael Zillgith
+ *  Copyright 2013-2018 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -67,7 +67,7 @@ typedef void (*GooseListener)(GooseSubscriber subscriber, void* parameter);
  *        GOOSE publisher uses.
  * \param dataSetValues the MmsValue object where the data set values will be written or NULL.
  */
-GooseSubscriber
+LIB61850_API GooseSubscriber
 GooseSubscriber_create(char* goCbRef, MmsValue* dataSetValues);
 
 //char*
@@ -81,7 +81,7 @@ GooseSubscriber_create(char* goCbRef, MmsValue* dataSetValues);
  * \param self GooseSubscriber instance to operate on.
  * \param the APPID value the subscriber should use to filter messages
  */
-void
+LIB61850_API void
 GooseSubscriber_setAppId(GooseSubscriber self, uint16_t appId);
 
 /**
@@ -91,10 +91,10 @@ GooseSubscriber_setAppId(GooseSubscriber self, uint16_t appId);
  * message were received with correct state and sequence ID.
  *
  */
-bool
+LIB61850_API bool
 GooseSubscriber_isValid(GooseSubscriber self);
 
-void
+LIB61850_API void
 GooseSubscriber_destroy(GooseSubscriber self);
 
 /**
@@ -104,7 +104,7 @@ GooseSubscriber_destroy(GooseSubscriber self);
  * \param listener user provided callback function
  * \param parameter a user provided parameter that will be passed to the callback function
  */
-void
+LIB61850_API void
 GooseSubscriber_setListener(GooseSubscriber self, GooseListener listener, void* parameter);
 
 /**
@@ -116,7 +116,7 @@ GooseSubscriber_setListener(GooseSubscriber self, GooseListener listener, void* 
  *
  * \return the state number of the last received GOOSE message
  */
-uint32_t
+LIB61850_API uint32_t
 GooseSubscriber_getStNum(GooseSubscriber self);
 
 /**
@@ -129,7 +129,7 @@ GooseSubscriber_getStNum(GooseSubscriber self);
  *
  * \return the sequence number of the last received GOOSE message
  */
-uint32_t
+LIB61850_API uint32_t
 GooseSubscriber_getSqNum(GooseSubscriber self);
 
 /**
@@ -141,7 +141,7 @@ GooseSubscriber_getSqNum(GooseSubscriber self);
  *
  * \return the state of the test flag of the last received GOOSE message.
  */
-bool
+LIB61850_API bool
 GooseSubscriber_isTest(GooseSubscriber self);
 
 /**
@@ -152,7 +152,7 @@ GooseSubscriber_isTest(GooseSubscriber self);
  * \return the confRev value of the last received GOOSE message. If the message does not contain such
  *         a value the result is always 0
  */
-uint32_t
+LIB61850_API uint32_t
 GooseSubscriber_getConfRev(GooseSubscriber self);
 
 /**
@@ -165,7 +165,7 @@ GooseSubscriber_getConfRev(GooseSubscriber self);
  * \return the state of the ndsCom flag of the last received GOOSE message.
  *
  */
-bool
+LIB61850_API bool
 GooseSubscriber_needsCommission(GooseSubscriber self);
 
 /**
@@ -175,7 +175,7 @@ GooseSubscriber_needsCommission(GooseSubscriber self);
  *
  * \return the TimeAllowedToLive value of the last received GOOSE message in milliseconds.
  */
-uint32_t
+LIB61850_API uint32_t
 GooseSubscriber_getTimeAllowedToLive(GooseSubscriber self);
 
 /**
@@ -185,7 +185,7 @@ GooseSubscriber_getTimeAllowedToLive(GooseSubscriber self);
  *
  * \return the timestamp value of the last received GOOSE message in milliseconds since epoch (1.1.1970 UTC).
  */
-uint64_t
+LIB61850_API uint64_t
 GooseSubscriber_getTimestamp(GooseSubscriber self);
 
 /**
@@ -199,7 +199,7 @@ GooseSubscriber_getTimestamp(GooseSubscriber self);
  *
  * \return MmsValue instance of the report data set
  */
-MmsValue*
+LIB61850_API MmsValue*
 GooseSubscriber_getDataSetValues(GooseSubscriber self);
 
 #ifdef __cplusplus

@@ -1,7 +1,7 @@
 /*
  *  byte_buffer.h
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013-2018 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -36,34 +36,34 @@ typedef struct {
     int size;
 } ByteBuffer;
 
-ByteBuffer*
+LIB61850_INTERNAL ByteBuffer*
 ByteBuffer_create(ByteBuffer* self, int maxSize);
 
-void
+LIB61850_INTERNAL void
 ByteBuffer_destroy(ByteBuffer* self);
 
-void
+LIB61850_INTERNAL void
 ByteBuffer_wrap(ByteBuffer* self, uint8_t* buf, int size, int maxSize);
 
-int
+LIB61850_INTERNAL int
 ByteBuffer_append(ByteBuffer* self, uint8_t* data, int dataSize);
 
-int
+LIB61850_INTERNAL int
 ByteBuffer_appendByte(ByteBuffer* self, uint8_t byte);
 
-uint8_t*
+LIB61850_INTERNAL uint8_t*
 ByteBuffer_getBuffer(ByteBuffer* self);
 
-int
+LIB61850_INTERNAL int
 ByteBuffer_getSize(ByteBuffer* self);
 
-int
+LIB61850_INTERNAL int
 ByteBuffer_getMaxSize(ByteBuffer* self);
 
-int
+LIB61850_INTERNAL int
 ByteBuffer_setSize(ByteBuffer* self, int size);
 
-void
+LIB61850_INTERNAL void
 ByteBuffer_print(ByteBuffer* self, char* message);
 
 #ifdef __cplusplus

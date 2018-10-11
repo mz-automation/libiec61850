@@ -13,10 +13,10 @@ extern "C" {
 
 typedef OCTET_STRING_t UTF8String_t;	/* Implemented via OCTET STRING */
 
-extern asn_TYPE_descriptor_t asn_DEF_UTF8String;
+LIB61850_INTERNAL extern asn_TYPE_descriptor_t asn_DEF_UTF8String;
 
-asn_struct_print_f UTF8String_print;
-asn_constr_check_f UTF8String_constraint;
+LIB61850_INTERNAL asn_struct_print_f UTF8String_print;
+LIB61850_INTERNAL asn_constr_check_f UTF8String_constraint;
 
 /*
  * Returns length of the given UTF-8 string in characters,
@@ -27,6 +27,7 @@ asn_constr_check_f UTF8String_constraint;
  * -4:	Not minimal length encoding
  * -5:	Invalid arguments
  */
+LIB61850_INTERNAL
 ssize_t UTF8String_length(const UTF8String_t *st);
 
 /*
@@ -40,6 +41,7 @@ ssize_t UTF8String_length(const UTF8String_t *st);
  * is equivalent to
  * 	UTF8String_length(const UTF8String_t *st);
  */
+LIB61850_INTERNAL
 size_t UTF8String_to_wcs(const UTF8String_t *st, uint32_t *dst, size_t dstlen);
 
 #ifdef __cplusplus

@@ -35,7 +35,7 @@ typedef struct InitiateResponsePdu {
 } InitiateResponsePdu_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_InitiateResponsePdu;
+LIB61850_INTERNAL extern asn_TYPE_descriptor_t asn_DEF_InitiateResponsePdu;
 
 #ifdef __cplusplus
 }

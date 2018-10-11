@@ -16,8 +16,7 @@
 extern "C" {
 #endif
 
-#include <stdbool.h>
-#include <stdint.h>
+#include "hal_base.h"
 
 /**
  * \file tls_config.h
@@ -42,11 +41,11 @@ typedef struct sTLSConfiguration* TLSConfiguration;
  *
  * \return the new TLS configuration
  */
-TLSConfiguration
+PAL_API TLSConfiguration
 TLSConfiguration_create(void);
 
 /* will be called by stack automatically when appropriate */
-void
+PAL_API void
 TLSConfiguration_setClientMode(TLSConfiguration self);
 
 /**
@@ -54,7 +53,7 @@ TLSConfiguration_setClientMode(TLSConfiguration self);
  *
  * \param value true to enable chain validation, false to disable
  */
-void
+PAL_API void
 TLSConfiguration_setChainValidation(TLSConfiguration self, bool value);
 
 /**
@@ -65,7 +64,7 @@ TLSConfiguration_setChainValidation(TLSConfiguration self, bool value);
  *
  * \param value true to enable setting, false otherwise
  */
-void
+PAL_API void
 TLSConfiguration_setAllowOnlyKnownCertificates(TLSConfiguration self, bool value);
 
 /**
@@ -76,7 +75,7 @@ TLSConfiguration_setAllowOnlyKnownCertificates(TLSConfiguration self, bool value
  *
  * \return true, when the certificate was set, false otherwise (e.g. unknown certificate format)
  */
-bool
+PAL_API bool
 TLSConfiguration_setOwnCertificate(TLSConfiguration self, uint8_t* certificate, int certLen);
 
 /**
@@ -86,25 +85,25 @@ TLSConfiguration_setOwnCertificate(TLSConfiguration self, uint8_t* certificate, 
  *
  * \return true, when the certificate was set, false otherwise (e.g. unknown certificate format)
  */
-bool
+PAL_API bool
 TLSConfiguration_setOwnCertificateFromFile(TLSConfiguration self, const char* filename);
 
-bool
+PAL_API bool
 TLSConfiguration_setOwnKey(TLSConfiguration self, uint8_t* key, int keyLen, const char* keyPassword);
 
-bool
+PAL_API bool
 TLSConfiguration_setOwnKeyFromFile(TLSConfiguration self, const char* filename, const char* keyPassword);
 
-bool
+PAL_API bool
 TLSConfiguration_addAllowedCertificate(TLSConfiguration self, uint8_t* certifcate, int certLen);
 
-bool
+PAL_API bool
 TLSConfiguration_addAllowedCertificateFromFile(TLSConfiguration self, const char* filename);
 
-bool
+PAL_API bool
 TLSConfiguration_addCACertificate(TLSConfiguration self, uint8_t* certifcate, int certLen);
 
-bool
+PAL_API bool
 TLSConfiguration_addCACertificateFromFile(TLSConfiguration self, const char* filename);
 
 /**
@@ -114,10 +113,10 @@ TLSConfiguration_addCACertificateFromFile(TLSConfiguration self, const char* fil
  *
  * \param timeInMs session renegotiation timeout in milliseconds
  */
-void
+PAL_API void
 TLSConfiguration_setRenegotiationTime(TLSConfiguration self, int timeInMs);
 
-void
+PAL_API void
 TLSConfiguration_destroy(TLSConfiguration self);
 
 /** @} */
