@@ -711,6 +711,33 @@ namespace IEC61850
 
 				flagOptFlds = true;
 			}
+
+			/// <summary>
+			/// Gets the ResvTms (reservation time) value
+			/// </summary>
+			/// <remarks>
+			/// Only for BRCB.
+			/// Value of -1 indicate the BRCB is exclusively reserved for a set of client based upon configuration.
+			/// Value of 0 means that the BRCB is not reserved.
+			/// Positive value indicates that the BRCB is reserved dynamically and the value is the number of
+			/// seconds for reservation after association loss.
+			/// </remarks>
+			/// <returns>The reservation time</returns>
+			public Int16 GetResvTms()
+			{
+				return ClientReportControlBlock_getResvTms (self);
+			}
+
+			/// <summary>
+			/// Sets the ResvTms (reservation time) value
+			/// </summary>
+			/// <param name="resvTms">the reservation time value</param>
+			public void SetResvTms(Int16 resvTms)
+			{
+				ClientReportControlBlock_setResvTms (self, resvTms);
+
+				flagResvTms = true;
+			}
 		}
 
 	}
