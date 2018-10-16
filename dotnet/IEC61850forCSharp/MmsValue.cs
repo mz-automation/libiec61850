@@ -179,6 +179,9 @@ namespace IEC61850
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern void MmsValue_setElement(IntPtr complexValue, int index, IntPtr elementValue);
 
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr MmsVariableSpecification_getChildValue(IntPtr self, IntPtr value, string childId);
+
 			internal IntPtr valueReference; /* reference to native MmsValue instance */
 
 			private bool responsableForDeletion; /* if .NET wrapper is responsable for the deletion of the native MmsValue instance */
@@ -863,6 +866,28 @@ namespace IEC61850
 				else
 					throw new MmsValueException ("Value type is not float");
 			}
+
+            /// <summary>
+            /// Gets the child value with the given name 
+            /// </summary>
+            /// <returns>the child value or null if no matching child has been found.</returns>
+            /// <param name="childPath">path specifying the child using '.' or '$' as path element separator.</param>
+            /// <param name="specification">the variable specification to use.</param>
+            public MmsValue GetChildValue(string childPath, MmsVariableSpecification specification)
+            {
+                StringBuilder childPathStr = new StringBuilder(childPath);
+
+                childPathStr.Replace('.', '$');
+
+                IntPtr childPtr = MmsVariableSpecification_getChildValue(specification.self, valueReference, childPathStr.ToString());
+
+                if (childPtr == IntPtr.Zero)
+                    return null;
+                else
+                {
+                    return new MmsValue(childPtr);
+                }
+            }
 
             public override bool Equals (object obj)
             {
