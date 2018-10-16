@@ -26,6 +26,7 @@ using System.Runtime.InteropServices;
 using System.Collections.Generic;
 
 using System.Collections;
+using System.Text;
 
 namespace IEC61850
 {
@@ -38,9 +39,6 @@ namespace IEC61850
 		{
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern void MmsVariableSpecification_destroy(IntPtr self);
-
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr MmsVariableSpecification_getChildValue(IntPtr self, IntPtr value, string childId);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern IntPtr MmsVariableSpecification_getNamedVariableRecursive(IntPtr variable, string nameId);
@@ -63,13 +61,20 @@ namespace IEC61850
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern int MmsVariableSpecification_getExponentWidth(IntPtr self);
 
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern bool MmsVariableSpecification_isValueOfType(IntPtr self, IntPtr value);
+
 			internal IntPtr self;
 			private bool responsableForDeletion;
 
-			internal MmsVariableSpecification (IntPtr self)
+            /* only to prevent garbage collector to destroy parent element */
+            internal MmsVariableSpecification parent = null;
+
+            internal MmsVariableSpecification (IntPtr self, MmsVariableSpecification parent)
 			{
 				this.self = self;
 				this.responsableForDeletion = false;
+                this.parent = parent;
 			}
 
 			internal MmsVariableSpecification (IntPtr self, bool responsableForDeletion)
@@ -77,6 +82,27 @@ namespace IEC61850
 				this.self = self;
 				this.responsableForDeletion = responsableForDeletion;
 			}
+
+            /// <summary>
+            /// Get a child variable specification by its name
+            /// </summary>
+            /// <returns>the varibable specification of the child, or null if no such child is existing.</returns>
+            /// <param name="name">The child name (can also be a path separating the elements with '.' or '$')</param>
+            public MmsVariableSpecification GetChildByName(string name)
+            {
+                StringBuilder nameId = new StringBuilder(name);
+
+                nameId.Replace('.', '$');
+
+                IntPtr varSpecPtr = MmsVariableSpecification_getNamedVariableRecursive(self, nameId.ToString());
+
+                if (varSpecPtr != IntPtr.Zero)
+                {
+                    return new MmsVariableSpecification(varSpecPtr, this);
+                }
+                else
+                    return null;
+            }
 
 			~MmsVariableSpecification ()
 			{
@@ -106,7 +132,7 @@ namespace IEC61850
 			{
 				if (GetType() == MmsType.MMS_ARRAY) {
 					IntPtr varSpecPtr = MmsVariableSpecification.MmsVariableSpecification_getArrayElementSpecification(self);
-					return new MmsVariableSpecification(varSpecPtr);
+					return new MmsVariableSpecification(varSpecPtr, this);
 				}
 				else
 					throw new  MmsValueException ("specification is of wrong type"); 
@@ -127,7 +153,7 @@ namespace IEC61850
 
 					if ((index >= 0) && (index < Size ())) {
 						IntPtr varSpecPtr = MmsVariableSpecification_getChildSpecificationByIndex(self, index);
-						return new MmsVariableSpecification(varSpecPtr);
+						return new MmsVariableSpecification(varSpecPtr, this);
 					} 
 					else
 						throw new MmsValueException ("Index out of bounds");
@@ -156,6 +182,16 @@ namespace IEC61850
 			{
 				return MmsVariableSpecification_getSize(self);
 			}
+
+            /// <summary>
+            /// Determines whether the given value object matches this type
+            /// </summary>
+            /// <returns><c>true</c> if the value matches this type; otherwise, <c>false</c>.</returns>
+            /// <param name="value">the value to test.</param>
+            public bool IsValueOfType(MmsValue value)
+            {
+                return MmsVariableSpecification_isValueOfType(self, value.valueReference);
+            }
 
 			IEnumerator IEnumerable.GetEnumerator ()
 			{
