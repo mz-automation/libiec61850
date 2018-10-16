@@ -276,7 +276,10 @@ namespace tests
 		[Test ()]
 		public void AccessDataModelClientServer()
 		{
-			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../model.cfg");
+            IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile("../../model.cfg");
+
+
+
 
 			ModelNode ind1 = iedModel.GetModelNodeByShortObjectReference ("GenericIO/GGIO1.Ind1.stVal");
 
