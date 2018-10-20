@@ -964,7 +964,7 @@ typedef void
 (*IedConnection_GetRCBValuesHandler) (int invokeId, void* parameter, IedClientError err, ClientReportControlBlock rcb);
 
 LIB61850_API uint32_t
-IedConnection_getRCBValuesAsync(IedConnection self, IedClientError* error, const char* rcbReference,
+IedConnection_getRCBValuesAsync(IedConnection self, IedClientError* error, const char* rcbReference, ClientReportControlBlock updateRcb,
         IedConnection_GetRCBValuesHandler handler, void* parameter);
 
 /** Describes the reason for the inclusion of the element in the report */

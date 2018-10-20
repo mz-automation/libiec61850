@@ -219,7 +219,7 @@ ControlObjectClient_create(const char* objectReference, IedConnection connection
     if (DEBUG_IED_CLIENT)
         printf("IED_CLIENT: Detected edition %i control\n", self->edition);
 
-    private_IedConnection_addControlClient(connection, self);
+    iedConnection_addControlClient(connection, self);
 
     free_varspec:
     MmsVariableSpecification_destroy(ctlVarSpec);
@@ -235,7 +235,7 @@ ControlObjectClient_destroy(ControlObjectClient self)
     {
         GLOBAL_FREEMEM(self->objectReference);
 
-        private_IedConnection_removeControlClient(self->connection, self);
+        iedConnection_removeControlClient(self->connection, self);
 
         if (self->ctlVal != NULL)
             MmsValue_delete(self->ctlVal);
@@ -752,7 +752,7 @@ ControlObjectClient_getLastApplError(ControlObjectClient self)
 }
 
 void
-private_ControlObjectClient_invokeCommandTerminationHandler(ControlObjectClient self)
+controlObjectClient_invokeCommandTerminationHandler(ControlObjectClient self)
 {
     if (self->commandTerminationHandler != NULL)
         self->commandTerminationHandler(self->commandTerminaionHandlerParameter, self);

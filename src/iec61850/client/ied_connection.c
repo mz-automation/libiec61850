@@ -153,6 +153,61 @@ iedConnection_mapDataAccessErrorToIedError(MmsDataAccessError mmsError)
     }
 }
 
+IedConnectionOutstandingCall
+iedConnection_allocateOutstandingCall(IedConnection self)
+{
+    Semaphore_wait(self->outstandingCallsLock);
+
+    IedConnectionOutstandingCall call = NULL;
+
+    int i = 0;
+
+    for (i = 0; i < OUTSTANDING_CALLS; i++) {
+        if (self->outstandingCalls[i].used == false) {
+            self->outstandingCalls[i].used = true;
+            call = &(self->outstandingCalls[i]);
+            break;
+        }
+    }
+
+    Semaphore_post(self->outstandingCallsLock);
+
+    return call;
+}
+
+void
+iedConnection_releaseOutstandingCall(IedConnection self, IedConnectionOutstandingCall call)
+{
+    Semaphore_wait(self->outstandingCallsLock);
+
+    call->used = false;
+
+    Semaphore_post(self->outstandingCallsLock);
+}
+
+IedConnectionOutstandingCall
+iedConnection_lookupOutstandingCall(IedConnection self, uint32_t invokeId)
+{
+    Semaphore_wait(self->outstandingCallsLock);
+
+    IedConnectionOutstandingCall call = NULL;
+
+    int i = 0;
+
+    for (i = 0; i < OUTSTANDING_CALLS; i++) {
+
+        printf("%d: used: %d invokeId: %d\n", i, self->outstandingCalls[i].used, self->outstandingCalls[i].invokeId);
+
+        if ((self->outstandingCalls[i].used) && (self->outstandingCalls[i].invokeId == invokeId)) {
+            call = &(self->outstandingCalls[i]);
+            break;
+        }
+    }
+
+    Semaphore_post(self->outstandingCallsLock);
+
+    return call;
+}
 
 static ICLogicalDevice*
 ICLogicalDevice_create(char* name)
@@ -234,7 +289,7 @@ ClientDataSet_getDataSetSize(ClientDataSet self)
 }
 
 bool
-private_IedConnection_doesControlObjectMatch(const char* objRef, const char* cntrlObj)
+iedConnection_doesControlObjectMatch(const char* objRef, const char* cntrlObj)
 {
     int i = 0;
 
@@ -418,7 +473,7 @@ handleLastApplErrorMessage(IedConnection self, MmsValue* lastApplError)
 
         const char* objectRef = ControlObjectClient_getObjectReference(object);
 
-        if (private_IedConnection_doesControlObjectMatch(objectRef, MmsValue_toString(cntrlObj))) {
+        if (iedConnection_doesControlObjectMatch(objectRef, MmsValue_toString(cntrlObj))) {
             ControlObjectClient_setLastApplError(object, self->lastApplError);
         }
 
@@ -438,7 +493,7 @@ informationReportHandler(void* parameter, char* domainName,
     if (domainName == NULL) {
 
         if (isVariableListName) {
-            private_IedConnection_handleReport(self, value);
+            iedConnection_handleReport(self, value);
         }
         else {
             if (strcmp(variableListName, "LastApplError") == 0)
@@ -461,7 +516,7 @@ informationReportHandler(void* parameter, char* domainName,
            char* objectRef = ControlObjectClient_getObjectReference(object);
 
            if (doesReportMatchControlObject(domainName, variableListName, objectRef))
-               private_ControlObjectClient_invokeCommandTerminationHandler(object);
+               controlObjectClient_invokeCommandTerminationHandler(object);
 
            control = LinkedList_getNext(control);
         }
@@ -718,62 +773,6 @@ IedConnection_destroy(IedConnection self)
     GLOBAL_FREEMEM(self);
 }
 
-static IedConnectionOutstandingCall
-allocateOutstandingCall(IedConnection self)
-{
-    Semaphore_wait(self->outstandingCallsLock);
-
-    IedConnectionOutstandingCall call = NULL;
-
-    int i = 0;
-
-    for (i = 0; i < OUTSTANDING_CALLS; i++) {
-        if (self->outstandingCalls[i].used == false) {
-            self->outstandingCalls[i].used = true;
-            call = &(self->outstandingCalls[i]);
-            break;
-        }
-    }
-
-    Semaphore_post(self->outstandingCallsLock);
-
-    return call;
-}
-
-static void
-releaseOutstandingCall(IedConnection self, IedConnectionOutstandingCall call)
-{
-    Semaphore_wait(self->outstandingCallsLock);
-
-    call->used = false;
-
-    Semaphore_post(self->outstandingCallsLock);
-}
-
-static IedConnectionOutstandingCall
-lookupOutstandingCall(IedConnection self, uint32_t invokeId)
-{
-    Semaphore_wait(self->outstandingCallsLock);
-
-    IedConnectionOutstandingCall call = NULL;
-
-    int i = 0;
-
-    for (i = 0; i < OUTSTANDING_CALLS; i++) {
-
-        printf("%d: used: %d invokeId: %d\n", i, self->outstandingCalls[i].used, self->outstandingCalls[i].invokeId);
-
-        if ((self->outstandingCalls[i].used) && (self->outstandingCalls[i].invokeId == invokeId)) {
-            call = &(self->outstandingCalls[i]);
-            break;
-        }
-    }
-
-    Semaphore_post(self->outstandingCallsLock);
-
-    return call;
-}
-
 MmsVariableSpecification*
 IedConnection_getVariableSpecification(IedConnection self, IedClientError* error, const char* objectReference,
         FunctionalConstraint fc)
@@ -813,7 +812,7 @@ getAccessAttrHandler(int invokeId, void* parameter, MmsError err, MmsVariableSpe
 {
     IedConnection self = (IedConnection) parameter;
 
-    IedConnectionOutstandingCall call = lookupOutstandingCall(self, invokeId);
+    IedConnectionOutstandingCall call = iedConnection_lookupOutstandingCall(self, invokeId);
 
     if (call) {
 
@@ -821,7 +820,7 @@ getAccessAttrHandler(int invokeId, void* parameter, MmsError err, MmsVariableSpe
 
         handler(invokeId, call->callbackParameter, iedConnection_mapMmsErrorToIedError(err), typeSpec);
 
-        releaseOutstandingCall(self, call);
+        iedConnection_releaseOutstandingCall(self, call);
     }
     else {
         if (DEBUG_IED_CLIENT)
@@ -841,7 +840,7 @@ IedConnection_getVariableSpecificationAsync(IedConnection self, IedClientError* 
     char* domainId;
     char* itemId;
 
-    MmsError mmsError;
+    MmsError err;
     MmsVariableSpecification* varSpec = NULL;
 
     domainId = MmsMapping_getMmsDomainFromObjectReference(dataAttributeReference, domainIdBuffer);
@@ -852,7 +851,7 @@ IedConnection_getVariableSpecificationAsync(IedConnection self, IedClientError* 
         goto cleanup_and_exit;
     }
 
-    IedConnectionOutstandingCall call = allocateOutstandingCall(self);
+    IedConnectionOutstandingCall call = iedConnection_allocateOutstandingCall(self);
 
     if (call == NULL) {
         *error = IED_ERROR_OUTSTANDING_CALL_LIMIT_REACHED;
@@ -862,11 +861,14 @@ IedConnection_getVariableSpecificationAsync(IedConnection self, IedClientError* 
     call->callback = handler;
     call->callbackParameter = parameter;
 
-    call->invokeId = MmsConnection_getVariableAccessAttributesAsync(self->connection, &mmsError, domainId, itemId, getAccessAttrHandler, self);
+    call->invokeId = MmsConnection_getVariableAccessAttributesAsync(self->connection, &err, domainId, itemId, getAccessAttrHandler, self);
 
     invokeId = call->invokeId;
 
-    *error = iedConnection_mapMmsErrorToIedError(mmsError);
+    *error = iedConnection_mapMmsErrorToIedError(err);
+
+    if (err != MMS_ERROR_NONE)
+        iedConnection_releaseOutstandingCall(self, call);
 
 cleanup_and_exit:
 
@@ -892,7 +894,7 @@ readObjectHandlerInternal(int invokeId, void* parameter, MmsError err, MmsValue*
 {
     IedConnection self = (IedConnection) parameter;
 
-    IedConnectionOutstandingCall call = lookupOutstandingCall(self, invokeId);
+    IedConnectionOutstandingCall call = iedConnection_lookupOutstandingCall(self, invokeId);
 
     if (call) {
 
@@ -900,7 +902,7 @@ readObjectHandlerInternal(int invokeId, void* parameter, MmsError err, MmsValue*
 
         handler(invokeId, call->callbackParameter, iedConnection_mapMmsErrorToIedError(err), value);
 
-        releaseOutstandingCall(self, call);
+        iedConnection_releaseOutstandingCall(self, call);
     }
     else {
         if (DEBUG_IED_CLIENT)
@@ -928,7 +930,7 @@ IedConnection_readObjectAsync(IedConnection self, IedClientError* error, const c
         return 0;
     }
 
-    IedConnectionOutstandingCall call = allocateOutstandingCall(self);
+    IedConnectionOutstandingCall call = iedConnection_allocateOutstandingCall(self);
 
     if (call == NULL) {
         *error = IED_ERROR_OUTSTANDING_CALL_LIMIT_REACHED;
@@ -975,7 +977,7 @@ IedConnection_readObjectAsync(IedConnection self, IedClientError* error, const c
         if (err != MMS_ERROR_NONE)
             *error = iedConnection_mapMmsErrorToIedError(err);
 
-        releaseOutstandingCall(self, call);
+        iedConnection_releaseOutstandingCall(self, call);
 
         return 0;
     }
@@ -1295,7 +1297,7 @@ writeVariableHandler(int invokeId, void* parameter, MmsError err, MmsDataAccessE
 {
     IedConnection self = (IedConnection) parameter;
 
-    IedConnectionOutstandingCall call = lookupOutstandingCall(self, invokeId);
+    IedConnectionOutstandingCall call = iedConnection_lookupOutstandingCall(self, invokeId);
 
     if (call) {
 
@@ -1308,7 +1310,7 @@ writeVariableHandler(int invokeId, void* parameter, MmsError err, MmsDataAccessE
 
         handler(invokeId, call->callbackParameter, iedError);
 
-        releaseOutstandingCall(self, call);
+        iedConnection_releaseOutstandingCall(self, call);
     }
     else {
         if (DEBUG_IED_CLIENT)
@@ -1320,6 +1322,8 @@ uint32_t
 IedConnection_writeObjectAsync(IedConnection self, IedClientError* error, const char* objectReference,
         FunctionalConstraint fc, MmsValue* value, IedConnection_WriteObjectHandler handler, void* parameter)
 {
+    *error = IED_ERROR_OK;
+
     char domainIdBuffer[65];
     char itemIdBuffer[65];
 
@@ -1334,7 +1338,7 @@ IedConnection_writeObjectAsync(IedConnection self, IedClientError* error, const 
         return 0;
     }
 
-    IedConnectionOutstandingCall call = allocateOutstandingCall(self);
+    IedConnectionOutstandingCall call = iedConnection_allocateOutstandingCall(self);
 
     if (call == NULL) {
         *error = IED_ERROR_OUTSTANDING_CALL_LIMIT_REACHED;
@@ -1379,6 +1383,11 @@ IedConnection_writeObjectAsync(IedConnection self, IedClientError* error, const 
         call->invokeId = MmsConnection_writeVariableAsync(self->connection, &err, domainId, itemId, value, writeVariableHandler, self);
 
     *error = iedConnection_mapMmsErrorToIedError(err);
+
+    if (err != MMS_ERROR_NONE) {
+        iedConnection_releaseOutstandingCall(self, call);
+        return 0;
+    }
 
     return call->invokeId;
 }
@@ -1650,7 +1659,7 @@ fileDirectoryHandler(int invokeId, void* parameter, MmsError err, char* filename
 {
     IedConnection self = (IedConnection) parameter;
 
-    IedConnectionOutstandingCall call = lookupOutstandingCall(self, invokeId);
+    IedConnectionOutstandingCall call = iedConnection_lookupOutstandingCall(self, invokeId);
 
     if (call) {
 
@@ -1659,7 +1668,7 @@ fileDirectoryHandler(int invokeId, void* parameter, MmsError err, char* filename
         handler(invokeId, call->callbackParameter, iedConnection_mapMmsErrorToIedError(err), filename, size, lastModfified, moreFollows);
 
         if (filename == NULL)
-            releaseOutstandingCall(self, call);
+            iedConnection_releaseOutstandingCall(self, call);
     }
     else {
         if (DEBUG_IED_CLIENT)
@@ -1674,7 +1683,7 @@ IedConnection_getFileDirectoryAsync(IedConnection self, IedClientError* error, c
 
     MmsError err = MMS_ERROR_NONE;
 
-    IedConnectionOutstandingCall call = allocateOutstandingCall(self);
+    IedConnectionOutstandingCall call = iedConnection_allocateOutstandingCall(self);
 
     if (call == NULL) {
        *error = IED_ERROR_OUTSTANDING_CALL_LIMIT_REACHED;
@@ -1684,11 +1693,15 @@ IedConnection_getFileDirectoryAsync(IedConnection self, IedClientError* error, c
     call->callback = handler;
     call->callbackParameter = parameter;
 
-
     call->invokeId = MmsConnection_getFileDirectoryAsync(self->connection, &err, directoryName, continueAfter,
             fileDirectoryHandler, self);
 
     *error = iedConnection_mapMmsErrorToIedError(err);
+
+    if (err != MMS_ERROR_NONE) {
+        iedConnection_releaseOutstandingCall(self, call);
+        return 0;
+    }
 
     return call->invokeId;
 }
@@ -2964,7 +2977,7 @@ readJournalHandler(int invokeId, void* parameter, MmsError err, LinkedList /* <M
 {
     IedConnection self = (IedConnection) parameter;
 
-    IedConnectionOutstandingCall call = lookupOutstandingCall(self, invokeId);
+    IedConnectionOutstandingCall call = iedConnection_lookupOutstandingCall(self, invokeId);
 
     if (call) {
 
@@ -2972,7 +2985,7 @@ readJournalHandler(int invokeId, void* parameter, MmsError err, LinkedList /* <M
 
         handler(invokeId, call->callbackParameter, iedConnection_mapMmsErrorToIedError(err), journalEntries, moreFollows);
 
-        releaseOutstandingCall(self, call);
+        iedConnection_releaseOutstandingCall(self, call);
     }
     else {
         if (DEBUG_IED_CLIENT)
@@ -2996,7 +3009,7 @@ IedConnection_queryLogByTimeAsync(IedConnection self, IedClientError* error, con
         logName[0] = 0;
         logName++;
 
-        IedConnectionOutstandingCall call = allocateOutstandingCall(self);
+        IedConnectionOutstandingCall call = iedConnection_allocateOutstandingCall(self);
 
         if (call == NULL) {
             *error = IED_ERROR_OUTSTANDING_CALL_LIMIT_REACHED;
@@ -3021,6 +3034,11 @@ IedConnection_queryLogByTimeAsync(IedConnection self, IedClientError* error, con
         MmsValue_delete(endTimeMms);
 
         *error = iedConnection_mapMmsErrorToIedError(err);
+
+        if (err != MMS_ERROR_NONE) {
+            iedConnection_releaseOutstandingCall(self, call);
+            return 0;
+        }
 
         return call->invokeId;
     }
@@ -3047,7 +3065,7 @@ IedConnection_queryLogAfterAsync(IedConnection self, IedClientError* error, cons
         logName[0] = 0;
         logName++;
 
-        IedConnectionOutstandingCall call = allocateOutstandingCall(self);
+        IedConnectionOutstandingCall call = iedConnection_allocateOutstandingCall(self);
 
         if (call == NULL) {
             *error = IED_ERROR_OUTSTANDING_CALL_LIMIT_REACHED;
@@ -3068,6 +3086,11 @@ IedConnection_queryLogAfterAsync(IedConnection self, IedClientError* error, cons
         MmsValue_delete(timeStampMms);
 
         *error = iedConnection_mapMmsErrorToIedError(err);
+
+        if (err != MMS_ERROR_NONE) {
+            iedConnection_releaseOutstandingCall(self, call);
+            return 0;
+        }
 
         return call->invokeId;
     }
@@ -3131,13 +3154,13 @@ IedConnection_getLastApplError(IedConnection self)
 }
 
 void
-private_IedConnection_addControlClient(IedConnection self, ControlObjectClient control)
+iedConnection_addControlClient(IedConnection self, ControlObjectClient control)
 {
     LinkedList_add(self->clientControls, control);
 }
 
 void
-private_IedConnection_removeControlClient(IedConnection self, ControlObjectClient control)
+iedConnection_removeControlClient(IedConnection self, ControlObjectClient control)
 {
     LinkedList_remove(self->clientControls, control);
 }

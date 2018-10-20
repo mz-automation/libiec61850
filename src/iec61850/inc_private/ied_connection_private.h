@@ -37,6 +37,8 @@ struct sIedConnectionOutstandingCall {
     uint32_t invokeId;
     void* callback;
     void* callbackParameter;
+    void* specificParameter; /* function/service specific parameter */
+    void* specificParameter2; /* function/service specific parameter */
 };
 
 struct sIedConnection
@@ -81,29 +83,35 @@ struct sClientReportControlBlock {
     MmsValue* owner;
 };
 
-LIB61850_INTERNAL IedClientError
-private_IedConnection_mapMmsErrorToIedError(MmsError mmsError);
+LIB61850_INTERNAL bool
+iedConnection_doesControlObjectMatch(const char* objRef, const char* cntrlObj);
+
+LIB61850_INTERNAL void
+iedConnection_addControlClient(IedConnection self, ControlObjectClient control);
+
+LIB61850_INTERNAL void
+iedConnection_removeControlClient(IedConnection self, ControlObjectClient control);
 
 LIB61850_INTERNAL bool
-private_IedConnection_doesControlObjectMatch(const char* objRef, const char* cntrlObj);
+clientReportControlBlock_updateValues(ClientReportControlBlock self, MmsValue* values);
 
 LIB61850_INTERNAL void
-private_IedConnection_addControlClient(IedConnection self, ControlObjectClient control);
-
-LIB61850_INTERNAL void
-private_IedConnection_removeControlClient(IedConnection self, ControlObjectClient control);
-
-LIB61850_INTERNAL bool
-private_ClientReportControlBlock_updateValues(ClientReportControlBlock self, MmsValue* values);
-
-LIB61850_INTERNAL void
-private_IedConnection_handleReport(IedConnection self, MmsValue* value);
+iedConnection_handleReport(IedConnection self, MmsValue* value);
 
 LIB61850_INTERNAL IedClientError
 iedConnection_mapMmsErrorToIedError(MmsError mmsError);
 
 LIB61850_INTERNAL IedClientError
 iedConnection_mapDataAccessErrorToIedError(MmsDataAccessError mmsError);
+
+LIB61850_INTERNAL IedConnectionOutstandingCall
+iedConnection_allocateOutstandingCall(IedConnection self);
+
+LIB61850_INTERNAL void
+iedConnection_releaseOutstandingCall(IedConnection self, IedConnectionOutstandingCall call);
+
+LIB61850_INTERNAL IedConnectionOutstandingCall
+iedConnection_lookupOutstandingCall(IedConnection self, uint32_t invokeId);
 
 LIB61850_INTERNAL ClientReport
 ClientReport_create(void);
@@ -112,7 +120,7 @@ LIB61850_INTERNAL void
 ClientReport_destroy(ClientReport self);
 
 LIB61850_INTERNAL void
-private_ControlObjectClient_invokeCommandTerminationHandler(ControlObjectClient self);
+controlObjectClient_invokeCommandTerminationHandler(ControlObjectClient self);
 
 /* some declarations that are shared with server side ! */
 

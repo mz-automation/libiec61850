@@ -343,7 +343,7 @@ IedConnection_triggerGIReport(IedConnection self, IedClientError* error, const c
 }
 
 void
-private_IedConnection_handleReport(IedConnection self, MmsValue* value)
+iedConnection_handleReport(IedConnection self, MmsValue* value)
 {
     MmsValue* rptIdValue = MmsValue_getElement(value, 0);
 
