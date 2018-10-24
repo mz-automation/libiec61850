@@ -26,6 +26,7 @@ if(WIN32)
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../third_party/winpcap/Lib/wpcap.lib")
 message("Found winpcap -> compile ethernet HAL layer (required for GOOSE/SV support)")
 set(WITH_WPCAP 1)
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../third_party/winpcap/Include")
 else()
 message("winpcap not found -> skip ethernet HAL layer (no GOOSE/SV support)")
 endif()
@@ -154,7 +155,7 @@ ENDIF(MINGW)
 
 iF(WITH_WPCAP)
 target_link_libraries(hal
-   ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/winpcap/lib/wpcap.lib
-   ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/winpcap/lib/packet.lib
+	${CMAKE_CURRENT_SOURCE_DIR}/../third_party/winpcap/Lib/wpcap.lib
+	${CMAKE_CURRENT_SOURCE_DIR}/../third_party/winpcap/Lib/packet.lib
 )
 ENDIF(WITH_WPCAP)
