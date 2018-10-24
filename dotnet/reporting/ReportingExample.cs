@@ -104,6 +104,10 @@ namespace reporting
 
                 rcb2.SetRCBValues();
 
+                rcb2.GetRCBValues();
+
+                Console.WriteLine("RCB: " + rcbReference2 + " Owner: " + BitConverter.ToString(rcb2.GetOwner()));
+
 				rcb3.GetRCBValues();
 
 				if (rcb3.IsBuffered())
