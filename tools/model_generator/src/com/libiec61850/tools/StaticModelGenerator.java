@@ -805,6 +805,11 @@ public class StaticModelGenerator {
         case FLOAT64:
             buffer.append("MmsValue_newDouble(" + value.getValue() + ");");
             break;
+            
+        case TIMESTAMP:
+            buffer.append("MmsValue_newUtcTimeByMsTime("+ value.getValue() + ");");
+            break;
+            
         default:
             System.out.println("Unknown default value for " + daName + " type: " + dataAttribute.getType());
             buffer.append("NULL;");
