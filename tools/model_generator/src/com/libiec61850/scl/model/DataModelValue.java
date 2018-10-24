@@ -1,5 +1,7 @@
 package com.libiec61850.scl.model;
 
+import java.text.SimpleDateFormat;
+
 /*
  *  DataModelValue.java
  *
@@ -24,6 +26,7 @@ package com.libiec61850.scl.model;
  */
 
 import java.util.Base64;
+import java.util.Date;
 
 import com.libiec61850.scl.types.EnumerationType;
 import com.libiec61850.scl.types.IllegalValueException;
@@ -162,6 +165,25 @@ public class DataModelValue {
         	this.value = null;
         	System.out.println("Warning: Initialization of QUALITY is unsupported!");
         	break;
+        	
+        case TIMESTAMP:
+        case ENTRY_TIME:
+            try {
+                String modValueString = value.replace(',', '.');
+                
+                SimpleDateFormat parser = new SimpleDateFormat("yyyy-MM-d'T'HH:mm:ss.SSS");
+                
+                Date date = parser.parse(modValueString);
+                
+                this.value = new Long(date.toInstant().toEpochMilli());
+            }
+            catch (java.text.ParseException e) {
+                this.value = null;
+                System.out.println("Warning: Val element does not contain a valid time stamp: " + e.getMessage()); 
+            }
+        
+            break;
+        	
         default:
             throw new IllegalValueException("Unsupported type " + type.toString() + " value: " + value);
         }
