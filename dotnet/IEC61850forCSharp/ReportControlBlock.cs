@@ -738,6 +738,19 @@ namespace IEC61850
 
 				flagResvTms = true;
 			}
+
+            /// <summary>
+            /// Gets the current owner of the RCB
+            /// </summary>
+            /// <returns>The owner information</returns>
+            public byte[] GetOwner()
+            {
+                IntPtr mmsValuePtr = ClientReportControlBlock_getOwner(self);
+
+                MmsValue octetStringVal = new MmsValue(mmsValuePtr);
+
+                return octetStringVal.getOctetString();
+            }
 		}
 
 	}
