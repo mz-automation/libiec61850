@@ -1,7 +1,7 @@
 /*
  *  iso_connection_parameters.h
  *
- *  Copyright 2013, 2014 Michael Zillgith
+ *  Copyright 2013-2018 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -37,7 +37,7 @@ extern "C" {
 
 
 /**
- * \brief authentication mechanism úsed by AcseAuthenticator
+ * \brief authentication mechanism used by AcseAuthenticator
  */
 typedef enum
 {
@@ -154,7 +154,7 @@ typedef struct sIsoConnectionParameters* IsoConnectionParameters;
  * NOTE: This function used internally by the MMS client library. When using the MMS or IEC 61850 API
  * there should be no reason for the user to call this function.
  *
- * \return new IsoConnectionParameters
+ * \return new IsoConnectionParameters instance
  */
 LIB61850_API IsoConnectionParameters
 IsoConnectionParameters_create(void);

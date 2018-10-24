@@ -250,7 +250,7 @@ parseNamedVariableAttributes(GetNamedVariableListAttributesResponse_t* response,
 }
 
 LinkedList /* <MmsVariableAccessSpecification*> */
-mmsClient_parseGetNamedVariableListAttributesResponse(ByteBuffer* message, uint32_t* invokeId, bool* /*OUT*/deletable)
+mmsClient_parseGetNamedVariableListAttributesResponse(ByteBuffer* message, bool* /*OUT*/deletable)
 {
     MmsPdu_t* mmsPdu = 0;
 
@@ -261,12 +261,6 @@ mmsClient_parseGetNamedVariableListAttributesResponse(ByteBuffer* message, uint3
 
     if (rval.code == RC_OK) {
         if (mmsPdu->present == MmsPdu_PR_confirmedResponsePdu) {
-
-#if 0
-            //TODO remove
-            if (invokeId != NULL)
-                *invokeId = mmsClient_getInvokeId(&mmsPdu->choice.confirmedResponsePdu);
-#endif
 
             if (mmsPdu->choice.confirmedResponsePdu.confirmedServiceResponse.present ==
                     ConfirmedServiceResponse_PR_getNamedVariableListAttributes)
@@ -289,7 +283,7 @@ mmsClient_createDefineNamedVariableListRequest(
         ByteBuffer* writeBuffer,
         const char* domainId,
         const char* listNameId,
-        LinkedList /*<MmsVariableSpecification*>*/listOfVariables,
+        LinkedList /*<MmsVariableSpecification*>*/ listOfVariables,
         bool associationSpecific)
 {
     MmsPdu_t* mmsPdu = mmsClient_createConfirmedRequestPdu(invokeId);
@@ -370,8 +364,7 @@ mmsClient_createDefineNamedVariableListRequest(
             alternateAccess->list.array[0]->present = AlternateAccess__Member_PR_unnamed;
             alternateAccess->list.array[0]->choice.unnamed = (AlternateAccessSelection_t*) GLOBAL_CALLOC(1, sizeof(AlternateAccessSelection_t));
 
-            alternateAccess->list.array[0]->choice.unnamed->present =
-                    AlternateAccessSelection_PR_selectAlternateAccess;
+            alternateAccess->list.array[0]->choice.unnamed->present = AlternateAccessSelection_PR_selectAlternateAccess;
 
             alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.accessSelection.present =
                     AlternateAccessSelection__selectAlternateAccess__accessSelection_PR_index;

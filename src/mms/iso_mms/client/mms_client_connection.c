@@ -82,7 +82,7 @@ handleUnconfirmedMmsPdu(MmsConnection self, ByteBuffer* message)
 
                 if (mmsPdu->choice.unconfirmedPDU.unconfirmedService.present ==
                         UnconfirmedService_PR_informationReport)
-                        {
+                {
                     char* domainId = NULL;
 
                     InformationReport_t* report =
@@ -90,12 +90,13 @@ handleUnconfirmedMmsPdu(MmsConnection self, ByteBuffer* message)
 
                     if (report->variableAccessSpecification.present ==
                             VariableAccessSpecification_PR_variableListName)
-                            {
+                    {
                         if (report->variableAccessSpecification.choice.variableListName.present
                                 == ObjectName_PR_vmdspecific)
-                                {
+                        {
                             int nameSize =
                                     report->variableAccessSpecification.choice.variableListName.choice.vmdspecific.size;
+
                             uint8_t* buffer =
                                     report->variableAccessSpecification.choice.variableListName.choice.vmdspecific.buf;
 
@@ -116,7 +117,7 @@ handleUnconfirmedMmsPdu(MmsConnection self, ByteBuffer* message)
 
                     }
                     else if (report->variableAccessSpecification.present == VariableAccessSpecification_PR_listOfVariable)
-                            {
+                    {
                         int listSize = report->listOfAccessResult.list.count;
                         int variableSpecSize = report->variableAccessSpecification.choice.listOfVariable.list.count;
 
@@ -133,10 +134,10 @@ handleUnconfirmedMmsPdu(MmsConnection self, ByteBuffer* message)
                         for (i = 0; i < variableSpecSize; i++) {
                             if (report->variableAccessSpecification.choice.listOfVariable.list.array[i]->variableSpecification.present
                                     == VariableSpecification_PR_name)
-                                    {
+                            {
                                 if (report->variableAccessSpecification.choice.listOfVariable.list.array[i]
                                         ->variableSpecification.choice.name.present == ObjectName_PR_vmdspecific)
-                                        {
+                                {
                                     int nameSize =
                                             report->variableAccessSpecification.choice.listOfVariable.list.array[i]
                                                     ->variableSpecification.choice.name.choice.vmdspecific.size;
@@ -158,7 +159,7 @@ handleUnconfirmedMmsPdu(MmsConnection self, ByteBuffer* message)
                                         self->reportHandler(self->reportHandlerParameter, domainId, variableListName,
                                                 value, false);
 
-                                        /* report handler should have deleted the MmsValue! */
+                                        /* report handler is responsible to delete the MmsValue object */
                                         if (variableSpecSize != 1)
                                             MmsValue_setElement(values, i, NULL);
                                         else
@@ -169,24 +170,24 @@ handleUnconfirmedMmsPdu(MmsConnection self, ByteBuffer* message)
                                         ->variableSpecification.choice.name.present == ObjectName_PR_domainspecific) {
 
                                     int domainNameSize =
-                                            report->variableAccessSpecification.choice.listOfVariable.list.array[i]
-                                                    ->variableSpecification.choice.name.choice.domainspecific.domainId.size;
+                                        report->variableAccessSpecification.choice.listOfVariable.list.array[i]
+                                            ->variableSpecification.choice.name.choice.domainspecific.domainId.size;
 
                                     int itemNameSize =
-                                            report->variableAccessSpecification.choice.listOfVariable.list.array[i]
-                                                    ->variableSpecification.choice.name.choice.domainspecific.itemId.size;
+                                         report->variableAccessSpecification.choice.listOfVariable.list.array[i]
+                                             ->variableSpecification.choice.name.choice.domainspecific.itemId.size;
 
-                                    if (domainNameSize < 65 && itemNameSize < 65) {
+                                    if ((domainNameSize < 65) && (itemNameSize < 65)) {
                                         char domainNameStr[65];
                                         char itemNameStr[65];
 
                                         uint8_t* domainNameBuffer =
-                                                report->variableAccessSpecification.choice.listOfVariable.list.array[i]
-                                                        ->variableSpecification.choice.name.choice.domainspecific.domainId.buf;
+                                            report->variableAccessSpecification.choice.listOfVariable.list.array[i]
+                                                   ->variableSpecification.choice.name.choice.domainspecific.domainId.buf;
 
                                         uint8_t* itemNamebuffer =
                                                 report->variableAccessSpecification.choice.listOfVariable.list.array[i]
-                                                        ->variableSpecification.choice.name.choice.domainspecific.itemId.buf;
+                                                       ->variableSpecification.choice.name.choice.domainspecific.itemId.buf;
 
                                         memcpy(domainNameStr, domainNameBuffer, domainNameSize);
                                         domainNameStr[domainNameSize] = 0;
@@ -201,7 +202,7 @@ handleUnconfirmedMmsPdu(MmsConnection self, ByteBuffer* message)
                                         self->reportHandler(self->reportHandlerParameter, domainNameStr, itemNameStr,
                                                 value, false);
 
-                                        /* report handler should have deleted the MmsValue! */
+                                        /* report handler is responsible to delete the MmsValue object */
                                         if (variableSpecSize != 1)
                                             MmsValue_setElement(values, i, NULL);
                                         else
@@ -322,6 +323,10 @@ sendMessage(MmsConnection self, ByteBuffer* message)
         handler(self->rawMmsMessageHandlerParameter, message->buffer, message->size, false);
     }
 #endif /* (CONFIG_MMS_RAW_MESSAGE_LOGGING == 1) */
+
+#if (CONFIG_MMS_COLLECT_STATISTICS == 1)
+    self->statAplMessagesSent++;
+#endif
 
     IsoClientConnection_sendMessage(self->isoClient, message);
 }
@@ -549,6 +554,7 @@ mmsMsg_parseConfirmedErrorPDU(uint8_t* buffer, int bufPos, int maxBufPos, uint32
         tag = buffer[bufPos++];
 
         bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
+
         if (bufPos < 0)
             goto exit_error;
 
@@ -575,7 +581,7 @@ mmsMsg_parseConfirmedErrorPDU(uint8_t* buffer, int bufPos, int maxBufPos, uint32
 
     return bufPos;
 
-    exit_error:
+exit_error:
     if (DEBUG_MMS_CLIENT)
         printf("MMS_CLIENT: error parsing confirmed error PDU\n");
 
@@ -608,6 +614,7 @@ mmsMsg_parseRejectPDU(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t* invo
         tag = buffer[bufPos++];
 
         bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
+
         if (bufPos < 0)
             goto exit_error;
 
@@ -717,7 +724,7 @@ handleAsyncResponse(MmsConnection self, ByteBuffer* response, uint32_t bufPos, M
             if (response) {
                 bool deletable = false;
 
-                LinkedList accessSpec = mmsClient_parseGetNamedVariableListAttributesResponse(response, NULL, &deletable);
+                LinkedList accessSpec = mmsClient_parseGetNamedVariableListAttributesResponse(response, &deletable);
 
                 if (accessSpec == false)
                     err = MMS_ERROR_PARSING_RESPONSE;
@@ -1061,6 +1068,7 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
         }
     }
     else if (tag == 0xa2) { /* confirmed error PDU */
+
         if (DEBUG_MMS_CLIENT)
             printf("MMS_CLIENT: Confirmed error PDU!\n");
 
@@ -1098,6 +1106,7 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
         }
     }
     else if (tag == 0xa4) { /* reject PDU */
+
         if (DEBUG_MMS_CLIENT)
             printf("MMS_CLIENT: reject PDU!\n");
 
@@ -1714,11 +1723,15 @@ MmsConnection_abort(MmsConnection self, MmsError* mmsError)
                 success = true;
                 break;
             }
+            else {
+                Thread_sleep(10);
+            }
         }
 
     }
     
     if (success == false) {
+        IsoClientConnection_close(self->isoClient);
         *mmsError = MMS_ERROR_SERVICE_TIMEOUT;
     }
 
@@ -1743,7 +1756,6 @@ concludeHandler(void* parameter, MmsError mmsError, bool success)
     /* unblock user thread */
     Semaphore_post(parameters->sem);
 }
-
 
 void
 MmsConnection_conclude(MmsConnection self, MmsError* mmsError)
@@ -2282,7 +2294,6 @@ exit_function:
     return invokeId;
 }
 
-
 MmsValue*
 MmsConnection_readNamedVariableListValues(MmsConnection self, MmsError* mmsError,
         const char* domainId, const char* listName,
@@ -2346,14 +2357,12 @@ exit_function:
     return invokeId;
 }
 
-
 MmsValue*
 MmsConnection_readNamedVariableListValuesAssociationSpecific(
         MmsConnection self, MmsError* mmsError,
         const char* listName,
         bool specWithResult)
 {
-
     MmsValue* value = NULL;
     MmsError err = MMS_ERROR_NONE;
 
@@ -2638,7 +2647,6 @@ exit_function:
     return invokeId;
 }
 
-
 void
 MmsConnection_defineNamedVariableListAssociationSpecific(MmsConnection self,
         MmsError* mmsError, const char* listName, LinkedList variableSpecs)
@@ -2693,7 +2701,6 @@ MmsConnection_defineNamedVariableListAssociationSpecificAsync(MmsConnection self
 exit_function:
     return invokeId;
 }
-
 
 bool
 MmsConnection_deleteNamedVariableList(MmsConnection self, MmsError* mmsError,
@@ -4279,14 +4286,13 @@ void
 MmsVariableAccessSpecification_destroy(MmsVariableAccessSpecification* self)
 {
     if (self->domainId != NULL)
-        GLOBAL_FREEMEM((void* ) self->domainId);
+        GLOBAL_FREEMEM((void*) self->domainId);
 
     if (self->itemId != NULL)
-        GLOBAL_FREEMEM((void* ) self->itemId);
+        GLOBAL_FREEMEM((void*) self->itemId);
 
     if (self->componentName != NULL)
-        GLOBAL_FREEMEM((void* ) self->componentName);
+        GLOBAL_FREEMEM((void*) self->componentName);
 
     GLOBAL_FREEMEM(self);
 }
-

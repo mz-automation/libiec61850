@@ -527,6 +527,7 @@ parseListOfDirectoryEntries(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t
     int length;
 
     bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
+
     if (bufPos < 0) return false;
 
     int endPos = bufPos + length;

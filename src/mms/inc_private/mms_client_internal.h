@@ -3,22 +3,22 @@
  *
  *  Copyright 2013-2018 Michael Zillgith
  *
- *	This file is part of libIEC61850.
+ *  This file is part of libIEC61850.
  *
- *	libIEC61850 is free software: you can redistribute it and/or modify
- *	it under the terms of the GNU General Public License as published by
- *	the Free Software Foundation, either version 3 of the License, or
- *	(at your option) any later version.
+ *  libIEC61850 is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
  *
- *	libIEC61850 is distributed in the hope that it will be useful,
- *	but WITHOUT ANY WARRANTY; without even the implied warranty of
- *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *	GNU General Public License for more details.
+ *  libIEC61850 is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
  *
- *	You should have received a copy of the GNU General Public License
- *	along with libIEC61850.  If not, see <http://www.gnu.org/licenses/>.
+ *  You should have received a copy of the GNU General Public License
+ *  along with libIEC61850.  If not, see <http://www.gnu.org/licenses/>.
  *
- *	See COPYING file for the complete license text.
+ *  See COPYING file for the complete license text.
  */
 
 #ifndef MMS_MSG_INTERNAL_H_
@@ -40,16 +40,6 @@
 
 #ifndef DEBUG_MMS_CLIENT
 #define DEBUG_MMS_CLIENT 0
-#endif
-
-#if 0
-typedef enum {
-	MMS_CON_IDLE,
-	MMS_CON_WAITING,
-	MMS_CON_ASSOCIATION_FAILED,
-	MMS_CON_ASSOCIATED,
-	MMS_CON_RESPONSE_PENDING
-} ConnectionState;
 #endif
 
 #define CONCLUDE_STATE_CONNECTION_ACTIVE 0
@@ -98,42 +88,42 @@ struct sMmsConnection {
     Semaphore lastInvokeIdLock;
     uint32_t lastInvokeId;
 
-	Semaphore outstandingCallsLock;
-	MmsOutstandingCall outstandingCalls;
+    Semaphore outstandingCallsLock;
+    MmsOutstandingCall outstandingCalls;
 
-	uint32_t requestTimeout;
-	uint32_t connectTimeout;
+    uint32_t requestTimeout;
+    uint32_t connectTimeout;
 
-	IsoClientConnection isoClient;
+    IsoClientConnection isoClient;
 
 #if (CONFIG_MMS_THREADLESS_STACK == 0)
-	Thread connectionHandlingThread;
-	bool createThread;
-	bool connectionThreadRunning;
+    Thread connectionHandlingThread;
+    bool createThread;
+    bool connectionThreadRunning;
 #endif
 
-	volatile MmsConnectionState connectionState;
-	Semaphore associationStateLock;
+    volatile MmsConnectionState connectionState;
+    Semaphore associationStateLock;
 
-	MmsConnectionParameters parameters;
-	IsoConnectionParameters isoParameters;
+    MmsConnectionParameters parameters;
+    IsoConnectionParameters isoParameters;
 
-	MmsConnectionStateChangedHandler stateChangedHandler;
-	void* stateChangedHandlerParameter;
+    MmsConnectionStateChangedHandler stateChangedHandler;
+    void* stateChangedHandlerParameter;
 
-	MmsInformationReportHandler reportHandler;
-	void* reportHandlerParameter;
+    MmsInformationReportHandler reportHandler;
+    void* reportHandlerParameter;
 
-	MmsConnectionLostHandler connectionLostHandler;
-	void* connectionLostHandlerParameter;
+    MmsConnectionLostHandler connectionLostHandler;
+    void* connectionLostHandlerParameter;
 
-	MmsConnection_ConcludeAbortHandler concludeHandler;
-	void* concludeHandlerParameter;
-	uint64_t concludeTimeout;
+    MmsConnection_ConcludeAbortHandler concludeHandler;
+    void* concludeHandlerParameter;
+    uint64_t concludeTimeout;
 
 #if (CONFIG_MMS_RAW_MESSAGE_LOGGING == 1)
-	void* rawMmsMessageHandler;
-	void* rawMmsMessageHandlerParameter;
+    void* rawMmsMessageHandler;
+    void* rawMmsMessageHandlerParameter;
 #endif
 
 #if (MMS_OBTAIN_FILE_SERVICE == 1)
@@ -236,8 +226,7 @@ mmsClient_createGetNamedVariableListAttributesRequestAssociationSpecific(uint32_
         ByteBuffer* writeBuffer, const char* listNameId);
 
 LIB61850_INTERNAL LinkedList
-mmsClient_parseGetNamedVariableListAttributesResponse(ByteBuffer* message, uint32_t* invokeId,
-		bool* /*OUT*/ deletable);
+mmsClient_parseGetNamedVariableListAttributesResponse(ByteBuffer* message, bool* /*OUT*/ deletable);
 
 LIB61850_INTERNAL int
 mmsClient_createGetVariableAccessAttributesRequest(

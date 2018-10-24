@@ -1,7 +1,7 @@
 /*
  *  mms_common_internal.h
  *
- *  Copyright 2013, 2014, 2015 Michael Zillgith
+ *  Copyright 2013-2018 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -77,6 +77,7 @@ LIB61850_INTERNAL FileHandle
 mmsMsg_openFile(const char* basepath, char* fileName, bool readWrite);
 
 #endif /* (MMS_FILE_SERVICE == 1) */
+
 typedef struct sMmsServiceError
 {
     int errorClass;
