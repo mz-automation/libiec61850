@@ -1964,11 +1964,11 @@ MmsConnection_getDomainNames(MmsConnection self, MmsError* mmsError)
 }
 
 uint32_t
-MmsConnection_getDomainNamesAsync(MmsConnection self, MmsError* mmsError, const char* continueAfter,
+MmsConnection_getDomainNamesAsync(MmsConnection self, MmsError* mmsError, const char* continueAfter, LinkedList result,
         MmsConnection_GetNameListHandler handler, void* parameter)
 {
     return mmsClient_getNameListSingleRequestAsync(self, mmsError, NULL, MMS_OBJECT_CLASS_DOMAIN, false,
-            continueAfter, handler, parameter, NULL);
+            continueAfter, handler, parameter, result);
 }
 
 LinkedList /* <char*> */
@@ -1979,10 +1979,10 @@ MmsConnection_getDomainVariableNames(MmsConnection self, MmsError* mmsError, con
 
 uint32_t
 MmsConnection_getDomainVariableNamesAsync(MmsConnection self, MmsError* mmsError, const char* domainId,
-        const char* continueAfter, MmsConnection_GetNameListHandler handler, void* parameter)
+        const char* continueAfter, LinkedList result, MmsConnection_GetNameListHandler handler, void* parameter)
 {
     return mmsClient_getNameListSingleRequestAsync(self, mmsError, domainId, MMS_OBJECT_CLASS_NAMED_VARIABLE, false,
-            continueAfter, handler, parameter, NULL);
+            continueAfter, handler, parameter, result);
 }
 
 LinkedList /* <char*> */

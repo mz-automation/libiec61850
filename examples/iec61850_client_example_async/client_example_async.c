@@ -67,6 +67,61 @@ getVarSpecHandler (uint32_t invokeId, void* parameter, IedClientError err, MmsVa
     }
 }
 
+static void
+getNameListHandler(uint32_t invokeId, void* parameter, IedClientError err, LinkedList nameList, bool moreFollows)
+{
+    if (err != IED_ERROR_OK) {
+        printf("Get name list error: %d\n", err);
+    }
+    else {
+
+        char* ldName = (char*) parameter;
+
+        LinkedList element = LinkedList_getNext(nameList);
+
+        while (element) {
+
+            char* variableName = (char*) LinkedList_getData(element);
+
+            printf("  %s/%s\n", ldName, variableName);
+
+            element = LinkedList_getNext(element);
+        }
+
+        LinkedList_destroy(nameList);
+
+        free(ldName);
+    }
+}
+
+static void
+getServerDirectoryHandler(uint32_t invokeId, void* parameter, IedClientError err, LinkedList nameList, bool moreFollows)
+{
+    IedConnection con = (IedConnection) parameter;
+
+    if (err != IED_ERROR_OK) {
+        printf("Get server directory error: %d\n", err);
+    }
+    else {
+        LinkedList element = LinkedList_getNext(nameList);
+
+        while (element) {
+
+            char* ldName = (char*) LinkedList_getData(element);
+
+            printf("LD: %s\n", ldName);
+
+            IedClientError cerr;
+
+            IedConnection_getLogicalDeviceVariablesAsync(con, &cerr, ldName, NULL, NULL, getNameListHandler, strdup(ldName));
+
+            element = LinkedList_getNext(element);
+        }
+
+        LinkedList_destroy(nameList);
+    }
+}
+
 int main(int argc, char** argv) {
 
     char* hostname;
@@ -101,6 +156,15 @@ int main(int argc, char** argv) {
         }
 
         if (success) {
+
+            IedConnection_getServerDirectoryAsync(con, &error, NULL, NULL, getServerDirectoryHandler, con);
+
+            if (error != IED_ERROR_OK) {
+                printf("read server directory error %i\n", error);
+            }
+
+            Thread_sleep(1000);
+
 
             IedConnection_readObjectAsync(con, &error, "simpleIOGenericIO/GGIO1.AnIn1.mag.f", IEC61850_FC_MX, readObjectHandler, "simpleIOGenericIO/GGIO1.AnIn1.mag.f");
 

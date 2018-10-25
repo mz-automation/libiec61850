@@ -2018,18 +2018,54 @@ IedConnection_getVariableSpecification(IedConnection self, IedClientError* error
 typedef void
 (*IedConnection_GetNameListHandler) (uint32_t invokeId, void* parameter, IedClientError err, LinkedList nameList, bool moreFollows);
 
+/**
+ * \brief Get the server directory (logical devices name) - asynchronous version
+ *
+ * \param[in] self the connection object
+ * \param[out] error the error code if an error occurs
+ * \param[in] continueAfter the name of the last received element when the call is a continuation, or NULL for the first call
+ * \param[in] result list to store (append) the response names, or NULL to create a new list for the response names
+ * \param[in] handler will be called when response is received or timed out.
+ * \param[in] parameter
+ *
+ * \return the invoke ID of the request
+ */
 LIB61850_API uint32_t
-IedConnection_getServerDirectoryAsync(IedConnection self, IedClientError* error, const char* continueAfter, bool getFileNames,
+IedConnection_getServerDirectoryAsync(IedConnection self, IedClientError* error, const char* continueAfter, LinkedList result,
         IedConnection_GetNameListHandler handler, void* parameter);
 
+/**
+ * \brief Get the variables in the logical device - asynchronous version
+ *
+ * \param[in] self the connection object
+ * \param[out] error the error code if an error occurs
+ * \param[in] ldName the logical device name
+ * \param[in] continueAfter the name of the last received element when the call is a continuation, or NULL for the first call
+ * \param[in] result list to store (append) the response names, or NULL to create a new list for the response names
+ * \param[in] handler will be called when response is received or timed out.
+ * \param[in] parameter
+ *
+ * \return the invoke ID of the request
+ */
 LIB61850_API uint32_t
-IedConnection_getLogicalDeviceVariables(IedConnection self, IedClientError* error, const char* continueAfter,
+IedConnection_getLogicalDeviceVariablesAsync(IedConnection self, IedClientError* error, const char* ldName, const char* continueAfter, LinkedList result,
         IedConnection_GetNameListHandler handler, void* parameter);
 
 
 typedef void
 (*IedConnection_GetVariableSpecificationHandler) (uint32_t invokeId, void* parameter, IedClientError err, MmsVariableSpecification* spec);
 
+/**
+ * \brief Get the specification of a variable (data attribute or functional constraint data object) - asynchronous version
+ *
+ * \param[in] self the connection object
+ * \param[out] error the error code if an error occurs
+ * \param[in] dataAttributeReference the data attribute reference (FCDA or FCDO)
+ * \param[in] handler will be called when response is received or timed out.
+ * \param[in] parameter
+ *
+ * \return the invoke ID of the request
+ */
 LIB61850_API uint32_t
 IedConnection_getVariableSpecificationAsync(IedConnection self, IedClientError* error, const char* dataAttributeReference,
         FunctionalConstraint fc, IedConnection_GetVariableSpecificationHandler handler, void* parameter);

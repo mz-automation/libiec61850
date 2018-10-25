@@ -875,18 +875,92 @@ cleanup_and_exit:
     return invokeId;
 }
 
-uint32_t
-IedConnection_getServerDirectoryAsync(IedConnection self, IedClientError* error, const char* continueAfter, bool getFileNames,
-        IedConnection_GetNameListHandler handler, void* parameter)
+static void
+getNameListHandler(uint32_t invokeId, void* parameter, MmsError mmsError, LinkedList nameList, bool moreFollows)
 {
-    //TODO implement me
+    IedConnection self = (IedConnection) parameter;
+
+    IedConnectionOutstandingCall call = iedConnection_lookupOutstandingCall(self, invokeId);
+
+    if (call) {
+
+        IedConnection_GetNameListHandler handler =  (IedConnection_GetNameListHandler) call->callback;
+
+        handler(invokeId, call->callbackParameter, iedConnection_mapMmsErrorToIedError(mmsError), nameList, moreFollows);
+
+        iedConnection_releaseOutstandingCall(self, call);
+    }
+    else {
+        if (DEBUG_IED_CLIENT)
+            printf("IED_CLIENT: internal error - no matching outstanding call!\n");
+    }
 }
 
 uint32_t
-IedConnection_getLogicalDeviceVariables(IedConnection self, IedClientError* error, const char* continueAfter,
+IedConnection_getServerDirectoryAsync(IedConnection self, IedClientError* error, const char* continueAfter, LinkedList result,
         IedConnection_GetNameListHandler handler, void* parameter)
 {
-    //TODO implement me
+    IedConnectionOutstandingCall call = iedConnection_allocateOutstandingCall(self);
+
+    if (call == NULL) {
+        *error = IED_ERROR_OUTSTANDING_CALL_LIMIT_REACHED;
+        return 0;
+    }
+
+    call->callback = handler;
+    call->callbackParameter = parameter;
+
+    MmsError err = MMS_ERROR_NONE;
+
+    call->invokeId = MmsConnection_getDomainNamesAsync(self->connection, &err, continueAfter, result, getNameListHandler, self);
+
+    if (err != MMS_ERROR_NONE) {
+        *error = iedConnection_mapMmsErrorToIedError(err);
+
+        iedConnection_releaseOutstandingCall(self, call);
+
+        return 0;
+    }
+    else {
+        *error = IED_ERROR_OK;
+    }
+
+    return call->invokeId;
+}
+
+
+
+
+uint32_t
+IedConnection_getLogicalDeviceVariablesAsync(IedConnection self, IedClientError* error, const char* ldName, const char* continueAfter, LinkedList result,
+        IedConnection_GetNameListHandler handler, void* parameter)
+{
+    IedConnectionOutstandingCall call = iedConnection_allocateOutstandingCall(self);
+
+    if (call == NULL) {
+        *error = IED_ERROR_OUTSTANDING_CALL_LIMIT_REACHED;
+        return 0;
+    }
+
+    call->callback = handler;
+    call->callbackParameter = parameter;
+
+    MmsError err = MMS_ERROR_NONE;
+
+    call->invokeId = MmsConnection_getDomainVariableNamesAsync(self->connection, &err, ldName, continueAfter, result, getNameListHandler, self);
+
+    if (err != MMS_ERROR_NONE) {
+        *error = iedConnection_mapMmsErrorToIedError(err);
+
+        iedConnection_releaseOutstandingCall(self, call);
+
+        return 0;
+    }
+    else {
+        *error = IED_ERROR_OK;
+    }
+
+    return call->invokeId;
 }
 
 static void

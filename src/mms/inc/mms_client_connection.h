@@ -363,8 +363,20 @@ MmsConnection_getVMDVariableNamesAsync(MmsConnection self, MmsError* mmsError, c
 LIB61850_API LinkedList /* <char*> */
 MmsConnection_getDomainNames(MmsConnection self, MmsError* mmsError);
 
+/**
+ * \brief Get the domain names of the server (asynchronous version).
+ *
+ * \param[in] self MmsConnection instance to operate on
+ * \param[out] mmsError user provided variable to store error code
+ * \param[in] continueAfter the name of the last received element when the call is a continuation, or NULL for the first call
+ * \param[in] result list to store (append) the response names, or NULL to create a new list for the response names
+ * \param[in] handler will be called when response is received or timed out.
+ * \param[in] parameter
+ *
+ * \return the invoke ID of the request
+ */
 LIB61850_API uint32_t
-MmsConnection_getDomainNamesAsync(MmsConnection self, MmsError* mmsError, const char* continueAfter,
+MmsConnection_getDomainNamesAsync(MmsConnection self, MmsError* mmsError, const char* continueAfter, LinkedList result,
         MmsConnection_GetNameListHandler handler, void* parameter);
 
 /**
@@ -372,18 +384,33 @@ MmsConnection_getDomainNamesAsync(MmsConnection self, MmsError* mmsError, const 
  *
  * This will result in a domain specific GetNameList request.
  *
- * \param self MmsConnection instance to operate on
- * \param mmsError user provided variable to store error code
- * \param domainId the domain name for the domain specific request
+ * \param[in] self MmsConnection instance to operate on
+ * \param[out] mmsError user provided variable to store error code
+ * \param[in] domainId the domain name for the domain specific request
  *
  * \return the of domain specific variable names or NULL if the request failed.
  */
 LIB61850_API LinkedList /* <char*> */
 MmsConnection_getDomainVariableNames(MmsConnection self, MmsError* mmsError, const char* domainId);
 
+/**
+ * \brief Get the names of all variables present in a MMS domain of the server (asynchronous version).
+ *
+ * This will result in a domain specific GetNameList request.
+ *
+ * \param[in] self MmsConnection instance to operate on
+ * \param[out] mmsError user provided variable to store error code
+ * \param[in] domainId the domain name for the domain specific request
+ * \param[in] continueAfter the name of the last received element when the call is a continuation, or NULL for the first call
+ * \param[in] result list to store (append) the response names, or NULL to create a new list for the response names
+ * \param[in] handler will be called when response is received or timed out.
+ * \param[in] parameter
+ *
+ * \return the invoke ID of the request
+ */
 LIB61850_API uint32_t
 MmsConnection_getDomainVariableNamesAsync(MmsConnection self, MmsError* mmsError, const char* domainId,
-        const char* continueAfter, MmsConnection_GetNameListHandler handler, void* parameter);
+        const char* continueAfter, LinkedList result, MmsConnection_GetNameListHandler handler, void* parameter);
 
 /**
  * \brief Get the names of all named variable lists present in a MMS domain or VMD scope of the server.
