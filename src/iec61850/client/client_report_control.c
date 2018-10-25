@@ -512,7 +512,7 @@ clientReportControlBlock_updateValues(ClientReportControlBlock self, MmsValue* v
 }
 
 static void
-readObjectHandlerInternal(int invokeId, void* parameter, MmsError err, MmsValue* value)
+readObjectHandlerInternal(uint32_t invokeId, void* parameter, MmsError err, MmsValue* value)
 {
     IedConnection self = (IedConnection) parameter;
 
@@ -696,7 +696,7 @@ IedConnection_getRCBValues(IedConnection self, IedClientError* error, const char
 }
 
 static void
-writeMultipleVariablesHandler(int invokeId, void* parameter, MmsError mmsError, LinkedList /* <MmsValue*> */ accessResults)
+writeMultipleVariablesHandler(uint32_t invokeId, void* parameter, MmsError mmsError, LinkedList /* <MmsValue*> */ accessResults)
 {
     IedConnection self = (IedConnection) parameter;
 
@@ -763,7 +763,7 @@ releaseWriteCall(IedConnection self, IedConnectionOutstandingCall call, struct s
 }
 
 static void
-writeVariableHandler(int invokeId, void* parameter, MmsError mmsError, MmsDataAccessError accessError)
+writeVariableHandler(uint32_t invokeId, void* parameter, MmsError mmsError, MmsDataAccessError accessError)
 {
     IedConnection self = (IedConnection) parameter;
 

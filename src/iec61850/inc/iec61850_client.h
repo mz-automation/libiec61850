@@ -716,7 +716,7 @@ LIB61850_API MmsValue*
 IedConnection_readObject(IedConnection self, IedClientError* error, const char* dataAttributeReference, FunctionalConstraint fc);
 
 typedef void
-(*IedConnection_ReadObjectHandler) (int invokeId, void* parameter, IedClientError err, MmsValue* value);
+(*IedConnection_ReadObjectHandler) (uint32_t invokeId, void* parameter, IedClientError err, MmsValue* value);
 
 LIB61850_API uint32_t
 IedConnection_readObjectAsync(IedConnection self, IedClientError* error, const char* objRef, FunctionalConstraint fc,
@@ -736,7 +736,7 @@ IedConnection_writeObject(IedConnection self, IedClientError* error, const char*
         MmsValue* value);
 
 typedef void
-(*IedConnection_WriteObjectHandler) (int invokeId, void* parameter, IedClientError err);
+(*IedConnection_WriteObjectHandler) (uint32_t invokeId, void* parameter, IedClientError err);
 
 LIB61850_API uint32_t
 IedConnection_writeObjectAsync(IedConnection self, IedClientError* error, const char* objectReference,
@@ -961,7 +961,7 @@ IedConnection_getRCBValues(IedConnection self, IedClientError* error, const char
         ClientReportControlBlock updateRcb);
 
 typedef void
-(*IedConnection_GetRCBValuesHandler) (int invokeId, void* parameter, IedClientError err, ClientReportControlBlock rcb);
+(*IedConnection_GetRCBValuesHandler) (uint32_t invokeId, void* parameter, IedClientError err, ClientReportControlBlock rcb);
 
 LIB61850_API uint32_t
 IedConnection_getRCBValuesAsync(IedConnection self, IedClientError* error, const char* rcbReference, ClientReportControlBlock updateRcb,
@@ -2016,7 +2016,7 @@ IedConnection_getVariableSpecification(IedConnection self, IedClientError* error
  *****************************************/
 
 typedef void
-(*IedConnection_GetNameListHandler) (int invokeId, void* parameter, IedClientError err, LinkedList nameList, bool moreFollows);
+(*IedConnection_GetNameListHandler) (uint32_t invokeId, void* parameter, IedClientError err, LinkedList nameList, bool moreFollows);
 
 LIB61850_API uint32_t
 IedConnection_getServerDirectoryAsync(IedConnection self, IedClientError* error, const char* continueAfter, bool getFileNames,
@@ -2028,7 +2028,7 @@ IedConnection_getLogicalDeviceVariables(IedConnection self, IedClientError* erro
 
 
 typedef void
-(*IedConnection_GetVariableSpecificationHandler) (int invokeId, void* parameter, IedClientError err, MmsVariableSpecification* spec);
+(*IedConnection_GetVariableSpecificationHandler) (uint32_t invokeId, void* parameter, IedClientError err, MmsVariableSpecification* spec);
 
 LIB61850_API uint32_t
 IedConnection_getVariableSpecificationAsync(IedConnection self, IedClientError* error, const char* dataAttributeReference,
@@ -2086,7 +2086,7 @@ IedConnection_queryLogAfter(IedConnection self, IedClientError* error, const cha
 
 
 typedef void
-(*IedConnection_QueryLogHandler) (int invokeId, void* parameter, IedClientError mmsError, LinkedList /* <MmsJournalEntry> */ journalEntries, bool moreFollows);
+(*IedConnection_QueryLogHandler) (uint32_t invokeId, void* parameter, IedClientError mmsError, LinkedList /* <MmsJournalEntry> */ journalEntries, bool moreFollows);
 
 LIB61850_API uint32_t
 IedConnection_queryLogByTimeAsync(IedConnection self, IedClientError* error, const char* logReference,
@@ -2214,7 +2214,7 @@ IedConnection_getFileDirectoryEx(IedConnection self, IedClientError* error, cons
  * \ref err != IED_ERROR_OK and moreFollows = false.
  */
 typedef void
-(*IedConnection_FileDirectoryHandler) (int invokeId, void* parameter, IedClientError err, char* filename, uint32_t size, uint64_t lastModfified,
+(*IedConnection_FileDirectoryHandler) (uint32_t invokeId, void* parameter, IedClientError err, char* filename, uint32_t size, uint64_t lastModfified,
         bool moreFollows);
 
 LIB61850_API uint32_t

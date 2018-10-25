@@ -327,10 +327,10 @@ LIB61850_API void
 MmsConnection_concludeAsync(MmsConnection self, MmsError* mmsError, MmsConnection_ConcludeAbortHandler handler, void* parameter);
 
 typedef void
-(*MmsConnection_GenericServiceHandler) (int invokeId, void* parameter, MmsError mmsError, bool success);
+(*MmsConnection_GenericServiceHandler) (uint32_t invokeId, void* parameter, MmsError mmsError, bool success);
 
 typedef void
-(*MmsConnection_GetNameListHandler) (int invokeId, void* parameter, MmsError mmsError, LinkedList nameList, bool moreFollows);
+(*MmsConnection_GetNameListHandler) (uint32_t invokeId, void* parameter, MmsError mmsError, LinkedList nameList, bool moreFollows);
 
 /**
  * \brief Get the names of all VMD scope variables of the server.
@@ -456,7 +456,7 @@ MmsConnection_readVariable(MmsConnection self, MmsError* mmsError, const char* d
 
 
 typedef void
-(*MmsConnection_ReadVariableHandler) (int invokeId, void* parameter, MmsError mmsError, MmsValue* value);
+(*MmsConnection_ReadVariableHandler) (uint32_t invokeId, void* parameter, MmsError mmsError, MmsValue* value);
 
 /**
  * \brief Read a single variable from the server (asynchronous version)
@@ -572,7 +572,7 @@ MmsConnection_writeVariable(MmsConnection self, MmsError* mmsError,
         const char* domainId, const char* itemId, MmsValue* value);
 
 typedef void
-(*MmsConnection_WriteVariableHandler) (int invokeId, void* parameter, MmsError mmsError, MmsDataAccessError accessError);
+(*MmsConnection_WriteVariableHandler) (uint32_t invokeId, void* parameter, MmsError mmsError, MmsDataAccessError accessError);
 
 LIB61850_API uint32_t
 MmsConnection_writeVariableAsync(MmsConnection self, MmsError* mmsError,
@@ -635,7 +635,7 @@ MmsConnection_writeArrayElementsAsync(MmsConnection self, MmsError* mmsError,
 
 
 typedef void
-(*MmsConnection_WriteMultipleVariablesHandler) (int invokeId, void* parameter, MmsError mmsError, LinkedList /* <MmsValue*> */ accessResults);
+(*MmsConnection_WriteMultipleVariablesHandler) (uint32_t invokeId, void* parameter, MmsError mmsError, LinkedList /* <MmsValue*> */ accessResults);
 
 
 /**
@@ -707,7 +707,7 @@ MmsConnection_getVariableAccessAttributes(MmsConnection self, MmsError* mmsError
         const char* domainId, const char* itemId);
 
 typedef void
-(*MmsConnection_GetVariableAccessAttributesHandler) (int invokeId, void* parameter, MmsError mmsError, MmsVariableSpecification* spec);
+(*MmsConnection_GetVariableAccessAttributesHandler) (uint32_t invokeId, void* parameter, MmsError mmsError, MmsVariableSpecification* spec);
 
 
 LIB61850_API uint32_t
@@ -825,7 +825,7 @@ MmsConnection_readNamedVariableListDirectory(MmsConnection self, MmsError* mmsEr
 
 
 typedef void
-(*MmsConnection_ReadNVLDirectoryHandler) (int invokeId, void* parameter, MmsError mmsError, LinkedList /* <MmsVariableAccessSpecification*> */ specs, bool deletable);
+(*MmsConnection_ReadNVLDirectoryHandler) (uint32_t invokeId, void* parameter, MmsError mmsError, LinkedList /* <MmsVariableAccessSpecification*> */ specs, bool deletable);
 
 
 LIB61850_API uint32_t
@@ -961,7 +961,7 @@ LIB61850_API MmsServerIdentity*
 MmsConnection_identify(MmsConnection self, MmsError* mmsError);
 
 typedef void
-(*MmsConnection_IdentifyHandler) (int invokeId, void* parameter, MmsError mmsError,
+(*MmsConnection_IdentifyHandler) (uint32_t invokeId, void* parameter, MmsError mmsError,
         char* vendorName, char* modelName, char* revision);
 
 LIB61850_API uint32_t
@@ -988,7 +988,7 @@ MmsConnection_getServerStatus(MmsConnection self, MmsError* mmsError, int* vmdLo
         bool extendedDerivation);
 
 typedef void
-(*MmsConnection_GetServerStatusHandler) (int invokeId, void* parameter, MmsError mmsError, int vmdLogicalStatus, int vmdPhysicalStatus);
+(*MmsConnection_GetServerStatusHandler) (uint32_t invokeId, void* parameter, MmsError mmsError, int vmdLogicalStatus, int vmdPhysicalStatus);
 
 LIB61850_API uint32_t
 MmsConnection_getServerStatusAsync(MmsConnection self, MmsError* mmsError, bool extendedDerivation,
@@ -1009,14 +1009,14 @@ typedef void
  * \ref mmsError != MMS_ERROR_NONE and moreFollows = false.
  */
 typedef void
-(*MmsConnection_FileDirectoryHandler) (int invokeId, void* parameter, MmsError mmsError, char* filename, uint32_t size, uint64_t lastModfified,
+(*MmsConnection_FileDirectoryHandler) (uint32_t invokeId, void* parameter, MmsError mmsError, char* filename, uint32_t size, uint64_t lastModfified,
         bool moreFollows);
 
 typedef void
 (*MmsFileReadHandler) (void* parameter, int32_t frsmId, uint8_t* buffer, uint32_t bytesReceived);
 
 typedef void
-(*MmsConnection_FileReadHandler) (int invokeId, void* parameter, MmsError mmsError, uint8_t* buffer, uint32_t byteReceived,
+(*MmsConnection_FileReadHandler) (uint32_t invokeId, void* parameter, MmsError mmsError, uint8_t* buffer, uint32_t byteReceived,
         bool moreFollows);
 
 
@@ -1033,7 +1033,7 @@ MmsConnection_fileOpen(MmsConnection self, MmsError* mmsError, const char* filen
         uint32_t* fileSize, uint64_t* lastModified);
 
 typedef void
-(*MmsConnection_FileOpenHandler) (int invokeId, void* parameter, MmsError mmsError, int32_t frsmId, uint32_t fileSize, uint64_t lastModified);
+(*MmsConnection_FileOpenHandler) (uint32_t invokeId, void* parameter, MmsError mmsError, int32_t frsmId, uint32_t fileSize, uint64_t lastModified);
 
 LIB61850_API uint32_t
 MmsConnection_fileOpenAsync(MmsConnection self, MmsError* mmsError, const char* filename, uint32_t initialPosition, MmsConnection_FileOpenHandler handler,
@@ -1185,7 +1185,7 @@ LIB61850_API const MmsValue*
 MmsJournalVariable_getValue(MmsJournalVariable self);
 
 typedef void
-(*MmsConnection_ReadJournalHandler) (int invokeId, void* parameter, MmsError mmsError, LinkedList /* <MmsJournalEntry> */ journalEntries, bool moreFollows);
+(*MmsConnection_ReadJournalHandler) (uint32_t invokeId, void* parameter, MmsError mmsError, LinkedList /* <MmsJournalEntry> */ journalEntries, bool moreFollows);
 
 
 LIB61850_API LinkedList /* <MmsJournalEntry> */

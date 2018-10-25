@@ -808,7 +808,7 @@ cleanup_and_exit:
 }
 
 static void
-getAccessAttrHandler(int invokeId, void* parameter, MmsError err, MmsVariableSpecification* typeSpec)
+getAccessAttrHandler(uint32_t invokeId, void* parameter, MmsError err, MmsVariableSpecification* typeSpec)
 {
     IedConnection self = (IedConnection) parameter;
 
@@ -890,7 +890,7 @@ IedConnection_getLogicalDeviceVariables(IedConnection self, IedClientError* erro
 }
 
 static void
-readObjectHandlerInternal(int invokeId, void* parameter, MmsError err, MmsValue* value)
+readObjectHandlerInternal(uint32_t invokeId, void* parameter, MmsError err, MmsValue* value)
 {
     IedConnection self = (IedConnection) parameter;
 
@@ -1293,7 +1293,7 @@ IedConnection_writeObject(IedConnection self, IedClientError* error, const char*
 }
 
 static void
-writeVariableHandler(int invokeId, void* parameter, MmsError err, MmsDataAccessError accessError)
+writeVariableHandler(uint32_t invokeId, void* parameter, MmsError err, MmsDataAccessError accessError)
 {
     IedConnection self = (IedConnection) parameter;
 
@@ -1649,12 +1649,8 @@ struct sClientProvidedFileReadHandler {
     uint32_t byteReceived;
 };
 
-typedef void
-(*IedConnection_FileDirectoryHandler) (int invokeId, void* parameter, IedClientError err, char* filename, uint32_t size, uint64_t lastModfified,
-        bool moreFollows);
-
 static void
-fileDirectoryHandler(int invokeId, void* parameter, MmsError err, char* filename, uint32_t size, uint64_t lastModfified,
+fileDirectoryHandler(uint32_t invokeId, void* parameter, MmsError err, char* filename, uint32_t size, uint64_t lastModfified,
         bool moreFollows)
 {
     IedConnection self = (IedConnection) parameter;
@@ -2969,11 +2965,8 @@ IedConnection_queryLogByTime(IedConnection self, IedClientError* error, const ch
 
 }
 
-typedef void
-(*IedConnection_QueryLogHandler) (int invokeId, void* parameter, IedClientError mmsError, LinkedList /* <MmsJournalEntry> */ journalEntries, bool moreFollows);
-
 static void
-readJournalHandler(int invokeId, void* parameter, MmsError err, LinkedList /* <MmsJournalEntry> */ journalEntries, bool moreFollows)
+readJournalHandler(uint32_t invokeId, void* parameter, MmsError err, LinkedList /* <MmsJournalEntry> */ journalEntries, bool moreFollows)
 {
     IedConnection self = (IedConnection) parameter;
 

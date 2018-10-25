@@ -42,7 +42,7 @@ printValue(char* name, MmsValue* value)
 }
 
 static void
-readObjectHandler (int invokeId, void* parameter, IedClientError err, MmsValue* value)
+readObjectHandler (uint32_t invokeId, void* parameter, IedClientError err, MmsValue* value)
 {
     if (err == IED_ERROR_OK) {
         printValue((char*) parameter, value);
@@ -50,12 +50,12 @@ readObjectHandler (int invokeId, void* parameter, IedClientError err, MmsValue* 
         MmsValue_delete(value);
     }
     else {
-        printf("Failed to read object %s (err=%i)\n", parameter, err);
+        printf("Failed to read object %s (err=%i)\n", (char*) parameter, err);
     }
 }
 
 static void
-getVarSpecHandler (int invokeId, void* parameter, IedClientError err, MmsVariableSpecification* spec)
+getVarSpecHandler (uint32_t invokeId, void* parameter, IedClientError err, MmsVariableSpecification* spec)
 {
     if (err == IED_ERROR_OK) {
         printf("variable: %s has type %d\n", (char*) parameter, MmsVariableSpecification_getType(spec));
@@ -63,7 +63,7 @@ getVarSpecHandler (int invokeId, void* parameter, IedClientError err, MmsVariabl
         MmsVariableSpecification_destroy(spec);
     }
     else {
-        printf("Failed to get variable specification for object %s (err=%i)\n", parameter, err);
+        printf("Failed to get variable specification for object %s (err=%i)\n", (char*) parameter, err);
     }
 }
 

@@ -386,6 +386,18 @@ namespace IEC61850
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern void IedConnection_uninstallReportHandler(IntPtr connection, string rcbReference);
 
+            /*********************
+             * Async functions
+             *********************/
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            private delegate void IedConnection_ReadObjectHandler (UInt32 invokeId, IntPtr parameter, int err, IntPtr value);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)] 
+            static extern UInt32
+            IedConnection_readObjectAsync(IntPtr self, out int error, string objRef, int fc,
+                IedConnection_ReadObjectHandler handler, IntPtr parameter);
+
 
             /********************
             * FileDirectoryEntry

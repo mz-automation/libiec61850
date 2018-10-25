@@ -1870,7 +1870,7 @@ struct getNameListParameters
 };
 
 static void
-getNameListHandler(int invokeId, void* parameter, MmsError mmsError, LinkedList nameList, bool moreFollows)
+getNameListHandler(uint32_t invokeId, void* parameter, MmsError mmsError, LinkedList nameList, bool moreFollows)
 {
     struct getNameListParameters* parameters = (struct getNameListParameters*) parameter;
 
@@ -2036,7 +2036,7 @@ struct readNVParameters
 };
 
 static void
-readVariableHandler(int invokeId, void* parameter, MmsError mmsError, MmsValue* value)
+readVariableHandler(uint32_t invokeId, void* parameter, MmsError mmsError, MmsValue* value)
 {
     struct readNVParameters* parameters = (struct readNVParameters*) parameter;
 
@@ -2430,7 +2430,7 @@ struct readNVLDirectoryParameters
 };
 
 static void
-readNVLDirectoryHandler(int invokeId, void* parameter, MmsError mmsError, LinkedList /* <MmsVariableAccessSpecification*> */ specs, bool deletable)
+readNVLDirectoryHandler(uint32_t invokeId, void* parameter, MmsError mmsError, LinkedList /* <MmsVariableAccessSpecification*> */ specs, bool deletable)
 {
     struct readNVLDirectoryParameters* parameters = (struct readNVLDirectoryParameters*) parameter;
 
@@ -2580,7 +2580,7 @@ struct defineNVLParameters
 };
 
 static void
-defineNVLHandler(int invokeId, void* parameter, MmsError mmsError, bool success)
+defineNVLHandler(uint32_t invokeId, void* parameter, MmsError mmsError, bool success)
 {
     struct defineNVLParameters* parameters = (struct defineNVLParameters*) parameter;
 
@@ -2825,7 +2825,7 @@ struct getVarAccessAttrParameters
 };
 
 static void
-getAccessAttrHandler(int invokeId, void* parameter, MmsError mmsError, MmsVariableSpecification* typeSpec)
+getAccessAttrHandler(uint32_t invokeId, void* parameter, MmsError mmsError, MmsVariableSpecification* typeSpec)
 {
     struct getVarAccessAttrParameters* parameters = (struct getVarAccessAttrParameters*) parameter;
 
@@ -2902,7 +2902,7 @@ struct identifyParameters
 };
 
 static void
-identifyHandler(int invokeId, void* parameter, MmsError mmsError, char* vendorName, char* modelName, char* revision)
+identifyHandler(uint32_t invokeId, void* parameter, MmsError mmsError, char* vendorName, char* modelName, char* revision)
 {
     struct identifyParameters* parameters = (struct identifyParameters*) parameter;
 
@@ -2985,7 +2985,7 @@ struct getServerStatusParameters
 };
 
 static void
-getServerStatusHandler(int invokeId, void* parameter, MmsError mmsError, int vmdLogicalStatus, int vmdPhysicalStatus)
+getServerStatusHandler(uint32_t invokeId, void* parameter, MmsError mmsError, int vmdLogicalStatus, int vmdPhysicalStatus)
 {
     struct getServerStatusParameters* parameters = (struct getServerStatusParameters*) parameter;
 
@@ -3120,7 +3120,7 @@ struct readJournalParameters
 };
 
 static void
-readJournalHandler(int invokeId, void* parameter, MmsError mmsError, LinkedList entries, bool moreFollows)
+readJournalHandler(uint32_t invokeId, void* parameter, MmsError mmsError, LinkedList entries, bool moreFollows)
 {
     struct readJournalParameters* parameters = (struct readJournalParameters*) parameter;
 
@@ -3279,7 +3279,7 @@ struct fileOpenParameters
 };
 
 static void
-fileOpenHandler(int invokeId, void* parameter, MmsError mmsError, int32_t frsmId, uint32_t fileSize, uint64_t lastModified)
+fileOpenHandler(uint32_t invokeId, void* parameter, MmsError mmsError, int32_t frsmId, uint32_t fileSize, uint64_t lastModified)
 {
     struct fileOpenParameters* parameters = (struct fileOpenParameters*) parameter;
 
@@ -3383,7 +3383,7 @@ struct fileOperationParameters
 };
 
 static void
-fileOperationHandler(int invokeId, void* parameter, MmsError mmsError, bool success)
+fileOperationHandler(uint32_t invokeId, void* parameter, MmsError mmsError, bool success)
 {
     struct fileOperationParameters* parameters = (struct fileOperationParameters*) parameter;
 
@@ -3546,7 +3546,7 @@ struct fileReadParameters
 };
 
 static void
-fileReadHandler(int invokeId, void* parameter, MmsError mmsError, uint8_t* buffer, uint32_t byteReceived,
+fileReadHandler(uint32_t invokeId, void* parameter, MmsError mmsError, uint8_t* buffer, uint32_t byteReceived,
         bool moreFollows)
 {
     struct fileReadParameters* parameters = (struct fileReadParameters*) parameter;
@@ -3649,7 +3649,7 @@ struct getFileDirParameters
 };
 
 static void
-getFileDirHandler(int invokeId, void* parameter, MmsError mmsError, char* filename, uint32_t size, uint64_t lastModified,
+getFileDirHandler(uint32_t invokeId, void* parameter, MmsError mmsError, char* filename, uint32_t size, uint64_t lastModified,
         bool moreFollows)
 {
     struct getFileDirParameters* parameters = (struct getFileDirParameters*) parameter;
@@ -3892,7 +3892,7 @@ exit_function:
 }
 
 static void
-writeVariableHandler(int invokeId, void* parameter, MmsError mmsError, MmsDataAccessError accessError)
+writeVariableHandler(uint32_t invokeId, void* parameter, MmsError mmsError, MmsDataAccessError accessError)
 {
     struct writeVariableParameters* parameters = (struct writeVariableParameters*) parameter;
 
@@ -4031,7 +4031,7 @@ struct writeMultipleVariablesParameter
 };
 
 static void
-writeMultipleVariablesHandler(int invokeId, void* parameter, MmsError mmsError, LinkedList /* <MmsValue*> */ accessResults)
+writeMultipleVariablesHandler(uint32_t invokeId, void* parameter, MmsError mmsError, LinkedList /* <MmsValue*> */ accessResults)
 {
     struct writeMultipleVariablesParameter* parameters = (struct writeMultipleVariablesParameter*) parameter;
 
