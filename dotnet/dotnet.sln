@@ -46,6 +46,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tls_server_example", "tls_s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "client_example_setting_groups", "client_example_setting_groups\client_example_setting_groups.csproj", "{0DA95476-B149-450B-AC36-01CEECFC1A43}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "client_example_async", "client_example_async\client_example_async.csproj", "{71902641-776A-47D8-9C0E-9ACBBEAC1370}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -92,6 +94,10 @@ Global
 		{71485F99-2976-45E6-B73D-4946E594C15C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{71485F99-2976-45E6-B73D-4946E594C15C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{71485F99-2976-45E6-B73D-4946E594C15C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{71902641-776A-47D8-9C0E-9ACBBEAC1370}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{71902641-776A-47D8-9C0E-9ACBBEAC1370}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{71902641-776A-47D8-9C0E-9ACBBEAC1370}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{71902641-776A-47D8-9C0E-9ACBBEAC1370}.Release|Any CPU.Build.0 = Release|Any CPU
 		{77127456-19B9-4D1A-AEF9-40F8D1C5695E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{77127456-19B9-4D1A-AEF9-40F8D1C5695E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{77127456-19B9-4D1A-AEF9-40F8D1C5695E}.Release|Any CPU.ActiveCfg = Release|Any CPU

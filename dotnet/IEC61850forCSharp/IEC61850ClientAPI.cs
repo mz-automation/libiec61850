@@ -1459,6 +1459,65 @@ namespace IEC61850
 				return newList;
 			}
 
+
+            /// <summary>
+            /// Read object handler.
+            /// </summary>
+            /// <param name="invokeId">The invoke ID of the reqeust triggering this callback</param>
+            /// <param name="parameter">user provided callback parameter</param>
+            /// <param name="err">Error code of response or timeout error in case of a response timeout</param>
+            /// <param name="value">The read result value or null in case of an error</param>
+            public delegate void ReadValueHandler(UInt32 invokeId, object parameter, IedClientError err, MmsValue value);
+
+            private void nativeReadObjectHandler (UInt32 invokeId, IntPtr parameter, int err, IntPtr value)
+            {
+                GCHandle handle = GCHandle.FromIntPtr(parameter);
+
+                Tuple<ReadValueHandler, object>  callbackInfo = handle.Target as Tuple<ReadValueHandler, object>;
+
+                ReadValueHandler handler = callbackInfo.Item1;
+                object handlerParameter = callbackInfo.Item2;
+
+                handle.Free();
+
+                IedClientError clientError = (IedClientError)err;
+
+                MmsValue mmsValue = null;
+
+                if (value != IntPtr.Zero)
+                {
+                    mmsValue = new MmsValue(value, true);
+                }
+
+                handler(invokeId, handlerParameter, clientError, mmsValue);
+            }
+
+            /// <summary>Asynchronously read the value of a data attribute (DA) or functional constraint data object (FCDO).</summary>
+            /// <param name="objectReference">The object reference of a DA or FCDO.</param>
+            /// <param name="fc">The functional constraint (FC) of the object</param>
+            /// <param name="handler">Callback function to handle the received response or service timeout</param>
+            /// <param name="parameter">User provided callback parameter. Will be passed to the callback function</param>
+            /// <returns>the invoke ID of the sent request</returns>
+            /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
+            public UInt32 ReadValueAsync(string objectReference, FunctionalConstraint fc, ReadValueHandler handler, object parameter)
+            {
+                int error;
+
+                Tuple<ReadValueHandler, object> callbackInfo = Tuple.Create(handler, parameter);
+
+                GCHandle handle = GCHandle.Alloc(callbackInfo);
+
+                UInt32 invokeId = IedConnection_readObjectAsync(connection, out error, objectReference, (int)fc, nativeReadObjectHandler, GCHandle.ToIntPtr(handle));
+
+                if (error != 0)
+                {
+                    handle.Free();
+                    throw new IedConnectionException("Reading value failed", error);
+                }
+
+                return invokeId;
+            }
+
 			internal void UninstallReportHandler (string objectReference)
 			{
 				if (connection != IntPtr.Zero) {
