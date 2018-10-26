@@ -398,6 +398,21 @@ namespace IEC61850
             IedConnection_readObjectAsync(IntPtr self, out int error, string objRef, int fc,
                 IedConnection_ReadObjectHandler handler, IntPtr parameter);
 
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            private delegate void IedConnection_WriteObjectHandler (UInt32 invokeId, IntPtr parameter, int err);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)] 
+            static extern UInt32
+            IedConnection_writeObjectAsync(IntPtr self, out int error, string objRef, int fc,
+                                           IntPtr value, IedConnection_WriteObjectHandler handler, IntPtr parameter);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            private delegate void IedConnection_GetNameListHandler (UInt32 invokeId, IntPtr parameter, int err, IntPtr nameList, [MarshalAs(UnmanagedType.I1)] bool  moreFollows);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)] 
+            static extern UInt32
+            IedConnection_getServerDirectoryAsync(IntPtr self, out int error, string continueAfter, IntPtr result,
+                IedConnection_GetNameListHandler handler, IntPtr parameter);
 
             /********************
             * FileDirectoryEntry
@@ -1492,7 +1507,7 @@ namespace IEC61850
                 handler(invokeId, handlerParameter, clientError, mmsValue);
             }
 
-            /// <summary>Asynchronously read the value of a data attribute (DA) or functional constraint data object (FCDO).</summary>
+            /// <summary>Asynchronously read the value of a data attribute (DA) or functional constraint data object (FCDO) - GetData service</summary>
             /// <param name="objectReference">The object reference of a DA or FCDO.</param>
             /// <param name="fc">The functional constraint (FC) of the object</param>
             /// <param name="handler">Callback function to handle the received response or service timeout</param>
@@ -1513,6 +1528,121 @@ namespace IEC61850
                 {
                     handle.Free();
                     throw new IedConnectionException("Reading value failed", error);
+                }
+
+                return invokeId;
+            }
+
+            /// <summary>
+            /// Write value handler.
+            /// </summary>
+            /// <param name="invokeId">The invoke ID of the reqeust triggering this callback</param>
+            /// <param name="parameter">user provided callback parameter</param>
+            /// <param name="err">Error code of response or timeout error in case of a response timeout</param>
+            public delegate void WriteValueHandler(UInt32 invokeId, object parameter, IedClientError err);
+
+            private void nativeWriteObjectHandler (UInt32 invokeId, IntPtr parameter, int err)
+            {
+                GCHandle handle = GCHandle.FromIntPtr(parameter);
+
+                Tuple<WriteValueHandler, object>  callbackInfo = handle.Target as Tuple<WriteValueHandler, object>;
+
+                WriteValueHandler handler = callbackInfo.Item1;
+                object handlerParameter = callbackInfo.Item2;
+
+                handle.Free();
+
+                IedClientError clientError = (IedClientError)err;
+
+                handler(invokeId, handlerParameter, clientError);
+            }
+
+
+            public UInt32 WriteValueAsync(string objectReference, FunctionalConstraint fc, MmsValue value, WriteValueHandler handler, object parameter)
+            {
+                int error;
+
+                Tuple<WriteValueHandler, object> callbackInfo = Tuple.Create(handler, parameter);
+
+                GCHandle handle = GCHandle.Alloc(callbackInfo);
+
+                UInt32 invokeId = IedConnection_writeObjectAsync(connection, out error, objectReference, (int)fc, value.valueReference, nativeWriteObjectHandler, GCHandle.ToIntPtr(handle));
+
+                if (error != 0)
+                {
+                    handle.Free();
+                    throw new IedConnectionException("Writing value failed", error);
+                }
+
+                return invokeId;
+            }
+
+            public delegate void GetNameListHandler(UInt32 invokeId, object parameter, IedClientError err, List<string> nameList, bool moreFollows);
+
+            private void nativeGetNameListHandler (UInt32 invokeId, IntPtr parameter, int err, IntPtr nameList, [MarshalAs(UnmanagedType.I1)] bool  moreFollows)
+            {
+                GCHandle handle = GCHandle.FromIntPtr(parameter);
+
+                Tuple<GetNameListHandler, object, List<string>> callbackInfo = handle.Target as Tuple<GetNameListHandler, object, List<string>>;
+
+                GetNameListHandler handler = callbackInfo.Item1;
+                object handlerParameter = callbackInfo.Item2;
+                List<string> resultList = callbackInfo.Item3;
+
+                handle.Free();
+
+                IedClientError clientError = (IedClientError)err;
+
+                if (nameList != IntPtr.Zero)
+                {
+                    IntPtr element = LinkedList_getNext(nameList);
+
+                    if (resultList == null)
+                        resultList = new List<string>();
+
+                    while (element != IntPtr.Zero)
+                    {
+                        string ld = Marshal.PtrToStringAnsi(LinkedList_getData(element));
+
+                        resultList.Add(ld);
+
+                        element = LinkedList_getNext(element);
+                    }
+
+                    LinkedList_destroy(nameList);
+
+                    handler(invokeId, handlerParameter, clientError, resultList, moreFollows);
+                }
+                else
+                {
+                    handler(invokeId, handlerParameter, clientError, null, moreFollows);
+                }
+
+            }
+                
+            /// <summary>
+            /// Gets the server directory (Logical devices or file objects)
+            /// </summary>
+            /// <param name="result">list where to store the result or null to create a new list for the result</param>
+            /// <param name="continueAfter">continuation value (last received name)</param>
+            /// <param name="handler">user provided callback function</param>
+            /// <param name="parameter">user provided callback parameter</param>
+            /// <returns>the invoke ID of the sent request</returns>
+            /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
+            public UInt32 GetServerDirectoryAsync(List<string> result, string continueAfter, GetNameListHandler handler, object parameter)
+            {
+                int error;
+
+                Tuple<GetNameListHandler, object, List<string>> callbackInfo = Tuple.Create(handler, parameter, result);
+
+                GCHandle handle = GCHandle.Alloc(callbackInfo);
+
+                UInt32 invokeId = IedConnection_getServerDirectoryAsync(connection, out error, continueAfter, IntPtr.Zero, nativeGetNameListHandler, GCHandle.ToIntPtr(handle));
+
+                if (error != 0)
+                {
+                    handle.Free();
+                    throw new IedConnectionException("Get server directory failed", error);
                 }
 
                 return invokeId;
