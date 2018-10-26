@@ -5,7 +5,7 @@
 find_package(SWIG REQUIRED)
 include(${SWIG_USE_FILE})
 
-find_package(PythonInterp REQUIRED)
+find_package(PythonInterp ${BUILD_PYTHON_VERSION} REQUIRED)
 find_package(PythonLibs ${PYTHON_VERSION_STRING} EXACT REQUIRED)
 
 include_directories(${PYTHON_INCLUDE_PATH})
@@ -34,7 +34,7 @@ swig_link_libraries(iec61850 ${PYTHON_LIBRARIES} ${LIBS})
 # Finding python modules install path
 execute_process(
 	COMMAND ${PYTHON_EXECUTABLE} -c
-	"from distutils.sysconfig import get_python_lib; print(get_python_lib())"
+	"from distutils.sysconfig import get_python_lib; import.sys; sys.stdout.write(get_python_lib())"
 	OUTPUT_VARIABLE PYTHON_SITE_DIR
 )
 
