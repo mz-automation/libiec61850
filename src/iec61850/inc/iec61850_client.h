@@ -1064,7 +1064,7 @@ ClientReport_getTimestamp(ClientReport self);
  *
  * \returns true if the report contains sub-sequence-number and more-follows-flag, false otherwise
  */
-LIB61850_API bool
+bool
 ClientReport_hasSubSeqNum(ClientReport self);
 
 /**
@@ -1077,7 +1077,7 @@ ClientReport_hasSubSeqNum(ClientReport self);
  *
  * \return the sub sequence number of the last received report message.
  */
-LIB61850_API uint16_t
+uint16_t
 ClientReport_getSubSeqNum(ClientReport self);
 
 /**
@@ -1090,7 +1090,7 @@ ClientReport_getSubSeqNum(ClientReport self);
  *
  * \return true when more segments of the current report will follow, false otherwise
  */
-LIB61850_API bool
+bool
 ClientReport_getMoreSeqmentsFollow(ClientReport self);
 
 /**

@@ -621,3 +621,6 @@ EXPORTS
     IedServerConfig_setMaxDomainSpecificDataSets
     IedServerConfig_getMaxDomainSpecificDataSets
     IedServer_setReadAccessHandler
+    ClientReport_hasSubSeqNum
+    ClientReport_getSubSeqNum
+    ClientReport_getMoreSeqmentsFollow
