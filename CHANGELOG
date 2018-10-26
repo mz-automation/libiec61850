@@ -1,3 +1,12 @@
+Changes to version 1.3.1
+------------------------
+- IEC 61850 client: improved support for handling segmented reports
+- .NET API: Added some additional access function to ReportControlBlock
+- Java SCL parser: added support for timestamp values in "Val" elements
+- fixed bug in cmake file (winpcap support)
+- added C# example code for client side setting group handling
+- .NET API: added some additional wrapper code for MmsVariableSpecification functions
+
 Changes to version 1.3.0
 ------------------------
 - IEC 61850 server: more features configurable at runtime
@@ -16,7 +25,6 @@ Changes to version 1.3.0
 - fixed bug in MmsValue_update
 - MMS server: fixed bug in delete variable list service - scope of delete was not considered optional
 - some more small bug fixes and optimizations
-
 
 Changes to version 1.2.2
 ------------------------

@@ -1058,6 +1058,42 @@ uint64_t
 ClientReport_getTimestamp(ClientReport self);
 
 /**
+ * \brief indicates if the report contains a sub sequence number and a more segments follow flags (for segmented reporting)
+ *
+ * \param self the ClientReport instance
+ *
+ * \returns true if the report contains sub-sequence-number and more-follows-flag, false otherwise
+ */
+LIB61850_API bool
+ClientReport_hasSubSeqNum(ClientReport self);
+
+/**
+ * \brief get the sub sequence number of the report (for segmented reporting)
+ *
+ * Returns the sub sequence number of the report. This is 0 for the first report of a segmented report and
+ * will be increased by one for each report segment.
+ *
+ * \param self the ClientReport instance
+ *
+ * \return the sub sequence number of the last received report message.
+ */
+LIB61850_API uint16_t
+ClientReport_getSubSeqNum(ClientReport self);
+
+/**
+ * \brief get the more segments follow flag of the received report segment (for segmented reporting)
+ *
+ * Will return true in case this is part of a segmented report and more report segments will follow or false, if
+ * the current report is not a segmented report or is the last segment of a segmented report.
+ *
+ * \param self the ClientReport instance
+ *
+ * \return true when more segments of the current report will follow, false otherwise
+ */
+LIB61850_API bool
+ClientReport_getMoreSeqmentsFollow(ClientReport self);
+
+/**
  * \brief get the reason for inclusion of as a human readable string
  *
  * \param reasonCode
