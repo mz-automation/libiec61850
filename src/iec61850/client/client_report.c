@@ -3,7 +3,7 @@
  *
  *  Client implementation for IEC 61850 reporting.
  *
- *  Copyright 2013, 2014 Michael Zillgith
+ *  Copyright 2013-2018 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -56,11 +56,15 @@ struct sClientReport
     bool hasConfRev;
     bool hasTimestamp;
     bool hasBufOverflow;
+    bool hasSubSequenceNumber;
 
     uint64_t timestamp;
     uint16_t seqNum;
     uint32_t confRev;
     bool bufOverflow;
+
+    uint16_t subSeqNum;
+    bool moreSegementsFollow;
 };
 
 char*
@@ -242,6 +246,24 @@ ClientReport_getDataSetValues(ClientReport self)
     return self->dataSetValues;
 }
 
+bool
+ClientReport_hasSubSeqNum(ClientReport self)
+{
+    return self->hasSubSequenceNumber;
+}
+
+uint16_t
+ClientReport_getSubSeqNum(ClientReport self)
+{
+    return self->subSeqNum;
+}
+
+bool
+ClientReport_getMoreSeqmentsFollow(ClientReport self)
+{
+    return self->moreSegementsFollow;
+}
+
 static ClientReport
 lookupReportHandler(IedConnection self, const char* rcbReference)
 {
@@ -386,6 +408,7 @@ iedConnection_handleReport(IedConnection self, MmsValue* value)
     matchingReport->hasConfRev = false;
     matchingReport->hasDataSetName = false;
     matchingReport->hasBufOverflow = false;
+    matchingReport->hasSubSequenceNumber = false;
 
    if (DEBUG_IED_CLIENT)
         printf("IED_CLIENT: received report with ID %s\n", MmsValue_toString(rptIdValue));
@@ -535,10 +558,43 @@ iedConnection_handleReport(IedConnection self, MmsValue* value)
         inclusionIndex++;
     }
 
+    /* handle segmentation fields (check ReportedOptFlds.segmentation) */
+    if (MmsValue_getBitStringBit(optFlds, 9) == true) {
 
-    /* skip segmentation fields */
-    if (MmsValue_getBitStringBit(optFlds, 9) == true)
-        inclusionIndex += 2;
+        MmsValue* subSeqNum = MmsValue_getElement(value, inclusionIndex);
+        inclusionIndex++;
+
+        if ((subSeqNum == NULL) || (MmsValue_getType(subSeqNum) != MMS_UNSIGNED)) {
+            if (DEBUG_IED_CLIENT)
+                printf("IED_CLIENT: received malformed report (SubSeqNum)\n");
+
+            goto exit_function;
+        }
+        else {
+            matchingReport->subSeqNum = (uint16_t) MmsValue_toUint32(subSeqNum);
+        }
+
+        MmsValue* moreSegmentsFollow = MmsValue_getElement(value, inclusionIndex);
+        inclusionIndex++;
+
+        if ((moreSegmentsFollow == NULL) || (MmsValue_getType(moreSegmentsFollow) != MMS_BOOLEAN)) {
+            if ((subSeqNum == NULL) || (MmsValue_getType(subSeqNum) != MMS_UNSIGNED)) {
+                if (DEBUG_IED_CLIENT)
+                    printf("IED_CLIENT: received malformed report (MoreSegmentsFollow)\n");
+
+                goto exit_function;
+            }
+        }
+        else {
+            matchingReport->moreSegementsFollow = MmsValue_getBoolean(moreSegmentsFollow);
+        }
+
+        matchingReport->hasSequenceNumber = true;
+    }
+    else {
+        matchingReport->subSeqNum = 0;
+        matchingReport->moreSegementsFollow = false;
+    }
 
     MmsValue* inclusion = MmsValue_getElement(value, inclusionIndex);
 

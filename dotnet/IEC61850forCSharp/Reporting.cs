@@ -1,7 +1,7 @@
 /*
  *  Reporting.cs
  *
- *  Copyright 2014 Michael Zillgith
+ *  Copyright 2014-2018 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -147,6 +147,15 @@ namespace IEC61850
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern IntPtr ClientReport_getDataReference(IntPtr self, int elementIndex);
 
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern bool ClientReport_hasSubSeqNum(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern UInt16 ClientReport_getSubSeqNum(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern bool ClientReport_getMoreSeqmentsFollow(IntPtr self);
+
 			private IntPtr self;
 
 			private IntPtr dataSetValues = IntPtr.Zero;
@@ -213,16 +222,55 @@ namespace IEC61850
 				return ClientReport_getBufOvfl(self);
 			}
 
+            /// <summary>
+            /// Indicates if the report contains a sequence number (SeqNum) field
+            /// </summary>
+            /// <returns><c>true</c> if this instance has SeqNum; otherwise, <c>false</c>.</returns>
             public bool HasSeqNum ()
             {
                 return ClientReport_hasSeqNum(self);
             }
 
+            /// <summary>
+            /// Gets the value of the SeqNum field
+            /// </summary>
+            /// <returns>The report sequence number</returns>
             public UInt16 GetSeqNum ()
             {
                 return ClientReport_getSeqNum(self);
             }
 
+            /// <summary>
+            /// Indicates if the report contains a sub sequence number (SubSeqNum) and more segments follow (MoreSegmentsFollow) field
+            /// </summary>
+            /// <returns><c>true</c> if this instance has SubSeqNum and MoreSegmentsFollow; otherwise, <c>false</c>.</returns>
+            public bool HasSubSeqNum()
+            {
+                return ClientReport_hasSubSeqNum(self);
+            }
+
+            /// <summary>
+            /// Gets the sub sequence number (SubSeqNum) value of a segmented report
+            /// </summary>
+            /// <returns>The sub sequence number.</returns>
+            public UInt16 GetSubSeqNum()
+            {
+                return ClientReport_getSubSeqNum(self);
+            }
+
+            /// <summary>
+            /// Gets the more segments follow (MoreSegmentsFollow) flag
+            /// </summary>
+            /// <returns><c>true</c>, if more report segments follow, <c>false</c> otherwise.</returns>
+            public bool GetMoreSegmentsFollow()
+            {
+                return ClientReport_getMoreSeqmentsFollow(self);
+            }
+
+            /// <summary>
+            /// Determines whether this report contains reason for inclusion information
+            /// </summary>
+            /// <returns><c>true</c> if this report contains reason for inclusion information; otherwise, <c>false</c>.</returns>
             public bool HasReasonForInclusion ()
             {
                 return ClientReport_hasReasonForInclusion(self);
