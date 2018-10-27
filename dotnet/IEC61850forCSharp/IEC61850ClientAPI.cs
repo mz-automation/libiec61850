@@ -419,6 +419,18 @@ namespace IEC61850
             IedConnection_getLogicalDeviceVariablesAsync(IntPtr self, out int error, string ldName, string continueAfter, IntPtr result,
                 IedConnection_GetNameListHandler handler, IntPtr parameter);
 
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            private delegate void IedConnection_QueryLogHandler (UInt32 invokeId, IntPtr parameter, int err, IntPtr journalEntries, [MarshalAs(UnmanagedType.I1)] bool moreFollows);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)] 
+            static extern UInt32
+            IedConnection_queryLogByTimeAsync(IntPtr self, out int error, string logReference,
+                UInt64 startTime, UInt64 endTime, IedConnection_QueryLogHandler handler, IntPtr parameter);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)] 
+            static extern UInt32
+            IedConnection_queryLogAfterAsync(IntPtr self, out int error, string logReference,
+                IntPtr entryID, UInt64 timeStamp, IedConnection_QueryLogHandler handler, IntPtr parameter);
 
             /********************
             * FileDirectoryEntry
@@ -1688,6 +1700,105 @@ namespace IEC61850
                 {
                     handle.Free();
                     throw new IedConnectionException("Get logical device variables failed", error);
+                }
+
+                return invokeId;
+            }
+
+
+            public delegate void QueryLogHandler(UInt32 invokeId, object parameter, IedClientError err, List<MmsJournalEntry> journalEntries, bool moreFollows);
+
+            private void nativeQueryLogHandler (UInt32 invokeId, IntPtr parameter, int err, IntPtr journalEntries, 
+                [MarshalAs(UnmanagedType.I1)] bool moreFollows)
+            {
+                GCHandle handle = GCHandle.FromIntPtr(parameter);
+
+                Tuple<QueryLogHandler, object>  callbackInfo = handle.Target as Tuple<QueryLogHandler, object>;
+
+                QueryLogHandler handler = callbackInfo.Item1;
+                object handlerParameter = callbackInfo.Item2;
+
+                handle.Free();
+
+                IedClientError clientError = (IedClientError)err;
+
+                var logResult = WrapNativeLogQueryResult(journalEntries);
+
+                handler(invokeId, handlerParameter, clientError, logResult, moreFollows);
+            }
+
+            /// <summary>
+            /// Queries all log entries of the given time range (asynchronous version)
+            /// </summary>
+            /// <returns>The list of log entries contained in the response</returns>
+            /// <param name="logRef">The object reference of the log (e.g. "simpleIOGenericIO/LLN0$EventLog")</param>
+            /// <param name="startTime">Start time of the time range</param>
+            /// <param name="stopTime">End time of the time range</param>
+            /// <param name="handler">user provided callback function</param>
+            /// <param name="parameter">user provided callback parameter</param>
+            /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
+            public UInt32 QueryLogByTimeAsync(string logRef, ulong startTime, ulong stopTime, QueryLogHandler handler, object parameter)
+            {
+                int error;
+
+                Tuple<QueryLogHandler, object> callbackInfo = Tuple.Create(handler, parameter);
+
+                GCHandle handle = GCHandle.Alloc(callbackInfo);
+
+                UInt32 invokeId = IedConnection_queryLogByTimeAsync(connection, out error, logRef, startTime, stopTime, nativeQueryLogHandler, GCHandle.ToIntPtr(handle));
+
+                if (error != 0)
+                {
+                    handle.Free();
+                    throw new IedConnectionException("QueryLogByTime failed", error);
+                }
+
+                return invokeId;
+            }
+
+            /// <summary>
+            /// Queries all log entries of the given time range (asynchronous version)
+            /// </summary>
+            /// <returns>The list of log entries contained in the response</returns>
+            /// <param name="logRef">The object reference of the log (e.g. "simpleIOGenericIO/LLN0$EventLog")</param>
+            /// <param name="startTime">Start time of the time range</param>
+            /// <param name="stopTime">End time of the time range</param>
+            /// <param name="handler">user provided callback function</param>
+            /// <param name="parameter">user provided callback parameter</param>
+            /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
+            public UInt32 QueryLogByTimeAsync(string logRef, DateTime startTime, DateTime stopTime, QueryLogHandler handler, object parameter)
+            {
+                ulong startTimeMs = LibIEC61850.DateTimeToMsTimestamp (startTime);
+                ulong stopTimeMs = LibIEC61850.DateTimeToMsTimestamp (stopTime);
+
+                return QueryLogByTimeAsync (logRef, startTimeMs, stopTimeMs, handler, parameter);
+            }
+
+            /// <summary>
+            /// Queries all log entries after the entry with the given entryID and timestamp (asynchronous version)
+            /// </summary>
+            /// <returns>The list of log entries contained in the response</returns>
+            /// <param name="logRef">The object reference of the log (e.g. "simpleIOGenericIO/LLN0$EventLog")</param>
+            /// <param name="entryID">EntryID of the last received MmsJournalEntry</param>
+            /// <param name="handler">user provided callback function</param>
+            /// <param name="parameter">user provided callback parameter</param>
+            /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
+            public UInt32 QueryLogAfterAsync(string logRef, byte[] entryID, ulong timestamp, QueryLogHandler handler, object parameter)
+            {
+                int error;
+
+                Tuple<QueryLogHandler, object> callbackInfo = Tuple.Create(handler, parameter);
+
+                GCHandle handle = GCHandle.Alloc(callbackInfo);
+
+                MmsValue entryIdValue = new MmsValue (entryID);
+
+                UInt32 invokeId =  IedConnection_queryLogAfterAsync(connection, out error, logRef, entryIdValue.valueReference, timestamp, nativeQueryLogHandler, GCHandle.ToIntPtr(handle));
+
+                if (error != 0)
+                {
+                    handle.Free();
+                    throw new IedConnectionException("QueryLogAfter failed", error);
                 }
 
                 return invokeId;
