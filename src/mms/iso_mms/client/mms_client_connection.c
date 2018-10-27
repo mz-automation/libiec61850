@@ -931,7 +931,8 @@ handleAsyncResponse(MmsConnection self, ByteBuffer* response, uint32_t bufPos, M
         }
     }
 
-    removeFromOutstandingCalls(self, outstandingCall->invokeId);
+    if (err != MMS_ERROR_SERVICE_TIMEOUT)
+        removeFromOutstandingCalls(self, outstandingCall->invokeId);
 }
 
 static void
