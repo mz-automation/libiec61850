@@ -414,6 +414,12 @@ namespace IEC61850
             IedConnection_getServerDirectoryAsync(IntPtr self, out int error, string continueAfter, IntPtr result,
                 IedConnection_GetNameListHandler handler, IntPtr parameter);
 
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)] 
+            static extern UInt32
+            IedConnection_getLogicalDeviceVariablesAsync(IntPtr self, out int error, string ldName, string continueAfter, IntPtr result,
+                IedConnection_GetNameListHandler handler, IntPtr parameter);
+
+
             /********************
             * FileDirectoryEntry
             *********************/
@@ -518,18 +524,33 @@ namespace IEC61850
 
 			private UInt32 connectTimeout = 10000;
 
-			/// <summary>
-			/// Gets or sets the timeout used for connection attempts.
-			/// </summary>
-			/// <value>The connect timeout in milliseconds</value>
-			public UInt32 ConnectTimeout {
-				get {
-					return connectTimeout;
-				}
-				set {
-					connectTimeout = value;
-				}
-			}
+            /// <summary>
+            /// Gets or sets the timeout used for connection attempts.
+            /// </summary>
+            /// <value>The connect timeout in milliseconds</value>
+            public UInt32 ConnectTimeout
+            {
+                get {
+                    return connectTimeout;
+                }
+                set {
+                    connectTimeout = value;
+                }
+            }
+
+            /// <summary>
+            /// Gets or sets the maximum size if a PDU (has to be set before calling connect!).
+            /// </summary>
+            /// <value>The maximum allowed size of an MMS PDU.</value>
+            public int MaxPduSize
+            {
+                get {
+                    return GetMmsConnection().GetLocalDetail();
+                }
+                set {
+                    GetMmsConnection().SetLocalDetail(value);
+                }
+            }
 
 
 			public MmsConnection GetMmsConnection ()
@@ -1643,6 +1664,30 @@ namespace IEC61850
                 {
                     handle.Free();
                     throw new IedConnectionException("Get server directory failed", error);
+                }
+
+                return invokeId;
+            }
+
+            public UInt32 GetLogicalDeviceVariablesAsync(string ldName, string continueAfter, GetNameListHandler handler, object parameter)
+            {
+                return GetLogicalDeviceVariablesAsync(null, ldName, continueAfter, handler, parameter);
+            }
+
+            public UInt32 GetLogicalDeviceVariablesAsync(List<string> result, string ldName, string continueAfter, GetNameListHandler handler, object parameter)
+            {
+                int error;
+
+                Tuple<GetNameListHandler, object, List<string>> callbackInfo = Tuple.Create(handler, parameter, result);
+
+                GCHandle handle = GCHandle.Alloc(callbackInfo);
+
+                UInt32 invokeId = IedConnection_getLogicalDeviceVariablesAsync(connection, out error, ldName, continueAfter, IntPtr.Zero, nativeGetNameListHandler, GCHandle.ToIntPtr(handle));
+
+                if (error != 0)
+                {
+                    handle.Free();
+                    throw new IedConnectionException("Get logical device variables failed", error);
                 }
 
                 return invokeId;

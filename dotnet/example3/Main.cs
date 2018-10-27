@@ -28,7 +28,7 @@ namespace example3
 
 				con.ConnectTimeout = 10000;
 
-				con.GetMmsConnection().SetLocalDetail(1200);
+                con.MaxPduSize = 1200;
 
                 con.Connect(hostname, 102);
 
