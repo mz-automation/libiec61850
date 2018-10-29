@@ -475,7 +475,11 @@ sendReport(ReportControl* self, bool isIntegrity, bool isGI)
     for (i = 0; i < self->dataSet->elementCount; i++)
         self->inclusionFlags[i] = REPORT_CONTROL_NONE;
 
+    ReportControl_unlockNotify(self);
+
     MmsServerConnection_sendInformationReportVMDSpecific(self->clientConnection, "RPT", reportElements, false);
+
+    ReportControl_lockNotify(self);
 
     /* Increase sequence number */
     self->sqNum++;
@@ -2393,7 +2397,11 @@ sendNextReportEntry(ReportControl* self)
         }
     }
 
+    ReportControl_unlockNotify(self);
+
     MmsServerConnection_sendInformationReportVMDSpecific(self->clientConnection, "RPT", (LinkedList) reportElements, false);
+
+    ReportControl_lockNotify(self);
 
     /* Increase sequence number */
     self->sqNum++;
@@ -2455,12 +2463,13 @@ processEventsForReport(ReportControl* rc, uint64_t currentTimeInMs)
 
                 /* send current events in event buffer before GI report */
                 if (rc->triggered) {
+
+                    rc->triggered = false;
+
                     if (rc->buffered)
                         enqueueReport(rc, false, false, currentTimeInMs);
                     else
                         sendReport(rc, false, false);
-
-                    rc->triggered = false;
                 }
 
                 if (rc->buffered)
