@@ -742,14 +742,19 @@ namespace IEC61850
             /// <summary>
             /// Gets the current owner of the RCB
             /// </summary>
-            /// <returns>The owner information</returns>
+            /// <returns>The owner information, or null when no owner information is available.</returns>
             public byte[] GetOwner()
             {
                 IntPtr mmsValuePtr = ClientReportControlBlock_getOwner(self);
 
-                MmsValue octetStringVal = new MmsValue(mmsValuePtr);
+                if (mmsValuePtr != IntPtr.Zero)
+                {
+                    MmsValue octetStringVal = new MmsValue(mmsValuePtr);
 
-                return octetStringVal.getOctetString();
+                    return octetStringVal.getOctetString();
+                }
+                else
+                    return null;
             }
 		}
 
