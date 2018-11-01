@@ -1,7 +1,7 @@
 /*
  *  goose_publisher.c
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013-2018 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -246,18 +246,18 @@ createGoosePayload(GoosePublisher self, LinkedList dataSetValues, uint8_t* buffe
     /* Step 1 - calculate length fields */
     uint32_t goosePduLength = 0;
 
-    goosePduLength += BerEncoder_determineEncodedStringSize(self->goCBRef);
-
-    goosePduLength += BerEncoder_determineEncodedStringSize(self->dataSetRef);
-
-    if (self->goID != NULL)
-        goosePduLength += BerEncoder_determineEncodedStringSize(self->goID);
-    else
-        goosePduLength += BerEncoder_determineEncodedStringSize(self->goCBRef);
+    goosePduLength += 1 + BerEncoder_determineEncodedStringSize(self->goCBRef);
 
     uint32_t timeAllowedToLive = self->timeAllowedToLive;
 
     goosePduLength += 2 + BerEncoder_UInt32determineEncodedSize(timeAllowedToLive);
+
+    goosePduLength += BerEncoder_determineEncodedStringSize(self->dataSetRef);
+
+    if (self->goID != NULL)
+        goosePduLength += 1 + BerEncoder_determineEncodedStringSize(self->goID);
+    else
+        goosePduLength += 1 + BerEncoder_determineEncodedStringSize(self->goCBRef);
 
     goosePduLength += 2 + 8; /* for T (UTCTIME) */
 
