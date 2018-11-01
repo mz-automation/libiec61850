@@ -162,8 +162,13 @@ ControlObjectClient_create(const char* objectReference, IedConnection connection
 
             ctlVal = MmsVariableSpecification_getNamedVariableRecursive(oper, "ctlVal");
 
-            if (MmsVariableSpecification_getType(ctlVal) == MMS_STRUCTURE)
-                isAPC = true;
+            if (ctlVal == NULL)
+                ctlVal = MmsVariableSpecification_getNamedVariableRecursive(oper, "setMag");
+
+            if (ctlVal) {
+                if (MmsVariableSpecification_getType(ctlVal) == MMS_STRUCTURE)
+                    isAPC = true;
+            }
 
             MmsVariableSpecification* operTm = MmsVariableSpecification_getNamedVariableRecursive(oper, "operTm");
 
@@ -211,20 +216,24 @@ ControlObjectClient_create(const char* objectReference, IedConnection connection
         self->analogValue = NULL;
 
     /* Check for T element type (Binary time -> Ed.1,UTC time -> Ed.2) */
-    if (MmsVariableSpecification_getType(t) == MMS_BINARY_TIME)
-        self->edition = 1;
+    if (t) {
+        if (MmsVariableSpecification_getType(t) == MMS_BINARY_TIME)
+            self->edition = 1;
+        else
+            self->edition = 2;
+    }
     else
-        self->edition = 2;
+        self->edition = 1;
 
     if (DEBUG_IED_CLIENT)
         printf("IED_CLIENT: Detected edition %i control\n", self->edition);
 
     private_IedConnection_addControlClient(connection, self);
 
-    free_varspec:
+free_varspec:
     MmsVariableSpecification_destroy(ctlVarSpec);
 
-    exit_function:
+exit_function:
     return self;
 }
 
