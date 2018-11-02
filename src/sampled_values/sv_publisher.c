@@ -63,6 +63,8 @@ struct sSVPublisher_ASDU {
     uint16_t smpRate;
 
     uint8_t* smpCntBuf;
+    uint8_t* refrTmBuf;
+    uint8_t* smpSynchBuf;
 
     SVPublisher_ASDU _next;
 };
@@ -386,11 +388,13 @@ SVPublisher_ASDU_encodeToBuffer(SVPublisher_ASDU self, uint8_t* buffer, int bufP
     /* RefrTm */
     if (self->hasRefrTm) {
         bufPos = BerEncoder_encodeTL(0x84, 8, buffer, bufPos);
+        self->refrTmBuf = buffer + bufPos;
         bufPos = encodeUtcTime(self->refrTm, buffer, bufPos);
     }
 
     /* SmpSynch */
     bufPos = BerEncoder_encodeTL(0x85, 1, buffer, bufPos);
+    self->smpSynchBuf = buffer + bufPos;
     buffer[bufPos++] = self->smpSynch;
 
     /* SmpRate */
@@ -651,7 +655,8 @@ SVPublisher_ASDU_setSmpCnt(SVPublisher_ASDU self, uint16_t value)
 {
     self->smpCnt = value;
 
-    encodeUInt16FixedSize(self->smpCnt, self->smpCntBuf, 0);
+    if (self->smpCntBuf != NULL)
+        encodeUInt16FixedSize(self->smpCnt, self->smpCntBuf, 0);
 }
 
 void
@@ -665,7 +670,14 @@ SVPublisher_ASDU_increaseSmpCnt(SVPublisher_ASDU self)
 {
     self->smpCnt = ((self->smpCnt + 1) % self->smpCntLimit);
 
-    encodeUInt16FixedSize(self->smpCnt, self->smpCntBuf, 0);
+    if (self->smpCntBuf != NULL)
+        encodeUInt16FixedSize(self->smpCnt, self->smpCntBuf, 0);
+}
+
+void
+SVPublisher_ASDU_enableRefrTm(SVPublisher_ASDU self)
+{
+    self->hasRefrTm = true;
 }
 
 void
@@ -673,6 +685,9 @@ SVPublisher_ASDU_setRefrTm(SVPublisher_ASDU self, uint64_t refrTm)
 {
     self->hasRefrTm = true;
     self->refrTm = refrTm;
+
+    if (self->refrTmBuf != NULL)
+        encodeUtcTime(self->refrTm, self->refrTmBuf, 0);
 }
 
 void
@@ -689,6 +704,12 @@ SVPublisher_ASDU_setSmpRate(SVPublisher_ASDU self, uint16_t smpRate)
     self->smpRate = smpRate;
 }
 
+void
+SVPublisher_ASDU_setSmpSynch(SVPublisher_ASDU self, uint16_t smpSynch)
+{
+    self->smpSynch = smpSynch;
+    *(self->smpSynchBuf) = self->smpSynch;
+}
 
 /*******************************************************************
  * Wrapper functions to support old API (remove in future versions)
