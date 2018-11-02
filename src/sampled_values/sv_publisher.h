@@ -311,7 +311,7 @@ SVPublisher_ASDU_setSmpCntWrap(SVPublisher_ASDU self, uint16_t value);
  *
  * \param[in] self the Sampled Values ASDU instance.
  */
-void
+LIB61850_API void
 SVPublisher_ASDU_enableRefrTm(SVPublisher_ASDU self);
 
 /**
@@ -364,7 +364,7 @@ SVPublisher_ASDU_setSmpRate(SVPublisher_ASDU self, uint16_t smpRate);
  * \param[in] self the Sampled Values ASDU instance.
  * \param[in] smpSynch the clock synchronization state
  */
-void
+LIB61850_API void
 SVPublisher_ASDU_setSmpSynch(SVPublisher_ASDU self, uint16_t smpSynch);
 
 /**@} @}*/
