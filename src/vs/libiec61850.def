@@ -752,3 +752,5 @@ EXPORTS
     ClientReport_hasSubSeqNum
     ClientReport_getSubSeqNum
     ClientReport_getMoreSeqmentsFollow
+    SVPublisher_ASDU_enableRefrTm
+    SVPublisher_ASDU_setSmpSynch
