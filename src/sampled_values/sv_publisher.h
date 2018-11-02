@@ -1,7 +1,7 @@
 /*
  *  sv_publisher.h
  *
- *  Copyright 2016 Michael Zillgith
+ *  Copyright 2016-2018 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -305,6 +305,16 @@ void
 SVPublisher_ASDU_setSmpCntWrap(SVPublisher_ASDU self, uint16_t value);
 
 /**
+ * \brief Enables the transmission of refresh time attribute of the ASDU
+ *
+ * The refresh time is the time when the data in put into the sampled values buffer
+ *
+ * \param[in] self the Sampled Values ASDU instance.
+ */
+void
+SVPublisher_ASDU_enableRefrTm(SVPublisher_ASDU self);
+
+/**
  * \brief Set the refresh time attribute of the ASDU.
  *
  * \param[in] self the Sampled Values ASDU instance.
@@ -318,8 +328,10 @@ SVPublisher_ASDU_setRefrTm(SVPublisher_ASDU self, uint64_t refrTm);
  * The attribute SmpMod shall specify if the sample rate is defined in units of samples per nominal period, samples per second or seconds per sample.
  * If it is missing, the default value is samples per period.
  *
+ * NOTE: Function has to be called before calling \ref SVPublisher_setupComplete
+ *
  * \param[in] self the Sampled Values ASDU instance.
- * \param smpMod one of IEC61850_SV_SMPMOD_PER_NOMINAL_PERIOD, IEC61850_SV_SMPMOD_SAMPLES_PER_SECOND or IEC61850_SV_SMPMOD_SECONDS_PER_SAMPLE
+ * \param[in] smpMod one of IEC61850_SV_SMPMOD_PER_NOMINAL_PERIOD, IEC61850_SV_SMPMOD_SAMPLES_PER_SECOND or IEC61850_SV_SMPMOD_SECONDS_PER_SAMPLE
  */
 void
 SVPublisher_ASDU_setSmpMod(SVPublisher_ASDU self, uint8_t smpMod);
@@ -330,11 +342,30 @@ SVPublisher_ASDU_setSmpMod(SVPublisher_ASDU self, uint8_t smpMod);
  * The attribute SmpRate shall specify the sample rate.
  * The value shall be interpreted depending on the value of the SmpMod attribute.
  *
+ * NOTE: Function has to be called before calling \ref SVPublisher_setupComplete
+ *
  * \param[in] self the Sampled Values ASDU instance.
- * \param smpRate Amount of samples (default per nominal period, see SmpMod).
+ * \param[in] smpRate Amount of samples (default per nominal period, see SmpMod).
  */
 void
 SVPublisher_ASDU_setSmpRate(SVPublisher_ASDU self, uint16_t smpRate);
+
+/**
+ * \brief Set the clock synchronization information
+ *
+ * Default value is not synchronized (0).
+ * Possible values are:
+ * 0 = SV are not synchronized by an external clock signal.
+ * 1 = SV are synchronized by a clock signal from an unspecified local area clock.
+ * 2 = SV are synchronized by a global area clock signal (time traceable).
+ * 5 to 254 = SV are synchronized by a clock signal from a local area clock identified by this value.
+ * 3;4;255 = Reserved values – Do not use.
+ *
+ * \param[in] self the Sampled Values ASDU instance.
+ * \param[in] smpSynch the clock synchronization state
+ */
+void
+SVPublisher_ASDU_setSmpSynch(SVPublisher_ASDU self, uint16_t smpSynch);
 
 /**@} @}*/
 
