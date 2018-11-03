@@ -100,9 +100,10 @@ main(int argc, char** argv)
     IedServerConfig_enableFileService(config, false);
 
     /* disable dynamic data set service */
-    IedServerConfig_enableDynamicDataSetService(config, false);
+    IedServerConfig_enableDynamicDataSetService(config, true);
 
-    IedServerConfig_enableLogService(config, true);
+    /* disable log service */
+    IedServerConfig_enableLogService(config, false);
 
     /* set maximum number of clients */
     IedServerConfig_setMaxMmsConnections(config, 2);

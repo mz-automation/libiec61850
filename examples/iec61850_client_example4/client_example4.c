@@ -67,18 +67,28 @@ int main(int argc, char** argv) {
 
         LinkedList_destroyStatic(newDataSetEntries);
 
-        printf("error: %i\n", error);
 
-        /* read data set */
-        ClientDataSet clientDataSet;
+        if (error == IED_ERROR_OK ) {
 
-        clientDataSet = IedConnection_readDataSetValues(con, &error, "simpleIOGenericIO/LLN0.AnalogueValues", NULL);
+            /* read new data set */
+            ClientDataSet clientDataSet;
 
-        printDataSetValues(ClientDataSet_getValues(clientDataSet));
+            clientDataSet = IedConnection_readDataSetValues(con, &error, "simpleIOGenericIO/LLN0.AnalogueValues", NULL);
 
-        Thread_sleep(1000);
+            if (error == IED_ERROR_OK) {
+                printDataSetValues(ClientDataSet_getValues(clientDataSet));
 
-        IedConnection_deleteDataSet(con, &error, "simpleIOGenericIO/LLN0.AnalogueValues");
+                ClientDataSet_destroy(clientDataSet);
+            }
+            else {
+                printf("Failed to read data set (error code: %d)\n", error);
+            }
+
+            IedConnection_deleteDataSet(con, &error, "simpleIOGenericIO/LLN0.AnalogueValues");
+        }
+        else {
+            printf("Failed to create data set (error code: %d)\n", error);
+        }
 
         IedConnection_close(con);
     }
