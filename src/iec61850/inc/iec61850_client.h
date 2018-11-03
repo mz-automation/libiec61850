@@ -411,8 +411,12 @@ typedef struct sClientSVControlBlock* ClientSVControlBlock;
 /**
  * \brief Create a new ClientSVControlBlock instance
  *
- *  This function simplifies client side access to server MSV/USV control blocks
- *  NOTE: Do not use the functions after the IedConnection object is invalidated!
+ * This function simplifies client side access to server MSV/USV control blocks
+ * NOTE: Do not use the functions after the IedConnection object is invalidated!
+ *
+ * The access functions cause synchronous read/write calls to the server. For asynchronous
+ * access use the \ref IedConnection_readObjectAsync and \ref IedConnection_writeObjectAsync
+ * functions.
  *
  * \param connection the IedConnection object with a valid connection to the server.
  * \param reference the object reference of the control block
@@ -430,6 +434,13 @@ ClientSVControlBlock_create(IedConnection connection, const char* reference);
 LIB61850_API void
 ClientSVControlBlock_destroy(ClientSVControlBlock self);
 
+/**
+ * \brief Test if this SVCB is multicast
+ *
+ * \param self the ClientSVControlBlock instance to operate on
+ *
+ * \return true if multicast SCVB, false otherwise (unicast)
+ */
 LIB61850_API bool
 ClientSVControlBlock_isMulticast(ClientSVControlBlock self);
 
@@ -508,6 +519,8 @@ ClientSVControlBlock_getSmpMod(ClientSVControlBlock self);
  * \brief returns number of ASDUs included in the SV message
  *
  * \param self the ClientSVControlBlock instance to operate on
+ *
+ * \return the number of ASDU included in a single SV message
  */
 LIB61850_API int
 ClientSVControlBlock_getNoASDU(ClientSVControlBlock self);
@@ -718,6 +731,18 @@ IedConnection_readObject(IedConnection self, IedClientError* error, const char* 
 typedef void
 (*IedConnection_ReadObjectHandler) (uint32_t invokeId, void* parameter, IedClientError err, MmsValue* value);
 
+/**
+ * \brief read a functional constrained data attribute (FCDA) or functional constrained data (FCD) - async version
+ *
+ * \param self  the connection object to operate on
+ * \param error the error code if an error occurs
+ * \param object reference of the object/attribute to read
+ * \param fc the functional constraint of the data attribute or data object to read
+ * \param handler the user provided callback handler
+ * \param parameter user provided parameter that is passed to the callback handler
+ *
+ * \return the invoke ID of the request
+ */
 LIB61850_API uint32_t
 IedConnection_readObjectAsync(IedConnection self, IedClientError* error, const char* objRef, FunctionalConstraint fc,
         IedConnection_ReadObjectHandler handler, void* parameter);
@@ -738,10 +763,22 @@ IedConnection_writeObject(IedConnection self, IedClientError* error, const char*
 typedef void
 (*IedConnection_WriteObjectHandler) (uint32_t invokeId, void* parameter, IedClientError err);
 
+/**
+ * \brief write a functional constrained data attribute (FCDA) or functional constrained data (FCD) - async version
+ *
+ * \param self  the connection object to operate on
+ * \param error the error code if an error occurs
+ * \param object reference of the object/attribute to write
+ * \param fc the functional constraint of the data attribute or data object to write
+ * \param value the MmsValue to write (has to be of the correct type - MMS_STRUCTURE for FCD)
+ * \param handler the user provided callback handler
+ * \param parameter user provided parameter that is passed to the callback handler
+ *
+ * \return the invoke ID of the request
+ */
 LIB61850_API uint32_t
 IedConnection_writeObjectAsync(IedConnection self, IedClientError* error, const char* objectReference,
         FunctionalConstraint fc, MmsValue* value, IedConnection_WriteObjectHandler handler, void* parameter);
-
 
 /**
  * \brief read a functional constrained data attribute (FCDA) of type boolean
@@ -1512,7 +1549,7 @@ ClientReportControlBlock_getOwner(ClientReportControlBlock self);
  */
 
 /**
- * \brief get data set values from a server device
+ * \brief get data set values from the server
  *
  * The parameter dataSetReference is the name of the data set to read. It is either in the form LDName/LNodeName.dataSetName
  * for permanent domain or VMD scope data sets or @dataSetName for an association specific data set.
@@ -1530,6 +1567,32 @@ ClientReportControlBlock_getOwner(ClientReportControlBlock self);
  */
 LIB61850_API ClientDataSet
 IedConnection_readDataSetValues(IedConnection self, IedClientError* error, const char* dataSetReference, ClientDataSet dataSet);
+
+typedef void
+(*IedConnection_ReadDataSetHandler) (uint32_t invokeId, void* parameter, IedClientError err, ClientDataSet dataSet);
+
+/**
+ * \brief get data set values from the server - async version
+ *
+ * The parameter dataSetReference is the name of the data set to read. It is either in the form LDName/LNodeName.dataSetName
+ * for permanent domain or VMD scope data sets or @dataSetName for an association specific data set.
+ * If the LDName part of the reference is missing the resulting data set will be of VMD scope.
+ * The received data set values are stored in a container object of type ClientDataSet that can be reused in a further
+ * service request.
+ *
+ * \param connection the connection object
+ * \param error the error code if an error occurs
+ * \param dataSetReference object reference of the data set
+ * \param dataSet a data set instance where to store the retrieved values or NULL if a new instance
+ *        shall be created.
+* \param handler the user provided callback handler
+* \param parameter user provided parameter that is passed to the callback handler
+*
+* \return the invoke ID of the request
+*/
+LIB61850_API uint32_t
+IedConnection_readDataSetValuesAsync(IedConnection self, IedClientError* error, const char* dataSetReference, ClientDataSet dataSet,
+        IedConnection_ReadDataSetHandler handler, void* parameter);
 
 /**
  * \brief create a new data set at the connected server device

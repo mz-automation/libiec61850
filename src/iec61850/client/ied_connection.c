@@ -195,9 +195,6 @@ iedConnection_lookupOutstandingCall(IedConnection self, uint32_t invokeId)
     int i = 0;
 
     for (i = 0; i < OUTSTANDING_CALLS; i++) {
-
-        printf("%d: used: %d invokeId: %d\n", i, self->outstandingCalls[i].used, self->outstandingCalls[i].invokeId);
-
         if ((self->outstandingCalls[i].used) && (self->outstandingCalls[i].invokeId == invokeId)) {
             call = &(self->outstandingCalls[i]);
             break;
@@ -2935,6 +2932,135 @@ IedConnection_readDataSetValues(IedConnection self, IedClientError* error, const
 
 exit_function:
     return dataSet;
+}
+
+static void
+getDataSetHandlerInternal(uint32_t invokeId, void* parameter, MmsError err, MmsValue* value)
+{
+    IedConnection self = (IedConnection) parameter;
+
+    IedConnectionOutstandingCall call = iedConnection_lookupOutstandingCall(self, invokeId);
+
+    if (call) {
+
+        IedConnection_ReadDataSetHandler handler =  (IedConnection_ReadDataSetHandler) call->callback;
+
+        ClientDataSet dataSet = (ClientDataSet) call->specificParameter;
+        char* dataSetReference = (char*) call->specificParameter2;
+
+        if (value != NULL) {
+
+            if (dataSet == NULL) {
+                dataSet = ClientDataSet_create(dataSetReference);
+                ClientDataSet_setDataSetValues(dataSet, value);
+                GLOBAL_FREEMEM(dataSetReference);
+            }
+            else {
+                MmsValue* dataSetValues = ClientDataSet_getValues(dataSet);
+                MmsValue_update(dataSetValues, value);
+                MmsValue_delete(value);
+            }
+        }
+
+        handler(invokeId, call->callbackParameter, iedConnection_mapMmsErrorToIedError(err), dataSet);
+
+        iedConnection_releaseOutstandingCall(self, call);
+    }
+    else {
+        if (DEBUG_IED_CLIENT)
+            printf("IED_CLIENT: internal error - no matching outstanding call!\n");
+    }
+}
+
+uint32_t
+IedConnection_readDataSetValuesAsync(IedConnection self, IedClientError* error, const char* dataSetReference, ClientDataSet dataSet,
+        IedConnection_ReadDataSetHandler handler, void* parameter)
+{
+    char domainIdBuffer[65];
+    char itemIdBuffer[DATA_SET_MAX_NAME_LENGTH + 1];
+
+    const char* domainId = NULL;
+    const char* itemId = NULL;
+
+    *error = IED_ERROR_OK;
+
+    bool isAssociationSpecific = false;
+
+    if (dataSetReference[0] != '@') {
+
+        if ((dataSetReference[0] == '/') || (strchr(dataSetReference, '/') == NULL)) {
+            domainId = NULL;
+
+            if (dataSetReference[0] == '/')
+                itemId = dataSetReference + 1;
+            else
+                itemId = dataSetReference;
+        }
+        else {
+            domainId = MmsMapping_getMmsDomainFromObjectReference(dataSetReference, domainIdBuffer);
+
+            if (domainId == NULL) {
+                *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
+                return 0;
+            }
+
+            const char* itemIdRefOrig = dataSetReference + strlen(domainId) + 1;
+
+            if (strlen(itemIdRefOrig) > DATA_SET_MAX_NAME_LENGTH) {
+                *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
+                return 0;
+            }
+
+            char* itemIdRef = StringUtils_copyStringToBuffer(itemIdRefOrig, itemIdBuffer);
+
+            StringUtils_replace(itemIdRef, '.', '$');
+            itemId = itemIdRef;
+        }
+    }
+    else {
+        itemId = dataSetReference + 1;
+        isAssociationSpecific = true;
+    }
+
+
+    IedConnectionOutstandingCall call = iedConnection_allocateOutstandingCall(self);
+
+    if (call == NULL) {
+        *error = IED_ERROR_OUTSTANDING_CALL_LIMIT_REACHED;
+        return 0;
+    }
+
+    call->callback = handler;
+    call->callbackParameter = parameter;
+    call->specificParameter = dataSet;
+
+    if (dataSet == NULL)
+        call->specificParameter2 = StringUtils_copyString(dataSetReference);
+    else
+        call->specificParameter2 = NULL;
+
+    MmsError err = MMS_ERROR_NONE;
+
+    if (isAssociationSpecific)
+        call->invokeId = MmsConnection_readNamedVariableListValuesAssociationSpecificAsync(self->connection,
+                &err, itemId, true, getDataSetHandlerInternal, self);
+    else
+        call->invokeId = MmsConnection_readNamedVariableListValuesAsync(self->connection, &err,
+                    domainId, itemId, true, getDataSetHandlerInternal, self);
+
+    if ((err != MMS_ERROR_NONE) || (*error != IED_ERROR_OK)) {
+
+        if (err != MMS_ERROR_NONE)
+            *error = iedConnection_mapMmsErrorToIedError(err);
+
+        GLOBAL_FREEMEM(call->specificParameter2);
+
+        iedConnection_releaseOutstandingCall(self, call);
+
+        return 0;
+    }
+
+    return call->invokeId;
 }
 
 void

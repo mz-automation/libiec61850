@@ -13,6 +13,21 @@
 
 #include "hal_thread.h"
 
+static ClientDataSet clientDataSet = NULL;
+
+static void
+readDataSetHandler(uint32_t invokeId, void* parameter, IedClientError err, ClientDataSet dataSet)
+{
+    if (err == IED_ERROR_OK) {
+        clientDataSet = dataSet;
+
+        printf("Data set has %d entries\n", ClientDataSet_getDataSetSize(dataSet));
+    }
+    else {
+        printf("Failed to read data set (err=%i)\n", err);
+    }
+}
+
 void
 reportCallbackFunction(void* parameter, ClientReport report)
 {
@@ -183,6 +198,12 @@ int main(int argc, char** argv) {
             if (error != IED_ERROR_OK) {
                 printf("get variable specification error %i\n", error);
             }
+
+            IedConnection_readDataSetValuesAsync(con, &error, "simpleIOGenericIO/LLN0.Events", NULL, readDataSetHandler, NULL);
+
+            if (error != IED_ERROR_OK) {
+                printf("read data set error %i\n", error);
+            }
         }
 
         Thread_sleep(1000);
@@ -202,6 +223,9 @@ int main(int argc, char** argv) {
     else {
         printf("Failed to connect to %s:%i\n", hostname, tcpPort);
     }
+
+    if (clientDataSet)
+        ClientDataSet_destroy(clientDataSet);
 
     IedConnection_destroy(con);
 }
