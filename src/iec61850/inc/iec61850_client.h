@@ -1585,11 +1585,11 @@ typedef void
  * \param dataSetReference object reference of the data set
  * \param dataSet a data set instance where to store the retrieved values or NULL if a new instance
  *        shall be created.
-* \param handler the user provided callback handler
-* \param parameter user provided parameter that is passed to the callback handler
-*
-* \return the invoke ID of the request
-*/
+ * \param handler the user provided callback handler
+ * \param parameter user provided parameter that is passed to the callback handler
+ *
+ * \return the invoke ID of the request
+ */
 LIB61850_API uint32_t
 IedConnection_readDataSetValuesAsync(IedConnection self, IedClientError* error, const char* dataSetReference, ClientDataSet dataSet,
         IedConnection_ReadDataSetHandler handler, void* parameter);
@@ -1638,9 +1638,9 @@ IedConnection_deleteDataSet(IedConnection self, IedClientError* error, const cha
  * this object references is LDName/LNodeName.item(arrayIndex)component[FC].
  *
  * \param connection the connection object
- * \param error the error code if an error occurs
+ * \param[out] error the error code if an error occurs
  * \param dataSetReference object reference of the data set
- * \param isDeletable this is an output parameter indicating that the requested data set is deletable by clients.
+ * \param[out] isDeletable this is an output parameter indicating that the requested data set is deletable by clients.
  *                    If this information is not required a NULL pointer can be used.
  *
  * \return LinkedList containing the data set elements as char* strings.
@@ -1658,14 +1658,50 @@ IedConnection_getDataSetDirectory(IedConnection self, IedClientError* error, con
  * contains a value for each data set member.
  *
  * \param connection the connection object
- * \param error the error code if an error occurs
+ * \param[out] error the error code if an error occurs
  * \param dataSetReference object reference of the data set
  * \param values the new data set values
- * \param accessResults the access results for each data set member
+ * \param[out] accessResults the access results for each data set member
  */
 LIB61850_API void
 IedConnection_writeDataSetValues(IedConnection self, IedClientError* error, const char* dataSetReference,
         LinkedList/*<MmsValue*>*/ values, /* OUTPUT */LinkedList* /* <MmsValue*> */accessResults);
+
+/**
+ * \brief Callback handler for asynchronous write data set values services (set data set)
+ *
+ * \param invokeId the invoke ID of the service request
+ * \param parameter used provided parameter
+ * \param err the error code if an error occurs
+ * \param accessResults the list of access results for the data set entries.
+ */
+typedef void
+(*IedConnection_WriteDataSetHandler) (uint32_t invokeId, void* parameter, IedClientError err, LinkedList /* <MmsValue*> */accessResults);
+
+/**
+ * \brief Write the data set values to the server - async version
+ *
+ * The parameter dataSetReference is the name of the data set to write. It is either in the form LDName/LNodeName.dataSetName
+ * for permanent domain or VMD scope data sets or @dataSetName for an association specific data set.
+ * If the LDName part of the reference is missing the resulting data set will be of VMD scope.
+ * The values parameter has to be the same number of elements as are members in the data set.
+ *
+ * When the service call had been successful the \ref IedConnection_WriteDataSetHandler is called with an error value of
+ * IED_ERROR_OK and a list of MmsValue instances of type data access error. These describe the access results of the individual
+ * data set entries.
+ *
+ * \param connection the connection object
+ * \param[out] error the error code if an error occurs
+ * \param dataSetReference object reference of the data set
+ * \param values the new data set values
+ * \param handler the user provided callback handler
+ * \param parameter user provided parameter that is passed to the callback handler
+ *
+ * \return the invoke ID of the request
+ */
+LIB61850_API uint32_t
+IedConnection_writeDataSetValuesAsync(IedConnection self, IedClientError* error, const char* dataSetReference,
+        LinkedList/*<MmsValue*>*/ values, IedConnection_WriteDataSetHandler handler, void* parameter);
 
 
 /********************************************************

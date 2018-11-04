@@ -3121,6 +3121,102 @@ exit_function:
     return;
 }
 
+static void
+writeDataSetHandlerInternal(uint32_t invokeId, void* parameter, MmsError err, LinkedList /* <MmsValue*> */ accessResults)
+{
+    IedConnection self = (IedConnection) parameter;
+
+    IedConnectionOutstandingCall call = iedConnection_lookupOutstandingCall(self, invokeId);
+
+    if (call) {
+
+        IedConnection_WriteDataSetHandler handler =  (IedConnection_WriteDataSetHandler) call->callback;
+
+        handler(invokeId, call->callbackParameter, iedConnection_mapMmsErrorToIedError(err), accessResults);
+
+        iedConnection_releaseOutstandingCall(self, call);
+    }
+    else {
+        if (DEBUG_IED_CLIENT)
+            printf("IED_CLIENT: internal error - no matching outstanding call!\n");
+    }
+}
+
+LIB61850_API uint32_t
+IedConnection_writeDataSetValuesAsync(IedConnection self, IedClientError* error, const char* dataSetReference,
+        LinkedList/*<MmsValue*>*/ values, IedConnection_WriteDataSetHandler handler, void* parameter)
+{
+    char domainIdBuffer[65];
+    char itemIdBuffer[DATA_SET_MAX_NAME_LENGTH + 1];
+
+    const char* domainId = NULL;
+    const char* itemId = NULL;
+
+    bool isAssociationSpecific = false;
+
+    if (dataSetReference[0] != '@') {
+
+        if ((dataSetReference[0] == '/') || (strchr(dataSetReference, '/') == NULL)) {
+            domainId = NULL;
+
+            if (dataSetReference[0] == '/')
+                itemId = dataSetReference + 1;
+            else
+                itemId = dataSetReference;
+        }
+        else {
+            domainId = MmsMapping_getMmsDomainFromObjectReference(dataSetReference, domainIdBuffer);
+
+            if (domainId == NULL) {
+                *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
+                return 0;
+            }
+
+            const char* itemIdRefOrig = dataSetReference + strlen(domainId) + 1;
+
+            if (strlen(itemIdRefOrig) > DATA_SET_MAX_NAME_LENGTH) {
+                *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
+                return 0;
+            }
+
+            char* itemIdRef = StringUtils_copyStringToBuffer(itemIdRefOrig, itemIdBuffer);
+
+            StringUtils_replace(itemIdRef, '.', '$');
+            itemId = itemIdRef;
+        }
+    }
+    else {
+        itemId = dataSetReference + 1;
+        isAssociationSpecific = true;
+    }
+
+    IedConnectionOutstandingCall call = iedConnection_allocateOutstandingCall(self);
+
+    if (call == NULL) {
+        *error = IED_ERROR_OUTSTANDING_CALL_LIMIT_REACHED;
+        return 0;
+    }
+
+    call->callback = handler;
+    call->callbackParameter = parameter;
+
+    MmsError err = MMS_ERROR_NONE;
+
+    call->invokeId = MmsConnection_writeNamedVariableListAsync(self->connection, &err, isAssociationSpecific, domainId, itemId, values, writeDataSetHandlerInternal, self);
+
+    if ((err != MMS_ERROR_NONE) || (*error != IED_ERROR_OK)) {
+
+        if (err != MMS_ERROR_NONE)
+            *error = iedConnection_mapMmsErrorToIedError(err);
+
+        iedConnection_releaseOutstandingCall(self, call);
+
+        return 0;
+    }
+
+    return call->invokeId;
+}
+
 LinkedList /* <MmsJournalEntry> */
 IedConnection_queryLogByTime(IedConnection self, IedClientError* error, const char* logReference,
         uint64_t startTime, uint64_t endTime, bool* moreFollows)

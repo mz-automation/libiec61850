@@ -3,7 +3,7 @@
  *
  * Shows how to use the asynchronous client API
  *
- * This example is intended to be used with server_example_basic_io or server_example_goose.
+ * This example is intended to be used with server_example_basic_io.
  */
 
 #include "iec61850_client.h"
@@ -16,19 +16,83 @@
 static ClientDataSet clientDataSet = NULL;
 
 static void
+printValue(char* name, MmsValue* value)
+{
+    char buf[1000];
+
+    MmsValue_printToBuffer(value, buf, 1000);
+
+    printf("%s: %s\n", name, buf);
+}
+
+static void
+readObjectHandler (uint32_t invokeId, void* parameter, IedClientError err, MmsValue* value)
+{
+    if (err == IED_ERROR_OK) {
+        printValue((char*) parameter, value);
+
+        MmsValue_delete(value);
+    }
+    else {
+        printf("Failed to read object %s (err=%i)\n", (char*) parameter, err);
+    }
+}
+
+static void
 readDataSetHandler(uint32_t invokeId, void* parameter, IedClientError err, ClientDataSet dataSet)
 {
     if (err == IED_ERROR_OK) {
         clientDataSet = dataSet;
 
         printf("Data set has %d entries\n", ClientDataSet_getDataSetSize(dataSet));
+
+        MmsValue* values = ClientDataSet_getValues(dataSet);
+
+        if (MmsValue_getType(values) == MMS_ARRAY) {
+            int i;
+            for (i = 0; i < MmsValue_getArraySize(values); i++) {
+                printf("  [%i]", i);
+                printValue("", MmsValue_getElement(values, i));
+            }
+        }
     }
     else {
         printf("Failed to read data set (err=%i)\n", err);
     }
 }
 
-void
+static void
+writeDataSetHandler(uint32_t invokeId, void* parameter, IedClientError err, LinkedList /* <MmsValue*> */accessResults)
+{
+    if (err == IED_ERROR_OK) {
+
+        if (accessResults) {
+
+            int i = 0;
+
+            LinkedList element = LinkedList_getNext(accessResults);
+
+            while (element) {
+                MmsValue* accessResultValue = LinkedList_getData(element);
+
+                printf("  access-result[%i]", i);
+                printValue("", accessResultValue);
+
+
+                element = LinkedList_getNext(element);
+                i++;
+            }
+
+            LinkedList_destroyDeep(accessResults, (LinkedListValueDeleteFunction) MmsValue_delete);
+
+        }
+    }
+    else {
+        printf("Failed to write data set (err=%i)\n", err);
+    }
+}
+
+static void
 reportCallbackFunction(void* parameter, ClientReport report)
 {
     MmsValue* dataSetValues = ClientReport_getDataSetValues(report);
@@ -43,29 +107,6 @@ reportCallbackFunction(void* parameter, ClientReport report)
             printf("  GGIO1.SPCSO%i.stVal: %i (included for reason %i)\n", i,
                     MmsValue_getBoolean(MmsValue_getElement(dataSetValues, i)), reason);
         }
-    }
-}
-
-static void
-printValue(char* name, MmsValue* value)
-{
-    char buf[1000];
-
-    MmsValue_printToBuffer(value, buf, 1000);
-
-    printf("Received value for %s: %s\n", name, buf);
-}
-
-static void
-readObjectHandler (uint32_t invokeId, void* parameter, IedClientError err, MmsValue* value)
-{
-    if (err == IED_ERROR_OK) {
-        printValue((char*) parameter, value);
-
-        MmsValue_delete(value);
-    }
-    else {
-        printf("Failed to read object %s (err=%i)\n", (char*) parameter, err);
     }
 }
 
@@ -204,6 +245,20 @@ int main(int argc, char** argv) {
             if (error != IED_ERROR_OK) {
                 printf("read data set error %i\n", error);
             }
+
+            LinkedList values = LinkedList_create();
+            LinkedList_add(values, MmsValue_newBoolean(true));
+            LinkedList_add(values, MmsValue_newBoolean(false));
+            LinkedList_add(values, MmsValue_newBoolean(true));
+            LinkedList_add(values, MmsValue_newBoolean(false));
+
+            IedConnection_writeDataSetValuesAsync(con, &error, "simpleIOGenericIO/LLN0.Events", values, writeDataSetHandler, NULL);
+
+            if (error != IED_ERROR_OK) {
+                printf("write data set error %i\n", error);
+            }
+
+            LinkedList_destroyDeep(values, (LinkedListValueDeleteFunction) MmsValue_delete);
         }
 
         Thread_sleep(1000);
