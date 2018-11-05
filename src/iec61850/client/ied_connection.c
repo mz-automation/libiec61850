@@ -352,7 +352,7 @@ iedConnection_doesControlObjectMatch(const char* objRef, const char* cntrlObj)
 }
 
 static bool
-doesReportMatchControlObject(char* domainName, char* itemName, char* objectRef)
+doesReportMatchControlObject(char* domainName, char* itemName, const char* objectRef)
 {
     int i = 0;
 
@@ -510,7 +510,7 @@ informationReportHandler(void* parameter, char* domainName,
         while (control != NULL) {
            ControlObjectClient object = (ControlObjectClient) control->data;
 
-           char* objectRef = ControlObjectClient_getObjectReference(object);
+           const char* objectRef = ControlObjectClient_getObjectReference(object);
 
            if (doesReportMatchControlObject(domainName, variableListName, objectRef))
                controlObjectClient_invokeCommandTerminationHandler(object);

@@ -1771,11 +1771,32 @@ ClientDataSet_getDataSetSize(ClientDataSet self);
 typedef struct sControlObjectClient* ControlObjectClient;
 
 typedef enum {
-	CONTROL_MODEL_STATUS_ONLY,
-	CONTROL_MODEL_DIRECT_NORMAL,
-	CONTROL_MODEL_SBO_NORMAL,
-	CONTROL_MODEL_DIRECT_ENHANCED,
-	CONTROL_MODEL_SBO_ENHANCED
+    /**
+     * No support for control functions. Control object only support status information.
+     */
+	CONTROL_MODEL_STATUS_ONLY = 0,
+
+	/**
+	 * Direct control with normal security: Supports Operate, TimeActivatedOperate (optional),
+	 * and Cancel (optional).
+	 */
+	CONTROL_MODEL_DIRECT_NORMAL = 1,
+
+	/**
+	 * Select before operate (SBO) with normal security: Supports Select, Operate, TimeActivatedOperate (optional),
+     * and Cancel (optional).
+	 */
+	CONTROL_MODEL_SBO_NORMAL = 2,
+
+	/**
+	 * Direct control with enhanced security (enhanced security includes the CommandTermination service)
+	 */
+	CONTROL_MODEL_DIRECT_ENHANCED = 3,
+
+	/**
+	 * Select before operate (SBO) with enhanced security (enhanced security includes the CommandTermination service)
+	 */
+	CONTROL_MODEL_SBO_ENHANCED = 4
 } ControlModel;
 
 
@@ -1783,7 +1804,12 @@ typedef enum {
  * \brief Create a new client control object
  *
  * A client control object is used to handle all client side aspects of a controllable
- * data object.
+ * data object. A controllable data object is an instance of a controllable CDC like e.g.
+ * SPC, DPC, APC, ...
+ *
+ * NOTE: This function will synchronously request information about the control object
+ * (like ctlModel) from the server. The function will block until these requests return
+ * or time-out.
  *
  * \param objectReference the reference of the controllable data object
  * \param connection the connection instance where the control object has to be reached
@@ -1793,14 +1819,67 @@ typedef enum {
 LIB61850_API ControlObjectClient
 ControlObjectClient_create(const char* objectReference, IedConnection connection);
 
+/**
+ * \brief Destroy the client control object instance and release all related resources
+ *
+ * \param self the control object instance to use
+ */
 LIB61850_API void
 ControlObjectClient_destroy(ControlObjectClient self);
 
-LIB61850_API char*
+typedef enum
+{
+    CONTROL_ACTION_TYPE_SELECT = 0,
+    CONTROL_ACTION_TYPE_OPERATE = 1,
+    CONTROL_ACTION_TYPE_CANCEL = 2
+} ControlActionType;
+
+
+typedef void
+(*ControlObjectClient_ControlActionHandler) (uint32_t invokeId, void* parameter, IedClientError err, ControlActionType type, bool success);
+
+/**
+ * \brief Get the object reference of the control data object
+ *
+ * \param self the control object instance to use
+ *
+ * \return the object reference (string is valid only as long as the \ref ControlObjectClient instance exists).
+ */
+LIB61850_API const char*
 ControlObjectClient_getObjectReference(ControlObjectClient self);
 
+/**
+ * \brief Get the current control model (local representation) applied to the control object
+ *
+ * \param self the control object instance to use
+ *
+ * \return the current applied control model (\ref ControlModel)
+ */
 LIB61850_API ControlModel
 ControlObjectClient_getControlModel(ControlObjectClient self);
+
+/**
+ * \brief Set the applied control model
+ *
+ * NOTE: This function call will not change the server control model.
+ *
+ * \param self the control object instance to use
+ * \param ctlModel the new control model to apply
+ */
+LIB61850_API void
+ControlObjectClient_setControlModel(ControlObjectClient self, ControlModel ctlModel);
+
+/**
+ * \brief Change the control model of the server.
+ *
+ * NOTE: Not supported by all servers. Information can be found in the PIXIT of the server.
+ * Also sets the applied control model for this client control instance.
+ *
+ * \param self the control object instance to use
+ * \param ctlModel the new control model
+ */
+LIB61850_API void
+ControlObjectClient_changeServerControlModel(ControlObjectClient self, ControlModel ctlModel);
 
 /**
  * \brief Get the type of ctlVal.
@@ -1867,9 +1946,80 @@ ControlObjectClient_selectWithValue(ControlObjectClient self, MmsValue* ctlVal);
 LIB61850_API bool
 ControlObjectClient_cancel(ControlObjectClient self);
 
-LIB61850_API void
-ControlObjectClient_setLastApplError(ControlObjectClient self, LastApplError lastAppIError);
 
+/**
+ * \brief Send an operate command to the server - async version
+ *
+ * \param self the control object instance to use
+ * \param[out] err error code
+ * \param ctlVal the control value (for APC the value may be either AnalogueValue (MMS_STRUCT) or MMS_FLOAT/MMS_INTEGER
+ * \param operTime the time when the command has to be executed (for time activated control). If this value is 0 the command will be executed instantly.
+ * \param handler the user provided callback handler
+ * \param parameter user provided parameter that is passed to the callback handler
+ *
+ * \return the invoke ID of the request
+ */
+LIB61850_API uint32_t
+ControlObjectClient_operateAsync(ControlObjectClient self, IedClientError* err, MmsValue* ctlVal, uint64_t operTime,
+        ControlObjectClient_ControlActionHandler handler, void* parameter);
+
+/**
+ * \brief Send a select command to the server - async version
+ *
+ * The select command is only used for the control model "select-before-operate with normal security"
+ * (CONTROL_MODEL_SBO_NORMAL). The select command has to be sent before the operate command can be used.
+ *
+ * \param self the control object instance to use
+ * \param[out] err error code
+ * \param handler the user provided callback handler
+ * \param parameter user provided parameter that is passed to the callback handler
+ *
+ * \return the invoke ID of the request
+ */
+LIB61850_API uint32_t
+ControlObjectClient_selectAsync(ControlObjectClient self, IedClientError* err, ControlObjectClient_ControlActionHandler handler, void* parameter);
+
+/**
+ * \brief Send a select-with-value command to the server - async version
+ *
+ * The select-with-value command is only used for the control model "select-before-operate with enhanced security"
+ * (CONTROL_MODEL_SBO_ENHANCED). The select-with-value command has to be sent before the operate command can be used.
+ *
+ * \param self the control object instance to use
+ * \param[out] err error code
+ * \param ctlVal the control value (for APC the value may be either AnalogueValue (MMS_STRUCT) or MMS_FLOAT/MMS_INTEGER
+ * \param handler the user provided callback handler
+ * \param parameter user provided parameter that is passed to the callback handler
+ *
+ * \return the invoke ID of the request
+ */
+LIB61850_API uint32_t
+ControlObjectClient_selectWithValueAsync(ControlObjectClient self, IedClientError* err, MmsValue* ctlVal,
+        ControlObjectClient_ControlActionHandler handler, void* parameter);
+
+/**
+ * \brief Send a cancel command to the server - async version
+ *
+ * The cancel command can be used to stop an ongoing operation (when the server and application
+ * support this) and to cancel a former select command.
+ *
+ * \param self the control object instance to use
+ * \param[out] err error code
+ * \param handler the user provided callback handler
+ * \param parameter user provided parameter that is passed to the callback handler
+ *
+ * \return the invoke ID of the request
+ */
+LIB61850_API uint32_t
+ControlObjectClient_cancelAsync(ControlObjectClient self, IedClientError* err, ControlObjectClient_ControlActionHandler handler, void* parameter);
+
+/**
+ * \brief Get the last received control application error
+ *
+ * NOTE: this is the content of the "LastApplError" message received from the server.
+ *
+ * \return the value of the last received application error
+ */
 LIB61850_API LastApplError
 ControlObjectClient_getLastApplError(ControlObjectClient self);
 
@@ -1891,6 +2041,9 @@ ControlObjectClient_setTestMode(ControlObjectClient self, bool value);
  * The origin parameter is used to identify the client/application that sent a control
  * command. It is intended for later analysis.
  *
+ * \param self the ControlObjectClient instance
+ * \param orIdent originator identification can be an arbitrary string
+ * \param orCat originator category (see \ref ORIGINATOR_CATEGORIES)
  */
 LIB61850_API void
 ControlObjectClient_setOrigin(ControlObjectClient self, const char* orIdent, int orCat);
@@ -1909,13 +2062,13 @@ ControlObjectClient_useConstantT(ControlObjectClient self, bool useConstantT);
 /**
  * \deprecated use ControlObjectClient_setInterlockCheck instead
  */
-LIB61850_API void
+LIB61850_API DEPRECATED void
 ControlObjectClient_enableInterlockCheck(ControlObjectClient self);
 
 /**
  * \deprecated use ControlObjectClient_setSynchroCheck instead
  */
-LIB61850_API void
+LIB61850_API DEPRECATED void
 ControlObjectClient_enableSynchroCheck(ControlObjectClient self);
 
 /**
@@ -1944,12 +2097,22 @@ ControlObjectClient_setSynchroCheck(ControlObjectClient self, bool value);
  * To distinguish between a CommandTermination+ and CommandTermination- please use the
  * ControlObjectClient_getLastApplError function.
  *
- * \param self the ControlObjectClient instance
- * \param handler the callback function to be used
- * \param handlerParameter an arbitrary parameter that is passed to the handler
+ * \param parameter the user paramter that is passed to the callback function
+ * \param controlClient the ControlObjectClient instance
  */
 typedef void (*CommandTerminationHandler) (void* parameter, ControlObjectClient controlClient);
 
+/**
+ * \brief Set the command termination callback handler for this control object
+ *
+ * This callback is invoked whenever a CommandTermination+ or CommandTermination- message is received.
+ * To distinguish between a CommandTermination+ and CommandTermination- please use the
+ * ControlObjectClient_getLastApplError function.
+ *
+ * \param self the ControlObjectClient instance
+ * \param handler the callback function to be used
+ * \param handlerParameter a user parameter that is passed to the handler
+ */
 LIB61850_API void
 ControlObjectClient_setCommandTerminationHandler(ControlObjectClient self, CommandTerminationHandler handler,
         void* handlerParameter);

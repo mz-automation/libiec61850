@@ -178,6 +178,12 @@ getServerDirectoryHandler(uint32_t invokeId, void* parameter, IedClientError err
     }
 }
 
+static void
+controlActionHandler(uint32_t invokeId, void* parameter, IedClientError err, ControlActionType type, bool success)
+{
+    printf("control: ID: %d type: %i err: %d success: %i\n", invokeId, type, err, success);
+}
+
 int main(int argc, char** argv) {
 
     char* hostname;
@@ -259,6 +265,28 @@ int main(int argc, char** argv) {
             }
 
             LinkedList_destroyDeep(values, (LinkedListValueDeleteFunction) MmsValue_delete);
+
+            Thread_sleep(1000);
+
+            ControlObjectClient controlClient = ControlObjectClient_create("simpleIOGenericIO/GGIO1.SPCSO1", con);
+
+            if (controlClient != NULL) {
+
+                ControlObjectClient_setOrigin(controlClient, "test1", CONTROL_ORCAT_AUTOMATIC_REMOTE);
+
+                MmsValue* ctlVal = MmsValue_newBoolean(true);
+
+                ControlObjectClient_operateAsync(controlClient, &error, ctlVal, 0, controlActionHandler, NULL);
+
+                if (error != IED_ERROR_OK) {
+                    printf("Failed to send operate %i\n", error);
+                }
+
+            }
+            else {
+                printf("Failed to connect to control object\n");
+            }
+
         }
 
         Thread_sleep(1000);

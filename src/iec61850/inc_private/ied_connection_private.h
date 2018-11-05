@@ -122,6 +122,9 @@ ClientReport_destroy(ClientReport self);
 LIB61850_INTERNAL void
 controlObjectClient_invokeCommandTerminationHandler(ControlObjectClient self);
 
+LIB61850_INTERNAL void
+ControlObjectClient_setLastApplError(ControlObjectClient self, LastApplError lastAppIError);
+
 /* some declarations that are shared with server side ! */
 
 LIB61850_INTERNAL char*
