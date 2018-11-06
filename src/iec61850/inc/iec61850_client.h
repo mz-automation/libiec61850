@@ -71,9 +71,10 @@ typedef struct
 /** Connection state of the IedConnection instance (either idle, connected or closed) */
 typedef enum
 {
-    IED_STATE_IDLE,
+    IED_STATE_CLOSED,
+    IED_STATE_CONNECTING,
     IED_STATE_CONNECTED,
-    IED_STATE_CLOSED
+    IED_STATE_CLOSING
 } IedConnectionState;
 
 /** used to describe the error reason for most client side service functions */
