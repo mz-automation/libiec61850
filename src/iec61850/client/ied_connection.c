@@ -587,7 +587,12 @@ static void
 IedConnection_setState(IedConnection self, IedConnectionState newState)
 {
     Semaphore_wait(self->stateMutex);
+
+    if (self->state != newState)
+        self->connectionStateChangedHandler(self->connectionStateChangedHandlerParameter, self, newState);
+
     self->state = newState;
+
     Semaphore_post(self->stateMutex);
 }
 
@@ -599,7 +604,7 @@ IedConnection_installConnectionClosedHandler(IedConnection self, IedConnectionCl
     self->connectionClosedParameter = parameter;
 }
 
-//TODO remove - not required - replace by mmsConnectionStateChangedHandler
+/* TODO remove - not required - replace by mmsConnectionStateChangedHandler */
 static void
 connectionLostHandler(MmsConnection connection, void* parameter)
 {
@@ -638,6 +643,13 @@ IedConnection_connect(IedConnection self, IedClientError* error, const char* hos
     }
     else
         *error = IED_ERROR_ALREADY_CONNECTED;
+}
+
+void
+IedConnection_installStateChangedHandler(IedConnection self, IedConnectionStateChangedHandler handler, void* parameter)
+{
+    self->connectionStateChangedHandler = handler;
+    self->connectionStateChangedHandlerParameter = parameter;
 }
 
 static void

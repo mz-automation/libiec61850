@@ -58,6 +58,10 @@ struct sIedConnection
 
     IedConnectionClosedHandler connectionCloseHandler;
     void* connectionClosedParameter;
+
+    IedConnectionStateChangedHandler connectionStateChangedHandler;
+    void* connectionStateChangedHandlerParameter;
+
     uint32_t connectionTimeout;
 };
 
