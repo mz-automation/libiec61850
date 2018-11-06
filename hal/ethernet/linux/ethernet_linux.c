@@ -155,7 +155,7 @@ Ethernet_getInterfaceMACAddress(const char* interfaceId, uint8_t* addr)
 
     memset(&buffer, 0x00, sizeof(buffer));
 
-    strcpy(buffer.ifr_name, interfaceId);
+    strncpy(buffer.ifr_name, interfaceId, IFNAMSIZ);
 
     ioctl(sock, SIOCGIFHWADDR, &buffer);
 
