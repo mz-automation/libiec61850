@@ -56,6 +56,9 @@ directChildStrLen(const char* childId)
     while (i < childIdLen) {
         if (*(childId + i) == '$')
             break;
+        if (*(childId + i) == '.')
+            break;
+
         i++;
     }
 

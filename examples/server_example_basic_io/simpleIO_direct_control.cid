@@ -79,6 +79,12 @@
               <OptFields seqNum="true" timeStamp="true" dataSet="true" reasonCode="true" configRef="true" />
               <RptEnabled max="3" />
             </ReportControl>
+
+            <ReportControl name="Events2" indexed="true" confRev="1" datSet="Events2" rptID="Events2" buffered="false" intgPd="1000" bufTime="50">
+              <TrgOps period="true" />
+              <OptFields seqNum="true" timeStamp="true" dataSet="true" reasonCode="true" configRef="true" />
+              <RptEnabled max="3" />
+            </ReportControl>
             
             <ReportControl name="Measurements" indexed="true" confRev="1" datSet="Measurements" rptID="Measurements" buffered="true" intgPd="1000" bufTime="50">
               <TrgOps period="false" />
@@ -192,10 +198,10 @@
       <DO name="AnIn2" type="MV_1_AnIn1" />
       <DO name="AnIn3" type="MV_1_AnIn1" />
       <DO name="AnIn4" type="MV_1_AnIn1" />
-      <DO name="SPCSO1" type="SPC_1_SPCSO1" />
-      <DO name="SPCSO2" type="SPC_2" />
-      <DO name="SPCSO3" type="SPC_2" />
-      <DO name="SPCSO4" type="SPC_2" />
+      <DO name="SPCSO1" type="SPC_1" />
+      <DO name="SPCSO2" type="SPC_1" />
+      <DO name="SPCSO3" type="SPC_1" />
+      <DO name="SPCSO4" type="SPC_1" />
       <DO name="Ind1" type="SPS_1_Proxy" />
       <DO name="Ind2" type="SPS_1_Proxy" />
       <DO name="Ind3" type="SPS_1_Proxy" />
@@ -251,7 +257,7 @@
       <DA name="t" bType="Timestamp" fc="MX" />
     </DOType>
     
-    <DOType id="SPC_1_SPCSO1" cdc="SPC">
+    <DOType id="SPC_1" cdc="SPC">
       <DA name="origin" fc="ST" type="Originator_1" bType="Struct" />
       <DA name="ctlNum" fc="ST" bType="INT8U" />
       <DA name="stVal" bType="BOOLEAN" fc="ST" dchg="true" />
@@ -259,14 +265,6 @@
       <DA name="t" bType="Timestamp" fc="ST" />
       <DA name="ctlModel" type="CtlModels" bType="Enum" fc="CF" />
       <DA name="Oper" type="SPCOperate_1" bType="Struct" fc="CO" />
-    </DOType>
-
-    <DOType id="SPC_2" cdc="SPC">
-      <DA name="stVal" bType="BOOLEAN" fc="ST" dchg="true" />
-      <DA name="q" bType="Quality" fc="ST" qchg="true" />
-      <DA name="Oper" type="SPCOperate_1" bType="Struct" fc="CO" />
-      <DA name="ctlModel" type="CtlModels" bType="Enum" fc="CF" />
-      <DA name="t" bType="Timestamp" fc="ST" />
     </DOType>
     
     <DAType id="AnalogueValue_1">

@@ -2,7 +2,25 @@
 <SCL xmlns="http://www.iec.ch/61850/2003/SCL">
   <Header id="" nameStructure="IEDName">
   </Header>
-
+  <Communication>
+    <SubNetwork name="subnetwork1" type="8-MMS">
+      <Text>Station bus</Text>
+      <BitRate unit="b/s">10</BitRate>
+      <ConnectedAP iedName="simpleIO" apName="accessPoint1">
+        <Address>
+          <P type="IP">0.0.0.0</P>
+          <P type="IP-SUBNET">255.255.255.0</P>
+          <P type="IP-GATEWAY">192.168.2.1</P>
+          <P type="OSI-AP-Title">1,3,9999,33</P>
+          <P type="OSI-AE-Qualifier">33</P>
+          <P type="OSI-PSEL">00000001</P>
+          <P type="OSI-SSEL">0001</P>
+          <P type="OSI-TSEL">0001</P>
+          <P type="MMS-Port">102</P>
+        </Address>
+      </ConnectedAP>
+    </SubNetwork>
+  </Communication>
   <IED name="TEMPLATE">
     <Services>
       <DynAssociation />
@@ -57,6 +75,12 @@
             </ReportControl>
             
             <ReportControl name="EventsIndexed" indexed="true" confRev="1" datSet="Events" rptID="Events2" buffered="false" intgPd="1000" bufTime="50">
+              <TrgOps period="true" />
+              <OptFields seqNum="true" timeStamp="true" dataSet="true" reasonCode="true" configRef="true" />
+              <RptEnabled max="3" />
+            </ReportControl>
+
+            <ReportControl name="Events2" indexed="true" confRev="1" datSet="Events2" rptID="Events2" buffered="false" intgPd="1000" bufTime="50">
               <TrgOps period="true" />
               <OptFields seqNum="true" timeStamp="true" dataSet="true" reasonCode="true" configRef="true" />
               <RptEnabled max="3" />
@@ -174,10 +198,10 @@
       <DO name="AnIn2" type="MV_1_AnIn1" />
       <DO name="AnIn3" type="MV_1_AnIn1" />
       <DO name="AnIn4" type="MV_1_AnIn1" />
-      <DO name="SPCSO1" type="SPC_1_SPCSO1" />
-      <DO name="SPCSO2" type="SPC_2" />
-      <DO name="SPCSO3" type="SPC_2" />
-      <DO name="SPCSO4" type="SPC_2" />
+      <DO name="SPCSO1" type="SPC_1" />
+      <DO name="SPCSO2" type="SPC_1" />
+      <DO name="SPCSO3" type="SPC_1" />
+      <DO name="SPCSO4" type="SPC_1" />
       <DO name="Ind1" type="SPS_1_Proxy" />
       <DO name="Ind2" type="SPS_1_Proxy" />
       <DO name="Ind3" type="SPS_1_Proxy" />
@@ -233,7 +257,7 @@
       <DA name="t" bType="Timestamp" fc="MX" />
     </DOType>
     
-    <DOType id="SPC_1_SPCSO1" cdc="SPC">
+    <DOType id="SPC_1" cdc="SPC">
       <DA name="origin" fc="ST" type="Originator_1" bType="Struct" />
       <DA name="ctlNum" fc="ST" bType="INT8U" />
       <DA name="stVal" bType="BOOLEAN" fc="ST" dchg="true" />
@@ -241,14 +265,6 @@
       <DA name="t" bType="Timestamp" fc="ST" />
       <DA name="ctlModel" type="CtlModels" bType="Enum" fc="CF" />
       <DA name="Oper" type="SPCOperate_1" bType="Struct" fc="CO" />
-    </DOType>
-
-    <DOType id="SPC_2" cdc="SPC">
-      <DA name="stVal" bType="BOOLEAN" fc="ST" dchg="true" />
-      <DA name="q" bType="Quality" fc="ST" qchg="true" />
-      <DA name="Oper" type="SPCOperate_1" bType="Struct" fc="CO" />
-      <DA name="ctlModel" type="CtlModels" bType="Enum" fc="CF" />
-      <DA name="t" bType="Timestamp" fc="ST" />
     </DOType>
     
     <DAType id="AnalogueValue_1">
