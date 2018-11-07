@@ -605,23 +605,15 @@ ControlObjectClient_select(ControlObjectClient self)
         goto exit_function;
     }
 
-    char sboReference[130];
-
-    snprintf(sboReference, 129, "%s/%s", domainId, itemId);
-
     if (MmsValue_getType(value) == MMS_VISIBLE_STRING) {
         if (strcmp(MmsValue_toString(value), "") == 0) {
             if (DEBUG_IED_CLIENT)
                 printf("select-response-\n");
         }
-        else if (strcmp(MmsValue_toString(value), sboReference) == 0) {
+        else {
             if (DEBUG_IED_CLIENT)
                 printf("select-response+: (%s)\n", MmsValue_toString(value));
             selected = true;
-        }
-        else {
-            if (DEBUG_IED_CLIENT)
-                printf("IED_CLIENT: select-response: (%s)\n", MmsValue_toString(value));
         }
     }
     else {
