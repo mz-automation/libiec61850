@@ -246,7 +246,7 @@ createGoosePayload(GoosePublisher self, LinkedList dataSetValues, uint8_t* buffe
     /* Step 1 - calculate length fields */
     uint32_t goosePduLength = 0;
 
-    goosePduLength += 1 + BerEncoder_determineEncodedStringSize(self->goCBRef);
+    goosePduLength += BerEncoder_determineEncodedStringSize(self->goCBRef);
 
     uint32_t timeAllowedToLive = self->timeAllowedToLive;
 
@@ -255,9 +255,9 @@ createGoosePayload(GoosePublisher self, LinkedList dataSetValues, uint8_t* buffe
     goosePduLength += BerEncoder_determineEncodedStringSize(self->dataSetRef);
 
     if (self->goID != NULL)
-        goosePduLength += 1 + BerEncoder_determineEncodedStringSize(self->goID);
+        goosePduLength += BerEncoder_determineEncodedStringSize(self->goID);
     else
-        goosePduLength += 1 + BerEncoder_determineEncodedStringSize(self->goCBRef);
+        goosePduLength += BerEncoder_determineEncodedStringSize(self->goCBRef);
 
     goosePduLength += 2 + 8; /* for T (UTCTIME) */
 
@@ -289,7 +289,9 @@ createGoosePayload(GoosePublisher self, LinkedList dataSetValues, uint8_t* buffe
 
     goosePduLength += allDataSize;
 
-    if (goosePduLength > maxPayloadSize)
+    uint32_t payloadSize = 1 + BerEncoder_determineLengthSize(goosePduLength) + goosePduLength;
+
+    if (payloadSize > maxPayloadSize)
         return -1;
 
     /* Step 2 - encode to buffer */
