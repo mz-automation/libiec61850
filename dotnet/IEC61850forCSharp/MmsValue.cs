@@ -186,8 +186,7 @@ namespace IEC61850
 
 			private bool responsableForDeletion; /* if .NET wrapper is responsable for the deletion of the native MmsValue instance */
 
-			// TODO make internal
-			public MmsValue (IntPtr value)
+			internal MmsValue (IntPtr value)
 			{
 				valueReference = value;
 				this.responsableForDeletion = false;
@@ -939,9 +938,31 @@ namespace IEC61850
 
 						return retString;
 					}
+                case MmsType.MMS_ARRAY:
+                    {
+                        string retString = "[";
+
+                        bool first = true;
+
+                        foreach (MmsValue element in this) {
+                            if (first) {
+                                retString += element.ToString ();
+
+                                first = false;
+                            } else {
+                                retString += ", " + element.ToString ();
+                            }
+                        }
+
+                        retString += "]";
+
+                        return retString;
+                    }
+                case MmsType.MMS_DATA_ACCESS_ERROR:
+                    return "error: " + GetDataAccessError().ToString();
 
 				default:
-					return "unknown";
+                    return "unknown (type:" + GetType().ToString() + ")";
 				}
 			}
 
