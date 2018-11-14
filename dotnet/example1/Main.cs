@@ -69,6 +69,17 @@ namespace example1
 
                 Console.WriteLine("Read data set " + dataSet.GetReference());
 
+                /* read multiple variables (WARNING: this is not IEC 61850 standard compliant but might
+                 * be supported by most servers).
+                 */
+                MmsConnection mmsConnection = con.GetMmsConnection();
+
+                MmsValue result = mmsConnection.ReadMultipleVariables("simpleIOGenericIO", new List<string>() {
+                    "GGIO1$ST$Ind1", "GGIO1$ST$Ind1", "GGIO1$ST$Ind1","GGIO1$ST$Ind1"
+                });
+
+                Console.WriteLine(result.ToString());
+
                 con.Abort();
             }
             catch (IedConnectionException e)

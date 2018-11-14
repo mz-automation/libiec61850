@@ -48,6 +48,9 @@ namespace IEC61850
 			public string revision;
 		}
 
+        /// <summary>
+        /// Represents an MmsConnection object (a single connection to an MMS server)
+        /// </summary>
 		public class MmsConnection 
 		{
 
@@ -68,6 +71,25 @@ namespace IEC61850
 
 			[DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
 			private static extern Int32 MmsConnection_getLocalDetail (IntPtr self);
+
+            [DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
+            private static extern IntPtr MmsConnection_readMultipleVariables(IntPtr self, out int mmsError,
+                                                                             string domainId, IntPtr items);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            private static extern void MmsValue_delete (IntPtr self);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            private delegate void LinkedListValueDeleteFunction(IntPtr pointer);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            private static extern void LinkedList_destroyDeep(IntPtr list, LinkedListValueDeleteFunction valueDeleteFunction);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            private static extern IntPtr LinkedList_create ();
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            private static extern void LinkedList_add (IntPtr self, IntPtr data);
 
 
 			private IntPtr self = IntPtr.Zero;
@@ -90,6 +112,15 @@ namespace IEC61850
                    		MmsConnection_destroy(self);
             }
 
+            private void FreeHGlobaleDeleteFunction (IntPtr pointer)
+            {
+                Marshal.FreeHGlobal(pointer);
+            }
+
+            /// <summary>
+            /// Requests the server identity information
+            /// </summary>
+            /// <returns>The server identity.</returns>
 			public MmsServerIdentity GetServerIdentity ()
 			{
 				int mmsError;
@@ -100,6 +131,12 @@ namespace IEC61850
 
 				IntPtr identity = MmsConnection_identify(self, out mmsError);
 
+                if (mmsError != 0)
+                    throw new IedConnectionException("Failed to read server identity", mmsError);
+
+                if (identity == IntPtr.Zero)
+                    throw new IedConnectionException("Failed to read server identity");
+
 				MmsServerIdentity serverIdentity = (MmsServerIdentity) 
 					Marshal.PtrToStructure(identity, typeof(MmsServerIdentity));
 
@@ -108,14 +145,54 @@ namespace IEC61850
 				return serverIdentity;
 			}
 
+            /// <summary>
+            /// Sets the local detail (maximum MMS PDU size)
+            /// </summary>
+            /// <param name="localDetail">maximum accepted MMS PDU size in bytes</param>
 			public void SetLocalDetail(int localDetail) {
 				MmsConnection_setLocalDetail (self, localDetail);
 			}
 
+            /// <summary>
+            /// Gets the local detail (maximum MMS PDU size)
+            /// </summary>
+            /// <returns>maximum accepted MMS PDU size in bytes</returns>
 			public int GetLocalDetail() {
 				return MmsConnection_getLocalDetail (self);
 			}
 
+            /// <summary>
+            /// Reads multipe MMS variables from the same domain
+            /// </summary>
+            /// <returns>MmsValue of type MMS_ARRAY containing the access results for the requested variables.</returns>
+            /// <param name="domainName">the domain name (logical device)</param>
+            /// <param name="variables">list of variable names (in MMS notation e.g. "GGIO$ST$Ind1")</param>
+            public MmsValue ReadMultipleVariables(string domainName, List<string> variables)
+            {
+                IntPtr linkedList = LinkedList_create ();
+
+                foreach (string variableName in variables) {
+                    IntPtr handle = System.Runtime.InteropServices.Marshal.StringToHGlobalAnsi (variableName);
+
+                    LinkedList_add (linkedList, handle);
+                }
+
+                int error;
+
+                IntPtr mmsValue = MmsConnection_readMultipleVariables(self, out error, domainName, linkedList);
+               
+                LinkedList_destroyDeep(linkedList, new LinkedListValueDeleteFunction(FreeHGlobaleDeleteFunction));
+
+                if (error != 0)
+                {
+                    if (mmsValue != IntPtr.Zero)
+                        MmsValue_delete(mmsValue);
+
+                    throw new IedConnectionException("ReadMultipleVariables failed", error);
+                }
+
+                return new MmsValue(mmsValue, true);
+            }
 		}
 
 
