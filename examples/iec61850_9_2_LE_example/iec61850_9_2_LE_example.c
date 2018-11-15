@@ -27,6 +27,7 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>
+#define _USE_MATH_DEFINES
 #include <math.h>
 
 /* Include the generated header with the model access handles */
