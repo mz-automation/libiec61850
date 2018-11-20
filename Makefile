@@ -89,10 +89,10 @@ LIB_API_HEADER_FILES = hal/inc/hal_time.h
 LIB_API_HEADER_FILES += hal/inc/hal_thread.h
 LIB_API_HEADER_FILES += hal/inc/hal_filesystem.h
 LIB_API_HEADER_FILES += hal/inc/tls_config.h
+LIB_API_HEADER_FILES += hal/inc/lib_memory.h
 LIB_API_HEADER_FILES += src/common/inc/libiec61850_common_api.h
 LIB_API_HEADER_FILES += src/common/inc/linked_list.h
 LIB_API_HEADER_FILES += src/common/inc/byte_buffer.h
-LIB_API_HEADER_FILES += src/common/inc/lib_memory.h
 LIB_API_HEADER_FILES += src/iec61850/inc/iec61850_client.h
 LIB_API_HEADER_FILES += src/iec61850/inc/iec61850_common.h
 LIB_API_HEADER_FILES += src/iec61850/inc/iec61850_server.h
@@ -128,20 +128,20 @@ LIB_SOURCES = $(call get_sources,$(LIB_SOURCE_DIRS))
 LIB_OBJS = $(call src_to,.o,$(LIB_SOURCES))
 
 CFLAGS += -std=gnu99
-#CFLAGS += -Wno-error=format 
+#CFLAGS += -Wno-error=format
 CFLAGS += -Wstrict-prototypes
 
 ifneq ($(HAL_IMPL), WIN32)
-CFLAGS += -Wuninitialized 
+CFLAGS += -Wuninitialized
 endif
 
-CFLAGS += -Wsign-compare 
-CFLAGS += -Wpointer-arith 
-CFLAGS += -Wnested-externs 
-CFLAGS += -Wmissing-declarations 
+CFLAGS += -Wsign-compare
+CFLAGS += -Wpointer-arith
+CFLAGS += -Wnested-externs
+CFLAGS += -Wmissing-declarations
 CFLAGS += -Wshadow
 CFLAGS += -Wall
-#CFLAGS += -Werror  
+#CFLAGS += -Werror
 
 all:	lib
 
