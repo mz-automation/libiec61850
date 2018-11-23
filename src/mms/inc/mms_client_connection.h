@@ -428,7 +428,7 @@ MmsConnection_getDomainVariableListNames(MmsConnection self, MmsError* mmsError,
 
 LIB61850_API uint32_t
 MmsConnection_getDomainVariableListNamesAsync(MmsConnection self, MmsError* mmsError, const char* domainId,
-        const char* continueAfter, MmsConnection_GetNameListHandler handler, void* parameter);
+        const char* continueAfter, LinkedList result, MmsConnection_GetNameListHandler handler, void* parameter);
 
 /**
  * \brief Get the names of all journals present in a MMS domain of the server

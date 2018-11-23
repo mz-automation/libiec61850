@@ -161,15 +161,20 @@ getServerDirectoryHandler(uint32_t invokeId, void* parameter, IedClientError err
     else {
         LinkedList element = LinkedList_getNext(nameList);
 
+        /* Call logical device variables for each logical node */
         while (element) {
 
             char* ldName = (char*) LinkedList_getData(element);
 
-            printf("LD: %s\n", ldName);
-
             IedClientError cerr;
 
+            printf("LD: %s variables:\n", ldName);
+
             IedConnection_getLogicalDeviceVariablesAsync(con, &cerr, ldName, NULL, NULL, getNameListHandler, strdup(ldName));
+
+            printf("LD: %s data sets:\n", ldName);
+
+            IedConnection_getLogicalDeviceDataSetsAsync(con, &err, ldName, NULL, NULL, getNameListHandler, strdup(ldName));
 
             element = LinkedList_getNext(element);
         }

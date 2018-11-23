@@ -2148,6 +2148,9 @@ IedConnection_getDeviceModelFromServer(IedConnection self, IedClientError* error
  *
  * This function is mapped to the GetServerDirectory(LD) ACSI service.
  *
+ * NOTE: This function will call \ref IedConnection_getDeviceModelFromServer if no buffered data model
+ * information is available. Otherwise it will use the buffered information.
+ *
  * \param self the connection object
  * \param error the error code if an error occurs
  *
@@ -2161,6 +2164,10 @@ IedConnection_getLogicalDeviceList(IedConnection self, IedClientError* error);
  *
  * GetServerDirectory ACSI service implementation. This function will either return the list of
  * logical devices (LD) present at the server or the list of available files.
+ *
+ * NOTE: When getFIleNames is false zhis function will call
+ * \ref IedConnection_getDeviceModelFromServer if no buffered data model
+ * information is available. Otherwise it will use the buffered information.
  *
  * \param self the connection object
  * \param error the error code if an error occurs
@@ -2176,6 +2183,9 @@ IedConnection_getServerDirectory(IedConnection self, IedClientError* error, bool
  *
  * GetLogicalDeviceDirectory ACSI service implementation. Returns the list of logical nodes names present
  * in a logical device. The list is returned as a linked list of type LinkedList with c style string elements.
+ *
+ * NOTE: This function will call \ref IedConnection_getDeviceModelFromServer if no buffered data model
+ * information is available. Otherwise it will use the buffered information.
  *
  * \param self the connection object
  * \param error the error code if an error occurs
@@ -2206,12 +2216,14 @@ typedef enum {
  * This function cannot be mapped to any ACSI service. It is a convenience function for generic clients that
  * wants to show a list of all available children of the MMS named variable representing the logical node.
  *
+ * NOTE: This function will call \ref IedConnection_getDeviceModelFromServer if no buffered data model
+ * information is available. Otherwise it will use the buffered information.
+ *
  * \param self the connection object
  * \param error the error code if an error occurs
  * \param logicalNodeReference string that represents the LN reference
  *
  * \return the list of all MMS named variables as C strings in a LinkedList type
- *
  */
 LIB61850_API LinkedList /*<char*>*/
 IedConnection_getLogicalNodeVariables(IedConnection self, IedClientError* error,
@@ -2222,7 +2234,8 @@ IedConnection_getLogicalNodeVariables(IedConnection self, IedClientError* error,
  *
  * Implementation of the GetLogicalNodeDirectory ACSI service. In contrast to the ACSI description this
  * function does not always creates a request to the server. For most ACSI classes it simply accesses the
- * data model that was retrieved before. An exception to this rule are the ACSI classes ACSI_CLASS_DATASET and
+ * data model that was retrieved before or calls \ref IedConnection_getDeviceModelFromServer if no buffered data model
+ * information is available. An exception to this rule are the ACSI classes ACSI_CLASS_DATASET and
  * ACSI_CLASS_LOG. Both always perform a request to the server.
  *
  * \param self the connection object
@@ -2231,7 +2244,6 @@ IedConnection_getLogicalNodeVariables(IedConnection self, IedClientError* error,
  * \param acsiClass specifies the ACSI class
  *
  * \return list of all logical node elements of the specified ACSI class type as C strings in a LinkedList
- *
  */
 LIB61850_API LinkedList /*<char*>*/
 IedConnection_getLogicalNodeDirectory(IedConnection self, IedClientError* error,
@@ -2243,12 +2255,14 @@ IedConnection_getLogicalNodeDirectory(IedConnection self, IedClientError* error,
  * Implementation of the GetDataDirectory ACSI service. This will return the list of
  * all data attributes or sub data objects.
  *
+ * NOTE: This function will call \ref IedConnection_getDeviceModelFromServer if no buffered data model
+ * information is available. Otherwise it will use the buffered information.
+ *
  * \param self the connection object
  * \param error the error code if an error occurs
  * \param dataReference string that represents the DO reference
  *
  * \return list of all data attributes or sub data objects as C strings in a LinkedList
- *
  */
 LIB61850_API LinkedList /*<char*>*/
 IedConnection_getDataDirectory(IedConnection self, IedClientError* error, const char* dataReference);
@@ -2260,12 +2274,14 @@ IedConnection_getDataDirectory(IedConnection self, IedClientError* error, const 
  * C strings with all data attributes or sub data objects as elements. The returned
  * strings will contain the functional constraint appended in square brackets when appropriate.
  *
+ * NOTE: This function will call \ref IedConnection_getDeviceModelFromServer if no buffered data model
+ * information is available. Otherwise it will use the buffered information.
+ *
  * \param self the connection object
  * \param error the error code if an error occurs
  * \param dataReference string that represents the DO reference
  *
  * \return list of all data attributes or sub data objects as C strings in a LinkedList
- *
  */
 LIB61850_API LinkedList /*<char*>*/
 IedConnection_getDataDirectoryFC(IedConnection self, IedClientError* error, const char* dataReference);
@@ -2276,6 +2292,9 @@ IedConnection_getDataDirectoryFC(IedConnection self, IedClientError* error, cons
  * Implementation of the GetDataDirectory ACSI service. This will return the list of
  * C strings with all data attributes or sub data objects as elements.
  *
+ * NOTE: This function will call \ref IedConnection_getDeviceModelFromServer if no buffered data model
+ * information is available. Otherwise it will use the buffered information.
+ *
  * WARNING: Starting with version 1.0.3 the functional constraint will no longer be appended to
  * the name string.
  *
@@ -2285,7 +2304,6 @@ IedConnection_getDataDirectoryFC(IedConnection self, IedClientError* error, cons
  * \param fc the functional constraint
  *
  * \return list of all data attributes or sub data objects as C strings in a LinkedList
- *
  */
 LIB61850_API LinkedList
 IedConnection_getDataDirectoryByFC(IedConnection self, IedClientError* error, const char* dataReference, FunctionalConstraint fc);
@@ -2304,11 +2322,40 @@ IedConnection_getDataDirectoryByFC(IedConnection self, IedClientError* error, co
  * \param fc functional constraint of the DA
  *
  * \return MmsVariableSpecification of the data attribute.
- *
  */
 LIB61850_API MmsVariableSpecification*
 IedConnection_getVariableSpecification(IedConnection self, IedClientError* error, const char* dataAttributeReference,
         FunctionalConstraint fc);
+
+/**
+ * \brief Get all variables of the logical device
+ *
+ * NOTE: This function will return all MMS variables of the logical device (MMS domain). The result will be in the
+ * MMS notation (like "GGIO1$ST$Ind1$stVal") and also contain the variables of control blocks.
+ *
+ * \param[in] self the connection object
+ * \param[out] error the error code if an error occurs
+ * \param[in] ldName the logical device name
+ *
+ * \return a \ref LinkedList with the MMS variable names as string. Has to be released by the caller
+ */
+LIB61850_API LinkedList
+IedConnection_getLogicalDeviceVariables(IedConnection self, IedClientError* error, const char* ldName);
+
+/**
+ * \brief Get the data set names of the logical device
+ *
+ * NOTE: This function will return all data set names (MMS named variable lists) of the logical device (MMS domain). The result will be in the
+ * MMS notation (like "LLN0$dataset1").
+ *
+ * \param[in] self the connection object
+ * \param[out] error the error code if an error occurs
+ * \param[in] ldName the logical device name
+ *
+ * \return a \ref LinkedList with data set names as string. Has to be released by the caller.
+ */
+LIB61850_API LinkedList
+IedConnection_getLogicalDeviceDataSets(IedConnection self, IedClientError* error, const char* ldName);
 
 /*****************************************
  * Asynchronous model discovery functions
@@ -2336,6 +2383,9 @@ IedConnection_getServerDirectoryAsync(IedConnection self, IedClientError* error,
 /**
  * \brief Get the variables in the logical device - asynchronous version
  *
+ * NOTE: This function will return all MMS variables of the logical device (MMS domain). The result will be in the
+ * MMS notation (like "GGIO1$ST$Ind1$stVal") and also contain the variables of control blocks.
+ *
  * \param[in] self the connection object
  * \param[out] error the error code if an error occurs
  * \param[in] ldName the logical device name
@@ -2348,6 +2398,26 @@ IedConnection_getServerDirectoryAsync(IedConnection self, IedClientError* error,
  */
 LIB61850_API uint32_t
 IedConnection_getLogicalDeviceVariablesAsync(IedConnection self, IedClientError* error, const char* ldName, const char* continueAfter, LinkedList result,
+        IedConnection_GetNameListHandler handler, void* parameter);
+
+/**
+ * \brief Get the data set names in the logical device - asynchronous version
+ *
+ * NOTE: This function will return all data set names (MMS named variable lists) of the logical device (MMS domain). The result will be in the
+ * MMS notation (like "LLN0$dataset1").
+ *
+ * \param[in] self the connection object
+ * \param[out] error the error code if an error occurs
+ * \param[in] ldName the logical device name
+ * \param[in] continueAfter the name of the last received element when the call is a continuation, or NULL for the first call
+ * \param[in] result list to store (append) the response names, or NULL to create a new list for the response names
+ * \param[in] handler will be called when response is received or timed out.
+ * \param[in] parameter
+ *
+ * \return the invoke ID of the request
+ */
+LIB61850_API uint32_t
+IedConnection_getLogicalDeviceDataSetsAsync(IedConnection self, IedClientError* error, const char* ldName, const char* continueAfter, LinkedList result,
         IedConnection_GetNameListHandler handler, void* parameter);
 
 

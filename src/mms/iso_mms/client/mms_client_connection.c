@@ -1994,10 +1994,10 @@ MmsConnection_getDomainVariableListNames(MmsConnection self, MmsError* mmsError,
 
 uint32_t
 MmsConnection_getDomainVariableListNamesAsync(MmsConnection self, MmsError* mmsError, const char* domainId,
-        const char* continueAfter, MmsConnection_GetNameListHandler handler, void* parameter)
+        const char* continueAfter, LinkedList result, MmsConnection_GetNameListHandler handler, void* parameter)
 {
     return mmsClient_getNameListSingleRequestAsync(self, mmsError, domainId, MMS_OBJECT_CLASS_NAMED_VARIABLE_LIST, false,
-            continueAfter, handler, parameter, NULL);
+            continueAfter, handler, parameter, result);
 }
 
 LinkedList /* <char*> */
