@@ -1,7 +1,7 @@
 /*
  *  DataSet.cs
  *
- *  Copyright 2014 Michael Zillgith
+ *  Copyright 2014-2018 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -34,7 +34,7 @@ namespace IEC61850
         /// This class is used to represent a data set. It is used to store the values
         /// of a data set.
         /// </summary>
-		public class DataSet
+        public class DataSet : IDisposable
 		{
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern void ClientDataSet_destroy (IntPtr self);
@@ -91,7 +91,7 @@ namespace IEC61850
 					values = new MmsValue (nativeValues, false);
 				}
 
-				return values;
+                return values.Clone();
 			}
 
 
@@ -105,6 +105,16 @@ namespace IEC61850
 			{
 				return ClientDataSet_getDataSetSize (nativeObject);
 			}
+
+            public void Dispose()
+            {
+                lock (this) {
+                    if (nativeObject != IntPtr.Zero) {
+                        ClientDataSet_destroy (nativeObject);
+                        nativeObject = IntPtr.Zero;
+                    }
+                }
+            }
 
 			~DataSet ()
 			{

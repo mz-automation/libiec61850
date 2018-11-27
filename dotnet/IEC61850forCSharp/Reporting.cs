@@ -293,7 +293,7 @@ namespace IEC61850
 					values = new MmsValue(dataSetValues);
 				}
 
-				return values;
+                return values.Clone();
 			}
 
             /// <summary>
