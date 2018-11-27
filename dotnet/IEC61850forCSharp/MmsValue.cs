@@ -36,7 +36,7 @@ namespace IEC61850
         /// <summary>
         /// This class is used to hold MMS data values of different types.
         /// </summary>
-		public class MmsValue : IEnumerable
+        public class MmsValue : IEnumerable, IDisposable
 		{
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern IntPtr MmsValue_toString (IntPtr self);
@@ -182,6 +182,9 @@ namespace IEC61850
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern IntPtr MmsVariableSpecification_getChildValue(IntPtr self, IntPtr value, string childId);
 
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr MmsValue_clone(IntPtr self);
+
 			internal IntPtr valueReference; /* reference to native MmsValue instance */
 
 			private bool responsableForDeletion; /* if .NET wrapper is responsable for the deletion of the native MmsValue instance */
@@ -237,11 +240,23 @@ namespace IEC61850
                 valueReference = MmsValue_newVisibleString(value);
             }
 
-			~MmsValue ()
-			{
-				if (responsableForDeletion)
-					MmsValue_delete (valueReference);
-			}
+            public void Dispose()
+            {
+                lock (this) {
+                    if (valueReference != IntPtr.Zero) {
+
+                        if (responsableForDeletion)
+                            MmsValue_delete (valueReference);
+
+                        valueReference = IntPtr.Zero;
+                    }
+                }
+            }
+
+            ~MmsValue ()
+            {
+                Dispose();
+            }
 
 			/// <summary>
 			/// Create a new MmsValue instance of type MMS_BIT_STRING.
@@ -886,6 +901,19 @@ namespace IEC61850
                 {
                     return new MmsValue(childPtr);
                 }
+            }
+
+            /// <summary>
+            /// Get an identical copy of this instance
+            /// </summary>
+            public MmsValue Clone()
+            {
+                IntPtr clonePtr = MmsValue_clone(valueReference);
+
+                if (clonePtr == IntPtr.Zero)
+                    return null;
+
+                return new MmsValue(clonePtr, true);
             }
 
             public override bool Equals (object obj)
