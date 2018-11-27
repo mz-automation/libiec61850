@@ -34,6 +34,8 @@ namespace IEC61850
         /// <summary>
         /// Report handler.
         /// </summary>
+        /// <param name="report">represents the received report. DON'T use this object
+        /// outside the scope of the report handler!</param>
 		public delegate void ReportHandler (Report report, object parameter);
 
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
