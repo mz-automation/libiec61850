@@ -140,18 +140,12 @@ createConnectPdu(IsoPresentation* self, BufferChain writeBuffer, BufferChain pay
     buffer[bufPos++] = (uint8_t) ((self->callingPresentationSelector >> 8) & 0xff);
     buffer[bufPos++] = (uint8_t) (self->callingPresentationSelector & 0xff);
 
-//    memcpy(buffer + bufPos, callingPresentationSelector, 4);
-//    bufPos += 4;
-
     /* called-presentation-selector */
     bufPos = BerEncoder_encodeTL(0x82, 4, buffer, bufPos);
     buffer[bufPos++] = (uint8_t) ((self->calledPresentationSelector >> 24) & 0xff);
     buffer[bufPos++] = (uint8_t) ((self->calledPresentationSelector >> 16) & 0xff);
     buffer[bufPos++] = (uint8_t) ((self->calledPresentationSelector >> 8) & 0xff);
     buffer[bufPos++] = (uint8_t) (self->calledPresentationSelector & 0xff);
-
-//    memcpy(buffer + bufPos, calledPresentationSelector, 4);
-//    bufPos += 4;
 
     /* presentation-context-id list */
     bufPos = BerEncoder_encodeTL(0xa4, 35, buffer, bufPos);
