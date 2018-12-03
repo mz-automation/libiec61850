@@ -588,8 +588,10 @@ IedConnection_setState(IedConnection self, IedConnectionState newState)
 {
     Semaphore_wait(self->stateMutex);
 
-    if (self->state != newState)
-        self->connectionStateChangedHandler(self->connectionStateChangedHandlerParameter, self, newState);
+    if (self->state != newState) {
+        if (self->connectionStateChangedHandler)
+            self->connectionStateChangedHandler(self->connectionStateChangedHandlerParameter, self, newState);
+    }
 
     self->state = newState;
 
@@ -784,6 +786,30 @@ IedConnection_destroy(IedConnection self)
     GLOBAL_FREEMEM(self);
 }
 
+LinkedList
+IedConnection_getLogicalDeviceVariables(IedConnection self, IedClientError* error, const char* ldName)
+{
+    MmsError err = MMS_ERROR_NONE;
+
+    LinkedList result = MmsConnection_getDomainVariableNames(self->connection, &err, ldName);
+
+    *error = iedConnection_mapMmsErrorToIedError(err);
+
+    return result;
+}
+
+LinkedList
+IedConnection_getLogicalDeviceDataSets(IedConnection self, IedClientError* error, const char* ldName)
+{
+    MmsError err = MMS_ERROR_NONE;
+
+    LinkedList result = MmsConnection_getDomainVariableListNames(self->connection, &err, ldName);
+
+    *error = iedConnection_mapMmsErrorToIedError(err);
+
+    return result;
+}
+
 MmsVariableSpecification*
 IedConnection_getVariableSpecification(IedConnection self, IedClientError* error, const char* objectReference,
         FunctionalConstraint fc)
@@ -959,6 +985,39 @@ IedConnection_getLogicalDeviceVariablesAsync(IedConnection self, IedClientError*
     MmsError err = MMS_ERROR_NONE;
 
     call->invokeId = MmsConnection_getDomainVariableNamesAsync(self->connection, &err, ldName, continueAfter, result, getNameListHandler, self);
+
+    if (err != MMS_ERROR_NONE) {
+        *error = iedConnection_mapMmsErrorToIedError(err);
+
+        iedConnection_releaseOutstandingCall(self, call);
+
+        return 0;
+    }
+    else {
+        *error = IED_ERROR_OK;
+    }
+
+    return call->invokeId;
+}
+
+uint32_t
+IedConnection_getLogicalDeviceDataSetsAsync(IedConnection self, IedClientError* error, const char* ldName, const char* continueAfter, LinkedList result,
+        IedConnection_GetNameListHandler handler, void* parameter)
+{
+    //TODO implement
+    IedConnectionOutstandingCall call = iedConnection_allocateOutstandingCall(self);
+
+    if (call == NULL) {
+        *error = IED_ERROR_OUTSTANDING_CALL_LIMIT_REACHED;
+        return 0;
+    }
+
+    call->callback = handler;
+    call->callbackParameter = parameter;
+
+    MmsError err = MMS_ERROR_NONE;
+
+    call->invokeId = MmsConnection_getDomainVariableListNamesAsync(self->connection, &err, ldName, continueAfter, result, getNameListHandler, self);
 
     if (err != MMS_ERROR_NONE) {
         *error = iedConnection_mapMmsErrorToIedError(err);
