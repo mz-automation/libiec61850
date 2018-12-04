@@ -55,6 +55,38 @@ typedef struct {
 } PhyComAddress;
 
 /**
+ * \brief Control model (represented by "ctlModel" attribute)
+ */
+typedef enum {
+    /**
+     * No support for control functions. Control object only support status information.
+     */
+    CONTROL_MODEL_STATUS_ONLY = 0,
+
+    /**
+     * Direct control with normal security: Supports Operate, TimeActivatedOperate (optional),
+     * and Cancel (optional).
+     */
+    CONTROL_MODEL_DIRECT_NORMAL = 1,
+
+    /**
+     * Select before operate (SBO) with normal security: Supports Select, Operate, TimeActivatedOperate (optional),
+     * and Cancel (optional).
+     */
+    CONTROL_MODEL_SBO_NORMAL = 2,
+
+    /**
+     * Direct control with enhanced security (enhanced security includes the CommandTermination service)
+     */
+    CONTROL_MODEL_DIRECT_ENHANCED = 3,
+
+    /**
+     * Select before operate (SBO) with enhanced security (enhanced security includes the CommandTermination service)
+     */
+    CONTROL_MODEL_SBO_ENHANCED = 4
+} ControlModel;
+
+/**
  * @defgroup TRIGGER_OPTIONS Trigger options (bit values combinable)
  *
  * @{
@@ -75,6 +107,8 @@ typedef struct {
 /** Report will be triggered by GI (general interrogation) request */
 #define TRG_OPT_GI 16
 /** @} */
+
+
 
 /**
  * @defgroup REPORT_OPTIONS Report options (bit values combinable)

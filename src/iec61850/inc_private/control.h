@@ -148,4 +148,7 @@ ControlObject_installCheckHandler(ControlObject* self, ControlPerformCheckHandle
 LIB61850_INTERNAL void
 ControlObject_installWaitForExecutionHandler(ControlObject* self, ControlWaitForExecutionHandler handler, void* parameter);
 
+LIB61850_INTERNAL void
+ControlObject_updateControlModel(ControlObject* self, ControlModel value, DataObject* ctlObject);
+
 #endif /* CONTROL_H_ */

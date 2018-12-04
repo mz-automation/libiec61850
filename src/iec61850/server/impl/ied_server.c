@@ -62,8 +62,10 @@ createControlObjects(IedServer self, MmsDomain* domain, char* lnName, MmsVariabl
             bool hasCancel = false;
             int cancelIndex = 0;
             bool hasSBOw = false;
+            bool hasSBO = false;
             int sBOwIndex = 0;
             int operIndex = 0;
+            int sBOIndex = 0;
 
             MmsVariableSpecification* coSpec = typeSpec->typeSpec.structure.elements[i];
 
@@ -89,11 +91,14 @@ createControlObjects(IedServer self, MmsDomain* domain, char* lnName, MmsVariabl
                         hasSBOw = true;
                         sBOwIndex = j;
                     }
-                    else if (!(strcmp(coElementSpec->name, "SBO") == 0)) {
+                    else if ((strcmp(coElementSpec->name, "SBO") == 0)) {
+                        hasSBO = true;
+                        sBOIndex = j;
+                    }
+                    else {
                         if (DEBUG_IED_SERVER)
-                            printf("IED_SERVER: createControlObjects: Unknown element in CO: %s! --> seems not to be a control object\n", coElementSpec->name);
+                            printf("IED_SERVER: createControlObjects: Unknown element in CO: %s\n", coElementSpec->name);
 
-                        break;
                     }
                 }
 
@@ -127,6 +132,9 @@ createControlObjects(IedServer self, MmsDomain* domain, char* lnName, MmsVariabl
 
                     if (hasSBOw)
                         controlObject->sbow = MmsValue_getElement(structure, sBOwIndex);
+
+                    if (hasSBO)
+                        controlObject->sbo = MmsValue_getElement(structure, sBOIndex);
 
                     MmsMapping_addControlObject(mapping, controlObject);
                 }
@@ -775,6 +783,22 @@ IedServer_setWaitForExecutionHandler(IedServer self, DataObject* node, ControlWa
     if (controlObject != NULL)
         ControlObject_installWaitForExecutionHandler(controlObject, handler, parameter);
 }
+
+void
+IedServer_updateCtlModel(IedServer self, DataObject* ctlObject, ControlModel value)
+{
+    ControlObject* controlObject = lookupControlObject(self, ctlObject);
+
+    if (controlObject != NULL)
+        ControlObject_updateControlModel(controlObject, value, ctlObject);
+}
+
+void
+IedServer_refreshControlParameters(IedServer self, DataObject* ctlObject)
+{
+
+}
+
 #endif /* (CONFIG_IEC61850_CONTROL_SERVICE == 1) */
 
 #if (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1)
