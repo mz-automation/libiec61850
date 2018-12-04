@@ -199,6 +199,7 @@ ControlObjectClient_createEx(const char* objectReference, IedConnection connecti
     iedConnection_addControlClient(connection, self);
 
 exit_function:
+    MmsVariableSpecification_destroy(operSpec);
     return self;
 }
 
