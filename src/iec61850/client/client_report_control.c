@@ -522,7 +522,7 @@ readObjectHandlerInternal(uint32_t invokeId, void* parameter, MmsError err, MmsV
 
         IedConnection_GetRCBValuesHandler handler =  (IedConnection_GetRCBValuesHandler) call->callback;
         ClientReportControlBlock updateRcb = (ClientReportControlBlock) call->specificParameter;
-        char* rcbReference = (char*) call->specificParameter2;
+        char* rcbReference = (char*) call->specificParameter2.pointer;
 
 
         if (err != MMS_ERROR_NONE) {
@@ -607,7 +607,7 @@ IedConnection_getRCBValuesAsync(IedConnection self, IedClientError* error, const
     call->callback = handler;
     call->callbackParameter = parameter;
     call->specificParameter = updateRcb;
-    call->specificParameter2 = StringUtils_copyString(rcbReference);
+    call->specificParameter2.pointer = StringUtils_copyString(rcbReference);
 
     if (DEBUG_IED_CLIENT)
         printf("DEBUG_IED_CLIENT: readRCBValues for %s\n", rcbReference);
@@ -619,7 +619,7 @@ IedConnection_getRCBValuesAsync(IedConnection self, IedClientError* error, const
     *error = iedConnection_mapMmsErrorToIedError(err);
 
     if (err != MMS_ERROR_NONE) {
-        GLOBAL_FREEMEM(call->specificParameter2);
+        GLOBAL_FREEMEM(call->specificParameter2.pointer);
         iedConnection_releaseOutstandingCall(self, call);
         return 0;
     }
@@ -773,7 +773,7 @@ writeVariableHandler(uint32_t invokeId, void* parameter, MmsError mmsError, MmsD
 
         IedConnection_WriteObjectHandler handler = (IedConnection_WriteObjectHandler) call->callback;
 
-        struct sWriteRcbVariablesParameter* param = (struct sWriteRcbVariablesParameter*) call->specificParameter2;
+        struct sWriteRcbVariablesParameter* param = (struct sWriteRcbVariablesParameter*) call->specificParameter2.pointer;
 
         if ((mmsError != MMS_ERROR_NONE) || (accessError != DATA_ACCESS_ERROR_SUCCESS)) {
 
@@ -997,7 +997,7 @@ IedConnection_setRCBValuesAsync(IedConnection self, IedClientError* error, Clien
 
          struct sWriteRcbVariablesParameter* param = (struct sWriteRcbVariablesParameter*) GLOBAL_MALLOC(sizeof(struct sWriteRcbVariablesParameter));
 
-         call->specificParameter2 = param;
+         call->specificParameter2.pointer = param;
 
          param->itemIds = itemIds;
          param->values = values;

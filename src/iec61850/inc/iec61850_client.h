@@ -2658,6 +2658,48 @@ LIB61850_API uint32_t
 IedConnection_getFile(IedConnection self, IedClientError* error, const char* fileName, IedClientGetFileHandler handler,
         void* handlerParameter);
 
+
+/**
+ * \brief User provided handler to receive the data of the asynchronous GetFile request
+ *
+ * This handler will be invoked whenever the clients receives a data block from
+ * the server. The API user has to copy the data to another location before returning.
+ * The other location could for example be a file in the clients file system. When the
+ * last data block is received the moreFollows parameter will be set to false.
+ *
+ * \param invokeId invoke ID of the message containing the received data
+ * \param parameter user provided parameter passed to the callback
+ * \param err error code in case of an error or IED_ERROR_OK
+ * \param originalInvokeId the invoke ID of the original (first) request. This is usually the request to open the file.
+ * \param buffer the buffer that contains the received file data
+ * \param bytesRead the number of bytes read into the buffer
+ * \param moreFollows indicates that more file data is following
+ */
+typedef bool
+(*IedConnection_GetFileAsyncHandler) (uint32_t invokeId, void* parameter, IedClientError err, uint32_t originalInvokeId,
+        uint8_t* buffer, uint32_t bytesRead, bool moreFollows);
+
+
+/**
+ * \brief Implementation of the GetFile ACSI service - asynchronous version
+ *
+ * Download a file from the server.
+ *
+ * NOTE: This function can cause several request messages to be sent until the complete file is received
+ * or the file transfer is canceled. It allocates a background task and an outstanding call slot.
+ *
+ * \param self the connection object
+ * \param error the error code if an error occurs
+ * \param fileName the name of the file to be read from the server
+ * \param hander callback handler that is called for each received data or error message
+ * \param paramter user provided callback parameter
+ *
+ * \return invokeId of the first sent request
+ */
+LIB61850_API uint32_t
+IedConnection_getFileAsync(IedConnection self, IedClientError* error, const char* fileName, IedConnection_GetFileAsyncHandler handler,
+        void* parameter);
+
 /**
  * \brief Set the virtual filestore basepath for the setFile service
  *

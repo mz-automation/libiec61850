@@ -38,7 +38,16 @@ struct sIedConnectionOutstandingCall {
     void* callback;
     void* callbackParameter;
     void* specificParameter; /* function/service specific parameter */
-    void* specificParameter2; /* function/service specific parameter */
+
+    union {
+        void* pointer;
+        struct {
+            int32_t frsmId;
+            uint32_t originalInvokeId;
+        } getFileInfo;
+    } specificParameter2; /* function/service specific parameter */
+
+    //void* specificParameter2; /* function/service specific parameter */
 };
 
 struct sIedConnection

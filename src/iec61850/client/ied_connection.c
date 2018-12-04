@@ -1908,6 +1908,162 @@ IedConnection_getFile(IedConnection self, IedClientError* error, const char* fil
     return clientFileReadHandler.byteReceived;
 }
 
+
+static void
+mmsConnectionFileCloseHandler (uint32_t invokeId, void* parameter, MmsError mmsError, bool success)
+{
+    IedConnection self = (IedConnection) parameter;
+
+    IedConnectionOutstandingCall call = iedConnection_lookupOutstandingCall(self, invokeId);
+
+    if (call) {
+        IedConnection_GetFileAsyncHandler handler =  (IedConnection_GetFileAsyncHandler) call->callback;
+
+        iedConnection_releaseOutstandingCall(self, call);
+    }
+    else {
+        if (DEBUG_IED_CLIENT)
+            printf("IED_CLIENT: internal error - no matching outstanding call!\n");
+    }
+}
+
+static void
+mmsConnectionFileReadHandler (uint32_t invokeId, void* parameter, MmsError mmsError, uint8_t* buffer, uint32_t byteReceived,
+        bool moreFollows)
+{
+    IedConnection self = (IedConnection) parameter;
+
+    IedConnectionOutstandingCall call = iedConnection_lookupOutstandingCall(self, invokeId);
+
+    if (call) {
+
+        IedConnection_GetFileAsyncHandler handler =  (IedConnection_GetFileAsyncHandler) call->callback;
+
+        if (mmsError != MMS_ERROR_NONE) {
+            IedClientError err = iedConnection_mapMmsErrorToIedError(mmsError);
+
+            handler(call->specificParameter2.getFileInfo.originalInvokeId, call->callbackParameter, err, invokeId, NULL, 0, false);
+
+            /* close file */
+            MmsConnection_fileCloseAsync(self->connection, &mmsError, call->specificParameter2.getFileInfo.frsmId, mmsConnectionFileCloseHandler, self);
+
+            if (mmsError != MMS_ERROR_NONE)
+                iedConnection_releaseOutstandingCall(self, call);
+        }
+        else {
+            bool cont = handler(call->specificParameter2.getFileInfo.originalInvokeId, call->callbackParameter, IED_ERROR_OK, invokeId, buffer, byteReceived, moreFollows);
+
+            if ((moreFollows == false) || (cont == false)) {
+                /* close file */
+                MmsConnection_fileCloseAsync(self->connection, &mmsError, call->specificParameter2.getFileInfo.frsmId, mmsConnectionFileCloseHandler, self);
+
+                if (mmsError != MMS_ERROR_NONE)
+                    iedConnection_releaseOutstandingCall(self, call);
+            }
+            else {
+                /* send next read request */
+
+                call->invokeId = MmsConnection_fileReadAsync(self->connection, &mmsError, call->specificParameter2.getFileInfo.frsmId,
+                        mmsConnectionFileReadHandler, self);
+
+                if (mmsError != MMS_ERROR_NONE) {
+                    IedClientError err = iedConnection_mapMmsErrorToIedError(mmsError);
+
+                    handler(invokeId, call->callbackParameter, err, invokeId, NULL, 0, false);
+
+                    /* close file */
+                    MmsConnection_fileCloseAsync(self->connection, &mmsError, call->specificParameter2.getFileInfo.frsmId, mmsConnectionFileCloseHandler, self);
+
+                    if (mmsError != MMS_ERROR_NONE) {
+                        iedConnection_releaseOutstandingCall(self, call);
+                    }
+
+                }
+            }
+        }
+
+    }
+    else {
+        if (DEBUG_IED_CLIENT)
+            printf("IED_CLIENT: internal error - no matching outstanding call!\n");
+    }
+}
+
+static void
+mmsConnectionFileOpenHandler (uint32_t invokeId, void* parameter, MmsError mmsError, int32_t frsmId, uint32_t fileSize, uint64_t lastModified)
+{
+    IedConnection self = (IedConnection) parameter;
+
+    IedConnectionOutstandingCall call = iedConnection_lookupOutstandingCall(self, invokeId);
+
+    if (call) {
+
+        IedConnection_GetFileAsyncHandler handler =  (IedConnection_GetFileAsyncHandler) call->callback;
+
+        call->specificParameter2.getFileInfo.originalInvokeId = invokeId;
+
+        if (mmsError != MMS_ERROR_NONE) {
+            IedClientError err = iedConnection_mapMmsErrorToIedError(mmsError);
+
+            handler(invokeId, call->callbackParameter, err, invokeId, NULL, 0, false);
+
+            iedConnection_releaseOutstandingCall(self, call);
+        }
+        else {
+
+            call->specificParameter2.getFileInfo.frsmId = frsmId;
+            call->specificParameter2.getFileInfo.originalInvokeId = invokeId;
+            call->invokeId = MmsConnection_fileReadAsync(self->connection, &mmsError, frsmId, mmsConnectionFileReadHandler, self);
+
+            if (mmsError != MMS_ERROR_NONE) {
+                IedClientError err = iedConnection_mapMmsErrorToIedError(mmsError);
+
+                handler(invokeId, call->callbackParameter, err, invokeId, NULL, 0, false);
+
+                /* close file */
+                MmsConnection_fileCloseAsync(self->connection, &mmsError, frsmId, mmsConnectionFileCloseHandler, self);
+
+                if (mmsError != MMS_ERROR_NONE)
+                    iedConnection_releaseOutstandingCall(self, call);
+            }
+        }
+
+    }
+    else {
+        if (DEBUG_IED_CLIENT)
+            printf("IED_CLIENT: internal error - no matching outstanding call!\n");
+    }
+}
+
+
+uint32_t
+IedConnection_getFileAsync(IedConnection self, IedClientError* error, const char* fileName, IedConnection_GetFileAsyncHandler handler,
+        void* parameter)
+{
+    MmsError err = MMS_ERROR_NONE;
+
+    IedConnectionOutstandingCall call = iedConnection_allocateOutstandingCall(self);
+
+    if (call == NULL) {
+       *error = IED_ERROR_OUTSTANDING_CALL_LIMIT_REACHED;
+       return 0;
+    }
+
+    call->callback = handler;
+    call->callbackParameter = parameter;
+
+    call->invokeId = MmsConnection_fileOpenAsync(self->connection, &err, fileName, 0, mmsConnectionFileOpenHandler, self);
+
+    *error = iedConnection_mapMmsErrorToIedError(err);
+
+    if (err != MMS_ERROR_NONE) {
+        iedConnection_releaseOutstandingCall(self, call);
+        return 0;
+    }
+
+    return call->invokeId;
+}
+
 void
 IedConnection_setFilestoreBasepath(IedConnection self, const char* basepath)
 {
@@ -3019,7 +3175,7 @@ getDataSetHandlerInternal(uint32_t invokeId, void* parameter, MmsError err, MmsV
         IedConnection_ReadDataSetHandler handler =  (IedConnection_ReadDataSetHandler) call->callback;
 
         ClientDataSet dataSet = (ClientDataSet) call->specificParameter;
-        char* dataSetReference = (char*) call->specificParameter2;
+        char* dataSetReference = (char*) call->specificParameter2.pointer;
 
         if (value != NULL) {
 
@@ -3108,9 +3264,9 @@ IedConnection_readDataSetValuesAsync(IedConnection self, IedClientError* error, 
     call->specificParameter = dataSet;
 
     if (dataSet == NULL)
-        call->specificParameter2 = StringUtils_copyString(dataSetReference);
+        call->specificParameter2.pointer = StringUtils_copyString(dataSetReference);
     else
-        call->specificParameter2 = NULL;
+        call->specificParameter2.pointer = NULL;
 
     MmsError err = MMS_ERROR_NONE;
 
@@ -3126,7 +3282,7 @@ IedConnection_readDataSetValuesAsync(IedConnection self, IedClientError* error, 
         if (err != MMS_ERROR_NONE)
             *error = iedConnection_mapMmsErrorToIedError(err);
 
-        GLOBAL_FREEMEM(call->specificParameter2);
+        GLOBAL_FREEMEM(call->specificParameter2.pointer);
 
         iedConnection_releaseOutstandingCall(self, call);
 
