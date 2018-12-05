@@ -71,6 +71,22 @@ public class ModelViewer {
         }
     }
     
+    private static void printDataObjects(List<DataObject> dataObjects, PrintStream output, String indent, String add)
+    {
+        for (DataObject dObject : dataObjects) {
+            output.println(indent + dObject.getName());
+            
+            printDataObjects(dObject.getSubDataObjects(), output, indent + add, add);
+            
+            for (DataAttribute dAttribute : dObject.getDataAttributes()) {
+                output.println(indent + add + dAttribute.getName() + " [" + dAttribute.getFc().toString() + "]");
+                
+                printSubAttributes(dAttribute, output, indent + add,  add);
+            }
+            
+        }
+    }
+    
     private static void printModelStructure(InputStream stream, String icdFile, PrintStream output, String iedName, String accessPointName) 
             throws SclParserException {
 
@@ -97,16 +113,7 @@ public class ModelViewer {
             for (LogicalNode lNode : lNodes) {
                 output.println("  " + lNode.getName());
                 
-                for (DataObject dObject : lNode.getDataObjects()) {
-                    output.println("    " + dObject.getName());
-                    
-                    for (DataAttribute dAttribute : dObject.getDataAttributes()) {
-                        output.println("      " + dAttribute.getName() + " [" + dAttribute.getFc().toString() + "]");
-                        
-                        printSubAttributes(dAttribute, output, "      ", "  ");
-                    }
-                    
-                }
+                printDataObjects(lNode.getDataObjects(), output, "    ", "  ");
             }
         }
         
@@ -124,6 +131,24 @@ public class ModelViewer {
                 output.println(nextPrefix + " [" + attr.getFc() + "]");
                 
                 printSubAttributeList(attr, output, nextPrefix);
+            }
+        }
+    }
+    
+    private static void printObjectList(List<DataObject> dataObjects, PrintStream output, String prefix)
+    {
+        for (DataObject dataObject : dataObjects) {
+            String dOPrefix = prefix + "." + dataObject.getName();
+            
+            printObjectList(dataObject.getSubDataObjects(), output, dOPrefix);
+            
+            for (DataAttribute dAttribute : dataObject.getDataAttributes()) {
+                
+                String daPrefix = dOPrefix + "." + dAttribute.getName();
+                
+                output.println(daPrefix  + " [" + dAttribute.getFc().toString() + "]");
+                
+                printSubAttributeList(dAttribute, output, daPrefix);
             }
         }
     }
@@ -158,20 +183,22 @@ public class ModelViewer {
             for (LogicalNode lNode : lNodes) {
                 String lNodePrefix = devPrefix + lNode.getName();
                 
-                for (DataObject dObject : lNode.getDataObjects()) {
-                    
-                    String dOPrefix = lNodePrefix + "." + dObject.getName();
-                    
-                    for (DataAttribute dAttribute : dObject.getDataAttributes()) {
-                        
-                        String daPrefix = dOPrefix + "." + dAttribute.getName();
-                        
-                        output.println(daPrefix  + " [" + dAttribute.getFc().toString() + "]");
-                        
-                        printSubAttributeList(dAttribute, output, daPrefix);
-                    }
-                    
-                }
+                printObjectList(lNode.getDataObjects(), output, lNodePrefix);
+                
+//                for (DataObject dObject : lNode.getDataObjects()) {
+//                    
+//                    String dOPrefix = lNodePrefix + "." + dObject.getName();
+//                    
+//                    for (DataAttribute dAttribute : dObject.getDataAttributes()) {
+//                        
+//                        String daPrefix = dOPrefix + "." + dAttribute.getName();
+//                        
+//                        output.println(daPrefix  + " [" + dAttribute.getFc().toString() + "]");
+//                        
+//                        printSubAttributeList(dAttribute, output, daPrefix);
+//                    }
+//                    
+//                }
             }
         }
         
