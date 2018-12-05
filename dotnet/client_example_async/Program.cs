@@ -31,6 +31,10 @@ namespace client_example_async
             {
                 con.MaxPduSize = 1000;
 
+                con.StateChanged = delegate(IedConnection connection, IedConnectionState newState) {
+                    Console.WriteLine("state change: " + newState.ToString());  
+                };
+
                 con.Connect(hostname, port);
 
                 AutoResetEvent waitForCallback = new AutoResetEvent(false);
@@ -161,6 +165,8 @@ namespace client_example_async
                 Thread.Sleep(5000);    
               
                 con.Abort();
+
+                Console.WriteLine("Aborted");
             }
             catch (IedConnectionException e)
             {

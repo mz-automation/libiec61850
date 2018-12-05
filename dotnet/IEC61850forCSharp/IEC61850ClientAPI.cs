@@ -320,7 +320,7 @@ namespace IEC61850
 		/// This class acts as the entry point for the IEC 61850 client API. It represents a single
 		/// (MMS) connection to a server.
 		/// </summary>
-		public partial class IedConnection
+        public partial class IedConnection : IDisposable
 		{
 			/*************
             * MmsValue
@@ -408,6 +408,9 @@ namespace IEC61850
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 			private delegate void InternalConnectionClosedHandler (IntPtr parameter,IntPtr Iedconnection);
 
+            /// <summary>
+            /// Called when the connection is closed
+            /// </summary>
 			public delegate void ConnectionClosedHandler (IedConnection connection);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
@@ -462,6 +465,20 @@ namespace IEC61850
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern void IedConnection_uninstallReportHandler(IntPtr connection, string rcbReference);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern int IedConnection_getState(IntPtr connection);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            private delegate void InternalStateChangedHandler (IntPtr parameter,IntPtr iedConnection, int newState);
+
+            /// <summary>
+            /// Called when there is a change in the connection state
+            /// </summary>
+            public delegate void StateChangedHandler (IedConnection connection, IedConnectionState newState);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedConnection_installStateChangedHandler(IntPtr connection, InternalStateChangedHandler handler, IntPtr parameter);
 
             /*********************
              * Async functions
@@ -543,8 +560,11 @@ namespace IEC61850
 			static extern void LinkedList_add (IntPtr self, IntPtr data);
 
 			private IntPtr connection = IntPtr.Zero;
-			private InternalConnectionClosedHandler connectionClosedHandler;
-			private ConnectionClosedHandler userProvidedHandler = null;
+            private InternalConnectionClosedHandler connectionClosedHandler = null;
+			private ConnectionClosedHandler userProvidedConnectionClosedHandler = null;
+
+            private InternalStateChangedHandler internalStateChangedHandler = null;
+            private StateChangedHandler stateChangedHandler = null;
 
 			/// <summary>
 			/// Initializes a new instance of the <see cref="IEC61850.Client.IedConnection"/> class.
@@ -641,7 +661,10 @@ namespace IEC61850
                 }
             }
 
-
+            /// <summary>
+            /// Gets the underlying MmsConnection instance.
+            /// </summary>
+            /// <returns>The mms connection.</returns>
 			public MmsConnection GetMmsConnection ()
 			{
 				IntPtr mmsConnectionPtr = IedConnection_getMmsConnection(connection);
@@ -662,6 +685,15 @@ namespace IEC61850
 				if (error != 0)
 					throw new IedConnectionException ("Connect to " + hostname + ":" + tcpPort + " failed", error);
 			}
+
+            /// <summary>
+            /// Gets the current state of the connection
+            /// </summary>
+            /// <returns>The current connection state</returns>
+            public IedConnectionState GetState()
+            {
+                return (IedConnectionState)IedConnection_getState(connection);
+            }
 
 			/// <summary>Establish an MMS connection to a server.</summary>
 			/// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error.</exception>
@@ -1373,8 +1405,8 @@ namespace IEC61850
 
 			private void MyConnectionClosedHandler (IntPtr parameter, IntPtr self)
 			{
-				if (userProvidedHandler != null)
-					userProvidedHandler (this);
+				if (userProvidedConnectionClosedHandler != null)
+					userProvidedConnectionClosedHandler (this);
 			}
 
 			/// <summary>
@@ -1385,14 +1417,50 @@ namespace IEC61850
 			/// by a prior function call.</description>
 			/// <param name="handler">The user provided callback handler</param>
 			/// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
-			public void InstallConnectionClosedHandler (ConnectionClosedHandler handler)
+            [Obsolete("ConnectionClosedHandler is deprecated, please use ConnectionEventHandler instead")]
+            public void InstallConnectionClosedHandler (ConnectionClosedHandler handler)
 			{
-				connectionClosedHandler = new InternalConnectionClosedHandler (MyConnectionClosedHandler);
+                if (connectionClosedHandler == null)
+                {
+                    connectionClosedHandler = new InternalConnectionClosedHandler(MyConnectionClosedHandler);
+                    IedConnection_installConnectionClosedHandler (connection, connectionClosedHandler, connection);
+                }
 
-				userProvidedHandler = handler;
-
-				IedConnection_installConnectionClosedHandler (connection, connectionClosedHandler, connection);
+				userProvidedConnectionClosedHandler = handler;	
 			}
+
+            private void MyStateChangedHandler(IntPtr parameter, IntPtr IedConnection, int newState)
+            {
+                if (stateChangedHandler != null)
+                    stateChangedHandler(this, (IedConnectionState)newState);
+            }
+
+            /// <summary>
+            /// Sets the handler for StateChanged events
+            /// </summary>
+            /// <param name="handler">The state changed event handler</param>
+            public void InstallStateChangedHandler (StateChangedHandler handler)
+            {
+                stateChangedHandler = handler;
+
+                if (internalStateChangedHandler == null)
+                {
+                    internalStateChangedHandler = new InternalStateChangedHandler(MyStateChangedHandler);
+                    IedConnection_installStateChangedHandler(connection, internalStateChangedHandler, IntPtr.Zero);
+                }
+            }
+
+            /// <summary>
+            /// Sets the handler for StateChanged events
+            /// </summary>
+            /// <value>The state changed event handler</value>
+            public StateChangedHandler StateChanged
+            {
+                set
+                {
+                    InstallStateChangedHandler(value);
+                }
+            }
 
             /// <summary>
             /// Read the values of a data set (GetDataSetValues service).
@@ -1979,6 +2047,35 @@ namespace IEC61850
             }
         }
 
+        /// <summary>
+        /// Connection state of an IedConnection instance
+        /// </summary>
+        public enum IedConnectionState
+        {
+            /// <summary>
+            /// The connection is closed. Requests cannot be sent.
+            /// </summary>
+            IED_STATE_CLOSED = 0,
+
+            /// <summary>
+            /// The connection is connecting. Requests cannot be sent yet.
+            /// </summary>
+            IED_STATE_CONNECTING = 1,
+
+            /// <summary>
+            /// The connection is up. Requests can be sent.
+            /// </summary>
+            IED_STATE_CONNECTED = 2,
+
+            /// <summary>
+            /// The connection is closing. Requests connect be sent.
+            /// </summary>
+            IED_STATE_CLOSING = 3
+        }
+
+        /// <summary>
+        /// Error codes for client side functions
+        /// </summary>
 		public enum IedClientError
 		{
 			/* general errors */
