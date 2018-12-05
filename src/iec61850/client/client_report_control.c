@@ -1006,10 +1006,10 @@ IedConnection_setRCBValuesAsync(IedConnection self, IedClientError* error, Clien
          param->currentValue = LinkedList_getNext(values);
          param->domainId = StringUtils_copyString(domainId);
 
-         char* itemId = (char*) LinkedList_getData(param->currentItemId);
+         char* variableId = (char*) LinkedList_getData(param->currentItemId);
          MmsValue* value = (MmsValue*) LinkedList_getData(param->currentValue);
 
-         call->invokeId = MmsConnection_writeVariableAsync(self->connection, &err, domainId, itemId, value, writeVariableHandler, self);
+         call->invokeId = MmsConnection_writeVariableAsync(self->connection, &err, domainId, variableId, value, writeVariableHandler, self);
 
          param->originalInvokeId = call->invokeId;
 

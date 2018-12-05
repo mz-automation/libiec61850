@@ -878,7 +878,6 @@ IedConnection_getVariableSpecificationAsync(IedConnection self, IedClientError* 
     char* itemId;
 
     MmsError err;
-    MmsVariableSpecification* varSpec = NULL;
 
     domainId = MmsMapping_getMmsDomainFromObjectReference(dataAttributeReference, domainIdBuffer);
     itemId = MmsMapping_createMmsVariableNameFromObjectReference(dataAttributeReference, fc, itemIdBuffer);
@@ -1917,8 +1916,6 @@ mmsConnectionFileCloseHandler (uint32_t invokeId, void* parameter, MmsError mmsE
     IedConnectionOutstandingCall call = iedConnection_lookupOutstandingCall(self, invokeId);
 
     if (call) {
-        IedConnection_GetFileAsyncHandler handler =  (IedConnection_GetFileAsyncHandler) call->callback;
-
         iedConnection_releaseOutstandingCall(self, call);
     }
     else {

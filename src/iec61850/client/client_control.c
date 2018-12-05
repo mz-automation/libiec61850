@@ -601,7 +601,7 @@ ControlObjectClient_operateAsync(ControlObjectClient self, IedClientError* err, 
 
     *err = iedConnection_mapMmsErrorToIedError(mmsError);
 
-    if (*err != MMS_ERROR_NONE) {
+    if (mmsError != MMS_ERROR_NONE) {
         iedConnection_releaseOutstandingCall(self->connection, call);
     }
     else {
@@ -829,7 +829,7 @@ ControlObjectClient_selectWithValueAsync(ControlObjectClient self, IedClientErro
 
     *err = iedConnection_mapMmsErrorToIedError(mmsError);
 
-    if (*err != MMS_ERROR_NONE) {
+    if (mmsError != MMS_ERROR_NONE) {
         iedConnection_releaseOutstandingCall(self->connection, call);
     }
     else {
@@ -988,7 +988,7 @@ ControlObjectClient_selectAsync(ControlObjectClient self, IedClientError* err, C
     call->invokeId = MmsConnection_readVariableAsync(IedConnection_getMmsConnection(self->connection),
             &mmsError, domainId, itemId, internalSelectHandler, self);
 
-    if (*err != MMS_ERROR_NONE) {
+    if (mmsError != MMS_ERROR_NONE) {
         iedConnection_releaseOutstandingCall(self->connection, call);
     }
 
@@ -1171,7 +1171,7 @@ ControlObjectClient_cancelAsync(ControlObjectClient self, IedClientError* err, C
 
     *err = iedConnection_mapMmsErrorToIedError(mmsError);
 
-    if (*err != MMS_ERROR_NONE) {
+    if (mmsError != MMS_ERROR_NONE) {
         iedConnection_releaseOutstandingCall(self->connection, call);
     }
 
