@@ -110,7 +110,7 @@ resetLastApplError(ControlObjectClient self)
 }
 
 ControlObjectClient
-ControlObjectClient_createEx(const char* objectReference, IedConnection connection, uint32_t ctlModel, MmsVariableSpecification* operSpec)
+ControlObjectClient_createEx(const char* objectReference, IedConnection connection, ControlModel ctlModel, MmsVariableSpecification* controlObjectSpec)
 {
     ControlObjectClient self = NULL;
 
@@ -122,8 +122,8 @@ ControlObjectClient_createEx(const char* objectReference, IedConnection connecti
     MmsVariableSpecification* ctlVal = NULL;
     MmsVariableSpecification* t = NULL;
 
-    if (MmsVariableSpecification_getType(operSpec) == MMS_STRUCTURE) {
-        MmsVariableSpecification* oper = MmsVariableSpecification_getNamedVariableRecursive(operSpec, "Oper");
+    if (MmsVariableSpecification_getType(controlObjectSpec) == MMS_STRUCTURE) {
+        MmsVariableSpecification* oper = MmsVariableSpecification_getNamedVariableRecursive(controlObjectSpec, "Oper");
 
         if (oper)
         {
@@ -151,6 +151,8 @@ ControlObjectClient_createEx(const char* objectReference, IedConnection connecti
 
             t = MmsVariableSpecification_getNamedVariableRecursive(oper, "T");
         }
+
+        /* TODO Add additional checks dependent on control model */
     }
 
     if (hasOper == false) {
@@ -173,7 +175,7 @@ ControlObjectClient_createEx(const char* objectReference, IedConnection connecti
 
     self->objectReference = StringUtils_copyString(objectReference);
     self->connection = connection;
-    self->ctlModel = (ControlModel) ctlModel;
+    self->ctlModel = ctlModel;
     self->hasTimeActivatedMode = hasTimeActivatedControl;
     self->hasCtlNum = hasCtlNum;
     self->ctlVal = MmsValue_newDefaultValue(ctlVal);
@@ -199,7 +201,6 @@ ControlObjectClient_createEx(const char* objectReference, IedConnection connecti
     iedConnection_addControlClient(connection, self);
 
 exit_function:
-    MmsVariableSpecification_destroy(operSpec);
     return self;
 }
 
@@ -239,10 +240,9 @@ ControlObjectClient_create(const char* objectReference, IedConnection connection
         goto exit_function;
     }
 
-    self = ControlObjectClient_createEx(objectReference, connection, ctlModel, ctlVarSpec);
+    self = ControlObjectClient_createEx(objectReference, connection, (ControlModel) ctlModel, ctlVarSpec);
 
-    if (self == NULL)
-        MmsVariableSpecification_destroy(ctlVarSpec);
+    MmsVariableSpecification_destroy(ctlVarSpec);
 
 exit_function:
     return self;

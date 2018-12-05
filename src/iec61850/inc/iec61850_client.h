@@ -68,10 +68,10 @@ typedef struct
     ControlAddCause addCause;
 } LastApplError;
 
-/** Connection state of the IedConnection instance (either idle, connected or closed) */
+/** Connection state of the IedConnection instance - either closed(idle), connecting, connected, or closing) */
 typedef enum
 {
-    IED_STATE_CLOSED,
+    IED_STATE_CLOSED = 0,
     IED_STATE_CONNECTING,
     IED_STATE_CONNECTED,
     IED_STATE_CLOSING
@@ -1774,7 +1774,7 @@ typedef struct sControlObjectClient* ControlObjectClient;
 /**
  * \brief Create a new client control object
  *
- * A client control object is used to handle all client side aspects of a controllable
+ * A client control object is used to handle all client side functions of a controllable
  * data object. A controllable data object is an instance of a controllable CDC like e.g.
  * SPC, DPC, APC, ...
  *
@@ -1789,6 +1789,21 @@ typedef struct sControlObjectClient* ControlObjectClient;
  */
 LIB61850_API ControlObjectClient
 ControlObjectClient_create(const char* objectReference, IedConnection connection);
+
+/**
+ * \brief Create a new client control object - doesn't send requests to the server (doesn't block)
+ *
+ * A client control object is used to handle all client side functions of a controllable
+ * data object. A controllable data object is an instance of a controllable CDC like e.g.
+ * SPC, DPC, APC, ...
+ *
+ * \param objectReference the reference of the controllable data object
+ * \param connection the connection instance where the control object has to be reached
+ * \param ctlModel the control model used by the controllable data object
+ * \param controlObjectSpec specification of the controllable data objects - used to derive required information to handle the control object
+ */
+LIB61850_API ControlObjectClient
+ControlObjectClient_createEx(const char* objectReference, IedConnection connection, ControlModel ctlModel, MmsVariableSpecification* controlObjectSpec);
 
 /**
  * \brief Destroy the client control object instance and release all related resources
