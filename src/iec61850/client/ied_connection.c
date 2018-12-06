@@ -640,8 +640,6 @@ IedConnection_connect(IedConnection self, IedClientError* error, const char* hos
 
         MmsError mmsError;
 
-        MmsConnection_setConnectionLostHandler(self->connection, NULL, NULL);
-
         MmsConnection_setConnectTimeout(self->connection, self->connectionTimeout);
 
         if (MmsConnection_connect(self->connection, &mmsError, hostname, tcpPort)) {
@@ -672,7 +670,6 @@ IedConnection_connectAsync(IedConnection self, IedClientError* error, const char
         MmsError mmsError = MMS_ERROR_NONE;
 
         MmsConnection_setConnectTimeout(self->connection, self->connectionTimeout);
-        MmsConnection_setConnectionLostHandler(self->connection, NULL, NULL);
 
         MmsConnection_connectAsync(self->connection, &mmsError, hostname, tcpPort);
 

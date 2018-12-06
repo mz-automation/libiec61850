@@ -77,7 +77,7 @@ struct sIsoClientConnection
     volatile int state;
     Semaphore stateMutex;
 
-    uint64_t nextReadTimeout;
+    uint64_t nextReadTimeout; /* timeout value for read and connect */
 
     Socket socket;
 
@@ -335,7 +335,20 @@ IsoClientConnection_handleConnection(IsoClientConnection self)
                 nextState = INT_STATE_CLOSE_ON_ERROR;
             }
             else {
-                waits = true;
+
+                /* check connect timeout */
+
+                uint64_t currentTime = Hal_getTimeInMs();
+
+                if (currentTime > self->nextReadTimeout) {
+                    IsoClientConnection_releaseTransmitBuffer(self);
+                    self->callback(ISO_IND_ASSOCIATION_FAILED, self->callbackParameter, NULL);
+                    nextState = INT_STATE_CLOSE_ON_ERROR;
+                }
+                else {
+                    waits = true;
+                }
+
             }
 
         }
@@ -599,6 +612,13 @@ IsoClientConnection_handleConnection(IsoClientConnection self)
         }
         break;
 
+    default:
+
+        if (DEBUG_ISO_CLIENT)
+            printf("ISO_CLIENT_CONNECTION: Illegal state\n");
+
+        break;
+
     }
 
     self->callback(ISO_IND_TICK, self->callbackParameter, NULL);
@@ -623,8 +643,6 @@ IsoClientConnection_associateAsync(IsoClientConnection self, uint32_t connectTim
 
     self->socket = TcpSocket_create();
 
-    Socket_setConnectTimeout(self->socket, connectTimeoutInMs);
-
 #if (CONFIG_ACTIVATE_TCP_KEEPALIVE == 1)
     Socket_activateTcpKeepAlive(self->socket,
             CONFIG_TCP_KEEPALIVE_IDLE,
@@ -633,6 +651,9 @@ IsoClientConnection_associateAsync(IsoClientConnection self, uint32_t connectTim
 #endif
 
     setIntState(self, INT_STATE_TCP_CONNECTING);
+
+    /* set timeout for connect */
+    self->nextReadTimeout = Hal_getTimeInMs() + connectTimeoutInMs;
 
     if (Socket_connectAsync(self->socket, self->parameters->hostname, self->parameters->tcpPort) == false) {
 
