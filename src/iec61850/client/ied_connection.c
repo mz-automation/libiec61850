@@ -522,6 +522,46 @@ informationReportHandler(void* parameter, char* domainName,
     MmsValue_delete(value);
 }
 
+static void
+IedConnection_setState(IedConnection self, IedConnectionState newState)
+{
+    Semaphore_wait(self->stateMutex);
+
+    if (self->state != newState) {
+        if (self->connectionStateChangedHandler)
+            self->connectionStateChangedHandler(self->connectionStateChangedHandlerParameter, self, newState);
+    }
+
+    self->state = newState;
+
+    Semaphore_post(self->stateMutex);
+}
+
+static void
+mmsConnectionStateChangedHandler(MmsConnection connection, void* parameter, MmsConnectionState newState)
+{
+    IedConnection self = (IedConnection) parameter;
+
+    if (newState == MMS_CONNECTION_STATE_CONNECTED) {
+        IedConnection_setState(self, IED_STATE_CONNECTED);
+    }
+    else if (newState == MMS_CONNECTION_STATE_CLOSED) {
+        IedConnection_setState(self, IED_STATE_CLOSED);
+
+        if (self->connectionCloseHandler != NULL)
+            self->connectionCloseHandler(self->connectionClosedParameter, self);
+
+        if (DEBUG_IED_CLIENT)
+            printf("IED_CLIENT: Connection closed!\n");
+    }
+    else if (newState == MMS_CONNECTION_STATE_CLOSING) {
+        IedConnection_setState(self, IED_STATE_CLOSING);
+    }
+    else if (newState == MMS_CONNECTION_STATE_CONNECTING) {
+        IedConnection_setState(self, IED_STATE_CONNECTING);
+    }
+}
+
 static IedConnection
 createNewConnectionObject(TLSConfiguration tlsConfig)
 {
@@ -548,6 +588,8 @@ createNewConnectionObject(TLSConfiguration tlsConfig)
         self->connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
 
         MmsConnection_setInformationReportHandler(self->connection, informationReportHandler, self);
+
+        MmsConnection_setConnectionStateChangedHandler(self->connection, mmsConnectionStateChangedHandler, self);
     }
 
     return self;
@@ -583,42 +625,12 @@ IedConnection_getState(IedConnection self)
     return state;
 }
 
-static void
-IedConnection_setState(IedConnection self, IedConnectionState newState)
-{
-    Semaphore_wait(self->stateMutex);
-
-    if (self->state != newState) {
-        if (self->connectionStateChangedHandler)
-            self->connectionStateChangedHandler(self->connectionStateChangedHandlerParameter, self, newState);
-    }
-
-    self->state = newState;
-
-    Semaphore_post(self->stateMutex);
-}
-
 void
 IedConnection_installConnectionClosedHandler(IedConnection self, IedConnectionClosedHandler handler,
         void* parameter)
 {
     self->connectionCloseHandler = handler;
     self->connectionClosedParameter = parameter;
-}
-
-/* TODO remove - not required - replace by mmsConnectionStateChangedHandler */
-static void
-connectionLostHandler(MmsConnection connection, void* parameter)
-{
-    IedConnection self = (IedConnection) parameter;
-
-    IedConnection_setState(self, IED_STATE_CLOSED);
-
-    if (self->connectionCloseHandler != NULL)
-        self->connectionCloseHandler(self->connectionClosedParameter, self);
-
-    if (DEBUG_IED_CLIENT)
-        printf("IedConnection closed!\n");
 }
 
 void
@@ -633,7 +645,6 @@ IedConnection_connect(IedConnection self, IedClientError* error, const char* hos
         MmsConnection_setConnectTimeout(self->connection, self->connectionTimeout);
 
         if (MmsConnection_connect(self->connection, &mmsError, hostname, tcpPort)) {
-            MmsConnection_setConnectionLostHandler(self->connection, connectionLostHandler, (void*) self);
             *error = IED_ERROR_OK;
             IedConnection_setState(self, IED_STATE_CONNECTED);
         }
@@ -653,26 +664,6 @@ IedConnection_installStateChangedHandler(IedConnection self, IedConnection_State
     self->connectionStateChangedHandlerParameter = parameter;
 }
 
-static void
-mmsConnectionStateChangedHandler(MmsConnection connection, void* parameter, MmsConnectionState newState)
-{
-    IedConnection self = (IedConnection) parameter;
-
-    if (newState == MMS_CONNECTION_STATE_CONNECTED) {
-        IedConnection_setState(self, IED_STATE_CONNECTED);
-        MmsConnection_setConnectionLostHandler(self->connection, connectionLostHandler, (void*) self);
-    }
-    else if (newState == MMS_CONNECTION_STATE_CLOSED) {
-        IedConnection_setState(self, IED_STATE_CLOSED);
-    }
-    else if (newState == MMS_CONNECTION_STATE_CLOSING) {
-        IedConnection_setState(self, IED_STATE_CLOSING);
-    }
-    else if (newState == MMS_CONNECTION_STATE_CONNECTING) {
-        IedConnection_setState(self, IED_STATE_CONNECTING);
-    }
-}
-
 void
 IedConnection_connectAsync(IedConnection self, IedClientError* error, const char* hostname, int tcpPort)
 {
@@ -682,9 +673,6 @@ IedConnection_connectAsync(IedConnection self, IedClientError* error, const char
 
         MmsConnection_setConnectTimeout(self->connection, self->connectionTimeout);
         MmsConnection_setConnectionLostHandler(self->connection, NULL, NULL);
-
-        //TODO move to createNewConnectionObject function
-        MmsConnection_setConnectionStateChangedHandler(self->connection, mmsConnectionStateChangedHandler, self);
 
         MmsConnection_connectAsync(self->connection, &mmsError, hostname, tcpPort);
 
