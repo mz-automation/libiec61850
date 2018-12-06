@@ -184,21 +184,6 @@ public class ModelViewer {
                 String lNodePrefix = devPrefix + lNode.getName();
                 
                 printObjectList(lNode.getDataObjects(), output, lNodePrefix);
-                
-//                for (DataObject dObject : lNode.getDataObjects()) {
-//                    
-//                    String dOPrefix = lNodePrefix + "." + dObject.getName();
-//                    
-//                    for (DataAttribute dAttribute : dObject.getDataAttributes()) {
-//                        
-//                        String daPrefix = dOPrefix + "." + dAttribute.getName();
-//                        
-//                        output.println(daPrefix  + " [" + dAttribute.getFc().toString() + "]");
-//                        
-//                        printSubAttributeList(dAttribute, output, daPrefix);
-//                    }
-//                    
-//                }
             }
         }
         

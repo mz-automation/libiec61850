@@ -704,7 +704,7 @@ writeMultipleVariablesHandler(uint32_t invokeId, void* parameter, MmsError mmsEr
 
     if (call) {
 
-        IedConnection_WriteObjectHandler handler = (IedConnection_WriteObjectHandler) call->callback;
+        IedConnection_GenericServiceHandler handler = (IedConnection_GenericServiceHandler) call->callback;
 
         if (accessResults != NULL) {
 
@@ -771,7 +771,7 @@ writeVariableHandler(uint32_t invokeId, void* parameter, MmsError mmsError, MmsD
 
     if (call) {
 
-        IedConnection_WriteObjectHandler handler = (IedConnection_WriteObjectHandler) call->callback;
+        IedConnection_GenericServiceHandler handler = (IedConnection_GenericServiceHandler) call->callback;
 
         struct sWriteRcbVariablesParameter* param = (struct sWriteRcbVariablesParameter*) call->specificParameter2.pointer;
 
@@ -822,7 +822,7 @@ writeVariableHandler(uint32_t invokeId, void* parameter, MmsError mmsError, MmsD
 
 uint32_t
 IedConnection_setRCBValuesAsync(IedConnection self, IedClientError* error, ClientReportControlBlock rcb,
-        uint32_t parametersMask, bool singleRequest, IedConnection_WriteObjectHandler handler, void* parameter)
+        uint32_t parametersMask, bool singleRequest, IedConnection_GenericServiceHandler handler, void* parameter)
 {
     uint32_t invokeId = 0;
 

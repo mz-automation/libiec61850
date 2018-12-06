@@ -45,6 +45,9 @@ struct sIedConnectionOutstandingCall {
             int32_t frsmId;
             uint32_t originalInvokeId;
         } getFileInfo;
+        struct {
+            bool cont;
+        } getFileDirectory;
     } specificParameter2; /* function/service specific parameter */
 
     //void* specificParameter2; /* function/service specific parameter */
@@ -68,7 +71,7 @@ struct sIedConnection
     IedConnectionClosedHandler connectionCloseHandler;
     void* connectionClosedParameter;
 
-    IedConnectionStateChangedHandler connectionStateChangedHandler;
+    IedConnection_StateChangedHandler connectionStateChangedHandler;
     void* connectionStateChangedHandlerParameter;
 
     uint32_t connectionTimeout;

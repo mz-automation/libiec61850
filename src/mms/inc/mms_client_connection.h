@@ -1032,7 +1032,7 @@ typedef void
  * \brief Callback handler for the get file directory service
  *
  * Will be called once for each file directory entry and after the last entry with \ref filename = NULL to indicate
- * with \ref moreFollows if more data is available at the server. In case of an error the callback will be called with
+ * with \ref moreFollows set to true when more data is available server side. In case of an error the callback will be called with
  * \ref mmsError != MMS_ERROR_NONE and moreFollows = false.
  */
 typedef void

@@ -221,6 +221,19 @@ IedConnection_destroy(IedConnection self);
 LIB61850_API void
 IedConnection_setConnectTimeout(IedConnection self, uint32_t timeoutInMs);
 
+/**
+ * \brief Generic serivce callback handler
+ *
+ * NOTE: This callback handler is used by several asynchronous service functions that require
+ * only a simple feedback in form of a success (IED_ERROR_OK) or failure (other \ref err value).
+ *
+ * \param invokeId the invoke ID used by the related service request
+ * \param parameter user provided parameter
+ * \param err the result code. IED_ERROR_OK indicates success.
+ */
+typedef void
+(*IedConnection_GenericServiceHandler) (uint32_t invokeId, void* parameter, IedClientError err);
+
 /**************************************************
  * Association service
  **************************************************/
@@ -342,12 +355,21 @@ IedConnection_getState(IedConnection self);
 LIB61850_API LastApplError
 IedConnection_getLastApplError(IedConnection self);
 
-
+/**
+ * \brief Callback handler that is invoked when the connection is closed
+ *
+ * \deprecated Use \ref IedConnection_StateChangedHandler instead
+ *
+ * \param user provided parameter
+ * \param connection the connection object of the closed connection
+ */
 typedef void
 (*IedConnectionClosedHandler) (void* parameter, IedConnection connection);
 
 /**
- * \brief Install a handler function that will be called when the connection is lost.
+ * \brief Install a handler function that is called when the connection is lost/closed.
+ *
+ * \deprecated Use \ref IedConnection_StateChangedHandler instead
  *
  * \param self the connection object
  * \param handler that callback function
@@ -357,11 +379,25 @@ LIB61850_API void
 IedConnection_installConnectionClosedHandler(IedConnection self, IedConnectionClosedHandler handler,
         void* parameter);
 
+/**
+ * \brief Callback handler that is invoked whenever the connection state (\ref IedConnectionState) changes
+ *
+ * \param user provided parameter
+ * \param connection the related connection
+ * \param newState the new state of the connection
+ */
 typedef void
-(*IedConnectionStateChangedHandler) (void* parameter, IedConnection connection, IedConnectionState newState);
+(*IedConnection_StateChangedHandler) (void* parameter, IedConnection connection, IedConnectionState newState);
 
+/**
+ * \brief Install a handler function that is called when the connection state changes
+ *
+ * \param self the connection object
+ * \param handler that callback function
+ * \param parameter the user provided parameter that is handed over to the callback function
+ */
 LIB61850_API void
-IedConnection_installStateChangedHandler(IedConnection self, IedConnectionStateChangedHandler handler, void* parameter);
+IedConnection_installStateChangedHandler(IedConnection self, IedConnection_StateChangedHandler handler, void* parameter);
 
 /**
  * \brief get a handle to the underlying MmsConnection
@@ -761,9 +797,6 @@ LIB61850_API void
 IedConnection_writeObject(IedConnection self, IedClientError* error, const char* dataAttributeReference, FunctionalConstraint fc,
         MmsValue* value);
 
-typedef void
-(*IedConnection_WriteObjectHandler) (uint32_t invokeId, void* parameter, IedClientError err);
-
 /**
  * \brief write a functional constrained data attribute (FCDA) or functional constrained data (FCD) - async version
  *
@@ -779,7 +812,7 @@ typedef void
  */
 LIB61850_API uint32_t
 IedConnection_writeObjectAsync(IedConnection self, IedClientError* error, const char* objectReference,
-        FunctionalConstraint fc, MmsValue* value, IedConnection_WriteObjectHandler handler, void* parameter);
+        FunctionalConstraint fc, MmsValue* value, IedConnection_GenericServiceHandler handler, void* parameter);
 
 /**
  * \brief read a functional constrained data attribute (FCDA) of type boolean
@@ -1115,7 +1148,7 @@ IedConnection_setRCBValues(IedConnection self, IedClientError* error, ClientRepo
 
 LIB61850_API uint32_t
 IedConnection_setRCBValuesAsync(IedConnection self, IedClientError* error, ClientReportControlBlock rcb,
-        uint32_t parametersMask, bool singleRequest, IedConnection_WriteObjectHandler handler, void* parameter);
+        uint32_t parametersMask, bool singleRequest, IedConnection_GenericServiceHandler handler, void* parameter);
 
 /**
  * \brief Callback function for receiving reports
@@ -2599,17 +2632,52 @@ IedConnection_getFileDirectoryEx(IedConnection self, IedClientError* error, cons
 /**
  * \brief Callback handler for the get file directory service
  *
- * Will be called once for each file directory entry and after the last entry with \ref filename = NULL to indicate
- * with \ref moreFollows if more data is available at the server. In case of an error the callback will be called with
+ * Will be called once for each file directory entry and after the last entry with \ref moreFollows = false to indicate
+ * to indicate that no more data will follow. In case of an error the callback will be called with
  * \ref err != IED_ERROR_OK and moreFollows = false.
  */
-typedef void
-(*IedConnection_FileDirectoryHandler) (uint32_t invokeId, void* parameter, IedClientError err, char* filename, uint32_t size, uint64_t lastModfified,
+
+/**
+ * \brief Callback handler for the get file directory service
+ *
+ * Will be called once for each file directory entry and after the last entry with \ref filename = NULL to indicate
+ * with \ref moreFollows set to true if more data is available at the server (can only happen when using the \ref IedConnection_getFileDirectoryAsyncEx
+ * function). In case of an error the callback will be called with \ref err != IED_ERROR_OK and moreFollows = false.
+ *
+ * \param invokeId invoke ID of the request
+ * \param parameter user provided parameter
+ * \param err error code in case of a problem, otherwise IED_ERROR_OK
+ * \param filename the filename of the current file directory entry or NULL if no more entries are available
+ * \param size the file size in byte of the current file directory entry
+ * \param lastModified the last modified timestamp of the current file directory entry
+ *
+ * \return return false when the request has to be stopped (no further callback invokations), true otherwise
+ */
+typedef bool
+(*IedConnection_FileDirectoryEntryHandler) (uint32_t invokeId, void* parameter, IedClientError err, char* filename, uint32_t size, uint64_t lastModfified,
         bool moreFollows);
 
+/**
+ * \brief Get file directory (single request) - asynchronous version
+ *
+ * The provided handler will be called for each received file directory entry.
+ *
+ * NOTE: This will only cause a single MMS request. When the resulting file directory doesn't fit into
+ * a single MMS PDU another request has to be sent indicating a continuation point with the continueAfter
+ * parameter.
+ *
+ * \param self the connection object
+ * \param error the error code if an error occurs
+ * \param directoryName the name of the directory or NULL to get the entries of the root directory
+ * \param continueAfter last received filename to continue after, or NULL for the first request
+ * \param handler the callback handler
+ * \param parameter user provided callback parameter
+ *
+ * \return the invokeId of the first file directory request
+ */
 LIB61850_API uint32_t
-IedConnection_getFileDirectoryAsync(IedConnection self, IedClientError* error, const char* directoryName, const char* continueAfter,
-        IedConnection_FileDirectoryHandler handler, void* parameter);
+IedConnection_getFileDirectoryAsyncEx(IedConnection self, IedClientError* error, const char* directoryName, const char* continueAfter,
+        IedConnection_FileDirectoryEntryHandler handler, void* parameter);
 
 /**
  * \brief user provided handler to receive the data of the GetFile request
@@ -2677,7 +2745,7 @@ typedef bool
  * \param error the error code if an error occurs
  * \param fileName the name of the file to be read from the server
  * \param hander callback handler that is called for each received data or error message
- * \param paramter user provided callback parameter
+ * \param parameter user provided callback parameter
  *
  * \return invokeId of the first sent request
  */
@@ -2711,6 +2779,21 @@ IedConnection_setFilestoreBasepath(IedConnection, const char* basepath);
 LIB61850_API void
 IedConnection_setFile(IedConnection self, IedClientError* error, const char* sourceFilename, const char* destinationFilename);
 
+/**
+ * \brief Implementation of the SetFile ACSI service - asynchronous version
+ *
+ * Upload a file to the server. The file has to be available in the local VMD filestore.
+ *
+ * \param self the connection object
+ * \param error the error code if an error occurs
+ * \param sourceFilename the filename of the local (client side) file
+ * \param destinationFilename the filename of the remote (service side) file
+ * \param handler callback handler that is called when the obtain file response has been received
+ * \param parameter user provided callback parameter
+ */
+LIB61850_API uint32_t
+IedConnection_setFileAsync(IedConnection self, IedClientError* error, const char* sourceFilename, const char* destinationFilename,
+        IedConnection_GenericServiceHandler handler, void* parameter);
 
 /**
  * \brief Implementation of the DeleteFile ACSI service
@@ -2723,6 +2806,21 @@ IedConnection_setFile(IedConnection self, IedClientError* error, const char* sou
  */
 LIB61850_API void
 IedConnection_deleteFile(IedConnection self, IedClientError* error, const char* fileName);
+
+/**
+ * \brief Implementation of the DeleteFile ACSI service - asynchronous version
+ *
+ * Delete a file at the server.
+ *
+ * \param self the connection object
+ * \param error the error code if an error occurs
+ * \param fileName the name of the file to delete
+ * \param handler callback handler that is called when the obtain file response has been received
+ * \param parameter user provided callback parameter
+ */
+LIB61850_API uint32_t
+IedConnection_deleteFileAsync(IedConnection self, IedClientError* error, const char* fileName,
+        IedConnection_GenericServiceHandler handler, void* parameter);
 
 
 /** @} */

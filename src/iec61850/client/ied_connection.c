@@ -647,7 +647,7 @@ IedConnection_connect(IedConnection self, IedClientError* error, const char* hos
 }
 
 void
-IedConnection_installStateChangedHandler(IedConnection self, IedConnectionStateChangedHandler handler, void* parameter)
+IedConnection_installStateChangedHandler(IedConnection self, IedConnection_StateChangedHandler handler, void* parameter)
 {
     self->connectionStateChangedHandler = handler;
     self->connectionStateChangedHandlerParameter = parameter;
@@ -1444,7 +1444,7 @@ writeVariableHandler(uint32_t invokeId, void* parameter, MmsError err, MmsDataAc
 
     if (call) {
 
-        IedConnection_WriteObjectHandler handler =  (IedConnection_WriteObjectHandler) call->callback;
+        IedConnection_GenericServiceHandler handler =  (IedConnection_GenericServiceHandler) call->callback;
 
         IedClientError iedError = iedConnection_mapMmsErrorToIedError(err);
 
@@ -1463,7 +1463,7 @@ writeVariableHandler(uint32_t invokeId, void* parameter, MmsError err, MmsDataAc
 
 uint32_t
 IedConnection_writeObjectAsync(IedConnection self, IedClientError* error, const char* objectReference,
-        FunctionalConstraint fc, MmsValue* value, IedConnection_WriteObjectHandler handler, void* parameter)
+        FunctionalConstraint fc, MmsValue* value, IedConnection_GenericServiceHandler handler, void* parameter)
 {
     *error = IED_ERROR_OK;
 
@@ -1784,16 +1784,8 @@ IedConnection_getFileDirectoryEx(IedConnection self, IedClientError* error, cons
     return fileNames;
 }
 
-
-struct sClientProvidedFileReadHandler {
-    IedClientGetFileHandler handler;
-    void* handlerParameter;
-    bool retVal;
-    uint32_t byteReceived;
-};
-
 static void
-fileDirectoryHandler(uint32_t invokeId, void* parameter, MmsError err, char* filename, uint32_t size, uint64_t lastModfified,
+fileDirectoryHandlerEx(uint32_t invokeId, void* parameter, MmsError err, char* filename, uint32_t size, uint64_t lastModfified,
         bool moreFollows)
 {
     IedConnection self = (IedConnection) parameter;
@@ -1802,9 +1794,12 @@ fileDirectoryHandler(uint32_t invokeId, void* parameter, MmsError err, char* fil
 
     if (call) {
 
-        IedConnection_FileDirectoryHandler handler =  (IedConnection_FileDirectoryHandler) call->callback;
+        if (call->specificParameter2.getFileDirectory.cont) {
+            IedConnection_FileDirectoryEntryHandler handler = (IedConnection_FileDirectoryEntryHandler) call->callback;
 
-        handler(invokeId, call->callbackParameter, iedConnection_mapMmsErrorToIedError(err), filename, size, lastModfified, moreFollows);
+            call->specificParameter2.getFileDirectory.cont =
+                    handler(invokeId, call->callbackParameter, iedConnection_mapMmsErrorToIedError(err), filename, size, lastModfified, moreFollows);
+        }
 
         if (filename == NULL)
             iedConnection_releaseOutstandingCall(self, call);
@@ -1816,10 +1811,9 @@ fileDirectoryHandler(uint32_t invokeId, void* parameter, MmsError err, char* fil
 }
 
 uint32_t
-IedConnection_getFileDirectoryAsync(IedConnection self, IedClientError* error, const char* directoryName, const char* continueAfter,
-        IedConnection_FileDirectoryHandler handler, void* parameter)
+IedConnection_getFileDirectoryAsyncEx(IedConnection self, IedClientError* error, const char* directoryName, const char* continueAfter,
+        IedConnection_FileDirectoryEntryHandler handler, void* parameter)
 {
-
     MmsError err = MMS_ERROR_NONE;
 
     IedConnectionOutstandingCall call = iedConnection_allocateOutstandingCall(self);
@@ -1831,9 +1825,10 @@ IedConnection_getFileDirectoryAsync(IedConnection self, IedClientError* error, c
 
     call->callback = handler;
     call->callbackParameter = parameter;
+    call->specificParameter2.getFileDirectory.cont = true;
 
     call->invokeId = MmsConnection_getFileDirectoryAsync(self->connection, &err, directoryName, continueAfter,
-            fileDirectoryHandler, self);
+            fileDirectoryHandlerEx, self);
 
     *error = iedConnection_mapMmsErrorToIedError(err);
 
@@ -1844,6 +1839,13 @@ IedConnection_getFileDirectoryAsync(IedConnection self, IedClientError* error, c
 
     return call->invokeId;
 }
+
+struct sClientProvidedFileReadHandler {
+    IedClientGetFileHandler handler;
+    void* handlerParameter;
+    bool retVal;
+    uint32_t byteReceived;
+};
 
 static void
 mmsFileReadHandler(void* parameter, int32_t frsmId, uint8_t* buffer, uint32_t bytesReceived)
@@ -2086,6 +2088,53 @@ IedConnection_setFile(IedConnection self, IedClientError* error, const char* sou
 #endif /* (MMS_OBTAIN_FILE_SERVICE == 1) */
 }
 
+static void
+deleteFileAndSetFileHandler (uint32_t invokeId, void* parameter, MmsError mmsError, bool success)
+{
+    IedConnection self = (IedConnection) parameter;
+
+    IedConnectionOutstandingCall call = iedConnection_lookupOutstandingCall(self, invokeId);
+
+    if (call) {
+
+        IedConnection_GenericServiceHandler handler =  (IedConnection_GenericServiceHandler) call->callback;
+
+        handler(invokeId, call->callbackParameter, iedConnection_mapMmsErrorToIedError(mmsError));
+    }
+    else {
+        if (DEBUG_IED_CLIENT)
+            printf("IED_CLIENT: internal error - no matching outstanding call!\n");
+    }
+}
+
+uint32_t
+IedConnection_setFileAsync(IedConnection self, IedClientError* error, const char* sourceFilename, const char* destinationFilename,
+        IedConnection_GenericServiceHandler handler, void* parameter)
+{
+    MmsError err = MMS_ERROR_NONE;
+
+    IedConnectionOutstandingCall call = iedConnection_allocateOutstandingCall(self);
+
+    if (call == NULL) {
+       *error = IED_ERROR_OUTSTANDING_CALL_LIMIT_REACHED;
+       return 0;
+    }
+
+    call->callback = handler;
+    call->callbackParameter = parameter;
+
+    call->invokeId = MmsConnection_obtainFileAsync(self->connection, &err, sourceFilename, destinationFilename, deleteFileAndSetFileHandler, self);
+
+    *error = iedConnection_mapMmsErrorToIedError(err);
+
+    if (err != MMS_ERROR_NONE) {
+        iedConnection_releaseOutstandingCall(self, call);
+        return 0;
+    }
+
+    return call->invokeId;
+}
+
 void
 IedConnection_deleteFile(IedConnection self, IedClientError* error, const char* fileName)
 {
@@ -2096,6 +2145,34 @@ IedConnection_deleteFile(IedConnection self, IedClientError* error, const char* 
     MmsConnection_fileDelete(self->connection, &mmsError, fileName);
 
     *error = iedConnection_mapMmsErrorToIedError(mmsError);
+}
+
+uint32_t
+IedConnection_deleteFileAsync(IedConnection self, IedClientError* error, const char* fileName,
+        IedConnection_GenericServiceHandler handler, void* parameter)
+{
+    MmsError err = MMS_ERROR_NONE;
+
+    IedConnectionOutstandingCall call = iedConnection_allocateOutstandingCall(self);
+
+    if (call == NULL) {
+       *error = IED_ERROR_OUTSTANDING_CALL_LIMIT_REACHED;
+       return 0;
+    }
+
+    call->callback = handler;
+    call->callbackParameter = parameter;
+
+    call->invokeId = MmsConnection_fileDeleteAsync(self->connection, &err, fileName, deleteFileAndSetFileHandler, self);
+
+    *error = iedConnection_mapMmsErrorToIedError(err);
+
+    if (err != MMS_ERROR_NONE) {
+        iedConnection_releaseOutstandingCall(self, call);
+        return 0;
+    }
+
+    return call->invokeId;
 }
 
 
