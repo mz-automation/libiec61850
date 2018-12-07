@@ -16,7 +16,7 @@ static void commandTerminationHandler(void *parameter, ControlObjectClient conne
 
     LastApplError lastApplError = ControlObjectClient_getLastApplError(connection);
 
-    // if lastApplError.error != 0 this indicates a CommandTermination-
+    /* if lastApplError.error != 0 this indicates a CommandTermination- */
     if (lastApplError.error != 0) {
         printf("Received CommandTermination-.\n");
         printf(" LastApplError: %i\n", lastApplError.error);

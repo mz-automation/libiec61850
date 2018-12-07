@@ -80,6 +80,25 @@ controlHandlerForBinaryOutput(void* parameter, MmsValue* value, bool test)
     return CONTROL_RESULT_OK;
 }
 
+static MmsDataAccessError
+writeAccessHandler (DataAttribute* dataAttribute, MmsValue* value, ClientConnection connection, void* parameter)
+{
+    ControlModel ctlModelVal = (ControlModel) MmsValue_toInt32(value);
+
+    /* we only allow status-only and direct-operate */
+    if ((ctlModelVal == CONTROL_MODEL_STATUS_ONLY) || (ctlModelVal == CONTROL_MODEL_DIRECT_NORMAL))
+    {
+        IedServer_updateCtlModel(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO1, ctlModelVal);
+
+        printf("Changed GGIO1.SPCSI.ctlModel to %i\n", ctlModelVal);
+
+        return DATA_ACCESS_ERROR_SUCCESS;
+    }
+    else {
+        return DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+    }
+}
+
 int
 main(int argc, char** argv)
 {
@@ -89,6 +108,14 @@ main(int argc, char** argv)
     IedServer_setControlHandler(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO1,
             (ControlHandler) controlHandlerForBinaryOutput,
             IEDMODEL_GenericIO_GGIO1_SPCSO1);
+
+    /*
+     * For SPCSO1 we want the user be able to change the control model by online service -
+     * so we install a write access handler to change the control model when the client
+     * writes to the "ctlModel" attribute.
+     */
+    IedServer_handleWriteAccess(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO1_ctlModel, writeAccessHandler, NULL);
+
 
     IedServer_setControlHandler(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO2,
             (ControlHandler) controlHandlerForBinaryOutput,

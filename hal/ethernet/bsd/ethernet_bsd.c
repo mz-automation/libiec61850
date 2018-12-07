@@ -39,12 +39,12 @@
 #include "hal_ethernet.h"
 
 struct sEthernetSocket {
-    int bpf;                        // BPF device handle.
-    uint8_t *bpfBuffer;             // Pointer to the BPF reception buffer.
-    int bpfBufferSize;              // Actual size of the BPF reception buffer.
-    uint8_t *bpfPositon;            // Actual read pointer on the BPF reception buffer.
-    uint8_t *bpfEnd;                // Pointer to the end of the BPF reception buffer.
-    struct bpf_program bpfProgram;  // BPF filter machine code program.
+    int bpf;                        /* BPF device handle. */
+    uint8_t *bpfBuffer;             /* Pointer to the BPF reception buffer. */
+    int bpfBufferSize;              /* Actual size of the BPF reception buffer. */
+    uint8_t *bpfPositon;            /* Actual read pointer on the BPF reception buffer. */
+    uint8_t *bpfEnd;                /* Pointer to the end of the BPF reception buffer. */
+    struct bpf_program bpfProgram;  /* BPF filter machine code program. */
 };
 
 struct sEthernetHandleSet {
@@ -126,10 +126,10 @@ setBpfEthernetAddressFilter(EthernetSocket self, uint8_t *addr)
 {
     if (addr)
     {
-        // Enable Ethernet address filter.
+        /* Enable Ethernet address filter. */
         self->bpfProgram.bf_insns[0].k = 1;
 
-        // Copy the address into the filter code.
+        /* Copy the address into the filter code. */
         memcpy((void *)&self->bpfProgram.bf_insns[3].k, &addr[2], 4);
         memcpy((void *)&self->bpfProgram.bf_insns[5].k, &addr, 2);
 
@@ -137,7 +137,7 @@ setBpfEthernetAddressFilter(EthernetSocket self, uint8_t *addr)
     }
     else
     {
-        // Disable Ethernet address filter.
+        /* Disable Ethernet address filter. */
         self->bpfProgram.bf_insns[0].k = 0;
 
         return activateBpdFilter(self);
@@ -149,17 +149,17 @@ setBpfEthertypeFilter(EthernetSocket self, uint16_t etherType)
 {
     if (etherType)
     {
-        // Enable Ethertype filter.
+        /* Enable Ethertype filter. */
         self->bpfProgram.bf_insns[6].k = 1;
 
-        // Set protocol.
+        /* Set protocol. */
         self->bpfProgram.bf_insns[9].k = etherType;
 
         return activateBpdFilter(self);
     }
     else
     {
-        // Disable Ethertype filter.
+        /* Disable Ethertype filter. */
         self->bpfProgram.bf_insns[6].k = 0;
 
         return activateBpdFilter(self);
@@ -189,7 +189,7 @@ Ethernet_getInterfaceMACAddress(const char* interfaceId, uint8_t* addr)
         ifc = ifc->ifa_next;
     }
 
-    // If we found the interface, extract MAC address from the info and copy to the destination.
+    /* If we found the interface, extract MAC address from the info and copy to the destination. */
     if (ifc)
     {
         link = (struct sockaddr_dl *)ifc->ifa_addr;
@@ -198,7 +198,7 @@ Ethernet_getInterfaceMACAddress(const char* interfaceId, uint8_t* addr)
     else
         printf("Could not find the network interface %s!", interfaceId);
 
-    // Free network interface info structure.
+    /* Free network interface info structure. */
     freeifaddrs(ifap);
 }
 
@@ -211,31 +211,31 @@ Ethernet_createSocket(const char* interfaceId, uint8_t* destAddress)
     int optval;
     struct bpf_insn destAddrFiltCode[] =
     {
-        // Load 0 into accumulator. Change to 1 to enable ethernet address filter.
-        {0x00, 0, 0, 0x00000000},   // A0:  ld #0
-        {0x15, 4, 0, 0x00000000},   //      jeq #0, P0, A1
+        /* Load 0 into accumulator. Change to 1 to enable ethernet address filter. */
+        {0x00, 0, 0, 0x00000000},   /* A0:  ld #0 */
+        {0x15, 4, 0, 0x00000000},   /*      jeq #0, P0, A1 */
 
-        // Load 4 bytes starting at offest 2 into the accu and compare it with 4 bytes of the destination address.
-        {0x20, 0, 0, 0x00000002},   // A1:  ld [2]
-        {0x15, 0, 7, 0x00000000},   //      jeq #0, A2, KO
+        /* Load 4 bytes starting at offest 2 into the accu and compare it with 4 bytes of the destination address. */
+        {0x20, 0, 0, 0x00000002},   /* A1:  ld [2] */
+        {0x15, 0, 7, 0x00000000},   /*      jeq #0, A2, KO */
 
-        // Load 2 bytes starting at offest 0 into the accu and compare it with 2 bytes of the destination address.
-        {0x28, 0, 0, 0x00000000},   // A2:  ldh [0]
-        {0x15, 0, 5, 0x00000000},   //      jeq #0, P0, KO
+        /* Load 2 bytes starting at offest 0 into the accu and compare it with 2 bytes of the destination address. */
+        {0x28, 0, 0, 0x00000000},   /* A2:  ldh [0] */
+        {0x15, 0, 5, 0x00000000},   /*      jeq #0, P0, KO */
 
-        // Load 0 into accumulator. Change to 1 to enable ethernet protocol filter.
-        {0x00, 0, 0, 0x00000000},   // P0:  ld #0
-        {0x15, 2, 0, 0x00000000},   //      jeq #0, OK, P1
+        /* Load 0 into accumulator. Change to 1 to enable ethernet protocol filter. */
+        {0x00, 0, 0, 0x00000000},   /* P0:  ld #0 */
+        {0x15, 2, 0, 0x00000000},   /*      jeq #0, OK, P1 */
 
-        // Load 2 bytes starting at offset 12 into the accu and compare it with the given ethertype.
-        {0x28, 0, 0, 0x0000000c},   // P1:  ldh [12]
-        {0x15, 0, 1, 0x00000000},   //      jeq #0, OK, KO
+        /* Load 2 bytes starting at offset 12 into the accu and compare it with the given ethertype. */
+        {0x28, 0, 0, 0x0000000c},   /* P1:  ldh [12] */
+        {0x15, 0, 1, 0x00000000},   /*      jeq #0, OK, KO */
 
-        // Accept packet.
-        {0x6, 0, 0, 0x0000ffff},    // OK:  ret #65535
+        /* Accept packet. */
+        {0x6, 0, 0, 0x0000ffff},    /* OK:  ret #65535 */
 
-        // Drop packet.
-        {0x6, 0, 0, 0x00000000}     // KO:  ret #0
+        /* Drop packet. */
+        {0x6, 0, 0, 0x00000000}     /* KO:  ret #0 */
 
         /* The whole BPF VM assembler program compiled with bpfc into the machine code above:
          *
@@ -261,7 +261,7 @@ Ethernet_createSocket(const char* interfaceId, uint8_t* destAddress)
         return NULL;
     }
 
-    // Copy default BPF filter program into descriptor.
+    /* Copy default BPF filter program into descriptor. */
     self->bpfProgram.bf_insns = GLOBAL_CALLOC(1, sizeof(destAddrFiltCode));
     if (!self->bpfProgram.bf_insns)
     {
@@ -271,7 +271,7 @@ Ethernet_createSocket(const char* interfaceId, uint8_t* destAddress)
     memcpy(self->bpfProgram.bf_insns, &destAddrFiltCode, sizeof(destAddrFiltCode));
     self->bpfProgram.bf_len = 12;
 
-    // Find the first unused BPF device node.
+    /* Find the first unused BPF device node. */
     self->bpf = -1;
     for (i = 0; i < 99; ++i)
     {
@@ -281,7 +281,7 @@ Ethernet_createSocket(const char* interfaceId, uint8_t* destAddress)
         if (self->bpf != -1) break;
     }
 
-    // Did not found any unused, fail.
+    /* Did not found any unused, fail. */
     if (self->bpf == -1)
     {
         printf("Error opening BPF file handle!\n");
@@ -290,7 +290,7 @@ Ethernet_createSocket(const char* interfaceId, uint8_t* destAddress)
         return NULL;
     }
 
-    // Activate non-blocking operation.
+    /* Activate non-blocking operation. */
     optval = ioctl(self->bpf, F_GETFL);
     optval |= O_NONBLOCK;
     if (fcntl(self->bpf, F_SETFL, &optval) == -1)
@@ -301,7 +301,7 @@ Ethernet_createSocket(const char* interfaceId, uint8_t* destAddress)
         return NULL;
     }
 
-    // Select the network interface for the BPF.
+    /* Select the network interface for the BPF. */
     strncpy(ifr.ifr_name, interfaceId, IFNAMSIZ);
     if (ioctl(self->bpf, BIOCSETIF, &ifr))
     {
@@ -311,7 +311,7 @@ Ethernet_createSocket(const char* interfaceId, uint8_t* destAddress)
         return NULL;
     }
 
-    // Activate immediate mode.
+    /* Activate immediate mode. */
     if (ioctl(self->bpf, BIOCIMMEDIATE, &self->bpfBufferSize) == -1)
     {
         printf("Unable to activate immediate mode!\n");
@@ -320,7 +320,7 @@ Ethernet_createSocket(const char* interfaceId, uint8_t* destAddress)
         return NULL;
     }
 
-    // Get the buffer length from the BPF handle.
+    /* Get the buffer length from the BPF handle. */
     if (ioctl(self->bpf, BIOCGBLEN, &self->bpfBufferSize) == -1)
     {
         printf("Unable to get BPF buffer lenght!\n");
@@ -329,7 +329,7 @@ Ethernet_createSocket(const char* interfaceId, uint8_t* destAddress)
         return NULL;
     }
 
-    // Allocate a buffer for the message reception.
+    /* Allocate a buffer for the message reception. */
     self->bpfBuffer = GLOBAL_CALLOC(1, self->bpfBufferSize);
     if (!self->bpfBuffer)
     {
@@ -341,7 +341,7 @@ Ethernet_createSocket(const char* interfaceId, uint8_t* destAddress)
     self->bpfPositon = self->bpfBuffer;
     self->bpfEnd = self->bpfBuffer;
 
-    // Set BPF into promiscous mode.
+    /* Set BPF into promiscous mode. */
     optval = 1;
     if (ioctl(self->bpf, BIOCPROMISC, &optval) == -1)
     {
@@ -365,64 +365,64 @@ Ethernet_setProtocolFilter(EthernetSocket self, uint16_t etherType)
 int
 Ethernet_receivePacket(EthernetSocket self, uint8_t* buffer, int bufferSize)
 {
-    // If the actual buffer is empty, make a read call to the BSP device in order to get new data.
+    /* If the actual buffer is empty, make a read call to the BSP device in order to get new data. */
     if (self->bpfEnd - self->bpfPositon < 4)
     {
-        // Position the read pointer to the start of the buffer.
+        /* Position the read pointer to the start of the buffer. */
         self->bpfPositon = self->bpfBuffer;
 
-        // Read one or more frames from the BPF handle.
+        /* Read one or more frames from the BPF handle. */
         int size = read(self->bpf, self->bpfBuffer, self->bpfBufferSize);
 
-        // Set the end pointer to the end of the received data or to 0 if no data at all was received.
+        /* Set the end pointer to the end of the received data or to 0 if no data at all was received. */
         if (size >= 0)
             self->bpfEnd = self->bpfBuffer + size;
         else
             self->bpfEnd = NULL;
     }
 
-    // Do we actually have at least one ethernet frame received?
+    /* Do we actually have at least one ethernet frame received? */
     if (self->bpfPositon < self->bpfEnd)
     {
-        // BPF adds a header to each packet, so we have to interpret it.
+        /* BPF adds a header to each packet, so we have to interpret it. */
         struct bpf_hdr *header = (struct bpf_hdr *)(self->bpfPositon);
 
-        // Check if the target buffer is big enough to hold the received ethernet frame.
+        /* Check if the target buffer is big enough to hold the received ethernet frame. */
         if ((unsigned int) bufferSize >= header->bh_caplen)
         {
-            // Copy the frame to the target buffer.
+            /* Copy the frame to the target buffer.
             memcpy(buffer, self->bpfPositon + header->bh_hdrlen, header->bh_caplen);
 
-            // Move the read pointer to the next ethernet frame header WORD ALIGNED (Took me a while to find that out).
+            /* Move the read pointer to the next ethernet frame header WORD ALIGNED (Took me a while to find that out). */
             self->bpfPositon += BPF_WORDALIGN(header->bh_hdrlen + header->bh_caplen);
 
-            // Return the number of bytes copied to the target buffer.
+            /* Return the number of bytes copied to the target buffer. */
             return header->bh_caplen;
         }
         else
-            // The buffer is too small, return an error.
-            // TODO: Would be there a standard error number to signal that the target buffer is too small?
+            /* The buffer is too small, return an error. */
+            /* TODO: Would be there a standard error number to signal that the target buffer is too small? */
             return -1;
     }
     else
-        // We did not get any ethernet frames, so return 0.
+        /* We did not get any ethernet frames, so return 0. */
         return 0;
 }
 
 void
 Ethernet_sendPacket(EthernetSocket self, uint8_t* buffer, int packetSize)
 {
-    // Just send the packet as it is.
+    /* Just send the packet as it is. */
     write(self->bpf, buffer, packetSize);
 }
 
 void
 Ethernet_destroySocket(EthernetSocket self)
 {
-    // Close the BPF device.
+    /* Close the BPF device. */
     close(self->bpf);
 
-    // Free all dynamic resources used by the ethernet socket.
+    /* Free all dynamic resources used by the ethernet socket. */
     GLOBAL_FREEMEM(self->bpfBuffer);
     GLOBAL_FREEMEM(self->bpfProgram.bf_insns);
     GLOBAL_FREEMEM(self);

@@ -1208,16 +1208,6 @@ IedServer_setWaitForExecutionHandler(IedServer self, DataObject* node, ControlWa
 LIB61850_API void
 IedServer_updateCtlModel(IedServer self, DataObject* ctlObject, ControlModel value);
 
-/**
- * \brief Refresh the control object parameters (ctlModel, sboClass, sboTimeout) from the current data
- *        attribute values in the online accessable data model.
- *
- * \param self the instance of IedServer to operate on.
- * \param ctlObject the controllable data object handle
- */
-LIB61850_API void
-IedServer_refreshControlParameters(IedServer self, DataObject* ctlObject);
-
 /**@}*/
 
 /**

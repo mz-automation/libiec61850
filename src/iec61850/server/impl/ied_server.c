@@ -793,12 +793,6 @@ IedServer_updateCtlModel(IedServer self, DataObject* ctlObject, ControlModel val
         ControlObject_updateControlModel(controlObject, value, ctlObject);
 }
 
-void
-IedServer_refreshControlParameters(IedServer self, DataObject* ctlObject)
-{
-
-}
-
 #endif /* (CONFIG_IEC61850_CONTROL_SERVICE == 1) */
 
 #if (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1)

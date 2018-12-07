@@ -160,7 +160,7 @@ TLSConfiguration_create()
         mbedtls_entropy_init( &(self->entropy) );
         mbedtls_ctr_drbg_init( &(self->ctr_drbg) );
 
-        //WARINING is fixed to server!
+        /* WARINING is fixed to server! */
         mbedtls_ssl_config_defaults( &(self->conf),
                 MBEDTLS_SSL_IS_SERVER,
                 MBEDTLS_SSL_TRANSPORT_STREAM,
@@ -173,8 +173,8 @@ TLSConfiguration_create()
 
         mbedtls_ssl_conf_renegotiation(&(self->conf), MBEDTLS_SSL_RENEGOTIATION_ENABLED);
 
-        //static int hashes[] = {3,4,5,6,7,8,0};
-        //  mbedtls_ssl_conf_sig_hashes(&(self->conf), hashes);
+        /* static int hashes[] = {3,4,5,6,7,8,0}; */
+        /* mbedtls_ssl_conf_sig_hashes(&(self->conf), hashes); */
 
         self->allowedCertificates = LinkedList_create();
 
