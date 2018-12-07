@@ -71,30 +71,33 @@ setupSVPublisher(const char* svInterface)
 {
     svPublisher = SVPublisher_create(NULL, svInterface);
 
-    asdu = SVPublisher_addASDU(svPublisher, "xxxxMUnn01", NULL, 1);
+    if (svPublisher) {
 
-    amp1 = SVPublisher_ASDU_addINT32(asdu);
-    amp1q = SVPublisher_ASDU_addQuality(asdu);
-    amp2 = SVPublisher_ASDU_addINT32(asdu);
-    amp2q = SVPublisher_ASDU_addQuality(asdu);
-    amp3 = SVPublisher_ASDU_addINT32(asdu);
-    amp3q = SVPublisher_ASDU_addQuality(asdu);
-    amp4 = SVPublisher_ASDU_addINT32(asdu);
-    amp4q = SVPublisher_ASDU_addQuality(asdu);
+        asdu = SVPublisher_addASDU(svPublisher, "xxxxMUnn01", NULL, 1);
 
-    vol1 = SVPublisher_ASDU_addINT32(asdu);
-    vol1q = SVPublisher_ASDU_addQuality(asdu);
-    vol2 = SVPublisher_ASDU_addINT32(asdu);
-    vol2q = SVPublisher_ASDU_addQuality(asdu);
-    vol3 = SVPublisher_ASDU_addINT32(asdu);
-    vol3q = SVPublisher_ASDU_addQuality(asdu);
-    vol4 = SVPublisher_ASDU_addINT32(asdu);
-    vol4q = SVPublisher_ASDU_addQuality(asdu);
+        amp1 = SVPublisher_ASDU_addINT32(asdu);
+        amp1q = SVPublisher_ASDU_addQuality(asdu);
+        amp2 = SVPublisher_ASDU_addINT32(asdu);
+        amp2q = SVPublisher_ASDU_addQuality(asdu);
+        amp3 = SVPublisher_ASDU_addINT32(asdu);
+        amp3q = SVPublisher_ASDU_addQuality(asdu);
+        amp4 = SVPublisher_ASDU_addINT32(asdu);
+        amp4q = SVPublisher_ASDU_addQuality(asdu);
 
-    SVPublisher_ASDU_setSmpCntWrap(asdu, 4000);
-    SVPublisher_ASDU_setRefrTm(asdu, 0);
+        vol1 = SVPublisher_ASDU_addINT32(asdu);
+        vol1q = SVPublisher_ASDU_addQuality(asdu);
+        vol2 = SVPublisher_ASDU_addINT32(asdu);
+        vol2q = SVPublisher_ASDU_addQuality(asdu);
+        vol3 = SVPublisher_ASDU_addINT32(asdu);
+        vol3q = SVPublisher_ASDU_addQuality(asdu);
+        vol4 = SVPublisher_ASDU_addINT32(asdu);
+        vol4q = SVPublisher_ASDU_addQuality(asdu);
 
-    SVPublisher_setupComplete(svPublisher);
+        SVPublisher_ASDU_setSmpCntWrap(asdu, 4000);
+        SVPublisher_ASDU_setRefrTm(asdu, 0);
+
+        SVPublisher_setupComplete(svPublisher);
+    }
 }
 
 static void sVCBEventHandler (SVControlBlock* svcb, int event, void* parameter)
@@ -132,115 +135,121 @@ main(int argc, char** argv)
 
     setupSVPublisher(svInterface);
 
-    SVControlBlock* svcb = IedModel_getSVControlBlock(&iedModel, IEDMODEL_MUnn_LLN0, "MSVCB01");
+    if (svPublisher) {
 
-    if (svcb == NULL) {
-        printf("Lookup svcb failed!\n");
-        exit(1);
-    }
+        SVControlBlock* svcb = IedModel_getSVControlBlock(&iedModel, IEDMODEL_MUnn_LLN0, "MSVCB01");
 
-    IedServer_setSVCBHandler(iedServer, svcb, sVCBEventHandler, NULL);
-
-    Quality q = QUALITY_VALIDITY_GOOD;
-
-    int vol = (int) (6350.f * sqrt(2));
-    int amp = 0;
-    float phaseAngle = 0.f;
-
-    int voltageA;
-    int voltageB;
-    int voltageC;
-    int voltageN;
-    int currentA;
-    int currentB;
-    int currentC;
-    int currentN;
-
-    int sampleCount = 0;
-
-    uint64_t nextCycleStart = Hal_getTimeInMs() + 1000;
-
-    while (running) {
-
-        /* update measurement values */
-        int samplePoint = sampleCount % 80;
-
-        double angleA = (2 * M_PI / 80) * samplePoint;
-        double angleB = (2 * M_PI / 80) * samplePoint - ( 2 * M_PI / 3);
-        double angleC = (2 * M_PI / 80) * samplePoint - ( 4 * M_PI / 3);
-
-        voltageA = (vol * sin(angleA)) * 100;
-        voltageB = (vol * sin(angleB)) * 100;
-        voltageC = (vol * sin(angleC)) * 100;
-        voltageN = voltageA + voltageB + voltageC;
-
-        currentA = (amp * sin(angleA - phaseAngle)) * 1000;
-        currentB = (amp * sin(angleB - phaseAngle)) * 1000;
-        currentC = (amp * sin(angleC - phaseAngle)) * 1000;
-        currentN = currentA + currentB + currentC;
-
-        IedServer_lockDataModel(iedServer);
-
-        IedServer_updateInt32AttributeValue(iedServer, IEDMODEL_MUnn_TCTR1_Amp_instMag_i, currentA);
-        IedServer_updateQuality(iedServer, IEDMODEL_MUnn_TCTR1_Amp_q, q);
-        IedServer_updateInt32AttributeValue(iedServer, IEDMODEL_MUnn_TCTR2_Amp_instMag_i, currentB);
-        IedServer_updateQuality(iedServer, IEDMODEL_MUnn_TCTR2_Amp_q, q);
-        IedServer_updateInt32AttributeValue(iedServer, IEDMODEL_MUnn_TCTR3_Amp_instMag_i, currentC);
-        IedServer_updateQuality(iedServer, IEDMODEL_MUnn_TCTR3_Amp_q, q);
-        IedServer_updateInt32AttributeValue(iedServer, IEDMODEL_MUnn_TCTR4_Amp_instMag_i, currentN);
-        IedServer_updateQuality(iedServer, IEDMODEL_MUnn_TCTR4_Amp_q, q);
-
-        IedServer_updateInt32AttributeValue(iedServer, IEDMODEL_MUnn_TVTR1_Vol_instMag_i, voltageA);
-        IedServer_updateQuality(iedServer, IEDMODEL_MUnn_TVTR1_Vol_q, q);
-        IedServer_updateInt32AttributeValue(iedServer, IEDMODEL_MUnn_TVTR2_Vol_instMag_i, voltageB);
-        IedServer_updateQuality(iedServer, IEDMODEL_MUnn_TVTR2_Vol_q, q);
-        IedServer_updateInt32AttributeValue(iedServer, IEDMODEL_MUnn_TVTR3_Vol_instMag_i, voltageC);
-        IedServer_updateQuality(iedServer, IEDMODEL_MUnn_TVTR3_Vol_q, q);
-        IedServer_updateInt32AttributeValue(iedServer, IEDMODEL_MUnn_TVTR4_Vol_instMag_i, voltageN);
-        IedServer_updateQuality(iedServer, IEDMODEL_MUnn_TVTR4_Vol_q, q);
-
-        IedServer_unlockDataModel(iedServer);
-
-        if (svcbEnabled) {
-
-            SVPublisher_ASDU_setINT32(asdu, amp1, currentA);
-            SVPublisher_ASDU_setQuality(asdu, amp1q, q);
-            SVPublisher_ASDU_setINT32(asdu, amp2, currentB);
-            SVPublisher_ASDU_setQuality(asdu, amp2q, q);
-            SVPublisher_ASDU_setINT32(asdu, amp3, currentC);
-            SVPublisher_ASDU_setQuality(asdu, amp3q, q);
-            SVPublisher_ASDU_setINT32(asdu, amp4, currentN);
-            SVPublisher_ASDU_setQuality(asdu, amp4q, q);
-
-            SVPublisher_ASDU_setINT32(asdu, vol1, voltageA);
-            SVPublisher_ASDU_setQuality(asdu, vol1q, q);
-            SVPublisher_ASDU_setINT32(asdu, vol2, voltageB);
-            SVPublisher_ASDU_setQuality(asdu, vol2q, q);
-            SVPublisher_ASDU_setINT32(asdu, vol3, voltageC);
-            SVPublisher_ASDU_setQuality(asdu, vol3q, q);
-            SVPublisher_ASDU_setINT32(asdu, vol4, voltageN);
-            SVPublisher_ASDU_setQuality(asdu, vol4q, q);
-
-            SVPublisher_ASDU_setRefrTm(asdu, Hal_getTimeInMs());
-
-            SVPublisher_ASDU_setSmpCnt(asdu, (uint16_t) sampleCount);
-
-            SVPublisher_publish(svPublisher);
+        if (svcb == NULL) {
+            printf("Lookup svcb failed!\n");
+            exit(1);
         }
 
-        sampleCount = ((sampleCount + 1) % 4000);
+        IedServer_setSVCBHandler(iedServer, svcb, sVCBEventHandler, NULL);
 
-        if ((sampleCount % 400) == 0) {
-            uint64_t timeval = Hal_getTimeInMs();
+        Quality q = QUALITY_VALIDITY_GOOD;
 
-            while (timeval < nextCycleStart + 100) {
-                Thread_sleep(1);
+        int vol = (int) (6350.f * sqrt(2));
+        int amp = 0;
+        float phaseAngle = 0.f;
 
-                timeval = Hal_getTimeInMs();
+        int voltageA;
+        int voltageB;
+        int voltageC;
+        int voltageN;
+        int currentA;
+        int currentB;
+        int currentC;
+        int currentN;
+
+        int sampleCount = 0;
+
+        uint64_t nextCycleStart = Hal_getTimeInMs() + 1000;
+
+        while (running) {
+
+            /* update measurement values */
+            int samplePoint = sampleCount % 80;
+
+            double angleA = (2 * M_PI / 80) * samplePoint;
+            double angleB = (2 * M_PI / 80) * samplePoint - ( 2 * M_PI / 3);
+            double angleC = (2 * M_PI / 80) * samplePoint - ( 4 * M_PI / 3);
+
+            voltageA = (vol * sin(angleA)) * 100;
+            voltageB = (vol * sin(angleB)) * 100;
+            voltageC = (vol * sin(angleC)) * 100;
+            voltageN = voltageA + voltageB + voltageC;
+
+            currentA = (amp * sin(angleA - phaseAngle)) * 1000;
+            currentB = (amp * sin(angleB - phaseAngle)) * 1000;
+            currentC = (amp * sin(angleC - phaseAngle)) * 1000;
+            currentN = currentA + currentB + currentC;
+
+            IedServer_lockDataModel(iedServer);
+
+            IedServer_updateInt32AttributeValue(iedServer, IEDMODEL_MUnn_TCTR1_Amp_instMag_i, currentA);
+            IedServer_updateQuality(iedServer, IEDMODEL_MUnn_TCTR1_Amp_q, q);
+            IedServer_updateInt32AttributeValue(iedServer, IEDMODEL_MUnn_TCTR2_Amp_instMag_i, currentB);
+            IedServer_updateQuality(iedServer, IEDMODEL_MUnn_TCTR2_Amp_q, q);
+            IedServer_updateInt32AttributeValue(iedServer, IEDMODEL_MUnn_TCTR3_Amp_instMag_i, currentC);
+            IedServer_updateQuality(iedServer, IEDMODEL_MUnn_TCTR3_Amp_q, q);
+            IedServer_updateInt32AttributeValue(iedServer, IEDMODEL_MUnn_TCTR4_Amp_instMag_i, currentN);
+            IedServer_updateQuality(iedServer, IEDMODEL_MUnn_TCTR4_Amp_q, q);
+
+            IedServer_updateInt32AttributeValue(iedServer, IEDMODEL_MUnn_TVTR1_Vol_instMag_i, voltageA);
+            IedServer_updateQuality(iedServer, IEDMODEL_MUnn_TVTR1_Vol_q, q);
+            IedServer_updateInt32AttributeValue(iedServer, IEDMODEL_MUnn_TVTR2_Vol_instMag_i, voltageB);
+            IedServer_updateQuality(iedServer, IEDMODEL_MUnn_TVTR2_Vol_q, q);
+            IedServer_updateInt32AttributeValue(iedServer, IEDMODEL_MUnn_TVTR3_Vol_instMag_i, voltageC);
+            IedServer_updateQuality(iedServer, IEDMODEL_MUnn_TVTR3_Vol_q, q);
+            IedServer_updateInt32AttributeValue(iedServer, IEDMODEL_MUnn_TVTR4_Vol_instMag_i, voltageN);
+            IedServer_updateQuality(iedServer, IEDMODEL_MUnn_TVTR4_Vol_q, q);
+
+            IedServer_unlockDataModel(iedServer);
+
+            if (svcbEnabled) {
+
+                SVPublisher_ASDU_setINT32(asdu, amp1, currentA);
+                SVPublisher_ASDU_setQuality(asdu, amp1q, q);
+                SVPublisher_ASDU_setINT32(asdu, amp2, currentB);
+                SVPublisher_ASDU_setQuality(asdu, amp2q, q);
+                SVPublisher_ASDU_setINT32(asdu, amp3, currentC);
+                SVPublisher_ASDU_setQuality(asdu, amp3q, q);
+                SVPublisher_ASDU_setINT32(asdu, amp4, currentN);
+                SVPublisher_ASDU_setQuality(asdu, amp4q, q);
+
+                SVPublisher_ASDU_setINT32(asdu, vol1, voltageA);
+                SVPublisher_ASDU_setQuality(asdu, vol1q, q);
+                SVPublisher_ASDU_setINT32(asdu, vol2, voltageB);
+                SVPublisher_ASDU_setQuality(asdu, vol2q, q);
+                SVPublisher_ASDU_setINT32(asdu, vol3, voltageC);
+                SVPublisher_ASDU_setQuality(asdu, vol3q, q);
+                SVPublisher_ASDU_setINT32(asdu, vol4, voltageN);
+                SVPublisher_ASDU_setQuality(asdu, vol4q, q);
+
+                SVPublisher_ASDU_setRefrTm(asdu, Hal_getTimeInMs());
+
+                SVPublisher_ASDU_setSmpCnt(asdu, (uint16_t) sampleCount);
+
+                SVPublisher_publish(svPublisher);
             }
 
-            nextCycleStart = nextCycleStart + 100;
+            sampleCount = ((sampleCount + 1) % 4000);
+
+            if ((sampleCount % 400) == 0) {
+                uint64_t timeval = Hal_getTimeInMs();
+
+                while (timeval < nextCycleStart + 100) {
+                    Thread_sleep(1);
+
+                    timeval = Hal_getTimeInMs();
+                }
+
+                nextCycleStart = nextCycleStart + 100;
+            }
         }
+    }
+    else {
+        printf("Cannot start SV publisher!\n");
     }
 
     /* stop MMS server - close TCP server socket and all client sockets */
