@@ -1706,8 +1706,7 @@ void
 MmsValue_setMmsString(MmsValue* self, const char* string)
 {
     if (self->type == MMS_STRING) {
-        if (self->value.visibleString.buf != NULL);
-            setVisibleStringValue(self, string);
+        setVisibleStringValue(self, string);
     }
 }
 
@@ -1750,8 +1749,7 @@ void
 MmsValue_setVisibleString(MmsValue* self, const char* string)
 {
     if (self->type == MMS_VISIBLE_STRING) {
-        if (self->value.visibleString.buf != NULL);
-            setVisibleStringValue(self, string);
+        setVisibleStringValue(self, string);
     }
 }
 

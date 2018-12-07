@@ -882,7 +882,7 @@ IedConnection_getVariableSpecificationAsync(IedConnection self, IedClientError* 
 
     if ((domainId == NULL) || (itemId == NULL)) {
         *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
-        goto cleanup_and_exit;
+        return 0;
     }
 
     IedConnectionOutstandingCall call = iedConnection_allocateOutstandingCall(self);
@@ -903,8 +903,6 @@ IedConnection_getVariableSpecificationAsync(IedConnection self, IedClientError* 
 
     if (err != MMS_ERROR_NONE)
         iedConnection_releaseOutstandingCall(self, call);
-
-cleanup_and_exit:
 
     return invokeId;
 }
@@ -1419,6 +1417,8 @@ IedConnection_writeObject(IedConnection self, IedClientError* error, const char*
                 *brace = 0;
 
                 MmsConnection_writeSingleArrayElementWithComponent(self->connection, &mmsError, domainId, itemId, index, component, value);
+
+                *error = iedConnection_mapMmsErrorToIedError(mmsError);
             }
             else
                 *error = IED_ERROR_USER_PROVIDED_INVALID_ARGUMENT;
@@ -1426,10 +1426,11 @@ IedConnection_writeObject(IedConnection self, IedClientError* error, const char*
         else
             *error = IED_ERROR_USER_PROVIDED_INVALID_ARGUMENT;
     }
-    else
+    else {
         MmsConnection_writeVariable(self->connection, &mmsError, domainId, itemId, value);
 
-    *error = iedConnection_mapMmsErrorToIedError(mmsError);
+        *error = iedConnection_mapMmsErrorToIedError(mmsError);
+    }
 }
 
 static void
@@ -1489,7 +1490,7 @@ IedConnection_writeObjectAsync(IedConnection self, IedClientError* error, const 
     call->callbackParameter = parameter;
     call->invokeId = 0;
 
-    MmsError err = MMS_ERROR_NONE;
+    MmsError err;
 
     /* check if item ID contains an array "(..)" */
     char* brace = strchr(itemId, '(');
@@ -1512,6 +1513,8 @@ IedConnection_writeObjectAsync(IedConnection self, IedClientError* error, const 
 
                 call->invokeId = MmsConnection_writeSingleArrayElementWithComponentAsync(self->connection, &err, domainId, itemId, index, component, value,
                         writeVariableHandler, self);
+
+                *error = iedConnection_mapMmsErrorToIedError(err);
             }
             else
                 *error = IED_ERROR_USER_PROVIDED_INVALID_ARGUMENT;
@@ -1519,12 +1522,13 @@ IedConnection_writeObjectAsync(IedConnection self, IedClientError* error, const 
         else
             *error = IED_ERROR_USER_PROVIDED_INVALID_ARGUMENT;
     }
-    else
+    else {
         call->invokeId = MmsConnection_writeVariableAsync(self->connection, &err, domainId, itemId, value, writeVariableHandler, self);
 
-    *error = iedConnection_mapMmsErrorToIedError(err);
+        *error = iedConnection_mapMmsErrorToIedError(err);
+    }
 
-    if (err != MMS_ERROR_NONE) {
+    if (*error != IED_ERROR_OK) {
         iedConnection_releaseOutstandingCall(self, call);
         return 0;
     }
@@ -3282,8 +3286,6 @@ IedConnection_readDataSetValuesAsync(IedConnection self, IedClientError* error, 
     const char* domainId = NULL;
     const char* itemId = NULL;
 
-    *error = IED_ERROR_OK;
-
     bool isAssociationSpecific = false;
 
     if (dataSetReference[0] != '@') {
@@ -3322,7 +3324,6 @@ IedConnection_readDataSetValuesAsync(IedConnection self, IedClientError* error, 
         isAssociationSpecific = true;
     }
 
-
     IedConnectionOutstandingCall call = iedConnection_allocateOutstandingCall(self);
 
     if (call == NULL) {
@@ -3348,10 +3349,9 @@ IedConnection_readDataSetValuesAsync(IedConnection self, IedClientError* error, 
         call->invokeId = MmsConnection_readNamedVariableListValuesAsync(self->connection, &err,
                     domainId, itemId, true, getDataSetHandlerInternal, self);
 
-    if ((err != MMS_ERROR_NONE) || (*error != IED_ERROR_OK)) {
+    *error = iedConnection_mapMmsErrorToIedError(err);
 
-        if (err != MMS_ERROR_NONE)
-            *error = iedConnection_mapMmsErrorToIedError(err);
+    if (err != MMS_ERROR_NONE) {
 
         GLOBAL_FREEMEM(call->specificParameter2.pointer);
 
@@ -3504,11 +3504,9 @@ IedConnection_writeDataSetValuesAsync(IedConnection self, IedClientError* error,
 
     call->invokeId = MmsConnection_writeNamedVariableListAsync(self->connection, &err, isAssociationSpecific, domainId, itemId, values, writeDataSetHandlerInternal, self);
 
-    if ((err != MMS_ERROR_NONE) || (*error != IED_ERROR_OK)) {
+    *error = iedConnection_mapMmsErrorToIedError(err);
 
-        if (err != MMS_ERROR_NONE)
-            *error = iedConnection_mapMmsErrorToIedError(err);
-
+    if (err != MMS_ERROR_NONE) {
         iedConnection_releaseOutstandingCall(self, call);
 
         return 0;
