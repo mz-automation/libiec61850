@@ -160,15 +160,20 @@ svReceiverLoop(void* threadParameter)
     self->running = true;
     self->stopped = false;
 
-    SVReceiver_startThreadless(self);
+    if (SVReceiver_startThreadless(self)) {
 
-    while (self->running) {
+        while (self->running) {
 
-        if (SVReceiver_tick(self) == false)
-            Thread_sleep(1);
+            if (SVReceiver_tick(self) == false)
+                Thread_sleep(1);
+        }
+
+        SVReceiver_stopThreadless(self);
     }
-
-    SVReceiver_stopThreadless(self);
+    else {
+        if (DEBUG_SV_SUBSCRIBER)
+            printf("SV_SUBSCRIBER: Failed to start SV receiver\n");
+    }
 
     self->stopped = true;
 }
@@ -229,9 +234,12 @@ SVReceiver_startThreadless(SVReceiver self)
     else
         self->ethSocket = Ethernet_createSocket(self->interfaceId, NULL);
 
-    Ethernet_setProtocolFilter(self->ethSocket, ETH_P_SV);
+    if (self->ethSocket) {
 
-    self->running = true;
+        Ethernet_setProtocolFilter(self->ethSocket, ETH_P_SV);
+
+        self->running = true;
+    }
     
     return self->ethSocket;
 }

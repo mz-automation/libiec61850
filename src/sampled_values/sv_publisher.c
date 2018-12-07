@@ -84,22 +84,22 @@ struct sSVPublisher {
 };
 
 
-static void
-preparePacketBuffer(SVPublisher self, CommParameters* parameters, const char* interfaceID)
+static bool
+preparePacketBuffer(SVPublisher self, CommParameters* parameters, const char* interfaceId)
 {
-    uint8_t srcAddr[6];
-
-    if (interfaceID != NULL)
-        Ethernet_getInterfaceMACAddress(interfaceID, srcAddr);
-    else
-        Ethernet_getInterfaceMACAddress(CONFIG_ETHERNET_INTERFACE_ID, srcAddr);
-
     uint8_t defaultDstAddr[] = CONFIG_SV_DEFAULT_DST_ADDRESS;
 
     uint8_t* dstAddr;
     uint8_t priority;
     uint16_t vlanId;
     uint16_t appId;
+
+    uint8_t srcAddr[6];
+
+    if (interfaceId != NULL)
+        Ethernet_getInterfaceMACAddress(interfaceId, srcAddr);
+    else
+        Ethernet_getInterfaceMACAddress(CONFIG_ETHERNET_INTERFACE_ID, srcAddr);
 
     if (parameters == NULL) {
         dstAddr = defaultDstAddr;
@@ -114,10 +114,18 @@ preparePacketBuffer(SVPublisher self, CommParameters* parameters, const char* in
         appId = parameters->appId;
     }
 
-    if (interfaceID != NULL)
-        self->ethernetSocket = Ethernet_createSocket(interfaceID, dstAddr);
+    if (interfaceId != NULL)
+        self->ethernetSocket = Ethernet_createSocket(interfaceId, dstAddr);
     else
         self->ethernetSocket = Ethernet_createSocket(CONFIG_ETHERNET_INTERFACE_ID, dstAddr);
+
+    if (self->ethernetSocket == NULL) {
+
+        if (DEBUG_SV_PUBLISHER)
+            printf("SV_PUBLISHER: Failed to allocate Ethernet interface\n");
+
+        return false;
+    }
 
     self->buffer = (uint8_t*) GLOBAL_MALLOC(SV_MAX_MESSAGE_SIZE);
 
@@ -161,6 +169,8 @@ preparePacketBuffer(SVPublisher self, CommParameters* parameters, const char* in
     self->buffer[bufPos++] = 0x00;
 
     self->payloadStart = bufPos;
+
+    return true;
 }
 
 
@@ -287,9 +297,15 @@ SVPublisher_create(CommParameters* parameters, const char* interfaceId)
 {
     SVPublisher self = (SVPublisher) GLOBAL_CALLOC(1, sizeof(struct sSVPublisher));
 
-    self->asduList = NULL;
+    if (self) {
+        self->asduList = NULL;
 
-    preparePacketBuffer(self, parameters, interfaceId);
+        if (preparePacketBuffer(self, parameters, interfaceId) == false) {
+            GLOBAL_FREEMEM(self);
+            self = NULL;
+        }
+
+    }
 
     return self;
 }
