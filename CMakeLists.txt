@@ -85,7 +85,6 @@ set(API_HEADERS
     src/common/inc/libiec61850_common_api.h
     src/common/inc/libiec61850_platform_includes.h
     src/common/inc/linked_list.h
-    src/common/inc/byte_buffer.h
     src/common/inc/string_utilities.h
     src/iec61850/inc/iec61850_client.h
     src/iec61850/inc/iec61850_common.h
