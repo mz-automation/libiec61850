@@ -542,7 +542,6 @@ mmsClient_createWriteRequestAlternateAccessSingleIndexComponent(uint32_t invokeI
     /* Create list of variable specifications */
     request->variableAccessSpecification.present = VariableAccessSpecification_PR_listOfVariable;
     request->variableAccessSpecification.choice.listOfVariable.list.count = 1;
-    //request->variableAccessSpecification.choice.listOfVariable.list.size = 1;
     request->variableAccessSpecification.choice.listOfVariable.list.array =
             (ListOfVariableSeq_t**) GLOBAL_CALLOC(1, sizeof(ListOfVariableSeq_t*));
 

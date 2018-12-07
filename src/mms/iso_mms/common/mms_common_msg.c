@@ -350,7 +350,6 @@ void
 mmsMsg_createExtendedFilename(const char* basepath, char* extendedFileName, char* fileName)
 {
 #if (CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME == 1)
-   // strncpy(extendedFileName, MmsServerConnection_getFilesystemBasepath(self), 512);
     strncpy(extendedFileName, basepath, 512);
     strncat(extendedFileName, fileName, 512);
 #else

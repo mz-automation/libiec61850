@@ -417,8 +417,10 @@ CDC_MV_create(const char* dataObjectName, ModelNode* parent, uint32_t options, b
 
     CDC_addTimeQuality(newMV, IEC61850_FC_MX);
 
-//    if (options & CDC_OPTION_PICS_SUBST)
-//        CDC_addOptionPicsSubst(newMV, )
+/*
+    if (options & CDC_OPTION_PICS_SUBST)
+        CDC_addOptionPicsSubst(newMV, )
+*/
 
     CDC_addStandardOptions(newMV, options);
 
@@ -447,8 +449,8 @@ CDC_CMV_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
 
     CDC_addTimeQuality(newMV, IEC61850_FC_MX);
 
-//    if (options & CDC_OPTION_PICS_SUBST)
-//        CDC_addOptionPicsSubst(newMV, )
+/*    if (options & CDC_OPTION_PICS_SUBST)
+        CDC_addOptionPicsSubst(newMV, )*/
 
     CDC_addStandardOptions(newMV, options);
 
@@ -499,7 +501,7 @@ CDC_HST_create(const char* dataObjectName, ModelNode* parent, uint32_t options, 
 
     DataAttribute_create("numPts", (ModelNode*) newHST, IEC61850_INT16U, IEC61850_FC_CF, 0, 0, 0);
 
-    //TODO add mandatory attribute "hstRangeC"
+    /* TODO add mandatory attribute "hstRangeC" */
 
     CAC_Unit_create("units", (ModelNode*) newHST, options & CDC_OPTION_UNIT_MULTIPLIER);
 
@@ -898,8 +900,8 @@ CDC_WYE_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
 {
     DataObject* newWYE = DataObject_create(dataObjectName, parent, 0);
 
-    //TODO check if some options should be masked
-    //TODO take care for GC_1
+    /* TODO check if some options should be masked */
+    /* TODO take care for GC_1 */
     CDC_CMV_create("phsA", (ModelNode*) newWYE, options);
     CDC_CMV_create("phsB", (ModelNode*) newWYE, options);
     CDC_CMV_create("phsC", (ModelNode*) newWYE, options);
@@ -921,7 +923,7 @@ CDC_DEL_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
 {
     DataObject* newDEL = DataObject_create(dataObjectName, parent, 0);
 
-    //TODO check if some options should be masked
+    /* TODO check if some options should be masked */
     CDC_CMV_create("phsAB", (ModelNode*) newDEL, options);
     CDC_CMV_create("phsBC", (ModelNode*) newDEL, options);
     CDC_CMV_create("phsCA", (ModelNode*) newDEL, options);
@@ -1038,7 +1040,7 @@ CDC_SPV_create(const char* dataObjectName, ModelNode* parent, uint32_t options, 
 
     CDC_APC_create("actVal", (ModelNode*) newSPV, 0, controlOptions, false);
 
-    //TOOO add optional "oldVal" APC
+    /* TOOO add optional "oldVal" APC */
 
     if (wpOptions & CDC_OPTION_61400_MIN_MX_VAL)
         CAC_AnalogueValue_create("minMxVal", (ModelNode*) newSPV, IEC61850_FC_MX, 0, false);

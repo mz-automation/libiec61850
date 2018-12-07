@@ -583,7 +583,7 @@ ModelNode_getChildCount(ModelNode* modelNode) {
 ModelNode*
 ModelNode_getChild(ModelNode* self, const char* name)
 {
-    // check for separator
+   /* check for separator */
    const char* separator = strchr(name, '.');
 
    int nameElementLength = 0;
@@ -620,7 +620,7 @@ ModelNode_getChild(ModelNode* self, const char* name)
 ModelNode*
 ModelNode_getChildWithFc(ModelNode* self, const char* name, FunctionalConstraint fc)
 {
-    // check for separator
+   /* check for separator */
    const char* separator = strchr(name, '.');
 
    int nameElementLength = 0;

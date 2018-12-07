@@ -268,7 +268,7 @@ alternateArrayAccess(MmsServerConnection connection,
 			appendErrorToResultList(values, DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT);
 
 	}
-	else { // invalid access
+	else { /* invalid access */
 		if (DEBUG_MMS_SERVER) printf("Invalid alternate access\n");
 
         appendErrorToResultList(values, DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT);
@@ -518,7 +518,7 @@ handleReadListOfVariablesRequest(
 	LinkedList /*<MmsValue>*/ values = LinkedList_create();
 
 	if (isSpecWithResult(read)) { /* add specification to result */
-		// ignore - not required for IEC 61850
+		/* ignore - not required for IEC 61850 */
 	}
 
 	int i;

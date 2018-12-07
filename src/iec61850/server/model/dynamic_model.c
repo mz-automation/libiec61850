@@ -718,7 +718,7 @@ ModelNode_destroy(ModelNode* modelNode)
 void
 IedModel_destroy(IedModel* model)
 {
-    // delete all model nodes and dynamically created strings
+    /* delete all model nodes and dynamically created strings */
 
     /* delete all logical devices */
 

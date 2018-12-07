@@ -307,7 +307,7 @@ mmsServer_handleWriteRequest2(
                          printf("    %s\n", printBuf);
                      }
                      else {
-                         //TODO cleanup already decoded MmsValue instances
+                         /* TODO cleanup already decoded MmsValue instances */
                          printf("  Failed to decode MMS data value\n");
                          mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
                          return;

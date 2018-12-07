@@ -317,7 +317,7 @@ int
 BerEncoder_encodeFloat(uint8_t* floatValue, uint8_t formatWidth, uint8_t exponentWidth,
         uint8_t* buffer, int bufPos)
 {
-    //TODO operate on encoding buffer directly
+    /* TODO operate on encoding buffer directly */
     uint8_t valueBuffer[9];
 
     int byteSize = formatWidth / 8;

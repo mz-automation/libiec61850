@@ -116,7 +116,7 @@ struct sMmsServer {
     MmsConnectionHandler connectionHandler;
     void* connectionHandlerParameter;
 
-    MmsNamedVariableListChangedHandler variableListChangedHandler; //TODO this is only required if dynamic data sets are supported!
+    MmsNamedVariableListChangedHandler variableListChangedHandler; /* TODO this is only required if dynamic data sets are supported! */
     void* variableListChangedHandlerParameter;
 
     Map openConnections;

@@ -110,7 +110,7 @@ mmsClient_createMmsGetNameListRequestAssociationSpecific(long invokeId, ByteBuff
 bool
 mmsClient_parseGetNameListResponse(LinkedList* nameList, ByteBuffer* message)
 {
-    // TODO only parse get name list specific part!
+    /* TODO only parse get name list specific part here */
 
 	bool moreFollows = true;
 
@@ -121,7 +121,7 @@ mmsClient_parseGetNameListResponse(LinkedList* nameList, ByteBuffer* message)
 
 	uint8_t tag = buffer[bufPos++];
 	if (tag == 0xa2) {
-	    // TODO parse confirmed error PDU
+	    /* TODO parse confirmed error PDU */
 	    goto exit_error;
 	}
 	if (tag != 0xa1) goto exit_error;

@@ -70,8 +70,9 @@ typedef void (*GooseListener)(GooseSubscriber subscriber, void* parameter);
 LIB61850_API GooseSubscriber
 GooseSubscriber_create(char* goCbRef, MmsValue* dataSetValues);
 
-//char*
-//GooseSubscriber_getGoCbRef(GooseSubscriber self);
+/* char*
+GooseSubscriber_getGoCbRef(GooseSubscriber self);
+*/
 
 /**
  * \brief set the APPID used by the subscriber to filter relevant messages.

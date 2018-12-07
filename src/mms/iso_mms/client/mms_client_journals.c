@@ -33,8 +33,6 @@
 #include "conversions.h"
 #include "mms_value_internal.h"
 
-//TODO add event-based API to parse journal entries
-
 static bool
 parseJournalVariable(uint8_t* buffer, int bufPos, int maxLength, MmsJournalVariable journalVariable)
 {

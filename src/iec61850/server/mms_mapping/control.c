@@ -1061,7 +1061,6 @@ Control_readAccessControlObject(MmsMapping* self, MmsDomain* domain, char* varia
     return value;
 }
 
-//INFO: function can be removed if no certification is required
 static bool
 checkValidityOfOriginParameter(MmsValue* origin)
 {

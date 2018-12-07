@@ -801,7 +801,7 @@ MmsValue_getUtcTimeInMsWithUs(const MmsValue* self, uint32_t* usec)
     fractionOfSecond += (valueArray[5] << 8);
     fractionOfSecond += (valueArray[6]);
 
-    uint64_t remainder = fractionOfSecond * 1000000ULL / 0x1000000ULL; // in usec
+    uint64_t remainder = fractionOfSecond * 1000000ULL / 0x1000000ULL; /* in usec */
 
     uint64_t msVal = (timeval32 * 1000LL) + (remainder / 1000LL);
 

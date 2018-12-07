@@ -244,7 +244,7 @@ MmsGooseControlBlock_enable(MmsGooseControlBlock self)
             if (self->goId != NULL)
                 GoosePublisher_setGoID(self->publisher, self->goId);
 
-            //prepare data set values
+            /* prepare data set values */
             self->dataSetValues = LinkedList_create();
 
             DataSetEntry* dataSetEntry = self->dataSet->fcdas;

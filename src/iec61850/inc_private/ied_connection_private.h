@@ -49,8 +49,6 @@ struct sIedConnectionOutstandingCall {
             bool cont;
         } getFileDirectory;
     } specificParameter2; /* function/service specific parameter */
-
-    //void* specificParameter2; /* function/service specific parameter */
 };
 
 struct sIedConnection

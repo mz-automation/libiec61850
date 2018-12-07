@@ -828,7 +828,7 @@ IsoClientConnection_abortAsync(IsoClientConnection self)
 void
 IsoClientConnection_release(IsoClientConnection self)
 {
-    //TODO block other messages from being sent
+    /* TODO block other messages from being sent */
     IsoClientConnection_allocateTransmitBuffer(self);
 
     struct sBufferChain sAcseBuffer;

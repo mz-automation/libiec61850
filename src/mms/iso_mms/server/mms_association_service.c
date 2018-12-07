@@ -272,7 +272,7 @@ parseInitiateRequestPdu(MmsServerConnection self, uint8_t* buffer, int bufPos, i
         bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
 
         if (bufPos < 0)  {
-            // TODO write initiate error PDU!
+            /* TODO write initiate error PDU! */
             return false;
         }
 
@@ -328,7 +328,7 @@ mmsServer_handleInitiateRequest (
     if (parseInitiateRequestPdu(self, buffer, bufPos, maxBufPos))
         createInitiateResponse(self, response);
     else {
-        //TODO send initiate error PDU
+        /* TODO send initiate error PDU */
     }
 
 }

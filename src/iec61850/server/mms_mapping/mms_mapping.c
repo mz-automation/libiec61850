@@ -256,7 +256,7 @@ createNamedVariableFromDataAttribute(DataAttribute* attribute)
             namedVariable->type = MMS_UTC_TIME;
             break;
         case IEC61850_QUALITY:
-            namedVariable->typeSpec.bitString = -13; // -13 = up to 13 bits
+            namedVariable->typeSpec.bitString = -13; /* -13 = up to 13 bits */
             namedVariable->type = MMS_BIT_STRING;
             break;
         case IEC61850_ENTRY_TIME:
@@ -1644,7 +1644,7 @@ writeAccessGooseControlBlock(MmsMapping* self, MmsDomain* domain, char* variable
 
 #if (CONFIG_GOOSE_DATSET_WRITABLE == 1)
             if (strcmp(varName, "DatSet") == 0) {
-            	// allow to set non-existing data set?
+            	/* allow to set non-existing data set? */
 
                 MmsValue_update(MmsValue_getElement(MmsGooseControlBlock_getMmsValues(mmsGCB), 2), value);
                 allowAccess = true;
@@ -2566,7 +2566,7 @@ variableListChangedHandler (void* parameter, bool create, MmsVariableListType li
 
     if (create) {
         if (listType == MMS_DOMAIN_SPECIFIC) {
-            // check if LN exists - otherwise reject request (to fulfill test case sDsN1c)
+            /* check if LN exists - otherwise reject request (to fulfill test case sDsN1c) */
 
             allow = MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT;
 

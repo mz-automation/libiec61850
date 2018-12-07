@@ -57,7 +57,7 @@ struct sJournalEncoder {
     int maxSize;
     int bufPos;
     int currentEntryBufPos; /* store start buffer position of current entry in case the whole JournalEntry will become too long */
-    uint64_t currentEntryId; //TODO use a byte array for the generic MMS case!
+    uint64_t currentEntryId; /* For generic MMS case a byte array would be required! */
     uint64_t currentTimestamp;
     bool moreFollows;
 };
@@ -92,7 +92,7 @@ entryDataCallback (void* parameter, const char* dataRef, uint8_t* data, int data
 
     uint8_t* buffer = encoder->buffer;
 
-    //TODO check if entry is too long for buffer!
+    /* TODO check if entry is too long for buffer! */
 
     if (moreFollow) {
         int bufPos = encoder->bufPos;
@@ -327,7 +327,7 @@ mmsServer_handleReadJournalRequest(
                 }
                 else {
                     mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
-                    return;    // forward request to implementation class
+                    return;    /* forward request to implementation class */
                 }
 
                 bufPos += length;
@@ -361,7 +361,7 @@ mmsServer_handleReadJournalRequest(
                 }
                 else {
                     mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
-                    return;    // forward request to implementation class
+                    return;    /* forward request to implementation class */
                 }
 
                 bufPos += length;
@@ -433,7 +433,7 @@ mmsServer_handleReadJournalRequest(
         }
     }
 
-    //TODO check if required fields are present
+    /* check if required fields are present */
     if (hasNames == false) {
         if (DEBUG_MMS_SERVER)
             printf("MMS_SERVER: readJournal missing journal name\n");
@@ -442,7 +442,7 @@ mmsServer_handleReadJournalRequest(
         return;
     }
 
-    //TODO check valid field combinations
+    /* TODO check valid field combinations */
 
     /* lookup journal */
     MmsDevice* mmsDevice = MmsServer_getDevice(connection->server);

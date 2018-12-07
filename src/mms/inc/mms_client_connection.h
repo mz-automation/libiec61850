@@ -264,9 +264,6 @@ MmsConnection_connect(MmsConnection self, MmsError* mmsError, const char* server
 LIB61850_API void
 MmsConnection_connectAsync(MmsConnection self, MmsError* mmsError, const char* serverName, int serverPort);
 
-
-// return value indicates that connection is currently waiting and calling thread can be suspended
-
 /**
  * \brief Call MmsConnection state machine and connection handling code (for non-threaded mode only)
  *

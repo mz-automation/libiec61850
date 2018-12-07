@@ -6,7 +6,7 @@
 #include <asn_internal.h>
 #include <INTEGER.h>
 #include <asn_codecs_prim.h>	/* Encoder and decoder of a primitive type */
-//#include <errno.h>
+/* #include <errno.h> */
 
 /*
  * INTEGER basic type description.
@@ -742,7 +742,7 @@ asn_INTEGER2long(const INTEGER_t *iptr, long *lptr) {
 
 	/* Sanity checking */
 	if(!iptr || !iptr->buf || !lptr) {
-		//errno = EINVAL;
+		/* errno = EINVAL; */
 		return -1;
 	}
 
@@ -771,7 +771,7 @@ asn_INTEGER2long(const INTEGER_t *iptr, long *lptr) {
 		size = end - b;
 		if(size > sizeof(long)) {
 			/* Still cannot fit the long */
-			//errno = ERANGE;
+			/* errno = ERANGE; */
 			return -1;
 		}
 	}
@@ -804,7 +804,7 @@ asn_long2INTEGER(INTEGER_t *st, long value) {
 	int add;
 
 	if(!st) {
-		//errno = EINVAL;
+		/* errno = EINVAL; */
 		return -1;
 	}
 

@@ -747,7 +747,7 @@ MmsServerConnection_destroy(MmsServerConnection self)
 bool
 MmsServerConnection_addNamedVariableList(MmsServerConnection self, MmsNamedVariableList variableList)
 {
-    //TODO check if operation is allowed!
+    /* TODO check if operation is allowed! */
 
     LinkedList_add(self->namedVariableLists, variableList);
 

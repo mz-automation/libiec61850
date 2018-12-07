@@ -1260,7 +1260,7 @@ updateOwner(ReportControl* rc, MmsServerConnection connection)
                         separator = strchr(separator, '.');
 
                         if (separator != NULL)
-                            separator++; // skip '.' character
+                            separator++; /* skip '.' character */
 
                         addrElementCount ++;
                     }
@@ -2427,7 +2427,7 @@ return_out_of_memory:
     if (DEBUG_IED_SERVER)
         printf("IED_SERVER: sendNextReportEntry failed - memory allocation problem!\n");
 
-    //TODO set some flag to notify application here
+    /* TODO set some flag to notify application here */
 
 cleanup_and_return:
 

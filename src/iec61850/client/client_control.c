@@ -299,7 +299,7 @@ ControlObjectClient_setControlModel(ControlObjectClient self, ControlModel ctlMo
 void
 ControlObjectClient_changeServerControlModel(ControlObjectClient self, ControlModel ctlModel)
 {
-    //TODO write new ctlModel to server
+    /* TODO write new ctlModel to server */
     self->ctlModel = ctlModel;
 }
 

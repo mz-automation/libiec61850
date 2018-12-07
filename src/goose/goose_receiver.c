@@ -744,7 +744,7 @@ parseGooseMessage(GooseReceiver self, int numbytes)
         printf("GOOSE_SUBSCRIBER:   APDU length: %i\n", apduLength);
     }
 
-    // check if there is an interested subscriber
+    /* check if there is an interested subscriber */
     LinkedList element = LinkedList_getNext(self->subscriberList);
 
     while (element != NULL) {
@@ -792,7 +792,7 @@ gooseReceiverLoop(void* threadParameter)
 }
 #endif
 
-// start GOOSE receiver in a separate thread
+/* start GOOSE receiver in a separate thread */
 void
 GooseReceiver_start(GooseReceiver self)
 {
@@ -879,7 +879,7 @@ GooseReceiver_stopThreadless(GooseReceiver self)
     self->running = false;
 }
 
-// call after reception of ethernet frame
+/* call after reception of ethernet frame */
 bool
 GooseReceiver_tick(GooseReceiver self)
 {

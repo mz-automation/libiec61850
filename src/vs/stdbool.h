@@ -1,1 +1,1 @@
-// just to make Visual Studio Compiler happy!
+/* just to make Visual Studio Compiler happy! */

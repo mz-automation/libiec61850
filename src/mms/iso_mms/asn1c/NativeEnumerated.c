@@ -28,7 +28,7 @@ asn_TYPE_descriptor_t asn_DEF_NativeEnumerated = {
 	NativeInteger_encode_der,
 	NULL,
         NULL,
-	//NativeEnumerated_encode_xer,
+	/* NativeEnumerated_encode_xer, */
 	NativeEnumerated_decode_uper,
 	NativeEnumerated_encode_uper,
 	0, /* Use generic outmost tag fetcher */

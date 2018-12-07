@@ -195,7 +195,7 @@ LIBIEC61850_SV_writeAccessSVControlBlock(MmsMapping* self, MmsDomain* domain, ch
         else {
             bool allowAccess = false;
 
-            // In 61850-9-2 mapping only Resv and SvEna are writable!
+            /* In 61850-9-2 mapping only Resv and SvEna are writable! */
 
             if (allowAccess)
                 return DATA_ACCESS_ERROR_SUCCESS;

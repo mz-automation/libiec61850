@@ -353,7 +353,6 @@ mmsClient_createDefineNamedVariableListRequest(
         request->listOfVariable.list.array[i]->variableSpecification.choice.name.choice.
                 domainspecific.itemId.buf = (uint8_t*) StringUtils_copyString(variableSpec->itemId);
 
-        //TODO add alternate access
         if (variableSpec->arrayIndex != -1) {
 
             AlternateAccess_t* alternateAccess = (AlternateAccess_t*) GLOBAL_CALLOC(1, sizeof(AlternateAccess_t));

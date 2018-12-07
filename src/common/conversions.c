@@ -58,7 +58,7 @@ timegm(struct tm* tm_time)
 
 #if defined(__MINGW32__)
 
-static inline // assuming gmtime is thread safe in windows!
+static inline /* assuming gmtime is thread safe in windows! */
 struct tm* gmtime_r(const time_t* timep, struct tm* result)
 {
    struct tm* t;

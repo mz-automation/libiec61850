@@ -116,7 +116,7 @@ createConnectPdu(IsoPresentation* self, BufferChain writeBuffer, BufferChain pay
 
     normalModeLength += 2;
 
-    contentLength += normalModeLength; // + 2;
+    contentLength += normalModeLength;
 
     contentLength += 1 + BerEncoder_determineLengthSize(normalModeLength);
 

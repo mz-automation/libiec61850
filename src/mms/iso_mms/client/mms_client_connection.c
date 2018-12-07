@@ -1195,7 +1195,7 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
         if (DEBUG_MMS_CLIENT)
             printf("MMS_CLIENT: received confirmed request PDU (size=%i)\n", payload->size);
 
-        // TODO extract function
+        /* TODO extract function */
 
         int bufPos = 1;
         int length;
@@ -1267,7 +1267,7 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
 #endif /* MMS_FILE_SERVICE == 1 */
 
                 default:
-                    // mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE, response);
+                    /* mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE, response); */
                     if (DEBUG_MMS_CLIENT)
                         printf("MMS_CLIENT: unexpected message from server!\n");
 
@@ -1287,7 +1287,7 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
                     break;
 
                 default:
-                    //  mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE, response);
+                    /*  mmsServer_writeMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE, response); */
                     if (DEBUG_MMS_CLIENT)
                         printf("MMS_CLIENT: unexpected message from server!\n");
 

@@ -383,7 +383,7 @@ createNamedVariableList(MmsServer server, MmsDomain* domain, MmsDevice* device,
 			accessSpecifier.arrayIndex = arrayIndex;
 			accessSpecifier.componentName = componentName;
 
-			// check if element exists
+			/* check if element exists */
 			if (checkIfVariableExists(device, &accessSpecifier) == true) {
 
                 MmsNamedVariableListEntry variable =
@@ -394,7 +394,7 @@ createNamedVariableList(MmsServer server, MmsDomain* domain, MmsDevice* device,
 			else {
 			    MmsNamedVariableList_destroy(namedVariableList);
                 namedVariableList = NULL;
-                i = variableCount; // exit loop after freeing loop variables
+                i = variableCount; /* exit loop after freeing loop variables */
                 *mmsError = MMS_ERROR_DEFINITION_OBJECT_UNDEFINED;
 			}
 		}

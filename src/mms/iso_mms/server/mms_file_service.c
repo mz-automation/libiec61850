@@ -808,7 +808,7 @@ mmsServer_handleFileCloseRequest(
 
 
 
-static int //TODO remove redundancy - same as in client code!
+static int /* TODO remove redundancy - same as in client code! */
 encodeFileSpecification(uint8_t tag, char* fileSpecification, uint8_t* buffer, int bufPos)
 {
     uint32_t fileNameStringSize = strlen(fileSpecification);

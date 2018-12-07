@@ -5,7 +5,7 @@
  *
  *  Partial implementation of the ISO 8073 COTP (ISO TP0) protocol for MMS.
  *
- *  Copyright 2013, 2014 Michael Zillgith
+ *  Copyright 2013-2018 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -63,7 +63,7 @@ getUint8(uint8_t* buffer)
 static void
 writeOptions(CotpConnection* self)
 {
-    // max size = 11 byte
+    /* max size = 11 byte */
     uint8_t* buffer = self->writeBuffer->buffer;
     int bufPos = self->writeBuffer->size;
 
@@ -449,7 +449,9 @@ CotpConnection_init(CotpConnection* self, Socket socket,
 {
     self->state = 0;
     self->socket = socket;
+#if (CONFIG_MMS_SUPPORT_TLS == 1)
     self->tlsSocket = NULL;
+#endif
     self->remoteRef = -1;
     self->localRef = 1;
     self->protocolClass = -1;

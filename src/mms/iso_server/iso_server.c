@@ -365,7 +365,7 @@ exit_function:
 
 
 #if (CONFIG_MMS_THREADLESS_STACK == 0)
-// used by single and multi-threaded versions
+/* used by single and multi-threaded versions */
 static void
 handleIsoConnections(IsoServer self)
 {
@@ -420,7 +420,7 @@ handleIsoConnections(IsoServer self)
 }
 #endif /* (CONFIG_MMS_THREADLESS_STACK == 0) */
 
-// used by non-threaded version
+/* used by non-threaded version */
 static void
 handleIsoConnectionsThreadless(IsoServer self)
 {
@@ -470,7 +470,7 @@ handleIsoConnectionsThreadless(IsoServer self)
 }
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
-// only required for multi-threaded server!
+/* only required for multi-threaded server! */
 static void
 isoServerThread(void* isoServerParam)
 {

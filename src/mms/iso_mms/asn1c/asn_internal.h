@@ -11,7 +11,6 @@
 
 #include "asn_application.h"	/* Application-visible API */
 
-//#include "libiec61850_platform_includes.h"
 #include "lib_memory.h"
 
 #ifndef	__NO_ASSERT_H__		/* Include assert.h only for internal use. */

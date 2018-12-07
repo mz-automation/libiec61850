@@ -161,10 +161,7 @@ static long GMTOFF(struct tm a){
 #ifdef	_EMULATE_TIMEGM
 static time_t timegm(struct tm *tm) {
 	time_t tloc;
-	//ATZVARS;
-	//ATZSAVETZ;
 	tloc = mktime(tm);
-//	ATZOLDTZ;
 	return tloc;
 }
 #endif	/* _EMULATE_TIMEGM */
@@ -245,7 +242,9 @@ GeneralizedTime_encode_der(asn_TYPE_descriptor_t *td, void *sptr,
 		/* Failed to recognize time. Fail completely. */
 		_ASN_ENCODE_FAILED;
 
-	//st = asn_time2GT_frac(0, &tm, fv, fd, 1); /* Save time canonically */
+#if 0
+	st = asn_time2GT_frac(0, &tm, fv, fd, 1); /* Save time canonically */
+#endif
 	if(!st) _ASN_ENCODE_FAILED;	/* Memory allocation failure. */
 
 	erval = OCTET_STRING_encode_der(td, st, tag_mode, tag, cb, app_key);
@@ -264,7 +263,7 @@ GeneralizedTime_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
 		asn_app_consume_bytes_f *cb, void *app_key) {
 
 	if(flags & XER_F_CANONICAL) {
-		GeneralizedTime_t *gt = NULL; // modified MZ
+		GeneralizedTime_t *gt = NULL; /* modified MZ */
 		asn_enc_rval_t rv;
 		int fv, fd;		/* fractional parts */
 		struct tm tm;
@@ -275,7 +274,9 @@ GeneralizedTime_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
 				&& errno != EPERM)
 			_ASN_ENCODE_FAILED;
 
-		//gt = asn_time2GT_frac(0, &tm, fv, fd, 1);
+#if 0
+		gt = asn_time2GT_frac(0, &tm, fv, fd, 1);
+#endif
 		if(!gt) _ASN_ENCODE_FAILED;
 	
 		rv = OCTET_STRING_encode_xer_utf8(td, sptr, ilevel, flags,
@@ -551,7 +552,7 @@ local_finish:
 	/*** AT THIS POINT tm_s is either GMT or local (unknown) ****/
 
 	if(offset_specified) {
-		//tloc = timegm(&tm_s);
+		/* tloc = timegm(&tm_s); */
 	} else {
 		/*
 		 * Without an offset (or "Z"),

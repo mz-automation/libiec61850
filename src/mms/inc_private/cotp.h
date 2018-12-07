@@ -44,9 +44,9 @@ typedef struct {
     int protocolClass;
 
     Socket socket;
-//#if (CONFIG_MMS_SUPPORT_TLS == 1)
+#if (CONFIG_MMS_SUPPORT_TLS == 1)
     TLSSocket tlsSocket;
-//#endif
+#endif
 
     CotpOptions options;
     bool isLastDataUnit;

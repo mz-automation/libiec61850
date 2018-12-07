@@ -28,7 +28,7 @@
 static int
 encodeArrayAccessResult(MmsValue* value, uint8_t* buffer, int bufPos, bool encode)
 {
-    if (value == NULL) // TODO report internal error
+    if (value == NULL) /* TODO report internal error */
         return 0;
 
     int elementsSize = 0;

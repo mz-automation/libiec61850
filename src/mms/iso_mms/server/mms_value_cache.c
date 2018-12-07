@@ -117,8 +117,10 @@ searchCacheForValue(MmsValueCache self, const char* itemId, char* parentId)
 MmsValue*
 MmsValueCache_lookupValue(MmsValueCache self, const char* itemId)
 {
-	// get value for first matching key substring!
-	// Then iterate the value for the exact value.
+	/*
+	 * get value for first matching key substring!
+	 * Then iterate the value for the exact value.
+     */
 
 	MmsValue* value = NULL;
 

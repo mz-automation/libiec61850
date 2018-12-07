@@ -70,32 +70,34 @@ int
 UTF8String_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
 		asn_app_constraint_failed_f *ctfailcb, void *app_key) {
 	ssize_t len = UTF8String_length((const UTF8String_t *)sptr);
-//	switch(len) {
-//	case U8E_EINVAL:
-//		_ASN_CTFAIL(app_key, td,
-//			"%s: value not given", td->name);
-//		break;
-//	case U8E_TRUNC:
-//		_ASN_CTFAIL(app_key, td,
-//			"%s: truncated UTF-8 sequence (%s:%d)",
-//			td->name, __FILE__, __LINE__);
-//		break;
-//	case U8E_ILLSTART:
-//		_ASN_CTFAIL(app_key, td,
-//			"%s: UTF-8 illegal start of encoding (%s:%d)",
-//			td->name, __FILE__, __LINE__);
-//		break;
-//	case U8E_NOTCONT:
-//		_ASN_CTFAIL(app_key, td,
-//			"%s: UTF-8 not continuation (%s:%d)",
-//			td->name, __FILE__, __LINE__);
-//		break;
-//	case U8E_NOTMIN:
-//		_ASN_CTFAIL(app_key, td,
-//			"%s: UTF-8 not minimal sequence (%s:%d)",
-//			td->name, __FILE__, __LINE__);
-//		break;
-//	}
+#if 0
+	switch(len) {
+	case U8E_EINVAL:
+		_ASN_CTFAIL(app_key, td,
+			"%s: value not given", td->name);
+		break;
+	case U8E_TRUNC:
+		_ASN_CTFAIL(app_key, td,
+			"%s: truncated UTF-8 sequence (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		break;
+	case U8E_ILLSTART:
+		_ASN_CTFAIL(app_key, td,
+			"%s: UTF-8 illegal start of encoding (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		break;
+	case U8E_NOTCONT:
+		_ASN_CTFAIL(app_key, td,
+			"%s: UTF-8 not continuation (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		break;
+	case U8E_NOTMIN:
+		_ASN_CTFAIL(app_key, td,
+			"%s: UTF-8 not minimal sequence (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		break;
+	}
+#endif
 	return (len < 0) ? -1 : 0;
 }
 

@@ -623,8 +623,6 @@ AcseConnection_createAssociateRequestMessage(AcseConnection* self,
         {
             contentLength += 2;
 
-            //if (authParameter->value.password.passwordLength == 0)
-
             passwordLength = authParameter->value.password.passwordLength;
 
             authValueStringLength = BerEncoder_determineLengthSize(
