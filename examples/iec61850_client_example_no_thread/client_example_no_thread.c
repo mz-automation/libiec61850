@@ -214,7 +214,38 @@ controlActionHandler(uint32_t invokeId, void* parameter, IedClientError err, Con
 static void
 stateChangedHandler(void* parameter, IedConnection connection, IedConnectionState newState)
 {
+    printf("Connection state changed: ");
 
+    switch (newState) {
+    case IED_STATE_CLOSED:
+        printf("CLOSED\n");
+        break;
+    case IED_STATE_CLOSING:
+        printf("CLOSING\n");
+        break;
+    case IED_STATE_CONNECTING:
+        printf("CONNECTING\n");
+        break;
+    case IED_STATE_CONNECTED:
+        printf("CONNECTED\n");
+        break;
+    }
+}
+
+static void
+getRCBValuesHandler (uint32_t invokeId, void* parameter, IedClientError err, ClientReportControlBlock rcb)
+{
+    if (parameter) {
+        printf("get rcb values handler: %s (error:%i)\n", (char*)parameter, err);
+    }
+}
+
+static void
+genericServiceHandler (uint32_t invokeId, void* parameter, IedClientError err)
+{
+    if (parameter) {
+        printf("generic service handler: %s (error:%i)\n", (char*)parameter, err);
+    }
 }
 
 static void waitWithTick(IedConnection con, int waitMs)
@@ -243,6 +274,8 @@ main(int argc, char** argv) {
         tcpPort = atoi(argv[2]);
 
     IedClientError error;
+
+    ClientReportControlBlock rcb = NULL;
 
     /* create new IedConnection with non-thread mode */
     IedConnection con = IedConnection_createEx(NULL, false);
@@ -279,7 +312,32 @@ main(int argc, char** argv) {
 
             waitWithTick(con, 1000);
 
-         //   ClientReportControlBlock_create()
+            rcb = ClientReportControlBlock_create("simpleIOGenericIO/LLN0.RP.EventsRCB01");
+
+            /* Read RCB values */
+            IedConnection_getRCBValuesAsync(con, &error, "simpleIOGenericIO/LLN0.RP.EventsRCB01", rcb, getRCBValuesHandler, NULL);
+
+            if (error != IED_ERROR_OK) {
+                printf("getRCBValues service error!\n");
+            }
+            else {
+                waitWithTick(con, 1000);
+
+                /* prepare the parameters of the RCP */
+                ClientReportControlBlock_setResv(rcb, true);
+                ClientReportControlBlock_setDataSetReference(rcb, "simpleIOGenericIO/LLN0$Events"); /* NOTE the "$" instead of "." ! */
+                ClientReportControlBlock_setRptEna(rcb, true);
+                ClientReportControlBlock_setGI(rcb, true);
+
+                /* Configure the report receiver */
+                IedConnection_installReportHandler(con, "simpleIOGenericIO/LLN0.RP.EventsRCB", ClientReportControlBlock_getRptId(rcb), reportCallbackFunction,
+                        NULL);
+
+                /* Write RCB parameters and enable report */
+                IedConnection_setRCBValuesAsync(con, &error, rcb, RCB_ELEMENT_RESV | RCB_ELEMENT_DATSET | RCB_ELEMENT_RPT_ENA | RCB_ELEMENT_GI, true, genericServiceHandler, NULL);
+
+                waitWithTick(con, 1000);
+            }
 
             IedConnection_readObjectAsync(con, &error, "simpleIOGenericIO/GGIO1.AnIn1.mag.f", IEC61850_FC_MX, readObjectHandler, "simpleIOGenericIO/GGIO1.AnIn1.mag.f");
 
@@ -331,7 +389,7 @@ main(int argc, char** argv) {
 
             waitWithTick(con, 1000);
 
-            /* Get the varibale specification for the controllable data object by online service */
+            /* Get the variable specification for the controllable data object by online service */
             MmsVariableSpecification* ctlVarSpec = NULL;
 
             IedConnection_getVariableSpecificationAsync(con, &error, "simpleIOGenericIO/GGIO1.SPCSO1", IEC61850_FC_CO,
@@ -385,6 +443,9 @@ main(int argc, char** argv) {
                     Thread_sleep(10);
             }
         }
+
+        if (rcb != NULL)
+            ClientReportControlBlock_destroy(rcb);
     }
     else {
         printf("Failed to connect to %s:%i\n", hostname, tcpPort);

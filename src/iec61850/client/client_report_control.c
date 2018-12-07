@@ -983,7 +983,7 @@ IedConnection_setRCBValuesAsync(IedConnection self, IedClientError* error, Clien
 
      if (singleRequest) {
 
-         invokeId = MmsConnection_writeMultipleVariablesAsync(self->connection, &err, domainId, itemIds, values, writeMultipleVariablesHandler, self);
+         call->invokeId = MmsConnection_writeMultipleVariablesAsync(self->connection, &err, domainId, itemIds, values, writeMultipleVariablesHandler, self);
 
          *error = iedConnection_mapMmsErrorToIedError(err);
 
