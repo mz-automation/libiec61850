@@ -31,46 +31,52 @@ main(int argc, char** argv)
 
     SVPublisher svPublisher = SVPublisher_create(NULL, interface);
 
-    SVPublisher_ASDU asdu1 = SVPublisher_addASDU(svPublisher, "svpub1", NULL, 1);
+    if (svPublisher) {
 
-    int float1 = SVPublisher_ASDU_addFLOAT(asdu1);
-    int float2 = SVPublisher_ASDU_addFLOAT(asdu1);
-    int ts1 = SVPublisher_ASDU_addTimestamp(asdu1);
+        SVPublisher_ASDU asdu1 = SVPublisher_addASDU(svPublisher, "svpub1", NULL, 1);
 
-    SVPublisher_ASDU asdu2 = SVPublisher_addASDU(svPublisher, "svpub2", NULL, 1);
+        int float1 = SVPublisher_ASDU_addFLOAT(asdu1);
+        int float2 = SVPublisher_ASDU_addFLOAT(asdu1);
+        int ts1 = SVPublisher_ASDU_addTimestamp(asdu1);
 
-    int float3 = SVPublisher_ASDU_addFLOAT(asdu2);
-    int float4 = SVPublisher_ASDU_addFLOAT(asdu2);
-    int ts2 = SVPublisher_ASDU_addTimestamp(asdu2);
+        SVPublisher_ASDU asdu2 = SVPublisher_addASDU(svPublisher, "svpub2", NULL, 1);
 
-    SVPublisher_setupComplete(svPublisher);
+        int float3 = SVPublisher_ASDU_addFLOAT(asdu2);
+        int float4 = SVPublisher_ASDU_addFLOAT(asdu2);
+        int ts2 = SVPublisher_ASDU_addTimestamp(asdu2);
 
-    float fVal1 = 1234.5678f;
-    float fVal2 = 0.12345f;
+        SVPublisher_setupComplete(svPublisher);
 
-    while (running) {
-        Timestamp ts;
-        Timestamp_clearFlags(&ts);
-        Timestamp_setTimeInMilliseconds(&ts, Hal_getTimeInMs());
+        float fVal1 = 1234.5678f;
+        float fVal2 = 0.12345f;
 
-        SVPublisher_ASDU_setFLOAT(asdu1, float1, fVal1);
-        SVPublisher_ASDU_setFLOAT(asdu1, float2, fVal2);
-        SVPublisher_ASDU_setTimestamp(asdu1, ts1, ts);
+        while (running) {
+            Timestamp ts;
+            Timestamp_clearFlags(&ts);
+            Timestamp_setTimeInMilliseconds(&ts, Hal_getTimeInMs());
 
-        SVPublisher_ASDU_setFLOAT(asdu2, float3, fVal1 * 2);
-        SVPublisher_ASDU_setFLOAT(asdu2, float4, fVal2 * 2);
-        SVPublisher_ASDU_setTimestamp(asdu2, ts2, ts);
+            SVPublisher_ASDU_setFLOAT(asdu1, float1, fVal1);
+            SVPublisher_ASDU_setFLOAT(asdu1, float2, fVal2);
+            SVPublisher_ASDU_setTimestamp(asdu1, ts1, ts);
 
-        SVPublisher_ASDU_increaseSmpCnt(asdu1);
-        SVPublisher_ASDU_increaseSmpCnt(asdu2);
+            SVPublisher_ASDU_setFLOAT(asdu2, float3, fVal1 * 2);
+            SVPublisher_ASDU_setFLOAT(asdu2, float4, fVal2 * 2);
+            SVPublisher_ASDU_setTimestamp(asdu2, ts2, ts);
 
-        fVal1 += 1.1f;
-        fVal2 += 0.1f;
+            SVPublisher_ASDU_increaseSmpCnt(asdu1);
+            SVPublisher_ASDU_increaseSmpCnt(asdu2);
 
-        SVPublisher_publish(svPublisher);
+            fVal1 += 1.1f;
+            fVal2 += 0.1f;
 
-        Thread_sleep(50);
+            SVPublisher_publish(svPublisher);
+
+            Thread_sleep(50);
+        }
+
+        SVPublisher_destroy(svPublisher);
     }
-
-    SVPublisher_destroy(svPublisher);
+    else {
+        printf("Failed to create SV publisher\n");
+    }
 }
