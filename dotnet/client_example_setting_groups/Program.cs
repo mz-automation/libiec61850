@@ -57,8 +57,8 @@ namespace client_examples_setting_groups
                 /* Confirm new setting group values */
                 con.WriteValue("DEMOPROT/LLN0.SGCB.CnfEdit", FunctionalConstraint.SP, new MmsValue(true));
 
-                /* Read SGCB */
-                con.ReadValue("DEMOPROT/LLN0.SGCB", FunctionalConstraint.SP);
+                /* Read SGCB again */
+                sgcbVal = con.ReadValue("DEMOPROT/LLN0.SGCB", FunctionalConstraint.SP);
 
                 Console.WriteLine("ActSG: {0}",sgcbVal.GetChildValue("ActSG", sgcbVarSpec).ToString());
 

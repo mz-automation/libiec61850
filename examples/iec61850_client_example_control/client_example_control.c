@@ -1,5 +1,5 @@
 /*
- * client_example3.c
+ * client_example_control.c
  *
  * How to control a device ... intended to be used with server_example_control
  */

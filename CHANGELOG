@@ -1,5 +1,26 @@
+Changes to version 1.4.0
+------------------------
+- IEC 61850 client: added asynchronous client API (can handle multiple outstanding requests in a single thread)
+- IEC 61850 client: added support for non-thread mode (for use with asynchronous API)
+- IEC 61850 client: added IedConnection_StateChangedHandler callback that is called for each connection state change (CLOSED, CONNECTING, CONNECTED, CLOSING)
+- .NET API: Added support for IedConnection.GetState and StateChangedHandler
+- modelviewer: show full hierarchy including sub data objects
+- IEC 61850 server: added IedServer_updateCtlModel function to change control model at runtime
+- IEC 61850 client: added implementations for functions IedConnection_getLogicalDeviceVariables, IedConnection_getLogicalDeviceDataSets, and IedConnection_getLogicalDeviceDataSetsAsync to address #89
+- .NET API: DataSet implements IDisposable interface, Report/DataSet GetValues methods return now clones of the original native values to prevent GC issues
+- .NET API: MmsValue - added Clone method and implemented IDisposable interface
+- .NET API: extended MmsValue.ToString method to print arrays and data access errors
+- common: MmsVariableSpecification_getChildValue now also accepts "." as separator
+- .NET API: ReportControlBlock.GetOwner returns null when no owner available (#79)
+
+
 Changes to version 1.3.1
 ------------------------
+- GOOSE publisher: fixed problem in payload length calculation
+- .NET API: Added method MmsConnection.ReadMultipleVariables
+- IEC 61850 client: implemented tissue 1178 client side (select-response+ is
+non-NULL)
+- SV publisher: fixed RefrTm and SmpSynch handling
 - IEC 61850 client: improved support for handling segmented reports
 - .NET API: Added some additional access function to ReportControlBlock
 - Java SCL parser: added support for timestamp values in "Val" elements

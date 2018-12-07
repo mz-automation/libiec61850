@@ -300,7 +300,7 @@ iedConnection_doesControlObjectMatch(const char* objRef, const char* cntrlObj)
     if (cntrlObj[i] != '/')
         return false;
 
-    // --> LD is equal
+    /* --> LD is equal */
 
     i++;
 
@@ -315,7 +315,7 @@ iedConnection_doesControlObjectMatch(const char* objRef, const char* cntrlObj)
     if (cntrlObj[j++] != '$')
         return false;
 
-    // --> LN is equal
+    /* --> LN is equal */
 
     if (cntrlObj[j++] != 'C')
         return false;
@@ -324,7 +324,7 @@ iedConnection_doesControlObjectMatch(const char* objRef, const char* cntrlObj)
     if (cntrlObj[j++] != '$')
         return false;
 
-    // --> FC is ok
+    /* --> FC is ok */
 
     i++;
 
@@ -366,7 +366,7 @@ doesReportMatchControlObject(char* domainName, char* itemName, const char* objec
     if (objectRef[i] != '/')
         return false;
 
-    // --> LD is equal
+    /* --> LD is equal */
 
     i++;
     int j = 0;
@@ -381,7 +381,7 @@ doesReportMatchControlObject(char* domainName, char* itemName, const char* objec
     if (itemName[j++] != '$')
         return false;
 
-    // --> LN is equal
+    /* --> LN is equal */
 
     if (itemName[j++] != 'C')
         return false;
@@ -390,7 +390,7 @@ doesReportMatchControlObject(char* domainName, char* itemName, const char* objec
     if (itemName[j++] != '$')
         return false;
 
-    // --> FC is ok
+    /* --> FC is ok */
 
     i++;
 
@@ -414,7 +414,7 @@ doesReportMatchControlObject(char* domainName, char* itemName, const char* objec
     if (itemName[j++] != '$')
         return false;
 
-    // --> object name is equal
+    /* --> object name is equal */
 
     if (itemName[j++] != 'O')
         return false;
@@ -446,7 +446,7 @@ handleLastApplErrorMessage(IedConnection self, MmsValue* lastApplError)
 
     MmsValue* cntrlObj = MmsValue_getElement(lastApplError, 0);
     MmsValue* error = MmsValue_getElement(lastApplError, 1);
-    //MmsValue* origin = MmsValue_getElement(lastApplError, 2);
+    /* MmsValue* origin = MmsValue_getElement(lastApplError, 2); */
     MmsValue* ctlNum = MmsValue_getElement(lastApplError, 3);
     MmsValue* addCause = MmsValue_getElement(lastApplError, 4);
     if (DEBUG_IED_CLIENT)
@@ -563,7 +563,7 @@ mmsConnectionStateChangedHandler(MmsConnection connection, void* parameter, MmsC
 }
 
 static IedConnection
-createNewConnectionObject(TLSConfiguration tlsConfig)
+createNewConnectionObject(TLSConfiguration tlsConfig, bool useThreads)
 {
     IedConnection self = (IedConnection) GLOBAL_CALLOC(1, sizeof(struct sIedConnection));
 
@@ -572,10 +572,11 @@ createNewConnectionObject(TLSConfiguration tlsConfig)
         self->logicalDevices = NULL;
         self->clientControls = LinkedList_create();
 
-        if (tlsConfig)
+
+        if (useThreads)
             self->connection = MmsConnection_createSecure(tlsConfig);
         else
-            self->connection = MmsConnection_create();
+            self->connection = MmsConnection_createNonThreaded(tlsConfig);
 
         self->state = IED_STATE_CLOSED;
 
@@ -598,13 +599,25 @@ createNewConnectionObject(TLSConfiguration tlsConfig)
 IedConnection
 IedConnection_create()
 {
-    return createNewConnectionObject(NULL);
+    return createNewConnectionObject(NULL, true);
 }
 
 IedConnection
 IedConnection_createWithTlsSupport(TLSConfiguration tlsConfig)
 {
-    return createNewConnectionObject(tlsConfig);
+    return createNewConnectionObject(tlsConfig, true);
+}
+
+IedConnection
+IedConnection_createEx(TLSConfiguration tlsConfig, bool useThreads)
+{
+    return createNewConnectionObject(tlsConfig, useThreads);
+}
+
+bool
+IedConnection_tick(IedConnection self)
+{
+    return MmsConnection_tick(self->connection);
 }
 
 void
@@ -988,7 +1001,6 @@ uint32_t
 IedConnection_getLogicalDeviceDataSetsAsync(IedConnection self, IedClientError* error, const char* ldName, const char* continueAfter, LinkedList result,
         IedConnection_GetNameListHandler handler, void* parameter)
 {
-    //TODO implement
     IedConnectionOutstandingCall call = iedConnection_allocateOutstandingCall(self);
 
     if (call == NULL) {
@@ -2536,7 +2548,7 @@ IedConnection_getLogicalNodeVariables(IedConnection self, IedClientError* error,
 
     char* logicalNodeName = ldSep + 1;
 
-    // search for logical device
+    /* search for logical device */
 
     LinkedList device = LinkedList_getNext(self->logicalDevices);
 
@@ -2637,7 +2649,7 @@ getDataDirectory(IedConnection self, IedClientError* error,
 
     StringUtils_replace(dataNamePart, '.', '$');
 
-    // search for logical device
+    /* search for logical device */
 
     LinkedList device = LinkedList_getNext(self->logicalDevices);
 
@@ -2806,7 +2818,7 @@ getDataDirectoryByFc(IedConnection self, IedClientError* error,
 
     StringUtils_replace(dataNamePart, '.', '$');
 
-    // search for logical device
+    /* search for logical device */
 
     LinkedList device = LinkedList_getNext(self->logicalDevices);
 

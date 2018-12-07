@@ -174,8 +174,8 @@ typedef enum {
  * \brief create a new IedConnection instance
  *
  * This function creates a new IedConnection instance that is used to handle a connection to an IED.
- * It allocated all required resources. The new connection is in the "idle" state. Before it can be used
- * the connect method has to be called.
+ * It allocated all required resources. The new connection is in the "CLOSED" state. Before it can be used
+ * the connect method has to be called. The connection will be in non-TLS and thread mode.
  *
  * \return the new IedConnection instance
  */
@@ -183,12 +183,30 @@ LIB61850_API IedConnection
 IedConnection_create(void);
 
 /**
+ * \brief create a new IedConnection instance (extended version)
+ *
+ * This function creates a new IedConnection instance that is used to handle a connection to an IED.
+ * It allocated all required resources. The new connection is in the "CLOSED" state. Before it can be used
+ * the \ref IedConnection_connect or \ref IedConnection_connectAsync method has to be called.
+ * The connection will use TLS when a TLSConfiguration object is provided. The useThread is false the
+ * IedConnection is in non-thread mode and the IedConnection_tick function has to be called periodically to
+ * receive messages and perform the house-keeping tasks.
+ *
+ * \param tlsConfig the TLS configuration to be used, or NULL for non-TLS connection
+ * \param useThreads when true, the IedConnection is in thread mode
+ *
+ * \return the new IedConnection instance
+ */
+LIB61850_API IedConnection
+IedConnection_createEx(TLSConfiguration tlsConfig, bool useThreads);
+
+/**
  * \brief create a new IedConnection instance that has support for TLS
  *
  * This function creates a new IedConnection instance that is used to handle a connection to an IED.
- * It allocated all required resources. The new connection is in the "idle" state. Before it can be used
- * the connect method has to be called. The connection will use TLS when a TLSConfiguration object is
- * provided.
+ * It allocated all required resources. The new connection is in the "CLOSED" state. Before it can be used
+ * the \ref IedConnection_connect or \ref IedConnection_connectAsync method has to be called.
+ * The connection will use TLS when a TLSConfiguration object is provided. The connection will be in thread mode.
  *
  * \param tlsConfig the TLS configuration to be used
  *
@@ -220,6 +238,21 @@ IedConnection_destroy(IedConnection self);
  */
 LIB61850_API void
 IedConnection_setConnectTimeout(IedConnection self, uint32_t timeoutInMs);
+
+/**
+ * \brief Perform MMS message handling and house-keeping tasks (for non-thread mode only)
+ *
+ * This function has to be called periodically by the user application in non-thread mode. The return
+ * value helps to decide when the stack has nothing to do and other tasks can be executed.
+ *
+ * NOTE: When using non-thread mode you should NOT use the synchronous (blocking) API functions. The
+ * synchronous functions will block forever when IedConnection_tick is not called in a separate thread.
+ *
+ * \return true when connection is currently waiting and calling thread can be suspended, false means
+ *         connection is busy and the tick function should be called again as soon as possible.
+ */
+LIB61850_API bool
+IedConnection_tick(IedConnection self);
 
 /**
  * \brief Generic serivce callback handler
