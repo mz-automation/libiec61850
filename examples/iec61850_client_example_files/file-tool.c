@@ -118,6 +118,7 @@ printHelp()
     printf("    -p portnumber\n");
     printf("  Operations\n");
     printf("     dir - show directory\n");
+    printf("     subdir <dirname> - show sub directory\n");
     printf("     info <filename> - show file info\n");
     printf("     del <filename> - delete file\n");
     printf("     get <filename> - get file\n");
@@ -145,6 +146,10 @@ parseOptions(int argc, char** argv)
         }
         else if (strcmp(argv[currentArgc], "dir") == 0) {
             operation = FileOperationType_Dir;
+        }
+        else if (strcmp(argv[currentArgc], "subdir") == 0) {
+            operation = FileOperationType_Dir;
+            filename = argv[++currentArgc];
         }
         else if (strcmp(argv[currentArgc], "info") == 0) {
             operation = FileOperationType_Info;
@@ -176,7 +181,7 @@ showDirectory(IedConnection con)
 
     /* Get the root directory */
     LinkedList rootDirectory =
-            IedConnection_getFileDirectory(con, &error, NULL);
+            IedConnection_getFileDirectory(con, &error, filename);
 
     if (error != IED_ERROR_OK) {
         printf("Error retrieving file directory\n");
