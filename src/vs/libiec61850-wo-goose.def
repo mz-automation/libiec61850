@@ -624,3 +624,4 @@ EXPORTS
     ClientReport_hasSubSeqNum
     ClientReport_getSubSeqNum
     ClientReport_getMoreSeqmentsFollow
+    IedConnection_getFileDirectoryEx

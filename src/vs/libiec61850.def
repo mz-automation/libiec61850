@@ -754,3 +754,4 @@ EXPORTS
     ClientReport_getMoreSeqmentsFollow
     SVPublisher_ASDU_enableRefrTm
     SVPublisher_ASDU_setSmpSynch
+    IedConnection_getFileDirectoryEx
