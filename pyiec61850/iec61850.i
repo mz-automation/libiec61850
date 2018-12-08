@@ -29,6 +29,7 @@ DataAttribute* toDataAttribute(ModelNode * MN)
 %}
 %apply int *OUTPUT {IedClientError* error};
 
+%include "libiec61850_common_api.h"
 %include "iec61850_client.h"
 %include "iso_connection_parameters.h"
 %include "mms_client_connection.h"
