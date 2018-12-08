@@ -439,6 +439,10 @@ namespace IEC61850
             static extern IntPtr IedConnection_getFileDirectory(IntPtr self, out int error, string directoryName);
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr IedConnection_getFileDirectoryEx(IntPtr self, out int error, string directoryName, string continueAfter,
+                [MarshalAs(UnmanagedType.I1)] out bool moreFollows);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern void IedConnection_deleteFile(IntPtr self, out int error, string fileName);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
@@ -1203,6 +1207,43 @@ namespace IEC61850
 
                 return fileDirectory;
             }
+
+            /// <summary>Read the content of a file directory. - single request version</summary>
+            /// <param name="directoryName">The name of the directory.</param>
+            /// <param name="continueAfter">The last directory when request is a continuation, or null otherwise</param>
+            /// <param name="moreFollows">true, when more files are available, false otherwise</param>
+            /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
+            public List<FileDirectoryEntry> GetFileDirectoryEx(string directoryName, string continueAfter, out bool moreFollows)
+            {
+                int error;
+
+                IntPtr fileEntryList = IedConnection_getFileDirectoryEx(connection, out error, directoryName, continueAfter, out moreFollows);
+
+                if (error != 0)
+                    throw new IedConnectionException("Reading file directory failed", error);
+
+                List<FileDirectoryEntry> fileDirectory = new List<FileDirectoryEntry>();
+
+                IntPtr element = LinkedList_getNext(fileEntryList);
+
+                while (element != IntPtr.Zero)
+                {
+                    IntPtr elementData = LinkedList_getData(element);
+
+                    FileDirectoryEntry entry = new FileDirectoryEntry(elementData);
+
+                    fileDirectory.Add(entry);
+
+                    FileDirectoryEntry_destroy(elementData);
+
+                    element = LinkedList_getNext(element);
+                }
+
+                LinkedList_destroyStatic(fileEntryList);
+
+                return fileDirectory;
+            }
+
 
 			[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             private delegate bool InternalIedClientGetFileHandler(IntPtr parameter, IntPtr buffer, UInt32 bytesRead);
