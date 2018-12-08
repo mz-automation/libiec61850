@@ -79,6 +79,7 @@ basename(char* path)
 static char* hostname = "localhost";
 static int tcpPort = 102;
 static char* filename = NULL;
+static bool singleRequest = false;
 
 typedef enum {
     FileOperationType_None = 0,
@@ -116,6 +117,7 @@ printHelp()
     printf("  Options:\n");
     printf("    -h <hostname/IP>\n");
     printf("    -p portnumber\n");
+    printf("    -s single request for show (sub) directory (ignore morefollows");
     printf("  Operations\n");
     printf("     dir - show directory\n");
     printf("     subdir <dirname> - show sub directory\n");
@@ -139,6 +141,9 @@ parseOptions(int argc, char** argv)
         }
         else if (strcmp(argv[currentArgc], "-p") == 0) {
             tcpPort = atoi(argv[++currentArgc]);
+        }
+        else if (strcmp(argv[currentArgc], "-s") == 0) {
+            singleRequest = true;
         }
         else if (strcmp(argv[currentArgc], "del") == 0) {
             operation = FileOperationType_Del;
@@ -179,9 +184,15 @@ showDirectory(IedConnection con)
 {
     IedClientError error;
 
+    bool moreFollows = false;
+
     /* Get the root directory */
-    LinkedList rootDirectory =
-            IedConnection_getFileDirectory(con, &error, filename);
+    LinkedList rootDirectory;
+
+    if (singleRequest)
+        rootDirectory = IedConnection_getFileDirectoryEx(con, &error, filename, NULL, &moreFollows);
+    else
+        rootDirectory = IedConnection_getFileDirectory(con, &error, filename);
 
     if (error != IED_ERROR_OK) {
         printf("Error retrieving file directory\n");
@@ -200,6 +211,9 @@ showDirectory(IedConnection con)
 
         LinkedList_destroyDeep(rootDirectory, (LinkedListValueDeleteFunction) FileDirectoryEntry_destroy);
     }
+
+    if (moreFollows)
+        printf("\n- MORE FILES AVAILABLE -\n");
 }
 
 void

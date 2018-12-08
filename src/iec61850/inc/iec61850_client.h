@@ -208,6 +208,8 @@ IedConnection_createEx(TLSConfiguration tlsConfig, bool useThreads);
  * the \ref IedConnection_connect or \ref IedConnection_connectAsync method has to be called.
  * The connection will use TLS when a TLSConfiguration object is provided. The connection will be in thread mode.
  *
+ * \deprecated Use \ref IedConnection_createEx instead
+ *
  * \param tlsConfig the TLS configuration to be used
  *
  * \return the new IedConnection instance
@@ -286,6 +288,11 @@ IedConnection_connect(IedConnection self, IedClientError* error, const char* hos
 
 /**
  * \brief Asynchronously connect to a server
+ *
+ * The function will return immediately. No error doesn't indicate that the
+ * connection is established. The current connection state has to be tracked
+ * by polling the \ref IedConnection_getState function or by using
+ * \ref IedConnection_StateChangedHandler
  *
  * \param self the connection object
  * \param error the error code if an error occurs

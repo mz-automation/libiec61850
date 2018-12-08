@@ -442,6 +442,11 @@ namespace IEC61850
             static extern IntPtr IedConnection_getFileDirectory(IntPtr self, out int error, string directoryName);
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr
+            IedConnection_getFileDirectoryEx(IntPtr self, out int error, string directoryName, string continueAfter
+                , [MarshalAs(UnmanagedType.I1)] out bool moreFollows);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern void IedConnection_deleteFile(IntPtr self, out int error, string fileName);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
@@ -484,6 +489,15 @@ namespace IEC61850
              * Async functions
              *********************/
 
+            [DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
+            static extern void IedConnection_connectAsync (IntPtr self, out int error, string hostname, int tcpPort);
+
+            [DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
+            static extern void IedConnection_abortAsync (IntPtr self, out int error);
+
+            [DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
+            private static extern void IedConnection_releaseAsync(IntPtr self, out int error);
+
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             private delegate void IedConnection_ReadObjectHandler (UInt32 invokeId, IntPtr parameter, int err, IntPtr value);
 
@@ -511,6 +525,11 @@ namespace IEC61850
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)] 
             static extern UInt32
             IedConnection_getLogicalDeviceVariablesAsync(IntPtr self, out int error, string ldName, string continueAfter, IntPtr result,
+                IedConnection_GetNameListHandler handler, IntPtr parameter);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)] 
+            static extern UInt32
+            IedConnection_getLogicalDeviceDataSetsAsync(IntPtr self, out int error, string ldName, string continueAfter, IntPtr result,
                 IedConnection_GetNameListHandler handler, IntPtr parameter);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -685,6 +704,19 @@ namespace IEC61850
 				if (error != 0)
 					throw new IedConnectionException ("Connect to " + hostname + ":" + tcpPort + " failed", error);
 			}
+
+            public void ConnectAsync(string hostname, int tcpPort)
+            {
+                int error;
+
+                IedConnection_setConnectTimeout(connection, connectTimeout);
+
+                IedConnection_connectAsync (connection, out error, hostname, tcpPort);
+
+                if (error != 0)
+                    throw new IedConnectionException ("Connect to " + hostname + ":" + tcpPort + " failed", error);
+                
+            }
 
             /// <summary>
             /// Gets the current state of the connection
@@ -1296,6 +1328,41 @@ namespace IEC61850
                 return fileDirectory;
             }
 
+            /// <summary>Read the content of a file directory. - single request version</summary>
+            /// <param name="directoryName">The name of the directory.</param>
+            /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
+            /// <param name="directoryName">The name of the directory.</param>
+            public List<FileDirectoryEntry> GetFileDirectoryEx(string directoryName, string continueAfter, out bool moreFollows)
+            {
+                int error;
+
+                IntPtr fileEntryList = IedConnection_getFileDirectoryEx(connection, out error, directoryName, continueAfter, out moreFollows);
+
+                if (error != 0)
+                    throw new IedConnectionException("Reading file directory failed", error);
+
+                List<FileDirectoryEntry> fileDirectory = new List<FileDirectoryEntry>();
+
+                IntPtr element = LinkedList_getNext(fileEntryList);
+
+                while (element != IntPtr.Zero)
+                {
+                    IntPtr elementData = LinkedList_getData(element);
+
+                    FileDirectoryEntry entry = new FileDirectoryEntry(elementData);
+
+                    fileDirectory.Add(entry);
+
+                    FileDirectoryEntry_destroy(elementData);
+
+                    element = LinkedList_getNext(element);
+                }
+
+                LinkedList_destroyStatic(fileEntryList);
+
+                return fileDirectory;
+            }
+
 			[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             private delegate bool InternalIedClientGetFileHandler(IntPtr parameter, IntPtr buffer, UInt32 bytesRead);
 
@@ -1376,6 +1443,22 @@ namespace IEC61850
 					throw new IedConnectionException ("Abort failed", error);
 			}
 
+            /// <summary>
+            /// Abort (close) the connection - asynchronous version
+            /// </summary>
+            /// <description>This function will send an abort request to the server. This will immediately interrupt the
+            /// connection.</description>
+            /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
+            public void AbortAsync ()
+            {
+                int error;
+
+                IedConnection_abortAsync (connection, out error);
+
+                if (error != 0)
+                    throw new IedConnectionException ("Abort failed", error);
+            }
+
 			/// <summary>
 			/// Release (close) the connection.
 			/// </summary>
@@ -1391,6 +1474,22 @@ namespace IEC61850
 				if (error != 0)
 					throw new IedConnectionException ("Release failed", error);
 			}
+
+            /// <summary>
+            /// Release (close) the connection - asynchronous version
+            /// </summary>
+            /// <description>This function will send an release request to the server. The function will block until the
+            /// connection is released or an error occured.</description>
+            /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
+            public void ReleaseAsync ()
+            {
+                int error;
+
+                IedConnection_releaseAsync(connection, out error);
+
+                if (error != 0)
+                    throw new IedConnectionException ("Release failed", error);
+            }
 
 			/// <summary>
 			/// Immediately close the connection.
@@ -1850,6 +1949,30 @@ namespace IEC61850
                 return invokeId;
             }
 
+            public UInt32 GetLogicalDeviceDataSetsAsync(string ldName, string continueAfter, GetNameListHandler handler, object parameter)
+            {
+                return GetLogicalDeviceDataSetsAsync(null, ldName, continueAfter, handler, parameter);
+            }
+
+
+            public UInt32 GetLogicalDeviceDataSetsAsync(List<string> result, string ldName, string continueAfter, GetNameListHandler handler, object parameter)
+            {
+                int error;
+
+                Tuple<GetNameListHandler, object, List<string>> callbackInfo = Tuple.Create(handler, parameter, result);
+
+                GCHandle handle = GCHandle.Alloc(callbackInfo);
+
+                UInt32 invokeId = IedConnection_getLogicalDeviceDataSetsAsync(connection, out error, ldName, continueAfter, IntPtr.Zero, nativeGetNameListHandler, GCHandle.ToIntPtr(handle));
+
+                if (error != 0)
+                {
+                    handle.Free();
+                    throw new IedConnectionException("Get logical device data sets failed", error);
+                }
+
+                return invokeId;
+            }
 
             public delegate void QueryLogHandler(UInt32 invokeId, object parameter, IedClientError err, List<MmsJournalEntry> journalEntries, bool moreFollows);
 

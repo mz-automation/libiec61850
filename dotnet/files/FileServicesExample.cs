@@ -15,7 +15,9 @@ namespace files
 	{
 		public static void printFiles (IedConnection con, string prefix, string parent)
 		{
-			List<FileDirectoryEntry> files = con.GetFileDirectory (parent);
+            bool moreFollows = false;
+
+            List<FileDirectoryEntry> files = con.GetFileDirectoryEx (parent, null, out moreFollows);
 
 			foreach (FileDirectoryEntry file in files) {
 				Console.WriteLine (prefix + file.GetFileName () + "\t" + file.GetFileSize () + "\t" +
@@ -26,6 +28,8 @@ namespace files
 				}
 			}
 
+            if (moreFollows)
+                Console.WriteLine("-- MORE FILES AVAILABLE --");
 		}
 
 		static bool getFileHandler (object parameter, byte[] data)
@@ -48,7 +52,7 @@ namespace files
 			if (args.Length > 0)
 				hostname = args [0];
 			else
-				hostname = "10.0.2.2";
+				hostname = "127.0.0.1";
 
 			Console.WriteLine ("Connect to " + hostname);
 
