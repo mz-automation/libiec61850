@@ -545,6 +545,23 @@ namespace IEC61850
             IedConnection_queryLogAfterAsync(IntPtr self, out int error, string logReference,
                 IntPtr entryID, UInt64 timeStamp, IedConnection_QueryLogHandler handler, IntPtr parameter);
 
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            private delegate void IedConnection_GetVariableSpecificationHandler (UInt32 invokeId, IntPtr parameter, int err, IntPtr spec);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)] 
+            static extern UInt32
+            IedConnection_getVariableSpecificationAsync(IntPtr self, out int error, string dataAttributeReference,
+                int fc, IedConnection_GetVariableSpecificationHandler handler, IntPtr parameter);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            private delegate void IedConnection_ReadDataSetHandler (UInt32 invokeId, IntPtr parameter, int err, IntPtr dataSet);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)] 
+            static extern UInt32
+            IedConnection_readDataSetValuesAsync(IntPtr self, out int error, string dataSetReference, IntPtr dataSet,
+                IedConnection_ReadDataSetHandler handler, IntPtr parameter);
+            
+
             /********************
             * FileDirectoryEntry
             *********************/
@@ -1330,8 +1347,10 @@ namespace IEC61850
 
             /// <summary>Read the content of a file directory. - single request version</summary>
             /// <param name="directoryName">The name of the directory.</param>
+            /// <param name="continueAfter">the filename that defines the continuation point, or null for the first request</param>
+            /// <param name="moreFollows">true, when more files are available, false otherwise</param>
             /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
-            /// <param name="directoryName">The name of the directory.</param>
+
             public List<FileDirectoryEntry> GetFileDirectoryEx(string directoryName, string continueAfter, out bool moreFollows)
             {
                 int error;
@@ -1567,7 +1586,6 @@ namespace IEC61850
             /// <description>This function will invoke a readDataSetValues service and return a new DataSet value containing the
             /// received values.</description>
             /// <param name="dataSetReference">The object reference of the data set</param>
-
             /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
             public DataSet GetDataSetValues (string dataSetReference)
             {
@@ -1805,6 +1823,119 @@ namespace IEC61850
                 {
                     handle.Free();
                     throw new IedConnectionException("Reading value failed", error);
+                }
+
+                return invokeId;
+            }
+
+            private void nativeGetVariableSpecifcationHandler (UInt32 invokeId, IntPtr parameter, int err, IntPtr spec)
+            {
+                GCHandle handle = GCHandle.FromIntPtr(parameter);
+
+                Tuple<GetVariableSpecifcationHandler, object>  callbackInfo = handle.Target as Tuple<GetVariableSpecifcationHandler, object>;
+
+                GetVariableSpecifcationHandler handler = callbackInfo.Item1;
+                object handlerParameter = callbackInfo.Item2;
+
+                handle.Free();
+
+                IedClientError clientError = (IedClientError)err;
+
+                MmsVariableSpecification varSpec = null;
+
+                if (spec != IntPtr.Zero)
+                    varSpec = new MmsVariableSpecification(spec, true);
+
+                handler(invokeId, handlerParameter, clientError, varSpec);
+            }
+
+            public delegate void GetVariableSpecifcationHandler(UInt32 invokeId, object parameter, IedClientError err, MmsVariableSpecification spec);
+
+            /// <summary>Read the variable specification (type description of a DA or FCDO</summary>
+            /// <param name="objectReference">The object reference of a DA or FCDO.</param>
+            /// <param name="fc">The functional constraint (FC) of the object</param>
+            /// <param name="handler">Callback function to handle the received response or service timeout</param>
+            /// <param name="parameter">User provided callback parameter. Will be passed to the callback function</param>
+            /// <returns>the invoke ID of the sent request</returns>
+            /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
+            public UInt32 GetVariableSpecificationAsync(string objectReference, FunctionalConstraint fc, GetVariableSpecifcationHandler handler, object parameter)
+            {
+                int error;
+
+                Tuple<GetVariableSpecifcationHandler, object> callbackInfo = Tuple.Create(handler, parameter);
+
+                GCHandle handle = GCHandle.Alloc(callbackInfo);
+
+                UInt32 invokeId = IedConnection_getVariableSpecificationAsync(connection, out error, objectReference, (int)fc, nativeGetVariableSpecifcationHandler, GCHandle.ToIntPtr(handle)); 
+
+                if (error != 0)
+                {
+                    handle.Free();
+                    throw new IedConnectionException("Reading variable specification failed", error);
+                }
+
+                return invokeId;
+            }
+
+            private void nativeReadDataSetHandler (UInt32 invokeId, IntPtr parameter, int err, IntPtr nativeDataSet)
+            {
+                GCHandle handle = GCHandle.FromIntPtr(parameter);
+
+                Tuple<ReadDataSetHandler, object, DataSet>  callbackInfo = handle.Target as Tuple<ReadDataSetHandler, object, DataSet>;
+
+                ReadDataSetHandler handler = callbackInfo.Item1;
+                object handlerParameter = callbackInfo.Item2;
+                DataSet dataSet = callbackInfo.Item3;
+
+                handle.Free();
+
+                IedClientError clientError = (IedClientError)err;
+
+                if (nativeDataSet != IntPtr.Zero)
+                {
+                    if (dataSet == null)
+                        dataSet = new DataSet(nativeDataSet);
+                }
+                
+
+                handler(invokeId, handlerParameter, clientError, dataSet);
+            }
+
+
+            public delegate void ReadDataSetHandler(UInt32 invokeId, object parameter, IedClientError err, DataSet dataSet);
+
+            /// <summary>
+            /// Read the values of a data set (GetDataSetValues service) - asynchronous version
+            /// </summary>
+            /// <description>This function will invoke a readDataSetValues service and in case of success returns a new DataSet value 
+            /// containing the received values by the callback function. If an existing instance of DataSet is provided to the 
+            ///  function the existing instance will be updated by the new values.
+            /// </description>
+            /// <param name="dataSetReference">The object reference of the data set</param>
+            /// <param name="dataSet">The object reference of an existing data set instance or null</param>
+            /// <param name="handler">Callback function to handle the received response or service timeout</param>
+            /// <param name="parameter">User provided callback parameter. Will be passed to the callback function</param>
+            /// <returns>the invoke ID of the sent request</returns>
+            /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
+            public UInt32 ReadDataSetValuesAsync(string dataSetReference, DataSet dataSet, ReadDataSetHandler handler, object parameter)
+            {
+                int error;
+
+                Tuple<ReadDataSetHandler, object, DataSet> callbackInfo = Tuple.Create(handler, parameter, dataSet);
+
+                GCHandle handle = GCHandle.Alloc(callbackInfo);
+
+                IntPtr dataSetPtr = IntPtr.Zero;
+
+                if (dataSet != null)
+                    dataSetPtr = dataSet.getNativeInstance();
+
+                UInt32 invokeId = IedConnection_readDataSetValuesAsync(connection, out error, dataSetReference, dataSetPtr, nativeReadDataSetHandler, GCHandle.ToIntPtr(handle)); 
+
+                if (error != 0)
+                {
+                    handle.Free();
+                    throw new IedConnectionException("Reading data set failed", error);
                 }
 
                 return invokeId;

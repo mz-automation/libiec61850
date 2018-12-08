@@ -101,6 +101,13 @@ namespace IEC61850
 			}
 		}
 
+        public enum ControlActionType
+        {
+            SELECT = 0,
+            OPERATE = 1,
+            CANCEL = 2
+        }
+
         /// <summary>
         /// Control object.
         /// </summary>
@@ -124,6 +131,30 @@ namespace IEC61850
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.I1)]
 			private static extern bool ControlObjectClient_operate(IntPtr self, IntPtr ctlVal, UInt64 operTime);
+
+            /// <summary>
+            /// Handler for asynchronous control actions (select, operate, cancel)
+            /// </summary>
+            public delegate void ControlActionHandler (UInt32 invokeId, Object parameter, IedClientError error, ControlActionType type, bool success);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            private delegate void ControlObjectClient_ControlActionHandler (UInt32 invokeId, IntPtr parameter, int err, int type, [MarshalAs(UnmanagedType.I1)] bool success);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            private static extern UInt32 ControlObjectClient_operateAsync(IntPtr self, out int err, IntPtr ctlVal, UInt64 operTime,
+                ControlObjectClient_ControlActionHandler handler, IntPtr parameter);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            private static extern UInt32 ControlObjectClient_selectAsync(IntPtr self, out int err,
+                ControlObjectClient_ControlActionHandler handler, IntPtr parameter);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            private static extern UInt32 ControlObjectClient_selectWithValueAsync(IntPtr self, out int err, IntPtr ctlVal,
+                ControlObjectClient_ControlActionHandler handler, IntPtr parameter);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            private static extern UInt32 ControlObjectClient_cancelAsync(IntPtr self, out int err,
+                ControlObjectClient_ControlActionHandler handler, IntPtr parameter);
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.I1)]
@@ -314,6 +345,149 @@ namespace IEC61850
 				return ControlObjectClient_operate(controlObject, ctlVal.valueReference, operTime);
 			}
 
+            private void nativeOperateHandler (UInt32 invokeId, IntPtr parameter, int err, int type, bool success)
+            {
+                GCHandle handle = GCHandle.FromIntPtr(parameter);
+
+                Tuple<ControlActionHandler, object>  callbackInfo = handle.Target as Tuple<ControlActionHandler, object>;
+
+                ControlActionHandler handler = callbackInfo.Item1;
+                object handlerParameter = callbackInfo.Item2;
+
+                handle.Free();
+
+                IedClientError clientError = (IedClientError)err;
+
+                handler(invokeId, handlerParameter, clientError, (ControlActionType) type, success);
+            }
+
+
+            /// <summary>
+            /// Operate the control with the specified control value.
+            /// </summary>
+            /// <param name='ctlVal'>the new value of the control</param>
+            /// <param name="handler">Callback function to handle the received response or service timeout</param>
+            /// <param name="parameter">User provided callback parameter. Will be passed to the callback function</param>
+            /// <returns>the invoke ID of the sent request</returns>
+            /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
+            public UInt32 OperateAsync (bool ctlVal, ControlActionHandler handler, object parameter)
+            {
+                return OperateAsync (ctlVal, 0, handler, parameter);
+            }
+                
+            /// <summary>
+            /// Operate the control with the specified control value (time activated control).
+            /// </summary>
+            /// <param name='ctlVal'>the new value of the control</param>
+            /// <param name='operTime'>the time when the operation will be executed</param>
+            /// <param name="handler">Callback function to handle the received response or service timeout</param>
+            /// <param name="parameter">User provided callback parameter. Will be passed to the callback function</param>
+            /// <returns>the invoke ID of the sent request</returns>
+            /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
+            public UInt32 OperateAsync (bool ctlVal, UInt64 operTime, ControlActionHandler handler, object parameter)
+            {
+                MmsValue value = new MmsValue(ctlVal);
+
+                return OperateAsync (value, operTime, handler, parameter);
+            }
+                
+            /// <summary>
+            /// Operate the control with the specified control value.
+            /// </summary>
+            /// <param name='ctlVal'>the new value of the control</param>
+            /// <param name="handler">Callback function to handle the received response or service timeout</param>
+            /// <param name="parameter">User provided callback parameter. Will be passed to the callback function</param>
+            /// <returns>the invoke ID of the sent request</returns>
+            /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
+            public UInt32 OperateAsync (float ctlVal, ControlActionHandler handler, object parameter)
+            {
+                return OperateAsync (ctlVal, 0, handler, parameter);
+            }
+                
+            /// <summary>
+            /// Operate the control with the specified control value (time activated control).
+            /// </summary>
+            /// <param name='ctlVal'>the new value of the control</param>
+            /// <param name='operTime'>the time when the operation will be executed</param>
+            /// <param name="handler">Callback function to handle the received response or service timeout</param>
+            /// <param name="parameter">User provided callback parameter. Will be passed to the callback function</param>
+            /// <returns>the invoke ID of the sent request</returns>
+            /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
+            public UInt32 OperateAsync (float ctlVal, UInt64 operTime, ControlActionHandler handler, object parameter)
+            {
+                MmsValue value = new MmsValue(ctlVal);
+
+                return OperateAsync (value, operTime, handler, parameter);
+            }
+                
+            /// <summary>
+            /// Operate the control with the specified control value.
+            /// </summary>
+            /// <param name='ctlVal'>the new value of the control</param>
+            /// <param name="handler">Callback function to handle the received response or service timeout</param>
+            /// <param name="parameter">User provided callback parameter. Will be passed to the callback function</param>
+            /// <returns>the invoke ID of the sent request</returns>
+            /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
+            public UInt32 OperateAsync (int ctlVal, ControlActionHandler handler, object parameter)
+            {
+                return OperateAsync (ctlVal, 0, handler, parameter);
+            }
+
+            /// <summary>
+            /// Operate the control with the specified control value (time activated control).
+            /// </summary>
+            /// <param name='ctlVal'>the new value of the control</param>
+            /// <param name='operTime'>the time when the operation will be executed</param>
+            /// <param name="handler">Callback function to handle the received response or service timeout</param>
+            /// <param name="parameter">User provided callback parameter. Will be passed to the callback function</param>
+            /// <returns>the invoke ID of the sent request</returns>
+            /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
+            public UInt32 OperateAsync (int ctlVal, UInt64 operTime, ControlActionHandler handler, object parameter)
+            {
+                return OperateAsync (ctlVal, operTime, handler, parameter);
+            }
+
+            /// <summary>
+            /// Operate the control with the specified control value.
+            /// </summary>
+            /// <param name='ctlVal'>the new value of the control</param>
+            /// <param name="handler">Callback function to handle the received response or service timeout</param>
+            /// <param name="parameter">User provided callback parameter. Will be passed to the callback function</param>
+            /// <returns>the invoke ID of the sent request</returns>
+            /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
+            public UInt32 OperateAsync (MmsValue ctlVal, ControlActionHandler handler, object parameter)
+            {
+                return OperateAsync (ctlVal, 0, handler, parameter);
+            }
+
+            /// <summary>
+            /// Operate the control with the specified control value (time activated control).
+            /// </summary>
+            /// <param name='ctlVal'>the new value of the control</param>
+            /// <param name='operTime'>the time when the operation will be executed</param>
+            /// <param name="handler">Callback function to handle the received response or service timeout</param>
+            /// <param name="parameter">User provided callback parameter. Will be passed to the callback function</param>
+            /// <returns>the invoke ID of the sent request</returns>
+            /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
+            public UInt32 OperateAsync (MmsValue ctlVal, UInt64 operTime, ControlActionHandler handler, object parameter)
+            {
+                int error;
+
+                Tuple<ControlActionHandler, object> callbackInfo = Tuple.Create(handler, parameter);
+
+                GCHandle handle = GCHandle.Alloc(callbackInfo);
+
+                UInt32 invokeId = ControlObjectClient_operateAsync(controlObject, out error, ctlVal.valueReference, operTime, nativeOperateHandler, GCHandle.ToIntPtr(handle));
+
+                if (error != 0)
+                {
+                    handle.Free();
+                    throw new IedConnectionException("Operate failed", error);
+                }
+
+                return invokeId;
+            }
+
             /// <summary>
             /// Select the control object.
             /// </summary>
@@ -323,13 +497,36 @@ namespace IEC61850
                 return ControlObjectClient_select(controlObject);
             }
 
+            /// <summary>
+            /// Select the control object.
+            /// </summary>
+            /// <param name="handler">Callback function to handle the received response or service timeout</param>
+            /// <param name="parameter">User provided callback parameter. Will be passed to the callback function</param>
+            /// <returns>the invoke ID of the sent request</returns>
+            /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
+            public UInt32 SelectAsync(ControlActionHandler handler, object parameter)
+            {
+                int error;
+
+                Tuple<ControlActionHandler, object> callbackInfo = Tuple.Create(handler, parameter);
+
+                GCHandle handle = GCHandle.Alloc(callbackInfo);
+
+                UInt32 invokeId = ControlObjectClient_selectAsync(controlObject, out error, nativeOperateHandler, GCHandle.ToIntPtr(handle));
+
+                if (error != 0)
+                {
+                    handle.Free();
+                    throw new IedConnectionException("Select failed", error);
+                }
+
+                return invokeId;
+            }
 
             /// <summary>
             /// Send a select with value command for generic MmsValue instances
             /// </summary>
-            /// <param name='ctlVal'>
-            /// the value to be checked.
-            /// </param>
+            /// <param name='ctlVal'>the value to be checked.</param>
             /// <returns>true when the selection has been successful, false otherwise</returns>
             public bool SelectWithValue (MmsValue ctlVal)
             {
@@ -373,12 +570,104 @@ namespace IEC61850
             }
 
             /// <summary>
+            /// Send a select with value command for boolean controls - asynchronous version
+            /// </summary>
+            /// <param name='ctlVal'>the value to be checked.</param>
+            /// <param name="handler">Callback function to handle the received response or service timeout</param>
+            /// <param name="parameter">User provided callback parameter. Will be passed to the callback function</param>
+            /// <returns>the invoke ID of the sent request</returns>
+            /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
+            public UInt32 SelectWithValueAsync (bool ctlVal, ControlActionHandler handler, object parameter)
+            {
+                return SelectWithValueAsync(new MmsValue(ctlVal), handler, parameter);
+            }
+
+            /// <summary>
+            /// Send a select with value command for integer controls - asynchronous version
+            /// </summary>
+            /// <param name='ctlVal'>the value to be checked.</param>
+            /// <param name="handler">Callback function to handle the received response or service timeout</param>
+            /// <param name="parameter">User provided callback parameter. Will be passed to the callback function</param>
+            /// <returns>the invoke ID of the sent request</returns>
+            /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
+            public UInt32 SelectWithValueAsync (int ctlVal, ControlActionHandler handler, object parameter)
+            {
+                return SelectWithValueAsync(new MmsValue(ctlVal), handler, parameter);
+            }
+
+            /// <summary>
+            /// Send a select with value command for float controls - asynchronous version
+            /// </summary>
+            /// <param name='ctlVal'>the value to be checked.</param>
+            /// <param name="handler">Callback function to handle the received response or service timeout</param>
+            /// <param name="parameter">User provided callback parameter. Will be passed to the callback function</param>
+            /// <returns>the invoke ID of the sent request</returns>
+            /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
+            public UInt32 SelectWithValueAsync (float ctlVal, ControlActionHandler handler, object parameter)
+            {
+                return SelectWithValueAsync(new MmsValue(ctlVal), handler, parameter);
+            }
+                
+            /// <summary>
+            /// Send a select with value command for generic MmsValue instances - asynchronous version
+            /// </summary>
+            /// <param name='ctlVal'>the value to be checked.</param>
+            /// <param name="handler">Callback function to handle the received response or service timeout</param>
+            /// <param name="parameter">User provided callback parameter. Will be passed to the callback function</param>
+            /// <returns>the invoke ID of the sent request</returns>
+            /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
+            public UInt32 SelectWithValueAsync (MmsValue ctlVal, ControlActionHandler handler, object parameter)
+            {
+                int error;
+
+                Tuple<ControlActionHandler, object> callbackInfo = Tuple.Create(handler, parameter);
+
+                GCHandle handle = GCHandle.Alloc(callbackInfo);
+
+                UInt32 invokeId = ControlObjectClient_selectWithValueAsync(controlObject, out error, ctlVal.valueReference, nativeOperateHandler, GCHandle.ToIntPtr(handle));
+
+                if (error != 0)
+                {
+                    handle.Free();
+                    throw new IedConnectionException("Select with value failed", error);
+                }
+
+                return invokeId;
+            }
+
+            /// <summary>
             /// Cancel a selection or time activated operation
             /// </summary>
             /// <returns>true when the cancelation has been successful, false otherwise</returns>
+            /// <param name="handler">Callback function to handle the received response or service timeout</param>
+            /// <param name="parameter">User provided callback parameter. Will be passed to the callback function</param>
+            /// <returns>the invoke ID of the sent request</returns>
+            /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
             public bool Cancel () 
             {
                 return ControlObjectClient_cancel(controlObject);
+            }
+
+            /// <summary>
+            /// Cancel a selection or time activated operation
+            /// </summary>
+            public UInt32 CancelAsync(ControlActionHandler handler, object parameter)
+            {
+                int error;
+
+                Tuple<ControlActionHandler, object> callbackInfo = Tuple.Create(handler, parameter);
+
+                GCHandle handle = GCHandle.Alloc(callbackInfo);
+
+                UInt32 invokeId = ControlObjectClient_cancelAsync(controlObject, out error, nativeOperateHandler, GCHandle.ToIntPtr(handle));
+
+                if (error != 0)
+                {
+                    handle.Free();
+                    throw new IedConnectionException("Cancel failed", error);
+                }
+
+                return invokeId;
             }
 
             /// <summary>
