@@ -32,7 +32,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <fcntl.h>
-#include <netinet/tcp.h> // required for TCP keepalive
+#include <netinet/tcp.h> /* required for TCP keepalive */
 
 #include "hal_thread.h"
 #include "lib_memory.h"
@@ -258,7 +258,7 @@ closeAndShutdownSocket(int socketFd)
         if (DEBUG_SOCKET)
             printf("socket_linux.c: call shutdown for %i!\n", socketFd);
 
-        // shutdown is required to unblock read or accept in another thread!
+        /* shutdown is required to unblock read or accept in another thread! */
         shutdown(socketFd, SHUT_RDWR);
 
         close(socketFd);
@@ -311,10 +311,6 @@ Socket_connectAsync(Socket self, const char* address, int port)
     self->fd = socket(AF_INET, SOCK_STREAM, 0);
 
     activateTcpNoDelay(self);
-
-#if (CONFIG_ACTIVATE_TCP_KEEPALIVE == 1)
-    activateKeepAlive(self->fd);
-#endif
 
     fcntl(self->fd, F_SETFL, O_NONBLOCK);
 
@@ -510,7 +506,7 @@ Socket_write(Socket self, uint8_t* buf, int size)
     if (self->fd == -1)
         return -1;
 
-    // MSG_NOSIGNAL - prevent send to signal SIGPIPE when peer unexpectedly closed the socket
+    /* MSG_NOSIGNAL - prevent send to signal SIGPIPE when peer unexpectedly closed the socket */
     return send(self->fd, buf, size, MSG_NOSIGNAL);
 }
 

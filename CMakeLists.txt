@@ -75,10 +75,12 @@ include_directories(
 )
 
 set(API_HEADERS
+	hal/inc/hal_base.h
     hal/inc/hal_time.h
     hal/inc/hal_thread.h
     hal/inc/hal_filesystem.h
     hal/inc/hal_ethernet.h
+    hal/inc/hal_socket.h
     hal/inc/tls_config.h
     hal/inc/platform_endian.h
     hal/inc/lib_memory.h
@@ -114,11 +116,11 @@ set(API_HEADERS
     ${CMAKE_CURRENT_BINARY_DIR}/config/stack_config.h
 )
 
-if(MSVC)
+if(MSVC AND MSVC_VERSION LESS 1800)
     include_directories(
         ${CMAKE_CURRENT_LIST_DIR}/src/vs
     )
-endif(MSVC)
+endif()
 
 if(EXISTS ${CMAKE_CURRENT_LIST_DIR}/third_party/mbedtls/mbedtls-2.6.0)
 set(WITH_MBEDTLS 1)

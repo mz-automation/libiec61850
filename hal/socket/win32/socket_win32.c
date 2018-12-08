@@ -342,10 +342,6 @@ Socket_connectAsync(Socket self, const char* address, int port)
 
     self->fd = socket(AF_INET, SOCK_STREAM, 0);
 
-#if CONFIG_ACTIVATE_TCP_KEEPALIVE == 1
-    activateKeepAlive(self->fd);
-#endif
-
     setSocketNonBlocking(self);
 
     if (connect(self->fd, (struct sockaddr *) &serverAddress, sizeof(serverAddress)) == SOCKET_ERROR) {
@@ -517,7 +513,7 @@ Socket_read(Socket self, uint8_t* buf, int size)
 {
     int bytes_read = recv(self->fd, (char*) buf, size, 0);
 
-    if (bytes_read == 0) // peer has closed socket
+    if (bytes_read == 0) /* peer has closed socket */
         return -1;
 
     if (bytes_read == SOCKET_ERROR) {

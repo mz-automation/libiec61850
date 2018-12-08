@@ -78,14 +78,14 @@ message("Found winpcap -> can compile with GOOSE support")
 set(WITH_WPCAP 1)
 endif()
 
-IF(MSVC)
-set_source_files_properties(${libhal_windows_SRCS}
-                                       PROPERTIES LANGUAGE CXX)
-ENDIF()
-
 set (libhal_SRCS
     ${libhal_windows_SRCS}
 )
+
+IF(MSVC)
+set_source_files_properties(${libhal_SRCS}
+                                       PROPERTIES LANGUAGE CXX)
+ENDIF()
 
 ELSEIF(UNIX)
 IF(APPLE)
@@ -122,8 +122,13 @@ file(GLOB tls_SRCS ${CMAKE_CURRENT_LIST_DIR}/../third_party/mbedtls/mbedtls-2.6.
 add_definitions(-DMBEDTLS_CONFIG_FILE="mbedtls_config.h")
 
 set (libhal_SRCS ${libhal_SRCS}
- ${CMAKE_CURRENT_LIST_DIR}/tls/mbedtls/tls_mbedtls.c
+  ${CMAKE_CURRENT_LIST_DIR}/tls/mbedtls/tls_mbedtls.c
 )
+
+IF(MSVC)
+set_source_files_properties(${libhal_SRCS}
+                                       PROPERTIES LANGUAGE CXX)
+ENDIF()
 
 list (APPEND libhal_SRCS ${tls_SRCS})
 
