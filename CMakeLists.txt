@@ -115,7 +115,7 @@ set(API_HEADERS
     ${CMAKE_CURRENT_BINARY_DIR}/config/stack_config.h
 )
 
-if(MSVC)
+if(MSVC AND MSVC_VERSION LESS 1800)
     include_directories(
         ${CMAKE_CURRENT_LIST_DIR}/src/vs
     )
