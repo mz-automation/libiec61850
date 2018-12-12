@@ -149,8 +149,9 @@ namespace IEC61850
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern IntPtr ClientReportControlBlock_getOwner (IntPtr self);
 
-			private IntPtr self;
-			private IedConnection iedConnection = null;
+			internal IntPtr self;
+			
+            private IedConnection iedConnection = null;
 			private string objectReference;
 			private bool flagRptId = false;
 			private bool flagRptEna = false;
@@ -303,6 +304,18 @@ namespace IEC61850
 			}
 
             /// <summary>
+            /// Read all RCB values from the server - asynchronous version
+            /// </summary>
+            /// <returns>the invoke ID of the request</returns>
+            /// <param name="handler">user provided callback function</param>
+            /// <param name="parameter">user provided callback parameter</param>
+            /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
+            public UInt32 GetRCBValuesAsync(GetRCBValuesHandler handler, object parameter)
+            {
+                return iedConnection.GetRCBValuesAsync(GetObjectReference(), this, handler, parameter);
+            }
+
+            /// <summary>
             /// Write changed RCB values to the server.
             /// </summary>
             /// <description>
@@ -315,17 +328,7 @@ namespace IEC61850
 				SetRCBValues (true);
 			}
 
-            /// <summary>
-            /// Write changed RCB values to the server.
-            /// </summary>
-            /// <description>
-            /// This function will only write the RCB values that were set by one of the setter methods.
-            /// </description>
-            /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
-            /// <param name='singleRequest'>
-            /// If true the values are sent by single MMS write request. Otherwise the values are all sent by their own MMS write requests.
-            /// </param>
-			public void SetRCBValues (bool singleRequest)
+            private UInt32 CreateParametersMask()
             {
                 UInt32 parametersMask = 0;
 
@@ -370,6 +373,35 @@ namespace IEC61850
 
                 if (flagResvTms)
                     parametersMask += 16384;
+
+                return parametersMask;
+            }
+
+            public UInt32 SetRCBValuesAsync(SetRCBValuesHandler handler, object parameter)
+            {   
+                return SetRCBValuesAsync(true, handler, parameter);
+            }
+
+            public UInt32 SetRCBValuesAsync(bool singleRequest, SetRCBValuesHandler handler, object parameter)
+            {   
+                UInt32 parametersMask = CreateParametersMask();
+
+                return iedConnection.SetRCBValuesAsync(this, parametersMask, singleRequest, handler, parameter);
+            }
+
+            /// <summary>
+            /// Write changed RCB values to the server.
+            /// </summary>
+            /// <description>
+            /// This function will only write the RCB values that were set by one of the setter methods.
+            /// </description>
+            /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
+            /// <param name='singleRequest'>
+            /// If true the values are sent by single MMS write request. Otherwise the values are all sent by their own MMS write requests.
+            /// </param>
+			public void SetRCBValues (bool singleRequest)
+            {
+                UInt32 parametersMask = CreateParametersMask();
 
                 int error;
 

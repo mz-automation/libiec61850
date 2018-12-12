@@ -316,6 +316,32 @@ namespace IEC61850
 			}
 		}
 
+        /// <summary>
+        /// Asynchonous service handler for the get RCB values service
+        /// </summary>
+        /// <param name="invokeId">The invoke ID of the request triggering this callback</param>
+        /// <param name="parameter">user provided callback parameter</param>
+        /// <param name="err">Error code of response or timeout error in case of a response timeout</param>
+        /// <param name="rcb">the report control block instance</param>
+        public delegate void GetRCBValuesHandler(UInt32 invokeId, object parameter, IedClientError err, ReportControlBlock rcb);
+
+        /// <summary>
+        /// Asynchonous service handler for the set RCB values service
+        /// </summary>
+        /// <param name="invokeId">The invoke ID of the request triggering this callback</param>
+        /// <param name="parameter">user provided callback parameter</param>
+        /// <param name="err">Error code of response or timeout error in case of a response timeout</param>
+        /// <param name="rcb">the report control block instance</param>
+        public delegate void SetRCBValuesHandler(UInt32 invokeId, object parameter, IedClientError err, ReportControlBlock rcb);
+
+        /// <summary>
+        /// Generic asynchonous service handler - used by simple services that have only success or error result
+        /// </summary>
+        /// <param name="invokeId">The invoke ID of the request triggering this callback</param>
+        /// <param name="parameter">user provided callback parameter</param>
+        /// <param name="err">Error code of response or timeout error in case of a response timeout</param>
+        public delegate void GenericServiceHandler(UInt32 invokeId, object parameter, IedClientError err);
+
 		/// <summary>
 		/// This class acts as the entry point for the IEC 61850 client API. It represents a single
 		/// (MMS) connection to a server.
@@ -560,6 +586,27 @@ namespace IEC61850
             static extern UInt32
             IedConnection_readDataSetValuesAsync(IntPtr self, out int error, string dataSetReference, IntPtr dataSet,
                 IedConnection_ReadDataSetHandler handler, IntPtr parameter);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            private delegate void IedConnection_GetRCBValuesHandler (UInt32 invokeId, IntPtr parameter, int err, IntPtr rcb);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)] 
+            static extern UInt32
+            IedConnection_getRCBValuesAsync(IntPtr self, out int error, string rcbReference, IntPtr updateRcb,
+                IedConnection_GetRCBValuesHandler handler, IntPtr parameter);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            private delegate void IedConnection_GenericServiceHandler (UInt32 invokeId, IntPtr parameter, int err);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)] 
+            static extern UInt32
+            IedConnection_setRCBValuesAsync(IntPtr self, out int error, IntPtr rcb,
+                UInt32 parametersMask, [MarshalAs(UnmanagedType.I1)] bool singleRequest, IedConnection_GenericServiceHandler handler, IntPtr parameter);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)] 
+            static extern UInt32
+            IedConnection_deleteFileAsync(IntPtr self, out int  error, string fileName,
+                IedConnection_GenericServiceHandler handler, IntPtr parameter);
             
 
             /********************
@@ -1311,6 +1358,44 @@ namespace IEC61850
 					throw new IedConnectionException ("Deleting file " + fileName + " failed", error);
 			}
 
+            private void nativeGenericServiceHandler (UInt32 invokeId, IntPtr parameter, int err)
+            {
+                GCHandle handle = GCHandle.FromIntPtr(parameter);
+
+                Tuple<GenericServiceHandler, object>  callbackInfo = handle.Target as Tuple<GenericServiceHandler, object>;
+
+                GenericServiceHandler handler = callbackInfo.Item1;
+                object handlerParameter = callbackInfo.Item2;
+
+                handle.Free();
+
+                IedClientError clientError = (IedClientError)err;
+                         
+                handler(invokeId, handlerParameter, clientError);
+            }
+
+            /// <summary>Delete file- asynchronous version</summary>
+            /// <param name="fileName">The name of the file.</param>
+            /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
+            public UInt32 DeleteFileAsync(string filename, GenericServiceHandler handler, object parameter)
+            {
+                int error;
+
+                Tuple<GenericServiceHandler, object> callbackInfo = Tuple.Create(handler, parameter);
+
+                GCHandle handle = GCHandle.Alloc(callbackInfo);
+
+                UInt32 invokeId = IedConnection_deleteFileAsync(connection, out error, filename, nativeGenericServiceHandler, GCHandle.ToIntPtr(handle));
+
+                if (error != 0)
+                {
+                    handle.Free();
+                    throw new IedConnectionException("Get file failed", error);
+                }
+
+                return invokeId;
+            }
+
             /// <summary>Read the content of a file directory.</summary>
             /// <param name="directoryName">The name of the directory.</param>
             /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
@@ -1349,8 +1434,8 @@ namespace IEC61850
             /// <param name="directoryName">The name of the directory.</param>
             /// <param name="continueAfter">the filename that defines the continuation point, or null for the first request</param>
             /// <param name="moreFollows">true, when more files are available, false otherwise</param>
+            /// <returns>list of file directory entries</returns>
             /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
-
             public List<FileDirectoryEntry> GetFileDirectoryEx(string directoryName, string continueAfter, out bool moreFollows)
             {
                 int error;
@@ -1383,6 +1468,7 @@ namespace IEC61850
             }
 
 			[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
             private delegate bool InternalIedClientGetFileHandler(IntPtr parameter, IntPtr buffer, UInt32 bytesRead);
 
             private bool iedClientGetFileHandler(IntPtr parameter, IntPtr buffer, UInt32 bytesRead)
@@ -1429,6 +1515,7 @@ namespace IEC61850
 			/// <param name='parameter'>
 			/// User provided parameter that is passed to the callback handler
 			/// </param>
+            /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
             public void GetFile(string fileName, GetFileHandler handler, object parameter)
             {
                 int error;
@@ -1445,6 +1532,90 @@ namespace IEC61850
 
                 handle.Free();
             }
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
+            private delegate bool IedConnection_GetFileAsyncHandler (UInt32 invokeId, IntPtr parameter, int err, UInt32 originalInvokeId,
+                IntPtr buffer, UInt32 bytesRead, bool moreFollows);
+
+            /// <summary>
+            /// Callback handler for the asynchronous get file service. Will be invoked for each chunk of received data
+            /// </summary>
+            /// <param name="invokeId">The invoke ID of the reqeust triggering this callback</param>
+            /// <param name="parameter">user provided callback parameter</param>
+            /// <param name="err">Error code of response or timeout error in case of a response timeout</param>
+            /// <param name="originalInvokeId">the invokeId of the first (file open) request</param>
+            /// <param name="buffer">the file data received with the last response, or null if no file data available</param>
+            /// <param name="moreFollows">indicates that more file data follows</param>
+            public delegate bool GetFileAsyncHandler(UInt32 invokeId, object parameter, IedClientError err, UInt32 originalInvokeId, byte[] buffer, bool moreFollows);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)] 
+            static extern UInt32
+            IedConnection_getFileAsync(IntPtr self, out int error, string fileName, IedConnection_GetFileAsyncHandler handler,
+                IntPtr parameter);
+
+            private bool nativeGetFileAsyncHandler(UInt32 invokeId, IntPtr parameter, int err, UInt32 originalInvokeId,
+                IntPtr buffer, UInt32 bytesRead, bool moreFollows)
+            {
+
+                GCHandle handle = GCHandle.FromIntPtr(parameter);
+
+                Tuple<GetFileAsyncHandler, object>  callbackInfo = handle.Target as Tuple<GetFileAsyncHandler, object>;
+
+                GetFileAsyncHandler handler = callbackInfo.Item1;
+                object handlerParameter = callbackInfo.Item2;
+
+                handle.Free();
+
+                IedClientError clientError = (IedClientError)err;
+
+                byte[] bytes = null;
+               
+                if (clientError == IedClientError.IED_ERROR_OK)
+                {
+                    bytes = new byte[bytesRead];
+
+                    Marshal.Copy(buffer, bytes, 0, (int) bytesRead);
+                }               
+                    
+                return handler(invokeId, handlerParameter, clientError, originalInvokeId, bytes, moreFollows);
+            }
+
+            /// <summary>
+            /// Download a file from the server.
+            /// </summary>
+            /// <param name='fileName'>
+            /// File name of the file (full path)
+            /// </param>
+            /// <param name='handler'>
+            /// Callback handler that is invoked for each chunk of the file received
+            /// </param>
+            /// <param name='parameter'>
+            /// User provided parameter that is passed to the callback handler
+            /// </param>
+            /// <returns>invoke ID of the request</returns>
+            /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
+            public UInt32 GetFileAsync(string fileName, GetFileAsyncHandler handler, object parameter)
+            {
+                int error;
+
+                Tuple<GetFileAsyncHandler, object> callbackInfo = Tuple.Create(handler, parameter);
+
+                GCHandle handle = GCHandle.Alloc(callbackInfo);
+
+                UInt32 invokeId = IedConnection_getFileAsync(connection, out error, fileName, nativeGetFileAsyncHandler, GCHandle.ToIntPtr(handle));
+
+                if (error != 0)
+                {
+                    handle.Free();
+                    throw new IedConnectionException("Get file failed", error);
+                }
+
+                return invokeId;
+            }
+
+
+
 
 			/// <summary>
 			/// Abort (close) the connection.
@@ -2234,6 +2405,79 @@ namespace IEC61850
 					error = 1; /* not connected */
 				}
 			}
+                
+
+            private void nativeGetRCBValuesHandler (UInt32 invokeId, IntPtr parameter, int err, IntPtr rcbPtr)
+            {
+                GCHandle handle = GCHandle.FromIntPtr(parameter);
+
+                Tuple<GetRCBValuesHandler, object, ReportControlBlock> callbackInfo = handle.Target as Tuple<GetRCBValuesHandler, object, ReportControlBlock>;
+
+                GetRCBValuesHandler handler = callbackInfo.Item1;
+                object handlerParameter = callbackInfo.Item2;
+                ReportControlBlock rcb = callbackInfo.Item3;
+
+                handle.Free();
+
+                IedClientError clientError = (IedClientError)err;
+
+                handler(invokeId, handlerParameter, clientError, rcb);
+            }
+
+            internal UInt32 GetRCBValuesAsync(string objectReference, ReportControlBlock updateRcb, GetRCBValuesHandler handler, object parameter)
+            {
+                int error;
+
+                Tuple<GetRCBValuesHandler, object, ReportControlBlock> callbackInfo = Tuple.Create(handler, parameter, updateRcb);
+
+                GCHandle handle = GCHandle.Alloc(callbackInfo);
+
+                UInt32 invokeId = IedConnection_getRCBValuesAsync(connection, out error, objectReference, updateRcb.self, nativeGetRCBValuesHandler, GCHandle.ToIntPtr(handle));
+
+                if (error != 0)
+                {
+                    handle.Free();
+                    throw new IedConnectionException("GetRCBValues failed", error);
+                }
+
+                return invokeId;
+            }
+
+            private void nativeSetRcbValuesHandler (UInt32 invokeId, IntPtr parameter, int err)
+            {
+                GCHandle handle = GCHandle.FromIntPtr(parameter);
+
+                Tuple<SetRCBValuesHandler, object, ReportControlBlock> callbackInfo = handle.Target as Tuple<SetRCBValuesHandler, object, ReportControlBlock>;
+
+                SetRCBValuesHandler handler = callbackInfo.Item1;
+                object handlerParameter = callbackInfo.Item2;
+                ReportControlBlock rcb = callbackInfo.Item3;
+
+                handle.Free();
+
+                IedClientError clientError = (IedClientError)err;
+
+                handler(invokeId, handlerParameter, clientError, rcb);
+            }
+
+            internal UInt32 SetRCBValuesAsync(ReportControlBlock rcb, UInt32 parametersMask, bool singleRequest, SetRCBValuesHandler handler, object parameter)
+            {
+                int error;
+
+                Tuple<SetRCBValuesHandler, object, ReportControlBlock> callbackInfo = Tuple.Create(handler, parameter, rcb);
+
+                GCHandle handle = GCHandle.Alloc(callbackInfo);
+
+                UInt32 invokeId = IedConnection_setRCBValuesAsync(connection, out error, rcb.self, parametersMask, singleRequest, nativeSetRcbValuesHandler, GCHandle.ToIntPtr(handle));
+
+                if (error != 0)
+                {
+                    handle.Free();
+                    throw new IedConnectionException("SetRCBValues failed", error);
+                }
+
+                return invokeId;
+            }
 
 		}
 

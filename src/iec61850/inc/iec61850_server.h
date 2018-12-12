@@ -322,8 +322,8 @@ IedServer_destroy(IedServer self);
 /**
  * \brief Set the local IP address to listen on
  *
- *  \param self the IedServer instance
- *  \param localIpAddress the local IP address as C string (an internal copy will be created)
+ * \param self the IedServer instance
+ * \param localIpAddress the local IP address as C string (an internal copy will be created)
  */
 LIB61850_API void
 IedServer_setLocalIpAddress(IedServer self, const char* localIpAddress);
