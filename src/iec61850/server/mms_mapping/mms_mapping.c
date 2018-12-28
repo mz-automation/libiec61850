@@ -2608,7 +2608,7 @@ variableListChangedHandler (void* parameter, bool create, MmsVariableListType li
                     if (listType == MMS_DOMAIN_SPECIFIC) {
                         if (rc->dataSet->logicalDeviceName != NULL) {
                             if (strcmp(rc->dataSet->name, listName) == 0) {
-                                if (strcmp(rc->dataSet->logicalDeviceName, MmsDomain_getName(domain)) == 0) {
+                                if (strcmp(rc->dataSet->logicalDeviceName, MmsDomain_getName(domain) + strlen(self->model->name)) == 0) {
                                     allow = MMS_ERROR_SERVICE_OBJECT_CONSTRAINT_CONFLICT;
                                     break;
                                 }
@@ -2650,7 +2650,7 @@ variableListChangedHandler (void* parameter, bool create, MmsVariableListType li
                     if (listType == MMS_DOMAIN_SPECIFIC) {
                         if (lc->dataSet->logicalDeviceName != NULL) {
                             if (strcmp(lc->dataSet->name, listName) == 0) {
-                                if (strcmp(lc->dataSet->logicalDeviceName, MmsDomain_getName(domain)) == 0) {
+                                if (strcmp(lc->dataSet->logicalDeviceName, MmsDomain_getName(domain) + strlen(self->model->name)) == 0) {
                                     allow = MMS_ERROR_SERVICE_OBJECT_CONSTRAINT_CONFLICT;
                                     break;
                                 }
@@ -3196,7 +3196,7 @@ MmsMapping_createDataSetByNamedVariableList(MmsMapping* self, MmsNamedVariableLi
     DataSet* dataSet = (DataSet*) GLOBAL_MALLOC(sizeof(DataSet));
 
     if (variableList->domain != NULL)
-        dataSet->logicalDeviceName = MmsDomain_getName(variableList->domain);
+        dataSet->logicalDeviceName = MmsDomain_getName(variableList->domain) + strlen(self->model->name);
     else
         dataSet->logicalDeviceName = NULL; /* name is not relevant for association specific data sets */
 
