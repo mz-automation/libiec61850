@@ -98,15 +98,9 @@ set(API_HEADERS
     src/mms/inc/mms_value.h
     src/mms/inc/mms_common.h
     src/mms/inc/mms_types.h
-    src/mms/inc/mms_device_model.h
-    src/mms/inc/mms_server.h
-    src/mms/inc/mms_named_variable_list.h
     src/mms/inc/mms_type_spec.h
     src/mms/inc/mms_client_connection.h
     src/mms/inc/iso_connection_parameters.h
-    src/mms/inc/iso_server.h
-    src/mms/inc/ber_integer.h
-    src/mms/inc/asn1_ber_primitive_value.h
     src/goose/goose_subscriber.h
     src/goose/goose_receiver.h
     src/goose/goose_publisher.h
