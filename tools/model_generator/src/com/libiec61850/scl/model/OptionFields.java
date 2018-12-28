@@ -94,7 +94,7 @@ public class OptionFields {
         if (boolVal != null)
             this.configRef = boolVal;
 
-        boolVal = ParserUtils.parseBooleanAttribute(optFieldsNode, "bufOvlf");
+        boolVal = ParserUtils.parseBooleanAttribute(optFieldsNode, "bufOvfl");
         if (boolVal != null)
             this.bufOvfl = boolVal;
     }
