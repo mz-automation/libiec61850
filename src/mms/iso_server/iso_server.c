@@ -853,6 +853,7 @@ private_IsoServer_getConnectionCounter(IsoServer self)
 }
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
+
 void
 IsoServer_setUserLock(IsoServer self, Semaphore userLock)
 {
@@ -872,4 +873,5 @@ IsoServer_userUnlock(IsoServer self)
     if (self->userLock != NULL)
         Semaphore_post(self->userLock);
 }
-#endif
+
+#endif /* (CONFIG_MMS_THREADLESS_STACK != 1) */
