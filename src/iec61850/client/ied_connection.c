@@ -95,6 +95,9 @@ iedConnection_mapMmsErrorToIedError(MmsError mmsError)
     case MMS_ERROR_ACCESS_OBJECT_VALUE_INVALID:
     	return IED_ERROR_OBJECT_VALUE_INVALID;
 
+    case MMS_ERROR_PARSING_RESPONSE:
+        return IED_ERROR_OBJECT_VALUE_INVALID;
+
     default:
         return IED_ERROR_UNKNOWN;
     }
@@ -2291,7 +2294,7 @@ exit_function:
 }
 
 ClientDataSet
-IedConnection_readDataSetValues(IedConnection self, IedClientError* error, const char* dataSetReference,
+IedConnection_readDataSetValues(IedConnection self, IedClientError* err, const char* dataSetReference,
         ClientDataSet dataSet)
 {
     char domainIdBuffer[65];
@@ -2316,14 +2319,14 @@ IedConnection_readDataSetValues(IedConnection self, IedClientError* error, const
             domainId = MmsMapping_getMmsDomainFromObjectReference(dataSetReference, domainIdBuffer);
 
             if (domainId == NULL) {
-                *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
+                *err = IED_ERROR_OBJECT_REFERENCE_INVALID;
                 goto exit_function;
             }
 
             const char* itemIdRefOrig = dataSetReference + strlen(domainId) + 1;
 
             if (strlen(itemIdRefOrig) > DATA_SET_MAX_NAME_LENGTH) {
-                *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
+                *err = IED_ERROR_OBJECT_REFERENCE_INVALID;
                 goto exit_function;
             }
 
@@ -2346,15 +2349,15 @@ IedConnection_readDataSetValues(IedConnection self, IedClientError* error, const
         dataSetVal = MmsConnection_readNamedVariableListValuesAssociationSpecific(self->connection,
                 &mmsError, itemId, true);
     else
-        dataSetVal= MmsConnection_readNamedVariableListValues(self->connection, &mmsError,
+        dataSetVal = MmsConnection_readNamedVariableListValues(self->connection, &mmsError,
                     domainId, itemId, true);
 
     if (dataSetVal == NULL) {
-        *error = iedConnection_mapMmsErrorToIedError(mmsError);
+        *err = iedConnection_mapMmsErrorToIedError(mmsError);
         goto exit_function;
     }
     else
-        *error = IED_ERROR_OK;
+        *err = IED_ERROR_OK;
 
     if (dataSet == NULL) {
         dataSet = ClientDataSet_create(dataSetReference);

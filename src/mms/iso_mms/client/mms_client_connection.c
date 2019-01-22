@@ -1697,8 +1697,12 @@ MmsConnection_readNamedVariableListValues(MmsConnection self, MmsError* mmsError
 
     ByteBuffer* responseMessage = sendRequestAndWaitForResponse(self, invokeId, payload, mmsError);
 
-    if (responseMessage != NULL)
+    if (responseMessage != NULL) {
         value = mmsClient_parseReadResponse(self->lastResponse, NULL, true);
+
+        if (value == NULL)
+            *mmsError = MMS_ERROR_PARSING_RESPONSE;
+    }
 
     releaseResponse(self);
 
