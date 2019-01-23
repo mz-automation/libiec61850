@@ -476,7 +476,7 @@ TLSSocket_close(TLSSocket self)
 {
     int ret;
 
-    //TODO add timeout?
+    /* TODO add timeout? */
 
     while ((ret = mbedtls_ssl_close_notify(&(self->ssl))) < 0)
     {
@@ -491,6 +491,9 @@ TLSSocket_close(TLSSocket self)
 
     mbedtls_ssl_config_free(&(self->conf));
     mbedtls_ssl_free(&(self->ssl));
+
+    if (self->peerCert)
+        GLOBAL_FREEMEM(self->peerCert);
 
     GLOBAL_FREEMEM(self);
 }

@@ -96,6 +96,12 @@ finalizeIsoConnection(IsoConnection self)
         printf("ISO_SERVER: finalizeIsoConnection --> close transport connection\n");
 
     IsoServer_closeConnection(self->isoServer, self);
+
+#if (CONFIG_MMS_SUPPORT_TLS == 1)
+    if (self->tlsSocket)
+        TLSSocket_close(self->tlsSocket);
+#endif
+
     if (self->socket != NULL)
         Socket_destroy(self->socket);
 
@@ -601,8 +607,10 @@ IsoConnection_close(IsoConnection self)
         self->socket = NULL;
 
 #if (CONFIG_MMS_SUPPORT_TLS == 1)
-        if (self->tlsSocket)
+        if (self->tlsSocket) {
             TLSSocket_close(self->tlsSocket);
+            self->tlsSocket = NULL;
+        }
 #endif
 
         Socket_destroy(socket);

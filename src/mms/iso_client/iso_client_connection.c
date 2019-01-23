@@ -201,6 +201,8 @@ sendConnectionRequestMessage(IsoClientConnection self)
 #if (CONFIG_MMS_SUPPORT_TLS == 1)
     if (self->parameters->tlsConfiguration) {
 
+        TLSConfiguration_setClientMode(self->parameters->tlsConfiguration);
+
         /* create TLSSocket and start TLS authentication */
         TLSSocket tlsSocket = TLSSocket_create(self->socket, self->parameters->tlsConfiguration, false);
 

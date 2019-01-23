@@ -66,7 +66,13 @@ int main(int argc, char** argv) {
 
     if (error == IED_ERROR_OK) {
 
-        IedConnection_getServerDirectory(con, &error, false);
+        LinkedList serverDirectory = IedConnection_getServerDirectory(con, &error, false);
+
+        if (error != IED_ERROR_OK)
+            printf("failed to read server directory (error=%i)\n", error);
+
+        if (serverDirectory)
+            LinkedList_destroy(serverDirectory);
 
         /* read an analog measurement value from server */
         MmsValue* value = IedConnection_readObject(con, &error, "simpleIOGenericIO/GGIO1.AnIn1.mag.f", IEC61850_FC_MX);
@@ -146,6 +152,8 @@ int main(int argc, char** argv) {
     }
 
     IedConnection_destroy(con);
+
+    TLSConfiguration_destroy(tlsConfig);
 }
 
 

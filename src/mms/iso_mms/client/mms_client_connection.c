@@ -1386,8 +1386,6 @@ MmsConnection_createInternal(TLSConfiguration tlsConfig, bool createThread)
 
 #if (CONFIG_MMS_SUPPORT_TLS == 1)
         if (tlsConfig) {
-            TLSConfiguration_setClientMode(tlsConfig);
-
             IsoConnectionParameters_setTlsConfiguration(self->isoParameters, tlsConfig);
         }
 #endif /* (CONFIG_MMS_SUPPORT_TLS == 1) */
