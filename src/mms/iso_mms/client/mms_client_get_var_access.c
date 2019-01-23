@@ -138,23 +138,23 @@ mmsClient_parseGetVariableAccessAttributesResponse(ByteBuffer* message, uint32_t
     asn_dec_rval_t rval = ber_decode(NULL, &asn_DEF_MmsPdu,
             (void**) &mmsPdu, ByteBuffer_getBuffer(message), ByteBuffer_getSize(message));
 
-    if (rval.code != RC_OK)
-        return NULL;
+    if (rval.code == RC_OK) {
 
-    if (mmsPdu->present == MmsPdu_PR_confirmedResponsePdu) {
+        if (mmsPdu->present == MmsPdu_PR_confirmedResponsePdu) {
 
-        if (invokeId != NULL)
-            *invokeId = mmsClient_getInvokeId(&mmsPdu->choice.confirmedResponsePdu);
+            if (invokeId != NULL)
+                *invokeId = mmsClient_getInvokeId(&mmsPdu->choice.confirmedResponsePdu);
 
-        if (mmsPdu->choice.confirmedResponsePdu.confirmedServiceResponse.present ==
-                ConfirmedServiceResponse_PR_getVariableAccessAttributes)
-                {
-            GetVariableAccessAttributesResponse_t* response;
+            if (mmsPdu->choice.confirmedResponsePdu.confirmedServiceResponse.present ==
+                    ConfirmedServiceResponse_PR_getVariableAccessAttributes)
+                    {
+                GetVariableAccessAttributesResponse_t* response;
 
-            response = &(mmsPdu->choice.confirmedResponsePdu.confirmedServiceResponse.choice.getVariableAccessAttributes);
-            TypeSpecification_t* asnTypeSpec = &response->typeSpecification;
+                response = &(mmsPdu->choice.confirmedResponsePdu.confirmedServiceResponse.choice.getVariableAccessAttributes);
+                TypeSpecification_t* asnTypeSpec = &response->typeSpecification;
 
-            typeSpec = createTypeSpecification(asnTypeSpec);
+                typeSpec = createTypeSpecification(asnTypeSpec);
+            }
         }
     }
 

@@ -1190,6 +1190,9 @@ MmsValue_deleteIfNotNull(MmsValue* self)
 void
 MmsValue_delete(MmsValue* self)
 {
+    if (self == NULL)
+        return;
+
     switch (self->type)
     {
     case MMS_INTEGER:

@@ -437,39 +437,41 @@ informationReportHandler(void* parameter, char* domainName,
     if (DEBUG_IED_CLIENT)
         printf("DEBUG_IED_CLIENT: received information report for %s\n", variableListName);
 
-    if (domainName == NULL) {
+    if (value) {
+        if (domainName == NULL) {
 
-        if (isVariableListName) {
-            private_IedConnection_handleReport(self, value);
-        }
-        else {
-            if (strcmp(variableListName, "LastApplError") == 0)
-                handleLastApplErrorMessage(self, value);
+            if (isVariableListName) {
+                private_IedConnection_handleReport(self, value);
+            }
             else {
-                if (DEBUG_IED_CLIENT)
-                    printf("IED_CLIENT: Received unknown variable list report for list: %s\n", variableListName);
+                if (strcmp(variableListName, "LastApplError") == 0)
+                    handleLastApplErrorMessage(self, value);
+                else {
+                    if (DEBUG_IED_CLIENT)
+                        printf("IED_CLIENT: Received unknown variable list report for list: %s\n", variableListName);
+                }
             }
         }
-    }
-    else {
-        if (DEBUG_IED_CLIENT)
-            printf("IED_CLIENT: RCVD CommandTermination for %s/%s\n", domainName, variableListName);
+        else {
+            if (DEBUG_IED_CLIENT)
+                printf("IED_CLIENT: RCVD CommandTermination for %s/%s\n", domainName, variableListName);
 
-        LinkedList control = LinkedList_getNext(self->clientControls);
+            LinkedList control = LinkedList_getNext(self->clientControls);
 
-        while (control != NULL) {
-           ControlObjectClient object = (ControlObjectClient) control->data;
+            while (control != NULL) {
+               ControlObjectClient object = (ControlObjectClient) control->data;
 
-           char* objectRef = ControlObjectClient_getObjectReference(object);
+               char* objectRef = ControlObjectClient_getObjectReference(object);
 
-           if (doesReportMatchControlObject(domainName, variableListName, objectRef))
-               private_ControlObjectClient_invokeCommandTerminationHandler(object);
+               if (doesReportMatchControlObject(domainName, variableListName, objectRef))
+                   private_ControlObjectClient_invokeCommandTerminationHandler(object);
 
-           control = LinkedList_getNext(control);
+               control = LinkedList_getNext(control);
+            }
         }
-    }
 
-    MmsValue_delete(value);
+        MmsValue_delete(value);
+    }
 }
 
 static IedConnection
