@@ -1,7 +1,7 @@
 /*
  *  ied_connection.c
  *
- *  Copyright 2013-2018 Michael Zillgith
+ *  Copyright 2013-2019 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -95,6 +95,9 @@ iedConnection_mapMmsErrorToIedError(MmsError mmsError)
 
     case MMS_ERROR_ACCESS_OBJECT_VALUE_INVALID:
     	return IED_ERROR_OBJECT_VALUE_INVALID;
+
+    case MMS_ERROR_PARSING_RESPONSE:
+        return IED_ERROR_MALFORMED_MESSAGE;
 
     default:
         return IED_ERROR_UNKNOWN;
@@ -484,42 +487,48 @@ informationReportHandler(void* parameter, char* domainName,
 {
     IedConnection self = (IedConnection) parameter;
 
-    if (DEBUG_IED_CLIENT)
-        printf("DEBUG_IED_CLIENT: received information report for %s\n", variableListName);
+    if (value) {
+        if (DEBUG_IED_CLIENT)
+            printf("IED_CLIENT: received information report for %s\n", variableListName);
 
-    if (domainName == NULL) {
+        if (domainName == NULL) {
 
-        if (isVariableListName) {
-            iedConnection_handleReport(self, value);
-        }
-        else {
-            if (strcmp(variableListName, "LastApplError") == 0)
-                handleLastApplErrorMessage(self, value);
+            if (isVariableListName) {
+                iedConnection_handleReport(self, value);
+            }
             else {
-                if (DEBUG_IED_CLIENT)
-                    printf("IED_CLIENT: Received unknown variable list report for list: %s\n", variableListName);
+                if (strcmp(variableListName, "LastApplError") == 0)
+                    handleLastApplErrorMessage(self, value);
+                else {
+                    if (DEBUG_IED_CLIENT)
+                        printf("IED_CLIENT: Received unknown variable list report for list: %s\n", variableListName);
+                }
             }
         }
+        else {
+            if (DEBUG_IED_CLIENT)
+                printf("IED_CLIENT: RCVD CommandTermination for %s/%s\n", domainName, variableListName);
+
+            LinkedList control = LinkedList_getNext(self->clientControls);
+
+            while (control != NULL) {
+               ControlObjectClient object = (ControlObjectClient) control->data;
+
+               const char* objectRef = ControlObjectClient_getObjectReference(object);
+
+               if (doesReportMatchControlObject(domainName, variableListName, objectRef))
+                   controlObjectClient_invokeCommandTerminationHandler(object);
+
+               control = LinkedList_getNext(control);
+            }
+        }
+
+        MmsValue_delete(value);
     }
     else {
         if (DEBUG_IED_CLIENT)
-            printf("IED_CLIENT: RCVD CommandTermination for %s/%s\n", domainName, variableListName);
-
-        LinkedList control = LinkedList_getNext(self->clientControls);
-
-        while (control != NULL) {
-           ControlObjectClient object = (ControlObjectClient) control->data;
-
-           const char* objectRef = ControlObjectClient_getObjectReference(object);
-
-           if (doesReportMatchControlObject(domainName, variableListName, objectRef))
-               controlObjectClient_invokeCommandTerminationHandler(object);
-
-           control = LinkedList_getNext(control);
-        }
+             printf("IED_CLIENT: report for %s/%s: value invalid\n", domainName, variableListName);
     }
-
-    MmsValue_delete(value);
 }
 
 static void

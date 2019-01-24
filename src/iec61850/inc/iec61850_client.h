@@ -1,7 +1,7 @@
 /*
  *  iec61850_client.h
  *
- *  Copyright 2013-2018 Michael Zillgith
+ *  Copyright 2013-2019 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -158,6 +158,9 @@ typedef enum {
 
     /** The object is invalidated (returned by server) */
     IED_ERROR_OBJECT_INVALIDATED = 33,
+
+    /** Received an invalid response message from the server */
+    IED_ERROR_MALFORMED_MESSAGE = 34,
 
     /** Service not implemented */
     IED_ERROR_SERVICE_NOT_IMPLEMENTED = 98,

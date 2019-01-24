@@ -1,7 +1,7 @@
 /*
  *  mms_client_connection.c
  *
- *  Copyright 2013-2018 Michael Zillgith
+ *  Copyright 2013-2019 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -657,7 +657,10 @@ handleAsyncResponse(MmsConnection self, ByteBuffer* response, uint32_t bufPos, M
             if (response) {
                 MmsValue* value = mmsClient_parseReadResponse(response, NULL, false);
 
-                handler(outstandingCall->invokeId, outstandingCall->userParameter, MMS_ERROR_NONE, value);
+                if (value == NULL)
+                    err = MMS_ERROR_PARSING_RESPONSE;
+
+                handler(outstandingCall->invokeId, outstandingCall->userParameter, err, value);
             }
 
         }
@@ -673,7 +676,10 @@ handleAsyncResponse(MmsConnection self, ByteBuffer* response, uint32_t bufPos, M
             if (response) {
                 MmsValue* value = mmsClient_parseReadResponse(response, NULL, true);
 
-                handler(outstandingCall->invokeId, outstandingCall->userParameter, MMS_ERROR_NONE, value);
+                if (value == NULL)
+                    err = MMS_ERROR_PARSING_RESPONSE;
+
+                handler(outstandingCall->invokeId, outstandingCall->userParameter, err, value);
             }
 
         }
@@ -726,7 +732,7 @@ handleAsyncResponse(MmsConnection self, ByteBuffer* response, uint32_t bufPos, M
 
                 LinkedList accessSpec = mmsClient_parseGetNamedVariableListAttributesResponse(response, &deletable);
 
-                if (accessSpec == false)
+                if (accessSpec == NULL)
                     err = MMS_ERROR_PARSING_RESPONSE;
 
                 handler(outstandingCall->invokeId, outstandingCall->userParameter, err, accessSpec, deletable);
@@ -778,6 +784,9 @@ handleAsyncResponse(MmsConnection self, ByteBuffer* response, uint32_t bufPos, M
         }
         else {
             MmsVariableSpecification* typeSpec = mmsClient_parseGetVariableAccessAttributesResponse(response, NULL);
+
+            if (typeSpec == NULL)
+                err = MMS_ERROR_PARSING_RESPONSE;
 
             handler(outstandingCall->invokeId, outstandingCall->userParameter, err, typeSpec);
         }

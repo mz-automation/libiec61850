@@ -1,7 +1,7 @@
 /*
  *  control.c
  *
- *  Copyright 2013-2018 Michael Zillgith
+ *  Copyright 2013-2019 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -316,10 +316,25 @@ ControlObject_create(IedServer iedServer, MmsDomain* domain, char* lnName, char*
     self->iedServer = iedServer;
 
     MmsVariableSpecification* ctlValSpec = MmsVariableSpecification_getChildSpecificationByName(operSpec, "ctlVal", NULL);
-    self->ctlVal = MmsValue_newDefaultValue(ctlValSpec);
+
+    if (ctlValSpec) {
+        self->ctlVal = MmsValue_newDefaultValue(ctlValSpec);
+    }
+    else {
+        if (DEBUG_IED_SERVER)
+            printf("IED_SERVER: control object %s/%s.%s has no ctlVal element!\n", domain->domainName, lnName, name);
+    }
+
 
     MmsVariableSpecification* originSpec = MmsVariableSpecification_getChildSpecificationByName(operSpec, "origin", NULL);
-    self->origin = MmsValue_newDefaultValue(originSpec);
+
+    if (originSpec) {
+        self->origin = MmsValue_newDefaultValue(originSpec);
+    }
+    else {
+        if (DEBUG_IED_SERVER)
+            printf("IED_SERVER: control object %s/%s.%s has no origin element!\n", domain->domainName, lnName, name);
+    }
 
     self->ctlNum = MmsValue_newUnsigned(8);
 
