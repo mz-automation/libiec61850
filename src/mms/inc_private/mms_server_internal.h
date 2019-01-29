@@ -357,8 +357,12 @@ mmsServer_handleObtainFileRequest(
         uint32_t invokeId,
         ByteBuffer* response);
 
-int
+
+bool
 mmsServer_isIndexAccess(AlternateAccess_t* alternateAccess);
+
+bool
+mmsServer_isComponentAccess(AlternateAccess_t* alternateAccess);
 
 int
 mmsServer_getLowIndex(AlternateAccess_t* alternateAccess);

@@ -208,7 +208,7 @@ mmsMsg_createServiceErrorPdu(uint32_t invokeId, ByteBuffer* response, MmsError e
     mmsServer_createServiceErrorPduWithServiceSpecificInfo(invokeId, response, errorType, NULL, 0);
 }
 
-int
+bool
 mmsServer_isIndexAccess(AlternateAccess_t* alternateAccess)
 {
 	if (alternateAccess->list.array[0]->present == AlternateAccess__Member_PR_unnamed) {
@@ -217,13 +217,25 @@ mmsServer_isIndexAccess(AlternateAccess_t* alternateAccess)
 			(alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.present
 				== AlternateAccessSelection__selectAccess_PR_indexRange))
 		{
-			return 1;
+			return true;
 		}
-		else
-			return 0;
 	}
-	else
-		return 0;
+
+	return false;
+}
+
+bool
+mmsServer_isComponentAccess(AlternateAccess_t* alternateAccess)
+{
+    if (alternateAccess->list.array[0]->present
+            == AlternateAccess__Member_PR_unnamed) {
+        if (alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.present
+                == AlternateAccessSelection__selectAccess_PR_component) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 int
