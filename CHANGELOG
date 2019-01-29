@@ -1,3 +1,13 @@
+Changes to version 1.3.2
+------------------------
+- MMS client/server: added support for component alternate access for generic variable read requests
+- MMS client: improved handling/stability when receiving malformed messages from the server
+- IEC 61850 server: fixed problem with wrong purge buffer invocation when using dynamic data set in buffered report control block
+- .NET API: add GetFileDirectoryEx function
+- modelviewer: show full hierarchy including sub data objects
+- .NET API: DataSet implements IDisposable interface, Report/DataSet GetValues methods return now clones of the original native values to prevent GC issues
+- .NET API: MmsValue - added Clone method and implemented IDisposable interface
+
 Changes to version 1.3.1
 ------------------------
 - GOOSE publisher: fixed problem in payload length calculation
