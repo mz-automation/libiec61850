@@ -43,6 +43,8 @@ struct sClientReport
     char* dataSetName;
     int dataSetNameSize; /* size of the dataSetName buffer */
 
+    int dataSetSize;
+
     MmsValue* entryId;
     MmsValue* dataReferences;
     MmsValue* dataSetValues;
@@ -92,6 +94,8 @@ ClientReport
 ClientReport_create()
 {
     ClientReport self = (ClientReport) GLOBAL_CALLOC(1, sizeof(struct sClientReport));
+
+    self->dataSetSize = -1;
 
     return self;
 }
@@ -607,6 +611,18 @@ private_IedConnection_handleReport(IedConnection self, MmsValue* value)
 
     int dataSetSize = MmsValue_getBitStringSize(inclusion);
 
+    if (matchingReport->dataSetSize == -1) {
+        matchingReport->dataSetSize = dataSetSize;
+    }
+    else {
+        if (dataSetSize != matchingReport->dataSetSize) {
+            if (DEBUG_IED_CLIENT)
+                printf("IED_CLIENT: received malformed report (inclusion has no plausible size)\n");
+
+            goto exit_function;
+        }
+    }
+
     int includedElements = MmsValue_getNumberOfSetBits(inclusion);
 
     if (DEBUG_IED_CLIENT)
@@ -692,7 +708,7 @@ private_IedConnection_handleReport(IedConnection self, MmsValue* value)
                 MmsValue_update(dataSetElement, newElementValue);
 
             if (DEBUG_IED_CLIENT)
-                printf("IED_CLIENT:  update element value type: %i\n", MmsValue_getType(newElementValue));
+                printf("IED_CLIENT: update element value type: %i\n", MmsValue_getType(newElementValue));
 
             valueIndex++;
 

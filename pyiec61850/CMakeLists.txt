@@ -34,7 +34,7 @@ swig_link_libraries(iec61850 ${PYTHON_LIBRARIES} ${LIBS})
 # Finding python modules install path
 execute_process(
 	COMMAND ${PYTHON_EXECUTABLE} -c
-	"from distutils.sysconfig import get_python_lib; import.sys; sys.stdout.write(get_python_lib())"
+	"from distutils.sysconfig import get_python_lib; import sys; sys.stdout.write(get_python_lib())"
 	OUTPUT_VARIABLE PYTHON_SITE_DIR
 )
 

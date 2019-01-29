@@ -46,6 +46,9 @@ mmsClient_parseListOfAccessResults(AccessResult_t** accessResultList, int listSi
     int i = 0;
 
     for (i = 0; i < elementCount; i++) {
+
+        value = NULL;
+
         AccessResult_PR presentType = accessResultList[i]->present;
 
         if (presentType == AccessResult_PR_failure) {
@@ -66,72 +69,138 @@ mmsClient_parseListOfAccessResults(AccessResult_t** accessResultList, int listSi
                 value = MmsValue_newDataAccessError(DATA_ACCESS_ERROR_UNKNOWN);
         }
         else if (presentType == AccessResult_PR_array) {
-            value = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
-            value->type = MMS_ARRAY;
 
             int arrayElementCount =
                     accessResultList[i]->choice.array.list.count;
 
-            value->value.structure.size = arrayElementCount;
-            value->value.structure.components = (MmsValue**) GLOBAL_CALLOC(arrayElementCount, sizeof(MmsValue*));
+            if (arrayElementCount > 0) {
+                value = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
+                value->type = MMS_ARRAY;
+                value->value.structure.size = arrayElementCount;
+                value->value.structure.components = (MmsValue**) GLOBAL_CALLOC(arrayElementCount, sizeof(MmsValue*));
 
-            int j;
+                int j;
 
-            for (j = 0; j < arrayElementCount; j++) {
-                value->value.structure.components[j] = mmsMsg_parseDataElement(
-                        accessResultList[i]->choice.array.list.array[j]);
+                for (j = 0; j < arrayElementCount; j++) {
+                    value->value.structure.components[j] = mmsMsg_parseDataElement(
+                            accessResultList[i]->choice.array.list.array[j]);
+
+                    if (value->value.structure.components[j] == NULL) {
+                        MmsValue_delete(value);
+                        value = NULL;
+                        break;
+                    }
+                }
             }
+            else {
+                if (DEBUG_MMS_CLIENT)
+                    printf("MMS CLIENT: error parsing access result (invalid array size)!\n");
+            }
+
         }
         else if (presentType == AccessResult_PR_structure) {
-            value = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
-            value->type = MMS_STRUCTURE;
 
             int componentCount =
                     accessResultList[i]->choice.structure.list.count;
 
-            value->value.structure.size = componentCount;
-            value->value.structure.components = (MmsValue**) GLOBAL_CALLOC(componentCount, sizeof(MmsValue*));
+            if (componentCount > 0) {
+                value = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
+                value->type = MMS_STRUCTURE;
+                value->value.structure.size = componentCount;
+                value->value.structure.components = (MmsValue**) GLOBAL_CALLOC(componentCount, sizeof(MmsValue*));
 
-            int j;
-            for (j = 0; j < componentCount; j++) {
-                value->value.structure.components[j] = mmsMsg_parseDataElement(
-                        accessResultList[i]->choice.structure.list.array[j]);
+                int j;
+                for (j = 0; j < componentCount; j++) {
+                    value->value.structure.components[j] = mmsMsg_parseDataElement(
+                            accessResultList[i]->choice.structure.list.array[j]);
+
+                    if (value->value.structure.components[j] == NULL) {
+                        MmsValue_delete(value);
+                        value = NULL;
+                        break;
+                    }
+                }
             }
+            else {
+                if (DEBUG_MMS_CLIENT)
+                    printf("MMS CLIENT: error parsing access result (invalid structure size)!\n");
+            }
+
         }
         else if (presentType == AccessResult_PR_bitstring) {
-            value = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
-            value->type = MMS_BIT_STRING;
+
             int size = accessResultList[i]->choice.bitstring.size;
 
-            value->value.bitString.size = (size * 8)
-                    - accessResultList[i]->choice.bitstring.bits_unused;
+            if (size > 0) {
 
-            value->value.bitString.buf = (uint8_t*) GLOBAL_MALLOC(size);
-            memcpy(value->value.bitString.buf,
-                    accessResultList[i]->choice.bitstring.buf, size);
+                int maxSize = (size * 8);
+                int bitSize = maxSize - accessResultList[i]->choice.bitstring.bits_unused;
+
+                if ((bitSize > 0) && (maxSize >= bitSize)) {
+
+                    value = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
+                    value->type = MMS_BIT_STRING;
+
+
+                    value->value.bitString.size = (size * 8)
+                            - accessResultList[i]->choice.bitstring.bits_unused;
+
+                    value->value.bitString.buf = (uint8_t*) GLOBAL_MALLOC(size);
+                    memcpy(value->value.bitString.buf,
+                            accessResultList[i]->choice.bitstring.buf, size);
+                }
+                else {
+                    if (DEBUG_MMS_CLIENT)
+                        printf("MMS CLIENT: error parsing access result (bit string padding problem)!\n");
+                }
+            }
+            else {
+                if (DEBUG_MMS_CLIENT)
+                    printf("MMS CLIENT: error parsing access result (bit string size 0 or negative)!\n");
+            }
 
         }
         else if (presentType == AccessResult_PR_integer) {
-            Asn1PrimitiveValue* berInteger =
-                    BerInteger_createFromBuffer(accessResultList[i]->choice.integer.buf,
-                            accessResultList[i]->choice.integer.size);
 
-            value = MmsValue_newIntegerFromBerInteger(berInteger);
+            int size = accessResultList[i]->choice.integer.size;
+
+            if (size > 0) {
+                Asn1PrimitiveValue* berInteger =
+                        BerInteger_createFromBuffer(accessResultList[i]->choice.integer.buf, size);
+
+                value = MmsValue_newIntegerFromBerInteger(berInteger);
+            }
+            else {
+                if (DEBUG_MMS_CLIENT)
+                    printf("MMS CLIENT: error parsing access result (invalid integer size)!\n");
+            }
         }
         else if (presentType == AccessResult_PR_unsigned) {
-            Asn1PrimitiveValue* berInteger =
-                    BerInteger_createFromBuffer(accessResultList[i]->choice.Unsigned.buf,
-                            accessResultList[i]->choice.Unsigned.size);
 
-            value = MmsValue_newUnsignedFromBerInteger(berInteger);
+            int size = accessResultList[i]->choice.Unsigned.size;
+
+            if (size > 0) {
+                Asn1PrimitiveValue* berInteger =
+                        BerInteger_createFromBuffer(accessResultList[i]->choice.Unsigned.buf,
+                                accessResultList[i]->choice.Unsigned.size);
+
+                value = MmsValue_newUnsignedFromBerInteger(berInteger);
+            }
+            else {
+                if (DEBUG_MMS_CLIENT)
+                    printf("MMS CLIENT: error parsing access result (invalid unsigned size)!\n");
+            }
+
         }
         else if (presentType == AccessResult_PR_floatingpoint) {
+
             int size = accessResultList[i]->choice.floatingpoint.size;
 
-            value = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
-            value->type = MMS_FLOAT;
-
             if (size == 5) { /* FLOAT32 */
+
+                value = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
+                value->type = MMS_FLOAT;
+
                 value->value.floatingPoint.formatWidth = 32;
                 value->value.floatingPoint.exponentWidth = accessResultList[i]->choice.floatingpoint.buf[0];
 
@@ -146,8 +215,11 @@ mmsClient_parseListOfAccessResults(AccessResult_t** accessResultList, int listSi
 #endif
 
             }
+            else if (size == 9) { /* FLOAT64 */
 
-            if (size == 9) { /* FLOAT64 */
+                value = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
+                value->type = MMS_FLOAT;
+
                 value->value.floatingPoint.formatWidth = 64;
                 value->value.floatingPoint.exponentWidth = accessResultList[i]->choice.floatingpoint.buf[0];
 
@@ -161,46 +233,70 @@ mmsClient_parseListOfAccessResults(AccessResult_t** accessResultList, int listSi
                 memcpy(value->value.floatingPoint.buf, floatBuf, 8);
 #endif
             }
+            else {
+                if (DEBUG_MMS_CLIENT)
+                    printf("MMS CLIENT: error parsing float (size must be 5 or 9, is %i)\n", size);
+            }
 
         }
         else if (presentType == AccessResult_PR_visiblestring) {
-            value = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
-
-            value->type = MMS_VISIBLE_STRING;
 
             int strSize = accessResultList[i]->choice.visiblestring.size;
 
-            value->value.visibleString.buf = (char*) GLOBAL_MALLOC(strSize + 1);
-            value->value.visibleString.size = strSize;
+            if (strSize >= 0) {
+                value = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
 
-            memcpy(value->value.visibleString.buf,
-                    accessResultList[i]->choice.visiblestring.buf,
-                    strSize);
+                value->type = MMS_VISIBLE_STRING;
+                value->value.visibleString.buf = (char*) GLOBAL_MALLOC(strSize + 1);
+                value->value.visibleString.size = strSize;
 
-            value->value.visibleString.buf[strSize] = 0;
+                memcpy(value->value.visibleString.buf,
+                        accessResultList[i]->choice.visiblestring.buf,
+                        strSize);
+
+                value->value.visibleString.buf[strSize] = 0;
+            }
+            else {
+                if (DEBUG_MMS_CLIENT)
+                    printf("MMS CLIENT: error parsing access result (invalid visible-string size)\n");
+            }
+
         }
         else if (presentType == AccessResult_PR_mMSString) {
-            value = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
-
-            value->type = MMS_STRING;
 
             int strSize = accessResultList[i]->choice.mMSString.size;
 
-            value->value.visibleString.buf = (char*) GLOBAL_MALLOC(strSize + 1);
-            value->value.visibleString.size = strSize;
+            if (strSize >= 0) {
+                value = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
 
-            memcpy(value->value.visibleString.buf,
-                    accessResultList[i]->choice.mMSString.buf, strSize);
+                value->type = MMS_STRING;
+                value->value.visibleString.buf = (char*) GLOBAL_MALLOC(strSize + 1);
+                value->value.visibleString.size = strSize;
 
-            value->value.visibleString.buf[strSize] = 0;
+                memcpy(value->value.visibleString.buf,
+                        accessResultList[i]->choice.mMSString.buf, strSize);
 
+                value->value.visibleString.buf[strSize] = 0;
+            }
+            else {
+                if (DEBUG_MMS_CLIENT)
+                    printf("MMS CLIENT: error parsing access result (invalid mms-string size)\n");
+            }
         }
         else if (presentType == AccessResult_PR_utctime) {
-            value = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
 
-            value->type = MMS_UTC_TIME;
-            memcpy(value->value.utcTime,
-                    accessResultList[i]->choice.utctime.buf, 8);
+            int size = accessResultList[i]->choice.utctime.size;
+
+            if (size == 8) {
+                value = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
+
+                value->type = MMS_UTC_TIME;
+                memcpy(value->value.utcTime, accessResultList[i]->choice.utctime.buf, 8);
+            }
+            else {
+                if (DEBUG_MMS_CLIENT)
+                    printf("MMS CLIENT: error parsing UTC time (size is %i instead of 8\n", size);
+            }
         }
         else if (presentType == AccessResult_PR_boolean) {
             value = MmsValue_newBoolean(accessResultList[i]->choice.boolean);
@@ -208,25 +304,36 @@ mmsClient_parseListOfAccessResults(AccessResult_t** accessResultList, int listSi
         else if (presentType == AccessResult_PR_binarytime) {
             int size = accessResultList[i]->choice.binarytime.size;
 
-            if (size <= 6) {
+            if ((size == 4) || (size == 6)) {
                 value = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
                 value->type = MMS_BINARY_TIME;
                 value->value.binaryTime.size = size;
                 memcpy(value->value.binaryTime.buf, accessResultList[i]->choice.binarytime.buf, size);
             }
+            else {
+                if (DEBUG_MMS_CLIENT)
+                    printf("MMS CLIENT: error parsing binary time (size must be 4 or 6, is %i\n", size);
+            }
         }
         else if (presentType == AccessResult_PR_octetstring) {
             int size = accessResultList[i]->choice.octetstring.size;
 
-            value = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
-            value->type = MMS_OCTET_STRING;
-            value->value.octetString.maxSize = size;
-            value->value.octetString.size = size;
-            value->value.octetString.buf = (uint8_t*) GLOBAL_MALLOC(size);
-            memcpy(value->value.octetString.buf, accessResultList[i]->choice.octetstring.buf, size);
+            if (size >= 0) {
+                value = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
+                value->type = MMS_OCTET_STRING;
+                value->value.octetString.maxSize = size;
+                value->value.octetString.size = size;
+                value->value.octetString.buf = (uint8_t*) GLOBAL_MALLOC(size);
+                memcpy(value->value.octetString.buf, accessResultList[i]->choice.octetstring.buf, size);
+            }
+            else {
+                if (DEBUG_MMS_CLIENT)
+                    printf("MMS CLIENT: error parsing access result (invalid octet-string size)\n");
+            }
         }
         else {
-            printf("unknown type %i\n", presentType);
+            if (DEBUG_MMS_CLIENT)
+                printf("MMS CLIENT: unknown type %i in access result\n", presentType);
             value = MmsValue_newDataAccessError(DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID);
         }
 
@@ -254,21 +361,20 @@ mmsClient_parseReadResponse(ByteBuffer* message, uint32_t* invokeId, bool create
     asn_dec_rval_t rval = ber_decode(NULL, &asn_DEF_MmsPdu,
             (void**) &mmsPdu, ByteBuffer_getBuffer(message), ByteBuffer_getSize(message));
 
-    if (rval.code != RC_OK)
-        return NULL;
+    if (rval.code == RC_OK) {
+        if (mmsPdu->present == MmsPdu_PR_confirmedResponsePdu) {
 
-    if (mmsPdu->present == MmsPdu_PR_confirmedResponsePdu) {
+            if (invokeId != NULL)
+                *invokeId = mmsClient_getInvokeId(&mmsPdu->choice.confirmedResponsePdu);
 
-        if (invokeId != NULL)
-            *invokeId = mmsClient_getInvokeId(&mmsPdu->choice.confirmedResponsePdu);
+            if (mmsPdu->choice.confirmedResponsePdu.confirmedServiceResponse.present == ConfirmedServiceResponse_PR_read) {
+                ReadResponse_t* response = &(mmsPdu->choice.confirmedResponsePdu.confirmedServiceResponse.choice.read);
 
-        if (mmsPdu->choice.confirmedResponsePdu.confirmedServiceResponse.present == ConfirmedServiceResponse_PR_read) {
-            ReadResponse_t* response = &(mmsPdu->choice.confirmedResponsePdu.confirmedServiceResponse.choice.read);
+                int elementCount = response->listOfAccessResult.list.count;
 
-            int elementCount = response->listOfAccessResult.list.count;
-
-            valueList = mmsClient_parseListOfAccessResults(response->listOfAccessResult.list.array,
-                    elementCount, createArray);
+                valueList = mmsClient_parseListOfAccessResults(response->listOfAccessResult.list.array,
+                        elementCount, createArray);
+            }
         }
     }
 
@@ -422,6 +528,123 @@ mmsClient_createReadRequest(uint32_t invokeId, const char* domainId, const char*
 }
 
 static AlternateAccess_t*
+createAlternateAccessComponent(const char* componentName)
+{
+    AlternateAccess_t* alternateAccess = (AlternateAccess_t*) GLOBAL_CALLOC(1, sizeof(AlternateAccess_t));
+    alternateAccess->list.count = 1;
+    alternateAccess->list.array = (struct AlternateAccess__Member**) GLOBAL_CALLOC(1, sizeof(struct AlternateAccess__Member*));
+    alternateAccess->list.array[0] = (struct AlternateAccess__Member*) GLOBAL_CALLOC(1, sizeof(struct AlternateAccess__Member));
+    alternateAccess->list.array[0]->present = AlternateAccess__Member_PR_unnamed;
+
+    alternateAccess->list.array[0]->choice.unnamed = (AlternateAccessSelection_t*) GLOBAL_CALLOC(1, sizeof(AlternateAccessSelection_t));
+
+    const char* separator = strchr(componentName, '$');
+
+    if (separator) {
+        int size = separator - componentName;
+
+        alternateAccess->list.array[0]->choice.unnamed->present = AlternateAccessSelection_PR_selectAlternateAccess;
+        alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.accessSelection.present =
+                AlternateAccessSelection__selectAlternateAccess__accessSelection_PR_component;
+
+        alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.accessSelection.choice.component.buf =
+			(uint8_t*) StringUtils_copySubString((char*) componentName, (char*) separator);
+        alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.accessSelection.choice.component.size = size;
+
+        alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess = createAlternateAccessComponent(separator + 1);
+    }
+    else {
+        int size = strlen(componentName);
+
+        alternateAccess->list.array[0]->choice.unnamed->present = AlternateAccessSelection_PR_selectAccess;
+
+        alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.present =
+                AlternateAccessSelection__selectAccess_PR_component;
+
+		alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.choice.component.buf =
+			(uint8_t*) StringUtils_copyString(componentName);
+        alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.choice.component.size = size;
+    }
+
+    return alternateAccess;
+}
+
+static void
+deleteAlternateAccessComponent(AlternateAccess_t* alternateAccess)
+{
+    GLOBAL_FREEMEM(alternateAccess->list.array[0]->choice.unnamed);
+    GLOBAL_FREEMEM(alternateAccess->list.array[0]);
+    GLOBAL_FREEMEM(alternateAccess->list.array);
+    GLOBAL_FREEMEM(alternateAccess);
+}
+
+static ListOfVariableSeq_t*
+createNewVariableSpecification(const char* domainId, const char* itemId, const char* componentName, bool associationSpecific)
+{
+    ListOfVariableSeq_t* varSpec = (ListOfVariableSeq_t*) GLOBAL_CALLOC(1, sizeof(ListOfVariableSeq_t));
+
+    varSpec->variableSpecification.present = VariableSpecification_PR_name;
+
+    if (domainId) {
+        varSpec->variableSpecification.choice.name.present = ObjectName_PR_domainspecific;
+        varSpec->variableSpecification.choice.name.choice.domainspecific.domainId.buf = (uint8_t*) domainId;
+        varSpec->variableSpecification.choice.name.choice.domainspecific.domainId.size = strlen(domainId);
+        varSpec->variableSpecification.choice.name.choice.domainspecific.itemId.buf = (uint8_t*) itemId;
+        varSpec->variableSpecification.choice.name.choice.domainspecific.itemId.size = strlen(itemId);
+    }
+    else if (associationSpecific) {
+        varSpec->variableSpecification.choice.name.present = ObjectName_PR_aaspecific;
+        varSpec->variableSpecification.choice.name.choice.aaspecific.buf = (uint8_t*) itemId;
+        varSpec->variableSpecification.choice.name.choice.aaspecific.size = strlen(itemId);
+    }
+    else {
+        varSpec->variableSpecification.choice.name.present = ObjectName_PR_vmdspecific;
+        varSpec->variableSpecification.choice.name.choice.vmdspecific.buf = (uint8_t*) itemId;
+        varSpec->variableSpecification.choice.name.choice.vmdspecific.size = strlen(itemId);
+    }
+
+    if (componentName)
+        varSpec->alternateAccess = createAlternateAccessComponent(componentName);
+
+    return varSpec;
+}
+
+/**
+ * Request a single value with optional component
+ */
+int
+mmsClient_createReadRequestComponent(uint32_t invokeId, const char* domainId, const char* itemId, const char* component, ByteBuffer* writeBuffer)
+{
+    MmsPdu_t* mmsPdu = mmsClient_createConfirmedRequestPdu(invokeId);
+
+    ReadRequest_t* readRequest = createReadRequest(mmsPdu);
+
+    readRequest->specificationWithResult = NULL;
+
+    readRequest->variableAccessSpecification.present = VariableAccessSpecification_PR_listOfVariable;
+    readRequest->variableAccessSpecification.choice.listOfVariable.list.count = 1;
+    readRequest->variableAccessSpecification.choice.listOfVariable.list.size = 1;
+    readRequest->variableAccessSpecification.choice.listOfVariable.list.array =
+            (ListOfVariableSeq_t**) GLOBAL_CALLOC(1, sizeof(ListOfVariableSeq_t*));
+    readRequest->variableAccessSpecification.choice.listOfVariable.list.array[0] = createNewVariableSpecification(domainId, itemId, component, false);
+
+    asn_enc_rval_t rval;
+
+    rval = der_encode(&asn_DEF_MmsPdu, mmsPdu,
+            (asn_app_consume_bytes_f*) mmsClient_write_out, (void*) writeBuffer);
+
+    /* clean up data structures */
+    deleteAlternateAccessComponent(readRequest->variableAccessSpecification.choice.listOfVariable.list.array[0]->alternateAccess);
+
+    GLOBAL_FREEMEM(readRequest->variableAccessSpecification.choice.listOfVariable.list.array);
+    readRequest->variableAccessSpecification.choice.listOfVariable.list.array = NULL;
+    readRequest->variableAccessSpecification.choice.listOfVariable.list.count = 0;
+    asn_DEF_MmsPdu.free_struct(&asn_DEF_MmsPdu, mmsPdu, 0);
+
+    return rval.encoded;
+}
+
+static AlternateAccess_t*
 createAlternateAccess(uint32_t index, uint32_t elementCount)
 {
     AlternateAccess_t* alternateAccess = (AlternateAccess_t*) GLOBAL_CALLOC(1, sizeof(AlternateAccess_t));
@@ -456,48 +679,6 @@ createAlternateAccess(uint32_t index, uint32_t elementCount)
                 &(alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.choice.index);
 
         asn_long2INTEGER(asnIndex, index);
-    }
-
-    return alternateAccess;
-}
-
-static AlternateAccess_t*
-createAlternateAccessComponent(const char* componentName)
-{
-    AlternateAccess_t* alternateAccess = (AlternateAccess_t*) GLOBAL_CALLOC(1, sizeof(AlternateAccess_t));
-    alternateAccess->list.count = 1;
-    alternateAccess->list.array = (struct AlternateAccess__Member**) GLOBAL_CALLOC(1, sizeof(struct AlternateAccess__Member*));
-    alternateAccess->list.array[0] = (struct AlternateAccess__Member*) GLOBAL_CALLOC(1, sizeof(struct AlternateAccess__Member));
-    alternateAccess->list.array[0]->present = AlternateAccess__Member_PR_unnamed;
-
-    alternateAccess->list.array[0]->choice.unnamed = (AlternateAccessSelection_t*) GLOBAL_CALLOC(1, sizeof(AlternateAccessSelection_t));
-
-    const char* separator = strchr(componentName, '$');
-
-    if (separator) {
-        int size = separator - componentName;
-
-        alternateAccess->list.array[0]->choice.unnamed->present = AlternateAccessSelection_PR_selectAlternateAccess;
-        alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.accessSelection.present =
-                AlternateAccessSelection__selectAlternateAccess__accessSelection_PR_component;
-
-        alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.accessSelection.choice.component.buf = 
-			(uint8_t*) StringUtils_copySubString((char*) componentName, (char*) separator);
-        alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.accessSelection.choice.component.size = size;
-
-        alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess = createAlternateAccessComponent(separator + 1);
-    }
-    else {
-        int size = strlen(componentName);
-
-        alternateAccess->list.array[0]->choice.unnamed->present = AlternateAccessSelection_PR_selectAccess;
-
-        alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.present =
-                AlternateAccessSelection__selectAccess_PR_component;
-
-		alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.choice.component.buf = 
-			(uint8_t*) StringUtils_copyString(componentName);
-        alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.choice.component.size = size;
     }
 
     return alternateAccess;

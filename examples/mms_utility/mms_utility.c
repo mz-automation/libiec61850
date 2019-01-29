@@ -18,6 +18,7 @@ print_help()
     printf("-i show server identity\n");
     printf("-t <domain_name> show domain directory\n");
     printf("-r <variable_name> read domain variable\n");
+    printf("-c <component_name> specify component name for variable read\n");
     printf("-a <domain_name> specify domain for read or write command\n");
     printf("-f show file list\n");
     printf("-g <filename> get file attributes\n");
@@ -105,6 +106,7 @@ int main(int argc, char** argv) {
 
 	char* domainName = NULL;
 	char* variableName = NULL;
+	char* componentName = NULL;
 	char* filename = NULL;
 	char* journalName = NULL;
 
@@ -122,7 +124,7 @@ int main(int argc, char** argv) {
 
 	int c;
 
-	while ((c = getopt(argc, argv, "mifdh:p:l:t:a:r:g:j:x:v:")) != -1)
+	while ((c = getopt(argc, argv, "mifdh:p:l:t:a:r:g:j:x:v:c:")) != -1)
 		switch (c) {
 		case 'm':
 		    printRawMmsMessages = 1;
@@ -155,6 +157,9 @@ int main(int argc, char** argv) {
 		    readVariable = 1;
 		    variableName = StringUtils_copyString(optarg);
 		    break;
+		case 'c':
+			componentName = StringUtils_copyString(optarg);
+			break;
 		case 'v':
 		    readVariableList = 1;
 		    variableName = StringUtils_copyString(optarg);
@@ -323,7 +328,13 @@ int main(int argc, char** argv) {
 
 	if (readVariable) {
 	    if (readWriteHasDomain) {
-	        MmsValue* result = MmsConnection_readVariable(con, &error, domainName, variableName);
+
+	    	MmsValue* result;
+
+	    	if (componentName == NULL)
+	    		result = MmsConnection_readVariable(con, &error, domainName, variableName);
+	    	else
+	    		result = MmsConnection_readVariableComponent(con, &error, domainName, variableName, componentName);
 
 	        if (error != MMS_ERROR_NONE) {
 	            printf("Reading variable failed: (ERROR %i)\n", error);

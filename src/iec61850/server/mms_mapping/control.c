@@ -316,10 +316,12 @@ ControlObject_create(IedServer iedServer, MmsDomain* domain, char* lnName, char*
     self->iedServer = iedServer;
 
     MmsVariableSpecification* ctlValSpec = MmsVariableSpecification_getChildSpecificationByName(operSpec, "ctlVal", NULL);
-    self->ctlVal = MmsValue_newDefaultValue(ctlValSpec);
+    if (ctlValSpec != NULL)
+	self->ctlVal = MmsValue_newDefaultValue(ctlValSpec);
 
     MmsVariableSpecification* originSpec = MmsVariableSpecification_getChildSpecificationByName(operSpec, "origin", NULL);
-    self->origin = MmsValue_newDefaultValue(originSpec);
+    if (originSpec != NULL)
+	self->origin = MmsValue_newDefaultValue(originSpec);
 
     self->ctlNum = MmsValue_newUnsigned(8);
 

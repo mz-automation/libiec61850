@@ -1081,10 +1081,12 @@ MmsValue_cloneToBuffer(const MmsValue* self, uint8_t* destinationAddress)
     return destinationAddress;
 }
 
-// create a deep clone
 MmsValue*
 MmsValue_clone(const MmsValue* self)
 {
+    if (self == NULL)
+        return NULL;
+
     MmsValue* newValue = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
 
     if (newValue == NULL)
@@ -1188,6 +1190,9 @@ MmsValue_deleteIfNotNull(MmsValue* self)
 void
 MmsValue_delete(MmsValue* self)
 {
+    if (self == NULL)
+        return;
+
     switch (self->type)
     {
     case MMS_INTEGER:
@@ -2010,6 +2015,16 @@ MmsValue_getTypeString(MmsValue* self)
 const char*
 MmsValue_printToBuffer(const MmsValue* self, char* buffer, int bufferSize)
 {
+    if (self == NULL) {
+        strncpy(buffer, "(null)", bufferSize);
+
+        /* Ensure buffer is always 0 terminated */
+        if (bufferSize > 0)
+            buffer[bufferSize - 1] = 0;
+
+        return buffer;
+    }
+
     switch (MmsValue_getType(self))
     {
     case MMS_STRUCTURE:
