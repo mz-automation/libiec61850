@@ -119,7 +119,7 @@ if(MSVC AND MSVC_VERSION LESS 1800)
     include_directories(
         ${CMAKE_CURRENT_LIST_DIR}/src/vs
     )
-endif(MSVC)
+endif(MSVC AND MSVC_VERSION LESS 1800)
 
 if(EXISTS ${CMAKE_CURRENT_LIST_DIR}/third_party/mbedtls/mbedtls-2.6.0)
 set(WITH_MBEDTLS 1)
