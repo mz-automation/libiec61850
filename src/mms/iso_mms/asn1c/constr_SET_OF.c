@@ -837,6 +837,7 @@ SET_OF_constraint(asn_TYPE_descriptor_t *td, const void *sptr,
 	return 0;
 }
 
+#if 0
 asn_dec_rval_t
 SET_OF_decode_uper(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
         asn_per_constraints_t *constraints, void **sptr, asn_per_data_t *pd) {
@@ -909,4 +910,4 @@ SET_OF_decode_uper(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 	rv.consumed = 0;
 	return rv;
 }
-
+#endif

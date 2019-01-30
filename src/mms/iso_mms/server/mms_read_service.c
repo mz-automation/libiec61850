@@ -156,7 +156,7 @@ isAccessToArrayComponent(AlternateAccess_t* alternateAccess)
 }
 
 static MmsValue*
-getComponent(AlternateAccess_t* alternateAccess, MmsVariableSpecification* namedVariable, MmsValue* variableValue)
+getComponent(MmsServerConnection connection, MmsDomain* domain, AlternateAccess_t* alternateAccess, MmsVariableSpecification* namedVariable, char* variableName)
 {
     MmsValue* retValue = NULL;
 
@@ -171,33 +171,39 @@ getComponent(AlternateAccess_t* alternateAccess, MmsVariableSpecification* named
 
             int i;
 
-            for (i = 0; i < namedVariable->typeSpec.structure.elementCount;
-                    i++) {
+            for (i = 0; i < namedVariable->typeSpec.structure.elementCount; i++) {
 
-                if (strlen(namedVariable->typeSpec.structure.elements[i]->name)
+                if ((int) strlen(namedVariable->typeSpec.structure.elements[i]->name)
                         == component.size) {
-                    if (strncmp(
-                            namedVariable->typeSpec.structure.elements[i]->name,
-                            (char*) component.buf, component.size) == 0) {
-                        MmsValue* value = MmsValue_getElement(variableValue, i);
+                    if (!strncmp(namedVariable->typeSpec.structure.elements[i]->name,
+                            (char*) component.buf, component.size))
+                    {
+                        if (strlen(variableName) + component.size < 199) {
 
-                        if (alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess
-                                != NULL) {
-                            retValue =
-                                    getComponent(
-                                            alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess,
-                                            namedVariable->typeSpec.structure.elements[i],
-                                            value);
+                            strcat(variableName, "$");
+                            strncat(variableName, (const char*) component.buf, component.size);
+
+
+                            if (alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess
+                                    != NULL) {
+                                retValue =
+                                        getComponent(connection, domain,
+                                                alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess,
+                                                namedVariable->typeSpec.structure.elements[i],
+                                                variableName);
+                            }
+                            else {
+                                retValue = mmsServer_getValue(connection->server, domain, variableName, connection);
+                            }
                         }
-                        else
-                            retValue = value;
                     }
                 }
             }
         }
     }
 
-    exit_function: return retValue;
+exit_function:
+    return retValue;
 }
 
 static MmsValue*
@@ -226,7 +232,7 @@ getComponentOfArrayElement(AlternateAccess_t* alternateAccess, MmsVariableSpecif
         int i;
         for (i = 0; i < structSpec->typeSpec.structure.elementCount; i++) {
 
-            if (strlen(structSpec->typeSpec.structure.elements[i]->name)
+            if ((int) strlen(structSpec->typeSpec.structure.elements[i]->name)
                     == component.size) {
                 if (strncmp(structSpec->typeSpec.structure.elements[i]->name,
                         (char*) component.buf, component.size) == 0) {
@@ -341,14 +347,19 @@ addNamedVariableToResultList(MmsVariableSpecification* namedVariable, MmsDomain*
 		    MmsValue* value = mmsServer_getValue(connection->server, domain, nameIdStr, connection);
 
 		    if (alternateAccess != NULL) {
-		    	value = getComponent(alternateAccess, namedVariable, value);
 
-				if (value != NULL) {
-					appendValueToResultList(value, values);
-				}
-				else {
-					appendErrorToResultList(values, DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT);
-				}
+		        char variableName[200];
+		        variableName[0] = 0;
+		        strcat(variableName, nameIdStr);
+
+		        value = getComponent(connection, domain, alternateAccess, namedVariable, variableName);
+
+                if (value != NULL) {
+                    appendValueToResultList(value, values);
+                }
+                else {
+                    appendErrorToResultList(values, DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT);
+                }
 		    }
 		    else {
 				if (value != NULL) {
