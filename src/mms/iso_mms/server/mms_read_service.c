@@ -337,22 +337,23 @@ static void
 addNamedVariableToResultList(MmsVariableSpecification* namedVariable, MmsDomain* domain, char* nameIdStr,
 		LinkedList /*<MmsValue>*/ values, MmsServerConnection connection, AlternateAccess_t* alternateAccess)
 {
-	if (namedVariable != NULL) {
+    if (namedVariable != NULL) {
 
-		if (DEBUG_MMS_SERVER) printf("MMS read: found named variable %s with search string %s\n",
-				namedVariable->name, nameIdStr);
+        if (DEBUG_MMS_SERVER)
+            printf("MMS read: found named variable %s with search string %s\n",
+                    namedVariable->name, nameIdStr);
 
-		if (namedVariable->type == MMS_STRUCTURE) {
+        if (namedVariable->type == MMS_STRUCTURE) {
 
-		    MmsValue* value = mmsServer_getValue(connection->server, domain, nameIdStr, connection);
+            MmsValue* value = mmsServer_getValue(connection->server, domain, nameIdStr, connection);
 
-		    if (alternateAccess != NULL) {
+            if (alternateAccess != NULL) {
 
-		        char variableName[200];
-		        variableName[0] = 0;
-		        strcat(variableName, nameIdStr);
+                char variableName[200];
+                variableName[0] = 0;
+                strcat(variableName, nameIdStr);
 
-		        value = getComponent(connection, domain, alternateAccess, namedVariable, variableName);
+                value = getComponent(connection, domain, alternateAccess, namedVariable, variableName);
 
                 if (value != NULL) {
                     appendValueToResultList(value, values);
@@ -360,44 +361,49 @@ addNamedVariableToResultList(MmsVariableSpecification* namedVariable, MmsDomain*
                 else {
                     appendErrorToResultList(values, DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT);
                 }
-		    }
-		    else {
-				if (value != NULL) {
-					appendValueToResultList(value, values);
-				}
-				else {
-					addComplexValueToResultList(namedVariable,
-						values, connection, domain, nameIdStr);
-				}
-		    }
-		}
-		else if (namedVariable->type == MMS_ARRAY) {
+            }
+            else {
+                if (value != NULL) {
+                    appendValueToResultList(value, values);
+                }
+                else {
+                    addComplexValueToResultList(namedVariable,
+                            values, connection, domain, nameIdStr);
+                }
+            }
+        }
+        else if (namedVariable->type == MMS_ARRAY) {
 
-			if (alternateAccess != NULL) {
-				alternateArrayAccess(connection, alternateAccess, domain,
-						nameIdStr, values, namedVariable);
-			}
-			else { /* return complete array */
-			    MmsValue* value = mmsServer_getValue(connection->server, domain, nameIdStr, connection);
-			    appendValueToResultList(value, values);
-			}
-		}
-		else {
-			MmsValue* value = mmsServer_getValue(connection->server, domain, nameIdStr, connection);
+            if (alternateAccess != NULL) {
+                alternateArrayAccess(connection, alternateAccess, domain,
+                        nameIdStr, values, namedVariable);
+            }
+            else { /* return complete array */
+                MmsValue* value = mmsServer_getValue(connection->server, domain, nameIdStr, connection);
+                appendValueToResultList(value, values);
+            }
+        }
+        else {
 
-			if (value == NULL) {
-			    if (DEBUG_MMS_SERVER)
-			        printf("MMS read: value of known variable is not found. Maybe illegal access to array element!\n");
+            if (alternateAccess != NULL) {
+                appendErrorToResultList(values, DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT);
+            }
+            else {
+                MmsValue* value = mmsServer_getValue(connection->server, domain, nameIdStr, connection);
 
-			    appendErrorToResultList(values, DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT);
-			}
-			else
-			    appendValueToResultList(value, values);
-		}
+                if (value == NULL) {
+                    if (DEBUG_MMS_SERVER)
+                        printf("MMS read: value of known variable is not found. Maybe illegal access to array element!\n");
 
-	}
-	else
-		appendErrorToResultList(values, DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT);
+                    appendErrorToResultList(values, DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT);
+                }
+                else
+                    appendValueToResultList(value, values);
+            }
+        }
+    }
+    else
+        appendErrorToResultList(values, DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT);
 }
 
 
