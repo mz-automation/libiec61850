@@ -684,7 +684,7 @@ parseGoosePayload(GooseReceiver self, uint8_t* buffer, int apduLength)
         return 0;
     }
 
-    exit_with_fault:
+exit_with_fault:
     if (DEBUG_GOOSE_SUBSCRIBER)
         printf("GOOSE_SUBSCRIBER: Invalid goose payload\n");
     return -1;
