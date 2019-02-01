@@ -287,6 +287,9 @@ IsoClientConnection_associate(IsoClientConnection self, IsoConnectionParameters 
 {
     self->socket = TcpSocket_create();
 
+    if (self->socket == NULL)
+        goto exit_error;
+
     Socket_setConnectTimeout(self->socket, connectTimeoutInMs);
 
 #if (CONFIG_ACTIVATE_TCP_KEEPALIVE == 1)
@@ -297,7 +300,7 @@ IsoClientConnection_associate(IsoClientConnection self, IsoConnectionParameters 
 #endif
 
     if (!Socket_connect(self->socket, params->hostname, params->tcpPort))
-        goto returnError;
+        goto exit_error;
 
     /* COTP (ISO transport) handshake */
     CotpConnection_init(self->cotpConnection, self->socket, self->receiveBuffer, self->cotpReadBuffer, self->cotpWriteBuffer);
@@ -315,7 +318,7 @@ IsoClientConnection_associate(IsoClientConnection self, IsoConnectionParameters 
             if (DEBUG_ISO_CLIENT)
                 printf("TLS handshake failed!\n");
 
-            goto returnError;
+            goto exit_error;
         }
     }
 #endif /* (CONFIG_MMS_SUPPORT_TLS == 1) */
@@ -336,12 +339,12 @@ IsoClientConnection_associate(IsoClientConnection self, IsoConnectionParameters 
     }
 
     if (packetState != TPKT_PACKET_COMPLETE)
-        goto returnError;
+        goto exit_error;
 
     cotpIndication = CotpConnection_parseIncomingMessage(self->cotpConnection);
 
     if (cotpIndication != COTP_CONNECT_INDICATION)
-        goto returnError;
+        goto exit_error;
 
     /* Upper layers handshake */
     struct sBufferChain sAcsePayload;
@@ -393,7 +396,7 @@ IsoClientConnection_associate(IsoClientConnection self, IsoConnectionParameters 
     cotpIndication = CotpConnection_parseIncomingMessage(self->cotpConnection);
 
     if (cotpIndication != COTP_DATA_INDICATION)
-        goto returnError;
+        goto exit_error;
 
     IsoSessionIndication sessionIndication;
 
@@ -403,13 +406,13 @@ IsoClientConnection_associate(IsoClientConnection self, IsoConnectionParameters 
     if (sessionIndication != SESSION_CONNECT) {
         if (DEBUG_ISO_CLIENT)
             printf("IsoClientConnection_associate: no session connect indication\n");
-        goto returnError;
+        goto exit_error;
     }
 
     if (!IsoPresentation_parseAcceptMessage(self->presentation, IsoSession_getUserData(self->session))) {
         if (DEBUG_ISO_CLIENT)
             printf("IsoClientConnection_associate: no presentation ok indication\n");
-        goto returnError;
+        goto exit_error;
     }
 
     AcseIndication acseIndication;
@@ -419,7 +422,7 @@ IsoClientConnection_associate(IsoClientConnection self, IsoConnectionParameters 
     if (acseIndication != ACSE_ASSOCIATE) {
         if (DEBUG_ISO_CLIENT)
             printf("IsoClientConnection_associate: no ACSE_ASSOCIATE indication\n");
-        goto returnError;
+        goto exit_error;
     }
 
     ByteBuffer_wrap(self->receivePayloadBuffer, self->acseConnection.userDataBuffer,
@@ -446,7 +449,7 @@ IsoClientConnection_associate(IsoClientConnection self, IsoConnectionParameters 
 
     return;
 
-returnError:
+exit_error:
     self->callback(ISO_IND_ASSOCIATION_FAILED, self->callbackParameter, NULL);
 
     setState(self, STATE_ERROR);

@@ -276,7 +276,7 @@ ServerSocket_accept(ServerSocket self)
 	fd = accept(self->fd, NULL, NULL);
 
 	if (fd >= 0) {
-		conSocket = TcpSocket_create();
+		conSocket = (Socket) GLOBAL_CALLOC(1, sizeof(struct sSocket));
 		conSocket->fd = fd;
 
 	    setSocketNonBlocking(conSocket);
@@ -303,12 +303,22 @@ ServerSocket_destroy(ServerSocket self)
 Socket
 TcpSocket_create()
 {
-	Socket self = (Socket) GLOBAL_MALLOC(sizeof(struct sSocket));
+    Socket self = NULL;
 
-	self->fd = INVALID_SOCKET;
-	self->connectTimeout = 5000;
+    int sock = socket(AF_INET, SOCK_STREAM, 0);
 
-	socketCount++;
+    if (sock != INVALID_SOCKET) {
+        self = (Socket) GLOBAL_MALLOC(sizeof(struct sSocket));
+
+        self->fd = sock;
+        self->connectTimeout = 5000;
+
+        socketCount++;
+    }
+    else {
+        if (DEBUG_SOCKET)
+            printf("SOCKET: failed to create socket (error code=%i)\n", WSAGetLastError());
+    }
 
 	return self;
 }
@@ -329,8 +339,6 @@ Socket_connect(Socket self, const char* address, int port)
 
 	if (!prepareServerAddress(address, port, &serverAddress))
 	    return false;
-
-	self->fd = socket(AF_INET, SOCK_STREAM, 0);
 
     setSocketNonBlocking(self);
 

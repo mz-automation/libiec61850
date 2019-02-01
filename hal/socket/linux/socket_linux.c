@@ -119,17 +119,30 @@ Socket_activateTcpKeepAlive(Socket self, int idleTime, int interval, int count)
     socklen_t optlen = sizeof(optval);
 
     optval = 1;
-    setsockopt(self->fd, SOL_SOCKET, SO_KEEPALIVE, &optval, optlen);
+
+    if (setsockopt(self->fd, SOL_SOCKET, SO_KEEPALIVE, &optval, optlen)) {
+        if (DEBUG_SOCKET)
+            printf("Failed to enable TCP keepalive\n");
+    }
 
 #if defined TCP_KEEPCNT
     optval = idleTime;
-    setsockopt(self->fd, IPPROTO_TCP, TCP_KEEPIDLE, &optval, optlen);
+    if (setsockopt(self->fd, IPPROTO_TCP, TCP_KEEPIDLE, &optval, optlen)) {
+        if (DEBUG_SOCKET)
+            printf("Failed to set TCP keepalive TCP_KEEPIDLE parameter\n");
+    }
 
     optval = interval;
-    setsockopt(self->fd, IPPROTO_TCP, TCP_KEEPINTVL, &optval, optlen);
+    if (setsockopt(self->fd, IPPROTO_TCP, TCP_KEEPINTVL, &optval, optlen)) {
+        if (DEBUG_SOCKET)
+            printf("Failed to set TCP keepalive TCP_KEEPINTVL parameter\n");
+    }
 
     optval = count;
-    setsockopt(self->fd, IPPROTO_TCP, TCP_KEEPCNT, &optval, optlen);
+    if (setsockopt(self->fd, IPPROTO_TCP, TCP_KEEPCNT, &optval, optlen)) {
+        if (DEBUG_SOCKET)
+            printf("Failed to set TCP keepalive TCP_KEEPCNT parameter\n");
+    }
 #endif /* TCP_KEEPCNT */
 
 #endif /* SO_KEEPALIVE */
@@ -236,7 +249,7 @@ ServerSocket_accept(ServerSocket self)
     fd = accept(self->fd, NULL, NULL );
 
     if (fd >= 0) {
-        conSocket = TcpSocket_create();
+        conSocket = (Socket) GLOBAL_CALLOC(1, sizeof(struct sSocket));
         conSocket->fd = fd;
 
         activateTcpNoDelay(conSocket);
@@ -283,10 +296,20 @@ ServerSocket_destroy(ServerSocket self)
 Socket
 TcpSocket_create()
 {
-    Socket self = (Socket) GLOBAL_MALLOC(sizeof(struct sSocket));
+    Socket self = NULL;
 
-    self->fd = -1;
-    self->connectTimeout = 5000;
+    int sock = socket(AF_INET, SOCK_STREAM, 0);
+
+    if (sock != -1) {
+        self = (Socket) GLOBAL_MALLOC(sizeof(struct sSocket));
+
+        self->fd = sock;
+        self->connectTimeout = 5000;
+    }
+    else {
+        if (DEBUG_SOCKET)
+            printf("SOCKET: failed to create socket (errno=%i)\n", errno);
+    }
 
     return self;
 }
@@ -305,12 +328,10 @@ Socket_connect(Socket self, const char* address, int port)
     struct sockaddr_in serverAddress;
 
     if (DEBUG_SOCKET)
-        printf("Socket_connect: %s:%i\n", address, port);
+        printf("SOCKET: connect: %s:%i\n", address, port);
 
     if (!prepareServerAddress(address, port, &serverAddress))
         return false;
-
-    self->fd = socket(AF_INET, SOCK_STREAM, 0);
 
     fd_set fdSet;
     FD_ZERO(&fdSet);
