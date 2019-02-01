@@ -1,7 +1,7 @@
 /*
  *  iec61850_common.h
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013-2019 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *

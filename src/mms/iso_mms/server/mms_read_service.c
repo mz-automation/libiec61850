@@ -156,6 +156,57 @@ isAccessToArrayComponent(AlternateAccess_t* alternateAccess)
 }
 
 static MmsValue*
+getComponent(MmsServerConnection connection, MmsDomain* domain, AlternateAccess_t* alternateAccess, MmsVariableSpecification* namedVariable, char* variableName)
+{
+    MmsValue* retValue = NULL;
+
+    if (mmsServer_isComponentAccess(alternateAccess)) {
+        Identifier_t component =
+                alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.choice.component;
+
+        if (component.size > 129)
+            goto exit_function;
+
+        if (namedVariable->type == MMS_STRUCTURE) {
+
+            int i;
+
+            for (i = 0; i < namedVariable->typeSpec.structure.elementCount; i++) {
+
+                if ((int) strlen(namedVariable->typeSpec.structure.elements[i]->name)
+                        == component.size) {
+                    if (!strncmp(namedVariable->typeSpec.structure.elements[i]->name,
+                            (char*) component.buf, component.size))
+                    {
+                        if (strlen(variableName) + component.size < 199) {
+
+                            strcat(variableName, "$");
+                            strncat(variableName, (const char*) component.buf, component.size);
+
+
+                            if (alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess
+                                    != NULL) {
+                                retValue =
+                                        getComponent(connection, domain,
+                                                alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess,
+                                                namedVariable->typeSpec.structure.elements[i],
+                                                variableName);
+                            }
+                            else {
+                                retValue = mmsServer_getValue(connection->server, domain, variableName, connection);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+exit_function:
+    return retValue;
+}
+
+static MmsValue*
 getComponentOfArrayElement(AlternateAccess_t* alternateAccess, MmsVariableSpecification* namedVariable,
         MmsValue* structuredValue)
 {
@@ -180,19 +231,26 @@ getComponentOfArrayElement(AlternateAccess_t* alternateAccess, MmsVariableSpecif
 
         int i;
         for (i = 0; i < structSpec->typeSpec.structure.elementCount; i++) {
-            if (strncmp (structSpec->typeSpec.structure.elements[i]->name, (char*) component.buf,
-                    component.size) == 0)
-            {
-                MmsValue* value = MmsValue_getElement(structuredValue, i);
 
-                if (isAccessToArrayComponent(alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess)) {
-                    retValue = getComponentOfArrayElement(alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess,
-                            structSpec->typeSpec.structure.elements[i], value);
+            if ((int) strlen(structSpec->typeSpec.structure.elements[i]->name)
+                    == component.size) {
+                if (strncmp(structSpec->typeSpec.structure.elements[i]->name,
+                        (char*) component.buf, component.size) == 0) {
+                    MmsValue* value = MmsValue_getElement(structuredValue, i);
+
+                    if (isAccessToArrayComponent(
+                            alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess)) {
+                        retValue =
+                                getComponentOfArrayElement(
+                                        alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess,
+                                        structSpec->typeSpec.structure.elements[i],
+                                        value);
+                    }
+                    else
+                        retValue = value;
+
+                    goto exit_function;
                 }
-                else
-                    retValue = value;
-
-                goto exit_function;
             }
         }
     }
@@ -279,50 +337,73 @@ static void
 addNamedVariableToResultList(MmsVariableSpecification* namedVariable, MmsDomain* domain, char* nameIdStr,
 		LinkedList /*<MmsValue>*/ values, MmsServerConnection connection, AlternateAccess_t* alternateAccess)
 {
-	if (namedVariable != NULL) {
+    if (namedVariable != NULL) {
 
-		if (DEBUG_MMS_SERVER) printf("MMS read: found named variable %s with search string %s\n",
-				namedVariable->name, nameIdStr);
+        if (DEBUG_MMS_SERVER)
+            printf("MMS read: found named variable %s with search string %s\n",
+                    namedVariable->name, nameIdStr);
 
-		if (namedVariable->type == MMS_STRUCTURE) {
+        if (namedVariable->type == MMS_STRUCTURE) {
 
-		    MmsValue* value = mmsServer_getValue(connection->server, domain, nameIdStr, connection);
+            MmsValue* value = mmsServer_getValue(connection->server, domain, nameIdStr, connection);
 
-		    if (value != NULL) {
-		        appendValueToResultList(value, values);
-		    }
-		    else {
-		        addComplexValueToResultList(namedVariable,
-					values, connection, domain, nameIdStr);
-		    }
-		}
-		else if (namedVariable->type == MMS_ARRAY) {
+            if (alternateAccess != NULL) {
 
-			if (alternateAccess != NULL) {
-				alternateArrayAccess(connection, alternateAccess, domain,
-						nameIdStr, values, namedVariable);
-			}
-			else { /* return complete array */
-			    MmsValue* value = mmsServer_getValue(connection->server, domain, nameIdStr, connection);
-			    appendValueToResultList(value, values);
-			}
-		}
-		else {
-			MmsValue* value = mmsServer_getValue(connection->server, domain, nameIdStr, connection);
+                char variableName[200];
+                variableName[0] = 0;
+                strcat(variableName, nameIdStr);
 
-			if (value == NULL) {
-			    if (DEBUG_MMS_SERVER)
-			        printf("MMS read: value of known variable is not found. Maybe illegal access to array element!\n");
+                value = getComponent(connection, domain, alternateAccess, namedVariable, variableName);
 
-			    appendErrorToResultList(values, DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT);
-			}
-			else
-			    appendValueToResultList(value, values);
-		}
+                if (value != NULL) {
+                    appendValueToResultList(value, values);
+                }
+                else {
+                    appendErrorToResultList(values, DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT);
+                }
+            }
+            else {
+                if (value != NULL) {
+                    appendValueToResultList(value, values);
+                }
+                else {
+                    addComplexValueToResultList(namedVariable,
+                            values, connection, domain, nameIdStr);
+                }
+            }
+        }
+        else if (namedVariable->type == MMS_ARRAY) {
 
-	}
-	else
-		appendErrorToResultList(values, DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT);
+            if (alternateAccess != NULL) {
+                alternateArrayAccess(connection, alternateAccess, domain,
+                        nameIdStr, values, namedVariable);
+            }
+            else { /* return complete array */
+                MmsValue* value = mmsServer_getValue(connection->server, domain, nameIdStr, connection);
+                appendValueToResultList(value, values);
+            }
+        }
+        else {
+
+            if (alternateAccess != NULL) {
+                appendErrorToResultList(values, DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT);
+            }
+            else {
+                MmsValue* value = mmsServer_getValue(connection->server, domain, nameIdStr, connection);
+
+                if (value == NULL) {
+                    if (DEBUG_MMS_SERVER)
+                        printf("MMS read: value of known variable is not found. Maybe illegal access to array element!\n");
+
+                    appendErrorToResultList(values, DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT);
+                }
+                else
+                    appendValueToResultList(value, values);
+            }
+        }
+    }
+    else
+        appendErrorToResultList(values, DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT);
 }
 
 

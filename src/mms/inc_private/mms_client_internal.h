@@ -195,6 +195,9 @@ LIB61850_INTERNAL int
 mmsClient_createReadRequest(uint32_t invokeId, const char* domainId, const char* itemId, ByteBuffer* writeBuffer);
 
 LIB61850_INTERNAL int
+mmsClient_createReadRequestComponent(uint32_t invokeId, const char* domainId, const char* itemId, const char* component, ByteBuffer* writeBuffer);
+
+LIB61850_INTERNAL int
 mmsClient_createReadRequestAlternateAccessIndex(uint32_t invokeId, const char* domainId, const char* itemId,
 		uint32_t index, uint32_t elementCount, ByteBuffer* writeBuffer);
 

@@ -2115,6 +2115,67 @@ MmsConnection_readVariable(MmsConnection self, MmsError* mmsError,
     return value;
 }
 
+uint32_t
+MmsConnection_readVariableComponentAsync(MmsConnection self, MmsError* mmsError,
+        const char* domainId, const char* itemId, const char* componentId,
+        MmsConnection_ReadVariableHandler handler, void* parameter)
+{
+    uint32_t invokeId = 0;
+
+    if (getConnectionState(self) != MMS_CONNECTION_STATE_CONNECTED) {
+        if (mmsError)
+            *mmsError = MMS_ERROR_CONNECTION_LOST;
+
+        goto exit_function;
+    }
+
+    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
+
+    invokeId = getNextInvokeId(self);
+
+    mmsClient_createReadRequestComponent(invokeId, domainId, itemId, componentId, payload);
+
+    MmsError err = sendAsyncRequest(self, invokeId, payload, MMS_CALL_TYPE_READ_VARIABLE, handler, parameter, NULL);
+
+    if (mmsError)
+        *mmsError = err;
+
+exit_function:
+    return invokeId;
+}
+
+MmsValue*
+MmsConnection_readVariableComponent(MmsConnection self, MmsError* mmsError,
+        const char* domainId, const char* itemId, const char* componentId)
+{
+    MmsValue* value = NULL;
+    MmsError err = MMS_ERROR_NONE;
+
+    struct readNVParameters parameter;
+
+    parameter.sem = Semaphore_create(1);;
+    parameter.value = NULL;
+    parameter.err = MMS_ERROR_NONE;
+
+    Semaphore_wait(parameter.sem);
+
+    MmsConnection_readVariableComponentAsync(self, &err, domainId, itemId, componentId, readVariableHandler, &parameter);
+
+    if (err == MMS_ERROR_NONE) {
+        Semaphore_wait(parameter.sem);
+
+        value = parameter.value;
+        err = parameter.err;
+    }
+
+    Semaphore_destroy(parameter.sem);
+
+    if (mmsError)
+        *mmsError = err;
+
+    return value;
+}
+
 MmsValue*
 MmsConnection_readArrayElements(MmsConnection self, MmsError* mmsError,
         const char* domainId, const char* itemId,

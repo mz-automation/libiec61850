@@ -497,6 +497,41 @@ MmsConnection_readVariableAsync(MmsConnection self, MmsError* mmsError, const ch
         MmsConnection_ReadVariableHandler handler, void* parameter);
 
 /**
+ * \brief Read a component of a single variable from the server.
+ *
+ * \param self MmsConnection instance to operate on
+ * \param mmsError user provided variable to store error code
+ * \param domainId the domain name of the variable to be read or NULL to read a VMD specific named variable
+ * \param itemId name of the variable to be read
+ * \param componentId the component name
+ *
+ * \return Returns a MmsValue object or NULL if the request failed. The MmsValue object can
+ * either be a simple value or a complex value or array. It is also possible that the return value is NULL
+ * even if mmsError = MMS_ERROR_NON. This is the case when the servers returns an empty result list.
+ */
+LIB61850_API MmsValue*
+MmsConnection_readVariableComponent(MmsConnection self, MmsError* mmsError,
+        const char* domainId, const char* itemId, const char* componentId);
+
+/**
+ * \brief Read a component of a single variable from the server (asynchronous version)
+ *
+ * \param self MmsConnection instance to operate on
+ * \param mmsError user provided variable to store error code
+ * \param domainId the domain name of the variable to be read or NULL to read a VMD specific named variable
+ * \param itemId name of the variable to be read
+ * \param componentId the component name
+ * \param handler
+ * \param parameter
+ *
+ * \return invoke ID of the request when the request was sent successfully
+ */
+LIB61850_API uint32_t
+MmsConnection_readVariableComponentAsync(MmsConnection self, MmsError* mmsError,
+        const char* domainId, const char* itemId, const char* componentId,
+        MmsConnection_ReadVariableHandler handler, void* parameter);
+
+/**
  * \brief Read one or more elements of a single array variable from the server.
  *
  * \param self MmsConnection instance to operate on

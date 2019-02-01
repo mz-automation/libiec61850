@@ -357,8 +357,11 @@ mmsServer_handleObtainFileRequest(
         uint32_t invokeId,
         ByteBuffer* response);
 
-LIB61850_INTERNAL int
+LIB61850_INTERNAL bool
 mmsServer_isIndexAccess(AlternateAccess_t* alternateAccess);
+
+LIB61850_INTERNAL bool
+mmsServer_isComponentAccess(AlternateAccess_t* alternateAccess);
 
 LIB61850_INTERNAL int
 mmsServer_getLowIndex(AlternateAccess_t* alternateAccess);

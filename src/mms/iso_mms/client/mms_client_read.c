@@ -527,6 +527,132 @@ mmsClient_createReadRequest(uint32_t invokeId, const char* domainId, const char*
     return rval.encoded;
 }
 
+static AlternateAccess_t*
+createAlternateAccessComponent(const char* componentName)
+{
+    AlternateAccess_t* alternateAccess = (AlternateAccess_t*) GLOBAL_CALLOC(1, sizeof(AlternateAccess_t));
+    alternateAccess->list.count = 1;
+    alternateAccess->list.array = (struct AlternateAccess__Member**) GLOBAL_CALLOC(1, sizeof(struct AlternateAccess__Member*));
+    alternateAccess->list.array[0] = (struct AlternateAccess__Member*) GLOBAL_CALLOC(1, sizeof(struct AlternateAccess__Member));
+    alternateAccess->list.array[0]->present = AlternateAccess__Member_PR_unnamed;
+
+    alternateAccess->list.array[0]->choice.unnamed = (AlternateAccessSelection_t*) GLOBAL_CALLOC(1, sizeof(AlternateAccessSelection_t));
+
+    const char* separator = strchr(componentName, '$');
+
+    if (separator) {
+        int size = separator - componentName;
+
+        alternateAccess->list.array[0]->choice.unnamed->present = AlternateAccessSelection_PR_selectAlternateAccess;
+        alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.accessSelection.present =
+                AlternateAccessSelection__selectAlternateAccess__accessSelection_PR_component;
+
+        alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.accessSelection.choice.component.buf =
+			(uint8_t*) StringUtils_copySubString((char*) componentName, (char*) separator);
+        alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.accessSelection.choice.component.size = size;
+
+        alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess = createAlternateAccessComponent(separator + 1);
+    }
+    else {
+        int size = strlen(componentName);
+
+        alternateAccess->list.array[0]->choice.unnamed->present = AlternateAccessSelection_PR_selectAccess;
+
+        alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.present =
+                AlternateAccessSelection__selectAccess_PR_component;
+
+		alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.choice.component.buf =
+			(uint8_t*) StringUtils_copyString(componentName);
+        alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.choice.component.size = size;
+    }
+
+    return alternateAccess;
+}
+
+static void
+deleteAlternateAccessComponent(AlternateAccess_t* alternateAccess)
+{
+    if (alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess)
+        deleteAlternateAccessComponent(alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess);
+
+    if (alternateAccess->list.array[0]->choice.unnamed->present == AlternateAccessSelection_PR_selectAlternateAccess)
+        GLOBAL_FREEMEM(alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.accessSelection.choice.component.buf);
+    else if (alternateAccess->list.array[0]->choice.unnamed->present == AlternateAccessSelection_PR_selectAccess)
+        GLOBAL_FREEMEM(alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.choice.component.buf);
+
+    GLOBAL_FREEMEM(alternateAccess->list.array[0]->choice.unnamed);
+    GLOBAL_FREEMEM(alternateAccess->list.array[0]);
+    GLOBAL_FREEMEM(alternateAccess->list.array);
+    GLOBAL_FREEMEM(alternateAccess);
+}
+
+static ListOfVariableSeq_t*
+createNewVariableSpecification(const char* domainId, const char* itemId, const char* componentName, bool associationSpecific)
+{
+    ListOfVariableSeq_t* varSpec = (ListOfVariableSeq_t*) GLOBAL_CALLOC(1, sizeof(ListOfVariableSeq_t));
+
+    varSpec->variableSpecification.present = VariableSpecification_PR_name;
+
+    if (domainId) {
+        varSpec->variableSpecification.choice.name.present = ObjectName_PR_domainspecific;
+        varSpec->variableSpecification.choice.name.choice.domainspecific.domainId.buf = (uint8_t*) domainId;
+        varSpec->variableSpecification.choice.name.choice.domainspecific.domainId.size = strlen(domainId);
+        varSpec->variableSpecification.choice.name.choice.domainspecific.itemId.buf = (uint8_t*) itemId;
+        varSpec->variableSpecification.choice.name.choice.domainspecific.itemId.size = strlen(itemId);
+    }
+    else if (associationSpecific) {
+        varSpec->variableSpecification.choice.name.present = ObjectName_PR_aaspecific;
+        varSpec->variableSpecification.choice.name.choice.aaspecific.buf = (uint8_t*) itemId;
+        varSpec->variableSpecification.choice.name.choice.aaspecific.size = strlen(itemId);
+    }
+    else {
+        varSpec->variableSpecification.choice.name.present = ObjectName_PR_vmdspecific;
+        varSpec->variableSpecification.choice.name.choice.vmdspecific.buf = (uint8_t*) itemId;
+        varSpec->variableSpecification.choice.name.choice.vmdspecific.size = strlen(itemId);
+    }
+
+    if (componentName)
+        varSpec->alternateAccess = createAlternateAccessComponent(componentName);
+
+    return varSpec;
+}
+
+/**
+ * Request a single value with optional component
+ */
+int
+mmsClient_createReadRequestComponent(uint32_t invokeId, const char* domainId, const char* itemId, const char* component, ByteBuffer* writeBuffer)
+{
+    MmsPdu_t* mmsPdu = mmsClient_createConfirmedRequestPdu(invokeId);
+
+    ReadRequest_t* readRequest = createReadRequest(mmsPdu);
+
+    readRequest->specificationWithResult = NULL;
+
+    readRequest->variableAccessSpecification.present = VariableAccessSpecification_PR_listOfVariable;
+    readRequest->variableAccessSpecification.choice.listOfVariable.list.count = 1;
+    readRequest->variableAccessSpecification.choice.listOfVariable.list.size = 1;
+    readRequest->variableAccessSpecification.choice.listOfVariable.list.array =
+            (ListOfVariableSeq_t**) GLOBAL_CALLOC(1, sizeof(ListOfVariableSeq_t*));
+    readRequest->variableAccessSpecification.choice.listOfVariable.list.array[0] = createNewVariableSpecification(domainId, itemId, component, false);
+
+    asn_enc_rval_t rval;
+
+    rval = der_encode(&asn_DEF_MmsPdu, mmsPdu,
+            (asn_app_consume_bytes_f*) mmsClient_write_out, (void*) writeBuffer);
+
+    /* clean up data structures */
+    deleteAlternateAccessComponent(readRequest->variableAccessSpecification.choice.listOfVariable.list.array[0]->alternateAccess);
+
+    GLOBAL_FREEMEM(readRequest->variableAccessSpecification.choice.listOfVariable.list.array[0]);
+    GLOBAL_FREEMEM(readRequest->variableAccessSpecification.choice.listOfVariable.list.array);
+    readRequest->variableAccessSpecification.choice.listOfVariable.list.array = NULL;
+    readRequest->variableAccessSpecification.choice.listOfVariable.list.count = 0;
+    asn_DEF_MmsPdu.free_struct(&asn_DEF_MmsPdu, mmsPdu, 0);
+
+    return rval.encoded;
+}
+
 static ListOfVariableSeq_t*
 createVariableIdentifier(const char* domainId, const char* itemId)
 {
