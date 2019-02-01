@@ -25,6 +25,7 @@ print_help()
     printf("-x <filename> delete file\n");
     printf("-j <domainName/journalName> read journal\n");
     printf("-v <variable list_name> read domain variable list\n");
+    printf("-y <index> array index for read access\n");
     printf("-m print raw MMS messages\n");
 }
 
@@ -103,6 +104,7 @@ int main(int argc, char** argv) {
 	char* hostname = StringUtils_copyString("localhost");
 	int tcpPort = 102;
 	int maxPduSize = 65000;
+    int arrayIndex = -1;
 
 	char* domainName = NULL;
 	char* variableName = NULL;
@@ -124,7 +126,7 @@ int main(int argc, char** argv) {
 
 	int c;
 
-	while ((c = getopt(argc, argv, "mifdh:p:l:t:a:r:g:j:x:v:c:")) != -1)
+	while ((c = getopt(argc, argv, "mifdh:p:l:t:a:r:g:j:x:v:c:y:")) != -1)
 		switch (c) {
 		case 'm':
 		    printRawMmsMessages = 1;
@@ -179,6 +181,10 @@ int main(int argc, char** argv) {
 		case 'j':
 		    readJournal = 1;
 		    journalName = StringUtils_copyString(optarg);
+		    break;
+
+		case 'y':
+		    arrayIndex = atoi(optarg);
 		    break;
 
 		default:
@@ -340,10 +346,23 @@ int main(int argc, char** argv) {
 
 	    	MmsValue* result;
 
-	    	if (componentName == NULL)
-	    		result = MmsConnection_readVariable(con, &error, domainName, variableName);
-	    	else
-	    		result = MmsConnection_readVariableComponent(con, &error, domainName, variableName, componentName);
+	    	if (componentName == NULL) {
+	    	    if (arrayIndex == -1) {
+	                result = MmsConnection_readVariable(con, &error, domainName, variableName);
+	    	    }
+	    	    else {
+	    	        result = MmsConnection_readSingleArrayElementWithComponent(con, &error, domainName, variableName, arrayIndex, NULL);
+	    	    }
+	    	}
+	    	else {
+	    	    if (arrayIndex == -1) {
+	    	        result = MmsConnection_readVariableComponent(con, &error, domainName, variableName, componentName);
+	    	    }
+	    	    else {
+	    	        result = MmsConnection_readSingleArrayElementWithComponent(con, &error, domainName, variableName, arrayIndex, componentName);
+	    	    }
+	    	}
+
 
 	        if (error != MMS_ERROR_NONE) {
 	            printf("Reading variable failed: (ERROR %i)\n", error);
