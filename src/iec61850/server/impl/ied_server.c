@@ -527,6 +527,9 @@ IedServer_destroy(IedServer self)
         }
     }
 
+    if (self->serverThread)
+        Thread_destroy(self->serverThread);
+
 #endif
 
     MmsMapping_destroy(self->mmsMapping);
@@ -598,9 +601,9 @@ IedServer_start(IedServer self, int tcpPort)
 #if (CONFIG_MMS_SINGLE_THREADED == 1)
         MmsServer_startListeningThreadless(self->mmsServer, tcpPort);
 
-        Thread serverThread = Thread_create((ThreadExecutionFunction) singleThreadedServerThread, (void*) self, true);
+        self->serverThread = Thread_create((ThreadExecutionFunction) singleThreadedServerThread, (void*) self, false);
 
-        Thread_start(serverThread);
+        Thread_start(self->serverThread);
 #else
 
         MmsServer_startListening(self->mmsServer, tcpPort);
@@ -635,6 +638,8 @@ IedServer_stop(IedServer self)
 
 #if (CONFIG_MMS_SINGLE_THREADED == 1)
         MmsServer_stopListeningThreadless(self->mmsServer);
+        Thread_destroy(self->serverThread);
+        self->serverThread = NULL;
 #else
         MmsServer_stopListening(self->mmsServer);
 #endif
