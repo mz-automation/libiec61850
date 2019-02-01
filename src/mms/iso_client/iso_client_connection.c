@@ -636,14 +636,17 @@ IsoClientConnection_handleConnection(IsoClientConnection self)
 bool
 IsoClientConnection_associateAsync(IsoClientConnection self, uint32_t connectTimeoutInMs)
 {
+    self->socket = TcpSocket_create();
+
+    if (self->socket == NULL)
+        return false;
+
     bool success = true;
 
     /* Create socket and start connect */
     setState(self, STATE_CONNECTING);
 
     Semaphore_wait(self->tickMutex);
-
-    self->socket = TcpSocket_create();
 
 #if (CONFIG_ACTIVATE_TCP_KEEPALIVE == 1)
     Socket_activateTcpKeepAlive(self->socket,
