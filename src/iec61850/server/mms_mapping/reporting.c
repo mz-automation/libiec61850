@@ -325,6 +325,7 @@ sendReport(ReportControl* self, bool isIntegrity, bool isGI)
     LinkedList_add(reportElements, optFlds);
 
     /* delete option fields for unsupported options */
+    MmsValue_setBitStringBit(optFlds, 6, false); /* bufOvfl */
     MmsValue_setBitStringBit(optFlds, 7, false); /* entryID */
     MmsValue_setBitStringBit(optFlds, 9, false); /* segmentation */
 
@@ -338,13 +339,6 @@ sendReport(ReportControl* self, bool isIntegrity, bool isGI)
 
     if (MmsValue_getBitStringBit(optFlds, 4)) /* data set reference */
         LinkedList_add(reportElements, datSet);
-
-    if (MmsValue_getBitStringBit(optFlds, 6)) { /* bufOvfl */
-        MmsValue* bufOvfl = MmsValue_newBoolean(false);
-
-        LinkedList_add(reportElements, bufOvfl);
-        LinkedList_add(deletableElements, bufOvfl);
-    }
 
     if (MmsValue_getBitStringBit(optFlds, 8))
         LinkedList_add(reportElements, self->confRev);
