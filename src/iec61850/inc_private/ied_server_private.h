@@ -55,6 +55,10 @@ struct sIedServer
     bool logServiceEnabled;
 #endif
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Thread serverThread;
+#endif
+
     uint8_t edition;
 
     bool running;
