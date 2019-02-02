@@ -53,7 +53,7 @@ mmsClient_parseListOfAccessResults(AccessResult_t** accessResultList, int listSi
 
         if (presentType == AccessResult_PR_failure) {
             if (DEBUG_MMS_CLIENT)
-                printf("access error!\n");
+                printf("MMS CLIENT: received access error!\n");
 
             if (accessResultList[i]->choice.failure.size > 0) {
                 int errorCode = (int) accessResultList[i]->choice.failure.buf[0];
