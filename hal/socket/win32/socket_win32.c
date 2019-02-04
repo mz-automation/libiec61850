@@ -279,6 +279,8 @@ ServerSocket_accept(ServerSocket self)
 		conSocket = (Socket) GLOBAL_CALLOC(1, sizeof(struct sSocket));
 		conSocket->fd = fd;
 
+		socketCount++;
+
 	    setSocketNonBlocking(conSocket);
 	}
 
@@ -304,6 +306,9 @@ Socket
 TcpSocket_create()
 {
     Socket self = NULL;
+
+    if (wsaStartUp() == false)
+        return NULL;
 
     int sock = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -333,9 +338,6 @@ bool
 Socket_connect(Socket self, const char* address, int port)
 {
 	struct sockaddr_in serverAddress;
-
-	if (wsaStartUp() == false)
-		return false;
 
 	if (!prepareServerAddress(address, port, &serverAddress))
 	    return false;
