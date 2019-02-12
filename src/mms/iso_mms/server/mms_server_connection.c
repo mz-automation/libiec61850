@@ -739,6 +739,18 @@ MmsServerConnection_destroy(MmsServerConnection self)
     GLOBAL_FREEMEM(self);
 }
 
+int
+MmsServerConnection_getMaxMmsPduSize(MmsServerConnection self)
+{
+    return self->maxPduSize;
+}
+
+void
+MmsServerConnection_sendMessage(MmsServerConnection self, ByteBuffer* message, bool handlerMode)
+{
+    IsoConnection_sendMessage(self->isoConnection, message, false);
+}
+
 #if (MMS_DYNAMIC_DATA_SETS == 1)
 bool
 MmsServerConnection_addNamedVariableList(MmsServerConnection self, MmsNamedVariableList variableList)

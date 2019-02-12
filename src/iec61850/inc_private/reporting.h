@@ -42,6 +42,8 @@ typedef struct {
     ReportBufferEntry* lastEnqueuedReport;
     ReportBufferEntry* nextToTransmit;
     bool isOverflow; /* true if overflow condition is active */
+
+    Semaphore lock; /* protect access to report buffer */
 } ReportBuffer;
 
 typedef struct {
@@ -53,6 +55,7 @@ typedef struct {
     MmsValue* rcbValues;
     MmsValue* inclusionField;
     MmsValue* confRev;
+
     DataSet* dataSet;
     bool isDynamicDataSet;
     bool enabled;
@@ -75,6 +78,12 @@ typedef struct {
     uint64_t lastEntryId;
 
     int triggerOps;
+
+    /* information for segmented reporting */
+    bool segmented; /* indicates that a segmented report is in process */
+    int startIndexForNextSegment; /* start data set index for the next report segment */
+    MmsValue* subSeqVal; /* sub sequence value for segmented reporting */
+    uint64_t segmentedReportTimestamp; /* time stamp used for all report segments */
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore createNotificationsMutex;  /* { covered by mutex } */

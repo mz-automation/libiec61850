@@ -48,6 +48,12 @@ MmsServerConnection_init(MmsServerConnection connection, MmsServer server, IsoCo
 void
 MmsServerConnection_destroy(MmsServerConnection connection);
 
+int
+MmsServerConnection_getMaxMmsPduSize(MmsServerConnection self);
+
+void
+MmsServerConnection_sendMessage(MmsServerConnection self, ByteBuffer* message, bool handlerMode);
+
 bool
 MmsServerConnection_addNamedVariableList(MmsServerConnection self, MmsNamedVariableList variableList);
 

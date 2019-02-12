@@ -1,7 +1,7 @@
 /*
  *  reporting.c
  *
- *  Copyright 2013-2018 Michael Zillgith
+ *  Copyright 2013-2019 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -29,9 +29,11 @@
 
 #include "simple_allocator.h"
 #include "mem_alloc_linked_list.h"
+#include "ber_encoder.h"
 
 #include "mms_mapping_internal.h"
 #include "mms_value_internal.h"
+#include "mms_server_internal.h"
 #include "conversions.h"
 #include "reporting.h"
 #include "ied_server_private.h"
@@ -66,6 +68,10 @@ ReportBuffer_create(int bufferSize)
             GLOBAL_FREEMEM(self);
             self = NULL;
         }
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        self->lock = Semaphore_create(1);
+#endif
     }
 
     return self;
@@ -75,6 +81,11 @@ static void
 ReportBuffer_destroy(ReportBuffer* self)
 {
     GLOBAL_FREEMEM(self->memoryBlock);
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_destroy(self->lock);
+#endif
+
     GLOBAL_FREEMEM(self);
 }
 
@@ -87,6 +98,9 @@ ReportControl_create(bool buffered, LogicalNode* parentLN, int reportBufferSize,
     self->parentLN = parentLN;
     self->rcbValues = NULL;
     self->confRev = NULL;
+    self->subSeqVal = MmsValue_newUnsigned(16);
+    self->segmented = false;
+    self->startIndexForNextSegment = 0;
     self->enabled = false;
     self->reserved = false;
     self->buffered = buffered;
@@ -195,6 +209,8 @@ ReportControl_destroy(ReportControl* self)
 
     if (self->buffered == false)
         MmsValue_delete(self->timeOfEntry);
+
+    MmsValue_delete(self->subSeqVal);
 
     deleteDataSetValuesShadowBuffer(self);
 
@@ -308,63 +324,235 @@ updateTimeOfEntry(ReportControl* self, uint64_t currentTime)
     MmsValue_setBinaryTime(timeOfEntry, currentTime);
 }
 
-static void
-sendReport(ReportControl* self, bool isIntegrity, bool isGI)
+static DataSetEntry*
+getDataSetEntryWithIndex(DataSetEntry* dataSet, int index)
 {
-    updateTimeOfEntry(self, Hal_getTimeInMs());
+    int i = 0;
 
-    LinkedList reportElements = LinkedList_create();
+    while (dataSet) {
+        if (i == index)
+            return dataSet;
 
-    LinkedList deletableElements = LinkedList_create();
+        i++;
+
+        dataSet = dataSet->sibling;
+    }
+
+    return NULL;
+}
+
+static bool
+sendReportSegment(ReportControl* self, bool isIntegrity, bool isGI)
+{
+    int maxMmsPduSize = MmsServerConnection_getMaxMmsPduSize(self->clientConnection);
+    int estimatedSegmentSize = 19; /* maximum size of header information (header can have 13-19 byte) */
+    estimatedSegmentSize += 8; /* reserve space for more-segments-follow (3 byte) and sub-seq-num (3-5 byte) */
+
+    bool segmented = self->segmented;
+    bool moreFollows = false;
+
+    bool hasSeqNum = false;
+    bool hasReportTimestamp = false;
+    bool hasDataSetReference = false;
+    bool hasConfRev = false;
+
+    uint32_t accessResultSize = 0;
 
     MmsValue* rptId = ReportControl_getRCBValue(self, "RptID");
     MmsValue* optFlds = ReportControl_getRCBValue(self, "OptFlds");
     MmsValue* datSet = ReportControl_getRCBValue(self, "DatSet");
 
-    LinkedList_add(reportElements, rptId);
-    LinkedList_add(reportElements, optFlds);
+    MmsValue timeOfEntry;
+    timeOfEntry.type = MMS_BINARY_TIME;
+    timeOfEntry.value.binaryTime.size = 6;
 
-    /* delete option fields for unsupported options */
+    accessResultSize += MmsValue_encodeMmsData(rptId, NULL, 0, false);
+    accessResultSize += MmsValue_encodeMmsData(optFlds, NULL, 0, false); /* TODO optimize - this is constant */
+
+    /* delete option fields for unrelated options (not present in unbuffered report) */
     MmsValue_setBitStringBit(optFlds, 6, false); /* bufOvfl */
     MmsValue_setBitStringBit(optFlds, 7, false); /* entryID */
-    MmsValue_setBitStringBit(optFlds, 9, false); /* segmentation */
 
     MmsValue* sqNum = ReportControl_getRCBValue(self, "SqNum");
 
-    if (MmsValue_getBitStringBit(optFlds, 1)) /* sequence number */
-        LinkedList_add(reportElements, sqNum);
+    if (MmsValue_getBitStringBit(optFlds, 1)) { /* sequence number */
+        hasSeqNum = true;
+        accessResultSize += MmsValue_encodeMmsData(sqNum, NULL, 0, false);
+    }
 
-    if (MmsValue_getBitStringBit(optFlds, 2)) /* report time stamp */
-        LinkedList_add(reportElements, self->timeOfEntry);
+    if (MmsValue_getBitStringBit(optFlds, 2)) { /* report time stamp */
+        hasReportTimestamp = true;
+        MmsValue_setBinaryTime(&timeOfEntry, self->segmentedReportTimestamp);
+        accessResultSize += MmsValue_encodeMmsData(&timeOfEntry, NULL, 0, false);
+    }
 
-    if (MmsValue_getBitStringBit(optFlds, 4)) /* data set reference */
-        LinkedList_add(reportElements, datSet);
+    if (MmsValue_getBitStringBit(optFlds, 4)) { /* data set reference */
+        hasDataSetReference = true;
+        accessResultSize += MmsValue_encodeMmsData(datSet, NULL, 0, false);
+    }
 
-    if (MmsValue_getBitStringBit(optFlds, 8))
-        LinkedList_add(reportElements, self->confRev);
+    if (MmsValue_getBitStringBit(optFlds, 8)) { /* configuration revision */
+        hasConfRev = true;
+        accessResultSize += MmsValue_encodeMmsData(self->confRev, NULL, 0, false);
+    }
 
-    if (isGI || isIntegrity)
-        MmsValue_setAllBitStringBits(self->inclusionField);
-    else
-        MmsValue_deleteAllBitStringBits(self->inclusionField);
+    MmsValue_deleteAllBitStringBits(self->inclusionField);
+    accessResultSize += MmsValue_encodeMmsData(self->inclusionField, NULL, 0, false);
 
-    LinkedList_add(reportElements, self->inclusionField);
+    /* here ends the base part that is equal for all sub reports and independent of the
+     * number of included data points
+     */
+    estimatedSegmentSize += accessResultSize;
 
-    /* add data references if selected */
+    int startElementIndex = self->startIndexForNextSegment; /* get value from segmented report control info */
+
+    bool withDataReference = MmsValue_getBitStringBit(optFlds, 5);
+    bool withReasonCode = MmsValue_getBitStringBit(optFlds, 3);
+
+    LogicalDevice* ld = (LogicalDevice*) self->parentLN->parent;
+
+    IedModel* iedModel = (IedModel*) ld->parent;
+
+    int maxIndex = startElementIndex;
+
+    char* iedName = iedModel->name;
+    int iedNameLength = strlen(iedName);
+
+    int i;
+
+    MmsValue _moreFollows;
+    _moreFollows.type = MMS_BOOLEAN;
+    _moreFollows.value.boolean = false;
+
+    MmsValue* subSeqNum = self->subSeqVal;
+
+    for (i = startElementIndex; i < self->dataSet->elementCount; i++) {
+
+        DataSetEntry* dataSetEntry = getDataSetEntryWithIndex(self->dataSet->fcdas, i);
+
+        bool includeElementInReport = false;
+
+        if (isGI || isIntegrity)
+            includeElementInReport = true;
+        else if (self->inclusionFlags[i] != REPORT_CONTROL_NONE)
+            includeElementInReport = true;
+
+        if (includeElementInReport) {
+
+            int elementSize = 0;
+
+            if (withDataReference) {
+                int currentPos = 0;
+
+                currentPos += iedNameLength;
+                currentPos += (int) strlen(dataSetEntry->logicalDeviceName);
+                currentPos++;
+                currentPos += (int) strlen(dataSetEntry->variableName);
+
+                elementSize +=  (1 + BerEncoder_determineLengthSize(currentPos) + currentPos);
+            }
+
+            if (self->inclusionFlags[i] != REPORT_CONTROL_NONE) {
+                elementSize += MmsValue_encodeMmsData(self->bufferedDataSetValues[i], NULL, 0, false);
+            }
+            else {
+                elementSize += MmsValue_encodeMmsData(dataSetEntry->value, NULL, 0, false);
+            }
+
+            if (withReasonCode) {
+                elementSize += 4; /* reason code size is always 4 byte */
+            }
+
+            if ((estimatedSegmentSize + elementSize) > maxMmsPduSize) {
+
+                segmented = true;
+                moreFollows = true;
+                _moreFollows.value.boolean = true;
+
+                if (startElementIndex == 0)
+                    MmsValue_setUint32(subSeqNum, 0);
+
+                if (DEBUG_IED_SERVER)
+                    printf("IED_SERVER: element doesn't fit into MMS PDU --> another report segment is required!\n");
+                break;
+            }
+
+            MmsValue_setBitStringBit(self->inclusionField, i, true);
+
+            accessResultSize += elementSize;
+            estimatedSegmentSize += elementSize;
+        }
+
+        maxIndex++;
+    }
+
+    MmsValue_setBitStringBit(optFlds, 9, segmented); /* set segmentation flag */
+
+    /* now calculate the exact information report segment size */
+
+    if (segmented) {
+        int segmentedSize = MmsValue_encodeMmsData(&_moreFollows, NULL, 0, false) + MmsValue_encodeMmsData(subSeqNum, NULL, 0, false);
+        accessResultSize += segmentedSize;
+    }
+
+    uint32_t variableAccessSpecSize = 7; /* T L "RPT" */
+    uint32_t listOfAccessResultSize = accessResultSize + BerEncoder_determineLengthSize(accessResultSize) + 1;
+    uint32_t informationReportContentSize = variableAccessSpecSize + listOfAccessResultSize;
+    uint32_t informationReportSize = 1 + informationReportContentSize + BerEncoder_determineLengthSize(informationReportContentSize);
+    uint32_t completeMessageSize = 1 + informationReportSize + BerEncoder_determineLengthSize(informationReportSize);
+
+    if ((int) completeMessageSize > maxMmsPduSize) {
+        if (DEBUG_IED_SERVER)
+            printf("IED_SERVER: report message too large %i (max = %i) -> skip message!\n", completeMessageSize, maxMmsPduSize);
+
+        goto exit_function;
+    }
+
+    /* encode the report message */
+
+    ByteBuffer* reportBuffer =  MmsServer_reserveTransmitBuffer(self->server->mmsServer);
+
+    uint8_t* buffer = reportBuffer->buffer;
+    int bufPos = 0;
+
+    /* encode header */
+    bufPos = BerEncoder_encodeTL(0xa3, informationReportSize, buffer, bufPos);
+    bufPos = BerEncoder_encodeTL(0xa0, informationReportContentSize, buffer, bufPos);
+
+    bufPos = BerEncoder_encodeTL(0xa1, 5, buffer, bufPos);
+    bufPos = BerEncoder_encodeStringWithTag(0x80, "RPT", buffer, bufPos);
+
+    bufPos = BerEncoder_encodeTL(0xa0, accessResultSize, buffer, bufPos);
+
+    /* encode access-results */
+
+    bufPos = MmsValue_encodeMmsData(rptId, buffer, bufPos, true);
+    bufPos = MmsValue_encodeMmsData(optFlds, buffer, bufPos, true);
+
+    if (hasSeqNum)
+        bufPos = MmsValue_encodeMmsData(sqNum, buffer, bufPos, true);
+
+    if (hasReportTimestamp)
+        bufPos = MmsValue_encodeMmsData(&timeOfEntry, buffer, bufPos, true);
+
+    if (hasDataSetReference)
+        bufPos = MmsValue_encodeMmsData(datSet, buffer, bufPos, true);
+
+    if (hasConfRev)
+        bufPos = MmsValue_encodeMmsData(self->confRev, buffer, bufPos, true);
+
+    if (segmented) {
+        bufPos = MmsValue_encodeMmsData(subSeqNum, buffer, bufPos, true);
+        bufPos = MmsValue_encodeMmsData(&_moreFollows, buffer, bufPos, true);
+    }
+
+    bufPos = MmsValue_encodeMmsData(self->inclusionField, buffer, bufPos, true);
+
+    /* encode data references if selected */
     if (MmsValue_getBitStringBit(optFlds, 5)) { /* data-reference */
-        DataSetEntry* dataSetEntry = self->dataSet->fcdas;
+        DataSetEntry* dataSetEntry = getDataSetEntryWithIndex(self->dataSet->fcdas, startElementIndex);
 
-        LogicalDevice* ld = (LogicalDevice*) self->parentLN->parent;
-
-        IedModel* iedModel = (IedModel*) ld->parent;
-
-        char* iedName = iedModel->name;
-
-        int iedNameLength = strlen(iedName);
-
-        int i = 0;
-
-        for (i = 0; i < self->dataSet->elementCount; i++) {
+        for (i = startElementIndex; i < maxIndex; i++) {
             assert(dataSetEntry->value != NULL);
 
             bool addReferenceForEntry = false;
@@ -400,33 +588,31 @@ sendReport(ReportControl* self, bool isIntegrity, bool isGI)
 
                 dataReference[currentPos] = 0;
 
-                MmsValue* dataRef = MmsValue_newVisibleString(dataReference);
+                MmsValue _dataRef;
+                _dataRef.type = MMS_VISIBLE_STRING;
+                _dataRef.value.visibleString.buf = dataReference;
+                _dataRef.value.visibleString.size = currentPos;
 
-                LinkedList_add(reportElements, dataRef);
-                LinkedList_add(deletableElements, dataRef);
+                bufPos = MmsValue_encodeMmsData(&_dataRef, buffer, bufPos, true);
             }
 
             dataSetEntry = dataSetEntry->sibling;
-
         }
     }
 
-    /* add data set value elements */
-    DataSetEntry* dataSetEntry = self->dataSet->fcdas;
+    /* encode data set value elements */
+    DataSetEntry* dataSetEntry = getDataSetEntryWithIndex(self->dataSet->fcdas, startElementIndex);
 
-    int i = 0;
-    for (i = 0; i < self->dataSet->elementCount; i++) {
-        assert(dataSetEntry->value != NULL);
+    for (i = startElementIndex; i < maxIndex; i++) {
 
         if (isGI || isIntegrity) {
-            LinkedList_add(reportElements, dataSetEntry->value);
+            /* encode value from data set */
+            bufPos = MmsValue_encodeMmsData(dataSetEntry->value, buffer, bufPos, true);
         }
         else {
             if (self->inclusionFlags[i] != REPORT_CONTROL_NONE) {
-                assert(self->bufferedDataSetValues[i] != NULL);
-
-                LinkedList_add(reportElements, self->bufferedDataSetValues[i]);
-                MmsValue_setBitStringBit(self->inclusionField, i, true);
+                /* encode value from the event buffer */
+                bufPos = MmsValue_encodeMmsData(self->bufferedDataSetValues[i], buffer, bufPos, true);
             }
         }
 
@@ -434,58 +620,90 @@ sendReport(ReportControl* self, bool isIntegrity, bool isGI)
     }
 
     /* add reason code to report if requested */
-    if (MmsValue_getBitStringBit(optFlds, 3)) {
-        for (i = 0; i < self->dataSet->elementCount; i++) {
+    if (withReasonCode) {
+
+        uint8_t bsBuf[1];
+
+        MmsValue _reason;
+        _reason.type = MMS_BIT_STRING;
+        _reason.value.bitString.size = 6;
+        _reason.value.bitString.buf = bsBuf;
+
+        for (i = startElementIndex; i < maxIndex; i++) {
 
             if (isGI || isIntegrity) {
-                MmsValue* reason = MmsValue_newBitString(6);
+                bsBuf[0] = 0; /* clear all bits */
 
                 if (isGI)
-                    MmsValue_setBitStringBit(reason, 5, true);
+                    MmsValue_setBitStringBit(&_reason, 5, true);
 
                 if (isIntegrity)
-                    MmsValue_setBitStringBit(reason, 4, true);
+                    MmsValue_setBitStringBit(&_reason, 4, true);
 
-                LinkedList_add(reportElements, reason);
-                LinkedList_add(deletableElements, reason);
+                bufPos = MmsValue_encodeMmsData(&_reason, buffer, bufPos, true);
             }
             else if (self->inclusionFlags[i] != REPORT_CONTROL_NONE) {
-                MmsValue* reason = MmsValue_newBitString(6);
+                bsBuf[0] = 0; /* clear all bits */
 
                 if (self->inclusionFlags[i] == REPORT_CONTROL_QUALITY_CHANGED)
-                    MmsValue_setBitStringBit(reason, 2, true);
+                    MmsValue_setBitStringBit(&_reason, 2, true);
                 else if (self->inclusionFlags[i] == REPORT_CONTROL_VALUE_CHANGED)
-                    MmsValue_setBitStringBit(reason, 1, true);
+                    MmsValue_setBitStringBit(&_reason, 1, true);
                 else if (self->inclusionFlags[i] == REPORT_CONTROL_VALUE_UPDATE)
-                    MmsValue_setBitStringBit(reason, 3, true);
+                    MmsValue_setBitStringBit(&_reason, 3, true);
 
-                LinkedList_add(reportElements, reason);
-                LinkedList_add(deletableElements, reason);
+                bufPos = MmsValue_encodeMmsData(&_reason, buffer, bufPos, true);
             }
         }
     }
 
     /* clear inclusion flags */
-    for (i = 0; i < self->dataSet->elementCount; i++)
+    for (i = startElementIndex; i < maxIndex; i++)
         self->inclusionFlags[i] = REPORT_CONTROL_NONE;
 
-    ReportControl_unlockNotify(self);
+    reportBuffer->size = bufPos;
 
-    MmsServerConnection_sendInformationReportVMDSpecific(self->clientConnection, "RPT", reportElements, false);
+    MmsServerConnection_sendMessage(self->clientConnection, reportBuffer, false);
 
-    ReportControl_lockNotify(self);
+    MmsServer_releaseTransmitBuffer(self->server->mmsServer);
 
-    /* Increase sequence number */
-    self->sqNum++;
+    if (moreFollows == false) {
+        /* reset sub sequence number */
+        segmented = false;
+        self->startIndexForNextSegment = 0;
+    }
+    else {
+        /* increase sub sequence number */
+        uint32_t subSeqNumVal = MmsValue_toUint32(subSeqNum);
+        subSeqNumVal++;
+        MmsValue_setUint32(subSeqNum, subSeqNumVal);
 
-    /* Unbuffered reporting --> sqNum is 8 bit only!!! */
-    if (self->sqNum == 256)
-        self->sqNum = 0;
+        self->startIndexForNextSegment = maxIndex;
+    }
 
-    MmsValue_setUint16(sqNum, self->sqNum);
+    if (segmented == false) {
+        /* Increase sequence number */
+        self->sqNum++;
 
-    LinkedList_destroyDeep(deletableElements, (LinkedListValueDeleteFunction) MmsValue_delete);
-    LinkedList_destroyStatic(reportElements);
+        /* Unbuffered reporting --> sqNum is 8 bit only!!! */
+        if (self->sqNum == 256)
+            self->sqNum = 0;
+
+        MmsValue_setUint16(sqNum, self->sqNum);
+    }
+
+exit_function:
+    self->segmented = segmented;
+    return moreFollows;
+}
+
+static void
+sendReport(ReportControl* self, bool isIntegrity, bool isGI, uint64_t currentTime)
+{
+    updateTimeOfEntry(self, currentTime);
+    self->segmentedReportTimestamp = currentTime;
+
+    while (sendReportSegment(self, isIntegrity, isGI));
 }
 
 static void
@@ -1276,10 +1494,8 @@ updateOwner(ReportControl* rc, MmsServerConnection connection)
                 MmsValue_setOctetString(owner, emptyAddr, 0);
             }
         }
-
     }
 }
-
 
 static bool
 checkForZeroEntryID(MmsValue* value)
@@ -1747,7 +1963,11 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
 
     updateTimeOfEntry(reportControl, Hal_getTimeInMs());
 
+    int inclusionBitStringSize = MmsValue_getBitStringSize(reportControl->inclusionField);
+
     ReportBuffer* buffer = reportControl->reportBuffer;
+
+    Semaphore_wait(buffer->lock);
 
     /* calculate size of complete buffer entry */
     int bufferEntrySize = MemoryAllocator_getAlignedSize(sizeof(ReportBufferEntry));
@@ -1757,7 +1977,7 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
     MmsValue inclusionFieldStatic;
 
     inclusionFieldStatic.type = MMS_BIT_STRING;
-    inclusionFieldStatic.value.bitString.size = MmsValue_getBitStringSize(reportControl->inclusionField);
+    inclusionFieldStatic.value.bitString.size = inclusionBitStringSize;
 
     MmsValue* inclusionField = &inclusionFieldStatic;
 
@@ -1767,7 +1987,7 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
 
         int i;
 
-        for (i = 0; i < MmsValue_getBitStringSize(reportControl->inclusionField); i++) {
+        for (i = 0; i < inclusionBitStringSize; i++) {
             assert(dataSetEntry != NULL);
 
             bufferEntrySize += MemoryAllocator_getAlignedSize(1); /* reason-for-inclusion */
@@ -1782,7 +2002,7 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
 
         int i;
 
-        for (i = 0; i < MmsValue_getBitStringSize(reportControl->inclusionField); i++) {
+        for (i = 0; i < inclusionBitStringSize; i++) {
 
             if (reportControl->inclusionFlags[i] != REPORT_CONTROL_NONE) {
                 bufferEntrySize += MemoryAllocator_getAlignedSize(1); /* reason-for-inclusion */
@@ -2017,7 +2237,7 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
 
         int i;
 
-        for (i = 0; i < MmsValue_getBitStringSize(reportControl->inclusionField); i++) {
+        for (i = 0; i < inclusionBitStringSize; i++) {
 
             assert(dataSetEntry != NULL);
 
@@ -2037,7 +2257,7 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
 
         int i;
 
-        for (i = 0; i < MmsValue_getBitStringSize(reportControl->inclusionField); i++) {
+        for (i = 0; i < inclusionBitStringSize; i++) {
 
             if (reportControl->inclusionFlags[i] != REPORT_CONTROL_NONE) {
 
@@ -2073,26 +2293,37 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
     reportControl->lastEntryId = entryId;
 
 exit_function:
+
+    Semaphore_post(buffer->lock);
+
     return;
 } /* enqueuReport() */
 
-static void
-sendNextReportEntry(ReportControl* self)
+static bool
+sendNextReportEntrySegment(ReportControl* self)
 {
-#define LOCAL_STORAGE_MEMORY_SIZE 65536
+    Semaphore_wait(self->reportBuffer->lock);
 
-    if (self->reportBuffer->nextToTransmit == NULL)
-        return;
+    if (self->reportBuffer->nextToTransmit == NULL) {
+        Semaphore_post(self->reportBuffer->lock);
+        return false;
+    }
 
-    char* localStorage = (char*) GLOBAL_MALLOC(LOCAL_STORAGE_MEMORY_SIZE); /* reserve 64k for dynamic memory allocation -
-                                     this can be optimized - maybe there is a good guess for the
-                                     required memory size */
+    int maxMmsPduSize = MmsServerConnection_getMaxMmsPduSize(self->clientConnection);
+    int estimatedSegmentSize = 19; /* maximum size of header information (header can have 13-19 byte) */
+    estimatedSegmentSize += 8; /* reserve space for more-segments-follow (3 byte) and sub-seq-num (3-5 byte) */
 
-    if (localStorage == NULL) /* out-of-memory */
-        goto return_out_of_memory;
+    bool segmented = self->segmented;
+    bool moreFollows = false;
 
-    MemoryAllocator ma;
-    MemoryAllocator_init(&ma, localStorage, LOCAL_STORAGE_MEMORY_SIZE);
+    bool hasSeqNum = false;
+    bool hasReportTimestamp = false;
+    bool hasDataSetReference = false;
+    bool hasBufOvfl = false;
+    bool hasEntryId = false;
+    bool hasConfRev = false;
+
+    uint32_t accessResultSize = 0;
 
     ReportBufferEntry* report = self->reportBuffer->nextToTransmit;
 
@@ -2105,42 +2336,30 @@ sendNextReportEntry(ReportControl* self)
     MmsValue* entryIdValue = MmsValue_getElement(self->rcbValues, 11);
     MmsValue_setOctetString(entryIdValue, (uint8_t*) report->entryId, 8);
 
-    MemAllocLinkedList reportElements = MemAllocLinkedList_create(&ma);
-
-    assert(reportElements != NULL);
-
-    if (reportElements == NULL)
-        goto return_out_of_memory;
-
     MmsValue* rptId = ReportControl_getRCBValue(self, "RptID");
     MmsValue* optFlds = ReportControl_getRCBValue(self, "OptFlds");
 
-    if (MemAllocLinkedList_add(reportElements, rptId) == NULL)
-        goto return_out_of_memory;
-
-    if (MemAllocLinkedList_add(reportElements, optFlds) == NULL)
-        goto return_out_of_memory;
+    accessResultSize += MmsValue_encodeMmsData(rptId, NULL, 0, false);
+    accessResultSize += MmsValue_encodeMmsData(optFlds, NULL, 0, false); /* TODO optimize - this is constant */
 
     MmsValue inclusionFieldStack;
 
-    inclusionFieldStack.type = MMS_BIT_STRING;
-    inclusionFieldStack.value.bitString.size = MmsValue_getBitStringSize(self->inclusionField);
-
     uint8_t* currentReportBufferPos = (uint8_t*) report + sizeof(ReportBufferEntry);
 
-    inclusionFieldStack.value.bitString.buf = currentReportBufferPos;
+    MmsValue* inclusionField = NULL;
 
-    MmsValue* inclusionField = &inclusionFieldStack;
+    if (report->flags == 0) {
 
-    if (report->flags == 0)
+        inclusionField = &inclusionFieldStack;
+
+        inclusionFieldStack.type = MMS_BIT_STRING;
+        inclusionFieldStack.value.bitString.size = MmsValue_getBitStringSize(self->inclusionField);
+        inclusionFieldStack.value.bitString.buf = currentReportBufferPos;
+
         currentReportBufferPos += MemoryAllocator_getAlignedSize(MmsValue_getBitStringByteSize(inclusionField));
-    else {
-        inclusionFieldStack.value.bitString.buf =
-                (uint8_t*) MemoryAllocator_allocate(&ma, MmsValue_getBitStringByteSize(inclusionField));
-
-        if (inclusionFieldStack.value.bitString.buf == NULL)
-            goto return_out_of_memory;
     }
+
+    MmsValue_deleteAllBitStringBits(self->inclusionField);
 
     uint8_t* valuesInReportBuffer = currentReportBufferPos;
 
@@ -2148,286 +2367,436 @@ sendNextReportEntry(ReportControl* self)
 
     MmsValue* sqNum = ReportControl_getRCBValue(self, "SqNum");
 
-    if (MmsValue_getBitStringBit(optFlds, 1)) /* sequence number */
-        if (MemAllocLinkedList_add(reportElements, sqNum) == NULL)
-            goto return_out_of_memory;
+    if (MmsValue_getBitStringBit(optFlds, 1)) { /* sequence number */
+        hasSeqNum = true;
+        accessResultSize += MmsValue_encodeMmsData(sqNum, NULL, 0, false);
+    }
+
+    MmsValue _timeOfEntry;
+    MmsValue* timeOfEntry = NULL;
 
     if (MmsValue_getBitStringBit(optFlds, 2)) { /* report time stamp */
-    	MmsValue* timeOfEntry = (MmsValue*) MemoryAllocator_allocate(&ma, sizeof(MmsValue));
-
-    	if (timeOfEntry == NULL) goto return_out_of_memory;
-
-    	timeOfEntry->deleteValue = 0;
-    	timeOfEntry->type = MMS_BINARY_TIME;
-    	timeOfEntry->value.binaryTime.size = 6;
+        hasReportTimestamp = true;
+    	_timeOfEntry.type = MMS_BINARY_TIME;
+    	_timeOfEntry.value.binaryTime.size = 6;
+        timeOfEntry = &_timeOfEntry;
 
     	MmsValue_setBinaryTime(timeOfEntry, report->timeOfEntry);
 
-        if (MemAllocLinkedList_add(reportElements, timeOfEntry) == NULL)
-            goto return_out_of_memory;
+    	accessResultSize += MmsValue_encodeMmsData(timeOfEntry, NULL, 0, false);
     }
+
+    MmsValue* datSet = ReportControl_getRCBValue(self, "DatSet");
 
     if (MmsValue_getBitStringBit(optFlds, 4)) {/* data set reference */
-        MmsValue* datSet = ReportControl_getRCBValue(self, "DatSet");
-        if (MemAllocLinkedList_add(reportElements, datSet) == NULL)
-            goto return_out_of_memory;
+        hasDataSetReference = true;
+        accessResultSize += MmsValue_encodeMmsData(datSet, NULL, 0, false);
     }
+
+    MmsValue _bufOvfl;
+    MmsValue* bufOvfl = NULL;
 
     if (MmsValue_getBitStringBit(optFlds, 6)) { /* bufOvfl */
+        hasBufOvfl = true;
 
-        MmsValue* bufOvfl = (MmsValue*) MemoryAllocator_allocate(&ma, sizeof(MmsValue));
+        bufOvfl = &_bufOvfl;
 
-        if (bufOvfl == NULL) goto return_out_of_memory;
+        _bufOvfl.type = MMS_BOOLEAN;
+        _bufOvfl.value.boolean = self->reportBuffer->isOverflow;
 
-        bufOvfl->deleteValue = 0;
-        bufOvfl->type = MMS_BOOLEAN;
-        bufOvfl->value.boolean = self->reportBuffer->isOverflow;
-
-        if (self->reportBuffer->isOverflow)
-            self->reportBuffer->isOverflow = false;
-
-        if (MemAllocLinkedList_add(reportElements, bufOvfl) == NULL)
-            goto return_out_of_memory;
+        accessResultSize += MmsValue_encodeMmsData(bufOvfl, NULL, 0, false);
     }
 
+    MmsValue _entryId;
+    MmsValue* entryId = NULL;
+
     if (MmsValue_getBitStringBit(optFlds, 7)) { /* entryID */
-        MmsValue* entryId = (MmsValue*) MemoryAllocator_allocate(&ma, sizeof(MmsValue));
+        hasEntryId = true;
+        entryId = &_entryId;
 
-        if (entryId == NULL) goto return_out_of_memory;
-
-        entryId->deleteValue = 0;
         entryId->type = MMS_OCTET_STRING;
         entryId->value.octetString.buf = report->entryId;
         entryId->value.octetString.size = 8;
         entryId->value.octetString.maxSize = 8;
 
-        if (MemAllocLinkedList_add(reportElements, entryId) == NULL)
-            goto return_out_of_memory;
+        accessResultSize += MmsValue_encodeMmsData(entryId, NULL, 0, false);
     }
 
-    if (MmsValue_getBitStringBit(optFlds, 8))
-        if (MemAllocLinkedList_add(reportElements, self->confRev) == NULL)
-            goto return_out_of_memory;
-
-    if (report->flags > 0)
-        MmsValue_setAllBitStringBits(inclusionField);
-
-    if (MemAllocLinkedList_add(reportElements, inclusionField) == NULL)
-        goto return_out_of_memory;
-
-    /* add data references if selected */
-    if (MmsValue_getBitStringBit(optFlds, 5)) { /* data-reference */
-        DataSetEntry* dataSetEntry = self->dataSet->fcdas;
-
-        LogicalDevice* ld = (LogicalDevice*) self->parentLN->parent;
-
-        IedModel* iedModel = (IedModel*) ld->parent;
-
-        char* iedName = iedModel->name;
-
-        int iedNameLength = strlen(iedName);
-
-        int i = 0;
-
-        for (i = 0; i < self->dataSet->elementCount; i++) {
-          assert(dataSetEntry->value != NULL);
-
-          bool addReferenceForEntry = false;
-
-          if (report->flags > 0)
-             addReferenceForEntry = true;
-          else
-              if (MmsValue_getBitStringBit(inclusionField, i))
-                  addReferenceForEntry = true;
-
-          if (addReferenceForEntry) {
-
-              int ldNameLength =  strlen(dataSetEntry->logicalDeviceName);
-              int variableNameLength = strlen(dataSetEntry->variableName);
-
-              int refLen = iedNameLength
-                      + ldNameLength
-                      + variableNameLength + 1;
-
-              char* dataReference = (char*) MemoryAllocator_allocate(&ma, refLen + 1);
-
-              if (dataReference == NULL) goto return_out_of_memory;
-
-              int currentPos = 0;
-
-              int j;
-
-              for (j = 0; j < iedNameLength; j++) {
-                  dataReference[currentPos++] = iedName[j];
-              }
-
-              for (j = 0; j <  ldNameLength; j++) {
-                  dataReference[currentPos] = dataSetEntry->logicalDeviceName[j];
-                  currentPos++;
-              }
-
-              dataReference[currentPos++] = '/';
-
-              for (j = 0; j < variableNameLength; j++) {
-                  dataReference[currentPos++] = dataSetEntry->variableName[j];
-              }
-
-              dataReference[currentPos] = 0;
-
-              MmsValue* dataRef = (MmsValue*) MemoryAllocator_allocate(&ma, sizeof(MmsValue));
-
-              if (dataRef == NULL) goto return_out_of_memory;
-
-              dataRef->deleteValue = 0;
-              dataRef->type = MMS_VISIBLE_STRING;
-              dataRef->value.visibleString.buf = dataReference;
-              dataRef->value.visibleString.size = refLen;
-
-
-              if (MemAllocLinkedList_add(reportElements, dataRef) == NULL)
-                  goto return_out_of_memory;
-
-          }
-
-          dataSetEntry = dataSetEntry->sibling;
-
-        }
+    if (MmsValue_getBitStringBit(optFlds, 8)) {
+        hasConfRev = true;
+        accessResultSize += MmsValue_encodeMmsData(self->confRev, NULL, 0, false);
     }
 
-    /* add data set value elements */
-    int i = 0;
-    for (i = 0; i < self->dataSet->elementCount; i++) {
+    accessResultSize += MmsValue_encodeMmsData(self->inclusionField, NULL, 0, false);
 
-        if (report->flags > 0) {
-            currentReportBufferPos += MemoryAllocator_getAlignedSize(1);;
-            if (MemAllocLinkedList_add(reportElements, currentReportBufferPos) == NULL)
-                goto return_out_of_memory;
+    /* here ends the base part that is equal for all sub reports and independent of the
+     * number of included data points
+     */
 
-            currentReportBufferPos += MmsValue_getSizeInMemory((MmsValue*) currentReportBufferPos);
-        }
-        else {
-            if (MmsValue_getBitStringBit(inclusionField, i)) {
-            	currentReportBufferPos += MemoryAllocator_getAlignedSize(1);;
-                if (MemAllocLinkedList_add(reportElements, currentReportBufferPos) == NULL)
-                    goto return_out_of_memory;
+    estimatedSegmentSize += accessResultSize;
+    int startElementIndex = self->startIndexForNextSegment; /* get value from segmented report control info */
+
+    bool withDataReference = MmsValue_getBitStringBit(optFlds, 5);
+    bool withReasonCode = MmsValue_getBitStringBit(optFlds, 3);
+
+    LogicalDevice* ld = (LogicalDevice*) self->parentLN->parent;
+
+    IedModel* iedModel = (IedModel*) ld->parent;
+
+    int maxIndex = startElementIndex;
+
+    char* iedName = iedModel->name;
+    int iedNameLength = strlen(iedName);
+
+    int i;
+
+    MmsValue _moreFollows;
+    _moreFollows.type = MMS_BOOLEAN;
+    _moreFollows.value.boolean = false;
+
+    MmsValue* subSeqNum = self->subSeqVal;
+
+    for (i = startElementIndex; i < self->dataSet->elementCount; i++) {
+
+        DataSetEntry* dataSetEntry = getDataSetEntryWithIndex(self->dataSet->fcdas, i);
+
+        if ((report->flags > 0) || MmsValue_getBitStringBit(inclusionField, i)) {
+
+            int elementSize = 0;
+
+            if (withDataReference) {
+
+                char dataReference[130];
+                int currentPos = 0;
+
+                int j;
+
+                for (j = 0; j < iedNameLength; j++) {
+                    dataReference[currentPos++] = iedName[j];
+                }
+
+                int ldNameLength = strlen(dataSetEntry->logicalDeviceName);
+                for (j = 0; j < ldNameLength; j++) {
+                    dataReference[currentPos] = dataSetEntry->logicalDeviceName[j];
+                    currentPos++;
+                }
+
+                dataReference[currentPos++] = '/';
+
+                for (j = 0; j < (int) strlen(dataSetEntry->variableName); j++) {
+                    dataReference[currentPos++] = dataSetEntry->variableName[j];
+                }
+
+                dataReference[currentPos] = 0;
+
+                /* TODO optimize - 2 + string size ? */
+
+                MmsValue _dataRef;
+                _dataRef.type = MMS_VISIBLE_STRING;
+                _dataRef.value.visibleString.buf = dataReference;
+                _dataRef.value.visibleString.size = currentPos;
+
+                elementSize += MmsValue_encodeMmsData(&_dataRef, NULL, 0, false);
+            }
+
+            if ((report->flags > 0) || MmsValue_getBitStringBit(inclusionField, i)) {
+                currentReportBufferPos += MemoryAllocator_getAlignedSize(1);;
+
+                elementSize += MmsValue_encodeMmsData((MmsValue*) currentReportBufferPos, NULL, 0, false);
+
                 currentReportBufferPos += MmsValue_getSizeInMemory((MmsValue*) currentReportBufferPos);
             }
+
+            if (withReasonCode) {
+                elementSize += 4; /* reason code size is always 4 byte */
+            }
+
+
+            if ((estimatedSegmentSize + elementSize) > maxMmsPduSize) {
+
+                segmented = true;
+                moreFollows = true;
+                _moreFollows.value.boolean = true;
+
+                if (startElementIndex == 0)
+                    MmsValue_setUint32(subSeqNum, 0);
+
+                break;
+            }
+
+            MmsValue_setBitStringBit(self->inclusionField, i, true);
+
+            accessResultSize += elementSize;
+            estimatedSegmentSize += elementSize;
         }
+
+        maxIndex++;
+    }
+
+    MmsValue_setBitStringBit(optFlds, 9, segmented); /* set segmentation flag */
+
+    /* now calculate the exact information report segment size */
+
+    if (segmented) {
+        int segmentedSize = MmsValue_encodeMmsData(&_moreFollows, NULL, 0, false) + MmsValue_encodeMmsData(subSeqNum, NULL, 0, false);
+        accessResultSize += segmentedSize;
+    }
+
+    uint32_t variableAccessSpecSize = 7; /* T L "RPT" */
+    uint32_t listOfAccessResultSize = accessResultSize + BerEncoder_determineLengthSize(accessResultSize) + 1;
+    uint32_t informationReportContentSize = variableAccessSpecSize + listOfAccessResultSize;
+    uint32_t informationReportSize = 1 + informationReportContentSize + BerEncoder_determineLengthSize(informationReportContentSize);
+    uint32_t completeMessageSize = 1 + informationReportSize + BerEncoder_determineLengthSize(informationReportSize);
+
+    if ((int) completeMessageSize > maxMmsPduSize) {
+        if (DEBUG_IED_SERVER)
+            printf("IED_SERVER: report message too large %i (max = %i) -> skip message!\n", completeMessageSize, maxMmsPduSize);
+
+        goto exit_function;
+    }
+
+    /* encode the report message */
+
+    ReportControl_unlockNotify(self);
+
+    ByteBuffer* reportBuffer = MmsServer_reserveTransmitBuffer(self->server->mmsServer);
+
+    uint8_t* buffer = reportBuffer->buffer;
+    int bufPos = 0;
+
+    /* encode header */
+    bufPos = BerEncoder_encodeTL(0xa3, informationReportSize, buffer, bufPos);
+    bufPos = BerEncoder_encodeTL(0xa0, informationReportContentSize, buffer, bufPos);
+
+    bufPos = BerEncoder_encodeTL(0xa1, 5, buffer, bufPos);
+    bufPos = BerEncoder_encodeStringWithTag(0x80, "RPT", buffer, bufPos);
+
+    bufPos = BerEncoder_encodeTL(0xa0, accessResultSize, buffer, bufPos);
+
+    /* encode access-results */
+
+    bufPos = MmsValue_encodeMmsData(rptId, buffer, bufPos, true);
+    bufPos = MmsValue_encodeMmsData(optFlds, buffer, bufPos, true);
+
+    if (hasSeqNum)
+        bufPos = MmsValue_encodeMmsData(sqNum, buffer, bufPos, true);
+
+    if (hasReportTimestamp)
+        bufPos = MmsValue_encodeMmsData(self->timeOfEntry, buffer, bufPos, true);
+
+    if (hasDataSetReference)
+        bufPos = MmsValue_encodeMmsData(datSet, buffer, bufPos, true);
+
+    if (hasBufOvfl)
+        bufPos = MmsValue_encodeMmsData(bufOvfl, buffer, bufPos, true);
+
+    if (hasEntryId)
+        bufPos = MmsValue_encodeMmsData(entryId, buffer, bufPos, true);
+
+    if (hasConfRev)
+        bufPos = MmsValue_encodeMmsData(self->confRev, buffer, bufPos, true);
+
+    if (segmented) {
+        bufPos = MmsValue_encodeMmsData(subSeqNum, buffer, bufPos, true);
+        bufPos = MmsValue_encodeMmsData(&_moreFollows, buffer, bufPos, true);
+    }
+
+    bufPos = MmsValue_encodeMmsData(self->inclusionField, buffer, bufPos, true);
+
+    /* encode data references if selected */
+    if (MmsValue_getBitStringBit(optFlds, 5)) { /* data-reference */
+        DataSetEntry* dataSetEntry = getDataSetEntryWithIndex(self->dataSet->fcdas, startElementIndex);
+
+        for (i = startElementIndex; i < maxIndex; i++) {
+            assert(dataSetEntry->value != NULL);
+
+            bool addReferenceForEntry = false;
+
+            if (report->flags > 0)
+               addReferenceForEntry = true;
+            else if (MmsValue_getBitStringBit(self->inclusionField, i))
+                addReferenceForEntry = true;
+
+            if (addReferenceForEntry) {
+
+                char dataReference[130];
+                int currentPos = 0;
+
+                int j;
+
+                for (j = 0; j < iedNameLength; j++) {
+                    dataReference[currentPos++] = iedName[j];
+                }
+
+                int ldNameLength =  strlen(dataSetEntry->logicalDeviceName);
+                for (j = 0; j <  ldNameLength; j++) {
+                    dataReference[currentPos] = dataSetEntry->logicalDeviceName[j];
+                    currentPos++;
+                }
+
+                dataReference[currentPos++] = '/';
+
+                for (j = 0; j < (int) strlen(dataSetEntry->variableName); j++) {
+                    dataReference[currentPos++] = dataSetEntry->variableName[j];
+                }
+
+                dataReference[currentPos] = 0;
+
+                MmsValue _dataRef;
+                _dataRef.type = MMS_VISIBLE_STRING;
+                _dataRef.value.visibleString.buf = dataReference;
+                _dataRef.value.visibleString.size = currentPos;
+
+                bufPos = MmsValue_encodeMmsData(&_dataRef, buffer, bufPos, true);
+            }
+
+            dataSetEntry = dataSetEntry->sibling;
+        }
+    }
+
+    /* move to start position in report buffer */
+    currentReportBufferPos = valuesInReportBuffer;
+
+    /* encode data set value elements */
+    for (i = 0; i < maxIndex; i++) {
+
+        bool isInBuffer = false;
+
+        if (report->flags > 0)
+            isInBuffer = true;
+        else {
+            if (MmsValue_getBitStringBit(inclusionField, i))
+                isInBuffer = true;
+        }
+
+        if (isInBuffer)
+            currentReportBufferPos += MemoryAllocator_getAlignedSize(1);
+
+        if (i >= startElementIndex) {
+            if ((report->flags > 0) || MmsValue_getBitStringBit(self->inclusionField, i)) {
+                /* encode value from report buffer entry*/
+                bufPos = MmsValue_encodeMmsData((MmsValue*) currentReportBufferPos, buffer, bufPos, true);
+            }
+        }
+
+        if (isInBuffer)
+            currentReportBufferPos += MmsValue_getSizeInMemory((MmsValue*) currentReportBufferPos);
     }
 
     /* add reason code to report if requested */
-    if (MmsValue_getBitStringBit(optFlds, 3)) {
+    if (withReasonCode) {
+
+        /* move to start position in report buffer */
         currentReportBufferPos = valuesInReportBuffer;
 
-        for (i = 0; i < self->dataSet->elementCount; i++) {
+        uint8_t bsBuf[1];
+
+        MmsValue _reason;
+        _reason.type = MMS_BIT_STRING;
+        _reason.value.bitString.size = 6;
+        _reason.value.bitString.buf = bsBuf;
+
+        for (i = 0; i < maxIndex; i++) {
+
+            bool isIncluded = false;
 
             if (report->flags > 0) {
-                MmsValue* reason = (MmsValue*) MemoryAllocator_allocate(&ma, sizeof(MmsValue));
-
-                if (reason == NULL) goto return_out_of_memory;
-
-                reason->deleteValue = 0;
-                reason->type = MMS_BIT_STRING;
-                reason->value.bitString.size = 6;
-                reason->value.bitString.buf = (uint8_t*) MemoryAllocator_allocate(&ma, 1);
-
-                if (reason->value.bitString.buf == NULL) goto return_out_of_memory;
-
-                MmsValue_deleteAllBitStringBits(reason);
+                bsBuf[0] = 0; /* clear all bits */
 
                 if (report->flags & 0x02) /* GI */
-                    MmsValue_setBitStringBit(reason, 5, true);
+                    MmsValue_setBitStringBit(&_reason, 5, true);
 
                 if (report->flags & 0x01) /* Integrity */
-                    MmsValue_setBitStringBit(reason, 4, true);
+                    MmsValue_setBitStringBit(&_reason, 4, true);
 
-                if (MemAllocLinkedList_add(reportElements, reason) == NULL)
-                    goto return_out_of_memory;
-
-                currentReportBufferPos += MemoryAllocator_getAlignedSize(1);
-
-                MmsValue* dataSetElement = (MmsValue*) currentReportBufferPos;
-
-                currentReportBufferPos += MmsValue_getSizeInMemory(dataSetElement);
+                isIncluded = true;
             }
-            else if (MmsValue_getBitStringBit(inclusionField, i)) {
-                MmsValue* reason = (MmsValue*) MemoryAllocator_allocate(&ma, sizeof(MmsValue));
-
-                if (reason == NULL) goto return_out_of_memory;
-
-                reason->deleteValue = 0;
-                reason->type = MMS_BIT_STRING;
-                reason->value.bitString.size = 6;
-                reason->value.bitString.buf = (uint8_t*) MemoryAllocator_allocate(&ma, 1);
-
-                if (reason->value.bitString.buf == NULL)
-                    goto return_out_of_memory;
-
-                MmsValue_deleteAllBitStringBits(reason);
+            else if (MmsValue_getBitStringBit(self->inclusionField, i)) {
+                bsBuf[0] = 0; /* clear all bits */
 
                 switch((int) *currentReportBufferPos) {
                 case REPORT_CONTROL_QUALITY_CHANGED:
-                    MmsValue_setBitStringBit(reason, 2, true);
+                    MmsValue_setBitStringBit(&_reason, 2, true);
                     break;
                 case REPORT_CONTROL_VALUE_CHANGED:
-                    MmsValue_setBitStringBit(reason, 1, true);
+                    MmsValue_setBitStringBit(&_reason, 1, true);
                     break;
                 case REPORT_CONTROL_VALUE_UPDATE:
-                    MmsValue_setBitStringBit(reason, 3, true);
+                    MmsValue_setBitStringBit(&_reason, 3, true);
                     break;
                 default:
                     break;
                 }
 
+                isIncluded = true;
+            }
+
+            if (isIncluded) {
+
+                if (i >= startElementIndex)
+                    bufPos =  MmsValue_encodeMmsData(&_reason, buffer, bufPos, true);
+            }
+
+            if ((report->flags > 0) || MmsValue_getBitStringBit(inclusionField, i)) {
                 currentReportBufferPos += MemoryAllocator_getAlignedSize(1);
 
                 MmsValue* dataSetElement = (MmsValue*) currentReportBufferPos;
 
                 currentReportBufferPos += MmsValue_getSizeInMemory(dataSetElement);
-
-                if (MemAllocLinkedList_add(reportElements, reason) == NULL)
-                    goto return_out_of_memory;
             }
         }
     }
 
-    ReportControl_unlockNotify(self);
+    reportBuffer->size = bufPos;
 
-    MmsServerConnection_sendInformationReportVMDSpecific(self->clientConnection, "RPT", (LinkedList) reportElements, false);
+    MmsServerConnection_sendMessage(self->clientConnection, reportBuffer, false);
 
-    ReportControl_lockNotify(self);
+    MmsServer_releaseTransmitBuffer(self->server->mmsServer);
 
-    /* Increase sequence number */
-    self->sqNum++;
-    MmsValue_setUint32(sqNum, self->sqNum);
+    if (moreFollows == false) {
+        /* reset sub sequence number */
+        segmented = false;
+        self->startIndexForNextSegment = 0;
+    }
+    else {
+        /* increase sub sequence number */
+        uint32_t subSeqNumVal = MmsValue_toUint32(subSeqNum);
+        subSeqNumVal++;
+        MmsValue_setUint32(subSeqNum, subSeqNumVal);
 
-    assert(self->reportBuffer->nextToTransmit != self->reportBuffer->nextToTransmit->next);
+        self->startIndexForNextSegment = maxIndex;
+    }
 
-    self->reportBuffer->nextToTransmit = self->reportBuffer->nextToTransmit->next;
+    if (segmented == false) {
 
-    if (DEBUG_IED_SERVER)
-        printf("IED_SERVER: sendNextReportEntry: memory(used/size): %i/%i\n",
-                (int) (ma.currentPtr - ma.memoryBlock), ma.size);
+        assert(self->reportBuffer->nextToTransmit != self->reportBuffer->nextToTransmit->next);
 
-#if (DEBUG_IED_SERVER == 1)
-    printf("IED_SERVER: reporting.c nextToTransmit: %p\n", self->reportBuffer->nextToTransmit);
-    printEnqueuedReports(self);
-#endif
+        self->reportBuffer->nextToTransmit = self->reportBuffer->nextToTransmit->next;
 
-    goto cleanup_and_return;
+    #if (DEBUG_IED_SERVER == 1)
+        printf("IED_SERVER: reporting.c nextToTransmit: %p\n", self->reportBuffer->nextToTransmit);
+        printEnqueuedReports(self);
+    #endif
 
-return_out_of_memory:
+        /* Increase sequence number */
+        self->sqNum++;
 
-    if (DEBUG_IED_SERVER)
-        printf("IED_SERVER: sendNextReportEntry failed - memory allocation problem!\n");
+        MmsValue_setUint16(sqNum, self->sqNum);
 
-    //TODO set some flag to notify application here
+        if (self->reportBuffer->isOverflow)
+            self->reportBuffer->isOverflow = false;
+    }
 
-cleanup_and_return:
+exit_function:
+    self->segmented = segmented;
+    Semaphore_post(self->reportBuffer->lock);
+    return moreFollows;
+}
 
-    if (localStorage != NULL)
-        GLOBAL_FREEMEM(localStorage);
-
+static void
+sendNextReportEntry(ReportControl* self)
+{
+    while (sendNextReportEntrySegment(self));
 }
 
 void
@@ -2463,13 +2832,13 @@ processEventsForReport(ReportControl* rc, uint64_t currentTimeInMs)
                     if (rc->buffered)
                         enqueueReport(rc, false, false, currentTimeInMs);
                     else
-                        sendReport(rc, false, false);
+                        sendReport(rc, false, false, currentTimeInMs);
                 }
 
                 if (rc->buffered)
                     enqueueReport(rc, false, true, currentTimeInMs);
                 else
-                    sendReport(rc, false, true);
+                    sendReport(rc, false, true, currentTimeInMs);
 
                 rc->gi = false;
 
@@ -2487,7 +2856,7 @@ processEventsForReport(ReportControl* rc, uint64_t currentTimeInMs)
                         if (rc->buffered)
                             enqueueReport(rc, false, false, currentTimeInMs);
                         else
-                            sendReport(rc, false, false);
+                            sendReport(rc, false, false, currentTimeInMs);
 
                         rc->triggered = false;
                     }
@@ -2497,7 +2866,7 @@ processEventsForReport(ReportControl* rc, uint64_t currentTimeInMs)
                     if (rc->buffered)
                         enqueueReport(rc, true, false, currentTimeInMs);
                     else
-                        sendReport(rc, true, false);
+                        sendReport(rc, true, false, currentTimeInMs);
 
                     rc->triggered = false;
                 }
@@ -2510,7 +2879,7 @@ processEventsForReport(ReportControl* rc, uint64_t currentTimeInMs)
                 if (rc->buffered)
                     enqueueReport(rc, false, false, currentTimeInMs);
                 else
-                    sendReport(rc, false, false);
+                    sendReport(rc, false, false, currentTimeInMs);
 
                 rc->triggered = false;
             }

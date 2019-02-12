@@ -315,7 +315,6 @@ MmsValue*
 MmsValue_newBitString(int bitSize)
 {
     MmsValue* self = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
-    ;
 
     if (self == NULL)
         return NULL;

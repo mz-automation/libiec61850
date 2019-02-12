@@ -80,7 +80,6 @@ mmsServer_createMmsWriteResponse(MmsServerConnection connection,
     response->size = bufPos;
 }
 
-
 void
 MmsServerConnection_sendWriteResponse(MmsServerConnection self, uint32_t invokeId, MmsDataAccessError indication, bool handlerMode)
 {

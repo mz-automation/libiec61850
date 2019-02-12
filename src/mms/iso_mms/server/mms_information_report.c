@@ -220,7 +220,6 @@ exit_function:
     return;
 }
 
-
 void /* send information report for a named variable list */
 MmsServerConnection_sendInformationReportVMDSpecific(MmsServerConnection self, char* itemId, LinkedList values,
         bool handlerMode)
@@ -254,6 +253,7 @@ MmsServerConnection_sendInformationReportVMDSpecific(MmsServerConnection self, c
 
     uint32_t informationReportContentSize = variableAccessSpecSize + listOfAccessResultSize;
 
+
     informationReportSize = 1 +  informationReportContentSize +
             BerEncoder_determineLengthSize(informationReportContentSize);
 
@@ -265,8 +265,6 @@ MmsServerConnection_sendInformationReportVMDSpecific(MmsServerConnection self, c
 
         goto exit_function;
     }
-
-    if (DEBUG_MMS_SERVER) printf("MMS_SERVER: sendInfReport\n");
 
     ByteBuffer* reportBuffer =  MmsServer_reserveTransmitBuffer(self->server);
 
