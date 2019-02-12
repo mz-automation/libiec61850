@@ -367,15 +367,7 @@ SVPublisher_ASDU_getEncodedSize(SVPublisher_ASDU self)
         encodedSize += 4;
 
     /* sample */
-    if (self->dataSize < 128)
-        encodedSize += 2;
-    else if (self->dataSize < 256)
-        encodedSize += 3;
-    else if (self->dataSize < 65535)
-        encodedSize += 4;
-    else
-        encodedSize += 5;
-
+    encodedSize += (1 + BerEncoder_determineLengthSize(self->dataSize));
     encodedSize += self->dataSize;
 
     /* smpMod */
