@@ -285,6 +285,20 @@ Socket_setConnectTimeout(Socket self, uint32_t timeoutInMs)
     self->connectTimeout = timeoutInMs;
 }
 
+// TODO: implement
+bool
+Socket_connectAsync(Socket self, const char* address, int port)
+{
+    return false;
+}
+
+// TODO: implement
+SocketState
+Socket_checkAsyncConnectState(Socket self)
+{
+    return SOCKET_STATE_FAILED;
+}
+
 
 bool
 Socket_connect(Socket self, const char* address, int port)
