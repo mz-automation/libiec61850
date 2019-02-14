@@ -1198,8 +1198,23 @@ ClientReportControlBlock_setGI(ClientReportControlBlock self, bool gi);
 bool
 ClientReportControlBlock_getPurgeBuf(ClientReportControlBlock self);
 
+/**
+ * \brief Set the "PurgeBuf" attribute value (only BRCB)
+ *
+ * When set to true the report buffer will be cleared.
+ *
+ * \param purgeBuf attribute value
+ */
 void
 ClientReportControlBlock_setPurgeBuf(ClientReportControlBlock self, bool purgeBuf);
+
+/**
+ *  \brief Check if optional attribute "ResvTms" is present in BRCB
+ *
+ *  \return true when present, false otherwise
+ */
+bool
+ClientReportControlBlock_hasResvTms(ClientReportControlBlock self);
 
 int16_t
 ClientReportControlBlock_getResvTms(ClientReportControlBlock self);

@@ -1759,9 +1759,9 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
                 rc->triggered = false;
 
                 rc->reserved = false;
-            }
 
-            updateOwner(rc, NULL);
+                updateOwner(rc, NULL);
+            }
 
             rc->enabled = false;
         }

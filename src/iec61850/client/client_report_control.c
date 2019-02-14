@@ -324,6 +324,12 @@ ClientReportControlBlock_setPurgeBuf(ClientReportControlBlock self, bool purgeBu
         MmsValue_setBoolean(self->purgeBuf, purgeBuf);
 }
 
+bool
+ClientReportControlBlock_hasResvTms(ClientReportControlBlock self)
+{
+    return (self->resvTms != NULL);
+}
+
 int16_t
 ClientReportControlBlock_getResvTms(ClientReportControlBlock self)
 {
