@@ -351,7 +351,7 @@ SVPublisher_ASDU_getEncodedSize(SVPublisher_ASDU self)
         encodedSize += 4;
 
     /* sample */
-    encodedSize += 2;
+    encodedSize += (1 + BerEncoder_determineLengthSize(self->dataSize));
     encodedSize += self->dataSize;
 
     /* smpMod */

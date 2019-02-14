@@ -39,6 +39,9 @@
 #include "ied_server_private.h"
 #include <string.h>
 
+/* if not explicitly set by client "ResvTms" will be set to this value */
+#define RESV_TMS_IMPLICIT_VALUE 30
+
 #ifndef DEBUG_IED_SERVER
 #define DEBUG_IED_SERVER 0
 #endif
@@ -127,6 +130,7 @@ ReportControl_create(bool buffered, LogicalNode* parentLN, int reportBufferSize,
     self->bufferedDataSetValues = NULL;
     self->valueReferences = NULL;
     self->lastEntryId = 0;
+    self->resvTms = 0;
 
     self->server = iedServer;
 
@@ -1438,6 +1442,32 @@ Reporting_createMmsUnbufferedRCBs(MmsMapping* self, MmsDomain* domain,
     return namedVariable;
 }
 
+static bool
+convertIPv4AddressStringToByteArray(const char* clientAddressString, uint8_t ipV4Addr[])
+{
+    int addrElementCount = 0;
+
+    char* separator = (char*) clientAddressString;
+
+    while (separator != NULL && addrElementCount < 4) {
+        int intVal = atoi(separator);
+
+        ipV4Addr[addrElementCount] = intVal;
+
+        separator = strchr(separator, '.');
+
+        if (separator != NULL)
+            separator++; /* skip '.' character */
+
+        addrElementCount ++;
+    }
+
+    if (addrElementCount == 4)
+        return true;
+    else
+        return false;
+}
+
 static void
 updateOwner(ReportControl* rc, MmsServerConnection connection)
 {
@@ -1460,24 +1490,9 @@ updateOwner(ReportControl* rc, MmsServerConnection connection)
 
                     uint8_t ipV4Addr[4];
 
-                    int addrElementCount = 0;
+                    bool valid = convertIPv4AddressStringToByteArray(clientAddressString, ipV4Addr);
 
-                    char* separator = clientAddressString;
-
-                    while (separator != NULL && addrElementCount < 4) {
-                        int intVal = atoi(separator);
-
-                        ipV4Addr[addrElementCount] = intVal;
-
-                        separator = strchr(separator, '.');
-
-                        if (separator != NULL)
-                            separator++; // skip '.' character
-
-                        addrElementCount ++;
-                    }
-
-                    if (addrElementCount == 4)
+                    if (valid)
                         MmsValue_setOctetString(owner, ipV4Addr, 4);
                     else
                         MmsValue_setOctetString(owner, ipV4Addr, 0);
@@ -1551,6 +1566,57 @@ increaseConfRev(ReportControl* self)
     MmsValue_setUint32(self->confRev, confRev);
 }
 
+static void
+checkReservationTimeout(ReportControl* rc)
+{
+    if (rc->resvTms > 0) {
+        if (Hal_getTimeInMs() > rc->reservationTimeout) {
+            rc->resvTms = 0;
+
+#if (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1)
+            MmsValue* resvTmsVal = ReportControl_getRCBValue(rc, "ResvTms");
+            MmsValue_setInt16(resvTmsVal, rc->resvTms);
+#endif
+
+            rc->reservationTimeout = 0;
+            updateOwner(rc, NULL);
+        }
+    }
+}
+
+void
+ReportControl_readAccess(ReportControl* rc, char* elementName)
+{
+    /* check reservation timeout */
+    if (rc->buffered) {
+        checkReservationTimeout(rc);
+    }
+}
+
+static bool
+isIpAddressMatchingWithOwner(ReportControl* rc, const char* ipAddress)
+{
+    MmsValue* owner = ReportControl_getRCBValue(rc, "Owner");
+
+    if (owner != NULL) {
+
+        uint8_t ipV4Addr[4];
+
+        if (strchr(ipAddress, '.') != NULL) {
+            if (convertIPv4AddressStringToByteArray(ipAddress, ipV4Addr)) {
+                if (memcmp(ipV4Addr, MmsValue_getOctetStringBuffer(owner), 4) == 0)
+                    return true;
+            }
+        }
+        else {
+            /* TODO add support to compare IPv6 addresses */
+            return true;
+        }
+    }
+
+    return false;
+}
+
 MmsDataAccessError
 Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* elementName, MmsValue* value,
         MmsServerConnection connection)
@@ -1558,6 +1624,61 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
     MmsDataAccessError retVal = DATA_ACCESS_ERROR_SUCCESS;
 
     ReportControl_lockNotify(rc);
+
+    /* check reservation timeout for buffered RCBs */
+    if (rc->buffered) {
+
+        checkReservationTimeout(rc);
+
+        if (rc->resvTms == 0) {
+            rc->resvTms = RESV_TMS_IMPLICIT_VALUE;
+            rc->reserved = true;
+            rc->clientConnection = connection;
+
+#if (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1)
+            MmsValue* resvTmsVal = ReportControl_getRCBValue(rc, "ResvTms");
+            MmsValue_setInt16(resvTmsVal, rc->resvTms);
+#endif
+
+            rc->reservationTimeout = Hal_getTimeInMs() + (RESV_TMS_IMPLICIT_VALUE * 1000);
+            updateOwner(rc, connection);
+        }
+        else if (rc->resvTms == -1) {
+
+            if (rc->reserved == false) {
+
+#if (CONFIG_IEC61850_RCB_ALLOW_ONLY_PRECONFIGURED_CLIENT == 1)
+                if (isIpAddressMatchingWithOwner(rc, MmsServerConnection_getClientAddress(connection))) {
+                    rc->reserved = true;
+                    rc->clientConnection = connection;
+                }
+#else
+                rc->reserved = true;
+                rc->clientConnection = connection;
+#endif
+            }
+        }
+        else if (rc->resvTms > 0) {
+            if (rc->reserved == false) {
+
+                if (isIpAddressMatchingWithOwner(rc, MmsServerConnection_getClientAddress(connection))) {
+                    rc->reserved = true;
+                    rc->clientConnection = connection;
+                    rc->reservationTimeout = Hal_getTimeInMs() + (rc->resvTms * 1000);
+                }
+                else {
+                    if (DEBUG_IED_SERVER)
+                        printf("IED_SERVER: client IP not matching with owner\n");
+                }
+
+            }
+            else {
+                if (rc->clientConnection == connection) {
+                    rc->reservationTimeout = Hal_getTimeInMs() + (rc->resvTms * 1000);
+                }
+            }
+        }
+    }
 
     if (strcmp(elementName, "RptEna") == 0) {
 
@@ -1797,6 +1918,38 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 
             goto exit_function;
         }
+        else if (strcmp(elementName, "ResvTms") == 0) {
+            if (rc->buffered) {
+                if (rc->resvTms != -1) {
+
+                    int resvTms = MmsValue_toInt32(value);
+
+                    if (resvTms >= 0) {
+                        rc->resvTms = resvTms;
+
+                        if (rc->resvTms == 0) {
+                            rc->reservationTimeout = 0;
+                            updateOwner(rc, NULL);
+                        }
+                        else {
+                            rc->reservationTimeout = Hal_getTimeInMs() + (rc->resvTms * 1000);
+                        }
+
+                        MmsValue* resvTmsVal = ReportControl_getRCBValue(rc, "ResvTms");
+
+                        if (resvTmsVal != NULL)
+                            MmsValue_update(resvTmsVal, value);
+                    }
+                    else
+                        retVal = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+                }
+                else {
+                    retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+                }
+
+                goto exit_function;
+            }
+        }
         else if (strcmp(elementName, "ConfRev") == 0) {
             retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
             goto exit_function;
@@ -1849,15 +2002,21 @@ Reporting_deactivateReportsForConnection(MmsMapping* self, MmsServerConnection c
             MmsValue* rptEna = ReportControl_getRCBValue(rc, "RptEna");
             MmsValue_setBoolean(rptEna, false);
 
-            if (rc->buffered == false) {
+            rc->reserved = false;
 
+            if (rc->buffered == false) {
                 MmsValue* resv = ReportControl_getRCBValue(rc, "Resv");
                 MmsValue_setBoolean(resv, false);
 
-                rc->reserved = false;
+                updateOwner(rc, NULL);
             }
-
-            updateOwner(rc, NULL);
+            else {
+                if (rc->resvTms == 0)
+                    updateOwner(rc, NULL);
+                else if (rc->resvTms > 0) {
+                     rc->reservationTimeout = Hal_getTimeInMs() + (rc->resvTms * 1000);
+                }
+            }
         }
     }
 }

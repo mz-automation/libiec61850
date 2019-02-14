@@ -100,6 +100,7 @@ typedef struct {
 
     bool isBuffering; /* true if buffered RCB is buffering (datSet is set to a valid value) */
     bool isResync; /* true if buffered RCB is in resync state */
+    int resvTms; /* -1 for preconfigured client, 0 - not reserved, > 0 reserved by client */
 
     ReportBuffer* reportBuffer;
     MmsValue* timeOfEntry;
@@ -130,6 +131,9 @@ Reporting_createMmsUnbufferedRCBs(MmsMapping* self, MmsDomain* domain,
 MmsDataAccessError
 Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* elementName, MmsValue* value,
         MmsServerConnection connection);
+
+void
+ReportControl_readAccess(ReportControl* rc, char* elementName);
 
 void
 Reporting_activateBufferedReports(MmsMapping* self);
