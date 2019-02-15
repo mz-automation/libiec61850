@@ -91,7 +91,7 @@
               <TrgOps period="true" />
               <OptFields seqNum="true" timeStamp="true" dataSet="true" reasonCode="true" configRef="true" />
               <RptEnabled max="1">
-                 <ClientLN iedName="remoteClient" apRef="accessPoint1" ldInst="LD0" lnClass="IHMI" lnInst="1"/>
+                 <ClientLN iedName="remoteClient" ldInst="LD0" lnClass="IHMI" lnInst="1"/>
               </RptEnabled>
             </ReportControl>
 

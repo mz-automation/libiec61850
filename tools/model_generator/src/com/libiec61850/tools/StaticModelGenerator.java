@@ -1091,16 +1091,43 @@ public class StaticModelGenerator {
     
     private String getIpAddressByIedName(SclParser sclParser, String iedName, String apRef) 
     {
-    	ConnectedAP ap = sclParser.getConnectedAP(iedName, apRef);
+    	Communication com = sclParser.getCommunication();
     	
-    	if (ap != null) {
-    		Address address = ap.getAddress();
+    	if (com != null) {
     		
-    		if (address != null) {
-    			P ip = address.getAddressParameter("IP");
+    		for (SubNetwork subNetWork : com.getSubNetworks()) {
     			
-    			if (ip != null)
-    				return ip.getText();
+    			for (ConnectedAP ap : subNetWork.getConnectedAPs()) {
+    				
+    				if (apRef != null) {
+    					boolean isMatching = false;
+    					
+    					String apName = ap.getApName();
+    					
+    					if (apName != null) {
+    						if (apName.equals(apRef))
+    							isMatching = true;
+    					}
+    					
+    					if (isMatching == false)
+    						continue;
+    				}
+    				
+    				String apIedName = ap.getIedName();
+    				
+    				if (apIedName != null) {
+    					if (apIedName.equals(iedName)) {
+    	    				Address address = ap.getAddress();
+    	    	    		
+    	    	    		if (address != null) {
+    	    	    			P ip = address.getAddressParameter("IP");
+    	    	    			
+    	    	    			if (ip != null)
+    	    	    				return ip.getText();
+    	    	    		}
+    					}
+    				}				
+    			}
     		}
     	}
     	
@@ -1148,8 +1175,8 @@ public class StaticModelGenerator {
                     			String iedName = clientLN.getIedName();
                     			String apRef = clientLN.getApRef();
                     			
-                    			if ((iedName != null) && (apRef != null)) {
-                    				String ipAddress = getIpAddressByIedName(sclParser, iedName, apRef);                    				
+                    			if (iedName != null) {
+                    				String ipAddress = getIpAddressByIedName(sclParser, iedName, apRef);    
                     				
                     				try {
 										InetAddress inetAddr = InetAddress.getByName(ipAddress);
