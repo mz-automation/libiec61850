@@ -42,7 +42,9 @@ MODEL_DIRS += server_example_threadless
 MODEL_DIRS += server_example_setting_groups
 MODEL_DIRS += server_example_logging
 MODEL_DIRS += server_example_files
+MODEL_DIRS += server_example_substitution
 MODEL_DIRS += iec61850_9_2_LE_example
+MODEL_DIRS += tls_server_example
 
 all:	examples
 

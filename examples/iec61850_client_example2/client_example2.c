@@ -124,7 +124,7 @@ main(int argc, char** argv)
                 while (dataSet != NULL) {
                     char* dataSetName = (char*) dataSet->data;
                     bool isDeletable;
-                    char dataSetRef[129];
+                    char dataSetRef[130];
                     sprintf(dataSetRef, "%s.%s", lnRef, dataSetName);
 
                     LinkedList dataSetMembers = IedConnection_getDataSetDirectory(con, &error, dataSetRef,

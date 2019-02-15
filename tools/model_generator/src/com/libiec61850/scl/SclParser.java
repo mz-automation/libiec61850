@@ -320,4 +320,32 @@ public class SclParser
         return null;
     }
 
+    public ConnectedAP getConnectedAP(String iedName, String accessPointName) {
+        communication = this.getCommunication();
+
+        if (communication != null) {
+            List<SubNetwork> subNetworks = communication.getSubNetworks();
+
+            for (SubNetwork subNetwork : subNetworks) {
+                List<ConnectedAP> connectedAPs = subNetwork.getConnectedAPs();
+
+                for (ConnectedAP connectedAP : connectedAPs) {
+                    if (connectedAP.getIedName().equals(iedName)) {
+
+                        if (connectedAP.getApName().equals(accessPointName)) {
+
+                            if (withOutput)
+                                System.out.println("Found connectedAP " + accessPointName + " for IED " + iedName);
+
+                            return connectedAP;
+                        }
+
+                    }
+                }
+
+            }
+        }
+
+        return null;
+    }
 }

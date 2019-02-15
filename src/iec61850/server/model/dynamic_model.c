@@ -360,10 +360,27 @@ ReportControlBlock_create(const char* name, LogicalNode* parent, char* rptId, bo
     self->bufferTime = bufTm;
     self->intPeriod = intgPd;
     self->sibling = NULL;
+    self->clientReservation[0] = 0; /* no pre-configured client */
 
     LogicalNode_addReportControlBlock(parent, self);
 
     return self;
+}
+
+void
+ReportControlBlock_setPreconfiguredClient(ReportControlBlock* self, uint8_t clientType, uint8_t* clientAddress)
+{
+    if (clientType == 4) { /* IPv4 address */
+        self->clientReservation[0] = 4;
+        memcpy(self->clientReservation + 1, clientAddress, 4);
+    }
+    else if (clientType == 6) { /* IPv6 address */
+        self->clientReservation[0] = 6;
+        memcpy(self->clientReservation + 1, clientAddress, 6);
+    }
+    else { /* no reservation or unknown type */
+        self->clientReservation[0] = 0;
+    }
 }
 
 #if (CONFIG_IEC61850_SETTING_GROUPS == 1)

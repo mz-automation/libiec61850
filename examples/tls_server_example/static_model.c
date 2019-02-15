@@ -1,9 +1,9 @@
 /*
  * static_model.c
  *
- * automatically generated from simpleIO_direct_control.icd
+ * automatically generated from simpleIO_direct_control.cid
  */
-#include "../server_example_basic_io/static_model.h"
+#include "static_model.h"
 
 static void initializeValues();
 
@@ -248,7 +248,7 @@ DataAttribute iedModel_GenericIO_LLN0_Mod_stVal = {
     NULL,
     0,
     IEC61850_FC_ST,
-    IEC61850_INT32,
+    IEC61850_ENUMERATED,
     0 + TRG_OPT_DATA_CHANGED,
     NULL,
     0};
@@ -309,7 +309,7 @@ DataAttribute iedModel_GenericIO_LLN0_Beh_stVal = {
     NULL,
     0,
     IEC61850_FC_ST,
-    IEC61850_INT32,
+    IEC61850_ENUMERATED,
     0 + TRG_OPT_DATA_CHANGED,
     NULL,
     0};
@@ -357,7 +357,7 @@ DataAttribute iedModel_GenericIO_LLN0_Health_stVal = {
     NULL,
     0,
     IEC61850_FC_ST,
-    IEC61850_INT32,
+    IEC61850_ENUMERATED,
     0 + TRG_OPT_DATA_CHANGED,
     NULL,
     0};
@@ -509,7 +509,7 @@ DataAttribute iedModel_GenericIO_LPHD1_PhyHealth_stVal = {
     NULL,
     0,
     IEC61850_FC_ST,
-    IEC61850_INT32,
+    IEC61850_ENUMERATED,
     0 + TRG_OPT_DATA_CHANGED,
     NULL,
     0};
@@ -601,9 +601,22 @@ DataObject iedModel_GenericIO_GGIO1_Mod = {
     "Mod",
     (ModelNode*) &iedModel_GenericIO_GGIO1,
     (ModelNode*) &iedModel_GenericIO_GGIO1_Beh,
-    (ModelNode*) &iedModel_GenericIO_GGIO1_Mod_q,
+    (ModelNode*) &iedModel_GenericIO_GGIO1_Mod_stVal,
     0
 };
+
+DataAttribute iedModel_GenericIO_GGIO1_Mod_stVal = {
+    DataAttributeModelType,
+    "stVal",
+    (ModelNode*) &iedModel_GenericIO_GGIO1_Mod,
+    (ModelNode*) &iedModel_GenericIO_GGIO1_Mod_q,
+    NULL,
+    0,
+    IEC61850_FC_ST,
+    IEC61850_ENUMERATED,
+    0 + TRG_OPT_DATA_CHANGED,
+    NULL,
+    0};
 
 DataAttribute iedModel_GenericIO_GGIO1_Mod_q = {
     DataAttributeModelType,
@@ -661,7 +674,7 @@ DataAttribute iedModel_GenericIO_GGIO1_Beh_stVal = {
     NULL,
     0,
     IEC61850_FC_ST,
-    IEC61850_INT32,
+    IEC61850_ENUMERATED,
     0 + TRG_OPT_DATA_CHANGED,
     NULL,
     0};
@@ -709,7 +722,7 @@ DataAttribute iedModel_GenericIO_GGIO1_Health_stVal = {
     NULL,
     0,
     IEC61850_FC_ST,
-    IEC61850_INT32,
+    IEC61850_ENUMERATED,
     0 + TRG_OPT_DATA_CHANGED,
     NULL,
     0};
@@ -1037,9 +1050,61 @@ DataObject iedModel_GenericIO_GGIO1_SPCSO1 = {
     "SPCSO1",
     (ModelNode*) &iedModel_GenericIO_GGIO1,
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO2,
-    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO1_stVal,
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO1_origin,
     0
 };
+
+DataAttribute iedModel_GenericIO_GGIO1_SPCSO1_origin = {
+    DataAttributeModelType,
+    "origin",
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO1,
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO1_ctlNum,
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO1_origin_orCat,
+    0,
+    IEC61850_FC_ST,
+    IEC61850_CONSTRUCTED,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_GGIO1_SPCSO1_origin_orCat = {
+    DataAttributeModelType,
+    "orCat",
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO1_origin,
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO1_origin_orIdent,
+    NULL,
+    0,
+    IEC61850_FC_ST,
+    IEC61850_ENUMERATED,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_GGIO1_SPCSO1_origin_orIdent = {
+    DataAttributeModelType,
+    "orIdent",
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO1_origin,
+    NULL,
+    NULL,
+    0,
+    IEC61850_FC_ST,
+    IEC61850_OCTET_STRING_64,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_GGIO1_SPCSO1_ctlNum = {
+    DataAttributeModelType,
+    "ctlNum",
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO1,
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO1_stVal,
+    NULL,
+    0,
+    IEC61850_FC_ST,
+    IEC61850_INT8U,
+    0,
+    NULL,
+    0};
 
 DataAttribute iedModel_GenericIO_GGIO1_SPCSO1_stVal = {
     DataAttributeModelType,
@@ -1058,7 +1123,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO1_q = {
     DataAttributeModelType,
     "q",
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO1,
-    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO1_Oper,
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO1_t,
     NULL,
     0,
     IEC61850_FC_ST,
@@ -1067,11 +1132,37 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO1_q = {
     NULL,
     0};
 
+DataAttribute iedModel_GenericIO_GGIO1_SPCSO1_t = {
+    DataAttributeModelType,
+    "t",
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO1,
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO1_ctlModel,
+    NULL,
+    0,
+    IEC61850_FC_ST,
+    IEC61850_TIMESTAMP,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_GGIO1_SPCSO1_ctlModel = {
+    DataAttributeModelType,
+    "ctlModel",
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO1,
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO1_Oper,
+    NULL,
+    0,
+    IEC61850_FC_CF,
+    IEC61850_ENUMERATED,
+    0,
+    NULL,
+    0};
+
 DataAttribute iedModel_GenericIO_GGIO1_SPCSO1_Oper = {
     DataAttributeModelType,
     "Oper",
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO1,
-    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO1_ctlModel,
+    NULL,
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO1_Oper_ctlVal,
     0,
     IEC61850_FC_CO,
@@ -1180,32 +1271,6 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO1_Oper_Check = {
     0,
     IEC61850_FC_CO,
     IEC61850_CHECK,
-    0,
-    NULL,
-    0};
-
-DataAttribute iedModel_GenericIO_GGIO1_SPCSO1_ctlModel = {
-    DataAttributeModelType,
-    "ctlModel",
-    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO1,
-    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO1_t,
-    NULL,
-    0,
-    IEC61850_FC_CF,
-    IEC61850_ENUMERATED,
-    0,
-    NULL,
-    0};
-
-DataAttribute iedModel_GenericIO_GGIO1_SPCSO1_t = {
-    DataAttributeModelType,
-    "t",
-    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO1,
-    NULL,
-    NULL,
-    0,
-    IEC61850_FC_ST,
-    IEC61850_TIMESTAMP,
     0,
     NULL,
     0};
@@ -1943,27 +2008,25 @@ extern ReportControlBlock iedModel_GenericIO_LLN0_report3;
 extern ReportControlBlock iedModel_GenericIO_LLN0_report4;
 extern ReportControlBlock iedModel_GenericIO_LLN0_report5;
 extern ReportControlBlock iedModel_GenericIO_LLN0_report6;
+extern ReportControlBlock iedModel_GenericIO_LLN0_report7;
+extern ReportControlBlock iedModel_GenericIO_LLN0_report8;
+extern ReportControlBlock iedModel_GenericIO_LLN0_report9;
 
-ReportControlBlock iedModel_GenericIO_LLN0_report0 = {&iedModel_GenericIO_LLN0, "EventsRCB01", "Events1", false, "Events", 4294967295, 24, 239, 50, 1000, &iedModel_GenericIO_LLN0_report1};
-ReportControlBlock iedModel_GenericIO_LLN0_report1 = {&iedModel_GenericIO_LLN0, "EventsIndexed01", "Events2", false, "Events", 1, 24, 239, 50, 1000, &iedModel_GenericIO_LLN0_report2};
-ReportControlBlock iedModel_GenericIO_LLN0_report2 = {&iedModel_GenericIO_LLN0, "EventsIndexed02", "Events2", false, "Events", 1, 24, 239, 50, 1000, &iedModel_GenericIO_LLN0_report3};
-ReportControlBlock iedModel_GenericIO_LLN0_report3 = {&iedModel_GenericIO_LLN0, "EventsIndexed03", "Events2", false, "Events", 1, 24, 239, 50, 1000, &iedModel_GenericIO_LLN0_report4};
-ReportControlBlock iedModel_GenericIO_LLN0_report4 = {&iedModel_GenericIO_LLN0, "Measurements01", "Measurements", true, "Measurements", 1, 16, 239, 50, 1000, &iedModel_GenericIO_LLN0_report5};
-ReportControlBlock iedModel_GenericIO_LLN0_report5 = {&iedModel_GenericIO_LLN0, "Measurements02", "Measurements", true, "Measurements", 1, 16, 239, 50, 1000, &iedModel_GenericIO_LLN0_report6};
-ReportControlBlock iedModel_GenericIO_LLN0_report6 = {&iedModel_GenericIO_LLN0, "Measurements03", "Measurements", true, "Measurements", 1, 16, 239, 50, 1000, NULL};
+ReportControlBlock iedModel_GenericIO_LLN0_report0 = {&iedModel_GenericIO_LLN0, "EventsRCB01", "Events1", false, "Events", 1, 24, 175, 50, 1000, {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, &iedModel_GenericIO_LLN0_report1};
+ReportControlBlock iedModel_GenericIO_LLN0_report1 = {&iedModel_GenericIO_LLN0, "EventsRCBPreConf01", "Events1", false, "Events", 1, 24, 175, 50, 1000, {0x4, 0xc0, 0xa8, 0x2, 0x9, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, &iedModel_GenericIO_LLN0_report2};
+ReportControlBlock iedModel_GenericIO_LLN0_report2 = {&iedModel_GenericIO_LLN0, "EventsBRCB01", "Events2", true, "Events", 1, 24, 175, 50, 1000, {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, &iedModel_GenericIO_LLN0_report3};
+ReportControlBlock iedModel_GenericIO_LLN0_report3 = {&iedModel_GenericIO_LLN0, "EventsBRCBPreConf01", "Events2", true, "Events", 1, 24, 175, 50, 1000, {0x4, 0xc0, 0xa8, 0x2, 0x9, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, &iedModel_GenericIO_LLN0_report4};
+ReportControlBlock iedModel_GenericIO_LLN0_report4 = {&iedModel_GenericIO_LLN0, "EventsIndexed01", "Events2", false, "Events", 1, 24, 175, 50, 1000, {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, &iedModel_GenericIO_LLN0_report5};
+ReportControlBlock iedModel_GenericIO_LLN0_report5 = {&iedModel_GenericIO_LLN0, "EventsIndexed02", "Events2", false, "Events", 1, 24, 175, 50, 1000, {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, &iedModel_GenericIO_LLN0_report6};
+ReportControlBlock iedModel_GenericIO_LLN0_report6 = {&iedModel_GenericIO_LLN0, "EventsIndexed03", "Events2", false, "Events", 1, 24, 175, 50, 1000, {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, &iedModel_GenericIO_LLN0_report7};
+ReportControlBlock iedModel_GenericIO_LLN0_report7 = {&iedModel_GenericIO_LLN0, "Measurements01", "Measurements", true, "Measurements", 1, 16, 239, 50, 1000, {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, &iedModel_GenericIO_LLN0_report8};
+ReportControlBlock iedModel_GenericIO_LLN0_report8 = {&iedModel_GenericIO_LLN0, "Measurements02", "Measurements", true, "Measurements", 1, 16, 239, 50, 1000, {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, &iedModel_GenericIO_LLN0_report9};
+ReportControlBlock iedModel_GenericIO_LLN0_report9 = {&iedModel_GenericIO_LLN0, "Measurements03", "Measurements", true, "Measurements", 1, 16, 239, 50, 1000, {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, NULL};
 
 
 
 
-extern LogControlBlock iedModel_GenericIO_LLN0_lcb0;
-extern LogControlBlock iedModel_GenericIO_LLN0_lcb1;
-LogControlBlock iedModel_GenericIO_LLN0_lcb0 = {&iedModel_GenericIO_LLN0, "EventLog", "Events", "GenericIO/LLN0$EventLog", 3, 0, true, true, &iedModel_GenericIO_LLN0_lcb1};
-LogControlBlock iedModel_GenericIO_LLN0_lcb1 = {&iedModel_GenericIO_LLN0, "GeneralLog", NULL, NULL, 3, 0, true, true, NULL};
 
-extern Log iedModel_GenericIO_LLN0_log0;
-extern Log iedModel_GenericIO_LLN0_log1;
-Log iedModel_GenericIO_LLN0_log0 = {&iedModel_GenericIO_LLN0, "GeneralLog", &iedModel_GenericIO_LLN0_log1};
-Log iedModel_GenericIO_LLN0_log1 = {&iedModel_GenericIO_LLN0, "EventLog", NULL};
 
 
 IedModel iedModel = {
@@ -1974,8 +2037,8 @@ IedModel iedModel = {
     NULL,
     NULL,
     NULL,
-    &iedModel_GenericIO_LLN0_lcb0,
-    &iedModel_GenericIO_LLN0_log0,
+    NULL,
+    NULL,
     initializeValues
 };
 
@@ -1983,15 +2046,29 @@ static void
 initializeValues()
 {
 
+iedModel_GenericIO_LLN0_Mod_stVal.mmsValue = MmsValue_newIntegerFromInt32(1);
+
 iedModel_GenericIO_LLN0_Mod_ctlModel.mmsValue = MmsValue_newIntegerFromInt32(0);
+
+iedModel_GenericIO_LLN0_Beh_stVal.mmsValue = MmsValue_newIntegerFromInt32(1);
+
+iedModel_GenericIO_LLN0_Health_stVal.mmsValue = MmsValue_newIntegerFromInt32(1);
 
 iedModel_GenericIO_LLN0_NamPlt_vendor.mmsValue = MmsValue_newVisibleString("MZ Automation");
 
-iedModel_GenericIO_LLN0_NamPlt_swRev.mmsValue = MmsValue_newVisibleString("0.7.3");
+iedModel_GenericIO_LLN0_NamPlt_swRev.mmsValue = MmsValue_newVisibleString("1.3.0");
 
 iedModel_GenericIO_LLN0_NamPlt_d.mmsValue = MmsValue_newVisibleString("libiec61850 server example");
 
+iedModel_GenericIO_LPHD1_PhyHealth_stVal.mmsValue = MmsValue_newIntegerFromInt32(1);
+
+iedModel_GenericIO_GGIO1_Mod_stVal.mmsValue = MmsValue_newIntegerFromInt32(1);
+
 iedModel_GenericIO_GGIO1_Mod_ctlModel.mmsValue = MmsValue_newIntegerFromInt32(0);
+
+iedModel_GenericIO_GGIO1_Beh_stVal.mmsValue = MmsValue_newIntegerFromInt32(1);
+
+iedModel_GenericIO_GGIO1_Health_stVal.mmsValue = MmsValue_newIntegerFromInt32(1);
 
 iedModel_GenericIO_GGIO1_SPCSO1_ctlModel.mmsValue = MmsValue_newIntegerFromInt32(1);
 

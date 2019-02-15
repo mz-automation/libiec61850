@@ -264,6 +264,10 @@ struct sReportControlBlock {
     uint32_t bufferTime; /* BufTm - time to buffer events until a report is generated */
     uint32_t intPeriod; /* IntgPd - integrity period */
 
+    /* type (first byte) and address of the pre-configured client
+       type can be one of (0 - no reservation, 4 - IPv4 client, 6 - IPv6 client) */
+    uint8_t clientReservation[17];
+
     ReportControlBlock* sibling; /* next control block in list or NULL if this is the last entry */
 };
 
