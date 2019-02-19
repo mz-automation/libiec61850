@@ -1641,6 +1641,21 @@ isIpAddressMatchingWithOwner(ReportControl* rc, const char* ipAddress)
     return false;
 }
 
+static void
+reserveRcb(ReportControl* rc,  MmsServerConnection connection)
+{
+    rc->reserved = true;
+    rc->clientConnection = connection;
+
+#if (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1)
+    MmsValue* resvTmsVal = ReportControl_getRCBValue(rc, "ResvTms");
+    MmsValue_setInt16(resvTmsVal, rc->resvTms);
+#endif
+
+    rc->reservationTimeout = Hal_getTimeInMs() + (RESV_TMS_IMPLICIT_VALUE * 1000);
+    updateOwner(rc, connection);
+}
+
 MmsDataAccessError
 Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* elementName, MmsValue* value,
         MmsServerConnection connection)
@@ -1649,23 +1664,15 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 
     ReportControl_lockNotify(rc);
 
+    bool resvTmsAccess = false;
+
     /* check reservation timeout for buffered RCBs */
     if (rc->buffered) {
 
         checkReservationTimeout(rc);
 
         if (rc->resvTms == 0) {
-            rc->resvTms = RESV_TMS_IMPLICIT_VALUE;
-            rc->reserved = true;
-            rc->clientConnection = connection;
-
-#if (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1)
-            MmsValue* resvTmsVal = ReportControl_getRCBValue(rc, "ResvTms");
-            MmsValue_setInt16(resvTmsVal, rc->resvTms);
-#endif
-
-            rc->reservationTimeout = Hal_getTimeInMs() + (RESV_TMS_IMPLICIT_VALUE * 1000);
-            updateOwner(rc, connection);
+            /* nothing to to */
         }
         else if (rc->resvTms == -1) {
 
@@ -1946,6 +1953,9 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
         }
         else if (strcmp(elementName, "ResvTms") == 0) {
             if (rc->buffered) {
+
+                resvTmsAccess = true;
+
                 if (rc->resvTms != -1) {
 
                     int resvTms = MmsValue_toInt32(value);
@@ -1955,10 +1965,13 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 
                         if (rc->resvTms == 0) {
                             rc->reservationTimeout = 0;
+                            rc->reserved = false;
                             updateOwner(rc, NULL);
                         }
                         else {
                             rc->reservationTimeout = Hal_getTimeInMs() + (rc->resvTms * 1000);
+
+                            reserveRcb(rc, connection);
                         }
 
                         MmsValue* resvTmsVal = ReportControl_getRCBValue(rc, "ResvTms");
@@ -2007,6 +2020,16 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
         retVal = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
 
 exit_function:
+
+    /* every successful write access reserves the RCB */
+    if ((rc->buffered) && (retVal == DATA_ACCESS_ERROR_SUCCESS) && (resvTmsAccess == false)) {
+        if (rc->resvTms == 0) {
+            rc->resvTms = RESV_TMS_IMPLICIT_VALUE;
+
+            reserveRcb(rc, connection);
+        }
+    }
+
     ReportControl_unlockNotify(rc);
 
     return retVal;
@@ -2768,7 +2791,7 @@ sendNextReportEntrySegment(ReportControl* self)
         bufPos = MmsValue_encodeMmsData(sqNum, buffer, bufPos, true);
 
     if (hasReportTimestamp)
-        bufPos = MmsValue_encodeMmsData(self->timeOfEntry, buffer, bufPos, true);
+        bufPos = MmsValue_encodeMmsData(timeOfEntry, buffer, bufPos, true);
 
     if (hasDataSetReference)
         bufPos = MmsValue_encodeMmsData(datSet, buffer, bufPos, true);
