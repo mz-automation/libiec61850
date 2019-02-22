@@ -1162,9 +1162,21 @@ ClientReportControlBlock_setDataSetReference(ClientReportControlBlock self, cons
 uint32_t
 ClientReportControlBlock_getConfRev(ClientReportControlBlock self);
 
+/**
+ * \brief Gets the OptFlds parameter of the RCB (decides what information to include in a report)
+ *
+ * \param self the RCB instance
+ * \return bit field representing the optional fields of a report (uses flags from \ref REPORT_OPTIONS)
+ */
 int
 ClientReportControlBlock_getOptFlds(ClientReportControlBlock self);
 
+/**
+ * \brief Set the OptFlds parameter of the RCB (decides what information to include in a report)
+ *
+ * \param self the RCB instance
+ * \param optFlds bit field representing the optional fields of a report (use flags from \ref REPORT_OPTIONS)
+ */
 void
 ClientReportControlBlock_setOptFlds(ClientReportControlBlock self, int optFlds);
 

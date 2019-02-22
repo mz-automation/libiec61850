@@ -162,7 +162,7 @@ parseInitResponseDetail(MmsConnection self, uint8_t* buffer, int bufPos, int max
 bool
 mmsClient_parseInitiateResponse(MmsConnection self)
 {
-    bool result = false;
+    bool result = true;
 
     self->parameters.maxPduSize = CONFIG_MMS_MAXIMUM_PDU_SIZE;
     self->parameters.dataStructureNestingLevel = DEFAULT_DATA_STRUCTURE_NESTING_LEVEL;
@@ -235,7 +235,6 @@ mmsClient_parseInitiateResponse(MmsConnection self)
 
         bufPos += length;
     }
-
 
     return result;
 }

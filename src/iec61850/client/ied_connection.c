@@ -617,8 +617,8 @@ void
 IedConnection_close(IedConnection self)
 {
     if (IedConnection_getState(self) == IED_STATE_CONNECTED) {
-        MmsConnection_close(self->connection);
         IedConnection_setState(self, IED_STATE_CLOSED);
+        MmsConnection_close(self->connection);
     }
 }
 

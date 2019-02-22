@@ -141,6 +141,9 @@ connectionHandlingThread(IsoClientConnection self)
             Thread_sleep(1);
 
             if (self->stopHandlingThread) {
+
+                if (DEBUG_ISO_CLIENT)
+                    printf("ISO_CLIENT_CONNECTION: stop thread requested\n");
                 packetState = TPKT_ERROR;
                 break;
             }
@@ -291,6 +294,9 @@ IsoClientConnection_associate(IsoClientConnection self, IsoConnectionParameters 
         goto exit_error;
 
     Socket_setConnectTimeout(self->socket, connectTimeoutInMs);
+
+    self->stopHandlingThread = false;
+    self->destroyHandlingThread = false;
 
 #if (CONFIG_ACTIVATE_TCP_KEEPALIVE == 1)
     Socket_activateTcpKeepAlive(self->socket,
@@ -599,6 +605,9 @@ IsoClientConnection_abort(IsoClientConnection self)
 
     IsoSession_createAbortSpdu(self->session, sessionBuffer, presentationBuffer);
 
+    if (DEBUG_ISO_CLIENT)
+        printf("ISO_CLIENT: send abort message\n");
+
     CotpConnection_sendDataMessage(self->cotpConnection, sessionBuffer);
 
     Semaphore_post(self->transmitBufferMutex);
@@ -642,6 +651,9 @@ IsoClientConnection_release(IsoClientConnection self)
     sessionBuffer->nextPart = presentationBuffer;
 
     IsoSession_createFinishSpdu(NULL, sessionBuffer, presentationBuffer);
+
+    if (DEBUG_ISO_CLIENT)
+        printf("ISO_CLIENT: send release message\n");
 
     CotpConnection_sendDataMessage(self->cotpConnection, sessionBuffer);
 

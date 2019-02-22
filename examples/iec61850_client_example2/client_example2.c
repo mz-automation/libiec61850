@@ -116,8 +116,12 @@ main(int argc, char** argv)
 
                 LinkedList_destroy(dataObjects);
 
+                printf("IedConnection_getLogicalNodeDirectory(%s)\n", lnRef);
                 LinkedList dataSets = IedConnection_getLogicalNodeDirectory(con, &error, lnRef,
                         ACSI_CLASS_DATA_SET);
+
+                if (error != IED_ERROR_OK)
+                    printf("get logical node data sets --> error: %i\n", error);
 
                 LinkedList dataSet = LinkedList_getNext(dataSets);
 
@@ -193,7 +197,7 @@ main(int argc, char** argv)
 
         LinkedList_destroy(deviceList);
 
-        IedConnection_close(con);
+        IedConnection_abort(con, &error);
     }
     else {
         printf("Connection failed!\n");

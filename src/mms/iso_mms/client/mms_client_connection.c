@@ -1314,19 +1314,31 @@ MmsConnection_connect(MmsConnection self, MmsError* mmsError, const char* server
     waitForConnectResponse(self);
 
     if (DEBUG_MMS_CLIENT)
-        printf("MmsConnection_connect: received response conState: %i\n", getConnectionState(self));
+        printf("MmsConnection_connect: received response conState: %i assocState: %i\n", getConnectionState(self), getAssociationState(self));
 
     if (getConnectionState(self) == MMS_CON_ASSOCIATED) {
-        mmsClient_parseInitiateResponse(self);
+        if (mmsClient_parseInitiateResponse(self) == false) {
+            if (DEBUG_MMS_CLIENT)
+                printf("MmsConnection_connect: failed to parse initiate response\n");
+
+            setAssociationState(self, MMS_STATE_CLOSED);
+
+            setConnectionState(self, MMS_CON_ASSOCIATION_FAILED);
+        }
+        else {
+            setAssociationState(self, MMS_STATE_CONNECTED);
+        }
 
         releaseResponse(self);
 
-        setAssociationState(self, MMS_STATE_CONNECTED);
+
     }
-    else
+    else {
         setAssociationState(self, MMS_STATE_CLOSED);
 
-    setConnectionState(self, MMS_CON_IDLE);
+        setConnectionState(self, MMS_CON_ASSOCIATION_FAILED);
+    }
+
 
     if (DEBUG_MMS_CLIENT)
         printf("MmsConnection_connect: states: con %i ass %i\n", getConnectionState(self), getAssociationState(self));
