@@ -510,6 +510,9 @@ mmsServer_fileUploadTask(MmsServer self, MmsObtainFileTask task)
 
                 IsoConnection_sendMessage(task->connection->isoConnection, response, false);
 
+                FileSystem_closeFile(task->fileHandle);
+                deleteFile(MmsServerConnection_getFilesystemBasepath(task->connection), task->destinationFilename);
+
                 MmsServer_releaseTransmitBuffer(self);
 
                 if (DEBUG_MMS_SERVER)
@@ -528,6 +531,9 @@ mmsServer_fileUploadTask(MmsServer self, MmsObtainFileTask task)
                 createServiceErrorObtainFileError(task->obtainFileRequestInvokeId, response, MMS_ERROR_FILE_OTHER, 1);
 
                 IsoConnection_sendMessage(task->connection->isoConnection, response, false);
+
+                FileSystem_closeFile(task->fileHandle);
+                deleteFile(MmsServerConnection_getFilesystemBasepath(task->connection), task->destinationFilename);
 
                 MmsServer_releaseTransmitBuffer(self);
 

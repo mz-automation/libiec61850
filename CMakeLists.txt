@@ -143,6 +143,10 @@ include_directories(
 
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/hal")
 
+if(DEBUG)
+	set(CMAKE_BUILD_TYPE Debug)
+endif(DEBUG)
+
 if(BUILD_EXAMPLES)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/examples)
 endif(BUILD_EXAMPLES)

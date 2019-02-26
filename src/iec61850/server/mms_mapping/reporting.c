@@ -348,6 +348,9 @@ getDataSetEntryWithIndex(DataSetEntry* dataSet, int index)
 static bool
 sendReportSegment(ReportControl* self, bool isIntegrity, bool isGI)
 {
+    if (self->clientConnection == NULL)
+        return false;
+
     int maxMmsPduSize = MmsServerConnection_getMaxMmsPduSize(self->clientConnection);
     int estimatedSegmentSize = 19; /* maximum size of header information (header can have 13-19 byte) */
     estimatedSegmentSize += 8; /* reserve space for more-segments-follow (3 byte) and sub-seq-num (3-5 byte) */
@@ -1593,17 +1596,19 @@ increaseConfRev(ReportControl* self)
 static void
 checkReservationTimeout(ReportControl* rc)
 {
-    if (rc->resvTms > 0) {
-        if (Hal_getTimeInMs() > rc->reservationTimeout) {
-            rc->resvTms = 0;
+    if (rc->enabled == false) {
+        if (rc->resvTms > 0) {
+            if (Hal_getTimeInMs() > rc->reservationTimeout) {
+                rc->resvTms = 0;
 
 #if (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1)
-            MmsValue* resvTmsVal = ReportControl_getRCBValue(rc, "ResvTms");
-            MmsValue_setInt16(resvTmsVal, rc->resvTms);
+                MmsValue* resvTmsVal = ReportControl_getRCBValue(rc, "ResvTms");
+                MmsValue_setInt16(resvTmsVal, rc->resvTms);
 #endif
 
-            rc->reservationTimeout = 0;
-            updateOwner(rc, NULL);
+                rc->reservationTimeout = 0;
+                updateOwner(rc, NULL);
+            }
         }
     }
 }
@@ -2511,6 +2516,11 @@ exit_function:
 static bool
 sendNextReportEntrySegment(ReportControl* self)
 {
+    if (self->clientConnection == NULL)
+        return false;
+
+    int maxMmsPduSize = MmsServerConnection_getMaxMmsPduSize(self->clientConnection);
+
     Semaphore_wait(self->reportBuffer->lock);
 
     if (self->reportBuffer->nextToTransmit == NULL) {
@@ -2518,7 +2528,6 @@ sendNextReportEntrySegment(ReportControl* self)
         return false;
     }
 
-    int maxMmsPduSize = MmsServerConnection_getMaxMmsPduSize(self->clientConnection);
     int estimatedSegmentSize = 19; /* maximum size of header information (header can have 13-19 byte) */
     estimatedSegmentSize += 8; /* reserve space for more-segments-follow (3 byte) and sub-seq-num (3-5 byte) */
 
