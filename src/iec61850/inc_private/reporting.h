@@ -1,7 +1,7 @@
 /*
  *  reporting.h
  *
- *  Copyright 2013, 2014 Michael Zillgith
+ *  Copyright 2013-2019 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -28,9 +28,9 @@ typedef struct sReportBufferEntry ReportBufferEntry;
 
 struct sReportBufferEntry {
     uint8_t entryId[8];
-    uint8_t flags; /* bit 0 (1 = isIntegrityReport), bit 1 (1 = isGiReport) */
     uint64_t timeOfEntry;
-    int entryLength;
+    int entryLength:30;
+    unsigned int flags:2; /* bit 0 (1 = isIntegrityReport), bit 1 (1 = isGiReport) */
     ReportBufferEntry* next;
 };
 
