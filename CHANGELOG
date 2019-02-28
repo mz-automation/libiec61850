@@ -1,3 +1,17 @@
+Changes to version 1.3.3
+------------------------
+- IEC 61850 server: optimized report buffer handling for buffered reporting (save memory and encoding time)
+- IEC 61850 client: fixed problem - IedConnection cannot be reused after IedConnection_close (github #124)
+- IEC 61850 server: added support for pre configured client with ClientLN
+- IEC 61850 client: added function ClientReportControlBlock_hasResvTms
+- IEC 61850 server: don't clear owner when client disables BRCB (RptEna = false)
+- IED Server: added ResvTms handling for BRCB
+- SV publisher: fixed length calculation
+- IEC 61850 server: added support for segmented reporting
+- fixed bug in windows socket abstraction
+- fixed client TCP keep alive problem (see github #115)
+- MMS server: read service - return data access error for component access to simple variable
+
 Changes to version 1.3.2
 ------------------------
 - MMS client/server: added support for component alternate access for generic variable read requests
