@@ -136,6 +136,8 @@ FunctionalConstraint_toString(FunctionalConstraint fc) {
         return "BR";
     case IEC61850_FC_LG:
         return "LG";
+    case IEC61850_FC_GO:
+        return "GO";
     default:
         return NULL;
     }
@@ -218,6 +220,12 @@ FunctionalConstraint_fromString(const char* fcString)
     if (fcString[0] == 'L') {
         if (fcString[1] == 'G')
             return IEC61850_FC_LG;
+        return IEC61850_FC_NONE;
+    }
+
+    if (fcString[0] == 'G') {
+        if (fcString[1] == 'O')
+            return IEC61850_FC_GO;
         return IEC61850_FC_NONE;
     }
 
