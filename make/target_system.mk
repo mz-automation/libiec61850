@@ -167,7 +167,7 @@ CFLAGS += -arch i386
 LDFLAGS += -arch i386
 endif
 
-ifeq ($(TARGET), WIN32)
+ifdef WINDOWS
 DYN_LIB_NAME = $(LIB_OBJS_DIR)/iec61850.dll
 else 
 
