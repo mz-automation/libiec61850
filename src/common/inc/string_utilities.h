@@ -114,6 +114,17 @@ StringUtils_compareStrings(const char* a, const char* b);
 void
 StringUtils_sortList(LinkedList list);
 
+/**
+ * \brief Convert IPv6 address string to byte array (uint8_t array)
+ *
+ * \param addressString the IPv6 address string in standard notation
+ * \param ipV6Addr buffer to store the IPv6 address bytes (has to be at least 16 bytes)
+ *
+ * \return true when parsing has been successful, false otherwise
+ */
+bool
+StringUtils_convertIPv6AdddressStringToByteArray(const char* addressString, uint8_t ipV6Addr[]);
+
 #ifdef __cplusplus
 }
 #endif
