@@ -24,7 +24,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include <Windows.h>
+#include <windows.h>
 
 #include "lib_memory.h"
 
