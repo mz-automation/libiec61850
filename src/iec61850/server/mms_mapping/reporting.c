@@ -1513,7 +1513,7 @@ updateOwner(ReportControl* rc, MmsServerConnection connection)
 
                 if (strchr(clientAddressString, '.') != NULL) {
                     if (DEBUG_IED_SERVER)
-                        printf("IED_SERVER: reporting.c:   client address is IPv4 address\n");
+                        printf("IED_SERVER: reporting.c: client address is IPv4 address\n");
 
                     uint8_t ipV4Addr[4];
 
@@ -1527,8 +1527,21 @@ updateOwner(ReportControl* rc, MmsServerConnection connection)
                 }
                 else {
                     uint8_t ipV6Addr[16];
-                    MmsValue_setOctetString(owner, ipV6Addr, 0);
-                    if (DEBUG_IED_SERVER) printf("IED_SERVER: reporting.c:   client address is IPv6 address or unknown\n");
+
+                    bool valid = StringUtils_convertIPv6AdddressStringToByteArray(clientAddressString, ipV6Addr);
+
+                    if (valid) {
+                        if (DEBUG_IED_SERVER)
+                            printf("IED_SERVER: reporting.c: client address is IPv6 address\n");
+
+                        MmsValue_setOctetString(owner, ipV6Addr, 16);
+                    }
+                    else {
+                        if (DEBUG_IED_SERVER)
+                            printf("IED_SERVER: reporting.c: not a valid IPv6 address\n");
+
+                        MmsValue_setOctetString(owner, ipV6Addr, 0);
+                    }
                 }
             }
             else {
@@ -1629,17 +1642,23 @@ isIpAddressMatchingWithOwner(ReportControl* rc, const char* ipAddress)
 
     if (owner != NULL) {
 
-        uint8_t ipV4Addr[4];
-
         if (strchr(ipAddress, '.') != NULL) {
+            uint8_t ipV4Addr[4];
+
             if (convertIPv4AddressStringToByteArray(ipAddress, ipV4Addr)) {
                 if (memcmp(ipV4Addr, MmsValue_getOctetStringBuffer(owner), 4) == 0)
                     return true;
             }
         }
         else {
-            /* TODO add support to compare IPv6 addresses */
-            return true;
+            uint8_t ipV6Addr[16];
+
+            if (StringUtils_convertIPv6AdddressStringToByteArray(ipAddress, ipV6Addr)) {
+                if (memcmp(ipV6Addr, MmsValue_getOctetStringBuffer(owner), 16) == 0)
+                    return true;
+            }
+            else
+                return false;
         }
     }
 
