@@ -25,23 +25,24 @@
 #include <semaphore.h>
 #include <unistd.h>
 #include "hal_thread.h"
-
+#include "libiec61850_platform_includes.h"
 #include "lib_memory.h"
 
-struct sThread {
-   ThreadExecutionFunction function;
-   void* parameter;
-   pthread_t pthread;
-   int state;
-   bool autodestroy;
+struct sThread
+{
+    ThreadExecutionFunction function;
+    void* parameter;
+    pthread_t pthread;
+    int state;
+    bool autodestroy;
 };
 
 Semaphore
 Semaphore_create(int initialValue)
 {
-    char tmpname[] = {"/tmp/libiec61850.XXXXXX"};
-    mktemp(tmpname);
-    Semaphore self = sem_open(tmpname, O_CREAT, 0666, initialValue);
+    Semaphore self = GLOBAL_MALLOC(sizeof(sem_t));
+
+    sem_init((sem_t*) self, 0, initialValue);
 
     return self;
 }
@@ -68,16 +69,16 @@ Semaphore_destroy(Semaphore self)
 Thread
 Thread_create(ThreadExecutionFunction function, void* parameter, bool autodestroy)
 {
-   Thread thread = (Thread) GLOBAL_MALLOC(sizeof(struct sThread));
+    Thread thread = (Thread) GLOBAL_MALLOC(sizeof(struct sThread));
 
-   if (thread != NULL) {
+    if (thread != NULL) {
         thread->parameter = parameter;
         thread->function = function;
         thread->state = 0;
         thread->autodestroy = autodestroy;
-   }
+    }
 
-   return thread;
+    return thread;
 }
 
 static void*
@@ -85,38 +86,38 @@ destroyAutomaticThread(void* parameter)
 {
     Thread thread = (Thread) parameter;
 
-   thread->function(thread->parameter);
+    thread->function(thread->parameter);
 
-   GLOBAL_FREEMEM(thread);
+    GLOBAL_FREEMEM(thread);
 
-   pthread_exit(NULL);
+    pthread_exit(NULL);
 }
 
 void
 Thread_start(Thread thread)
 {
-   if (thread->autodestroy == true) {
-       pthread_create(&thread->pthread, NULL, destroyAutomaticThread, thread);
-       pthread_detach(thread->pthread);
-   }
-   else
-       pthread_create(&thread->pthread, NULL, thread->function, thread->parameter);
+    if (thread->autodestroy == true) {
+        pthread_create(&thread->pthread, NULL, destroyAutomaticThread, thread);
+        pthread_detach(thread->pthread);
+    }
+    else
+        pthread_create(&thread->pthread, NULL, thread->function, thread->parameter);
 
-   thread->state = 1;
+    thread->state = 1;
 }
 
 void
 Thread_destroy(Thread thread)
 {
-   if (thread->state == 1) {
-       pthread_join(thread->pthread, NULL);
-   }
+    if (thread->state == 1) {
+        pthread_join(thread->pthread, NULL);
+    }
 
-   GLOBAL_FREEMEM(thread);
+    GLOBAL_FREEMEM(thread);
 }
 
 void
 Thread_sleep(int millies)
 {
-   usleep(millies * 1000);
+    usleep(millies * 1000);
 }
