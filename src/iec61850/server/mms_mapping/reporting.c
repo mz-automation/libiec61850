@@ -1622,6 +1622,7 @@ checkReservationTimeout(ReportControl* rc)
 
                 rc->reservationTimeout = 0;
                 updateOwner(rc, NULL);
+                rc->reserved = false;
             }
         }
     }
@@ -2042,8 +2043,9 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
         }
 
     }
-    else
+    else {
         retVal = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
+    }
 
 exit_function:
 
