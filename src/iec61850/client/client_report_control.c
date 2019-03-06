@@ -492,6 +492,8 @@ IedConnection_getRCBValues(IedConnection self, IedClientError* error, const char
         *error = iedConnection_mapDataAccessErrorToIedError(
                         MmsValue_getDataAccessError(rcb));
 
+        MmsValue_delete(rcb);
+
         return NULL;
     }
 
