@@ -734,10 +734,12 @@ mmsMsg_parseFileReadResponse(uint8_t* buffer, int bufPos, int maxBufPos, int frs
 
             bufPos += length;
             break;
+
         case 0x81: /* moreFollows */
             *moreFollows = BerDecoder_decodeBoolean(buffer, bufPos);
             bufPos += length;
             break;
+
         default:
             bufPos += length;
             if (DEBUG_MMS_CLIENT)

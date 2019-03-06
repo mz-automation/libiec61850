@@ -130,7 +130,7 @@ MmsValue_equals(const MmsValue* self, const MmsValue* otherValue)
                 return true;
             break;
         case MMS_INTEGER:
-            case MMS_UNSIGNED:
+        case MMS_UNSIGNED:
             return Asn1PrimitivaValue_compare(self->value.integer, otherValue->value.integer);
             break;
         case MMS_UTC_TIME:
@@ -162,7 +162,7 @@ MmsValue_equals(const MmsValue* self, const MmsValue* otherValue)
             break;
 
         case MMS_VISIBLE_STRING:
-            case MMS_STRING:
+        case MMS_STRING:
             if (self->value.visibleString.buf != NULL) {
                 if (otherValue->value.visibleString.buf != NULL) {
                     if (strcmp(self->value.visibleString.buf, otherValue->value.visibleString.buf) == 0)
@@ -586,7 +586,6 @@ MmsValue*
 MmsValue_newIntegerFromInt8(int8_t integer)
 {
     MmsValue* self = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
-    ;
 
     self->type = MMS_INTEGER;
     self->value.integer = BerInteger_createFromInt32((int32_t) integer);
@@ -598,7 +597,6 @@ MmsValue*
 MmsValue_newIntegerFromInt16(int16_t integer)
 {
     MmsValue* self = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
-    ;
 
     self->type = MMS_INTEGER;
     self->value.integer = BerInteger_createFromInt32((int32_t) integer);
@@ -832,7 +830,6 @@ MmsValue*
 MmsValue_newUnsignedFromUint32(uint32_t integer)
 {
     MmsValue* self = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
-    ;
 
     if (self == NULL)
         return NULL;
@@ -847,7 +844,6 @@ MmsValue*
 MmsValue_newIntegerFromInt64(int64_t integer)
 {
     MmsValue* self = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
-    ;
 
     if (self == NULL)
         return NULL;
@@ -913,8 +909,6 @@ MmsValue_toFloat(const MmsValue* self)
             return val;
         }
     }
-    else
-        printf("MmsValue_toFloat: conversion error. Wrong type!\n");
 
     return 0.f;
 }
@@ -966,7 +960,7 @@ MmsValue_getSizeInMemory(const MmsValue* self)
     switch (self->type)
     {
     case MMS_ARRAY:
-        case MMS_STRUCTURE:
+    case MMS_STRUCTURE:
         {
             memorySize += (MemoryAllocator_getAlignedSize(sizeof(MmsValue*)) * self->value.structure.size);
 
@@ -981,7 +975,7 @@ MmsValue_getSizeInMemory(const MmsValue* self)
         break;
 
     case MMS_INTEGER:
-        case MMS_UNSIGNED:
+    case MMS_UNSIGNED:
         memorySize += MemoryAllocator_getAlignedSize(sizeof(Asn1PrimitiveValue));
         memorySize += MemoryAllocator_getAlignedSize(self->value.integer->maxSize);
         break;
@@ -1037,7 +1031,7 @@ MmsValue_cloneToBuffer(const MmsValue* self, uint8_t* destinationAddress)
         break;
 
     case MMS_INTEGER:
-        case MMS_UNSIGNED:
+    case MMS_UNSIGNED:
         {
             newValue->value.integer = (Asn1PrimitiveValue*) destinationAddress;
             Asn1PrimitiveValue* newAsn1Value = (Asn1PrimitiveValue*) destinationAddress;
@@ -1066,7 +1060,7 @@ MmsValue_cloneToBuffer(const MmsValue* self, uint8_t* destinationAddress)
         break;
 
     case MMS_STRING:
-        case MMS_VISIBLE_STRING:
+    case MMS_VISIBLE_STRING:
         newValue->value.visibleString.buf = (char*) destinationAddress;
         newValue->value.visibleString.size = self->value.visibleString.size;
         strcpy((char*) destinationAddress, self->value.visibleString.buf);
@@ -1099,7 +1093,7 @@ MmsValue_clone(const MmsValue* self)
     {
 
     case MMS_ARRAY:
-        case MMS_STRUCTURE:
+    case MMS_STRUCTURE:
         {
             int componentCount = self->value.structure.size;
             newValue->value.structure.size = componentCount;
@@ -1113,7 +1107,7 @@ MmsValue_clone(const MmsValue* self)
         break;
 
     case MMS_INTEGER:
-        case MMS_UNSIGNED:
+    case MMS_UNSIGNED:
         newValue->value.integer = Asn1PrimitiveValue_clone(self->value.integer);
         break;
 
@@ -1154,7 +1148,7 @@ MmsValue_clone(const MmsValue* self)
         break;
 
     case MMS_VISIBLE_STRING:
-        case MMS_STRING:
+    case MMS_STRING:
         size = self->value.visibleString.size;
         newValue->value.visibleString.buf = (char*) GLOBAL_MALLOC(size + 1);
         newValue->value.visibleString.size = size;
@@ -1169,7 +1163,7 @@ MmsValue_clone(const MmsValue* self)
         break;
     }
 
-    exit_function:
+exit_function:
     return newValue;
 }
 
@@ -1195,7 +1189,7 @@ MmsValue_delete(MmsValue* self)
     switch (self->type)
     {
     case MMS_INTEGER:
-        case MMS_UNSIGNED:
+    case MMS_UNSIGNED:
         Asn1PrimitiveValue_destroy(self->value.integer);
         break;
     case MMS_FLOAT:
@@ -1208,12 +1202,12 @@ MmsValue_delete(MmsValue* self)
         GLOBAL_FREEMEM(self->value.octetString.buf);
         break;
     case MMS_VISIBLE_STRING:
-        case MMS_STRING:
+    case MMS_STRING:
         if (self->value.visibleString.buf != NULL)
             GLOBAL_FREEMEM(self->value.visibleString.buf);
         break;
     case MMS_ARRAY:
-        case MMS_STRUCTURE:
+    case MMS_STRUCTURE:
         {
             int componentCount = self->value.structure.size;
             int i;
@@ -1241,7 +1235,7 @@ MmsValue_deleteConditional(MmsValue* self)
         switch (self->type)
         {
         case MMS_INTEGER:
-            case MMS_UNSIGNED:
+        case MMS_UNSIGNED:
             Asn1PrimitiveValue_destroy(self->value.integer);
             break;
         case MMS_FLOAT:
@@ -1254,12 +1248,12 @@ MmsValue_deleteConditional(MmsValue* self)
             GLOBAL_FREEMEM(self->value.octetString.buf);
             break;
         case MMS_VISIBLE_STRING:
-            case MMS_STRING:
+        case MMS_STRING:
             if (self->value.visibleString.buf != NULL)
                 GLOBAL_FREEMEM(self->value.visibleString.buf);
             break;
         case MMS_ARRAY:
-            case MMS_STRUCTURE:
+        case MMS_STRUCTURE:
             {
                 int componentCount = self->value.structure.size;
                 int i;
@@ -1530,7 +1524,7 @@ setVisibleStringValue(MmsValue* self, const char* string)
             self->value.visibleString.buf[0] = 0;
     }
 
-    exit_function:
+exit_function:
     return;
 }
 
@@ -1744,7 +1738,7 @@ MmsValue_newStringFromByteArray(const uint8_t* byteArray, int size, MmsType type
         self = NULL;
     }
 
-    exit_function:
+exit_function:
     return self;
 }
 
@@ -1813,7 +1807,7 @@ MmsValue_newUtcTime(uint32_t timeval)
     valueArray[3] = timeArray[3];
 #endif
 
-    exit_function:
+exit_function:
     return self;
 }
 
@@ -1860,7 +1854,7 @@ MmsValue_createArray(MmsVariableSpecification* elementType, int size)
         }
     }
 
-    exit_function:
+exit_function:
     return self;
 }
 
@@ -1887,7 +1881,7 @@ MmsValue_createEmptyArray(int size)
         self->value.structure.components[i] = NULL;
     }
 
-    exit_function:
+exit_function:
     return self;
 }
 
@@ -2027,7 +2021,7 @@ MmsValue_printToBuffer(const MmsValue* self, char* buffer, int bufferSize)
     switch (MmsValue_getType(self))
     {
     case MMS_STRUCTURE:
-        case MMS_ARRAY:
+    case MMS_ARRAY:
         {
             if (bufferSize == 0)
                 break;

@@ -1616,7 +1616,8 @@ checkReservationTimeout(ReportControl* rc)
 
 #if (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1)
                 MmsValue* resvTmsVal = ReportControl_getRCBValue(rc, "ResvTms");
-                MmsValue_setInt16(resvTmsVal, rc->resvTms);
+                if (resvTmsVal)
+                    MmsValue_setInt16(resvTmsVal, rc->resvTms);
 #endif
 
                 rc->reservationTimeout = 0;
@@ -1673,7 +1674,8 @@ reserveRcb(ReportControl* rc,  MmsServerConnection connection)
 
 #if (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1)
     MmsValue* resvTmsVal = ReportControl_getRCBValue(rc, "ResvTms");
-    MmsValue_setInt16(resvTmsVal, rc->resvTms);
+    if (resvTmsVal)
+        MmsValue_setInt16(resvTmsVal, rc->resvTms);
 #endif
 
     rc->reservationTimeout = Hal_getTimeInMs() + (RESV_TMS_IMPLICIT_VALUE * 1000);
@@ -2078,6 +2080,7 @@ Reporting_deactivateReportsForConnection(MmsMapping* self, MmsServerConnection c
             rc->reserved = false;
 
             if (rc->buffered == false) {
+
                 MmsValue* resv = ReportControl_getRCBValue(rc, "Resv");
                 MmsValue_setBoolean(resv, false);
 

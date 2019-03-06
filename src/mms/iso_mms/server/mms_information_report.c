@@ -253,7 +253,6 @@ MmsServerConnection_sendInformationReportVMDSpecific(MmsServerConnection self, c
 
     uint32_t informationReportContentSize = variableAccessSpecSize + listOfAccessResultSize;
 
-
     informationReportSize = 1 +  informationReportContentSize +
             BerEncoder_determineLengthSize(informationReportContentSize);
 

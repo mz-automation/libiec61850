@@ -211,17 +211,17 @@ mmsMsg_createServiceErrorPdu(uint32_t invokeId, ByteBuffer* response, MmsError e
 bool
 mmsServer_isIndexAccess(AlternateAccess_t* alternateAccess)
 {
-	if (alternateAccess->list.array[0]->present == AlternateAccess__Member_PR_unnamed) {
-		if ((alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.present
-				== AlternateAccessSelection__selectAccess_PR_index) ||
-			(alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.present
-				== AlternateAccessSelection__selectAccess_PR_indexRange))
-		{
-			return true;
-		}
-	}
+    if (alternateAccess->list.array[0]->present == AlternateAccess__Member_PR_unnamed) {
+        if ((alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.present
+                == AlternateAccessSelection__selectAccess_PR_index) ||
+                (alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.present
+                        == AlternateAccessSelection__selectAccess_PR_indexRange))
+        {
+            return true;
+        }
+    }
 
-	return false;
+    return false;
 }
 
 bool
