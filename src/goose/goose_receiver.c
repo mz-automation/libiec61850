@@ -48,7 +48,7 @@
 struct sGooseReceiver
 {
     bool running;
-    bool stopped;
+    bool stop;
     char* interfaceId;
     uint8_t* buffer;
     EthernetSocket ethSocket;
@@ -65,6 +65,7 @@ GooseReceiver_create()
 
     if (self != NULL) {
         self->running = false;
+        self->stop = false;
         self->interfaceId = NULL;
         self->buffer = (uint8_t*) GLOBAL_MALLOC(ETH_BUFFER_LENGTH);
         self->ethSocket = NULL;
@@ -772,9 +773,6 @@ gooseReceiverLoop(void* threadParameter)
 {
     GooseReceiver self = (GooseReceiver) threadParameter;
 
-    self->running = true;
-    self->stopped = false;
-
     GooseReceiver_startThreadless(self);
 
     if (self->running) {
@@ -783,12 +781,13 @@ gooseReceiverLoop(void* threadParameter)
 
             if (GooseReceiver_tick(self) == false)
                 Thread_sleep(1);
+
+            if (self->stop)
+                break;
         }
 
         GooseReceiver_stopThreadless(self);
     }
-
-    self->stopped = true;
 }
 #endif
 
@@ -822,12 +821,11 @@ void
 GooseReceiver_stop(GooseReceiver self)
 {
 #if (CONFIG_MMS_THREADLESS_STACK == 0)
+    self->stop = true;
     self->running = false;
 
     Thread_destroy(self->thread);
-
-    while (self->stopped == false)
-        Thread_sleep(1);
+    self->stop = false;
 #endif
 }
 
