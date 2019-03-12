@@ -117,7 +117,7 @@ ControlObjectClient_create(const char* objectReference, IedConnection connection
     /* request control model from server */
     char reference[129];
 
-    if (strlen(objectReference) < 121) {
+    if (strlen(objectReference) < 120) {
         strcpy(reference, objectReference);
         strcat(reference, ".ctlModel");
     }
@@ -188,7 +188,7 @@ ControlObjectClient_create(const char* objectReference, IedConnection connection
         if (DEBUG_IED_CLIENT)
             printf("IED_CLIENT: control is missing required element \"Oper\"\n");
 
-        goto exit_function;
+        goto free_varspec;
     }
 
     if ((ctlVal == NULL) || (t == NULL)) {
@@ -201,7 +201,7 @@ ControlObjectClient_create(const char* objectReference, IedConnection connection
     self = (ControlObjectClient) GLOBAL_CALLOC(1, sizeof(struct sControlObjectClient));
 
     if (self == NULL)
-        goto exit_function;
+        goto free_varspec;
 
     self->objectReference = StringUtils_copyString(objectReference);
     self->connection = connection;
