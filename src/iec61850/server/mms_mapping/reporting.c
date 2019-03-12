@@ -2167,7 +2167,6 @@ removeAllGIReportsFromReportBuffer(ReportBuffer* reportBuffer)
             }
             else {
                 lastReport->next = currentReport->next;
-
             }
 
 #if (DEBUG_IED_SERVER == 1)
@@ -2179,12 +2178,20 @@ removeAllGIReportsFromReportBuffer(ReportBuffer* reportBuffer)
             if (reportBuffer->nextToTransmit == currentReport)
                 reportBuffer->nextToTransmit = currentReport->next;
 
-            currentReport = currentReport->next;
+            if (reportBuffer->lastEnqueuedReport == currentReport) {
+                if (lastReport != NULL) {
+                    reportBuffer->lastEnqueuedReport = lastReport;
+                }
+                else {
+                    reportBuffer->lastEnqueuedReport = reportBuffer->oldestReport;
+                }
+            }
         }
         else {
             lastReport = currentReport;
-            currentReport = currentReport->next;
         }
+
+        currentReport = currentReport->next;
     }
 
     if (reportBuffer->oldestReport == NULL)
