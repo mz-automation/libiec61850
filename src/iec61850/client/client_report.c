@@ -686,8 +686,6 @@ private_IedConnection_handleReport(IedConnection self, MmsValue* value)
     if (hasReasonForInclusion)
         matchingReport->hasReasonForInclusion = true;
 
-    int reasonForInclusionIndex = valueIndex + includedElements;
-
     for (i = 0; i < dataSetSize; i++) {
         if (MmsValue_getBitStringBit(inclusion, i) == true) {
 
@@ -710,10 +708,8 @@ private_IedConnection_handleReport(IedConnection self, MmsValue* value)
             if (DEBUG_IED_CLIENT)
                 printf("IED_CLIENT: update element value type: %i\n", MmsValue_getType(newElementValue));
 
-            valueIndex++;
-
             if (hasReasonForInclusion) {
-                MmsValue* reasonForInclusion = MmsValue_getElement(value, reasonForInclusionIndex);
+                MmsValue* reasonForInclusion = MmsValue_getElement(value, includedElements + valueIndex);
 
                 if ((reasonForInclusion == NULL) || (MmsValue_getType(reasonForInclusion) != MMS_BIT_STRING)) {
                     if (DEBUG_IED_CLIENT)
@@ -736,6 +732,8 @@ private_IedConnection_handleReport(IedConnection self, MmsValue* value)
             else {
                 matchingReport->reasonForInclusion[i] = IEC61850_REASON_UNKNOWN;
             }
+
+            valueIndex++;
         }
         else {
             matchingReport->reasonForInclusion[i] = IEC61850_REASON_NOT_INCLUDED;
