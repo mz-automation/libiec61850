@@ -2179,12 +2179,10 @@ removeAllGIReportsFromReportBuffer(ReportBuffer* reportBuffer)
                 reportBuffer->nextToTransmit = currentReport->next;
 
             if (reportBuffer->lastEnqueuedReport == currentReport) {
-                if (lastReport != NULL) {
+                if (lastReport != NULL)
                     reportBuffer->lastEnqueuedReport = lastReport;
-                }
-                else {
+                else
                     reportBuffer->lastEnqueuedReport = reportBuffer->oldestReport;
-                }
             }
         }
         else {
