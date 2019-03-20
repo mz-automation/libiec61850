@@ -247,9 +247,13 @@ bool
 SVReceiver_tick(SVReceiver self);
 
 /*
- * Subscriber
+ * \brief Create a new SV subscriber instance
+ *
+ * \param ethAddr optional destination address (NULL to not specify the destination address)
+ * \param appID the APP-ID to identify matching SV messages
+ *
+ * \return the new subscriber instance
  */
-
 SVSubscriber
 SVSubscriber_create(const uint8_t* ethAddr, uint16_t appID);
 
@@ -263,7 +267,6 @@ SVSubscriber_create(const uint8_t* ethAddr, uint16_t appID);
  * \param self The subscriber object
  * \param listener the callback function to install
  * \param a user provided parameter that is provided to the callback function
- *
  */
 void
 SVSubscriber_setListener(SVSubscriber self,  SVUpdateListener listener, void* parameter);
