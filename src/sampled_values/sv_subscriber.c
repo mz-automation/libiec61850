@@ -121,7 +121,7 @@ SVReceiver_disableDestAddrCheck(SVReceiver self)
 void
 SVReceiver_enableDestAddrCheck(SVReceiver self)
 {
-    self->checkDestAddr = false;
+    self->checkDestAddr = true;
 }
 
 void
@@ -454,7 +454,7 @@ parseSVMessage(SVReceiver self, int numbytes)
     if (numbytes < 22) return;
 
     /* Ethernet source address */
-    uint8_t* srcAddr = buffer;
+    uint8_t* dstAddr = buffer;
 
     /* skip ethernet addresses */
     bufPos = 12;
@@ -517,13 +517,13 @@ parseSVMessage(SVReceiver self, int numbytes)
         if (subscriber->appId == appId) {
 
             if (self->checkDestAddr) {
-                if (memcmp(srcAddr, subscriber->ethAddr, 6) == 0) {
+                if (memcmp(dstAddr, subscriber->ethAddr, 6) == 0) {
                     subscriberFound = true;
                     break;
                 }
                 else
                     if (DEBUG_SV_SUBSCRIBER)
-                        printf("SV_SUBSCRIBER: Checking ethernet src address failed!\n");
+                        printf("SV_SUBSCRIBER: Checking ethernet dest address failed!\n");
             }
             else {
                 subscriberFound = true;
@@ -545,7 +545,7 @@ parseSVMessage(SVReceiver self, int numbytes)
         parseSVPayload(self, subscriber, buffer + bufPos, apduLength);
     else {
         if (DEBUG_SV_SUBSCRIBER)
-            printf("SV_SUBSCRIBER: SV message ignored due to unknown APPID value\n");
+            printf("SV_SUBSCRIBER: SV message ignored due to unknown APPID value or dest address mismatch\n");
     }
 }
 
