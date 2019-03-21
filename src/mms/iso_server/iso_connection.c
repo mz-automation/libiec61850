@@ -90,34 +90,50 @@ struct sIsoConnection
 };
 
 static void
+IsoConnection_releaseAllocatedMemory(IsoConnection self)
+{
+    if (self->socket)
+         Socket_destroy(self->socket);
+
+#if (CONFIG_MMS_SUPPORT_TLS == 1)
+    if (IsoServer_getTLSConfiguration(self->isoServer) != NULL) {
+        TLSSocket_close(self->tlsSocket);
+    }
+#endif /* (CONFIG_MMS_SUPPORT_TLS == 1) */
+
+     GLOBAL_FREEMEM(self->session);
+     GLOBAL_FREEMEM(self->presentation);
+     AcseConnection_destroy(self->acseConnection);
+     GLOBAL_FREEMEM(self->acseConnection);
+
+     GLOBAL_FREEMEM(self->cotpReadBuf);
+     GLOBAL_FREEMEM(self->cotpWriteBuf);
+
+     GLOBAL_FREEMEM(self->cotpConnection);
+
+ #if (CONFIG_MMS_THREADLESS_STACK != 1)
+     if (self->conMutex)
+         Semaphore_destroy(self->conMutex);
+ #endif
+
+     GLOBAL_FREEMEM(self->receiveBuffer);
+     GLOBAL_FREEMEM(self->sendBuffer);
+     GLOBAL_FREEMEM(self->clientAddress);
+     GLOBAL_FREEMEM(self);
+}
+
+static void
 finalizeIsoConnection(IsoConnection self)
 {
     if (DEBUG_ISO_SERVER)
         printf("ISO_SERVER: finalizeIsoConnection --> close transport connection\n");
 
-    IsoServer_closeConnection(self->isoServer, self);
-    if (self->socket != NULL)
-        Socket_destroy(self->socket);
-
-    GLOBAL_FREEMEM(self->session);
-    GLOBAL_FREEMEM(self->presentation);
-    AcseConnection_destroy(self->acseConnection);
-    GLOBAL_FREEMEM(self->acseConnection);
-
-    GLOBAL_FREEMEM(self->cotpReadBuf);
-    GLOBAL_FREEMEM(self->cotpWriteBuf);
-
-    GLOBAL_FREEMEM(self->cotpConnection);
-
-#if (CONFIG_MMS_THREADLESS_STACK != 1)
-    Semaphore_destroy(self->conMutex);
-#endif
-
-    GLOBAL_FREEMEM(self->receiveBuffer);
-    GLOBAL_FREEMEM(self->sendBuffer);
-    GLOBAL_FREEMEM(self->clientAddress);
     IsoServer isoServer = self->isoServer;
-    GLOBAL_FREEMEM(self);
+
+    IsoServer_closeConnection(isoServer, self);
+
+    IsoConnection_releaseAllocatedMemory(self);
+
     if (DEBUG_ISO_SERVER)
         printf("ISO_SERVER: connection %p closed\n", self);
 
@@ -441,6 +457,10 @@ IsoConnection
 IsoConnection_create(Socket socket, IsoServer isoServer)
 {
     IsoConnection self = (IsoConnection) GLOBAL_CALLOC(1, sizeof(struct sIsoConnection));
+
+    if (self == NULL)
+        return NULL;
+
     self->socket = socket;
 
 #if (CONFIG_MMS_SUPPORT_TLS == 1)
@@ -461,6 +481,10 @@ IsoConnection_create(Socket socket, IsoServer isoServer)
 
     self->receiveBuffer = (uint8_t*) GLOBAL_MALLOC(RECEIVE_BUF_SIZE);
     self->sendBuffer = (uint8_t*) GLOBAL_MALLOC(SEND_BUF_SIZE);
+
+    if ((self->receiveBuffer == NULL) || (self->sendBuffer == NULL))
+        goto exit_error;
+
     self->msgRcvdHandler = NULL;
     self->msgRcvdHandlerParameter = NULL;
     self->isoServer = isoServer;
@@ -476,10 +500,17 @@ IsoConnection_create(Socket socket, IsoServer isoServer)
     self->cotpReadBuf = (uint8_t*) GLOBAL_MALLOC(CONFIG_COTP_MAX_TPDU_SIZE + TPKT_RFC1006_HEADER_SIZE);
     self->cotpWriteBuf = (uint8_t*) GLOBAL_MALLOC(CONFIG_COTP_MAX_TPDU_SIZE + TPKT_RFC1006_HEADER_SIZE);
 
+    if ((self->cotpReadBuf == NULL) || (self->cotpWriteBuf == NULL))
+        goto exit_error;
+
     ByteBuffer_wrap(&(self->cotpReadBuffer), self->cotpReadBuf, 0, CONFIG_COTP_MAX_TPDU_SIZE + TPKT_RFC1006_HEADER_SIZE);
     ByteBuffer_wrap(&(self->cotpWriteBuffer), self->cotpWriteBuf, 0, CONFIG_COTP_MAX_TPDU_SIZE + TPKT_RFC1006_HEADER_SIZE);
 
     self->cotpConnection = (CotpConnection*) GLOBAL_CALLOC(1, sizeof(CotpConnection));
+
+    if (self->cotpConnection == NULL)
+        goto exit_error;
+
     CotpConnection_init(self->cotpConnection, self->socket, &(self->rcvBuffer), &(self->cotpReadBuffer), &(self->cotpWriteBuffer));
 
 #if (CONFIG_MMS_SUPPORT_TLS == 1)
@@ -488,12 +519,23 @@ IsoConnection_create(Socket socket, IsoServer isoServer)
 #endif /* (CONFIG_MMS_SUPPORT_TLS == 1) */
 
     self->session = (IsoSession*) GLOBAL_CALLOC(1, sizeof(IsoSession));
+
+    if (self->session == NULL)
+        goto exit_error;
+
     IsoSession_init(self->session);
 
     self->presentation = (IsoPresentation*) GLOBAL_CALLOC(1, sizeof(IsoPresentation));
+
+    if (self->presentation == NULL)
+        goto exit_error;
+
     IsoPresentation_init(self->presentation);
 
     self->acseConnection = (AcseConnection*) GLOBAL_CALLOC(1, sizeof(AcseConnection));
+
+    if (self->acseConnection == NULL)
+        goto exit_error;
 
 #if (CONFIG_MMS_SUPPORT_TLS == 1)
     AcseConnection_init(self->acseConnection, IsoServer_getAuthenticator(self->isoServer),
@@ -510,11 +552,23 @@ IsoConnection_create(Socket socket, IsoServer isoServer)
 #if (CONFIG_MMS_THREADLESS_STACK == 0)
     self->thread = Thread_create((ThreadExecutionFunction) handleTcpConnection, self, true);
 
-    Thread_start(self->thread);
+    if (self->thread)
+        Thread_start(self->thread);
+    else
+        goto exit_error;
 #endif
 #endif
 
     return self;
+
+exit_error:
+
+    if (DEBUG_ISO_SERVER)
+        printf("ISO_SERVER: Failed to allocate memory for new connection\n");
+
+    IsoConnection_releaseAllocatedMemory(self);
+
+    return NULL;
 }
 
 void

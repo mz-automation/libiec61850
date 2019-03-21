@@ -55,6 +55,11 @@ Memory_calloc(size_t nmemb, size_t size);
 void *
 Memory_realloc(void *ptr, size_t size);
 
+/**
+ * \brief Free memory block
+ *
+ * \param address of memory block to release of NULL for no operation
+ */
 void
 Memory_free(void* memb);
 
