@@ -99,6 +99,7 @@ createControlObjects(IedServer self, MmsDomain* domain, char* lnName, MmsVariabl
                         if (DEBUG_IED_SERVER)
                             printf("IED_SERVER: createControlObjects: Unknown element in CO: %s\n", coElementSpec->name);
 
+                        break;
                     }
                 }
 

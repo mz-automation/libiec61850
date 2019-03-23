@@ -99,7 +99,7 @@ main(int argc, char** argv)
     /* disable MMS file service */
     IedServerConfig_enableFileService(config, false);
 
-    /* disable dynamic data set service */
+    /* enable dynamic data set service */
     IedServerConfig_enableDynamicDataSetService(config, true);
 
     /* disable log service */

@@ -56,7 +56,7 @@ LIB61850_INTERNAL bool
 mmsMsg_parseFileOpenResponse(uint8_t* buffer, int bufPos, int maxBufPos, int32_t* frsmId, uint32_t* fileSize, uint64_t* lastModified);
 
 LIB61850_INTERNAL bool
-mmsMsg_parseFileReadResponse(uint8_t* buffer, int bufPos, int maxBufPos, bool* moreFollows, uint8_t** dataBuffer, int* dataLength);
+mmsMsg_parseFileReadResponse(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t invokeId, int32_t frsmId,  bool* moreFollows, MmsConnection_FileReadHandler handler, void* handlerParameter);
 
 LIB61850_INTERNAL void
 mmsMsg_createFileReadResponse(int maxPduSize, uint32_t invokeId, ByteBuffer* response,  MmsFileReadStateMachine* frsm);

@@ -70,6 +70,13 @@ typedef enum {
     MMS_CALL_TYPE_GET_FILE_DIR
 } eMmsOutstandingCallType;
 
+typedef union
+{
+    int32_t i32;
+    uint32_t u32;
+    void* ptr;
+} MmsClientInternalParameter;
+
 struct sMmsOutstandingCall
 {
     bool isUsed;
@@ -77,7 +84,7 @@ struct sMmsOutstandingCall
     eMmsOutstandingCallType type;
     void* userCallback;
     void* userParameter;
-    void* internalParameter;
+    MmsClientInternalParameter internalParameter;
     uint64_t timeout;
 };
 

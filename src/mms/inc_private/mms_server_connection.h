@@ -48,6 +48,12 @@ MmsServerConnection_init(MmsServerConnection connection, MmsServer server, IsoCo
 LIB61850_INTERNAL void
 MmsServerConnection_destroy(MmsServerConnection connection);
 
+LIB61850_INTERNAL int
+MmsServerConnection_getMaxMmsPduSize(MmsServerConnection self);
+
+LIB61850_INTERNAL void
+MmsServerConnection_sendMessage(MmsServerConnection self, ByteBuffer* message, bool handlerMode);
+
 LIB61850_INTERNAL bool
 MmsServerConnection_addNamedVariableList(MmsServerConnection self, MmsNamedVariableList variableList);
 

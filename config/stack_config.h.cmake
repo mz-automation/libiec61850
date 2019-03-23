@@ -137,7 +137,10 @@
 #cmakedefine01 CONFIG_IEC61850_REPORT_SERVICE
 
 /* support buffered report control blocks with ResvTms field */
-#define CONFIG_IEC61850_BRCB_WITH_RESVTMS 0
+#define CONFIG_IEC61850_BRCB_WITH_RESVTMS 1
+
+/* allow only configured clients (when pre-configured by ClientLN) - note behavior in PIXIT Rp13 */
+#define CONFIG_IEC61850_RCB_ALLOW_ONLY_PRECONFIGURED_CLIENT 0
 
 /* The default buffer size of buffered RCBs in bytes */
 #cmakedefine CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE @CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE@

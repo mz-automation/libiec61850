@@ -39,9 +39,9 @@ struct sThread {
 Semaphore
 Semaphore_create(int initialValue)
 {
-    char tmpname[] = {"/tmp/libiec61850.XXXXXX"};
-    mktemp(tmpname);
-    Semaphore self = sem_open(tmpname, O_CREAT, 0666, initialValue);
+    Semaphore self = GLOBAL_MALLOC(sizeof(sem_t));
+
+    sem_init((sem_t*) self, 0, initialValue);
 
     return self;
 }

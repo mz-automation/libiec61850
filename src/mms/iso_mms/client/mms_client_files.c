@@ -689,11 +689,15 @@ mmsMsg_parseFileOpenResponse(uint8_t* buffer, int bufPos, int maxBufPos, int32_t
 }
 
 bool
-mmsMsg_parseFileReadResponse(uint8_t* buffer, int bufPos, int maxBufPos, bool* moreFollows, uint8_t** dataBuffer, int* dataLength)
+mmsMsg_parseFileReadResponse(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t invokeId, int frsmId, bool* moreFollows, MmsConnection_FileReadHandler handler, void* handlerParameter)
 {
     int length;
+    uint8_t* data = NULL;
+    int dataLen = 0;
+
 
     uint8_t tag = buffer[bufPos++];
+
 
     if (tag != 0xbf) {
         if (DEBUG_MMS_CLIENT)
@@ -704,8 +708,6 @@ mmsMsg_parseFileReadResponse(uint8_t* buffer, int bufPos, int maxBufPos, bool* m
     tag = buffer[bufPos++];
 
     *moreFollows = true;
-    *dataBuffer = NULL;
-    *dataLength = 0;
 
     if (tag != 0x49) {
         if (DEBUG_MMS_CLIENT)
@@ -731,11 +733,11 @@ mmsMsg_parseFileReadResponse(uint8_t* buffer, int bufPos, int maxBufPos, bool* m
         if (bufPos < 0)
             return false;
 
-        switch (tag)
-        {
+        switch (tag) {
         case 0x80: /* fileData */
-            *dataBuffer = buffer + bufPos;
-            *dataLength = length;
+            data = buffer + bufPos;
+            dataLen = length;
+
             bufPos += length;
             break;
 
@@ -753,8 +755,7 @@ mmsMsg_parseFileReadResponse(uint8_t* buffer, int bufPos, int maxBufPos, bool* m
         }
     }
 
-    if (*dataBuffer == NULL)
-        return false;
+    handler(invokeId, handlerParameter, frsmId, data, dataLen, *moreFollows);
 
     return true;
 }

@@ -161,6 +161,18 @@ ReportControlBlock_create(const char* name, LogicalNode* parent, char* rptId, bo
         dataSetName, uint32_t confRef, uint8_t trgOps, uint8_t options, uint32_t bufTm, uint32_t intgPd);
 
 /**
+ * \brief Set a pre-configured client for the RCB
+ *
+ * If set only the pre configured client should use this RCB instance
+ *
+ * \param self the RCB instance
+ * \param clientType the type of the client (0 = no client, 4 = IPv4 client, 6 = IPv6 client)
+ * \param clientAddress buffer containing the client address (4 byte in case of an IPv4 address, 16 byte in case of an IPv6 address, NULL for no client)
+ */
+LIB61850_API void
+ReportControlBlock_setPreconfiguredClient(ReportControlBlock* self, uint8_t clientType, uint8_t* clientAddress);
+
+/**
  * \brief create a new log control block (LCB)
  *
  * Create a new log control block (LCB) and add it to the given logical node (LN).

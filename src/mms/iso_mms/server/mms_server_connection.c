@@ -453,12 +453,12 @@ getUploadTaskByInvokeId(MmsServer mmsServer, uint32_t invokeId)
 }
 
 static void
-mmsFileReadHandler(void* parameter, int32_t frsmId, uint8_t* buffer, uint32_t bytesReceived)
+mmsFileReadHandler(uint32_t invokeId, void* parameter, MmsError mmsError, uint8_t* buffer, uint32_t bytesReceived, bool moreFollows)
 {
     MmsObtainFileTask task = (MmsObtainFileTask) parameter;
 
     if (DEBUG_MMS_SERVER)
-        printf("MMS_SERVER:  FILE %i received %i bytes\n", frsmId, bytesReceived);
+        printf("MMS_SERVER:  file %i received %i bytes\n", task->frmsId, bytesReceived);
 
     FileSystem_writeFile(task->fileHandle, buffer, bytesReceived);
 }
@@ -538,12 +538,8 @@ handleConfirmedResponsePdu(
                     if (fileTask != NULL) {
 
                         bool moreFollows;
-                        uint8_t* dataBuffer = NULL;
-                        int dataLength = 0;
 
-                        if (mmsMsg_parseFileReadResponse(buffer, startBufPos, maxBufPos, &moreFollows, &dataBuffer, &dataLength)) {
-
-                            mmsFileReadHandler((void*) fileTask, fileTask->frmsId, dataBuffer, dataLength);
+                        if (mmsMsg_parseFileReadResponse(buffer, startBufPos, maxBufPos, invokeId, fileTask->frmsId, &moreFollows, mmsFileReadHandler, (void*) fileTask)) {
 
                             if (moreFollows) {
                                 fileTask->state = MMS_FILE_UPLOAD_STATE_SEND_FILE_READ;
@@ -741,6 +737,18 @@ MmsServerConnection_destroy(MmsServerConnection self)
 #endif
 
     GLOBAL_FREEMEM(self);
+}
+
+int
+MmsServerConnection_getMaxMmsPduSize(MmsServerConnection self)
+{
+    return self->maxPduSize;
+}
+
+void
+MmsServerConnection_sendMessage(MmsServerConnection self, ByteBuffer* message, bool handlerMode)
+{
+    IsoConnection_sendMessage(self->isoConnection, message, false);
 }
 
 #if (MMS_DYNAMIC_DATA_SETS == 1)

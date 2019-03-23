@@ -104,7 +104,7 @@ int main(int argc, char** argv) {
 	char* hostname = StringUtils_copyString("localhost");
 	int tcpPort = 102;
 	int maxPduSize = 65000;
-    int arrayIndex = -1;
+        int arrayIndex = -1;
 
 	char* domainName = NULL;
 	char* variableName = NULL;

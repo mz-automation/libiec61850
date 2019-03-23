@@ -122,7 +122,7 @@ StringUtils_sortList(LinkedList list);
  *
  * \return true when parsing has been successful, false otherwise
  */
-bool
+LIB61850_INTERNAL bool
 StringUtils_convertIPv6AdddressStringToByteArray(const char* addressString, uint8_t ipV6Addr[]);
 
 #ifdef __cplusplus

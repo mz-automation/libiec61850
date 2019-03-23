@@ -3,7 +3,7 @@
  *
  * automatically generated from complexModel.icd
  */
-#include "../server_example_write_handler/static_model.h"
+#include "static_model.h"
 
 static void initializeValues();
 
@@ -3580,7 +3580,7 @@ DataAttribute iedModel_Physical_Measurements_LPHD1_Proxy_t = {
 
 extern ReportControlBlock iedModel_Inverter_LLN0_report0;
 
-ReportControlBlock iedModel_Inverter_LLN0_report0 = {&iedModel_Inverter_LLN0, "rcb101", "ID", false, "dataset1", 0, 19, 32, 0, 0, NULL};
+ReportControlBlock iedModel_Inverter_LLN0_report0 = {&iedModel_Inverter_LLN0, "rcb101", "ID", false, "dataset1", 0, 19, 32, 0, 0, {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, NULL};
 
 
 

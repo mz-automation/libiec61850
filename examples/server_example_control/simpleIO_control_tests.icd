@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--This file is generated using Kalkitech SCL Manager IEC61850 Configuration Tool (www.kalkitech.com)-->
 <SCL xmlns="http://www.iec.ch/61850/2003/SCL">
-  <Header id="" version="4.0.2" revision="" toolID="" nameStructure="IEDName">
+  <Header id="" version="1.0.0" revision="" toolID="" nameStructure="IEDName">
   </Header>
   <Communication>
     <SubNetwork name="subnetwork1" type="8-MMS">
       <Text>Station bus</Text>
-      <BitRate unit="b/s">10</BitRate>
       <ConnectedAP iedName="simpleIO" apName="accessPoint1">
         <Address>
-          <P type="IP">10.0.0.2</P>
+          <P type="IP">192.168.2.223</P>
           <P type="IP-SUBNET">255.255.255.0</P>
           <P type="IP-GATEWAY">10.0.0.1</P>
           <P type="OSI-TSEL">0001</P>
@@ -29,10 +27,7 @@
       <ReadWrite />
       <GetCBValues />
       <ConfLNs fixPrefix="true" fixLnInst="true" />
-      <GOOSE max="5" />
-      <GSSE max="5" />
       <FileHandling />
-      <GSEDir />
       <TimerActivatedControl />
     </Services>
     <AccessPoint name="accessPoint1">

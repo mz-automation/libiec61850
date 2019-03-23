@@ -970,8 +970,8 @@ DataAttribute iedModel_LD1_GGIO1_AnIn1_subID = {
 extern ReportControlBlock iedModel_LD1_LLN0_report0;
 extern ReportControlBlock iedModel_LD1_LLN0_report1;
 
-ReportControlBlock iedModel_LD1_LLN0_report0 = {&iedModel_LD1_LLN0, "urcb01", "13e08c78", false, "", 1, 23, 247, 3000, 5000, &iedModel_LD1_LLN0_report1};
-ReportControlBlock iedModel_LD1_LLN0_report1 = {&iedModel_LD1_LLN0, "urcb02", "13e08c78", false, "", 1, 23, 247, 3000, 5000, NULL};
+ReportControlBlock iedModel_LD1_LLN0_report0 = {&iedModel_LD1_LLN0, "urcb01", "13e08c78", false, "", 1, 23, 247, 3000, 5000, {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, &iedModel_LD1_LLN0_report1};
+ReportControlBlock iedModel_LD1_LLN0_report1 = {&iedModel_LD1_LLN0, "urcb02", "13e08c78", false, "", 1, 23, 247, 3000, 5000, {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, NULL};
 
 
 

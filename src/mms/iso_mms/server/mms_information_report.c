@@ -220,7 +220,6 @@ exit_function:
     return;
 }
 
-
 void /* send information report for a named variable list */
 MmsServerConnection_sendInformationReportVMDSpecific(MmsServerConnection self, char* itemId, LinkedList values,
         bool handlerMode)

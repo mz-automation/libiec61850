@@ -1,7 +1,7 @@
 /*
  *  reporting.h
  *
- *  Copyright 2013, 2014 Michael Zillgith
+ *  Copyright 2013-2019 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -28,9 +28,9 @@ typedef struct sReportBufferEntry ReportBufferEntry;
 
 struct sReportBufferEntry {
     uint8_t entryId[8];
-    uint8_t flags; /* bit 0 (1 = isIntegrityReport), bit 1 (1 = isGiReport) */
     uint64_t timeOfEntry;
-    int entryLength;
+    int entryLength:30;
+    unsigned int flags:2; /* bit 0 (1 = isIntegrityReport), bit 1 (1 = isGiReport) */
     ReportBufferEntry* next;
 };
 
@@ -42,6 +42,8 @@ typedef struct {
     ReportBufferEntry* lastEnqueuedReport;
     ReportBufferEntry* nextToTransmit;
     bool isOverflow; /* true if overflow condition is active */
+
+    Semaphore lock; /* protect access to report buffer */
 } ReportBuffer;
 
 typedef struct {
@@ -53,6 +55,7 @@ typedef struct {
     MmsValue* rcbValues;
     MmsValue* inclusionField;
     MmsValue* confRev;
+
     DataSet* dataSet;
     bool isDynamicDataSet;
     bool enabled;
@@ -76,6 +79,12 @@ typedef struct {
 
     int triggerOps;
 
+    /* information for segmented reporting */
+    bool segmented; /* indicates that a segmented report is in process */
+    int startIndexForNextSegment; /* start data set index for the next report segment */
+    MmsValue* subSeqVal; /* sub sequence value for segmented reporting */
+    uint64_t segmentedReportTimestamp; /* time stamp used for all report segments */
+
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore createNotificationsMutex;  /* { covered by mutex } */
 #endif
@@ -91,6 +100,7 @@ typedef struct {
 
     bool isBuffering; /* true if buffered RCB is buffering (datSet is set to a valid value) */
     bool isResync; /* true if buffered RCB is in resync state */
+    int resvTms; /* -1 for preconfigured client, 0 - not reserved, > 0 reserved by client */
 
     ReportBuffer* reportBuffer;
     MmsValue* timeOfEntry;
@@ -121,6 +131,9 @@ Reporting_createMmsUnbufferedRCBs(MmsMapping* self, MmsDomain* domain,
 LIB61850_INTERNAL MmsDataAccessError
 Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* elementName, MmsValue* value,
         MmsServerConnection connection);
+
+LIB61850_INTERNAL void
+ReportControl_readAccess(ReportControl* rc, char* elementName);
 
 LIB61850_INTERNAL void
 Reporting_activateBufferedReports(MmsMapping* self);

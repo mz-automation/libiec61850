@@ -1882,8 +1882,8 @@ DataAttribute iedModel_GenericIO_GGIO1_Ind4_t = {
 extern ReportControlBlock iedModel_GenericIO_LLN0_report0;
 extern ReportControlBlock iedModel_GenericIO_LLN0_report1;
 
-ReportControlBlock iedModel_GenericIO_LLN0_report0 = {&iedModel_GenericIO_LLN0, "EventsRCB01", "Events", false, "Events", 1, 24, 111, 50, 1000, &iedModel_GenericIO_LLN0_report1};
-ReportControlBlock iedModel_GenericIO_LLN0_report1 = {&iedModel_GenericIO_LLN0, "AnalogValuesRCB01", "AnalogValues", false, "AnalogValues", 1, 24, 111, 50, 1000, NULL};
+ReportControlBlock iedModel_GenericIO_LLN0_report0 = {&iedModel_GenericIO_LLN0, "EventsRCB01", "Events", false, "Events", 1, 24, 239, 50, 1000, {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, &iedModel_GenericIO_LLN0_report1};
+ReportControlBlock iedModel_GenericIO_LLN0_report1 = {&iedModel_GenericIO_LLN0, "AnalogValuesRCB01", "AnalogValues", false, "AnalogValues", 1, 24, 239, 50, 1000, {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, NULL};
 
 
 extern GSEControlBlock iedModel_GenericIO_LLN0_gse0;
