@@ -567,9 +567,6 @@ singleThreadedServerThread(void* parameter)
 
     bool running = true;
 
-    mmsMapping->reportThreadFinished = false;
-    mmsMapping->reportThreadRunning = true;
-
     if (DEBUG_IED_SERVER)
         printf("IED_SERVER: server thread started!\n");
 
@@ -601,6 +598,9 @@ IedServer_start(IedServer self, int tcpPort)
 
 #if (CONFIG_MMS_SINGLE_THREADED == 1)
         MmsServer_startListeningThreadless(self->mmsServer, tcpPort);
+
+        self->mmsMapping->reportThreadFinished = false;
+        self->mmsMapping->reportThreadRunning = true;
 
         self->serverThread = Thread_create((ThreadExecutionFunction) singleThreadedServerThread, (void*) self, false);
 
