@@ -1555,9 +1555,21 @@ ClientReportControlBlock_setDataSetReference(ClientReportControlBlock self, cons
 LIB61850_API uint32_t
 ClientReportControlBlock_getConfRev(ClientReportControlBlock self);
 
+/**
+ * \brief Gets the OptFlds parameter of the RCB (decides what information to include in a report)
+ *
+ * \param self the RCB instance
+ * \return bit field representing the optional fields of a report (uses flags from \ref REPORT_OPTIONS)
+ */
 LIB61850_API int
 ClientReportControlBlock_getOptFlds(ClientReportControlBlock self);
 
+/**
+ * \brief Set the OptFlds parameter of the RCB (decides what information to include in a report)
+ *
+ * \param self the RCB instance
+ * \param optFlds bit field representing the optional fields of a report (use flags from \ref REPORT_OPTIONS)
+ */
 LIB61850_API void
 ClientReportControlBlock_setOptFlds(ClientReportControlBlock self, int optFlds);
 
@@ -1591,8 +1603,23 @@ ClientReportControlBlock_setGI(ClientReportControlBlock self, bool gi);
 LIB61850_API bool
 ClientReportControlBlock_getPurgeBuf(ClientReportControlBlock self);
 
+/**
+ * \brief Set the "PurgeBuf" attribute value (only BRCB)
+ *
+ * When set to true the report buffer will be cleared.
+ *
+ * \param purgeBuf attribute value
+ */
 LIB61850_API void
 ClientReportControlBlock_setPurgeBuf(ClientReportControlBlock self, bool purgeBuf);
+
+/**
+ *  \brief Check if optional attribute "ResvTms" is present in BRCB
+ *
+ *  \return true when present, false otherwise
+ */
+LIB61850_API  bool
+ClientReportControlBlock_hasResvTms(ClientReportControlBlock self);
 
 LIB61850_API int16_t
 ClientReportControlBlock_getResvTms(ClientReportControlBlock self);

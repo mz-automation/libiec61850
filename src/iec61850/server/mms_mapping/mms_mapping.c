@@ -2338,6 +2338,8 @@ mmsReadHandler(void* parameter, MmsDomain* domain, char* variableId, MmsServerCo
 
                         char* elementName = MmsMapping_getNextNameElement(reportName);
 
+                        ReportControl_readAccess(rc, elementName);
+
                         MmsValue* value = NULL;
 
                         if (elementName != NULL)

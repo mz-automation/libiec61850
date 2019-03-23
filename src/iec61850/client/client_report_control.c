@@ -324,6 +324,12 @@ ClientReportControlBlock_setPurgeBuf(ClientReportControlBlock self, bool purgeBu
         MmsValue_setBoolean(self->purgeBuf, purgeBuf);
 }
 
+bool
+ClientReportControlBlock_hasResvTms(ClientReportControlBlock self)
+{
+    return (self->resvTms != NULL);
+}
+
 int16_t
 ClientReportControlBlock_getResvTms(ClientReportControlBlock self)
 {
@@ -669,6 +675,8 @@ IedConnection_getRCBValues(IedConnection self, IedClientError* error, const char
 
         *error = iedConnection_mapDataAccessErrorToIedError(
                         MmsValue_getDataAccessError(rcb));
+
+        MmsValue_delete(rcb);
 
         return NULL;
     }

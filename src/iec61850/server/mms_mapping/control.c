@@ -417,9 +417,6 @@ ControlObject_destroy(ControlObject* self)
     if (self->mmsValue != NULL)
         MmsValue_delete(self->mmsValue);
 
-    if (self->sbo != NULL)
-        MmsValue_delete(self->sbo);
-
     if (self->emptyString != NULL)
         MmsValue_delete(self->emptyString);
 
