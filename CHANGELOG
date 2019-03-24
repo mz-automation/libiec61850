@@ -7,12 +7,39 @@ Changes to version 1.4.0
 - modelviewer: show full hierarchy including sub data objects
 - IEC 61850 server: added IedServer_updateCtlModel function to change control model at runtime
 - IEC 61850 client: added functions IedConnection_getLogicalDeviceVariables, IedConnection_getLogicalDeviceDataSets, and IedConnection_getLogicalDeviceDataSetsAsync to address #89
-- .NET API: DataSet implements IDisposable interface, Report/DataSet GetValues methods return now clones of the original native values to prevent GC issues
-- .NET API: MmsValue - added Clone method and implemented IDisposable interface
 - .NET API: extended MmsValue.ToString method to print arrays and data access errors
 - common: MmsVariableSpecification_getChildValue now also accepts "." as separator
 - .NET API: ReportControlBlock.GetOwner returns null when no owner available (#79)
 - IEC 61850 client: IedConnection - added CONNECTING AND CLOSING states - removed IDLE state (CLOSED, CONNECTING, CONNECTED, CLOSING)
+
+Changes to version 1.3.3
+------------------------
+
+- IEC 61850 server: reporting - fixed problem with removing old GI reports when latest report is also GI
+- IEC 61850 client: fixed problems in ClientReportControlBlock_create (see github #134)
+- IEC 61850 client: handle reason code correctly when report contains data with different reason code (see github #133)
+- IEC 61850 server: optimized report buffer handling for buffered reporting (save memory and encoding time)
+- IEC 61850 client: fixed problem - IedConnection cannot be reused after IedConnection_close (github #124)
+- IEC 61850 server: added support for pre configured client with ClientLN
+- IEC 61850 client: added function ClientReportControlBlock_hasResvTms
+- IEC 61850 server: don't clear owner when client disables BRCB (RptEna = false)
+- IED Server: added ResvTms handling for BRCB
+- SV publisher: fixed length calculation
+- IEC 61850 server: added support for segmented reporting
+- fixed bug in windows socket abstraction
+- fixed client TCP keep alive problem (see github #115)
+- MMS server: read service - return data access error for component access to simple variable
+- GOOSE receiver: fixed potential deadlock when GooseReceiver_stop is called directly after GooseReceiver_start
+
+Changes to version 1.3.2
+------------------------
+- MMS client/server: added support for component alternate access for generic variable read requests
+- MMS client: improved handling/stability when receiving malformed messages from the server
+- IEC 61850 server: fixed problem with wrong purge buffer invocation when using dynamic data set in buffered report control block
+- .NET API: add GetFileDirectoryEx function
+- modelviewer: show full hierarchy including sub data objects
+- .NET API: DataSet implements IDisposable interface, Report/DataSet GetValues methods return now clones of the original native values to prevent GC issues
+- .NET API: MmsValue - added Clone method and implemented IDisposable interface
 
 Changes to version 1.3.1
 ------------------------
