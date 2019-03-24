@@ -25,7 +25,7 @@
 #include "logging_api.h"
 #include "libiec61850_platform_includes.h"
 
-#include <sqlite3.h>
+#include "sqlite3.h"
 
 #ifndef DEBUG_LOG_STORAGE_DRIVER
 #define DEBUG_LOG_STORAGE_DRIVER 0
