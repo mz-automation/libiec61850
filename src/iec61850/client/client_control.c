@@ -212,7 +212,7 @@ ControlObjectClient_create(const char* objectReference, IedConnection connection
     /* request control model from server */
     char reference[129];
 
-    if (strlen(objectReference) < 121) {
+    if (strlen(objectReference) < 120) {
         strcpy(reference, objectReference);
         strcat(reference, ".ctlModel");
     }
