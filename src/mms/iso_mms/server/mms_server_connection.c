@@ -453,14 +453,20 @@ getUploadTaskByInvokeId(MmsServer mmsServer, uint32_t invokeId)
 }
 
 static void
-mmsFileReadHandler(uint32_t invokeId, void* parameter, MmsError mmsError, uint8_t* buffer, uint32_t bytesReceived, bool moreFollows)
+mmsFileReadHandler(uint32_t invokeId, void* parameter, MmsError mmsError, int32_t frsmId, uint8_t* buffer, uint32_t bytesReceived, bool moreFollows)
 {
     MmsObtainFileTask task = (MmsObtainFileTask) parameter;
 
-    if (DEBUG_MMS_SERVER)
-        printf("MMS_SERVER:  file %i received %i bytes\n", task->frmsId, bytesReceived);
+    if (mmsError == MMS_ERROR_NONE) {
+        if (DEBUG_MMS_SERVER)
+            printf("MMS_SERVER:  file %i received %i bytes\n", task->frmsId, bytesReceived);
 
-    FileSystem_writeFile(task->fileHandle, buffer, bytesReceived);
+        FileSystem_writeFile(task->fileHandle, buffer, bytesReceived);
+    }
+    else {
+        if (DEBUG_MMS_SERVER)
+            printf("MMS_SERVER:  problem reading file %i (error code: %i)\n", task->frmsId, mmsError);
+    }
 }
 
 static void

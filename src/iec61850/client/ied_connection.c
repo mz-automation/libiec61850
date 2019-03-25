@@ -1937,7 +1937,7 @@ mmsConnectionFileCloseHandler (uint32_t invokeId, void* parameter, MmsError mmsE
 }
 
 static void
-mmsConnectionFileReadHandler (uint32_t invokeId, void* parameter, MmsError mmsError, uint8_t* buffer, uint32_t byteReceived,
+mmsConnectionFileReadHandler (uint32_t invokeId, void* parameter, MmsError mmsError, int32_t frsmId, uint8_t* buffer, uint32_t byteReceived,
         bool moreFollows)
 {
     IedConnection self = (IedConnection) parameter;
@@ -1954,7 +1954,7 @@ mmsConnectionFileReadHandler (uint32_t invokeId, void* parameter, MmsError mmsEr
             handler(call->specificParameter2.getFileInfo.originalInvokeId, call->callbackParameter, err, invokeId, NULL, 0, false);
 
             /* close file */
-            MmsConnection_fileCloseAsync(self->connection, &mmsError, call->specificParameter2.getFileInfo.frsmId, mmsConnectionFileCloseHandler, self);
+            MmsConnection_fileCloseAsync(self->connection, &mmsError, frsmId, mmsConnectionFileCloseHandler, self);
 
             if (mmsError != MMS_ERROR_NONE)
                 iedConnection_releaseOutstandingCall(self, call);
@@ -1964,7 +1964,7 @@ mmsConnectionFileReadHandler (uint32_t invokeId, void* parameter, MmsError mmsEr
 
             if ((moreFollows == false) || (cont == false)) {
                 /* close file */
-                MmsConnection_fileCloseAsync(self->connection, &mmsError, call->specificParameter2.getFileInfo.frsmId, mmsConnectionFileCloseHandler, self);
+                MmsConnection_fileCloseAsync(self->connection, &mmsError, frsmId, mmsConnectionFileCloseHandler, self);
 
                 if (mmsError != MMS_ERROR_NONE)
                     iedConnection_releaseOutstandingCall(self, call);
@@ -1972,7 +1972,7 @@ mmsConnectionFileReadHandler (uint32_t invokeId, void* parameter, MmsError mmsEr
             else {
                 /* send next read request */
 
-                call->invokeId = MmsConnection_fileReadAsync(self->connection, &mmsError, call->specificParameter2.getFileInfo.frsmId,
+                call->invokeId = MmsConnection_fileReadAsync(self->connection, &mmsError, frsmId,
                         mmsConnectionFileReadHandler, self);
 
                 if (mmsError != MMS_ERROR_NONE) {
@@ -1981,7 +1981,7 @@ mmsConnectionFileReadHandler (uint32_t invokeId, void* parameter, MmsError mmsEr
                     handler(invokeId, call->callbackParameter, err, invokeId, NULL, 0, false);
 
                     /* close file */
-                    MmsConnection_fileCloseAsync(self->connection, &mmsError, call->specificParameter2.getFileInfo.frsmId, mmsConnectionFileCloseHandler, self);
+                    MmsConnection_fileCloseAsync(self->connection, &mmsError, frsmId, mmsConnectionFileCloseHandler, self);
 
                     if (mmsError != MMS_ERROR_NONE) {
                         iedConnection_releaseOutstandingCall(self, call);
@@ -2019,8 +2019,6 @@ mmsConnectionFileOpenHandler (uint32_t invokeId, void* parameter, MmsError mmsEr
             iedConnection_releaseOutstandingCall(self, call);
         }
         else {
-
-            call->specificParameter2.getFileInfo.frsmId = frsmId;
             call->specificParameter2.getFileInfo.originalInvokeId = invokeId;
             call->invokeId = MmsConnection_fileReadAsync(self->connection, &mmsError, frsmId, mmsConnectionFileReadHandler, self);
 

@@ -894,18 +894,18 @@ handleAsyncResponse(MmsConnection self, ByteBuffer* response, uint32_t bufPos, M
         MmsConnection_FileReadHandler handler =
                 (MmsConnection_FileReadHandler) outstandingCall->userCallback;
 
+        int32_t frsmId = outstandingCall->internalParameter.i32;
+
         if (err != MMS_ERROR_NONE) {
-            handler(outstandingCall->invokeId, outstandingCall->userParameter, err, NULL, 0, false);
+            handler(outstandingCall->invokeId, outstandingCall->userParameter, err, frsmId, NULL, 0, false);
         }
         else {
             bool moreFollows;
 
-            int32_t frsmId = outstandingCall->internalParameter.i32;
-
             if (mmsMsg_parseFileReadResponse(ByteBuffer_getBuffer(response), bufPos, ByteBuffer_getSize(response), outstandingCall->invokeId, frsmId, &moreFollows,
                     handler, outstandingCall->userParameter) == false)
             {
-                handler(outstandingCall->invokeId, outstandingCall->userParameter, MMS_ERROR_PARSING_RESPONSE, NULL, 0, false);
+                handler(outstandingCall->invokeId, outstandingCall->userParameter, MMS_ERROR_PARSING_RESPONSE, frsmId, NULL, 0, false);
             }
         }
     }
@@ -3671,14 +3671,13 @@ struct fileReadParameters
 {
     Semaphore waitForResponse;
     MmsError err;
-    int32_t frsmId;
     MmsFileReadHandler handler;
     void* handlerParameter;
     bool moreFollows;
 };
 
 static void
-fileReadHandler(uint32_t invokeId, void* parameter, MmsError mmsError, uint8_t* buffer, uint32_t byteReceived,
+fileReadHandler(uint32_t invokeId, void* parameter, MmsError mmsError, int frsmId, uint8_t* buffer, uint32_t byteReceived,
         bool moreFollows)
 {
     struct fileReadParameters* parameters = (struct fileReadParameters*) parameter;
@@ -3686,7 +3685,7 @@ fileReadHandler(uint32_t invokeId, void* parameter, MmsError mmsError, uint8_t* 
     parameters->err = mmsError;
 
     if (mmsError == MMS_ERROR_NONE)
-        parameters->handler(parameters->handlerParameter, parameters->frsmId, buffer, byteReceived);
+        parameters->handler(parameters->handlerParameter, frsmId, buffer, byteReceived);
 
     parameters->moreFollows = moreFollows;
 
@@ -3706,7 +3705,6 @@ MmsConnection_fileRead(MmsConnection self, MmsError* mmsError, int32_t frsmId, M
 
     parameter.waitForResponse = Semaphore_create(1);
     parameter.err = MMS_ERROR_NONE;
-    parameter.frsmId = frsmId;
     parameter.handler = handler;
     parameter.handlerParameter = handlerParameter;
     parameter.moreFollows = false;

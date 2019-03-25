@@ -1074,8 +1074,21 @@ typedef void
 typedef void
 (*MmsFileReadHandler) (void* parameter, int32_t frsmId, uint8_t* buffer, uint32_t bytesReceived);
 
+/**
+ * \brief Callback handler for the file read service
+ *
+ * Will be called for every received part of the file and when there is an error during reading the file.
+ *
+ * \param invokeId invokeID of the response
+ * \param parameter user provided context parameter
+ * \param mmsError error code
+ * \param frsmId ID of the file
+ * \param buffer buffer where the received bytes are stored
+ * \param bytesReceived number of bytes received with this response
+ * \param moreFollows more messages with parts of the file are following
+ */
 typedef void
-(*MmsConnection_FileReadHandler) (uint32_t invokeId, void* parameter, MmsError mmsError, uint8_t* buffer, uint32_t byteReceived,
+(*MmsConnection_FileReadHandler) (uint32_t invokeId, void* parameter, MmsError mmsError, int32_t frsmId, uint8_t* buffer, uint32_t byteReceived,
         bool moreFollows);
 
 

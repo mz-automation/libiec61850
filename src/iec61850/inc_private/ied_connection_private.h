@@ -42,7 +42,6 @@ struct sIedConnectionOutstandingCall {
     union {
         void* pointer;
         struct {
-            int32_t frsmId;
             uint32_t originalInvokeId;
         } getFileInfo;
         struct {
