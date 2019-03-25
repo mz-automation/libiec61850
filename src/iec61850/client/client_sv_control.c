@@ -50,12 +50,16 @@ ClientSVControlBlock_create(IedConnection connection, const char* reference)
         MmsValue_delete(value);
     }
     else {
+        MmsValue_delete(value);
+
         value = IedConnection_readObject(connection, &error, reference, IEC61850_FC_US);
 
         if ((error == IED_ERROR_OK) && (MmsValue_getType(value) != MMS_DATA_ACCESS_ERROR))
             MmsValue_delete(value);
-        else
+        else {
+            MmsValue_delete(value);
             return NULL;
+        }
     }
 
     ClientSVControlBlock self = (ClientSVControlBlock) GLOBAL_CALLOC(1, sizeof(struct sClientSVControlBlock));
