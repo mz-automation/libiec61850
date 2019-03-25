@@ -73,7 +73,7 @@ writeDataSetHandler(uint32_t invokeId, void* parameter, IedClientError err, Link
             LinkedList element = LinkedList_getNext(accessResults);
 
             while (element) {
-                MmsValue* accessResultValue = LinkedList_getData(element);
+                MmsValue* accessResultValue = (MmsValue*) LinkedList_getData(element);
 
                 printf("  access-result[%i]", i);
                 printValue("", accessResultValue);
