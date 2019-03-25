@@ -45,17 +45,17 @@ ClientSVControlBlock_create(IedConnection connection, const char* reference)
     IedClientError error;
     MmsValue* value = IedConnection_readObject(connection, &error, reference, IEC61850_FC_MS);
 
-    if (value != NULL) {
+    if ((error == IED_ERROR_OK) && (MmsValue_getType(value) != MMS_DATA_ACCESS_ERROR)) {
         isMulticast = true;
         MmsValue_delete(value);
     }
     else {
         value = IedConnection_readObject(connection, &error, reference, IEC61850_FC_US);
 
-        if (value == NULL)
+        if ((error == IED_ERROR_OK) && (MmsValue_getType(value) != MMS_DATA_ACCESS_ERROR))
+            MmsValue_delete(value);
+        else
             return NULL;
-
-        MmsValue_delete(value);
     }
 
     ClientSVControlBlock self = (ClientSVControlBlock) GLOBAL_CALLOC(1, sizeof(struct sClientSVControlBlock));

@@ -72,16 +72,22 @@ int main(int argc, char** argv) {
         LinkedList logs = IedConnection_getLogicalNodeDirectory(con, &error, "simpleIOGenericIO/LLN0", ACSI_CLASS_LOG);
 
         if (error == IED_ERROR_OK) {
-            printf("Found log in LN simpleIOGenericIO/LLN0:\n");
 
-            LinkedList log = LinkedList_getNext(logs);
+            if (LinkedList_size(logs) > 0) {
+                printf("Found logs in LN simpleIOGenericIO/LLN0:\n");
 
-            while (log != NULL) {
-                char* logName = (char*) LinkedList_getData(log);
+                LinkedList log = LinkedList_getNext(logs);
 
-                printf("  %s\n", logName);
+                while (log != NULL) {
+                    char* logName = (char*) LinkedList_getData(log);
 
-                log = LinkedList_getNext(log);
+                    printf("  %s\n", logName);
+
+                    log = LinkedList_getNext(log);
+                }
+            }
+            else {
+                printf("No logs found\n");
             }
 
             LinkedList_destroy(logs);
@@ -90,7 +96,7 @@ int main(int argc, char** argv) {
         /* read log control block (using the generic read function) */
         MmsValue* lcbValue = IedConnection_readObject(con, &error, "simpleIOGenericIO/LLN0.EventLog", IEC61850_FC_LG);
 
-        if (error == IED_ERROR_OK) {
+        if ((error == IED_ERROR_OK) && (MmsValue_getType(lcbValue) != MMS_DATA_ACCESS_ERROR)) {
 
             char printBuf[1024];
 
