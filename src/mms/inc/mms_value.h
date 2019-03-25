@@ -756,18 +756,6 @@ LIB61850_API void
 MmsValue_deleteConditional(MmsValue* value);
 
 /**
- * \brief Delete an MmsValue instance if the provided pointer is not NULL
- *
- * This operation frees all dynamically allocated memory of the MmsValue instance.
- * If the instance is of type MMS_STRUCTURE or MMS_ARRAY all child elements will
- * be deleted too.
- *
- * \param self the MmsValue instance to be deleted.
- */
-LIB61850_API void
-MmsValue_deleteIfNotNull(MmsValue* value);
-
-/**
  * \brief Create a new MmsValue instance of type MMS_VISIBLE_STRING.
  *
  * This function will allocate as much memory as required to hold the string and sets the maximum size of

@@ -82,22 +82,22 @@ ClientReportControlBlock_destroy(ClientReportControlBlock self)
 {
     GLOBAL_FREEMEM(self->objectReference);
 
-    MmsValue_deleteIfNotNull(self->rptId);
-    MmsValue_deleteIfNotNull(self->rptEna);
-    MmsValue_deleteIfNotNull(self->resv);
-    MmsValue_deleteIfNotNull(self->datSet);
-    MmsValue_deleteIfNotNull(self->confRev);
-    MmsValue_deleteIfNotNull(self->optFlds);
-    MmsValue_deleteIfNotNull(self->bufTm);
-    MmsValue_deleteIfNotNull(self->sqNum);
-    MmsValue_deleteIfNotNull(self->trgOps);
-    MmsValue_deleteIfNotNull(self->intgPd);
-    MmsValue_deleteIfNotNull(self->gi);
-    MmsValue_deleteIfNotNull(self->purgeBuf);
-    MmsValue_deleteIfNotNull(self->entryId);
-    MmsValue_deleteIfNotNull(self->timeOfEntry);
-    MmsValue_deleteIfNotNull(self->resvTms);
-    MmsValue_deleteIfNotNull(self->owner);
+    MmsValue_delete(self->rptId);
+    MmsValue_delete(self->rptEna);
+    MmsValue_delete(self->resv);
+    MmsValue_delete(self->datSet);
+    MmsValue_delete(self->confRev);
+    MmsValue_delete(self->optFlds);
+    MmsValue_delete(self->bufTm);
+    MmsValue_delete(self->sqNum);
+    MmsValue_delete(self->trgOps);
+    MmsValue_delete(self->intgPd);
+    MmsValue_delete(self->gi);
+    MmsValue_delete(self->purgeBuf);
+    MmsValue_delete(self->entryId);
+    MmsValue_delete(self->timeOfEntry);
+    MmsValue_delete(self->resvTms);
+    MmsValue_delete(self->owner);
 
     GLOBAL_FREEMEM(self);
 }

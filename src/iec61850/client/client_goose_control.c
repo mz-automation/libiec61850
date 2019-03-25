@@ -59,15 +59,15 @@ ClientGooseControlBlock_destroy(ClientGooseControlBlock self)
 {
     GLOBAL_FREEMEM(self->objectReference);
 
-    MmsValue_deleteIfNotNull(self->goEna);
-    MmsValue_deleteIfNotNull(self->goID);
-    MmsValue_deleteIfNotNull(self->datSet);
-    MmsValue_deleteIfNotNull(self->confRev);
-    MmsValue_deleteIfNotNull(self->ndsCom);
-    MmsValue_deleteIfNotNull(self->dstAddress);
-    MmsValue_deleteIfNotNull(self->minTime);
-    MmsValue_deleteIfNotNull(self->maxTime);
-    MmsValue_deleteIfNotNull(self->fixedOffs);
+    MmsValue_delete(self->goEna);
+    MmsValue_delete(self->goID);
+    MmsValue_delete(self->datSet);
+    MmsValue_delete(self->confRev);
+    MmsValue_delete(self->ndsCom);
+    MmsValue_delete(self->dstAddress);
+    MmsValue_delete(self->minTime);
+    MmsValue_delete(self->maxTime);
+    MmsValue_delete(self->fixedOffs);
 
     GLOBAL_FREEMEM(self);
 }

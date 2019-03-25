@@ -1173,13 +1173,6 @@ MmsValue_getArraySize(const MmsValue* self)
 }
 
 void
-MmsValue_deleteIfNotNull(MmsValue* self)
-{
-    if (self != NULL)
-        MmsValue_delete(self);
-}
-
-void
 MmsValue_delete(MmsValue* self)
 {
     if (self == NULL)

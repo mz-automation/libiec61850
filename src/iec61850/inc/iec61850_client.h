@@ -580,9 +580,10 @@ LIB61850_API PhyComAddress
 ClientSVControlBlock_getDstAddress(ClientSVControlBlock self);
 
 /**
- * \brief returns the OptFlds bit string as integer
+ * \brief Gets the OptFlds parameter of the RCB (decides what information to include in a report)
  *
- * \param self the ClientSVControlBlock instance to operate on
+ * \param self the RCB instance
+ * \return bit field representing the optional fields of a report (uses flags from \ref REPORT_OPTIONS)
  */
 LIB61850_API int
 ClientSVControlBlock_getOptFlds(ClientSVControlBlock self);
@@ -1573,9 +1574,26 @@ ClientReportControlBlock_getOptFlds(ClientReportControlBlock self);
 LIB61850_API void
 ClientReportControlBlock_setOptFlds(ClientReportControlBlock self, int optFlds);
 
+/**
+ * \brief Get the BufTm (buffer time) parameter of the RCB
+ *
+ * The buffer time is the time to wait after a triggering event before the report is actually sent.
+ * It is used to be able to collect events that happen in a short time period and send them in a single report.
+ *
+ * \param self the RCB instance
+ */
 LIB61850_API uint32_t
 ClientReportControlBlock_getBufTm(ClientReportControlBlock self);
 
+/**
+ * \brief Set the BufTm (buffer time) parameter of the RCB
+ *
+ * The buffer time is the time to wait after a triggering event before the report is actually sent.
+ * It is used to be able to collect events that happen in a short time period and send them in a single report.
+ *
+ * \param self the RCB instance
+ * \param bufTm the buffer time in ms
+ */
 LIB61850_API void
 ClientReportControlBlock_setBufTm(ClientReportControlBlock self, uint32_t bufTm);
 
