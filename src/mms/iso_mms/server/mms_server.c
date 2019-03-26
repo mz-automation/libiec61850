@@ -61,6 +61,8 @@ MmsServer_create(MmsDevice* device, TLSConfiguration tlsConfiguration)
     self->transmitBuffer = ByteBuffer_create(NULL, CONFIG_MMS_MAXIMUM_PDU_SIZE);
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
+    self->openConnectionsLock = Semaphore_create(1);
+
     self->modelMutex = Semaphore_create(1);
     self->transmitBufferMutex = Semaphore_create(1);
 
@@ -299,6 +301,8 @@ MmsServer_destroy(MmsServer self)
     Map_deleteDeep(self->valueCaches, false, (void (*) (void*)) deleteSingleCache);
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_destroy(self->openConnectionsLock);
+
     Semaphore_destroy(self->modelMutex);
     Semaphore_destroy(self->transmitBufferMutex);
 #endif
@@ -401,23 +405,41 @@ static void /* will be called by ISO server stack */
 isoConnectionIndicationHandler(IsoConnectionIndication indication,
 		void* parameter, IsoConnection connection)
 {
-    MmsServer mmsServer = (MmsServer) parameter;
+    MmsServer self = (MmsServer) parameter;
 
     if (indication == ISO_CONNECTION_OPENED) {
-        MmsServerConnection mmsCon = MmsServerConnection_init(0, mmsServer, connection);
+        MmsServerConnection mmsCon = MmsServerConnection_init(0, self, connection);
 
-        Map_addEntry(mmsServer->openConnections, connection, mmsCon);
 
-        if (mmsServer->connectionHandler != NULL)
-            mmsServer->connectionHandler(mmsServer->connectionHandlerParameter,
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_wait(self->openConnectionsLock);
+#endif
+
+        Map_addEntry(self->openConnections, connection, mmsCon);
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_post(self->openConnectionsLock);
+#endif
+
+        if (self->connectionHandler != NULL)
+            self->connectionHandler(self->connectionHandlerParameter,
                     mmsCon, MMS_SERVER_NEW_CONNECTION);
     }
     else if (indication == ISO_CONNECTION_CLOSED) {
-        MmsServerConnection mmsCon = (MmsServerConnection)
-                Map_removeEntry(mmsServer->openConnections, connection, false);
 
-        if (mmsServer->connectionHandler != NULL)
-            mmsServer->connectionHandler(mmsServer->connectionHandlerParameter,
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_wait(self->openConnectionsLock);
+#endif
+
+        MmsServerConnection mmsCon = (MmsServerConnection)
+                Map_removeEntry(self->openConnections, connection, false);
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_post(self->openConnectionsLock);
+#endif
+
+        if (self->connectionHandler != NULL)
+            self->connectionHandler(self->connectionHandlerParameter,
                     mmsCon, MMS_SERVER_CONNECTION_CLOSED);
 
         if (mmsCon != NULL)
