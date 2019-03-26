@@ -393,6 +393,17 @@ ControlObject_initialize(ControlObject* self)
         MmsValue_setVisibleString(self->sbo, controlObjectReference);
     }
 
+    char* stSeldName = StringUtils_createStringInBuffer(strBuf, 6, self->mmsDomain->domainName, "/", self->lnName, ".", self->name, ".stSeld");
+
+    self->stSeld = (DataAttribute*) IedModel_getModelNodeByObjectReference(self->iedServer->model, stSeldName);
+
+    if ((self->stSeld) && (self->stSeld->type != IEC61850_BOOLEAN)) {
+        self->stSeld = NULL;
+
+        if (DEBUG_IED_SERVER)
+            printf("IED_SERVER:  ERROR - stSeld of wrong type!\n");
+    }
+
     self->error = MmsValue_newIntegerFromInt32(0);
     self->addCause = MmsValue_newIntegerFromInt32(0);
 
@@ -489,15 +500,24 @@ ControlObject_getMmsValue(ControlObject* self)
 }
 
 static void
+setStSeld(ControlObject* self, bool value)
+{
+    if (self->stSeld) {
+        IedServer_updateBooleanAttributeValue(self->iedServer, self->stSeld, value);
+    }
+}
+
+static void
 selectObject(ControlObject* self, uint64_t selectTime, MmsServerConnection connection)
 {
     if (DEBUG_IED_SERVER)
         printf("IED_SERVER: control %s selected\n", self->ctlObjectName);
 
     updateSboTimeoutValue(self);
-    self->selected = true;
+
     self->selectTime = selectTime;
     self->mmsConnection = connection;
+    setStSeld(self, true);
     setState(self, STATE_READY);
 }
 
@@ -505,6 +525,8 @@ static void
 unselectObject(ControlObject* self)
 {
     setState(self, STATE_UNSELECTED);
+
+    setStSeld(self, false);
 
     if (DEBUG_IED_SERVER)
         printf("IED_SERVER: control %s unselected\n", self->ctlObjectName);

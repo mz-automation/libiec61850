@@ -65,13 +65,14 @@ struct sControlObject
     MmsValue* ctlNumSt;
     MmsValue* originSt;
 
+    DataAttribute* stSeld;
+
     char ctlObjectName[130];
 
     /* for LastAppIError */
     MmsValue* error;
     MmsValue* addCause;
 
-    bool selected;
     uint64_t selectTime;
     uint32_t selectTimeout;
     MmsValue* sboClass;
