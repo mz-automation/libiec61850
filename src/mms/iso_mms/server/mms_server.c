@@ -410,7 +410,6 @@ isoConnectionIndicationHandler(IsoConnectionIndication indication,
     if (indication == ISO_CONNECTION_OPENED) {
         MmsServerConnection mmsCon = MmsServerConnection_init(0, self, connection);
 
-
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
         Semaphore_wait(self->openConnectionsLock);
 #endif

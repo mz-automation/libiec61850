@@ -31,6 +31,9 @@ IsoConnection
 IsoConnection_create(Socket socket, IsoServer isoServer);
 
 void
+IsoConnection_start(IsoConnection self);
+
+void
 IsoConnection_destroy(IsoConnection self);
 
 void

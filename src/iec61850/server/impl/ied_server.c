@@ -418,6 +418,7 @@ IedServer_createWithConfig(IedModel* dataModel, TLSConfiguration tlsConfiguratio
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
         self->dataModelLock = Semaphore_create(1);
+        self->clientConnectionsLock = Semaphore_create(1);
 #endif /* (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1) */
 
 #if (CONFIG_IEC61850_REPORT_SERVICE == 1)
@@ -527,6 +528,7 @@ IedServer_destroy(IedServer self)
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_destroy(self->dataModelLock);
+    Semaphore_destroy(self->clientConnectionsLock);
 #endif
 
     GLOBAL_FREEMEM(self);
@@ -1471,6 +1473,10 @@ IedServer_setLogStorage(IedServer self, const char* logRef, LogStorage logStorag
 ClientConnection
 private_IedServer_getClientConnectionByHandle(IedServer self, void* serverConnectionHandle)
 {
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_wait(self->clientConnectionsLock);
+#endif
+
     LinkedList element = LinkedList_getNext(self->clientConnections);
     ClientConnection matchingConnection = NULL;
 
@@ -1485,19 +1491,39 @@ private_IedServer_getClientConnectionByHandle(IedServer self, void* serverConnec
         element = LinkedList_getNext(element);
     }
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_post(self->clientConnectionsLock);
+#endif
+
     return matchingConnection;
 }
 
 void
 private_IedServer_addNewClientConnection(IedServer self, ClientConnection newClientConnection)
 {
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_wait(self->clientConnectionsLock);
+#endif
+
     LinkedList_add(self->clientConnections, (void*) newClientConnection);
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_post(self->clientConnectionsLock);
+#endif
 }
 
 void
 private_IedServer_removeClientConnection(IedServer self, ClientConnection clientConnection)
 {
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_wait(self->clientConnectionsLock);
+#endif
+
     LinkedList_remove(self->clientConnections, clientConnection);
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_post(self->clientConnectionsLock);
+#endif
 }
 
 
