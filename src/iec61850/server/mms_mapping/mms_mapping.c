@@ -1,7 +1,7 @@
 /*
  *  mms_mapping.c
  *
- *  Copyright 2013-2018 Michael Zillgith
+ *  Copyright 2013-2019 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *

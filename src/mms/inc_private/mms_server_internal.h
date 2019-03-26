@@ -119,6 +119,10 @@ struct sMmsServer {
     MmsNamedVariableListChangedHandler variableListChangedHandler; //TODO this is only required if dynamic data sets are supported!
     void* variableListChangedHandlerParameter;
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore openConnectionsLock;
+#endif
+
     Map openConnections;
     Map valueCaches;
     bool isLocked;
