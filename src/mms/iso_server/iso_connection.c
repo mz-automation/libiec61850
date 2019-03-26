@@ -93,7 +93,7 @@ static void
 finalizeIsoConnection(IsoConnection self)
 {
     if (DEBUG_ISO_SERVER)
-        printf("ISO_SERVER: finalizeIsoConnection --> close transport connection\n");
+        printf("ISO_SERVER: finalizeIsoConnection (%p)--> close transport connection\n", self);
 
     IsoServer_closeConnection(self->isoServer, self);
 
@@ -515,12 +515,20 @@ IsoConnection_create(Socket socket, IsoServer isoServer)
 #if (CONFIG_MMS_SINGLE_THREADED == 0)
 #if (CONFIG_MMS_THREADLESS_STACK == 0)
     self->thread = Thread_create((ThreadExecutionFunction) handleTcpConnection, self, true);
-
-    Thread_start(self->thread);
 #endif
 #endif
 
     return self;
+}
+
+void
+IsoConnection_start(IsoConnection self)
+{
+#if (CONFIG_MMS_SINGLE_THREADED == 0)
+#if (CONFIG_MMS_THREADLESS_STACK == 0)
+    Thread_start(self->thread);
+#endif
+#endif
 }
 
 void

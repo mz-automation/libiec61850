@@ -31,6 +31,9 @@ LIB61850_INTERNAL IsoConnection
 IsoConnection_create(Socket socket, IsoServer isoServer);
 
 LIB61850_INTERNAL void
+IsoConnection_start(IsoConnection self);
+
+LIB61850_INTERNAL void
 IsoConnection_destroy(IsoConnection self);
 
 LIB61850_INTERNAL void

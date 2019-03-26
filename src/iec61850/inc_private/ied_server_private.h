@@ -49,6 +49,7 @@ struct sIedServer
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore dataModelLock;
+    Semaphore clientConnectionsLock;
 #endif
 
 #if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)

@@ -410,6 +410,7 @@ handleIsoConnections(IsoServer self)
             self->connectionHandler(ISO_CONNECTION_OPENED, self->connectionHandlerParameter,
                     isoConnection);
 
+            IsoConnection_start(isoConnection);
         }
 
     }
