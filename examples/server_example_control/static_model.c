@@ -7,7 +7,149 @@
 
 static void initializeValues();
 
+extern DataSet iedModelds_GenericIO_LLN0_ControlEvents;
 
+
+extern DataSetEntry iedModelds_GenericIO_LLN0_ControlEvents_fcda0;
+extern DataSetEntry iedModelds_GenericIO_LLN0_ControlEvents_fcda1;
+extern DataSetEntry iedModelds_GenericIO_LLN0_ControlEvents_fcda2;
+extern DataSetEntry iedModelds_GenericIO_LLN0_ControlEvents_fcda3;
+extern DataSetEntry iedModelds_GenericIO_LLN0_ControlEvents_fcda4;
+extern DataSetEntry iedModelds_GenericIO_LLN0_ControlEvents_fcda5;
+extern DataSetEntry iedModelds_GenericIO_LLN0_ControlEvents_fcda6;
+extern DataSetEntry iedModelds_GenericIO_LLN0_ControlEvents_fcda7;
+extern DataSetEntry iedModelds_GenericIO_LLN0_ControlEvents_fcda8;
+extern DataSetEntry iedModelds_GenericIO_LLN0_ControlEvents_fcda9;
+extern DataSetEntry iedModelds_GenericIO_LLN0_ControlEvents_fcda10;
+extern DataSetEntry iedModelds_GenericIO_LLN0_ControlEvents_fcda11;
+
+DataSetEntry iedModelds_GenericIO_LLN0_ControlEvents_fcda0 = {
+  "GenericIO",
+  false,
+  "GGIO1$ST$SPCSO1$stVal",
+  -1,
+  NULL,
+  NULL,
+  &iedModelds_GenericIO_LLN0_ControlEvents_fcda1
+};
+
+DataSetEntry iedModelds_GenericIO_LLN0_ControlEvents_fcda1 = {
+  "GenericIO",
+  false,
+  "GGIO1$ST$SPCSO2$stVal",
+  -1,
+  NULL,
+  NULL,
+  &iedModelds_GenericIO_LLN0_ControlEvents_fcda2
+};
+
+DataSetEntry iedModelds_GenericIO_LLN0_ControlEvents_fcda2 = {
+  "GenericIO",
+  false,
+  "GGIO1$ST$SPCSO3$stVal",
+  -1,
+  NULL,
+  NULL,
+  &iedModelds_GenericIO_LLN0_ControlEvents_fcda3
+};
+
+DataSetEntry iedModelds_GenericIO_LLN0_ControlEvents_fcda3 = {
+  "GenericIO",
+  false,
+  "GGIO1$ST$SPCSO4$stVal",
+  -1,
+  NULL,
+  NULL,
+  &iedModelds_GenericIO_LLN0_ControlEvents_fcda4
+};
+
+DataSetEntry iedModelds_GenericIO_LLN0_ControlEvents_fcda4 = {
+  "GenericIO",
+  false,
+  "GGIO1$ST$SPCSO5$stVal",
+  -1,
+  NULL,
+  NULL,
+  &iedModelds_GenericIO_LLN0_ControlEvents_fcda5
+};
+
+DataSetEntry iedModelds_GenericIO_LLN0_ControlEvents_fcda5 = {
+  "GenericIO",
+  false,
+  "GGIO1$ST$SPCSO6$stVal",
+  -1,
+  NULL,
+  NULL,
+  &iedModelds_GenericIO_LLN0_ControlEvents_fcda6
+};
+
+DataSetEntry iedModelds_GenericIO_LLN0_ControlEvents_fcda6 = {
+  "GenericIO",
+  false,
+  "GGIO1$ST$SPCSO7$stVal",
+  -1,
+  NULL,
+  NULL,
+  &iedModelds_GenericIO_LLN0_ControlEvents_fcda7
+};
+
+DataSetEntry iedModelds_GenericIO_LLN0_ControlEvents_fcda7 = {
+  "GenericIO",
+  false,
+  "GGIO1$ST$SPCSO8$stVal",
+  -1,
+  NULL,
+  NULL,
+  &iedModelds_GenericIO_LLN0_ControlEvents_fcda8
+};
+
+DataSetEntry iedModelds_GenericIO_LLN0_ControlEvents_fcda8 = {
+  "GenericIO",
+  false,
+  "GGIO1$ST$SPCSO9$stVal",
+  -1,
+  NULL,
+  NULL,
+  &iedModelds_GenericIO_LLN0_ControlEvents_fcda9
+};
+
+DataSetEntry iedModelds_GenericIO_LLN0_ControlEvents_fcda9 = {
+  "GenericIO",
+  false,
+  "GGIO1$ST$SPCSO2$stSeld",
+  -1,
+  NULL,
+  NULL,
+  &iedModelds_GenericIO_LLN0_ControlEvents_fcda10
+};
+
+DataSetEntry iedModelds_GenericIO_LLN0_ControlEvents_fcda10 = {
+  "GenericIO",
+  false,
+  "GGIO1$OR$SPCSO2$opRcvd",
+  -1,
+  NULL,
+  NULL,
+  &iedModelds_GenericIO_LLN0_ControlEvents_fcda11
+};
+
+DataSetEntry iedModelds_GenericIO_LLN0_ControlEvents_fcda11 = {
+  "GenericIO",
+  false,
+  "GGIO1$OR$SPCSO2$opOk",
+  -1,
+  NULL,
+  NULL,
+  NULL
+};
+
+DataSet iedModelds_GenericIO_LLN0_ControlEvents = {
+  "GenericIO",
+  "LLN0$ControlEvents",
+  12,
+  &iedModelds_GenericIO_LLN0_ControlEvents_fcda0,
+  NULL
+};
 
 LogicalDevice iedModel_GenericIO = {
     LogicalDeviceModelType,
@@ -1264,10 +1406,62 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO2_t = {
     DataAttributeModelType,
     "t",
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO2,
-    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO2_ctlModel,
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO2_stSeld,
     NULL,
     0,
     IEC61850_FC_ST,
+    IEC61850_TIMESTAMP,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_GGIO1_SPCSO2_stSeld = {
+    DataAttributeModelType,
+    "stSeld",
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO2,
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO2_opRcvd,
+    NULL,
+    0,
+    IEC61850_FC_ST,
+    IEC61850_BOOLEAN,
+    0 + TRG_OPT_DATA_CHANGED,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_GGIO1_SPCSO2_opRcvd = {
+    DataAttributeModelType,
+    "opRcvd",
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO2,
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO2_opOk,
+    NULL,
+    0,
+    IEC61850_FC_OR,
+    IEC61850_BOOLEAN,
+    0 + TRG_OPT_DATA_CHANGED,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_GGIO1_SPCSO2_opOk = {
+    DataAttributeModelType,
+    "opOk",
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO2,
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO2_tOpOk,
+    NULL,
+    0,
+    IEC61850_FC_OR,
+    IEC61850_BOOLEAN,
+    0 + TRG_OPT_DATA_CHANGED,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_GGIO1_SPCSO2_tOpOk = {
+    DataAttributeModelType,
+    "tOpOk",
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO2,
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO2_ctlModel,
+    NULL,
+    0,
+    IEC61850_FC_OR,
     IEC61850_TIMESTAMP,
     0,
     NULL,
@@ -1277,12 +1471,25 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO2_ctlModel = {
     DataAttributeModelType,
     "ctlModel",
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO2,
-    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO2_sboClass,
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO2_sboTimeout,
     NULL,
     0,
     IEC61850_FC_CF,
     IEC61850_ENUMERATED,
     0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_GGIO1_SPCSO2_sboTimeout = {
+    DataAttributeModelType,
+    "sboTimeout",
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO2,
+    (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO2_sboClass,
+    NULL,
+    0,
+    IEC61850_FC_CF,
+    IEC61850_INT32U,
+    0 + TRG_OPT_DATA_CHANGED,
     NULL,
     0};
 
@@ -3868,7 +4075,11 @@ DataAttribute iedModel_GenericIO_GGIO1_Ind4_t = {
     NULL,
     0};
 
+extern ReportControlBlock iedModel_GenericIO_LLN0_report0;
+extern ReportControlBlock iedModel_GenericIO_LLN0_report1;
 
+ReportControlBlock iedModel_GenericIO_LLN0_report0 = {&iedModel_GenericIO_LLN0, "ControlEventsRCB01", "ControlEvents", false, "ControlEvents", 1, 17, 239, 0, 1000, {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, &iedModel_GenericIO_LLN0_report1};
+ReportControlBlock iedModel_GenericIO_LLN0_report1 = {&iedModel_GenericIO_LLN0, "ControlEventsRCB02", "ControlEvents", false, "ControlEvents", 1, 17, 239, 0, 1000, {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, NULL};
 
 
 
@@ -3879,8 +4090,8 @@ DataAttribute iedModel_GenericIO_GGIO1_Ind4_t = {
 IedModel iedModel = {
     "simpleIO",
     &iedModel_GenericIO,
-    NULL,
-    NULL,
+    &iedModelds_GenericIO_LLN0_ControlEvents,
+    &iedModel_GenericIO_LLN0_report0,
     NULL,
     NULL,
     NULL,
@@ -3900,6 +4111,8 @@ iedModel_GenericIO_GGIO1_Mod_ctlModel.mmsValue = MmsValue_newIntegerFromInt32(0)
 iedModel_GenericIO_GGIO1_SPCSO1_ctlModel.mmsValue = MmsValue_newIntegerFromInt32(1);
 
 iedModel_GenericIO_GGIO1_SPCSO2_ctlModel.mmsValue = MmsValue_newIntegerFromInt32(2);
+
+iedModel_GenericIO_GGIO1_SPCSO2_sboTimeout.mmsValue = MmsValue_newUnsignedFromUint32(2000);
 
 iedModel_GenericIO_GGIO1_SPCSO3_ctlModel.mmsValue = MmsValue_newIntegerFromInt32(3);
 

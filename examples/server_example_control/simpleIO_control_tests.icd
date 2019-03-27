@@ -7,7 +7,7 @@
       <Text>Station bus</Text>
       <ConnectedAP iedName="simpleIO" apName="accessPoint1">
         <Address>
-          <P type="IP">192.168.2.223</P>
+          <P type="IP">0.0.0.0</P>
           <P type="IP-SUBNET">255.255.255.0</P>
           <P type="IP-GATEWAY">10.0.0.1</P>
           <P type="OSI-TSEL">0001</P>
@@ -35,6 +35,28 @@
         <Authentication />
         <LDevice inst="GenericIO">
           <LN0 lnClass="LLN0" lnType="LLN01" inst="">
+          
+          	<DataSet name="ControlEvents" desc="control related events">
+              <FCDA ldInst="GenericIO" lnClass="GGIO" fc="ST" lnInst="1" doName="SPCSO1" daName="stVal" />
+              <FCDA ldInst="GenericIO" lnClass="GGIO" fc="ST" lnInst="1" doName="SPCSO2" daName="stVal" />
+              <FCDA ldInst="GenericIO" lnClass="GGIO" fc="ST" lnInst="1" doName="SPCSO3" daName="stVal" />
+              <FCDA ldInst="GenericIO" lnClass="GGIO" fc="ST" lnInst="1" doName="SPCSO4" daName="stVal" />
+              <FCDA ldInst="GenericIO" lnClass="GGIO" fc="ST" lnInst="1" doName="SPCSO5" daName="stVal" />
+              <FCDA ldInst="GenericIO" lnClass="GGIO" fc="ST" lnInst="1" doName="SPCSO6" daName="stVal" />
+              <FCDA ldInst="GenericIO" lnClass="GGIO" fc="ST" lnInst="1" doName="SPCSO7" daName="stVal" />
+              <FCDA ldInst="GenericIO" lnClass="GGIO" fc="ST" lnInst="1" doName="SPCSO8" daName="stVal" />
+              <FCDA ldInst="GenericIO" lnClass="GGIO" fc="ST" lnInst="1" doName="SPCSO9" daName="stVal" />
+              <FCDA ldInst="GenericIO" lnClass="GGIO" fc="ST" lnInst="1" doName="SPCSO2" daName="stSeld" />
+              <FCDA ldInst="GenericIO" lnClass="GGIO" fc="OR" lnInst="1" doName="SPCSO2" daName="opRcvd" />
+              <FCDA ldInst="GenericIO" lnClass="GGIO" fc="OR" lnInst="1" doName="SPCSO2" daName="opOk" />
+            </DataSet>
+            
+            <ReportControl name="ControlEventsRCB" confRev="1" datSet="ControlEvents" rptID="ControlEvents" buffered="false" intgPd="1000" bufTime="0" indexed="true">
+              <TrgOps dchg="true" />
+              <OptFields seqNum="true" timeStamp="true" dataSet="true" reasonCode="true" entryID="true" configRef="true" />
+              <RptEnabled max="2" />
+            </ReportControl>
+          
             <DOI name="Mod">
               <DAI name="ctlModel">
                 <Val>status-only</Val>
@@ -56,6 +78,9 @@
             <DOI name="SPCSO2">
               <DAI name="ctlModel">
                 <Val>sbo-with-normal-security</Val>
+              </DAI>
+              <DAI name="sboTimeout">
+                <Val>2000</Val>
               </DAI>
             </DOI>
             <DOI name="SPCSO3">
@@ -228,7 +253,12 @@
       <DA name="stVal" bType="BOOLEAN" fc="ST" dchg="true" />
       <DA name="q" bType="Quality" fc="ST" qchg="true" />
       <DA name="t" bType="Timestamp" fc="ST" />
+      <DA bType="BOOLEAN" dchg="true" fc="ST" name="stSeld"/>
+      <DA name="opRcvd" bType="BOOLEAN" fc="OR" dchg="true" />
+      <DA name="opOk" bType="BOOLEAN" fc="OR" dchg="true" />
+      <DA name="tOpOk" bType="Timestamp" fc="OR" />
       <DA name="ctlModel" type="CtlModels" bType="Enum" fc="CF" />
+      <DA bType="INT32U" fc="CF" name="sboTimeout" dchg="true" />
       <DA name="sboClass" type="SboClasses" bType="Enum" fc="CF" />
     </DOType>
     <DOType id="SPC_1_SPCSO1" cdc="SPC">

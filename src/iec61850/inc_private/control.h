@@ -1,7 +1,7 @@
 /*
  *  control.h
  *
- *  Copyright 2013-2018 Michael Zillgith
+ *  Copyright 2013-2019 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -45,8 +45,11 @@ struct sControlObject
 
     int state;
 
+    int pendingEvents:8;
+
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore stateLock;
+    Semaphore pendingEventsLock;
 #endif
 
     MmsValue* mmsValue;
@@ -65,7 +68,17 @@ struct sControlObject
     MmsValue* ctlNumSt;
     MmsValue* originSt;
 
+    /* for automatic update of stSeld attribute */
     DataAttribute* stSeld;
+
+    /* for automatic update of opRcvd attribute */
+    DataAttribute* opRcvd;
+
+    /* for automatic update of opOk attribute */
+    DataAttribute* opOk;
+
+    /* for automatic update of tOpOk attribute */
+    DataAttribute* tOpOk;
 
     char ctlObjectName[130];
 
