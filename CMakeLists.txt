@@ -101,6 +101,7 @@ set(API_HEADERS
     src/mms/inc/mms_types.h
     src/mms/inc/mms_type_spec.h
     src/mms/inc/mms_client_connection.h
+    src/mms/inc/mms_server.h
     src/mms/inc/iso_connection_parameters.h
     src/goose/goose_subscriber.h
     src/goose/goose_receiver.h
@@ -108,7 +109,6 @@ set(API_HEADERS
     src/sampled_values/sv_subscriber.h
     src/sampled_values/sv_publisher.h
     src/logging/logging_api.h
-    ${CMAKE_CURRENT_BINARY_DIR}/config/stack_config.h
 )
 
 if(MSVC AND MSVC_VERSION LESS 1800)

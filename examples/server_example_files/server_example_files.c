@@ -45,7 +45,7 @@ fileAccessHandler (void* parameter, MmsServerConnection connection, MmsFileServi
     if (service == MMS_FILE_ACCESS_TYPE_RENAME)
         return MMS_ERROR_FILE_FILE_ACCESS_DENIED;
 
-    /* Don't allow client to delete fike "IEDSERVER.BIN" */
+    /* Don't allow client to delete file "IEDSERVER.BIN" */
     if (service == MMS_FILE_ACCESS_TYPE_DELETE) {
         if (strcmp(localFilename, "IEDSERVER.BIN") == 0)
             return MMS_ERROR_FILE_FILE_ACCESS_DENIED;
@@ -64,7 +64,8 @@ main(int argc, char** argv)
 
     /* Set the base path for the MMS file services */
     MmsServer mmsServer = IedServer_getMmsServer(iedServer);
-    MmsServer_setFilestoreBasepath(mmsServer, "./vmd-filestore/");
+
+    IedServer_setFilestoreBasepath(iedServer, "./vmd-filestore/");
 
     /* Set a callback handler to control file accesses */
     MmsServer_installFileAccessHandler(mmsServer, fileAccessHandler, NULL);
