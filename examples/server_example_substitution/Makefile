@@ -4,7 +4,7 @@ PROJECT_BINARY_NAME = server_example_substitution
 PROJECT_SOURCES = server_example_substitution.c
 PROJECT_SOURCES += static_model.c
 
-PROJECT_ICD_FILE = substitution_example.icd
+PROJECT_ICD_FILE = substitution_example.cid
 
 include $(LIBIEC_HOME)/make/target_system.mk
 include $(LIBIEC_HOME)/make/stack_includes.mk

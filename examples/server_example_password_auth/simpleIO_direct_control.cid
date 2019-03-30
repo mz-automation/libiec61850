@@ -4,8 +4,6 @@
   </Header>
   <Communication>
     <SubNetwork name="subnetwork1" type="8-MMS">
-      <Text>Station bus</Text>
-      <BitRate unit="b/s">10</BitRate>
       <ConnectedAP iedName="simpleIO" apName="accessPoint1">
         <Address>
           <P type="IP">10.0.0.2</P>
@@ -31,7 +29,6 @@
       <GOOSE max="5" />
       <GSSE max="5" />
       <FileHandling />
-      <GSEDir />
       <TimerActivatedControl />
     </Services>
     <AccessPoint name="accessPoint1">
@@ -45,45 +42,14 @@
               <FCDA ldInst="GenericIO" lnClass="GGIO" fc="ST" lnInst="1" doName="SPCSO3" daName="stVal" />
               <FCDA ldInst="GenericIO" lnClass="GGIO" fc="ST" lnInst="1" doName="SPCSO4" daName="stVal" />
             </DataSet>
-            
-            <DataSet name="Events2" desc="Events2">
-              <FCDA ldInst="GenericIO" lnClass="GGIO" fc="ST" lnInst="1" doName="SPCSO1" />
-              <FCDA ldInst="GenericIO" lnClass="GGIO" fc="ST" lnInst="1" doName="SPCSO2" />
-              <FCDA ldInst="GenericIO" lnClass="GGIO" fc="ST" lnInst="1" doName="SPCSO3" />
-              <FCDA ldInst="GenericIO" lnClass="GGIO" fc="ST" lnInst="1" doName="SPCSO4" />
-            </DataSet>
-            
-            <ReportControl name="EventsRCB" confRev="1" datSet="Events" rptID="Events1" buffered="false" intgPd="1000" bufTime="50">
+            <ReportControl name="EventsRCB" confRev="1" datSet="Events" rptID="Events" buffered="false" intgPd="1000" bufTime="50">
               <TrgOps period="true" />
               <OptFields seqNum="true" timeStamp="true" dataSet="true" reasonCode="true" entryID="true" configRef="true" />
               <RptEnabled max="1" />
             </ReportControl>
-            
-            <ReportControl name="EventsIndexed" indexed="true" confRev="1" datSet="Events" rptID="Events2" buffered="false" intgPd="1000" bufTime="50">
-              <TrgOps period="true" />
-              <OptFields seqNum="true" timeStamp="true" dataSet="true" reasonCode="true" entryID="true" configRef="true" />
-              <RptEnabled max="3" />
-            </ReportControl>
-            
-            <LogControl name="EventLog" datSet="Events" logName="EventLog">
-			  <TrgOps dchg="true" qchg="true"/>
-			</LogControl>
-
             <DOI name="Mod">
               <DAI name="ctlModel">
                 <Val>status-only</Val>
-              </DAI>
-            </DOI>
-            
-            <DOI name="NamPlt">
-              <DAI name="vendor">
-                <Val>MZ Automation</Val>
-              </DAI>
-              <DAI name="swRev">
-                <Val>0.7.3</Val>
-              </DAI>
-              <DAI name="d">
-                <Val>libiec61850 server example</Val>
               </DAI>
             </DOI>
           </LN0>
@@ -125,6 +91,7 @@
       <DO name="Beh" type="INS_1_Beh" />
       <DO name="Health" type="INS_1_Beh" />
       <DO name="NamPlt" type="LPL_1_NamPlt" />
+      <DO name="ModAuto" type="SPG_0" />
     </LNodeType>
     <LNodeType id="LPHD1" lnClass="LPHD">
       <DO name="PhyNam" type="DPL_1_PhyNam" />
@@ -150,7 +117,6 @@
       <DO name="Ind4" type="SPS_1_Proxy" />
     </LNodeType>
     <DOType id="INC_1_Mod" cdc="INC">
-      <DA name="stVal" bType="INT32" fc="ST" dchg="true" />
       <DA name="q" bType="Quality" fc="ST" qchg="true" />
       <DA name="t" bType="Timestamp" fc="ST" />
       <DA name="ctlModel" type="CtlModels" bType="Enum" fc="CF" />
@@ -218,6 +184,9 @@
       <DA name="ctlModel" type="CtlModels" bType="Enum" fc="CF" />
       <DA name="t" bType="Timestamp" fc="ST" />
     </DOType>
+	<DOType cdc="SPG" id="SPG_0">
+	  <DA name="setVal" bType="BOOLEAN" fc="SP" dchg="true" />
+	</DOType>
     <DAType id="AnalogueValue_1">
       <BDA name="f" bType="FLOAT32" />
     </DAType>

@@ -4,8 +4,6 @@
   </Header>
   <Communication>
     <SubNetwork name="subnetwork1" type="8-MMS">
-      <Text>Station bus</Text>
-      <BitRate unit="b/s">10</BitRate>
       <ConnectedAP iedName="simpleIO" apName="accessPoint1">
         <Address>
           <P type="IP">10.0.0.2</P>
@@ -15,22 +13,6 @@
           <P type="OSI-PSEL">00000001</P>
           <P type="OSI-SSEL">0001</P>
         </Address>
-        <GSE ldInst="GenericIO" cbName="gcbEvents">
-           <Address>
-                <P type="VLAN-ID">1</P>
-                <P type="VLAN-PRIORITY">4</P>
-                <P type="MAC-Address">01-0c-cd-01-00-01</P>
-                <P type="APPID">1000</P>
-           </Address>
-	    </GSE>
-        <GSE ldInst="GenericIO" cbName="gcbAnalogValues">
-           <Address>
-                <P type="VLAN-ID">1</P>
-                <P type="VLAN-PRIORITY">4</P>
-                <P type="MAC-Address">01-0c-cd-01-00-01</P>
-                <P type="APPID">1000</P>
-           </Address>
-	    </GSE>
       </ConnectedAP>
     </SubNetwork>
   </Communication>
@@ -55,6 +37,7 @@
         <Authentication />
         <LDevice inst="GenericIO">
           <LN0 lnClass="LLN0" lnType="LLN01" inst="">
+          
           	<DataSet name="Events" desc="Events">
               <FCDA ldInst="GenericIO" lnClass="GGIO" fc="ST" lnInst="1" doName="SPCSO1" daName="stVal" />
               <FCDA ldInst="GenericIO" lnClass="GGIO" fc="ST" lnInst="1" doName="SPCSO2" daName="stVal" />
@@ -68,29 +51,63 @@
               <FCDA ldInst="GenericIO" lnClass="GGIO" fc="ST" lnInst="1" doName="SPCSO3" />
               <FCDA ldInst="GenericIO" lnClass="GGIO" fc="ST" lnInst="1" doName="SPCSO4" />
             </DataSet>
-                      
-            <DataSet name="AnalogValues" desc="analog values">
-              <FCDA ldInst="GenericIO" lnClass="GGIO" fc="MX" lnInst="1" doName="AnIn1" />
-              <FCDA ldInst="GenericIO" lnClass="GGIO" fc="MX" lnInst="1" doName="AnIn2" />
-              <FCDA ldInst="GenericIO" lnClass="GGIO" fc="MX" lnInst="1" doName="AnIn3" />
-              <FCDA ldInst="GenericIO" lnClass="GGIO" fc="MX" lnInst="1" doName="AnIn4" />
+            
+            <DataSet name="Measurements" desc="Measurements">
+              <FCDA ldInst="GenericIO" lnClass="GGIO" fc="MX" lnInst="1" doName="AnIn1" daName="mag.f" />
+              <FCDA ldInst="GenericIO" lnClass="GGIO" fc="MX" lnInst="1" doName="AnIn1" daName="q" />
+			  <FCDA ldInst="GenericIO" lnClass="GGIO" fc="MX" lnInst="1" doName="AnIn2" daName="mag.f" />
+              <FCDA ldInst="GenericIO" lnClass="GGIO" fc="MX" lnInst="1" doName="AnIn2" daName="q" />
+              <FCDA ldInst="GenericIO" lnClass="GGIO" fc="MX" lnInst="1" doName="AnIn3" daName="mag.f" />
+              <FCDA ldInst="GenericIO" lnClass="GGIO" fc="MX" lnInst="1" doName="AnIn3" daName="q" />
+              <FCDA ldInst="GenericIO" lnClass="GGIO" fc="MX" lnInst="1" doName="AnIn4" daName="mag.f" />
+              <FCDA ldInst="GenericIO" lnClass="GGIO" fc="MX" lnInst="1" doName="AnIn4" daName="q" />
             </DataSet>
             
-            <ReportControl name="EventsRCB" confRev="1" datSet="Events" rptID="Events" buffered="false" intgPd="1000" bufTime="50">
+            <ReportControl name="EventsRCB" confRev="4294967295" datSet="Events" rptID="Events1" buffered="false" intgPd="1000" bufTime="50">
               <TrgOps period="true" />
               <OptFields seqNum="true" timeStamp="true" dataSet="true" reasonCode="true" entryID="true" configRef="true" />
               <RptEnabled max="1" />
             </ReportControl>
-            <ReportControl name="AnalogValuesRCB" confRev="1" datSet="AnalogValues" rptID="AnalogValues" buffered="false" intgPd="1000" bufTime="50">
+            
+            <ReportControl name="EventsIndexed" indexed="true" confRev="1" datSet="Events" rptID="Events2" buffered="false" intgPd="1000" bufTime="50">
               <TrgOps period="true" />
               <OptFields seqNum="true" timeStamp="true" dataSet="true" reasonCode="true" entryID="true" configRef="true" />
-              <RptEnabled max="1" />
+              <RptEnabled max="3" />
             </ReportControl>
-            <GSEControl appID="events" name="gcbEvents" type="GOOSE" datSet="Events" confRev="2" minTime="1000" maxTime="3000" /> 
-            <GSEControl appID="analog" name="gcbAnalogValues" type="GOOSE" datSet="AnalogValues" confRev="2"/> 
+            
+            <ReportControl name="Measurements" indexed="true" confRev="1" datSet="Measurements" rptID="Measurements" buffered="true" intgPd="1000" bufTime="50">
+              <TrgOps period="false" />
+              <OptFields seqNum="true" timeStamp="true" dataSet="true" reasonCode="true" entryID="true" configRef="true" />
+              <RptEnabled max="3" />
+            </ReportControl>
+            
+            <LogControl name="EventLog" datSet="Events" logName="EventLog">
+			  <TrgOps dchg="true" qchg="true"/>
+	    </LogControl>
+
+	    <LogControl name="GeneralLog" logName="">
+                          <TrgOps dchg="true" qchg="true"/>
+        </LogControl>
+
+
+	    <Log />
+            <Log name="EventLog" />
+
             <DOI name="Mod">
               <DAI name="ctlModel">
                 <Val>status-only</Val>
+              </DAI>
+            </DOI>
+            
+            <DOI name="NamPlt">
+              <DAI name="vendor">
+                <Val>MZ Automation</Val>
+              </DAI>
+              <DAI name="swRev">
+                <Val>0.7.3</Val>
+              </DAI>
+              <DAI name="d">
+                <Val>libiec61850 server example</Val>
               </DAI>
             </DOI>
           </LN0>
@@ -157,6 +174,7 @@
       <DO name="Ind4" type="SPS_1_Proxy" />
     </LNodeType>
     <DOType id="INC_1_Mod" cdc="INC">
+      <DA name="stVal" bType="INT32" fc="ST" dchg="true" />
       <DA name="q" bType="Quality" fc="ST" qchg="true" />
       <DA name="t" bType="Timestamp" fc="ST" />
       <DA name="ctlModel" type="CtlModels" bType="Enum" fc="CF" />

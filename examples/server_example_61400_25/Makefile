@@ -4,7 +4,7 @@ PROJECT_BINARY_NAME = server_example_61400_25
 PROJECT_SOURCES = server_example_61400_25.c
 PROJECT_SOURCES += static_model.c
 
-PROJECT_ICD_FILE = wtur.icd
+PROJECT_ICD_FILE = wtur.cid
 
 include $(LIBIEC_HOME)/make/target_system.mk
 include $(LIBIEC_HOME)/make/stack_includes.mk

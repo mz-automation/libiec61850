@@ -4,7 +4,7 @@ PROJECT_BINARY_NAME = server_example_ca
 PROJECT_SOURCES = server_example_ca.c
 PROJECT_SOURCES += static_model.c
 
-PROJECT_ICD_FILE = mhai_array.icd
+PROJECT_ICD_FILE = mhai_array.cid
 
 include $(LIBIEC_HOME)/make/target_system.mk
 include $(LIBIEC_HOME)/make/stack_includes.mk

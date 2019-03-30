@@ -4,8 +4,6 @@
 	</Header>
 	<Communication>
 		<SubNetwork name="subnetwork1" type="8-MMS">
-			<Text>Station bus</Text>
-			<BitRate unit="b/s">10</BitRate>
 			<ConnectedAP iedName="simpleIO" apName="accessPoint1">
 				<Address>
 					<P type="IP">10.0.0.2</P>

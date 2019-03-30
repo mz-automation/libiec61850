@@ -4,7 +4,7 @@ PROJECT_BINARY_NAME = server_example_files
 PROJECT_SOURCES = server_example_files.c
 PROJECT_SOURCES += static_model.c
 
-PROJECT_ICD_FILE = simpleIO_direct_control.icd
+PROJECT_ICD_FILE = simpleIO_direct_control.cid
 
 include $(LIBIEC_HOME)/make/target_system.mk
 include $(LIBIEC_HOME)/make/stack_includes.mk

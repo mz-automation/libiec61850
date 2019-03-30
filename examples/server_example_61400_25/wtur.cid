@@ -1,7 +1,4 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<!--2014.05.12-21:21:53 Academic and Evaluation License (AEL) Powered by Masson Technologies (www.massontech.com)-->
-<!--2014.05.12-21:21:53 This file is generated using RedWind IED Modeler (www.iedmodeler.com)-->
-<!--2014.05.12-21:21:53 ????? RedWind IED Modeler ???? (www.iedmodeler.com)-->
 <SCL xmlns="http://www.iec.ch/61850/2003/SCL" revision="" version="">
   <Header id="" nameStructure="IEDName" toolID="RedWind IED Modeler">
     <History>

@@ -4,7 +4,6 @@
   </Header>
   <Communication>
     <SubNetwork name="subnetwork1" type="8-MMS">
-      <Text>Station bus</Text>
       <ConnectedAP iedName="simpleIO" apName="accessPoint1">
         <Address>
           <P type="IP">0.0.0.0</P>

@@ -4,7 +4,7 @@ PROJECT_BINARY_NAME = server_example_simple
 PROJECT_SOURCES = server_example_simple.c
 PROJECT_SOURCES += static_model.c
 
-PROJECT_ICD_FILE = sampleModel_with_dataset.icd
+PROJECT_ICD_FILE = sampleModel_with_dataset.cid
 
 include $(LIBIEC_HOME)/make/target_system.mk
 include $(LIBIEC_HOME)/make/stack_includes.mk
