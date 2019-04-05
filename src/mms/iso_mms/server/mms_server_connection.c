@@ -787,10 +787,10 @@ MmsServerConnection_getClientAddress(MmsServerConnection self)
     return IsoConnection_getPeerAddress(self->isoConnection);
 }
 
-IsoConnection
-MmsServerConnection_getIsoConnection(MmsServerConnection self)
+void*
+MmsServerConnection_getSecurityToken(MmsServerConnection self)
 {
-    return self->isoConnection;
+    return IsoConnection_getSecurityToken(self->isoConnection);
 }
 
 #if (MMS_DYNAMIC_DATA_SETS == 1)

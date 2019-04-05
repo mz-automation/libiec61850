@@ -34,7 +34,7 @@ extern "C" {
 
 #include "mms_device_model.h"
 #include "mms_value.h"
-#include "iso_server.h"
+#include "iso_connection_parameters.h"
 
 typedef enum {
 	MMS_SERVER_NEW_CONNECTION, MMS_SERVER_CONNECTION_CLOSED
@@ -507,9 +507,8 @@ MmsServer_setStatusRequestListener(MmsServer self, MmsStatusRequestListener list
 LIB61850_INTERNAL char*
 MmsServerConnection_getClientAddress(MmsServerConnection self);
 
-LIB61850_INTERNAL IsoConnection
-MmsServerConnection_getIsoConnection(MmsServerConnection self);
-
+LIB61850_INTERNAL void*
+MmsServerConnection_getSecurityToken(MmsServerConnection self);
 
 /**@}*/
 
