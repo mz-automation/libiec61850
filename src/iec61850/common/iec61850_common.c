@@ -443,6 +443,340 @@ Timestamp_toMmsValue(Timestamp* self, MmsValue* mmsValue)
 }
 
 char*
+MmsMapping_getMmsDomainFromObjectReference(const char* objectReference, char* buffer)
+{
+    int objRefLength = strlen(objectReference);
+    char* domainName = NULL;
+
+    /* check for object reference size limit VISIBLESTRING129 */
+    if (objRefLength > 129)
+        goto exit_function;
+
+    /* check if LD name is present */
+    int i;
+    for (i = 0; i < objRefLength; i++) {
+        if (objectReference[i] == '/') {
+            break;
+        }
+    }
+
+    /* check for LD name limit (=64 characters) */
+    if (i > 64)
+        goto exit_function;
+
+    if (i == objRefLength)
+        goto exit_function;
+
+    if (buffer == NULL)
+        domainName = (char*) GLOBAL_MALLOC(i + 1);
+    else
+        domainName = buffer;
+
+    int j;
+    for (j = 0; j < i; j++) {
+        domainName[j] = objectReference[j];
+    }
+
+    domainName[j] = 0;
+
+exit_function:
+    return domainName;
+}
+
+char*
+MmsMapping_createMmsVariableNameFromObjectReference(const char* objectReference,
+        FunctionalConstraint fc, char* buffer)
+{
+    int objRefLength = strlen(objectReference);
+
+    /* check for object reference size limit VISIBLESTRING129 */
+    if (objRefLength > 129)
+        return NULL;
+
+    /* check if LD name is present */
+    int i;
+    for (i = 0; i < objRefLength; i++) {
+        if (objectReference[i] == '/') {
+            break;
+        }
+    }
+
+    /* check for LD name limit (= 64 characters) */
+    if (i > 64)
+        return NULL;
+
+    if (i == objRefLength)
+        i = 0; /* for the case when no LD name is present */
+    else
+        i++;
+
+
+    if (fc == IEC61850_FC_NONE) {
+
+        int len = objRefLength - i;
+
+        char* mmsVariableName;
+
+        if (buffer == NULL)
+            mmsVariableName = (char*) GLOBAL_MALLOC(len);
+        else
+            mmsVariableName = buffer;
+
+        strcpy(mmsVariableName, objectReference + i);
+
+        return mmsVariableName;
+    }
+
+    char* fcString = FunctionalConstraint_toString(fc);
+
+    if (fcString == NULL)
+        return NULL;
+
+    int namePartLength = objRefLength - i - 1;
+
+    /* ensure that limit due to MMS name part length = 64 is not exceeded */
+    if (namePartLength > 61)
+        return NULL;
+
+    char* mmsVariableName;
+
+    if (buffer == NULL)
+        mmsVariableName = (char*) GLOBAL_MALLOC(namePartLength + 5);
+    else
+        mmsVariableName = buffer;
+
+    int sourceIndex = i;
+    int destIndex = 0;
+
+    bool fcAdded = false;
+
+    while (sourceIndex < objRefLength) {
+
+        if (objectReference[sourceIndex] != '.')
+            mmsVariableName[destIndex++] = objectReference[sourceIndex++];
+        else {
+
+            if (!fcAdded) {
+                mmsVariableName[destIndex++] = '$';
+                mmsVariableName[destIndex++] = fcString[0];
+                mmsVariableName[destIndex++] = fcString[1];
+                mmsVariableName[destIndex++] = '$';
+
+                fcAdded = true;
+            }
+            else
+                mmsVariableName[destIndex++] = '$';
+
+            sourceIndex++;
+        }
+    }
+
+    if (!fcAdded) {
+        mmsVariableName[destIndex++] = '$';
+        mmsVariableName[destIndex++] = fcString[0];
+        mmsVariableName[destIndex++] = fcString[1];
+    }
+
+    mmsVariableName[destIndex] = 0;
+
+    return mmsVariableName;
+}
+
+MmsVariableAccessSpecification*
+MmsMapping_ObjectReferenceToVariableAccessSpec(char* objectReference)
+{
+    char* domainIdEnd = strchr(objectReference, '/');
+
+    if (domainIdEnd == NULL) /* no logical device name present */
+        return NULL;
+
+    int domainIdLen = domainIdEnd - objectReference;
+
+    if (domainIdLen > 64)
+        return NULL;
+
+    char* fcStart = strchr(objectReference, '[');
+
+    if (fcStart == NULL) /* no FC present */
+        return NULL;
+
+    char* fcEnd = strchr(fcStart, ']');
+
+    if (fcEnd == NULL) /* syntax error in FC */
+        return NULL;
+
+    if ((fcEnd - fcStart) != 3) /* syntax error in FC */
+        return NULL;
+
+    FunctionalConstraint fc = FunctionalConstraint_fromString(fcStart + 1);
+
+    MmsVariableAccessSpecification* accessSpec =
+            (MmsVariableAccessSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableAccessSpecification));
+
+    accessSpec->domainId = StringUtils_createStringFromBuffer((uint8_t*) objectReference, domainIdLen);
+
+    char* indexBrace = strchr(domainIdEnd, '(');
+
+    char* itemIdEnd = indexBrace;
+
+    if (itemIdEnd == NULL)
+        itemIdEnd = strchr(domainIdEnd, '[');
+
+    int objRefLen = strlen(objectReference);
+
+    accessSpec->arrayIndex = -1; /* -1 --> not present */
+
+    if (itemIdEnd != NULL) {
+        int itemIdLen = itemIdEnd - domainIdEnd - 1;
+
+        char itemIdStr[129];
+
+        memcpy(itemIdStr, (domainIdEnd + 1), itemIdLen);
+        itemIdStr[itemIdLen] = 0;
+
+        accessSpec->itemId = MmsMapping_createMmsVariableNameFromObjectReference(itemIdStr, fc, NULL);
+
+        if (indexBrace != NULL) {
+
+            char* indexStart = itemIdEnd + 1;
+
+            char* indexEnd = strchr(indexStart, ')');
+
+            int indexLen = indexEnd - indexStart;
+
+            int index = StringUtils_digitsToInt(indexStart, indexLen);
+
+            accessSpec->arrayIndex = (int32_t) index;
+
+            int componentNameLen = objRefLen - ((indexEnd + 2) - objectReference) - 4;
+
+            if (componentNameLen > 0) {
+                accessSpec->componentName = StringUtils_createStringFromBuffer((uint8_t*) (indexEnd + 2), componentNameLen);
+                StringUtils_replace(accessSpec->componentName, '.', '$');
+            }
+        }
+    }
+
+    return accessSpec;
+}
+
+
+static int
+getNumberOfDigits(int value)
+{
+    int numberOfDigits = 1;
+
+    while (value > 9) {
+        numberOfDigits++;
+        value /= 10;
+    }
+
+    return numberOfDigits;
+}
+
+char*
+MmsMapping_varAccessSpecToObjectReference(MmsVariableAccessSpecification* varAccessSpec)
+{
+    char* domainId = varAccessSpec->domainId;
+
+    int domainIdLen = strlen(domainId);
+
+    char* itemId = varAccessSpec->itemId;
+
+    char* separator = strchr(itemId, '$');
+
+    int itemIdLen = strlen(itemId);
+
+    int arrayIndexLen = 0;
+
+    int componentPartLen = 0;
+
+    if (varAccessSpec->componentName != NULL)
+        componentPartLen = strlen(varAccessSpec->componentName);
+
+    if (varAccessSpec->arrayIndex > -1)
+        arrayIndexLen = 2 + getNumberOfDigits(varAccessSpec->arrayIndex);
+
+    int newStringLen = (domainIdLen + 1) + (itemIdLen - 2) + arrayIndexLen + 4 /* for FC */+ componentPartLen + 1;
+
+    char* newString = (char*) GLOBAL_MALLOC(newStringLen);
+
+    char* targetPos = newString;
+
+    /* Copy domain id part */
+    char* currentPos = domainId;
+
+    while (currentPos < (domainId + domainIdLen)) {
+        *targetPos = *currentPos;
+        targetPos++;
+        currentPos++;
+    }
+
+    *targetPos = '/';
+    targetPos++;
+
+    /* Copy item id parts */
+    currentPos = itemId;
+
+    while (currentPos < separator) {
+        *targetPos = *currentPos;
+        targetPos++;
+        currentPos++;
+    }
+
+    *targetPos = '.';
+    targetPos++;
+
+    currentPos = separator + 4;
+
+    while (currentPos < (itemId + itemIdLen)) {
+        if (*currentPos == '$')
+            *targetPos = '.';
+        else
+            *targetPos = *currentPos;
+
+        targetPos++;
+        currentPos++;
+    }
+
+    /* Add array index part */
+    if (varAccessSpec->arrayIndex > -1) {
+        sprintf(targetPos, "(%i)", varAccessSpec->arrayIndex);
+        targetPos += arrayIndexLen;
+    }
+
+    /* Add component part */
+    if (varAccessSpec->componentName != NULL) {
+        *targetPos = '.';
+        targetPos++;
+
+        int i;
+        for (i = 0; i < componentPartLen; i++) {
+            if (varAccessSpec->componentName[i] == '$')
+                *targetPos = '.';
+            else
+                *targetPos = varAccessSpec->componentName[i];
+
+            targetPos++;
+        }
+    }
+
+    /* add FC part */
+    *targetPos = '[';
+    targetPos++;
+    *targetPos = *(separator + 1);
+    targetPos++;
+    *targetPos = *(separator + 2);
+    targetPos++;
+    *targetPos = ']';
+    targetPos++;
+
+    *targetPos = 0; /* add terminator */
+
+    return newString;
+}
+
+char*
 LibIEC61850_getVersionString()
 {
     return LIBIEC61850_VERSION;

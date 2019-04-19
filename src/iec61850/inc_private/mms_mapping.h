@@ -24,7 +24,7 @@
 #ifndef MMS_MAPPING_H_
 #define MMS_MAPPING_H_
 
-#include "iec61850_model.h"
+#include "iec61850_common_internal.h"
 #include "mms_device_model.h"
 #include "control.h"
 
@@ -106,14 +106,8 @@ MmsMapping_enableGoosePublishing(MmsMapping* self);
 LIB61850_INTERNAL void
 MmsMapping_disableGoosePublishing(MmsMapping* self);
 
-LIB61850_INTERNAL char*
-MmsMapping_getMmsDomainFromObjectReference(const char* objectReference, char* buffer);
-
 LIB61850_INTERNAL void
 MmsMapping_addControlObject(MmsMapping* self, ControlObject* controlObject);
-
-LIB61850_INTERNAL char*
-MmsMapping_createMmsVariableNameFromObjectReference(const char* objectReference, FunctionalConstraint fc, char* buffer);
 
 LIB61850_INTERNAL char*
 MmsMapping_getNextNameElement(char* name);
@@ -132,12 +126,6 @@ MmsMapping_getDomainSpecificDataSet(MmsMapping* self, const char* dataSetName);
 
 LIB61850_INTERNAL void
 MmsMapping_freeDynamicallyCreatedDataSet(DataSet* dataSet);
-
-LIB61850_INTERNAL MmsVariableAccessSpecification*
-MmsMapping_ObjectReferenceToVariableAccessSpec(char* objectReference);
-
-LIB61850_INTERNAL char*
-MmsMapping_varAccessSpecToObjectReference(MmsVariableAccessSpecification* varAccessSpec);
 
 LIB61850_INTERNAL void
 MmsMapping_setConnectionIndicationHandler(MmsMapping* self, IedConnectionIndicationHandler handler, void* parameter);
