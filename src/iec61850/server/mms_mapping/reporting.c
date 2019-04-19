@@ -423,7 +423,7 @@ sendReportSegment(ReportControl* self, bool isIntegrity, bool isGI)
     int maxIndex = startElementIndex;
 
     char* iedName = iedModel->name;
-    int iedNameLength = strlen(iedName);
+    int iedNameLength = (int) strlen(iedName);
 
     int i;
 
@@ -463,7 +463,16 @@ sendReportSegment(ReportControl* self, bool isIntegrity, bool isGI)
                 elementSize += MmsValue_encodeMmsData(self->bufferedDataSetValues[i], NULL, 0, false);
             }
             else {
-                elementSize += MmsValue_encodeMmsData(dataSetEntry->value, NULL, 0, false);
+                if (dataSetEntry->value) {
+                    elementSize += MmsValue_encodeMmsData(dataSetEntry->value, NULL, 0, false);
+                }
+                else {
+                    MmsValue _errVal;
+                    _errVal.type = MMS_DATA_ACCESS_ERROR;
+                    _errVal.value.dataAccessError = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+
+                    elementSize += MmsValue_encodeMmsData(&_errVal, NULL, 0, false);
+                }
             }
 
             if (withReasonCode) {
@@ -581,7 +590,7 @@ sendReportSegment(ReportControl* self, bool isIntegrity, bool isGI)
                     dataReference[currentPos++] = iedName[j];
                 }
 
-                int ldNameLength =  strlen(dataSetEntry->logicalDeviceName);
+                int ldNameLength =  (int) strlen(dataSetEntry->logicalDeviceName);
                 for (j = 0; j <  ldNameLength; j++) {
                     dataReference[currentPos] = dataSetEntry->logicalDeviceName[j];
                     currentPos++;
@@ -614,7 +623,17 @@ sendReportSegment(ReportControl* self, bool isIntegrity, bool isGI)
 
         if (isGI || isIntegrity) {
             /* encode value from data set */
-            bufPos = MmsValue_encodeMmsData(dataSetEntry->value, buffer, bufPos, true);
+
+            if (dataSetEntry) {
+                bufPos = MmsValue_encodeMmsData(dataSetEntry->value, buffer, bufPos, true);
+            }
+            else {
+                MmsValue _errVal;
+                _errVal.type = MMS_DATA_ACCESS_ERROR;
+                _errVal.value.dataAccessError = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+
+                bufPos = MmsValue_encodeMmsData(&_errVal, buffer, bufPos, true);
+            }
         }
         else {
             if (self->inclusionFlags[i] != REPORT_CONTROL_NONE) {
@@ -2233,11 +2252,20 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
         int i;
 
         for (i = 0; i < inclusionBitStringSize; i++) {
-            assert(dataSetEntry != NULL);
-
             /* don't need reason for inclusion in GI or integrity report */
 
-            int encodedSize = MmsValue_encodeMmsData(dataSetEntry->value, NULL, 0, false);
+            int encodedSize;
+
+            if (dataSetEntry->value) {
+                encodedSize = MmsValue_encodeMmsData(dataSetEntry->value, NULL, 0, false);
+            }
+            else {
+                MmsValue _errVal;
+                _errVal.type = MMS_DATA_ACCESS_ERROR;
+                _errVal.value.dataAccessError = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+
+                encodedSize = MmsValue_encodeMmsData(&_errVal, NULL, 0, false);
+            }
 
             dataBlockSize += encodedSize;
 
@@ -2500,9 +2528,16 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
 
         for (i = 0; i < inclusionBitStringSize; i++) {
 
-            assert(dataSetEntry != NULL);
+            if (dataSetEntry->value) {
+                entryBufPos += MmsValue_encodeMmsData(dataSetEntry->value, entryBufPos, 0, true);
+            }
+            else {
+                MmsValue _errVal;
+                _errVal.type = MMS_DATA_ACCESS_ERROR;
+                _errVal.value.dataAccessError = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
 
-            entryBufPos += MmsValue_encodeMmsData(dataSetEntry->value, entryBufPos, 0, true);
+                entryBufPos += MmsValue_encodeMmsData(&_errVal, entryBufPos, 0, true);
+            }
 
             dataSetEntry = dataSetEntry->sibling;
         }
@@ -2727,7 +2762,7 @@ sendNextReportEntrySegment(ReportControl* self)
     int maxIndex = startElementIndex;
 
     char* iedName = iedModel->name;
-    int iedNameLength = strlen(iedName);
+    int iedNameLength = (int) strlen(iedName);
 
     int i;
 
@@ -2756,7 +2791,7 @@ sendNextReportEntrySegment(ReportControl* self)
                     dataReference[currentPos++] = iedName[j];
                 }
 
-                int ldNameLength = strlen(dataSetEntry->logicalDeviceName);
+                int ldNameLength = (int) strlen(dataSetEntry->logicalDeviceName);
                 for (j = 0; j < ldNameLength; j++) {
                     dataReference[currentPos] = dataSetEntry->logicalDeviceName[j];
                     currentPos++;
@@ -2911,7 +2946,7 @@ sendNextReportEntrySegment(ReportControl* self)
                     dataReference[currentPos++] = iedName[j];
                 }
 
-                int ldNameLength =  strlen(dataSetEntry->logicalDeviceName);
+                int ldNameLength =  (int) strlen(dataSetEntry->logicalDeviceName);
                 for (j = 0; j <  ldNameLength; j++) {
                     dataReference[currentPos] = dataSetEntry->logicalDeviceName[j];
                     currentPos++;
