@@ -281,8 +281,6 @@ ReportControl_getRCBValue(ReportControl* rc, char* elementName)
 #endif
         }
 
-
-
     } else {
         if (strcmp(elementName, "RptID") == 0)
             return MmsValue_getElement(rc->rcbValues, 0);
@@ -624,7 +622,7 @@ sendReportSegment(ReportControl* self, bool isIntegrity, bool isGI)
         if (isGI || isIntegrity) {
             /* encode value from data set */
 
-            if (dataSetEntry) {
+            if (dataSetEntry->value) {
                 bufPos = MmsValue_encodeMmsData(dataSetEntry->value, buffer, bufPos, true);
             }
             else {
