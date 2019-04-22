@@ -396,6 +396,9 @@ namespace IEC61850
             static extern void IedConnection_destroy(IntPtr self);
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern int Connection_getState(IedConnection self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern void IedConnection_setConnectTimeout(IntPtr self, UInt32 timeoutInMs);
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]

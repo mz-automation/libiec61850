@@ -131,7 +131,11 @@ namespace IEC61850
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern void ClientReportControlBlock_setPurgeBuf (IntPtr self, [MarshalAs(UnmanagedType.I1)] bool purgeBuf);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
+            static extern bool ClientReportControlBlock_hasResvTms(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern Int16 ClientReportControlBlock_getResvTms (IntPtr self);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
