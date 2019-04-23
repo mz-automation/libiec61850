@@ -43,9 +43,14 @@ struct sControlObject
     char* lnName;
     char* name;
 
-    int state;
-
+    int state:4;
+    int ctlModel:4;
     int pendingEvents:8;
+    int testMode:1;
+    int interlockCheck:1;
+    int synchroCheck:1;
+    int timeActivatedOperate:1;
+    int operateOnce:1;
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore stateLock;
@@ -80,7 +85,7 @@ struct sControlObject
     /* for automatic update of tOpOk attribute */
     DataAttribute* tOpOk;
 
-    char ctlObjectName[130];
+//    char ctlObjectName[130];
 
     /* for LastAppIError */
     MmsValue* error;
@@ -91,19 +96,9 @@ struct sControlObject
     MmsValue* sboClass;
     MmsValue* sboTimeout;
 
-    bool timeActivatedOperate;
     uint64_t operateTime;
 
-    bool operateOnce;
     MmsServerConnection mmsConnection;
-
-    MmsValue* emptyString;
-
-    uint32_t ctlModel;
-
-    bool testMode;
-    bool interlockCheck;
-    bool synchroCheck;
 
     uint32_t operateInvokeId;
 

@@ -53,6 +53,8 @@
 #define PENDING_EVENT_OP_OK_TRUE 16
 #define PENDING_EVENT_OP_OK_FALSE 32
 
+static MmsValue emptyString = {.type = MMS_VISIBLE_STRING, .value.visibleString.buf = NULL, .value.visibleString.size = 0};
+
 void
 ControlObject_sendLastApplError(ControlObject* self, MmsServerConnection connection, char* ctlVariable, int error,
         ControlAddCause addCause, MmsValue* ctlNum, MmsValue* origin, bool handlerMode);
@@ -176,7 +178,7 @@ updateSboTimeoutValue(ControlObject* self)
         uint32_t sboTimeoutVal = MmsValue_toInt32(self->sboTimeout);
 
         if (DEBUG_IED_SERVER)
-            printf("set timeout for %s to %u\n", self->ctlObjectName, sboTimeoutVal);
+            printf("IED_SERVER: set timeout for %s/%s.%s to %u\n", MmsDomain_getName(self->mmsDomain), self->lnName, self->name, sboTimeoutVal);
 
         self->selectTimeout = sboTimeoutVal;
     }
@@ -426,8 +428,6 @@ ControlObject_initialize(ControlObject* self)
 {
     MmsServer mmsServer = IedServer_getMmsServer(self->iedServer);
 
-    self->emptyString = MmsValue_newVisibleString(NULL);
-
     char strBuf[129];
 
     char* ctlModelName = StringUtils_createStringInBuffer(strBuf, 4, self->lnName, "$CF$", self->name, "$ctlModel");
@@ -446,9 +446,6 @@ ControlObject_initialize(ControlObject* self)
     char* sboClassName = StringUtils_createStringInBuffer(strBuf, 4, self->lnName, "$CF$", self->name, "$sboClass");
 
     self->sboClass = MmsServer_getValueFromCache(mmsServer, self->mmsDomain, sboClassName);
-
-    StringUtils_createStringInBuffer(self->ctlObjectName, 5, MmsDomain_getName(self->mmsDomain), "/",
-            self->lnName, "$CO$", self->name);
 
     char* ctlNumName = StringUtils_createStringInBuffer(strBuf, 4, self->lnName, "$ST$", self->name, "$ctlNum");
 
@@ -520,12 +517,18 @@ ControlObject_initialize(ControlObject* self)
     self->addCause = MmsValue_newIntegerFromInt32(0);
 
     if (ctlModel != NULL) {
-        uint32_t ctlModelVal = MmsValue_toInt32(ctlModel);
-
-        self->ctlModel = ctlModelVal;
+        int ctlModelVal = MmsValue_toInt32(ctlModel);
 
         if (DEBUG_IED_SERVER)
             printf("IED_SERVER:  ctlModel: %i\n", ctlModelVal);
+
+        if ((ctlModelVal < 0) || (ctlModelVal > 4)) {
+            ctlModelVal = 1;
+            if (DEBUG_IED_SERVER)
+                printf("IED_SERVER:  invalid control model!\n");
+        }
+
+        self->ctlModel = ctlModelVal;
 
         if ((ctlModelVal == 2) || (ctlModelVal == 4)) /* SBO */
             setState(self, STATE_UNSELECTED);
@@ -596,9 +599,6 @@ ControlObject_destroy(ControlObject* self)
 {
     if (self->mmsValue)
         MmsValue_delete(self->mmsValue);
-
-    if (self->emptyString)
-        MmsValue_delete(self->emptyString);
 
     if (self->error)
         MmsValue_delete(self->error);
@@ -675,7 +675,7 @@ static void
 selectObject(ControlObject* self, uint64_t selectTime, MmsServerConnection connection)
 {
     if (DEBUG_IED_SERVER)
-        printf("IED_SERVER: control %s selected\n", self->ctlObjectName);
+        printf("IED_SERVER: control %s/%s.%s selected\n", MmsDomain_getName(self->mmsDomain), self->lnName, self->name);
 
     updateSboTimeoutValue(self);
 
@@ -693,7 +693,7 @@ unselectObject(ControlObject* self)
     setStSeld(self, false);
 
     if (DEBUG_IED_SERVER)
-        printf("IED_SERVER: control %s unselected\n", self->ctlObjectName);
+        printf("IED_SERVER: control %s/%s.%s unselected\n", MmsDomain_getName(self->mmsDomain), self->lnName, self->name);
 }
 
 static void
@@ -705,8 +705,8 @@ checkSelectTimeout(ControlObject* self, uint64_t currentTime)
             if (self->selectTimeout > 0) {
                 if (currentTime > (self->selectTime + self->selectTimeout)) {
                     if (DEBUG_IED_SERVER)
-                        printf("IED_SERVER: select-timeout (timeout-val = %i) for control %s\n",
-                                self->selectTimeout, self->ctlObjectName);
+                        printf("IED_SERVER: select-timeout (timeout-val = %i) for control %s/%s.%s\n",
+                                self->selectTimeout, MmsDomain_getName(self->mmsDomain), self->lnName, self->name);
 
                     unselectObject(self);
                 }
@@ -781,7 +781,7 @@ Control_processControlActions(MmsMapping* self, uint64_t currentTimeInMs)
                 setOpRcvd(controlObject, true);
 
                 if (DEBUG_IED_SERVER)
-                    printf("time activated operate: perform test\n");
+                    printf("IED_SERVER: time activated operate: perform test\n");
 
                 controlObject->timeActivatedOperate = false;
 
@@ -800,7 +800,7 @@ Control_processControlActions(MmsMapping* self, uint64_t currentTimeInMs)
                 if (checkResult == CONTROL_ACCEPTED) {
 
                     if (DEBUG_IED_SERVER)
-                        printf("time activated operate: command accepted\n");
+                        printf("IED_SERVER: time activated operate: command accepted\n");
 
                     /* leave state Perform Test */
                     setOpRcvd(controlObject, false);
@@ -1017,7 +1017,8 @@ ControlObject_sendCommandTerminationNegative(ControlObject* self)
 
     char ctlObj[130];
 
-    StringUtils_createStringInBuffer(ctlObj, 2, self->ctlObjectName, "$Oper");
+    StringUtils_createStringInBuffer(ctlObj, 6, MmsDomain_getName(self->mmsDomain), "/",
+            self->lnName, "$CO$", self->name, "$Oper");
 
     MmsValue ctlObjValueMemory;
 
@@ -1092,7 +1093,8 @@ ControlObject_sendLastApplError(ControlObject* self, MmsServerConnection connect
 
     char ctlObj[130];
 
-    StringUtils_createStringInBuffer(ctlObj, 3, self->ctlObjectName, "$", ctlVariable);
+    StringUtils_createStringInBuffer(ctlObj, 7, MmsDomain_getName(self->mmsDomain), "/",
+            self->lnName, "$CO$", self->name, "$", ctlVariable);
 
     if (DEBUG_IED_SERVER) {
         printf("IED_SERVER: sendLastApplError:\n");
@@ -1234,7 +1236,7 @@ Control_readAccessControlObject(MmsMapping* self, MmsDomain* domain, char* varia
 
                     uint64_t currentTime = Hal_getTimeInMs();
 
-                    value = controlObject->emptyString;
+                    value = &emptyString;
 
                     checkSelectTimeout(controlObject, currentTime);
 
