@@ -984,32 +984,49 @@ ControlObject_sendCommandTerminationPositive(ControlObject* self)
     if (DEBUG_IED_SERVER)
         printf("IED_SERVER: send CommandTermination+: %s\n", itemId);
 
-    char* domainId = MmsDomain_getName(self->mmsDomain);
-
     MmsVariableAccessSpecification varSpec;
 
     varSpec.itemId = itemId;
-    varSpec.domainId = domainId;
+    varSpec.domainId = MmsDomain_getName(self->mmsDomain);
 
-    LinkedList varSpecList = LinkedList_create();
-    LinkedList values = LinkedList_create();
+    struct sLinkedList _varSpecList1;
+    _varSpecList1.next = NULL;
+    struct sLinkedList _varSpecList;
+    _varSpecList.data = NULL;
+    _varSpecList.next = &_varSpecList1;
 
-    if ((varSpecList != NULL) && (values != NULL))
-    {
-        LinkedList_add(varSpecList, &varSpec);
-        LinkedList_add(values, self->oper);
+    struct sLinkedList _values1;
+    _values1.next = NULL;
+    struct sLinkedList _values;
+    _values.data = NULL;
+    _values.next = &_values1;
 
-        MmsServerConnection_sendInformationReportListOfVariables(self->mmsConnection, varSpecList, values, false);
+    _varSpecList1.data = &varSpec;
+    _values1.data = self->oper;
 
-        LinkedList_destroyStatic(varSpecList);
-        LinkedList_destroyStatic(values);
-    }
+    MmsServerConnection_sendInformationReportListOfVariables(self->mmsConnection, &_varSpecList, &_values, false);
 }
 
 void
 ControlObject_sendCommandTerminationNegative(ControlObject* self)
 {
     /* create LastApplError */
+
+    struct sLinkedList _varSpecList2;
+    _varSpecList2.next = NULL;
+    struct sLinkedList _varSpecList1;
+    _varSpecList1.next = &_varSpecList2;
+    struct sLinkedList _varSpecList;
+    _varSpecList.data = NULL;
+    _varSpecList.next = &_varSpecList1;
+
+    struct sLinkedList _values2;
+    _values2.next = NULL;
+    struct sLinkedList _values1;
+    _values1.next = &_values2;
+    struct sLinkedList _values;
+    _values.data = NULL;
+    _values.next = &_values1;
 
     MmsValue lastApplErrorMemory;
 
@@ -1061,24 +1078,18 @@ ControlObject_sendCommandTerminationNegative(ControlObject* self)
     operVarSpec.itemId = itemId;
     operVarSpec.domainId = domainId;
 
-
     /* create response */
 
     if (DEBUG_IED_SERVER)
         printf("IED_SERVER: send CommandTermination-: %s\n", itemId);
 
-    LinkedList varSpecList = LinkedList_create();
-    LinkedList values = LinkedList_create();
+    _varSpecList1.data = &lastApplErrorVarSpec;
+    _varSpecList2.data = &operVarSpec;
 
-    LinkedList_add(varSpecList, &lastApplErrorVarSpec);
-    LinkedList_add(varSpecList, &operVarSpec);
-    LinkedList_add(values, lastApplError);
-    LinkedList_add(values, self->oper);
+    _values1.data = lastApplError;
+    _values2.data = self->oper;
 
-    MmsServerConnection_sendInformationReportListOfVariables(self->mmsConnection, varSpecList, values, false);
-
-    LinkedList_destroyStatic(varSpecList);
-    LinkedList_destroyStatic(values);
+    MmsServerConnection_sendInformationReportListOfVariables(self->mmsConnection, &_varSpecList, &_values, false);
 } /* ControlObject_sendCommandTerminationNegative() */
 
 
@@ -1095,7 +1106,7 @@ ControlObject_sendLastApplError(ControlObject* self, MmsServerConnection connect
 
     MmsValue* componentContainer[5];
 
-    lastApplError->value.structure.components =componentContainer;
+    lastApplError->value.structure.components = componentContainer;
 
     char ctlObj[130];
 
