@@ -53,7 +53,7 @@
 #define PENDING_EVENT_OP_OK_TRUE 16
 #define PENDING_EVENT_OP_OK_FALSE 32
 
-static MmsValue emptyString = {.type = MMS_VISIBLE_STRING, .value.visibleString.buf = NULL, .value.visibleString.size = 0};
+static MmsValue emptyString = {MMS_STRUCTURE};
 
 void
 ControlObject_sendLastApplError(ControlObject* self, MmsServerConnection connection, char* ctlVariable, int error,
@@ -427,6 +427,12 @@ void
 ControlObject_initialize(ControlObject* self)
 {
     MmsServer mmsServer = IedServer_getMmsServer(self->iedServer);
+
+    if (emptyString.type != MMS_VISIBLE_STRING) {
+        emptyString.type = MMS_VISIBLE_STRING;
+        emptyString.value.visibleString.size = 0;
+        emptyString.value.visibleString.buf = NULL;
+    }
 
     char strBuf[129];
 
