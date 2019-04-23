@@ -59,8 +59,9 @@ reportCallbackFunction(void* parameter, ClientReport report)
     }
 }
 
-int main(int argc, char** argv) {
-
+int
+main(int argc, char** argv)
+{
     char* hostname;
     int tcpPort = 102;
 
@@ -151,15 +152,16 @@ int main(int argc, char** argv) {
             }
         }
 
-        exit_error:
-
         /* disable reporting */
         ClientReportControlBlock_setRptEna(rcb, false);
         IedConnection_setRCBValues(con, &error, rcb, RCB_ELEMENT_RPT_ENA, true);
 
-        ClientDataSet_destroy(clientDataSet);
+        exit_error:
 
         IedConnection_close(con);
+
+        ClientDataSet_destroy(clientDataSet);
+        ClientReportControlBlock_destroy(rcb);
     }
     else {
         printf("Failed to connect to %s:%i\n", hostname, tcpPort);
