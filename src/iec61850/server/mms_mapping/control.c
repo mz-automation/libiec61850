@@ -261,8 +261,10 @@ operateControl(ControlObject* self, MmsValue* value, uint64_t currentTime, bool 
 {
     self->selectTime = currentTime;
 
+    self->addCauseValue = ADD_CAUSE_UNKNOWN;
+
     if (self->operateHandler != NULL)
-        return self->operateHandler(self->operateHandlerParameter, value, testCondition);
+        return self->operateHandler((ControlAction) self, self->operateHandlerParameter, value, testCondition);
 
     return CONTROL_RESULT_OK;
 }
@@ -287,15 +289,17 @@ executeStateMachine:
         if (state == STATE_WAIT_FOR_ACTIVATION_TIME)
            isTimeActivatedControl = true;
 
+        self->addCauseValue = ADD_CAUSE_BLOCKED_BY_SYNCHROCHECK;
+
         if (self->waitForExecutionHandler != NULL) {
-            dynamicCheckResult = self->waitForExecutionHandler(self->waitForExecutionHandlerParameter, self->ctlVal,
+            dynamicCheckResult = self->waitForExecutionHandler((ControlAction) self, self->waitForExecutionHandlerParameter, self->ctlVal,
                     self->testMode, self->synchroCheck);
         }
 
         if (dynamicCheckResult == CONTROL_RESULT_FAILED) {
             if (isTimeActivatedControl) {
                 ControlObject_sendLastApplError(self, self->mmsConnection, "Oper",
-                        CONTROL_ERROR_NO_ERROR, ADD_CAUSE_BLOCKED_BY_SYNCHROCHECK,
+                        CONTROL_ERROR_NO_ERROR, self->addCauseValue,
                         self->ctlNum, self->origin, false);
             }
             else
@@ -795,12 +799,11 @@ Control_processControlActions(MmsMapping* self, uint64_t currentTimeInMs)
 
                 if (controlObject->checkHandler != NULL) { /* perform operative tests */
 
-                    ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer,
-                            controlObject->mmsConnection);
+                    controlObject->addCauseValue = ADD_CAUSE_BLOCKED_BY_INTERLOCKING;
 
-                    checkResult = controlObject->checkHandler(
+                    checkResult = controlObject->checkHandler((ControlAction) self,
                             controlObject->checkHandlerParameter, controlObject->ctlVal, controlObject->testMode,
-                            controlObject->interlockCheck, clientConnection);
+                            controlObject->interlockCheck);
                 }
 
                 if (checkResult == CONTROL_ACCEPTED) {
@@ -814,9 +817,10 @@ Control_processControlActions(MmsMapping* self, uint64_t currentTimeInMs)
                     executeControlTask(controlObject, currentTimeInMs);
                 }
                 else {
+
                     ControlObject_sendLastApplError(controlObject, controlObject->mmsConnection, "Oper",
-                    CONTROL_ERROR_NO_ERROR, ADD_CAUSE_BLOCKED_BY_INTERLOCKING,
-                            controlObject->ctlNum, controlObject->origin, false);
+                            CONTROL_ERROR_NO_ERROR, controlObject->addCauseValue,
+                                controlObject->ctlNum, controlObject->origin, false);
 
                     /* leave state Perform Test */
                     setOpRcvd(controlObject, false);
@@ -1053,7 +1057,7 @@ ControlObject_sendCommandTerminationNegative(ControlObject* self)
     MmsValue_setElement(lastApplError, 0, ctlObjValue);
 
     MmsValue_setInt32(self->error, CONTROL_ERROR_UNKOWN);
-    MmsValue_setInt32(self->addCause, ADD_CAUSE_UNKNOWN);
+    MmsValue_setInt32(self->addCause, self->addCauseValue);
 
     MmsValue_setElement(lastApplError, 1, self->error);
     MmsValue_setElement(lastApplError, 2, self->origin);
@@ -1262,14 +1266,12 @@ Control_readAccessControlObject(MmsMapping* self, MmsDomain* domain, char* varia
 
                         /* opRcvd must not be set here! */
 
+                        controlObject->addCauseValue = ADD_CAUSE_UNKNOWN;
+
                         if (controlObject->checkHandler != NULL) { /* perform operative tests */
 
-                            ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer,
-                                                                                connection);
-
-                            checkResult = controlObject->checkHandler(
-                                    controlObject->checkHandlerParameter, NULL, false, false,
-                                    clientConnection);
+                            checkResult = controlObject->checkHandler((ControlAction) controlObject,
+                                    controlObject->checkHandlerParameter, NULL, false, false);
                         }
 
                         if (checkResult == CONTROL_ACCEPTED) {
@@ -1442,10 +1444,10 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                     indication = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
 
                     if (connection != controlObject->mmsConnection)
-                        ControlObject_sendLastApplError(controlObject, connection, "SBOw", 0,
+                        ControlObject_sendLastApplError(controlObject, connection, "SBOw", CONTROL_ERROR_NO_ERROR,
                                 ADD_CAUSE_LOCKED_BY_OTHER_CLIENT, ctlNum, origin, true);
                     else
-                        ControlObject_sendLastApplError(controlObject, connection, "SBOw", 0,
+                        ControlObject_sendLastApplError(controlObject, connection, "SBOw", CONTROL_ERROR_NO_ERROR,
                                 ADD_CAUSE_OBJECT_ALREADY_SELECTED, ctlNum, origin, true);
 
                     if (DEBUG_IED_SERVER)
@@ -1461,14 +1463,12 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
 
                     bool testCondition = MmsValue_getBoolean(test);
 
+                    controlObject->addCauseValue = ADD_CAUSE_SELECT_FAILED;
+
                     if (controlObject->checkHandler != NULL) { /* perform operative tests */
 
-                        ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer,
-                                                    connection);
-
-                        checkResult = controlObject->checkHandler(
-                                controlObject->checkHandlerParameter, ctlVal, testCondition, interlockCheck,
-                                clientConnection);
+                        checkResult = controlObject->checkHandler((ControlAction) controlObject,
+                                controlObject->checkHandlerParameter, ctlVal, testCondition, interlockCheck);
                     }
 
                     if (checkResult == CONTROL_ACCEPTED) {
@@ -1485,7 +1485,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                         indication = (MmsDataAccessError) checkResult;
 
                         ControlObject_sendLastApplError(controlObject, connection, "SBOw", 0,
-                                ADD_CAUSE_SELECT_FAILED, ctlNum, origin, true);
+                                controlObject->addCauseValue, ctlNum, origin, true);
 
                         if (DEBUG_IED_SERVER)
                             printf("SBOw: select rejected by application!\n");
@@ -1601,14 +1601,12 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                 /* enter state Perform Test */
                 setOpRcvd(controlObject, true);
 
+                controlObject->addCauseValue = ADD_CAUSE_UNKNOWN;
+
                 if (controlObject->checkHandler != NULL) { /* perform operative tests */
 
-                    ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer,
-                            connection);
-
-                    checkResult = controlObject->checkHandler(
-                            controlObject->checkHandlerParameter, ctlVal, testCondition, interlockCheck,
-                            clientConnection);
+                    checkResult = controlObject->checkHandler((ControlAction) controlObject,
+                            controlObject->checkHandlerParameter, ctlVal, testCondition, interlockCheck);
                 }
 
                 if (checkResult == CONTROL_ACCEPTED) {
@@ -1691,6 +1689,65 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
 free_and_return:
 
     return indication;
+}
+
+void
+ControlAction_setAddCause(ControlAction self, ControlAddCause addCause)
+{
+    ControlObject* controlObject = (ControlObject*) self;
+
+    controlObject->addCauseValue = addCause;
+}
+
+int
+ControlAction_getOrCat(ControlAction self)
+{
+    ControlObject* controlObject = (ControlObject*) self;
+
+    if (controlObject->origin) {
+        MmsValue* orCat = MmsValue_getElement(controlObject->origin, 0);
+
+        if (orCat) {
+            return MmsValue_toInt32(orCat);
+        }
+    }
+
+    return 0;
+}
+
+uint8_t*
+ControlAction_getOrIdent(ControlAction self, int* orIdentSize)
+{
+    ControlObject* controlObject = (ControlObject*) self;
+
+    if (controlObject->origin) {
+        MmsValue* orIdent = MmsValue_getElement(controlObject->origin, 1);
+
+        if (orIdent) {
+            if (MmsValue_getType(orIdent) == MMS_OCTET_STRING) {
+                *orIdentSize  = MmsValue_getOctetStringSize(orIdent);
+                return MmsValue_getOctetStringBuffer(orIdent);
+            }
+        }
+    }
+
+    return NULL;
+}
+
+ClientConnection
+ControlAction_getClientConnection(ControlAction self)
+{
+    ControlObject* controlObject = (ControlObject*) self;
+
+    return private_IedServer_getClientConnectionByHandle(controlObject->iedServer, controlObject->mmsConnection);
+}
+
+DataObject*
+ControlAction_getControlObject(ControlAction self)
+{
+    ControlObject* controlObject = (ControlObject*) self;
+
+    return controlObject->dataObject;
 }
 
 #endif /* (CONFIG_IEC61850_CONTROL_SERVICE == 1) */

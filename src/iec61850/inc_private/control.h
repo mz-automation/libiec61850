@@ -51,6 +51,7 @@ struct sControlObject
     int synchroCheck:1;
     int timeActivatedOperate:1;
     int operateOnce:1;
+    ControlAddCause addCauseValue:6;
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore stateLock;
@@ -85,8 +86,6 @@ struct sControlObject
     /* for automatic update of tOpOk attribute */
     DataAttribute* tOpOk;
 
-//    char ctlObjectName[130];
-
     /* for LastAppIError */
     MmsValue* error;
     MmsValue* addCause;
@@ -110,6 +109,8 @@ struct sControlObject
 
     ControlWaitForExecutionHandler waitForExecutionHandler;
     void* waitForExecutionHandlerParameter;
+
+    DataObject* dataObject;
 };
 
 LIB61850_INTERNAL ControlObject*

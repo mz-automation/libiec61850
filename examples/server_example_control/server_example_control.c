@@ -25,7 +25,7 @@ sigint_handler(int signalId)
 }
 
 static CheckHandlerResult
-checkHandler(void* parameter, MmsValue* ctlVal, bool test, bool interlockCheck, ClientConnection connection)
+checkHandler(ControlAction action, void* parameter, MmsValue* ctlVal, bool test, bool interlockCheck)
 {
     printf("check handler called!\n");
 
@@ -51,7 +51,7 @@ checkHandler(void* parameter, MmsValue* ctlVal, bool test, bool interlockCheck, 
 }
 
 static ControlHandlerResult
-controlHandlerForBinaryOutput(void* parameter, MmsValue* value, bool test)
+controlHandlerForBinaryOutput(ControlAction action, void* parameter, MmsValue* value, bool test)
 {
     uint64_t timestamp = Hal_getTimeInMs();
 
@@ -102,7 +102,6 @@ writeAccessHandler (DataAttribute* dataAttribute, MmsValue* value, ClientConnect
 int
 main(int argc, char** argv)
 {
-
     iedServer = IedServer_create(&iedModel);
 
     IedServer_setControlHandler(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO1,

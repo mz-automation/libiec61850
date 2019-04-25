@@ -56,6 +56,7 @@ struct sControlObjectClient
     uint64_t constantT; /* timestamp of select/operate to be used when constant T option is selected */
 
     LastApplError lastApplError;
+    MmsError lastMmsError;
 
     CommandTerminationHandler commandTerminationHandler;
     void* commandTerminaionHandlerParameter;
@@ -312,6 +313,12 @@ ControlObjectClient_getCtlValType(ControlObjectClient self)
         return MmsValue_getType(self->ctlVal);
 }
 
+IedClientError
+ControlObjectClient_getLastError(ControlObjectClient self)
+{
+    return iedConnection_mapMmsErrorToIedError(self->lastMmsError);
+}
+
 void
 ControlObjectClient_setOrigin(ControlObjectClient self, const char* orIdent, int orCat)
 {
@@ -499,6 +506,8 @@ ControlObjectClient_operate(ControlObjectClient self, MmsValue* ctlVal, uint64_t
 
     MmsValue_setElement(operParameters, 0, NULL);
     MmsValue_delete(operParameters);
+
+    self->lastMmsError = mmsError;
 
     if (mmsError != MMS_ERROR_NONE) {
         if (DEBUG_IED_CLIENT)
@@ -718,6 +727,8 @@ ControlObjectClient_selectWithValue(ControlObjectClient self, MmsValue* ctlVal)
     MmsValue_setElement(selValParameters, 0, NULL);
     MmsValue_delete(selValParameters);
 
+    self->lastMmsError = mmsError;
+
     if (mmsError != MMS_ERROR_NONE) {
         if (DEBUG_IED_CLIENT)
             printf("IED_CLIENT: select-with-value failed!\n");
@@ -868,6 +879,8 @@ ControlObjectClient_select(ControlObjectClient self)
     bool selected = false;
 
     self->ctlNum++;
+
+    self->lastMmsError = mmsError;
 
     if (value == NULL) {
         if (DEBUG_IED_CLIENT)
@@ -1067,6 +1080,8 @@ ControlObjectClient_cancel(ControlObjectClient self)
 
     MmsDataAccessError writeResult = MmsConnection_writeVariable(IedConnection_getMmsConnection(self->connection),
             &mmsError, domainId, itemId, cancelParameters);
+
+    self->lastMmsError = mmsError;
 
     MmsValue_setElement(cancelParameters, 0, NULL);
     MmsValue_delete(cancelParameters);

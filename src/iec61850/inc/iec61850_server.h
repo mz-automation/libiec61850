@@ -3,7 +3,7 @@
  *
  *  IEC 61850 server API for libiec61850.
  *
- *  Copyright 2013-2018 Michael Zillgith
+ *  Copyright 2013-2019 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -1083,8 +1083,61 @@ typedef enum {
     CONTROL_RESULT_WAITING = 2 /** check or operation is in progress */
 } ControlHandlerResult;
 
+typedef void* ControlAction;
+
+/**
+ * \brief Set the add cause for the next command termination or application error message
+ *
+ * \param self the control action instance
+ * \param addCause the additional cause
+ */
+LIB61850_API void
+ControlAction_setAddCause(ControlAction self, ControlAddCause addCause);
+
+/**
+ * \brief Get the originator category provided by the client
+ *
+ * \param self the control action instance
+ *
+ * \return the originator category
+ */
+LIB61850_API int
+ControlAction_getOrCat(ControlAction self);
+
+/**
+ * \brief Get the originator identifier provided by the client
+ *
+ * \param self the control action instance
+ *
+ * \return the originator identifier
+ */
+LIB61850_API uint8_t*
+ControlAction_getOrIdent(ControlAction self, int* orIdentSize);
+
+/**
+ * \brief Get the client object associated with the client that caused the control action
+ *
+ * \param self the control action instance
+ *
+ * \return client connection instance
+ */
+LIB61850_API ClientConnection
+ControlAction_getClientConnection(ControlAction self);
+
+/**
+ * \brief Get the control object that is subject to this action
+ *
+ * \param self the control action instance
+ *
+ * \return the controllable data object instance
+ */
+LIB61850_API DataObject*
+ControlAction_getControlObject(ControlAction self);
+
 /**
  * \brief Control model callback to perform the static tests (optional).
+ *
+ * NOTE: Signature changed in version 1.4!
  *
  * User provided callback function for the control model. It will be invoked after
  * a control operation has been invoked by the client. This callback function is
@@ -1093,19 +1146,20 @@ typedef enum {
  * This handler can also be check if the client has the required permissions to execute the
  * operation and allow or deny the operation accordingly.
  *
+ * \param action the control action parameter that provides access to additional context information
  * \param parameter the parameter that was specified when setting the control handler
  * \param ctlVal the control value of the control operation.
  * \param test indicates if the operate request is a test operation
  * \param interlockCheck the interlockCheck parameter provided by the client
- * \param connection the connection object of the client connection that invoked the control operation
  *
  * \return CONTROL_ACCEPTED if the static tests had been successful, one of the error codes otherwise
  */
-typedef CheckHandlerResult (*ControlPerformCheckHandler) (void* parameter, MmsValue* ctlVal, bool test, bool interlockCheck,
-        ClientConnection connection);
+typedef CheckHandlerResult (*ControlPerformCheckHandler) (ControlAction action, void* parameter, MmsValue* ctlVal, bool test, bool interlockCheck);
 
 /**
  * \brief Control model callback to perform the dynamic tests (optional).
+ *
+ * NOTE: Signature changed in version 1.4!
  *
  * User provided callback function for the control model. It will be invoked after
  * a control operation has been invoked by the client. This callback function is
@@ -1115,6 +1169,7 @@ typedef CheckHandlerResult (*ControlPerformCheckHandler) (void* parameter, MmsVa
  * cannot be performed immediately the function SHOULD return CONTROL_RESULT_WAITING and the
  * handler will be invoked again later.
  *
+ * \param action the control action parameter that provides access to additional context information
  * \param parameter the parameter that was specified when setting the control handler
  * \param ctlVal the control value of the control operation.
  * \param test indicates if the operate request is a test operation
@@ -1123,10 +1178,12 @@ typedef CheckHandlerResult (*ControlPerformCheckHandler) (void* parameter, MmsVa
  * \return CONTROL_RESULT_OK if the dynamic tests had been successful, CONTROL_RESULT_FAILED otherwise,
  *         CONTROL_RESULT_WAITING if the test is not yet finished
  */
-typedef ControlHandlerResult (*ControlWaitForExecutionHandler) (void* parameter, MmsValue* ctlVal, bool test, bool synchroCheck);
+typedef ControlHandlerResult (*ControlWaitForExecutionHandler) (ControlAction action, void* parameter, MmsValue* ctlVal, bool test, bool synchroCheck);
 
 /**
  * \brief Control model callback to actually perform the control operation.
+ *
+ * NOTE: Signature changed in version 1.4!
  *
  * User provided callback function for the control model. It will be invoked when
  * a control operation happens (Oper). Here the user should perform the control operation
@@ -1135,6 +1192,7 @@ typedef ControlHandlerResult (*ControlWaitForExecutionHandler) (void* parameter,
  * cannot be performed immediately the function SHOULD return CONTROL_RESULT_WAITING and the
  * handler will be invoked again later.
  *
+ * \param action the control action parameter that provides access to additional context information
  * \param parameter the parameter that was specified when setting the control handler
  * \param ctlVal the control value of the control operation.
  * \param test indicates if the operate request is a test operation
@@ -1142,7 +1200,7 @@ typedef ControlHandlerResult (*ControlWaitForExecutionHandler) (void* parameter,
  * \return CONTROL_RESULT_OK if the control action bas been successful, CONTROL_RESULT_FAILED otherwise,
  *         CONTROL_RESULT_WAITING if the test is not yet finished
  */
-typedef ControlHandlerResult (*ControlHandler) (void* parameter, MmsValue* ctlVal, bool test);
+typedef ControlHandlerResult (*ControlHandler) (ControlAction action, void* parameter, MmsValue* ctlVal, bool test);
 
 /**
  * \brief Set control handler for controllable data object

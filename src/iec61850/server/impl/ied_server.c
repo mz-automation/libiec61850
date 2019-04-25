@@ -751,6 +751,9 @@ lookupControlObject(IedServer self, DataObject* node)
     ControlObject* controlObject = MmsMapping_getControlObject(self->mmsMapping, domain,
             lnName, objectName);
 
+    if (controlObject)
+        controlObject->dataObject = node;
+
     return controlObject;
 }
 

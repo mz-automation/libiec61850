@@ -2002,6 +2002,16 @@ LIB61850_API MmsType
 ControlObjectClient_getCtlValType(ControlObjectClient self);
 
 /**
+ * \brief Get the error code of the last synchronous control action (operate, select, select-with-value, cancel)
+ *
+ * \param self the control object instance to use
+ *
+ * \return the client error code
+ */
+LIB61850_API IedClientError
+ControlObjectClient_getLastError(ControlObjectClient self);
+
+/**
  * \brief Send an operate command to the server
  *
  * \param self the control object instance to use
