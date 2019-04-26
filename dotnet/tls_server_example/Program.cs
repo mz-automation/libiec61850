@@ -46,7 +46,7 @@ namespace tls_server_example
 
 			IedServer iedServer = new IedServer (iedModel, tlsConfig);
 
-			iedServer.SetControlHandler (spcso1, delegate(DataObject controlObject, object parameter, MmsValue ctlVal, bool test) {
+			iedServer.SetControlHandler (spcso1, delegate(ControlAction action, object parameter, MmsValue ctlVal, bool test) {
 				bool val = ctlVal.GetBoolean();
 
 				if (val)

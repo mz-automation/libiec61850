@@ -126,7 +126,11 @@ namespace tests
 
 			Assert.AreEqual (elem2.GetType (), MmsType.MMS_INTEGER);
 			Assert.AreEqual (elem2.ToInt32 (), 3);
-		}
+
+            val.SetElement (0, null);
+            val.SetElement (1, null);
+            val.SetElement (2, null);
+        }
 
 		[Test()]
 		public void MmsValueStructure()
@@ -147,6 +151,9 @@ namespace tests
 			MmsValue elem1 = val.GetElement (1);
 
 			Assert.AreEqual (elem1.GetType (), MmsType.MMS_BIT_STRING);
+
+            val.SetElement (0, null);
+            val.SetElement (1, null);
 		}
 
 		[Test ()]
@@ -428,7 +435,17 @@ namespace tests
 
 			IedServer iedServer = new IedServer (iedModel);
 
-			iedServer.SetControlHandler (spcso1, delegate(DataObject controlObject, object parameter, MmsValue ctlVal, bool test) {
+			iedServer.SetControlHandler (spcso1, delegate(ControlAction action, object parameter, MmsValue ctlVal, bool test) {
+
+                byte [] orIdent = action.GetOrIdent ();
+
+                string orIdentStr = System.Text.Encoding.UTF8.GetString (orIdent, 0, orIdent.Length);
+
+                Assert.AreEqual ("TEST1234", orIdentStr);
+                Assert.AreEqual (OrCat.MAINTENANCE, action.GetOrCat ());
+
+                Assert.AreSame (spcso1, action.GetControlObject ());
+
 				handlerCalled++;
 				return ControlHandlerResult.OK;
 			}, null);
@@ -440,6 +457,7 @@ namespace tests
 			connection.Connect ("localhost", 10002);
 
 			ControlObject controlClient = connection.CreateControlObject ("simpleIOGenericIO/GGIO1.SPCSO1");
+            controlClient.SetOrigin ("TEST1234", OrCat.MAINTENANCE);
 
 			Assert.IsNotNull (controlClient);
 

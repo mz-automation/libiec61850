@@ -28,10 +28,7 @@ using IEC61850.Common;
 
 namespace IEC61850
 {
-
-    /// <summary>
-    /// IEC 61850 common API parts (used by client and server API)
-    /// </summary>
+    // IEC 61850 common API parts (used by client and server API)
 	namespace Common {
 
         /// <summary>
@@ -76,8 +73,8 @@ namespace IEC61850
         }
 	}
 
-	namespace Client {
-
+	namespace Client
+    {
 		[StructLayout(LayoutKind.Sequential)]
 		internal struct LastApplErrorInternal
 		{
@@ -128,7 +125,10 @@ namespace IEC61850
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			private static extern int ControlObjectClient_getCtlValType(IntPtr self);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport ("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            private static extern int ControlObjectClient_getLastError (IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.I1)]
 			private static extern bool ControlObjectClient_operate(IntPtr self, IntPtr ctlVal, UInt64 operTime);
 
@@ -190,7 +190,7 @@ namespace IEC61850
 			public delegate void CommandTerminationHandler (Object parameter, ControlObject controlObject);
 
             private IedConnection iedConnection;
-			private IntPtr controlObject;
+			private IntPtr self;
 
 			private CommandTerminationHandler commandTerminationHandler = null;
 			private Object commandTerminationHandlerParameter = null;
@@ -207,14 +207,14 @@ namespace IEC61850
 			{
                 this.iedConnection = iedConnection;
 
-				this.controlObject = ControlObjectClient_create(objectReference, connection);
+				this.self = ControlObjectClient_create(objectReference, connection);
 
-				if (this.controlObject == System.IntPtr.Zero)
+				if (this.self == System.IntPtr.Zero)
 					throw new IedConnectionException("Control object not found", 0);
 
 				intCommandTerminationHandler = new InternalCommandTerminationHandler (MyCommandTerminationHandler);
 
-				ControlObjectClient_setCommandTerminationHandler(controlObject, intCommandTerminationHandler, controlObject);
+				ControlObjectClient_setCommandTerminationHandler(self, intCommandTerminationHandler, self);
 			}
 
             /// <summary>
@@ -225,7 +225,7 @@ namespace IEC61850
             /// </returns>
 			public ControlModel GetControlModel ()
 			{
-				ControlModel controlModel = (ControlModel) ControlObjectClient_getControlModel(controlObject);
+				ControlModel controlModel = (ControlModel) ControlObjectClient_getControlModel(self);
 
 				return controlModel;
 			}
@@ -236,7 +236,7 @@ namespace IEC61850
 			/// <returns>MmsType required for the ctlVal value.</returns>
 			public MmsType GetCtlValType ()
 			{
-				MmsType ctlValType = (MmsType) ControlObjectClient_getCtlValType (controlObject);
+				MmsType ctlValType = (MmsType) ControlObjectClient_getCtlValType (self);
 
 				return ctlValType;
 			}
@@ -252,7 +252,17 @@ namespace IEC61850
             /// </param>
             public void SetOrigin (string originator, OrCat originatorCategory)
             {
-                ControlObjectClient_setOrigin(controlObject, originator, (int) originatorCategory);
+                ControlObjectClient_setOrigin(self, originator, (int) originatorCategory);
+            }
+
+            /// <summary>
+            /// Gets the error code of the last synchronous control action (operate, select, select-with-value, cancel)
+            /// </summary>
+            /// <value>error code.</value>
+            public IedClientError LastError {
+                get {
+                    return (IedClientError)ControlObjectClient_getLastError (self);
+                }
             }
 
             /// <summary>
@@ -342,7 +352,7 @@ namespace IEC61850
             /// <returns>true when the operation has been successful, false otherwise</returns>
 			public bool Operate (MmsValue ctlVal, UInt64 operTime)
 			{
-				return ControlObjectClient_operate(controlObject, ctlVal.valueReference, operTime);
+				return ControlObjectClient_operate(self, ctlVal.valueReference, operTime);
 			}
 
             private void nativeOperateHandler (UInt32 invokeId, IntPtr parameter, int err, int type, bool success)
@@ -477,7 +487,7 @@ namespace IEC61850
 
                 GCHandle handle = GCHandle.Alloc(callbackInfo);
 
-                UInt32 invokeId = ControlObjectClient_operateAsync(controlObject, out error, ctlVal.valueReference, operTime, nativeOperateHandler, GCHandle.ToIntPtr(handle));
+                UInt32 invokeId = ControlObjectClient_operateAsync(self, out error, ctlVal.valueReference, operTime, nativeOperateHandler, GCHandle.ToIntPtr(handle));
 
                 if (error != 0)
                 {
@@ -494,7 +504,7 @@ namespace IEC61850
             /// <returns>true when the selection has been successful, false otherwise</returns>
             public bool Select ()
             {
-                return ControlObjectClient_select(controlObject);
+                return ControlObjectClient_select(self);
             }
 
             /// <summary>
@@ -512,7 +522,7 @@ namespace IEC61850
 
                 GCHandle handle = GCHandle.Alloc(callbackInfo);
 
-                UInt32 invokeId = ControlObjectClient_selectAsync(controlObject, out error, nativeOperateHandler, GCHandle.ToIntPtr(handle));
+                UInt32 invokeId = ControlObjectClient_selectAsync(self, out error, nativeOperateHandler, GCHandle.ToIntPtr(handle));
 
                 if (error != 0)
                 {
@@ -530,7 +540,7 @@ namespace IEC61850
             /// <returns>true when the selection has been successful, false otherwise</returns>
             public bool SelectWithValue (MmsValue ctlVal)
             {
-                return ControlObjectClient_selectWithValue(controlObject, ctlVal.valueReference);
+                return ControlObjectClient_selectWithValue(self, ctlVal.valueReference);
             }
 
             /// <summary>
@@ -624,7 +634,7 @@ namespace IEC61850
 
                 GCHandle handle = GCHandle.Alloc(callbackInfo);
 
-                UInt32 invokeId = ControlObjectClient_selectWithValueAsync(controlObject, out error, ctlVal.valueReference, nativeOperateHandler, GCHandle.ToIntPtr(handle));
+                UInt32 invokeId = ControlObjectClient_selectWithValueAsync(self, out error, ctlVal.valueReference, nativeOperateHandler, GCHandle.ToIntPtr(handle));
 
                 if (error != 0)
                 {
@@ -645,7 +655,7 @@ namespace IEC61850
             /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
             public bool Cancel () 
             {
-                return ControlObjectClient_cancel(controlObject);
+                return ControlObjectClient_cancel(self);
             }
 
             /// <summary>
@@ -659,7 +669,7 @@ namespace IEC61850
 
                 GCHandle handle = GCHandle.Alloc(callbackInfo);
 
-                UInt32 invokeId = ControlObjectClient_cancelAsync(controlObject, out error, nativeOperateHandler, GCHandle.ToIntPtr(handle));
+                UInt32 invokeId = ControlObjectClient_cancelAsync(self, out error, nativeOperateHandler, GCHandle.ToIntPtr(handle));
 
                 if (error != 0)
                 {
@@ -676,7 +686,7 @@ namespace IEC61850
 			[Obsolete("use SetSynchroCheck instead")]
             public void EnableSynchroCheck ()
             {
-				ControlObjectClient_setSynchroCheck (controlObject, true);
+				ControlObjectClient_setSynchroCheck (self, true);
             }
 
             /// <summary>
@@ -685,7 +695,7 @@ namespace IEC61850
 			[Obsolete("use SetInterlockCheck instead")]
 			public void EnableInterlockCheck ()
             {
-				ControlObjectClient_setInterlockCheck (controlObject, true);
+				ControlObjectClient_setInterlockCheck (self, true);
             }
 
 			/// <summary>
@@ -693,7 +703,7 @@ namespace IEC61850
 			/// </summary>
 			public void SetInterlockCheck (bool value)
 			{
-				ControlObjectClient_setInterlockCheck (controlObject, value);
+				ControlObjectClient_setInterlockCheck (self, value);
 			}
 
 			/// <summary>
@@ -701,7 +711,7 @@ namespace IEC61850
 			/// </summary>
 			public void SetSynchroCheck (bool value)
 			{
-				ControlObjectClient_setSynchroCheck (controlObject, value);
+				ControlObjectClient_setSynchroCheck (self, value);
 			}
 
 			/// <summary>
@@ -709,7 +719,7 @@ namespace IEC61850
 			/// </summary>
 			public void SetTestMode (bool value)
 			{
-				ControlObjectClient_setTestMode (controlObject, value);
+				ControlObjectClient_setTestMode (self, value);
 			}
 
 			/// <summary>
@@ -720,7 +730,7 @@ namespace IEC61850
 			/// </returns>
 			public LastApplError GetLastApplError ()
 			{
-				LastApplErrorInternal lastApplError = ControlObjectClient_getLastApplError(controlObject);
+				LastApplErrorInternal lastApplError = ControlObjectClient_getLastApplError(self);
 
 				return new LastApplError(lastApplError);
 			}
@@ -741,9 +751,9 @@ namespace IEC61850
 			}
 
 			protected virtual void Dispose(bool disposing) {
-				if (this.controlObject != System.IntPtr.Zero) {
-					ControlObjectClient_destroy (controlObject);
-					this.controlObject = System.IntPtr.Zero;
+				if (this.self != System.IntPtr.Zero) {
+					ControlObjectClient_destroy (self);
+					this.self = System.IntPtr.Zero;
 				}
 			}
 

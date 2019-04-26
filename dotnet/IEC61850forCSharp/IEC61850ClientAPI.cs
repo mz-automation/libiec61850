@@ -1,7 +1,7 @@
 /*
  *  IEC61850ClientAPI.cs
  *
- *  Copyright 2014-2016 Michael Zillgith
+ *  Copyright 2014-2019 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -29,14 +29,10 @@ using System.Collections;
 using IEC61850.Common;
 using IEC61850.TLS;
 
-/// <summary>
-/// IEC 61850 API for the libiec61850 .NET wrapper library
-/// </summary>
+// IEC 61850 API for the libiec61850 .NET wrapper library
 namespace IEC61850
 {
-    /// <summary>
-    /// IEC 61850 client API.
-    /// </summary>
+    // IEC 61850 client API.
     namespace Client
     {
 
@@ -201,7 +197,9 @@ namespace IEC61850
             }
         }
 
-
+        /// <summary>
+        /// Represents a variable in a log entry
+        /// </summary>
         public class MmsJournalVariable
         {
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
@@ -265,6 +263,10 @@ namespace IEC61850
                 this.self = self;
             }
 
+            /// <summary>
+            /// Gets the journal variables.
+            /// </summary>
+            /// <returns>The journal variables.</returns>
             public List<MmsJournalVariable> GetJournalVariables()
             {
                 if (variables == null)
@@ -289,7 +291,10 @@ namespace IEC61850
                 return variables;
             }
 
-
+            /// <summary>
+            /// Gets the entry identifier of the log entry
+            /// </summary>
+            /// <returns>The entry identifier.</returns>
             public byte[] GetEntryID()
             {
                 IntPtr mmsValuePtr = MmsJournalEntry_getEntryID(self);
@@ -301,6 +306,10 @@ namespace IEC61850
                 return octetString;
             }
 
+            /// <summary>
+            /// Gets the occurence time of the log entry
+            /// </summary>
+            /// <returns>The occurence time.</returns>
             public ulong GetOccurenceTime()
             {
                 IntPtr mmsValuePtr = MmsJournalEntry_getOccurenceTime(self);
@@ -310,6 +319,9 @@ namespace IEC61850
                 return mmsValue.GetBinaryTimeAsUtcMs();
             }
 
+            /// <summary>
+            /// Releases all resource used by the <see cref="T:IEC61850.Client.MmsJournalEntry"/> object.
+            /// </summary>
             public void Dispose()
             {
                 if (self != IntPtr.Zero)

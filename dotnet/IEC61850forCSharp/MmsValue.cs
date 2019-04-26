@@ -521,9 +521,12 @@ namespace IEC61850
 				if ((elementType == MmsType.MMS_ARRAY) || (elementType == MmsType.MMS_STRUCTURE)) {
 				
 					if ((index >= 0) && (index < Size ())) {
-						MmsValue_setElement (valueReference, index, elementValue.valueReference);
-					
-					} else
+                        if (elementValue != null)
+						    MmsValue_setElement (valueReference, index, elementValue.valueReference);
+                        else
+                            MmsValue_setElement (valueReference, index, IntPtr.Zero);
+
+                    } else
 						throw new MmsValueException ("Index out of bounds");
 				
 				} else

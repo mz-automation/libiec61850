@@ -1086,7 +1086,7 @@ typedef enum {
 typedef void* ControlAction;
 
 /**
- * \brief Set the add cause for the next command termination or application error message
+ * \brief Sets the add cause for the next command termination or application error message
  *
  * \param self the control action instance
  * \param addCause the additional cause
@@ -1095,7 +1095,7 @@ LIB61850_API void
 ControlAction_setAddCause(ControlAction self, ControlAddCause addCause);
 
 /**
- * \brief Get the originator category provided by the client
+ * \brief Gets the originator category provided by the client
  *
  * \param self the control action instance
  *
@@ -1105,7 +1105,7 @@ LIB61850_API int
 ControlAction_getOrCat(ControlAction self);
 
 /**
- * \brief Get the originator identifier provided by the client
+ * \brief Gets the originator identifier provided by the client
  *
  * \param self the control action instance
  *
@@ -1115,7 +1115,7 @@ LIB61850_API uint8_t*
 ControlAction_getOrIdent(ControlAction self, int* orIdentSize);
 
 /**
- * \brief Get the client object associated with the client that caused the control action
+ * \brief Gets the client object associated with the client that caused the control action
  *
  * \param self the control action instance
  *
@@ -1125,7 +1125,7 @@ LIB61850_API ClientConnection
 ControlAction_getClientConnection(ControlAction self);
 
 /**
- * \brief Get the control object that is subject to this action
+ * \brief Gets the control object that is subject to this action
  *
  * \param self the control action instance
  *
