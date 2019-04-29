@@ -24,18 +24,19 @@
 #ifndef GOOSE_RECEIVER_H_
 #define GOOSE_RECEIVER_H_
 
-#include <goose_subscriber.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+#include <stdbool.h>
+
+#include "hal_ethernet.h"
+#include "goose_subscriber.h"
 
 /**
  * \addtogroup goose_api_group
  */
 /**@{*/
-
 
 typedef struct sGooseReceiver* GooseReceiver;
 
@@ -101,6 +102,15 @@ GooseReceiver_start(GooseReceiver self);
 void
 GooseReceiver_stop(GooseReceiver self);
 
+/**
+ * \brief Check if GOOSE receiver is running
+ *
+ * Can be used to check if \ref GooseReceiver_start has been successful.
+ *
+ * \param self the GooseReceiver instance
+ *
+ * \return true if GOOSE receiver is running, false otherwise
+ */
 bool
 GooseReceiver_isRunning(GooseReceiver self);
 
@@ -115,7 +125,7 @@ GooseReceiver_destroy(GooseReceiver self);
 /***************************************
  * Functions for non-threaded operation
  ***************************************/
-void
+EthernetSocket
 GooseReceiver_startThreadless(GooseReceiver self);
 
 void

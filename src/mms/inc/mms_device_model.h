@@ -182,7 +182,7 @@ MmsDevice_destroy(MmsDevice* self);
  * \return the new MmsDevice instance
  */
 MmsDomain*
-MmsDevice_getDomain(MmsDevice* self, char* domainId);
+MmsDevice_getDomain(MmsDevice* self, const char* domainId);
 
 /**
  * \brief Get the MmsTypeSpecification instance of a MMS named variable of VMD scope

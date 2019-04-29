@@ -56,7 +56,9 @@ public enum AttributeType {
     CONSTRUCTED(27), 
     ENTRY_TIME(28), 
     PHYCOMADDR(29),
-    CURRENCY(30);
+    CURRENCY(30),
+    OPTFLDS(31),
+    TRGOPS(32);
     
     private int intValue;
     
@@ -125,9 +127,9 @@ public enum AttributeType {
         else if (typeString.equals("Unicode255"))
             return UNICODE_STRING_255;
         else if (typeString.equals("OptFlds"))
-            return GENERIC_BITSTRING;
+            return OPTFLDS;
         else if (typeString.equals("TrgOps"))
-            return GENERIC_BITSTRING;
+            return TRGOPS;
         else if (typeString.equals("EntryID"))
             return OCTET_STRING_8;
         else if (typeString.equals("EntryTime"))

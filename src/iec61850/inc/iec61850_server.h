@@ -61,12 +61,23 @@ typedef struct sClientConnection* ClientConnection;
 /**
  * \brief Create a new IedServer instance
  *
- * \param iedModel reference to the IedModel data structure to be used as IEC 61850 model of the device
+ * \param dataModel reference to the IedModel data structure to be used as IEC 61850 data model of the device
  *
- * \return the newly generated IedServer instance
+ * \return the new IedServer instance
  */
 IedServer
-IedServer_create(IedModel* iedModel);
+IedServer_create(IedModel* dataModel);
+
+/**
+ * \brief Create a new IedServer with TLS support
+ *
+ * \param dataModel reference to the IedModel data structure to be used as IEC 61850 data model of the device
+ * \param tlsConfiguration TLS configuration object, or NULL to not use TLS
+ *
+ * \return the new IedServer instance
+ */
+IedServer
+IedServer_createWithTlsSupport(IedModel* dataModel, TLSConfiguration tlsConfiguration);
 
 /**
  * \brief Destroy an IedServer instance and release all resources (memory, TCP sockets)
@@ -102,7 +113,7 @@ IedServer_setFilestoreBasepath(IedServer self, const char* basepath);
  * \brief Start handling client connections
  *
  * \param self the instance of IedServer to operate on.
- * \param tcpPort the TCP port the server is listening
+ * \param tcpPort the TCP port the server is listening (-1 for using the default MMS or secure MMS port)
  */
 void
 IedServer_start(IedServer self, int tcpPort);
@@ -123,7 +134,7 @@ IedServer_stop(IedServer self);
  * be called periodically.
  *
  * \param self the instance of IedServer to operate on.
- * \param tcpPort the TCP port the server is listening
+ * \param tcpPort the TCP port the server is listening (-1 for using the default MMS or secure MMS port)
  */
 void
 IedServer_startThreadless(IedServer self, int tcpPort);
@@ -209,16 +220,6 @@ MmsServer
 IedServer_getMmsServer(IedServer self);
 
 /**
- * \brief get the IsoServer instance for this IedServer object
- *
- * \param self the instance of IedServer to operate on.
- *
- * \return the IsoServer instance of this IedServer object
- */
-IsoServer
-IedServer_getIsoServer(IedServer self);
-
-/**
  * \brief Enable all GOOSE control blocks.
  *
  * This will set the GoEna attribute of all configured GOOSE control blocks
@@ -243,7 +244,7 @@ void
 IedServer_disableGoosePublishing(IedServer self);
 
 /**
- * \brief Set the ethernet interface to be used by GOOSE publishing
+ * \brief Set the Ethernet interface to be used by GOOSE publishing
  *
  * This function can be used to set the GOOSE interface ID. If not used or set to NULL the
  * default interface ID from stack_config.h is used. Note the interface ID is operating system
@@ -273,7 +274,7 @@ IedServer_setGooseInterfaceId(IedServer self, const char* interfaceId);
  *
  * \param self the instance of IedServer to operate on.
  * \param authenticator the user provided authenticator callback
- * \param authenticatorParameter user provided paremeter that is passed to the authenticator
+ * \param authenticatorParameter user provided parameter that is passed to the authenticator
  */
 void
 IedServer_setAuthenticator(IedServer self, AcseAuthenticator authenticator, void* authenticatorParameter);
@@ -855,6 +856,8 @@ typedef enum {
  * a control operation has been invoked by the client. This callback function is
  * intended to perform the static tests. It should check if the interlock conditions
  * are met if the interlockCheck parameter is true.
+ * This handler can also be check if the client has the required permissions to execute the
+ * operation and allow or deny the operation accordingly.
  *
  * \param parameter the parameter that was specified when setting the control handler
  * \param ctlVal the control value of the control operation.
@@ -999,36 +1002,6 @@ IedServer_setSVCBHandler(IedServer self, SVControlBlock* svcb, SVCBEventHandler 
  *
  * @{
  */
-
-/**
- * \brief callback handler to monitor client access to data attributes
- *
- * User provided callback function to observe (monitor) MMS client access to
- * IEC 61850 data attributes. The application can install the same handler
- * multiple times and distinguish data attributes by the dataAttribute parameter.
- *
- * \param the data attribute that has been written by an MMS client.
- * \param connection the connection object of the client connection that invoked the write operation
- */
-typedef void (*AttributeChangedHandler) (DataAttribute* dataAttribute, ClientConnection connection);
-
-/**
- * \deprecated Please use IedServer_handleWriteAccess instead!
- * \brief Install an observer for a data attribute.
- *
- * This instructs the server to monitor write attempts by MMS clients to specific
- * data attributes. If a successful write attempt happens the server will call
- * the provided callback function to inform the application. This can be used to
- * monitor important configuration values.
- *
- * \param self the instance of IedServer to operate on.
- * \param dataAttribute the data attribute to monitor
- * \param handler the callback function that is invoked if a client has written to
- *        the monitored data attribute.
- */
-void
-IedServer_observeDataAttribute(IedServer self, DataAttribute* dataAttribute,
-        AttributeChangedHandler handler);
 
 /***************************************************************************
  * Access control

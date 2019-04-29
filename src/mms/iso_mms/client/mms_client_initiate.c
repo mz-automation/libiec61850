@@ -24,7 +24,6 @@
 #include "libiec61850_platform_includes.h"
 #include "mms_common.h"
 #include "mms_common_internal.h"
-#include "mms_indication.h"
 #include "mms_client_connection.h"
 #include "byte_buffer.h"
 
@@ -170,20 +169,30 @@ mmsClient_parseInitiateResponse(MmsConnection self)
     self->parameters.maxServOutstandingCalled = DEFAULT_MAX_SERV_OUTSTANDING_CALLED;
     self->parameters.maxServOutstandingCalling = DEFAULT_MAX_SERV_OUTSTANDING_CALLING;
 
-    int bufPos = 0;
+    int bufPos = 1; /* ignore tag - already checked */
+
     int maxBufPos = ByteBuffer_getSize(self->lastResponse);
     uint8_t* buffer = ByteBuffer_getBuffer(self->lastResponse);
 
+    int length;
+    bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
+
+    if (bufPos < 0)
+        return false;
+
+    if (bufPos + length > maxBufPos)
+        return false;
+
     while (bufPos < maxBufPos) {
         uint8_t tag = buffer[bufPos++];
-        int length;
 
         bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
 
-        if (bufPos < 0)  {
-            // TODO write initiate error PDU!
+        if (bufPos < 0)
             return false;
-        }
+
+        if (bufPos + length > maxBufPos)
+            return false;
 
         switch (tag) {
         case 0x80: /* local-detail-calling */

@@ -27,6 +27,7 @@ using System.Collections.Generic;
 using System.Collections;
 
 using IEC61850.Common;
+using IEC61850.TLS;
 
 /// <summary>
 /// IEC 61850 API for the libiec61850 .NET wrapper library
@@ -276,6 +277,9 @@ namespace IEC61850
 			[DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
 			static extern IntPtr IedConnection_create ();
 
+			[DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
+			static extern IntPtr IedConnection_createWithTlsSupport (IntPtr tlsConfig);
+
             [DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
             static extern void IedConnection_destroy (IntPtr self);
 
@@ -405,9 +409,21 @@ namespace IEC61850
 			private InternalConnectionClosedHandler connectionClosedHandler;
 			private ConnectionClosedHandler userProvidedHandler = null;
 
+			/// <summary>
+			/// Initializes a new instance of the <see cref="IEC61850.Client.IedConnection"/> class.
+			/// </summary>
 			public IedConnection ()
 			{
 				connection = IedConnection_create ();
+			}
+
+			/// <summary>
+			/// Initializes a new instance of the <see cref="IEC61850.Client.IedConnection"/> class.
+			/// </summary>
+			/// <param name="tlsConfig">TLS configuration to use</param>
+			public IedConnection (TLSConfiguration tlsConfig)
+			{
+				connection = IedConnection_createWithTlsSupport (tlsConfig.GetNativeInstance ());
 			}
 
 			/// <summary>
@@ -504,7 +520,7 @@ namespace IEC61850
 			/// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error.</exception>
 			public void Connect (string hostname)
 			{
-				Connect (hostname, 102);
+				Connect (hostname, -1);
 			}
 
 			/// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
@@ -515,10 +531,28 @@ namespace IEC61850
 				return controlObject;
 			}
 
+			/// <summary>
+			/// Creates a new SampledValuesControlBlock instance.
+			/// </summary>
+			/// <description>>
+			/// This function will also read the SVCB values from the server.
+			/// </description>
+			/// <returns>The new SVCB instance</returns>
+			/// <param name="svcbObjectReference">The object reference of the SVCB</param>
+			public SampledValuesControlBlock GetSvControlBlock (string svcbObjectReference)
+			{
+				return new SampledValuesControlBlock (connection, svcbObjectReference);
+			}
 
-		
-
-
+			/// <summary>
+			/// Creates a new SampledValuesControlBlock instance.
+			/// </summary>
+			/// <returns>The new GoCB instance</returns>
+			/// <param name="gocbObjectReference">The object reference of the GoCB</param>
+			public GooseControlBlock GetGooseControlBlock (string gocbObjectReference)
+			{
+				return new GooseControlBlock (gocbObjectReference, connection);
+			}
 
 			/// <summary>
 			/// Updates the device model by quering the server.
@@ -1035,6 +1069,18 @@ namespace IEC61850
 
 				if (error != 0)
 					throw new IedConnectionException ("Write value failed", error);
+			}
+
+			/// <summary>Delete file</summary>
+			/// <param name="fileName">The name of the file.</param>
+			/// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
+			public void DeleteFile (string fileName)
+			{
+				int error;
+				IedConnection_deleteFile (connection, out error, fileName);
+
+				if (error != 0)
+					throw new IedConnectionException ("Deleting file " + fileName + " failed", error);
 			}
 
             /// <summary>Delete file</summary>

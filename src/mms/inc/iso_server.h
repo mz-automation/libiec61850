@@ -89,13 +89,13 @@ void
 IsoConnection_sendMessage(IsoConnection self, ByteBuffer* message, bool handlerMode);
 
 IsoServer
-IsoServer_create(void);
+IsoServer_create(TLSConfiguration tlsConfiguration);
 
 void
 IsoServer_setTcpPort(IsoServer self, int port);
 
 void
-IsoServer_setLocalIpAddress(IsoServer self, char* ipAddress);
+IsoServer_setLocalIpAddress(IsoServer self, const char* ipAddress);
 
 IsoServerState
 IsoServer_getState(IsoServer self);
@@ -112,6 +112,9 @@ IsoServer_getAuthenticator(IsoServer self);
 
 void*
 IsoServer_getAuthenticatorParameter(IsoServer self);
+
+TLSConfiguration
+IsoServer_getTLSConfiguration(IsoServer self);
 
 void
 IsoServer_startListening(IsoServer self);

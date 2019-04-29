@@ -1,7 +1,7 @@
 /*
  * client_example1.c
  *
- * This example is intended to be used with server_example3 or server_example_goose.
+ * This example is intended to be used with server_example_basic_io or server_example_goose.
  */
 
 #include "iec61850_client.h"
@@ -49,8 +49,6 @@ int main(int argc, char** argv) {
     IedConnection_connect(con, &error, hostname, tcpPort);
 
     if (error == IED_ERROR_OK) {
-
-        IedConnection_getServerDirectory(con, &error, false);
 
         /* read an analog measurement value from server */
         MmsValue* value = IedConnection_readObject(con, &error, "simpleIOGenericIO/GGIO1.AnIn1.mag.f", IEC61850_FC_MX);

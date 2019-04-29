@@ -29,6 +29,7 @@
 #include "buffer_chain.h"
 #include "hal_socket.h"
 #include "iso_connection_parameters.h"
+#include "tls_socket.h"
 
 typedef struct {
     TSelector tSelSrc;
@@ -41,7 +42,12 @@ typedef struct {
     int remoteRef;
     int localRef;
     int protocolClass;
+
     Socket socket;
+//#if (CONFIG_MMS_SUPPORT_TLS == 1)
+    TLSSocket tlsSocket;
+//#endif
+
     CotpOptions options;
     bool isLastDataUnit;
     ByteBuffer* payload;

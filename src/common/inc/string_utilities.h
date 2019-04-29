@@ -27,6 +27,10 @@
 #include "libiec61850_platform_includes.h"
 #include "linked_list.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 char*
 StringUtils_copyString(const char* string);
 
@@ -77,6 +81,9 @@ StringUtils_createBufferFromHexString(char* hexString, uint8_t* buffer);
 bool
 StringUtils_startsWith(char* string, char* prefix);
 
+bool
+StringUtils_endsWith(const char* str, const char* suffix);
+
 /**
  * \brief Compare to characters using the collation order as defined in ISO 9506-2 7.5.2
  *
@@ -106,5 +113,10 @@ StringUtils_compareStrings(const char* a, const char* b);
  */
 void
 StringUtils_sortList(LinkedList list);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif /* STRING_UTILITIES_H_ */

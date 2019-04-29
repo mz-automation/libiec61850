@@ -169,6 +169,12 @@ mmsClient_parseWriteResponse(ByteBuffer* message, int32_t bufPos, MmsError* mmsE
         if (tag == 0x80) {
             bufPos = BerDecoder_decodeLength(buf, &length, bufPos, size);
 
+            if (bufPos == -1) {
+                *mmsError = MMS_ERROR_PARSING_RESPONSE;
+                retVal =  DATA_ACCESS_ERROR_UNKNOWN;
+                goto exit_function;
+            }
+
             uint32_t dataAccessErrorCode =
                     BerDecoder_decodeUint32(buf, length, bufPos);
 

@@ -157,6 +157,9 @@
 /* include support for IEC 61850 log services */
 #define CONFIG_IEC61850_LOG_SERVICE 1
 
+/* Force memory alignment - required for some platforms (required more memory for buffered reporting) */
+#define CONFIG_IEC61850_FORCE_MEMORY_ALIGNMENT 1
+
 /* overwrite default results for MMS identify service */
 //#define CONFIG_DEFAULT_MMS_VENDOR_NAME "libiec61850.com"
 //#define CONFIG_DEFAULT_MMS_MODEL_NAME "LIBIEC61850"

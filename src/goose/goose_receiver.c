@@ -45,7 +45,8 @@
 
 #define ETH_P_GOOSE 0x88b8
 
-struct sGooseReceiver {
+struct sGooseReceiver
+{
     bool running;
     bool stopped;
     char* interfaceId;
@@ -56,7 +57,6 @@ struct sGooseReceiver {
     Thread thread;
 #endif
 };
-
 
 GooseReceiver
 GooseReceiver_create()
@@ -88,7 +88,6 @@ GooseReceiver_removeSubscriber(GooseReceiver self, GooseSubscriber subscriber)
 {
     LinkedList_remove(self->subscriberList, (void*) subscriber);
 }
-
 
 void
 GooseReceiver_setInterfaceId(GooseReceiver self, const char* interfaceId)
@@ -122,45 +121,60 @@ parseAllData(uint8_t* buffer, int allDataLength, MmsValue* dataSetValues)
         uint8_t tag = buffer[bufPos++];
 
         if (elementIndex > maxIndex) {
-            if (DEBUG_GOOSE_SUBSCRIBER) printf("GOOSE_SUBSCRIBER: Malformed message: too much elements!\n");
+            if (DEBUG_GOOSE_SUBSCRIBER)
+                printf("GOOSE_SUBSCRIBER: Malformed message: too much elements!\n");
             return 0;
         }
 
         MmsValue* value = MmsValue_getElement(dataSetValues, elementIndex);
 
         bufPos = BerDecoder_decodeLength(buffer, &elementLength, bufPos, allDataLength);
-
-        if (bufPos + elementLength > allDataLength) {
-            if (DEBUG_GOOSE_SUBSCRIBER) printf("GOOSE_SUBSCRIBER: Malformed message: sub element is too large!\n");
+        if (bufPos < 0) {
+            if (DEBUG_GOOSE_SUBSCRIBER)
+                printf("GOOSE_SUBSCRIBER: Malformed message: failed to decode BER length tag!\n");
             return 0;
         }
 
-        switch (tag) {
+        if (bufPos + elementLength > allDataLength) {
+            if (DEBUG_GOOSE_SUBSCRIBER)
+                printf("GOOSE_SUBSCRIBER: Malformed message: sub element is too large!\n");
+            return 0;
+        }
+
+        switch (tag)
+        {
         case 0x80: /* reserved for access result */
             printf("GOOSE_SUBSCRIBER:    found reserved value (tag 0x80)!\n");
             break;
+
         case 0xa1: /* array */
-            if (DEBUG_GOOSE_SUBSCRIBER) printf("GOOSE_SUBSCRIBER:    found array\n");
+            if (DEBUG_GOOSE_SUBSCRIBER)
+                printf("GOOSE_SUBSCRIBER:    found array\n");
             if (MmsValue_getType(value) == MMS_ARRAY) {
                 if (!parseAllData(buffer + bufPos, elementLength, value))
                     return -1;
             }
             break;
+
         case 0xa2: /* structure */
-            if (DEBUG_GOOSE_SUBSCRIBER) printf("GOOSE_SUBSCRIBER:    found structure\n");
+            if (DEBUG_GOOSE_SUBSCRIBER)
+                printf("GOOSE_SUBSCRIBER:    found structure\n");
             if (MmsValue_getType(value) == MMS_STRUCTURE) {
                 if (!parseAllData(buffer + bufPos, elementLength, value))
                     return -1;
             }
             break;
+
         case 0x83: /* boolean */
-            if (DEBUG_GOOSE_SUBSCRIBER) printf("GOOSE_SUBSCRIBER:    found boolean\n");
+            if (DEBUG_GOOSE_SUBSCRIBER)
+                printf("GOOSE_SUBSCRIBER:    found boolean\n");
 
             if (MmsValue_getType(value) == MMS_BOOLEAN) {
                 MmsValue_setBoolean(value, BerDecoder_decodeBoolean(buffer, bufPos));
             }
             else
-                if (DEBUG_GOOSE_SUBSCRIBER) printf("GOOSE_SUBSCRIBER:      message contains value of wrong type!\n");
+            if (DEBUG_GOOSE_SUBSCRIBER)
+                printf("GOOSE_SUBSCRIBER:      message contains value of wrong type!\n");
 
             break;
 
@@ -173,10 +187,11 @@ parseAllData(uint8_t* buffer, int allDataLength, MmsValue* dataSetValues)
                             elementLength - 1);
                 }
                 else
-                    if (DEBUG_GOOSE_SUBSCRIBER)
-                        printf("bit-string is of wrong size");
+                if (DEBUG_GOOSE_SUBSCRIBER)
+                    printf("bit-string is of wrong size");
             }
             break;
+
         case 0x85: /* integer */
             if (MmsValue_getType(value) == MMS_INTEGER) {
                 if (elementLength <= value->value.integer->maxSize) {
@@ -185,6 +200,7 @@ parseAllData(uint8_t* buffer, int allDataLength, MmsValue* dataSetValues)
                 }
             }
             break;
+
         case 0x86: /* unsigned integer */
             if (MmsValue_getType(value) == MMS_UNSIGNED) {
                 if (elementLength <= value->value.integer->maxSize) {
@@ -193,6 +209,7 @@ parseAllData(uint8_t* buffer, int allDataLength, MmsValue* dataSetValues)
                 }
             }
             break;
+
         case 0x87: /* Float */
             if (MmsValue_getType(value) == MMS_FLOAT) {
                 if (elementLength == 9) {
@@ -212,6 +229,7 @@ parseAllData(uint8_t* buffer, int allDataLength, MmsValue* dataSetValues)
                 }
             }
             break;
+
         case 0x8a: /* visible string */
             if (MmsValue_getType(value) == MMS_VISIBLE_STRING) {
 
@@ -231,6 +249,7 @@ parseAllData(uint8_t* buffer, int allDataLength, MmsValue* dataSetValues)
 
             }
             break;
+
         case 0x8c: /* binary time */
             if (MmsValue_getType(value) == MMS_BINARY_TIME) {
                 if ((elementLength == 4) || (elementLength == 6)) {
@@ -238,17 +257,21 @@ parseAllData(uint8_t* buffer, int allDataLength, MmsValue* dataSetValues)
                 }
             }
             break;
+
         case 0x91: /* Utctime */
             if (elementLength == 8) {
                 if (MmsValue_getType(value) == MMS_UTC_TIME) {
                     MmsValue_setUtcTimeByBuffer(value, buffer + bufPos);
                 }
                 else
-                    if (DEBUG_GOOSE_SUBSCRIBER) printf("GOOSE_SUBSCRIBER:      message contains value of wrong type!\n");
+                if (DEBUG_GOOSE_SUBSCRIBER)
+                    printf("GOOSE_SUBSCRIBER:      message contains value of wrong type!\n");
             }
             else
-                if (DEBUG_GOOSE_SUBSCRIBER) printf("GOOSE_SUBSCRIBER:      UTCTime element is of wrong size!\n");
+            if (DEBUG_GOOSE_SUBSCRIBER)
+                printf("GOOSE_SUBSCRIBER:      UTCTime element is of wrong size!\n");
             break;
+
         default:
             if (DEBUG_GOOSE_SUBSCRIBER)
                 printf("GOOSE_SUBSCRIBER:    found unkown tag %02x\n", tag);
@@ -277,13 +300,20 @@ parseAllDataUnknownValue(GooseSubscriber self, uint8_t* buffer, int allDataLengt
         uint8_t tag = buffer[bufPos++];
 
         bufPos = BerDecoder_decodeLength(buffer, &elementLength, bufPos, allDataLength);
+        if (bufPos < 0) {
+            if (DEBUG_GOOSE_SUBSCRIBER)
+                printf("GOOSE_SUBSCRIBER: Malformed message: failed to decode BER length tag!\n");
+            return 0;
+        }
 
         if (bufPos + elementLength > allDataLength) {
-            if (DEBUG_GOOSE_SUBSCRIBER) printf("GOOSE_SUBSCRIBER: Malformed message: sub element is too large!\n");
+            if (DEBUG_GOOSE_SUBSCRIBER)
+                printf("GOOSE_SUBSCRIBER: Malformed message: sub element is too large!\n");
             goto exit_with_error;
         }
 
-        switch (tag) {
+        switch (tag)
+        {
         case 0x80: /* reserved for access result */
             break;
         case 0xa1: /* array */
@@ -331,17 +361,25 @@ parseAllDataUnknownValue(GooseSubscriber self, uint8_t* buffer, int allDataLengt
         uint8_t tag = buffer[bufPos++];
 
         bufPos = BerDecoder_decodeLength(buffer, &elementLength, bufPos, allDataLength);
+        if (bufPos < 0) {
+            if (DEBUG_GOOSE_SUBSCRIBER)
+                printf("GOOSE_SUBSCRIBER: Malformed message: failed to decode BER length tag!\n");
+            return 0;
+        }
 
         if (bufPos + elementLength > allDataLength) {
-            if (DEBUG_GOOSE_SUBSCRIBER) printf("GOOSE_SUBSCRIBER: Malformed message: sub element is too large!\n");
+            if (DEBUG_GOOSE_SUBSCRIBER)
+                printf("GOOSE_SUBSCRIBER: Malformed message: sub element is too large!\n");
             goto exit_with_error;
         }
 
         MmsValue* value = NULL;
 
-        switch (tag) {
+        switch (tag)
+        {
         case 0xa1: /* array */
-            if (DEBUG_GOOSE_SUBSCRIBER) printf("GOOSE_SUBSCRIBER:    found array\n");
+            if (DEBUG_GOOSE_SUBSCRIBER)
+                printf("GOOSE_SUBSCRIBER:    found array\n");
 
             value = parseAllDataUnknownValue(self, buffer + bufPos, elementLength, false);
 
@@ -349,8 +387,10 @@ parseAllDataUnknownValue(GooseSubscriber self, uint8_t* buffer, int allDataLengt
                 goto exit_with_error;
 
             break;
+
         case 0xa2: /* structure */
-            if (DEBUG_GOOSE_SUBSCRIBER) printf("GOOSE_SUBSCRIBER:    found structure\n");
+            if (DEBUG_GOOSE_SUBSCRIBER)
+                printf("GOOSE_SUBSCRIBER:    found structure\n");
 
             value = parseAllDataUnknownValue(self, buffer + bufPos, elementLength, true);
 
@@ -358,8 +398,10 @@ parseAllDataUnknownValue(GooseSubscriber self, uint8_t* buffer, int allDataLengt
                 goto exit_with_error;
 
             break;
+
         case 0x83: /* boolean */
-            if (DEBUG_GOOSE_SUBSCRIBER) printf("GOOSE_SUBSCRIBER:    found boolean\n");
+            if (DEBUG_GOOSE_SUBSCRIBER)
+                printf("GOOSE_SUBSCRIBER:    found boolean\n");
             value = MmsValue_newBoolean(BerDecoder_decodeBoolean(buffer, bufPos));
 
             break;
@@ -373,30 +415,35 @@ parseAllDataUnknownValue(GooseSubscriber self, uint8_t* buffer, int allDataLengt
 
             }
             break;
+
         case 0x85: /* integer */
             value = MmsValue_newInteger(elementLength * 8);
             memcpy(value->value.integer->octets, buffer + bufPos, elementLength);
             value->value.integer->size = elementLength;
             break;
+
         case 0x86: /* unsigned integer */
             value = MmsValue_newUnsigned(elementLength * 8);
             memcpy(value->value.integer->octets, buffer + bufPos, elementLength);
             value->value.integer->size = elementLength;
             break;
+
         case 0x87: /* Float */
-                if (elementLength == 9)
-                    value = MmsValue_newDouble(BerDecoder_decodeDouble(buffer, bufPos));
-                else if (elementLength == 5)
-                    value = MmsValue_newFloat(BerDecoder_decodeFloat(buffer, bufPos));
+            if (elementLength == 9)
+                value = MmsValue_newDouble(BerDecoder_decodeDouble(buffer, bufPos));
+            else if (elementLength == 5)
+                value = MmsValue_newFloat(BerDecoder_decodeFloat(buffer, bufPos));
             break;
 
         case 0x89: /* octet string */
             value = MmsValue_newOctetString(elementLength, elementLength);
             memcpy(value->value.octetString.buf, buffer + bufPos, elementLength);
             break;
+
         case 0x8a: /* visible string */
             value = MmsValue_newVisibleStringFromByteArray(buffer + bufPos, elementLength);
             break;
+
         case 0x8c: /* binary time */
             if (elementLength == 4)
                 value = MmsValue_newBinaryTime(true);
@@ -407,16 +454,20 @@ parseAllDataUnknownValue(GooseSubscriber self, uint8_t* buffer, int allDataLengt
                 memcpy(value->value.binaryTime.buf, buffer + bufPos, elementLength);
 
             break;
+
         case 0x91: /* Utctime */
             if (elementLength == 8) {
                 value = MmsValue_newUtcTime(0);
                 MmsValue_setUtcTimeByBuffer(value, buffer + bufPos);
             }
             else
-                if (DEBUG_GOOSE_SUBSCRIBER) printf("GOOSE_SUBSCRIBER:      UTCTime element is of wrong size!\n");
+            if (DEBUG_GOOSE_SUBSCRIBER)
+                printf("GOOSE_SUBSCRIBER:      UTCTime element is of wrong size!\n");
             break;
+
         default:
-            if (DEBUG_GOOSE_SUBSCRIBER) printf("GOOSE_SUBSCRIBER:    found unkown tag %02x\n", tag);
+            if (DEBUG_GOOSE_SUBSCRIBER)
+                printf("GOOSE_SUBSCRIBER:    found unkown tag %02x\n", tag);
             goto exit_with_error;
         }
 
@@ -432,14 +483,13 @@ parseAllDataUnknownValue(GooseSubscriber self, uint8_t* buffer, int allDataLengt
 
     return dataSetValues;
 
-exit_with_error:
+    exit_with_error:
 
     if (dataSetValues != NULL)
         MmsValue_delete(dataSetValues);
 
     return NULL;
 }
-
 
 static int
 parseGoosePayload(GooseReceiver self, uint8_t* buffer, int apduLength)
@@ -461,6 +511,11 @@ parseGoosePayload(GooseReceiver self, uint8_t* buffer, int apduLength)
     if (buffer[bufPos++] == 0x61) {
         int gooseLength;
         bufPos = BerDecoder_decodeLength(buffer, &gooseLength, bufPos, apduLength);
+        if (bufPos < 0) {
+            if (DEBUG_GOOSE_SUBSCRIBER)
+                printf("GOOSE_SUBSCRIBER: Malformed message: failed to decode BER length tag!\n");
+            return 0;
+        }
 
         int gooseEnd = bufPos + gooseLength;
 
@@ -469,6 +524,11 @@ parseGoosePayload(GooseReceiver self, uint8_t* buffer, int apduLength)
 
             uint8_t tag = buffer[bufPos++];
             bufPos = BerDecoder_decodeLength(buffer, &elementLength, bufPos, apduLength);
+            if (bufPos < 0) {
+                if (DEBUG_GOOSE_SUBSCRIBER)
+                    printf("GOOSE_SUBSCRIBER: Malformed message: failed to decode BER length tag!\n");
+                return 0;
+            }
 
             if (bufPos + elementLength > apduLength) {
                 if (DEBUG_GOOSE_SUBSCRIBER)
@@ -480,9 +540,11 @@ parseGoosePayload(GooseReceiver self, uint8_t* buffer, int apduLength)
             if (bufPos == -1)
                 goto exit_with_fault;
 
-            switch(tag) {
+            switch (tag)
+            {
             case 0x80: /* gocbRef */
-                if (DEBUG_GOOSE_SUBSCRIBER) printf("GOOSE_SUBSCRIBER:   Found gocbRef\n");
+                if (DEBUG_GOOSE_SUBSCRIBER)
+                    printf("GOOSE_SUBSCRIBER:   Found gocbRef\n");
 
                 {
                     LinkedList element = LinkedList_getNext(self->subscriberList);
@@ -492,7 +554,8 @@ parseGoosePayload(GooseReceiver self, uint8_t* buffer, int apduLength)
 
                         if (subscriber->goCBRefLen == elementLength) {
                             if (memcmp(subscriber->goCBRef, buffer + bufPos, elementLength) == 0) {
-                                if (DEBUG_GOOSE_SUBSCRIBER) printf("GOOSE_SUBSCRIBER:   gocbRef is matching!\n");
+                                if (DEBUG_GOOSE_SUBSCRIBER)
+                                    printf("GOOSE_SUBSCRIBER:   gocbRef is matching!\n");
                                 matchingSubscriber = subscriber;
                                 break;
                             }
@@ -511,61 +574,73 @@ parseGoosePayload(GooseReceiver self, uint8_t* buffer, int apduLength)
 
                 timeAllowedToLive = BerDecoder_decodeUint32(buffer, elementLength, bufPos);
 
-                if (DEBUG_GOOSE_SUBSCRIBER) printf("GOOSE_SUBSCRIBER:   Found timeAllowedToLive %u\n", timeAllowedToLive);
+                if (DEBUG_GOOSE_SUBSCRIBER)
+                    printf("GOOSE_SUBSCRIBER:   Found timeAllowedToLive %u\n", timeAllowedToLive);
 
                 break;
 
             case 0x82:
-                if (DEBUG_GOOSE_SUBSCRIBER) printf("GOOSE_SUBSCRIBER:   Found dataSet\n");
+                if (DEBUG_GOOSE_SUBSCRIBER)
+                    printf("GOOSE_SUBSCRIBER:   Found dataSet\n");
                 break;
 
             case 0x83:
-                if (DEBUG_GOOSE_SUBSCRIBER) printf("GOOSE_SUBSCRIBER:   Found goId\n");
+                if (DEBUG_GOOSE_SUBSCRIBER)
+                    printf("GOOSE_SUBSCRIBER:   Found goId\n");
                 break;
 
             case 0x84:
                 timestampBufPos = buffer + bufPos;
-                if (DEBUG_GOOSE_SUBSCRIBER) printf("GOOSE_SUBSCRIBER:   Found timestamp\n");
+                if (DEBUG_GOOSE_SUBSCRIBER)
+                    printf("GOOSE_SUBSCRIBER:   Found timestamp\n");
                 break;
 
             case 0x85:
                 stNum = BerDecoder_decodeUint32(buffer, elementLength, bufPos);
-                if (DEBUG_GOOSE_SUBSCRIBER) printf("GOOSE_SUBSCRIBER:   Found stNum: %u\n", stNum);
+                if (DEBUG_GOOSE_SUBSCRIBER)
+                    printf("GOOSE_SUBSCRIBER:   Found stNum: %u\n", stNum);
                 break;
 
             case 0x86:
                 sqNum = BerDecoder_decodeUint32(buffer, elementLength, bufPos);
-                if (DEBUG_GOOSE_SUBSCRIBER) printf("GOOSE_SUBSCRIBER:   Found sqNum: %u\n", sqNum);
+                if (DEBUG_GOOSE_SUBSCRIBER)
+                    printf("GOOSE_SUBSCRIBER:   Found sqNum: %u\n", sqNum);
                 break;
 
             case 0x87:
                 simulation = BerDecoder_decodeBoolean(buffer, bufPos);
-                if (DEBUG_GOOSE_SUBSCRIBER) printf("GOOSE_SUBSCRIBER:   Found simulation: %i\n", simulation);
+                if (DEBUG_GOOSE_SUBSCRIBER)
+                    printf("GOOSE_SUBSCRIBER:   Found simulation: %i\n", simulation);
                 break;
 
             case 0x88:
                 confRev = BerDecoder_decodeUint32(buffer, elementLength, bufPos);
-                if (DEBUG_GOOSE_SUBSCRIBER) printf("GOOSE_SUBSCRIBER:   Found confRev: %u\n", confRev);
+                if (DEBUG_GOOSE_SUBSCRIBER)
+                    printf("GOOSE_SUBSCRIBER:   Found confRev: %u\n", confRev);
                 break;
 
             case 0x89:
                 ndsCom = BerDecoder_decodeBoolean(buffer, bufPos);
-                if (DEBUG_GOOSE_SUBSCRIBER) printf("GOOSE_SUBSCRIBER:   Found ndsCom: %i\n", ndsCom);
+                if (DEBUG_GOOSE_SUBSCRIBER)
+                    printf("GOOSE_SUBSCRIBER:   Found ndsCom: %i\n", ndsCom);
                 break;
 
             case 0x8a:
                 numberOfDatSetEntries = BerDecoder_decodeUint32(buffer, elementLength, bufPos);
-                if (DEBUG_GOOSE_SUBSCRIBER) printf("GOOSE_SUBSCRIBER:   Found number of entries: %u\n", numberOfDatSetEntries);
+                if (DEBUG_GOOSE_SUBSCRIBER)
+                    printf("GOOSE_SUBSCRIBER:   Found number of entries: %u\n", numberOfDatSetEntries);
                 break;
 
             case 0xab:
-                if (DEBUG_GOOSE_SUBSCRIBER) printf("GOOSE_SUBSCRIBER:   Found all data with length: %i\n", elementLength);
+                if (DEBUG_GOOSE_SUBSCRIBER)
+                    printf("GOOSE_SUBSCRIBER:   Found all data with length: %i\n", elementLength);
                 dataSetBufferAddress = buffer + bufPos;
                 dataSetBufferLength = elementLength;
                 break;
 
             default:
-                if (DEBUG_GOOSE_SUBSCRIBER)  printf("GOOSE_SUBSCRIBER:   Unknown tag %02x\n", tag);
+                if (DEBUG_GOOSE_SUBSCRIBER)
+                    printf("GOOSE_SUBSCRIBER:   Unknown tag %02x\n", tag);
                 break;
             }
 
@@ -609,11 +684,11 @@ parseGoosePayload(GooseReceiver self, uint8_t* buffer, int apduLength)
         return 0;
     }
 
-exit_with_fault:
-    if (DEBUG_GOOSE_SUBSCRIBER) printf("GOOSE_SUBSCRIBER: Invalid goose payload\n");
+    exit_with_fault:
+    if (DEBUG_GOOSE_SUBSCRIBER)
+        printf("GOOSE_SUBSCRIBER: Invalid goose payload\n");
     return -1;
 }
-
 
 static void
 parseGooseMessage(GooseReceiver self, int numbytes)
@@ -622,7 +697,8 @@ parseGooseMessage(GooseReceiver self, int numbytes)
     bool subscriberFound = false;
     uint8_t* buffer = self->buffer;
 
-    if (numbytes < 22) return;
+    if (numbytes < 22)
+        return;
 
     /* skip ethernet addresses */
     bufPos = 12;
@@ -668,7 +744,6 @@ parseGooseMessage(GooseReceiver self, int numbytes)
         printf("GOOSE_SUBSCRIBER:   APDU length: %i\n", apduLength);
     }
 
-
     // check if there is an interested subscriber
     LinkedList element = LinkedList_getNext(self->subscriberList);
 
@@ -691,7 +766,6 @@ parseGooseMessage(GooseReceiver self, int numbytes)
     }
 }
 
-
 static void
 gooseReceiverLoop(void* threadParameter)
 {
@@ -702,17 +776,19 @@ gooseReceiverLoop(void* threadParameter)
 
     GooseReceiver_startThreadless(self);
 
-    while (self->running) {
+    if (self->running) {
 
-        if (GooseReceiver_tick(self) == false)
-            Thread_sleep(1);
+        while (self->running) {
+
+            if (GooseReceiver_tick(self) == false)
+                Thread_sleep(1);
+        }
+
+        GooseReceiver_stopThreadless(self);
     }
 
-   GooseReceiver_stopThreadless(self);
-
-   self->stopped = true;
+    self->stopped = true;
 }
-
 
 // start GOOSE receiver in a separate thread
 void
@@ -774,7 +850,7 @@ GooseReceiver_destroy(GooseReceiver self)
 /***************************************
  * Functions for non-threaded operation
  ***************************************/
-void
+EthernetSocket
 GooseReceiver_startThreadless(GooseReceiver self)
 {
     if (self->interfaceId == NULL)
@@ -788,12 +864,15 @@ GooseReceiver_startThreadless(GooseReceiver self)
     }
     else
         self->running = false;
+
+    return self->ethSocket;
 }
 
 void
 GooseReceiver_stopThreadless(GooseReceiver self)
 {
-    Ethernet_destroySocket(self->ethSocket);
+    if (self->ethSocket)
+        Ethernet_destroySocket(self->ethSocket);
 
     self->running = false;
 }

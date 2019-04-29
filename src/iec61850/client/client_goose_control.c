@@ -183,6 +183,97 @@ newEmptyPhyCommAddress(void) {
     return self;
 }
 
+PhyComAddress
+ClientGooseControlBlock_getDstAddress(ClientGooseControlBlock self)
+{
+    PhyComAddress retVal;
+    memset(&retVal, 0, sizeof(retVal));
+
+    if (self->dstAddress == NULL) goto exit_error;
+
+    if (MmsValue_getType(self->dstAddress) != MMS_STRUCTURE) {
+        if (DEBUG_IED_CLIENT) printf("IED_CLIENT: GoCB - addr has wrong type\n");
+        goto exit_error;
+    }
+
+    if (MmsValue_getArraySize(self->dstAddress) != 4) {
+        if (DEBUG_IED_CLIENT) printf("IED_CLIENT: GoCB - addr has wrong type\n");
+        goto exit_error;
+    }
+
+    MmsValue* addr = MmsValue_getElement(self->dstAddress, 0);
+
+    if (MmsValue_getType(addr) != MMS_OCTET_STRING) {
+        if (DEBUG_IED_CLIENT) printf("IED_CLIENT: GoCB - addr has wrong type\n");
+        goto exit_error;
+    }
+
+    if (MmsValue_getOctetStringSize(addr) != 6) {
+        if (DEBUG_IED_CLIENT) printf("IED_CLIENT: GoCB - addr has wrong size\n");
+        goto exit_error;
+    }
+
+    uint8_t* addrBuf = MmsValue_getOctetStringBuffer(addr);
+
+    memcpy(&(retVal.dstAddress), addrBuf, 6);
+
+    MmsValue* prio = MmsValue_getElement(self->dstAddress, 1);
+
+    if (MmsValue_getType(prio) != MMS_UNSIGNED) {
+        if (DEBUG_IED_CLIENT) printf("IED_CLIENT: GoCB - prio has wrong type\n");
+        goto exit_error;
+    }
+
+    retVal.vlanPriority = MmsValue_toUint32(prio);
+
+    MmsValue* vid = MmsValue_getElement(self->dstAddress, 2);
+
+    if (MmsValue_getType(vid) != MMS_UNSIGNED) {
+        if (DEBUG_IED_CLIENT) printf("IED_CLIENT: GoCB - vid has wrong type\n");
+        goto exit_error;
+    }
+
+    retVal.vlanId = MmsValue_toUint32(vid);
+
+    MmsValue* appID = MmsValue_getElement(self->dstAddress, 3);
+
+    if (MmsValue_getType(appID) != MMS_UNSIGNED) {
+        if (DEBUG_IED_CLIENT) printf("IED_CLIENT: GoCB - appID has wrong type\n");
+        goto exit_error;
+    }
+
+    retVal.appId = MmsValue_toUint32(appID);
+
+exit_error:
+    return retVal;
+}
+
+void
+ClientGooseControlBlock_setDstAddress(ClientGooseControlBlock self, PhyComAddress value)
+{
+    if (self->dstAddress == NULL)
+        self->dstAddress = newEmptyPhyCommAddress();
+
+    if (self->dstAddress) {
+
+        MmsValue* addr = MmsValue_getElement(self->dstAddress, 0);
+
+        MmsValue_setOctetString(addr, value.dstAddress, 6);
+
+        MmsValue* prio = MmsValue_getElement(self->dstAddress, 1);
+
+        MmsValue_setUint8(prio, value.vlanPriority);
+
+        MmsValue* vid = MmsValue_getElement(self->dstAddress, 2);
+
+        MmsValue_setUint16(vid, value.vlanId);
+
+        MmsValue* appID = MmsValue_getElement(self->dstAddress, 3);
+
+        MmsValue_setUint16(appID, value.appId);
+    }
+}
+
 MmsValue*
 ClientGooseControlBlock_getDstAddress_addr(ClientGooseControlBlock self)
 {

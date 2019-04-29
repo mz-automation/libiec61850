@@ -117,7 +117,9 @@ typedef enum {
 	IEC61850_CONSTRUCTED = 27,
 	IEC61850_ENTRY_TIME = 28,
 	IEC61850_PHYCOMADDR = 29,
-	IEC61850_CURRENCY = 30
+	IEC61850_CURRENCY = 30,
+	IEC61850_OPTFLDS = 31, /* bit-string(10) */
+	IEC61850_TRGOPS = 32 /* bit-string(6) */
 
 
 #if (CONFIG_IEC61850_USE_COMPAT_TYPE_DECLARATIONS == 1)
@@ -153,6 +155,8 @@ typedef enum {
     ENTRY_TIME = 28,
     PHYCOMADDR = 29,
     CURRENCY = 30
+    OPTFLDS = 31,
+    TRGOPS = 32
 #endif
 } DataAttributeType;
 
@@ -467,6 +471,17 @@ IedModel_getModelNodeByShortAddress(IedModel* self, uint32_t shortAddress);
  */
 LogicalDevice*
 IedModel_getDeviceByInst(IedModel* self, const char* ldInst);
+
+/**
+ * \brief Lookup logical device (LD) instance by index
+ *
+ * \param self IedModel instance
+ * \param index the index of the LD in the range (0 .. number of LDs - 1)
+ *
+ * \return the corresponding LogicalDevice* object or NULL if the index is out of range
+ */
+LogicalDevice*
+IedModel_getDeviceByIndex(IedModel* self, int index);
 
 
 /**

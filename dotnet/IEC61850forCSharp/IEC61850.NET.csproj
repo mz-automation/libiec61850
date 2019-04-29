@@ -7,6 +7,8 @@
     <OutputType>Library</OutputType>
     <RootNamespace>iec61850dotnet</RootNamespace>
     <AssemblyName>iec61850dotnet</AssemblyName>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -45,6 +47,11 @@
     <Compile Include="MmsVariableSpecification.cs" />
     <Compile Include="IEC61850ServerAPI.cs" />
     <Compile Include="IEC61850CommonAPI.cs" />
+    <Compile Include="TLS.cs" />
+    <Compile Include="SampledValuesControlBlock.cs" />
+    <Compile Include="GooseControlBlock.cs" />
+    <Compile Include="GooseSubscriber.cs" />
+    <Compile Include="SampledValuesSubscriber.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

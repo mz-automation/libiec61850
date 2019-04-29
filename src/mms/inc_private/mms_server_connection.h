@@ -1,5 +1,5 @@
 /*
- *  mms_connection.h
+ *  mms_server_connection.h
  *
  *  Copyright 2013 Michael Zillgith
  *
@@ -31,13 +31,16 @@
 #include "libiec61850_platform_includes.h"
 
 #include "mms_common.h"
-#include "mms_indication.h"
 #include "mms_device_model.h"
 #include "mms_value.h"
 #include "mms_server.h"
 #include "iso_server.h"
 #include "linked_list.h"
 #include "byte_buffer.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 MmsServerConnection
 MmsServerConnection_init(MmsServerConnection connection, MmsServer server, IsoConnection isoCon);
@@ -57,17 +60,13 @@ MmsServerConnection_getNamedVariableLists(MmsServerConnection self);
 void
 MmsServerConnection_deleteNamedVariableList(MmsServerConnection self, char* listName);
 
-MmsIndication
-MmsServerConnection_parseMessage(MmsServerConnection connection, ByteBuffer* message, ByteBuffer* response);
-
-
 /** \brief send information report for a single VMD specific variable
  *
  *   \param handlerMode send this message in the context of a stack callback handler
  */
 void
 MmsServerConnection_sendInformationReportSingleVariableVMDSpecific(MmsServerConnection self,
-		char* itemId, MmsValue* value, bool handlerMode);
+    char* itemId, MmsValue* value, bool handlerMode);
 
 
 /** \brief send information report for a VMD specific named variable list
@@ -103,6 +102,10 @@ MmsServerConnection_getNextRequestInvokeId(MmsServerConnection self);
 
 const char*
 MmsServerConnection_getFilesystemBasepath(MmsServerConnection self);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* MMS_SERVER_CONNECTION_H_ */
 

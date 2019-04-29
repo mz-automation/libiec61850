@@ -82,6 +82,7 @@ mmsClient_parseStatusResponse(MmsConnection self, int* vmdLogicalStatus, int* vm
     while (bufPos < endPos) {
         tag = buffer[bufPos++];
         bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
+        if (bufPos < 0) goto exit_error;
 
         switch (tag) {
         case 0x80: /* vmdLogicalStatus */

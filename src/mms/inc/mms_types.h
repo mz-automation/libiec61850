@@ -26,7 +26,7 @@
 
 #include "libiec61850_common_api.h"
 
-typedef enum ATTRIBUTE_PACKED {
+typedef enum  {
     MMS_VALUE_NO_RESPONSE,
 	MMS_VALUE_OK,
 	MMS_VALUE_ACCESS_DENIED,

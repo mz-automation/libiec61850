@@ -1,7 +1,7 @@
 UNAME := $(shell uname)
 
 MIPSEL_TOOLCHAIN_PREFIX=mipsel-openwrt-linux-
-ARM_TOOLCHAIN_PREFIX=arm-linux-gnueabihf-
+ARM_TOOLCHAIN_PREFIX=arm-linux-
 #ARM_TOOLCHAIN_PREFIX=arm-linux-gnueabi-
 #ARM_TOOLCHAIN_PREFIX=arm-poky-linux-gnueabi-
 #ARM_TOOLCHAIN_PREFIX=arm-linux-gnueabi-
@@ -57,7 +57,7 @@ endif
 
 ifeq ($(TARGET), LINUX-ARM)
 TOOLCHAIN_PREFIX=$(ARM_TOOLCHAIN_PREFIX)
-CFLAGS += -mno-unaligned-access
+#CFLAGS += -mno-unaligned-access
 #CFLAGS += -mcpu=arm926ej-s
 endif
 

@@ -1,3 +1,29 @@
+Changes to version 1.2.0
+------------------------
+
+- IEC 61850/MMS client/server: Added TLS support (TLS API and implementation for mbedtls)
+- IEC 61850/MMS server: removed deprecated AttributeChangedHandler
+- Added pkg-config file
+- The Sampled Values APIs have been renamed. The old version of the API is deprecated but still supported and will be removed in the next major version of the library.
+- SV Publisher/Subscriber: a lot of small fixed and improvements
+- .NET API: Added support for sampled values (SV) subscriber
+- .NET API: Added support for GOOSE subscriber
+- SV subscriber: added function SVReceiver_enableDestAddrCheck
+- IEC 61850 server: fixed bug in buffered report module - report can be lost under some circumstances when BRCB is enabled
+- SV subscriber: replaced code that caused unaligned memory access
+- IEC 61850 server: added memory alignement for buffered reporting
+
+
+Changes to version 1.1.2
+------------------------
+
+- MMS client: fixed parsing initiate response message
+- SV publisher: conditional encoding for SmpRate
+- MmsValue_update function now allows adjusting octet-string size of target object
+- .NET API: Added DeleteFile 
+- CDC helper functions: added helper functions for VSS and VSG CDC
+- added additional locks in client and server
+
 Changes to version 1.1.1
 ------------------------
 
@@ -18,7 +44,6 @@ Changes to version 1.1.1
 - MMS: fixed potential memory leak in asn1 code that can be caused by malformed MMS messages
 - MMS client: MmsConnection_getVariableAccessAttributes support for VMD specific variables
 - Java SCL parser: added support for "Val" elements for Octet64 types
-
 
 Changes to version 1.1.0
 ------------------------

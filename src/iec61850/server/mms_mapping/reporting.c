@@ -148,6 +148,9 @@ purgeBuf(ReportControl* rc)
 {
     if (DEBUG_IED_SERVER) printf("IED_SERVER: reporting.c: run purgeBuf\n");
 
+    /* reset trigger */
+    rc->triggered = false;
+
     ReportBuffer* reportBuffer = rc->reportBuffer;
 
     reportBuffer->lastEnqueuedReport = NULL;
@@ -522,8 +525,50 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
     else
         dataSetValue = ReportControl_getRCBValue(rc, "DatSet");
 
+
+    bool dataSetChanged = true;
+
+    /* check if old and new data sets are the same */
+    if (rc->dataSet && dataSetValue) {
+
+        const char* dataSetLdName = rc->dataSet->logicalDeviceName;
+        const char* dataSetName = rc->dataSet->name;
+        const char* newDataSetName = MmsValue_toString(dataSetValue);
+
+        if (newDataSetName[0] == '@') {
+            if ((dataSetLdName == NULL) && (!strcmp(dataSetName, newDataSetName + 1))) {
+                dataSetChanged = false;
+            }
+        }
+        else if (newDataSetName[0] == '/') {
+            if ((dataSetLdName == NULL) && (!strcmp(dataSetName, newDataSetName + 1))) {
+                dataSetChanged = false;
+            }
+        }
+        else {
+            if (dataSetLdName && dataSetName) {
+
+                char externalVisibleName[256];
+
+                /* Construct external visible name */
+                strcpy(externalVisibleName, mapping->model->name);
+                strcat(externalVisibleName, dataSetLdName);
+                strcat(externalVisibleName, "/");
+                strcat(externalVisibleName, dataSetName);
+
+                if (!(strcmp(externalVisibleName, newDataSetName))) {
+                    dataSetChanged = false;
+                }
+            }
+        }
+
+        if (dataSetChanged)
+            purgeBuf(rc);
+    }
+
+
     if (rc->isDynamicDataSet) {
-        if (rc->dataSet != NULL) {
+        if (rc->dataSet && dataSetChanged) {
             deleteDataSetValuesShadowBuffer(rc);
             MmsMapping_freeDynamicallyCreatedDataSet(rc->dataSet);
             rc->isDynamicDataSet = false;
@@ -531,7 +576,7 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
         }
     }
 
-    if (dataSetValue != NULL) {
+    if (dataSetValue && dataSetChanged) {
         const char* dataSetName = MmsValue_toString(dataSetValue);
 
         DataSet* dataSet = IedModel_lookupDataSet(mapping->model, dataSetName);
@@ -592,6 +637,8 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
 
         rc->inclusionField = MmsValue_newBitString(dataSet->elementCount);
 
+        rc->triggered = false;
+
         if (rc->inclusionFlags != NULL)
             GLOBAL_FREEMEM(rc->inclusionFlags);
 
@@ -603,6 +650,9 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
             rc->isBuffering = true;
 
         goto exit_function;
+    }
+    else {
+        success = true;
     }
 
 exit_function:
@@ -1688,9 +1738,9 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
     ReportBuffer* buffer = reportControl->reportBuffer;
 
     /* calculate size of complete buffer entry */
-    int bufferEntrySize = sizeof(ReportBufferEntry);
+    int bufferEntrySize = MemoryAllocator_getAlignedSize(sizeof(ReportBufferEntry));
 
-    int inclusionFieldSize = MmsValue_getBitStringByteSize(reportControl->inclusionField);
+    int inclusionFieldSize = MemoryAllocator_getAlignedSize(MmsValue_getBitStringByteSize(reportControl->inclusionField));
 
     MmsValue inclusionFieldStatic;
 
@@ -1708,7 +1758,7 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
         for (i = 0; i < MmsValue_getBitStringSize(reportControl->inclusionField); i++) {
             assert(dataSetEntry != NULL);
 
-            bufferEntrySize += 1; /* reason-for-inclusion */
+            bufferEntrySize += MemoryAllocator_getAlignedSize(1); /* reason-for-inclusion */
 
             bufferEntrySize += MmsValue_getSizeInMemory(dataSetEntry->value);
 
@@ -1723,7 +1773,7 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
         for (i = 0; i < MmsValue_getBitStringSize(reportControl->inclusionField); i++) {
 
             if (reportControl->inclusionFlags[i] != REPORT_CONTROL_NONE) {
-                bufferEntrySize += 1; /* reason-for-inclusion */
+                bufferEntrySize += MemoryAllocator_getAlignedSize(1); /* reason-for-inclusion */
 
                 assert(reportControl->bufferedDataSetValues[i] != NULL);
 
@@ -1946,12 +1996,9 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
     else
         entry->flags = 0;
 
-    if ((bufferEntrySize % sizeof(void*)) > 0)
-       bufferEntrySize  = sizeof(void*) * ((bufferEntrySize  + sizeof(void*) - 1) / sizeof(void*));
+    entry->entryLength = MemoryAllocator_getAlignedSize(bufferEntrySize);
 
-    entry->entryLength = bufferEntrySize;
-
-    entryBufPos += sizeof(ReportBufferEntry);
+    entryBufPos += MemoryAllocator_getAlignedSize(sizeof(ReportBufferEntry));
 
     if (isIntegrity || isGI) {
         DataSetEntry* dataSetEntry = reportControl->dataSet->fcdas;
@@ -1963,7 +2010,7 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
             assert(dataSetEntry != NULL);
 
             *entryBufPos = (uint8_t) reportControl->inclusionFlags[i];
-            entryBufPos++;
+            entryBufPos += MemoryAllocator_getAlignedSize(1);
 
             entryBufPos = MmsValue_cloneToBuffer(dataSetEntry->value, entryBufPos);
 
@@ -1985,7 +2032,7 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
                 assert(reportControl->bufferedDataSetValues[i] != NULL);
 
                 *entryBufPos = (uint8_t) reportControl->inclusionFlags[i];
-                entryBufPos++;
+                entryBufPos += MemoryAllocator_getAlignedSize(1);
 
                 entryBufPos = MmsValue_cloneToBuffer(reportControl->bufferedDataSetValues[i], entryBufPos);
 
@@ -2078,7 +2125,7 @@ sendNextReportEntry(ReportControl* self)
     MmsValue* inclusionField = &inclusionFieldStack;
 
     if (report->flags == 0)
-        currentReportBufferPos += MmsValue_getBitStringByteSize(inclusionField);
+        currentReportBufferPos += MemoryAllocator_getAlignedSize(MmsValue_getBitStringByteSize(inclusionField));
     else {
         inclusionFieldStack.value.bitString.buf =
                 (uint8_t*) MemoryAllocator_allocate(&ma, MmsValue_getBitStringByteSize(inclusionField));
@@ -2244,7 +2291,7 @@ sendNextReportEntry(ReportControl* self)
     for (i = 0; i < self->dataSet->elementCount; i++) {
 
         if (report->flags > 0) {
-            currentReportBufferPos++;
+            currentReportBufferPos += MemoryAllocator_getAlignedSize(1);;
             if (MemAllocLinkedList_add(reportElements, currentReportBufferPos) == NULL)
                 goto return_out_of_memory;
 
@@ -2252,7 +2299,7 @@ sendNextReportEntry(ReportControl* self)
         }
         else {
             if (MmsValue_getBitStringBit(inclusionField, i)) {
-                currentReportBufferPos++;
+            	currentReportBufferPos += MemoryAllocator_getAlignedSize(1);;
                 if (MemAllocLinkedList_add(reportElements, currentReportBufferPos) == NULL)
                     goto return_out_of_memory;
                 currentReportBufferPos += MmsValue_getSizeInMemory((MmsValue*) currentReportBufferPos);
@@ -2289,7 +2336,7 @@ sendNextReportEntry(ReportControl* self)
                 if (MemAllocLinkedList_add(reportElements, reason) == NULL)
                     goto return_out_of_memory;
 
-                currentReportBufferPos++;
+                currentReportBufferPos += MemoryAllocator_getAlignedSize(1);
 
                 MmsValue* dataSetElement = (MmsValue*) currentReportBufferPos;
 
@@ -2324,7 +2371,7 @@ sendNextReportEntry(ReportControl* self)
                     break;
                 }
 
-                currentReportBufferPos++;
+                currentReportBufferPos += MemoryAllocator_getAlignedSize(1);
 
                 MmsValue* dataSetElement = (MmsValue*) currentReportBufferPos;
 

@@ -48,11 +48,11 @@ createValueCaches(MmsDevice* device)
 }
 
 MmsServer
-MmsServer_create(IsoServer isoServer, MmsDevice* device)
+MmsServer_create(MmsDevice* device, TLSConfiguration tlsConfiguration)
 {
     MmsServer self = (MmsServer) GLOBAL_CALLOC(1, sizeof(struct sMmsServer));
 
-    self->isoServer = isoServer;
+    self->isoServer = IsoServer_create(tlsConfiguration);
     self->device = device;
     self->openConnections = Map_create();
     self->valueCaches = createValueCaches(device);
@@ -64,12 +64,26 @@ MmsServer_create(IsoServer isoServer, MmsDevice* device)
     self->modelMutex = Semaphore_create(1);
     self->transmitBufferMutex = Semaphore_create(1);
 
-    IsoServer_setUserLock(isoServer, self->modelMutex);
+    IsoServer_setUserLock(self->isoServer, self->modelMutex);
 #endif
 
     return self;
 }
 
+void
+MmsServer_setLocalIpAddress(MmsServer self, const char* localIpAddress)
+{
+    IsoServer_setLocalIpAddress(self->isoServer, localIpAddress);
+}
+
+bool
+MmsServer_isRunning(MmsServer self)
+{
+    if (IsoServer_getState(self->isoServer) == ISO_SVR_STATE_RUNNING)
+        return true;
+    else
+        return false;
+}
 
 void
 MmsServer_setFilestoreBasepath(MmsServer self, const char* basepath)
@@ -225,6 +239,8 @@ deleteSingleCache(MmsValueCache cache)
 void
 MmsServer_destroy(MmsServer self)
 {
+    IsoServer_destroy(self->isoServer);
+
     Map_deleteDeep(self->openConnections, false, closeConnection);
     Map_deleteDeep(self->valueCaches, false, (void (*) (void*)) deleteSingleCache);
 
@@ -244,7 +260,7 @@ MmsServer_destroy(MmsServer self)
 }
 
 MmsValue*
-MmsServer_getValueFromCache(MmsServer self, MmsDomain* domain, char* itemId)
+MmsServer_getValueFromCache(MmsServer self, MmsDomain* domain, const char* itemId)
 {
     MmsValueCache cache = (MmsValueCache) Map_getEntry(self->valueCaches, domain);
 
@@ -360,7 +376,10 @@ void
 MmsServer_startListening(MmsServer server, int tcpPort)
 {
     IsoServer_setConnectionHandler(server->isoServer, isoConnectionIndicationHandler, (void*) server);
-    IsoServer_setTcpPort(server->isoServer, tcpPort);
+
+    if (tcpPort != -1)
+        IsoServer_setTcpPort(server->isoServer, tcpPort);
+
     IsoServer_startListening(server->isoServer);
 }
 
@@ -375,7 +394,10 @@ void
 MmsServer_startListeningThreadless(MmsServer self, int tcpPort)
 {
     IsoServer_setConnectionHandler(self->isoServer, isoConnectionIndicationHandler, (void*) self);
-    IsoServer_setTcpPort(self->isoServer, tcpPort);
+
+    if (tcpPort != -1)
+        IsoServer_setTcpPort(self->isoServer, tcpPort);
+
     IsoServer_startListeningThreadless(self->isoServer);
 }
 

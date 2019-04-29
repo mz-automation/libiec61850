@@ -11,8 +11,9 @@ project(libiec61850)
 ENABLE_TESTING()
 
 set(LIB_VERSION_MAJOR "1")
-set(LIB_VERSION_MINOR "1")
-set(LIB_VERSION_PATCH "1")
+set(LIB_VERSION_MINOR "2")
+set(LIB_VERSION_PATCH "0")
+set(LIB_VERSION "${LIB_VERSION_MAJOR}.${LIB_VERSION_MINOR}.${LIB_VERSION_PATCH}")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/third_party/cmake/modules/")
 
@@ -45,35 +46,56 @@ set(CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE "8000" CACHE STRING "Default buf
 
 # advanced options
 option(DEBUG "Enable debugging mode (include assertions)" OFF)
-option(DEBUG_SOCKET "Enable printf debugging for socket layer" OFF)
-option(DEBUG_COTP "Enable COTP printf debugging" OFF)
-option(DEBUG_ISO_SERVER "Enable ISO SERVER printf debugging" OFF)
-option(DEBUG_ISO_CLIENT "Enable ISO CLIENT printf debugging" OFF)
-option(DEBUG_IED_SERVER "Enable IED SERVER printf debugging" OFF)
-option(DEBUG_IED_CLIENT "Enable IED CLIENT printf debugging" OFF)
-option(DEBUG_MMS_SERVER "Enable MMS SERVER printf debugging" OFF)
-option(DEBUG_MMS_CLIENT "Enable MMS CLIENT printf debugging" OFF)
-#mark_as_advanced(DEBUG DEBUG_COTP DEBUG_ISO_SERVER DEBUG_ISO_CLIENT DEBUG_IED_SERVER
-#				 DEBUG_IED_CLIENT DEBUG_MMS_SERVER DEBUG_MMS_CLIENT)
+option(DEBUG_SOCKET "Enable printf debugging for socket layer" ${DEBUG})
+option(DEBUG_COTP "Enable COTP printf debugging" ${DEBUG})
+option(DEBUG_ISO_SERVER "Enable ISO SERVER printf debugging" ${DEBUG})
+option(DEBUG_ISO_CLIENT "Enable ISO CLIENT printf debugging" ${DEBUG})
+option(DEBUG_IED_SERVER "Enable IED SERVER printf debugging" ${DEBUG})
+option(DEBUG_IED_CLIENT "Enable IED CLIENT printf debugging" ${DEBUG})
+option(DEBUG_MMS_SERVER "Enable MMS SERVER printf debugging" ${DEBUG})
+option(DEBUG_MMS_CLIENT "Enable MMS CLIENT printf debugging" ${DEBUG})
+option(DEBUG_GOOSE_SUBSCRIBER "Enable GOOSE subscriber printf debugging" ${DEBUG})
+option(DEBUG_GOOSE_PUBLISHER "Enable GOOSE publisher printf debugging" ${DEBUG})
+option(DEBUG_SV_SUBSCRIBER "Enable Sampled Values subscriber debugging" ${DEBUG})
+option(DEBUG_SV_PUBLISHER "Enable Sampled Values publisher debugging" ${DEBUG})
+option(DEBUG_HAL_ETHERNET "Enable Ethernet HAL printf debugging" ${DEBUG})
+
+#mark_as_advanced(
+#    DEBUG_SOCKET
+#    DEBUG_COTP
+#    DEBUG_ISO_SERVER
+#    DEBUG_ISO_CLIENT
+#    DEBUG_IED_SERVER
+#    DEBUG_IED_CLIENT
+#    DEBUG_MMS_SERVER
+#    DEBUG_MMS_CLIENT
+#    DEBUG_GOOSE_SUBSCRIBER
+#    DEBUG_GOOSE_PUBLISHER
+#    DEBUG_SV_SUBSCRIBER
+#    DEBUG_SV_PUBLISHER
+#    DEBUG_HAL_ETHERNET
+#)
 
 include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}/config
-    src/common/inc
-    src/goose
-    src/sampled_values
-    src/hal/inc
-    src/iec61850/inc
-    src/iec61850/inc_private
-    src/mms/inc
-    src/mms/inc_private
-    src/mms/iso_mms/asn1c
-    src/logging
+    ${CMAKE_CURRENT_LIST_DIR}/src/common/inc
+    ${CMAKE_CURRENT_LIST_DIR}/src/goose
+    ${CMAKE_CURRENT_LIST_DIR}/src/sampled_values
+    ${CMAKE_CURRENT_LIST_DIR}/src/hal/inc
+    ${CMAKE_CURRENT_LIST_DIR}/src/iec61850/inc
+    ${CMAKE_CURRENT_LIST_DIR}/src/iec61850/inc_private
+    ${CMAKE_CURRENT_LIST_DIR}/src/mms/inc
+    ${CMAKE_CURRENT_LIST_DIR}/src/mms/inc_private
+    ${CMAKE_CURRENT_LIST_DIR}/src/mms/iso_mms/asn1c
+    ${CMAKE_CURRENT_LIST_DIR}/src/logging
+    ${CMAKE_CURRENT_LIST_DIR}/src/tls
 )
 
-set(API_HEADERS 
-    src/hal/inc/hal_time.h 
+set(API_HEADERS
+    src/hal/inc/hal_time.h
     src/hal/inc/hal_thread.h
-    src/hal/inc/hal_filesystem.h 
+    src/hal/inc/hal_filesystem.h
+    src/hal/inc/hal_ethernet.h
     src/hal/inc/platform_endian.h
     src/common/inc/libiec61850_common_api.h
     src/common/inc/libiec61850_platform_includes.h
@@ -106,14 +128,32 @@ set(API_HEADERS
     src/sampled_values/sv_subscriber.h
     src/sampled_values/sv_publisher.h
     src/logging/logging_api.h
+    src/tls/tls_api.h
     ${CMAKE_CURRENT_BINARY_DIR}/config/stack_config.h
 )
 
 if(MSVC)
     include_directories(
-        src/vs
+        ${CMAKE_CURRENT_LIST_DIR}/src/vs
     )
 endif(MSVC)
+
+if(EXISTS ${CMAKE_CURRENT_LIST_DIR}/third_party/mbedtls/mbedtls-2.6.0)
+set(WITH_MBEDTLS 1)
+endif(EXISTS ${CMAKE_CURRENT_LIST_DIR}/third_party/mbedtls/mbedtls-2.6.0)
+
+if(WITH_MBEDTLS)
+include_directories(
+    ${CMAKE_CURRENT_LIST_DIR}/src/tls/mbedtls
+    ${CMAKE_CURRENT_LIST_DIR}/third_party/mbedtls/mbedtls-2.6.0/include
+)
+
+file(GLOB tls_SRCS ${CMAKE_CURRENT_LIST_DIR}/third_party/mbedtls/mbedtls-2.6.0/library/*.c)
+
+add_definitions(-DCONFIG_MMS_SUPPORT_TLS=1)
+add_definitions(-DMBEDTLS_CONFIG_FILE="mbedtls_config.h")
+
+endif(WITH_MBEDTLS)
 
 # write the detected stuff to this file
 configure_file(
@@ -122,7 +162,7 @@ configure_file(
 )
 
 if(BUILD_EXAMPLES)
-    add_subdirectory(examples)
+    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/examples)
 endif(BUILD_EXAMPLES)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/src)
@@ -133,21 +173,21 @@ if(BUILD_PYTHON_BINDINGS)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/pyiec61850)
 endif(BUILD_PYTHON_BINDINGS)
 
+set(CPACK_PACKAGE_DESCRIPTION "IEC 61850 MMS/GOOSE client and server library")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "IEC 61850 MMS/GOOSE client and server library")
+set(CPACK_PACKAGE_VENDOR "MZ Automation GmbH")
+set(CPACK_PACKAGE_CONTACT "info@libiec61850.com")
+set(CPACK_PACKAGE_VERSION_MAJOR "${LIB_VERSION_MAJOR}")
+set(CPACK_PACKAGE_VERSION_MINOR "${LIB_VERSION_MINOR}")
+set(CPACK_PACKAGE_VERSION_PATCH "${LIB_VERSION_PATCH}")
+set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}_${LIB_VERSION_MAJOR}.${LIB_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}_${CMAKE_SYSTEM_PROCESSOR}")
+set(CPACK_SOURCE_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}_${LIB_VERSION_MAJOR}.${LIB_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
+
+set(CPACK_COMPONENTS_ALL Libraries Development Applications)
+#set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CMAKE_PROJECT_NAME}")
+
 if(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
     include(InstallRequiredSystemLibraries)
-    
-    set(CPACK_PACKAGE_DESCRIPTION "IEC 61850 MMS/GOOSE client and server library")
-    set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "IEC 61850 MMS/GOOSE client and server library")
-    set(CPACK_PACKAGE_VENDOR "MZ Automation GmbH")
-    set(CPACK_PACKAGE_CONTACT "info@libiec61850.com")
-    set(CPACK_PACKAGE_VERSION_MAJOR "${LIB_VERSION_MAJOR}")
-    set(CPACK_PACKAGE_VERSION_MINOR "${LIB_VERSION_MINOR}")
-    set(CPACK_PACKAGE_VERSION_PATCH "${LIB_VERSION_PATCH}")
-    set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}_${LIB_VERSION_MAJOR}.${LIB_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}_${CMAKE_SYSTEM_PROCESSOR}")
-    set(CPACK_SOURCE_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}_${LIB_VERSION_MAJOR}.${LIB_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
-    
-    set(CPACK_COMPONENTS_ALL Libraries Development Applications)
-    #set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CMAKE_PROJECT_NAME}")
 
     include(CPack)
 endif(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")

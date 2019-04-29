@@ -26,6 +26,7 @@
 #include "byte_buffer.h"
 #include "buffer_chain.h"
 #include "iso_connection_parameters.h"
+#include "tls_socket.h"
 
 #ifndef ACSE_H_
 #define ACSE_H_
@@ -57,6 +58,10 @@ typedef struct sAcseConnection
     IsoApplicationReference applicationReference;
     void* authenticatorParameter;
     void* securityToken;
+
+#if (CONFIG_MMS_SUPPORT_TLS == 1)
+    TLSSocket tlsSocket;
+#endif
 } AcseConnection;
 
 #define ACSE_RESULT_ACCEPT 0
@@ -64,7 +69,7 @@ typedef struct sAcseConnection
 #define ACSE_RESULT_REJECT_TRANSIENT 2
 
 void
-AcseConnection_init(AcseConnection* self, AcseAuthenticator authenticator, void* parameter);
+AcseConnection_init(AcseConnection* self, AcseAuthenticator authenticator, void* parameter, TLSSocket tlsSocket);
 
 void
 AcseConnection_destroy(AcseConnection* self);

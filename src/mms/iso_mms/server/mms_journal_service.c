@@ -271,6 +271,11 @@ mmsServer_handleReadJournalRequest(
                 uint8_t objectIdTag = requestBuffer[bufPos++];
                 bufPos = BerDecoder_decodeLength(requestBuffer, &length, bufPos, maxBufPos);
 
+                if (bufPos < 0)  {
+                    mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
+                    return;
+                }
+
                 switch (objectIdTag) {
                 case 0xa1: /* domain-specific */
 
@@ -298,13 +303,18 @@ mmsServer_handleReadJournalRequest(
         case 0xa1: /* rangeStartSpecification */
             {
                 uint8_t subTag = requestBuffer[bufPos++];
-                bufPos = BerDecoder_decodeLength(requestBuffer, &length, bufPos, maxBufPos);
 
                 if (subTag != 0x80) {
                     mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_MODIFIER, response);
                     return;
                 }
 
+                bufPos = BerDecoder_decodeLength(requestBuffer, &length, bufPos, maxBufPos);
+
+                if (bufPos < 0)  {
+                    mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
+                    return;
+                }
 
                 if ((length == 4) || (length == 6)) {
 
@@ -328,10 +338,16 @@ mmsServer_handleReadJournalRequest(
         case 0xa2: /* rangeStopSpecification */
             {
                 uint8_t subTag = requestBuffer[bufPos++];
-                bufPos = BerDecoder_decodeLength(requestBuffer, &length, bufPos, maxBufPos);
 
                 if (subTag != 0x80) {
                     mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_MODIFIER, response);
+                    return;
+                }
+
+                bufPos = BerDecoder_decodeLength(requestBuffer, &length, bufPos, maxBufPos);
+
+                if (bufPos < 0)  {
+                    mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
                     return;
                 }
 
@@ -359,7 +375,13 @@ mmsServer_handleReadJournalRequest(
 
                 while (bufPos < maxSubBufPos) {
                     uint8_t subTag = requestBuffer[bufPos++];
+
                     bufPos = BerDecoder_decodeLength(requestBuffer, &length, bufPos, maxBufPos);
+
+                    if (bufPos < 0)  {
+                        mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
+                        return;
+                    }
 
                     switch (subTag) {
                     case 0x80: /* timeSpecification */

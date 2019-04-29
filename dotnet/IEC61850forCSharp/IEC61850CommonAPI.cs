@@ -1,4 +1,27 @@
-﻿using System;
+﻿/*
+ *  IEC61850CommonAPI.cs
+ *
+ *  Copyright 2014-2017 Michael Zillgith
+ *
+ *  This file is part of libIEC61850.
+ *
+ *  libIEC61850 is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  libIEC61850 is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with libIEC61850.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *  See COPYING file for the complete license text.
+ */
+
+using System;
 using System.Runtime.InteropServices;
 
 namespace IEC61850
@@ -49,6 +72,17 @@ namespace IEC61850
 			}
 		}
 
+		[StructLayout(LayoutKind.Sequential)]
+		public class PhyComAddress
+		{
+			public byte vlanPriority;
+			public UInt16 vlanId;
+			public UInt16 appId;
+
+			[MarshalAs(UnmanagedType.ByValArray, SizeConst=6)]
+			public byte[] dstAddress = new byte[6];
+		}
+
 		/// <summary>
 		/// MMS data access error for MmsValue type MMS_DATA_ACCESS_ERROR
 		/// </summary>
@@ -85,6 +119,29 @@ namespace IEC61850
 			GI = 16
 		}
 
+		/// <summary>
+		/// SmpMod values
+		/// </summary>
+		public enum SmpMod {
+			SAMPLES_PER_PERIOD = 0,
+			SAMPLES_PER_SECOND = 1,
+			SECONDS_PER_SAMPLE = 2
+		}
+
+		/// <summary>
+		/// Values for Sampled Values (SV) OptFlds
+		/// </summary>
+		[Flags]
+		public enum SVOptions {
+			NONE = 0,
+			REFRESH_TIME = 1,
+			SAMPLE_SYNC = 2,
+			SAMPLE_RATE = 4,
+			DATA_SET = 8,
+			SECURITY = 16,
+			ALL = 31
+		}
+
 		[Flags]
 		public enum ReportOptions {
 			NONE = 0,
@@ -96,7 +153,9 @@ namespace IEC61850
 			BUFFER_OVERFLOW = 32,
 			ENTRY_ID = 64,
 			CONF_REV = 128,
-			ALL = 255
+			SEGMENTATION = 256,
+			ALL = SEQ_NUM | TIME_STAMP | REASON_FOR_INCLUSION | DATA_SET | DATA_REFERENCE |
+				BUFFER_OVERFLOW | ENTRY_ID | CONF_REV | SEGMENTATION
 		}
 
 		public enum Validity
@@ -112,8 +171,25 @@ namespace IEC61850
 		/// </summary>
 		public class Quality
 		{
-
 			private UInt16 value;
+
+			private const UInt16 QUALITY_DETAIL_OVERFLOW = 4;
+			private const UInt16 QUALITY_DETAIL_OUT_OF_RANGE = 8;
+			private const UInt16 QUALITY_DETAIL_BAD_REFERENCE = 16;
+			private const UInt16 QUALITY_DETAIL_OSCILLATORY = 32;
+			private const UInt16 QUALITY_DETAIL_FAILURE = 64;
+			private const UInt16 QUALITY_DETAIL_OLD_DATA = 128;
+			private const UInt16 QUALITY_DETAIL_INCONSISTENT = 256;
+			private const UInt16 QUALITY_DETAIL_INACCURATE = 512;
+			private const UInt16 QUALITY_SOURCE_SUBSTITUTED = 1024;
+			private const UInt16 QUALITY_TEST = 2048;
+			private const UInt16 QUALITY_OPERATOR_BLOCKED = 4096;
+
+			public override string ToString ()
+			{
+				return GetValidity ().ToString ();
+
+			}
 
 			public Quality (int bitStringValue)
 			{
@@ -138,6 +214,133 @@ namespace IEC61850
 
 				value += (ushort)validity;
 			}
+
+			public Validity Validity
+			{
+				get {return GetValidity ();}
+				set { SetValidity (value); }
+			}
+
+			public bool Overflow
+			{
+				get { return ((this.value & QUALITY_DETAIL_OVERFLOW) != 0);}
+				set {
+					if (value)
+						this.value |= QUALITY_DETAIL_OVERFLOW;
+					else
+						this.value = (ushort) ((int) this.value & (~QUALITY_DETAIL_OVERFLOW));
+				}
+			}
+
+			public bool OutOfRange
+			{
+				get { return ((this.value & QUALITY_DETAIL_OUT_OF_RANGE) != 0);}
+				set {
+					if (value)
+						this.value |= QUALITY_DETAIL_OUT_OF_RANGE;
+					else
+						this.value = (ushort) ((int) this.value & (~QUALITY_DETAIL_OUT_OF_RANGE));
+				}
+			}
+
+			public bool BadReference
+			{
+				get { return ((this.value & QUALITY_DETAIL_BAD_REFERENCE) != 0);}
+				set {
+					if (value)
+						this.value |= QUALITY_DETAIL_BAD_REFERENCE;
+					else
+						this.value = (ushort) ((int) this.value & (~QUALITY_DETAIL_BAD_REFERENCE));
+				}
+			}
+
+			public bool Oscillatory
+			{
+				get { return ((this.value & QUALITY_DETAIL_OSCILLATORY) != 0);}
+				set {
+					if (value)
+						this.value |= QUALITY_DETAIL_OSCILLATORY;
+					else
+						this.value = (ushort) ((int) this.value & (~QUALITY_DETAIL_OSCILLATORY));
+				}
+			}
+
+			public bool Failure
+			{
+				get { return ((this.value & QUALITY_DETAIL_FAILURE) != 0);}
+				set {
+					if (value)
+						this.value |= QUALITY_DETAIL_FAILURE;
+					else
+						this.value = (ushort) ((int) this.value & (~QUALITY_DETAIL_FAILURE));
+				}
+			}
+
+			public bool OldData
+			{
+				get { return ((this.value & QUALITY_DETAIL_OLD_DATA) != 0);}
+				set {
+					if (value)
+						this.value |= QUALITY_DETAIL_OLD_DATA;
+					else
+						this.value = (ushort) ((int) this.value & (~QUALITY_DETAIL_OLD_DATA));
+				}
+			}
+
+			public bool Inconsistent
+			{
+				get { return ((this.value & QUALITY_DETAIL_INCONSISTENT) != 0);}
+				set {
+					if (value)
+						this.value |= QUALITY_DETAIL_INCONSISTENT;
+					else
+						this.value = (ushort) ((int) this.value & (~QUALITY_DETAIL_INCONSISTENT));
+				}
+			}
+
+			public bool Inaccurate
+			{
+				get { return ((this.value & QUALITY_DETAIL_INACCURATE) != 0);}
+				set {
+					if (value)
+						this.value |= QUALITY_DETAIL_INACCURATE;
+					else
+						this.value = (ushort) ((int) this.value & (~QUALITY_DETAIL_INACCURATE));
+				}
+			}
+
+			public bool Substituted
+			{
+				get { return ((this.value & QUALITY_SOURCE_SUBSTITUTED) != 0);}
+				set {
+					if (value)
+						this.value |= QUALITY_SOURCE_SUBSTITUTED;
+					else
+						this.value = (ushort) ((int) this.value & (~QUALITY_SOURCE_SUBSTITUTED));
+				}
+			}
+
+			public bool Test
+			{
+				get { return ((this.value & QUALITY_TEST) != 0);}
+				set {
+					if (value)
+						this.value |= QUALITY_TEST;
+					else
+						this.value = (ushort) ((int) this.value & (~QUALITY_TEST));
+				}
+			}
+
+			public bool OperatorBlocked
+			{
+				get { return ((this.value & QUALITY_OPERATOR_BLOCKED) != 0);}
+				set {
+					if (value)
+						this.value |= QUALITY_OPERATOR_BLOCKED;
+					else
+						this.value = (ushort) ((int) this.value & (~QUALITY_OPERATOR_BLOCKED));
+				}
+			}
 		}
 
 		/// <summary>
@@ -147,6 +350,9 @@ namespace IEC61850
 		{
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern IntPtr Timestamp_create ();
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr Timestamp_createFromByteArray(byte[] byteArry);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern void Timestamp_destroy (IntPtr self);
@@ -198,12 +404,12 @@ namespace IEC61850
 			static extern void Timestamp_setByMmsUtcTime (IntPtr self, IntPtr mmsValue);
 
 			internal IntPtr timestampRef = IntPtr.Zero;
-			private bool responsableForDeletion;
+			private bool responsibleForDeletion;
 
 			internal Timestamp(IntPtr timestampRef, bool selfAllocated)
 			{
 				this.timestampRef = timestampRef;
-				this.responsableForDeletion = selfAllocated;
+				this.responsibleForDeletion = selfAllocated;
 			}
 
 			public Timestamp (DateTime timestamp) : this ()
@@ -220,12 +426,18 @@ namespace IEC61850
 			{
 				timestampRef = Timestamp_create ();
 				LeapSecondKnown = true;
-				responsableForDeletion = true;
+				responsibleForDeletion = true;
+			}
+
+			public Timestamp(byte[] value)
+			{
+				timestampRef = Timestamp_createFromByteArray (value);
+				responsibleForDeletion = true;
 			}
 
 			~Timestamp ()
 			{
-				if (responsableForDeletion)
+				if (responsibleForDeletion)
 					Timestamp_destroy (timestampRef);
 			}
 
@@ -333,6 +545,15 @@ namespace IEC61850
 			public void SetByMmsUtcTime(MmsValue mmsValue)
 			{
 				Timestamp_setByMmsUtcTime (timestampRef, mmsValue.valueReference);
+			}
+
+			public DateTime AsDateTime()
+			{
+				DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+				DateTime retVal = epoch.AddMilliseconds ((double) GetTimeInMilliseconds ());
+
+				return retVal;
 			}
 
 		}

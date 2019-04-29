@@ -1,7 +1,7 @@
 /*
  *  ied_server.c
  *
- *  Copyright 2013-2016 Michael Zillgith
+ *  Copyright 2013-2018 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -271,8 +271,6 @@ installDefaultValuesForDataAttribute(IedServer self, DataAttribute* dataAttribut
             if (cacheValue == NULL) {
                 printf("IED_SERVER: exception: invalid initializer for %s\n", mmsVariableName);
                 exit(-1);
-
-                //TODO else call exception handler
             }
         #endif
 
@@ -398,55 +396,62 @@ updateDataSetsWithCachedValues(IedServer self)
 }
 
 IedServer
-IedServer_create(IedModel* iedModel)
+IedServer_createWithTlsSupport(IedModel* dataModel, TLSConfiguration tlsConfiguration)
 {
     IedServer self = (IedServer) GLOBAL_CALLOC(1, sizeof(struct sIedServer));
 
-    self->model = iedModel;
+    if (self) {
 
-    // self->running = false; /* not required due to CALLOC */
-    // self->localIpAddress = NULL; /* not required due to CALLOC */
+        self->model = dataModel;
+
+        self->running = false;
+        self->localIpAddress = NULL;
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
-    self->dataModelLock = Semaphore_create(1);
+        self->dataModelLock = Semaphore_create(1);
 #endif
 
-    self->mmsMapping = MmsMapping_create(iedModel);
+        self->mmsMapping = MmsMapping_create(dataModel);
 
-    self->mmsDevice = MmsMapping_getMmsDeviceModel(self->mmsMapping);
+        self->mmsDevice = MmsMapping_getMmsDeviceModel(self->mmsMapping);
 
-    self->isoServer = IsoServer_create();
+        self->mmsServer = MmsServer_create(self->mmsDevice, tlsConfiguration);
 
-    self->mmsServer = MmsServer_create(self->isoServer, self->mmsDevice);
+        MmsMapping_setMmsServer(self->mmsMapping, self->mmsServer);
 
-    MmsMapping_setMmsServer(self->mmsMapping, self->mmsServer);
+        MmsMapping_installHandlers(self->mmsMapping);
 
-    MmsMapping_installHandlers(self->mmsMapping);
+        MmsMapping_setIedServer(self->mmsMapping, self);
 
-    MmsMapping_setIedServer(self->mmsMapping, self);
+        createMmsServerCache(self);
 
-    createMmsServerCache(self);
+        dataModel->initializer();
 
-    iedModel->initializer();
+        installDefaultValuesInCache(self); /* This will also connect cached MmsValues to DataAttributes */
 
-    installDefaultValuesInCache(self); /* This will also connect cached MmsValues to DataAttributes */
+        updateDataSetsWithCachedValues(self);
 
-    updateDataSetsWithCachedValues(self);
+        self->clientConnections = LinkedList_create();
 
-    self->clientConnections = LinkedList_create();
-
-    /* default write access policy allows access to SP, SE and SV FCDAs but denies access to DC and CF FCDAs */
-    self->writeAccessPolicies = ALLOW_WRITE_ACCESS_SP | ALLOW_WRITE_ACCESS_SV | ALLOW_WRITE_ACCESS_SE;
+        /* default write access policy allows access to SP, SE and SV FCDAs but denies access to DC and CF FCDAs */
+        self->writeAccessPolicies = ALLOW_WRITE_ACCESS_SP | ALLOW_WRITE_ACCESS_SV | ALLOW_WRITE_ACCESS_SE;
 
 #if (CONFIG_IEC61850_REPORT_SERVICE == 1)
-    Reporting_activateBufferedReports(self->mmsMapping);
+        Reporting_activateBufferedReports(self->mmsMapping);
 #endif
 
 #if (CONFIG_IEC61850_SETTING_GROUPS == 1)
-    MmsMapping_configureSettingGroups(self->mmsMapping);
+        MmsMapping_configureSettingGroups(self->mmsMapping);
 #endif
+    }
 
     return self;
+}
+
+IedServer
+IedServer_create(IedModel* dataModel)
+{
+    return IedServer_createWithTlsSupport(dataModel, NULL);
 }
 
 void
@@ -463,7 +468,6 @@ IedServer_destroy(IedServer self)
     }
 
     MmsServer_destroy(self->mmsServer);
-    IsoServer_destroy(self->isoServer);
 
     if (self->localIpAddress != NULL)
         GLOBAL_FREEMEM(self->localIpAddress);
@@ -503,12 +507,6 @@ MmsServer
 IedServer_getMmsServer(IedServer self)
 {
     return self->mmsServer;
-}
-
-IsoServer
-IedServer_getIsoServer(IedServer self)
-{
-    return self->isoServer;
 }
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
@@ -574,10 +572,7 @@ IedServer_start(IedServer self, int tcpPort)
 bool
 IedServer_isRunning(IedServer self)
 {
-    if (IsoServer_getState(self->isoServer) == ISO_SVR_STATE_RUNNING)
-        return true;
-    else
-        return false;
+    return MmsServer_isRunning(self->mmsServer);
 }
 
 IedModel*
@@ -618,7 +613,8 @@ IedServer_setLocalIpAddress(IedServer self, const char* localIpAddress)
         GLOBAL_FREEMEM(self->localIpAddress);
 
     self->localIpAddress = StringUtils_copyString(localIpAddress);
-    IsoServer_setLocalIpAddress(self->isoServer, self->localIpAddress);
+
+    MmsServer_setLocalIpAddress(self->mmsServer, self->localIpAddress);
 }
 
 
@@ -1239,13 +1235,6 @@ IedServer_disableGoosePublishing(IedServer self)
 }
 
 void
-IedServer_observeDataAttribute(IedServer self, DataAttribute* dataAttribute,
-        AttributeChangedHandler handler)
-{
-    MmsMapping_addObservedAttribute(self->mmsMapping, dataAttribute, handler);
-}
-
-void
 IedServer_setWriteAccessPolicy(IedServer self, FunctionalConstraint fc, AccessPolicy policy)
 {
     if (policy == ACCESS_POLICY_ALLOW) {
@@ -1355,16 +1344,26 @@ IedServer_getFunctionalConstrainedData(IedServer self, DataObject* dataObject, F
 
     char domainName[65];
 
-    if ((strlen(self->model->name) + strlen(ld->name)) > 64)
-        goto exit_function; // TODO call exception handler!
+    if ((strlen(self->model->name) + strlen(ld->name)) > 64) {
+
+        if (DEBUG_IED_SERVER)
+            printf("IED_SERVER: LD name too long!\n");
+
+        goto exit_function;
+    }
 
     strncpy(domainName, self->model->name, 64);
     strncat(domainName, ld->name, 64);
 
     MmsDomain* domain = MmsDevice_getDomain(self->mmsDevice, domainName);
 
-    if (domain == NULL)
-        goto exit_function; // TODO call exception handler!
+    if (domain == NULL) {
+
+        if (DEBUG_IED_SERVER)
+            printf("IED_SERVER: internal error - domain does not exist!\n");
+
+        goto exit_function;
+    }
 
     value = MmsServer_getValueFromCache(self->mmsServer, domain, currentStart);
 

@@ -26,7 +26,6 @@ namespace example1
 
             Console.WriteLine("Connect to " + hostname);
 
-
             try
             {
                 con.Connect(hostname, port);

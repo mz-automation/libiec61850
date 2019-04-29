@@ -63,7 +63,7 @@ MmsDevice_destroy(MmsDevice* self)
 }
 
 MmsDomain*
-MmsDevice_getDomain(MmsDevice* self, char* domainId)
+MmsDevice_getDomain(MmsDevice* self, const char* domainId)
 {
     int i;
 

@@ -166,17 +166,6 @@ FileSystem_readDirectory(DirectoryHandle directory, bool* isDirectory);
 void
 FileSystem_closeDirectory(DirectoryHandle directory);
 
-/**
- * \brief set local file system base path for the MMS VMD
- *
- * NOTE: the meaning of this functions is platform specific. It was introduced to
- * simplify the configuration of the VMD base path at runtime. It may not be supported
- * on all platform. Also it is not called by the MMS protocol stack.
- *
- * \param basePath the local base path of the MMS VMD
- */
-void
-FileSystem_setBasePath(char* basePath);
 
 /*! @} */
 

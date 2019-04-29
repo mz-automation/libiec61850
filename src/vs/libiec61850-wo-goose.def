@@ -163,12 +163,10 @@ EXPORTS
     IedServer_getAttributeValue @416
     IedServer_getDataModel @417
     IedServer_getFunctionalConstrainedData @418
-    IedServer_getIsoServer @419
     IedServer_getMmsServer @420
     IedServer_handleWriteAccess @421
     IedServer_isRunning @422
     IedServer_lockDataModel @423
-    IedServer_observeDataAttribute @424
     IedServer_setAuthenticator @425
     IedServer_setConnectionIndicationHandler @426
     IedServer_setControlHandler @427
@@ -573,3 +571,13 @@ EXPORTS
     IedConnection_writeDataSetValues
     MmsVariableSpecification_isValueOfType
     IedServer_udpateDbposValue
+    MmsServer_setLocalIpAddress
+    MmsServer_isRunning
+    IedServer_createWithTlsSupport
+    IedConnection_createWithTlsSupport
+    ClientGooseControlBlock_getDstAddress
+    ClientGooseControlBlock_setDstAddress
+    CDC_VSS_create
+    CDC_VSG_create
+    Timestamp_createFromByteArray
+    IedModel_getDeviceByIndex

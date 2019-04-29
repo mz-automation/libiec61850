@@ -240,6 +240,23 @@ StringUtils_startsWith(char* string, char* prefix)
     return false;
 }
 
+bool
+StringUtils_endsWith(const char* str, const char* suffix)
+{
+    int stringLength = strlen(str);
+    int suffixLength = strlen(suffix);
+
+
+    if (stringLength >= suffixLength) {
+
+        if (!strcmp(str + (stringLength - suffixLength), suffix))
+            return true;
+
+    }
+
+    return false;
+}
+
 #define LT_MAX_CHARS 128
 
 static int

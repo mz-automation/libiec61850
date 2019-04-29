@@ -80,6 +80,15 @@ set (lib_common_SRCS
 ./logging/log_storage.c
 )
 
+if(WITH_MBEDTLS)
+set (lib_common_SRCS ${lib_common_SRCS}
+./tls/mbedtls/tls_mbedtls.c
+)
+
+list (APPEND lib_common_SRCS ${tls_SRCS})
+
+endif(WITH_MBEDTLS)
+
 set (lib_asn1c_SRCS
 ./mms/iso_mms/asn1c/DataAccessError.c
 ./mms/iso_mms/asn1c/DeleteNamedVariableListRequest.c
@@ -367,10 +376,22 @@ if(MSVC)
 endif()
 ENDIF(WITH_WPCAP)
 
+if(UNIX)
+    configure_file(
+        ${CMAKE_CURRENT_LIST_DIR}/libiec61850.pc.in
+        ${CMAKE_CURRENT_BINARY_DIR}/libiec61850.pc @ONLY
+    )
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/libiec61850.pc" DESTINATION "${CMAKE_INSTALL_PREFIX}/share/pkgconfig")
+endif()
+
+find_package(Doxygen)
+if(DOXYGEN_FOUND)
+  configure_file(Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
+  add_custom_target(doc ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} COMMENT "Generating API documentation with Doxygen" VERBATIM)
+endif(DOXYGEN_FOUND)
 
 install (TARGETS iec61850 iec61850-shared
 	RUNTIME DESTINATION bin COMPONENT Applications
 	ARCHIVE DESTINATION lib COMPONENT Libraries
     LIBRARY DESTINATION lib COMPONENT Libraries
 )
-

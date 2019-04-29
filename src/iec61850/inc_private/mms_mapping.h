@@ -113,10 +113,6 @@ MmsMapping_addControlObject(MmsMapping* self, ControlObject* controlObject);
 char*
 MmsMapping_createMmsVariableNameFromObjectReference(const char* objectReference, FunctionalConstraint fc, char* buffer);
 
-void
-MmsMapping_addObservedAttribute(MmsMapping* self, DataAttribute* dataAttribute,
-        AttributeChangedHandler handler);
-
 char*
 MmsMapping_getNextNameElement(char* name);
 

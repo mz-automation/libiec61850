@@ -79,6 +79,15 @@ IsoConnectionParameters_destroy(IsoConnectionParameters self)
 }
 
 void
+IsoConnectionParameters_setTlsConfiguration(IsoConnectionParameters self, TLSConfiguration tlsConfig)
+{
+#if (CONFIG_MMS_SUPPORT_TLS == 1)
+    self->tlsConfiguration = tlsConfig;
+#endif
+}
+
+
+void
 IsoConnectionParameters_setAcseAuthenticationParameter(IsoConnectionParameters self,
         AcseAuthenticationParameter acseAuthParameter)
 {
@@ -113,7 +122,7 @@ IsoConnectionParameters_setRemoteAddresses(IsoConnectionParameters self, uint32_
 
 
 void
-IsoConnectionParameters_setLocalApTitle(IsoConnectionParameters self, char* apTitle, int aeQualifier)
+IsoConnectionParameters_setLocalApTitle(IsoConnectionParameters self, const char* apTitle, int aeQualifier)
 {
     if (apTitle == NULL)
         self->localApTitleLen = 0;

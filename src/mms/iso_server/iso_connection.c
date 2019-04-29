@@ -69,6 +69,11 @@ struct sIsoConnection
     IsoServer isoServer;
 
     Socket socket;
+
+#if (CONFIG_MMS_SUPPORT_TLS == 1)
+    TLSSocket tlsSocket;
+#endif
+
     int state;
     IsoSession* session;
     IsoPresentation* presentation;
@@ -445,6 +450,23 @@ IsoConnection_create(Socket socket, IsoServer isoServer)
 {
     IsoConnection self = (IsoConnection) GLOBAL_CALLOC(1, sizeof(struct sIsoConnection));
     self->socket = socket;
+
+#if (CONFIG_MMS_SUPPORT_TLS == 1)
+    if (IsoServer_getTLSConfiguration(isoServer) != NULL) {
+        self->tlsSocket = TLSSocket_create(socket, IsoServer_getTLSConfiguration(isoServer), true);
+
+        if (self->tlsSocket == NULL) {
+            if (DEBUG_ISO_SERVER)
+                printf("ISO_SERVER: IsoConnection - TLS initialization failed\n");
+
+            GLOBAL_FREEMEM(self);
+
+            return NULL;
+        }
+    }
+#endif /* (CONFIG_MMS_SUPPORT_TLS == 1) */
+
+
     self->receiveBuffer = (uint8_t*) GLOBAL_MALLOC(RECEIVE_BUF_SIZE);
     self->sendBuffer = (uint8_t*) GLOBAL_MALLOC(SEND_BUF_SIZE);
     self->msgRcvdHandler = NULL;
@@ -469,6 +491,11 @@ IsoConnection_create(Socket socket, IsoServer isoServer)
     self->cotpConnection = (CotpConnection*) GLOBAL_CALLOC(1, sizeof(CotpConnection));
     CotpConnection_init(self->cotpConnection, self->socket, &(self->rcvBuffer), &(self->cotpReadBuffer), &(self->cotpWriteBuffer));
 
+#if (CONFIG_MMS_SUPPORT_TLS == 1)
+    if (self->tlsSocket)
+        self->cotpConnection->tlsSocket = self->tlsSocket;
+#endif /* (CONFIG_MMS_SUPPORT_TLS == 1) */
+
     self->session = (IsoSession*) GLOBAL_CALLOC(1, sizeof(IsoSession));
     IsoSession_init(self->session);
 
@@ -476,8 +503,14 @@ IsoConnection_create(Socket socket, IsoServer isoServer)
     IsoPresentation_init(self->presentation);
 
     self->acseConnection = (AcseConnection*) GLOBAL_CALLOC(1, sizeof(AcseConnection));
+
+#if (CONFIG_MMS_SUPPORT_TLS == 1)
     AcseConnection_init(self->acseConnection, IsoServer_getAuthenticator(self->isoServer),
-            IsoServer_getAuthenticatorParameter(self->isoServer));
+            IsoServer_getAuthenticatorParameter(self->isoServer), self->tlsSocket);
+#else
+    AcseConnection_init(self->acseConnection, IsoServer_getAuthenticator(self->isoServer),
+            IsoServer_getAuthenticatorParameter(self->isoServer), NULL);
+#endif
 
     if (DEBUG_ISO_SERVER)
         printf("ISO_SERVER: IsoConnection: Start to handle connection for client %s\n", self->clientAddress);
@@ -571,6 +604,11 @@ IsoConnection_close(IsoConnection self)
         Socket socket = self->socket;
         self->state = ISO_CON_STATE_STOPPED;
         self->socket = NULL;
+
+#if (CONFIG_MMS_SUPPORT_TLS == 1)
+        if (self->tlsSocket)
+            TLSSocket_close(self->tlsSocket);
+#endif
 
         Socket_destroy(socket);
     }

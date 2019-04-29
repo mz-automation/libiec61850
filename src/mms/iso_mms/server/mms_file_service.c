@@ -250,6 +250,8 @@ mmsServer_handleFileDeleteRequest(
     int length;
 
     bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
+    if (bufPos == -1)
+        goto exit_reject_invalid_pdu;
 
     if (length > 255) {
         mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);

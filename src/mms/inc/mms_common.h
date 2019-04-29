@@ -102,7 +102,7 @@ typedef enum
 
 } MmsError;
 
-typedef enum ATTRIBUTE_PACKED
+typedef enum
 {
     /*! this represents all MMS array types (arrays contain uniform elements) */
     MMS_ARRAY = 0,
@@ -155,12 +155,17 @@ typedef struct
 typedef struct sMmsNamedVariableList* MmsNamedVariableList;
 typedef struct sMmsAccessSpecifier* MmsNamedVariableListEntry;
 
-
+/**
+ * \brief ITU (International Telecommunication Union) object identifier (OID)
+ */
 typedef struct {
     uint16_t arc[10];
     int arcCount;
 } ItuObjectIdentifier;
 
+/**
+ * \brief ISO application reference (specifies an ISO application endpoint)
+ */
 typedef struct {
     ItuObjectIdentifier apTitle;
     int aeQualifier;

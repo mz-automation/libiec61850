@@ -82,19 +82,19 @@ getParentSubString(char* itemId)
 	return NULL;
 }
 
-static char*
-getChildSubString (char* itemId, char* parentId)
+static const char*
+getChildSubString (const char* itemId, char* parentId)
 {
 	return itemId + strlen(parentId) + 1;
 }
 
 static MmsValue*
-searchCacheForValue(MmsValueCache self, char* itemId, char* parentId)
+searchCacheForValue(MmsValueCache self, const char* itemId, char* parentId)
 {
 	MmsValueCacheEntry* cacheEntry;
 	MmsValue* value = NULL;
 
-	cacheEntry = (MmsValueCacheEntry*) Map_getEntry(self->map, parentId);
+	cacheEntry = (MmsValueCacheEntry*) Map_getEntry(self->map, (void*) parentId);
 
 	if (cacheEntry == NULL) {
 		char* parentItemId = getParentSubString(parentId);
@@ -105,7 +105,7 @@ searchCacheForValue(MmsValueCache self, char* itemId, char* parentId)
 	}
 	else {
 
-		char* childId = getChildSubString(itemId, parentId);
+		const char* childId = getChildSubString(itemId, parentId);
 
 		MmsVariableSpecification* typeSpec = MmsDomain_getNamedVariable(self->domain, parentId);
 		value = MmsVariableSpecification_getChildValue(typeSpec, cacheEntry->value, childId);
@@ -115,7 +115,7 @@ searchCacheForValue(MmsValueCache self, char* itemId, char* parentId)
 }
 
 MmsValue*
-MmsValueCache_lookupValue(MmsValueCache self, char* itemId)
+MmsValueCache_lookupValue(MmsValueCache self, const char* itemId)
 {
 	// get value for first matching key substring!
 	// Then iterate the value for the exact value.
@@ -124,7 +124,7 @@ MmsValueCache_lookupValue(MmsValueCache self, char* itemId)
 
 	MmsValueCacheEntry* cacheEntry;
 
-	cacheEntry = (MmsValueCacheEntry*) Map_getEntry(self->map, itemId);
+	cacheEntry = (MmsValueCacheEntry*) Map_getEntry(self->map, (void*) itemId);
 
 	if (cacheEntry == NULL) {
 		char* itemIdCopy = StringUtils_copyString(itemId);

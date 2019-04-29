@@ -38,11 +38,14 @@ struct sIedServer
     IedModel* model;
     MmsDevice* mmsDevice;
     MmsServer mmsServer;
-    IsoServer isoServer;
     char* localIpAddress;
     MmsMapping* mmsMapping;
     LinkedList clientConnections;
     uint8_t writeAccessPolicies;
+
+#if (CONFIG_IEC61850_REPORT_SERVICE == 1)
+    int reportBufferSize;
+#endif
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore dataModelLock;

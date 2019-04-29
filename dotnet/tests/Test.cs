@@ -454,6 +454,33 @@ namespace tests
 
 			iedServer.Stop ();
 		}
+
+		[Test()]
+		public void Quality()
+		{
+			Quality q = new Quality ();
+
+			Assert.AreEqual (false, q.Overflow);
+
+			q.Overflow = true;
+
+			Assert.AreEqual (true, q.Overflow);
+
+			q.Overflow = false;
+
+			Assert.AreEqual (false, q.Overflow);
+
+			Assert.AreEqual (Validity.GOOD, q.Validity);
+
+			q.Substituted = true;
+
+			Assert.AreEqual (true, q.Substituted);
+			Assert.AreEqual (false, q.Overflow);
+
+			q.Validity = Validity.QUESTIONABLE;
+
+			Assert.AreEqual (Validity.QUESTIONABLE, q.Validity);
+		}
 	}
 }
 

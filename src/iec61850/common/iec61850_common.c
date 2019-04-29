@@ -232,6 +232,21 @@ Timestamp_create()
     return self;
 }
 
+Timestamp*
+Timestamp_createFromByteArray(uint8_t* byteArray)
+{
+    Timestamp* self = Timestamp_create();
+
+    if (self) {
+        int i;
+
+        for (i = 0; i < 8; i++)
+            self->val[i] = byteArray[i];
+    }
+
+    return self;
+}
+
 void
 Timestamp_destroy(Timestamp* self)
 {

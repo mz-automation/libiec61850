@@ -470,25 +470,42 @@ informationReportHandler(void* parameter, char* domainName,
     MmsValue_delete(value);
 }
 
-IedConnection
-IedConnection_create()
+static IedConnection
+createNewConnectionObject(TLSConfiguration tlsConfig)
 {
     IedConnection self = (IedConnection) GLOBAL_CALLOC(1, sizeof(struct sIedConnection));
 
-    self->enabledReports = LinkedList_create();
-    self->logicalDevices = NULL;
-    self->clientControls = LinkedList_create();
+    if (self) {
+        self->enabledReports = LinkedList_create();
+        self->logicalDevices = NULL;
+        self->clientControls = LinkedList_create();
 
-    self->connection = MmsConnection_create();
+        if (tlsConfig)
+            self->connection = MmsConnection_createSecure(tlsConfig);
+        else
+            self->connection = MmsConnection_create();
 
-    self->state = IED_STATE_IDLE;
+        self->state = IED_STATE_IDLE;
 
-    self->stateMutex = Semaphore_create(1);
-    self->reportHandlerMutex = Semaphore_create(1);
+        self->stateMutex = Semaphore_create(1);
+        self->reportHandlerMutex = Semaphore_create(1);
 
-    self->connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
+        self->connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
+    }
 
     return self;
+}
+
+IedConnection
+IedConnection_create()
+{
+    return createNewConnectionObject(NULL);
+}
+
+IedConnection
+IedConnection_createWithTlsSupport(TLSConfiguration tlsConfig)
+{
+    return createNewConnectionObject(tlsConfig);
 }
 
 void
@@ -2513,7 +2530,7 @@ FileDirectoryEntry_destroy(FileDirectoryEntry self)
     GLOBAL_FREEMEM(self);
 }
 
-char*
+const char*
 FileDirectoryEntry_getFileName(FileDirectoryEntry self)
 {
     return self->fileName;

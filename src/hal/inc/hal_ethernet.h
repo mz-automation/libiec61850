@@ -48,6 +48,58 @@ extern "C" {
  */
 typedef struct sEthernetSocket* EthernetSocket;
 
+/** Opaque reference for a set of ethernet socket handles */
+typedef struct sEthernetHandleSet* EthernetHandleSet;
+
+/**
+ * \brief Create a new connection handle set (EthernetHandleSet)
+ *
+ * \return new EthernetHandleSet instance
+ */
+EthernetHandleSet
+EthernetHandleSet_new(void);
+
+/**
+ * \brief add a socket to an existing handle set
+ *
+ * \param self the HandleSet instance
+ * \param sock the socket to add
+ */
+void
+EthernetHandleSet_addSocket(EthernetHandleSet self, const EthernetSocket sock);
+
+/**
+ * \brief remove a socket from an existing handle set
+ *
+ * \param self the HandleSet instance
+ * \param sock the socket to add
+ */
+void
+EthernetHandleSet_removeSocket(EthernetHandleSet self, const EthernetSocket sock);
+
+/**
+ * \brief wait for a socket to become ready
+ *
+ * This function is corresponding to the BSD socket select function.
+ * The function will return after \p timeoutMs ms if no data is pending.
+ *
+ * \param self the HandleSet instance
+ * \param timeout in milliseconds (ms)
+ * \return It returns the number of sockets on which data is pending
+ *   or 0 if no data is pending on any of the monitored connections.
+ *   The function shall return -1 if a socket error occures.
+ */
+int
+EthernetHandleSet_waitReady(EthernetHandleSet self, unsigned int timeoutMs);
+
+/**
+ * \brief destroy the EthernetHandleSet instance
+ *
+ * \param self the HandleSet instance to destroy
+ */
+void
+EthernetHandleSet_destroy(EthernetHandleSet self);
+
 /**
  * \brief Return the MAC address of an Ethernet interface.
  *

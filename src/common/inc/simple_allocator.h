@@ -33,6 +33,9 @@ typedef struct {
 void
 MemoryAllocator_init(MemoryAllocator* self, char* memoryBlock, int size);
 
+int
+MemoryAllocator_getAlignedSize(int size);
+
 char*
 MemoryAllocator_allocate(MemoryAllocator* self, int size);
 

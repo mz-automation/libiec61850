@@ -1,7 +1,7 @@
 /*
  *  mms_mapping.c
  *
- *  Copyright 2013-2016 Michael Zillgith
+ *  Copyright 2013-2017 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -45,16 +45,9 @@
 typedef struct
 {
     DataAttribute* attribute;
-    AttributeChangedHandler handler;
-} AttributeObserver;
-
-typedef struct
-{
-    DataAttribute* attribute;
     WriteAccessHandler handler;
     void* parameter;
 } AttributeAccessHandler;
-
 
 typedef struct
 {
@@ -274,6 +267,15 @@ createNamedVariableFromDataAttribute(DataAttribute* attribute)
         case IEC61850_PHYCOMADDR:
             MmsMapping_createPhyComAddrStructure(namedVariable);
             break;
+        case IEC61850_OPTFLDS:
+            namedVariable->typeSpec.bitString = 10;
+            namedVariable->type = MMS_BIT_STRING;
+            break;
+        case IEC61850_TRGOPS:
+            namedVariable->typeSpec.bitString = 6;
+            namedVariable->type = MMS_BIT_STRING;
+            break;
+
         default:
             if (DEBUG_IED_SERVER)
                 printf("MMS-MAPPING: type cannot be mapped %i\n", attribute->type);
@@ -1190,8 +1192,13 @@ createDataSets(MmsDevice* mmsDevice, IedModel* iedModel)
 
     int iedModelNameLength = strlen(iedModel->name);
 
-    if (iedModelNameLength > 64)
-        goto exit_function; //TODO call exception handler!
+    if (iedModelNameLength > 64) {
+
+        if (DEBUG_IED_SERVER)
+            printf("IED_SERVER: IED model name too long!\n");
+
+        goto exit_function;
+    }
 
     while (dataset != NULL) {
         strncpy(domainName, iedModel->name, 64);
@@ -1199,8 +1206,13 @@ createDataSets(MmsDevice* mmsDevice, IedModel* iedModel)
 
         MmsDomain* dataSetDomain = MmsDevice_getDomain(mmsDevice, domainName);
 
-        if (dataSetDomain == NULL)
-            goto exit_function; //TODO call exception handler!
+        if (dataSetDomain == NULL) {
+
+            if (DEBUG_IED_SERVER)
+                printf("IED_SERVER: LD for dataset does not exist!\n");
+
+            goto exit_function;
+        }
 
         MmsNamedVariableList varList = MmsNamedVariableList_create(dataSetDomain, dataset->name, false);
 
@@ -1289,8 +1301,6 @@ MmsMapping_create(IedModel* model)
     self->settingGroups = LinkedList_create();
 #endif
 
-    self->observedObjects = LinkedList_create();
-
     self->attributeAccessHandlers = LinkedList_create();
 
     self->mmsDevice = createMmsModelFromIedModel(self, model);
@@ -1336,8 +1346,6 @@ MmsMapping_destroy(MmsMapping* self)
     LinkedList_destroyDeep(self->logControls, (LinkedListValueDeleteFunction) LogControl_destroy);
     LinkedList_destroyDeep(self->logInstances, (LinkedListValueDeleteFunction) LogInstance_destroy);
 #endif
-
-    LinkedList_destroy(self->observedObjects);
 
     LinkedList_destroy(self->attributeAccessHandlers);
 
@@ -2093,21 +2101,6 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
             else
                 return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
 
-            /* Call observer callback */
-            LinkedList observerListElement = LinkedList_getNext(self->observedObjects);
-
-            while (observerListElement != NULL) {
-                AttributeObserver* observer = (AttributeObserver*) observerListElement->data;
-                DataAttribute* dataAttribute = observer->attribute;
-
-                if (checkIfValueBelongsToModelNode(dataAttribute, cachedValue, value) != NULL) {
-                    observer->handler(dataAttribute, (ClientConnection) connection);
-                    break; /* only all one handler per data attribute */
-                }
-
-                observerListElement = LinkedList_getNext(observerListElement);
-            }
-
             return DATA_ACCESS_ERROR_SUCCESS;
         }
         else
@@ -2115,18 +2108,6 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
     }
 
     return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
-}
-
-void
-MmsMapping_addObservedAttribute(MmsMapping* self, DataAttribute* dataAttribute,
-        AttributeChangedHandler handler)
-{
-    AttributeObserver* observer = (AttributeObserver*) GLOBAL_MALLOC(sizeof(AttributeObserver));
-
-    observer->attribute = dataAttribute;
-    observer->handler = handler;
-
-    LinkedList_add(self->observedObjects, observer);
 }
 
 static AttributeAccessHandler*
@@ -2591,8 +2572,6 @@ MmsMapping_setConnectionIndicationHandler(MmsMapping* self, IedConnectionIndicat
     self->connectionIndicationHandlerParameter = parameter;
 }
 
-
-
 static bool
 isMemberValueRecursive(MmsValue* container, MmsValue* value)
 {
@@ -2730,10 +2709,11 @@ MmsMapping_triggerLogging(MmsMapping* self, MmsValue* value, LogInclusionFlag fl
                 if (lc->logInstance != NULL) {
                     LogInstance_logSingleData(lc->logInstance, dataRef, value, reasonCode);
                 }
-                else
-                    printf("No log instance available!\n");
+                else {
+                    if (DEBUG_IED_SERVER)
+                        printf("IED_SERVER: No log instance available!\n");
+                }
             }
-
 
         }
     }

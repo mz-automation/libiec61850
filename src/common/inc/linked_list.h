@@ -112,10 +112,23 @@ void
 LinkedList_add(LinkedList self, void* data);
 
 /**
+ * \brief Check if the specified data is contained in the list
+ *
+ * \param self the LinkedList instance
+ * \param data data to remove from the LinkedList instance
+ *
+ * \return true if data is part of the list, false otherwise
+ */
+bool
+LinkedList_contains(LinkedList self, void* data);
+
+/**
  * \brief Removed the specified element from the list
  *
  * \param self the LinkedList instance
  * \param data data to remove from the LinkedList instance
+ *
+ *  \return true if data has been removed from the list, false otherwise
  */
 bool
 LinkedList_remove(LinkedList self, void* data);

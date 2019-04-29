@@ -34,6 +34,8 @@
 #include "iso_presentation.h"
 #include "iso_client_connection.h"
 #include "acse.h"
+#include "tls_api.h"
+
 
 #ifndef DEBUG_ISO_CLIENT
 #ifdef DEBUG
@@ -55,8 +57,16 @@ struct sIsoClientConnection
 {
     IsoIndicationCallback callback;
     void* callbackParameter;
+
     volatile int state;
+    Semaphore stateMutex;
+
     Socket socket;
+
+#if (CONFIG_MMS_SUPPORT_TLS == 1)
+    TLSSocket tlsSocket;
+#endif
+
     CotpConnection* cotpConnection;
     IsoPresentation* presentation;
     IsoSession* session;
@@ -87,12 +97,31 @@ struct sIsoClientConnection
 };
 
 static void
+setState(IsoClientConnection self, int newState)
+{
+    Semaphore_wait(self->stateMutex);
+    self->state = newState;
+    Semaphore_post(self->stateMutex);
+}
+
+static int
+getState(IsoClientConnection self)
+{
+    int stateVal;
+
+    Semaphore_wait(self->stateMutex);
+    stateVal = self->state;
+    Semaphore_post(self->stateMutex);
+
+    return stateVal;
+}
+
+static void
 connectionHandlingThread(IsoClientConnection self)
 {
     IsoSessionIndication sessionIndication;
 
     self->handlingThreadRunning = true;
-    self->stopHandlingThread = false;
 
     if (DEBUG_ISO_CLIENT)
         printf("ISO_CLIENT_CONNECTION: new connection %p\n", self);
@@ -157,7 +186,12 @@ connectionHandlingThread(IsoClientConnection self)
 
     self->callback(ISO_IND_CLOSED, self->callbackParameter, NULL);;
 
-    self->state = STATE_IDLE;
+    setState(self, STATE_IDLE);
+
+#if (CONFIG_MMS_SUPPORT_TLS == 1)
+    if (self->cotpConnection->tlsSocket)
+        TLSSocket_close(self->cotpConnection->tlsSocket);
+#endif
 
     Socket_destroy(self->socket);
 
@@ -202,7 +236,9 @@ IsoClientConnection_create(IsoIndicationCallback callback, void* callbackParamet
 
     self->callback = callback;
     self->callbackParameter = callbackParameter;
+
     self->state = STATE_IDLE;
+    self->stateMutex = Semaphore_create(1);
 
     self->sendBuffer = (uint8_t*) GLOBAL_MALLOC(ISO_CLIENT_BUFFER_SIZE);
 
@@ -235,6 +271,12 @@ IsoClientConnection_create(IsoIndicationCallback callback, void* callbackParamet
 
     self->cotpConnection = (CotpConnection*) GLOBAL_CALLOC(1, sizeof(CotpConnection));
 
+    self->handlingThreadRunning = false;
+
+    self->stopHandlingThread = false;
+    self->destroyHandlingThread = false;
+    self->startHandlingThread = false;
+
     return self;
 }
 
@@ -251,6 +293,27 @@ IsoClientConnection_associate(IsoClientConnection self, IsoConnectionParameters 
 
     /* COTP (ISO transport) handshake */
     CotpConnection_init(self->cotpConnection, self->socket, self->receiveBuffer, self->cotpReadBuffer, self->cotpWriteBuffer);
+
+#if (CONFIG_MMS_SUPPORT_TLS == 1)
+    if (params->tlsConfiguration) {
+
+        /* create TLSSocket and start TLS authentication */
+        TLSSocket tlsSocket = TLSSocket_create(self->socket, params->tlsConfiguration, false);
+
+        if (tlsSocket)
+            self->cotpConnection->tlsSocket = tlsSocket;
+        else {
+
+            if (DEBUG_ISO_CLIENT)
+                printf("TLS handshake failed!\n");
+
+            goto returnError;
+        }
+    }
+#endif /* (CONFIG_MMS_SUPPORT_TLS == 1) */
+
+
+    /* COTP (ISO transport) handshake */
     CotpIndication cotpIndication =
             CotpConnection_sendConnectionRequestMessage(self->cotpConnection, params);
 
@@ -280,7 +343,7 @@ IsoClientConnection_associate(IsoClientConnection self, IsoConnectionParameters 
     acsePayload->length = payload->size;
     acsePayload->nextPart = NULL;
 
-    AcseConnection_init(&(self->acseConnection), NULL, NULL);
+    AcseConnection_init(&(self->acseConnection), NULL, NULL, NULL);
 
     AcseAuthenticationParameter authParameter = params->acseAuthParameter;
 
@@ -361,7 +424,7 @@ IsoClientConnection_associate(IsoClientConnection self, IsoConnectionParameters 
     /* wait for upper layer to release buffer */
     Semaphore_wait(self->receiveBufferMutex);
 
-    self->state = STATE_ASSOCIATED;
+    setState(self, STATE_ASSOCIATED);
 
     if (self->thread == NULL) {
         self->thread = Thread_create(connectionThreadFunction, self, false);
@@ -378,12 +441,12 @@ IsoClientConnection_associate(IsoClientConnection self, IsoConnectionParameters 
 returnError:
     self->callback(ISO_IND_ASSOCIATION_FAILED, self->callbackParameter, NULL);
 
-    self->state = STATE_ERROR;
+    setState(self, STATE_ERROR);
 
     Socket_destroy(self->socket);
     self->socket = NULL;
 
-    Semaphore_post(self->transmitBufferMutex); //TODO check
+    Semaphore_post(self->transmitBufferMutex);
 
     return;
 }
@@ -432,7 +495,7 @@ IsoClientConnection_close(IsoClientConnection self)
             Thread_sleep(1);
     }
 
-    self->state = STATE_IDLE;
+    setState(self, STATE_IDLE);
 }
 
 
@@ -442,7 +505,7 @@ IsoClientConnection_destroy(IsoClientConnection self)
     if (DEBUG_ISO_CLIENT)
         printf("ISO_CLIENT: IsoClientConnection_destroy\n");
 
-    if (self->state == STATE_ASSOCIATED) {
+    if (getState(self) == STATE_ASSOCIATED) {
 
         if (DEBUG_ISO_CLIENT)
             printf("ISO_CLIENT: call IsoClientConnection_close\n");
@@ -489,6 +552,7 @@ IsoClientConnection_destroy(IsoClientConnection self)
 
     Semaphore_destroy(self->receiveBufferMutex);
     Semaphore_destroy(self->transmitBufferMutex);
+    Semaphore_destroy(self->stateMutex);
 
     GLOBAL_FREEMEM(self->sendBuffer);
     GLOBAL_FREEMEM(self);

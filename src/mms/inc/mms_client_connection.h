@@ -41,6 +41,8 @@ extern "C" {
 #include "iso_connection_parameters.h"
 #include "linked_list.h"
 
+#include "tls_api.h"
+
 /**
  * Contains MMS layer specific parameters
  */
@@ -78,6 +80,16 @@ typedef struct sMmsConnection* MmsConnection;
  */
 MmsConnection
 MmsConnection_create(void);
+
+/**
+ * \brief Create a new secure (TLS enabled) MmsConnection instance
+ *
+ * \param tlsConfig TLS configuration parameters and certificates
+ *
+ * \return the newly created instance.
+ */
+MmsConnection
+MmsConnection_createSecure(TLSConfiguration tlsConfig);
 
 /**
  * \brief Callback function to intercept raw MMS messages
@@ -217,7 +229,7 @@ MmsConnection_destroy(MmsConnection self);
  * \param self MmsConnection instance to operate on
  * \param mmsError user provided variable to store error code
  * \param serverName hostname or IP address of the server to connect
- * \param serverPort TCP port number of the server to connect (usually 102)
+ * \param serverPort TCP port number of the server to connect or -1 to use default port (102 for MMS or 3872 for MMS over TLS)
  *
  * \return true on success. false if the connection attempt failed.
  */
