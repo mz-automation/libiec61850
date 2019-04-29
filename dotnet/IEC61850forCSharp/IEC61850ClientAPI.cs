@@ -69,6 +69,9 @@ namespace IEC61850
 			[DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
 			private static extern Int32 MmsConnection_getLocalDetail (IntPtr self);
 
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            private static extern Int32 MmsConnection_setRequestTimeout(IntPtr self, UInt32 timeoutInMs);
+
 
 			private IntPtr self = IntPtr.Zero;
 			private bool selfDestroy = false;
@@ -115,6 +118,11 @@ namespace IEC61850
 			public int GetLocalDetail() {
 				return MmsConnection_getLocalDetail (self);
 			}
+
+            public void SetRequestTimeout(uint timeoutMs)
+            {
+                MmsConnection_setRequestTimeout(self, timeoutMs);
+            }
 
 		}
 
