@@ -755,3 +755,4 @@ EXPORTS
     SVPublisher_ASDU_enableRefrTm
     SVPublisher_ASDU_setSmpSynch
     IedConnection_getFileDirectoryEx
+    ClientReportControlBlock_hasResvTms

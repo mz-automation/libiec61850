@@ -625,3 +625,4 @@ EXPORTS
     ClientReport_getSubSeqNum
     ClientReport_getMoreSeqmentsFollow
     IedConnection_getFileDirectoryEx
+    ClientReportControlBlock_hasResvTms
