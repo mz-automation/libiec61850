@@ -319,7 +319,7 @@ mmsMsg_parseDataElement(Data_t* dataElement)
 
             int size = dataElement->choice.bitstring.size;
 
-            if (size > 0) {
+            if (size >= 0) {
 
                 int maxSize = (size * 8);
                 int bitSize = maxSize - dataElement->choice.bitstring.bits_unused;
@@ -334,6 +334,13 @@ mmsMsg_parseDataElement(Data_t* dataElement)
                     value->value.bitString.buf = (uint8_t*) GLOBAL_MALLOC(size);
                     memcpy(value->value.bitString.buf,
                             dataElement->choice.bitstring.buf, size);
+                }
+                else if (bitSize == 0) {
+                    value = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
+
+                    value->type = MMS_BIT_STRING;
+                    value->value.bitString.size = 0;
+                    value->value.bitString.buf = NULL;
                 }
                 else {
                     if (DEBUG_MMS_CLIENT)

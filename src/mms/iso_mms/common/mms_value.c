@@ -1196,7 +1196,8 @@ MmsValue_delete(MmsValue* self)
         GLOBAL_FREEMEM(self->value.floatingPoint.buf);
         break;
     case MMS_BIT_STRING:
-        GLOBAL_FREEMEM(self->value.bitString.buf);
+        if (self->value.bitString.buf != NULL)
+            GLOBAL_FREEMEM(self->value.bitString.buf);
         break;
     case MMS_OCTET_STRING:
         GLOBAL_FREEMEM(self->value.octetString.buf);
