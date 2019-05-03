@@ -411,7 +411,7 @@ BerEncoder_encodeOIDToBuffer(const char* oidString, uint8_t* buffer, int maxBufL
 
     if (separator == NULL) {
         sepChar = ' ';
-        separator = strchr(oidString, ',');
+        separator = strchr(oidString, ' ');
     }
 
     if (separator == NULL) return 0;
