@@ -1158,7 +1158,6 @@ IedServer_updateBooleanAttributeValue(IedServer self, DataAttribute* dataAttribu
     bool currentValue = MmsValue_getBoolean(dataAttribute->mmsValue);
 
     if (currentValue == value) {
-
         checkForUpdateTrigger(self, dataAttribute);
     }
     else {

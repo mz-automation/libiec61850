@@ -400,7 +400,19 @@ BerEncoder_encodeOIDToBuffer(const char* oidString, uint8_t* buffer, int maxBufL
 
     int x = atoi(oidString);
 
+    char sepChar = '.';
+
     const char* separator = strchr(oidString, '.');
+
+    if (separator == NULL) {
+        sepChar = ',';
+        separator = strchr(oidString, ',');
+    }
+
+    if (separator == NULL) {
+        sepChar = ' ';
+        separator = strchr(oidString, ',');
+    }
 
     if (separator == NULL) return 0;
 
@@ -416,7 +428,7 @@ BerEncoder_encodeOIDToBuffer(const char* oidString, uint8_t* buffer, int maxBufL
     encodedBytes++;
 
     while (1) {
-        separator = strchr(separator + 1, '.');
+        separator = strchr(separator + 1, sepChar);
 
         if (separator == NULL)
             break;
