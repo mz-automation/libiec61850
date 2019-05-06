@@ -1592,8 +1592,12 @@ MmsConnection_readVariable(MmsConnection self, MmsError* mmsError,
 
     ByteBuffer* responseMessage = sendRequestAndWaitForResponse(self, invokeId, payload, mmsError);
 
-    if (responseMessage != NULL)
+    if (responseMessage != NULL) {
         value = mmsClient_parseReadResponse(self->lastResponse, NULL, false);
+
+        if (value == NULL)
+            *mmsError = MMS_ERROR_PARSING_RESPONSE;
+    }
 
     releaseResponse(self);
 
@@ -1620,8 +1624,12 @@ MmsConnection_readVariableComponent(MmsConnection self, MmsError* mmsError,
 
     ByteBuffer* responseMessage = sendRequestAndWaitForResponse(self, invokeId, payload, mmsError);
 
-    if (responseMessage != NULL)
+    if (responseMessage != NULL) {
         value = mmsClient_parseReadResponse(self->lastResponse, NULL, false);
+
+        if (value == NULL)
+            *mmsError = MMS_ERROR_PARSING_RESPONSE;
+    }
 
     releaseResponse(self);
 
@@ -1650,8 +1658,12 @@ MmsConnection_readArrayElements(MmsConnection self, MmsError* mmsError,
 
     ByteBuffer* responseMessage = sendRequestAndWaitForResponse(self, invokeId, payload, mmsError);
 
-    if (responseMessage != NULL)
+    if (responseMessage != NULL) {
         value = mmsClient_parseReadResponse(self->lastResponse, NULL, false);
+
+        if (value == NULL)
+            *mmsError = MMS_ERROR_PARSING_RESPONSE;
+    }
 
     releaseResponse(self);
 
@@ -1679,8 +1691,12 @@ MmsConnection_readSingleArrayElementWithComponent(MmsConnection self, MmsError* 
 
     ByteBuffer* responseMessage = sendRequestAndWaitForResponse(self, invokeId, payload, mmsError);
 
-    if (responseMessage != NULL)
+    if (responseMessage != NULL) {
         value = mmsClient_parseReadResponse(self->lastResponse, NULL, false);
+
+        if (value == NULL)
+            *mmsError = MMS_ERROR_PARSING_RESPONSE;
+    }
 
     releaseResponse(self);
 
@@ -1707,8 +1723,12 @@ MmsConnection_readMultipleVariables(MmsConnection self, MmsError* mmsError,
 
     ByteBuffer* responseMessage = sendRequestAndWaitForResponse(self, invokeId, payload, mmsError);
 
-    if (responseMessage != NULL)
+    if (responseMessage != NULL) {
         value = mmsClient_parseReadResponse(self->lastResponse, NULL, true);
+
+        if (value == NULL)
+            *mmsError = MMS_ERROR_PARSING_RESPONSE;
+    }
 
     releaseResponse(self);
 
@@ -1772,8 +1792,12 @@ MmsConnection_readNamedVariableListValuesAssociationSpecific(
 
     ByteBuffer* responseMessage = sendRequestAndWaitForResponse(self, invokeId, payload, mmsError);
 
-    if (responseMessage != NULL)
+    if (responseMessage != NULL) {
         value = mmsClient_parseReadResponse(self->lastResponse, NULL, true);
+
+        if (value == NULL)
+            *mmsError = MMS_ERROR_PARSING_RESPONSE;
+    }
 
     releaseResponse(self);
 
@@ -1801,9 +1825,13 @@ MmsConnection_readNamedVariableListDirectory(MmsConnection self, MmsError* mmsEr
 
     ByteBuffer* responseMessage = sendRequestAndWaitForResponse(self, invokeId, payload, mmsError);
 
-    if (responseMessage != NULL)
+    if (responseMessage != NULL) {
         attributes = mmsClient_parseGetNamedVariableListAttributesResponse(self->lastResponse, NULL,
                 deletable);
+
+        if (attributes == NULL)
+            *mmsError = MMS_ERROR_PARSING_RESPONSE;
+    }
 
     releaseResponse(self);
 
@@ -1831,9 +1859,13 @@ MmsConnection_readNamedVariableListDirectoryAssociationSpecific(MmsConnection se
 
     ByteBuffer* responseMessage = sendRequestAndWaitForResponse(self, invokeId, payload, mmsError);
 
-    if (responseMessage != NULL)
+    if (responseMessage != NULL) {
         attributes = mmsClient_parseGetNamedVariableListAttributesResponse(self->lastResponse, NULL,
                 deletable);
+
+        if (attributes == NULL)
+            *mmsError = MMS_ERROR_PARSING_RESPONSE;
+    }
 
     releaseResponse(self);
 
