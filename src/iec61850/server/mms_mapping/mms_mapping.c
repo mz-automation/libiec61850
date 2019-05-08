@@ -2404,12 +2404,6 @@ mmsConnectionHandler(void* parameter, MmsServerConnection connection, MmsServerE
 
         private_IedServer_removeClientConnection(self->iedServer, clientConnection);
 
-#if (CONFIG_MMS_THREADLESS_STACK != 1)
-        /* wait until control threads are finished */
-        while (private_ClientConnection_getTasksCount(clientConnection) > 0)
-            Thread_sleep(10);
-#endif /* (CONFIG_MMS_THREADLESS_STACK != 1) */
-
 #if (CONFIG_IEC61850_REPORT_SERVICE == 1)
         Reporting_deactivateReportsForConnection(self, connection);
 #endif

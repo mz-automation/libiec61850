@@ -1357,12 +1357,10 @@ IedServer_handleWriteAccess(IedServer self, DataAttribute* dataAttribute, WriteA
     if (dataAttribute == NULL) {
         if (DEBUG_IED_SERVER)
             printf("IED_SERVER: IedServer_handleWriteAccess - dataAttribute == NULL!\n");
-
-        /* Cause a trap */
-        *((volatile int*) NULL) = 1;
     }
-
-    MmsMapping_installWriteAccessHandler(self->mmsMapping, dataAttribute, handler, parameter);
+    else {
+        MmsMapping_installWriteAccessHandler(self->mmsMapping, dataAttribute, handler, parameter);
+    }
 }
 
 void

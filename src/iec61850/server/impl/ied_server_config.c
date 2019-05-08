@@ -51,6 +51,7 @@ IedServerConfig_create()
         self->maxDataSetEntries = CONFIG_MMS_MAX_NUMBER_OF_DATA_SET_MEMBERS;
         self->enableLogService = true;
         self->edition = IEC_61850_EDITION_2;
+        self->maxMmsConnections = 5;
     }
 
     return self;
