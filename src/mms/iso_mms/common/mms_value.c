@@ -36,7 +36,7 @@
 
 #include <time.h> /* for ctime_r */
 
-static inline int
+static int
 bitStringByteSize(const MmsValue* value)
 {
     int bitSize = value->value.bitString.size;
@@ -1492,7 +1492,7 @@ exit_function:
     return self;
 }
 
-static inline void
+static void
 setVisibleStringValue(MmsValue* self, const char* string)
 {
     if (self->value.visibleString.buf != NULL) {
