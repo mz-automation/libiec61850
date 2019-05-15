@@ -99,6 +99,9 @@ iedConnection_mapMmsErrorToIedError(MmsError mmsError)
     case MMS_ERROR_PARSING_RESPONSE:
         return IED_ERROR_MALFORMED_MESSAGE;
 
+    case MMS_ERROR_OUTSTANDING_CALL_LIMIT:
+        return IED_ERROR_OUTSTANDING_CALL_LIMIT_REACHED;
+
     default:
         return IED_ERROR_UNKNOWN;
     }
@@ -1121,8 +1124,9 @@ IedConnection_readObjectAsync(IedConnection self, IedClientError* error, const c
 
     if ((err != MMS_ERROR_NONE) || (*error != IED_ERROR_OK)) {
 
-        if (err != MMS_ERROR_NONE)
+        if (err != MMS_ERROR_NONE) {
             *error = iedConnection_mapMmsErrorToIedError(err);
+        }
 
         iedConnection_releaseOutstandingCall(self, call);
 
