@@ -532,8 +532,12 @@ mmsServer_fileUploadTask(MmsServer self, MmsObtainFileTask task)
 
                 IsoConnection_sendMessage(task->connection->isoConnection, response, false);
 
-                FileSystem_closeFile(task->fileHandle);
-                deleteFile(MmsServerConnection_getFilesystemBasepath(task->connection), task->destinationFilename);
+                if (task->fileHandle) {
+                    FileSystem_closeFile(task->fileHandle);
+
+                    if (task->destinationFilename)
+                        deleteFile(MmsServerConnection_getFilesystemBasepath(task->connection), task->destinationFilename);
+                }
 
                 MmsServer_releaseTransmitBuffer(self);
 
@@ -657,15 +661,16 @@ mmsServer_handleObtainFileRequest(
             FileHandle fileHandle = openFile(MmsServerConnection_getFilesystemBasepath(connection),
                     destinationFilename, true);
 
+            task->connection = connection;
+            task->obtainFileRequestInvokeId = invokeId;
+
             if (fileHandle == NULL) {
                 task->state = MMS_FILE_UPLOAD_STATE_SEND_OBTAIN_FILE_ERROR_DESTINATION;
             }
             else {
                 /* send file open request */
                 task->lastRequestInvokeId = MmsServerConnection_getNextRequestInvokeId(connection);
-                task->connection = connection;
                 task->fileHandle = fileHandle;
-                task->obtainFileRequestInvokeId = invokeId;
 
                 strcpy(task->destinationFilename, destinationFilename);
 

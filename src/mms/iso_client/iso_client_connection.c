@@ -128,13 +128,13 @@ getState(IsoClientConnection self)
     return stateVal;
 }
 
-static inline void
+static void
 setIntState(IsoClientConnection self, eIsoClientInternalState newState)
 {
     self->intState = newState;
 }
 
-static inline eIsoClientInternalState
+static eIsoClientInternalState
 getIntState(IsoClientConnection self)
 {
     return self->intState;
