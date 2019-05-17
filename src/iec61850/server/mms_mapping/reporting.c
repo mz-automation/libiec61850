@@ -1829,15 +1829,7 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
                 if (rc->dataSet)
                     clearInclusionFlags(rc);
 
-                MmsValue* resv = ReportControl_getRCBValue(rc, "Resv");
-                MmsValue_setBoolean(resv, false);
-
                 rc->triggered = false;
-
-                rc->reserved = false;
-
-                if (rc->resvTms != -1)
-                    updateOwner(rc, NULL);
             }
 
             rc->enabled = false;
@@ -1872,8 +1864,15 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
         if (strcmp(elementName, "Resv") == 0) {
             rc->reserved = value->value.boolean;
 
-            if (rc->reserved == true)
+            if (rc->reserved == true) {
+                updateOwner(rc, connection);
                 rc->clientConnection = connection;
+            }
+            else {
+                updateOwner(rc, NULL);
+                rc->clientConnection = NULL;
+            }
+
         }
         else if (strcmp(elementName, "PurgeBuf") == 0) {
             if (MmsValue_getType(value) == MMS_BOOLEAN) {
