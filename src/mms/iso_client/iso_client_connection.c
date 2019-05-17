@@ -757,6 +757,8 @@ IsoClientConnection_destroy(IsoClientConnection self)
         IsoClientConnection_close(self);
     }
 
+    releaseSocket(self);
+
     if (self->receiveBuf != NULL)
         GLOBAL_FREEMEM(self->receiveBuf);
     if (self->receiveBuffer != NULL)
