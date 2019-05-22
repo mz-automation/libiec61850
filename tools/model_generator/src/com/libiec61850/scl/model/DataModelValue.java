@@ -27,6 +27,7 @@ import java.text.SimpleDateFormat;
 
 import java.util.Base64;
 import java.util.Date;
+import java.util.TimeZone;
 
 import com.libiec61850.scl.types.EnumerationType;
 import com.libiec61850.scl.types.IllegalValueException;
@@ -172,6 +173,7 @@ public class DataModelValue {
                 String modValueString = value.replace(',', '.');
                 
                 SimpleDateFormat parser = new SimpleDateFormat("yyyy-MM-d'T'HH:mm:ss.SSS");
+                parser.setTimeZone(TimeZone.getTimeZone("UTC"));
                 
                 Date date = parser.parse(modValueString);
                 
