@@ -65,9 +65,13 @@ directChildStrLen(const char* childId)
 MmsValue*
 MmsVariableSpecification_getChildValue(MmsVariableSpecification* typeSpec, MmsValue* value, const char* childId)
 {
-    if (typeSpec->type == MMS_STRUCTURE) {
+    if ((typeSpec->type == MMS_STRUCTURE) && (value->type == MMS_STRUCTURE)) {
         size_t childLen = directChildStrLen(childId);
         int i;
+
+        if (typeSpec->typeSpec.structure.elementCount != value->value.structure.size)
+            return NULL;
+
         for (i = 0; i < typeSpec->typeSpec.structure.elementCount; i++) {
 
             if (strlen(typeSpec->typeSpec.structure.elements[i]->name) == childLen) {
