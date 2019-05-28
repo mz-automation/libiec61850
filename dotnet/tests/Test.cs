@@ -49,6 +49,15 @@ namespace tests
 			Assert.AreEqual(7, val.BitStringToUInt32());
 		}
 
+        [Test ()]
+        public void MmsValueUtcTime ()
+        {
+            var val = MmsValue.NewUtcTime (100000);
+            val.GetUtcTimeInMs ();
+
+            Assert.AreEqual (val.GetUtcTimeInMs (), 100000);
+        }
+
 		[Test()]
 		public void MmsValueOctetString ()
 		{
@@ -423,6 +432,7 @@ namespace tests
 		}
 
 		[Test()]
+        [Ignore()]
 		public void ControlHandler()
 		{
 			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../model.cfg");
