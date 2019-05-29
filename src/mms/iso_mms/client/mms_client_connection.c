@@ -391,7 +391,7 @@ sendRequestAndWaitForResponse(MmsConnection self, uint32_t invokeId, ByteBuffer*
 
         Semaphore_post(self->lastResponseLock);
 
-        Thread_sleep(10);
+        Thread_sleep(2);
 
         currentTime = Hal_getTimeInMs();
     }
@@ -409,7 +409,7 @@ sendRequestAndWaitForResponse(MmsConnection self, uint32_t invokeId, ByteBuffer*
             receivedMessage = NULL;
     }
 
-    connection_lost:
+connection_lost:
 
     removeFromOutstandingCalls(self, invokeId);
 
@@ -440,7 +440,7 @@ getResponseInvokeId(MmsConnection self)
 }
 
 static void
-waitUntilLastResponseHasBeenProcessed(MmsConnection self)
+waitUntilResponseHasBeenProcessed(MmsConnection self)
 {
     uint32_t currentInvokeId = getResponseInvokeId(self);
 
@@ -635,9 +635,12 @@ parseServiceError(uint8_t* buffer, int bufPos, int maxLength, MmsServiceError* e
 }
 
 int
-mmsMsg_parseConfirmedErrorPDU(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t* invokeId, MmsServiceError* serviceError)
+mmsMsg_parseConfirmedErrorPDU(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t* invokeId, bool* hasInvokeId, MmsServiceError* serviceError)
 {
     int length;
+
+    if (hasInvokeId)
+        *hasInvokeId = false;
 
     uint8_t tag = buffer[bufPos++];
     if (tag != 0xa2)
@@ -662,6 +665,8 @@ mmsMsg_parseConfirmedErrorPDU(uint8_t* buffer, int bufPos, int maxBufPos, uint32
         switch (tag)
         {
         case 0x80: /* invoke Id */
+            if (hasInvokeId)
+                *hasInvokeId = true;
             if (invokeId != NULL)
                 *invokeId = BerDecoder_decodeUint32(buffer, length, bufPos);
             bufPos += length;
@@ -690,9 +695,12 @@ mmsMsg_parseConfirmedErrorPDU(uint8_t* buffer, int bufPos, int maxBufPos, uint32
 }
 
 int
-mmsMsg_parseRejectPDU(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t* invokeId, int* rejectType, int* rejectReason)
+mmsMsg_parseRejectPDU(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t* invokeId, bool* hasInvokeId, int* rejectType, int* rejectReason)
 {
     int length;
+
+    if (hasInvokeId)
+        *hasInvokeId = false;
 
     uint8_t tag = buffer[bufPos++];
 
@@ -719,6 +727,9 @@ mmsMsg_parseRejectPDU(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t* invo
             goto exit_error;
 
         if (tag == 0x80) { /* invoke id */
+            if (hasInvokeId)
+                *hasInvokeId = true;
+
             if (invokeId != NULL)
                 *invokeId = BerDecoder_decodeUint32(buffer, length, bufPos);
         }
@@ -838,26 +849,29 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
     else if (tag == 0xa2) { /* confirmed error PDU */
         if (DEBUG_MMS_CLIENT)
             printf("MMS_CLIENT: Confirmed error PDU!\n");
-        uint32_t invokeId;
-        MmsServiceError serviceError =
-        { 0, 0 };
 
-        if (mmsMsg_parseConfirmedErrorPDU(payload->buffer, 0, payload->size, &invokeId, &serviceError) < 0) {
+        uint32_t invokeId;
+        bool hasInvokeId = false;
+
+        MmsServiceError serviceError = { 0, 0 };
+
+        if (mmsMsg_parseConfirmedErrorPDU(payload->buffer, 0, payload->size, &invokeId, &hasInvokeId, &serviceError) < 0) {
             if (DEBUG_MMS_CLIENT)
                 printf("MMS_CLIENT: Error parsing confirmedErrorPDU!\n");
 
             goto exit_with_error;
         }
         else {
-            if (checkForOutstandingCall(self, invokeId)) {
 
-                /* wait for application thread to handle last received response */
-                waitUntilLastResponseHasBeenProcessed(self);
+            if (hasInvokeId && checkForOutstandingCall(self, invokeId)) {
 
                 Semaphore_wait(self->lastResponseLock);
                 self->lastResponseError = convertServiceErrorToMmsError(serviceError);
                 self->responseInvokeId = invokeId;
                 Semaphore_post(self->lastResponseLock);
+
+                /* wait for application thread to handle received response */
+                waitUntilResponseHasBeenProcessed(self);
             }
             else {
                 if (DEBUG_MMS_CLIENT)
@@ -871,24 +885,25 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
         if (DEBUG_MMS_CLIENT)
             printf("MMS_CLIENT: reject PDU!\n");
 
-        uint32_t invokeId;
+        bool hasInvokeId = false;
+        uint32_t invokeId = 0;
         int rejectType;
         int rejectReason;
 
-        if (mmsMsg_parseRejectPDU(payload->buffer, 0, payload->size, &invokeId, &rejectType, &rejectReason) >= 0) {
+        if (mmsMsg_parseRejectPDU(payload->buffer, 0, payload->size, &invokeId, &hasInvokeId, &rejectType, &rejectReason) >= 0) {
 
             if (DEBUG_MMS_CLIENT)
-                printf("MMS_CLIENT: reject PDU invokeID: %i type: %i reason: %i\n", (int) invokeId, rejectType, rejectReason);
+                printf("MMS_CLIENT: reject PDU invokeID: %u type: %i reason: %i\n", invokeId, rejectType, rejectReason);
 
-            if (checkForOutstandingCall(self, invokeId)) {
-
-                /* wait for application thread to handle last received response */
-                waitUntilLastResponseHasBeenProcessed(self);
+            if (hasInvokeId && checkForOutstandingCall(self, invokeId)) {
 
                 Semaphore_wait(self->lastResponseLock);
                 self->lastResponseError = convertRejectCodesToMmsError(rejectType, rejectReason);
                 self->responseInvokeId = invokeId;
                 Semaphore_post(self->lastResponseLock);
+
+                /* wait for application thread to handle received response */
+                waitUntilResponseHasBeenProcessed(self);
             }
             else {
                 IsoClientConnection_releaseReceiveBuffer(self->isoClient);
@@ -925,13 +940,14 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
 
             if (checkForOutstandingCall(self, invokeId)) {
 
-                waitUntilLastResponseHasBeenProcessed(self);
-
                 Semaphore_wait(self->lastResponseLock);
+
                 self->lastResponse = payload;
                 self->lastResponseBufPos = bufPos;
                 self->responseInvokeId = invokeId;
                 Semaphore_post(self->lastResponseLock);
+
+                waitUntilResponseHasBeenProcessed(self);
             }
             else {
                 if (DEBUG_MMS_CLIENT)

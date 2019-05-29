@@ -91,10 +91,10 @@ void
 mmsMsg_createMmsRejectPdu(uint32_t* invokeId, int reason, ByteBuffer* response);
 
 int
-mmsMsg_parseConfirmedErrorPDU(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t* invokeId, MmsServiceError* serviceError);
+mmsMsg_parseConfirmedErrorPDU(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t* invokeId, bool* hasInvokeId, MmsServiceError* serviceError);
 
 int
-mmsMsg_parseRejectPDU(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t* invokeId, int* rejectType, int* rejectReason);
+mmsMsg_parseRejectPDU(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t* invokeId, bool* hasInvokeId, int* rejectType, int* rejectReason);
 
 MmsValue*
 mmsMsg_parseDataElement(Data_t* dataElement);
