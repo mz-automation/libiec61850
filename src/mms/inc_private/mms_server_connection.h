@@ -52,7 +52,7 @@ int
 MmsServerConnection_getMaxMmsPduSize(MmsServerConnection self);
 
 void
-MmsServerConnection_sendMessage(MmsServerConnection self, ByteBuffer* message, bool handlerMode);
+MmsServerConnection_sendMessage(MmsServerConnection self, ByteBuffer* message);
 
 bool
 MmsServerConnection_addNamedVariableList(MmsServerConnection self, MmsNamedVariableList variableList);

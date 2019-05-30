@@ -83,15 +83,21 @@ mmsServer_createMmsWriteResponse(MmsServerConnection connection,
 void
 MmsServerConnection_sendWriteResponse(MmsServerConnection self, uint32_t invokeId, MmsDataAccessError indication, bool handlerMode)
 {
+    if (handlerMode == false)
+        IsoConnection_lock(self->isoConnection);
+
     ByteBuffer* response = MmsServer_reserveTransmitBuffer(self->server);
 
     ByteBuffer_setSize(response, 0);
 
     mmsServer_createMmsWriteResponse(self, invokeId, response, 1, &indication);
 
-    IsoConnection_sendMessage(self->isoConnection, response, handlerMode);
+    IsoConnection_sendMessage(self->isoConnection, response);
 
     MmsServer_releaseTransmitBuffer(self->server);
+
+    if (handlerMode == false)
+        IsoConnection_unlock(self->isoConnection);
 }
 
 #if 0

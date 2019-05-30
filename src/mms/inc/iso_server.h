@@ -73,6 +73,12 @@ void
 IsoConnection_close(IsoConnection self);
 
 void
+IsoConnection_lock(IsoConnection self);
+
+void
+IsoConnection_unlock(IsoConnection self);
+
+void
 IsoConnection_installListener(IsoConnection self, MessageReceivedHandler handler,
         void* parameter);
 
@@ -86,7 +92,7 @@ IsoConnection_getSecurityToken(IsoConnection self);
  *        (handlerMode)
  */
 void
-IsoConnection_sendMessage(IsoConnection self, ByteBuffer* message, bool handlerMode);
+IsoConnection_sendMessage(IsoConnection self, ByteBuffer* message);
 
 IsoServer
 IsoServer_create(TLSConfiguration tlsConfiguration);

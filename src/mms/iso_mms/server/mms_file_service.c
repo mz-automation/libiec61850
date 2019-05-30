@@ -434,15 +434,19 @@ mmsServer_fileUploadTask(MmsServer self, MmsObtainFileTask task)
 
         case MMS_FILE_UPLOAD_STATE_SEND_FILE_READ:
             {
+                IsoConnection_lock(task->connection->isoConnection);
+
                 ByteBuffer* request = MmsServer_reserveTransmitBuffer(self);
 
                 task->lastRequestInvokeId = MmsServerConnection_getNextRequestInvokeId(task->connection);
 
                 mmsClient_createFileReadRequest(task->lastRequestInvokeId, request, task->frmsId);
 
-                IsoConnection_sendMessage(task->connection->isoConnection, request, false);
+                IsoConnection_sendMessage(task->connection->isoConnection, request);
 
                 MmsServer_releaseTransmitBuffer(self);
+
+                IsoConnection_unlock(task->connection->isoConnection);
 
                 task->nextTimeout = Hal_getTimeInMs() + 2000; /* timeout 2000 ms */
 
@@ -468,15 +472,19 @@ mmsServer_fileUploadTask(MmsServer self, MmsObtainFileTask task)
 
         case MMS_FILE_UPLOAD_STATE_SEND_FILE_CLOSE:
             {
+                IsoConnection_lock(task->connection->isoConnection);
+
                 ByteBuffer* request = MmsServer_reserveTransmitBuffer(self);
 
                 task->lastRequestInvokeId = MmsServerConnection_getNextRequestInvokeId(task->connection);
 
                 mmsClient_createFileCloseRequest(task->lastRequestInvokeId, request, task->frmsId);
 
-                IsoConnection_sendMessage(task->connection->isoConnection, request, false);
+                IsoConnection_sendMessage(task->connection->isoConnection, request);
 
                 MmsServer_releaseTransmitBuffer(self);
+
+                IsoConnection_unlock(task->connection->isoConnection);
 
                 task->nextTimeout = Hal_getTimeInMs() + 2000; /* timeout 2000 ms */
 
@@ -504,16 +512,20 @@ mmsServer_fileUploadTask(MmsServer self, MmsObtainFileTask task)
             {
                 /* send ObtainFileError */
 
+                IsoConnection_lock(task->connection->isoConnection);
+
                 ByteBuffer* response = MmsServer_reserveTransmitBuffer(self);
 
                 createServiceErrorObtainFileError(task->obtainFileRequestInvokeId, response, MMS_ERROR_FILE_FILE_NON_EXISTENT, 0);
 
-                IsoConnection_sendMessage(task->connection->isoConnection, response, false);
+                IsoConnection_sendMessage(task->connection->isoConnection, response);
+
+                MmsServer_releaseTransmitBuffer(self);
+
+                IsoConnection_unlock(task->connection->isoConnection);
 
                 FileSystem_closeFile(task->fileHandle);
                 deleteFile(MmsServerConnection_getFilesystemBasepath(task->connection), task->destinationFilename);
-
-                MmsServer_releaseTransmitBuffer(self);
 
                 if (DEBUG_MMS_SERVER)
                     printf("MMS_SERVER: ObtainFile service: failed to open file from client\n");
@@ -526,11 +538,17 @@ mmsServer_fileUploadTask(MmsServer self, MmsObtainFileTask task)
             {
                 /* send ObtainFileError */
 
+                IsoConnection_lock(task->connection->isoConnection);
+
                 ByteBuffer* response = MmsServer_reserveTransmitBuffer(self);
 
                 createServiceErrorObtainFileError(task->obtainFileRequestInvokeId, response, MMS_ERROR_FILE_OTHER, 1);
 
-                IsoConnection_sendMessage(task->connection->isoConnection, response, false);
+                IsoConnection_sendMessage(task->connection->isoConnection, response);
+
+                MmsServer_releaseTransmitBuffer(self);
+
+                IsoConnection_unlock(task->connection->isoConnection);
 
                 if (task->fileHandle) {
                     FileSystem_closeFile(task->fileHandle);
@@ -538,8 +556,6 @@ mmsServer_fileUploadTask(MmsServer self, MmsObtainFileTask task)
                     if (task->destinationFilename)
                         deleteFile(MmsServerConnection_getFilesystemBasepath(task->connection), task->destinationFilename);
                 }
-
-                MmsServer_releaseTransmitBuffer(self);
 
                 if (DEBUG_MMS_SERVER)
                     printf("MMS_SERVER: ObtainFile service: failed to create local file\n");
@@ -551,13 +567,17 @@ mmsServer_fileUploadTask(MmsServer self, MmsObtainFileTask task)
 
         case MMS_FILE_UPLOAD_STATE_SEND_OBTAIN_FILE_RESPONSE:
             {
+                IsoConnection_lock(task->connection->isoConnection);
+
                 ByteBuffer* response = MmsServer_reserveTransmitBuffer(self);
 
                 createObtainFileResponse(task->obtainFileRequestInvokeId, response);
 
-                IsoConnection_sendMessage(task->connection->isoConnection, response, false);
+                IsoConnection_sendMessage(task->connection->isoConnection, response);
 
                 MmsServer_releaseTransmitBuffer(self);
+
+                IsoConnection_unlock(task->connection->isoConnection);
 
                 if (self->getFileCompleteHandler)
                     self->getFileCompleteHandler(self->getFileCompleteHandlerParameter, task->connection, task->destinationFilename);
@@ -678,7 +698,7 @@ mmsServer_handleObtainFileRequest(
 
                 mmsClient_createFileOpenRequest(task->lastRequestInvokeId, request, sourceFilename, 0);
 
-                IsoConnection_sendMessage(task->connection->isoConnection, request, true);
+                IsoConnection_sendMessage(task->connection->isoConnection, request);
 
                 MmsServer_releaseTransmitBuffer(connection->server);
 
