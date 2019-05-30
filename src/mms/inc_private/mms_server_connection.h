@@ -52,7 +52,7 @@ LIB61850_INTERNAL int
 MmsServerConnection_getMaxMmsPduSize(MmsServerConnection self);
 
 LIB61850_INTERNAL void
-MmsServerConnection_sendMessage(MmsServerConnection self, ByteBuffer* message, bool handlerMode);
+MmsServerConnection_sendMessage(MmsServerConnection self, ByteBuffer* message);
 
 LIB61850_INTERNAL bool
 MmsServerConnection_addNamedVariableList(MmsServerConnection self, MmsNamedVariableList variableList);
