@@ -173,7 +173,10 @@ namespace IEC61850
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern ulong MmsValue_getBinaryTimeAsUtcMs (IntPtr self);
 
-			[DllImport("iec61850", CallingConvention=CallingConvention.Cdecl)]
+            [DllImport ("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr MmsValue_newUtcTimeByMsTime (UInt64 timestamp);
+
+            [DllImport("iec61850", CallingConvention=CallingConvention.Cdecl)]
 			static extern int MmsValue_getDataAccessError(IntPtr self);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
@@ -388,6 +391,18 @@ namespace IEC61850
 				} else
 					throw new MmsValueException ("Value is not a time type");
 			}
+
+            /// <summary>
+            /// Create a new MmsValue instance of type MMS_UTC_TIME
+            /// </summary>
+            /// <returns>the new MmsValue instance.</returns>
+            /// <param name="timestamp">the time value as milliseconds since epoch (1.1.1970 UTC).</param>
+            public static MmsValue NewUtcTime (UInt64 timestamp)
+            {
+                IntPtr newValue = MmsValue_newUtcTimeByMsTime (timestamp);
+
+                return new MmsValue (newValue, true);
+            }
 
             /// <summary>
             /// Gets the type of the value
