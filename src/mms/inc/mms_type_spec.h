@@ -5,7 +5,7 @@
  *  Complex types are arrays or structures of simple and complex types.
  *  They also represent MMS NamedVariables.
  *
- *  Copyright 2013, 2014 Michael Zillgith
+ *  Copyright 2013-2019 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -28,6 +28,7 @@
 #ifndef MMS_TYPE_SPEC_H_
 #define MMS_TYPE_SPEC_H_
 
+#include "libiec61850_common_api.h"
 #include "mms_common.h"
 #include "mms_types.h"
 #include "linked_list.h"
@@ -51,7 +52,7 @@ extern "C" {
  *
  * \param self the MmsVariableSpecification instance
  */
-void
+LIB61850_API void
 MmsVariableSpecification_destroy(MmsVariableSpecification* self);
 
 /**
@@ -67,7 +68,7 @@ MmsVariableSpecification_destroy(MmsVariableSpecification* self);
  * \param childId the relative MMS name to the child MMS variable (with "$" separators!)
  *
  */
-MmsValue*
+LIB61850_API MmsValue*
 MmsVariableSpecification_getChildValue(MmsVariableSpecification* self, MmsValue* value, const char* childId);
 
 /**
@@ -78,7 +79,7 @@ MmsVariableSpecification_getChildValue(MmsVariableSpecification* self, MmsValue*
  *
  * \return the variable specification of the child or NULL if not existing.
  */
-MmsVariableSpecification*
+LIB61850_API MmsVariableSpecification*
 MmsVariableSpecification_getNamedVariableRecursive(MmsVariableSpecification* self, const char* nameId);
 
 /**
@@ -88,7 +89,7 @@ MmsVariableSpecification_getNamedVariableRecursive(MmsVariableSpecification* sel
  *
  * \return the MMS type of the variable
  */
-MmsType
+LIB61850_API MmsType
 MmsVariableSpecification_getType(MmsVariableSpecification* self);
 
 /**
@@ -99,7 +100,7 @@ MmsVariableSpecification_getType(MmsVariableSpecification* self);
  *
  * \return true if type is matching, false otherwise
  */
-bool
+LIB61850_API bool
 MmsVariableSpecification_isValueOfType(MmsVariableSpecification* self, MmsValue* value);
 
 /**
@@ -112,10 +113,10 @@ MmsVariableSpecification_isValueOfType(MmsVariableSpecification* self, MmsValue*
  *
  * \return the name of the variable
  */
-const char*
+LIB61850_API const char*
 MmsVariableSpecification_getName(MmsVariableSpecification* self);
 
-LinkedList /* <char*> */
+LIB61850_API LinkedList /* <char*> */
 MmsVariableSpecification_getStructureElements(MmsVariableSpecification* self);
 
 /**
@@ -125,10 +126,10 @@ MmsVariableSpecification_getStructureElements(MmsVariableSpecification* self);
  * \param self the MmsVariableSpecification object
  * \return the number of elements or -1 if not applicable
  */
-int
+LIB61850_API int
 MmsVariableSpecification_getSize(MmsVariableSpecification* self);
 
-MmsVariableSpecification*
+LIB61850_API MmsVariableSpecification*
 MmsVariableSpecification_getChildSpecificationByIndex(MmsVariableSpecification* self, int index);
 
 /**
@@ -140,13 +141,13 @@ MmsVariableSpecification_getChildSpecificationByIndex(MmsVariableSpecification* 
  *
  *  \return the type specification of the component or NULL if the component was not found
  */
-MmsVariableSpecification*
+LIB61850_API MmsVariableSpecification*
 MmsVariableSpecification_getChildSpecificationByName(MmsVariableSpecification* self, const char* name, int* index);
 
-MmsVariableSpecification*
+LIB61850_API MmsVariableSpecification*
 MmsVariableSpecification_getArrayElementSpecification(MmsVariableSpecification* self);
 
-int
+LIB61850_API int
 MmsVariableSpecification_getExponentWidth(MmsVariableSpecification* self);
 
 /**@}*/
