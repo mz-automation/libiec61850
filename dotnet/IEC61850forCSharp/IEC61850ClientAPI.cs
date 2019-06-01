@@ -72,6 +72,9 @@ namespace IEC61850
 			[DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
 			private static extern Int32 MmsConnection_getLocalDetail (IntPtr self);
 
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            private static extern Int32 MmsConnection_setRequestTimeout(IntPtr self, UInt32 timeoutInMs);
+
             [DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
             private static extern IntPtr MmsConnection_readMultipleVariables(IntPtr self, out int mmsError,
                                                                              string domainId, IntPtr items);
@@ -160,6 +163,11 @@ namespace IEC61850
 			public int GetLocalDetail() {
 				return MmsConnection_getLocalDetail (self);
 			}
+
+            public void SetRequestTimeout(uint timeoutMs)
+            {
+                MmsConnection_setRequestTimeout(self, timeoutMs);
+            }
 
             /// <summary>
             /// Reads multipe MMS variables from the same domain
