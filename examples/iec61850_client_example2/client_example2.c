@@ -38,7 +38,7 @@ printDataDirectory(char* doRef, IedConnection con, int spaces)
 
             dataAttribute = LinkedList_getNext(dataAttribute);
 
-            char daRef[129];
+            char daRef[130];
             sprintf(daRef, "%s.%s", doRef, daName);
             printDataDirectory(daRef, con, spaces + 2);
         }
