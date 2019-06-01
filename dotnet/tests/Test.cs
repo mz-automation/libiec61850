@@ -432,7 +432,7 @@ namespace tests
 		}
 
 		[Test()]
-        [Ignore()]
+        [Ignore("has to be fixed")]
 		public void ControlHandler()
 		{
 			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../model.cfg");
