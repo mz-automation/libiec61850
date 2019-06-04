@@ -92,14 +92,15 @@ struct sIsoConnection
 static void
 IsoConnection_releaseAllocatedMemory(IsoConnection self)
 {
-    if (self->socket)
-         Socket_destroy(self->socket);
-
 #if (CONFIG_MMS_SUPPORT_TLS == 1)
     if (IsoServer_getTLSConfiguration(self->isoServer) != NULL) {
         TLSSocket_close(self->tlsSocket);
+        self->tlsSocket = NULL;
     }
 #endif /* (CONFIG_MMS_SUPPORT_TLS == 1) */
+
+    if (self->socket)
+         Socket_destroy(self->socket);
 
      GLOBAL_FREEMEM(self->session);
      GLOBAL_FREEMEM(self->presentation);
@@ -662,8 +663,10 @@ IsoConnection_close(IsoConnection self)
         self->socket = NULL;
 
 #if (CONFIG_MMS_SUPPORT_TLS == 1)
-        if (self->tlsSocket)
+        if (self->tlsSocket) {
             TLSSocket_close(self->tlsSocket);
+            self->tlsSocket = NULL;
+        }
 #endif
 
         Socket_destroy(socket);

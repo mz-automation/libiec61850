@@ -474,23 +474,23 @@ TLSSocket_write(TLSSocket self, uint8_t* buf, int size)
 void
 TLSSocket_close(TLSSocket self)
 {
-    int ret;
+    if (self) {
+        int ret;
 
-    //TODO add timeout?
-
-    while ((ret = mbedtls_ssl_close_notify(&(self->ssl))) < 0)
-    {
-        if ((ret != MBEDTLS_ERR_SSL_WANT_READ) && (ret != MBEDTLS_ERR_SSL_WANT_WRITE))
+        while ((ret = mbedtls_ssl_close_notify(&(self->ssl))) < 0)
         {
-            DEBUG_PRINT("TLS", "mbedtls_ssl_close_notify returned %d\n", ret);
-            break;
+            if ((ret != MBEDTLS_ERR_SSL_WANT_READ) && (ret != MBEDTLS_ERR_SSL_WANT_WRITE))
+            {
+                DEBUG_PRINT("TLS", "mbedtls_ssl_close_notify returned %d\n", ret);
+                break;
+            }
         }
+
+        Thread_sleep(10);
+
+        mbedtls_ssl_config_free(&(self->conf));
+        mbedtls_ssl_free(&(self->ssl));
+
+        GLOBAL_FREEMEM(self);
     }
-
-    Thread_sleep(10);
-
-    mbedtls_ssl_config_free(&(self->conf));
-    mbedtls_ssl_free(&(self->ssl));
-
-    GLOBAL_FREEMEM(self);
 }
