@@ -59,7 +59,7 @@ struct sGooseReceiver
 };
 
 GooseReceiver
-GooseReceiver_create()
+GooseReceiver_createEx(uint8_t* buffer)
 {
     GooseReceiver self = (GooseReceiver) GLOBAL_MALLOC(sizeof(struct sGooseReceiver));
 
@@ -67,12 +67,24 @@ GooseReceiver_create()
         self->running = false;
         self->stop = false;
         self->interfaceId = NULL;
-        self->buffer = (uint8_t*) GLOBAL_MALLOC(ETH_BUFFER_LENGTH);
+        self->buffer = buffer;
         self->ethSocket = NULL;
         self->subscriberList = LinkedList_create();
 #if (CONFIG_MMS_THREADLESS_STACK == 0)
         self->thread = NULL;
 #endif
+    }
+
+    return self;
+}
+
+GooseReceiver
+GooseReceiver_create()
+{
+    GooseReceiver self = GooseReceiver_createEx(NULL);
+
+    if (self) {
+        self->buffer = (uint8_t*) GLOBAL_MALLOC(ETH_BUFFER_LENGTH);
     }
 
     return self;
@@ -692,11 +704,10 @@ exit_with_fault:
 }
 
 static void
-parseGooseMessage(GooseReceiver self, int numbytes)
+parseGooseMessage(GooseReceiver self, uint8_t* buffer, int numbytes)
 {
     int bufPos;
     bool subscriberFound = false;
-    uint8_t* buffer = self->buffer;
 
     if (numbytes < 22)
         return;
@@ -884,9 +895,15 @@ GooseReceiver_tick(GooseReceiver self)
     int packetSize = Ethernet_receivePacket(self->ethSocket, self->buffer, ETH_BUFFER_LENGTH);
 
     if (packetSize > 0) {
-        parseGooseMessage(self, packetSize);
+        parseGooseMessage(self, self->buffer, packetSize);
         return true;
     }
     else
         return false;
+}
+
+void
+GooseReceiver_handleMessage(GooseReceiver self, uint8_t* buffer, int size)
+{
+    parseGooseMessage(self, buffer, size);
 }
