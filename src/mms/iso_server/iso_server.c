@@ -83,6 +83,7 @@ struct sIsoServer {
 #endif /* (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS == -1) */
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
+    /* used to control access to server data model */
     Semaphore userLock;
 #endif
 

@@ -1,7 +1,7 @@
 /*
  *  mms_information_report.c
  *
- *  Copyright 2013, 2015 Michael Zillgith
+ *  Copyright 2013-2019 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -59,6 +59,11 @@ MmsServerConnection_sendInformationReportSingleVariableVMDSpecific(MmsServerConn
 
 	if (DEBUG_MMS_SERVER) printf("MMS_SERVER: sendInfReportSingle variable: %s\n", itemId);
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    if (handlerMode == false)
+        IsoConnection_lock(self->isoConnection);
+#endif
+
 	ByteBuffer* reportBuffer = MmsServer_reserveTransmitBuffer(self->server);
 
 	uint8_t* buffer = reportBuffer->buffer;
@@ -80,9 +85,14 @@ MmsServerConnection_sendInformationReportSingleVariableVMDSpecific(MmsServerConn
 
     reportBuffer->size = bufPos;
 
-    IsoConnection_sendMessage(self->isoConnection, reportBuffer, handlerMode);
+    IsoConnection_sendMessage(self->isoConnection, reportBuffer);
 
     MmsServer_releaseTransmitBuffer(self->server);
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    if (handlerMode == false)
+        IsoConnection_unlock(self->isoConnection);
+#endif
 
 exit_function:
     return;
@@ -152,6 +162,11 @@ MmsServerConnection_sendInformationReportListOfVariables(
         goto exit_function;
     }
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    if (handlerMode == false)
+        IsoConnection_lock(self->isoConnection);
+#endif
+
     /* encode message */
     ByteBuffer* reportBuffer = MmsServer_reserveTransmitBuffer(self->server);
 
@@ -212,9 +227,15 @@ MmsServerConnection_sendInformationReportListOfVariables(
 
     reportBuffer->size = bufPos;
 
-    IsoConnection_sendMessage(self->isoConnection, reportBuffer, handlerMode);
+    IsoConnection_sendMessage(self->isoConnection, reportBuffer);
 
     MmsServer_releaseTransmitBuffer(self->server);
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    if (handlerMode == false) {
+        IsoConnection_unlock(self->isoConnection);
+    }
+#endif
 
 exit_function:
     return;
@@ -265,7 +286,10 @@ MmsServerConnection_sendInformationReportVMDSpecific(MmsServerConnection self, c
         goto exit_function;
     }
 
-    if (DEBUG_MMS_SERVER) printf("MMS_SERVER: sendInfReport\n");
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    if (handlerMode == false)
+        IsoConnection_lock(self->isoConnection);
+#endif
 
     ByteBuffer* reportBuffer =  MmsServer_reserveTransmitBuffer(self->server);
 
@@ -295,9 +319,14 @@ MmsServerConnection_sendInformationReportVMDSpecific(MmsServerConnection self, c
 
     reportBuffer->size = bufPos;
 
-    IsoConnection_sendMessage(self->isoConnection, reportBuffer, false);
+    IsoConnection_sendMessage(self->isoConnection, reportBuffer);
 
     MmsServer_releaseTransmitBuffer(self->server);
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    if (handlerMode == false)
+        IsoConnection_unlock(self->isoConnection);
+#endif
 
 exit_function:
     return;

@@ -165,13 +165,13 @@ IsoConnection_handleTcpConnection(IsoConnection self)
             printf("ISO_SERVER: COTP connection indication\n");
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
-        Semaphore_wait(self->conMutex);
+        IsoConnection_lock(self);
 #endif
 
         CotpConnection_sendConnectionResponseMessage(self->cotpConnection);
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
-        Semaphore_post(self->conMutex);
+        IsoConnection_unlock(self);
 #endif
 
         break;
@@ -202,7 +202,7 @@ IsoConnection_handleTcpConnection(IsoConnection self)
                     if (aIndication == ACSE_ASSOCIATE) {
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
-                        Semaphore_wait(self->conMutex);
+                        IsoConnection_lock(self);
 #endif
 
                         if (DEBUG_ISO_SERVER)
@@ -265,7 +265,7 @@ IsoConnection_handleTcpConnection(IsoConnection self)
                         }
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
-                        Semaphore_post(self->conMutex);
+                        IsoConnection_unlock(self);
 #endif
                     }
                     else {
@@ -297,7 +297,7 @@ IsoConnection_handleTcpConnection(IsoConnection self)
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
                     IsoServer_userLock(self->isoServer);
-                    Semaphore_wait(self->conMutex);
+                    IsoConnection_lock(self);
 #endif
 
                     ByteBuffer_wrap(&mmsResponseBuffer, self->sendBuffer, 0, SEND_BUF_SIZE);
@@ -336,7 +336,7 @@ IsoConnection_handleTcpConnection(IsoConnection self)
                     }
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
-                    Semaphore_post(self->conMutex);
+                    IsoConnection_unlock(self);
                     IsoServer_userUnlock(self->isoServer);
 #endif
                 }
@@ -357,7 +357,7 @@ IsoConnection_handleTcpConnection(IsoConnection self)
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
                     IsoServer_userLock(self->isoServer);
-                    Semaphore_wait(self->conMutex);
+                    IsoConnection_lock(self);
 #endif
 
                     struct sBufferChain acseBufferPartStruct;
@@ -384,7 +384,7 @@ IsoConnection_handleTcpConnection(IsoConnection self)
                     CotpConnection_sendDataMessage(self->cotpConnection, sessionBufferPart);
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
-                    Semaphore_post(self->conMutex);
+                    IsoConnection_unlock(self);
                     IsoServer_userUnlock(self->isoServer);
 #endif
                 }
@@ -556,22 +556,29 @@ IsoConnection_getLocalAddress(IsoConnection self)
 }
 
 void
-IsoConnection_sendMessage(IsoConnection self, ByteBuffer* message, bool handlerMode)
+IsoConnection_lock(IsoConnection self)
+{
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_wait(self->conMutex);
+#endif
+}
+
+void
+IsoConnection_unlock(IsoConnection self)
+{
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_post(self->conMutex);
+#endif
+}
+
+void
+IsoConnection_sendMessage(IsoConnection self, ByteBuffer* message)
 {
     if (self->state == ISO_CON_STATE_STOPPED) {
         if (DEBUG_ISO_SERVER)
             printf("DEBUG_ISO_SERVER: sendMessage: connection already stopped!\n");
         goto exit_error;
     }
-
-    bool locked = false;
-
-#if (CONFIG_MMS_THREADLESS_STACK != 1)
-    if (handlerMode == false) {
-        Semaphore_wait(self->conMutex);
-        locked = true;
-    }
-#endif
 
     struct sBufferChain payloadBufferStruct;
     BufferChain payloadBuffer = &payloadBufferStruct;
@@ -605,11 +612,6 @@ IsoConnection_sendMessage(IsoConnection self, ByteBuffer* message, bool handlerM
         else
             printf("ISO_SERVER: IsoConnection_sendMessage success!\n");
     }
-
-#if (CONFIG_MMS_THREADLESS_STACK != 1)
-    if (locked)
-        Semaphore_post(self->conMutex);
-#endif
 
 exit_error:
     return;

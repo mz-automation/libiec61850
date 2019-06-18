@@ -533,9 +533,12 @@ parseServiceError(uint8_t* buffer, int bufPos, int maxLength, MmsServiceError* e
 }
 
 int
-mmsMsg_parseConfirmedErrorPDU(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t* invokeId, MmsServiceError* serviceError)
+mmsMsg_parseConfirmedErrorPDU(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t* invokeId, bool* hasInvokeId, MmsServiceError* serviceError)
 {
     int length;
+
+    if (hasInvokeId)
+        *hasInvokeId = false;
 
     uint8_t tag = buffer[bufPos++];
     if (tag != 0xa2)
@@ -561,6 +564,8 @@ mmsMsg_parseConfirmedErrorPDU(uint8_t* buffer, int bufPos, int maxBufPos, uint32
         switch (tag)
         {
         case 0x80: /* invoke Id */
+            if (hasInvokeId)
+                *hasInvokeId = true;
             if (invokeId != NULL)
                 *invokeId = BerDecoder_decodeUint32(buffer, length, bufPos);
             bufPos += length;
@@ -589,9 +594,12 @@ exit_error:
 }
 
 int
-mmsMsg_parseRejectPDU(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t* invokeId, int* rejectType, int* rejectReason)
+mmsMsg_parseRejectPDU(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t* invokeId, bool* hasInvokeId, int* rejectType, int* rejectReason)
 {
     int length;
+
+    if (hasInvokeId)
+        *hasInvokeId = false;
 
     uint8_t tag = buffer[bufPos++];
 
@@ -619,6 +627,8 @@ mmsMsg_parseRejectPDU(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t* invo
             goto exit_error;
 
         if (tag == 0x80) { /* invoke id */
+            if (hasInvokeId)
+                *hasInvokeId = true;
             if (invokeId != NULL)
                 *invokeId = BerDecoder_decodeUint32(buffer, length, bufPos);
         }
@@ -1080,9 +1090,11 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
             printf("MMS_CLIENT: Confirmed error PDU!\n");
 
         uint32_t invokeId;
+        bool hasInvokeId = false;
+
         MmsServiceError serviceError = { 0, 0 };
 
-        if (mmsMsg_parseConfirmedErrorPDU(payload->buffer, 0, payload->size, &invokeId, &serviceError) < 0) {
+        if (mmsMsg_parseConfirmedErrorPDU(payload->buffer, 0, payload->size, &invokeId, &hasInvokeId, &serviceError) < 0) {
             if (DEBUG_MMS_CLIENT)
                 printf("MMS_CLIENT: Error parsing confirmedErrorPDU!\n");
 
@@ -1090,26 +1102,35 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
         }
         else {
 
-            MmsOutstandingCall call = checkForOutstandingCall(self, invokeId);
+            if (hasInvokeId) {
+                MmsOutstandingCall call = checkForOutstandingCall(self, invokeId);
 
-            if (call) {
+                if (call) {
 
-                MmsError err = convertServiceErrorToMmsError(serviceError);
+                    MmsError err = convertServiceErrorToMmsError(serviceError);
 
-                if (call->type != MMS_CALL_TYPE_NONE) {
-                    handleAsyncResponse(self, NULL, 0, call, err);
+                    if (call->type != MMS_CALL_TYPE_NONE) {
+                        handleAsyncResponse(self, NULL, 0, call, err);
+                    }
+                    else {
+                        if (DEBUG_MMS_CLIENT)
+                            printf("MMS_CLIENT: internal problem (unexpected call type - error PDU)\n");
+                    }
                 }
                 else {
                     if (DEBUG_MMS_CLIENT)
-                        printf("MMS_CLIENT: internal problem (unexpected call type - error PDU)\n");
+                        printf("MMS_CLIENT: server sent unexpected confirmed error PDU!\n");
+
+                    return;
                 }
             }
             else {
                 if (DEBUG_MMS_CLIENT)
-                    printf("MMS_CLIENT: unexpected message from server!\n");
+                    printf("MMS_CLIENT: server sent confirmed error PDU without invoke ID!\n");
 
                 return;
             }
+
         }
     }
     else if (tag == 0xa4) { /* reject PDU */
@@ -1117,33 +1138,40 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
         if (DEBUG_MMS_CLIENT)
             printf("MMS_CLIENT: reject PDU!\n");
 
-        uint32_t invokeId;
+        bool hasInvokeId = false;
+        uint32_t invokeId = 0;
         int rejectType;
         int rejectReason;
 
-        if (mmsMsg_parseRejectPDU(payload->buffer, 0, payload->size, &invokeId, &rejectType, &rejectReason) >= 0) {
+        if (mmsMsg_parseRejectPDU(payload->buffer, 0, payload->size, &invokeId, &hasInvokeId, &rejectType, &rejectReason) >= 0) {
 
             if (DEBUG_MMS_CLIENT)
-                printf("MMS_CLIENT: reject PDU invokeID: %i type: %i reason: %i\n", (int) invokeId, rejectType, rejectReason);
+                printf("MMS_CLIENT: reject PDU invokeID: %u type: %i reason: %i\n", invokeId, rejectType, rejectReason);
 
-            MmsOutstandingCall call = checkForOutstandingCall(self, invokeId);
+            if (hasInvokeId) {
+                MmsOutstandingCall call = checkForOutstandingCall(self, invokeId);
 
-            if (call) {
+                if (call) {
 
-                MmsError err = convertRejectCodesToMmsError(rejectType, rejectReason);
+                    MmsError err = convertRejectCodesToMmsError(rejectType, rejectReason);
 
-                if (call->type != MMS_CALL_TYPE_NONE) {
-                    handleAsyncResponse(self, NULL, 0, call, err);
+                    if (call->type != MMS_CALL_TYPE_NONE) {
+                        handleAsyncResponse(self, NULL, 0, call, err);
+                    }
+                    else {
+
+                        if (DEBUG_MMS_CLIENT)
+                            printf("MMS_CLIENT: internal problem (unexpected call type - reject PDU)\n");
+                    }
                 }
                 else {
-
-                    if (DEBUG_MMS_CLIENT)
-                        printf("MMS_CLIENT: internal problem (unexpected call type - reject PDU)\n");
+                    return;
                 }
             }
             else {
                 return;
             }
+
         }
         else
             goto exit_with_error;

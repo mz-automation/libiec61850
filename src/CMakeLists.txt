@@ -296,6 +296,8 @@ set_target_properties(iec61850-shared PROPERTIES
            SOVERSION "${LIB_VERSION_MAJOR}.${LIB_VERSION_MINOR}.${LIB_VERSION_PATCH}"
 )
 
+target_compile_definitions(iec61850-shared PRIVATE EXPORT_FUNCTIONS_FOR_DLL)
+
 target_link_libraries(iec61850-shared
 	hal-shared
 )

@@ -76,6 +76,12 @@ LIB61850_INTERNAL void
 IsoConnection_close(IsoConnection self);
 
 LIB61850_INTERNAL void
+IsoConnection_lock(IsoConnection self);
+
+LIB61850_INTERNAL void
+IsoConnection_unlock(IsoConnection self);
+
+LIB61850_INTERNAL void
 IsoConnection_installListener(IsoConnection self, MessageReceivedHandler handler,
         void* parameter);
 
@@ -89,7 +95,7 @@ IsoConnection_getSecurityToken(IsoConnection self);
  *        (handlerMode)
  */
 LIB61850_INTERNAL void
-IsoConnection_sendMessage(IsoConnection self, ByteBuffer* message, bool handlerMode);
+IsoConnection_sendMessage(IsoConnection self, ByteBuffer* message);
 
 LIB61850_INTERNAL IsoServer
 IsoServer_create(TLSConfiguration tlsConfiguration);

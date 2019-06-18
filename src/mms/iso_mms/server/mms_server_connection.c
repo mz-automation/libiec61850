@@ -411,28 +411,32 @@ handleConfirmedErrorPdu(
         uint8_t* buffer, int bufPos, int maxBufPos,
         ByteBuffer* response)
 {
-    uint32_t invokeId;
+    uint32_t invokeId = 0;
+    bool hasInvokeId = false;
     MmsServiceError serviceError;
 
-    if (mmsMsg_parseConfirmedErrorPDU(buffer, bufPos, maxBufPos, &invokeId, &serviceError)) {
+    if (mmsMsg_parseConfirmedErrorPDU(buffer, bufPos, maxBufPos, &invokeId, &hasInvokeId, &serviceError)) {
 
         if (DEBUG_MMS_SERVER)
-            printf("MMS_SERVER: Handle confirmed error PDU: invokeID: %i\n", invokeId);
+            printf("MMS_SERVER: Handle confirmed error PDU: invokeID: %u\n", invokeId);
 
-        /* check if message is related to an existing file upload task */
-        int i;
-        for (i = 0; i < CONFIG_MMS_SERVER_MAX_GET_FILE_TASKS; i++) {
+        if (hasInvokeId) {
+            /* check if message is related to an existing file upload task */
+            int i;
+            for (i = 0; i < CONFIG_MMS_SERVER_MAX_GET_FILE_TASKS; i++) {
 
-            if (self->server->fileUploadTasks[i].state != MMS_FILE_UPLOAD_STATE_NOT_USED) {
+                if (self->server->fileUploadTasks[i].state != MMS_FILE_UPLOAD_STATE_NOT_USED) {
 
-                if (self->server->fileUploadTasks[i].lastRequestInvokeId == invokeId) {
+                    if (self->server->fileUploadTasks[i].lastRequestInvokeId == invokeId) {
 
-                    self->server->fileUploadTasks[i].state = MMS_FILE_UPLOAD_STATE_SEND_OBTAIN_FILE_ERROR_SOURCE;
-                    return;
+                        self->server->fileUploadTasks[i].state = MMS_FILE_UPLOAD_STATE_SEND_OBTAIN_FILE_ERROR_SOURCE;
+                        return;
+                    }
+
                 }
-
             }
         }
+
     }
     else {
         if (DEBUG_MMS_SERVER)
@@ -752,9 +756,9 @@ MmsServerConnection_getMaxMmsPduSize(MmsServerConnection self)
 }
 
 void
-MmsServerConnection_sendMessage(MmsServerConnection self, ByteBuffer* message, bool handlerMode)
+MmsServerConnection_sendMessage(MmsServerConnection self, ByteBuffer* message)
 {
-    IsoConnection_sendMessage(self->isoConnection, message, false);
+    IsoConnection_sendMessage(self->isoConnection, message);
 }
 
 #if (MMS_DYNAMIC_DATA_SETS == 1)

@@ -1,7 +1,7 @@
 /*
  *  goose_receiver.h
  *
- *  Copyright 2014-2018 Michael Zillgith
+ *  Copyright 2014-2019 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -50,6 +50,19 @@ typedef struct sGooseReceiver* GooseReceiver;
  */
 LIB61850_API GooseReceiver
 GooseReceiver_create(void);
+
+/**
+ * \brief Create a new receiver instance using the provided buffer instead of allocating an own buffer
+ *
+ * A GooseReceiver instance is used to handle all GOOSE messages received on a specific
+ * network interface.
+ *
+ * \param buffer buffer to store Ethernet messages or NULL when using \ref GooseReceiver_handleMessage
+ *
+ * \return the new GooseReceiver instance
+ */
+LIB61850_API GooseReceiver
+GooseReceiver_createEx(uint8_t* buffer);
 
 /**
  * \brief sets the interface for the GOOSE receiver
@@ -134,7 +147,7 @@ GooseReceiver_stopThreadless(GooseReceiver self);
 /**
  * \brief Parse GOOSE messages if they are available
  *
- * Call after reception of ethernet frame and periodically to to house keeping tasks
+ * Call after reception of an Ethernet frame or periodically
  *
  * \param self the receiver object
  *
@@ -142,6 +155,19 @@ GooseReceiver_stopThreadless(GooseReceiver self);
  */
 LIB61850_API bool
 GooseReceiver_tick(GooseReceiver self);
+
+/**
+ * \brief Parse a GOOSE message
+ *
+ * Call after reception of an Ethernet frame (can be used as an alternative to \ref GooseReceiver_tick
+ * to avoid implementing the Ethernet HAL)
+ *
+ * \param self the receiver object
+ * \param buffer a buffer containing the complete Ethernet message
+ * \param size size of the Ethernet message
+ */
+LIB61850_API void
+GooseReceiver_handleMessage(GooseReceiver self, uint8_t* buffer, int size);
 
 /**@}*/
 

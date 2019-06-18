@@ -38,7 +38,7 @@ printDataDirectory(char* doRef, IedConnection con, int spaces)
 
             dataAttribute = LinkedList_getNext(dataAttribute);
 
-            char daRef[129];
+            char daRef[130];
             sprintf(daRef, "%s.%s", doRef, daName);
             printDataDirectory(daRef, con, spaces + 2);
         }
@@ -124,7 +124,7 @@ main(int argc, char** argv)
                 while (dataSet != NULL) {
                     char* dataSetName = (char*) dataSet->data;
                     bool isDeletable;
-                    char dataSetRef[129];
+                    char dataSetRef[130];
                     sprintf(dataSetRef, "%s.%s", lnRef, dataSetName);
 
                     LinkedList dataSetMembers = IedConnection_getDataSetDirectory(con, &error, dataSetRef,
