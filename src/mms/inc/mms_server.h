@@ -507,6 +507,9 @@ MmsServer_setStatusRequestListener(MmsServer self, MmsStatusRequestListener list
 LIB61850_INTERNAL char*
 MmsServerConnection_getClientAddress(MmsServerConnection self);
 
+LIB61850_INTERNAL char*
+MmsServerConnection_getLocalAddress(MmsServerConnection self);
+
 LIB61850_INTERNAL void*
 MmsServerConnection_getSecurityToken(MmsServerConnection self);
 

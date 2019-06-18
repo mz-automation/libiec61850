@@ -787,6 +787,12 @@ MmsServerConnection_getClientAddress(MmsServerConnection self)
     return IsoConnection_getPeerAddress(self->isoConnection);
 }
 
+char*
+MmsServerConnection_getLocalAddress(MmsServerConnection self)
+{
+    return IsoConnection_getLocalAddress(self->isoConnection);
+}
+
 void*
 MmsServerConnection_getSecurityToken(MmsServerConnection self)
 {

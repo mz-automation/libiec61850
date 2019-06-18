@@ -526,6 +526,18 @@ LIB61850_API const char*
 ClientConnection_getPeerAddress(ClientConnection self);
 
 /**
+ * \brief get the local address of this connection as string
+ *
+ * Note: the returned string is only valid as long as the client connection exists. It is save to use
+ * the string inside of the connection indication callback function.
+ *
+ * \param self the ClientConnection instance
+ * \return local address as C string.
+ */
+LIB61850_API const char*
+ClientConnection_getLocalAddress(ClientConnection self);
+
+/**
  * \brief Get the security token associated with this connection
  *
  * The security token is an opaque handle that is associated with the connection. It is provided by the

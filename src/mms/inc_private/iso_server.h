@@ -69,6 +69,9 @@ typedef void
 LIB61850_INTERNAL char*
 IsoConnection_getPeerAddress(IsoConnection self);
 
+LIB61850_INTERNAL char*
+IsoConnection_getLocalAddress(IsoConnection self);
+
 LIB61850_INTERNAL void
 IsoConnection_close(IsoConnection self);
 

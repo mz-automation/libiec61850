@@ -434,47 +434,69 @@ Socket_connect(Socket self, const char* address, int port)
         return true;
 }
 
-char*
-Socket_getPeerAddress(Socket self)
+static char*
+convertAddressToStr(struct sockaddr_storage* addr)
 {
-	struct sockaddr_storage addr;
-	int addrLen = sizeof(addr);
+    char addrString[INET6_ADDRSTRLEN + 7];
+    int addrStringLen = INET6_ADDRSTRLEN + 7;
+    int port;
 
-	getpeername(self->fd, (struct sockaddr*) &addr, &addrLen);
+    bool isIPv6;
 
-	char addrString[INET6_ADDRSTRLEN + 7];
-	int addrStringLen = INET6_ADDRSTRLEN + 7;
-	int port;
+    if (addr->ss_family == AF_INET)  {
+        struct sockaddr_in* ipv4Addr = (struct sockaddr_in*) addr;
+        port = ntohs(ipv4Addr->sin_port);
+        ipv4Addr->sin_port = 0;
+        WSAAddressToString((LPSOCKADDR) ipv4Addr, sizeof(struct sockaddr_storage), NULL,
+            (LPSTR) addrString, (LPDWORD) &addrStringLen);
+        isIPv6 = false;
+    }
+    else if (addr->ss_family == AF_INET6){
+        struct sockaddr_in6* ipv6Addr = (struct sockaddr_in6*) addr;
+        port = ntohs(ipv6Addr->sin6_port);
+        ipv6Addr->sin6_port = 0;
+        WSAAddressToString((LPSOCKADDR) ipv6Addr, sizeof(struct sockaddr_storage), NULL,
+            (LPSTR) addrString, (LPDWORD) &addrStringLen);
+        isIPv6 = true;
+    }
+    else
+        return NULL;
 
-	bool isIPv6;
-
-	if (addr.ss_family == AF_INET)  {
-		struct sockaddr_in* ipv4Addr = (struct sockaddr_in*) &addr;
-		port = ntohs(ipv4Addr->sin_port);
-		ipv4Addr->sin_port = 0;
-		WSAAddressToString((LPSOCKADDR) ipv4Addr, sizeof(struct sockaddr_storage), NULL, 
-			(LPSTR) addrString, (LPDWORD) &addrStringLen);
-		isIPv6 = false;
-	}
-	else if (addr.ss_family == AF_INET6){
-		struct sockaddr_in6* ipv6Addr = (struct sockaddr_in6*) &addr;
-		port = ntohs(ipv6Addr->sin6_port);
-		ipv6Addr->sin6_port = 0;
-		WSAAddressToString((LPSOCKADDR) ipv6Addr, sizeof(struct sockaddr_storage), NULL, 
-			(LPSTR) addrString, (LPDWORD) &addrStringLen);
-		isIPv6 = true;
-	}
-	else
-		return NULL;
-
-	char* clientConnection = (char*) GLOBAL_MALLOC(strlen(addrString) + 9);
+    char* clientConnection = (char*) GLOBAL_MALLOC(strlen(addrString) + 9);
 
     if (isIPv6)
         sprintf(clientConnection, "[%s]:%i", addrString, port);
     else
         sprintf(clientConnection, "%s:%i", addrString, port);
 
-	return clientConnection;
+    return clientConnection;
+}
+
+
+char*
+Socket_getPeerAddress(Socket self)
+{
+    struct sockaddr_storage addr;
+    socklen_t addrLen = sizeof(addr);
+
+    if (getpeername(self->fd, (struct sockaddr*) &addr, &addrLen) == 0) {
+        return convertAddressToStr(&addr);
+    }
+    else
+        return NULL;
+}
+
+char*
+Socket_getLocalAddress(Socket self)
+{
+    struct sockaddr_storage addr;
+    socklen_t addrLen = sizeof(addr);
+
+    if (getsockname(self->fd, (struct sockaddr*) &addr, &addrLen) == 0) {
+        return convertAddressToStr(&addr);
+    }
+    else
+        return NULL;
 }
 
 char*

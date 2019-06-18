@@ -269,6 +269,9 @@ Socket_read(Socket self, uint8_t* buf, int size);
 PAL_API int
 Socket_write(Socket self, uint8_t* buf, int size);
 
+PAL_API char*
+Socket_getLocalAddress(Socket self);
+
 /**
  * \brief Get the address of the peer application (IP address and port number)
  *

@@ -236,7 +236,6 @@ ServerSocket_listen(ServerSocket self)
     listen(self->fd, self->backLog);
 }
 
-
 /* CHANGED TO MAKE NON-BLOCKING --> RETURNS NULL IF NO CONNECTION IS PENDING */
 Socket
 ServerSocket_accept(ServerSocket self)
@@ -421,27 +420,22 @@ Socket_connect(Socket self, const char* address, int port)
 }
 
 
-char*
-Socket_getPeerAddress(Socket self)
+static char*
+convertAddressToStr(struct sockaddr_storage* addr)
 {
-    struct sockaddr_storage addr;
-    socklen_t addrLen = sizeof(addr);
-
-    getpeername(self->fd, (struct sockaddr*) &addr, &addrLen);
-
     char addrString[INET6_ADDRSTRLEN + 7];
     int port;
 
     bool isIPv6;
 
-    if (addr.ss_family == AF_INET) {
-        struct sockaddr_in* ipv4Addr = (struct sockaddr_in*) &addr;
+    if (addr->ss_family == AF_INET) {
+        struct sockaddr_in* ipv4Addr = (struct sockaddr_in*) addr;
         port = ntohs(ipv4Addr->sin_port);
         inet_ntop(AF_INET, &(ipv4Addr->sin_addr), addrString, INET_ADDRSTRLEN);
         isIPv6 = false;
     }
-    else if (addr.ss_family == AF_INET6) {
-        struct sockaddr_in6* ipv6Addr = (struct sockaddr_in6*) &addr;
+    else if (addr->ss_family == AF_INET6) {
+        struct sockaddr_in6* ipv6Addr = (struct sockaddr_in6*) addr;
         port = ntohs(ipv6Addr->sin6_port);
         inet_ntop(AF_INET6, &(ipv6Addr->sin6_addr), addrString, INET6_ADDRSTRLEN);
         isIPv6 = true;
@@ -451,13 +445,38 @@ Socket_getPeerAddress(Socket self)
 
     char* clientConnection = (char*) GLOBAL_MALLOC(strlen(addrString) + 9);
 
-
     if (isIPv6)
         sprintf(clientConnection, "[%s]:%i", addrString, port);
     else
         sprintf(clientConnection, "%s:%i", addrString, port);
 
     return clientConnection;
+}
+
+char*
+Socket_getPeerAddress(Socket self)
+{
+    struct sockaddr_storage addr;
+    socklen_t addrLen = sizeof(addr);
+
+    if (getpeername(self->fd, (struct sockaddr*) &addr, &addrLen) == 0) {
+        return convertAddressToStr(&addr);
+    }
+    else
+        return NULL;
+}
+
+char*
+Socket_getLocalAddress(Socket self)
+{
+    struct sockaddr_storage addr;
+    socklen_t addrLen = sizeof(addr);
+
+    if (getsockname(self->fd, (struct sockaddr*) &addr, &addrLen) == 0) {
+        return convertAddressToStr(&addr);
+    }
+    else
+        return NULL;
 }
 
 char*

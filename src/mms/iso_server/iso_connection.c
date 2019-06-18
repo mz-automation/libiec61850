@@ -82,6 +82,7 @@ struct sIsoConnection
     AcseConnection* acseConnection;
 
     char* clientAddress;
+    char* localAddress;
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     Thread thread;
@@ -122,6 +123,7 @@ finalizeIsoConnection(IsoConnection self)
     GLOBAL_FREEMEM(self->receiveBuffer);
     GLOBAL_FREEMEM(self->sendBuffer);
     GLOBAL_FREEMEM(self->clientAddress);
+    GLOBAL_FREEMEM(self->localAddress);
     IsoServer isoServer = self->isoServer;
     GLOBAL_FREEMEM(self);
     if (DEBUG_ISO_SERVER)
@@ -472,6 +474,7 @@ IsoConnection_create(Socket socket, IsoServer isoServer)
     self->isoServer = isoServer;
     self->state = ISO_CON_STATE_RUNNING;
     self->clientAddress = Socket_getPeerAddress(self->socket);
+    self->localAddress = Socket_getLocalAddress(self->socket);
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     self->conMutex = Semaphore_create(1);
@@ -544,6 +547,12 @@ char*
 IsoConnection_getPeerAddress(IsoConnection self)
 {
     return self->clientAddress;
+}
+
+char*
+IsoConnection_getLocalAddress(IsoConnection self)
+{
+    return self->localAddress;
 }
 
 void

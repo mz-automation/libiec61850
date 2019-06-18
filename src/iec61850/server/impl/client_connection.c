@@ -128,6 +128,14 @@ ClientConnection_getPeerAddress(ClientConnection self)
     return MmsServerConnection_getClientAddress(mmsConnection);
 }
 
+const char*
+ClientConnection_getLocalAddress(ClientConnection self)
+{
+    MmsServerConnection mmsConnection = (MmsServerConnection) self->serverConnectionHandle;
+
+    return MmsServerConnection_getLocalAddress(mmsConnection);
+}
+
 
 void*
 ClientConnection_getSecurityToken(ClientConnection self)
