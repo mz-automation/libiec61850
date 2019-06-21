@@ -215,6 +215,14 @@ TcpServerSocket_create(const char* address, int port)
         int optionReuseAddr = 1;
         setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (char *) &optionReuseAddr, sizeof(int));
 
+        int tcpUserTimeout = 10000;
+        int result = setsockopt(fd, SOL_TCP,  TCP_USER_TIMEOUT, &tcpUserTimeout, sizeof(tcpUserTimeout));
+
+        if (result < 0) {
+            if (DEBUG_SOCKET)
+                printf("SOCKET: failed to set TCP_USER_TIMEOUT\n");
+        }
+
         if (bind(fd, (struct sockaddr *) &serverAddress, sizeof(serverAddress)) >= 0) {
             serverSocket = (ServerSocket) GLOBAL_MALLOC(sizeof(struct sServerSocket));
             serverSocket->fd = fd;
@@ -305,6 +313,14 @@ TcpSocket_create()
 
         self->fd = sock;
         self->connectTimeout = 5000;
+
+        int tcpUserTimeout = 10000;
+        int result = setsockopt(sock, SOL_TCP,  TCP_USER_TIMEOUT, &tcpUserTimeout, sizeof(tcpUserTimeout));
+
+        if (result < 0) {
+            if (DEBUG_SOCKET)
+                printf("SOCKET: failed to set TCP_USER_TIMEOUT\n");
+        }
     }
     else {
         if (DEBUG_SOCKET)
