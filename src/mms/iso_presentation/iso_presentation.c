@@ -1,7 +1,7 @@
 /*
  *  iso_presentation.c
  *
- *  Copyright 2013-2018 Michael Zillgith
+ *  Copyright 2013-2019 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -99,6 +99,7 @@ static void
 createConnectPdu(IsoPresentation* self, BufferChain writeBuffer, BufferChain payload)
 {
     int contentLength = 0;
+    int i;
 
     /* mode-selector */
     contentLength += 5;
@@ -108,7 +109,9 @@ createConnectPdu(IsoPresentation* self, BufferChain writeBuffer, BufferChain pay
     /* called- and calling-presentation-selector */
     normalModeLength += 12;
 
-    int pclLength = 35;
+    int pclLength = 27; /* 35; */
+    pclLength += self->callingPresentationSelector.size;
+    pclLength += self->calledPresentationSelector.size;
 
     normalModeLength += pclLength;
 
@@ -134,18 +137,14 @@ createConnectPdu(IsoPresentation* self, BufferChain writeBuffer, BufferChain pay
     bufPos = BerEncoder_encodeTL(0xa2, normalModeLength, buffer, bufPos);
 
     /* calling-presentation-selector */
-    bufPos = BerEncoder_encodeTL(0x81, 4, buffer, bufPos);
-    buffer[bufPos++] = (uint8_t) ((self->callingPresentationSelector >> 24) & 0xff);
-    buffer[bufPos++] = (uint8_t) ((self->callingPresentationSelector >> 16) & 0xff);
-    buffer[bufPos++] = (uint8_t) ((self->callingPresentationSelector >> 8) & 0xff);
-    buffer[bufPos++] = (uint8_t) (self->callingPresentationSelector & 0xff);
+    bufPos = BerEncoder_encodeTL(0x81, self->callingPresentationSelector.size, buffer, bufPos);
+    for (i = 0; i < self->callingPresentationSelector.size; i++)
+        buffer[bufPos++] = self->callingPresentationSelector.value[i];
 
     /* called-presentation-selector */
-    bufPos = BerEncoder_encodeTL(0x82, 4, buffer, bufPos);
-    buffer[bufPos++] = (uint8_t) ((self->calledPresentationSelector >> 24) & 0xff);
-    buffer[bufPos++] = (uint8_t) ((self->calledPresentationSelector >> 16) & 0xff);
-    buffer[bufPos++] = (uint8_t) ((self->calledPresentationSelector >> 8) & 0xff);
-    buffer[bufPos++] = (uint8_t) (self->calledPresentationSelector & 0xff);
+    bufPos = BerEncoder_encodeTL(0x82, self->calledPresentationSelector.size, buffer, bufPos);
+    for (i = 0; i < self->calledPresentationSelector.size; i++)
+        buffer[bufPos++] = self->calledPresentationSelector.value[i];
 
     /* presentation-context-id list */
     bufPos = BerEncoder_encodeTL(0xa4, 35, buffer, bufPos);
@@ -384,6 +383,9 @@ parseNormalModeParameters(IsoPresentation* self, uint8_t* buffer, int totalLengt
 {
     int endPos = bufPos + totalLength;
 
+    self->calledPresentationSelector.size = 0;
+    self->callingPresentationSelector.size = 0;
+
     while (bufPos < endPos) {
         uint8_t tag = buffer[bufPos++];
         int len;
@@ -398,15 +400,37 @@ parseNormalModeParameters(IsoPresentation* self, uint8_t* buffer, int totalLengt
 
         switch (tag) {
         case 0x81: /* calling-presentation-selector */
-            if (DEBUG_PRES)
-                printf("PRES: calling-pres-sel\n");
+
+            if (len > 16) {
+                if (DEBUG_PRES)
+                    printf("PRES: calling-presentation-sel too large\n");
+            }
+            else {
+                self->callingPresentationSelector.size = len;
+                int i;
+                for (i = 0; i < len; i++)
+                    self->callingPresentationSelector.value[i] = buffer[bufPos + i];
+            }
+
             bufPos += len;
             break;
-        case 0x82: /* calling-presentation-selector */
-            if (DEBUG_PRES)
-                printf("PRES: calling-pres-sel\n");
+
+        case 0x82: /* called-presentation-selector */
+
+            if (len > 16) {
+                if (DEBUG_PRES)
+                    printf("PRES: called-presentation-sel too large\n");
+            }
+            else {
+                self->calledPresentationSelector.size = len;
+                int i;
+                for (i = 0; i < len; i++)
+                    self->calledPresentationSelector.value[i] = buffer[bufPos + i];
+            }
+
             bufPos += len;
             break;
+
         case 0xa4: /* presentation-context-definition list */
             if (DEBUG_PRES)
                 printf("PRES: pcd list\n");

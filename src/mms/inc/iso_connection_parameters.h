@@ -114,10 +114,25 @@ typedef struct {
     uint8_t value[4]; /** T-selector value */
 } TSelector;
 
+/**
+ * \brief OSI session selector
+ *
+ * To not use S SEL set size to 0
+ */
 typedef struct {
     uint8_t size; /** 0 .. 16 - 0 means S-selector is not present */
-    uint8_t value[16]; /** P-selector value */
+    uint8_t value[16]; /** S-selector value */
 } SSelector;
+
+/**
+ * \brief OSI presentation (P) selector
+ *
+ * To not use P SEL set size to 0
+ */
+typedef struct {
+    uint8_t size; /** 0 .. 16 - 0 means P-selector is not present */
+    uint8_t value[16]; /** P-selector value */
+} PSelector;
 
 struct sIsoConnectionParameters
 {
@@ -133,14 +148,15 @@ struct sIsoConnectionParameters
     uint8_t remoteApTitle[10];
     int remoteApTitleLen;
     int remoteAEQualifier;
-    uint32_t remotePSelector;
+    PSelector remotePSelector;
     SSelector remoteSSelector;
     TSelector remoteTSelector;
+
 
     uint8_t localApTitle[10];
     int localApTitleLen;
     int localAEQualifier;
-    uint32_t localPSelector;
+    PSelector localPSelector;
     SSelector localSSelector;
     TSelector localTSelector;
 
@@ -227,7 +243,7 @@ IsoConnectionParameters_setRemoteApTitle(IsoConnectionParameters self, const cha
  *  \param tSelector the T-Selector (ISO transport layer address)
  */
 LIB61850_API void
-IsoConnectionParameters_setRemoteAddresses(IsoConnectionParameters self, uint32_t pSelector, SSelector sSelector, TSelector tSelector);
+IsoConnectionParameters_setRemoteAddresses(IsoConnectionParameters self, PSelector pSelector, SSelector sSelector, TSelector tSelector);
 
 /**
  * \brief set the local AP-Title and AE-Qualifier
@@ -257,7 +273,7 @@ IsoConnectionParameters_setLocalApTitle(IsoConnectionParameters self, const char
  *  \param tSelector the T-Selector (ISO transport layer address)
  */
 LIB61850_API void
-IsoConnectionParameters_setLocalAddresses(IsoConnectionParameters self, uint32_t pSelector, SSelector sSelector, TSelector tSelector);
+IsoConnectionParameters_setLocalAddresses(IsoConnectionParameters self, PSelector pSelector, SSelector sSelector, TSelector tSelector);
 
 /**@}*/
 

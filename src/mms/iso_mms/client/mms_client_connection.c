@@ -1408,10 +1408,11 @@ MmsConnection_createInternal(TLSConfiguration tlsConfig, bool createThread)
         /* Load default values for connection parameters */
         TSelector tSelector = { 2, { 0, 1 } };
         SSelector sSelector = { 2, { 0, 1 } };
+        PSelector pSelector = { 4, { 0, 0, 0, 1 } };
 
-        IsoConnectionParameters_setLocalAddresses(self->isoParameters, 1, sSelector, tSelector);
+        IsoConnectionParameters_setLocalAddresses(self->isoParameters, pSelector, sSelector, tSelector);
         IsoConnectionParameters_setLocalApTitle(self->isoParameters, "1.1.1.999", 12);
-        IsoConnectionParameters_setRemoteAddresses(self->isoParameters, 1, sSelector, tSelector);
+        IsoConnectionParameters_setRemoteAddresses(self->isoParameters, pSelector, sSelector, tSelector);
         IsoConnectionParameters_setRemoteApTitle(self->isoParameters, "1.1.1.999.1", 12);
 
         self->connectTimeout = CONFIG_MMS_CONNECTION_DEFAULT_CONNECT_TIMEOUT;

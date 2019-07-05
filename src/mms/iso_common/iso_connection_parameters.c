@@ -113,7 +113,7 @@ IsoConnectionParameters_setRemoteApTitle(IsoConnectionParameters self, const cha
 }
 
 void
-IsoConnectionParameters_setRemoteAddresses(IsoConnectionParameters self, uint32_t pSelector, SSelector sSelector, TSelector tSelector)
+IsoConnectionParameters_setRemoteAddresses(IsoConnectionParameters self, PSelector pSelector, SSelector sSelector, TSelector tSelector)
 {
     self->remotePSelector = pSelector;
     self->remoteSSelector = sSelector;
@@ -133,7 +133,7 @@ IsoConnectionParameters_setLocalApTitle(IsoConnectionParameters self, const char
 }
 
 void
-IsoConnectionParameters_setLocalAddresses(IsoConnectionParameters self, uint32_t pSelector, SSelector sSelector, TSelector tSelector)
+IsoConnectionParameters_setLocalAddresses(IsoConnectionParameters self, PSelector pSelector, SSelector sSelector, TSelector tSelector)
 {
     self->localPSelector = pSelector;
     self->localSSelector = sSelector;

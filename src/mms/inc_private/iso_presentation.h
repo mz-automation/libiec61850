@@ -1,7 +1,7 @@
 /*
  *  iso_presentation.h
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013-2019 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -29,8 +29,8 @@
 #include "iso_connection_parameters.h"
 
 typedef struct {
-	uint32_t callingPresentationSelector;
-	uint32_t calledPresentationSelector;
+	PSelector callingPresentationSelector;
+	PSelector calledPresentationSelector;
 	uint8_t nextContextId;
 	uint8_t acseContextId;
 	uint8_t mmsContextId;
