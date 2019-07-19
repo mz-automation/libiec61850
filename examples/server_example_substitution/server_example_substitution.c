@@ -25,6 +25,10 @@ static IedServer iedServer = NULL;
 static bool subsAnIn1 = false;
 static bool subsInd1 = false;
 
+static float an1 = 0.f;
+static uint64_t timestamp = 0;
+static bool ind1 = true;
+
 void
 sigint_handler(int signalId)
 {
@@ -39,6 +43,28 @@ connectionHandler (IedServer self, ClientConnection connection, bool connected, 
         printf("Connection opened\n");
     else
         printf("Connection closed\n");
+}
+
+static void
+updateProcessValues()
+{
+    Timestamp iecTimestamp;
+
+    Timestamp_clearFlags(&iecTimestamp);
+    Timestamp_setTimeInMilliseconds(&iecTimestamp, timestamp);
+    Timestamp_setLeapSecondKnown(&iecTimestamp, true);
+
+    if (subsAnIn1 == false) {
+        IedServer_updateTimestampAttributeValue(iedServer, IEDMODEL_LD1_GGIO1_AnIn1_t, &iecTimestamp);
+        IedServer_updateQuality(iedServer, IEDMODEL_LD1_GGIO1_AnIn1_q, QUALITY_VALIDITY_GOOD);
+        IedServer_updateFloatAttributeValue(iedServer, IEDMODEL_LD1_GGIO1_AnIn1_mag_f, an1);
+    }
+
+    if (subsInd1 == false) {
+        IedServer_updateTimestampAttributeValue(iedServer, IEDMODEL_LD1_GGIO1_Ind1_t, &iecTimestamp);
+        IedServer_updateQuality(iedServer, IEDMODEL_LD1_GGIO1_Ind1_q, QUALITY_VALIDITY_GOOD);
+        IedServer_updateBooleanAttributeValue(iedServer, IEDMODEL_LD1_GGIO1_Ind1_stVal, ind1);
+    }
 }
 
 static MmsDataAccessError
@@ -64,7 +90,11 @@ writeAccessHandler (DataAttribute* dataAttribute, MmsValue* value, ClientConnect
                     IedServer_getAttributeValue(iedServer, IEDMODEL_LD1_GGIO1_AnIn1_subMag_f));
         }
         else {
+            IedServer_updateVisibleStringAttributeValue(iedServer, IEDMODEL_LD1_GGIO1_AnIn1_subID, "");
+
             subsAnIn1 = false;
+
+            updateProcessValues();
         }
 
     }
@@ -105,7 +135,11 @@ writeAccessHandler (DataAttribute* dataAttribute, MmsValue* value, ClientConnect
                     IedServer_getAttributeValue(iedServer, IEDMODEL_LD1_GGIO1_Ind1_subVal));
         }
         else {
+            IedServer_updateVisibleStringAttributeValue(iedServer, IEDMODEL_LD1_GGIO1_Ind1_subID, "");
+
             subsInd1 = false;
+
+            updateProcessValues();
         }
     }
     else if (dataAttribute == IEDMODEL_LD1_GGIO1_Ind1_subVal) {
@@ -134,9 +168,6 @@ int
 main(int argc, char** argv)
 {
     printf("Using libIEC61850 version %s\n", LibIEC61850_getVersionString());
-
-
-
 
     /* Create a new IEC 61850 server instance */
     iedServer = IedServer_create(&iedModel);
@@ -167,44 +198,22 @@ main(int argc, char** argv)
     signal(SIGINT, sigint_handler);
 
     float t = 0.f;
-    bool ind1 = true;
 
     while (running) {
-        uint64_t timestamp = Hal_getTimeInMs();
+        timestamp = Hal_getTimeInMs();
 
         t += 0.1f;
 
-        float an1 = sinf(t);
+        an1 = sinf(t);
 
         if (ind1)
             ind1 = false;
         else
             ind1 = true;
 
-        Timestamp iecTimestamp;
-
-        Timestamp_clearFlags(&iecTimestamp);
-        Timestamp_setTimeInMilliseconds(&iecTimestamp, timestamp);
-        Timestamp_setLeapSecondKnown(&iecTimestamp, true);
-
-
-        /* toggle clock-not-synchronized flag in timestamp */
-        if (((int) t % 2) == 0)
-            Timestamp_setClockNotSynchronized(&iecTimestamp, true);
-
         IedServer_lockDataModel(iedServer);
 
-        if (subsAnIn1 == false) {
-            IedServer_updateTimestampAttributeValue(iedServer, IEDMODEL_LD1_GGIO1_AnIn1_t, &iecTimestamp);
-            IedServer_updateQuality(iedServer, IEDMODEL_LD1_GGIO1_AnIn1_q, QUALITY_VALIDITY_GOOD);
-            IedServer_updateFloatAttributeValue(iedServer, IEDMODEL_LD1_GGIO1_AnIn1_mag_f, an1);
-        }
-
-        if (subsInd1 == false) {
-            IedServer_updateTimestampAttributeValue(iedServer, IEDMODEL_LD1_GGIO1_Ind1_t, &iecTimestamp);
-            IedServer_updateQuality(iedServer, IEDMODEL_LD1_GGIO1_Ind1_q, QUALITY_VALIDITY_GOOD);
-            IedServer_updateBooleanAttributeValue(iedServer, IEDMODEL_LD1_GGIO1_Ind1_stVal, ind1);
-        }
+        updateProcessValues();
 
         IedServer_unlockDataModel(iedServer);
 
