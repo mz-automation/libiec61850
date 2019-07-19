@@ -209,7 +209,7 @@ typedef MmsError (*MmsFileAccessHandler) (void* parameter, MmsServerConnection c
  * \param handler the callback handler function
  * \param parameter user provided parameter that is passed to the callback handler
  */
-LIB61850_INTERNAL void
+LIB61850_API void
 MmsServer_installFileAccessHandler(MmsServer self, MmsFileAccessHandler handler, void* parameter);
 
 /**
