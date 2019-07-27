@@ -36,7 +36,7 @@
 #define GOOSE_MAX_MESSAGE_SIZE 1518
 
 static void
-prepareGooseBuffer(GoosePublisher self, CommParameters* parameters, const char* interfaceID);
+prepareGooseBuffer(GoosePublisher self, CommParameters* parameters, const char* interfaceID, bool useVlanTags);
 
 struct sGoosePublisher {
     uint8_t* buffer;
@@ -63,19 +63,24 @@ struct sGoosePublisher {
     MmsValue* timestamp; /* time when stNum is increased */
 };
 
-
 GoosePublisher
-GoosePublisher_create(CommParameters* parameters, const char* interfaceID)
+GoosePublisher_createEx(CommParameters* parameters, const char* interfaceID, bool useVlanTag)
 {
     GoosePublisher self = (GoosePublisher) GLOBAL_CALLOC(1, sizeof(struct sGoosePublisher));
 
-    prepareGooseBuffer(self, parameters, interfaceID);
+    prepareGooseBuffer(self, parameters, interfaceID, useVlanTag);
 
     self->timestamp = MmsValue_newUtcTimeByMsTime(Hal_getTimeInMs());
 
     GoosePublisher_reset(self);
 
     return self;
+}
+
+GoosePublisher
+GoosePublisher_create(CommParameters* parameters, const char* interfaceID)
+{
+    return GoosePublisher_createEx(parameters, interfaceID, true);
 }
 
 void
@@ -160,7 +165,7 @@ GoosePublisher_setTimeAllowedToLive(GoosePublisher self, uint32_t timeAllowedToL
 }
 
 static void
-prepareGooseBuffer(GoosePublisher self, CommParameters* parameters, const char* interfaceID)
+prepareGooseBuffer(GoosePublisher self, CommParameters* parameters, const char* interfaceID, bool useVlanTags)
 {
     uint8_t srcAddr[6];
 
@@ -201,19 +206,19 @@ prepareGooseBuffer(GoosePublisher self, CommParameters* parameters, const char* 
 
     int bufPos = 12;
 
-#if 1
-    /* Priority tag - IEEE 802.1Q */
-    self->buffer[bufPos++] = 0x81;
-    self->buffer[bufPos++] = 0x00;
+    if (useVlanTags) {
+        /* Priority tag - IEEE 802.1Q */
+        self->buffer[bufPos++] = 0x81;
+        self->buffer[bufPos++] = 0x00;
 
-    uint8_t tci1 = priority << 5;
-    tci1 += vlanId / 256;
+        uint8_t tci1 = priority << 5;
+        tci1 += vlanId / 256;
 
-    uint8_t tci2 = vlanId % 256;
+        uint8_t tci2 = vlanId % 256;
 
-    self->buffer[bufPos++] = tci1; /* Priority + VLAN-ID */
-    self->buffer[bufPos++] = tci2; /* VLAN-ID */
-#endif
+        self->buffer[bufPos++] = tci1; /* Priority + VLAN-ID */
+        self->buffer[bufPos++] = tci2; /* VLAN-ID */
+    }
 
     /* EtherType GOOSE */
     self->buffer[bufPos++] = 0x88;

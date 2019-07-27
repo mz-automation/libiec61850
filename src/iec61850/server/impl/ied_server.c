@@ -1287,6 +1287,21 @@ IedServer_updateQuality(IedServer self, DataAttribute* dataAttribute, Quality qu
 
 }
 
+void
+IedServer_useGooseVlanTag(IedServer self, LogicalNode* ln, const char* gcbName, bool useVlanTag)
+{
+#if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
+    MmsMapping_useGooseVlanTag(self->mmsMapping, ln, gcbName, useVlanTag);
+#endif /* (CONFIG_INCLUDE_GOOSE_SUPPORT == 1) */
+}
+
+void
+IedServer_setGooseInterfaceIdEx(IedServer self, LogicalNode* ln, const char* gcbName, const char* interfaceId)
+{
+#if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
+    MmsMapping_setGooseInterfaceId(self->mmsMapping, ln, gcbName, interfaceId);
+#endif /* (CONFIG_INCLUDE_GOOSE_SUPPORT == 1) */
+}
 
 void
 IedServer_enableGoosePublishing(IedServer self)

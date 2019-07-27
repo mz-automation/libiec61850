@@ -1,7 +1,7 @@
 /*
  *  mms_goose.h
  *
- *  Copyright 2013-2018 Michael Zillgith
+ *  Copyright 2013-2019 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -34,6 +34,15 @@ MmsGooseControlBlock_destroy(MmsGooseControlBlock self);
 
 LIB61850_INTERNAL MmsDomain*
 MmsGooseControlBlock_getDomain(MmsGooseControlBlock self);
+
+LIB61850_INTERNAL void
+MmsGooseControlBlock_useGooseVlanTag(MmsGooseControlBlock self, bool useVlanTag);
+
+LIB61850_INTERNAL void
+MmsGooseControlBlock_setGooseInterfaceId(MmsGooseControlBlock self, const char* interfaceId);
+
+LIB61850_INTERNAL LogicalNode*
+MmsGooseControlBlock_getLogicalNode(MmsGooseControlBlock self);
 
 LIB61850_INTERNAL char*
 MmsGooseControlBlock_getLogicalNodeName(MmsGooseControlBlock self);
