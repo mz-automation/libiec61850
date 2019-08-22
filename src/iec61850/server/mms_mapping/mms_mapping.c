@@ -2915,6 +2915,44 @@ MmsMapping_enableGoosePublishing(MmsMapping* self)
 }
 
 void
+MmsMapping_useGooseVlanTag(MmsMapping* self, LogicalNode* ln, const char* gcbName, bool useVlanTag)
+{
+    LinkedList element = self->gseControls;
+
+    while ((element = LinkedList_getNext(element)) != NULL) {
+        MmsGooseControlBlock gcb = (MmsGooseControlBlock) element->data;
+
+        if (ln == NULL) {
+            MmsGooseControlBlock_useGooseVlanTag(gcb, useVlanTag);
+        }
+        else {
+            if ((MmsGooseControlBlock_getLogicalNode(gcb) == ln) && !strcmp(MmsGooseControlBlock_getName(gcb), gcbName)) {
+                MmsGooseControlBlock_useGooseVlanTag(gcb, useVlanTag);
+            }
+        }
+    }
+}
+
+void
+MmsMapping_setGooseInterfaceId(MmsMapping* self,  LogicalNode* ln, const char* gcbName, const char* interfaceId)
+{
+    LinkedList element = self->gseControls;
+
+    while ((element = LinkedList_getNext(element)) != NULL) {
+        MmsGooseControlBlock gcb = (MmsGooseControlBlock) element->data;
+
+        if (ln == NULL) {
+            MmsGooseControlBlock_setGooseInterfaceId(gcb, interfaceId);
+        }
+        else {
+            if ((MmsGooseControlBlock_getLogicalNode(gcb) == ln) && !strcmp(MmsGooseControlBlock_getName(gcb), gcbName)) {
+                MmsGooseControlBlock_setGooseInterfaceId(gcb, interfaceId);
+            }
+        }
+    }
+}
+
+void
 MmsMapping_disableGoosePublishing(MmsMapping* self)
 {
     LinkedList element = self->gseControls;

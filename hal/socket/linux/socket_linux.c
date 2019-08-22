@@ -33,6 +33,7 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <netinet/tcp.h> /* required for TCP keepalive */
+#include <linux/version.h>
 
 #include "hal_thread.h"
 #include "lib_memory.h"
@@ -214,6 +215,7 @@ TcpServerSocket_create(const char* address, int port)
         int optionReuseAddr = 1;
         setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (char *) &optionReuseAddr, sizeof(int));
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 37)
         int tcpUserTimeout = 10000;
         int result = setsockopt(fd, SOL_TCP,  TCP_USER_TIMEOUT, &tcpUserTimeout, sizeof(tcpUserTimeout));
 
@@ -221,6 +223,9 @@ TcpServerSocket_create(const char* address, int port)
             if (DEBUG_SOCKET)
                 printf("SOCKET: failed to set TCP_USER_TIMEOUT\n");
         }
+#else
+#warning "TCP_USER_TIMEOUT not supported by linux kernel"
+#endif
 
         if (bind(fd, (struct sockaddr *) &serverAddress, sizeof(serverAddress)) >= 0) {
             serverSocket = (ServerSocket) GLOBAL_MALLOC(sizeof(struct sServerSocket));
@@ -312,6 +317,7 @@ TcpSocket_create()
         self->fd = sock;
         self->connectTimeout = 5000;
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 37)
         int tcpUserTimeout = 10000;
         int result = setsockopt(sock, SOL_TCP,  TCP_USER_TIMEOUT, &tcpUserTimeout, sizeof(tcpUserTimeout));
 
@@ -319,6 +325,8 @@ TcpSocket_create()
             if (DEBUG_SOCKET)
                 printf("SOCKET: failed to set TCP_USER_TIMEOUT\n");
         }
+#endif
+
     }
     else {
         if (DEBUG_SOCKET)

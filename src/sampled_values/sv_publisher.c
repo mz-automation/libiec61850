@@ -85,7 +85,7 @@ struct sSVPublisher {
 
 
 static bool
-preparePacketBuffer(SVPublisher self, CommParameters* parameters, const char* interfaceId)
+preparePacketBuffer(SVPublisher self, CommParameters* parameters, const char* interfaceId, bool useVlanTags)
 {
     uint8_t defaultDstAddr[] = CONFIG_SV_DEFAULT_DST_ADDRESS;
 
@@ -134,17 +134,19 @@ preparePacketBuffer(SVPublisher self, CommParameters* parameters, const char* in
 
     int bufPos = 12;
 
-    /* Priority tag - IEEE 802.1Q */
-    self->buffer[bufPos++] = 0x81;
-    self->buffer[bufPos++] = 0x00;
+    if (useVlanTags) {
+        /* Priority tag - IEEE 802.1Q */
+        self->buffer[bufPos++] = 0x81;
+        self->buffer[bufPos++] = 0x00;
 
-    uint8_t tci1 = priority << 5;
-    tci1 += vlanId / 256;
+        uint8_t tci1 = priority << 5;
+        tci1 += vlanId / 256;
 
-    uint8_t tci2 = vlanId % 256;
+        uint8_t tci2 = vlanId % 256;
 
-    self->buffer[bufPos++] = tci1; /* Priority + VLAN-ID */
-    self->buffer[bufPos++] = tci2; /* VLAN-ID */
+        self->buffer[bufPos++] = tci1; /* Priority + VLAN-ID */
+        self->buffer[bufPos++] = tci2; /* VLAN-ID */
+    }
 
     /* EtherType Sampled Values */
     self->buffer[bufPos++] = 0x88;
@@ -293,14 +295,14 @@ encodeUtcTime(uint64_t timeval, uint8_t* buffer, int bufPos)
 }
 
 SVPublisher
-SVPublisher_create(CommParameters* parameters, const char* interfaceId)
+SVPublisher_createEx(CommParameters* parameters, const char* interfaceId, bool useVlanTag)
 {
     SVPublisher self = (SVPublisher) GLOBAL_CALLOC(1, sizeof(struct sSVPublisher));
 
     if (self) {
         self->asduList = NULL;
 
-        if (preparePacketBuffer(self, parameters, interfaceId) == false) {
+        if (preparePacketBuffer(self, parameters, interfaceId, useVlanTag) == false) {
             GLOBAL_FREEMEM(self);
             self = NULL;
         }
@@ -308,6 +310,12 @@ SVPublisher_create(CommParameters* parameters, const char* interfaceId)
     }
 
     return self;
+}
+
+SVPublisher
+SVPublisher_create(CommParameters* parameters, const char* interfaceId)
+{
+    return SVPublisher_createEx(parameters, interfaceId, true);
 }
 
 SVPublisher_ASDU

@@ -1102,7 +1102,7 @@ typedef enum {
     /** the element is included due to a general interrogation by the client */
     IEC61850_REASON_GI = 5,
 
-    /** the reason for inclusion is unknown */
+    /** the reason for inclusion is unknown (e.g. report is not configured to include reason-for-inclusion) */
     IEC61850_REASON_UNKNOWN = 6
 } ReasonForInclusion;
 
