@@ -36,6 +36,10 @@
 #include "lib_memory.h"
 #include "hal_ethernet.h"
 
+#ifndef DEBUG_SOCKET
+#define DEBUG_SOCKET 0
+#endif
+
 struct sEthernetSocket {
     int rawSocket;
     bool isBind;
@@ -123,23 +127,26 @@ getInterfaceIndex(int sock, const char* deviceName)
     strncpy(ifr.ifr_name, deviceName, IFNAMSIZ);
 
     if (ioctl(sock, SIOCGIFINDEX, &ifr) == -1) {
-        perror("ETHERNET_LINUX: Failed to get interface index -> exit");
-        exit(1);
+        if (DEBUG_SOCKET)
+            printf("ETHERNET_LINUX: Failed to get interface index");
+        return -1;
     }
 
     int interfaceIndex = ifr.ifr_ifindex;
 
     if (ioctl (sock, SIOCGIFFLAGS, &ifr) == -1)
     {
-        perror ("ETHERNET_LINUX: Problem getting device flags -> exit");
-        exit (1);
+        if (DEBUG_SOCKET)
+            printf("ETHERNET_LINUX: Problem getting device flags");
+        return -1;
     }
 
     ifr.ifr_flags |= IFF_PROMISC;
     if (ioctl (sock, SIOCSIFFLAGS, &ifr) == -1)
     {
-        perror ("ETHERNET_LINUX: Setting device to promiscuous mode failed -> exit");
-        exit (1);
+        if (DEBUG_SOCKET)
+            printf("ETHERNET_LINUX: Setting device to promiscuous mode failed");
+        return -1;
     }
 
     return interfaceIndex;
@@ -178,7 +185,8 @@ Ethernet_createSocket(const char* interfaceId, uint8_t* destAddress)
     ethernetSocket->rawSocket = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
 
     if (ethernetSocket->rawSocket == -1) {
-        printf("Error creating raw socket!\n");
+        if (DEBUG_SOCKET)
+            printf("Error creating raw socket!\n");
         GLOBAL_FREEMEM(ethernetSocket);
         return NULL;
     }
@@ -186,7 +194,14 @@ Ethernet_createSocket(const char* interfaceId, uint8_t* destAddress)
     ethernetSocket->socketAddress.sll_family = PF_PACKET;
     ethernetSocket->socketAddress.sll_protocol = htons(ETH_P_IP);
 
-    ethernetSocket->socketAddress.sll_ifindex = getInterfaceIndex(ethernetSocket->rawSocket, interfaceId);
+    int ifcIdx =  getInterfaceIndex(ethernetSocket->rawSocket, interfaceId);
+
+    if (ifcIdx == -1) {
+        Ethernet_destroySocket(ethernetSocket);
+        return NULL;
+    }
+
+    ethernetSocket->socketAddress.sll_ifindex = ifcIdx;
 
     ethernetSocket->socketAddress.sll_hatype =  ARPHRD_ETHER;
     ethernetSocket->socketAddress.sll_pkttype = PACKET_OTHERHOST;
