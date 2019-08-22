@@ -111,6 +111,15 @@ GooseReceiver_setInterfaceId(GooseReceiver self, const char* interfaceId)
     self->interfaceId = StringUtils_copyString(interfaceId);
 }
 
+const char*
+GooseReceiver_getInterfaceId(GooseReceiver self)
+{
+    if (self->interfaceId)
+        return self->interfaceId;
+    else
+        return CONFIG_ETHERNET_INTERFACE_ID;
+}
+
 static void
 createNewStringFromBufferElement(MmsValue* value, uint8_t* bufferSrc, int elementLength)
 {
@@ -784,8 +793,6 @@ gooseReceiverLoop(void* threadParameter)
 {
     GooseReceiver self = (GooseReceiver) threadParameter;
 
-    GooseReceiver_startThreadless(self);
-
     if (self->running) {
 
         while (self->running) {
@@ -807,17 +814,19 @@ void
 GooseReceiver_start(GooseReceiver self)
 {
 #if (CONFIG_MMS_THREADLESS_STACK == 0)
-    self->thread = Thread_create((ThreadExecutionFunction) gooseReceiverLoop, (void*) self, false);
+    if (GooseReceiver_startThreadless(self)) {
+        self->thread = Thread_create((ThreadExecutionFunction) gooseReceiverLoop, (void*) self, false);
 
-    if (self->thread != NULL) {
-        if (DEBUG_GOOSE_SUBSCRIBER)
-            printf("GOOSE_SUBSCRIBER: GOOSE receiver started for interface %s\n", self->interfaceId);
+        if (self->thread != NULL) {
+            if (DEBUG_GOOSE_SUBSCRIBER)
+                printf("GOOSE_SUBSCRIBER: GOOSE receiver started for interface %s\n", self->interfaceId);
 
-        Thread_start(self->thread);
-    }
-    else {
-        if (DEBUG_GOOSE_SUBSCRIBER)
-            printf("GOOSE_SUBSCRIBER: Starting GOOSE receiver failed for interface %s\n", self->interfaceId);
+            Thread_start(self->thread);
+        }
+        else {
+            if (DEBUG_GOOSE_SUBSCRIBER)
+                printf("GOOSE_SUBSCRIBER: Starting GOOSE receiver failed for interface %s\n", self->interfaceId);
+        }
     }
 #endif
 }
