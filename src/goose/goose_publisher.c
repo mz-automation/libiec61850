@@ -1,7 +1,7 @@
 /*
  *  goose_publisher.c
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013-2018 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -36,7 +36,7 @@
 #define GOOSE_MAX_MESSAGE_SIZE 1518
 
 static void
-prepareGooseBuffer(GoosePublisher self, CommParameters* parameters, const char* interfaceID, uint8_t srcAddress[]);
+prepareGooseBuffer(GoosePublisher self, CommParameters* parameters, const char* interfaceID);
 
 struct sGoosePublisher {
     uint8_t* buffer;
@@ -65,11 +65,11 @@ struct sGoosePublisher {
 
 
 GoosePublisher
-GoosePublisher_create(CommParameters* parameters, const char* interfaceID, uint8_t srcAddr[])
+GoosePublisher_create(CommParameters* parameters, const char* interfaceID)
 {
     GoosePublisher self = (GoosePublisher) GLOBAL_CALLOC(1, sizeof(struct sGoosePublisher));
 
-    prepareGooseBuffer(self, parameters, interfaceID, srcAddr);
+    prepareGooseBuffer(self, parameters, interfaceID);
 
     self->timestamp = MmsValue_newUtcTimeByMsTime(Hal_getTimeInMs());
 
@@ -160,8 +160,15 @@ GoosePublisher_setTimeAllowedToLive(GoosePublisher self, uint32_t timeAllowedToL
 }
 
 static void
-prepareGooseBuffer(GoosePublisher self, CommParameters* parameters, const char* interfaceID, uint8_t srcAddr[])
+prepareGooseBuffer(GoosePublisher self, CommParameters* parameters, const char* interfaceID)
 {
+    uint8_t srcAddr[6];
+
+    if (interfaceID != NULL)
+        Ethernet_getInterfaceMACAddress(interfaceID, srcAddr);
+    else
+        Ethernet_getInterfaceMACAddress(CONFIG_ETHERNET_INTERFACE_ID, srcAddr);
+
     uint8_t defaultDstAddr[] = CONFIG_GOOSE_DEFAULT_DST_ADDRESS;
 
     uint8_t* dstAddr;
@@ -194,19 +201,19 @@ prepareGooseBuffer(GoosePublisher self, CommParameters* parameters, const char* 
 
     int bufPos = 12;
 
-    if (vlanId != 65535) {
-        /* Priority tag - IEEE 802.1Q */
-        self->buffer[bufPos++] = 0x81;
-        self->buffer[bufPos++] = 0x00;
+#if 1
+    /* Priority tag - IEEE 802.1Q */
+    self->buffer[bufPos++] = 0x81;
+    self->buffer[bufPos++] = 0x00;
 
-        uint8_t tci1 = priority << 5;
-        tci1 += vlanId / 256;
+    uint8_t tci1 = priority << 5;
+    tci1 += vlanId / 256;
 
-        uint8_t tci2 = vlanId % 256;
+    uint8_t tci2 = vlanId % 256;
 
-        self->buffer[bufPos++] = tci1; /* Priority + VLAN-ID */
-        self->buffer[bufPos++] = tci2; /* VLAN-ID */
-    }
+    self->buffer[bufPos++] = tci1; /* Priority + VLAN-ID */
+    self->buffer[bufPos++] = tci2; /* VLAN-ID */
+#endif
 
     /* EtherType GOOSE */
     self->buffer[bufPos++] = 0x88;
@@ -241,16 +248,16 @@ createGoosePayload(GoosePublisher self, LinkedList dataSetValues, uint8_t* buffe
 
     goosePduLength += BerEncoder_determineEncodedStringSize(self->goCBRef);
 
+    uint32_t timeAllowedToLive = self->timeAllowedToLive;
+
+    goosePduLength += 2 + BerEncoder_UInt32determineEncodedSize(timeAllowedToLive);
+
     goosePduLength += BerEncoder_determineEncodedStringSize(self->dataSetRef);
 
     if (self->goID != NULL)
         goosePduLength += BerEncoder_determineEncodedStringSize(self->goID);
     else
         goosePduLength += BerEncoder_determineEncodedStringSize(self->goCBRef);
-
-    uint32_t timeAllowedToLive = self->timeAllowedToLive;
-
-    goosePduLength += 2 + BerEncoder_UInt32determineEncodedSize(timeAllowedToLive);
 
     goosePduLength += 2 + 8; /* for T (UTCTIME) */
 
@@ -282,7 +289,9 @@ createGoosePayload(GoosePublisher self, LinkedList dataSetValues, uint8_t* buffe
 
     goosePduLength += allDataSize;
 
-    if (goosePduLength > maxPayloadSize)
+    uint32_t payloadSize = 1 + BerEncoder_determineLengthSize(goosePduLength) + goosePduLength;
+
+    if (payloadSize > maxPayloadSize)
         return -1;
 
     /* Step 2 - encode to buffer */
