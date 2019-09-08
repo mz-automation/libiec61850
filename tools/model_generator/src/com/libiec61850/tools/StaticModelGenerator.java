@@ -798,6 +798,17 @@ public class StaticModelGenerator {
             }
             break;
             
+        case CODEDENUM:
+            {     
+                buffer.append("MmsValue_newBitString(2);\n");
+                buffer.append("MmsValue_setBitStringFromIntegerBigEndian(");
+                buffer.append(daName);
+                buffer.append(".mmsValue, ");
+                buffer.append(value.getValue().toString());
+                buffer.append(");\n");
+            }
+            break;
+            
         case UNICODE_STRING_255:
             buffer.append("MmsValue_newMmsString(\"" + value.getValue() + "\");");
             break;
