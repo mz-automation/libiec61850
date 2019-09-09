@@ -361,6 +361,9 @@ mmsServer_handleObtainFileRequest(
         uint32_t invokeId,
         ByteBuffer* response);
 
+LIB61850_INTERNAL void
+mmsServerConnection_stopFileUploadTasks(MmsServerConnection self);
+
 LIB61850_INTERNAL bool
 mmsServer_isIndexAccess(AlternateAccess_t* alternateAccess);
 

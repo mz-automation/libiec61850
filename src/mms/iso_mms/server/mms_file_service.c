@@ -588,6 +588,33 @@ mmsServer_fileUploadTask(MmsServer self, MmsObtainFileTask task)
     }
 }
 
+#if (MMS_OBTAIN_FILE_SERVICE == 1)
+
+void
+mmsServerConnection_stopFileUploadTasks(MmsServerConnection self)
+{
+    MmsServer server = self->server;
+
+    int i;
+
+    for (i = 0; i < CONFIG_MMS_SERVER_MAX_GET_FILE_TASKS; i++) {
+
+        if (server->fileUploadTasks[i].state != 0) {
+
+            if (server->fileUploadTasks[i].connection == self) {
+
+
+                /* stop file upload task */
+                FileSystem_closeFile(server->fileUploadTasks[i].fileHandle);
+                deleteFile(MmsServerConnection_getFilesystemBasepath(self), server->fileUploadTasks[i].destinationFilename);
+                server->fileUploadTasks[i].state = 0;
+            }
+
+        }
+    }
+}
+
+#endif /*(MMS_OBTAIN_FILE_SERVICE == 1) */
 void
 mmsServer_handleObtainFileRequest(
         MmsServerConnection connection,
