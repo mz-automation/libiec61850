@@ -733,6 +733,8 @@ MmsServerConnection_destroy(MmsServerConnection self)
     for (frsmIndex = 0; frsmIndex < CONFIG_MMS_MAX_NUMBER_OF_OPEN_FILES_PER_CONNECTION; frsmIndex++)
         if (self->frsms[frsmIndex].fileHandle != NULL)
             FileSystem_closeFile(self->frsms[frsmIndex].fileHandle);
+
+    mmsServerConnection_stopFileUploadTasks(self);
 #endif
 
 #if (MMS_DYNAMIC_DATA_SETS == 1)
