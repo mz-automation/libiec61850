@@ -75,13 +75,18 @@ main(int argc, char** argv)
     /* Start listening to SV messages - starts a new receiver background thread */
     SVReceiver_start(receiver);
 
-    signal(SIGINT, sigint_handler);
+    if (SVReceiver_isRunning(receiver)) {
+        signal(SIGINT, sigint_handler);
 
-    while (running)
-        Thread_sleep(1);
+        while (running)
+            Thread_sleep(1);
 
-    /* Stop listening to SV messages */
-    SVReceiver_stop(receiver);
+        /* Stop listening to SV messages */
+        SVReceiver_stop(receiver);
+    }
+    else {
+        printf("Failed to start SV subscriber. Reason can be that the Ethernet interface doesn't exist or root permission are required.\n");
+    }
 
     /* Cleanup and free resources */
     SVReceiver_destroy(receiver);
