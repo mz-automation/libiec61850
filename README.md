@@ -8,6 +8,7 @@ Content:
 
 * [Overview](#overview)
 * [Features](#features)
+* [Examples](#examples)
 * [Building and running the examples](#building-and-running-the-examples-with-the-provided-makefiles)
 * [Building the library with TLS support](#building-the-library-with-tls-support)
 * [Installing the library and the API headers](#installing-the-library-and-the-api-headers)
@@ -52,6 +53,12 @@ The library support the following IEC 61850 protocol features:
 * C and C#/.NET API
 
 
+## Examples
+
+The examples are built automatically when CMake is used to build the library.
+
+NOTE: Most examples are intended to show a specific function of the library. They are designed to show this function as simple as possible and may miss some error handling that has to be present in real applications!
+
 ## Building and running the examples with the provided makefiles
 
 In the project root directory type
@@ -75,13 +82,17 @@ You can test the server examples by using a generic client or the provided clien
 
 ## Building the library with TLS support
 
-Download, unpack, and copy mbedtls-2.6.0 into the third_party/mbedtls folder.
+Download, unpack, and copy mbedtls-2.16 into the third_party/mbedtls folder.
+
+NOTE: The current version support mbedtls version 2.16. When you download the source archive from https://tls.mbed.org/ you have to rename the extracted folder to "mbedtls-2.16".
 
 In the main libiec61850 folder run
 
 ```
 make WITH_MBEDTLS=1
 ```
+
+When using CMake the library is built automatically with TLS support when the folder third_party/mbedtls/mbedtls-2.16 is present.
 
 ## Installing the library and the API headers
 

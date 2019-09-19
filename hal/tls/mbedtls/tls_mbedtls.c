@@ -171,7 +171,7 @@ TLSConfiguration_create()
 
         mbedtls_ssl_conf_authmode(&(self->conf), MBEDTLS_SSL_VERIFY_REQUIRED);
 
-        mbedtls_ssl_conf_renegotiation(&(self->conf), MBEDTLS_SSL_RENEGOTIATION_ENABLED);
+        mbedtls_ssl_conf_renegotiation(&(self->conf), MBEDTLS_SSL_RENEGOTIATION_DISABLED);
 
         /* static int hashes[] = {3,4,5,6,7,8,0}; */
         /* mbedtls_ssl_conf_sig_hashes(&(self->conf), hashes); */

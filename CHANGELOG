@@ -11,6 +11,8 @@ Changes to version 1.4.0
 - common: MmsVariableSpecification_getChildValue now also accepts "." as separator
 - .NET API: ReportControlBlock.GetOwner returns null when no owner available (#79)
 - IEC 61850 client: IedConnection - added CONNECTING AND CLOSING states - removed IDLE state (CLOSED, CONNECTING, CONNECTED, CLOSING)
+- now using mbedtls 2.16
+- TLS renegotiation disabled by default
 
 Changes to version 1.3.3
 ------------------------

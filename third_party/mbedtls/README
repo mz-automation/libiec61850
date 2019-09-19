@@ -1,6 +1,9 @@
 README
 ------
 
-For TLS support with mbedtls download the source tarball of version 2.6.0 and extract here in the subfolder
+For TLS support with mbedtls download the source tarball of version 2.16.x and extract here in the subfolder
 
-mbedtls-2.6.0
+mbedtls-2.16
+
+After extracting of the archive you may have to rename the folder to match the exact name "mbedtls-2.16". Otherwise the build system will not find the library.
+

@@ -117,9 +117,9 @@ if(MSVC AND MSVC_VERSION LESS 1800)
     )
 endif(MSVC AND MSVC_VERSION LESS 1800)
 
-if(EXISTS ${CMAKE_CURRENT_LIST_DIR}/third_party/mbedtls/mbedtls-2.6.0)
+if(EXISTS ${CMAKE_CURRENT_LIST_DIR}/third_party/mbedtls/mbedtls-2.16)
 set(WITH_MBEDTLS 1)
-endif(EXISTS ${CMAKE_CURRENT_LIST_DIR}/third_party/mbedtls/mbedtls-2.6.0)
+endif(EXISTS ${CMAKE_CURRENT_LIST_DIR}/third_party/mbedtls/mbedtls-2.16)
 
 if(WITH_MBEDTLS)
 
