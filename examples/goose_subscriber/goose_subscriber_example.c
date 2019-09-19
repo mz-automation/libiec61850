@@ -66,10 +66,15 @@ main(int argc, char** argv)
 
     GooseReceiver_start(receiver);
 
-    signal(SIGINT, sigint_handler);
+    if (GooseReceiver_isRunning(receiver)) {
+        signal(SIGINT, sigint_handler);
 
-    while (running) {
-        Thread_sleep(100);
+        while (running) {
+            Thread_sleep(100);
+        }
+    }
+    else {
+        printf("Failed to start GOOSE subscriber. Reason can be that the Ethernet interface doesn't exist or root permission are required.\n");
     }
 
     GooseReceiver_stop(receiver);

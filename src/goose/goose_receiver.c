@@ -844,7 +844,9 @@ GooseReceiver_stop(GooseReceiver self)
     self->stop = true;
     self->running = false;
 
-    Thread_destroy(self->thread);
+    if (self->thread)
+        Thread_destroy(self->thread);
+
     self->stop = false;
 #endif
 }

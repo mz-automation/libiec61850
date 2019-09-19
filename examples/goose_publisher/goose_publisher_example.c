@@ -69,7 +69,7 @@ main(int argc, char** argv)
 	    GoosePublisher_destroy(publisher);
 	}
 	else {
-	    printf("Failed to create GOOSE publisher. Reason can be that the Ethernet interface doesn't exist or you need root permissions.\n");
+	    printf("Failed to create GOOSE publisher. Reason can be that the Ethernet interface doesn't exist or root permission are required.\n");
 	}
 
 	LinkedList_destroyDeep(dataSetValues, (LinkedListValueDeleteFunction) MmsValue_delete);
