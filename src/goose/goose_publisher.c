@@ -35,7 +35,7 @@
 
 #define GOOSE_MAX_MESSAGE_SIZE 1518
 
-static void
+static bool
 prepareGooseBuffer(GoosePublisher self, CommParameters* parameters, const char* interfaceID, bool useVlanTags);
 
 struct sGoosePublisher {
@@ -68,11 +68,19 @@ GoosePublisher_createEx(CommParameters* parameters, const char* interfaceID, boo
 {
     GoosePublisher self = (GoosePublisher) GLOBAL_CALLOC(1, sizeof(struct sGoosePublisher));
 
-    prepareGooseBuffer(self, parameters, interfaceID, useVlanTag);
+    if (self) {
 
-    self->timestamp = MmsValue_newUtcTimeByMsTime(Hal_getTimeInMs());
+        if (prepareGooseBuffer(self, parameters, interfaceID, useVlanTag)) {
+            self->timestamp = MmsValue_newUtcTimeByMsTime(Hal_getTimeInMs());
 
-    GoosePublisher_reset(self);
+            GoosePublisher_reset(self);
+        }
+        else {
+            GoosePublisher_destroy(self);
+            self = NULL;
+        }
+
+    }
 
     return self;
 }
@@ -86,7 +94,9 @@ GoosePublisher_create(CommParameters* parameters, const char* interfaceID)
 void
 GoosePublisher_destroy(GoosePublisher self)
 {
-    Ethernet_destroySocket(self->ethernetSocket);
+    if (self->ethernetSocket) {
+        Ethernet_destroySocket(self->ethernetSocket);
+    }
 
     MmsValue_delete(self->timestamp);
 
@@ -99,7 +109,9 @@ GoosePublisher_destroy(GoosePublisher self)
     if (self->dataSetRef != NULL)
         GLOBAL_FREEMEM(self->dataSetRef);
 
-    GLOBAL_FREEMEM(self->buffer);
+    if (self->buffer)
+        GLOBAL_FREEMEM(self->buffer);
+
     GLOBAL_FREEMEM(self);
 }
 
@@ -164,7 +176,7 @@ GoosePublisher_setTimeAllowedToLive(GoosePublisher self, uint32_t timeAllowedToL
     self->timeAllowedToLive = timeAllowedToLive;
 }
 
-static void
+static bool
 prepareGooseBuffer(GoosePublisher self, CommParameters* parameters, const char* interfaceID, bool useVlanTags)
 {
     uint8_t srcAddr[6];
@@ -199,50 +211,57 @@ prepareGooseBuffer(GoosePublisher self, CommParameters* parameters, const char* 
     else
         self->ethernetSocket = Ethernet_createSocket(CONFIG_ETHERNET_INTERFACE_ID, dstAddr);
 
-    self->buffer = (uint8_t*) GLOBAL_MALLOC(GOOSE_MAX_MESSAGE_SIZE);
+    if (self->ethernetSocket) {
+        self->buffer = (uint8_t*) GLOBAL_MALLOC(GOOSE_MAX_MESSAGE_SIZE);
 
-    memcpy(self->buffer, dstAddr, 6);
-    memcpy(self->buffer + 6, srcAddr, 6);
+        memcpy(self->buffer, dstAddr, 6);
+        memcpy(self->buffer + 6, srcAddr, 6);
 
-    int bufPos = 12;
+        int bufPos = 12;
 
-    if (useVlanTags) {
-        /* Priority tag - IEEE 802.1Q */
-        self->buffer[bufPos++] = 0x81;
+        if (useVlanTags) {
+            /* Priority tag - IEEE 802.1Q */
+            self->buffer[bufPos++] = 0x81;
+            self->buffer[bufPos++] = 0x00;
+
+            uint8_t tci1 = priority << 5;
+            tci1 += vlanId / 256;
+
+            uint8_t tci2 = vlanId % 256;
+
+            self->buffer[bufPos++] = tci1; /* Priority + VLAN-ID */
+            self->buffer[bufPos++] = tci2; /* VLAN-ID */
+        }
+
+        /* EtherType GOOSE */
+        self->buffer[bufPos++] = 0x88;
+        self->buffer[bufPos++] = 0xB8;
+
+        /* APPID */
+        self->buffer[bufPos++] = appId / 256;
+        self->buffer[bufPos++] = appId % 256;
+
+        self->lengthField = bufPos;
+
+        /* Length */
+        self->buffer[bufPos++] = 0x00;
+        self->buffer[bufPos++] = 0x08;
+
+        /* Reserved1 */
+        self->buffer[bufPos++] = 0x00;
         self->buffer[bufPos++] = 0x00;
 
-        uint8_t tci1 = priority << 5;
-        tci1 += vlanId / 256;
+        /* Reserved2 */
+        self->buffer[bufPos++] = 0x00;
+        self->buffer[bufPos++] = 0x00;
 
-        uint8_t tci2 = vlanId % 256;
+        self->payloadStart = bufPos;
 
-        self->buffer[bufPos++] = tci1; /* Priority + VLAN-ID */
-        self->buffer[bufPos++] = tci2; /* VLAN-ID */
+        return true;
     }
-
-    /* EtherType GOOSE */
-    self->buffer[bufPos++] = 0x88;
-    self->buffer[bufPos++] = 0xB8;
-
-    /* APPID */
-    self->buffer[bufPos++] = appId / 256;
-    self->buffer[bufPos++] = appId % 256;
-
-    self->lengthField = bufPos;
-
-    /* Length */
-    self->buffer[bufPos++] = 0x00;
-    self->buffer[bufPos++] = 0x08;
-
-    /* Reserved1 */
-    self->buffer[bufPos++] = 0x00;
-    self->buffer[bufPos++] = 0x00;
-
-    /* Reserved2 */
-    self->buffer[bufPos++] = 0x00;
-    self->buffer[bufPos++] = 0x00;
-
-    self->payloadStart = bufPos;
+    else {
+        return false;
+    }
 }
 
 static int32_t

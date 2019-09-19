@@ -51,21 +51,26 @@ main(int argc, char** argv)
 	 */
 	GoosePublisher publisher = GoosePublisher_create(&gooseCommParameters, interface);
 
-	GoosePublisher_setGoCbRef(publisher, "simpleIOGenericIO/LLN0$GO$gcbAnalogValues");
-	GoosePublisher_setConfRev(publisher, 1);
-	GoosePublisher_setDataSetRef(publisher, "simpleIOGenericIO/LLN0$AnalogValues");
+	if (publisher) {
+	    GoosePublisher_setGoCbRef(publisher, "simpleIOGenericIO/LLN0$GO$gcbAnalogValues");
+	    GoosePublisher_setConfRev(publisher, 1);
+	    GoosePublisher_setDataSetRef(publisher, "simpleIOGenericIO/LLN0$AnalogValues");
 
-	int i = 0;
+	    int i = 0;
 
-	for (i = 0; i < 3; i++) {
-		Thread_sleep(1000);
+	    for (i = 0; i < 3; i++) {
+	        Thread_sleep(1000);
 
-		if (GoosePublisher_publish(publisher, dataSetValues) == -1) {
-			printf("Error sending message!\n");
-		}
+	        if (GoosePublisher_publish(publisher, dataSetValues) == -1) {
+	            printf("Error sending message!\n");
+	        }
+	    }
+
+	    GoosePublisher_destroy(publisher);
 	}
-
-	GoosePublisher_destroy(publisher);
+	else {
+	    printf("Failed to create GOOSE publisher. Reason can be that the Ethernet interface doesn't exist or you need root permissions.\n");
+	}
 
 	LinkedList_destroyDeep(dataSetValues, (LinkedListValueDeleteFunction) MmsValue_delete);
 }
