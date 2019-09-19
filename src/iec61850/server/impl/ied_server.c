@@ -503,6 +503,13 @@ IedServer_destroy(IedServer self)
 #endif
     }
 
+#if (CONFIG_MMS_SINGLE_THREADED == 1)
+    if (self->serverThread) {
+        self->stopServerThread = true;
+        Thread_destroy(self->serverThread);
+    }
+#endif
+
     MmsServer_destroy(self->mmsServer);
 
     if (self->localIpAddress != NULL)
@@ -555,15 +562,13 @@ singleThreadedServerThread(void* parameter)
 
     MmsMapping* mmsMapping = self->mmsMapping;
 
-    bool running = true;
-
     mmsMapping->reportThreadFinished = false;
     mmsMapping->reportThreadRunning = true;
 
     if (DEBUG_IED_SERVER)
         printf("IED_SERVER: server thread started!\n");
 
-    while (running) {
+    while (self->stopServerThread == false) {
 
         if (IedServer_waitReady(self, 25) > 0)
             MmsServer_handleIncomingMessages(self->mmsServer);
@@ -571,8 +576,6 @@ singleThreadedServerThread(void* parameter)
         IedServer_performPeriodicTasks(self);
 
         Thread_sleep(1);
-
-        running = mmsMapping->reportThreadRunning;
     }
 
     if (DEBUG_IED_SERVER)
@@ -592,9 +595,11 @@ IedServer_start(IedServer self, int tcpPort)
 #if (CONFIG_MMS_SINGLE_THREADED == 1)
         MmsServer_startListeningThreadless(self->mmsServer, tcpPort);
 
-        Thread serverThread = Thread_create((ThreadExecutionFunction) singleThreadedServerThread, (void*) self, true);
+        self->stopServerThread = false;
 
-        Thread_start(serverThread);
+        self->serverThread = Thread_create((ThreadExecutionFunction) singleThreadedServerThread, (void*) self, false);
+
+        Thread_start(self->serverThread);
 #else
 
         MmsServer_startListening(self->mmsServer, tcpPort);
@@ -625,11 +630,13 @@ IedServer_stop(IedServer self)
     if (self->running) {
         self->running = false;
 
-        MmsMapping_stopEventWorkerThread(self->mmsMapping);
-
 #if (CONFIG_MMS_SINGLE_THREADED == 1)
         MmsServer_stopListeningThreadless(self->mmsServer);
+        self->stopServerThread = true;
+        Thread_destroy(self->serverThread);
+        self->serverThread = NULL;
 #else
+        MmsMapping_stopEventWorkerThread(self->mmsMapping);
         MmsServer_stopListening(self->mmsServer);
 #endif
     }

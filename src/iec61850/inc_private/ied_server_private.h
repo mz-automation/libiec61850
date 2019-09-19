@@ -59,6 +59,11 @@ struct sIedServer
     uint8_t edition;
 
     bool running;
+
+#if (CONFIG_MMS_SINGLE_THREADED == 1)
+    bool stopServerThread;
+    Thread serverThread;
+#endif
 };
 
 
