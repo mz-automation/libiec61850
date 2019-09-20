@@ -638,6 +638,24 @@ IedConnection_setConnectTimeout(IedConnection self, uint32_t timeoutInMs)
     self->connectionTimeout = timeoutInMs;
 }
 
+void
+IedConnection_setRequestTimeout(IedConnection self, uint32_t timeoutInMs)
+{
+    if (self->connection) {
+        MmsConnection_setRequestTimeout(self->connection, timeoutInMs);
+    }
+}
+
+uint32_t
+IedConnection_getRequestTimeout(IedConnection self)
+{
+    if (self->connection) {
+        return MmsConnection_getRequestTimeout(self->connection);
+    }
+    else
+        return 0;
+}
+
 IedConnectionState
 IedConnection_getState(IedConnection self)
 {

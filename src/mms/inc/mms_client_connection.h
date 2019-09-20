@@ -161,6 +161,16 @@ LIB61850_API void
 MmsConnection_setRequestTimeout(MmsConnection self, uint32_t timeoutInMs);
 
 /**
+ * \brief Get the request timeout in ms for this connection
+ *
+ * \param self MmsConnection instance to operate on
+ *
+ * \return request timeout in milliseconds
+ */
+LIB61850_API uint32_t
+MmsConnection_getRequestTimeout(MmsConnection self);
+
+/**
  * \brief Set the connect timeout in ms for this connection instance
  *
  * \param self MmsConnection instance to operate on

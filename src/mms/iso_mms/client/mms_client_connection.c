@@ -1555,6 +1555,12 @@ MmsConnection_setRequestTimeout(MmsConnection self, uint32_t timeoutInMs)
     self->requestTimeout = timeoutInMs;
 }
 
+uint32_t
+MmsConnection_getRequestTimeout(MmsConnection self)
+{
+    return self->requestTimeout;
+}
+
 void
 MmsConnection_setConnectTimeout(MmsConnection self, uint32_t timeoutInMs)
 {
