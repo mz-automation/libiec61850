@@ -1,7 +1,7 @@
 /*
  *  mms_common_internal.h
  *
- *  Copyright 2013-2018 Michael Zillgith
+ *  Copyright 2013-2019 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -42,11 +42,17 @@
 
 #include "hal_filesystem.h"
 
+typedef struct sMmsOutstandingCall* MmsOutstandingCall;
+
 typedef struct {
         int32_t frsmId;
         uint32_t readPosition;
         uint32_t fileSize;
         FileHandle fileHandle;
+
+#if (MMS_OBTAIN_FILE_SERVICE == 1)
+        MmsOutstandingCall obtainRequest;
+#endif
 } MmsFileReadStateMachine;
 
 /* include for MmsFileReadHandler definition */

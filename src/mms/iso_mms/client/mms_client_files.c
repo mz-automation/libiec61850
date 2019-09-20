@@ -127,12 +127,25 @@ mmsClient_handleFileOpenRequest(
         MmsFileReadStateMachine* frsm = getFreeFrsm(connection);
 
         if (frsm != NULL) {
+
+            MmsOutstandingCall obtainFileCall = mmsClient_getMatchingObtainFileRequest(connection, filename);
+
+            if (obtainFileCall) {
+
+                if (DEBUG_MMS_CLIENT)
+                    printf("MMS_CLIENT: file open is matching obtain file request for file %s\n", filename);
+
+                obtainFileCall->timeout = Hal_getTimeInMs() + connection->requestTimeout;
+            }
+
             FileHandle fileHandle = mmsMsg_openFile(MmsConnection_getFilestoreBasepath(connection), filename, false);
 
             if (fileHandle != NULL) {
+
                 frsm->fileHandle = fileHandle;
                 frsm->readPosition = filePosition;
                 frsm->frsmId = getNextFrsmId(connection);
+                frsm->obtainRequest = obtainFileCall;
 
                 mmsMsg_createFileOpenResponse(MmsConnection_getFilestoreBasepath(connection),
                         invokeId, response, filename, frsm);
@@ -172,8 +185,12 @@ mmsClient_handleFileReadRequest(
 
     MmsFileReadStateMachine* frsm = getFrsm(connection, frsmId);
 
-    if (frsm != NULL)
+    if (frsm) {
+        if (frsm->obtainRequest)
+            frsm->obtainRequest->timeout = Hal_getTimeInMs() + connection->requestTimeout;
+
         mmsMsg_createFileReadResponse(connection->parameters.maxPduSize, invokeId, response, frsm);
+    }
     else
         mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_OTHER);
 }
@@ -189,11 +206,19 @@ mmsClient_handleFileCloseRequest(
 
     MmsFileReadStateMachine* frsm = getFrsm(connection, frsmId);
 
-    FileSystem_closeFile(frsm->fileHandle);
-    frsm->fileHandle = NULL;
-    frsm->frsmId = 0;
+    if (frsm) {
+        if (frsm->obtainRequest)
+            frsm->obtainRequest->timeout = Hal_getTimeInMs() + connection->requestTimeout;
 
-    mmsMsg_createFileCloseResponse(invokeId, response);
+        FileSystem_closeFile(frsm->fileHandle);
+        frsm->fileHandle = NULL;
+        frsm->frsmId = 0;
+        frsm->obtainRequest = NULL;
+
+        mmsMsg_createFileCloseResponse(invokeId, response);
+    }
+    else
+        mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_OTHER);
 }
 
 

@@ -88,8 +88,6 @@ struct sMmsOutstandingCall
     uint64_t timeout;
 };
 
-typedef struct sMmsOutstandingCall* MmsOutstandingCall;
-
 /* private instance variables */
 struct sMmsConnection {
     Semaphore lastInvokeIdLock;
@@ -373,6 +371,9 @@ MmsConnection connection,
 uint8_t* buffer, int bufPos, int maxBufPos,
 uint32_t invokeId,
 ByteBuffer* response);
+
+LIB61850_INTERNAL MmsOutstandingCall
+mmsClient_getMatchingObtainFileRequest(MmsConnection self, const char* filename);
 
 
 #endif /* MMS_MSG_INTERNAL_H_ */
