@@ -102,6 +102,9 @@ iedConnection_mapMmsErrorToIedError(MmsError mmsError)
     case MMS_ERROR_OUTSTANDING_CALL_LIMIT:
         return IED_ERROR_OUTSTANDING_CALL_LIMIT_REACHED;
 
+    case MMS_ERROR_DEFINITION_OBJECT_UNDEFINED:
+        return IED_ERROR_OBJECT_UNDEFINED;
+
     default:
         return IED_ERROR_UNKNOWN;
     }
