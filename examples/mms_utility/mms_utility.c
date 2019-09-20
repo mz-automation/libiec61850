@@ -30,17 +30,17 @@ print_help()
 }
 
 static void
-mmsFileDirectoryHandler (void* parameter, char* filename, uint32_t size, uint64_t lastModified)
+mmsFileDirectoryHandler(void* parameter, char* filename, uint32_t size, uint64_t lastModified)
 {
     char* lastName = (char*) parameter;
 
-    strcpy (lastName, filename);
+    strcpy(lastName, filename);
 
     printf("%s\n", filename);
 }
 
 static void
-mmsGetFileAttributeHandler (void* parameter, char* filename, uint32_t size, uint64_t lastModified)
+mmsGetFileAttributeHandler(void* parameter, char* filename, uint32_t size, uint64_t lastModified)
 {
     char gtString[30];
     Conversions_msTimeToGeneralizedTime(lastModified, (uint8_t*) gtString);
@@ -99,142 +99,144 @@ printRawMmsMessage(void* parameter, uint8_t* message, int messageLength, bool re
     printf("\n");
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char** argv)
+{
 
-	char* hostname = StringUtils_copyString("localhost");
-	int tcpPort = 102;
-	int maxPduSize = 65000;
-        int arrayIndex = -1;
+    char* hostname = StringUtils_copyString("localhost");
+    int tcpPort = 102;
+    int maxPduSize = 65000;
+    int arrayIndex = -1;
 
-	char* domainName = NULL;
-	char* variableName = NULL;
-	char* componentName = NULL;
-	char* filename = NULL;
-	char* journalName = NULL;
+    char* domainName = NULL;
+    char* variableName = NULL;
+    char* componentName = NULL;
+    char* filename = NULL;
+    char* journalName = NULL;
 
-	int readDeviceList = 0;
-	int getDeviceDirectory = 0;
-	int identifyDevice = 0;
-	int readWriteHasDomain = 0;
-	int readVariable = 0;
-	int showFileList = 0;
-	int getFileAttributes = 0;
-	int readJournal = 0;
-	int printRawMmsMessages = 0;
-	int deleteFile = 0;
-	int readVariableList = 0;
+    int readDeviceList = 0;
+    int getDeviceDirectory = 0;
+    int identifyDevice = 0;
+    int readWriteHasDomain = 0;
+    int readVariable = 0;
+    int showFileList = 0;
+    int getFileAttributes = 0;
+    int readJournal = 0;
+    int printRawMmsMessages = 0;
+    int deleteFile = 0;
+    int readVariableList = 0;
 
-	int c;
+    int c;
 
-	while ((c = getopt(argc, argv, "mifdh:p:l:t:a:r:g:j:x:v:c:y:")) != -1)
-		switch (c) {
-		case 'm':
-		    printRawMmsMessages = 1;
-		    break;
-
-		case 'h':
-			hostname = StringUtils_copyString(optarg);
-			break;
-		case 'p':
-			tcpPort = atoi(optarg);
-			break;
-		case 'l':
-			maxPduSize = atoi(optarg);
-			break;
-		case 'd':
-			readDeviceList = 1;
-			break;
-		case 'i':
-		    identifyDevice = 1;
-		    break;
-		case 't':
-			getDeviceDirectory = 1;
-			domainName = StringUtils_copyString(optarg);
-			break;
-		case 'a':
-		    readWriteHasDomain = 1;
-		    domainName = StringUtils_copyString(optarg);
-		    break;
-		case 'r':
-		    readVariable = 1;
-		    variableName = StringUtils_copyString(optarg);
-		    break;
-		case 'c':
-			componentName = StringUtils_copyString(optarg);
-			break;
-		case 'v':
-		    readVariableList = 1;
-		    variableName = StringUtils_copyString(optarg);
+    while ((c = getopt(argc, argv, "mifdh:p:l:t:a:r:g:j:x:v:c:y:")) != -1)
+        switch (c) {
+        case 'm':
+            printRawMmsMessages = 1;
             break;
-		case 'f':
-		    showFileList = 1;
-		    break;
-		case 'g':
-		    getFileAttributes = 1;
-		    filename = StringUtils_copyString(optarg);
-		    break;
-		case 'x':
-		    deleteFile = 1;
-		    filename = StringUtils_copyString(optarg);
-		    break;
 
-		case 'j':
-		    readJournal = 1;
-		    journalName = StringUtils_copyString(optarg);
-		    break;
+        case 'h':
+            free(hostname);
+            hostname = StringUtils_copyString(optarg);
+            break;
+        case 'p':
+            tcpPort = atoi(optarg);
+            break;
+        case 'l':
+            maxPduSize = atoi(optarg);
+            break;
+        case 'd':
+            readDeviceList = 1;
+            break;
+        case 'i':
+            identifyDevice = 1;
+            break;
+        case 't':
+            getDeviceDirectory = 1;
+            domainName = StringUtils_copyString(optarg);
+            break;
+        case 'a':
+            readWriteHasDomain = 1;
+            domainName = StringUtils_copyString(optarg);
+            break;
+        case 'r':
+            readVariable = 1;
+            variableName = StringUtils_copyString(optarg);
+            break;
+        case 'c':
+            componentName = StringUtils_copyString(optarg);
+            break;
+        case 'v':
+            readVariableList = 1;
+            variableName = StringUtils_copyString(optarg);
+            break;
+        case 'f':
+            showFileList = 1;
+            break;
+        case 'g':
+            getFileAttributes = 1;
+            filename = StringUtils_copyString(optarg);
+            break;
+        case 'x':
+            deleteFile = 1;
+            filename = StringUtils_copyString(optarg);
+            break;
 
-		case 'y':
-		    arrayIndex = atoi(optarg);
-		    break;
+        case 'j':
+            readJournal = 1;
+            journalName = StringUtils_copyString(optarg);
+            break;
 
-		default:
-		    print_help();
-			return 0;
-		}
+        case 'y':
+            arrayIndex = atoi(optarg);
+            break;
 
-	MmsConnection con = MmsConnection_create();
+        default:
+            print_help();
+            return 0;
+        }
 
-	MmsError error;
+    MmsConnection con = MmsConnection_create();
 
-	/* Set maximum MMS PDU size (local detail) to 2000 byte */
-	MmsConnection_setLocalDetail(con, maxPduSize);
+    MmsError error;
 
-	if (printRawMmsMessages)
-	    MmsConnection_setRawMessageHandler(con, (MmsRawMessageHandler) printRawMmsMessage, NULL);
+    /* Set maximum MMS PDU size (local detail) to 2000 byte */
+    MmsConnection_setLocalDetail(con, maxPduSize);
 
-	if (!MmsConnection_connect(con, &error, hostname, tcpPort)) {
-		printf("MMS connect failed!\n");
-		goto exit;
-	}
-	else
-		printf("MMS connected.\n");
+    if (printRawMmsMessages)
+        MmsConnection_setRawMessageHandler(con, (MmsRawMessageHandler) printRawMmsMessage, NULL);
 
-	if (identifyDevice) {
-	    MmsServerIdentity* identity =
-	            MmsConnection_identify(con, &error);
+    if (!MmsConnection_connect(con, &error, hostname, tcpPort)) {
+        printf("MMS connect failed!\n");
+        goto exit;
+    }
+    else
+        printf("MMS connected.\n");
 
-	    if (identity != NULL) {
-	        printf("\nServer identity:\n----------------\n");
-	        printf("  vendor:\t%s\n", identity->vendorName);
-	        printf("  model:\t%s\n", identity->modelName);
-	        printf("  revision:\t%s\n", identity->revision);
-	    }
-	    else
-	        printf("Reading server identity failed!\n");
-	}
+    if (identifyDevice) {
+        MmsServerIdentity* identity =
+                MmsConnection_identify(con, &error);
 
-	if (readDeviceList) {
-		printf("\nDomains present on server:\n--------------------------\n");
-		LinkedList nameList = MmsConnection_getDomainNames(con, &error);
-		LinkedList_printStringList(nameList);
-		LinkedList_destroy(nameList);
-	}
+        if (identity != NULL) {
+            printf("\nServer identity:\n----------------\n");
+            printf("  vendor:\t%s\n", identity->vendorName);
+            printf("  model:\t%s\n", identity->modelName);
+            printf("  revision:\t%s\n", identity->revision);
+        }
+        else
+            printf("Reading server identity failed!\n");
+    }
 
-	if (getDeviceDirectory) {
-		LinkedList variableList = MmsConnection_getDomainVariableNames(con, &error,
-				domainName);
+    if (readDeviceList) {
+        printf("\nDomains present on server:\n--------------------------\n");
+        LinkedList nameList = MmsConnection_getDomainNames(con, &error);
+        LinkedList_printStringList(nameList);
+        LinkedList_destroy(nameList);
+    }
 
-		if (variableList) {
+    if (getDeviceDirectory) {
+        LinkedList variableList = MmsConnection_getDomainVariableNames(con, &error,
+                domainName);
+
+        if (variableList) {
             LinkedList element = LinkedList_getNext(variableList);
 
             printf("\nMMS domain variables for domain %s\n", domainName);
@@ -248,14 +250,14 @@ int main(int argc, char** argv) {
             }
 
             LinkedList_destroy(variableList);
-		}
-		else {
-		    printf("\nFailed to read domain directory (error=%d)\n", error);
-		}
+        }
+        else {
+            printf("\nFailed to read domain directory (error=%d)\n", error);
+        }
 
-		variableList = MmsConnection_getDomainJournals(con, &error, domainName);
+        variableList = MmsConnection_getDomainJournals(con, &error, domainName);
 
-		if (variableList) {
+        if (variableList) {
 
             LinkedList element = variableList;
 
@@ -268,21 +270,21 @@ int main(int argc, char** argv) {
             }
 
             LinkedList_destroy(variableList);
-		}
+        }
         else {
             printf("\nFailed to read domain journals (error=%d)\n", error);
         }
 
-	}
+    }
 
-	if (readJournal) {
+    if (readJournal) {
 
-	    printf("  read journal %s...\n", journalName);
+        printf("  read journal %s...\n", journalName);
 
-	    char* logDomain = journalName;
-	    char* logName = strchr(journalName, '/');
+        char* logDomain = journalName;
+        char* logName = strchr(journalName, '/');
 
-	    if (logName != NULL) {
+        if (logName != NULL) {
 
             logName[0] = 0;
             logName++;
@@ -334,44 +336,43 @@ int main(int argc, char** argv) {
 
                         readNext = true;
                     }
-                } while ((moreFollows == true) || (readNext == true));
+                }
+                while ((moreFollows == true) || (readNext == true));
             }
-	    }
-	    else
-	        printf("  Invalid log name!\n");
-	}
+        }
+        else
+            printf("  Invalid log name!\n");
+    }
 
-	if (readVariable) {
-	    if (readWriteHasDomain) {
+    if (readVariable) {
+        if (readWriteHasDomain) {
 
-	    	MmsValue* result;
+            MmsValue* result;
 
-	    	if (componentName == NULL) {
-	    	    if (arrayIndex == -1) {
-	                result = MmsConnection_readVariable(con, &error, domainName, variableName);
-	    	    }
-	    	    else {
-	    	        result = MmsConnection_readSingleArrayElementWithComponent(con, &error, domainName, variableName, arrayIndex, NULL);
-	    	    }
-	    	}
-	    	else {
-	    	    if (arrayIndex == -1) {
-	    	        result = MmsConnection_readVariableComponent(con, &error, domainName, variableName, componentName);
-	    	    }
-	    	    else {
-	    	        result = MmsConnection_readSingleArrayElementWithComponent(con, &error, domainName, variableName, arrayIndex, componentName);
-	    	    }
-	    	}
+            if (componentName == NULL) {
+                if (arrayIndex == -1) {
+                    result = MmsConnection_readVariable(con, &error, domainName, variableName);
+                }
+                else {
+                    result = MmsConnection_readSingleArrayElementWithComponent(con, &error, domainName, variableName, arrayIndex, NULL);
+                }
+            }
+            else {
+                if (arrayIndex == -1) {
+                    result = MmsConnection_readVariableComponent(con, &error, domainName, variableName, componentName);
+                }
+                else {
+                    result = MmsConnection_readSingleArrayElementWithComponent(con, &error, domainName, variableName, arrayIndex, componentName);
+                }
+            }
 
+            if (error != MMS_ERROR_NONE) {
+                printf("Reading variable failed: (ERROR %i)\n", error);
+            }
+            else {
+                printf("Read SUCCESS\n");
 
-	        if (error != MMS_ERROR_NONE) {
-	            printf("Reading variable failed: (ERROR %i)\n", error);
-	        }
-	        else {
-	            printf("Read SUCCESS\n");
-
-
-	            if (result != NULL) {
+                if (result != NULL) {
                     char outbuf[1024];
 
                     MmsValue_printToBuffer(result, outbuf, 1024);
@@ -379,17 +380,17 @@ int main(int argc, char** argv) {
                     printf("%s\n", outbuf);
 
                     MmsValue_delete(result);
-	            }
-	            else
-	                printf("result: NULL\n");
-	        }
+                }
+                else
+                    printf("result: NULL\n");
+            }
 
-	    }
-	    else
-	        printf("Reading VMD scope variable not yet supported!\n");
-	}
+        }
+        else
+            printf("Reading VMD scope variable not yet supported!\n");
+    }
 
-	if (readVariableList) {
+    if (readVariableList) {
         if (readWriteHasDomain) {
             MmsValue* variables = MmsConnection_readNamedVariableListValues(con, &error, domainName, variableName, true);
 
@@ -402,25 +403,25 @@ int main(int argc, char** argv) {
         }
         else
             printf("Reading VMD scope variable list not yet supported!\n");
-	}
+    }
 
-	if (showFileList) {
-	    char lastName[300];
-	    lastName[0] = 0;
+    if (showFileList) {
+        char lastName[300];
+        lastName[0] = 0;
 
-	    char* continueAfter = NULL;
+        char* continueAfter = NULL;
 
-	    while (MmsConnection_getFileDirectory(con, &error, "", continueAfter, mmsFileDirectoryHandler, lastName)) {
-	        continueAfter = lastName;
-	    }
-	}
+        while (MmsConnection_getFileDirectory(con, &error, "", continueAfter, mmsFileDirectoryHandler, lastName)) {
+            continueAfter = lastName;
+        }
+    }
 
-	if (getFileAttributes) {
-	    MmsConnection_getFileDirectory(con, &error, filename, NULL, mmsGetFileAttributeHandler, NULL);
-	}
+    if (getFileAttributes) {
+        MmsConnection_getFileDirectory(con, &error, filename, NULL, mmsGetFileAttributeHandler, NULL);
+    }
 
-	if (deleteFile) {
-	    MmsConnection_fileDelete(con, &error, filename);
+    if (deleteFile) {
+        MmsConnection_fileDelete(con, &error, filename);
 
         if (error != MMS_ERROR_NONE) {
             printf("Delete file failed: (ERROR %i)\n", error);
@@ -428,15 +429,15 @@ int main(int argc, char** argv) {
         else {
             printf("File deleted\n");
         }
-	}
+    }
 
-exit:
-	free(hostname);
-	free(domainName);
-	free(variableName);
-	free(journalName);
-	free(componentName);
+    exit:
+    free(hostname);
+    free(domainName);
+    free(variableName);
+    free(journalName);
+    free(componentName);
 
-	MmsConnection_destroy(con);
+    MmsConnection_destroy(con);
 }
 
