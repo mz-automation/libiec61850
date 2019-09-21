@@ -13,6 +13,15 @@ Changes to version 1.4.0
 - IEC 61850 client: IedConnection - added CONNECTING AND CLOSING states - removed IDLE state (CLOSED, CONNECTING, CONNECTED, CLOSING)
 - now using mbedtls 2.16
 - TLS renegotiation disabled by default
+- fixed bug in BerInteger_setUint16
+- IEC 61850 client: Added functions IedConnection_setRequestTimeout and IedConnection_getRequestTimeout to C API and IedConnection.RequestTimeout property to .NET API
+- MMS client: fixed problem with obtain file timeout with large files
+- IEC 61850 server: Control model callback signature changed. Added ControlAction object to access control related parameters in control callbacks
+- SV subscriber: improved error handling when Ethernet access doesn't work; fixed potential memory leak
+- GOOSE publisher: integrated error handling when Ethernet interface is not available
+- GOOSE receiver: add support for operation without Ethernet HAL implementation
+- MMS server: fixed memory access problem when client unexpectedly closed connection during file upload (set-file)
+- static model generator: Initialize Dbpos value from Val element in ICD/CID file (see github #163)
 
 Changes to version 1.3.3
 ------------------------
