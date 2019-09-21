@@ -2,7 +2,13 @@
 
 [![Build Status](https://travis-ci.org/mz-automation/libiec61850.svg?branch=master)](https://travis-ci.org/mz-automation/libiec61850)
 
-This file is part of the documentation of **libIEC61850**. More documentation can be found online at http://libiec61850.com or in the provided doxygen documentation. Also consider to review the examples to understand how to use the library
+This file is part of the documentation of **libIEC61850**. More documentation can be found online at http://libiec61850.com.
+
+The API documentation can be found here:
+* C API: https://support.mz-automation.de/doc/libiec61850/c/latest/
+* .NET API: https://support.mz-automation.de/doc/libiec61850/net/latest/
+
+Also consider to review the examples to understand how to use the library.
 
 Content:
 
@@ -57,7 +63,7 @@ The library support the following IEC 61850 protocol features:
 
 The examples are built automatically when CMake is used to build the library.
 
-NOTE: Most examples are intended to show a specific function of the library. They are designed to show this function as simple as possible and may miss some error handling that has to be present in real applications!
+NOTE: Most examples are intended to show a specific function of the library. They are designed to show this function as simple as possible and may miss error handling that has to be present in real applications!
 
 ## Building and running the examples with the provided makefiles
 
@@ -162,6 +168,8 @@ The experimental Python binding can be created using SWIG with cmake.
 
 To enable the bindings you have to select the phyton configuration option with ccmake of cmake-gui.
 
+We don't provide any support for the Python bindings!
+
 ## Commercial licenses and support
 
 Support and commercial license options are provided by MZ Automation GmbH. Please contact info@mz-automation.de for more details.
@@ -170,6 +178,7 @@ Support and commercial license options are provided by MZ Automation GmbH. Pleas
 
 If you want to contribute to the improvement and development of the library please send me comments, feature requests, bug reports, or patches. For more than trivial contributions I require you to sign a Contributor License Agreement. Please contact info@libiec61850.com.
 
+Please don't send pull requests before signing the Contributor License Agreement! Such pull requests may be silently ignored.
 
 ## Third-party contributions
 
