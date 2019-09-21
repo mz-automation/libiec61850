@@ -1,7 +1,7 @@
 /*
  *  ber_integer.c
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013-2019 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -106,7 +106,23 @@ BerInteger_setUint16(Asn1PrimitiveValue* self, uint16_t value)
     uint16_t valueCopy = value;
     uint8_t* valueBuffer = (uint8_t*) &valueCopy;
 
-    return setIntegerValue(self, valueBuffer, sizeof(value));
+    uint8_t byteBuffer[3];
+
+    int i;
+
+#if (ORDER_LITTLE_ENDIAN == 1)
+    byteBuffer[2] = 0;
+
+    for (i = 0; i < 2; i++)
+        byteBuffer[i] = valueBuffer[i];
+#else
+    byteBuffer[0] = 0;
+
+    for (i = 0; i < 2; i++)
+        byteBuffer[i + 1] = valueBuffer[i];
+#endif /* (ORDER_LITTLE_ENDIAN == 1) */
+
+    return setIntegerValue(self, byteBuffer, sizeof(byteBuffer));
 }
 
 int
