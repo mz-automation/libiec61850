@@ -517,8 +517,11 @@ namespace IEC61850
             [DllImport ("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern IntPtr ControlAction_getOrIdent (IntPtr self, ref int size);
 
-            [DllImport ("iec61850", CallingConvention = CallingConvention.Cdecl)]
-            static extern IntPtr ControlAction_getClientConnection (IntPtr self);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr ControlAction_getClientConnection(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern int ControlAction_getCtlNum(IntPtr self);
 
             private IntPtr self;
             private IedServer.ControlHandlerInfo info;
@@ -567,6 +570,15 @@ namespace IEC61850
                 Marshal.Copy (orIdentPtr, orIdent, 0, size);
 
                 return orIdent;
+            }
+
+            /// <summary>
+            /// Gets the ctlNum attribute of the control action
+            /// </summary>
+            /// <returns>The ctlNum value. Valid values are restricted from 0 to 255, -1 means not present</returns>
+            public int GetCtlNum()
+            {
+                return ControlAction_getCtlNum(self);
             }
 
             /// <summary>

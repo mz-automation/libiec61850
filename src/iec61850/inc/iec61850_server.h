@@ -1165,6 +1165,16 @@ LIB61850_API uint8_t*
 ControlAction_getOrIdent(ControlAction self, int* orIdentSize);
 
 /**
+ * \brief Get the ctlNum attribute send by the client
+ *
+ * \param self the control action instance
+ *
+ * \return the ctlNum value
+ */
+LIB61850_API int
+ControlAction_getCtlNum(ControlAction self);
+
+/**
  * \brief Gets the client object associated with the client that caused the control action
  *
  * \param self the control action instance

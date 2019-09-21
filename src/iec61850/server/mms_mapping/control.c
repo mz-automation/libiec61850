@@ -1734,6 +1734,18 @@ ControlAction_getOrIdent(ControlAction self, int* orIdentSize)
     return NULL;
 }
 
+int
+ControlAction_getCtlNum(ControlAction self)
+{
+    ControlObject* controlObject = (ControlObject*) self;
+
+    if (controlObject->ctlNum) {
+        return MmsValue_toInt32(controlObject->ctlNum);
+    }
+
+    return -1;
+}
+
 ClientConnection
 ControlAction_getClientConnection(ControlAction self)
 {
