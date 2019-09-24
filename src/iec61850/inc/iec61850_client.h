@@ -2038,7 +2038,8 @@ ControlObjectClient_getLastError(ControlObjectClient self);
  *
  * \param self the control object instance to use
  * \param ctlVal the control value (for APC the value may be either AnalogueValue (MMS_STRUCT) or MMS_FLOAT/MMS_INTEGER
- * \param operTime the time when the command has to be executed (for time activated control). If this value is 0 the command will be executed instantly.
+ * \param operTime the time when the command has to be executed (for time activated control). The value represents the local time of the
+ *                 server in milliseconds since epoch. If this value is 0 the command will be executed instantly.
  *
  * \return true if operation has been successful, false otherwise.
  */
@@ -2092,7 +2093,8 @@ ControlObjectClient_cancel(ControlObjectClient self);
  * \param self the control object instance to use
  * \param[out] err error code
  * \param ctlVal the control value (for APC the value may be either AnalogueValue (MMS_STRUCT) or MMS_FLOAT/MMS_INTEGER
- * \param operTime the time when the command has to be executed (for time activated control). If this value is 0 the command will be executed instantly.
+ * \param operTime the time when the command has to be executed (for time activated control). The value represents the local time of the
+ *                 server in milliseconds since epoch. If this value is 0 the command will be executed instantly.
  * \param handler the user provided callback handler
  * \param parameter user provided parameter that is passed to the callback handler
  *

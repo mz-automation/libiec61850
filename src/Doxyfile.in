@@ -51,7 +51,7 @@ PROJECT_BRIEF          = "@CPACK_PACKAGE_DESCRIPTION_SUMMARY@"
 # pixels and the maximum width should not exceed 200 pixels. Doxygen will copy
 # the logo to the output directory.
 
-PROJECT_LOGO           =
+PROJECT_LOGO           = @CMAKE_CURRENT_LIST_DIR@/doxygen/mz-automation.ico
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) path
 # into which the generated documentation will be written. If a relative path is
