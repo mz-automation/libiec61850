@@ -86,6 +86,7 @@ INSTALL_PREFIX = ./.install
 endif
 
 LIB_API_HEADER_FILES = hal/inc/hal_time.h 
+LIB_API_HEADER_FILES += hal/inc/hal_base.h
 LIB_API_HEADER_FILES += hal/inc/hal_thread.h
 LIB_API_HEADER_FILES += hal/inc/hal_filesystem.h
 LIB_API_HEADER_FILES += hal/inc/tls_config.h
@@ -101,6 +102,9 @@ LIB_API_HEADER_FILES += src/iec61850/inc/iec61850_dynamic_model.h
 LIB_API_HEADER_FILES += src/iec61850/inc/iec61850_config_file_parser.h
 LIB_API_HEADER_FILES += src/mms/inc/mms_value.h
 LIB_API_HEADER_FILES += src/mms/inc/mms_common.h
+LIB_API_HEADER_FILES += src/mms/inc/mms_server.h
+LIB_API_HEADER_FILES += src/mms/inc/mms_device_model.h
+LIB_API_HEADER_FILES += src/mms/inc/mms_named_variable_list.h
 LIB_API_HEADER_FILES += src/mms/inc/mms_types.h
 LIB_API_HEADER_FILES += src/mms/inc/mms_type_spec.h
 LIB_API_HEADER_FILES += src/mms/inc/mms_client_connection.h
