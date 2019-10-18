@@ -1053,7 +1053,7 @@ IedServer_updateInt32AttributeValue(IedServer self, DataAttribute* dataAttribute
 }
 
 void
-IedServer_udpateDbposValue(IedServer self, DataAttribute* dataAttribute, Dbpos value)
+IedServer_updateDbposValue(IedServer self, DataAttribute* dataAttribute, Dbpos value)
 {
     Dbpos currentValue = Dbpos_fromMmsValue(dataAttribute->mmsValue);
 

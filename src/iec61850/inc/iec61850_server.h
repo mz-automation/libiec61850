@@ -858,7 +858,7 @@ IedServer_updateInt32AttributeValue(IedServer self, DataAttribute* dataAttribute
  * \param value the new Dbpos value of the data attribute.
  */
 LIB61850_API void
-IedServer_udpateDbposValue(IedServer self, DataAttribute* dataAttribute, Dbpos value);
+IedServer_updateDbposValue(IedServer self, DataAttribute* dataAttribute, Dbpos value);
 
 /**
  * \brief Update the value of an IEC 61850 integer64 data attribute (like BCR actVal)
