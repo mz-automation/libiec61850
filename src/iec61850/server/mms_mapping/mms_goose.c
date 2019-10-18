@@ -39,7 +39,9 @@
 
 struct sMmsGooseControlBlock {
     char* name;
-    bool goEna;
+    int goEna:1;
+    int isDynamicDataSet:1;
+    int useVlanTag:1;
 
     char* dstAddress;
 
@@ -50,7 +52,6 @@ struct sMmsGooseControlBlock {
     GoosePublisher publisher;
 
     DataSet* dataSet;
-    bool isDynamicDataSet;
 
     LinkedList dataSetValues;
     uint64_t nextPublishTime;
@@ -68,6 +69,8 @@ struct sMmsGooseControlBlock {
     char* goCBRef;
     char* goId;
     char* dataSetRef;
+
+    char* gooseInterfaceId;
 };
 
 MmsGooseControlBlock
@@ -75,9 +78,12 @@ MmsGooseControlBlock_create()
 {
 	MmsGooseControlBlock self = (MmsGooseControlBlock) GLOBAL_CALLOC(1, sizeof(struct sMmsGooseControlBlock));
 
+	if (self) {
+	    self->useVlanTag = true;
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
-    self->publisherMutex = Semaphore_create(1);
+	    self->publisherMutex = Semaphore_create(1);
 #endif
+	}
 
     return self;
 }
@@ -112,9 +118,27 @@ MmsGooseControlBlock_destroy(MmsGooseControlBlock self)
         }
     }
 
+    if (self->gooseInterfaceId != NULL)
+        GLOBAL_FREEMEM(self->gooseInterfaceId);
+
     MmsValue_delete(self->mmsValue);
 
     GLOBAL_FREEMEM(self);
+}
+
+void
+MmsGooseControlBlock_useGooseVlanTag(MmsGooseControlBlock self, bool useVlanTag)
+{
+    self->useVlanTag = useVlanTag;
+}
+
+void
+MmsGooseControlBlock_setGooseInterfaceId(MmsGooseControlBlock self, const char* interfaceId)
+{
+    if (self->gooseInterfaceId != NULL)
+        GLOBAL_FREEMEM(self->gooseInterfaceId);
+
+    self->gooseInterfaceId = StringUtils_copyString(interfaceId);
 }
 
 MmsDomain*
@@ -127,6 +151,12 @@ DataSet*
 MmsGooseControlBlock_getDataSet(MmsGooseControlBlock self)
 {
     return self->dataSet;
+}
+
+LogicalNode*
+MmsGooseControlBlock_getLogicalNode(MmsGooseControlBlock self)
+{
+    return self->logicalNode;
 }
 
 char*
@@ -222,7 +252,10 @@ MmsGooseControlBlock_enable(MmsGooseControlBlock self)
 
             memcpy(commParameters.dstAddress, MmsValue_getOctetStringBuffer(macAddress), 6);
 
-            self->publisher = GoosePublisher_create(&commParameters, self->mmsMapping->gooseInterfaceId);
+            if (self->gooseInterfaceId)
+                self->publisher = GoosePublisher_createEx(&commParameters, self->gooseInterfaceId, self->useVlanTag);
+            else
+                self->publisher = GoosePublisher_createEx(&commParameters, self->mmsMapping->gooseInterfaceId, self->useVlanTag);
 
             self->minTime = MmsValue_toUint32(MmsValue_getElement(self->mmsValue, 6));
             self->maxTime = MmsValue_toUint32(MmsValue_getElement(self->mmsValue, 7));

@@ -426,6 +426,12 @@ namespace IEC61850
             static extern void IedConnection_setConnectTimeout(IntPtr self, UInt32 timeoutInMs);
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedConnection_setRequestTimeout(IntPtr self, UInt32 timeoutInMs);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern UInt32 IedConnection_getRequestTimeout(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern void IedConnection_connect(IntPtr self, out int error, string hostname, int tcpPort);
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
@@ -766,6 +772,22 @@ namespace IEC61850
                 set
                 {
                     connectTimeout = value;
+                }
+            }
+
+            /// <summary>
+            /// Gets or sets the request timeout for this connection
+            /// </summary>
+            /// <value>The request timeout in milliseconds</value>
+            public UInt32 RequestTimeout
+            {
+                get
+                {
+                    return IedConnection_getRequestTimeout(connection);
+                }
+                set
+                {
+                    IedConnection_setRequestTimeout(connection, value);
                 }
             }
 

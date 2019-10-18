@@ -59,8 +59,20 @@ int main(int argc, char** argv) {
 		char* ethernetIfcID = argv[1];
 
 		printf("Using GOOSE interface: %s\n", ethernetIfcID);
+
+		/* set GOOSE interface for all GOOSE publishers (GCBs) */
 		IedServer_setGooseInterfaceId(iedServer, ethernetIfcID);
 	}
+
+	if (argc > 2) {
+	    char* ethernetIfcID = argv[2];
+
+	    printf("Using GOOSE interface for GenericIO/LLN0.gcbAnalogValues: %s\n", ethernetIfcID);
+
+        /* set GOOSE interface for a particular GOOSE publisher (GCB) */
+	    IedServer_setGooseInterfaceIdEx(iedServer, IEDMODEL_GenericIO_LLN0, "gcbAnalogValues", ethernetIfcID);
+	}
+
 
 	/* MMS server will be instructed to start listening to client connections. */
 	IedServer_start(iedServer, 102);

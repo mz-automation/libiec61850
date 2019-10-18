@@ -106,18 +106,18 @@ ENDIF(WIN32)
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC" )
 #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC" )
 
-if(EXISTS ${CMAKE_CURRENT_LIST_DIR}/../third_party/mbedtls/mbedtls-2.6.0)
+if(EXISTS ${CMAKE_CURRENT_LIST_DIR}/../third_party/mbedtls/mbedtls-2.16)
 message("Found mbedtls -> can compile with TLS support")
 set(WITH_MBEDTLS 1)
-endif(EXISTS ${CMAKE_CURRENT_LIST_DIR}/../third_party/mbedtls/mbedtls-2.6.0)
+endif(EXISTS ${CMAKE_CURRENT_LIST_DIR}/../third_party/mbedtls/mbedtls-2.16)
 
 if(WITH_MBEDTLS)
 include_directories(
 	${CMAKE_CURRENT_LIST_DIR}/tls/mbedtls
-    ${CMAKE_CURRENT_LIST_DIR}/../third_party/mbedtls/mbedtls-2.6.0/include
+    ${CMAKE_CURRENT_LIST_DIR}/../third_party/mbedtls/mbedtls-2.16/include
 )
 
-file(GLOB tls_SRCS ${CMAKE_CURRENT_LIST_DIR}/../third_party/mbedtls/mbedtls-2.6.0/library/*.c)
+file(GLOB tls_SRCS ${CMAKE_CURRENT_LIST_DIR}/../third_party/mbedtls/mbedtls-2.16/library/*.c)
 
 add_definitions(-DMBEDTLS_CONFIG_FILE="mbedtls_config.h")
 

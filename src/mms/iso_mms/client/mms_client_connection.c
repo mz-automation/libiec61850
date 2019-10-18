@@ -314,6 +314,36 @@ removeFromOutstandingCalls(MmsConnection self, uint32_t invokeId)
     Semaphore_post(self->outstandingCallsLock);
 }
 
+MmsOutstandingCall
+mmsClient_getMatchingObtainFileRequest(MmsConnection self, const char* filename)
+{
+    int i = 0;
+
+    Semaphore_wait(self->outstandingCallsLock);
+
+    for (i = 0; i < OUTSTANDING_CALLS; i++) {
+        if (self->outstandingCalls[i].isUsed) {
+
+            if (self->outstandingCalls[i].type == MMS_CALL_TYPE_OBTAIN_FILE) {
+
+                char* storedFilename = (char*) self->outstandingCalls[i].internalParameter.ptr;
+
+                if (storedFilename) {
+
+                    if (!strcmp(filename, storedFilename)) {
+                        Semaphore_post(self->outstandingCallsLock);
+                        return &(self->outstandingCalls[i]);
+                    }
+                }
+            }
+        }
+    }
+
+    Semaphore_post(self->outstandingCallsLock);
+
+    return NULL;
+}
+
 static void
 sendMessage(MmsConnection self, ByteBuffer* message)
 {
@@ -926,6 +956,11 @@ handleAsyncResponse(MmsConnection self, ByteBuffer* response, uint32_t bufPos, M
     {
         MmsConnection_GenericServiceHandler handler =
                 (MmsConnection_GenericServiceHandler) outstandingCall->userCallback;
+
+        if (outstandingCall->type == MMS_CALL_TYPE_OBTAIN_FILE) {
+            if (outstandingCall->internalParameter.ptr)
+                GLOBAL_FREEMEM(outstandingCall->internalParameter.ptr);
+        }
 
         if (err != MMS_ERROR_NONE) {
             handler(outstandingCall->invokeId, outstandingCall->userParameter, err, false);
@@ -1553,6 +1588,12 @@ void
 MmsConnection_setRequestTimeout(MmsConnection self, uint32_t timeoutInMs)
 {
     self->requestTimeout = timeoutInMs;
+}
+
+uint32_t
+MmsConnection_getRequestTimeout(MmsConnection self)
+{
+    return self->requestTimeout;
 }
 
 void
@@ -4044,7 +4085,11 @@ MmsConnection_obtainFileAsync(MmsConnection self, MmsError* mmsError, const char
     mmsClient_createObtainFileRequest(invokeId, payload, sourceFile, destinationFile);
 
     MmsClientInternalParameter intParam;
-    intParam.ptr = NULL;
+
+    if (sourceFile)
+        intParam.ptr = StringUtils_copyString(sourceFile);
+    else
+        intParam.ptr = NULL;
 
     MmsError err = sendAsyncRequest(self, invokeId, payload, MMS_CALL_TYPE_OBTAIN_FILE, handler, parameter, intParam);
 

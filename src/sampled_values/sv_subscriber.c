@@ -157,38 +157,34 @@ svReceiverLoop(void* threadParameter)
 {
     SVReceiver self = (SVReceiver) threadParameter;
 
-    self->running = true;
     self->stopped = false;
 
-    if (SVReceiver_startThreadless(self)) {
+    while (self->running) {
 
-        while (self->running) {
-
-            if (SVReceiver_tick(self) == false)
-                Thread_sleep(1);
-        }
-
-        SVReceiver_stopThreadless(self);
-    }
-    else {
-        if (DEBUG_SV_SUBSCRIBER)
-            printf("SV_SUBSCRIBER: Failed to start SV receiver\n");
+        if (SVReceiver_tick(self) == false)
+            Thread_sleep(1);
     }
 
     self->stopped = true;
 }
 
-
 void
 SVReceiver_start(SVReceiver self)
 {
-    Thread thread = Thread_create((ThreadExecutionFunction) svReceiverLoop, (void*) self, true);
+    if (SVReceiver_startThreadless(self)) {
 
-    if (thread != NULL) {
         if (DEBUG_SV_SUBSCRIBER)
             printf("SV_SUBSCRIBER: SV receiver started for interface %s\n", self->interfaceId);
 
-        Thread_start(thread);
+        Thread thread = Thread_create((ThreadExecutionFunction) svReceiverLoop, (void*) self, true);
+
+        if (thread) {
+            Thread_start(thread);
+        }
+        else {
+            if (DEBUG_SV_SUBSCRIBER)
+                printf("SV_SUBSCRIBER: Failed to start thread\n");
+        }
     }
     else {
         if (DEBUG_SV_SUBSCRIBER)
@@ -206,10 +202,12 @@ SVReceiver_isRunning(SVReceiver self)
 void
 SVReceiver_stop(SVReceiver self)
 {
-    self->running = false;
+    if (self->running) {
+        SVReceiver_stopThreadless(self);
 
-    while (self->stopped == false)
-        Thread_sleep(1);
+        while (self->stopped == false)
+            Thread_sleep(1);
+    }
 }
 
 void
@@ -217,6 +215,9 @@ SVReceiver_destroy(SVReceiver self)
 {
     LinkedList_destroyDeep(self->subscriberList,
             (LinkedListValueDeleteFunction) SVSubscriber_destroy);
+
+    if (self->interfaceId != NULL)
+        GLOBAL_FREEMEM(self->interfaceId);
 
 #if (CONFIG_MMS_THREADLESS_STACK == 0)
         Semaphore_destroy(self->subscriberListLock);
@@ -247,7 +248,8 @@ SVReceiver_startThreadless(SVReceiver self)
 void
 SVReceiver_stopThreadless(SVReceiver self)
 {
-    Ethernet_destroySocket(self->ethSocket);
+    if (self->ethSocket)
+        Ethernet_destroySocket(self->ethSocket);
 
     self->running = false;
 }

@@ -459,6 +459,8 @@ IedServer_getMmsServer(IedServer self);
  * then configured GOOSE control blocks keep inactive until a MMS client enables
  * them by writing to the GOOSE control block.
  *
+ * Note: This function has no effect when CONFIG_INCLUDE_GOOSE_SUPPORT is not set.
+ *
  * \param self the instance of IedServer to operate on.
  */
 LIB61850_API void
@@ -469,6 +471,8 @@ IedServer_enableGoosePublishing(IedServer self);
  *
  * This will set the GoEna attribute of all configured GOOSE control blocks
  * to false. This will stop GOOSE transmission.
+ *
+ * Note: This function has no effect when CONFIG_INCLUDE_GOOSE_SUPPORT is not set.
  *
  * \param self the instance of IedServer to operate on.
  */
@@ -482,11 +486,45 @@ IedServer_disableGoosePublishing(IedServer self);
  * default interface ID from stack_config.h is used. Note the interface ID is operating system
  * specific!
  *
+ * Note: This function has no effect when CONFIG_INCLUDE_GOOSE_SUPPORT is not set.
+ *
  * \param self the instance of IedServer to operate on.
  * \param interfaceId the ID of the ethernet interface to be used for GOOSE publishing
  */
 LIB61850_API void
 IedServer_setGooseInterfaceId(IedServer self, const char* interfaceId);
+
+/**
+ * \brief Set the Ethernet interface to be used by GOOSE publishing
+ *
+ * This function can be used to set the GOOSE interface ID forG all CBs (parameter ln = NULL) or for
+ * a specific GCB specified by the logical node instance and the GCB name.
+ *
+ * Note: This function has no effect when CONFIG_INCLUDE_GOOSE_SUPPORT is not set.
+ *
+ * \param self the instance of IedServer to operate on.
+ * \param ln the logical node that contains the GCB or NULL to enable/disable VLAN tagging for all GCBs
+ * \param gcbName the name (not object reference!) of the GCB
+ * \param interfaceId the ID of the ethernet interface to be used for GOOSE publishing
+ */
+LIB61850_API void
+IedServer_setGooseInterfaceIdEx(IedServer self, LogicalNode* ln, const char* gcbName, const char* interfaceId);
+
+/**
+ * \brief Enable/disable the use of VLAN tags in GOOSE messages
+ *
+ * This function can be used to enable/disable VLAN tagging for all GCBs (parameter ln = NULL) or for
+ * a specific GCB specified by the logical node instance and the GCB name.
+ *
+ * Note: This function has no effect when CONFIG_INCLUDE_GOOSE_SUPPORT is not set.
+ *
+ * \param self the instance of IedServer to operate on
+ * \param ln the logical node that contains the GCB or NULL to enable/disable VLAN tagging for all GCBs
+ * \param gcbName the name (not object reference!) of the GCB
+ * \param useVlanTag true to enable VLAN tagging, false otherwise
+ */
+LIB61850_API void
+IedServer_useGooseVlanTag(IedServer self, LogicalNode* ln, const char* gcbName, bool useVlanTag);
 
 /**@}*/
 
@@ -1125,6 +1163,16 @@ ControlAction_getOrCat(ControlAction self);
  */
 LIB61850_API uint8_t*
 ControlAction_getOrIdent(ControlAction self, int* orIdentSize);
+
+/**
+ * \brief Get the ctlNum attribute send by the client
+ *
+ * \param self the control action instance
+ *
+ * \return the ctlNum value
+ */
+LIB61850_API int
+ControlAction_getCtlNum(ControlAction self);
 
 /**
  * \brief Gets the client object associated with the client that caused the control action

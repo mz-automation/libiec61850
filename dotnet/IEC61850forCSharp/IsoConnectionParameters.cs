@@ -59,20 +59,28 @@ namespace IEC61850
 				[MarshalAs(UnmanagedType.ByValArray, SizeConst=16)] public byte[] value;
 			}
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            [StructLayout(LayoutKind.Sequential)]
+            private struct NativePSelector
+            {
+                public byte size;
+
+                [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)] public byte[] value;
+            }
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			private static extern void IsoConnectionParameters_destroy(IntPtr self);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			private static extern void IsoConnectionParameters_setRemoteApTitle(IntPtr self, string apTitle, int aeQualifier);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			private static extern void IsoConnectionParameters_setRemoteAddresses(IntPtr self, UInt32 pSelector, NativeSSelector sSelector, NativeTSelector tSelector);
+			private static extern void IsoConnectionParameters_setRemoteAddresses(IntPtr self, NativePSelector pSelector, NativeSSelector sSelector, NativeTSelector tSelector);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			private static extern void IsoConnectionParameters_setLocalApTitle(IntPtr self, string apTitle, int aeQualifier);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			private static extern void IsoConnectionParameters_setLocalAddresses(IntPtr self, UInt32 pSelector, NativeSSelector sSelector, NativeTSelector tSelector);
+			private static extern void IsoConnectionParameters_setLocalAddresses(IntPtr self, NativePSelector pSelector, NativeSSelector sSelector, NativeTSelector tSelector);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			private static extern void IsoConnectionParameters_setAcseAuthenticationParameter(IntPtr self, IntPtr acseAuthParameter);
@@ -130,7 +138,7 @@ namespace IEC61850
             /// <param name='tSelector'>
             /// ISO COTP transport layer address
             /// </param>
-			public void SetRemoteAddresses (UInt32 pSelector, byte[] sSelector, byte[] tSelector)
+			public void SetRemoteAddresses (byte[] pSelector, byte[] sSelector, byte[] tSelector)
 			{
                 if (tSelector.Length > 4)
                     throw new ArgumentOutOfRangeException("tSelector", "maximum size (4) exceeded");
@@ -152,7 +160,17 @@ namespace IEC61850
 				for (int i = 0; i < sSelector.Length; i++)
 					nativeSSelector.value [i] = sSelector [i];
 
-				IsoConnectionParameters_setRemoteAddresses(self, pSelector, nativeSSelector, nativeTSelector);
+                if (pSelector.Length > 16)
+                    throw new ArgumentOutOfRangeException("pSelector", "maximum size (16) exceeded");
+
+                NativePSelector nativePSelector;
+                nativePSelector.size = (byte)pSelector.Length;
+                nativePSelector.value = new byte[16];
+
+                for (int i = 0; i < pSelector.Length; i++)
+                    nativePSelector.value[i] = pSelector[i];
+
+                IsoConnectionParameters_setRemoteAddresses(self, nativePSelector, nativeSSelector, nativeTSelector);
 			}
 
             /// <summary>
@@ -181,7 +199,7 @@ namespace IEC61850
             /// <param name='tSelector'>
             /// ISO COTP transport layer address
             /// </param>
-			public void SetLocalAddresses (UInt32 pSelector, byte[] sSelector, byte[] tSelector)
+			public void SetLocalAddresses (byte[] pSelector, byte[] sSelector, byte[] tSelector)
 			{
                 if (tSelector.Length > 4)
                     throw new ArgumentOutOfRangeException("tSelector", "maximum size (4) exceeded");
@@ -203,7 +221,17 @@ namespace IEC61850
 				for (int i = 0; i < sSelector.Length; i++)
 					nativeSSelector.value [i] = sSelector [i];
 
-				IsoConnectionParameters_setLocalAddresses(self, pSelector, nativeSSelector, nativeTSelector);
+                if (pSelector.Length > 16)
+                    throw new ArgumentOutOfRangeException("pSelector", "maximum size (16) exceeded");
+
+                NativePSelector nativePSelector;
+                nativePSelector.size = (byte)pSelector.Length;
+                nativePSelector.value = new byte[16];
+
+                for (int i = 0; i < pSelector.Length; i++)
+                    nativePSelector.value[i] = pSelector[i];
+
+                IsoConnectionParameters_setLocalAddresses(self, nativePSelector, nativeSSelector, nativeTSelector);
 			}
 
             /// <summary>

@@ -49,6 +49,9 @@ typedef struct sGoosePublisher* GoosePublisher;
 LIB61850_API GoosePublisher
 GoosePublisher_create(CommParameters* parameters, const char* interfaceID);
 
+LIB61850_API GoosePublisher
+GoosePublisher_createEx(CommParameters* parameters, const char* interfaceID, bool useVlanTag);
+
 LIB61850_API void
 GoosePublisher_destroy(GoosePublisher self);
 

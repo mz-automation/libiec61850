@@ -74,6 +74,16 @@ LIB61850_API void
 GooseReceiver_setInterfaceId(GooseReceiver self, const char* interfaceId);
 
 /**
+ * \brief return the interface ID used by the GOOSE receiver
+ *
+ * \param self the GosseReceiver instance
+ *
+ * \return the Ethernet interface ID string
+ */
+LIB61850_API const char*
+GooseReceiver_getInterfaceId(GooseReceiver self);
+
+/**
  * \brief Add a subscriber to this receiver instance
  *
  * NOTE: Do not call this function while the receiver is running (after GooseReceiver_start

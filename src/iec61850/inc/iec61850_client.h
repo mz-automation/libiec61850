@@ -245,6 +245,28 @@ LIB61850_API void
 IedConnection_setConnectTimeout(IedConnection self, uint32_t timeoutInMs);
 
 /**
+ * \brief set the request timeout in ms
+ *
+ * Set the request timeout for this connection. You can call this function any time to adjust
+ * timeout behavior.
+ *
+ * \param self the connection object
+ * \param timoutInMs the connection timeout in ms
+ */
+LIB61850_API void
+IedConnection_setRequestTimeout(IedConnection self, uint32_t timeoutInMs);
+
+/**
+ * \brief get the request timeout in ms for this connection
+ *
+ * \param self the connection object
+ *
+ * \return request timeout in milliseconds
+ */
+LIB61850_API uint32_t
+IedConnection_getRequestTimeout(IedConnection self);
+
+/**
  * \brief Perform MMS message handling and house-keeping tasks (for non-thread mode only)
  *
  * This function has to be called periodically by the user application in non-thread mode. The return
@@ -1102,7 +1124,7 @@ typedef enum {
     /** the element is included due to a general interrogation by the client */
     IEC61850_REASON_GI = 5,
 
-    /** the reason for inclusion is unknown */
+    /** the reason for inclusion is unknown (e.g. report is not configured to include reason-for-inclusion) */
     IEC61850_REASON_UNKNOWN = 6
 } ReasonForInclusion;
 

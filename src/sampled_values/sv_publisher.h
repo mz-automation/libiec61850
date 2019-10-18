@@ -70,12 +70,26 @@ typedef struct sSVPublisher_ASDU* SVPublisher_ASDU;
 /**
  * \brief Create a new IEC61850-9-2 Sampled Values publisher.
  *
+ * NOTE: VLAN tagging is enabled when calling this constructor. To disable VLAN tagging
+ * use \ref SVPublisher_createEx instead.
+ *
  * \param[in] interfaceId the name of the interface over which the SV publisher should send SV packets.
  * \param[in] parameters optional parameters for setting VLAN options and destination MAC address. Use NULL for default values.
  * \return the new SV publisher instance.
  */
 LIB61850_API SVPublisher
 SVPublisher_create(CommParameters* parameters, const char* interfaceId);
+
+/**
+ * \brief Create a new IEC61850-9-2 Sampled Values publisher.
+ *
+ * \param[in] interfaceId the name of the interface over which the SV publisher should send SV packets.
+ * \param[in] parameters optional parameters for setting VLAN options and destination MAC address. Use NULL for default values.
+ * \param[in] useVlanTags enable(true)/disable(false) VLAN tagging
+ * \return the new SV publisher instance.
+ */
+LIB61850_API SVPublisher
+SVPublisher_createEx(CommParameters* parameters, const char* interfaceId, bool useVlanTag);
 
 /**
  * \brief Create an Application Service Data Unit (ASDU) and add it to an existing Sampled Values publisher.

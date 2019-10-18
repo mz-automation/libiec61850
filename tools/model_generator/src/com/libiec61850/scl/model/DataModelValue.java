@@ -160,7 +160,26 @@ public class DataModelValue {
             System.out.println("Warning: Initialization of CHECK is unsupported!");
         case CODEDENUM:
             this.value = null;
-            System.out.println("Warning: Initialization of CODEDENUM is unsupported!");
+            
+            if (value.equals("intermediate-state"))
+            	this.value = new Integer(0);
+            else if (value.equals("off"))
+            	this.value = new Integer(1);
+            else if (value.equals("on"))
+            	this.value = new Integer(2);
+            else if (value.equals("bad-state"))
+            	this.value = new Integer(4);
+            else if (value.equals("stop"))
+            	this.value = new Integer(0);
+            else if (value.equals("lower"))
+            	this.value = new Integer(1);
+            else if (value.equals("higher"))
+            	this.value = new Integer(2);
+            else if (value.equals("reserved"))
+            	this.value = new Integer(4);
+            else 
+            	System.out.println("Warning: CODEDENUM is initialized with unsupported value " + value.toString());
+            
             break;
         case QUALITY:
         	this.value = null;

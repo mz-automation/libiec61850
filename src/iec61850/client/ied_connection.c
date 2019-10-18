@@ -102,6 +102,9 @@ iedConnection_mapMmsErrorToIedError(MmsError mmsError)
     case MMS_ERROR_OUTSTANDING_CALL_LIMIT:
         return IED_ERROR_OUTSTANDING_CALL_LIMIT_REACHED;
 
+    case MMS_ERROR_DEFINITION_OBJECT_UNDEFINED:
+        return IED_ERROR_OBJECT_UNDEFINED;
+
     default:
         return IED_ERROR_UNKNOWN;
     }
@@ -636,6 +639,24 @@ void
 IedConnection_setConnectTimeout(IedConnection self, uint32_t timeoutInMs)
 {
     self->connectionTimeout = timeoutInMs;
+}
+
+void
+IedConnection_setRequestTimeout(IedConnection self, uint32_t timeoutInMs)
+{
+    if (self->connection) {
+        MmsConnection_setRequestTimeout(self->connection, timeoutInMs);
+    }
+}
+
+uint32_t
+IedConnection_getRequestTimeout(IedConnection self)
+{
+    if (self->connection) {
+        return MmsConnection_getRequestTimeout(self->connection);
+    }
+    else
+        return 0;
 }
 
 IedConnectionState
