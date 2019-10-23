@@ -1667,7 +1667,9 @@ void
 IedConnection_getDeviceModelFromServer(IedConnection self, IedClientError* error)
 {
     MmsError mmsError = MMS_ERROR_NONE;
-    *error = IED_ERROR_OK;
+
+    if (error)
+        *error = IED_ERROR_OK;
 
     LinkedList logicalDeviceNames = MmsConnection_getDomainNames(self->connection, &mmsError);
 
@@ -1685,24 +1687,31 @@ IedConnection_getDeviceModelFromServer(IedConnection self, IedClientError* error
         while (logicalDevice != NULL) {
             char* name = (char*) logicalDevice->data;
 
-            ICLogicalDevice* icLogicalDevice = ICLogicalDevice_create(name);
-
             LinkedList variables = MmsConnection_getDomainVariableNames(self->connection,
                     &mmsError, name);
 
-            if (variables != NULL)
+            if (variables != NULL) {
+                ICLogicalDevice* icLogicalDevice = ICLogicalDevice_create(name);
+
                 ICLogicalDevice_setVariableList(icLogicalDevice, variables);
+
+                LinkedList_add(logicalDevices, icLogicalDevice);
+            }
             else {
-                *error = iedConnection_mapMmsErrorToIedError(mmsError);
+                if (error)
+                    *error = iedConnection_mapMmsErrorToIedError(mmsError);
                 break;
             }
-
-            LinkedList_add(logicalDevices, icLogicalDevice);
 
             logicalDevice = LinkedList_getNext(logicalDevice);
         }
 
-        self->logicalDevices = logicalDevices;
+        if (mmsError != MMS_ERROR_NONE) {
+            LinkedList_destroyDeep(logicalDevices, (LinkedListValueDeleteFunction) ICLogicalDevice_destroy);
+        }
+        else {
+            self->logicalDevices = logicalDevices;
+        }
 
         LinkedList_destroy(logicalDeviceNames);
     }

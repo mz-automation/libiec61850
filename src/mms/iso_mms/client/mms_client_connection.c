@@ -2018,6 +2018,13 @@ mmsClient_getNameList(MmsConnection self, MmsError *mmsError,
     if (mmsError)
         *mmsError = err;
 
+    if (err != MMS_ERROR_NONE) {
+        if (list) {
+            LinkedList_destroy(list);
+            list = NULL;
+        }
+    }
+
     return list;
 }
 
