@@ -230,7 +230,7 @@ TcpServerSocket_create(const char* address, int port)
         if (bind(fd, (struct sockaddr *) &serverAddress, sizeof(serverAddress)) >= 0) {
             serverSocket = (ServerSocket) GLOBAL_MALLOC(sizeof(struct sServerSocket));
             serverSocket->fd = fd;
-            serverSocket->backLog = 0;
+            serverSocket->backLog = 2;
 
             setSocketNonBlocking((Socket) serverSocket);
         }
