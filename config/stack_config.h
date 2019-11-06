@@ -68,9 +68,6 @@
 /* maximum COTP (ISO 8073) TPDU size - valid range is 1024 - 8192 */
 #define CONFIG_COTP_MAX_TPDU_SIZE 8192
 
-/* timeout while reading from TCP stream in ms */
-#define CONFIG_TCP_READ_TIMEOUT_MS 1000
-
 /* Ethernet interface ID for GOOSE and SV */
 #define CONFIG_ETHERNET_INTERFACE_ID "eth0"
 //#define CONFIG_ETHERNET_INTERFACE_ID "vboxnet0"

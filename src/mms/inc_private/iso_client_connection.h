@@ -59,7 +59,7 @@ LIB61850_INTERNAL void
 IsoClientConnection_destroy(IsoClientConnection self);
 
 LIB61850_INTERNAL bool
-IsoClientConnection_associateAsync(IsoClientConnection self, uint32_t connectTimeoutInMs);
+IsoClientConnection_associateAsync(IsoClientConnection self, uint32_t connectTimeoutInMs, uint32_t readTimeoutInMs);
 
 /**
  * called by tick function

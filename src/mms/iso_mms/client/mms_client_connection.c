@@ -1741,7 +1741,7 @@ MmsConnection_connectAsync(MmsConnection self, MmsError* mmsError, const char* s
     }
 #endif /* (CONFIG_MMS_RAW_MESSAGE_LOGGING == 1) */
 
-    if (IsoClientConnection_associateAsync(self->isoClient, self->connectTimeout)) {
+    if (IsoClientConnection_associateAsync(self->isoClient, self->connectTimeout, self->requestTimeout)) {
         setConnectionState(self, MMS_CONNECTION_STATE_CONNECTING);
         *mmsError = MMS_ERROR_NONE;
     }
