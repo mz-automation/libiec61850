@@ -85,6 +85,8 @@
 #define MMS_FILE_UPLOAD_STATE_SEND_OBTAIN_FILE_ERROR_DESTINATION 9
 #define MMS_FILE_UPLOAD_STATE_SEND_OBTAIN_FILE_RESPONSE 10
 
+#define MMS_FILE_UPLOAD_STATE_INTERRUPTED 11
+
 typedef struct sMmsObtainFileTask* MmsObtainFileTask;
 
 struct sMmsObtainFileTask {
