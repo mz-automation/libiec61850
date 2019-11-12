@@ -1777,5 +1777,13 @@ ControlAction_getControlObject(ControlAction self)
     return controlObject->dataObject;
 }
 
+uint64_t
+ControlAction_getControlTime(ControlAction self)
+{
+    ControlObject* controlObject = (ControlObject*) self;
+
+    return controlObject->operateTime;
+}
+
 #endif /* (CONFIG_IEC61850_CONTROL_SERVICE == 1) */
 
