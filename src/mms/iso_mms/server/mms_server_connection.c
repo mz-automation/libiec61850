@@ -554,20 +554,25 @@ handleConfirmedResponsePdu(
 
                         bool moreFollows;
 
-                        if (mmsMsg_parseFileReadResponse(buffer, startBufPos, maxBufPos, invokeId, fileTask->frmsId, &moreFollows, mmsFileReadHandler, (void*) fileTask)) {
+                        if(fileTask->fileHandle == NULL){
+                            fileTask->state = MMS_FILE_UPLOAD_STATE_SEND_OBTAIN_FILE_ERROR_DESTINATION;
+                        }
+                        else{
+                            if (mmsMsg_parseFileReadResponse(buffer, startBufPos, maxBufPos, invokeId, fileTask->frmsId, &moreFollows, mmsFileReadHandler, (void*) fileTask)) {
 
-                            if (moreFollows) {
-                                fileTask->state = MMS_FILE_UPLOAD_STATE_SEND_FILE_READ;
+                                if (moreFollows) {
+                                    fileTask->state = MMS_FILE_UPLOAD_STATE_SEND_FILE_READ;
+                                }
+                                else {
+                                    fileTask->state = MMS_FILE_UPLOAD_STATE_SEND_FILE_CLOSE;
+                                }
                             }
                             else {
-                                fileTask->state = MMS_FILE_UPLOAD_STATE_SEND_FILE_CLOSE;
-                            }
-                        }
-                        else {
-                            fileTask->state = MMS_FILE_UPLOAD_STATE_SEND_OBTAIN_FILE_ERROR_SOURCE;
+                                fileTask->state = MMS_FILE_UPLOAD_STATE_SEND_OBTAIN_FILE_ERROR_SOURCE;
 
-                            if (DEBUG_MMS_SERVER)
-                                printf("MMS_SERVER: error parsing file-read-response\n");
+                                if (DEBUG_MMS_SERVER)
+                                    printf("MMS_SERVER: error parsing file-read-response\n");
+                            }
                         }
                     }
                     else {
@@ -588,7 +593,9 @@ handleConfirmedResponsePdu(
                     MmsObtainFileTask fileTask = getUploadTaskByInvokeId(self->server, invokeId);
 
                     if (fileTask != NULL) {
-                        FileSystem_closeFile(fileTask->fileHandle);
+                        if(fileTask->fileHandle){
+                            FileSystem_closeFile(fileTask->fileHandle);
+                        }
                         fileTask->state = MMS_FILE_UPLOAD_STATE_SEND_OBTAIN_FILE_RESPONSE;
                     }
                     else {

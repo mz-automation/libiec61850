@@ -210,8 +210,10 @@ mmsClient_handleFileCloseRequest(
         if (frsm->obtainRequest)
             frsm->obtainRequest->timeout = Hal_getTimeInMs() + connection->requestTimeout;
 
-        FileSystem_closeFile(frsm->fileHandle);
-        frsm->fileHandle = NULL;
+        if(frsm->fileHandle){
+            FileSystem_closeFile(frsm->fileHandle);
+            frsm->fileHandle = NULL;
+        }
         frsm->frsmId = 0;
         frsm->obtainRequest = NULL;
 
