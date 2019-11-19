@@ -464,8 +464,13 @@ mmsFileReadHandler(uint32_t invokeId, void* parameter, MmsError mmsError, int32_
     if (mmsError == MMS_ERROR_NONE) {
         if (DEBUG_MMS_SERVER)
             printf("MMS_SERVER:  file %i received %i bytes\n", task->frmsId, bytesReceived);
-
-        FileSystem_writeFile(task->fileHandle, buffer, bytesReceived);
+            if(task->fileHandle){
+                FileSystem_writeFile(task->fileHandle, buffer, bytesReceived);
+            }
+            else{
+                if (DEBUG_MMS_SERVER)
+                    printf("MMS_SERVER: problem reading file %i file already closed\n", task->frmsId);
+            }
     }
     else {
         if (DEBUG_MMS_SERVER)
