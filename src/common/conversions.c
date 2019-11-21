@@ -65,7 +65,7 @@ days_from_civil(int y, int m, int d)
 
 /* from https://stackoverflow.com/questions/16647819/timegm-cross-platform */
 time_t 
-timegm(tm const* t) /* does not modify broken-down time */
+timegm(struct tm const* t) /* does not modify broken-down time */
 {
 	int year = t->tm_year + 1900;
 	int month = t->tm_mon;          /* 0-11 */
