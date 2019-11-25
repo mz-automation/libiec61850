@@ -857,11 +857,19 @@ mmsServer_handleFileCloseRequest(
 
     MmsFileReadStateMachine* frsm = getFrsm(connection, frsmId);
 
-    FileSystem_closeFile(frsm->fileHandle);
-    frsm->fileHandle = NULL;
-    frsm->frsmId = 0;
+    if (frsm) {
+        FileSystem_closeFile(frsm->fileHandle);
+        frsm->fileHandle = NULL;
+        frsm->frsmId = 0;
 
-    mmsMsg_createFileCloseResponse(invokeId, response);
+        mmsMsg_createFileCloseResponse(invokeId, response);
+    }
+    else {
+        if (DEBUG_MMS_SERVER)
+            printf("MMS_SERVER: Unused file ID %i\n", frsmId);
+
+        mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_OTHER);
+    }
 }
 
 
