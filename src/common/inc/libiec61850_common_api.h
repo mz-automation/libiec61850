@@ -9,11 +9,6 @@
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdbool.h>
-#ifdef _MSC_VER
-#if (_MSC_VER <= 1600)
-#define bool int
-#endif
-#endif
 #include <string.h>
 
 #ifdef __GNUC__
