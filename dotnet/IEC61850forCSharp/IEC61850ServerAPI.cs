@@ -36,33 +36,20 @@ namespace IEC61850
         /// Config file parser.
         /// </summary>
         public class ConfigFileParser
-		{
+        {
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr ConfigFileParser_createModelFromConfigFileEx(string filename);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr FileSystem_openFile(string filePath, [MarshalAs(UnmanagedType.I1)] bool readWrite);
+            public static IedModel CreateModelFromConfigFile(string filePath)
+            { 
+                IntPtr retVal = ConfigFileParser_createModelFromConfigFileEx (filePath);
+                if (retVal == IntPtr.Zero) {
+                    return null;
+                }
 
-
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr ConfigFileParser_createModelFromConfigFile(IntPtr fileHandle);
-
-			public static IedModel CreateModelFromConfigFile(string filePath)
-			{
-				IntPtr fileHandle = FileSystem_openFile (filePath, false);
-
-				if (fileHandle != IntPtr.Zero) {
-					
-					IntPtr retVal = ConfigFileParser_createModelFromConfigFile (fileHandle);
-					if (retVal == IntPtr.Zero) {
-						return null;
-					}
-
-					return new IedModel (retVal);
-
-				} else
-					return null;
-				//TODO else throw exception
-			}
-		}
+                return new IedModel (retVal);
+            }
+        }
 
         /// <summary>
         /// Representation of the IED server data model

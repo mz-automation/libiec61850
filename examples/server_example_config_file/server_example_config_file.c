@@ -20,7 +20,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "hal_filesystem.h"
 #include "iec61850_config_file_parser.h"
 
 static int running = 0;
@@ -39,18 +38,8 @@ main(int argc, char** argv)
         tcpPort = atoi(argv[1]);
     }
 
-    /* open configuration file */
-    FileHandle configFile = FileSystem_openFile("model.cfg", false);
-
-    if (configFile == NULL) {
-        printf("Error opening config file!\n");
-        return 1;
-    }
-
     /* parse the configuration file and create the data model */
-    IedModel* model = ConfigFileParser_createModelFromConfigFile(configFile);
-
-    FileSystem_closeFile(configFile);
+    IedModel* model = ConfigFileParser_createModelFromConfigFileEx("model.cfg");
 
     if (model == NULL) {
         printf("Error parsing config file!\n");

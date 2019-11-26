@@ -91,6 +91,24 @@ terminateString(char* string, char ch)
 }
 
 IedModel*
+ConfigFileParser_createModelFromConfigFileEx(const char* filename)
+{
+    FileHandle configFile = FileSystem_openFile((char*)filename, false);
+
+    if (configFile == NULL) {
+        if (DEBUG_IED_SERVER)
+            printf("IED_SERVER: Error opening config file!\n");
+        return NULL;
+    }
+
+    IedModel* model = ConfigFileParser_createModelFromConfigFile(configFile);
+
+    FileSystem_closeFile(configFile);
+
+    return model;
+}
+
+IedModel*
 ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
 {
     int bytesRead = 1;
@@ -268,7 +286,7 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
 
                         if (strcmp(currentLN->name, "LLN0") != 0) {
                             if (DEBUG_IED_SERVER)
-                                printf("Setting group control is not defined in LLN0\n");
+                                printf("IED_SERVER: Setting group control is not defined in LLN0\n");
 
                             goto exit_error;
                         }
