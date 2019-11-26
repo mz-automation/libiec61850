@@ -407,10 +407,12 @@ namespace IEC61850
             {
                 UInt32 parametersMask = CreateParametersMask();
 
+                bool flagRptId = this.flagRptId;
+
                 int error;
 
 				iedConnection.SetRCBValues (out error, self, parametersMask, singleRequest);
-
+                               
 				resetSendFlags();
 
                 if (error != 0)
