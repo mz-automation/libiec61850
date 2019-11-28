@@ -1581,15 +1581,31 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                     controlObject->interlockCheck = interlockCheck;
                     controlObject->mmsConnection = connection;
 
-                    initiateControlTask(controlObject);
+                    CheckHandlerResult checkResult = CONTROL_ACCEPTED;
+                    if (controlObject->checkHandler != NULL) { /* perform operative tests */
 
-                    setState(controlObject, STATE_WAIT_FOR_ACTIVATION_TIME);
+                        checkResult = controlObject->checkHandler((ControlAction) controlObject,
+                            controlObject->checkHandlerParameter, ctlVal, testCondition, interlockCheck);
 
-                    if (DEBUG_IED_SERVER)
-                        printf("Oper: activate time activated control\n");
+                    }
 
-                    indication = DATA_ACCESS_ERROR_SUCCESS;
+                    if(checkResult == CONTROL_ACCEPTED){
+                        initiateControlTask(controlObject);
+
+                        setState(controlObject, STATE_WAIT_FOR_ACTIVATION_TIME);
+
+                        if (DEBUG_IED_SERVER)
+                            printf("Oper: activate time activated control\n");
+
+                        indication = DATA_ACCESS_ERROR_SUCCESS;
+                    }
+                    else{
+                        indication = (MmsDataAccessError) checkResult;
+                    }
                 }
+            }
+            else{
+                controlObject->operateTime = 0;
             }
 
             MmsValue_update(controlObject->oper, value);
@@ -1681,7 +1697,6 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
         if (controlObject->timeActivatedOperate) {
             controlObject->timeActivatedOperate = false;
             abortControlOperation(controlObject);
-            indication = DATA_ACCESS_ERROR_SUCCESS;
             goto free_and_return;
         }
     }
@@ -1760,6 +1775,14 @@ ControlAction_getControlObject(ControlAction self)
     ControlObject* controlObject = (ControlObject*) self;
 
     return controlObject->dataObject;
+}
+
+uint64_t
+ControlAction_getControlTime(ControlAction self)
+{
+    ControlObject* controlObject = (ControlObject*) self;
+
+    return controlObject->operateTime;
 }
 
 #endif /* (CONFIG_IEC61850_CONTROL_SERVICE == 1) */

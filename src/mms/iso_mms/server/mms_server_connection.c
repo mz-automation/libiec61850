@@ -464,8 +464,13 @@ mmsFileReadHandler(uint32_t invokeId, void* parameter, MmsError mmsError, int32_
     if (mmsError == MMS_ERROR_NONE) {
         if (DEBUG_MMS_SERVER)
             printf("MMS_SERVER:  file %i received %i bytes\n", task->frmsId, bytesReceived);
-
-        FileSystem_writeFile(task->fileHandle, buffer, bytesReceived);
+            if(task->fileHandle){
+                FileSystem_writeFile(task->fileHandle, buffer, bytesReceived);
+            }
+            else{
+                if (DEBUG_MMS_SERVER)
+                    printf("MMS_SERVER: problem reading file %i file already closed\n", task->frmsId);
+            }
     }
     else {
         if (DEBUG_MMS_SERVER)
@@ -549,20 +554,25 @@ handleConfirmedResponsePdu(
 
                         bool moreFollows;
 
-                        if (mmsMsg_parseFileReadResponse(buffer, startBufPos, maxBufPos, invokeId, fileTask->frmsId, &moreFollows, mmsFileReadHandler, (void*) fileTask)) {
+                        if(fileTask->fileHandle == NULL){
+                            fileTask->state = MMS_FILE_UPLOAD_STATE_SEND_OBTAIN_FILE_ERROR_DESTINATION;
+                        }
+                        else{
+                            if (mmsMsg_parseFileReadResponse(buffer, startBufPos, maxBufPos, invokeId, fileTask->frmsId, &moreFollows, mmsFileReadHandler, (void*) fileTask)) {
 
-                            if (moreFollows) {
-                                fileTask->state = MMS_FILE_UPLOAD_STATE_SEND_FILE_READ;
+                                if (moreFollows) {
+                                    fileTask->state = MMS_FILE_UPLOAD_STATE_SEND_FILE_READ;
+                                }
+                                else {
+                                    fileTask->state = MMS_FILE_UPLOAD_STATE_SEND_FILE_CLOSE;
+                                }
                             }
                             else {
-                                fileTask->state = MMS_FILE_UPLOAD_STATE_SEND_FILE_CLOSE;
-                            }
-                        }
-                        else {
-                            fileTask->state = MMS_FILE_UPLOAD_STATE_SEND_OBTAIN_FILE_ERROR_SOURCE;
+                                fileTask->state = MMS_FILE_UPLOAD_STATE_SEND_OBTAIN_FILE_ERROR_SOURCE;
 
-                            if (DEBUG_MMS_SERVER)
-                                printf("MMS_SERVER: error parsing file-read-response\n");
+                                if (DEBUG_MMS_SERVER)
+                                    printf("MMS_SERVER: error parsing file-read-response\n");
+                            }
                         }
                     }
                     else {
@@ -583,7 +593,9 @@ handleConfirmedResponsePdu(
                     MmsObtainFileTask fileTask = getUploadTaskByInvokeId(self->server, invokeId);
 
                     if (fileTask != NULL) {
-                        FileSystem_closeFile(fileTask->fileHandle);
+                        if(fileTask->fileHandle){
+                            FileSystem_closeFile(fileTask->fileHandle);
+                        }
                         fileTask->state = MMS_FILE_UPLOAD_STATE_SEND_OBTAIN_FILE_RESPONSE;
                     }
                     else {

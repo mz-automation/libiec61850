@@ -1195,6 +1195,16 @@ LIB61850_API DataObject*
 ControlAction_getControlObject(ControlAction self);
 
 /**
+ * \brief Gets the time of the control, if it's a timeActivatedControl, returns 0, if it's not.
+ *
+ * \param self the control action instance
+ *
+ * \return the controllable data object instance
+ */
+LIB61850_API uint64_t
+ControlAction_getControlTime(ControlAction self);
+
+/**
  * \brief Control model callback to perform the static tests (optional).
  *
  * NOTE: Signature changed in version 1.4!
