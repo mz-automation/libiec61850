@@ -1451,7 +1451,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                                 ADD_CAUSE_OBJECT_ALREADY_SELECTED, ctlNum, origin, true);
 
                     if (DEBUG_IED_SERVER)
-                        printf("SBOw: select failed!\n");
+                        printf("IED_SERVER: SBOw - select failed!\n");
                 }
                 else {
 
@@ -1479,7 +1479,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                         indication = DATA_ACCESS_ERROR_SUCCESS;
 
                         if (DEBUG_IED_SERVER)
-                            printf("SBOw: selected successful\n");
+                            printf("IED_SERVER: SBOw - selected successful\n");
                     }
                     else {
                         indication = (MmsDataAccessError) checkResult;
@@ -1488,7 +1488,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                                 controlObject->addCauseValue, ctlNum, origin, true);
 
                         if (DEBUG_IED_SERVER)
-                            printf("SBOw: select rejected by application!\n");
+                            printf("IED_SERVER: SBOw - select rejected by application!\n");
                     }
                 }
             }
@@ -1595,7 +1595,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                         setState(controlObject, STATE_WAIT_FOR_ACTIVATION_TIME);
 
                         if (DEBUG_IED_SERVER)
-                            printf("Oper: activate time activated control\n");
+                            printf("IED_SERVER: Oper - activate time activated control\n");
 
                         indication = DATA_ACCESS_ERROR_SUCCESS;
                     }
