@@ -510,6 +510,9 @@ namespace IEC61850
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern int ControlAction_getCtlNum(IntPtr self);
 
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern UInt64 ControlAction_getControlTime(IntPtr self);
+
             private IntPtr self;
             private IedServer.ControlHandlerInfo info;
             private IedServer iedServer;
@@ -575,6 +578,24 @@ namespace IEC61850
             public DataObject GetControlObject ()
             {
                 return info.controlObject;
+            }
+
+            /// <summary>
+            ///  Gets the time of control execution, if it's a time activated control
+            /// </summary>
+            /// <returns>The time of control execution or 0 for immediate execution</returns>
+            public UInt64 GetControlTime()
+            {
+                return ControlAction_getControlTime(self);
+            }
+
+            /// <summary>
+            /// Gets the tome of control execution as data time offset.
+            /// </summary>
+            /// <returns>The control execution time as data time offset.</returns>
+            public DateTimeOffset GetControlTimeAsDataTimeOffset()
+            {
+                return MmsValue.MsTimeToDateTimeOffset(GetControlTime());
             }
 
             /// <summary>

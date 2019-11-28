@@ -31,13 +31,22 @@ namespace server1
 
 			IedServer iedServer = new IedServer (iedModel, config);
 
+            iedServer.SetCheckHandler(spcso1, delegate(ControlAction action, object parameter, MmsValue ctlVal, bool test, bool interlockCheck) {
+
+                Console.WriteLine("Received binary control command:");
+                Console.WriteLine("   ctlNum: " + action.GetCtlNum());
+                Console.WriteLine("   execution-time: " + action.GetControlTimeAsDataTimeOffset().ToString());
+
+                return CheckHandlerResult.ACCEPTED;
+            }, null);
+
 			iedServer.SetControlHandler (spcso1, delegate(ControlAction action, object parameter, MmsValue ctlVal, bool test) {
                 bool val = ctlVal.GetBoolean();
 
                 if (val)
-                    Console.WriteLine("received binary control command: on");
+                    Console.WriteLine("execute binary control command: on");
                 else
-                    Console.WriteLine("received binary control command: off");
+                    Console.WriteLine("execute binary control command: off");
                 
                 return ControlHandlerResult.OK;
 			}, null);

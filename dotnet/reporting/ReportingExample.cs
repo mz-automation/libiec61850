@@ -113,7 +113,7 @@ namespace reporting
 				if (rcb3.IsBuffered())
 					Console.WriteLine ("RCB: " + rcbReference3 + " is buffered");
 
-				rcb3.InstallReportHandler(reportHandler, rcb2);
+				rcb3.InstallReportHandler(reportHandler, rcb3);
 
 				rcb3.SetOptFlds(ReportOptions.REASON_FOR_INCLUSION | ReportOptions.SEQ_NUM | ReportOptions.TIME_STAMP |
 				                ReportOptions.CONF_REV | ReportOptions.ENTRY_ID | ReportOptions.DATA_REFERENCE | ReportOptions.DATA_SET);
