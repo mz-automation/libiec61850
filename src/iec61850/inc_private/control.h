@@ -43,14 +43,15 @@ struct sControlObject
     char* lnName;
     char* name;
 
-    int state:4;
-    int ctlModel:4;
-    int pendingEvents:8;
-    int testMode:1;
-    int interlockCheck:1;
-    int synchroCheck:1;
-    int timeActivatedOperate:1;
-    int operateOnce:1;
+    unsigned state:4;
+    unsigned ctlModel:4;
+    unsigned pendingEvents:8;
+    unsigned testMode:1;
+    unsigned interlockCheck:1;
+    unsigned synchroCheck:1;
+    unsigned timeActivatedOperate:1;
+    unsigned operateOnce:1;
+    unsigned isSelect:1;
     ControlAddCause addCauseValue:6;
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)

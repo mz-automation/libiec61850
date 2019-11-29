@@ -1175,6 +1175,16 @@ LIB61850_API int
 ControlAction_getCtlNum(ControlAction self);
 
 /**
+ * \brief Check if the control callback is called by a select or operate command
+ *
+ * \param self the control action instance
+ *
+ * \return true, when called by select, false for operate
+ */
+LIB61850_API bool
+ControlAction_isSelect(ControlAction self);
+
+/**
  * \brief Gets the client object associated with the client that caused the control action
  *
  * \param self the control action instance

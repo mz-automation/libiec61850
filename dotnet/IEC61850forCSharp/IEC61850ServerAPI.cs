@@ -513,6 +513,10 @@ namespace IEC61850
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern UInt64 ControlAction_getControlTime(IntPtr self);
 
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
+            static extern bool ControlAction_isSelect(IntPtr self);
+
             private IntPtr self;
             private IedServer.ControlHandlerInfo info;
             private IedServer iedServer;
@@ -613,6 +617,15 @@ namespace IEC61850
                 }
 
                 return con;
+            }
+
+            /// <summary>
+            /// Cehck if the control callback is called by a select or operate command
+            /// </summary>
+            /// <returns><c>true</c>, if select, <c>false</c> otherwise.</returns>
+            public bool IsSelect()
+            {
+                return ControlAction_isSelect(self);
             }
         }
 

@@ -1270,8 +1270,12 @@ Control_readAccessControlObject(MmsMapping* self, MmsDomain* domain, char* varia
 
                         if (controlObject->checkHandler != NULL) { /* perform operative tests */
 
+                            controlObject->isSelect = 1;
+
                             checkResult = controlObject->checkHandler((ControlAction) controlObject,
                                     controlObject->checkHandlerParameter, NULL, false, false);
+
+                            controlObject->isSelect = 0;
                         }
 
                         if (checkResult == CONTROL_ACCEPTED) {
@@ -1467,8 +1471,12 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
 
                     if (controlObject->checkHandler != NULL) { /* perform operative tests */
 
+                        controlObject->isSelect = 1;
+
                         checkResult = controlObject->checkHandler((ControlAction) controlObject,
                                 controlObject->checkHandlerParameter, ctlVal, testCondition, interlockCheck);
+
+                        controlObject->isSelect = 0;
                     }
 
                     if (checkResult == CONTROL_ACCEPTED) {
@@ -1759,6 +1767,17 @@ ControlAction_getCtlNum(ControlAction self)
     }
 
     return -1;
+}
+
+bool
+ControlAction_isSelect(ControlAction self)
+{
+    ControlObject* controlObject = (ControlObject*) self;
+
+    if (controlObject->isSelect)
+        return true;
+    else
+        return false;
 }
 
 ClientConnection

@@ -27,10 +27,15 @@ sigint_handler(int signalId)
 static CheckHandlerResult
 checkHandler(ControlAction action, void* parameter, MmsValue* ctlVal, bool test, bool interlockCheck)
 {
-    printf("check handler called!\n");
+    if (ControlAction_isSelect(action))
+        printf("check handler called by select command!\n");
+    else
+        printf("check handler called by operate command!\n");
 
     if (interlockCheck)
         printf("  with interlock check bit set!\n");
+
+    printf("  ctlNum: %i\n", ControlAction_getCtlNum(action));
 
     if (parameter == IEDMODEL_GenericIO_GGIO1_SPCSO1)
         return CONTROL_ACCEPTED;
@@ -54,6 +59,9 @@ static ControlHandlerResult
 controlHandlerForBinaryOutput(ControlAction action, void* parameter, MmsValue* value, bool test)
 {
     uint64_t timestamp = Hal_getTimeInMs();
+
+    printf("control handler called\n");
+    printf("  ctlNum: %i\n", ControlAction_getCtlNum(action));
 
     if (parameter == IEDMODEL_GenericIO_GGIO1_SPCSO1) {
         IedServer_updateUTCTimeAttributeValue(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO1_t, timestamp);
@@ -122,7 +130,7 @@ main(int argc, char** argv)
 
     /* this is optional - performs operative checks */
     IedServer_setPerformCheckHandler(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO2, checkHandler,
-    IEDMODEL_GenericIO_GGIO1_SPCSO2);
+            IEDMODEL_GenericIO_GGIO1_SPCSO2);
 
     IedServer_setControlHandler(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO3,
             (ControlHandler) controlHandlerForBinaryOutput,

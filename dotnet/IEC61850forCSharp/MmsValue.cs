@@ -32,7 +32,6 @@ namespace IEC61850
 {
 	namespace Common
 	{
-
         /// <summary>
         /// This class is used to hold MMS data values of different types.
         /// </summary>
