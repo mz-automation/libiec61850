@@ -59,12 +59,12 @@
             </DataSet>
             <ReportControl name="EventsRCB" confRev="1" datSet="Events" rptID="Events" buffered="false" intgPd="1000" bufTime="50">
               <TrgOps period="true" />
-              <OptFields seqNum="true" timeStamp="true" dataSet="true" reasonCode="true" entryID="true" configRef="true" />
+              <OptFields seqNum="true" timeStamp="true" dataSet="true" reasonCode="true" configRef="true" />
               <RptEnabled max="1" />
             </ReportControl>
             <ReportControl name="AnalogValuesRCB" confRev="1" datSet="AnalogValues" rptID="AnalogValues" buffered="false" intgPd="1000" bufTime="50">
               <TrgOps period="true" />
-              <OptFields seqNum="true" timeStamp="true" dataSet="true" reasonCode="true" entryID="true" configRef="true" />
+              <OptFields seqNum="true" timeStamp="true" dataSet="true" reasonCode="true" configRef="true" />
               <RptEnabled max="1" />
 	        </ReportControl>
 	        
