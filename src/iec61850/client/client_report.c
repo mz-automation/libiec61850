@@ -460,7 +460,7 @@ iedConnection_handleReport(IedConnection self, MmsValue* value)
         matchingReport->timestamp = MmsValue_getBinaryTimeAsUtcMs(timeStampValue);
 
         if (DEBUG_IED_CLIENT)
-            printf("IED_CLIENT: report has timestamp %lu\n", matchingReport->timestamp);
+            printf("IED_CLIENT: report has timestamp %llu\n", (unsigned long long) matchingReport->timestamp);
 
         inclusionIndex++;
     }

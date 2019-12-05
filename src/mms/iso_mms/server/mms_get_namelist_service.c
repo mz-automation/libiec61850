@@ -257,10 +257,11 @@ getNameListDomainSpecific(MmsServerConnection connection, char* domainName)
 #if (MMS_DATA_SET_SERVICE == 1)
 
 static LinkedList
-createStringsFromNamedVariableList(LinkedList nameList, LinkedList variableLists)
+createStringsFromNamedVariableList(LinkedList variableLists)
 {
-    nameList = LinkedList_create();
+    LinkedList nameList = LinkedList_create();
     LinkedList variableListsElement = LinkedList_getNext(variableLists);
+
     while (variableListsElement != NULL) {
         MmsNamedVariableList variableList =
                 (MmsNamedVariableList) variableListsElement->data;
@@ -285,7 +286,7 @@ getNamedVariableListsDomainSpecific(MmsServerConnection connection, char* domain
     if (domain != NULL) {
         LinkedList variableLists = MmsDomain_getNamedVariableLists(domain);
 
-        nameList = createStringsFromNamedVariableList(nameList, variableLists);
+        nameList = createStringsFromNamedVariableList(variableLists);
     }
 
     return nameList;
@@ -300,7 +301,7 @@ getNamedVariableListsVMDSpecific(MmsServerConnection connection)
 
     LinkedList variableLists = MmsDevice_getNamedVariableLists(device);
 
-    nameList = createStringsFromNamedVariableList(nameList, variableLists);
+    nameList = createStringsFromNamedVariableList(variableLists);
 
     return nameList;
 }
@@ -313,7 +314,7 @@ getNamedVariableListAssociationSpecific(MmsServerConnection connection)
 
     LinkedList variableLists = MmsServerConnection_getNamedVariableLists(connection);
 
-    nameList = createStringsFromNamedVariableList(nameList, variableLists);
+    nameList = createStringsFromNamedVariableList(variableLists);
 
     return nameList;
 }

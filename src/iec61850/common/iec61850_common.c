@@ -22,6 +22,7 @@
  */
 
 #include "iec61850_common.h"
+#include "iec61850_common_internal.h"
 
 #include "libiec61850_platform_includes.h"
 

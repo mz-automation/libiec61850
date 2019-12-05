@@ -244,36 +244,6 @@ mmsMsg_parseDataElement(Data_t* dataElement)
                 printf("MMS CLIENT: error parsing data element (invalid structure size)!\n");
         }
     }
-    else if (dataElement->present == Data_PR_array) {
-
-        int componentCount = dataElement->choice.array->list.count;
-
-        if (componentCount > 0) {
-            value = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
-
-            value->type = MMS_ARRAY;
-            value->value.structure.size = componentCount;
-            value->value.structure.components = (MmsValue**) GLOBAL_CALLOC(componentCount, sizeof(MmsValue*));
-
-            int i;
-
-            for (i = 0; i < componentCount; i++) {
-                value->value.structure.components[i] =
-                        mmsMsg_parseDataElement(dataElement->choice.array->list.array[i]);
-
-                if (value->value.structure.components[i] == NULL) {
-                    MmsValue_delete(value);
-                    value = NULL;
-                    break;
-                }
-            }
-        }
-        else {
-            if (DEBUG_MMS_CLIENT)
-                printf("MMS CLIENT: error parsing data element (invalid array size)!\n");
-        }
-
-    }
     else {
         if (dataElement->present == Data_PR_integer) {
 

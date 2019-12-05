@@ -2186,7 +2186,10 @@ removeAllGIReportsFromReportBuffer(ReportBuffer* reportBuffer)
                 reportBuffer->oldestReport = currentReport->next;
             }
             else {
-                lastReport->next = currentReport->next;
+                if (lastReport != NULL)
+                    lastReport->next = currentReport->next;
+                else
+                    lastReport = currentReport;
             }
 
 #if (DEBUG_IED_SERVER == 1)

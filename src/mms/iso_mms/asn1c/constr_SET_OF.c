@@ -841,7 +841,14 @@ asn_dec_rval_t
 SET_OF_decode_uper(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
         asn_per_constraints_t *constraints, void **sptr, asn_per_data_t *pd) {
 	asn_dec_rval_t rv;
-        asn_SET_OF_specifics_t *specs = (asn_SET_OF_specifics_t *)td->specifics;
+
+    rv.code = RC_OK;
+    rv.consumed = 0;
+
+	if (td == NULL)
+	    return rv;
+
+    asn_SET_OF_specifics_t *specs = (asn_SET_OF_specifics_t *)td->specifics;
 	asn_TYPE_member_t *elm = td->elements;	/* Single one */
 	void *st = *sptr;
 	asn_anonymous_set_ *list;
@@ -866,7 +873,7 @@ SET_OF_decode_uper(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 	else if(td->per_constraints) ct = &td->per_constraints->size;
 	else ct = 0;
 
-	if(ct && ct->flags & APC_EXTENSIBLE) {
+	if(ct && (ct->flags & APC_EXTENSIBLE)) {
 		int value = per_get_few_bits(pd, 1);
 		if(value < 0) _ASN_DECODE_STARVED;
 		if(value) ct = 0;	/* Not restricted! */
@@ -905,8 +912,6 @@ SET_OF_decode_uper(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 		nelems = -1;	/* Allow uper_get_length() */
 	} while(repeat);
 
-	rv.code = RC_OK;
-	rv.consumed = 0;
 	return rv;
 }
 

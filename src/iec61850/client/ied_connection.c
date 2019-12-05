@@ -1925,9 +1925,7 @@ IedConnection_getFile(IedConnection self, IedClientError* error, const char* fil
     clientFileReadHandler.retVal = true;
     clientFileReadHandler.byteReceived = 0;
 
-    bool continueRead = true;
-
-    while (continueRead == true) {
+    while (true) {
         bool moreFollows =
                 MmsConnection_fileRead(self->connection, &mmsError, frsmId, mmsFileReadHandler,
                         &clientFileReadHandler);

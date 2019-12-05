@@ -1261,12 +1261,14 @@ OCTET_STRING_encode_uper(asn_TYPE_descriptor_t *td,
 	asn_enc_rval_t er;
 	int ct_extensible = ct->flags & APC_EXTENSIBLE;
 	int inext = 0;		/* Lies not within extension root */
-	int sizeinunits = st->size;
+	int sizeinunits;
 	const uint8_t *buf;
 	int ret;
 
 	if(!st || !st->buf)
 		_ASN_ENCODE_FAILED;
+
+	sizeinunits = st->size;
 
 	if(unit_bits == 1) {
 		sizeinunits = sizeinunits * 8 - (st->bits_unused & 0x07);
@@ -1387,38 +1389,41 @@ OCTET_STRING_print_utf8(asn_TYPE_descriptor_t *td, const void *sptr,
 }
 
 void
-OCTET_STRING_free(asn_TYPE_descriptor_t *td, void *sptr, int contents_only) {
-	OCTET_STRING_t *st = (OCTET_STRING_t *)sptr;
-	asn_OCTET_STRING_specifics_t *specs = td->specifics
-				? (asn_OCTET_STRING_specifics_t *)td->specifics
-				: &asn_DEF_OCTET_STRING_specs;
-	asn_struct_ctx_t *ctx = (asn_struct_ctx_t *)
-					((char *)st + specs->ctx_offset);
-	struct _stack *stck;
+OCTET_STRING_free(asn_TYPE_descriptor_t *td, void *sptr, int contents_only)
+{
+    OCTET_STRING_t *st = (OCTET_STRING_t*) sptr;
 
-	if(!td || !st)
-		return;
+    if ((td == NULL) || (st == NULL))
+        return;
 
-	if(st->buf) {
-		FREEMEM(st->buf);
-	}
+    asn_OCTET_STRING_specifics_t *specs = td->specifics
+                                          ? (asn_OCTET_STRING_specifics_t*) td->specifics
+                                            :
+                                            &asn_DEF_OCTET_STRING_specs;
+    asn_struct_ctx_t *ctx = (asn_struct_ctx_t*)
+            ((char*) st + specs->ctx_offset);
+    struct _stack *stck;
 
-	/*
-	 * Remove decode-time stack.
-	 */
-	stck = (struct _stack *)ctx->ptr;
-	if(stck) {
-		while(stck->tail) {
-			struct _stack_el *sel = stck->tail;
-			stck->tail = sel->prev;
-			FREEMEM(sel);
-		}
-		FREEMEM(stck);
-	}
+    if (st->buf) {
+        FREEMEM(st->buf);
+    }
 
-	if(!contents_only) {
-		FREEMEM(st);
-	}
+    /*
+     * Remove decode-time stack.
+     */
+    stck = (struct _stack*) ctx->ptr;
+    if (stck) {
+        while (stck->tail) {
+            struct _stack_el *sel = stck->tail;
+            stck->tail = sel->prev;
+            FREEMEM(sel);
+        }
+        FREEMEM(stck);
+    }
+
+    if (!contents_only) {
+        FREEMEM(st);
+    }
 }
 
 /*

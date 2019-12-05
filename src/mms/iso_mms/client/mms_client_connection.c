@@ -1273,7 +1273,8 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
         if (bufPos == -1)
             goto exit_with_error;
 
-        uint32_t invokeId;
+        bool hasInvokeId = false;
+        uint32_t invokeId = 0;
 
         while (bufPos < payload->size) {
 
@@ -1291,6 +1292,14 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
                 goto exit_with_error;
 
             if (extendedTag) {
+
+                if (hasInvokeId == false) {
+                    if (DEBUG_MMS_CLIENT)
+                        printf("MMS_CLIENT: invalid message received - missing invoke ID!\n");
+
+                    goto exit_with_error;
+                }
+
                 switch (nestedTag)
                 {
 
@@ -1350,6 +1359,8 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
                     invokeId = BerDecoder_decodeUint32(buf, length, bufPos);
                     if (DEBUG_MMS_CLIENT)
                         printf("MMS_CLIENT: received request with invokeId: %i\n", invokeId);
+
+                    hasInvokeId = true;
 
                     self->lastInvokeId = invokeId;
 
@@ -3376,7 +3387,8 @@ MmsConnection_readJournalTimeRangeAsync(MmsConnection self, MmsError* mmsError, 
     if ((MmsValue_getType(startTime) != MMS_BINARY_TIME) ||
             (MmsValue_getType(endTime) != MMS_BINARY_TIME)) {
 
-        *mmsError = MMS_ERROR_INVALID_ARGUMENTS;
+        if (mmsError)
+            *mmsError = MMS_ERROR_INVALID_ARGUMENTS;
         goto exit_function;
     }
 
@@ -3447,7 +3459,8 @@ MmsConnection_readJournalStartAfterAsync(MmsConnection self, MmsError* mmsError,
     if ((MmsValue_getType(timeSpecification) != MMS_BINARY_TIME) ||
             (MmsValue_getType(entrySpecification) != MMS_OCTET_STRING)) {
 
-        *mmsError = MMS_ERROR_INVALID_ARGUMENTS;
+        if (mmsError)
+            *mmsError = MMS_ERROR_INVALID_ARGUMENTS;
         goto exit_function;
     }
 

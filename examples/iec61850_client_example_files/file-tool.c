@@ -26,26 +26,26 @@ static char _dirname[1000];
 static char*
 dirname(char* path)
 {
-        char* lastSep = NULL;
+    char* lastSep = NULL;
 
-        int len = strlen(path);
-        int i = 0;
+    int len = strlen(path);
+    int i = 0;
 
-        while (i < len) {
-                if (path[i] == '/' || path[i] == ':' || path[i] == '\\')
-                        lastSep = path + i;
+    while (i < len) {
+        if (path[i] == '/' || path[i] == ':' || path[i] == '\\')
+            lastSep = path + i;
 
-                i++;
-        }
+        i++;
+    }
 
-        if (lastSep) {
-                strcpy(_dirname, path);
-                _dirname[lastSep - path] = 0;
-        }
-        else
-                strcpy("", path);
+    if (lastSep) {
+        strcpy(_dirname, path);
+        _dirname[lastSep - path] = 0;
+    }
+    else
+        strcpy(_dirname, "");
 
-        return _dirname;
+    return _dirname;
 }
 
 
@@ -54,24 +54,24 @@ static char _basename[1000];
 static char*
 basename(char* path)
 {
-        char* lastSep = NULL;
+    char* lastSep = NULL;
 
-        int len = strlen(path);
-        int i = 0;
+    int len = strlen(path);
+    int i = 0;
 
-        while (i < len) {
-                if (path[i] == '/' || path[i] == ':' || path[i] == '\\')
-                        lastSep = path + i;
+    while (i < len) {
+        if (path[i] == '/' || path[i] == ':' || path[i] == '\\')
+            lastSep = path + i;
 
-                i++;
-        }
+        i++;
+    }
 
-        if (lastSep)
-                strcpy(_basename, lastSep + 1);
-        else
-                strcpy(_basename, path);
+    if (lastSep)
+        strcpy(_basename, lastSep + 1);
+    else
+        strcpy(_basename, path);
 
-        return _basename;
+    return _basename;
 }
 
 #endif
