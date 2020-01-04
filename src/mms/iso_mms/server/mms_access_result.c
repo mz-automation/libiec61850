@@ -190,7 +190,12 @@ MmsValue_decodeMmsData(uint8_t* buffer, int bufPos, int bufferLength, int* endBu
             if (newBufPos < 0)
                 goto exit_with_error;
 
-            MmsValue* elementValue = MmsValue_decodeMmsData(buffer, bufPos, dataLength, NULL);
+            if (newBufPos + elementLength > dataEndBufPos)
+                goto exit_with_error;
+
+            int elementBufLength = newBufPos - bufPos + elementLength;
+
+            MmsValue* elementValue = MmsValue_decodeMmsData(buffer, bufPos, elementBufLength, NULL);
 
             if (elementValue == NULL)
                 goto exit_with_error;
@@ -227,6 +232,9 @@ MmsValue_decodeMmsData(uint8_t* buffer, int bufPos, int bufferLength, int* endBu
         break;
 
     case 0x85: /* MMS_INTEGER */
+        if (dataLength > 8)
+            goto exit_with_error;
+
         value = MmsValue_newInteger(dataLength * 8);
         memcpy(value->value.integer->octets, buffer + bufPos, dataLength);
         value->value.integer->size = dataLength;
@@ -234,6 +242,9 @@ MmsValue_decodeMmsData(uint8_t* buffer, int bufPos, int bufferLength, int* endBu
         break;
 
     case 0x86: /* MMS_UNSIGNED */
+        if (dataLength > 8)
+            goto exit_with_error;
+
         value = MmsValue_newUnsigned(dataLength * 8);
         memcpy(value->value.integer->octets, buffer + bufPos, dataLength);
         value->value.integer->size = dataLength;
