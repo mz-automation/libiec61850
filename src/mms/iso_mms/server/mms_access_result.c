@@ -171,8 +171,10 @@ MmsValue_decodeMmsData(uint8_t* buffer, int bufPos, int bufferLength, int* endBu
     case 0xa1: /* MMS_ARRAY */
     case 0xa2: /* MMS_STRUCTURE */
     {
-
         int elementCount = getNumberOfElements(buffer, bufPos, dataLength);
+
+        if (elementCount < 0)
+            goto exit_with_error;
 
         if (tag == 0xa1)
             value = MmsValue_createEmptyArray(elementCount);
