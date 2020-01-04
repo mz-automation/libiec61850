@@ -99,8 +99,6 @@ mmsClient_handleFileOpenRequest(
 
         if (bufPos < 0) goto exit_reject_invalid_pdu;
 
-        if (bufPos + length > maxBufPos) goto exit_reject_invalid_pdu;
-
         switch(tag) {
         case 0xa0: /* filename */
 
@@ -497,7 +495,7 @@ parseDirectoryEntry(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t invokeI
         bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
         if (bufPos < 0) {
             if (DEBUG_MMS_CLIENT)
-                printf("MMS_CLIENT: message contains unknown tag!\n");
+                printf("MMS_CLIENT: invalid length field\n");
             return false;
         }
 
@@ -511,7 +509,7 @@ parseDirectoryEntry(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t invokeI
             bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
             if (bufPos < 0) {
                 if (DEBUG_MMS_CLIENT)
-                    printf("MMS_CLIENT: message contains unknown tag!\n");
+                    printf("MMS_CLIENT: invalid length field\n");
                 return false;
             }
 
@@ -558,12 +556,6 @@ parseListOfDirectoryEntries(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t
     if (bufPos < 0) return false;
 
     int endPos = bufPos + length;
-
-    if (endPos > maxBufPos) {
-         if (DEBUG_MMS_CLIENT)
-             printf("parseListOfDirectoryEntries: message to short!\n");
-         return false;
-    }
 
     while (bufPos < endPos) {
         tag = buffer[bufPos++];
@@ -615,12 +607,6 @@ mmsClient_parseFileDirectoryResponse(ByteBuffer* response, int bufPos, uint32_t 
     if (bufPos < 0) return false;
 
     int endPos = bufPos + length;
-
-    if (endPos > maxBufPos) {
-        if (DEBUG_MMS_CLIENT)
-            printf("mmsClient_parseFileDirectoryResponse: message to short (length:%i maxBufPos:%i)!\n", length, maxBufPos);
-        return false;
-    }
 
     bool moreFollows = false;
 
@@ -679,12 +665,6 @@ mmsMsg_parseFileOpenResponse(uint8_t* buffer, int bufPos, int maxBufPos, int32_t
         return false;
 
     int endPos = bufPos + length;
-
-    if (endPos > maxBufPos) {
-        if (DEBUG_MMS_CLIENT)
-            printf("MMS_CLIENT/SERVER: mmsClient_parseFileOpenResponse: message to short (length:%i maxBufPos:%i)!\n", length, maxBufPos);
-        return false;
-    }
 
     while (bufPos < endPos) {
         tag = buffer[bufPos++];
@@ -748,14 +728,9 @@ mmsMsg_parseFileReadResponse(uint8_t* buffer, int bufPos, int maxBufPos, uint32_
 
     int endPos = bufPos + length;
 
-    if (endPos > maxBufPos) {
-        if (DEBUG_MMS_CLIENT)
-            printf("MMS_CLIENT/SERVER: mmsClient_parseFileReadResponse: message to short (length:%i maxBufPos:%i)!\n", length, maxBufPos);
-        return false;
-    }
-
     while (bufPos < endPos) {
         tag = buffer[bufPos++];
+
         bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
         if (bufPos < 0)
             return false;

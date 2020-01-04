@@ -2823,6 +2823,13 @@ sendNextReportEntrySegment(ReportControl* self)
 
                 int lenSize = BerDecoder_decodeLength(currentReportBufferPos + 1, &length, 0, report->entryLength);
 
+                if (lenSize < 0) {
+                    if (DEBUG_IED_SERVER)
+                        printf("IED_SERVER: internal error in report buffer\n");
+
+                    return false;
+                }
+
                 int dataElementSize =  1 + lenSize + length;
 
                 elementSize += dataElementSize;
@@ -2998,6 +3005,13 @@ sendNextReportEntrySegment(ReportControl* self)
             int length;
 
             int lenSize = BerDecoder_decodeLength(currentReportBufferPos + 1, &length, 0, report->entryLength);
+
+            if (lenSize < 0) {
+                if (DEBUG_IED_SERVER)
+                    printf("IED_SERVER: internal error in report buffer\n");
+
+                return false;
+            }
 
             int dataElementSize =  1 + lenSize + length;
 

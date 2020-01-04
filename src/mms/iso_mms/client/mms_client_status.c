@@ -69,12 +69,6 @@ mmsClient_parseStatusResponse(MmsConnection self, ByteBuffer* response, int bufP
 
     int endPos = bufPos + length;
 
-    if (endPos > maxBufPos) {
-        if (DEBUG_MMS_CLIENT)
-            printf("mmsClient_parseStatusResponse: message to short!\n");
-        goto exit_error;
-    }
-
     bool hasPhysicalStatus = false;
     bool hasLogicalStatus = false;
 

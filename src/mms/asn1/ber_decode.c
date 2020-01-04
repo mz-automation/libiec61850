@@ -59,6 +59,9 @@ BerDecoder_decodeLength(uint8_t* buffer, int* length, int bufPos, int maxBufPos)
     if (*length < 0)
         return -1;
 
+    if (*length > maxBufPos)
+        return -1;
+
     if (bufPos + (*length) > maxBufPos)
         return -1;
 

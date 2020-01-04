@@ -178,18 +178,12 @@ mmsClient_parseInitiateResponse(MmsConnection self, ByteBuffer* response)
     if (bufPos < 0)
         return false;
 
-    if (bufPos + length > maxBufPos)
-        return false;
-
     while (bufPos < maxBufPos) {
         uint8_t tag = buffer[bufPos++];
 
         bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
 
         if (bufPos < 0)
-            return false;
-
-        if (bufPos + length > maxBufPos)
             return false;
 
         switch (tag) {

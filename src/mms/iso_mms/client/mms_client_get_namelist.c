@@ -151,7 +151,6 @@ mmsClient_parseGetNameListResponse(LinkedList* nameList, ByteBuffer* message)
     if (bufPos < 0) goto exit_error;
 
     int listEndPos = bufPos + length;
-    if (listEndPos > maxBufPos) goto exit_error;
 
     if (*nameList == NULL)
         *nameList = LinkedList_create();
@@ -174,10 +173,15 @@ mmsClient_parseGetNameListResponse(LinkedList* nameList, ByteBuffer* message)
 
     if (bufPos < maxBufPos) {
 		tag = buffer[bufPos++];
+
 		if (tag != 0x81) goto exit_error;
+
 		bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
+
 		if (bufPos < 0) goto exit_error;
+
 		if (length != 1) goto exit_error;
+
 		if (buffer[bufPos++] > 0)
 			moreFollows = true;
 		else

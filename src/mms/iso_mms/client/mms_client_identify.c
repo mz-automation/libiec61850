@@ -66,12 +66,6 @@ mmsClient_parseIdentifyResponse(MmsConnection self, ByteBuffer* response, uint32
 
     int endPos = bufPos + length;
 
-    if (endPos > maxBufPos) {
-        if (DEBUG_MMS_CLIENT)
-            printf("mmsClient_parseIdentifyResponse: Message to short!\n");
-        goto exit_error;
-    }
-
     char vendorNameBuf[100];
     char modelNameBuf[100];
     char revisionBuf[100];

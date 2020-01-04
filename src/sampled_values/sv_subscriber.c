@@ -403,19 +403,7 @@ parseSVPayload(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, int ap
             uint8_t tag = buffer[bufPos++];
 
             bufPos = BerDecoder_decodeLength(buffer, &elementLength, bufPos, svEnd);
-            if (bufPos < 0) {
-                if (DEBUG_SV_SUBSCRIBER) printf("SV_SUBSCRIBER: Malformed message: failed to decode BER length tag!\n");
-                return;
-            }
-
-            if (bufPos + elementLength > apduLength) {
-                if (DEBUG_SV_SUBSCRIBER)
-                    printf("SV_SUBSCRIBER: Malformed message: sub element is too large!\n");
-
-                goto exit_error;
-            }
-
-            if (bufPos == -1)
+            if (bufPos < 0)
                 goto exit_error;
 
             switch(tag) {

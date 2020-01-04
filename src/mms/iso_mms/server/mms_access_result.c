@@ -107,9 +107,8 @@ getNumberOfElements(uint8_t* buffer, int bufPos, int elementLength)
 
          bufPos = BerDecoder_decodeLength(buffer, &elementLength, bufPos, elementEndBufPos);
 
-         if ((bufPos < 0) || (bufPos + elementLength > elementEndBufPos)) {
+         if (bufPos < 0)
              goto exit_with_error;
-         }
 
          switch (tag) {
          case 0x80: /* reserved for access result */
@@ -164,7 +163,7 @@ MmsValue_decodeMmsData(uint8_t* buffer, int bufPos, int bufferLength, int* endBu
 
     bufPos = BerDecoder_decodeLength(buffer, &dataLength, bufPos, dataEndBufPos);
 
-    if (bufPos + dataLength > dataEndBufPos)
+    if (bufPos < 0)
         goto exit_with_error;
 
     switch (tag) {
@@ -188,7 +187,7 @@ MmsValue_decodeMmsData(uint8_t* buffer, int bufPos, int bufferLength, int* endBu
 
             int newBufPos = BerDecoder_decodeLength(buffer, &elementLength, bufPos + 1, dataEndBufPos);
 
-            if (newBufPos == -1)
+            if (newBufPos < 0)
                 goto exit_with_error;
 
             MmsValue* elementValue = MmsValue_decodeMmsData(buffer, bufPos, dataLength, NULL);

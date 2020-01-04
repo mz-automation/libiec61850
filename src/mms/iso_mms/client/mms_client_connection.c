@@ -580,9 +580,6 @@ mmsMsg_parseConfirmedErrorPDU(uint8_t* buffer, int bufPos, int maxBufPos, uint32
 
     int endPos = bufPos + length;
 
-    if (endPos > maxBufPos)
-        goto exit_error;
-
     while (bufPos < endPos) {
         tag = buffer[bufPos++];
 
@@ -640,13 +637,7 @@ mmsMsg_parseRejectPDU(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t* invo
     if (bufPos < 0)
         goto exit_error;
 
-    if (bufPos + length > maxBufPos)
-        goto exit_error;
-
     int endPos = bufPos + length;
-
-    if (endPos > maxBufPos)
-        goto exit_error;
 
     while (bufPos < endPos) {
         tag = buffer[bufPos++];
@@ -1217,14 +1208,14 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
         int bufPos = 1;
 
         bufPos = BerDecoder_decodeLength(buf, &length, bufPos, payload->size);
-        if (bufPos == -1)
+        if (bufPos < 0)
             goto exit_with_error;
 
         if (buf[bufPos++] == 0x02) {
             int invokeIdLength;
 
             bufPos = BerDecoder_decodeLength(buf, &invokeIdLength, bufPos, payload->size);
-            if (bufPos == -1)
+            if (bufPos < 0)
                 goto exit_with_error;
 
             uint32_t invokeId =
@@ -1270,7 +1261,7 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
         int length;
 
         bufPos = BerDecoder_decodeLength(buf, &length, bufPos, payload->size);
-        if (bufPos == -1)
+        if (bufPos < 0)
             goto exit_with_error;
 
         bool hasInvokeId = false;
@@ -1288,7 +1279,7 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
             }
 
             bufPos = BerDecoder_decodeLength(buf, &length, bufPos, payload->size);
-            if (bufPos == -1)
+            if (bufPos < 0)
                 goto exit_with_error;
 
             if (extendedTag) {
