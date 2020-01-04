@@ -182,38 +182,40 @@ Ethernet_createSocket(const char* interfaceId, uint8_t* destAddress)
 {
     EthernetSocket ethernetSocket = GLOBAL_CALLOC(1, sizeof(struct sEthernetSocket));
 
-    ethernetSocket->rawSocket = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
+    if (ethernetSocket) {
+        ethernetSocket->rawSocket = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
 
-    if (ethernetSocket->rawSocket == -1) {
-        if (DEBUG_SOCKET)
-            printf("Error creating raw socket!\n");
-        GLOBAL_FREEMEM(ethernetSocket);
-        return NULL;
+        if (ethernetSocket->rawSocket == -1) {
+            if (DEBUG_SOCKET)
+                printf("Error creating raw socket!\n");
+            GLOBAL_FREEMEM(ethernetSocket);
+            return NULL;
+        }
+
+        ethernetSocket->socketAddress.sll_family = PF_PACKET;
+        ethernetSocket->socketAddress.sll_protocol = htons(ETH_P_IP);
+
+        int ifcIdx =  getInterfaceIndex(ethernetSocket->rawSocket, interfaceId);
+
+        if (ifcIdx == -1) {
+            Ethernet_destroySocket(ethernetSocket);
+            return NULL;
+        }
+
+        ethernetSocket->socketAddress.sll_ifindex = ifcIdx;
+
+        ethernetSocket->socketAddress.sll_hatype =  ARPHRD_ETHER;
+        ethernetSocket->socketAddress.sll_pkttype = PACKET_OTHERHOST;
+
+        ethernetSocket->socketAddress.sll_halen = ETH_ALEN;
+
+        memset(ethernetSocket->socketAddress.sll_addr, 0, 8);
+
+        if (destAddress != NULL)
+            memcpy(ethernetSocket->socketAddress.sll_addr, destAddress, 6);
+
+        ethernetSocket->isBind = false;
     }
-
-    ethernetSocket->socketAddress.sll_family = PF_PACKET;
-    ethernetSocket->socketAddress.sll_protocol = htons(ETH_P_IP);
-
-    int ifcIdx =  getInterfaceIndex(ethernetSocket->rawSocket, interfaceId);
-
-    if (ifcIdx == -1) {
-        Ethernet_destroySocket(ethernetSocket);
-        return NULL;
-    }
-
-    ethernetSocket->socketAddress.sll_ifindex = ifcIdx;
-
-    ethernetSocket->socketAddress.sll_hatype =  ARPHRD_ETHER;
-    ethernetSocket->socketAddress.sll_pkttype = PACKET_OTHERHOST;
-
-    ethernetSocket->socketAddress.sll_halen = ETH_ALEN;
-
-    memset(ethernetSocket->socketAddress.sll_addr, 0, 8);
-
-    if (destAddress != NULL)
-        memcpy(ethernetSocket->socketAddress.sll_addr, destAddress, 6);
-
-    ethernetSocket->isBind = false;
 
     return ethernetSocket;
 }

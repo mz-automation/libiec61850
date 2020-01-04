@@ -29,6 +29,8 @@ main(int argc, char** argv)
   
     printf("Using interface %s\n", interface);
 
+    signal(SIGINT, sigint_handler);
+
     SVPublisher svPublisher = SVPublisher_create(NULL, interface);
 
     if (svPublisher) {

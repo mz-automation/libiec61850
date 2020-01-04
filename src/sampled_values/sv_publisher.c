@@ -129,48 +129,53 @@ preparePacketBuffer(SVPublisher self, CommParameters* parameters, const char* in
 
     self->buffer = (uint8_t*) GLOBAL_MALLOC(SV_MAX_MESSAGE_SIZE);
 
-    memcpy(self->buffer, dstAddr, 6);
-    memcpy(self->buffer + 6, srcAddr, 6);
+    if (self->buffer) {
+        memcpy(self->buffer, dstAddr, 6);
+        memcpy(self->buffer + 6, srcAddr, 6);
 
-    int bufPos = 12;
+        int bufPos = 12;
 
-    if (useVlanTags) {
-        /* Priority tag - IEEE 802.1Q */
-        self->buffer[bufPos++] = 0x81;
+        if (useVlanTags) {
+            /* Priority tag - IEEE 802.1Q */
+            self->buffer[bufPos++] = 0x81;
+            self->buffer[bufPos++] = 0x00;
+
+            uint8_t tci1 = priority << 5;
+            tci1 += vlanId / 256;
+
+            uint8_t tci2 = vlanId % 256;
+
+            self->buffer[bufPos++] = tci1; /* Priority + VLAN-ID */
+            self->buffer[bufPos++] = tci2; /* VLAN-ID */
+        }
+
+        /* EtherType Sampled Values */
+        self->buffer[bufPos++] = 0x88;
+        self->buffer[bufPos++] = 0xBa;
+
+        /* APPID */
+        self->buffer[bufPos++] = appId / 256;
+        self->buffer[bufPos++] = appId % 256;
+
+        self->lengthField = bufPos;
+
+        /* Length */
+        self->buffer[bufPos++] = 0x00;
+        self->buffer[bufPos++] = 0x08;
+
+        /* Reserved1 */
+        self->buffer[bufPos++] = 0x00;
         self->buffer[bufPos++] = 0x00;
 
-        uint8_t tci1 = priority << 5;
-        tci1 += vlanId / 256;
+        /* Reserved2 */
+        self->buffer[bufPos++] = 0x00;
+        self->buffer[bufPos++] = 0x00;
 
-        uint8_t tci2 = vlanId % 256;
-
-        self->buffer[bufPos++] = tci1; /* Priority + VLAN-ID */
-        self->buffer[bufPos++] = tci2; /* VLAN-ID */
+        self->payloadStart = bufPos;
     }
-
-    /* EtherType Sampled Values */
-    self->buffer[bufPos++] = 0x88;
-    self->buffer[bufPos++] = 0xBa;
-
-    /* APPID */
-    self->buffer[bufPos++] = appId / 256;
-    self->buffer[bufPos++] = appId % 256;
-
-    self->lengthField = bufPos;
-
-    /* Length */
-    self->buffer[bufPos++] = 0x00;
-    self->buffer[bufPos++] = 0x08;
-
-    /* Reserved1 */
-    self->buffer[bufPos++] = 0x00;
-    self->buffer[bufPos++] = 0x00;
-
-    /* Reserved2 */
-    self->buffer[bufPos++] = 0x00;
-    self->buffer[bufPos++] = 0x00;
-
-    self->payloadStart = bufPos;
+    else {
+        return false;
+    }
 
     return true;
 }
@@ -303,7 +308,7 @@ SVPublisher_createEx(CommParameters* parameters, const char* interfaceId, bool u
         self->asduList = NULL;
 
         if (preparePacketBuffer(self, parameters, interfaceId, useVlanTag) == false) {
-            GLOBAL_FREEMEM(self);
+            SVPublisher_destroy(self);
             self = NULL;
         }
 
@@ -502,7 +507,6 @@ SVPublisher_setupComplete(SVPublisher self)
 
 }
 
-
 void
 SVPublisher_publish(SVPublisher self)
 {
@@ -512,11 +516,26 @@ SVPublisher_publish(SVPublisher self)
     Ethernet_sendPacket(self->ethernetSocket, self->buffer, self->payloadStart + self->payloadLength);
 }
 
-
 void
 SVPublisher_destroy(SVPublisher self)
 {
-    GLOBAL_FREEMEM(self->buffer);
+    if (self->ethernetSocket)
+        Ethernet_destroySocket(self->ethernetSocket);
+
+    if (self->buffer)
+        GLOBAL_FREEMEM(self->buffer);
+
+    SVPublisher_ASDU asdu = self->asduList;
+
+    while (asdu) {
+        SVPublisher_ASDU nextAsdu = asdu->_next;
+
+        GLOBAL_FREEMEM(asdu);
+
+        asdu = nextAsdu;
+    }
+
+    GLOBAL_FREEMEM(self);
 }
 
 
