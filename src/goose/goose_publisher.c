@@ -159,6 +159,11 @@ GoosePublisher_increaseStNum(GoosePublisher self)
     MmsValue_setUtcTimeMs(self->timestamp, currentTime);
 
     self->stNum++;
+
+    /* check for overflow */
+    if (self->stNum == 0)
+        self->stNum = 1;
+
     self->sqNum = 0;
 
     return currentTime;
@@ -387,10 +392,13 @@ GoosePublisher_publish(GoosePublisher self, LinkedList dataSet)
 
     int32_t payloadLength = createGoosePayload(self, dataSet, buffer, maxPayloadSize);
 
-    self->sqNum++;
-
     if (payloadLength == -1)
         return -1;
+
+    self->sqNum++;
+
+    if (self->sqNum == 0)
+        self->sqNum = 1;
 
     int lengthIndex = self->lengthField;
 
