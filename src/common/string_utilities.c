@@ -30,9 +30,11 @@ StringUtils_copySubString(char* startPos, char* endPos)
 
 	char* newString = (char*) GLOBAL_MALLOC(newStringLength + 1);
 
-	memcpy(newString, startPos, newStringLength);
+	if (newString) {
+	    memcpy(newString, startPos, newStringLength);
 
-	newString[newStringLength] = 0;
+	    newString[newStringLength] = 0;
+	}
 
 	return newString;
 }
@@ -44,7 +46,8 @@ StringUtils_copyString(const char* string)
 
 	char* newString = (char*) GLOBAL_MALLOC(newStringLength);
 
-	memcpy(newString, string, newStringLength);
+	if (newString)
+	    memcpy(newString, string, newStringLength);
 
 	return newString;
 }
@@ -65,8 +68,10 @@ StringUtils_createStringFromBuffer(const uint8_t* buf, int size)
 {
 	char* newStr = (char*) GLOBAL_MALLOC(size + 1);
 
-	memcpy(newStr, buf, size);
-	newStr[size] = 0;
+	if (newStr) {
+	    memcpy(newStr, buf, size);
+	    newStr[size] = 0;
+	}
 
 	return newStr;
 }
@@ -120,18 +125,20 @@ StringUtils_createString(int count, ...)
 	va_end(ap);
 
 	newStr = (char*) GLOBAL_MALLOC(newStringLength + 1);
-	currentPos = newStr;
 
+	if (newStr) {
+	    currentPos = newStr;
 
-	va_start(ap, count);
-	for (i = 0; i < count; i++) {
-		char* str = va_arg(ap, char*);
-		strcpy(currentPos, str);
-		currentPos += strlen(str);
+	    va_start(ap, count);
+	    for (i = 0; i < count; i++) {
+	        char* str = va_arg(ap, char*);
+	        strcpy(currentPos, str);
+	        currentPos += strlen(str);
+	    }
+	    va_end(ap);
+
+	    *currentPos = 0;
 	}
-	va_end(ap);
-
-	*currentPos = 0;
 
 	return newStr;
 }
