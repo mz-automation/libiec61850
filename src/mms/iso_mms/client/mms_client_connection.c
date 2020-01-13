@@ -1393,6 +1393,7 @@ exit_with_error:
     return;
 }
 
+#if (CONFIG_MMS_THREADLESS_STACK == 0)
 static void*
 connectionHandlingThread(void* parameter)
 {
@@ -1405,7 +1406,7 @@ connectionHandlingThread(void* parameter)
 
     return NULL;
 }
-
+#endif /* (CONFIG_MMS_THREADLESS_STACK == 0) */
 
 static MmsConnection
 MmsConnection_createInternal(TLSConfiguration tlsConfig, bool createThread)
