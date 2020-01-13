@@ -155,7 +155,7 @@ MmsValue_decodeMmsData(uint8_t* buffer, int bufPos, int bufferLength, int* endBu
 {
     MmsValue* value = NULL;
 
-    int dataEndBufPos = bufPos + bufferLength;
+    int dataEndBufPos = bufferLength;
 
     uint8_t tag = buffer[bufPos++];
 
@@ -192,12 +192,9 @@ MmsValue_decodeMmsData(uint8_t* buffer, int bufPos, int bufferLength, int* endBu
             if (newBufPos < 0)
                 goto exit_with_error;
 
-            if (newBufPos + elementLength > dataEndBufPos)
-                goto exit_with_error;
-
             int elementBufLength = newBufPos - bufPos + elementLength;
 
-            MmsValue* elementValue = MmsValue_decodeMmsData(buffer, bufPos, elementBufLength, NULL);
+            MmsValue* elementValue = MmsValue_decodeMmsData(buffer, bufPos, bufPos + elementBufLength, NULL);
 
             if (elementValue == NULL)
                 goto exit_with_error;
@@ -226,6 +223,10 @@ MmsValue_decodeMmsData(uint8_t* buffer, int bufPos, int bufferLength, int* endBu
     case 0x84: /* MMS_BIT_STRING */
     {
         int padding = buffer[bufPos];
+
+        if (padding > 7)
+            goto exit_with_error;
+
         int bitStringLength = (8 * (dataLength - 1)) - padding;
         value = MmsValue_newBitString(bitStringLength);
         memcpy(value->value.bitString.buf, buffer + bufPos + 1, dataLength - 1);
