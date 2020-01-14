@@ -62,7 +62,13 @@ namespace IEC61850
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern void MmsValue_setBitStringFromInteger(IntPtr self, UInt32 intValue);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern UInt32 MmsValue_getBitStringAsIntegerBigEndian(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void MmsValue_setBitStringFromIntegerBigEndian(IntPtr self, UInt32 intValue);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern int MmsValue_getBitStringSize(IntPtr self);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
@@ -787,7 +793,23 @@ namespace IEC61850
 				MmsValue_setBitStringFromInteger(valueReference, intValue);
 			}
 
-			public void SetBit (int bitPos, bool bitValue)
+            public UInt32 BitStringToUInt32BigEndian()
+            {
+                if (GetType() != MmsType.MMS_BIT_STRING)
+                    throw new MmsValueException("Value type is not bit string");
+
+                return MmsValue_getBitStringAsIntegerBigEndian(valueReference);
+            }
+
+            public void BitStringFromUInt32BigEndian(UInt32 intValue)
+            {
+                if (GetType() != MmsType.MMS_BIT_STRING)
+                    throw new MmsValueException("Value type is not bit string");
+
+                MmsValue_setBitStringFromIntegerBigEndian(valueReference, intValue);
+            }
+
+            public void SetBit (int bitPos, bool bitValue)
 			{
 				if (GetType () != MmsType.MMS_BIT_STRING)
 					throw new MmsValueException("Value type is not bit string");
