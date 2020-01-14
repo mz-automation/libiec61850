@@ -1,3 +1,21 @@
+Changes to version 1.4.1
+------------------------
+- IEC 61850 server: added support for transient data objects
+- .NET API: added MmsValue methods BitStringToUInt32BigEndian and BitStringFromUInt32BigEndian
+- fixed compilation problem when CONFIG_MMS_THREADLESS_STACK is defined
+- MMS get name list service: fixed wrong return value in case of unknown argument for continueAfter (problem with test case sSrvN1)
+- fixed memory leak in windows socket layer (socket connect)
+- improved robustness in MMS message parsing
+- SV publisher: fixed memory leaks (#191)
+- .NET API: added ControlAction.GetControlTime methods
+- .NET API: fixed problem in ReportControlBlock.SetRCBValues (see #184)
+- MMS server: fixed possible crash when client disconnects during file upload
+- MMS server: fixed file upload error with multi-threaded server, added some NULL checks to file-handling.
+- IEC 61850 server: added function ConfigFileParser_createModelFromConfigFileEx with filename as argument to avoid dependency on FileSystem_... functions
+- IEC 61850 server: Add check call before starting a timeactivated operate, so operates can be denied before the waiting state
+- IEC 61850 client: improved error handling and fixed potential memory leak in IedConnection_getDeviceModelFromServer
+- replaced timegm implementation on windows. Fixes bug with MMS file times
+
 Changes to version 1.4.0
 ------------------------
 - IEC 61850 client: added asynchronous client API (can handle multiple outstanding requests in a single thread)
