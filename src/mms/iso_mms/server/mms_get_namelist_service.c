@@ -343,7 +343,7 @@ createNameListResponse(
         }
 
         if (startElement == NULL) {
-            mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_ACCESS_UNSUPPORTED);
+            mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
             return;
         }
     }
