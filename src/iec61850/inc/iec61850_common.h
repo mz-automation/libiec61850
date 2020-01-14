@@ -92,7 +92,7 @@ typedef enum {
  * @{
  */
 
-/** Report will be triggerd when data changes */
+/** Report will be triggered when data changes */
 #define TRG_OPT_DATA_CHANGED 1
 
 /** Report will be triggered when quality changes */
@@ -106,6 +106,9 @@ typedef enum {
 
 /** Report will be triggered by GI (general interrogation) request */
 #define TRG_OPT_GI 16
+
+/** Report will be triggered only on rising edge (transient variable */
+#define TRG_OPT_TRANSIENT 128
 /** @} */
 
 

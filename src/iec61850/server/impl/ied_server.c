@@ -989,17 +989,23 @@ IedServer_updateAttributeValue(IedServer self, DataAttribute* dataAttribute, Mms
         checkForUpdateTrigger(self, dataAttribute);
     else {
 
+        if (dataAttribute->type == IEC61850_BOOLEAN) {
+            /* Special treatment because of transient option */
+            IedServer_updateBooleanAttributeValue(self, dataAttribute, MmsValue_getBoolean(value));
+        }
+        else {
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
-        Semaphore_wait(self->dataModelLock);
+            Semaphore_wait(self->dataModelLock);
 #endif
 
-        MmsValue_update(dataAttribute->mmsValue, value);
+            MmsValue_update(dataAttribute->mmsValue, value);
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
-        Semaphore_post(self->dataModelLock);
+            Semaphore_post(self->dataModelLock);
 #endif
 
-        checkForChangedTriggers(self, dataAttribute);
+            checkForChangedTriggers(self, dataAttribute);
+        }
     }
 }
 
@@ -1161,6 +1167,14 @@ IedServer_updateBooleanAttributeValue(IedServer self, DataAttribute* dataAttribu
         checkForUpdateTrigger(self, dataAttribute);
     }
     else {
+
+        bool callCheckTriggers = true;
+
+        if (dataAttribute->triggerOptions & TRG_OPT_TRANSIENT) {
+            if (currentValue == true)
+                callCheckTriggers = false;
+        }
+
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
         Semaphore_wait(self->dataModelLock);
 #endif
@@ -1169,7 +1183,8 @@ IedServer_updateBooleanAttributeValue(IedServer self, DataAttribute* dataAttribu
         Semaphore_post(self->dataModelLock);
 #endif
 
-        checkForChangedTriggers(self, dataAttribute);
+        if (callCheckTriggers)
+            checkForChangedTriggers(self, dataAttribute);
     }
 }
 
