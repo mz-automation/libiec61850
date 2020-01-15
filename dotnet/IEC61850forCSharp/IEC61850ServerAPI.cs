@@ -259,6 +259,9 @@ namespace IEC61850
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern IntPtr CDC_DPL_create(string name, IntPtr parent, uint options);
 
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr CDC_ENS_create(string name, IntPtr parent, uint options);
+
 			public const int CDC_OPTION_DESC = (1 << 2);
 			public const int CDC_OPTION_DESC_UNICODE = (1 << 3);
 			public const int CDC_OPTION_AC_DLNDA = (1 << 4);
@@ -333,6 +336,16 @@ namespace IEC61850
 
 				if (self != IntPtr.Zero)
 					return new DataObject (self);
+				else
+					return null;
+			}
+
+			public static DataObject Create_CDC_ENS(ModelNode parent, string name, uint options)
+			{
+				IntPtr self = CDC_ENS_create(name, parent.self, options);
+
+				if (self != IntPtr.Zero)
+					return new DataObject(self);
 				else
 					return null;
 			}
