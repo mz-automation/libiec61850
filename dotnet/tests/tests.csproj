@@ -38,7 +38,7 @@
     <ConsolePause>false</ConsolePause>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <DebugType>none</DebugType>    
+    <DebugType>none</DebugType>
     <PlatformTarget>x64</PlatformTarget>
     <Optimize>true</Optimize>
     <OutputPath>bin\x64\Release</OutputPath>
@@ -57,6 +57,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="model.cfg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
