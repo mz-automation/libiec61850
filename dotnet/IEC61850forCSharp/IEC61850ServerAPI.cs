@@ -356,7 +356,7 @@ namespace IEC61850
 					return null;
 			}
 
-			public static DataObject Create_SPC_ENS(ModelNode parent, string name, uint options, uint controlOptions)
+			public static DataObject Create_CDC_SPC(ModelNode parent, string name, uint options, uint controlOptions)
 			{
 				IntPtr self = CDC_SPC_create(name, parent.self, options, controlOptions);
 
