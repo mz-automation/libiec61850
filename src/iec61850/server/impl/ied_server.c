@@ -1,7 +1,7 @@
 /*
  *  ied_server.c
  *
- *  Copyright 2013-2018 Michael Zillgith
+ *  Copyright 2013-2020 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -431,10 +431,14 @@ IedServer_createWithConfig(IedModel* dataModel, TLSConfiguration tlsConfiguratio
 #endif /* (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1) */
 
 #if (CONFIG_IEC61850_REPORT_SERVICE == 1)
-        if (serverConfiguration)
-            self->reportBufferSize = serverConfiguration->reportBufferSize;
-        else
-            self->reportBufferSize = CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE;
+        if (serverConfiguration) {
+            self->reportBufferSizeBRCBs = serverConfiguration->reportBufferSize;
+            self->reportBufferSizeURCBs = serverConfiguration->reportBufferSizeURCBs;
+        }
+        else {
+            self->reportBufferSizeBRCBs = CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE;
+            self->reportBufferSizeURCBs = CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE;
+        }
 #endif
 
         self->mmsMapping = MmsMapping_create(dataModel, self);

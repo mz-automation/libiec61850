@@ -505,6 +505,14 @@ MmsServer_handleBackgroundTasks(MmsServer self)
 }
 
 void
+MmsServer_callConnectionHandler(MmsServer self, MmsServerConnection connection)
+{
+    if (self->connectionHandler) {
+        self->connectionHandler(self->connectionHandlerParameter, connection, MMS_SERVER_CONNECTION_TICK);
+    }
+}
+
+void
 MmsServer_stopListeningThreadless(MmsServer self)
 {
     IsoServer_stopListeningThreadless(self->isoServer);

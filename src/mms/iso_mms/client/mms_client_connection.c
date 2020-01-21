@@ -1401,7 +1401,7 @@ connectionHandlingThread(void* parameter)
 
     while (self->connectionThreadRunning) {
         if (MmsConnection_tick(self))
-            Thread_sleep(10);
+            Thread_sleep(1);
     }
 
     return NULL;

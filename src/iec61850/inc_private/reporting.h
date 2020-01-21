@@ -95,7 +95,6 @@ typedef struct {
 
     /*
      * the following members are only required for buffered RCBs *
-     * TODO move to ReportBuffer structure!
      */
 
     bool isBuffering; /* true if buffered RCB is buffering (datSet is set to a valid value) */
@@ -145,6 +144,10 @@ Reporting_processReportEvents(MmsMapping* self, uint64_t currentTimeInMs);
 /* check if report have to be sent after data model update */
 LIB61850_INTERNAL void
 Reporting_processReportEventsAfterUnlock(MmsMapping* self);
+
+/* send reports in report buffer */
+LIB61850_INTERNAL void
+Reporting_sendReports(MmsMapping* self, MmsServerConnection connection);
 
 LIB61850_INTERNAL void
 Reporting_deactivateReportsForConnection(MmsMapping* self, MmsServerConnection connection);

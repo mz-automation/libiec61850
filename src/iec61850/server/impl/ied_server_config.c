@@ -1,7 +1,7 @@
 /*
  *  ied_server_config.c
  *
- *  Copyright 2018 Michael Zillgith
+ *  Copyright 2018-2020 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -43,6 +43,7 @@ IedServerConfig_create()
 
     if (self) {
         self->reportBufferSize = CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE;
+        self->reportBufferSizeURCBs = CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE;
         self->fileServiceBasepath = StringUtils_copyString(CONFIG_VIRTUAL_FILESTORE_BASEPATH);
         self->enableFileService = true;
         self->enableDynamicDataSetService = true;
@@ -86,6 +87,18 @@ int
 IedServerConfig_getReportBufferSize(IedServerConfig self)
 {
     return self->reportBufferSize;
+}
+
+void
+IedServerConfig_setReportBufferSizeForURCBs(IedServerConfig self, int reportBufferSize)
+{
+    self->reportBufferSizeURCBs = reportBufferSize;
+}
+
+int
+IedServerConfig_getReportBufferSizeForURCBs(IedServerConfig self)
+{
+    return self->reportBufferSizeURCBs;
 }
 
 void

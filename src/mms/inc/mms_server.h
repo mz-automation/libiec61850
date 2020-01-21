@@ -37,7 +37,9 @@ extern "C" {
 #include "iso_connection_parameters.h"
 
 typedef enum {
-	MMS_SERVER_NEW_CONNECTION, MMS_SERVER_CONNECTION_CLOSED
+	MMS_SERVER_NEW_CONNECTION,
+	MMS_SERVER_CONNECTION_CLOSED,
+	MMS_SERVER_CONNECTION_TICK
 } MmsServerEvent;
 
 typedef struct sMmsServer* MmsServer;

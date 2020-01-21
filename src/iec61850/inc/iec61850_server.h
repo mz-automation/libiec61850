@@ -3,7 +3,7 @@
  *
  *  IEC 61850 server API for libiec61850.
  *
- *  Copyright 2013-2019 Michael Zillgith
+ *  Copyright 2013-2020 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -50,6 +50,9 @@ struct sIedServerConfig
 {
     /** size of the report buffer associated with a buffered report control block */
     int reportBufferSize;
+
+    /** size of the report buffer associated with an unbuffered report control block */
+    int reportBufferSizeURCBs;
 
     /** Base path (directory where the file service serves files */
     char* fileServiceBasepath;
@@ -124,6 +127,22 @@ IedServerConfig_setReportBufferSize(IedServerConfig self, int reportBufferSize);
  */
 LIB61850_API int
 IedServerConfig_getReportBufferSize(IedServerConfig self);
+
+/**
+ * \brief Set the report buffer size for unbuffered reporting
+ *
+ * \param reportBufferSize the buffer size for each unbuffered report control block
+ */
+LIB61850_API void
+IedServerConfig_setReportBufferSizeForURCBs(IedServerConfig self, int reportBufferSize);
+
+/**
+ * \brief Gets the report buffer size for unbuffered reporting
+ *
+ * \return the buffer size for each unbuffered report control block
+ */
+LIB61850_API int
+IedServerConfig_getReportBufferSizeForURCBs(IedServerConfig self);
 
 /**
  * \brief Set the maximum number of MMS (TCP) connections the server accepts

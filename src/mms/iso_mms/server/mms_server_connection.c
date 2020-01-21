@@ -696,12 +696,20 @@ MmsServerConnection_parseMessage(MmsServerConnection self, ByteBuffer* message, 
     return;
 }
 
-static void /* will be called by IsoConnection */
+static void /* is called by IsoConnection */
 messageReceived(void* parameter, ByteBuffer* message, ByteBuffer* response)
 {
     MmsServerConnection self = (MmsServerConnection) parameter;
 
     MmsServerConnection_parseMessage(self, message, response);
+}
+
+static void /* is called by IsoConnection */
+connectionTickHandler(void* parameter)
+{
+    MmsServerConnection self = (MmsServerConnection) parameter;
+
+    MmsServer_callConnectionHandler(self->server, self);
 }
 
 /**********************************************************************************************
@@ -733,7 +741,9 @@ MmsServerConnection_init(MmsServerConnection connection, MmsServer server, IsoCo
     self->lastRequestInvokeId = 0;
 #endif
 
-    IsoConnection_installListener(isoCon, messageReceived, (void*) self);
+    IsoConnection_installListener(isoCon, messageReceived,
+            (UserLayerTickHandler) connectionTickHandler,
+            (void*) self);
 
     return self;
 }

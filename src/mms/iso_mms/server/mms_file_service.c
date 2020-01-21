@@ -516,7 +516,6 @@ mmsServer_fileUploadTask(MmsServer self, MmsObtainFileTask task)
 
             {
                 /* send ObtainFileError */
-
                 IsoConnection_lock(task->connection->isoConnection);
 
                 ByteBuffer* response = MmsServer_reserveTransmitBuffer(self);
@@ -545,7 +544,6 @@ mmsServer_fileUploadTask(MmsServer self, MmsObtainFileTask task)
         case MMS_FILE_UPLOAD_STATE_SEND_OBTAIN_FILE_ERROR_DESTINATION:
             {
                 /* send ObtainFileError */
-
                 IsoConnection_lock(task->connection->isoConnection);
 
                 ByteBuffer* response = MmsServer_reserveTransmitBuffer(self);

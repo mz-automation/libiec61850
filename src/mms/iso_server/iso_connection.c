@@ -64,7 +64,8 @@ struct sIsoConnection
     ByteBuffer cotpWriteBuffer;
 
     MessageReceivedHandler msgRcvdHandler;
-    void* msgRcvdHandlerParameter;
+    UserLayerTickHandler tickHandler;
+    void* handlerParameter; /* context parameter for msgRcvdHandler */
 
     IsoServer isoServer;
 
@@ -141,6 +142,11 @@ IsoConnection_addHandleSet(const IsoConnection self, HandleSet handles)
 void
 IsoConnection_handleTcpConnection(IsoConnection self)
 {
+    /* call tick handler */
+    if (self->tickHandler) {
+        self->tickHandler(self->handlerParameter);
+    }
+
 #if (CONFIG_MMS_SINGLE_THREADED == 0)
     if (IsoServer_waitReady(self->isoServer, 10) < 1)
         goto exit_function;
@@ -217,7 +223,7 @@ IsoConnection_handleTcpConnection(IsoConnection self)
                         ByteBuffer_wrap(&mmsResponseBuffer, self->sendBuffer, 0, SEND_BUF_SIZE);
 
                         if (self->msgRcvdHandler != NULL) {
-                            self->msgRcvdHandler(self->msgRcvdHandlerParameter,
+                            self->msgRcvdHandler(self->handlerParameter,
                                     &mmsRequest, &mmsResponseBuffer);
                         }
 
@@ -304,7 +310,7 @@ IsoConnection_handleTcpConnection(IsoConnection self)
 
                     if (self->msgRcvdHandler != NULL) {
 
-                        self->msgRcvdHandler(self->msgRcvdHandlerParameter,
+                        self->msgRcvdHandler(self->handlerParameter,
                                 mmsRequest, &mmsResponseBuffer);
                     }
 
@@ -470,7 +476,8 @@ IsoConnection_create(Socket socket, IsoServer isoServer)
     self->receiveBuffer = (uint8_t*) GLOBAL_MALLOC(RECEIVE_BUF_SIZE);
     self->sendBuffer = (uint8_t*) GLOBAL_MALLOC(SEND_BUF_SIZE);
     self->msgRcvdHandler = NULL;
-    self->msgRcvdHandlerParameter = NULL;
+    self->tickHandler = NULL;
+    self->handlerParameter = NULL;
     self->isoServer = isoServer;
     self->state = ISO_CON_STATE_RUNNING;
     self->clientAddress = Socket_getPeerAddress(self->socket);
@@ -637,11 +644,13 @@ IsoConnection_close(IsoConnection self)
 }
 
 void
-IsoConnection_installListener(IsoConnection self, MessageReceivedHandler handler,
+IsoConnection_installListener(IsoConnection self, MessageReceivedHandler rcvdHandler,
+        UserLayerTickHandler tickHandler,
         void* parameter)
 {
-    self->msgRcvdHandler = handler;
-    self->msgRcvdHandlerParameter = parameter;
+    self->msgRcvdHandler = rcvdHandler;
+    self->tickHandler = tickHandler;
+    self->handlerParameter = parameter;
 }
 
 void*

@@ -66,6 +66,9 @@ typedef void
 typedef void
 (*MessageReceivedHandler)(void* parameter, ByteBuffer* message, ByteBuffer* response);
 
+typedef void
+(*UserLayerTickHandler)(void* parameter);
+
 LIB61850_INTERNAL char*
 IsoConnection_getPeerAddress(IsoConnection self);
 
@@ -82,7 +85,8 @@ LIB61850_INTERNAL void
 IsoConnection_unlock(IsoConnection self);
 
 LIB61850_INTERNAL void
-IsoConnection_installListener(IsoConnection self, MessageReceivedHandler handler,
+IsoConnection_installListener(IsoConnection self, MessageReceivedHandler rcvdHandler,
+        UserLayerTickHandler tickHandler,
         void* parameter);
 
 LIB61850_INTERNAL void*

@@ -24,6 +24,7 @@
 #include "libiec61850_platform_includes.h"
 #include "mms_mapping.h"
 #include "mms_mapping_internal.h"
+#include "mms_server_internal.h"
 #include "stack_config.h"
 
 #include "mms_goose.h"
@@ -2389,12 +2390,15 @@ unselectControlsForConnection(MmsMapping* self, MmsServerConnection connection)
 }
 #endif /* (CONFIG_IEC61850_CONTROL_SERVICE == 1) */
 
-static void /* is called by MMS server layer */
+static void /* is called by MMS server layer and runs in the connection handling thread */
 mmsConnectionHandler(void* parameter, MmsServerConnection connection, MmsServerEvent event)
 {
     MmsMapping* self = (MmsMapping*) parameter;
 
-    if (event == MMS_SERVER_CONNECTION_CLOSED) {
+    if (event == MMS_SERVER_CONNECTION_TICK) {
+        Reporting_sendReports(self, connection);
+    }
+    else if (event == MMS_SERVER_CONNECTION_CLOSED) {
         ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer, connection);
 
         /* call user provided handler function */

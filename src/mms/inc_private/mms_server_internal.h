@@ -219,6 +219,9 @@ MmsServer_reserveTransmitBuffer(MmsServer self);
 LIB61850_INTERNAL void
 MmsServer_releaseTransmitBuffer(MmsServer self);
 
+LIB61850_INTERNAL void
+MmsServer_callConnectionHandler(MmsServer self, MmsServerConnection connection);
+
 /* write_out function required for ASN.1 encoding */
 LIB61850_INTERNAL int
 mmsServer_write_out(const void *buffer, size_t size, void *app_key);

@@ -44,7 +44,8 @@ struct sIedServer
     uint8_t writeAccessPolicies;
 
 #if (CONFIG_IEC61850_REPORT_SERVICE == 1)
-    int reportBufferSize;
+    int reportBufferSizeBRCBs;
+    int reportBufferSizeURCBs;
 #endif
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
