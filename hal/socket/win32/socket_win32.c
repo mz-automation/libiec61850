@@ -1,7 +1,7 @@
 /*
  *  socket_win32.c
  *
- *  Copyright 2013-2018 Michael Zillgith
+ *  Copyright 2013-2020 Michael Zillgith
  *
  *	This file is part of libIEC61850.
  *
@@ -296,8 +296,13 @@ ServerSocket_setBacklog(ServerSocket self, int backlog)
 void
 ServerSocket_destroy(ServerSocket self)
 {
-    closesocket(self->fd);
-    socketCount--;
+    if (self->fd != INVALID_SOCKET) {
+        shutdown(self->fd, 2);
+        closesocket(self->fd);
+        socketCount--;
+        self->fd = INVALID_SOCKET;
+    }
+
     wsaShutdown();
     GLOBAL_FREEMEM(self);
 }
@@ -575,10 +580,14 @@ void
 Socket_destroy(Socket self)
 {
     if (self->fd != INVALID_SOCKET) {
+        shutdown(self->fd, 2);
         closesocket(self->fd);
+
+        self->fd = INVALID_SOCKET;
+
+        socketCount--;
     }
 
-    socketCount--;
     wsaShutdown();
 
     GLOBAL_FREEMEM(self);
