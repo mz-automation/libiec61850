@@ -267,6 +267,9 @@ namespace IEC61850
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern IntPtr CDC_APC_create(string name, IntPtr parent, uint options, uint controlOptions, [MarshalAs(UnmanagedType.I1)] bool isIntegerNotFloat);
+			
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr CDC_BCR_create(string name, IntPtr parent, uint options);
 
 			public const int CDC_OPTION_DESC = (1 << 2);
 			public const int CDC_OPTION_DESC_UNICODE = (1 << 3);
@@ -369,6 +372,16 @@ namespace IEC61850
 			public static DataObject Create_CDC_APC(ModelNode parent, string name, uint options, uint controlOptions, bool isIntegerNotFloat)
 			{
 				IntPtr self = CDC_APC_create(name, parent.self, options, controlOptions, isIntegerNotFloat);
+
+				if (self != IntPtr.Zero)
+					return new DataObject(self);
+				else
+					return null;
+			}
+
+			public static DataObject Create_CDC_BCR(ModelNode parent, string name, uint options)
+			{
+				IntPtr self = CDC_BCR_create(name, parent.self, options);
 
 				if (self != IntPtr.Zero)
 					return new DataObject(self);
