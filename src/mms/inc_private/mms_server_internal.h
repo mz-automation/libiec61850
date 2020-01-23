@@ -32,7 +32,7 @@
 #include "mms_device_model.h"
 #include "mms_common_internal.h"
 #include "stack_config.h"
-#include "mms_server.h"
+#include "mms_server_libinternal.h"
 
 
 #include "byte_buffer.h"

@@ -25,6 +25,7 @@
 #include "mms_mapping.h"
 #include "mms_mapping_internal.h"
 #include "mms_value_internal.h"
+#include "mms_server_libinternal.h"
 #include "control.h"
 #include "stack_config.h"
 #include "ied_server_private.h"

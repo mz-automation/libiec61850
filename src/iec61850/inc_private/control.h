@@ -27,6 +27,7 @@
 #include "iec61850_model.h"
 #include "iec61850_server.h"
 #include "mms_server_connection.h"
+#include "mms_server_libinternal.h"
 #include "mms_device_model.h"
 
 #include "mms_mapping_internal.h"
