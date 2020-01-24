@@ -31,7 +31,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <errno.h>
-
+#include <stdio.h>
 #include <fcntl.h>
 
 #include <netinet/tcp.h> // required for TCP keepalive

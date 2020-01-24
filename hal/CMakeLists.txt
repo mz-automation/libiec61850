@@ -94,7 +94,7 @@ set (libhal_SRCS
 )
 ELSEIF(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
 set (libhal_SRCS
-    ${libhal_bsd_SRCS}}
+    ${libhal_bsd_SRCS}
 )
 ELSE()
 set (libhal_SRCS
