@@ -89,6 +89,14 @@ Handleset_addSocket(HandleSet self, const Socket sock)
    }
 }
 
+void
+Handleset_removeSocket(HandleSet self, const Socket sock)
+{
+    if (self != NULL && sock != NULL && sock->fd != INVALID_SOCKET) {
+        FD_CLR(sock->fd, &self->handles);
+    }
+}
+
 int
 Handleset_waitReady(HandleSet self, unsigned int timeoutMs)
 {

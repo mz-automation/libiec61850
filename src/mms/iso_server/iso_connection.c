@@ -134,7 +134,7 @@ finalizeIsoConnection(IsoConnection self)
 }
 
 void
-IsoConnection_addHandleSet(const IsoConnection self, HandleSet handles)
+IsoConnection_addToHandleSet(const IsoConnection self, HandleSet handles)
 {
    Handleset_addSocket(handles, self->socket);
 }

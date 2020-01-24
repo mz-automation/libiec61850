@@ -1,7 +1,7 @@
 /*
  *  socket_hal.h
  *
- *  Copyright 2013-2018 Michael Zillgith
+ *  Copyright 2013-2020 Michael Zillgith
  *
  *	This file is part of libIEC61850.
  *
@@ -87,13 +87,19 @@ PAL_API void
 Handleset_reset(HandleSet self);
 
 /**
- * \brief add a soecket to an existing handle set
+ * \brief add a socket to an existing handle set
  *
  * \param self the HandleSet instance
  * \param sock the socket to add
  */
 PAL_API void
 Handleset_addSocket(HandleSet self, const Socket sock);
+
+/**
+ * \brief remove a socket from an existing handle set
+ */
+void
+Handleset_removeSocket(HandleSet self, const Socket sock);
 
 /**
  * \brief wait for a socket to become ready

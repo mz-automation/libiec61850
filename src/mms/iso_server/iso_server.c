@@ -645,10 +645,9 @@ IsoServer_waitReady(IsoServer self, unsigned int timeoutMs)
    int result;
 
    if (getState(self) == ISO_SVR_STATE_RUNNING) {
-       HandleSet handles;
+       HandleSet handles = Handleset_new();
 
-       handles = Handleset_new();
-       if (handles != NULL) {
+       if (handles) {
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1) && (CONFIG_MMS_SINGLE_THREADED == 0)
            lockClientConnections(self);
@@ -663,7 +662,7 @@ IsoServer_waitReady(IsoServer self, unsigned int timeoutMs)
                IsoConnection isoConnection = (IsoConnection) openConnection->data;
 
                if (IsoConnection_isRunning(isoConnection)) {
-                   IsoConnection_addHandleSet(isoConnection, handles);
+                   IsoConnection_addToHandleSet(isoConnection, handles);
                    openConnection = LinkedList_getNext(openConnection);
                } else {
 #if ((CONFIG_MMS_SINGLE_THREADED == 1) || (CONFIG_MMS_THREADLESS_STACK == 1))
@@ -683,7 +682,7 @@ IsoServer_waitReady(IsoServer self, unsigned int timeoutMs)
            for (i = 0; i < CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS; i++) {
                if (self->openClientConnections[i] != NULL) {
                    if (IsoConnection_isRunning(self->openClientConnections[i])) {
-                       IsoConnection_addHandleSet(self->openClientConnections[i], handles);
+                       IsoConnection_addToHandleSet(self->openClientConnections[i], handles);
                    }
                    else {
 #if ((CONFIG_MMS_SINGLE_THREADED == 1) || (CONFIG_MMS_THREADLESS_STACK == 1))

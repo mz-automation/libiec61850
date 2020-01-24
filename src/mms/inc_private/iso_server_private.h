@@ -39,8 +39,11 @@ IsoConnection_destroy(IsoConnection self);
 LIB61850_INTERNAL void
 IsoConnection_handleTcpConnection(IsoConnection self);
 
+/**
+ * \brief Add the connection socket to the given HandleSet instance
+ */
 LIB61850_INTERNAL void
-IsoConnection_addHandleSet(const IsoConnection self, HandleSet handles);
+IsoConnection_addToHandleSet(const IsoConnection self, HandleSet handles);
 
 LIB61850_INTERNAL void
 private_IsoServer_increaseConnectionCounter(IsoServer self);

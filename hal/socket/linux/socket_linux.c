@@ -1,7 +1,7 @@
 /*
  *  socket_linux.c
  *
- *  Copyright 2013-2018 Michael Zillgith
+ *  Copyright 2013-2020 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -35,6 +35,12 @@
 #include <netinet/tcp.h> /* required for TCP keepalive */
 #include <linux/version.h>
 
+#define _GNU_SOURCE
+#include <signal.h>
+#include <poll.h>
+
+
+#include "linked_list.h"
 #include "hal_thread.h"
 #include "lib_memory.h"
 
@@ -53,62 +59,118 @@ struct sServerSocket {
 };
 
 struct sHandleSet {
-   fd_set handles;
-   int maxHandle;
+    LinkedList sockets;
+    bool pollfdIsUpdated;
+    struct pollfd* fds;
+    int nfds;
 };
 
 HandleSet
 Handleset_new(void)
 {
-   HandleSet result = (HandleSet) GLOBAL_MALLOC(sizeof(struct sHandleSet));
+   HandleSet self = (HandleSet) GLOBAL_MALLOC(sizeof(struct sHandleSet));
 
-   if (result != NULL) {
-       FD_ZERO(&result->handles);
-       result->maxHandle = -1;
+   if (self) {
+       self->sockets = LinkedList_create();
+       self->pollfdIsUpdated = false;
+       self->fds = NULL;
+       self->nfds = 0;
    }
-   return result;
+
+   return self;
 }
 
 void
 Handleset_reset(HandleSet self)
 {
-    FD_ZERO(&self->handles);
-    self->maxHandle = -1;
+    if (self) {
+        if (self->sockets) {
+            LinkedList_destroyStatic(self->sockets);
+            self->sockets = LinkedList_create();
+            self->pollfdIsUpdated = false;
+        }
+    }
 }
 
 void
 Handleset_addSocket(HandleSet self, const Socket sock)
 {
    if (self != NULL && sock != NULL && sock->fd != -1) {
-       FD_SET(sock->fd, &self->handles);
-       if (sock->fd > self->maxHandle) {
-           self->maxHandle = sock->fd;
-       }
+
+       LinkedList_add(self->sockets, sock);
+       self->pollfdIsUpdated = false;
    }
+}
+
+void
+Handleset_removeSocket(HandleSet self, const Socket sock)
+{
+    if (self && self->sockets && sock) {
+        LinkedList_remove(self->sockets, sock);
+        self->pollfdIsUpdated = false;
+    }
 }
 
 int
 Handleset_waitReady(HandleSet self, unsigned int timeoutMs)
 {
-   int result;
+    /* check if pollfd array is updated */
+    if (self->pollfdIsUpdated == false) {
+        if (self->fds) {
+            GLOBAL_FREEMEM(self->fds);
+            self->fds = NULL;
+        }
 
-   if ((self != NULL) && (self->maxHandle >= 0)) {
-       struct timeval timeout;
+        self->nfds = LinkedList_size(self->sockets);
 
-       timeout.tv_sec = timeoutMs / 1000;
-       timeout.tv_usec = (timeoutMs % 1000) * 1000;
-       result = select(self->maxHandle + 1, &self->handles, NULL, NULL, &timeout);
-   } else {
-       result = -1;
-   }
+        self->fds = GLOBAL_CALLOC(self->nfds, sizeof(struct pollfd));
 
-   return result;
+        int i;
+
+        for (i = 0; i < self->nfds; i++) {
+            LinkedList sockElem = LinkedList_get(self->sockets, i);
+
+            if (sockElem) {
+                Socket sock = (Socket) LinkedList_getData(sockElem);
+
+                if (sock) {
+                    self->fds[i].fd = sock->fd;
+                    self->fds[i].events = POLL_IN;
+                }
+            }
+        }
+
+        self->pollfdIsUpdated = true;
+    }
+
+    if (self->fds && self->nfds > 0) {
+        int result = poll(self->fds, self->nfds, timeoutMs);
+
+        if (result == -1) {
+            if (DEBUG_SOCKET)
+                printf("SOCKET: poll error (errno: %i)\n", errno);
+        }
+
+        return result;
+    }
+    else {
+        /* there is no socket to wait for */
+        return 0;
+    }
 }
 
 void
 Handleset_destroy(HandleSet self)
 {
-   GLOBAL_FREEMEM(self);
+    if (self) {
+        if (self->sockets)
+            LinkedList_destroyStatic(self->sockets);
+
+        if (self->fds)
+            GLOBAL_FREEMEM(self->fds);
+
+        GLOBAL_FREEMEM(self);
+    }
 }
 
 void
@@ -557,10 +619,12 @@ Socket_read(Socket self, uint8_t* buf, int size)
 
             case EAGAIN:
                 return 0;
-            case EBADF:
-                return -1;
 
             default:
+
+                if (DEBUG_SOCKET)
+                    printf("DEBUG_SOCKET: recv returned error (errno=%i)\n", error);
+
                 return -1;
         }
     }
@@ -577,10 +641,17 @@ Socket_write(Socket self, uint8_t* buf, int size)
     /* MSG_NOSIGNAL - prevent send to signal SIGPIPE when peer unexpectedly closed the socket */
     int retVal = send(self->fd, buf, size, MSG_NOSIGNAL);
 
-    if ((retVal == -1) && (errno == EAGAIN))
-        return 0;
-    else
-        return retVal;
+    if (retVal == -1) {
+        if (errno == EAGAIN) {
+            return 0;
+        }
+        else {
+            if (DEBUG_SOCKET)
+                printf("DEBUG_SOCKET: send returned error (errno=%i)\n", errno);
+        }
+    }
+
+    return retVal;
 }
 
 void
