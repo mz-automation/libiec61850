@@ -224,8 +224,7 @@ ReportControl_destroy(ReportControl* self)
         }
     }
 
-    if (self->buffered)
-        ReportBuffer_destroy(self->reportBuffer);
+    ReportBuffer_destroy(self->reportBuffer);
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_destroy(self->createNotificationsMutex);
