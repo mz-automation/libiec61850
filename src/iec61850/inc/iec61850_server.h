@@ -458,6 +458,16 @@ LIB61850_API bool
 IedServer_isRunning(IedServer self);
 
 /**
+ * \brief Get number of open MMS connections
+ *
+ * \param self the instance of IedServer to operate on
+ *
+ * \return the number of open and accepted MMS connections
+ */
+LIB61850_API int
+IedServer_getNumberOfOpenConnections(IedServer self);
+
+/**
  * \brief Get access to the underlying MmsServer instance.
  *
  * This function should be handled with care. Since direct interaction with the

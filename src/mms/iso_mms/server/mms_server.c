@@ -446,7 +446,7 @@ isoConnectionIndicationHandler(IsoConnectionIndication indication,
     }
 }
 
-#if (CONFIG_MMS_THREADLESS_STACK != 1)
+#if (CONFIG_MMS_THREADLESS_STACK != 1) && (CONFIG_MMS_SINGLE_THREADED != 1)
 void
 MmsServer_startListening(MmsServer server, int tcpPort)
 {
@@ -463,7 +463,7 @@ MmsServer_stopListening(MmsServer server)
 {
     IsoServer_stopListening(server->isoServer);
 }
-#endif /* (CONFIG_MMS_THREADLESS_STACK != 1)*/
+#endif /* (CONFIG_MMS_THREADLESS_STACK != 1) && (CONFIG_MMS_SINGLE_THREADED != 1)*/
 
 void
 MmsServer_startListeningThreadless(MmsServer self, int tcpPort)
@@ -502,6 +502,12 @@ MmsServer_handleBackgroundTasks(MmsServer self)
     }
 
 #endif /* (MMS_OBTAIN_FILE_SERVICE == 1) */
+}
+
+int
+MmsServer_getConnectionCounter(MmsServer self)
+{
+    return IsoServer_getConnectionCounter(self->isoServer);
 }
 
 void

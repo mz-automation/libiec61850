@@ -1,5 +1,8 @@
 Changes to version 1.4.1
 ------------------------
+- MMS server: refactored connection handling; more efficient use of HandleSet
+- linux/bsd socket layer: replaced select by poll
+- removed header dependencies from API headers
 - IEC 61850 server: added support for transient data objects
 - .NET API: added MmsValue methods BitStringToUInt32BigEndian and BitStringFromUInt32BigEndian
 - fixed compilation problem when CONFIG_MMS_THREADLESS_STACK is defined

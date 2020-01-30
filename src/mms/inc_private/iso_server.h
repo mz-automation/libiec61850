@@ -148,6 +148,9 @@ LIB61850_INTERNAL void
 IsoServer_processIncomingMessages(IsoServer self);
 
 LIB61850_INTERNAL int
+IsoServer_getConnectionCounter(IsoServer self);
+
+LIB61850_INTERNAL int
 IsoServer_waitReady(IsoServer self, unsigned int timeoutMs);
 
 LIB61850_INTERNAL void

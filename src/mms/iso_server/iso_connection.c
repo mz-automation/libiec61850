@@ -1,7 +1,7 @@
 /*
  *  iso_connection.c
  *
- *  Copyright 2013-2018 Michael Zillgith
+ *  Copyright 2013-2020 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -48,9 +48,6 @@
 
 #define TPKT_RFC1006_HEADER_SIZE 4
 
-#define ISO_CON_STATE_RUNNING 1
-#define ISO_CON_STATE_STOPPED 0
-
 struct sIsoConnection
 {
     uint8_t* receiveBuffer;
@@ -89,6 +86,10 @@ struct sIsoConnection
     Thread thread;
     Semaphore conMutex;
 #endif
+
+#if (CONFIG_MMS_SINGLE_THREADED != 1) || (CONFIG_MMS_THREADLESS_STACK == 1)
+    HandleSet handleSet;
+#endif
 };
 
 static void
@@ -97,15 +98,19 @@ finalizeIsoConnection(IsoConnection self)
     if (DEBUG_ISO_SERVER)
         printf("ISO_SERVER: finalizeIsoConnection (%p)--> close transport connection\n", self);
 
-    IsoServer_closeConnection(self->isoServer, self);
-
 #if (CONFIG_MMS_SUPPORT_TLS == 1)
     if (self->tlsSocket)
         TLSSocket_close(self->tlsSocket);
 #endif
 
-    if (self->socket != NULL)
-        Socket_destroy(self->socket);
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+#if (CONFIG_MMS_SINGLE_THREADED != 1)
+    if (self->handleSet) {
+        Handleset_destroy(self->handleSet);
+        self->handleSet = NULL;
+    }
+#endif
+#endif
 
     GLOBAL_FREEMEM(self->session);
     GLOBAL_FREEMEM(self->presentation);
@@ -126,7 +131,7 @@ finalizeIsoConnection(IsoConnection self)
     GLOBAL_FREEMEM(self->clientAddress);
     GLOBAL_FREEMEM(self->localAddress);
     IsoServer isoServer = self->isoServer;
-    GLOBAL_FREEMEM(self);
+
     if (DEBUG_ISO_SERVER)
         printf("ISO_SERVER: connection %p closed\n", self);
 
@@ -140,17 +145,34 @@ IsoConnection_addToHandleSet(const IsoConnection self, HandleSet handles)
 }
 
 void
-IsoConnection_handleTcpConnection(IsoConnection self)
+IsoConnection_removeFromHandleSet(const IsoConnection self, HandleSet handles)
 {
-    /* call tick handler */
+    Handleset_removeSocket(handles, self->socket);
+}
+
+void
+IsoConnection_callTickHandler(IsoConnection self)
+{
     if (self->tickHandler) {
         self->tickHandler(self->handlerParameter);
     }
+}
 
-#if (CONFIG_MMS_SINGLE_THREADED == 0)
-    if (IsoServer_waitReady(self->isoServer, 10) < 1)
-        goto exit_function;
-#endif /* (CONFIG_MMS_SINGLE_THREADED == 0) */
+void
+IsoConnection_handleTcpConnection(IsoConnection self, bool isSingleThread)
+{
+#if (CONFIG_MMS_SINGLE_THREADED != 1)
+    if (isSingleThread == false) {
+
+        /* call tick handler */
+        if (self->tickHandler) {
+            self->tickHandler(self->handlerParameter);
+        }
+
+        if (Handleset_waitReady(self->handleSet, 10) < 1)
+            goto exit_function;
+    }
+#endif
 
     TpktState tpktState = CotpConnection_readToTpktBuffer(self->cotpConnection);
 
@@ -439,20 +461,25 @@ exit_function:
 }
 
 #if ((CONFIG_MMS_SINGLE_THREADED == 0) && (CONFIG_MMS_THREADLESS_STACK == 0))
+/* only for multi-thread mode */
 static void
 handleTcpConnection(void* parameter)
 {
     IsoConnection self = (IsoConnection) parameter;
 
     while(self->state == ISO_CON_STATE_RUNNING)
-        IsoConnection_handleTcpConnection(self);
+        IsoConnection_handleTcpConnection(self, false);
+
+    IsoServer_closeConnection(self->isoServer, self);
 
     finalizeIsoConnection(self);
+
+    self->state = ISO_CON_STATE_TERMINATED;
 }
 #endif /* (CONFIG_MMS_SINGLE_THREADED == 0) */
 
 IsoConnection
-IsoConnection_create(Socket socket, IsoServer isoServer)
+IsoConnection_create(Socket socket, IsoServer isoServer, bool isSingleThread)
 {
     IsoConnection self = (IsoConnection) GLOBAL_CALLOC(1, sizeof(struct sIsoConnection));
     self->socket = socket;
@@ -524,11 +551,21 @@ IsoConnection_create(Socket socket, IsoServer isoServer)
 
 #if (CONFIG_MMS_SINGLE_THREADED == 0)
 #if (CONFIG_MMS_THREADLESS_STACK == 0)
-    self->thread = Thread_create((ThreadExecutionFunction) handleTcpConnection, self, true);
+    if (isSingleThread == false) {
+        self->handleSet = Handleset_new();
+        Handleset_addSocket(self->handleSet, self->socket);
+        self->thread = Thread_create((ThreadExecutionFunction) handleTcpConnection, self, false);
+    }
 #endif
 #endif
 
     return self;
+}
+
+int
+IsoConnection_getState(IsoConnection self)
+{
+    return self->state;
 }
 
 void
@@ -544,10 +581,15 @@ IsoConnection_start(IsoConnection self)
 void
 IsoConnection_destroy(IsoConnection self)
 {
-    if (DEBUG_ISO_SERVER)
-        printf("ISO_SERVER: destroy called for IsoConnection.\n");
+#if (CONFIG_MMS_THREADLESS_STACK == 0) && (CONFIG_MMS_SINGLE_THREADED == 0)
+    if (self->thread)
+        Thread_destroy(self->thread);
+#endif
 
-    finalizeIsoConnection(self);
+    if (self->socket != NULL)
+        Socket_destroy(self->socket);
+
+    GLOBAL_FREEMEM(self);
 }
 
 char*
@@ -627,19 +669,23 @@ exit_error:
 void
 IsoConnection_close(IsoConnection self)
 {
-    if (self->state != ISO_CON_STATE_STOPPED) {
-        Socket socket = self->socket;
+    if (self->state != ISO_CON_STATE_TERMINATED) {
         self->state = ISO_CON_STATE_STOPPED;
-        self->socket = NULL;
 
-#if (CONFIG_MMS_SUPPORT_TLS == 1)
-        if (self->tlsSocket) {
-            TLSSocket_close(self->tlsSocket);
-            self->tlsSocket = NULL;
+#if (CONFIG_MMS_THREADLESS_STACK != 1) && (CONFIG_MMS_SINGLE_THREADED != 1)
+        /* wait for connection thread to terminate */
+        if (self->thread) {
+            Thread_destroy(self->thread);
+            self->thread = NULL;
         }
+        else {
+            finalizeIsoConnection(self);
+            self->state = ISO_CON_STATE_TERMINATED;
+        }
+#else
+        finalizeIsoConnection(self);
+        self->state = ISO_CON_STATE_TERMINATED;
 #endif
-
-        Socket_destroy(socket);
     }
 }
 

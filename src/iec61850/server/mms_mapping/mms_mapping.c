@@ -3004,8 +3004,6 @@ GOOSE_processGooseEvents(MmsMapping* self, uint64_t currentTimeInMs)
 
 #endif /* (CONFIG_INCLUDE_GOOSE_SUPPORT == 1) */
 
-
-
 static void
 processPeriodicTasks(MmsMapping* self)
 {

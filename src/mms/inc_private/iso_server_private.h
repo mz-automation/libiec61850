@@ -1,7 +1,7 @@
 /*
  *  iso_server_private.h
  *
- *  Copyright 2013-2018 Michael Zillgith
+ *  Copyright 2013-2020 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -28,7 +28,7 @@
 #include "hal_socket.h"
 
 LIB61850_INTERNAL IsoConnection
-IsoConnection_create(Socket socket, IsoServer isoServer);
+IsoConnection_create(Socket socket, IsoServer isoServer, bool isSingleThread);
 
 LIB61850_INTERNAL void
 IsoConnection_start(IsoConnection self);
@@ -37,13 +37,29 @@ LIB61850_INTERNAL void
 IsoConnection_destroy(IsoConnection self);
 
 LIB61850_INTERNAL void
-IsoConnection_handleTcpConnection(IsoConnection self);
+IsoConnection_callTickHandler(IsoConnection self);
+
+LIB61850_INTERNAL void
+IsoConnection_handleTcpConnection(IsoConnection self, bool isSingleThread);
+
+#define ISO_CON_STATE_TERMINATED 2 /* connection has terminated and is ready to be destroyed */
+#define ISO_CON_STATE_RUNNING 1 /* connection is newly started */
+#define ISO_CON_STATE_STOPPED 0 /* connection is being stopped */
+
+LIB61850_INTERNAL int
+IsoConnection_getState(IsoConnection self);
 
 /**
  * \brief Add the connection socket to the given HandleSet instance
  */
 LIB61850_INTERNAL void
 IsoConnection_addToHandleSet(const IsoConnection self, HandleSet handles);
+
+/**
+ * \brief Remove the connection socket from the given HandleSet instance
+ */
+LIB61850_INTERNAL void
+IsoConnection_removeFromHandleSet(const IsoConnection self, HandleSet handles);
 
 LIB61850_INTERNAL void
 private_IsoServer_increaseConnectionCounter(IsoServer self);

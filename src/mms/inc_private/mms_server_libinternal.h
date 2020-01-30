@@ -167,6 +167,16 @@ LIB61850_INTERNAL void
 MmsServer_handleBackgroundTasks(MmsServer self);
 
 /**
+ * \brief Get number of open connections
+ *
+ * \param self the MmsServer instance to operate on
+ *
+ * \return the number of open MMS connections
+ */
+LIB61850_INTERNAL int
+MmsServer_getConnectionCounter(MmsServer self);
+
+/**
  * \brief Stop the server (for non-threaded operation mode)
  *
  * \param self the MmsServer instance to operate on

@@ -578,13 +578,9 @@ singleThreadedServerThread(void* parameter)
         printf("IED_SERVER: server thread started!\n");
 
     while (running) {
-
-        if (IedServer_waitReady(self, 25) > 0)
-            MmsServer_handleIncomingMessages(self->mmsServer);
+        MmsServer_handleIncomingMessages(self->mmsServer);
 
         IedServer_performPeriodicTasks(self);
-
-        Thread_sleep(1);
 
         running = mmsMapping->reportThreadRunning;
     }
@@ -613,7 +609,6 @@ IedServer_start(IedServer self, int tcpPort)
 
         Thread_start(self->serverThread);
 #else
-
         MmsServer_startListening(self->mmsServer, tcpPort);
         MmsMapping_startEventWorkerThread(self->mmsMapping);
 #endif
@@ -681,6 +676,12 @@ IedServer_startThreadless(IedServer self, int tcpPort)
         MmsServer_startListeningThreadless(self->mmsServer, tcpPort);
         self->running = true;
     }
+}
+
+int
+IedServer_getNumberOfOpenConnections(IedServer self)
+{
+    return MmsServer_getConnectionCounter(self->mmsServer);
 }
 
 int
