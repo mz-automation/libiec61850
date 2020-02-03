@@ -367,14 +367,14 @@ mmsServer_setValue(MmsServer self, MmsDomain* domain, char* itemId, MmsValue* va
 
 
 MmsValue*
-mmsServer_getValue(MmsServer self, MmsDomain* domain, char* itemId, MmsServerConnection connection)
+mmsServer_getValue(MmsServer self, MmsDomain* domain, char* itemId, MmsServerConnection connection, bool isDirectAccess)
 {
     MmsValue* value = NULL;
 
     if (self->readAccessHandler != NULL) {
         MmsDataAccessError accessError =
                 self->readAccessHandler(self->readAccessHandlerParameter, (domain == (MmsDomain*) self->device) ? NULL : domain,
-                        itemId, connection);
+                        itemId, connection, isDirectAccess);
 
         if (accessError != DATA_ACCESS_ERROR_SUCCESS) {
             value = MmsValue_newDataAccessError(accessError);
@@ -388,7 +388,7 @@ mmsServer_getValue(MmsServer self, MmsDomain* domain, char* itemId, MmsServerCon
     if (value == NULL)
         if (self->readHandler != NULL)
             value = self->readHandler(self->readHandlerParameter, (domain == (MmsDomain*) self->device) ? NULL : domain,
-                    itemId, connection);
+                    itemId, connection, isDirectAccess);
 
 exit_function:
     return value;

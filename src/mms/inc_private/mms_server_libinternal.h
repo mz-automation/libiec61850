@@ -28,10 +28,10 @@
 #include "mms_device_model.h"
 
 typedef MmsValue* (*MmsReadVariableHandler)(void* parameter, MmsDomain* domain,
-        char* variableId, MmsServerConnection connection);
+        char* variableId, MmsServerConnection connection, bool isDirectAccess);
 
 typedef MmsDataAccessError (*MmsReadAccessHandler) (void* parameter, MmsDomain* domain,
-        char* variableId, MmsServerConnection connection);
+        char* variableId, MmsServerConnection connection, bool isDirectAccess);
 
 typedef MmsDataAccessError (*MmsWriteVariableHandler)(void* parameter,
         MmsDomain* domain, char* variableId, MmsValue* value,

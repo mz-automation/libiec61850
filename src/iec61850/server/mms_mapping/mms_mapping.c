@@ -71,7 +71,7 @@ typedef struct
 #if (CONFIG_IEC61850_CONTROL_SERVICE == 1)
 MmsValue*
 Control_readAccessControlObject(MmsMapping* self, MmsDomain* domain, char* variableIdOrig,
-        MmsServerConnection connection);
+        MmsServerConnection connection, bool isDirectAccess);
 #endif
 
 void /* Create PHYCOMADDR ACSI type instance */
@@ -2248,7 +2248,7 @@ readAccessGooseControlBlock(MmsMapping* self, MmsDomain* domain, char* variableI
 
 
 static MmsValue*
-mmsReadHandler(void* parameter, MmsDomain* domain, char* variableId, MmsServerConnection connection)
+mmsReadHandler(void* parameter, MmsDomain* domain, char* variableId, MmsServerConnection connection, bool isDirectAccess)
 {
     MmsMapping* self = (MmsMapping*) parameter;
 
@@ -2267,7 +2267,7 @@ mmsReadHandler(void* parameter, MmsDomain* domain, char* variableId, MmsServerCo
 #if (CONFIG_IEC61850_CONTROL_SERVICE == 1)
     /* Controllable objects - CO */
     if (isControllable(separator)) {
-        retValue = Control_readAccessControlObject(self, domain, variableId, connection);
+        retValue = Control_readAccessControlObject(self, domain, variableId, connection, isDirectAccess);
         goto exit_function;
     }
 #endif
@@ -2362,7 +2362,6 @@ mmsReadHandler(void* parameter, MmsDomain* domain, char* variableId, MmsServerCo
 
     /* handle read access to other objects */
 
-
 exit_function:
     return retValue;
 }
@@ -2436,7 +2435,7 @@ mmsConnectionHandler(void* parameter, MmsServerConnection connection, MmsServerE
 }
 
 static MmsDataAccessError
-mmsReadAccessHandler (void* parameter, MmsDomain* domain, char* variableId, MmsServerConnection connection)
+mmsReadAccessHandler (void* parameter, MmsDomain* domain, char* variableId, MmsServerConnection connection, bool isDirectAccess)
 {
     MmsMapping* self = (MmsMapping*) parameter;
 

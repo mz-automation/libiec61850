@@ -51,7 +51,7 @@ addNamedVariableValue(MmsVariableSpecification* namedVariable, MmsServerConnecti
 
     if (namedVariable->type == MMS_STRUCTURE) {
 
-        value = mmsServer_getValue(connection->server, domain, itemId, connection);
+        value = mmsServer_getValue(connection->server, domain, itemId, connection, false);
 
         if (value != NULL)
             goto exit_function;
@@ -86,7 +86,7 @@ addNamedVariableValue(MmsVariableSpecification* namedVariable, MmsServerConnecti
         }
     }
     else {
-        value = mmsServer_getValue(connection->server, domain, itemId, connection);
+        value = mmsServer_getValue(connection->server, domain, itemId, connection, false);
     }
 
 exit_function:
@@ -183,7 +183,6 @@ getComponent(MmsServerConnection connection, MmsDomain* domain, AlternateAccess_
                             strcat(variableName, "$");
                             strncat(variableName, (const char*) component.buf, component.size);
 
-
                             if (alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess
                                     != NULL) {
                                 retValue =
@@ -193,7 +192,7 @@ getComponent(MmsServerConnection connection, MmsDomain* domain, AlternateAccess_
                                                 variableName);
                             }
                             else {
-                                retValue = mmsServer_getValue(connection->server, domain, variableName, connection);
+                                retValue = mmsServer_getValue(connection->server, domain, variableName, connection, false);
                             }
                         }
                     }
@@ -275,7 +274,7 @@ alternateArrayAccess(MmsServerConnection connection,
 
 		int index = lowIndex;
 
-		MmsValue* arrayValue = mmsServer_getValue(connection->server, domain, itemId, connection);
+		MmsValue* arrayValue = mmsServer_getValue(connection->server, domain, itemId, connection, false);
 
 		if (arrayValue != NULL) {
 
@@ -335,7 +334,7 @@ alternateArrayAccess(MmsServerConnection connection,
 
 static void
 addNamedVariableToResultList(MmsVariableSpecification* namedVariable, MmsDomain* domain, char* nameIdStr,
-		LinkedList /*<MmsValue>*/ values, MmsServerConnection connection, AlternateAccess_t* alternateAccess)
+		LinkedList /*<MmsValue>*/ values, MmsServerConnection connection, AlternateAccess_t* alternateAccess, bool isAccessToSingleVariable)
 {
     if (namedVariable != NULL) {
 
@@ -345,7 +344,7 @@ addNamedVariableToResultList(MmsVariableSpecification* namedVariable, MmsDomain*
 
         if (namedVariable->type == MMS_STRUCTURE) {
 
-            MmsValue* value = mmsServer_getValue(connection->server, domain, nameIdStr, connection);
+            MmsValue* value = mmsServer_getValue(connection->server, domain, nameIdStr, connection, isAccessToSingleVariable);
 
             if (alternateAccess != NULL) {
 
@@ -379,7 +378,7 @@ addNamedVariableToResultList(MmsVariableSpecification* namedVariable, MmsDomain*
                         nameIdStr, values, namedVariable);
             }
             else { /* return complete array */
-                MmsValue* value = mmsServer_getValue(connection->server, domain, nameIdStr, connection);
+                MmsValue* value = mmsServer_getValue(connection->server, domain, nameIdStr, connection, isAccessToSingleVariable);
                 appendValueToResultList(value, values);
             }
         }
@@ -389,7 +388,7 @@ addNamedVariableToResultList(MmsVariableSpecification* namedVariable, MmsDomain*
                 appendErrorToResultList(values, DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT);
             }
             else {
-                MmsValue* value = mmsServer_getValue(connection->server, domain, nameIdStr, connection);
+                MmsValue* value = mmsServer_getValue(connection->server, domain, nameIdStr, connection, isAccessToSingleVariable);
 
                 if (value == NULL) {
                     if (DEBUG_MMS_SERVER)
@@ -641,7 +640,7 @@ handleReadListOfVariablesRequest(
                         appendErrorToResultList(values, DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT);
                     else
                         addNamedVariableToResultList(namedVariable, domain, nameIdStr,
-                            values, connection, alternateAccess);
+                            values, connection, alternateAccess, variableCount == 1);
 				}
 			}
 #if (CONFIG_MMS_SUPPORT_VMD_SCOPE_NAMED_VARIABLES == 1)
@@ -678,7 +677,28 @@ handleReadListOfVariablesRequest(
 		}
 	}
 
-	encodeReadResponse(connection, invokeId, response, values, NULL);
+	bool sendResponse = true;
+
+	LinkedList valueElement = LinkedList_getNext(values);
+
+	while (valueElement) {
+
+	    MmsValue* value = (MmsValue*) LinkedList_getData(valueElement);
+
+	    if (value) {
+	        if (MmsValue_getType(value) == MMS_DATA_ACCESS_ERROR) {
+	            if (MmsValue_getDataAccessError(value) == DATA_ACCESS_ERROR_NO_RESPONSE) {
+	                sendResponse = false;
+	                break;
+	            }
+	        }
+	    }
+
+	    valueElement = LinkedList_getNext(valueElement);
+	}
+
+	if (sendResponse)
+	    encodeReadResponse(connection, invokeId, response, values, NULL);
 
 exit:
 
@@ -689,7 +709,7 @@ exit:
 
 static void
 createNamedVariableListResponse(MmsServerConnection connection, MmsNamedVariableList namedList,
-		int invokeId, ByteBuffer* response, ReadRequest_t* read, VarAccessSpec* accessSpec)
+		int invokeId, ByteBuffer* response, bool isSpecWithResult, VarAccessSpec* accessSpec)
 {
 
 	LinkedList /*<MmsValue>*/ values = LinkedList_create();
@@ -712,12 +732,12 @@ createNamedVariableListResponse(MmsServerConnection connection, MmsNamedVariable
 				variableName);
 
 		addNamedVariableToResultList(namedVariable, variableDomain, variableName,
-								values, connection, NULL);
+								values, connection, NULL, false);
 
 		variable = LinkedList_getNext(variable);
 	}
 
-	if (isSpecWithResult(read)) /* add specification to result */
+	if (isSpecWithResult) /* add specification to result */
 		encodeReadResponse(connection, invokeId, response, values, accessSpec);
 	else
 		encodeReadResponse(connection, invokeId, response, values, NULL);
@@ -769,7 +789,7 @@ handleReadNamedVariableListRequest(
 			MmsNamedVariableList namedList = MmsDomain_getNamedVariableList(domain, nameIdStr);
 
 			if (namedList != NULL) {
-				createNamedVariableListResponse(connection, namedList, invokeId, response, read,
+				createNamedVariableListResponse(connection, namedList, invokeId, response, isSpecWithResult(read),
 						&accessSpec);
 			}
 			else {
@@ -798,7 +818,7 @@ handleReadNamedVariableListRequest(
             accessSpec.domainId = NULL;
             accessSpec.itemId = listName;
 
-            createNamedVariableListResponse(connection, namedList, invokeId, response, read, &accessSpec);
+            createNamedVariableListResponse(connection, namedList, invokeId, response, isSpecWithResult(read), &accessSpec);
         }
 	}
 #if (MMS_DYNAMIC_DATA_SETS == 1)
@@ -822,7 +842,7 @@ handleReadNamedVariableListRequest(
             accessSpec.domainId = NULL;
             accessSpec.itemId = listName;
 
-			createNamedVariableListResponse(connection, namedList, invokeId, response, read, &accessSpec);
+			createNamedVariableListResponse(connection, namedList, invokeId, response, isSpecWithResult(read), &accessSpec);
 		}
 	}
 #endif /* (MMS_DYNAMIC_DATA_SETS == 1) */
@@ -866,5 +886,25 @@ mmsServer_handleReadRequest(
 
 exit_function:	
 	asn_DEF_MmsPdu.free_struct(&asn_DEF_MmsPdu, mmsPdu, 0);
+}
+
+void
+MmsServerConnection_sendReadResponse(MmsServerConnection self, uint32_t invokeId, LinkedList values, bool handlerMode)
+{
+    if (handlerMode == false)
+        IsoConnection_lock(self->isoConnection);
+
+    ByteBuffer* response = MmsServer_reserveTransmitBuffer(self->server);
+
+    ByteBuffer_setSize(response, 0);
+
+    encodeReadResponse(self, invokeId, response, values, NULL);
+
+    IsoConnection_sendMessage(self->isoConnection, response);
+
+    MmsServer_releaseTransmitBuffer(self->server);
+
+    if (handlerMode == false)
+        IsoConnection_unlock(self->isoConnection);
 }
 

@@ -359,7 +359,7 @@ createWriteNamedVariableListResponse(
         MmsDomain* variableDomain = MmsNamedVariableListEntry_getDomain(variableListEntry);
         char* variableName = MmsNamedVariableListEntry_getVariableName(variableListEntry);
 
-        MmsValue* oldValue = mmsServer_getValue(connection->server, variableDomain, variableName, connection);
+        MmsValue* oldValue = mmsServer_getValue(connection->server, variableDomain, variableName, connection, false);
 
         Data_t* dataElement = writeRequest->listOfData.list.array[i];
 

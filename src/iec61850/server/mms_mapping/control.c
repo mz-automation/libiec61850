@@ -1,7 +1,7 @@
 /*
  *  control.c
  *
- *  Copyright 2013-2019 Michael Zillgith
+ *  Copyright 2013-2020 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -45,6 +45,7 @@
 #define STATE_PERFORM_TEST 3
 #define STATE_WAIT_FOR_EXECUTION 4
 #define STATE_OPERATE 5
+#define STATE_WAIT_FOR_SELECT 6
 
 #define PENDING_EVENT_SELECTED 1
 #define PENDING_EVENT_UNSELECTED 2
@@ -55,6 +56,8 @@
 
 static MmsValue emptyString = {MMS_STRUCTURE};
 
+static MmsValue delayedResponse = {MMS_DATA_ACCESS_ERROR, 0, {DATA_ACCESS_ERROR_NO_RESPONSE}};
+
 void
 ControlObject_sendLastApplError(ControlObject* self, MmsServerConnection connection, char* ctlVariable, int error,
         ControlAddCause addCause, MmsValue* ctlNum, MmsValue* origin, bool handlerMode);
@@ -64,10 +67,6 @@ ControlObject_sendCommandTerminationPositive(ControlObject* self);
 
 void
 ControlObject_sendCommandTerminationNegative(ControlObject* self);
-
-MmsValue*
-Control_readAccessControlObject(MmsMapping* self, MmsDomain* domain, char* variableIdOrig,
-        MmsServerConnection connection);
 
 static void
 unselectObject(ControlObject* self);
@@ -124,6 +123,65 @@ setStSeld(ControlObject* self, bool value)
 }
 
 static void
+updateSboTimeoutValue(ControlObject* self)
+{
+    if (self->sboTimeout != NULL) {
+        uint32_t sboTimeoutVal = MmsValue_toInt32(self->sboTimeout);
+
+        if (DEBUG_IED_SERVER)
+            printf("IED_SERVER: set timeout for %s/%s.%s to %u\n", MmsDomain_getName(self->mmsDomain), self->lnName, self->name, sboTimeoutVal);
+
+        self->selectTimeout = sboTimeoutVal;
+    }
+    else
+        self->selectTimeout = CONFIG_CONTROL_DEFAULT_SBO_TIMEOUT;
+}
+
+static void
+selectObject(ControlObject* self, uint64_t selectTime, MmsServerConnection connection)
+{
+    if (DEBUG_IED_SERVER)
+        printf("IED_SERVER: control %s/%s.%s selected\n", MmsDomain_getName(self->mmsDomain), self->lnName, self->name);
+
+    updateSboTimeoutValue(self);
+
+    self->selectTime = selectTime;
+    self->mmsConnection = connection;
+    setStSeld(self, true);
+    setState(self, STATE_READY);
+}
+
+static void
+unselectObject(ControlObject* self)
+{
+    setState(self, STATE_UNSELECTED);
+
+    setStSeld(self, false);
+
+    if (DEBUG_IED_SERVER)
+        printf("IED_SERVER: control %s/%s.%s unselected\n", MmsDomain_getName(self->mmsDomain), self->lnName, self->name);
+}
+
+static void
+checkSelectTimeout(ControlObject* self, uint64_t currentTime)
+{
+    if ((self->ctlModel == 2) || (self->ctlModel == 4)) {
+
+        if (getState(self) == STATE_READY) {
+            if (self->selectTimeout > 0) {
+                if (currentTime > (self->selectTime + self->selectTimeout)) {
+                    if (DEBUG_IED_SERVER)
+                        printf("IED_SERVER: select-timeout (timeout-val = %i) for control %s/%s.%s\n",
+                                self->selectTimeout, MmsDomain_getName(self->mmsDomain), self->lnName, self->name);
+
+                    unselectObject(self);
+                }
+            }
+        }
+    }
+}
+
+static void
 setOpRcvd(ControlObject* self, bool value)
 {
     if (self->opRcvd) {
@@ -159,7 +217,6 @@ setOpOk(ControlObject* self, bool value, uint64_t currentTimeInMs)
                 /* TODO update time quality */
             }
 
-
             self->pendingEvents |= PENDING_EVENT_OP_OK_TRUE;
         }
         else
@@ -169,21 +226,6 @@ setOpOk(ControlObject* self, bool value, uint64_t currentTimeInMs)
         Semaphore_post(self->pendingEventsLock);
 #endif
     }
-}
-
-static void
-updateSboTimeoutValue(ControlObject* self)
-{
-    if (self->sboTimeout != NULL) {
-        uint32_t sboTimeoutVal = MmsValue_toInt32(self->sboTimeout);
-
-        if (DEBUG_IED_SERVER)
-            printf("IED_SERVER: set timeout for %s/%s.%s to %u\n", MmsDomain_getName(self->mmsDomain), self->lnName, self->name, sboTimeoutVal);
-
-        self->selectTimeout = sboTimeoutVal;
-    }
-    else
-        self->selectTimeout = CONFIG_CONTROL_DEFAULT_SBO_TIMEOUT;
 }
 
 static bool
@@ -279,6 +321,74 @@ executeStateMachine:
     state = getState(self);
 
     switch (state) {
+
+    case STATE_WAIT_FOR_SELECT:
+    {
+        self->isSelect = 1;
+
+        CheckHandlerResult checkHandlerResult = self->checkHandler((ControlAction) self, self->checkHandlerParameter, NULL, false, false);
+
+        self->isSelect = 0;
+
+        if (checkHandlerResult != CONTROL_WAITING_FOR_SELECT) {
+
+            if (self->ctlModel == 2) {
+                LinkedList values = LinkedList_create();
+
+                if (checkHandlerResult == CONTROL_ACCEPTED) {
+                    LinkedList_add(values, self->sbo);
+
+                    selectObject(self, Hal_getTimeInMs(), self->mmsConnection);
+                }
+                else {
+                    LinkedList_add(values, &emptyString);
+
+                    setState(self, STATE_UNSELECTED);
+                }
+
+                MmsServerConnection_sendReadResponse(self->mmsConnection, self->operateInvokeId, values, false);
+
+                LinkedList_destroyStatic(values);
+            }
+            else if (self->ctlModel == 4) {
+                if (checkHandlerResult == CONTROL_ACCEPTED) {
+
+                    selectObject(self, Hal_getTimeInMs(), self->mmsConnection);
+
+                    if (self->ctlNumSt)
+                        MmsValue_update(self->ctlNumSt, self->ctlNum);
+
+                    if (self->originSt)
+                        MmsValue_update(self->originSt, self->origin);
+
+                    MmsServerConnection_sendWriteResponse(self->mmsConnection, self->operateInvokeId, DATA_ACCESS_ERROR_SUCCESS, false);
+
+                    if (DEBUG_IED_SERVER)
+                        printf("IED_SERVER: SBOw - selected successful\n");
+                }
+                else {
+
+                    setState(self, STATE_UNSELECTED);
+
+                    ControlObject_sendLastApplError(self, self->mmsConnection, "SBOw", 0,
+                            ADD_CAUSE_SELECT_FAILED, self->ctlNum, self->origin, false);
+
+                    MmsServerConnection_sendWriteResponse(self->mmsConnection, self->operateInvokeId, (MmsDataAccessError) checkHandlerResult, false);
+
+                    if (DEBUG_IED_SERVER)
+                        printf("IED_SERVER: SBOw - select rejected by application!\n");
+                }
+            }
+            else {
+                /* ERROR: invalid internal state! */
+                setState(self, STATE_WAIT_FOR_SELECT);
+            }
+
+        }
+
+    }
+    break;
+
 
     case STATE_WAIT_FOR_ACTIVATION_TIME:
     case STATE_WAIT_FOR_EXECUTION:
@@ -679,50 +789,6 @@ MmsValue*
 ControlObject_getMmsValue(ControlObject* self)
 {
     return self->mmsValue;
-}
-
-static void
-selectObject(ControlObject* self, uint64_t selectTime, MmsServerConnection connection)
-{
-    if (DEBUG_IED_SERVER)
-        printf("IED_SERVER: control %s/%s.%s selected\n", MmsDomain_getName(self->mmsDomain), self->lnName, self->name);
-
-    updateSboTimeoutValue(self);
-
-    self->selectTime = selectTime;
-    self->mmsConnection = connection;
-    setStSeld(self, true);
-    setState(self, STATE_READY);
-}
-
-static void
-unselectObject(ControlObject* self)
-{
-    setState(self, STATE_UNSELECTED);
-
-    setStSeld(self, false);
-
-    if (DEBUG_IED_SERVER)
-        printf("IED_SERVER: control %s/%s.%s unselected\n", MmsDomain_getName(self->mmsDomain), self->lnName, self->name);
-}
-
-static void
-checkSelectTimeout(ControlObject* self, uint64_t currentTime)
-{
-    if ((self->ctlModel == 2) || (self->ctlModel == 4)) {
-
-        if (getState(self) == STATE_READY) {
-            if (self->selectTimeout > 0) {
-                if (currentTime > (self->selectTime + self->selectTimeout)) {
-                    if (DEBUG_IED_SERVER)
-                        printf("IED_SERVER: select-timeout (timeout-val = %i) for control %s/%s.%s\n",
-                                self->selectTimeout, MmsDomain_getName(self->mmsDomain), self->lnName, self->name);
-
-                    unselectObject(self);
-                }
-            }
-        }
-    }
 }
 
 bool
@@ -1181,7 +1247,7 @@ doesElementEquals(char* element, char* name)
 
 MmsValue*
 Control_readAccessControlObject(MmsMapping* self, MmsDomain* domain, char* variableIdOrig,
-        MmsServerConnection connection)
+        MmsServerConnection connection, bool isDirectAccess)
 {
     MmsValue* value = NULL;
 
@@ -1259,28 +1325,36 @@ Control_readAccessControlObject(MmsMapping* self, MmsDomain* domain, char* varia
 
                     value = &emptyString;
 
-                    checkSelectTimeout(controlObject, currentTime);
+                    if (isDirectAccess == true) {
+                        checkSelectTimeout(controlObject, currentTime);
 
-                    if (getState(controlObject) == STATE_UNSELECTED) {
-                        CheckHandlerResult checkResult = CONTROL_ACCEPTED;
+                        if (getState(controlObject) == STATE_UNSELECTED) {
+                            CheckHandlerResult checkResult = CONTROL_ACCEPTED;
 
-                        /* opRcvd must not be set here! */
+                            /* opRcvd must not be set here! */
 
-                        controlObject->addCauseValue = ADD_CAUSE_UNKNOWN;
+                            controlObject->addCauseValue = ADD_CAUSE_UNKNOWN;
 
-                        if (controlObject->checkHandler != NULL) { /* perform operative tests */
+                            if (controlObject->checkHandler != NULL) { /* perform operative tests */
 
-                            controlObject->isSelect = 1;
+                                controlObject->isSelect = 1;
 
-                            checkResult = controlObject->checkHandler((ControlAction) controlObject,
-                                    controlObject->checkHandlerParameter, NULL, false, false);
+                                checkResult = controlObject->checkHandler((ControlAction) controlObject,
+                                        controlObject->checkHandlerParameter, NULL, false, false);
 
-                            controlObject->isSelect = 0;
-                        }
+                                controlObject->isSelect = 0;
+                            }
 
-                        if (checkResult == CONTROL_ACCEPTED) {
-                            selectObject(controlObject, currentTime, connection);
-                            value = controlObject->sbo;
+                            if (checkResult == CONTROL_ACCEPTED) {
+                                selectObject(controlObject, currentTime, connection);
+                                value = controlObject->sbo;
+                            }
+                            else if (checkResult == CONTROL_WAITING_FOR_SELECT) {
+                                controlObject->mmsConnection = connection;
+                                controlObject->operateInvokeId = MmsServerConnection_getLastInvokeId(connection);
+                                setState(controlObject, STATE_WAIT_FOR_SELECT);
+                                value = &delayedResponse;
+                            }
                         }
                     }
 
@@ -1398,10 +1472,8 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
             varName = NULL;
     }
 
-
     if (DEBUG_IED_SERVER)
         printf("IED_SERVER: write access control: objectName: (%s) varName: (%s)\n", objectName, varName);
-
 
     if (varName == NULL) {
         indication = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
@@ -1488,6 +1560,18 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
 
                         if (DEBUG_IED_SERVER)
                             printf("IED_SERVER: SBOw - selected successful\n");
+                    }
+                    else if (checkResult == CONTROL_WAITING_FOR_SELECT) {
+                        controlObject->mmsConnection = connection;
+                        controlObject->operateInvokeId = MmsServerConnection_getLastInvokeId(connection);
+
+                        MmsValue_update(controlObject->ctlVal, ctlVal);
+                        MmsValue_update(controlObject->ctlNum, ctlNum);
+                        MmsValue_update(controlObject->origin, origin);
+
+                        setState(controlObject, STATE_WAIT_FOR_SELECT);
+
+                        indication = DATA_ACCESS_ERROR_NO_RESPONSE;
                     }
                     else {
                         indication = (MmsDataAccessError) checkResult;

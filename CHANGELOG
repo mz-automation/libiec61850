@@ -1,3 +1,7 @@
+Changes to version 1.5.0
+------------------------
+- IEC 61850 server: control models - allow delaying select response with check handler (new handler return value CONTROL_WAITING_FOR_SELECT)
+
 Changes to version 1.4.1
 ------------------------
 - MMS server: refactored connection handling; more efficient use of HandleSet

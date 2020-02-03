@@ -1146,6 +1146,7 @@ IedServer_setEditSettingGroupConfirmationHandler(IedServer self, SettingGroupCon
  */
 typedef enum {
     CONTROL_ACCEPTED = -1, /** check passed */
+    CONTROL_WAITING_FOR_SELECT = 0, /** select operation in progress - handler will be called again later */
     CONTROL_HARDWARE_FAULT = 1, /** check failed due to hardware fault */
     CONTROL_TEMPORARILY_UNAVAILABLE = 2, /** control is already selected or operated */
     CONTROL_OBJECT_ACCESS_DENIED = 3, /** check failed due to access control reason - access denied for this client or state */

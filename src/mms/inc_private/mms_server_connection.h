@@ -99,6 +99,9 @@ LIB61850_INTERNAL void
 MmsServerConnection_sendWriteResponse(MmsServerConnection self, uint32_t invokeId, MmsDataAccessError indication,
         bool handlerMode);
 
+LIB61850_INTERNAL void
+MmsServerConnection_sendReadResponse(MmsServerConnection self, uint32_t invokeId, LinkedList values,
+        bool handlerMode);
 
 LIB61850_INTERNAL uint32_t
 MmsServerConnection_getLastInvokeId(MmsServerConnection self);

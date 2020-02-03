@@ -391,8 +391,13 @@ LIB61850_INTERNAL MmsDataAccessError
 mmsServer_setValue(MmsServer self, MmsDomain* domain, char* itemId, MmsValue* value,
         MmsServerConnection connection);
 
+/**
+ * \brief Get the current value of a variable in the server data model
+ *
+ * \param isDirectAccess the access is result of a direct single read access to the variable and no part of broader read request
+ */
 LIB61850_INTERNAL MmsValue*
-mmsServer_getValue(MmsServer self, MmsDomain* domain, char* itemId, MmsServerConnection connection);
+mmsServer_getValue(MmsServer self, MmsDomain* domain, char* itemId, MmsServerConnection connection, bool isDirectAccess);
 
 LIB61850_INTERNAL void
 mmsServer_createMmsWriteResponse(MmsServerConnection connection,
