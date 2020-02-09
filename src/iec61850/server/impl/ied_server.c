@@ -1304,8 +1304,6 @@ IedServer_updateQuality(IedServer self, DataAttribute* dataAttribute, Quality qu
 #endif
 
     }
-
-
 }
 
 void
