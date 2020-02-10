@@ -388,6 +388,9 @@ TLSSocket_create(Socket socket, TLSConfiguration configuration, bool storeClient
             {
                 DEBUG_PRINT("TLS", "mbedtls_ssl_handshake returned %d\n\n", ret );
 
+                mbedtls_ssl_config_free(&(self->conf));
+                mbedtls_ssl_free(&(self->ssl));
+
                 GLOBAL_FREEMEM(self);
 
                 return NULL;

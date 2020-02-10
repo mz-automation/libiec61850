@@ -521,7 +521,9 @@ handleIsoConnections(IsoServer self, bool isSingleThread)
             if (isSingleThread == false)
                 IsoConnection_start(isoConnection);
         }
-
+        else {
+            Socket_destroy(connectionSocket);
+        }
     }
 
     if (isSingleThread)
