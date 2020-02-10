@@ -1748,8 +1748,9 @@ MmsConnection_connectAsync(MmsConnection self, MmsError* mmsError, const char* s
         setConnectionState(self, MMS_CONNECTION_STATE_CONNECTING);
         *mmsError = MMS_ERROR_NONE;
     }
-    else
+    else {
         *mmsError = MMS_ERROR_OTHER;
+    }
 }
 
 bool

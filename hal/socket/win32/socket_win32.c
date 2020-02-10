@@ -33,7 +33,6 @@
 #include "hal_socket.h"
 #include "stack_config.h"
 
-
 #ifndef __MINGW64_VERSION_MAJOR
 struct tcp_keepalive {
     u_long  onoff;
@@ -82,6 +81,7 @@ void
 Handleset_addSocket(HandleSet self, const Socket sock)
 {
    if (self != NULL && sock != NULL && sock->fd != INVALID_SOCKET) {
+
        FD_SET(sock->fd, &self->handles);
 
        if ((sock->fd > self->maxHandle) || (self->maxHandle == INVALID_SOCKET))
@@ -107,7 +107,12 @@ Handleset_waitReady(HandleSet self, unsigned int timeoutMs)
 
        timeout.tv_sec = timeoutMs / 1000;
        timeout.tv_usec = (timeoutMs % 1000) * 1000;
-       result = select(self->maxHandle + 1, &self->handles, NULL, NULL, &timeout);
+
+       fd_set handles;
+
+       memcpy((void*)&handles, &(self->handles), sizeof(fd_set));
+
+       result = select(self->maxHandle + 1, &handles, NULL, NULL, &timeout);
    } else {
        result = -1;
    }
@@ -290,6 +295,13 @@ ServerSocket_accept(ServerSocket self)
         socketCount++;
 
         setSocketNonBlocking(conSocket);
+
+        if (DEBUG_SOCKET)
+            printf("WIN32_SOCKET: connection accepted\n");
+    }
+    else {
+        if (DEBUG_SOCKET)
+            printf("WIN32_SOCKET: accept failed\n");
     }
 
     return conSocket;
@@ -335,7 +347,7 @@ TcpSocket_create()
     }
     else {
         if (DEBUG_SOCKET)
-            printf("SOCKET: failed to create socket (error code=%i)\n", WSAGetLastError());
+            printf("WIN32_SOCKET: failed to create socket (error code=%i)\n", WSAGetLastError());
     }
 
     return self;
@@ -351,7 +363,7 @@ bool
 Socket_connectAsync(Socket self, const char* address, int port)
 {
     if (DEBUG_SOCKET)
-        printf("Socket_connect: %s:%i\n", address, port);
+        printf("WIN32_SOCKET: Socket_connect: %s:%i\n", address, port);
 
     struct sockaddr_in serverAddress;
     WSADATA wsa;
