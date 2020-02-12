@@ -245,6 +245,51 @@ namespace IEC61850
 			static extern IntPtr CDC_SPS_create(string name, IntPtr parent, uint options);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr CDC_DPS_create(string name, IntPtr parent, uint options);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr CDC_VSS_create(string name, IntPtr parent, uint options);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr CDC_SEC_create(string name, IntPtr parent, uint options);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr CDC_CMV_create(string name, IntPtr parent, uint options);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr CDC_SAV_create(string name, IntPtr parent, uint options, [MarshalAs(UnmanagedType.I1)] bool isIntegerNotFloat);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr CDC_ACD_create(string name, IntPtr parent, uint options);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr CDC_ACT_create(string name, IntPtr parent, uint options);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr CDC_SPG_create(string name, IntPtr parent, uint options);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr CDC_VSG_create(string name, IntPtr parent, uint options);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr CDC_ENG_create(string name, IntPtr parent, uint options);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr CDC_ING_create(string name, IntPtr parent, uint options);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr CDC_ASG_create(string name, IntPtr parent, uint options, [MarshalAs(UnmanagedType.I1)] bool isIntegerNotFloat);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr CDC_WYE_create(string name, IntPtr parent, uint options);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr CDC_DEL_create(string name, IntPtr parent, uint options);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr CDC_HST_create(string name, IntPtr parent, uint options, ushort maxPts);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern IntPtr CDC_INS_create(string name, IntPtr parent, uint options);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
@@ -266,6 +311,12 @@ namespace IEC61850
 			static extern IntPtr CDC_SPC_create(string name, IntPtr parent, uint options, uint controlOptions);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr CDC_DPC_create(string name, IntPtr parent, uint options, uint controlOptions);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr CDC_BSC_create(string name, IntPtr parent, uint options, uint controlOptions, [MarshalAs(UnmanagedType.I1)] bool hasTransientIndicator);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern IntPtr CDC_APC_create(string name, IntPtr parent, uint options, uint controlOptions, [MarshalAs(UnmanagedType.I1)] bool isIntegerNotFloat);
 			
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
@@ -273,6 +324,24 @@ namespace IEC61850
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern IntPtr CDC_ENC_create(string name, IntPtr parent, uint options, uint controlOptions);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr CDC_SPV_create(string name, IntPtr parent, uint options, uint controlOptions, uint wpOptions, [MarshalAs(UnmanagedType.I1)] bool hasChaManRs);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr CDC_STV_create(string name, IntPtr parent, uint options, uint controlOptions, uint wpOptions, [MarshalAs(UnmanagedType.I1)] bool hasOldStatus);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr CDC_CMD_create(string name, IntPtr parent, uint options, uint controlOptions, uint wpOptions, [MarshalAs(UnmanagedType.I1)] bool hasOldStatus, [MarshalAs(UnmanagedType.I1)] bool hasCmTm, [MarshalAs(UnmanagedType.I1)] bool hasCmCt);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr CDC_ALM_create(string name, IntPtr parent, uint options, uint controlOptions, uint wpOptions, [MarshalAs(UnmanagedType.I1)] bool hasOldStatus);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr CDC_CTE_create(string name, IntPtr parent, uint options, uint controlOptions, uint wpOptions, [MarshalAs(UnmanagedType.I1)] bool hasHisRs);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr CDC_TMS_create(string name, IntPtr parent, uint options, uint controlOptions, uint wpOptions, [MarshalAs(UnmanagedType.I1)] bool hasHisRs);
 
 			public const int CDC_OPTION_DESC = (1 << 2);
 			public const int CDC_OPTION_DESC_UNICODE = (1 << 3);
@@ -298,6 +367,156 @@ namespace IEC61850
 
 				if (self != IntPtr.Zero)
 					return new DataObject (self);
+				else
+					return null;
+			}
+			
+			public static DataObject Create_CDC_DPS(ModelNode parent, string name, uint options)
+			{
+				IntPtr self = CDC_DPS_create(name, parent.self, options);
+
+				if (self != IntPtr.Zero)
+					return new DataObject(self);
+				else
+					return null;
+			}
+
+			public static DataObject Create_CDC_VSS(ModelNode parent, string name, uint options)
+			{
+				IntPtr self = CDC_VSS_create(name, parent.self, options);
+
+				if (self != IntPtr.Zero)
+					return new DataObject(self);
+				else
+					return null;
+			}
+
+			public static DataObject Create_CDC_SEC(ModelNode parent, string name, uint options)
+			{
+				IntPtr self = CDC_SEC_create(name, parent.self, options);
+
+				if (self != IntPtr.Zero)
+					return new DataObject(self);
+				else
+					return null;
+			}
+
+			public static DataObject Create_CDC_CMV(ModelNode parent, string name, uint options)
+			{
+				IntPtr self = CDC_CMV_create(name, parent.self, options);
+
+				if (self != IntPtr.Zero)
+					return new DataObject(self);
+				else
+					return null;
+			}
+
+			public static DataObject Create_CDC_SAV(ModelNode parent, string name, uint options, bool isIntegerNotFloat)
+			{
+				IntPtr self = CDC_SAV_create(name, parent.self, options, isIntegerNotFloat);
+
+				if (self != IntPtr.Zero)
+					return new DataObject(self);
+				else
+					return null;
+			}
+
+			public static DataObject Create_CDC_ACD(ModelNode parent, string name, uint options)
+			{
+				IntPtr self = CDC_ACD_create(name, parent.self, options);
+
+				if (self != IntPtr.Zero)
+					return new DataObject(self);
+				else
+					return null;
+			}
+
+			public static DataObject Create_CDC_ACT(ModelNode parent, string name, uint options)
+			{
+				IntPtr self = CDC_ACT_create(name, parent.self, options);
+
+				if (self != IntPtr.Zero)
+					return new DataObject(self);
+				else
+					return null;
+			}
+
+			public static DataObject Create_CDC_SPG(ModelNode parent, string name, uint options)
+			{
+				IntPtr self = CDC_SPG_create(name, parent.self, options);
+
+				if (self != IntPtr.Zero)
+					return new DataObject(self);
+				else
+					return null;
+			}
+
+			public static DataObject Create_CDC_VSG(ModelNode parent, string name, uint options)
+			{
+				IntPtr self = CDC_VSG_create(name, parent.self, options);
+
+				if (self != IntPtr.Zero)
+					return new DataObject(self);
+				else
+					return null;
+			}
+
+			public static DataObject Create_CDC_ENG(ModelNode parent, string name, uint options)
+			{
+				IntPtr self = CDC_ENG_create(name, parent.self, options);
+
+				if (self != IntPtr.Zero)
+					return new DataObject(self);
+				else
+					return null;
+			}
+
+			public static DataObject Create_CDC_ING(ModelNode parent, string name, uint options)
+			{
+				IntPtr self = CDC_ING_create(name, parent.self, options);
+
+				if (self != IntPtr.Zero)
+					return new DataObject(self);
+				else
+					return null;
+			}
+
+			public static DataObject Create_CDC_ASG(ModelNode parent, string name, uint options, bool isIntegerNotFloat)
+			{
+				IntPtr self = CDC_ASG_create(name, parent.self, options, isIntegerNotFloat);
+
+				if (self != IntPtr.Zero)
+					return new DataObject(self);
+				else
+					return null;
+			}
+
+			public static DataObject Create_CDC_WYE(ModelNode parent, string name, uint options)
+			{
+				IntPtr self = CDC_WYE_create(name, parent.self, options);
+
+				if (self != IntPtr.Zero)
+					return new DataObject(self);
+				else
+					return null;
+			}
+
+			public static DataObject Create_CDC_DEL(ModelNode parent, string name, uint options)
+			{
+				IntPtr self = CDC_DEL_create(name, parent.self, options);
+
+				if (self != IntPtr.Zero)
+					return new DataObject(self);
+				else
+					return null;
+			}
+
+			public static DataObject Create_CDC_HST(ModelNode parent, string name, uint options, ushort maxPts)
+			{
+				IntPtr self = CDC_HST_create(name, parent.self, options, maxPts);
+
+				if (self != IntPtr.Zero)
+					return new DataObject(self);
 				else
 					return null;
 			}
@@ -372,6 +591,26 @@ namespace IEC61850
 					return null;
 			}
 
+			public static DataObject Create_CDC_DPC(ModelNode parent, string name, uint options, uint controlOptions)
+			{
+				IntPtr self = CDC_DPC_create(name, parent.self, options, controlOptions);
+
+				if (self != IntPtr.Zero)
+					return new DataObject(self);
+				else
+					return null;
+			}
+
+			public static DataObject Create_CDC_BSC(ModelNode parent, string name, uint options, uint controlOptions, bool hasTransientIndicator)
+			{
+				IntPtr self = CDC_BSC_create(name, parent.self, options, controlOptions, hasTransientIndicator);
+
+				if (self != IntPtr.Zero)
+					return new DataObject(self);
+				else
+					return null;
+			}
+
 			public static DataObject Create_CDC_APC(ModelNode parent, string name, uint options, uint controlOptions, bool isIntegerNotFloat)
 			{
 				IntPtr self = CDC_APC_create(name, parent.self, options, controlOptions, isIntegerNotFloat);
@@ -395,6 +634,66 @@ namespace IEC61850
 			public static DataObject Create_CDC_ENC(ModelNode parent, string name, uint options, uint controlOptions)
 			{
 				IntPtr self = CDC_ENC_create(name, parent.self, options, controlOptions);
+
+				if (self != IntPtr.Zero)
+					return new DataObject(self);
+				else
+					return null;
+			}
+
+			public static DataObject Create_CDC_SPV(ModelNode parent, string name, uint options, uint controlOptions, uint wpOptions, bool hasChaManRs)
+			{
+				IntPtr self = CDC_SPV_create(name, parent.self, options, controlOptions, wpOptions, hasChaManRs);
+
+				if (self != IntPtr.Zero)
+					return new DataObject(self);
+				else
+					return null;
+			}
+
+			public static DataObject Create_CDC_STV(ModelNode parent, string name, uint options, uint controlOptions, uint wpOptions, bool hasOldStatus)
+			{
+				IntPtr self = CDC_STV_create(name, parent.self, options, controlOptions, wpOptions, hasOldStatus);
+
+				if (self != IntPtr.Zero)
+					return new DataObject(self);
+				else
+					return null;
+			}
+
+			public static DataObject Create_CDC_CMD(ModelNode parent, string name, uint options, uint controlOptions, uint wpOptions, bool hasOldStatus, bool hasCmTm, bool hasCmCt)
+			{
+				IntPtr self = CDC_CMD_create(name, parent.self, options, controlOptions, wpOptions, hasOldStatus, hasCmTm, hasCmCt);
+
+				if (self != IntPtr.Zero)
+					return new DataObject(self);
+				else
+					return null;
+			}
+
+			public static DataObject Create_CDC_ALM(ModelNode parent, string name, uint options, uint controlOptions, uint wpOptions, bool hasOldStatus)
+			{
+				IntPtr self = CDC_ALM_create(name, parent.self, options, controlOptions, wpOptions, hasOldStatus);
+
+				if (self != IntPtr.Zero)
+					return new DataObject(self);
+				else
+					return null;
+			}
+
+			public static DataObject Create_CDC_CTE(ModelNode parent, string name, uint options, uint controlOptions, uint wpOptions, bool hasHisRs)
+			{
+				IntPtr self = CDC_CTE_create(name, parent.self, options, controlOptions, wpOptions, hasHisRs);
+
+				if (self != IntPtr.Zero)
+					return new DataObject(self);
+				else
+					return null;
+			}
+
+			public static DataObject Create_CDC_TMS(ModelNode parent, string name, uint options, uint controlOptions, uint wpOptions, bool hasHisRs)
+			{
+				IntPtr self = CDC_TMS_create(name, parent.self, options, controlOptions, wpOptions, hasHisRs);
 
 				if (self != IntPtr.Zero)
 					return new DataObject(self);
