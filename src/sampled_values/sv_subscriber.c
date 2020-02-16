@@ -339,7 +339,7 @@ parseASDU(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, int length)
         if (SVSubscriber_ASDU_hasDatSet(&asdu))
             printf("SV_SUBSCRIBER:     DatSet: %s\n", asdu.datSet);
         if (SVSubscriber_ASDU_hasRefrTm(&asdu))
-            printf("SV_SUBSCRIBER:     RefrTm: %lu\n", SVSubscriber_ASDU_getRefrTmAsMs(&asdu));
+            printf("SV_SUBSCRIBER:     RefrTm[ns]: %lu\n", SVSubscriber_ASDU_getRefrTmAsNs(&asdu));
         if (SVSubscriber_ASDU_hasSmpMod(&asdu))
             printf("SV_SUBSCRIBER:     SmpMod: %d\n", SVSubscriber_ASDU_getSmpMod(&asdu));
         if (SVSubscriber_ASDU_hasSmpRate(&asdu))
@@ -599,8 +599,8 @@ SVSubscriber_ASDU_getSmpCnt(SVSubscriber_ASDU self)
     return retVal;
 }
 
-static uint64_t
-decodeUtcTime(uint8_t* buffer, uint8_t* timeQuality)
+static nsSinceEpoch
+decodeUtcTimeToNsTime(uint8_t* buffer, uint8_t* timeQuality)
 {
     uint32_t timeval32;
 
@@ -609,33 +609,45 @@ decodeUtcTime(uint8_t* buffer, uint8_t* timeQuality)
     timeval32 += buffer[1] * 0x10000;
     timeval32 += buffer[0] * 0x1000000;
 
-    uint32_t msVal;
-
     uint32_t fractionOfSecond;
 
     fractionOfSecond = buffer[6];
     fractionOfSecond += buffer[5] * 0x100;
     fractionOfSecond += buffer[4] * 0x10000;
 
-    msVal = (uint32_t) (((uint64_t) fractionOfSecond * 1000) / 16777215);
+    uint64_t nsVal = fractionOfSecond;
+
+    nsVal = nsVal * 1000000000UL;
+    nsVal = nsVal >> 24;
 
     if (timeQuality != NULL)
         *timeQuality = buffer[7];
 
-    uint64_t timeval64 = (uint64_t) timeval32 * 1000 + (uint64_t) msVal;
+    uint64_t timeval64 = (uint64_t) timeval32 * 1000000000LLU + nsVal;
 
     return timeval64;
 }
 
-uint64_t
+msSinceEpoch
 SVSubscriber_ASDU_getRefrTmAsMs(SVSubscriber_ASDU self)
 {
-    uint64_t msTime = 0;
+    msSinceEpoch msTime = 0;
 
     if (self->refrTm != NULL)
-        msTime = decodeUtcTime(self->refrTm, NULL);
+        msTime = decodeUtcTimeToNsTime(self->refrTm, NULL);
 
-    return msTime;
+    return (msTime / 1000000LLU);
+}
+
+nsSinceEpoch
+SVSubscriber_ASDU_getRefrTmAsNs(SVSubscriber_ASDU self)
+{
+    nsSinceEpoch nsTime = 0;
+
+    if (self->refrTm != NULL)
+        nsTime = decodeUtcTimeToNsTime(self->refrTm, NULL);
+
+    return nsTime;
 }
 
 bool

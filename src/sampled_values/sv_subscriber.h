@@ -376,7 +376,7 @@ LIB61850_API bool
 SVSubscriber_ASDU_hasSmpRate(SVSubscriber_ASDU self);
 
 /**
- * \brief Get the RefrTim value included in SV ASDU as ms timestamp
+ * \brief Get the RefrTim value included in SV ASDU as milliseconds timestamp
  *
  * \param self ASDU object instance
  *
@@ -384,6 +384,16 @@ SVSubscriber_ASDU_hasSmpRate(SVSubscriber_ASDU self);
  */
 LIB61850_API uint64_t
 SVSubscriber_ASDU_getRefrTmAsMs(SVSubscriber_ASDU self);
+
+/**
+ * \brief Get the RefrTim value included in SV ASDU as nanoseconds timestamp
+ *
+ * \param self ASDU object instance
+ *
+ * \return the time value as nanoseconds timestamp or 0 if RefrTm is not present in the SV ASDU
+ */
+LIB61850_API nsSinceEpoch
+SVSubscriber_ASDU_getRefrTmAsNs(SVSubscriber_ASDU self);
 
 /**
  * \brief Get an INT8 data value in the data part of the ASDU
