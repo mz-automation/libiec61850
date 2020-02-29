@@ -57,6 +57,9 @@ namespace IEC61850
 			static extern bool MmsValue_getBoolean (IntPtr self);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern void MmsValue_setBoolean(IntPtr self, [MarshalAs(UnmanagedType.I1)] bool value);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern UInt32 MmsValue_getBitStringAsInteger (IntPtr self);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
@@ -80,6 +83,9 @@ namespace IEC61850
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern Int32 MmsValue_toInt32 (IntPtr self);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern void MmsValue_setInt32(IntPtr self, int value);			
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern Int64 MmsValue_toInt64 (IntPtr self);
@@ -739,17 +745,32 @@ namespace IEC61850
 				return MmsValue_toInt32 (valueReference);
 			}
 
-            /// <summary>
-            /// Return the value as 64 bit signed integer.
-            /// </summary>
-            /// <description>
-            /// Return the value as 64 bit signed integer (Int64).
-            /// The value has to be of type MMS_INTEGER.
-            /// </description>
-            /// <returns>
-            /// the value if the object as 64 bit signed integer
-            /// </returns>
-            /// <exception cref="MmsValueException">This exception is thrown if the value has the wrong type.</exception>
+			/// <summary>
+			/// Sets the 32 bit signed integer.
+			/// </summary>
+			/// <param name='value'>
+			/// the new value to set
+			/// </param>
+			/// <exception cref="MmsValueException">This exception is thrown if the value has the wrong type.</exception>
+			public void SetInt32(int value)
+			{
+				if (GetType() != MmsType.MMS_INTEGER)
+					throw new MmsValueException("Value type is not integer");
+
+				MmsValue_setInt32(valueReference, value);
+			}
+
+			/// <summary>
+			/// Return the value as 64 bit signed integer.
+			/// </summary>
+			/// <description>
+			/// Return the value as 64 bit signed integer (Int64).
+			/// The value has to be of type MMS_INTEGER.
+			/// </description>
+			/// <returns>
+			/// the value if the object as 64 bit signed integer
+			/// </returns>
+			/// <exception cref="MmsValueException">This exception is thrown if the value has the wrong type.</exception>
 			public Int64 ToInt64 ()
 			{
 				if (GetType () != MmsType.MMS_INTEGER)
@@ -860,13 +881,28 @@ namespace IEC61850
 					throw new MmsValueException ("Value type is not boolean");
 			}
 
-            /// <summary>
-            /// Gets the float value of an MMS_FLOAT instance
-            /// </summary>
-            /// <returns>
-            /// The float value
-            /// </returns>
-            /// <exception cref="MmsValueException">This exception is thrown if the value has the wrong type.</exception>
+			/// <summary>
+			/// Sets the boolean value of an MMS_BOOLEAN instance
+			/// </summary>
+			/// <param name='value'>
+			/// the new value to set
+			/// </param>
+			/// <exception cref="MmsValueException">This exception is thrown if the value has the wrong type.</exception>
+			public void SetBoolean(bool value)
+			{
+				if (GetType() != MmsType.MMS_BOOLEAN)
+					throw new MmsValueException("Value type is not boolean");
+
+				MmsValue_setBoolean(valueReference, value);
+			}
+
+			/// <summary>
+			/// Gets the float value of an MMS_FLOAT instance
+			/// </summary>
+			/// <returns>
+			/// The float value
+			/// </returns>
+			/// <exception cref="MmsValueException">This exception is thrown if the value has the wrong type.</exception>
 			public float ToFloat ()
 			{
 				if (GetType () == MmsType.MMS_FLOAT)
