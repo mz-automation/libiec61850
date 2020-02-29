@@ -58,6 +58,10 @@ struct sServerSocket {
     int backLog;
 };
 
+struct sUdpSocket {
+    int fd;
+};
+
 struct sHandleSet {
     LinkedList sockets;
     bool pollfdIsUpdated;
@@ -184,26 +188,26 @@ Socket_activateTcpKeepAlive(Socket self, int idleTime, int interval, int count)
 
     if (setsockopt(self->fd, SOL_SOCKET, SO_KEEPALIVE, &optval, optlen)) {
         if (DEBUG_SOCKET)
-            printf("Failed to enable TCP keepalive\n");
+            printf("SOCKET: Failed to enable TCP keepalive\n");
     }
 
 #if defined TCP_KEEPCNT
     optval = idleTime;
     if (setsockopt(self->fd, IPPROTO_TCP, TCP_KEEPIDLE, &optval, optlen)) {
         if (DEBUG_SOCKET)
-            printf("Failed to set TCP keepalive TCP_KEEPIDLE parameter\n");
+            printf("SOCKET: Failed to set TCP keepalive TCP_KEEPIDLE parameter\n");
     }
 
     optval = interval;
     if (setsockopt(self->fd, IPPROTO_TCP, TCP_KEEPINTVL, &optval, optlen)) {
         if (DEBUG_SOCKET)
-            printf("Failed to set TCP keepalive TCP_KEEPINTVL parameter\n");
+            printf("SOCKET: Failed to set TCP keepalive TCP_KEEPINTVL parameter\n");
     }
 
     optval = count;
     if (setsockopt(self->fd, IPPROTO_TCP, TCP_KEEPCNT, &optval, optlen)) {
         if (DEBUG_SOCKET)
-            printf("Failed to set TCP keepalive TCP_KEEPCNT parameter\n");
+            printf("SOCKET: Failed to set TCP keepalive TCP_KEEPCNT parameter\n");
     }
 #endif /* TCP_KEEPCNT */
 
@@ -343,7 +347,7 @@ closeAndShutdownSocket(int socketFd)
     if (socketFd != -1) {
 
         if (DEBUG_SOCKET)
-            printf("socket_linux.c: call shutdown for %i!\n", socketFd);
+            printf("SOCKET: call shutdown for %i!\n", socketFd);
 
         /* shutdown is required to unblock read or accept in another thread! */
         shutdown(socketFd, SHUT_RDWR);
@@ -505,7 +509,6 @@ Socket_connect(Socket self, const char* address, int port)
     return false;
 }
 
-
 static char*
 convertAddressToStr(struct sockaddr_storage* addr)
 {
@@ -666,4 +669,95 @@ Socket_destroy(Socket self)
     Thread_sleep(10);
 
     GLOBAL_FREEMEM(self);
+}
+
+UdpSocket
+UdpSocket_create()
+{
+    UdpSocket self = NULL;
+
+    int sock = socket(AF_INET, SOCK_DGRAM, 0);
+
+    if (sock != -1) {
+        self = (UdpSocket) GLOBAL_MALLOC(sizeof(struct sSocket));
+
+        self->fd = sock;
+    }
+    else {
+        if (DEBUG_SOCKET)
+            printf("SOCKET: failed to create UDP socket (errno=%i)\n", errno);
+    }
+
+    return self;
+}
+
+bool
+UdpSocket_bind(UdpSocket self, const char* address, int port)
+{
+    struct sockaddr_in localAddress;
+
+    if (!prepareServerAddress(address, port, &localAddress)) {
+        close(self->fd);
+        self->fd = 0;
+        return false;
+    }
+
+    int result = bind(self->fd, (struct sockaddr*)&localAddress, sizeof(localAddress));
+
+    if (result == -1) {
+        if (DEBUG_SOCKET)
+            printf("SOCKET: failed to bind UDP socket (errno=%i)\n", errno);
+
+        close(self->fd);
+        self->fd = 0;
+
+        return false;
+    }
+
+    return true;
+}
+
+bool
+UdpSocket_sendTo(UdpSocket self, const char* address, int port, uint8_t* msg, int msgSize)
+{
+    struct sockaddr_in remoteAddress;
+
+    if (!prepareServerAddress(address, port, &remoteAddress)) {
+
+        if (DEBUG_SOCKET)
+            printf("SOCKET: failed to lookup remote address %s\n", address);
+
+        return false;
+    }
+
+    int result = sendto(self->fd, msg, msgSize, 0, (struct sockaddr*)&remoteAddress, sizeof(remoteAddress));
+
+    if (result == msgSize) {
+        return true;
+    }
+    else if (result == -1) {
+        if (DEBUG_SOCKET)
+            printf("SOCKET: failed to send UDP message (errno=%i)\n", errno);
+    }
+    else {
+        if (DEBUG_SOCKET)
+            printf("SOCKET: failed to send UDP message (insufficient data sent)\n");
+    }
+
+    return false;
+}
+
+int
+UdpSocket_receiveFrom(UdpSocket self, char** address, int maxAddrSize, uint8_t* msg, int msgSize)
+{
+    struct sockaddr_in remoteAddress;
+
+    int result = recvfrom(self->fd, msg, msgSize, MSG_DONTWAIT, NULL, NULL);
+
+    if (result == -1) {
+        if (DEBUG_SOCKET)
+            printf("SOCKET: failed to receive UDP message (errno=%i)\n", errno);
+    }
+
+    return result;
 }

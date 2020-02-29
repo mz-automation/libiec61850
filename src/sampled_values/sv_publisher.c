@@ -58,12 +58,11 @@ struct sSVPublisher_ASDU {
     uint16_t smpCntLimit;
     uint32_t confRev;
 
-    uint64_t refrTm;
+    Timestamp* refrTm;
     uint8_t smpMod;
     uint16_t smpRate;
 
     uint8_t* smpCntBuf;
-    uint8_t* refrTmBuf;
     uint8_t* smpSynchBuf;
 
     SVPublisher_ASDU _next;
@@ -265,40 +264,6 @@ encodeInt64FixedSize(int64_t value, uint8_t* buffer, int bufPos)
     return bufPos;
 }
 
-static int
-encodeUtcTime(uint64_t timeval, uint8_t* buffer, int bufPos)
-{
-    uint32_t timeval32 = (timeval / 1000LL);
-
-    uint8_t* timeArray = (uint8_t*) &timeval32;
-    uint8_t* valueArray = buffer + bufPos;
-
-#if (ORDER_LITTLE_ENDIAN == 1)
-    valueArray[0] = timeArray[3];
-    valueArray[1] = timeArray[2];
-    valueArray[2] = timeArray[1];
-    valueArray[3] = timeArray[0];
-#else
-    valueArray[0] = timeArray[0];
-    valueArray[1] = timeArray[1];
-    valueArray[2] = timeArray[2];
-    valueArray[3] = timeArray[3];
-#endif
-
-    uint32_t remainder = (timeval % 1000LL);
-    uint32_t fractionOfSecond = (remainder) * 16777 + ((remainder * 216) / 1000);
-
-    /* encode fraction of second */
-    valueArray[4] = ((fractionOfSecond >> 16) & 0xff);
-    valueArray[5] = ((fractionOfSecond >> 8) & 0xff);
-    valueArray[6] = (fractionOfSecond & 0xff);
-
-    /* encode time quality */
-    valueArray[7] = 0x0a; /* 10 bit sub-second time accuracy */
-
-    return bufPos + 8;
-}
-
 SVPublisher
 SVPublisher_createEx(CommParameters* parameters, const char* interfaceId, bool useVlanTag)
 {
@@ -332,7 +297,6 @@ SVPublisher_addASDU(SVPublisher self, const char* svID, const char* datset, uint
     newAsdu->datset = datset;
     newAsdu->confRev = confRev;
     newAsdu->smpCntLimit = UINT16_MAX;
-
     newAsdu->_next = NULL;
 
     /* append new ASDU to list */
@@ -417,8 +381,8 @@ SVPublisher_ASDU_encodeToBuffer(SVPublisher_ASDU self, uint8_t* buffer, int bufP
     /* RefrTm */
     if (self->hasRefrTm) {
         bufPos = BerEncoder_encodeTL(0x84, 8, buffer, bufPos);
-        self->refrTmBuf = buffer + bufPos;
-        bufPos = encodeUtcTime(self->refrTm, buffer, bufPos);
+        self->refrTm = (Timestamp*) (buffer + bufPos);
+        bufPos += 8;
     }
 
     /* SmpSynch */
@@ -724,13 +688,34 @@ SVPublisher_ASDU_enableRefrTm(SVPublisher_ASDU self)
 }
 
 void
-SVPublisher_ASDU_setRefrTm(SVPublisher_ASDU self, uint64_t refrTm)
+SVPublisher_ASDU_setRefrTmNs(SVPublisher_ASDU self, nsSinceEpoch refrTmNs)
 {
     self->hasRefrTm = true;
-    self->refrTm = refrTm;
 
-    if (self->refrTmBuf != NULL)
-        encodeUtcTime(self->refrTm, self->refrTmBuf, 0);
+    if (self->refrTm) {
+        Timestamp_setTimeInNanoseconds(self->refrTm, refrTmNs);
+        Timestamp_setSubsecondPrecision(self->refrTm, 20);
+    }
+}
+
+void
+SVPublisher_ASDU_setRefrTm(SVPublisher_ASDU self, msSinceEpoch refrTm)
+{
+    self->hasRefrTm = true;
+
+    if (self->refrTm) {
+        Timestamp_setTimeInMilliseconds(self->refrTm, refrTm);
+        Timestamp_setSubsecondPrecision(self->refrTm, 10);
+    }
+}
+
+void
+SVPublisher_ASDU_setRefrTmByTimestamp(SVPublisher_ASDU self, Timestamp* refrTm)
+{
+    self->hasRefrTm = true;
+
+    if (self->refrTm)
+        memcpy(self->refrTm, refrTm, 8);
 }
 
 void

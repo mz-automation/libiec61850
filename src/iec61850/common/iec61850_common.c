@@ -1,7 +1,7 @@
 /*
  * iec61850_common.c
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013-2020 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -341,14 +341,12 @@ Timestamp_setSubsecondPrecision(Timestamp* self, int subsecondPrecision)
 void
 Timestamp_setTimeInSeconds(Timestamp* self, uint32_t secondsSinceEpoch)
 {
-    uint8_t* timeArray = (uint8_t*) &secondsSinceEpoch;
     uint8_t* valueArray =  self->val;
 
-#if (ORDER_LITTLE_ENDIAN == 1)
-        memcpyReverseByteOrder(valueArray, timeArray, 4);
-#else
-        memcpy(valueArray, timeArray, 4);
-#endif
+    valueArray[0] = (secondsSinceEpoch / 0x1000000 & 0xff);
+    valueArray[1] = (secondsSinceEpoch / 0x10000 & 0xff);
+    valueArray[2] = (secondsSinceEpoch / 0x100 & 0xff);
+    valueArray[3] = (secondsSinceEpoch & 0xff);
 
     self->val[4] = 0;
     self->val[5] = 0;
@@ -358,21 +356,46 @@ Timestamp_setTimeInSeconds(Timestamp* self, uint32_t secondsSinceEpoch)
 }
 
 void
-Timestamp_setTimeInMilliseconds(Timestamp* self, uint64_t millisSinceEpoch)
+Timestamp_setTimeInMilliseconds(Timestamp* self, msSinceEpoch millisSinceEpoch)
 {
     uint32_t timeval32 = (uint32_t) (millisSinceEpoch / 1000LL);
 
-    uint8_t* timeArray = (uint8_t*) &timeval32;
     uint8_t* valueArray = self->val;
 
-#if (ORDER_LITTLE_ENDIAN == 1)
-        memcpyReverseByteOrder(valueArray, timeArray, 4);
-#else
-        memcpy(valueArray, timeArray, 4);
-#endif
+    valueArray[0] = (timeval32 / 0x1000000 & 0xff);
+    valueArray[1] = (timeval32 / 0x10000 & 0xff);
+    valueArray[2] = (timeval32 / 0x100 & 0xff);
+    valueArray[3] = (timeval32 & 0xff);
 
     uint32_t remainder = (millisSinceEpoch % 1000LL);
     uint32_t fractionOfSecond = (remainder) * 16777 + ((remainder * 216) / 1000);
+
+    /* encode fraction of second */
+    valueArray[4] = ((fractionOfSecond >> 16) & 0xff);
+    valueArray[5] = ((fractionOfSecond >> 8) & 0xff);
+    valueArray[6] = (fractionOfSecond & 0xff);
+
+    /* don't touch time quality */
+}
+
+void
+Timestamp_setTimeInNanoseconds(Timestamp* self, nsSinceEpoch nsTime)
+{
+    uint32_t timeval32 = (nsTime / 1000000000LLU);
+
+    uint8_t* valueArray = self->val;
+
+    valueArray[0] = (timeval32 / 0x1000000 & 0xff);
+    valueArray[1] = (timeval32 / 0x10000 & 0xff);
+    valueArray[2] = (timeval32 / 0x100 & 0xff);
+    valueArray[3] = (timeval32 & 0xff);
+
+    uint64_t remainder = (nsTime % 1000000000LLU);
+
+    remainder = remainder << 24;
+    remainder = remainder / 1000000000UL;
+
+    uint32_t fractionOfSecond = (uint32_t) remainder;
 
     /* encode fraction of second */
     valueArray[4] = ((fractionOfSecond >> 16) & 0xff);
@@ -388,26 +411,24 @@ Timestamp_getTimeInSeconds(Timestamp* self)
     uint32_t timeval32;
     uint8_t* valueArray = self->val;
 
-#if (ORDER_LITTLE_ENDIAN == 1)
-    memcpyReverseByteOrder((uint8_t*) &timeval32, valueArray, 4);
-#else
-    memcpy((uint8_t*) &timeval32, valueArray, 4);
-#endif
+    timeval32 = valueArray[3];
+    timeval32 += valueArray[2] * 0x100;
+    timeval32 += valueArray[1] * 0x10000;
+    timeval32 += valueArray[0] * 0x1000000;
 
     return timeval32;
 }
 
-uint64_t
+msSinceEpoch
 Timestamp_getTimeInMs(Timestamp* self)
 {
     uint32_t timeval32;
     uint8_t* valueArray = self->val;
 
-#if (ORDER_LITTLE_ENDIAN == 1)
-    memcpyReverseByteOrder((uint8_t*) &timeval32, valueArray, 4);
-#else
-    memcpy((uint8_t*) &timeval32, valueArray, 4);
-#endif
+    timeval32 = valueArray[3];
+    timeval32 += valueArray[2] * 0x100;
+    timeval32 += valueArray[1] * 0x10000;
+    timeval32 += valueArray[0] * 0x1000000;
 
     uint32_t fractionOfSecond = 0;
 
@@ -420,6 +441,33 @@ Timestamp_getTimeInMs(Timestamp* self)
     uint64_t msVal = (timeval32 * 1000LL) + remainder;
 
     return (uint64_t) msVal;
+}
+
+nsSinceEpoch
+Timestamp_getTimeInNs(Timestamp* self)
+{
+    uint32_t timeval32;
+    uint8_t* valueArray = self->val;
+
+    timeval32 = valueArray[3];
+    timeval32 += valueArray[2] * 0x100;
+    timeval32 += valueArray[1] * 0x10000;
+    timeval32 += valueArray[0] * 0x1000000;
+
+    uint32_t fractionOfSecond;
+
+    fractionOfSecond = valueArray[6];
+    fractionOfSecond += valueArray[5] * 0x100;
+    fractionOfSecond += valueArray[4] * 0x10000;
+
+    uint64_t nsVal = fractionOfSecond;
+
+    nsVal = nsVal * 1000000000UL;
+    nsVal = nsVal >> 24;
+
+    uint64_t timeval64 = (uint64_t) timeval32 * 1000000000LLU + nsVal;
+
+    return timeval64;
 }
 
 void

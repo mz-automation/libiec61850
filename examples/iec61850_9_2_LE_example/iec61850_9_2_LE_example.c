@@ -226,7 +226,7 @@ main(int argc, char** argv)
                 SVPublisher_ASDU_setINT32(asdu, vol4, voltageN);
                 SVPublisher_ASDU_setQuality(asdu, vol4q, q);
 
-                SVPublisher_ASDU_setRefrTm(asdu, Hal_getTimeInMs());
+                SVPublisher_ASDU_setRefrTmNs(asdu, Hal_getTimeInNs());
 
                 SVPublisher_ASDU_setSmpCnt(asdu, (uint16_t) sampleCount);
 

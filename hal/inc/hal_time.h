@@ -1,7 +1,7 @@
 /*
  *  time.c
  *
- *  Copyright 2013, 2014 Michael Zillgith
+ *  Copyright 2013-2020 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -46,6 +46,9 @@ extern "C" {
  * @{
  */
 
+typedef uint64_t nsSinceEpoch;
+typedef uint64_t msSinceEpoch;
+
 /**
  * Get the system time in milliseconds.
  *
@@ -54,8 +57,22 @@ extern "C" {
  *
  * \return the system time with millisecond resolution.
  */
-PAL_API uint64_t
+PAL_API msSinceEpoch
 Hal_getTimeInMs(void);
+
+/**
+ * Get the system time in nanoseconds.
+ *
+ * The time value returned as 64-bit unsigned integer should represent the nanoseconds
+ * since the UNIX epoch (1970/01/01 00:00 UTC).
+ *
+ * \return the system time with nanosecond resolution.
+ */
+PAL_API nsSinceEpoch
+Hal_getTimeInNs();
+
+PAL_API bool
+Hal_setTimeInNs(nsSinceEpoch nsTime);
 
 /*! @} */
 

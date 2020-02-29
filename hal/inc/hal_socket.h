@@ -57,6 +57,8 @@ extern "C" {
 /** Opaque reference for a server socket instance */
 typedef struct sServerSocket* ServerSocket;
 
+typedef struct sUdpSocket* UdpSocket;
+
 /** Opaque reference for a client or connection socket instance */
 typedef struct sSocket* Socket;
 
@@ -139,6 +141,18 @@ Handleset_destroy(HandleSet self);
  */
 PAL_API ServerSocket
 TcpServerSocket_create(const char* address, int port);
+
+PAL_API UdpSocket
+UdpSocket_create();
+
+PAL_API bool
+UdpSocket_bind(UdpSocket self, const char* address, int port);
+
+PAL_API bool
+UdpSocket_sendTo(UdpSocket self, const char* address, int port, uint8_t* msg, int msgSize);
+
+PAL_API int
+UdpSocket_receiveFrom(UdpSocket self, char** address, int maxAddrSize, uint8_t* msg, int msgSize);
 
 
 PAL_API void

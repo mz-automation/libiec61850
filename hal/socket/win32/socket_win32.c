@@ -58,6 +58,10 @@ struct sHandleSet {
    SOCKET maxHandle;
 };
 
+struct sUdpSocket {
+	SOCKET fd;
+};
+
 HandleSet
 Handleset_new(void)
 {
@@ -611,4 +615,102 @@ Socket_destroy(Socket self)
     wsaShutdown();
 
     GLOBAL_FREEMEM(self);
+}
+
+UdpSocket
+UdpSocket_create()
+{
+    UdpSocket self = NULL;
+
+    int sock = socket(AF_INET, SOCK_DGRAM, 0);
+
+    if (sock != -1) {
+        self = (UdpSocket) GLOBAL_MALLOC(sizeof(struct sSocket));
+
+        self->fd = sock;
+
+        setSocketNonBlocking((Socket)self);
+    }
+    else {
+        if (DEBUG_SOCKET)
+            printf("SOCKET: failed to create UDP socket (errno=%i)\n", errno);
+    }
+
+    return self;
+}
+
+bool
+UdpSocket_bind(UdpSocket self, const char* address, int port)
+{
+    struct sockaddr_in localAddress;
+
+    if (!prepareServerAddress(address, port, &localAddress)) {
+		closesocket(self->fd);
+        self->fd = 0;
+        return false;
+    }
+
+    int result = bind(self->fd, (struct sockaddr*)&localAddress, sizeof(localAddress));
+
+    if (result == -1) {
+        if (DEBUG_SOCKET)
+            printf("SOCKET: failed to bind UDP socket (errno=%i)\n", errno);
+
+		closesocket(self->fd);
+        self->fd = 0;
+
+        return false;
+    }
+
+    return true;
+}
+
+bool
+UdpSocket_sendTo(UdpSocket self, const char* address, int port, uint8_t* msg, int msgSize)
+{
+    struct sockaddr_in remoteAddress;
+
+    if (!prepareServerAddress(address, port, &remoteAddress)) {
+
+        if (DEBUG_SOCKET)
+            printf("SOCKET: failed to lookup remote address %s\n", address);
+
+        return false;
+    }
+
+    int result = sendto(self->fd, (const char*) msg, msgSize, 0, (struct sockaddr*)&remoteAddress, sizeof(remoteAddress));
+
+    if (result == msgSize) {
+        return true;
+    }
+    else if (result == -1) {
+        if (DEBUG_SOCKET)
+            printf("SOCKET: failed to send UDP message (errno=%i)\n", errno);
+    }
+    else {
+        if (DEBUG_SOCKET)
+            printf("SOCKET: failed to send UDP message (insufficient data sent)\n");
+    }
+
+    return false;
+}
+
+int
+UdpSocket_receiveFrom(UdpSocket self, char** address, int maxAddrSize, uint8_t* msg, int msgSize)
+{
+    struct sockaddr_in remoteAddress;
+
+    int result = recvfrom(self->fd, (char*) msg, msgSize, 0, NULL, NULL);
+
+    if (result == 0) /* peer has closed socket */
+        return -1;
+
+    if (result == SOCKET_ERROR) {
+        if (WSAGetLastError() == WSAEWOULDBLOCK)
+            return 0;
+        else
+            return -1;
+    }
+
+    return result;
 }

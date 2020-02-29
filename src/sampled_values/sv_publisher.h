@@ -329,12 +329,34 @@ LIB61850_API void
 SVPublisher_ASDU_enableRefrTm(SVPublisher_ASDU self);
 
 /**
- * \brief Set the refresh time attribute of the ASDU.
+ * \brief Set the refresh time attribute of the ASDU with nanosecond resolution
  *
  * \param[in] self the Sampled Values ASDU instance.
+ * \param[in] refrTmNs the refresh time value with nanoseconds resolution.
  */
 LIB61850_API void
-SVPublisher_ASDU_setRefrTm(SVPublisher_ASDU self, uint64_t refrTm);
+SVPublisher_ASDU_setRefrTmNs(SVPublisher_ASDU self, nsSinceEpoch refrTmNs);
+
+/**
+ * \brief Set the refresh time attribute of the ASDU with millisecond resolution
+ *
+ * \param[in] self the Sampled Values ASDU instance.
+ * \param[in] refrTmNs the refresh time value with with milliseconds resolution.
+ */
+LIB61850_API void
+SVPublisher_ASDU_setRefrTm(SVPublisher_ASDU self, msSinceEpoch refrTm);
+
+/**
+ * \brief Set the refresh time attribute of the ASDU
+ *
+ * NOTE: Using this function you can control the time quality flags and the
+ * sub second precision (number of valid bits) of the RefrTm value.
+ *
+ * \param[in] self the Sampled Values ASDU instance.
+ * \param[in] refrTm the refresh time value
+ */
+LIB61850_API void
+SVPublisher_ASDU_setRefrTmByTimestamp(SVPublisher_ASDU self, Timestamp* refrTm);
 
 /**
  * \brief Set the sample mode attribute of the ASDU.

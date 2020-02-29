@@ -418,8 +418,11 @@ Timestamp_clearFlags(Timestamp* self);
 LIB61850_API uint32_t
 Timestamp_getTimeInSeconds(Timestamp* self);
 
-LIB61850_API uint64_t
+LIB61850_API msSinceEpoch
 Timestamp_getTimeInMs(Timestamp* self);
+
+LIB61850_API nsSinceEpoch
+Timestamp_getTimeInNs(Timestamp* self);
 
 LIB61850_API bool
 Timestamp_isLeapSecondKnown(Timestamp* self);
@@ -450,11 +453,39 @@ Timestamp_getSubsecondPrecision(Timestamp* self);
 LIB61850_API void
 Timestamp_setSubsecondPrecision(Timestamp* self, int subsecondPrecision);
 
+/**
+ * \brief Set the time in seconds
+ *
+ * NOTE: the fractionOfSecond part is set to zero
+ * NOTE: the subSecondPrecision is not touched
+ *
+ * \param self the Timestamp instance
+ * \param secondsSinceEpoch the seconds since unix epoch (unix timestamp)
+ */
 LIB61850_API void
 Timestamp_setTimeInSeconds(Timestamp* self, uint32_t secondsSinceEpoch);
 
+/**
+ * \brief Set the time in milliseconds
+ *
+ * NOTE: the subSecondPrecision is not touched
+ *
+ * \param self the Timestamp instance
+ * \param msTime the milliseconds since unix epoch
+ */
 LIB61850_API void
-Timestamp_setTimeInMilliseconds(Timestamp* self, uint64_t millisSinceEpoch);
+Timestamp_setTimeInMilliseconds(Timestamp* self, msSinceEpoch msTime);
+
+/**
+ * \brief Set the time in nanoseconds
+ *
+ * NOTE: the subSecondPrecision is not touched
+ *
+ * \param self the Timestamp instance
+ * \param msTime the nanoseconds since unix epoch
+ */
+LIB61850_API void
+Timestamp_setTimeInNanoseconds(Timestamp* self, nsSinceEpoch nsTime);
 
 LIB61850_API void
 Timestamp_setByMmsUtcTime(Timestamp* self, MmsValue* mmsValue);
