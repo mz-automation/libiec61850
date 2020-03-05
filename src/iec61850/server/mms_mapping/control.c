@@ -1469,6 +1469,8 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
 
                     controlObject->addCauseValue = ADD_CAUSE_SELECT_FAILED;
 
+                    updateControlParameters(controlObject, ctlVal, ctlNum, origin);
+
                     if (controlObject->checkHandler != NULL) { /* perform operative tests */
 
                         controlObject->isSelect = 1;
@@ -1481,8 +1483,6 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
 
                     if (checkResult == CONTROL_ACCEPTED) {
                         selectObject(controlObject, currentTime, connection);
-
-                        updateControlParameters(controlObject, ctlVal, ctlNum, origin);
 
                         indication = DATA_ACCESS_ERROR_SUCCESS;
 
