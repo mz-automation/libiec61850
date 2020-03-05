@@ -1447,12 +1447,8 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                 if (state != STATE_UNSELECTED) {
                     indication = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
 
-                    if (connection != controlObject->mmsConnection)
-                        ControlObject_sendLastApplError(controlObject, connection, "SBOw", CONTROL_ERROR_NO_ERROR,
-                                ADD_CAUSE_LOCKED_BY_OTHER_CLIENT, ctlNum, origin, true);
-                    else
-                        ControlObject_sendLastApplError(controlObject, connection, "SBOw", CONTROL_ERROR_NO_ERROR,
-                                ADD_CAUSE_OBJECT_ALREADY_SELECTED, ctlNum, origin, true);
+                    ControlObject_sendLastApplError(controlObject, connection, "SBOw", CONTROL_ERROR_NO_ERROR,
+                            ADD_CAUSE_OBJECT_ALREADY_SELECTED, ctlNum, origin, true);
 
                     if (DEBUG_IED_SERVER)
                         printf("IED_SERVER: SBOw - select failed!\n");
@@ -1557,6 +1553,10 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                     indication = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
                     if (DEBUG_IED_SERVER)
                         printf("IED_SERVER: Oper - operate from wrong client connection!\n");
+
+                    ControlObject_sendLastApplError(controlObject, connection, "Oper", CONTROL_ERROR_NO_ERROR,
+                            ADD_CAUSE_LOCKED_BY_OTHER_CLIENT, ctlNum, origin, true);
+
                     goto free_and_return;
                 }
 
