@@ -109,6 +109,7 @@ set(API_HEADERS
     src/sampled_values/sv_subscriber.h
     src/sampled_values/sv_publisher.h
     src/logging/logging_api.h
+    ${CMAKE_CURRENT_BINARY_DIR}/config/stack_config.h
 )
 
 if(MSVC AND MSVC_VERSION LESS 1800)
