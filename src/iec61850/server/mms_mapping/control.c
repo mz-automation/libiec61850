@@ -1435,6 +1435,13 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
 
                 if (checkValidityOfOriginParameter(origin) == false) {
                     indication = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+
+                    ControlObject_sendLastApplError(controlObject, connection, "SBOw", CONTROL_ERROR_NO_ERROR,
+                            ADD_CAUSE_SELECT_FAILED, ctlNum, origin, true);
+
+                    if (DEBUG_IED_SERVER)
+                        printf("IED_SERVER: SBOw - invalid origin value\n");
+
                     goto free_and_return;
                 }
 
@@ -1571,6 +1578,8 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                                 CONTROL_ERROR_NO_ERROR, ADD_CAUSE_INCONSISTENT_PARAMETERS,
                                     ctlNum, origin, true);
 
+                        unselectObject(controlObject);
+
                         goto free_and_return;
                     }
                 }
@@ -1654,6 +1663,9 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                     setOpRcvd(controlObject, false);
 
                     abortControlOperation(controlObject);
+
+                    if ((controlObject->ctlModel == 2) || (controlObject->ctlModel == 4))
+                        unselectObject(controlObject);
                 }
             }
 
