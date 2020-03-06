@@ -264,7 +264,7 @@ MmsServer_enableJournalService(MmsServer self, bool enable);
  * \param modelName the model name attribute of the VMD
  * \param revision the revision attribute of the VMD
  */
-LIB61850_INTERNAL void
+LIB61850_API void
 MmsServer_setServerIdentity(MmsServer self, char* vendorName, char* modelName, char* revision);
 
 /**
@@ -273,7 +273,7 @@ MmsServer_setServerIdentity(MmsServer self, char* vendorName, char* modelName, c
  * \param self the MmsServer instance to operate on
  * \return the vendor name attribute of the VMD as C string
  */
-LIB61850_INTERNAL char*
+LIB61850_API char*
 MmsServer_getVendorName(MmsServer self);
 
 /**
@@ -282,7 +282,7 @@ MmsServer_getVendorName(MmsServer self);
  * \param self the MmsServer instance to operate on
  * \return the model name attribute of the VMD as C string
  */
-LIB61850_INTERNAL char*
+LIB61850_API char*
 MmsServer_getModelName(MmsServer self);
 
 /**
@@ -291,7 +291,7 @@ MmsServer_getModelName(MmsServer self);
  * \param self the MmsServer instance to operate on
  * \return the revision attribute of the VMD as C string
  */
-LIB61850_INTERNAL char*
+LIB61850_API char*
 MmsServer_getRevision(MmsServer self);
 
 /***************************************************

@@ -837,6 +837,9 @@ namespace IEC61850
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern IntPtr ClientConnection_getPeerAddress(IntPtr self);
 
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr ClientConnection_getLocalAddress(IntPtr self);
+
 			internal IntPtr self;
 
 			internal ClientConnection (IntPtr self) {
@@ -849,6 +852,16 @@ namespace IEC61850
 
 				if (peerAddrPtr != IntPtr.Zero)
 					return Marshal.PtrToStringAnsi (peerAddrPtr);
+				else
+					return null;
+			}
+
+			public string GetLocalAddress()
+			{
+				IntPtr localAddrPtr = ClientConnection_getLocalAddress(self);
+
+				if (localAddrPtr != IntPtr.Zero)
+					return Marshal.PtrToStringAnsi(localAddrPtr);
 				else
 					return null;
 			}
@@ -1052,6 +1065,18 @@ namespace IEC61850
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern void IedServer_setLocalIpAddress(IntPtr self, string localIpAddress);
 
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern void MmsServer_setServerIdentity(IntPtr self, string vendorName, string modelName, string revision);
+			
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr MmsServer_getVendorName(IntPtr self);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr MmsServer_getModelName(IntPtr self);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr MmsServer_getRevision(IntPtr self);
+
 			[DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
 			static extern void IedServer_start(IntPtr self, int tcpPort);
 
@@ -1064,6 +1089,9 @@ namespace IEC61850
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			[return: MarshalAs(UnmanagedType.Bool)]
 			static extern bool IedServer_isRunning(IntPtr self);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern int IedServer_getNumberOfOpenConnections(IntPtr self);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern void IedServer_lockDataModel(IntPtr self);
@@ -1323,6 +1351,59 @@ namespace IEC61850
 			}
 
 			/// <summary>
+			/// Sets the values that the server will give as response for an MMS identify request
+			/// </summary>
+			/// <param name="vendorName">Vendor Name for VMD</param>
+			/// <param name="modelName">Model name for VMD</param>
+			/// <param name="revision">Revision for VMD</param>
+			public void SetServerIdentity(string vendorName, string modelName, string revision)
+			{
+				MmsServer_setServerIdentity(self, vendorName, modelName, revision);
+			}
+
+			/// <summary>
+			/// Gets the Vendor Name attributed to the VMD
+			/// </summary>
+			/// <returns>Vendor Name</returns>
+			public string GetVendorName()
+			{
+				IntPtr vendorNamePtr = MmsServer_getVendorName(self);
+
+				if (vendorNamePtr != IntPtr.Zero)
+					return Marshal.PtrToStringAnsi(vendorNamePtr);
+				else
+					return null;
+			}
+
+			/// <summary>
+			/// Gets the Model Name attributed to the VMD
+			/// </summary>
+			/// <returns>Model Name</returns>
+			public string GetModelName()
+			{
+				IntPtr modelNamePtr = MmsServer_getModelName(self);
+
+				if (modelNamePtr != IntPtr.Zero)
+					return Marshal.PtrToStringAnsi(modelNamePtr);
+				else
+					return null;
+			}
+
+			/// <summary>
+			/// Gets the Revision attributed to the VMD
+			/// </summary>
+			/// <returns>Revision</returns>
+			public string GetRevision()
+			{
+				IntPtr revisionPtr = MmsServer_getRevision(self);
+
+				if (revisionPtr != IntPtr.Zero)
+					return Marshal.PtrToStringAnsi(revisionPtr);
+				else
+					return null;
+			}
+
+			/// <summary>
 			/// Start MMS server
 			/// </summary>
 			/// <param name="localIpAddress">Local IP address.</param>
@@ -1375,6 +1456,15 @@ namespace IEC61850
 			public bool IsRunning()
 			{
 				return IedServer_isRunning(self);
+			}
+
+			/// <summary>
+			/// Get number of open MMS connections
+			/// </summary>
+			/// <returns>the number of open and accepted MMS connections</returns>
+			public int GetNumberOfOpenConnections()
+			{
+				return IedServer_getNumberOfOpenConnections(self);
 			}
 
 			private ControlHandlerInfo GetControlHandlerInfo(DataObject controlObject)
