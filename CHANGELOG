@@ -1,3 +1,13 @@
+Changes to version 1.4.2
+-------------------------
+- IEC 61850 server: fixed control handling to comply with test case sCtl25
+- IEC 61850 server: fixed control handling to comply with test case sCtl11
+- IEC 61850 server: pass origin, ctlNum, ctlVal to select handler (perform check handler) for SBOw
+- removed internal header files from install target (#214)
+- .NET API: additional function mappings
+- TLS: fixed memory leak when TLS authentication fails
+- fixed bug in windows socket layer
+
 Changes to version 1.4.1
 ------------------------
 - MMS server: refactored connection handling; more efficient use of HandleSet
