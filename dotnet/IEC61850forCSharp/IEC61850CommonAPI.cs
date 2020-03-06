@@ -360,6 +360,11 @@ namespace IEC61850
 						this.value = (ushort) ((int) this.value & (~QUALITY_DERIVED));
 				}
 			}
+
+			public ushort GetValue()
+			{
+				return value;
+			}
 		}
 
 		/// <summary>
