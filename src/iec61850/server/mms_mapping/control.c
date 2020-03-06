@@ -1700,6 +1700,9 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                                 ctlNum, origin, true);
                 }
             }
+            else {
+                indication = DATA_ACCESS_ERROR_SUCCESS;
+            }
         }
 
         if (controlObject->timeActivatedOperate) {
