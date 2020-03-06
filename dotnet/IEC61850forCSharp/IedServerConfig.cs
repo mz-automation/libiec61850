@@ -45,6 +45,12 @@ namespace IEC61850.Server
 		static extern int IedServerConfig_getReportBufferSize(IntPtr self);
 
 		[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+		static extern void IedServerConfig_setReportBufferSizeForURCBs(IntPtr self, int reportBufferSize);
+
+		[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+		static extern int IedServerConfig_getReportBufferSizeForURCBs(IntPtr self);
+
+		[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 		static extern void IedServerConfig_setFileServiceBasePath(IntPtr self, string basepath);
 
 		[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
@@ -119,6 +125,22 @@ namespace IEC61850.Server
 			}
 			set {
 				IedServerConfig_setReportBufferSize (self, value);
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets the size of the report buffer for unbuffered report control blocks
+		/// </summary>
+		/// <value>The size of the report buffer.</value>
+		public int ReportBufferSizeForURCBs
+		{
+			get
+			{
+				return IedServerConfig_getReportBufferSizeForURCBs(self);
+			}
+			set
+			{
+				IedServerConfig_setReportBufferSizeForURCBs(self, value);
 			}
 		}
 
