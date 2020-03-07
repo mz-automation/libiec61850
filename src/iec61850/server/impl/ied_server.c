@@ -548,6 +548,18 @@ IedServer_destroy(IedServer self)
     Semaphore_destroy(self->clientConnectionsLock);
 #endif
 
+#if (CONFIG_IEC61850_SUPPORT_SERVER_IDENTITY == 1)
+
+    if (self->vendorName)
+        GLOBAL_FREEMEM(self->vendorName);
+
+    if (self->modelName)
+        GLOBAL_FREEMEM(self->modelName);
+
+    if (self->revision)
+        GLOBAL_FREEMEM(self->revision);
+#endif /* (CONFIG_IEC61850_SUPPORT_SERVER_IDENTITY == 1) */
+
     GLOBAL_FREEMEM(self);
 }
 
@@ -1527,6 +1539,28 @@ IedServer_setLogStorage(IedServer self, const char* logRef, LogStorage logStorag
 {
 #if (CONFIG_IEC61850_LOG_SERVICE == 1)
     MmsMapping_setLogStorage(self->mmsMapping, logRef, logStorage);
+#endif
+}
+
+void
+IedServer_setServerIdentity(IedServer self, const char* vendor, const char* model, const char* revision)
+{
+#if (CONFIG_IEC61850_SUPPORT_SERVER_IDENTITY == 1)
+
+    if (self->vendorName)
+        GLOBAL_FREEMEM(self->vendorName);
+
+    if (self->modelName)
+        GLOBAL_FREEMEM(self->modelName);
+
+    if (self->revision)
+        GLOBAL_FREEMEM(self->revision);
+
+    self->vendorName = StringUtils_copyString(vendor);
+    self->modelName = StringUtils_copyString(model);
+    self->revision = StringUtils_copyString(revision);
+
+    MmsServer_setServerIdentity(self->mmsServer, self->vendorName, self->modelName, self->revision);
 #endif
 }
 

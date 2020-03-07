@@ -164,6 +164,9 @@
 /* allow user to control read access by callback */
 #define CONFIG_IEC61850_SUPPORT_USER_READ_ACCESS_CONTROL 1
 
+/* allow application to set server identity (for MMS identity service) at runtime */
+#define CONFIG_IEC61850_SUPPORT_SERVER_IDENTITY 1
+
 /* Force memory alignment - required for some platforms (required more memory for buffered reporting) */
 #define CONFIG_IEC61850_FORCE_MEMORY_ALIGNMENT 1
 
