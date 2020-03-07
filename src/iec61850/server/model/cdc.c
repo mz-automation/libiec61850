@@ -554,6 +554,19 @@ addOriginatorAndCtlNumOptions(ModelNode* parent, uint32_t controlOptions)
         DataAttribute_create("ctlNum", parent, IEC61850_INT8U, IEC61850_FC_ST, 0, 0, 0);
 }
 
+static void
+addCommonControlAttributes(DataObject* dobj, uint32_t controlOptions)
+{
+    if (controlOptions & CDC_CTL_OPTION_OP_RCVD)
+        DataAttribute_create("opRcvd", (ModelNode*) dobj, IEC61850_BOOLEAN, IEC61850_FC_OR, TRG_OPT_DATA_CHANGED, 0, 0);
+
+    if (controlOptions & CDC_CTL_OPTION_OP_OK)
+        DataAttribute_create("opOk", (ModelNode*) dobj, IEC61850_BOOLEAN, IEC61850_FC_OR, TRG_OPT_DATA_CHANGED, 0, 0);
+
+    if (controlOptions & CDC_CTL_OPTION_T_OP_OK)
+        DataAttribute_create("tOpOk", (ModelNode*) dobj, IEC61850_BOOLEAN, IEC61850_FC_OR, TRG_OPT_DATA_CHANGED, 0, 0);
+}
+
 /**
  *
  * CDC_OPTION_IS_TIME_ACTICATED
@@ -573,6 +586,11 @@ CDC_SPC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, 
     CDC_addStatusToDataObject(newSPC, IEC61850_BOOLEAN);
 
     addControls(newSPC, IEC61850_BOOLEAN, controlOptions);
+
+    if (controlOptions & CDC_CTL_OPTION_ST_SELD)
+        DataAttribute_create("stSeld", (ModelNode*) newSPC, IEC61850_BOOLEAN, IEC61850_FC_ST, TRG_OPT_DATA_CHANGED, 0, 0);
+
+    addCommonControlAttributes(newSPC, controlOptions);
 
     if (options & CDC_OPTION_PICS_SUBST)
         CDC_addOptionPicsSubst(newSPC, IEC61850_BOOLEAN);
@@ -604,6 +622,11 @@ CDC_DPC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, 
     CDC_addStatusToDataObject(newDPC, IEC61850_CODEDENUM);
 
     addControls(newDPC, IEC61850_BOOLEAN, controlOptions);
+
+    if (controlOptions & CDC_CTL_OPTION_ST_SELD)
+        DataAttribute_create("stSeld", (ModelNode*) newDPC, IEC61850_BOOLEAN, IEC61850_FC_ST, TRG_OPT_DATA_CHANGED, 0, 0);
+
+    addCommonControlAttributes(newDPC, controlOptions);
 
     if (options & CDC_OPTION_PICS_SUBST)
         CDC_addOptionPicsSubst(newDPC, IEC61850_CODEDENUM);
@@ -661,16 +684,22 @@ addAnalogControls(DataObject* parent, uint32_t controlOptions, bool isIntegerNot
     }
 }
 
+static void
+addControlStatusAttributesForAnalogControl(DataObject* dobj, uint32_t controlOptions)
+{
+    if (controlOptions & CDC_CTL_OPTION_ORIGIN)
+        addOriginator("origin", (ModelNode*) dobj, IEC61850_FC_MX);
+
+    if (controlOptions & CDC_CTL_OPTION_CTL_NUM)
+        DataAttribute_create("ctlNum", (ModelNode*) dobj, IEC61850_INT8U, IEC61850_FC_MX, 0, 0, 0);
+}
+
 DataObject*
 CDC_APC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, uint32_t controlOptions, bool isIntegerNotFloat)
 {
     DataObject* newAPC = DataObject_create(dataObjectName, parent, 0);
 
-    if (controlOptions & CDC_CTL_OPTION_ORIGIN)
-        addOriginator("origin", (ModelNode*) newAPC, IEC61850_FC_MX);
-
-    if (controlOptions & CDC_CTL_OPTION_CTL_NUM)
-        DataAttribute_create("ctlNum", (ModelNode*) newAPC, IEC61850_INT8U, IEC61850_FC_MX, 0, 0, 0);
+    addControlStatusAttributesForAnalogControl(newAPC, controlOptions);
 
     CAC_AnalogueValue_create("mxVal", (ModelNode*) newAPC, IEC61850_FC_MX, TRG_OPT_DATA_CHANGED, isIntegerNotFloat);
 
@@ -679,14 +708,7 @@ CDC_APC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, 
     if (controlOptions & CDC_CTL_OPTION_ST_SELD)
         DataAttribute_create("stSeld", (ModelNode*) newAPC, IEC61850_BOOLEAN, IEC61850_FC_MX, TRG_OPT_DATA_CHANGED, 0, 0);
 
-    if (controlOptions & CDC_CTL_OPTION_OP_RCVD)
-        DataAttribute_create("opRcvd", (ModelNode*) newAPC, IEC61850_BOOLEAN, IEC61850_FC_OR, TRG_OPT_DATA_CHANGED, 0, 0);
-
-    if (controlOptions & CDC_CTL_OPTION_OP_OK)
-        DataAttribute_create("opOk", (ModelNode*) newAPC, IEC61850_BOOLEAN, IEC61850_FC_OR, TRG_OPT_DATA_CHANGED, 0, 0);
-
-    if (controlOptions & CDC_CTL_OPTION_T_OP_OK)
-        DataAttribute_create("tOpOk", (ModelNode*) newAPC, IEC61850_BOOLEAN, IEC61850_FC_OR, TRG_OPT_DATA_CHANGED, 0, 0);
+    addCommonControlAttributes(newAPC, controlOptions);
 
     if (options & CDC_OPTION_PICS_SUBST) {
         DataAttribute_create("subEna", (ModelNode*) newAPC, IEC61850_BOOLEAN, IEC61850_FC_SV, 0, 0, 0);
@@ -705,7 +727,6 @@ CDC_APC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, 
     return newAPC;
 }
 
-
 DataObject*
 CDC_INC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, uint32_t controlOptions)
 {
@@ -716,6 +737,11 @@ CDC_INC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, 
     CDC_addStatusToDataObject(newINC, IEC61850_INT32);
 
     addControls(newINC, IEC61850_INT32, controlOptions);
+
+    if (controlOptions & CDC_CTL_OPTION_ST_SELD)
+        DataAttribute_create("stSeld", (ModelNode*) newINC, IEC61850_BOOLEAN, IEC61850_FC_ST, TRG_OPT_DATA_CHANGED, 0, 0);
+
+    addCommonControlAttributes(newINC, controlOptions);
 
     if (options & CDC_OPTION_PICS_SUBST)
         CDC_addOptionPicsSubst(newINC, IEC61850_INT32);
@@ -748,6 +774,11 @@ CDC_ENC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, 
 
     addControls(newENC, IEC61850_ENUMERATED, controlOptions);
 
+    if (controlOptions & CDC_CTL_OPTION_ST_SELD)
+        DataAttribute_create("stSeld", (ModelNode*) newENC, IEC61850_BOOLEAN, IEC61850_FC_ST, TRG_OPT_DATA_CHANGED, 0, 0);
+
+    addCommonControlAttributes(newENC, controlOptions);
+
     if (options & CDC_OPTION_PICS_SUBST)
         CDC_addOptionPicsSubst(newENC, IEC61850_ENUMERATED);
 
@@ -772,6 +803,11 @@ CDC_BSC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, 
     DataAttribute_create("persistent", (ModelNode*) newBSC, IEC61850_BOOLEAN, IEC61850_FC_CF, TRG_OPT_DATA_CHANGED, 0, 0);
 
     addControls(newBSC, IEC61850_CODEDENUM, controlOptions);
+
+    if (controlOptions & CDC_CTL_OPTION_ST_SELD)
+        DataAttribute_create("stSeld", (ModelNode*) newBSC, IEC61850_BOOLEAN, IEC61850_FC_ST, TRG_OPT_DATA_CHANGED, 0, 0);
+
+    addCommonControlAttributes(newBSC, controlOptions);
 
     if (options & CDC_OPTION_PICS_SUBST)
         CDC_addOptionPicsSubstValWithTrans(newBSC, hasTransientIndicator);
