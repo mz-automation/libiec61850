@@ -345,22 +345,6 @@ target_link_libraries(iec61850-shared
 )
 
 ENDIF(WITH_WPCAP)
-
-set(BINDIR "bin")
-set(LIBDIR "lib")
-if(UNIX)
-    # GNUInstallDirs is required for Debian multiarch
-    include(GNUInstallDirs)
-    set(LIBDIR ${CMAKE_INSTALL_LIBDIR})
-    set(BINDIR ${CMAKE_INSTALL_BINDIR})
-
-    configure_file(
-        ${CMAKE_CURRENT_LIST_DIR}/libiec61850.pc.in
-        ${CMAKE_CURRENT_BINARY_DIR}/libiec61850.pc @ONLY
-    )
-    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/libiec61850.pc" DESTINATION "${CMAKE_INSTALL_PREFIX}/share/pkgconfig")
-endif()
-
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
   configure_file(Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
@@ -371,8 +355,3 @@ if(DOXYGEN_FOUND)
 
 endif(DOXYGEN_FOUND)
 
-install (TARGETS iec61850 iec61850-shared hal hal-shared
-	RUNTIME DESTINATION ${BINDIR} COMPONENT Applications
-	ARCHIVE DESTINATION ${LIBDIR} COMPONENT Libraries
-    LIBRARY DESTINATION ${LIBDIR} COMPONENT Libraries
-)

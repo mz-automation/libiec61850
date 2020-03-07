@@ -169,3 +169,25 @@ if(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
 
     include(CPack)
 endif(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
+
+set(BINDIR "bin")
+set(LIBDIR "lib")
+if(UNIX)
+    # GNUInstallDirs is required for Debian multiarch
+    include(GNUInstallDirs)
+    set(LIBDIR ${CMAKE_INSTALL_LIBDIR})
+    set(BINDIR ${CMAKE_INSTALL_BINDIR})
+
+    configure_file(
+        ${CMAKE_CURRENT_LIST_DIR}/src/libiec61850.pc.in
+        ${CMAKE_CURRENT_BINARY_DIR}/src/libiec61850.pc @ONLY
+    )
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/src/libiec61850.pc" DESTINATION "${CMAKE_INSTALL_PREFIX}/share/pkgconfig")
+endif()
+
+install (TARGETS iec61850 iec61850-shared hal hal-shared
+	RUNTIME DESTINATION ${BINDIR} COMPONENT Applications
+	ARCHIVE DESTINATION ${LIBDIR} COMPONENT Libraries
+    LIBRARY DESTINATION ${LIBDIR} COMPONENT Libraries
+)
+
