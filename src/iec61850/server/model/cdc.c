@@ -821,6 +821,84 @@ CDC_BSC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, 
 }
 
 DataObject*
+CDC_ISC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, uint32_t controlOptions, bool hasTransientIndicator)
+{
+    DataObject* newISC = DataObject_create(dataObjectName, parent, 0);
+
+    addOriginatorAndCtlNumOptions((ModelNode*) newISC, controlOptions);
+
+    CAC_ValWithTrans_create("valWTr", (ModelNode*) newISC, IEC61850_FC_ST, TRG_OPT_DATA_CHANGED, hasTransientIndicator);
+    CDC_addTimeQuality(newISC, IEC61850_FC_ST);
+
+    addControls(newISC, IEC61850_INT8, controlOptions);
+
+    if (controlOptions & CDC_CTL_OPTION_ST_SELD)
+        DataAttribute_create("stSeld", (ModelNode*) newISC, IEC61850_BOOLEAN, IEC61850_FC_ST, TRG_OPT_DATA_CHANGED, 0, 0);
+
+    addCommonControlAttributes(newISC, controlOptions);
+
+    if (options & CDC_OPTION_PICS_SUBST)
+        CDC_addOptionPicsSubstValWithTrans(newISC, hasTransientIndicator);
+
+    if (options & CDC_OPTION_BLK_ENA)
+        DataAttribute_create("blkEna", (ModelNode*) newISC, IEC61850_BOOLEAN, IEC61850_FC_BL, 0, 0, 0);
+
+    if (options & CDC_OPTION_MIN)
+        DataAttribute_create("minVal", (ModelNode*) newISC, IEC61850_INT32, IEC61850_FC_CF, 0, 0, 0);
+
+    if (options & CDC_OPTION_MAX)
+        DataAttribute_create("maxVal", (ModelNode*) newISC, IEC61850_INT32, IEC61850_FC_CF, 0, 0, 0);
+
+    CDC_addStandardOptions(newISC, options);
+
+    return newISC;
+}
+
+DataObject*
+CDC_BAC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, uint32_t controlOptions, bool isIntegerNotFloat)
+{
+    DataObject* newBAC = DataObject_create(dataObjectName, parent, 0);
+
+    addControlStatusAttributesForAnalogControl(newBAC, controlOptions);
+
+    CAC_AnalogueValue_create("mxVal", (ModelNode*) newBAC, IEC61850_FC_MX, TRG_OPT_DATA_CHANGED, isIntegerNotFloat);
+
+    CDC_addTimeQuality(newBAC, IEC61850_FC_MX);
+
+    if (controlOptions & CDC_CTL_OPTION_ST_SELD)
+        DataAttribute_create("stSeld", (ModelNode*) newBAC, IEC61850_BOOLEAN, IEC61850_FC_MX, TRG_OPT_DATA_CHANGED, 0, 0);
+
+    addControls(newBAC, IEC61850_INT8, controlOptions);
+
+    if (options & CDC_OPTION_PICS_SUBST) {
+        DataAttribute_create("subEna", (ModelNode*) newBAC, IEC61850_BOOLEAN, IEC61850_FC_SV, 0, 0, 0);
+        CAC_AnalogueValue_create("subVal", (ModelNode*) newBAC, IEC61850_FC_SV, 0, isIntegerNotFloat);
+        DataAttribute_create("subQ", (ModelNode*) newBAC, IEC61850_QUALITY, IEC61850_FC_SV, 0, 0, 0);
+        DataAttribute_create("subID", (ModelNode*) newBAC, IEC61850_VISIBLE_STRING_64, IEC61850_FC_SV, 0, 0, 0);
+    }
+
+    if (options & CDC_OPTION_BLK_ENA)
+        DataAttribute_create("blkEna", (ModelNode*) newBAC, IEC61850_BOOLEAN, IEC61850_FC_BL, 0, 0, 0);
+
+    DataAttribute_create("persistent", (ModelNode*) newBAC, IEC61850_BOOLEAN, IEC61850_FC_CF, TRG_OPT_DATA_CHANGED, 0, 0);
+
+    addAnalogControls(newBAC, controlOptions, isIntegerNotFloat);
+
+    if (options & CDC_OPTION_MIN)
+        CAC_AnalogueValue_create("minVal", (ModelNode*) newBAC, IEC61850_FC_CF, 0, isIntegerNotFloat);
+
+    if (options & CDC_OPTION_MAX)
+        CAC_AnalogueValue_create("maxVal", (ModelNode*) newBAC, IEC61850_FC_CF, 0, isIntegerNotFloat);
+
+    if (options & CDC_OPTION_STEP_SIZE)
+        CAC_AnalogueValue_create("stepSize", (ModelNode*) newBAC, IEC61850_FC_CF, 0, isIntegerNotFloat);
+
+    CDC_addStandardOptions(newBAC, options);
+
+    return newBAC;
+}
+
+DataObject*
 CDC_LPL_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
 {
     DataObject* newLPL = DataObject_create(dataObjectName, parent, 0);
