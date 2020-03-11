@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.12)
 
 # automagically detect if we should cross-compile
 if(DEFINED ENV{TOOLCHAIN})
@@ -169,3 +169,5 @@ if(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
 
     include(CPack)
 endif(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
+
+

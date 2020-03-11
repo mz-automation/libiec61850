@@ -294,9 +294,6 @@ namespace tests
 		{
             IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile("../../model.cfg");
 
-
-
-
 			ModelNode ind1 = iedModel.GetModelNodeByShortObjectReference ("GenericIO/GGIO1.Ind1.stVal");
 
 			Assert.IsTrue (ind1.GetType ().Equals (typeof(IEC61850.Server.DataAttribute)));
@@ -556,6 +553,45 @@ namespace tests
 
 			Assert.AreEqual (Validity.QUESTIONABLE, q.Validity);
 		}
-	}
+
+        [Test()]
+        public void MmsValaueCreateStructureAndAddElement()
+        {
+            MmsValue structure1 = MmsValue.NewEmptyStructure(1);
+            MmsValue structure2 = MmsValue.NewEmptyStructure(1);
+            MmsValue element = MmsValue.NewEmptyStructure(1);
+
+            structure1.SetElement(0, element);
+
+            /* Clone is required when adding the value to another structure or element */
+            MmsValue elementClone = element.Clone();
+            structure2.SetElement(0, elementClone);
+
+            element.Dispose();
+
+            structure1.Dispose();
+            structure2.Dispose();
+
+            Assert.AreEqual(true, true);
+        }
+
+        [Test()]
+        public void MmsValueClone()
+        {
+            MmsValue boolValue = new MmsValue(true);
+
+            MmsValue boolClone = boolValue.Clone();
+
+            boolValue.Dispose();
+            boolClone.Dispose();
+
+            MmsValue structure = MmsValue.NewEmptyStructure(1);
+            MmsValue structureClone = structure.Clone();
+
+            structure.Dispose();
+            structureClone.Dispose();
+        }
+
+    }
 }
 

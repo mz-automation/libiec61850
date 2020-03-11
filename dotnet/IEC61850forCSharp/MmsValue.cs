@@ -533,43 +533,60 @@ namespace IEC61850
 					throw new MmsValueException ("Value is of wrong type");
 			}
 
-			/// <summary>
-			/// Sets the element of an array of structure
-			/// </summary>
-			/// <param name="index">index of the element starting with 0</param>
-			/// <param name="elementValue">MmsValue instance that will be used as element value</param>
-			/// <exception cref="MmsValueException">This exception is thrown if the value has the wrong type.</exception>
-			/// <exception cref="MmsValueException">This exception is thrown if the index is out of range.</exception>
-			public void SetElement(int index, MmsValue elementValue)
-			{
-				MmsType elementType = GetType ();
+            /// <summary>
+            /// Sets the element of an array or structure
+            /// </summary>
+            /// <remarks>
+            /// After calling this function the native memory of the element will be managed by the array or structure. 
+            /// Therefore an element can only be used in a single array or structure. 
+            /// When the value is required in multiple arrays or structures
+            /// a clone has to be created before using this function!
+            /// To be save, always use a clone for setting the element.
+            /// </remarks>
+            /// <param name="index">index of the element starting with 0</param>
+            /// <param name="elementValue">MmsValue instance that will be used as element value</param>
+            /// <exception cref="MmsValueException">This exception is thrown if the value has the wrong type.</exception>
+            /// <exception cref="MmsValueException">This exception is thrown if the index is out of range.</exception>
+            public void SetElement(int index, MmsValue elementValue)
+            {
+                MmsType elementType = GetType();
 
-				if ((elementType == MmsType.MMS_ARRAY) || (elementType == MmsType.MMS_STRUCTURE)) {
-				
-					if ((index >= 0) && (index < Size ())) {
+                if ((elementType == MmsType.MMS_ARRAY) || (elementType == MmsType.MMS_STRUCTURE))
+                {
+
+                    if ((index >= 0) && (index < Size()))
+                    {
+
                         if (elementValue != null)
-						    MmsValue_setElement (valueReference, index, elementValue.valueReference);
+                        {
+                            MmsValue_setElement(valueReference, index, elementValue.valueReference);
+
+                            /* will be deleted by structure */
+                            elementValue.responsableForDeletion = false;
+                        }
                         else
-                            MmsValue_setElement (valueReference, index, IntPtr.Zero);
+                            MmsValue_setElement(valueReference, index, IntPtr.Zero);
 
-                    } else
-						throw new MmsValueException ("Index out of bounds");
-				
-				} else
-					throw new MmsValueException ("Value is of wrong type");
+                    }
+                    else
+                        throw new MmsValueException("Index out of bounds");
 
-			}
+                }
+                else
+                    throw new MmsValueException("Value is of wrong type");
+            }
 
-			public MmsDataAccessError GetDataAccessError ()
-			{
-				if (GetType () == MmsType.MMS_DATA_ACCESS_ERROR) {
-					int errorCode = MmsValue_getDataAccessError (valueReference);
+            public MmsDataAccessError GetDataAccessError()
+            {
+                if (GetType() == MmsType.MMS_DATA_ACCESS_ERROR)
+                {
+                    int errorCode = MmsValue_getDataAccessError(valueReference);
 
-					return (MmsDataAccessError)errorCode;
-				}
-				else
-					throw new MmsValueException ("Value is of wrong type");
-			}
+                    return (MmsDataAccessError)errorCode;
+                }
+                else
+                    throw new MmsValueException("Value is of wrong type");
+            }
 
             /// <summary>
             /// Gets the timestamp value as UTC time in s (UNIX time stamp).

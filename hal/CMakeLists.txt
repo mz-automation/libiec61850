@@ -164,3 +164,18 @@ target_link_libraries(hal
 	${CMAKE_CURRENT_SOURCE_DIR}/../third_party/winpcap/Lib/packet.lib
 )
 ENDIF(WITH_WPCAP)
+
+set(BINDIR "bin")
+set(LIBDIR "lib")
+if(UNIX)
+    # GNUInstallDirs is required for Debian multiarch
+    include(GNUInstallDirs)
+    set(LIBDIR ${CMAKE_INSTALL_LIBDIR})
+    set(BINDIR ${CMAKE_INSTALL_BINDIR})
+endif()
+
+install (TARGETS hal hal-shared
+	RUNTIME DESTINATION ${BINDIR} COMPONENT Applications
+	ARCHIVE DESTINATION ${LIBDIR} COMPONENT Libraries
+    LIBRARY DESTINATION ${LIBDIR} COMPONENT Libraries
+)

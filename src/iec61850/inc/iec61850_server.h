@@ -348,6 +348,19 @@ LIB61850_API void
 IedServer_setLocalIpAddress(IedServer self, const char* localIpAddress);
 
 /**
+ * \brief Set the identify for the MMS identify service
+ *
+ * CONFIG_IEC61850_SUPPORT_SERVER_IDENTITY required
+ *
+ * \param self the IedServer instance
+ * \param vendor the IED vendor name
+ * \param model the IED model name
+ * \param revision the IED revision/version number
+ */
+LIB61850_API void
+IedServer_setServerIdentity(IedServer self, const char* vendor, const char* model, const char* revision);
+
+/**
  * \brief Set the virtual filestore basepath for the MMS file services
  *
  * All external file service accesses will be mapped to paths relative to the base directory.

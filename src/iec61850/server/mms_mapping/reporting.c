@@ -2104,14 +2104,14 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
 
     ReportBufferEntry* entry = (ReportBufferEntry*) entryBufPos;
 
+    entry->timeOfEntry = timeOfEntry;
+
     if (isBuffered) {
         /* ENTRY_ID is set to system time in ms! */
         uint64_t entryId = timeOfEntry;
 
         if (entryId <= reportControl->lastEntryId)
             entryId = reportControl->lastEntryId + 1;
-
-        entry->timeOfEntry = entryId;
 
     #if (ORDER_LITTLE_ENDIAN == 1)
         memcpyReverseByteOrder(entry->entryId, (uint8_t*) &entryId, 8);
