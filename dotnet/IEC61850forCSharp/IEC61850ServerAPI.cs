@@ -1065,18 +1065,6 @@ namespace IEC61850
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern void IedServer_setLocalIpAddress(IntPtr self, string localIpAddress);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern void MmsServer_setServerIdentity(IntPtr self, string vendorName, string modelName, string revision);
-			
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr MmsServer_getVendorName(IntPtr self);
-
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr MmsServer_getModelName(IntPtr self);
-
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr MmsServer_getRevision(IntPtr self);
-
 			[DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
 			static extern void IedServer_start(IntPtr self, int tcpPort);
 
@@ -1348,59 +1336,6 @@ namespace IEC61850
 			public void SetLocalIpAddress(string localIpAddress)
 			{
 				IedServer_setLocalIpAddress (self, localIpAddress);
-			}
-
-			/// <summary>
-			/// Sets the values that the server will give as response for an MMS identify request
-			/// </summary>
-			/// <param name="vendorName">Vendor Name for VMD</param>
-			/// <param name="modelName">Model name for VMD</param>
-			/// <param name="revision">Revision for VMD</param>
-			public void SetServerIdentity(string vendorName, string modelName, string revision)
-			{
-				MmsServer_setServerIdentity(self, vendorName, modelName, revision);
-			}
-
-			/// <summary>
-			/// Gets the Vendor Name attributed to the VMD
-			/// </summary>
-			/// <returns>Vendor Name</returns>
-			public string GetVendorName()
-			{
-				IntPtr vendorNamePtr = MmsServer_getVendorName(self);
-
-				if (vendorNamePtr != IntPtr.Zero)
-					return Marshal.PtrToStringAnsi(vendorNamePtr);
-				else
-					return null;
-			}
-
-			/// <summary>
-			/// Gets the Model Name attributed to the VMD
-			/// </summary>
-			/// <returns>Model Name</returns>
-			public string GetModelName()
-			{
-				IntPtr modelNamePtr = MmsServer_getModelName(self);
-
-				if (modelNamePtr != IntPtr.Zero)
-					return Marshal.PtrToStringAnsi(modelNamePtr);
-				else
-					return null;
-			}
-
-			/// <summary>
-			/// Gets the Revision attributed to the VMD
-			/// </summary>
-			/// <returns>Revision</returns>
-			public string GetRevision()
-			{
-				IntPtr revisionPtr = MmsServer_getRevision(self);
-
-				if (revisionPtr != IntPtr.Zero)
-					return Marshal.PtrToStringAnsi(revisionPtr);
-				else
-					return null;
 			}
 
 			/// <summary>
