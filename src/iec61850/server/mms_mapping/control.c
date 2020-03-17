@@ -1145,11 +1145,13 @@ ControlObject_sendLastApplError(ControlObject* self, MmsServerConnection connect
 }
 
 static void
-updateControlParameters(ControlObject* controlObject, MmsValue* ctlVal, MmsValue* ctlNum, MmsValue* origin)
+updateControlParameters(ControlObject* controlObject, MmsValue* ctlVal, MmsValue* ctlNum, MmsValue* origin, bool synchroCheck, bool interlockCheck)
 {
     MmsValue_update(controlObject->ctlVal, ctlVal);
     MmsValue_update(controlObject->ctlNum, ctlNum);
     MmsValue_update(controlObject->origin, origin);
+    controlObject->synchroCheck = synchroCheck;
+    controlObject->interlockCheck = interlockCheck;
 
     if (controlObject->ctlNumSt)
         MmsValue_update(controlObject->ctlNumSt, ctlNum);
@@ -1467,12 +1469,12 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                     /* opRcvd must not be set here! */
 
                     bool interlockCheck = MmsValue_getBitStringBit(check, 1);
-
+                    bool synchroCheck = MmsValue_getBitStringBit(check, 0);
                     bool testCondition = MmsValue_getBoolean(test);
 
                     controlObject->addCauseValue = ADD_CAUSE_SELECT_FAILED;
 
-                    updateControlParameters(controlObject, ctlVal, ctlNum, origin);
+                    updateControlParameters(controlObject, ctlVal, ctlNum, origin, interlockCheck, synchroCheck);
 
                     if (controlObject->checkHandler != NULL) { /* perform operative tests */
 
@@ -1528,6 +1530,15 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
 
         if (checkValidityOfOriginParameter(origin) == false) {
             indication = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+
+            if ((controlObject->ctlModel == 2) || (controlObject->ctlModel == 4)) {
+                ControlObject_sendLastApplError(controlObject, connection, "Oper",
+                        CONTROL_ERROR_NO_ERROR, ADD_CAUSE_INCONSISTENT_PARAMETERS,
+                            ctlNum, origin, true);
+
+                unselectObject(controlObject);
+            }
+
             goto free_and_return;
         }
 
@@ -1570,7 +1581,10 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                 if (controlObject->ctlModel == 4) { /* select-before-operate with enhanced security */
                     if ((MmsValue_equals(ctlVal, controlObject->ctlVal) &&
                          MmsValue_equals(origin, controlObject->origin) &&
-                         MmsValue_equals(ctlNum, controlObject->ctlNum)) == false)
+                         MmsValue_equals(ctlNum, controlObject->ctlNum) &&
+                         (controlObject->interlockCheck == interlockCheck) &&
+                         (controlObject->synchroCheck == synchroCheck)
+                         ) == false)
                     {
 
                         indication = DATA_ACCESS_ERROR_TYPE_INCONSISTENT;
@@ -1585,7 +1599,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                 }
             }
 
-            updateControlParameters(controlObject, ctlVal, ctlNum, origin);
+            updateControlParameters(controlObject, ctlVal, ctlNum, origin, synchroCheck, interlockCheck);
 
             MmsValue* operTm = getOperParameterOperTime(value);
 
