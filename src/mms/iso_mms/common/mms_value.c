@@ -2105,7 +2105,7 @@ MmsValue_printToBuffer(const MmsValue* self, char* buffer, int bufferSize)
         break;
 
     case MMS_INTEGER:
-        snprintf(buffer, bufferSize, "%i", MmsValue_toInt32(self));
+        snprintf(buffer, bufferSize, "%lld", (long long) MmsValue_toInt64(self));
         break;
 
     case MMS_OCTET_STRING:
