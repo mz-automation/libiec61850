@@ -1290,9 +1290,9 @@ createMmsModelFromIedModel(MmsMapping* self, IedModel* iedModel)
 {
     MmsDevice* mmsDevice = NULL;
 
-    if (iedModel->firstChild != NULL) {
+    mmsDevice = MmsDevice_create(iedModel->name);
 
-        mmsDevice = MmsDevice_create(iedModel->name);
+    if (iedModel->firstChild != NULL) {
 
         int iedDeviceCount = IedModel_getLogicalDeviceCount(iedModel);
 
