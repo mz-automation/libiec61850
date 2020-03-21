@@ -69,9 +69,9 @@ typedef struct {
     bool gi; /* flag to indicate that a GI report is triggered */
 
     uint16_t sqNum;
-    uint32_t intgPd;
+    uint32_t intgPd; /* integrity period in ms */
     uint32_t bufTm;
-    uint64_t nextIntgReportTime;
+    uint64_t nextIntgReportTime; /* time when to send next integrity report */
     uint64_t reservationTimeout;
     MmsServerConnection clientConnection;
 

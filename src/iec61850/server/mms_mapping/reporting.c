@@ -615,7 +615,7 @@ refreshIntegrityPeriod(ReportControl* rc)
     rc->intgPd = MmsValue_toUint32(intgPd);
 
     if (rc->buffered == false)
-        rc->nextIntgReportTime = 0;
+        rc->nextIntgReportTime = Hal_getTimeInMs() + rc->intgPd;
 }
 
 static void
