@@ -837,6 +837,9 @@ namespace IEC61850
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern IntPtr ClientConnection_getPeerAddress(IntPtr self);
 
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr ClientConnection_getLocalAddress(IntPtr self);
+
 			internal IntPtr self;
 
 			internal ClientConnection (IntPtr self) {
@@ -849,6 +852,16 @@ namespace IEC61850
 
 				if (peerAddrPtr != IntPtr.Zero)
 					return Marshal.PtrToStringAnsi (peerAddrPtr);
+				else
+					return null;
+			}
+
+			public string GetLocalAddress()
+			{
+				IntPtr localAddrPtr = ClientConnection_getLocalAddress(self);
+
+				if (localAddrPtr != IntPtr.Zero)
+					return Marshal.PtrToStringAnsi(localAddrPtr);
 				else
 					return null;
 			}
@@ -1064,6 +1077,9 @@ namespace IEC61850
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			[return: MarshalAs(UnmanagedType.Bool)]
 			static extern bool IedServer_isRunning(IntPtr self);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern int IedServer_getNumberOfOpenConnections(IntPtr self);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern void IedServer_lockDataModel(IntPtr self);
@@ -1394,6 +1410,15 @@ namespace IEC61850
             {
                 return IedServer_isRunning(self);
             }
+
+			/// <summary>
+			/// Get number of open MMS connections
+			/// </summary>
+			/// <returns>the number of open and accepted MMS connections</returns>
+			public int GetNumberOfOpenConnections()
+			{
+				return IedServer_getNumberOfOpenConnections(self);
+			}
 
             private ControlHandlerInfo GetControlHandlerInfo(DataObject controlObject)
 			{
