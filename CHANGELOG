@@ -1,5 +1,19 @@
 Changes to version 1.4.2
 -------------------------
+
+- IEC 61850 server: unbuffered reporting - send first integrity report after integrity timeout (before it was sent when the RCB was enabled)
+- IEC 61850 server: allow server to start without logical devices in data model (#218)
+- IEC 61850 client: fixed bug in ClientReportControlBlock - some allowed structures for RCB were rejected
+- IEC 61850 server: control - unselect when operate with wrong origin parameters, check if check parameter matches for SBO
+- IEC 61850 server: fixed missing report timestamp update for unbuffered reporting
+- IEC 618580 server: Added function IedServer_setServerIdentity to set values for MMS identity service
+- CDC helpers: added functions to create ISC and BAC CDCs
+- CDC helpers: added stSeld and attributes from ControlTestingCDC to control CDCs
+- CDC helper functions: added stSeld and attributes from ControlTestingCDC to control CDCs
+- updated cmake files
+- .NET API: fixed memory management issue in MmsValue.SetElement (see #213)
+- IEC 61850 server: unselect control when oper is not accepted
+- IEC 61850 server: send select-failed for control when origin parameter is not valid
 - IEC 61850 server: fixed control handling to comply with test case sCtl25
 - IEC 61850 server: fixed control handling to comply with test case sCtl11
 - IEC 61850 server: pass origin, ctlNum, ctlVal to select handler (perform check handler) for SBOw
