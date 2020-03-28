@@ -1,6 +1,8 @@
 Changes to version 1.4.2
 -------------------------
 
+- IEC 61850 server: wait for background thread termination before data model is released
+- MMS server: fixed potential crash when get-named-variable-list-attributes response doesn't fit in MMS PDU. Server returns service error in this case
 - IEC 61850 server: unbuffered reporting - send first integrity report after integrity timeout (before it was sent when the RCB was enabled)
 - IEC 61850 server: allow server to start without logical devices in data model (#218)
 - IEC 61850 client: fixed bug in ClientReportControlBlock - some allowed structures for RCB were rejected
