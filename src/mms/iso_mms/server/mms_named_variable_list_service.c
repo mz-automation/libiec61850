@@ -712,8 +712,6 @@ mmsServer_handleGetNamedVariableListAttributesRequest(
 
 			if (variableList != NULL) {
 
-			    int bufSize = ByteBuffer_getSize(response);
-
 				if (createGetNamedVariableListAttributesResponse(invokeId, response, variableList) == false) {
 
 				    /* encoding failed - probably because buffer size is too small for message */

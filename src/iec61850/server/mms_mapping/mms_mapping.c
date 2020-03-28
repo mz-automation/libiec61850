@@ -1352,7 +1352,7 @@ MmsMapping_destroy(MmsMapping* self)
 {
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
-    if (self->reportWorkerThread != NULL) {
+    if (self->reportWorkerThread) {
         self->reportThreadRunning = false;
         Thread_destroy(self->reportWorkerThread);
     }
@@ -3045,7 +3045,6 @@ static void
 eventWorkerThread(MmsMapping* self)
 {
     bool running = true;
-    self->reportThreadFinished = false;
 
     while (running) {
 
@@ -3058,8 +3057,6 @@ eventWorkerThread(MmsMapping* self)
 
     if (DEBUG_IED_SERVER)
         printf("IED_SERVER: event worker thread finished!\n");
-
-    self->reportThreadFinished = true;
 }
 
 void
@@ -3079,8 +3076,9 @@ MmsMapping_stopEventWorkerThread(MmsMapping* self)
 
         self->reportThreadRunning = false;
 
-        while (self->reportThreadFinished == false)
-            Thread_sleep(1);
+        Thread_destroy(self->reportWorkerThread);
+
+        self->reportWorkerThread = NULL;
     }
 }
 #endif /* (CONFIG_MMS_THREADLESS_STACK != 1) */

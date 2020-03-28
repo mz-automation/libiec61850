@@ -65,7 +65,6 @@ struct sMmsMapping {
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     bool reportThreadRunning;
-    bool reportThreadFinished;
     Thread reportWorkerThread;
 #endif
 
