@@ -61,8 +61,9 @@ ByteBuffer_append(ByteBuffer* self, uint8_t* data, int dataSize)
 		self->size += dataSize;
 		return dataSize;
 	}
-	else
+	else {
 		return -1;
+	}
 }
 
 int

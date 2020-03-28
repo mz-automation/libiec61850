@@ -601,7 +601,7 @@ exit_free_struct:
 
 #if (MMS_GET_DATA_SET_ATTRIBUTES == 1)
 
-static void
+static bool
 createGetNamedVariableListAttributesResponse(int invokeId, ByteBuffer* response,
 		MmsNamedVariableList variableList)
 {
@@ -658,9 +658,14 @@ createGetNamedVariableListAttributesResponse(int invokeId, ByteBuffer* response,
 		variable = LinkedList_getNext(variable);
 	}
 
-	der_encode(&asn_DEF_MmsPdu, mmsPdu,	mmsServer_write_out, (void*) response);
+	asn_enc_rval_t res = der_encode(&asn_DEF_MmsPdu, mmsPdu, mmsServer_write_out, (void*) response);
 
 	asn_DEF_MmsPdu.free_struct(&asn_DEF_MmsPdu, mmsPdu, 0);
+
+	if (res.encoded == -1)
+	    return false;
+	else
+	    return true;
 }
 
 void
@@ -705,8 +710,18 @@ mmsServer_handleGetNamedVariableListAttributesRequest(
 			MmsNamedVariableList variableList =
 					MmsDomain_getNamedVariableList(domain, itemName);
 
-			if (variableList != NULL)
-				createGetNamedVariableListAttributesResponse(invokeId, response, variableList);
+			if (variableList != NULL) {
+
+			    int bufSize = ByteBuffer_getSize(response);
+
+				if (createGetNamedVariableListAttributesResponse(invokeId, response, variableList) == false) {
+
+				    /* encoding failed - probably because buffer size is too small for message */
+				    ByteBuffer_setSize(response, 0);
+
+				    mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_RESOURCE_OTHER);
+				}
+			}
 			else
 				mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
 		}

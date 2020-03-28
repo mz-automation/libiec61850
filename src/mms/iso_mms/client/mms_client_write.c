@@ -319,7 +319,6 @@ mmsClient_createWriteMultipleItemsRequest(uint32_t invokeId, const char* domainI
     asn_DEF_MmsPdu.free_struct(&asn_DEF_MmsPdu, mmsPdu, 0);
 
     return rval.encoded;
-
 }
 
 int
