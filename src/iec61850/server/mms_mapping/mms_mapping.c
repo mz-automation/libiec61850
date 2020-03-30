@@ -3076,9 +3076,10 @@ MmsMapping_stopEventWorkerThread(MmsMapping* self)
 
         self->reportThreadRunning = false;
 
-        Thread_destroy(self->reportWorkerThread);
-
-        self->reportWorkerThread = NULL;
+        if (self->reportWorkerThread) {
+            Thread_destroy(self->reportWorkerThread);
+            self->reportWorkerThread = NULL;
+        }
     }
 }
 #endif /* (CONFIG_MMS_THREADLESS_STACK != 1) */

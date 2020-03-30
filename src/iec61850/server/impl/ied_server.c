@@ -524,16 +524,6 @@ IedServer_destroy(IedServer self)
 
 #if ((CONFIG_MMS_SINGLE_THREADED == 1) && (CONFIG_MMS_THREADLESS_STACK == 0))
 
-    /* trigger stopping background task thread */
-    if (self->mmsMapping->reportThreadRunning) {
-        self->mmsMapping->reportThreadRunning = false;
-
-        /* waiting for thread to finish */
-        while (self->mmsMapping->reportThreadFinished == false) {
-            Thread_sleep(10);
-        }
-    }
-
     if (self->serverThread)
         Thread_destroy(self->serverThread);
 
@@ -599,8 +589,6 @@ singleThreadedServerThread(void* parameter)
 
     if (DEBUG_IED_SERVER)
         printf("IED_SERVER: server thread finished!\n");
-
-    mmsMapping->reportThreadFinished = true;
 }
 #endif /* (CONFIG_MMS_SINGLE_THREADED == 1) */
 #endif /* (CONFIG_MMS_THREADLESS_STACK != 1) */
@@ -614,7 +602,6 @@ IedServer_start(IedServer self, int tcpPort)
 #if (CONFIG_MMS_SINGLE_THREADED == 1)
         MmsServer_startListeningThreadless(self->mmsServer, tcpPort);
 
-        self->mmsMapping->reportThreadFinished = false;
         self->mmsMapping->reportThreadRunning = true;
 
         self->serverThread = Thread_create((ThreadExecutionFunction) singleThreadedServerThread, (void*) self, false);
