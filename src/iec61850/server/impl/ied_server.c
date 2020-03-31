@@ -517,17 +517,17 @@ IedServer_destroy(IedServer self)
 #endif
     }
 
-    MmsServer_destroy(self->mmsServer);
-
-    if (self->localIpAddress != NULL)
-        GLOBAL_FREEMEM(self->localIpAddress);
-
 #if ((CONFIG_MMS_SINGLE_THREADED == 1) && (CONFIG_MMS_THREADLESS_STACK == 0))
 
     if (self->serverThread)
         Thread_destroy(self->serverThread);
 
 #endif
+
+    MmsServer_destroy(self->mmsServer);
+
+    if (self->localIpAddress != NULL)
+        GLOBAL_FREEMEM(self->localIpAddress);
 
     MmsMapping_destroy(self->mmsMapping);
 
@@ -639,9 +639,10 @@ IedServer_stop(IedServer self)
         MmsMapping_stopEventWorkerThread(self->mmsMapping);
 
 #if (CONFIG_MMS_SINGLE_THREADED == 1)
-        MmsServer_stopListeningThreadless(self->mmsServer);
         Thread_destroy(self->serverThread);
         self->serverThread = NULL;
+
+        MmsServer_stopListeningThreadless(self->mmsServer);
 #else
         MmsServer_stopListening(self->mmsServer);
 #endif
