@@ -541,6 +541,8 @@ isoServerThread(void* isoServerParam)
         if (DEBUG_ISO_SERVER)
             printf("ISO_SERVER: starting server failed!\n");
 
+        self->serverSocket = NULL;
+
         goto cleanUp;
     }
 
@@ -556,8 +558,7 @@ isoServerThread(void* isoServerParam)
 
     self->state = ISO_SVR_STATE_STOPPED;
 
-    cleanUp:
-    self->serverSocket = NULL;
+cleanUp:
 
     if (DEBUG_ISO_SERVER)
         printf("ISO_SERVER: isoServerThread %p stopped\n", &isoServerParam);
@@ -758,10 +759,15 @@ IsoServer_stopListeningThreadless(IsoServer self)
 void
 IsoServer_stopListening(IsoServer self)
 {
-    stopListening(self);
+    setState(self, ISO_SVR_STATE_STOPPED);
 
     if (self->serverThread != NULL)
         Thread_destroy(self->serverThread);
+
+    if (self->serverSocket != NULL) {
+        ServerSocket_destroy((ServerSocket) self->serverSocket);
+        self->serverSocket = NULL;
+    }
 
     closeAllOpenClientConnections(self);
 
