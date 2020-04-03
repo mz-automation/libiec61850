@@ -1365,6 +1365,11 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
         }
     }
 
+    if ((rc->reserved) && (rc->clientConnection != connection)) {
+        retVal = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
+        goto exit_function;
+    }
+
     if (strcmp(elementName, "RptEna") == 0) {
 
         if (value->value.boolean == true) {
