@@ -1,3 +1,12 @@
+Changes to version 1.4.2.1
+--------------------------
+
+- IEC 61850 server: RCB - fixed problem that other client can "steal" reservation
+- MMS client: fixed bug in log entry parsing (#224)
+- IEC 61850 server: fixed potential null pointer dereference in multi-thread mode when server is stopped
+- IEC 61850 server: fixed bug in single threaded mode (windows)
+- IEC 61850 server: fixed compilation error in single thread mode (was new in release 1.4.2)
+
 Changes to version 1.4.2
 -------------------------
 
