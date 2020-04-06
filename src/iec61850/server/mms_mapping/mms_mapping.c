@@ -2753,31 +2753,34 @@ DataSet_isMemberValue(DataSet* dataSet, MmsValue* value, int* index)
 #if (CONFIG_IEC61850_LOG_SERVICE == 1)
 
 static bool
-DataSet_isMemberValueWithRef(DataSet* dataSet, MmsValue* value, char* dataRef, const char* iedName)
+DataSet_isMemberValueWithRef(DataSet* dataSet, MmsValue* value, char* dataRef, const char* iedName, int* index)
 {
     int i = 0;
 
-     DataSetEntry* dataSetEntry = dataSet->fcdas;
+    DataSetEntry* dataSetEntry = dataSet->fcdas;
 
-     while (dataSetEntry != NULL) {
+    while (dataSetEntry != NULL) {
 
-         MmsValue* dataSetValue = dataSetEntry->value;
+        MmsValue *dataSetValue = dataSetEntry->value;
 
-         if (dataSetValue != NULL) { /* prevent invalid data set members */
-             if (isMemberValueRecursive(dataSetValue, value)) {
-                 if (dataRef != NULL)
-                     sprintf(dataRef, "%s%s/%s", iedName, dataSetEntry->logicalDeviceName, dataSetEntry->variableName);
+        if (dataSetValue != NULL) { /* prevent invalid data set members */
+            if (isMemberValueRecursive(dataSetValue, value)) {
+                if (dataRef != NULL)
+                    sprintf(dataRef, "%s%s/%s", iedName, dataSetEntry->logicalDeviceName, dataSetEntry->variableName);
 
-                 return true;
-             }
-         }
+                if (index)
+                    *index = i;
 
-         i++;
+                return true;
+            }
+        }
 
-         dataSetEntry = dataSetEntry->sibling;
-     }
+        i++;
 
-     return false;
+        dataSetEntry = dataSetEntry->sibling;
+    }
+
+    return false;
 }
 
 void
@@ -2825,10 +2828,33 @@ MmsMapping_triggerLogging(MmsMapping* self, MmsValue* value, LogInclusionFlag fl
 
             char dataRef[130];
 
-            if (DataSet_isMemberValueWithRef(lc->dataSet, value, dataRef, self->model->name)) {
+            int dsEntryIdx = 0;
+
+            if (DataSet_isMemberValueWithRef(lc->dataSet, value, dataRef, self->model->name, &dsEntryIdx)) {
 
                 if (lc->logInstance != NULL) {
-                    LogInstance_logSingleData(lc->logInstance, dataRef, value, reasonCode);
+
+                    if (lc->dataSet) {
+
+                        DataSetEntry* dsEntry = lc->dataSet->fcdas;
+
+                        while (dsEntry && (dsEntryIdx > 0)) {
+                            dsEntry = dsEntry->sibling;
+
+                            if (dsEntry == NULL)
+                                break;
+
+                            dsEntryIdx--;
+                        }
+
+                        if (dsEntry) {
+                            MmsValue* dsValue = dsEntry->value;
+
+                            LogInstance_logSingleData(lc->logInstance, dataRef, dsValue, reasonCode);
+                        }
+
+                    }
+
                 }
                 else {
                     if (DEBUG_IED_SERVER)
