@@ -1290,9 +1290,9 @@ createMmsModelFromIedModel(MmsMapping* self, IedModel* iedModel)
 {
     MmsDevice* mmsDevice = NULL;
 
-    if (iedModel->firstChild != NULL) {
+    mmsDevice = MmsDevice_create(iedModel->name);
 
-        mmsDevice = MmsDevice_create(iedModel->name);
+    if (iedModel->firstChild != NULL) {
 
         int iedDeviceCount = IedModel_getLogicalDeviceCount(iedModel);
 
@@ -1352,7 +1352,7 @@ MmsMapping_destroy(MmsMapping* self)
 {
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
-    if (self->reportWorkerThread != NULL) {
+    if (self->reportWorkerThread) {
         self->reportThreadRunning = false;
         Thread_destroy(self->reportWorkerThread);
     }
@@ -2752,31 +2752,34 @@ DataSet_isMemberValue(DataSet* dataSet, MmsValue* value, int* index)
 #if (CONFIG_IEC61850_LOG_SERVICE == 1)
 
 static bool
-DataSet_isMemberValueWithRef(DataSet* dataSet, MmsValue* value, char* dataRef, const char* iedName)
+DataSet_isMemberValueWithRef(DataSet* dataSet, MmsValue* value, char* dataRef, const char* iedName, int* index)
 {
     int i = 0;
 
-     DataSetEntry* dataSetEntry = dataSet->fcdas;
+    DataSetEntry* dataSetEntry = dataSet->fcdas;
 
-     while (dataSetEntry != NULL) {
+    while (dataSetEntry != NULL) {
 
-         MmsValue* dataSetValue = dataSetEntry->value;
+        MmsValue *dataSetValue = dataSetEntry->value;
 
-         if (dataSetValue != NULL) { /* prevent invalid data set members */
-             if (isMemberValueRecursive(dataSetValue, value)) {
-                 if (dataRef != NULL)
-                     sprintf(dataRef, "%s%s/%s", iedName, dataSetEntry->logicalDeviceName, dataSetEntry->variableName);
+        if (dataSetValue != NULL) { /* prevent invalid data set members */
+            if (isMemberValueRecursive(dataSetValue, value)) {
+                if (dataRef != NULL)
+                    sprintf(dataRef, "%s%s/%s", iedName, dataSetEntry->logicalDeviceName, dataSetEntry->variableName);
 
-                 return true;
-             }
-         }
+                if (index)
+                    *index = i;
 
-         i++;
+                return true;
+            }
+        }
 
-         dataSetEntry = dataSetEntry->sibling;
-     }
+        i++;
 
-     return false;
+        dataSetEntry = dataSetEntry->sibling;
+    }
+
+    return false;
 }
 
 void
@@ -2824,10 +2827,33 @@ MmsMapping_triggerLogging(MmsMapping* self, MmsValue* value, LogInclusionFlag fl
 
             char dataRef[130];
 
-            if (DataSet_isMemberValueWithRef(lc->dataSet, value, dataRef, self->model->name)) {
+            int dsEntryIdx = 0;
+
+            if (DataSet_isMemberValueWithRef(lc->dataSet, value, dataRef, self->model->name, &dsEntryIdx)) {
 
                 if (lc->logInstance != NULL) {
-                    LogInstance_logSingleData(lc->logInstance, dataRef, value, reasonCode);
+
+                    if (lc->dataSet) {
+
+                        DataSetEntry* dsEntry = lc->dataSet->fcdas;
+
+                        while (dsEntry && (dsEntryIdx > 0)) {
+                            dsEntry = dsEntry->sibling;
+
+                            if (dsEntry == NULL)
+                                break;
+
+                            dsEntryIdx--;
+                        }
+
+                        if (dsEntry) {
+                            MmsValue* dsValue = dsEntry->value;
+
+                            LogInstance_logSingleData(lc->logInstance, dataRef, dsValue, reasonCode);
+                        }
+
+                    }
+
                 }
                 else {
                     if (DEBUG_IED_SERVER)
@@ -3044,7 +3070,6 @@ static void
 eventWorkerThread(MmsMapping* self)
 {
     bool running = true;
-    self->reportThreadFinished = false;
 
     while (running) {
 
@@ -3057,8 +3082,6 @@ eventWorkerThread(MmsMapping* self)
 
     if (DEBUG_IED_SERVER)
         printf("IED_SERVER: event worker thread finished!\n");
-
-    self->reportThreadFinished = true;
 }
 
 void
@@ -3078,8 +3101,10 @@ MmsMapping_stopEventWorkerThread(MmsMapping* self)
 
         self->reportThreadRunning = false;
 
-        while (self->reportThreadFinished == false)
-            Thread_sleep(1);
+        if (self->reportWorkerThread) {
+            Thread_destroy(self->reportWorkerThread);
+            self->reportWorkerThread = NULL;
+        }
     }
 }
 #endif /* (CONFIG_MMS_THREADLESS_STACK != 1) */

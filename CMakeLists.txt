@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.12)
 
 # automagically detect if we should cross-compile
 if(DEFINED ENV{TOOLCHAIN})
@@ -76,19 +76,15 @@ include_directories(
 )
 
 set(API_HEADERS
-	hal/inc/hal_base.h
+    hal/inc/hal_base.h
     hal/inc/hal_time.h
     hal/inc/hal_thread.h
     hal/inc/hal_filesystem.h
     hal/inc/hal_ethernet.h
     hal/inc/hal_socket.h
     hal/inc/tls_config.h
-    hal/inc/platform_endian.h
-    hal/inc/lib_memory.h
     src/common/inc/libiec61850_common_api.h
-    src/common/inc/libiec61850_platform_includes.h
     src/common/inc/linked_list.h
-    src/common/inc/string_utilities.h
     src/iec61850/inc/iec61850_client.h
     src/iec61850/inc/iec61850_common.h
     src/iec61850/inc/iec61850_server.h
@@ -173,3 +169,5 @@ if(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
 
     include(CPack)
 endif(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
+
+

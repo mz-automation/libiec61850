@@ -33,10 +33,12 @@ sigint_handler(int signalId)
 }
 
 static ControlHandlerResult
-controlHandlerForBinaryOutput(void* parameter, MmsValue* value, bool test)
+controlHandlerForBinaryOutput(ControlAction action, void* parameter, MmsValue* value, bool test)
 {
-    if (test)
+    if (test) {
+        printf("Received test command\n");
         return CONTROL_RESULT_FAILED;
+    }
 
     if (MmsValue_getType(value) == MMS_BOOLEAN) {
         printf("received binary control command: ");
@@ -148,7 +150,7 @@ main(int argc, char** argv)
 
     IedServer_setLogStorage(iedServer, "GenericIO/LLN0$EventLog", statusLog);
 
-#if 0
+#if 1
     uint64_t entryID = LogStorage_addEntry(statusLog, Hal_getTimeInMs());
 
     MmsValue* value = MmsValue_newIntegerFromInt32(123);

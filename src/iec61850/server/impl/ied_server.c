@@ -517,27 +517,17 @@ IedServer_destroy(IedServer self)
 #endif
     }
 
-    MmsServer_destroy(self->mmsServer);
-
-    if (self->localIpAddress != NULL)
-        GLOBAL_FREEMEM(self->localIpAddress);
-
 #if ((CONFIG_MMS_SINGLE_THREADED == 1) && (CONFIG_MMS_THREADLESS_STACK == 0))
-
-    /* trigger stopping background task thread */
-    if (self->mmsMapping->reportThreadRunning) {
-        self->mmsMapping->reportThreadRunning = false;
-
-        /* waiting for thread to finish */
-        while (self->mmsMapping->reportThreadFinished == false) {
-            Thread_sleep(10);
-        }
-    }
 
     if (self->serverThread)
         Thread_destroy(self->serverThread);
 
 #endif
+
+    MmsServer_destroy(self->mmsServer);
+
+    if (self->localIpAddress != NULL)
+        GLOBAL_FREEMEM(self->localIpAddress);
 
     MmsMapping_destroy(self->mmsMapping);
 
@@ -547,6 +537,18 @@ IedServer_destroy(IedServer self)
     Semaphore_destroy(self->dataModelLock);
     Semaphore_destroy(self->clientConnectionsLock);
 #endif
+
+#if (CONFIG_IEC61850_SUPPORT_SERVER_IDENTITY == 1)
+
+    if (self->vendorName)
+        GLOBAL_FREEMEM(self->vendorName);
+
+    if (self->modelName)
+        GLOBAL_FREEMEM(self->modelName);
+
+    if (self->revision)
+        GLOBAL_FREEMEM(self->revision);
+#endif /* (CONFIG_IEC61850_SUPPORT_SERVER_IDENTITY == 1) */
 
     GLOBAL_FREEMEM(self);
 }
@@ -587,8 +589,6 @@ singleThreadedServerThread(void* parameter)
 
     if (DEBUG_IED_SERVER)
         printf("IED_SERVER: server thread finished!\n");
-
-    mmsMapping->reportThreadFinished = true;
 }
 #endif /* (CONFIG_MMS_SINGLE_THREADED == 1) */
 #endif /* (CONFIG_MMS_THREADLESS_STACK != 1) */
@@ -602,7 +602,6 @@ IedServer_start(IedServer self, int tcpPort)
 #if (CONFIG_MMS_SINGLE_THREADED == 1)
         MmsServer_startListeningThreadless(self->mmsServer, tcpPort);
 
-        self->mmsMapping->reportThreadFinished = false;
         self->mmsMapping->reportThreadRunning = true;
 
         self->serverThread = Thread_create((ThreadExecutionFunction) singleThreadedServerThread, (void*) self, false);
@@ -640,9 +639,10 @@ IedServer_stop(IedServer self)
         MmsMapping_stopEventWorkerThread(self->mmsMapping);
 
 #if (CONFIG_MMS_SINGLE_THREADED == 1)
-        MmsServer_stopListeningThreadless(self->mmsServer);
         Thread_destroy(self->serverThread);
         self->serverThread = NULL;
+
+        MmsServer_stopListeningThreadless(self->mmsServer);
 #else
         MmsServer_stopListening(self->mmsServer);
 #endif
@@ -1525,6 +1525,28 @@ IedServer_setLogStorage(IedServer self, const char* logRef, LogStorage logStorag
 {
 #if (CONFIG_IEC61850_LOG_SERVICE == 1)
     MmsMapping_setLogStorage(self->mmsMapping, logRef, logStorage);
+#endif
+}
+
+void
+IedServer_setServerIdentity(IedServer self, const char* vendor, const char* model, const char* revision)
+{
+#if (CONFIG_IEC61850_SUPPORT_SERVER_IDENTITY == 1)
+
+    if (self->vendorName)
+        GLOBAL_FREEMEM(self->vendorName);
+
+    if (self->modelName)
+        GLOBAL_FREEMEM(self->modelName);
+
+    if (self->revision)
+        GLOBAL_FREEMEM(self->revision);
+
+    self->vendorName = StringUtils_copyString(vendor);
+    self->modelName = StringUtils_copyString(model);
+    self->revision = StringUtils_copyString(revision);
+
+    MmsServer_setServerIdentity(self->mmsServer, self->vendorName, self->modelName, self->revision);
 #endif
 }
 

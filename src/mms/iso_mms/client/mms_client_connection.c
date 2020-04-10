@@ -4334,15 +4334,20 @@ MmsConnection_writeMultipleVariablesAsync(MmsConnection self, MmsError* mmsError
 
     invokeId = getNextInvokeId(self);
 
-    mmsClient_createWriteMultipleItemsRequest(invokeId, domainId, items, values, payload);
+    if (mmsClient_createWriteMultipleItemsRequest(invokeId, domainId, items, values, payload) != -1) {
+        MmsClientInternalParameter intParam;
+        intParam.ptr = NULL;
 
-    MmsClientInternalParameter intParam;
-    intParam.ptr = NULL;
+        MmsError err = sendAsyncRequest(self, invokeId, payload, MMS_CALL_TYPE_WRITE_MULTIPLE_VARIABLES, handler, parameter, intParam);
 
-    MmsError err = sendAsyncRequest(self, invokeId, payload, MMS_CALL_TYPE_WRITE_MULTIPLE_VARIABLES, handler, parameter, intParam);
+        if (mmsError)
+            *mmsError = err;
+    }
+    else {
+        *mmsError = MMS_ERROR_RESOURCE_OTHER;
+        return 0;
+    }
 
-    if (mmsError)
-        *mmsError = err;
 
 exit_function:
     return invokeId;

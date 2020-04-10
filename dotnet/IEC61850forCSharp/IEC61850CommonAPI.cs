@@ -178,7 +178,7 @@ namespace IEC61850
 		/// </summary>
 		public class Quality
 		{
-			private UInt16 value;
+			private UInt16 value;		
 
 			private const UInt16 QUALITY_DETAIL_OVERFLOW = 4;
 			private const UInt16 QUALITY_DETAIL_OUT_OF_RANGE = 8;
@@ -192,6 +192,8 @@ namespace IEC61850
 			private const UInt16 QUALITY_TEST = 2048;
 			private const UInt16 QUALITY_OPERATOR_BLOCKED = 4096;
 			private const UInt16 QUALITY_DERIVED = 8192;
+
+			public ushort Value => value;
 
 			public override string ToString ()
 			{

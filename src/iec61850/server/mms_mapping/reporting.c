@@ -615,7 +615,7 @@ refreshIntegrityPeriod(ReportControl* rc)
     rc->intgPd = MmsValue_toUint32(intgPd);
 
     if (rc->buffered == false)
-        rc->nextIntgReportTime = 0;
+        rc->nextIntgReportTime = Hal_getTimeInMs() + rc->intgPd;
 }
 
 static void
@@ -1365,6 +1365,11 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
         }
     }
 
+    if ((rc->reserved) && (rc->clientConnection != connection)) {
+        retVal = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
+        goto exit_function;
+    }
+
     if (strcmp(elementName, "RptEna") == 0) {
 
         if (value->value.boolean == true) {
@@ -2104,14 +2109,14 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
 
     ReportBufferEntry* entry = (ReportBufferEntry*) entryBufPos;
 
+    entry->timeOfEntry = timeOfEntry;
+
     if (isBuffered) {
         /* ENTRY_ID is set to system time in ms! */
         uint64_t entryId = timeOfEntry;
 
         if (entryId <= reportControl->lastEntryId)
             entryId = reportControl->lastEntryId + 1;
-
-        entry->timeOfEntry = entryId;
 
     #if (ORDER_LITTLE_ENDIAN == 1)
         memcpyReverseByteOrder(entry->entryId, (uint8_t*) &entryId, 8);

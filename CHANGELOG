@@ -2,6 +2,41 @@ Changes to version 1.5.0
 ------------------------
 - IEC 61850 server: control models - allow delaying select response with check handler (new handler return value CONTROL_WAITING_FOR_SELECT)
 
+Changes to version 1.4.2.1
+--------------------------
+
+- IEC 61850 server: RCB - fixed problem that other client can "steal" reservation
+- MMS client: fixed bug in log entry parsing (#224)
+- IEC 61850 server: fixed potential null pointer dereference in multi-thread mode when server is stopped
+- IEC 61850 server: fixed bug in single threaded mode (windows)
+- IEC 61850 server: fixed compilation error in single thread mode (was new in release 1.4.2)
+
+Changes to version 1.4.2
+-------------------------
+
+- IEC 61850 server: wait for background thread termination before data model is released
+- MMS server: fixed potential crash when get-named-variable-list-attributes response doesn't fit in MMS PDU. Server returns service error in this case
+- IEC 61850 server: unbuffered reporting - send first integrity report after integrity timeout (before it was sent when the RCB was enabled)
+- IEC 61850 server: allow server to start without logical devices in data model (#218)
+- IEC 61850 client: fixed bug in ClientReportControlBlock - some allowed structures for RCB were rejected
+- IEC 61850 server: control - unselect when operate with wrong origin parameters, check if check parameter matches for SBO
+- IEC 61850 server: fixed missing report timestamp update for unbuffered reporting
+- IEC 618580 server: Added function IedServer_setServerIdentity to set values for MMS identity service
+- CDC helpers: added functions to create ISC and BAC CDCs
+- CDC helpers: added stSeld and attributes from ControlTestingCDC to control CDCs
+- CDC helper functions: added stSeld and attributes from ControlTestingCDC to control CDCs
+- updated cmake files
+- .NET API: fixed memory management issue in MmsValue.SetElement (see #213)
+- IEC 61850 server: unselect control when oper is not accepted
+- IEC 61850 server: send select-failed for control when origin parameter is not valid
+- IEC 61850 server: fixed control handling to comply with test case sCtl25
+- IEC 61850 server: fixed control handling to comply with test case sCtl11
+- IEC 61850 server: pass origin, ctlNum, ctlVal to select handler (perform check handler) for SBOw
+- removed internal header files from install target (#214)
+- .NET API: additional function mappings
+- TLS: fixed memory leak when TLS authentication fails
+- fixed bug in windows socket layer
+
 Changes to version 1.4.1
 ------------------------
 - MMS server: refactored connection handling; more efficient use of HandleSet

@@ -436,27 +436,33 @@ BerEncoder_encodeOIDToBuffer(const char* oidString, uint8_t* buffer, int maxBufL
 
         int requiredBytes = 0;
 
-        int val2 = val;
-        while (val2 > 0) {
-            requiredBytes++;
-            val2 = val2 >> 7;
+        if (val == 0) {
+            buffer[encodedBytes++] = 0;
+        }
+        else {
+            int val2 = val;
+            while (val2 > 0) {
+                requiredBytes++;
+                val2 = val2 >> 7;
+            }
+
+            while (requiredBytes > 0) {
+                val2 = val >> (7 * (requiredBytes - 1));
+
+                val2 = val2 & 0x7f;
+
+                if (requiredBytes > 1)
+                    val2 += 128;
+
+                if (encodedBytes == maxBufLen)
+                    return 0;
+
+                buffer[encodedBytes++] = (uint8_t) val2;
+
+                requiredBytes--;
+            }
         }
 
-        while (requiredBytes > 0) {
-            val2 = val >> (7 * (requiredBytes - 1));
-
-            val2 = val2 & 0x7f;
-
-            if (requiredBytes > 1)
-                val2 += 128;
-
-            if (encodedBytes == maxBufLen)
-                return 0;
-
-            buffer[encodedBytes++] = (uint8_t) val2;
-
-            requiredBytes--;
-        }
     }
 
     return encodedBytes;

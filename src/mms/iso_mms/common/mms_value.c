@@ -744,11 +744,13 @@ MmsValue_getUtcTimeQuality(const MmsValue* self)
 void
 MmsValue_setUtcTimeByBuffer(MmsValue* self, const uint8_t* buffer)
 {
-    uint8_t* valueArray = self->value.utcTime;
+    if (buffer) {
+        uint8_t* valueArray = self->value.utcTime;
 
-    int i;
-    for (i = 0; i < 8; i++) {
-        valueArray[i] = buffer[i];
+        int i;
+        for (i = 0; i < 8; i++) {
+            valueArray[i] = buffer[i];
+        }
     }
 }
 
@@ -2007,6 +2009,9 @@ MmsValue_printToBuffer(const MmsValue* self, char* buffer, int bufferSize)
         return buffer;
     }
 
+    if (bufferSize)
+        buffer[0] = 0;
+
     switch (MmsValue_getType(self))
     {
     case MMS_STRUCTURE:
@@ -2105,7 +2110,7 @@ MmsValue_printToBuffer(const MmsValue* self, char* buffer, int bufferSize)
         break;
 
     case MMS_INTEGER:
-        snprintf(buffer, bufferSize, "%i", MmsValue_toInt32(self));
+        snprintf(buffer, bufferSize, "%lld", (long long) MmsValue_toInt64(self));
         break;
 
     case MMS_OCTET_STRING:

@@ -1,7 +1,7 @@
 /*
  *  mms_server_common.c
  *
- *  Copyright 2013-2016 Michael Zillgith
+ *  Copyright 2013-2020 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -29,7 +29,15 @@ int
 mmsServer_write_out(const void *buffer, size_t size, void *app_key)
 {
     ByteBuffer* writeBuffer = (ByteBuffer*) app_key;
-    return ByteBuffer_append(writeBuffer, (uint8_t*) buffer, size);
+
+    int appendedBytes = ByteBuffer_append(writeBuffer, (uint8_t*) buffer, size);
+
+    if (appendedBytes == -1) {
+        if (DEBUG_MMS_SERVER)
+            printf("MMS_SERVER: message exceeds maximum PDU size!\n");
+    }
+
+    return appendedBytes;
 }
 
 MmsPdu_t*

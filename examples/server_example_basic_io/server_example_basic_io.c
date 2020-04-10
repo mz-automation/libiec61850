@@ -114,6 +114,9 @@ main(int argc, char** argv)
     /* configuration object is no longer required */
     IedServerConfig_destroy(config);
 
+    /* set the identity values for MMS identify service */
+    IedServer_setServerIdentity(iedServer, "MZ", "basic io", "1.4.2");
+
     /* Install handler for operate command */
     IedServer_setControlHandler(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO1,
             (ControlHandler) controlHandlerForBinaryOutput,

@@ -497,9 +497,31 @@ LIB61850_API DataObject*
 CDC_BSC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, uint32_t controlOptions, bool hasTransientIndicator);
 
 /**
+ * \brief Integer controlled step position information (ISC)
+ *
+ * CDC_OPTION_IS_TIME_ACTICATED
+ *
+ * substitution options
+ * CDC_OPTION_BLK_ENA
+ * standard description and namespace options
+ *
+ * \param dataObjectName the name of the new object
+ * \param parent the parent of the new data object (either a LogicalNode or another DataObject)
+ * \param options bit mask to encode required optional elements
+ * \param controlOptions specify which control model to set as default and other control specific options
+ * \param hasTransientIndicator specifies if the step position information contains the transient indicator
+ *
+ */
+LIB61850_API DataObject*
+CDC_ISC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, uint32_t controlOptions, bool hasTransientIndicator);
+
+/**
  * \brief Controllable analogue process value (APC)
  *
  * CDC_OPTION_IS_TIME_ACTICATED
+ *
+ * CDC_OPTION_MIN
+ * CDC_OPTION_MAX
  *
  * substitution options
  * CDC_OPTION_BLK_ENA
@@ -513,6 +535,28 @@ CDC_BSC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, 
  */
 LIB61850_API DataObject*
 CDC_APC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, uint32_t controlOptions, bool isIntegerNotFloat);
+
+/**
+ * \brief Binary controlled ananlogue process value (BAC)
+ *
+ * CDC_OPTION_IS_TIME_ACTICATED
+ *
+ * CDC_OPTION_MIN
+ * CDC_OPTION_MAX
+ * CDC_OPTION_STEP_SIZE
+ *
+ * substitution options
+ * CDC_OPTION_BLK_ENA
+ * standard description and namespace options
+ *
+ * \param dataObjectName the name of the new object
+ * \param parent the parent of the new data object (either a LogicalNode or another DataObject)
+ * \param options bit mask to encode required optional elements
+ * \param controlOptions specify which control model to set as default and other control specific options
+ * \param isIntegerNotFloat
+ */
+LIB61850_API DataObject*
+CDC_BAC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, uint32_t controlOptions, bool isIntegerNotFloat);
 
 /** Minimum measured value */
 #define CDC_OPTION_61400_MIN_MX_VAL (1 << 10)

@@ -33,7 +33,15 @@ int
 mmsClient_write_out(void *buffer, size_t size, void *app_key)
 {
     ByteBuffer* writeBuffer = (ByteBuffer*) app_key;
-    return ByteBuffer_append(writeBuffer, (uint8_t*) buffer, size);
+
+    int appendedBytes = ByteBuffer_append(writeBuffer, (uint8_t*) buffer, size);
+
+    if (appendedBytes == -1) {
+        if (DEBUG_MMS_CLIENT)
+            printf("MMS_CLIENT: message exceeds maximum PDU size!\n");
+    }
+
+    return appendedBytes;
 }
 
 

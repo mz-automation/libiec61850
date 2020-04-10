@@ -438,7 +438,8 @@ clientReportControlBlock_updateValues(ClientReportControlBlock self, MmsValue* v
         if (!checkElementType(values, 12, MMS_BINARY_TIME)) return false;
 
         if (rcbElementCount == 14) {
-            if (!checkElementType(values, 13, MMS_OCTET_STRING)) return false;
+            if (!checkElementType(values, 13, MMS_OCTET_STRING) && !checkElementType(values, 13, MMS_INTEGER))
+                return false;
         }
         else if (rcbElementCount == 15) {
             if (!checkElementType(values, 13, MMS_INTEGER)) return false;

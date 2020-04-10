@@ -61,6 +61,12 @@ struct sIedServer
     Thread serverThread;
 #endif
 
+#if (CONFIG_IEC61850_SUPPORT_SERVER_IDENTITY == 1)
+    char* vendorName;
+    char* modelName;
+    char* revision;
+#endif
+
     uint8_t edition;
 
     bool running;

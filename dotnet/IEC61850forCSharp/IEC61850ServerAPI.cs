@@ -837,6 +837,9 @@ namespace IEC61850
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern IntPtr ClientConnection_getPeerAddress(IntPtr self);
 
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr ClientConnection_getLocalAddress(IntPtr self);
+
 			internal IntPtr self;
 
 			internal ClientConnection (IntPtr self) {
@@ -849,6 +852,16 @@ namespace IEC61850
 
 				if (peerAddrPtr != IntPtr.Zero)
 					return Marshal.PtrToStringAnsi (peerAddrPtr);
+				else
+					return null;
+			}
+
+			public string GetLocalAddress()
+			{
+				IntPtr localAddrPtr = ClientConnection_getLocalAddress(self);
+
+				if (localAddrPtr != IntPtr.Zero)
+					return Marshal.PtrToStringAnsi(localAddrPtr);
 				else
 					return null;
 			}
@@ -1066,6 +1079,9 @@ namespace IEC61850
 			static extern bool IedServer_isRunning(IntPtr self);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern int IedServer_getNumberOfOpenConnections(IntPtr self);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern void IedServer_lockDataModel(IntPtr self);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
@@ -1098,7 +1114,10 @@ namespace IEC61850
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern void IedServer_updateQuality(IntPtr self, IntPtr dataAttribute, ushort value);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedServer_setServerIdentity(IntPtr self, string vendor, string model, string revision);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern IntPtr IedServer_getAttributeValue(IntPtr self, IntPtr dataAttribute);
 
 			[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -1372,12 +1391,36 @@ namespace IEC61850
 				internalConnectionHandler = null;
 			}
 
+            /// <summary>
+            /// Set the identify for the MMS identify service
+            /// </summary>
+            /// <param name="vendor">the IED vendor name</param>
+            /// <param name="model">the IED model name</param>
+            /// <param name="revision">the IED revision/version number</param>
+            public void SetServerIdentity(string vendor, string model, string revision)
+            {
+                IedServer_setServerIdentity(self, vendor, model, revision);
+            }
+
+            /// <summary>
+            /// Check if server is running (accepting client connections)
+            /// </summary>
+            /// <returns><c>true</c>, if running, <c>false</c> otherwise.</returns>
 			public bool IsRunning()
+            {
+                return IedServer_isRunning(self);
+            }
+
+			/// <summary>
+			/// Get number of open MMS connections
+			/// </summary>
+			/// <returns>the number of open and accepted MMS connections</returns>
+			public int GetNumberOfOpenConnections()
 			{
-				return IedServer_isRunning(self);
+				return IedServer_getNumberOfOpenConnections(self);
 			}
 
-			private ControlHandlerInfo GetControlHandlerInfo(DataObject controlObject)
+            private ControlHandlerInfo GetControlHandlerInfo(DataObject controlObject)
 			{
 				ControlHandlerInfo info;
 

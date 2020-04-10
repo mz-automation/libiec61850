@@ -1211,11 +1211,13 @@ ControlObject_sendLastApplError(ControlObject* self, MmsServerConnection connect
 }
 
 static void
-updateControlParameters(ControlObject* controlObject, MmsValue* ctlVal, MmsValue* ctlNum, MmsValue* origin)
+updateControlParameters(ControlObject* controlObject, MmsValue* ctlVal, MmsValue* ctlNum, MmsValue* origin, bool synchroCheck, bool interlockCheck)
 {
     MmsValue_update(controlObject->ctlVal, ctlVal);
     MmsValue_update(controlObject->ctlNum, ctlNum);
     MmsValue_update(controlObject->origin, origin);
+    controlObject->synchroCheck = synchroCheck;
+    controlObject->interlockCheck = interlockCheck;
 
     if (controlObject->ctlNumSt)
         MmsValue_update(controlObject->ctlNumSt, ctlNum);
@@ -1507,6 +1509,13 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
 
                 if (checkValidityOfOriginParameter(origin) == false) {
                     indication = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+
+                    ControlObject_sendLastApplError(controlObject, connection, "SBOw", CONTROL_ERROR_NO_ERROR,
+                            ADD_CAUSE_SELECT_FAILED, ctlNum, origin, true);
+
+                    if (DEBUG_IED_SERVER)
+                        printf("IED_SERVER: SBOw - invalid origin value\n");
+
                     goto free_and_return;
                 }
 
@@ -1519,12 +1528,8 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                 if (state != STATE_UNSELECTED) {
                     indication = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
 
-                    if (connection != controlObject->mmsConnection)
-                        ControlObject_sendLastApplError(controlObject, connection, "SBOw", CONTROL_ERROR_NO_ERROR,
-                                ADD_CAUSE_LOCKED_BY_OTHER_CLIENT, ctlNum, origin, true);
-                    else
-                        ControlObject_sendLastApplError(controlObject, connection, "SBOw", CONTROL_ERROR_NO_ERROR,
-                                ADD_CAUSE_OBJECT_ALREADY_SELECTED, ctlNum, origin, true);
+                    ControlObject_sendLastApplError(controlObject, connection, "SBOw", CONTROL_ERROR_NO_ERROR,
+                            ADD_CAUSE_OBJECT_ALREADY_SELECTED, ctlNum, origin, true);
 
                     if (DEBUG_IED_SERVER)
                         printf("IED_SERVER: SBOw - select failed!\n");
@@ -1536,10 +1541,12 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                     /* opRcvd must not be set here! */
 
                     bool interlockCheck = MmsValue_getBitStringBit(check, 1);
-
+                    bool synchroCheck = MmsValue_getBitStringBit(check, 0);
                     bool testCondition = MmsValue_getBoolean(test);
 
                     controlObject->addCauseValue = ADD_CAUSE_SELECT_FAILED;
+
+                    updateControlParameters(controlObject, ctlVal, ctlNum, origin, interlockCheck, synchroCheck);
 
                     if (controlObject->checkHandler != NULL) { /* perform operative tests */
 
@@ -1553,8 +1560,6 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
 
                     if (checkResult == CONTROL_ACCEPTED) {
                         selectObject(controlObject, currentTime, connection);
-
-                        updateControlParameters(controlObject, ctlVal, ctlNum, origin);
 
                         indication = DATA_ACCESS_ERROR_SUCCESS;
 
@@ -1609,6 +1614,15 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
 
         if (checkValidityOfOriginParameter(origin) == false) {
             indication = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+
+            if ((controlObject->ctlModel == 2) || (controlObject->ctlModel == 4)) {
+                ControlObject_sendLastApplError(controlObject, connection, "Oper",
+                        CONTROL_ERROR_NO_ERROR, ADD_CAUSE_INCONSISTENT_PARAMETERS,
+                            ctlNum, origin, true);
+
+                unselectObject(controlObject);
+            }
+
             goto free_and_return;
         }
 
@@ -1641,13 +1655,20 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                     indication = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
                     if (DEBUG_IED_SERVER)
                         printf("IED_SERVER: Oper - operate from wrong client connection!\n");
+
+                    ControlObject_sendLastApplError(controlObject, connection, "Oper", CONTROL_ERROR_NO_ERROR,
+                            ADD_CAUSE_LOCKED_BY_OTHER_CLIENT, ctlNum, origin, true);
+
                     goto free_and_return;
                 }
 
                 if (controlObject->ctlModel == 4) { /* select-before-operate with enhanced security */
                     if ((MmsValue_equals(ctlVal, controlObject->ctlVal) &&
                          MmsValue_equals(origin, controlObject->origin) &&
-                         MmsValue_equals(ctlNum, controlObject->ctlNum)) == false)
+                         MmsValue_equals(ctlNum, controlObject->ctlNum) &&
+                         (controlObject->interlockCheck == interlockCheck) &&
+                         (controlObject->synchroCheck == synchroCheck)
+                         ) == false)
                     {
 
                         indication = DATA_ACCESS_ERROR_TYPE_INCONSISTENT;
@@ -1655,12 +1676,14 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                                 CONTROL_ERROR_NO_ERROR, ADD_CAUSE_INCONSISTENT_PARAMETERS,
                                     ctlNum, origin, true);
 
+                        unselectObject(controlObject);
+
                         goto free_and_return;
                     }
                 }
             }
 
-            updateControlParameters(controlObject, ctlVal, ctlNum, origin);
+            updateControlParameters(controlObject, ctlVal, ctlNum, origin, synchroCheck, interlockCheck);
 
             MmsValue* operTm = getOperParameterOperTime(value);
 
@@ -1738,6 +1761,9 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                     setOpRcvd(controlObject, false);
 
                     abortControlOperation(controlObject);
+
+                    if ((controlObject->ctlModel == 2) || (controlObject->ctlModel == 4))
+                        unselectObject(controlObject);
                 }
             }
 
@@ -1783,6 +1809,9 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                             CONTROL_ERROR_NO_ERROR, ADD_CAUSE_LOCKED_BY_OTHER_CLIENT,
                                 ctlNum, origin, true);
                 }
+            }
+            else {
+                indication = DATA_ACCESS_ERROR_SUCCESS;
             }
         }
 
