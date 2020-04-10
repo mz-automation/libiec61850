@@ -2007,6 +2007,9 @@ MmsValue_printToBuffer(const MmsValue* self, char* buffer, int bufferSize)
         return buffer;
     }
 
+    if (bufferSize)
+        buffer[0] = 0;
+
     switch (MmsValue_getType(self))
     {
     case MMS_STRUCTURE:
