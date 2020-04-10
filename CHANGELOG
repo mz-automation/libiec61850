@@ -1,5 +1,6 @@
 Changes to version 1.5.0
 ------------------------
+- added support for time with ns resolution
 - IEC 61850 server: control models - allow delaying select response with check handler (new handler return value CONTROL_WAITING_FOR_SELECT)
 
 Changes to version 1.4.2.1
