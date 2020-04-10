@@ -744,11 +744,13 @@ MmsValue_getUtcTimeQuality(const MmsValue* self)
 void
 MmsValue_setUtcTimeByBuffer(MmsValue* self, const uint8_t* buffer)
 {
-    uint8_t* valueArray = self->value.utcTime;
+    if (buffer) {
+        uint8_t* valueArray = self->value.utcTime;
 
-    int i;
-    for (i = 0; i < 8; i++) {
-        valueArray[i] = buffer[i];
+        int i;
+        for (i = 0; i < 8; i++) {
+            valueArray[i] = buffer[i];
+        }
     }
 }
 

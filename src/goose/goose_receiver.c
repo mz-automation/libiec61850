@@ -650,7 +650,15 @@ parseGoosePayload(GooseReceiver self, uint8_t* buffer, int apduLength)
             matchingSubscriber->confRev = confRev;
             matchingSubscriber->ndsCom = ndsCom;
             matchingSubscriber->simulation = simulation;
-            MmsValue_setUtcTimeByBuffer(matchingSubscriber->timestamp, timestampBufPos);
+
+            if (timestampBufPos)
+                MmsValue_setUtcTimeByBuffer(matchingSubscriber->timestamp, timestampBufPos);
+            else {
+                if (DEBUG_GOOSE_SUBSCRIBER)
+                    printf("GOOSE_SUBSCRIBER: GOOSE message has no time stamp\n");
+
+                MmsValue_setUtcTime(matchingSubscriber->timestamp, 0);
+            }
 
             if (matchingSubscriber->dataSetValues == NULL)
                 matchingSubscriber->dataSetValues = parseAllDataUnknownValue(matchingSubscriber, dataSetBufferAddress, dataSetBufferLength, false);
