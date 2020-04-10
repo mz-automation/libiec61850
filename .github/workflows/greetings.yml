@@ -1,0 +1,12 @@
+name: Greetings
+
+on: [pull_request, issues]
+
+jobs:
+  greeting:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/first-interaction@v1
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        pr-message: 'Push requests and other code contributions can only be accepted from authorized persons that have signed our contributor license agreement(CLA). When in doubt please write to info@libiec61850.com.'
