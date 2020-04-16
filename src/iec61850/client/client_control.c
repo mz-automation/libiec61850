@@ -991,6 +991,8 @@ internalSelectHandler(uint32_t invokeId, void* parameter, MmsError err, MmsValue
         if (DEBUG_IED_CLIENT)
             printf("IED_CLIENT: internal error - no matching outstanding call!\n");
     }
+
+    MmsValue_delete(value);
 }
 
 uint32_t
