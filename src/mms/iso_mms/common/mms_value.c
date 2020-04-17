@@ -258,6 +258,13 @@ MmsValue_update(MmsValue* self, const MmsValue* update)
         case MMS_BIT_STRING:
             if (self->value.bitString.size == update->value.bitString.size)
                 memcpy(self->value.bitString.buf, update->value.bitString.buf, bitStringByteSize(self));
+            else if (update->value.bitString.size < self->value.bitString.size) {
+                int i;
+
+                for (i = 0; i < update->value.bitString.size; i++) {
+                    MmsValue_setBitStringBit(self, i, MmsValue_getBitStringBit(update, i));
+                }
+            }
             else
                 return false;
             break;
