@@ -431,6 +431,11 @@ Socket_connectAsync(Socket self, const char* address, int port)
     if (connect(self->fd, (struct sockaddr *) &serverAddress, sizeof(serverAddress)) < 0) {
 
         if (errno != EINPROGRESS) {
+            if (close(self->fd) == -1) {
+                if (DEBUG_SOCKET)
+                    printf("SOCKET: failed to close socket (errno: %i)\n", errno);
+            }
+
             self->fd = -1;
             return false;
         }

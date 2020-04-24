@@ -386,6 +386,7 @@ Socket_connectAsync(Socket self, const char* address, int port)
 
     if (connect(self->fd, (struct sockaddr *) &serverAddress, sizeof(serverAddress)) == SOCKET_ERROR) {
         if (WSAGetLastError() != WSAEWOULDBLOCK) {
+            closesocket(self->fd);
             self->fd = INVALID_SOCKET;
             return false;
         }
