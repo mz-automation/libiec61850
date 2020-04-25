@@ -54,7 +54,7 @@ connectionIndicationHandler(IedServer server, ClientConnection connection, bool 
 }
 
 static CheckHandlerResult
-performCheckHandler(void* parameter, MmsValue* ctlVal, bool test, bool interlockCheck, ClientConnection connection)
+performCheckHandler(ControlAction action, void* parameter, MmsValue* ctlVal, bool test, bool interlockCheck, ClientConnection connection)
 {
     if (controllingClient == NULL) {
         printf("Client takes control -> switch to remote control operation mode\n");
@@ -101,7 +101,7 @@ updateLED3stVal(bool newLedState, uint64_t timeStamp) {
 }
 
 static ControlHandlerResult
-controlHandlerForBinaryOutput(void* parameter, MmsValue* value, bool test)
+controlHandlerForBinaryOutput(ControlAction action, void* parameter, MmsValue* value, bool test)
 {
     if (test)
         return CONTROL_RESULT_OK;
@@ -151,7 +151,7 @@ static int ledOffTimeMs = 1000;
 static int32_t opCnt = 0;
 
 static ControlHandlerResult
-controlHandlerForInt32Controls(void* parameter, MmsValue* value, bool test)
+controlHandlerForInt32Controls(ControlAction action, void* parameter, MmsValue* value, bool test)
 {
 	if (test)
 		return CONTROL_RESULT_OK;

@@ -88,7 +88,7 @@ clientAuthenticator(void* parameter, AcseAuthenticationParameter authParameter, 
 }
 
 static CheckHandlerResult
-performCheckHandler (void* parameter, MmsValue* ctlVal, bool test, bool interlockCheck, ClientConnection connection)
+performCheckHandler (ControlAction action, void* parameter, MmsValue* ctlVal, bool test, bool interlockCheck, ClientConnection connection)
 {
     void* securityToken = ClientConnection_getSecurityToken(connection);
 
@@ -99,7 +99,7 @@ performCheckHandler (void* parameter, MmsValue* ctlVal, bool test, bool interloc
 }
 
 static void
-controlHandlerForBinaryOutput(void* parameter, MmsValue* value, bool test)
+controlHandlerForBinaryOutput(ControlAction action, void* parameter, MmsValue* value, bool test)
 {
     MmsValue* timeStamp = MmsValue_newUtcTimeByMsTime(Hal_getTimeInMs());
 

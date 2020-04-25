@@ -26,7 +26,7 @@ sigint_handler(int signalId)
 }
 
 static ControlHandlerResult
-controlHandlerForBinaryOutput(void* parameter, MmsValue* value, bool test)
+controlHandlerForBinaryOutput(ControlAction action, void* parameter, MmsValue* value, bool test)
 {
     if (test)
         return CONTROL_RESULT_FAILED;

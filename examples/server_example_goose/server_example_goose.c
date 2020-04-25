@@ -26,7 +26,7 @@ void sigint_handler(int signalId)
 }
 
 void
-controlHandlerForBinaryOutput(void* parameter, MmsValue* value)
+controlHandlerForBinaryOutput(ControlAction action, void* parameter, MmsValue* value)
 {
     uint64_t timestamp = Hal_getTimeInMs();
 
