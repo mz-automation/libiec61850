@@ -43,7 +43,7 @@ void sigint_handler(int signalId)
 
 
 bool
-controlHandlerForIntegerOutput(void* parameter, MmsValue* value, bool test)
+controlHandlerForIntegerOutput(ControlAction action, void* parameter, MmsValue* value, bool test)
 {
     if (MmsValue_getType(value) != MMS_INTEGER)
         return false;
