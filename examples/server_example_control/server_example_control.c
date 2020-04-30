@@ -27,6 +27,15 @@ sigint_handler(int signalId)
 static CheckHandlerResult
 checkHandler(ControlAction action, void* parameter, MmsValue* ctlVal, bool test, bool interlockCheck)
 {
+    ClientConnection clientCon = ControlAction_getClientConnection(action);
+
+    if (clientCon) {
+        printf("Control from client %s\n", ClientConnection_getPeerAddress(clientCon));
+    }
+    else {
+        printf("clientCon == NULL\n");
+    }
+
     if (ControlAction_isSelect(action))
         printf("check handler called by select command!\n");
     else
@@ -62,6 +71,15 @@ controlHandlerForBinaryOutput(ControlAction action, void* parameter, MmsValue* v
 
     printf("control handler called\n");
     printf("  ctlNum: %i\n", ControlAction_getCtlNum(action));
+
+    ClientConnection clientCon = ControlAction_getClientConnection(action);
+
+    if (clientCon) {
+        printf("Control from client %s\n", ClientConnection_getPeerAddress(clientCon));
+    }
+    else {
+        printf("clientCon == NULL!\n");
+    }
 
     if (parameter == IEDMODEL_GenericIO_GGIO1_SPCSO1) {
         IedServer_updateUTCTimeAttributeValue(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO1_t, timestamp);
