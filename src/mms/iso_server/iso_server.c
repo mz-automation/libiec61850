@@ -187,12 +187,11 @@ removeClientConnection(IsoServer self, IsoConnection connection)
 {
 #if (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS == -1)
 
-
-#if (CONFIG_MMS_SINGLE_THREADED == 0)
-
     LinkedList_remove(self->openClientConnections, connection);
 
-#endif /* (CONFIG_MMS_SINGLE_THREADED == 0) */
+#if (CONFIG_MMS_SINGLE_THREADED == 1)
+    IsoConnection_removeFromHandleSet(connection, self->handleset);
+#endif
 
 
 #else
@@ -226,7 +225,8 @@ removeTerminatedConnections(IsoServer self, bool isSingleThread)
 #if (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS == -1)
 
     LinkedList openConnection = LinkedList_getNext(self->openClientConnections);
-    while (openConnection != NULL) {
+
+    while (openConnection) {
         IsoConnection isoConnection = (IsoConnection) openConnection->data;
 
         if (isSingleThread) {
@@ -335,6 +335,7 @@ callTickHandlerForClientConnections(IsoServer self)
 #if (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS == -1)
 
     LinkedList openConnection = LinkedList_getNext(self->openClientConnections);
+
     while (openConnection != NULL) {
         IsoConnection isoConnection = (IsoConnection) openConnection->data;
 
@@ -376,13 +377,6 @@ handleClientConnections(IsoServer self)
 
         if (IsoConnection_isRunning(isoConnection))
             IsoConnection_handleTcpConnection(isoConnection, true);
-        else {
-            IsoConnection_destroy(isoConnection);
-
-            lastConnection->next = openConnection->next;
-
-            GLOBAL_FREEMEM(openConnection);
-        }
 
         openConnection = LinkedList_getNext(openConnection);
     }
@@ -390,6 +384,8 @@ handleClientConnections(IsoServer self)
 #if (CONFIG_MMS_THREADLESS_STACK != 1) && (CONFIG_MMS_SINGLE_THREADED == 0)
     unlockClientConnections(self);
 #endif
+
+    removeTerminatedConnections(self, true);
 
 #else
 
