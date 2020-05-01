@@ -1336,6 +1336,7 @@ Control_readAccessControlObject(MmsMapping* self, MmsDomain* domain, char* varia
                             /* opRcvd must not be set here! */
 
                             controlObject->addCauseValue = ADD_CAUSE_UNKNOWN;
+                            controlObject->mmsConnection = connection;
 
                             if (controlObject->checkHandler != NULL) { /* perform operative tests */
 
@@ -1552,6 +1553,8 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
 
                         controlObject->isSelect = 1;
 
+                        controlObject->mmsConnection = connection;
+
                         checkResult = controlObject->checkHandler((ControlAction) controlObject,
                                 controlObject->checkHandlerParameter, ctlVal, testCondition, interlockCheck);
 
@@ -1583,6 +1586,8 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
 
                         ControlObject_sendLastApplError(controlObject, connection, "SBOw", 0,
                                 controlObject->addCauseValue, ctlNum, origin, true);
+
+                        controlObject->mmsConnection = NULL;
 
                         if (DEBUG_IED_SERVER)
                             printf("IED_SERVER: SBOw - select rejected by application!\n");
@@ -1704,7 +1709,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
 
                     }
 
-                    if(checkResult == CONTROL_ACCEPTED){
+                    if (checkResult == CONTROL_ACCEPTED) {
                         initiateControlTask(controlObject);
 
                         setState(controlObject, STATE_WAIT_FOR_ACTIVATION_TIME);
@@ -1714,7 +1719,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
 
                         indication = DATA_ACCESS_ERROR_SUCCESS;
                     }
-                    else{
+                    else {
                         indication = (MmsDataAccessError) checkResult;
                     }
                 }
@@ -1733,6 +1738,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                 setOpRcvd(controlObject, true);
 
                 controlObject->addCauseValue = ADD_CAUSE_UNKNOWN;
+                controlObject->mmsConnection = connection;
 
                 if (controlObject->checkHandler != NULL) { /* perform operative tests */
 
