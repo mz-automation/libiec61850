@@ -370,7 +370,6 @@ handleClientConnections(IsoServer self)
 #endif
 
     LinkedList openConnection = LinkedList_getNext(self->openClientConnections);
-    LinkedList lastConnection = self->openClientConnections;
 
     while (openConnection != NULL) {
         IsoConnection isoConnection = (IsoConnection) openConnection->data;
