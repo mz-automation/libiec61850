@@ -54,6 +54,7 @@ struct sControlObject
     unsigned operateOnce:1;
     unsigned isSelect:1;
     ControlAddCause addCauseValue:6;
+    unsigned errorValue:2;
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore stateLock;

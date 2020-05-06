@@ -34,11 +34,6 @@
 #define DEBUG_IED_SERVER 0
 #endif
 
-#define CONTROL_ERROR_NO_ERROR 0
-#define CONTROL_ERROR_UNKOWN 1
-#define CONTROL_ERROR_TIMEOUT_TEST 2
-#define CONTROL_ERROR_OPERATOR_TEST 3
-
 #define STATE_UNSELECTED 0
 #define STATE_READY 1
 #define STATE_WAIT_FOR_ACTIVATION_TIME 2
@@ -261,6 +256,7 @@ operateControl(ControlObject* self, MmsValue* value, uint64_t currentTime, bool 
 {
     self->selectTime = currentTime;
 
+    self->errorValue = CONTROL_ERROR_NO_ERROR;
     self->addCauseValue = ADD_CAUSE_UNKNOWN;
 
     if (self->operateHandler != NULL)
@@ -289,6 +285,7 @@ executeStateMachine:
         if (state == STATE_WAIT_FOR_ACTIVATION_TIME)
            isTimeActivatedControl = true;
 
+        self->errorValue = CONTROL_ERROR_NO_ERROR;
         self->addCauseValue = ADD_CAUSE_BLOCKED_BY_SYNCHROCHECK;
 
         if (self->waitForExecutionHandler != NULL) {
@@ -299,7 +296,7 @@ executeStateMachine:
         if (dynamicCheckResult == CONTROL_RESULT_FAILED) {
             if (isTimeActivatedControl) {
                 ControlObject_sendLastApplError(self, self->mmsConnection, "Oper",
-                        CONTROL_ERROR_NO_ERROR, self->addCauseValue,
+                        self->errorValue, self->addCauseValue,
                         self->ctlNum, self->origin, false);
             }
             else
@@ -801,6 +798,7 @@ Control_processControlActions(MmsMapping* self, uint64_t currentTimeInMs)
 
                 if (controlObject->checkHandler != NULL) { /* perform operative tests */
 
+                    controlObject->errorValue = CONTROL_ERROR_NO_ERROR;
                     controlObject->addCauseValue = ADD_CAUSE_BLOCKED_BY_INTERLOCKING;
 
                     checkResult = controlObject->checkHandler((ControlAction) self,
@@ -821,7 +819,7 @@ Control_processControlActions(MmsMapping* self, uint64_t currentTimeInMs)
                 else {
 
                     ControlObject_sendLastApplError(controlObject, controlObject->mmsConnection, "Oper",
-                            CONTROL_ERROR_NO_ERROR, controlObject->addCauseValue,
+                            controlObject->errorValue, controlObject->addCauseValue,
                                 controlObject->ctlNum, controlObject->origin, false);
 
                     /* leave state Perform Test */
@@ -1058,7 +1056,7 @@ ControlObject_sendCommandTerminationNegative(ControlObject* self)
 
     MmsValue_setElement(lastApplError, 0, ctlObjValue);
 
-    MmsValue_setInt32(self->error, CONTROL_ERROR_UNKOWN);
+    MmsValue_setInt32(self->error, self->errorValue);
     MmsValue_setInt32(self->addCause, self->addCauseValue);
 
     MmsValue_setElement(lastApplError, 1, self->error);
@@ -1502,7 +1500,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                     else {
                         indication = (MmsDataAccessError) checkResult;
 
-                        ControlObject_sendLastApplError(controlObject, connection, "SBOw", 0,
+                        ControlObject_sendLastApplError(controlObject, connection, "SBOw", controlObject->errorValue,
                                 controlObject->addCauseValue, ctlNum, origin, true);
 
                         controlObject->mmsConnection = NULL;
@@ -1749,6 +1747,14 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
 free_and_return:
 
     return indication;
+}
+
+void
+ControlAction_setError(ControlAction self, ControlLastApplError error)
+{
+    ControlObject* controlObject = (ControlObject*) self;
+
+    controlObject->errorValue = error;
 }
 
 void
