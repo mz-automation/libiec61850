@@ -220,6 +220,21 @@ typedef enum {
 /** @} */
 
 /**
+ * @defgroup CONTROL_LAST_APPL_ERROR Definition for LastAppError error type - used in control models
+ *
+ * @{
+ */
+
+typedef enum {
+    CONTROL_ERROR_NO_ERROR = 0,
+    CONTROL_ERROR_UNKNOWN = 1,
+    CONTROL_ERROR_TIMEOUT_TEST = 2,
+    CONTROL_ERROR_OPERATOR_TEST = 3
+} ControlLastApplError;
+
+/** @} */
+
+/**
  * @defgroup FUNCTIONAL_CONSTRAINTS Definitions and functions related to functional constraints (FCs)
  *
  * @{

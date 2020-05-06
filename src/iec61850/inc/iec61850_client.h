@@ -64,7 +64,7 @@ typedef struct sIedConnection* IedConnection;
 typedef struct
 {
     int ctlNum;
-    int error;
+    ControlLastApplError error;
     ControlAddCause addCause;
 } LastApplError;
 

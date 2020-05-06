@@ -1179,6 +1179,15 @@ typedef enum {
 typedef void* ControlAction;
 
 /**
+ * \brief Sets the error code for the next command termination or application error message
+ *
+ * \param self the control action instance
+ * \param error the error code
+ */
+LIB61850_API void
+ControlAction_setError(ControlAction self, ControlLastApplError error);
+
+/**
  * \brief Sets the add cause for the next command termination or application error message
  *
  * \param self the control action instance
