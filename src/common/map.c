@@ -142,18 +142,20 @@ Map_deleteStatic(Map map, bool deleteKey)
 }
 
 void
-Map_deleteDeep(Map map, bool deleteKey, void
-(*valueDeleteFunction)(void*))
+Map_deleteDeep(Map map, bool deleteKey, void (*valueDeleteFunction)(void*))
 {
-    LinkedList element = map->entries;
+    if (map) {
+        LinkedList element = map->entries;
 
-    while ((element = LinkedList_getNext(element)) != NULL) {
-        MapEntry* entry = (MapEntry*) element->data;
-        if (deleteKey == true)
-            GLOBAL_FREEMEM(entry->key);
-        valueDeleteFunction(entry->value);
+        while ((element = LinkedList_getNext(element)) != NULL) {
+            MapEntry* entry = (MapEntry*) element->data;
+            if (deleteKey == true)
+                GLOBAL_FREEMEM(entry->key);
+            valueDeleteFunction(entry->value);
+        }
+
+        LinkedList_destroy(map->entries);
+
+        GLOBAL_FREEMEM(map);
     }
-
-    LinkedList_destroy(map->entries);
-    GLOBAL_FREEMEM(map);
 }

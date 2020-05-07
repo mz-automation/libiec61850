@@ -46,6 +46,12 @@ MmsServer_create(MmsDevice* device, TLSConfiguration tlsConfiguration);
 LIB61850_INTERNAL void
 MmsServer_destroy(MmsServer self);
 
+/**
+ * \brief Add a new passive access point to the server
+ */
+LIB61850_INTERNAL bool
+MmsServer_addAP(MmsServer self, const char* ipAddr, int tcpPort, TLSConfiguration tlsConfiguration);
+
 LIB61850_INTERNAL void
 MmsServer_installReadHandler(MmsServer self, MmsReadVariableHandler,
         void* parameter);

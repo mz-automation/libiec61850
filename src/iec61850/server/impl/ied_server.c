@@ -696,6 +696,17 @@ IedServer_processIncomingData(IedServer self)
     MmsServer_handleIncomingMessages(self->mmsServer);
 }
 
+bool
+IedServer_addAccessPoint(IedServer self, const char* ipAddr, int tcpPort, TLSConfiguration tlsConfiguration)
+{
+    if (self->mmsServer) {
+        return MmsServer_addAP(self->mmsServer, ipAddr, tcpPort, tlsConfiguration);
+    }
+    else {
+        return false;
+    }
+}
+
 void
 IedServer_stopThreadless(IedServer self)
 {

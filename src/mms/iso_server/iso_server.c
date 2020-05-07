@@ -70,7 +70,7 @@ struct sIsoServer {
 
     Socket serverSocket;
     int tcpPort;
-    const char* localIpAddress;
+    char* localIpAddress;
 
     TLSConfiguration tlsConfiguration;
 
@@ -565,33 +565,35 @@ IsoServer_create(TLSConfiguration tlsConfiguration)
 {
     IsoServer self = (IsoServer) GLOBAL_CALLOC(1, sizeof(struct sIsoServer));
 
-    self->state = ISO_SVR_STATE_IDLE;
+    if (self) {
+        self->state = ISO_SVR_STATE_IDLE;
 
-    if (tlsConfiguration == NULL)
-        self->tcpPort = TCP_PORT;
-    else
-        self->tcpPort = SECURE_TCP_PORT;
+        if (tlsConfiguration == NULL)
+            self->tcpPort = TCP_PORT;
+        else
+            self->tcpPort = SECURE_TCP_PORT;
 
-    self->tlsConfiguration = tlsConfiguration;
+        self->tlsConfiguration = tlsConfiguration;
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
-    self->stateLock = Semaphore_create(1);
+        self->stateLock = Semaphore_create(1);
 #endif
 
 #if (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS == -1)
-    self->openClientConnections = LinkedList_create();
+        self->openClientConnections = LinkedList_create();
 #endif
 
 #if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
-    self->maxConnections = CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS;
+        self->maxConnections = CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS;
 #endif
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1) && (CONFIG_MMS_SINGLE_THREADED == 0)
-    self->connectionCounterMutex = Semaphore_create(1);
-    self->openClientConnectionsMutex = Semaphore_create(1);
+        self->connectionCounterMutex = Semaphore_create(1);
+        self->openClientConnectionsMutex = Semaphore_create(1);
 #endif /* (CONFIG_MMS_THREADLESS_STACK != 1) */
 
-    self->connectionCounter = 0;
+        self->connectionCounter = 0;
+    }
 
     return self;
 }
@@ -613,7 +615,12 @@ IsoServer_setTcpPort(IsoServer self, int port)
 void
 IsoServer_setLocalIpAddress(IsoServer self, const char* ipAddress)
 {
-	self->localIpAddress = ipAddress;
+    GLOBAL_FREEMEM(self->localIpAddress);
+
+    if (ipAddress)
+        self->localIpAddress = StringUtils_copyString(ipAddress);
+    else
+        self->localIpAddress = NULL;
 }
 
 IsoServerState
@@ -795,41 +802,45 @@ IsoServer_setConnectionHandler(IsoServer self, ConnectionIndicationHandler handl
 void
 IsoServer_destroy(IsoServer self)
 {
+    if (self) {
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
-    if (self->state == ISO_SVR_STATE_RUNNING)
-        IsoServer_stopListening(self);
+        if (self->state == ISO_SVR_STATE_RUNNING)
+            IsoServer_stopListening(self);
 #endif
 
 #if (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS == -1)
 
 #if (CONFIG_MMS_SINGLE_THREADED == 1)
-    if (self->openClientConnections != NULL)
-        LinkedList_destroy(self->openClientConnections);
+        if (self->openClientConnections != NULL)
+            LinkedList_destroy(self->openClientConnections);
 #else
-    if (self->openClientConnections != NULL)
-        LinkedList_destroyStatic(self->openClientConnections);
+        if (self->openClientConnections != NULL)
+            LinkedList_destroyStatic(self->openClientConnections);
 #endif /* (CONFIG_MMS_SINGLE_THREADED == 1) */
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1) && (CONFIG_MMS_SINGLE_THREADED == 0)
-    lockClientConnections(self);
+        lockClientConnections(self);
 #endif
 
 #endif /* (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS == -1) */
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1) && (CONFIG_MMS_SINGLE_THREADED == 0)
-    Semaphore_destroy(self->connectionCounterMutex);
-    Semaphore_destroy(self->openClientConnectionsMutex);
+        Semaphore_destroy(self->connectionCounterMutex);
+        Semaphore_destroy(self->openClientConnectionsMutex);
 #endif
 
-    if (self->handleset)
-        Handleset_destroy(self->handleset);
+        if (self->handleset)
+            Handleset_destroy(self->handleset);
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
-    Semaphore_destroy(self->stateLock);
+        Semaphore_destroy(self->stateLock);
 #endif
 
-    GLOBAL_FREEMEM(self);
+        GLOBAL_FREEMEM(self->localIpAddress);
+
+        GLOBAL_FREEMEM(self);
+    }
 }
 
 void

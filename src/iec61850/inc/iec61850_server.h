@@ -339,6 +339,19 @@ LIB61850_API void
 IedServer_destroy(IedServer self);
 
 /**
+ * \brief Add a new local access point (server will listen to provided IP/port combination)
+ *
+ * \param self the instance of IedServer to operate on.
+ * \param ipAddr the local IP address to listen on
+ * \param tcpPort the local TCP port to listen on or -1 to use the standard TCP port
+ * \oaram tlsConfiguration the TLS configuration or NULL when TLS is not used for this access point
+ *
+ * \return true in case of success, false otherwise
+ */
+LIB61850_API bool
+IedServer_addAccessPoint(IedServer self, const char* ipAddr, int tcpPort, TLSConfiguration tlsConfiguration);
+
+/**
  * \brief Set the local IP address to listen on
  *
  * \param self the IedServer instance

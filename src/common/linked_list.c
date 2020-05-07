@@ -51,19 +51,21 @@ LinkedList_create()
 void
 LinkedList_destroyDeep(LinkedList list, LinkedListValueDeleteFunction valueDeleteFunction)
 {
-    LinkedList nextElement = list;
-    LinkedList currentElement;
+    if (list) {
+        LinkedList nextElement = list;
+        LinkedList currentElement;
 
-    do {
-        currentElement = nextElement;
-        nextElement = currentElement->next;
+        do {
+            currentElement = nextElement;
+            nextElement = currentElement->next;
 
-        if (currentElement->data != NULL)
-            valueDeleteFunction(currentElement->data);
+            if (currentElement->data != NULL)
+                valueDeleteFunction(currentElement->data);
 
-        GLOBAL_FREEMEM(currentElement);
+            GLOBAL_FREEMEM(currentElement);
+        }
+        while (nextElement != NULL);
     }
-    while (nextElement != NULL);
 }
 
 void

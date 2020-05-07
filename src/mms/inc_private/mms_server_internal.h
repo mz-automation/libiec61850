@@ -103,7 +103,9 @@ struct sMmsObtainFileTask {
 #endif /* (MMS_OBTAIN_FILE_SERVICE == 1) */
 
 struct sMmsServer {
-    IsoServer isoServer;
+
+    LinkedList /*<IsoServer>*/ isoServerList;
+
     MmsDevice* device;
 
     MmsReadVariableHandler readHandler;
@@ -120,6 +122,9 @@ struct sMmsServer {
 
     MmsNamedVariableListChangedHandler variableListChangedHandler; /* TODO this is only required if dynamic data sets are supported! */
     void* variableListChangedHandlerParameter;
+
+    AcseAuthenticator authenticator;
+    void* authenticatorParameter;
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore openConnectionsLock;
