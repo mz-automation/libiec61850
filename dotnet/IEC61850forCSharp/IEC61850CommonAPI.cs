@@ -649,6 +649,21 @@ namespace IEC61850
 			NONE = -1
 		}
 
+        /// <summary>
+        /// Definition for LastAppError error type for control models
+        /// Used in LastApplError and CommandTermination messages.
+        /// </summary>
+        public enum ControlLastApplError {
+            NO_ERROR = 0,
+            UNKNOWN = 1,
+            TIMEOUT_TEST = 2,
+            OPERATOR_TEST = 3
+        }
+
+        /// <summary>
+        /// AddCause - additional cause information for control model errors
+        /// Used in LastApplError and CommandTermination messages.
+        /// </summary>
 		public enum ControlAddCause {
 			ADD_CAUSE_UNKNOWN = 0,
 			ADD_CAUSE_NOT_SUPPORTED = 1,
