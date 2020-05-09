@@ -875,6 +875,9 @@ namespace IEC61850
             [DllImport ("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern void ControlAction_setAddCause (IntPtr self, int addCause);
 
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void ControlAction_setError(IntPtr self, int error);
+
             [DllImport ("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern int ControlAction_getOrCat (IntPtr self);
 
@@ -903,6 +906,15 @@ namespace IEC61850
                 this.self = self;
                 this.info = info;
                 this.iedServer = iedServer;
+            }
+
+            /// <summary>
+            /// Sets the error code for the next command termination or application error message.
+            /// </summary>
+            /// <param name="error">the errror code to use</param>
+            public void SetError(ControlLastApplError error)
+            {
+                ControlAction_setError(self, (int)error);
             }
 
             /// <summary>
