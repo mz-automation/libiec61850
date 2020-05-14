@@ -225,7 +225,7 @@ getFile(IedConnection con)
 
     char* localFilename = basename(bname);
 
-    FILE* fp = fopen(localFilename, "w");
+    FILE* fp = fopen(localFilename, "wb");
 
     if (fp != NULL) {
 
