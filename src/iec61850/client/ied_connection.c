@@ -472,7 +472,7 @@ handleLastApplErrorMessage(IedConnection self, MmsValue* lastApplError)
 
     self->lastApplError.ctlNum = MmsValue_toUint32(ctlNum);
     self->lastApplError.addCause = (ControlAddCause) MmsValue_toInt32(addCause);
-    self->lastApplError.error = MmsValue_toInt32(error);
+    self->lastApplError.error = (ControlLastApplError) MmsValue_toInt32(error);
     LinkedList control = LinkedList_getNext(self->clientControls);
     while (control != NULL) {
         ControlObjectClient object = (ControlObjectClient) control->data;
