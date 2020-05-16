@@ -41,7 +41,7 @@ struct ATTRIBUTE_PACKED sMmsValue {
         struct {
             uint8_t exponentWidth;
             uint8_t formatWidth; /* number of bits - either 32 or 64)  */
-            uint8_t* buf;
+            uint8_t buf[8];
         } floatingPoint;
         struct {
             uint16_t size;

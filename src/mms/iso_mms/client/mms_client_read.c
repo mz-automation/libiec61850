@@ -206,8 +206,6 @@ mmsClient_parseListOfAccessResults(AccessResult_t** accessResultList, int listSi
 
                 uint8_t* floatBuf = (accessResultList[i]->choice.floatingpoint.buf + 1);
 
-                value->value.floatingPoint.buf = (uint8_t*) GLOBAL_MALLOC(4);
-
 #if (ORDER_LITTLE_ENDIAN == 1)
                 memcpyReverseByteOrder(value->value.floatingPoint.buf, floatBuf, 4);
 #else
@@ -224,8 +222,6 @@ mmsClient_parseListOfAccessResults(AccessResult_t** accessResultList, int listSi
                 value->value.floatingPoint.exponentWidth = accessResultList[i]->choice.floatingpoint.buf[0];
 
                 uint8_t* floatBuf = (accessResultList[i]->choice.floatingpoint.buf + 1);
-
-                value->value.floatingPoint.buf = (uint8_t*) GLOBAL_MALLOC(8);
 
 #if (ORDER_LITTLE_ENDIAN == 1)
                 memcpyReverseByteOrder(value->value.floatingPoint.buf, floatBuf, 8);
