@@ -31,6 +31,9 @@ public class GSE {
     private String ldInst;
     private String cbName;
     
+    private int minTime = -1;
+    private int maxTime = -1;
+    
     private PhyComAddress address;
     
     public GSE(Node gseNode) throws SclParserException {
@@ -39,6 +42,18 @@ public class GSE {
         
         if ((ldInst == null) || (cbName == null))
             throw new SclParserException(gseNode, "GSE is missing required attribute");
+        
+        Node minTimeNode = ParserUtils.getChildNodeWithTag(gseNode, "MinTime");
+        
+        if (minTimeNode != null) {
+        	minTime = Integer.parseInt(minTimeNode.getTextContent());
+        }
+        
+        Node maxTimeNode = ParserUtils.getChildNodeWithTag(gseNode, "MaxTime");
+        
+        if (maxTimeNode != null) {
+        	maxTime = Integer.parseInt(maxTimeNode.getTextContent());
+        }
         
         Node addressNode = ParserUtils.getChildNodeWithTag(gseNode, "Address");
         
@@ -55,6 +70,14 @@ public class GSE {
     public String getCbName() {
         return cbName;
     }
+    
+	public int getMinTime() {
+		return minTime;
+	}
+
+	public int getMaxTime() {
+		return maxTime;
+	}
 
     public PhyComAddress getAddress() {
         return address;

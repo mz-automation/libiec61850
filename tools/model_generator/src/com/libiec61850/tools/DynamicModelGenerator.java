@@ -3,7 +3,7 @@ package com.libiec61850.tools;
 /*
  *  DynamicModelGenerator.java
  *
- *  Copyright 2014-2016 Michael Zillgith
+ *  Copyright 2014-2020 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -35,6 +35,7 @@ import com.libiec61850.scl.DataAttributeDefinition;
 import com.libiec61850.scl.SclParser;
 import com.libiec61850.scl.SclParserException;
 import com.libiec61850.scl.communication.ConnectedAP;
+import com.libiec61850.scl.communication.GSE;
 import com.libiec61850.scl.communication.PhyComAddress;
 import com.libiec61850.scl.model.AccessPoint;
 import com.libiec61850.scl.model.DataAttribute;
@@ -153,10 +154,15 @@ public class DynamicModelGenerator {
         for (GSEControl gcb : logicalNode.getGSEControlBlocks()) {
             LogicalDevice ld = logicalNode.getParentLogicalDevice();
             
+            GSE gse = null;
             PhyComAddress gseAddress = null;
             
-            if (connectedAP != null)
-            	gseAddress = connectedAP.lookupGSEAddress(ld.getInst(), gcb.getName());
+            if (connectedAP != null) {
+                gse = connectedAP.lookupGSE(ld.getInst(), gcb.getName());
+            	
+                if (gse != null)
+                	gseAddress = gse.getAddress();
+            }
             else
             	System.out.println("WARNING: IED \"" + ied.getName() + "\" has no connected access point!");
             
@@ -170,9 +176,14 @@ public class DynamicModelGenerator {
             else
                 output.print('0');
             output.print(' ');
-            output.print(gcb.getMinTime());
-            output.print(' ');
-            output.print(gcb.getMaxTime());
+            if (gse != null) {
+	            output.print(gse.getMinTime());
+	            output.print(' ');
+	            output.print(gse.getMaxTime());
+            }
+            else {
+            	output.print("-1 -1");
+            }
             output.print(' ');
                        
             if (gseAddress == null) {

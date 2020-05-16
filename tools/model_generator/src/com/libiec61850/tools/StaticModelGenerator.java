@@ -3,7 +3,7 @@ package com.libiec61850.tools;
 /*
  *  StaticModelGenerator.java
  *
- *  Copyright 2013-2016 Michael Zillgith
+ *  Copyright 2013-2020 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -1027,8 +1027,10 @@ public class StaticModelGenerator {
 
         for (GSEControl gseControlBlock : gseControlBlocks) {
 
-            PhyComAddress gseAddress = connectedAP.lookupGSEAddress(logicalDeviceName, gseControlBlock.getName());
+            GSE gse = connectedAP.lookupGSE(logicalDeviceName, gseControlBlock.getName());
 
+            PhyComAddress gseAddress = gse.getAddress();
+            
             String gseString = "";
 
             String phyComAddrName = "";
@@ -1082,8 +1084,8 @@ public class StaticModelGenerator {
             else
                 gseString += "NULL, ";
             
-            gseString += gseControlBlock.getMinTime() + ", ";
-            gseString += gseControlBlock.getMaxTime() + ", ";
+            gseString += gse.getMinTime() + ", ";
+            gseString += gse.getMaxTime() + ", ";
 
             currentGseVariableNumber++;
             
