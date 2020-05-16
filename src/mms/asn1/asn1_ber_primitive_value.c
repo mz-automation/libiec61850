@@ -1,7 +1,7 @@
 /*
  *  asn1_ber_primitive_value.c
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013-2020 Michael Zillgith
  *
  *	This file is part of libIEC61850.
  *
@@ -30,9 +30,17 @@ Asn1PrimitiveValue_create(int size)
 {
 	Asn1PrimitiveValue* self = (Asn1PrimitiveValue*) GLOBAL_MALLOC(sizeof(Asn1PrimitiveValue));
 
-	self->size = 1;
-	self->maxSize = size;
-	self->octets = (uint8_t*) GLOBAL_CALLOC(1, size);
+	if (self) {
+	    self->size = 1;
+	    self->maxSize = size;
+
+	    self->octets = (uint8_t*) GLOBAL_CALLOC(1, size);
+
+	    if (self->octets == NULL) {
+	        GLOBAL_FREEMEM(self);
+	        self = NULL;
+	    }
+	}
 
 	return self;
 }
@@ -42,12 +50,21 @@ Asn1PrimitiveValue_clone(Asn1PrimitiveValue* self)
 {
 	Asn1PrimitiveValue* clone = (Asn1PrimitiveValue*) GLOBAL_MALLOC(sizeof(Asn1PrimitiveValue));
 
-	clone->size = self->size;
-	clone->maxSize = self->maxSize;
+	if (clone) {
+	    clone->size = self->size;
+	    clone->maxSize = self->maxSize;
 
-	clone->octets = (uint8_t*) GLOBAL_MALLOC(self->maxSize);
+	    clone->octets = (uint8_t*) GLOBAL_MALLOC(self->maxSize);
 
-	memcpy(clone->octets, self->octets, clone->maxSize);
+	    if (clone->octets) {
+	        memcpy(clone->octets, self->octets, clone->maxSize);
+	    }
+	    else {
+	        GLOBAL_FREEMEM(clone);
+	        clone = NULL;
+	    }
+
+	}
 
 	return clone;
 }
@@ -80,6 +97,8 @@ Asn1PrimitiveValue_getMaxSize(Asn1PrimitiveValue* self)
 void
 Asn1PrimitiveValue_destroy(Asn1PrimitiveValue* self)
 {
-    GLOBAL_FREEMEM(self->octets);
-    GLOBAL_FREEMEM(self);
+    if (self) {
+        GLOBAL_FREEMEM(self->octets);
+        GLOBAL_FREEMEM(self);
+    }
 }

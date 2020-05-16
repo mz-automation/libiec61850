@@ -336,7 +336,6 @@ mmsMsg_parseDataElement(Data_t* dataElement)
 
                 uint8_t* floatBuf = (dataElement->choice.floatingpoint.buf + 1);
 
-                value->value.floatingPoint.buf = (uint8_t*) GLOBAL_MALLOC(4);
 #if (ORDER_LITTLE_ENDIAN == 1)
                 memcpyReverseByteOrder(value->value.floatingPoint.buf, floatBuf, 4);
 #else
@@ -354,7 +353,6 @@ mmsMsg_parseDataElement(Data_t* dataElement)
 
                 uint8_t* floatBuf = (dataElement->choice.floatingpoint.buf + 1);
 
-                value->value.floatingPoint.buf = (uint8_t*) GLOBAL_MALLOC(8);
 #if (ORDER_LITTLE_ENDIAN == 1)
                 memcpyReverseByteOrder(value->value.floatingPoint.buf, floatBuf, 8);
 #else

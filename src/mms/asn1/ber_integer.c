@@ -1,7 +1,7 @@
 /*
  *  ber_integer.c
  *
- *  Copyright 2013-2019 Michael Zillgith
+ *  Copyright 2013-2020 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -61,9 +61,11 @@ BerInteger_createFromBuffer(uint8_t* buf, int size)
 
     Asn1PrimitiveValue* self = Asn1PrimitiveValue_create(maxSize);
 
-    memcpy(self->octets, buf, size);
+    if (self) {
+        memcpy(self->octets, buf, size);
 
-    self->size = size;
+        self->size = size;
+    }
 
     return self;
 }
@@ -95,7 +97,10 @@ Asn1PrimitiveValue*
 BerInteger_createFromInt32(int32_t value)
 {
     Asn1PrimitiveValue* asn1Value = BerInteger_createInt32();
-    BerInteger_setInt32(asn1Value, value);
+
+    if (asn1Value) {
+        BerInteger_setInt32(asn1Value, value);
+    }
 
     return asn1Value;
 }
@@ -163,7 +168,10 @@ Asn1PrimitiveValue*
 BerInteger_createFromUint32(uint32_t value)
 {
     Asn1PrimitiveValue* asn1Value = BerInteger_createInt32();
-    BerInteger_setUint32(asn1Value, value);
+
+    if (asn1Value) {
+        BerInteger_setUint32(asn1Value, value);
+    }
 
     return asn1Value;
 }
@@ -187,7 +195,10 @@ Asn1PrimitiveValue*
 BerInteger_createFromInt64(int64_t value)
 {
     Asn1PrimitiveValue* asn1Value = BerInteger_createInt64();
-    BerInteger_setInt64(asn1Value, value);
+
+    if (asn1Value) {
+        BerInteger_setInt64(asn1Value, value);
+    }
 
     return asn1Value;
 }

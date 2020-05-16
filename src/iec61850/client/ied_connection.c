@@ -1633,7 +1633,7 @@ IedConnection_writeFloatValue(IedConnection self, IedClientError* error, const c
     mmsValue.type = MMS_FLOAT;
     mmsValue.value.floatingPoint.exponentWidth = 8;
     mmsValue.value.floatingPoint.formatWidth = 32;
-    mmsValue.value.floatingPoint.buf = (uint8_t*) &value;
+    memcpy(mmsValue.value.floatingPoint.buf, (uint8_t*) &value, sizeof(value));
 
     IedConnection_writeObject(self, error, objectReference, fc, &mmsValue);
 }
