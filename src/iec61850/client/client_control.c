@@ -73,7 +73,7 @@ struct sControlObjectClient
 static void
 convertToMmsAndInsertFC(char* newItemId, const char* originalObjectName, const char* fc)
 {
-    int originalLength = strlen(originalObjectName);
+    int originalLength = (int) strlen(originalObjectName);
 
     int srcIndex = 0;
     int dstIndex = 0;
@@ -106,7 +106,7 @@ convertToMmsAndInsertFC(char* newItemId, const char* originalObjectName, const c
 static void
 resetLastApplError(ControlObjectClient self)
 {
-    self->lastApplError.error = 0;
+    self->lastApplError.error = CONTROL_ERROR_NO_ERROR;
     self->lastApplError.addCause = ADD_CAUSE_UNKNOWN;
     self->lastApplError.ctlNum = 0;
 }
