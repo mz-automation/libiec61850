@@ -138,6 +138,8 @@ add_library (hal STATIC ${libhal_SRCS})
 
 add_library (hal-shared STATIC ${libhal_SRCS})
 
+target_compile_definitions(hal-shared PRIVATE EXPORT_FUNCTIONS_FOR_DLL)
+
 SET_TARGET_PROPERTIES(hal-shared PROPERTIES
   COMPILE_FLAGS "-fPIC"
 )
