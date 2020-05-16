@@ -86,12 +86,12 @@ public class ConnectedAP {
     	return smvs;
     }
     
-    public PhyComAddress lookupGSEAddress(String logicalDeviceName, String name) {
+    public GSE lookupGSE(String logicalDeviceName, String name) {
 
         for (GSE gse : this.getGses()) {
             if (gse.getLdInst().equals(logicalDeviceName)) {
                 if (gse.getCbName().equals(name))
-                    return gse.getAddress();
+                    return gse;
             }
         }
 

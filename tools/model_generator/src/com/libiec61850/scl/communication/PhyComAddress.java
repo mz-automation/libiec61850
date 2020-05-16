@@ -50,7 +50,7 @@ public class PhyComAddress {
             	   throw new SclParserException(addressNode, "VLAN-ID value out of range");
            }
            else if (type.equals("VLAN-PRIORITY")) {
-               vlanPriority = new Integer(pNode.getTextContent());
+               vlanPriority = Integer.parseInt(pNode.getTextContent());
            }
            else if (type.equals("APPID")) {
                appId = Integer.parseInt(pNode.getTextContent(), 16);

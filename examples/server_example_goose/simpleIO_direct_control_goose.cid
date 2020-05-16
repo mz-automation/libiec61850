@@ -20,6 +20,8 @@
                 <P type="MAC-Address">01-0c-cd-01-00-01</P>
                 <P type="APPID">1000</P>
            </Address>
+           <MinTime>1000</MinTime>
+           <MaxTime>3000</MaxTime>
 	    </GSE>
         <GSE ldInst="GenericIO" cbName="gcbAnalogValues">
            <Address>
@@ -59,36 +61,36 @@
               <FCDA ldInst="GenericIO" lnClass="GGIO" fc="ST" lnInst="1" doName="SPCSO3" daName="stVal" />
               <FCDA ldInst="GenericIO" lnClass="GGIO" fc="ST" lnInst="1" doName="SPCSO4" daName="stVal" />
             </DataSet>
-            
+
             <DataSet name="Events2" desc="Events2">
               <FCDA ldInst="GenericIO" lnClass="GGIO" fc="ST" lnInst="1" doName="SPCSO1" />
               <FCDA ldInst="GenericIO" lnClass="GGIO" fc="ST" lnInst="1" doName="SPCSO2" />
               <FCDA ldInst="GenericIO" lnClass="GGIO" fc="ST" lnInst="1" doName="SPCSO3" />
               <FCDA ldInst="GenericIO" lnClass="GGIO" fc="ST" lnInst="1" doName="SPCSO4" />
             </DataSet>
-                      
+
             <DataSet name="AnalogValues" desc="analog values">
               <FCDA ldInst="GenericIO" lnClass="GGIO" fc="MX" lnInst="1" doName="AnIn1" />
               <FCDA ldInst="GenericIO" lnClass="GGIO" fc="MX" lnInst="1" doName="AnIn2" />
               <FCDA ldInst="GenericIO" lnClass="GGIO" fc="MX" lnInst="1" doName="AnIn3" />
               <FCDA ldInst="GenericIO" lnClass="GGIO" fc="MX" lnInst="1" doName="AnIn4" />
             </DataSet>
-            
+
             <ReportControl name="EventsRCB" confRev="1" datSet="Events" rptID="Events" buffered="false" intgPd="1000" bufTime="50">
               <TrgOps period="true" />
               <OptFields seqNum="true" timeStamp="true" dataSet="true" reasonCode="true" configRef="true" />
               <RptEnabled max="1" />
             </ReportControl>
-            
+
             <ReportControl name="AnalogValuesRCB" confRev="1" datSet="AnalogValues" rptID="AnalogValues" buffered="false" intgPd="1000" bufTime="50">
               <TrgOps period="true" />
               <OptFields seqNum="true" timeStamp="true" dataSet="true" reasonCode="true" configRef="true" />
               <RptEnabled max="1" />
             </ReportControl>
-            
-            <GSEControl appID="events" name="gcbEvents" type="GOOSE" datSet="Events" confRev="2" minTime="1000" maxTime="3000" /> 
-            <GSEControl appID="analog" name="gcbAnalogValues" type="GOOSE" datSet="AnalogValues" confRev="2"/> 
-            
+
+            <GSEControl appID="events" name="gcbEvents" type="GOOSE" datSet="Events" confRev="2" />
+            <GSEControl appID="analog" name="gcbAnalogValues" type="GOOSE" datSet="AnalogValues" confRev="2"/>
+
             <DOI name="Mod">
               <DAI name="ctlModel">
                 <Val>status-only</Val>
