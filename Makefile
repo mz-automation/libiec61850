@@ -90,6 +90,7 @@ LIB_API_HEADER_FILES += hal/inc/hal_thread.h
 LIB_API_HEADER_FILES += hal/inc/hal_filesystem.h
 LIB_API_HEADER_FILES += hal/inc/tls_config.h
 LIB_API_HEADER_FILES += hal/inc/lib_memory.h
+LIB_API_HEADER_FILES += hal/inc/hal_base.h
 LIB_API_HEADER_FILES += src/common/inc/libiec61850_common_api.h
 LIB_API_HEADER_FILES += src/common/inc/linked_list.h
 LIB_API_HEADER_FILES += src/iec61850/inc/iec61850_client.h
