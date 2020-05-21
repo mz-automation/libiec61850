@@ -79,18 +79,25 @@ mmsClient_parseListOfAccessResults(AccessResult_t** accessResultList, int listSi
                 value->value.structure.size = arrayElementCount;
                 value->value.structure.components = (MmsValue**) GLOBAL_CALLOC(arrayElementCount, sizeof(MmsValue*));
 
-                int j;
+                if (value->value.structure.components) {
+                    int j;
 
-                for (j = 0; j < arrayElementCount; j++) {
-                    value->value.structure.components[j] = mmsMsg_parseDataElement(
-                            accessResultList[i]->choice.array.list.array[j]);
+                    for (j = 0; j < arrayElementCount; j++) {
+                        value->value.structure.components[j] = mmsMsg_parseDataElement(
+                                accessResultList[i]->choice.array.list.array[j]);
 
-                    if (value->value.structure.components[j] == NULL) {
-                        MmsValue_delete(value);
-                        value = NULL;
-                        break;
+                        if (value->value.structure.components[j] == NULL) {
+
+                            if (DEBUG_MMS_CLIENT)
+                                printf("MMS CLIENT: failed to parse array element %i\n", j);
+
+                            MmsValue_delete(value);
+                            value = NULL;
+                            break;
+                        }
                     }
                 }
+
             }
             else {
                 if (DEBUG_MMS_CLIENT)
@@ -109,17 +116,24 @@ mmsClient_parseListOfAccessResults(AccessResult_t** accessResultList, int listSi
                 value->value.structure.size = componentCount;
                 value->value.structure.components = (MmsValue**) GLOBAL_CALLOC(componentCount, sizeof(MmsValue*));
 
-                int j;
-                for (j = 0; j < componentCount; j++) {
-                    value->value.structure.components[j] = mmsMsg_parseDataElement(
-                            accessResultList[i]->choice.structure.list.array[j]);
+                if (value->value.structure.components) {
+                    int j;
+                    for (j = 0; j < componentCount; j++) {
+                        value->value.structure.components[j] = mmsMsg_parseDataElement(
+                                accessResultList[i]->choice.structure.list.array[j]);
 
-                    if (value->value.structure.components[j] == NULL) {
-                        MmsValue_delete(value);
-                        value = NULL;
-                        break;
+                        if (value->value.structure.components[j] == NULL) {
+
+                            if (DEBUG_MMS_CLIENT)
+                                printf("MMS CLIENT: failed to parse struct element %i\n", j);
+
+                            MmsValue_delete(value);
+                            value = NULL;
+                            break;
+                        }
                     }
                 }
+
             }
             else {
                 if (DEBUG_MMS_CLIENT)
