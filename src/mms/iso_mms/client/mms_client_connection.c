@@ -240,10 +240,10 @@ getNextInvokeId(MmsConnection self)
 {
     uint32_t nextInvokeId;
 
-    Semaphore_wait(self->lastInvokeIdLock);
-    self->lastInvokeId++;
-    nextInvokeId = self->lastInvokeId;
-    Semaphore_post(self->lastInvokeIdLock);
+    Semaphore_wait(self->nextInvokeIdLock);
+    self->nextInvokeId++;
+    nextInvokeId = self->nextInvokeId;
+    Semaphore_post(self->nextInvokeIdLock);
 
     return nextInvokeId;
 }
@@ -1353,8 +1353,6 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
 
                     hasInvokeId = true;
 
-                    self->lastInvokeId = invokeId;
-
                     break;
 
                 default:
@@ -1429,7 +1427,7 @@ MmsConnection_createInternal(TLSConfiguration tlsConfig, bool createThread)
 
         self->requestTimeout = CONFIG_MMS_CONNECTION_DEFAULT_TIMEOUT;
 
-        self->lastInvokeIdLock = Semaphore_create(1);
+        self->nextInvokeIdLock = Semaphore_create(1);
         self->outstandingCallsLock = Semaphore_create(1);
 
         self->associationStateLock = Semaphore_create(1);
@@ -1512,7 +1510,7 @@ MmsConnection_destroy(MmsConnection self)
     if (self->isoParameters != NULL)
         IsoConnectionParameters_destroy(self->isoParameters);
 
-    Semaphore_destroy(self->lastInvokeIdLock);
+    Semaphore_destroy(self->nextInvokeIdLock);
 
     Semaphore_destroy(self->outstandingCallsLock);
 

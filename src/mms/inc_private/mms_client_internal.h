@@ -90,8 +90,8 @@ struct sMmsOutstandingCall
 
 /* private instance variables */
 struct sMmsConnection {
-    Semaphore lastInvokeIdLock;
-    uint32_t lastInvokeId;
+    Semaphore nextInvokeIdLock;
+    uint32_t nextInvokeId;
 
     Semaphore outstandingCallsLock;
     MmsOutstandingCall outstandingCalls;
