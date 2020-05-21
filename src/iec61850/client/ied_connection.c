@@ -3253,7 +3253,7 @@ IedConnection_readDataSetValues(IedConnection self, IedClientError* error, const
         dataSetVal = MmsConnection_readNamedVariableListValuesAssociationSpecific(self->connection,
                 &mmsError, itemId, true);
     else
-        dataSetVal= MmsConnection_readNamedVariableListValues(self->connection, &mmsError,
+        dataSetVal = MmsConnection_readNamedVariableListValues(self->connection, &mmsError,
                     domainId, itemId, true);
 
     if (dataSetVal == NULL) {
