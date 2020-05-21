@@ -28,34 +28,34 @@ using IEC61850.Common;
 
 namespace IEC61850
 {
-	namespace Client
-	{
+    namespace Client
+    {
         /// <summary>
         /// This class is used to represent a data set. It is used to store the values
         /// of a data set.
         /// </summary>
         public class DataSet : IDisposable
-		{
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern void ClientDataSet_destroy (IntPtr self);
+        {
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void ClientDataSet_destroy(IntPtr self);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr ClientDataSet_getValues (IntPtr self);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr ClientDataSet_getValues(IntPtr self);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr ClientDataSet_getReference (IntPtr self);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr ClientDataSet_getReference(IntPtr self);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern int ClientDataSet_getDataSetSize (IntPtr self);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern int ClientDataSet_getDataSetSize(IntPtr self);
 
-			private IntPtr nativeObject;
-			private MmsValue values = null;
-			private string reference = null;
+            private IntPtr nativeObject;
+            private MmsValue values = null;
+            private string reference = null;
 
-			internal DataSet (IntPtr nativeObject)
-			{
-				this.nativeObject = nativeObject;
-			}
+            internal DataSet(IntPtr nativeObject)
+            {
+                this.nativeObject = nativeObject;
+            }
 
             /// <summary>
             /// Gets the object reference of the data set
@@ -63,16 +63,17 @@ namespace IEC61850
             /// <returns>
             /// object reference.
             /// </returns>
-			public string GetReference ()
-			{
-				if (reference == null) {
-					IntPtr nativeString = ClientDataSet_getReference (nativeObject);
+			public string GetReference()
+            {
+                if (reference == null)
+                {
+                    IntPtr nativeString = ClientDataSet_getReference(nativeObject);
 
-					reference = Marshal.PtrToStringAnsi (nativeString);
-				}
+                    reference = Marshal.PtrToStringAnsi(nativeString);
+                }
 
-				return reference;
-			}
+                return reference;
+            }
 
             /// <summary>
             /// Gets the values associated with the data set object
@@ -83,16 +84,17 @@ namespace IEC61850
             /// <returns>
             /// The locally stored values of the data set (as MmsValue instance of type MMS_ARRAY)
             /// </returns>
-			public MmsValue GetValues ()
-			{
-				if (values == null) {
-					IntPtr nativeValues = ClientDataSet_getValues (nativeObject);
+			public MmsValue GetValues()
+            {
+                if (values == null)
+                {
+                    IntPtr nativeValues = ClientDataSet_getValues(nativeObject);
 
-					values = new MmsValue (nativeValues, false);
-				}
+                    values = new MmsValue(nativeValues, false);
+                }
 
                 return values.Clone();
-			}
+            }
 
 
             /// <summary>
@@ -101,32 +103,34 @@ namespace IEC61850
             /// <returns>
             /// the number of elementes (data set members)
             /// </returns>
-			public int GetSize ()
-			{
-				return ClientDataSet_getDataSetSize (nativeObject);
-			}
+			public int GetSize()
+            {
+                return ClientDataSet_getDataSetSize(nativeObject);
+            }
 
             public void Dispose()
             {
-                lock (this) {
-                    if (nativeObject != IntPtr.Zero) {
-                        ClientDataSet_destroy (nativeObject);
+                lock (this)
+                {
+                    if (nativeObject != IntPtr.Zero)
+                    {
+                        ClientDataSet_destroy(nativeObject);
                         nativeObject = IntPtr.Zero;
                     }
                 }
             }
 
-			~DataSet ()
-			{
-				ClientDataSet_destroy (nativeObject);
-			}
+            ~DataSet()
+            {
+                Dispose();
+            }
 
-			internal IntPtr getNativeInstance ()
-			{
-				return nativeObject;
-			}
-		}
+            internal IntPtr getNativeInstance()
+            {
+                return nativeObject;
+            }
+        }
 
-	}
+    }
 
 }
