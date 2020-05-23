@@ -2874,6 +2874,8 @@ MmsMapping_triggerReportObservers(MmsMapping* self, MmsValue* value, int flag)
 {
     LinkedList element = self->reportControls;
 
+    bool modelLocked = self->isModelLocked;
+
     while ((element = LinkedList_getNext(element)) != NULL) {
         ReportControl* rc = (ReportControl*) element->data;
 
@@ -2900,11 +2902,13 @@ MmsMapping_triggerReportObservers(MmsMapping* self, MmsValue* value, int flag)
 
             if (DataSet_isMemberValue(rc->dataSet, value, &index)) {
 
-                bool modelLocked = self->isModelLocked;
-
                 ReportControl_valueUpdated(rc, index, flag, modelLocked);
             }
         }
+    }
+
+    if (modelLocked == false) {
+        Reporting_processReportEventsAfterUnlock(self);
     }
 }
 
