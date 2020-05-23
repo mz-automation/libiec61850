@@ -2719,19 +2719,16 @@ sendNextReportEntrySegment(ReportControl* self)
             else if (MmsValue_getBitStringBit(self->inclusionField, i)) {
                 bsBuf[0] = 0; /* clear all bits */
 
-                switch((int) *currentReportBufferPos) {
-                case REPORT_CONTROL_QUALITY_CHANGED:
+                uint8_t reasonForInclusion = *currentReportBufferPos;
+
+                if (reasonForInclusion & REPORT_CONTROL_QUALITY_CHANGED)
                     MmsValue_setBitStringBit(&_reason, 2, true);
-                    break;
-                case REPORT_CONTROL_VALUE_CHANGED:
+
+                if (reasonForInclusion & REPORT_CONTROL_VALUE_CHANGED)
                     MmsValue_setBitStringBit(&_reason, 1, true);
-                    break;
-                case REPORT_CONTROL_VALUE_UPDATE:
+
+                if (reasonForInclusion & REPORT_CONTROL_VALUE_UPDATE)
                     MmsValue_setBitStringBit(&_reason, 3, true);
-                    break;
-                default:
-                    break;
-                }
 
                 isIncluded = true;
             }
@@ -2971,9 +2968,13 @@ Reporting_processReportEventsAfterUnlock(MmsMapping* self)
         ReportControl_lockNotify(rc);
 
         if ((rc->enabled) || (rc->isBuffering)) {
-            copyValuesToReportBuffer(rc);
 
-            processEventsForReport(rc, currentTime);
+            if (rc->triggered) {
+                copyValuesToReportBuffer(rc);
+
+                processEventsForReport(rc, currentTime);
+            }
+
         }
 
         ReportControl_unlockNotify(rc);
@@ -2985,7 +2986,7 @@ ReportControl_valueUpdated(ReportControl* self, int dataSetEntryIndex, int flag,
 {
     ReportControl_lockNotify(self);
 
-    if (self->inclusionFlags[dataSetEntryIndex] != 0) { /* report for this data set entry is already pending (bypass BufTm) */
+    if (self->inclusionFlags[dataSetEntryIndex] & flag) { /* report for this data set entry is already pending (bypass BufTm) */
         self->reportTime = Hal_getTimeInMs();
 
         if (modelLocked) {
@@ -2998,7 +2999,7 @@ ReportControl_valueUpdated(ReportControl* self, int dataSetEntryIndex, int flag,
 
     if (modelLocked) {
         /* set flag to update values when report is to be sent or data model unlocked */
-        self->inclusionFlags[dataSetEntryIndex] = flag | REPORT_CONTROL_NOT_UPDATED;
+        self->inclusionFlags[dataSetEntryIndex] = self->inclusionFlags[dataSetEntryIndex] | flag | REPORT_CONTROL_NOT_UPDATED;
 
     }
     else {
