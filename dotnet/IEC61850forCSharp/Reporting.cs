@@ -28,75 +28,78 @@ using System.Collections.Generic;
 
 namespace IEC61850
 {
-	namespace Client
-	{
-		public partial class IedConnection
-		{
+    namespace Client
+    {
+        public partial class IedConnection
+        {
 
-			private List<ReportControlBlock> activeRCBs = null;
+            private List<ReportControlBlock> activeRCBs = null;
 
-			public ReportControlBlock GetReportControlBlock (string rcbObjectReference)
-			{
-				var newRCB = new ReportControlBlock (rcbObjectReference, this, connection);
+            public ReportControlBlock GetReportControlBlock(string rcbObjectReference)
+            {
+                var newRCB = new ReportControlBlock(rcbObjectReference, this, connection);
 
-				if (activeRCBs == null)
-					activeRCBs = new List<ReportControlBlock> ();
+                if (activeRCBs == null)
+                    activeRCBs = new List<ReportControlBlock>();
 
-				activeRCBs.Add (newRCB);
+                activeRCBs.Add(newRCB);
 
-				return newRCB;
-			}
+                return newRCB;
+            }
 
-			internal void RemoveRCB(ReportControlBlock rcb) {
-				if (activeRCBs != null) {
-					activeRCBs.Remove (rcb);
-				}
-			}
+            internal void RemoveRCB(ReportControlBlock rcb)
+            {
+                if (activeRCBs != null)
+                {
+                    activeRCBs.Remove(rcb);
+                }
+            }
 
-		}
+        }
 
-		public enum ReasonForInclusion
-		{
-			/** the element is not included in the received report */
-			REASON_NOT_INCLUDED = 0,
+        [Flags]
+        public enum ReasonForInclusion
+        {
+            /** the element is not included in the received report */
+            REASON_NOT_INCLUDED = 0,
 
-			/** the element is included due to a change of the data value */
-			REASON_DATA_CHANGE = 1,
+            /** the element is included due to a change of the data value */
+            REASON_DATA_CHANGE = 1,
 
-			/** the element is included due to a change in the quality of data */
-			REASON_QUALITY_CHANGE = 2,
+            /** the element is included due to a change in the quality of data */
+            REASON_QUALITY_CHANGE = 2,
 
-			/** the element is included due to an update of the data value */
-			REASON_DATA_UPDATE = 3,
+            /** the element is included due to an update of the data value */
+            REASON_DATA_UPDATE = 4,
 
-			/** the element is included due to a periodic integrity report task */
-			REASON_INTEGRITY = 4,
+            /** the element is included due to a periodic integrity report task */
+            REASON_INTEGRITY = 8,
 
-			/** the element is included due to a general interrogation by the client */
-			REASON_GI = 5,
+            /** the element is included due to a general interrogation by the client */
+            REASON_GI = 16,
 
-			/** the reason for inclusion is unknown */
-			REASON_UNKNOWN = 6
-		}
+            /** the reason for inclusion is unknown */
+            REASON_UNKNOWN = 32
+        }
 
         /// <summary>
         /// A class to hold the contents of a received report
         /// </summary>
 		public class Report
-		{
+        {
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.I1)]
-			static extern bool ClientReport_hasTimestamp (IntPtr self);
+            static extern bool ClientReport_hasTimestamp(IntPtr self);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern UInt64 ClientReport_getTimestamp (IntPtr self);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern UInt64 ClientReport_getTimestamp(IntPtr self);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr ClientReport_getDataSetValues(IntPtr self);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr ClientReport_getDataSetValues(IntPtr self);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern int ClientReport_getReasonForInclusion(IntPtr self, int elementIndex);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern int ClientReport_getReasonForInclusion(IntPtr self, int elementIndex);
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.I1)]
@@ -124,7 +127,7 @@ namespace IEC61850
             [return: MarshalAs(UnmanagedType.I1)]
             static extern bool ClientReport_hasBufOvfl(IntPtr self);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.I1)]
             static extern bool ClientReport_getBufOvfl(IntPtr self);
 
@@ -135,14 +138,14 @@ namespace IEC61850
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern IntPtr ClientReport_getRcbReference(IntPtr self);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr ClientReport_getDataSetName(IntPtr self);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr ClientReport_getDataSetName(IntPtr self);
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern IntPtr ClientReport_getRptId(IntPtr self);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr ClientReport_getEntryId(IntPtr self);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr ClientReport_getEntryId(IntPtr self);
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern IntPtr ClientReport_getDataReference(IntPtr self, int elementIndex);
@@ -156,16 +159,16 @@ namespace IEC61850
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern bool ClientReport_getMoreSeqmentsFollow(IntPtr self);
 
-			private IntPtr self;
+            private IntPtr self;
 
-			private IntPtr dataSetValues = IntPtr.Zero;
+            private IntPtr dataSetValues = IntPtr.Zero;
 
-			private MmsValue values = null;
+            private MmsValue values = null;
 
-			internal Report (IntPtr self)
-			{
-				this.self = self;
-			}
+            internal Report(IntPtr self)
+            {
+                this.self = self;
+            }
 
             /// <summary>
             /// Determines whether the report has a timestamp.
@@ -173,10 +176,10 @@ namespace IEC61850
             /// <returns>
             /// <c>true</c> if this report has a timestamp; otherwise, <c>false</c>.
             /// </returns>
-			public bool HasTimestamp ()
-			{
-				return ClientReport_hasTimestamp (self);
-			}
+			public bool HasTimestamp()
+            {
+                return ClientReport_hasTimestamp(self);
+            }
 
             /// <summary>
             /// Gets the timestamp.
@@ -184,49 +187,49 @@ namespace IEC61850
             /// <returns>
             /// The timestamp as milliseconds since 1.1.1970 UTC 00:00 or 0 if no timestamp is present.
             /// </returns>
-			public UInt64 GetTimestamp ()
-			{
-				if (HasTimestamp ())
-					return ClientReport_getTimestamp (self);
-				else
-					return 0;
-			}
+			public UInt64 GetTimestamp()
+            {
+                if (HasTimestamp())
+                    return ClientReport_getTimestamp(self);
+                else
+                    return 0;
+            }
 
-            public bool HasDataSetName ()
+            public bool HasDataSetName()
             {
                 return ClientReport_hasDataSetName(self);
             }
 
-            public bool HasDataReference ()
+            public bool HasDataReference()
             {
                 return ClientReport_hasDataReference(self);
             }
 
-            public bool HasConfRev ()
+            public bool HasConfRev()
             {
                 return ClientReport_hasConfRev(self);
             }
 
-            public UInt32 GetConfRev ()
+            public UInt32 GetConfRev()
             {
                 return ClientReport_getConfRev(self);
             }
 
-            public bool HasBufOvfl ()
+            public bool HasBufOvfl()
             {
                 return ClientReport_hasBufOvfl(self);
             }
 
-			public bool GetBufOvfl ()
-			{
-				return ClientReport_getBufOvfl(self);
-			}
+            public bool GetBufOvfl()
+            {
+                return ClientReport_getBufOvfl(self);
+            }
 
             /// <summary>
             /// Indicates if the report contains a sequence number (SeqNum) field
             /// </summary>
             /// <returns><c>true</c> if this instance has SeqNum; otherwise, <c>false</c>.</returns>
-            public bool HasSeqNum ()
+            public bool HasSeqNum()
             {
                 return ClientReport_hasSeqNum(self);
             }
@@ -235,7 +238,7 @@ namespace IEC61850
             /// Gets the value of the SeqNum field
             /// </summary>
             /// <returns>The report sequence number</returns>
-            public UInt16 GetSeqNum ()
+            public UInt16 GetSeqNum()
             {
                 return ClientReport_getSeqNum(self);
             }
@@ -271,7 +274,7 @@ namespace IEC61850
             /// Determines whether this report contains reason for inclusion information
             /// </summary>
             /// <returns><c>true</c> if this report contains reason for inclusion information; otherwise, <c>false</c>.</returns>
-            public bool HasReasonForInclusion ()
+            public bool HasReasonForInclusion()
             {
                 return ClientReport_hasReasonForInclusion(self);
             }
@@ -282,19 +285,20 @@ namespace IEC61850
             /// <returns>
             /// The data set values.
             /// </returns>
-			public MmsValue GetDataSetValues ()
-			{
-				if (dataSetValues == IntPtr.Zero) {
-					dataSetValues = ClientReport_getDataSetValues(self);
+			public MmsValue GetDataSetValues()
+            {
+                if (dataSetValues == IntPtr.Zero)
+                {
+                    dataSetValues = ClientReport_getDataSetValues(self);
 
-					if (dataSetValues == IntPtr.Zero)
-						throw new IedConnectionException("No report values available yet");
+                    if (dataSetValues == IntPtr.Zero)
+                        throw new IedConnectionException("No report values available yet");
 
-					values = new MmsValue(dataSetValues);
-				}
+                    values = new MmsValue(dataSetValues);
+                }
 
                 return values.Clone();
-			}
+            }
 
             /// <summary>
             /// Gets the reason for inclusion of data set member with the given index
@@ -305,36 +309,37 @@ namespace IEC61850
             /// <param name='index'>
             /// index of the data set member in the data set
             /// </param>
-			public ReasonForInclusion GetReasonForInclusion (int index)
-			{
-				if (values == null) {
-					GetDataSetValues ();
+			public ReasonForInclusion GetReasonForInclusion(int index)
+            {
+                if (values == null)
+                {
+                    GetDataSetValues();
 
-					if (values == null) 
-						throw new IedConnectionException("No ReasonForInclusion available yet");
-				}
+                    if (values == null)
+                        throw new IedConnectionException("No ReasonForInclusion available yet");
+                }
 
-				int dataSetSize = values.Size();
+                int dataSetSize = values.Size();
 
-				if (index >= dataSetSize)
-					throw new IedConnectionException("data set index out of range (count = " + dataSetSize + ")");
+                if (index >= dataSetSize)
+                    throw new IedConnectionException("data set index out of range (count = " + dataSetSize + ")");
 
-				return (ReasonForInclusion) ClientReport_getReasonForInclusion(self, index);
-			}
+                return (ReasonForInclusion)ClientReport_getReasonForInclusion(self, index);
+            }
 
-            public string GetRcbReference ()
+            public string GetRcbReference()
             {
                 IntPtr rcbRef = ClientReport_getRcbReference(self);
 
-                return Marshal.PtrToStringAnsi (rcbRef);
+                return Marshal.PtrToStringAnsi(rcbRef);
             }
 
-			public string GetDataSetName ()
-			{
-				IntPtr dataSetName = ClientReport_getDataSetName (self);
+            public string GetDataSetName()
+            {
+                IntPtr dataSetName = ClientReport_getDataSetName(self);
 
-				return Marshal.PtrToStringAnsi (dataSetName);
-			}
+                return Marshal.PtrToStringAnsi(dataSetName);
+            }
 
             /// <summary>
             /// Gets the data reference for the specified data set element
@@ -345,7 +350,7 @@ namespace IEC61850
             /// <param name='index'>
             /// index of the data set element starting with 0
             /// </param>
-            public string GetDataReference (int index)
+            public string GetDataReference(int index)
             {
                 IntPtr dataRef = ClientReport_getDataReference(self, index);
 
@@ -355,35 +360,36 @@ namespace IEC61850
                     return null;
             }
 
-            public string GetRptId ()
+            public string GetRptId()
             {
                 IntPtr rptId = ClientReport_getRptId(self);
 
                 if (rptId == IntPtr.Zero)
                     return GetRcbReference();
                 else
-                    return Marshal.PtrToStringAnsi (rptId);
+                    return Marshal.PtrToStringAnsi(rptId);
             }
 
-			/// <summary>
-			/// Gets the EntryID of this report.
-			/// </summary>
-			/// <returns>The entryID as a byte array representing an MMS octet string.</returns>
-			public byte[] GetEntryId () 
-			{
-				IntPtr entryIdRef = ClientReport_getEntryId (self);
+            /// <summary>
+            /// Gets the EntryID of this report.
+            /// </summary>
+            /// <returns>The entryID as a byte array representing an MMS octet string.</returns>
+            public byte[] GetEntryId()
+            {
+                IntPtr entryIdRef = ClientReport_getEntryId(self);
 
-				if (entryIdRef == IntPtr.Zero)
-					return null;
-				else {
-					MmsValue entryId = new MmsValue (entryIdRef);
+                if (entryIdRef == IntPtr.Zero)
+                    return null;
+                else
+                {
+                    MmsValue entryId = new MmsValue(entryIdRef);
 
-					return entryId.getOctetString ();
-				}
-			}
+                    return entryId.getOctetString();
+                }
+            }
 
-		}
+        }
 
-	}
+    }
 }
 

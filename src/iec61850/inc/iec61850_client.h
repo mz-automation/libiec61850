@@ -1116,16 +1116,16 @@ typedef enum {
     IEC61850_REASON_QUALITY_CHANGE = 2,
 
     /** the element is included due to an update of the data value */
-    IEC61850_REASON_DATA_UPDATE = 3,
+    IEC61850_REASON_DATA_UPDATE = 4,
 
     /** the element is included due to a periodic integrity report task */
-    IEC61850_REASON_INTEGRITY = 4,
+    IEC61850_REASON_INTEGRITY = 8,
 
     /** the element is included due to a general interrogation by the client */
-    IEC61850_REASON_GI = 5,
+    IEC61850_REASON_GI = 16,
 
     /** the reason for inclusion is unknown (e.g. report is not configured to include reason-for-inclusion) */
-    IEC61850_REASON_UNKNOWN = 6
+    IEC61850_REASON_UNKNOWN = 32
 } ReasonForInclusion;
 
 #define REASON_NOT_INCLUDED IEC61850_REASON_NOT_INCLUDED
