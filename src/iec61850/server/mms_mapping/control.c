@@ -1701,6 +1701,18 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
 
             goto free_and_return;
         }
+        else if ((state == STATE_OPERATE) || (state == STATE_WAIT_FOR_EXECUTION)) {
+            if (DEBUG_IED_SERVER)
+                printf("IED_SERVER: Oper failed - control already being executed!\n");
+
+            indication = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
+
+            ControlObject_sendLastApplError(controlObject, connection, "Oper",
+                    CONTROL_ERROR_NO_ERROR, ADD_CAUSE_COMMAND_ALREADY_IN_EXECUTION,
+                    ctlNum, origin, true);
+
+            goto free_and_return;
+        }
     }
     else if (strcmp(varName, "Cancel") == 0) {
         if (DEBUG_IED_SERVER)
