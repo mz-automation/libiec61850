@@ -404,14 +404,16 @@ executeStateMachine:
         }
 
         if (dynamicCheckResult == CONTROL_RESULT_FAILED) {
-            if (isTimeActivatedControl) {
+            if ((self->errorValue != CONTROL_ERROR_NO_ERROR) || (self->addCauseValue != ADD_CAUSE_UNKNOWN)) {
                 ControlObject_sendLastApplError(self, self->mmsConnection, "Oper",
                         self->errorValue, self->addCauseValue,
                         self->ctlNum, self->origin, false);
             }
-            else
+
+            if (!isTimeActivatedControl) {
                 MmsServerConnection_sendWriteResponse(self->mmsConnection, self->operateInvokeId,
                         DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED, true);
+            }
 
             abortControlOperation(self);
             exitControlTask(self);
