@@ -688,11 +688,25 @@ MmsValue_newIntegerFromInt64(int64_t integer);
 LIB61850_API MmsValue*
 MmsValue_newUnsignedFromUint32(uint32_t integer);
 
+/**
+ * \brief Create a new 32 bit wide float variable and initialize with value
+ *
+ * \param value the initial value
+ *
+ * \return new MmsValue instance of type MMS_FLOAT
+ */
 LIB61850_API MmsValue*
-MmsValue_newFloat(float variable);
+MmsValue_newFloat(float value);
 
+/**
+ * \brief Create a new 64 bit wide float variable and initialize with value
+ *
+ * \param value the initial value
+ *
+ * \return new MmsValue instance of type MMS_FLOAT
+ */
 LIB61850_API MmsValue*
-MmsValue_newDouble(double variable);
+MmsValue_newDouble(double value);
 
 /**
  * \brief Create a (deep) copy of an MmsValue instance
