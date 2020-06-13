@@ -536,7 +536,7 @@ MmsValue_setBitStringFromIntegerBigEndian(MmsValue* self, uint32_t intValue)
 }
 
 MmsValue*
-MmsValue_newFloat(float variable)
+MmsValue_newFloat(float value)
 {
     MmsValue* self = (MmsValue*) GLOBAL_MALLOC(sizeof(MmsValue));
 
@@ -545,40 +545,44 @@ MmsValue_newFloat(float variable)
         self->value.floatingPoint.formatWidth = 32;
         self->value.floatingPoint.exponentWidth = 8;
 
-        *((float*) self->value.floatingPoint.buf) = variable;
+        memcpy(self->value.floatingPoint.buf, &value, sizeof(float));
     }
 
     return self;
 }
 
 void
-MmsValue_setFloat(MmsValue* value, float newFloatValue)
+MmsValue_setFloat(MmsValue* self, float newFloatValue)
 {
-    if (value->type == MMS_FLOAT) {
-        if (value->value.floatingPoint.formatWidth == 32) {
-            *((float*) value->value.floatingPoint.buf) = newFloatValue;
+    if (self->type == MMS_FLOAT) {
+        if (self->value.floatingPoint.formatWidth == 32) {
+            memcpy(self->value.floatingPoint.buf, &newFloatValue, sizeof(float));
         }
-        else if (value->value.floatingPoint.formatWidth == 64) {
-            *((double*) value->value.floatingPoint.buf) = (double) newFloatValue;
+        else if (self->value.floatingPoint.formatWidth == 64) {
+            double newDoubleValue = (double) newFloatValue;
+
+            memcpy(self->value.floatingPoint.buf, &newDoubleValue, sizeof(double));
         }
     }
 }
 
 void
-MmsValue_setDouble(MmsValue* value, double newFloatValue)
+MmsValue_setDouble(MmsValue* self, double newDoubleValue)
 {
-    if (value->type == MMS_FLOAT) {
-        if (value->value.floatingPoint.formatWidth == 32) {
-            *((float*) value->value.floatingPoint.buf) = (float) newFloatValue;
+    if (self->type == MMS_FLOAT) {
+        if (self->value.floatingPoint.formatWidth == 32) {
+            float newFloatValue = (float) newDoubleValue;
+
+            memcpy(self->value.floatingPoint.buf, &newFloatValue, sizeof(float));
         }
-        else if (value->value.floatingPoint.formatWidth == 64) {
-            *((double*) value->value.floatingPoint.buf) = newFloatValue;
+        else if (self->value.floatingPoint.formatWidth == 64) {
+            memcpy(self->value.floatingPoint.buf, &newDoubleValue, sizeof(double));
         }
     }
 }
 
 MmsValue*
-MmsValue_newDouble(double variable)
+MmsValue_newDouble(double value)
 {
     MmsValue* self = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
 
@@ -587,7 +591,7 @@ MmsValue_newDouble(double variable)
         self->value.floatingPoint.formatWidth = 64;
         self->value.floatingPoint.exponentWidth = 11;
 
-        *((double*) self->value.floatingPoint.buf) = variable;
+        memcpy(self->value.floatingPoint.buf, &value, sizeof(double));
     }
 
     return self;
@@ -939,13 +943,16 @@ MmsValue_toFloat(const MmsValue* self)
         if (self->value.floatingPoint.formatWidth == 32) {
             float val;
 
-            val = *((float*) (self->value.floatingPoint.buf));
+            memcpy(&val, self->value.floatingPoint.buf, sizeof(float));
+
             return val;
         }
         else if (self->value.floatingPoint.formatWidth == 64) {
-            float val;
-            val = *((double*) (self->value.floatingPoint.buf));
-            return val;
+            double val;
+
+            memcpy(&val, self->value.floatingPoint.buf, sizeof(double));
+
+            return (float) val;
         }
     }
 
@@ -956,18 +963,24 @@ double
 MmsValue_toDouble(const MmsValue* self)
 {
     if (self->type == MMS_FLOAT) {
-        double val;
+
         if (self->value.floatingPoint.formatWidth == 32) {
-            val = (double) *((float*) (self->value.floatingPoint.buf));
-            return val;
+            float val;
+
+            memcpy(&val, self->value.floatingPoint.buf, sizeof(float));
+
+            return (double) val;
         }
         if (self->value.floatingPoint.formatWidth == 64) {
-            val = *((double*) (self->value.floatingPoint.buf));
+            double val;
+
+            memcpy(&val, self->value.floatingPoint.buf, sizeof(double));
+
             return val;
         }
     }
 
-    return 0.f;
+    return (double) 0.f;
 }
 
 uint32_t
