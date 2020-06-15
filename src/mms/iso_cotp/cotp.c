@@ -178,19 +178,21 @@ writeToSocket(CotpConnection* self, uint8_t* buf, int size)
 static bool
 sendBuffer(CotpConnection* self)
 {
-    int writeBufferPosition = ByteBuffer_getSize(self->writeBuffer);
+    int remainingSize = ByteBuffer_getSize(self->writeBuffer);
+    uint8_t* buffer = ByteBuffer_getBuffer(self->writeBuffer);
 
     bool retVal = false;
 
-    int sentBytes;
-
     do {
-        sentBytes = writeToSocket(self, ByteBuffer_getBuffer(self->writeBuffer), writeBufferPosition);
+        int sentBytes = writeToSocket(self, buffer, remainingSize);
 
         if (sentBytes == -1)
             goto exit_function;
 
-    } while (sentBytes == 0);
+        buffer += sentBytes;
+        remainingSize -= sentBytes;
+
+    } while (remainingSize > 0);
 
     retVal = true;
 
