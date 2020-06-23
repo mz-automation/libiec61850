@@ -1477,7 +1477,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
 
                     controlObject->addCauseValue = ADD_CAUSE_SELECT_FAILED;
 
-                    updateControlParameters(controlObject, ctlVal, ctlNum, origin, interlockCheck, synchroCheck);
+                    updateControlParameters(controlObject, ctlVal, ctlNum, origin, synchroCheck, interlockCheck);
 
                     if (controlObject->checkHandler != NULL) { /* perform operative tests */
 
