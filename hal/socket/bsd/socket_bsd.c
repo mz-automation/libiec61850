@@ -47,6 +47,10 @@
 #define DEBUG_SOCKET 0
 #endif
 
+#ifndef MSG_NOSIGNAL
+#define MSG_NOSIGNAL 0
+#endif
+
 struct sSocket {
     int fd;
     uint32_t connectTimeout;
@@ -224,6 +228,14 @@ setSocketNonBlocking(Socket self)
     fcntl(self->fd, F_SETFL, flags | O_NONBLOCK);
 }
 
+static void
+activateTcpNoDelay(Socket self)
+{
+    /* activate TCP_NODELAY option - packets will be sent immediately */
+    int flag = 1;
+    setsockopt(self->fd, IPPROTO_TCP, TCP_NODELAY, (char *) &flag, sizeof(int));
+}
+
 ServerSocket
 TcpServerSocket_create(const char* address, int port)
 {
@@ -243,16 +255,16 @@ TcpServerSocket_create(const char* address, int port)
         setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (char *) &optionReuseAddr, sizeof(int));
 
         if (bind(fd, (struct sockaddr *) &serverAddress, sizeof(serverAddress)) >= 0) {
-            serverSocket = GLOBAL_MALLOC(sizeof(struct sServerSocket));
+            serverSocket = (ServerSocket) GLOBAL_MALLOC(sizeof(struct sServerSocket));
             serverSocket->fd = fd;
             serverSocket->backLog = 0;
+
+            setSocketNonBlocking((Socket) serverSocket);
         }
         else {
             close(fd);
             return NULL ;
         }
-
-        setSocketNonBlocking((Socket) serverSocket);
     }
 
     return serverSocket;
@@ -264,6 +276,8 @@ ServerSocket_listen(ServerSocket self)
     listen(self->fd, self->backLog);
 }
 
+
+/* CHANGED TO MAKE NON-BLOCKING --> RETURNS NULL IF NO CONNECTION IS PENDING */
 Socket
 ServerSocket_accept(ServerSocket self)
 {
@@ -275,7 +289,19 @@ ServerSocket_accept(ServerSocket self)
 
     if (fd >= 0) {
         conSocket = (Socket) GLOBAL_CALLOC(1, sizeof(struct sSocket));
-        conSocket->fd = fd;
+
+        if (conSocket) {
+            conSocket->fd = fd;
+
+            activateTcpNoDelay(conSocket);
+        }
+        else {
+            /* out of memory */
+            close(fd);
+
+            if (DEBUG_SOCKET)
+                printf("SOCKET: out of memory\n");
+        }
     }
 
     return conSocket;
@@ -295,7 +321,7 @@ closeAndShutdownSocket(int socketFd)
         if (DEBUG_SOCKET)
             printf("socket_linux.c: call shutdown for %i!\n", socketFd);
 
-        // shutdown is required to unblock read or accept in another thread!
+        /* shutdown is required to unblock read or accept in another thread! */
         shutdown(socketFd, SHUT_RDWR);
 
         close(socketFd);
@@ -326,8 +352,23 @@ TcpSocket_create()
     if (sock != -1) {
         self = (Socket) GLOBAL_MALLOC(sizeof(struct sSocket));
 
-        self->fd = sock;
-        self->connectTimeout = 5000;
+        if (self) {
+            self->fd = sock;
+            self->connectTimeout = 5000;
+
+#if 0
+            int tcpUserTimeout = 10000;
+            int result = setsockopt(sock, SOL_TCP,  TCP_USER_TIMEOUT, &tcpUserTimeout, sizeof(tcpUserTimeout));
+#endif
+        }
+        else {
+            /* out of memory */
+            close(sock);
+
+            if (DEBUG_SOCKET)
+                printf("SOCKET: out of memory\n");
+        }
+
     }
     else {
         if (DEBUG_SOCKET)
@@ -343,23 +384,22 @@ Socket_setConnectTimeout(Socket self, uint32_t timeoutInMs)
     self->connectTimeout = timeoutInMs;
 }
 
-// TODO: implement
+bool
+Socket_setLocalAddress(Socket self, const char* address, int port)
+{
+    struct sockaddr_in clientAddress;
+
+    if (!prepareServerAddress(address, port, &clientAddress))
+        return false;
+
+    if (bind(self->fd, (struct sockaddr *) &clientAddress, sizeof(clientAddress)) != 0)
+        return false;
+
+    return true;
+}
+
 bool
 Socket_connectAsync(Socket self, const char* address, int port)
-{
-    return false;
-}
-
-// TODO: implement
-SocketState
-Socket_checkAsyncConnectState(Socket self)
-{
-    return SOCKET_STATE_FAILED;
-}
-
-
-bool
-Socket_connect(Socket self, const char* address, int port)
 {
     struct sockaddr_in serverAddress;
 
@@ -373,21 +413,89 @@ Socket_connect(Socket self, const char* address, int port)
     FD_ZERO(&fdSet);
     FD_SET(self->fd, &fdSet);
 
+    activateTcpNoDelay(self);
+
     fcntl(self->fd, F_SETFL, O_NONBLOCK);
 
     if (connect(self->fd, (struct sockaddr *) &serverAddress, sizeof(serverAddress)) < 0) {
-        if (errno != EINPROGRESS)
+
+        if (errno != EINPROGRESS) {
+            self->fd = -1;
             return false;
+        }
     }
+
+    return true; /* is connecting or already connected */
+}
+
+SocketState
+Socket_checkAsyncConnectState(Socket self)
+{
+    struct timeval timeout;
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 0;
+
+    fd_set fdSet;
+    FD_ZERO(&fdSet);
+    FD_SET(self->fd, &fdSet);
+
+    int selectVal = select(self->fd + 1, NULL, &fdSet , NULL, &timeout);
+
+    if (selectVal == 1) {
+
+        /* Check if connection is established */
+
+        int so_error;
+        socklen_t len = sizeof so_error;
+
+        if (getsockopt(self->fd, SOL_SOCKET, SO_ERROR, &so_error, &len) >= 0) {
+
+            if (so_error == 0)
+                return SOCKET_STATE_CONNECTED;
+        }
+
+        return SOCKET_STATE_FAILED;
+    }
+    else if (selectVal == 0) {
+        return SOCKET_STATE_CONNECTING;
+    }
+    else {
+        return SOCKET_STATE_FAILED;
+    }
+}
+
+bool
+Socket_connect(Socket self, const char* address, int port)
+{
+    if (Socket_connectAsync(self, address, port) == false)
+        return false;
 
     struct timeval timeout;
     timeout.tv_sec = self->connectTimeout / 1000;
     timeout.tv_usec = (self->connectTimeout % 1000) * 1000;
 
-    if (select(self->fd + 1, NULL, &fdSet, NULL, &timeout) <= 0)
-        return false;
-    else
-        return true;
+    fd_set fdSet;
+    FD_ZERO(&fdSet);
+    FD_SET(self->fd, &fdSet);
+
+    if (select(self->fd + 1, NULL, &fdSet , NULL, &timeout) == 1) {
+
+        /* Check if connection is established */
+
+        int so_error;
+        socklen_t len = sizeof so_error;
+
+        if (getsockopt(self->fd, SOL_SOCKET, SO_ERROR, &so_error, &len) >= 0) {
+
+            if (so_error == 0)
+                return true;
+        }
+    }
+
+    close (self->fd);
+    self->fd = -1;
+
+    return false;
 }
 
 static char*
@@ -520,7 +628,8 @@ Socket_write(Socket self, uint8_t* buf, int size)
     if (self->fd == -1)
         return -1;
 
-    int retVal = send(self->fd, buf, size, 0);
+    /* MSG_NOSIGNAL - prevent send to signal SIGPIPE when peer unexpectedly closed the socket */
+    int retVal = send(self->fd, buf, size, MSG_NOSIGNAL | MSG_DONTWAIT);
 
     if ((retVal == -1) && (errno == EAGAIN))
         return 0;
