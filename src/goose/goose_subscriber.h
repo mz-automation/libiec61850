@@ -75,12 +75,23 @@ GooseSubscriber_getGoCbRef(GooseSubscriber self);
 */
 
 /**
+ * \brief set the destination mac address used by the subscriber to filter relevant messages.
+ *
+ * If dstMac is set the subscriber will ignore all messages with other dstMac values.
+ *
+ * \param self GooseSubscriber instance to operate on.
+ * \param dstMac the destination mac address
+ */
+LIB61850_API void
+GooseSubscriber_setDstMac(GooseSubscriber self, uint8_t dstMac[6]);
+
+/**
  * \brief set the APPID used by the subscriber to filter relevant messages.
  *
  * If APPID is set the subscriber will ignore all messages with other APPID values.
  *
  * \param self GooseSubscriber instance to operate on.
- * \param the APPID value the subscriber should use to filter messages
+ * \param appId the APPID value the subscriber should use to filter messages
  */
 LIB61850_API void
 GooseSubscriber_setAppId(GooseSubscriber self, uint16_t appId);

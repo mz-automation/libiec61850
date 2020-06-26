@@ -720,6 +720,9 @@ parseGooseMessage(GooseReceiver self, uint8_t* buffer, int numbytes)
     if (buffer[bufPos++] != 0xb8)
         return;
 
+    uint8_t dstMac[6];
+    memcpy(dstMac,buffer,6);
+
     uint16_t appId;
 
     appId = buffer[bufPos++] * 0x100;
@@ -743,6 +746,8 @@ parseGooseMessage(GooseReceiver self, uint8_t* buffer, int numbytes)
 
     if (DEBUG_GOOSE_SUBSCRIBER) {
         printf("GOOSE_SUBSCRIBER: GOOSE message:\nGOOSE_SUBSCRIBER: ----------------\n");
+        printf("GOOSE_SUBSCRIBER:   DST-MAC: %02x:%02x:%02x:%02x:%02X:%02X\n",
+               dstMac[0], dstMac[1], dstMac[2], dstMac[3], dstMac[4], dstMac[5]);
         printf("GOOSE_SUBSCRIBER:   APPID: %u\n", appId);
         printf("GOOSE_SUBSCRIBER:   LENGTH: %u\n", length);
         printf("GOOSE_SUBSCRIBER:   APDU length: %i\n", apduLength);
@@ -754,7 +759,8 @@ parseGooseMessage(GooseReceiver self, uint8_t* buffer, int numbytes)
     while (element != NULL) {
         GooseSubscriber subscriber = (GooseSubscriber) LinkedList_getData(element);
 
-        if (subscriber->appId == appId) {
+        if (((subscriber->appId == -1) || (subscriber->appId == appId)) &&
+                (!subscriber->dstMacSet || (memcmp(subscriber->dstMac, dstMac,6) == 0))) {
             subscriberFound = true;
             break;
         }
@@ -766,7 +772,7 @@ parseGooseMessage(GooseReceiver self, uint8_t* buffer, int numbytes)
         parseGoosePayload(self, buffer + bufPos, apduLength);
     else {
         if (DEBUG_GOOSE_SUBSCRIBER)
-            printf("GOOSE_SUBSCRIBER: GOOSE message ignored due to unknown APPID value\n");
+            printf("GOOSE_SUBSCRIBER: GOOSE message ignored due to unknown DST-MAC or APPID value\n");
     }
 }
 

@@ -48,10 +48,12 @@ struct sGooseSubscriber {
     uint64_t invalidityTime;
     bool stateValid;
 
+    uint8_t dstMac[6]; /* destination mac address */
     int32_t appId; /* APPID or -1 if APPID should be ignored */
 
     MmsValue* dataSetValues;
     bool dataSetValuesSelfAllocated;
+    bool dstMacSet;
 
     GooseListener listener;
     void* listenerParameter;

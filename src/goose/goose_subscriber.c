@@ -48,6 +48,8 @@ GooseSubscriber_create(char* goCbRef, MmsValue* dataSetValues)
     if (dataSetValues != NULL)
         self->dataSetValuesSelfAllocated = false;
 
+    memset(self->dstMac, 0xFF, 6);
+    self->dstMacSet = false;
     self->appId = -1;
 
     return self;
@@ -63,6 +65,13 @@ GooseSubscriber_isValid(GooseSubscriber self)
         return false;
 
     return true;
+}
+
+void
+GooseSubscriber_setDstMac(GooseSubscriber self, uint8_t dstMac[6])
+{
+  memcpy(self->dstMac, dstMac,6);
+  self->dstMacSet = true;
 }
 
 void
