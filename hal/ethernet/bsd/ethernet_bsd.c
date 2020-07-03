@@ -34,6 +34,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <fcntl.h>
+#include <stdio.h>
 
 #include "lib_memory.h"
 #include "hal_ethernet.h"
@@ -390,7 +391,7 @@ Ethernet_receivePacket(EthernetSocket self, uint8_t* buffer, int bufferSize)
         /* Check if the target buffer is big enough to hold the received ethernet frame. */
         if ((unsigned int) bufferSize >= header->bh_caplen)
         {
-            /* Copy the frame to the target buffer.
+            /* Copy the frame to the target buffer. */
             memcpy(buffer, self->bpfPositon + header->bh_hdrlen, header->bh_caplen);
 
             /* Move the read pointer to the next ethernet frame header WORD ALIGNED (Took me a while to find that out). */

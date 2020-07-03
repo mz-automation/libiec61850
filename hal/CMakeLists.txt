@@ -65,7 +65,16 @@ endif(WITH_WPCAP)
 set (libhal_bsd_SRCS
  ${CMAKE_CURRENT_LIST_DIR}/socket/bsd/socket_bsd.c
  ${CMAKE_CURRENT_LIST_DIR}/ethernet/bsd/ethernet_bsd.c
- ${CMAKE_CURRENT_LIST_DIR}/thread/bsd/thread_bsd.c
+ ${CMAKE_CURRENT_LIST_DIR}/thread/bsd/thread_macos.c
+ ${CMAKE_CURRENT_LIST_DIR}/filesystem/linux/file_provider_linux.c
+ ${CMAKE_CURRENT_LIST_DIR}/time/unix/time.c
+ ${CMAKE_CURRENT_LIST_DIR}/memory/lib_memory.c
+)
+
+set (libhal_macos_SRCS
+ ${CMAKE_CURRENT_LIST_DIR}/socket/bsd/socket_bsd.c
+ ${CMAKE_CURRENT_LIST_DIR}/ethernet/bsd/ethernet_bsd.c
+ ${CMAKE_CURRENT_LIST_DIR}/thread/macos/thread_macos.c
  ${CMAKE_CURRENT_LIST_DIR}/filesystem/linux/file_provider_linux.c
  ${CMAKE_CURRENT_LIST_DIR}/time/unix/time.c
  ${CMAKE_CURRENT_LIST_DIR}/memory/lib_memory.c
@@ -90,7 +99,7 @@ ENDIF()
 ELSEIF(UNIX)
 IF(APPLE)
 set (libhal_SRCS
-    ${libhal_bsd_SRCS}
+    ${libhal_macos_SRCS}
 )
 ELSEIF(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
 set (libhal_SRCS
