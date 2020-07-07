@@ -553,6 +553,8 @@ parseServiceError(uint8_t* buffer, int bufPos, int maxLength, MmsServiceError* e
         case 0xa3: /* serviceSpecificInfo */
             bufPos += length; /* ignore */
             break;
+        case 0x00: /* indefinite length end tag -> ignore */
+            break;
         default:
             bufPos += length; /* ignore */
             break;
@@ -604,6 +606,8 @@ mmsMsg_parseConfirmedErrorPDU(uint8_t* buffer, int bufPos, int maxBufPos, uint32
             bufPos = parseServiceError(buffer, bufPos, length, serviceError);
             if (bufPos < 0)
                 goto exit_error;
+            break;
+        case 0x00: /* indefinite length end tag -> ignore */
             break;
         default:
             bufPos += length; /* ignore */
@@ -673,7 +677,7 @@ exit_error:
     return -1;
 }
 
-static void
+void
 handleAsyncResponse(MmsConnection self, ByteBuffer* response, uint32_t bufPos, MmsOutstandingCall outstandingCall, MmsError err)
 {
 

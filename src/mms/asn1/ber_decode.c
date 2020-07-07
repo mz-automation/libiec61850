@@ -24,6 +24,40 @@
 #include "libiec61850_platform_includes.h"
 #include "ber_decode.h"
 
+static int
+getIndefiniteLength(uint8_t* buffer, int bufPos, int maxBufPos)
+{
+    int length = 0;
+
+    while (bufPos < maxBufPos) {
+        if ((buffer[bufPos] == 0) && (buffer[bufPos+1] == 0)) {
+            return length + 2;
+        }
+        else {
+            length++;
+
+            if ((buffer[bufPos++] & 0x1f) == 0x1f) {
+                /* handle extended tags */
+                bufPos++;
+                length++;
+            }
+
+            int subLength = -1;
+
+            int newBufPos = BerDecoder_decodeLength(buffer, &subLength, bufPos, maxBufPos);
+
+            if (newBufPos == -1)
+                return -1;
+
+            length += subLength + newBufPos - bufPos;
+
+            bufPos = newBufPos + subLength;
+        }
+    }
+
+    return -1;
+}
+
 int
 BerDecoder_decodeLength(uint8_t* buffer, int* length, int bufPos, int maxBufPos)
 {
@@ -36,7 +70,7 @@ BerDecoder_decodeLength(uint8_t* buffer, int* length, int bufPos, int maxBufPos)
         int lenLength = len1 & 0x7f;
 
         if (lenLength == 0) { /* indefinite length form */
-            *length = -1;
+            *length = getIndefiniteLength(buffer, bufPos, maxBufPos);
         }
         else {
             *length = 0;

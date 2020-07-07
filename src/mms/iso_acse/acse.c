@@ -230,6 +230,9 @@ parseAarePdu(AcseConnection* self, uint8_t* buffer, int bufPos, int maxBufPos)
             }
             break;
 
+        case 0x00: /* indefinite length end tag -> ignore */
+            break;
+
         default: /* ignore unknown tag */
             if (DEBUG_ACSE)
                 printf("ACSE: parseAarePdu: unknown tag %02x\n", tag);
@@ -363,6 +366,9 @@ parseAarqPdu(AcseConnection* self, uint8_t* buffer, int bufPos, int maxBufPos)
             }
             break;
 
+        case 0x00: /* indefinite length end tag -> ignore */
+            break;
+
         default: /* ignore unknown tag */
             if (DEBUG_ACSE)
                 printf("ACSE: parseAarqPdu: unknown tag %02x\n", tag);
@@ -453,6 +459,8 @@ AcseConnection_parseMessage(AcseConnection* self, ByteBuffer* message)
         break;
     case 0x64: /* A_ABORT */
         indication = ACSE_ABORT;
+        break;
+    case 0x00: /* indefinite length end tag -> ignore */
         break;
     default:
         if (DEBUG_ACSE)

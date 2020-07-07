@@ -135,6 +135,8 @@ getNumberOfElements(uint8_t* buffer, int bufPos, int elementLength)
              break;
          case 0x91: /* Utctime */
              break;
+         case 0x00: /* indefinite length end tag -> ignore */
+             break;
          default:
              goto exit_with_error;
          }
@@ -302,6 +304,9 @@ MmsValue_decodeMmsData(uint8_t* buffer, int bufPos, int bufferLength, int* endBu
         else
             goto exit_with_error;
 
+        break;
+
+    case 0x00: /* indefinite length end tag -> ignore */
         break;
 
     default: /* unknown tag -> decoding error */

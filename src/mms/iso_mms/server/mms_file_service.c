@@ -333,6 +333,9 @@ mmsServer_handleFileOpenRequest(
             bufPos += length;
             break;
 
+        case 0x00: /* indefinite length end tag -> ignore */
+            break;
+
         default: /* unrecognized parameter */
             bufPos += length;
             goto exit_reject_invalid_pdu;
@@ -670,6 +673,9 @@ mmsServer_handleObtainFileRequest(
 
             hasDestinationFilename = true;
 
+            break;
+
+        case 0x00: /* indefinite length end tag -> ignore */
             break;
 
         default: /* unrecognized parameter */
@@ -1096,6 +1102,8 @@ mmsServer_handleFileRenameRequest(
                 printf("MMS_SERVER: newFileName: (%s)\n", newFileName);
 
             break;
+        case 0x00: /* indefinite length end tag -> ignore */
+            break;
         default: /* ignore unknown tag */
             if (DEBUG_MMS_SERVER)
                 printf("MMS_SERVER: unknown tag: (%02x)\n", tag);
@@ -1179,6 +1187,9 @@ mmsServer_handleFileDirectoryRequest(
 
             continueAfter = continueAfterFileName;
 
+            break;
+
+        case 0x00: /* indefinite length end tag -> ignore */
             break;
 
         default: /* unrecognized parameter */
