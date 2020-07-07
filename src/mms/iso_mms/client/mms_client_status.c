@@ -95,6 +95,8 @@ mmsClient_parseStatusResponse(MmsConnection self, ByteBuffer* response, int bufP
         case 0x82: /* localDetail */
             bufPos += length;
             break;
+        case 0x00: /* indefinite length end tag -> ignore */
+            break;
         default:
             return false;
         }

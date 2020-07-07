@@ -149,6 +149,9 @@ parseInitResponseDetail(MmsConnection self, uint8_t* buffer, int bufPos, int max
             }
             break;
 
+        case 0x00: /* indefinite length end tag -> ignore */
+            break;
+
         default:
             break;
         }
@@ -219,6 +222,9 @@ mmsClient_parseInitiateResponse(MmsConnection self, ByteBuffer* response)
                 if (parseInitResponseDetail(self, buffer, bufPos, bufPos + length) == false)
                     return false;
             }
+            break;
+
+        case 0x00: /* indefinite length end tag -> ignore */
             break;
 
         default:

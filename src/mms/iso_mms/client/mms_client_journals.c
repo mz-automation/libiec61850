@@ -72,6 +72,9 @@ parseJournalVariable(uint8_t* buffer, int bufPos, int maxLength, MmsJournalVaria
 
             break;
 
+        case 0x00: /* indefinite length end tag -> ignore */
+            break;
+
         default:
             break;
 
@@ -115,6 +118,9 @@ parseJournalVariables(uint8_t* buffer, int bufPos, int maxLength, MmsJournalEntr
 
             break;
 
+        case 0x00: /* indefinite length end tag -> ignore */
+            break;
+
         default:
             break;
         }
@@ -150,6 +156,9 @@ parseData(uint8_t* buffer, int bufPos, int maxLength, MmsJournalEntry journalEnt
 
             parseJournalVariables(buffer, bufPos, length, journalEntry);
 
+            break;
+
+        case 0x00: /* indefinite length end tag -> ignore */
             break;
 
         default:
@@ -198,6 +207,9 @@ parseEntryContent(uint8_t* buffer, int bufPos, int maxLength, MmsJournalEntry jo
 
            parseData(buffer, bufPos, length, journalEntry);
 
+           break;
+
+       case 0x00: /* indefinite length end tag -> ignore */
            break;
 
        default:
@@ -250,6 +262,9 @@ parseJournalEntry(uint8_t* buffer, int bufPos, int maxLength, LinkedList journal
 
             break;
 
+        case 0x00: /* indefinite length end tag -> ignore */
+            break;
+
         default:
             if (DEBUG_MMS_CLIENT)
                 printf("MMS_CLIENT: parseReadJournalResponse: unknown tag %02x\n", tag);
@@ -286,6 +301,9 @@ parseListOfJournalEntries(uint8_t* buffer, int bufPos, int maxLength, LinkedList
         case 0x30:
             if (parseJournalEntry(buffer, bufPos, length, journalEntries) == false)
                 return false;
+            break;
+
+        case 0x00: /* indefinite length end tag -> ignore */
             break;
 
         default:
@@ -351,6 +369,9 @@ mmsClient_parseReadJournalResponse(MmsConnection self, ByteBuffer* response, int
         case 0x81: /* moreFollows */
             if (moreFollows)
                 *moreFollows = BerDecoder_decodeBoolean(buffer, bufPos);
+            break;
+
+        case 0x00: /* indefinite length end tag -> ignore */
             break;
 
         default:

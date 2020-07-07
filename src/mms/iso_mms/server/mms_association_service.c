@@ -308,6 +308,9 @@ parseInitiateRequestPdu(MmsServerConnection self, uint8_t* buffer, int bufPos, i
             /* we ignore this */
             break;
 
+        case 0x00: /* indefinite length end tag -> ignore */
+            break;
+
         default:
         	break; /* Ignore unknown tags */
         }

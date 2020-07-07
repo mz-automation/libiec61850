@@ -486,6 +486,8 @@ mmsServer_handleGetNameListRequest(
                 case 0x82: /* association-specific */
                     objectScope = OBJECT_SCOPE_ASSOCIATION;
                     break;
+                case 0x00: /* indefinite length end tag -> ignore */
+                    break;
                 default:
                     mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_MODIFIER, response);
                     return;
@@ -497,6 +499,10 @@ mmsServer_handleGetNameListRequest(
             continueAfter = (char*) (buffer + bufPos);
             continueAfterLength = length;
             break;
+
+        case 0x00: /* indefinite length end tag -> ignore */
+            break;
+
         default:
             /* ignore unknown tag */
             break;

@@ -96,6 +96,8 @@ mmsClient_parseIdentifyResponse(MmsConnection self, ByteBuffer* response, uint32
         case 0x83: /* list of abstract syntaxes */
             bufPos += length;
             break;
+        case 0x00: /* indefinite length end tag -> ignore */
+            break;
         default: /* ignore unknown tags */
         	bufPos += length;
         	break;

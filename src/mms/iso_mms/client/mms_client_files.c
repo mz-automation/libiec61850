@@ -114,6 +114,9 @@ mmsClient_handleFileOpenRequest(
             bufPos += length;
             break;
 
+        case 0x00: /* indefinite length end tag -> ignore */
+            break;
+
         default: /* unrecognized parameter */
             bufPos += length;
             goto exit_reject_invalid_pdu;
@@ -470,6 +473,8 @@ parseFileAttributes(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t* fileSi
                 }
             }
             break;
+        case 0x00: /* indefinite length end tag -> ignore */
+            break;
         default:
             return false;
         }
@@ -523,6 +528,8 @@ parseDirectoryEntry(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t invokeI
                 return false;
             bufPos += length;
             break;
+        case 0x00: /* indefinite length end tag -> ignore */
+            break;
         default:
             bufPos += length;
             if (DEBUG_MMS_CLIENT)
@@ -567,6 +574,8 @@ parseListOfDirectoryEntries(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t
         case 0x30: /* Sequence */
             parseDirectoryEntry(buffer, bufPos, bufPos + length, invokeId, handler, parameter);
             bufPos += length;
+            break;
+        case 0x00: /* indefinite length end tag -> ignore */
             break;
         default:
             bufPos += length;
@@ -626,6 +635,8 @@ mmsClient_parseFileDirectoryResponse(ByteBuffer* response, int bufPos, uint32_t 
             moreFollows = BerDecoder_decodeBoolean(buffer, bufPos);
             bufPos += length;
             break;
+        case 0x00: /* indefinite length end tag -> ignore */
+            break;
         default:
             bufPos += length;
             if (DEBUG_MMS_CLIENT)
@@ -683,6 +694,8 @@ mmsMsg_parseFileOpenResponse(uint8_t* buffer, int bufPos, int maxBufPos, int32_t
             if (!parseFileAttributes(buffer, bufPos, bufPos + length, fileSize, lastModified))
                 return false;
             bufPos += length;
+            break;
+        case 0x00: /* indefinite length end tag -> ignore */
             break;
         default:
             bufPos += length;
@@ -746,6 +759,9 @@ mmsMsg_parseFileReadResponse(uint8_t* buffer, int bufPos, int maxBufPos, uint32_
         case 0x81: /* moreFollows */
             *moreFollows = BerDecoder_decodeBoolean(buffer, bufPos);
             bufPos += length;
+            break;
+
+        case 0x00: /* indefinite length end tag -> ignore */
             break;
 
         default:
