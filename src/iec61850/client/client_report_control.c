@@ -999,6 +999,9 @@ IedConnection_setRCBValuesAsync(IedConnection self, IedClientError* error, Clien
          if (err != MMS_ERROR_NONE) {
              iedConnection_releaseOutstandingCall(self, call);
          }
+         else {
+             invokeId = call->invokeId;
+         }
 
          goto exit_function;
      }
