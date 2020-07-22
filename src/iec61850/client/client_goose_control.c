@@ -589,6 +589,7 @@ IedConnection_setGoCBValues(IedConnection self, IedClientError* error, ClientGoo
         }
 
         *error = iedConnection_mapMmsErrorToIedError(mmsError);
+
         goto exit_function;
     }
     else {
