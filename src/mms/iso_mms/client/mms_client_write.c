@@ -132,8 +132,12 @@ mmsClient_parseWriteMultipleItemsResponse(ByteBuffer* message, int32_t bufPos, M
 exit_with_error:
     *mmsError = MMS_ERROR_PARSING_RESPONSE;
 
-    if (accessResults != NULL)
-        LinkedList_destroyDeep(*accessResults, (LinkedListValueDeleteFunction) MmsValue_delete);
+    if (accessResults != NULL) {
+        if (*accessResults) {
+            LinkedList_destroyDeep(*accessResults, (LinkedListValueDeleteFunction) MmsValue_delete);
+            *accessResults = NULL;
+        }
+    }
 }
 
 
