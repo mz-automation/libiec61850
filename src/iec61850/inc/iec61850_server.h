@@ -1372,8 +1372,7 @@ IedServer_setPerformCheckHandler(IedServer self, DataObject* node, ControlPerfor
  * This functions sets a user provided handler that should perform the dynamic tests for a control operation.
  * Setting this handler is not required. If not set the server assumes that the checks will always be successful.
  * The handler has to return true upon a successful test of false if the test fails. In the later case the control
- * operation will be aborted. If this handler is set than the server will start a new thread before calling the
- * handler. This thread will also be used to execute the ControlHandler.
+ * operation will be aborted.
  *
  * \param self the instance of IedServer to operate on.
  * \param node the controllable data object handle
