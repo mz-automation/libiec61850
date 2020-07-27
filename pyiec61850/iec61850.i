@@ -51,3 +51,42 @@ ModelNode* toModelNode(DataObject *);
 DataAttribute* toDataAttribute(DataObject *);
 DataAttribute* toDataAttribute(ModelNode *);
 char* toCharP(void *);
+
+/* Goose Subscriber section */
+%{
+struct sGooseSubscriber;
+typedef struct sGooseSubscriber* GooseSubscriber;
+#include "goose_subscriber.h"
+#include "goose_receiver.h"
+
+void GooseSubscriber_setDstMac(GooseSubscriber subscriber,
+                               uint8_t dst_mac_0,
+                               uint8_t dst_mac_1,
+                               uint8_t dst_mac_2,
+                               uint8_t dst_mac_3,
+                               uint8_t dst_mac_4,
+                               uint8_t dst_mac_5)
+{
+    uint8_t dst_mac[6];
+    dst_mac[0] = dst_mac_0;
+    dst_mac[1] = dst_mac_1;
+    dst_mac[2] = dst_mac_2;
+    dst_mac[3] = dst_mac_3;
+    dst_mac[4] = dst_mac_4;
+    dst_mac[5] = dst_mac_5;
+
+    GooseSubscriber_setDstMac(subscriber, dst_mac);
+}
+%}
+
+%include "goose_subscriber.h"
+%include "goose_receiver.h"
+
+void GooseSubscriber_setDstMac(GooseSubscriber subscriber,
+                               uint8_t dst_mac_0,
+                               uint8_t dst_mac_1,
+                               uint8_t dst_mac_2,
+                               uint8_t dst_mac_3,
+                               uint8_t dst_mac_4,
+                               uint8_t dst_mac_5);
+
