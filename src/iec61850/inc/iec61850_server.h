@@ -795,7 +795,7 @@ IedServer_getFloatAttributeValue(IedServer self, const DataAttribute* dataAttrib
  * \param self the instance of IedServer to operate on.
  * \param dataAttribute the data attribute handle
  *
- * \return the value as 32 bit float
+ * \return the value as 64 bit unsigned integer representing the time in milliseconds since Epoch
  */
 LIB61850_API uint64_t
 IedServer_getUTCTimeAttributeValue(IedServer self, const DataAttribute* dataAttribute);
