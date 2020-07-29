@@ -91,8 +91,11 @@ void GooseSubscriber_setDstMac(GooseSubscriber subscriber,
                                uint8_t dst_mac_5);
 
 /* Event Handler section */
+%feature("director") RCBHandler;
 %{
 #include "eventHandler.hpp"
+#include "reportControlBlockHandler.hpp"
 EventSubscriber* EventSubscriber::m_last_created_event_subscriber = nullptr;
 %}
 %include "eventHandler.hpp"
+%include "reportControlBlockHandler.hpp"
