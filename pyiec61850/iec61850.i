@@ -1,5 +1,5 @@
 /* File : iec61850.i */
-%module iec61850
+%module(directors="1") iec61850
 %ignore ControlObjectClient_setTestMode(ControlObjectClient self);
 %ignore CDA_OperBoolean(ModelNode* parent, bool isTImeActivated);
 %ignore LogicalNode_hasBufferedReports(LogicalNode* node);
@@ -90,3 +90,9 @@ void GooseSubscriber_setDstMac(GooseSubscriber subscriber,
                                uint8_t dst_mac_4,
                                uint8_t dst_mac_5);
 
+/* Event Handler section */
+%{
+#include "eventHandler.hpp"
+EventSubscriber* EventSubscriber::m_last_created_event_subscriber = nullptr;
+%}
+%include "eventHandler.hpp"
