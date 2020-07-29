@@ -47,7 +47,7 @@ readLine(FileHandle fileHandle, uint8_t* buffer, int maxSize)
 
         if (fileReadResult == 1) {
 
-            if (!((buffer[bufPos] == '\n') || (buffer[bufPos] == '\r'))) {
+            if (!((buffer[bufPos] == '\n') || (buffer[bufPos] == '\r') || (buffer[bufPos] == '\t') || (buffer[bufPos] == ' '))) {
                 bufPos++;
                 bytesRead++;
                 break;
