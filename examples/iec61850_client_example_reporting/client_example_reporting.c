@@ -103,7 +103,7 @@ main(int argc, char** argv)
         LinkedList dataSetDirectory = NULL;
 
         /* read data set directory */
-        dataSetDirectory = IedConnection_getDataSetDirectory(con, &error, "testmodelSENSORS/LLN0.DataSetST_Attr", NULL);
+        dataSetDirectory = IedConnection_getDataSetDirectory(con, &error, "simpleIOGenericIO/LLN0.Events", NULL);
 
         if (error != IED_ERROR_OK) {
             printf("Reading data set directory failed!\n");
@@ -111,7 +111,7 @@ main(int argc, char** argv)
         }
 
         /* read data set */
-        clientDataSet = IedConnection_readDataSetValues(con, &error, "testmodelSENSORS/LLN0.DataSetST_Attr", NULL);
+        clientDataSet = IedConnection_readDataSetValues(con, &error, "simpleIOGenericIO/LLN0.Events", NULL);
 
         if (clientDataSet == NULL) {
             printf("failed to read dataset\n");
@@ -119,7 +119,7 @@ main(int argc, char** argv)
         }
 
         /* Read RCB values */
-        rcb = IedConnection_getRCBValues(con, &error, "testmodelSENSORS/LLN0.RP.events01", NULL);
+        rcb = IedConnection_getRCBValues(con, &error, "simpleIOGenericIO/LLN0.RP.EventsRCB01", NULL);
 
         if (error != IED_ERROR_OK) {
             printf("getRCBValues service error!\n");
@@ -129,12 +129,12 @@ main(int argc, char** argv)
         /* prepare the parameters of the RCP */
         ClientReportControlBlock_setResv(rcb, true);
         ClientReportControlBlock_setTrgOps(rcb, TRG_OPT_DATA_CHANGED | TRG_OPT_QUALITY_CHANGED | TRG_OPT_GI);
-        ClientReportControlBlock_setDataSetReference(rcb, "testmodelSENSORS/LLN0$DataSetST_Attr"); /* NOTE the "$" instead of "." ! */
+        ClientReportControlBlock_setDataSetReference(rcb, "simpleIOGenericIO/LLN0$Events"); /* NOTE the "$" instead of "." ! */
         ClientReportControlBlock_setRptEna(rcb, true);
         ClientReportControlBlock_setGI(rcb, true);
 
         /* Configure the report receiver */
-        IedConnection_installReportHandler(con, "testmodelSENSORS/LLN0.events01", ClientReportControlBlock_getRptId(rcb), reportCallbackFunction,
+        IedConnection_installReportHandler(con, "simpleIOGenericIO/LLN0.RP.EventsRCB", ClientReportControlBlock_getRptId(rcb), reportCallbackFunction,
                 (void*) dataSetDirectory);
 
         /* Write RCB parameters and enable report */
