@@ -1105,28 +1105,28 @@ IedConnection_getRCBValuesAsync(IedConnection self, IedClientError* error, const
         IedConnection_GetRCBValuesHandler handler, void* parameter);
 
 /** Describes the reason for the inclusion of the element in the report */
-typedef enum {
-    /** the element is not included in the received report */
-    IEC61850_REASON_NOT_INCLUDED = 0,
+typedef int ReasonForInclusion;
 
-    /** the element is included due to a change of the data value */
-    IEC61850_REASON_DATA_CHANGE = 1,
+/** the element is not included in the received report */
+#define IEC61850_REASON_NOT_INCLUDED 0
 
-    /** the element is included due to a change in the quality of data */
-    IEC61850_REASON_QUALITY_CHANGE = 2,
+/** the element is included due to a change of the data value */
+#define IEC61850_REASON_DATA_CHANGE 1
 
-    /** the element is included due to an update of the data value */
-    IEC61850_REASON_DATA_UPDATE = 4,
+/** the element is included due to a change in the quality of data */
+#define IEC61850_REASON_QUALITY_CHANGE 2
 
-    /** the element is included due to a periodic integrity report task */
-    IEC61850_REASON_INTEGRITY = 8,
+/** the element is included due to an update of the data value */
+#define IEC61850_REASON_DATA_UPDATE 4
 
-    /** the element is included due to a general interrogation by the client */
-    IEC61850_REASON_GI = 16,
+/** the element is included due to a periodic integrity report task */
+#define IEC61850_REASON_INTEGRITY 8
 
-    /** the reason for inclusion is unknown (e.g. report is not configured to include reason-for-inclusion) */
-    IEC61850_REASON_UNKNOWN = 32
-} ReasonForInclusion;
+/** the element is included due to a general interrogation by the client */
+#define IEC61850_REASON_GI 16
+
+/** the reason for inclusion is unknown (e.g. report is not configured to include reason-for-inclusion) */
+#define IEC61850_REASON_UNKNOWN 32
 
 #define REASON_NOT_INCLUDED IEC61850_REASON_NOT_INCLUDED
 #define REASON_DATA_CHANGE IEC61850_REASON_DATA_CHANGE

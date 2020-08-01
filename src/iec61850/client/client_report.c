@@ -716,10 +716,10 @@ iedConnection_handleReport(IedConnection self, MmsValue* value)
                     goto exit_function;
                 }
 
-                matchingReport->reasonForInclusion[i] = 0;
+                matchingReport->reasonForInclusion[i] = IEC61850_REASON_NOT_INCLUDED;
 
                 if (MmsValue_getBitStringBit(reasonForInclusion, 1) == true)
-                    matchingReport->reasonForInclusion[i] |= IEC61850_REASON_DATA_CHANGE;
+                    matchingReport->reasonForInclusion[i] |= (ReasonForInclusion) IEC61850_REASON_DATA_CHANGE;
                 if (MmsValue_getBitStringBit(reasonForInclusion, 2) == true)
                     matchingReport->reasonForInclusion[i] |= IEC61850_REASON_QUALITY_CHANGE;
                 if (MmsValue_getBitStringBit(reasonForInclusion, 3) == true)
