@@ -542,7 +542,7 @@ isoServerThread(void* isoServerParam)
     }
 
     if (DEBUG_ISO_SERVER)
-        printf("ISO_SERVER: isoServerThread %p started\n", &isoServerParam);
+        printf("ISO_SERVER: isoServerThread %p started\n", isoServerParam);
 
     while (self->state == ISO_SVR_STATE_RUNNING)
     {
@@ -556,7 +556,7 @@ isoServerThread(void* isoServerParam)
 cleanUp:
 
     if (DEBUG_ISO_SERVER)
-        printf("ISO_SERVER: isoServerThread %p stopped\n", &isoServerParam);
+        printf("ISO_SERVER: isoServerThread %p stopped\n", isoServerParam);
 }
 #endif
 
