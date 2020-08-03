@@ -151,6 +151,9 @@
 /* include support for IEC 61850 log services */
 #cmakedefine01 CONFIG_IEC61850_LOG_SERVICE
 
+/* include support for IEC 61850 service tracking */
+#cmakedefine01 CONFIG_IEC61850_SERVICE_TRACKING
+
 /* allow user to control read access by callback */
 #cmakedefine01 CONFIG_IEC61850_SUPPORT_USER_READ_ACCESS_CONTROL
 

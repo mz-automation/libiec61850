@@ -132,7 +132,7 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
         MmsServerConnection connection);
 
 LIB61850_INTERNAL void
-ReportControl_readAccess(ReportControl* rc, char* elementName);
+ReportControl_readAccess(ReportControl* rc, MmsMapping* mmsMapping, char* elementName);
 
 LIB61850_INTERNAL void
 Reporting_activateBufferedReports(MmsMapping* self);

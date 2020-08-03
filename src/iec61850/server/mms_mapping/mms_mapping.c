@@ -856,6 +856,241 @@ checkForSgcb(MmsMapping* self, LogicalNode* logicalNode)
 
 #endif /* (CONFIG_IEC61850_SETTING_GROUPS == 1) */
 
+#if (CONFIG_IEC61850_SERVICE_TRACKING == 1)
+
+static void
+getCommonTrackingAttributes(ServiceTrkInstance svcTrkInst, DataObject* trkObj)
+{
+    ModelNode* modelNode = trkObj->firstChild;
+
+    while (modelNode) {
+        if (modelNode->modelType == DataAttributeModelType) {
+            DataAttribute* da = (DataAttribute*) modelNode;
+
+            if (!strcmp(da->name, "objRef")) {
+                svcTrkInst->objRef = da;
+            }
+            else if (!strcmp(da->name, "serviceType")) {
+                svcTrkInst->serviceType = da;
+            }
+            else if (!strcmp(da->name, "errorCode")) {
+                svcTrkInst->errorCode = da;
+            }
+            else if (!strcmp(da->name, "originatorID")) {
+                svcTrkInst->originatorID = da;
+            }
+            else if (!strcmp(da->name, "t")) {
+                svcTrkInst->t = da;
+            }
+        }
+
+        modelNode = modelNode->sibling;
+    }
+
+    /* check if all mandatory attributes are present */
+    if (svcTrkInst->objRef && svcTrkInst->serviceType && svcTrkInst->errorCode && svcTrkInst->t) {
+
+    }
+    else {
+        if (DEBUG_IED_SERVER)
+            printf("IED_SERVER: required attribute missing in service tracking object %s\n",trkObj->name);
+    }
+}
+
+static void
+getBrcbTrackingAttributes(BrcbTrkInstance svcTrkInst, DataObject* trkObj)
+{
+    ModelNode* modelNode = trkObj->firstChild;
+
+    while (modelNode) {
+        if (modelNode->modelType == DataAttributeModelType) {
+            DataAttribute* da = (DataAttribute*) modelNode;
+
+            if (!strcmp(da->name, "rptID")) {
+                svcTrkInst->rptID = da;
+            }
+            else if (!strcmp(da->name, "rptEna")) {
+                svcTrkInst->rptEna = da;
+            }
+            else if (!strcmp(da->name, "datSet")) {
+                svcTrkInst->datSet = da;
+            }
+            else if (!strcmp(da->name, "confRev")) {
+                svcTrkInst->confRev = da;
+            }
+            else if (!strcmp(da->name, "optFlds")) {
+                svcTrkInst->optFlds = da;
+            }
+            else if (!strcmp(da->name, "bufTm")) {
+                svcTrkInst->bufTm = da;
+            }
+            else if (!strcmp(da->name, "sqNum")) {
+                svcTrkInst->sqNum = da;
+            }
+            else if (!strcmp(da->name, "trgOps")) {
+                svcTrkInst->trgOps = da;
+            }
+            else if (!strcmp(da->name, "intgPd")) {
+                svcTrkInst->intgPd = da;
+            }
+            else if (!strcmp(da->name, "gi")) {
+                svcTrkInst->gi = da;
+            }
+            else if (!strcmp(da->name, "purgeBuf")) {
+                svcTrkInst->purgeBuf = da;
+            }
+            else if (!strcmp(da->name, "entryID")) {
+                svcTrkInst->entryID = da;
+            }
+            else if (!strcmp(da->name, "timeOfEntry")) {
+                svcTrkInst->timeOfEntry = da;
+            }
+            else if (!strcmp(da->name, "resvTms")) {
+                svcTrkInst->resvTms = da;
+            }
+        }
+
+        modelNode = modelNode->sibling;
+    }
+
+    /* check if all mandatory attributes are present */
+    if (svcTrkInst->rptID && svcTrkInst->rptEna && svcTrkInst->datSet && svcTrkInst->confRev &&
+        svcTrkInst->optFlds && svcTrkInst->bufTm && svcTrkInst->sqNum && svcTrkInst->trgOps &&
+        svcTrkInst->intgPd && svcTrkInst->gi && svcTrkInst->purgeBuf && svcTrkInst->entryID &&
+        svcTrkInst->timeOfEntry) {
+
+    }
+    else {
+        if (DEBUG_IED_SERVER)
+            printf("IED_SERVER: required attribute missing in brcbTrk service tracking object %s\n",trkObj->name);
+    }
+}
+
+static void
+getUrcbTrackingAttributes(UrcbTrkInstance svcTrkInst, DataObject* trkObj)
+{
+    ModelNode* modelNode = trkObj->firstChild;
+
+    while (modelNode) {
+        if (modelNode->modelType == DataAttributeModelType) {
+            DataAttribute* da = (DataAttribute*) modelNode;
+
+            if (!strcmp(da->name, "rptID")) {
+                svcTrkInst->rptID = da;
+            }
+            else if (!strcmp(da->name, "rptEna")) {
+                svcTrkInst->rptEna = da;
+            }
+            else if (!strcmp(da->name, "resv")) {
+                svcTrkInst->resv = da;
+            }
+            else if (!strcmp(da->name, "datSet")) {
+                svcTrkInst->datSet = da;
+            }
+            else if (!strcmp(da->name, "confRev")) {
+                svcTrkInst->confRev = da;
+            }
+            else if (!strcmp(da->name, "optFlds")) {
+                svcTrkInst->optFlds = da;
+            }
+            else if (!strcmp(da->name, "bufTm")) {
+                svcTrkInst->bufTm = da;
+            }
+            else if (!strcmp(da->name, "sqNum")) {
+                svcTrkInst->sqNum = da;
+            }
+            else if (!strcmp(da->name, "trgOps")) {
+                svcTrkInst->trgOps = da;
+            }
+            else if (!strcmp(da->name, "intgPd")) {
+                svcTrkInst->intgPd = da;
+            }
+            else if (!strcmp(da->name, "gi")) {
+                svcTrkInst->gi = da;
+            }
+        }
+
+        modelNode = modelNode->sibling;
+    }
+
+    /* check if all mandatory attributes are present */
+    if (svcTrkInst->rptID && svcTrkInst->rptEna && svcTrkInst->datSet && svcTrkInst->confRev &&
+        svcTrkInst->optFlds && svcTrkInst->bufTm && svcTrkInst->sqNum && svcTrkInst->trgOps &&
+        svcTrkInst->intgPd && svcTrkInst->gi && svcTrkInst->resv) {
+
+    }
+    else {
+        if (DEBUG_IED_SERVER)
+            printf("IED_SERVER: required attribute missing in urcbTrk service tracking object %s\n",trkObj->name);
+    }
+}
+
+static void
+checkForServiceTrackingVariables(MmsMapping* self, LogicalNode* logicalNode)
+{
+    ModelNode* modelNode = logicalNode->firstChild;
+
+    while (modelNode) {
+
+        if (!strcmp(modelNode->name, "SpcTrk")) {
+            if (DEBUG_IED_SERVER)
+                printf("SpcTrk data object found!\n");
+
+        }
+        else if (!strcmp(modelNode->name, "BrcbTrk")) {
+            if (DEBUG_IED_SERVER)
+                printf("BrcbTrk data object found!\n");
+
+            DataObject* brcbTrk = (DataObject*) modelNode;
+
+            if (self->brcbTrk) {
+                if (DEBUG_IED_SERVER)
+                    printf("IED_SERVER: ERROR: multiple BrcbTrk instances found in server\n");
+            }
+            else {
+                /* Setup BrcbTrk references */
+                self->brcbTrk = (BrcbTrkInstance) GLOBAL_CALLOC(1, sizeof(struct sBrcbTrkInstance));
+
+                if (self->brcbTrk) {
+                    self->brcbTrk->dobj = brcbTrk;
+
+                    getCommonTrackingAttributes((ServiceTrkInstance) self->brcbTrk, brcbTrk);
+                    getBrcbTrackingAttributes(self->brcbTrk, brcbTrk);
+                }
+
+            }
+
+        }
+        else if (!strcmp(modelNode->name, "UrcbTrk")) {
+            if (DEBUG_IED_SERVER)
+                printf("UrcbTrk data object found!\n");
+
+            DataObject* urcbTrk = (DataObject*) modelNode;
+
+            if (self->urcbTrk) {
+                if (DEBUG_IED_SERVER)
+                    printf("IED_SERVER: ERROR: multiple UrcbTrk instances found in server\n");
+            }
+            else {
+                /* Setup BrcbTrk references */
+                self->urcbTrk = (UrcbTrkInstance) GLOBAL_CALLOC(1, sizeof(struct sUrcbTrkInstance));
+
+                if (self->urcbTrk) {
+                    self->urcbTrk->dobj = urcbTrk;
+
+                    getCommonTrackingAttributes((ServiceTrkInstance) self->urcbTrk, urcbTrk);
+                    getUrcbTrackingAttributes(self->urcbTrk, urcbTrk);
+                }
+
+            }
+        }
+
+        modelNode = modelNode->sibling;
+    }
+
+}
+
+#endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
 
 static MmsVariableSpecification*
 createNamedVariableFromLogicalNode(MmsMapping* self, MmsDomain* domain,
@@ -1103,6 +1338,20 @@ createNamedVariableFromLogicalNode(MmsMapping* self, MmsDomain* domain,
     if (LogicalNode_hasFCData(logicalNode, IEC61850_FC_SR)) {
         namedVariable->typeSpec.structure.elements[currentComponent] =
                 createFCNamedVariable(logicalNode, IEC61850_FC_SR);
+
+#if (CONFIG_IEC61850_SERVICE_TRACKING == 1)
+
+        if (DEBUG_IED_SERVER)
+            printf("Service tracking elements detected\n");
+
+        /* TODO set flag to enable service tracking */
+        MmsVariableSpecification* trackingVariables = namedVariable->typeSpec.structure.elements[currentComponent];
+
+        checkForServiceTrackingVariables(self, logicalNode);
+
+#endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
+
+
         currentComponent++;
     }
 
@@ -2339,7 +2588,7 @@ mmsReadHandler(void* parameter, MmsDomain* domain, char* variableId, MmsServerCo
 
                         char* elementName = MmsMapping_getNextNameElement(reportName);
 
-                        ReportControl_readAccess(rc, elementName);
+                        ReportControl_readAccess(rc, self, elementName);
 
                         MmsValue* value = NULL;
 

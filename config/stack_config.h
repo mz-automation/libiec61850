@@ -161,6 +161,9 @@
 /* include support for IEC 61850 log services */
 #define CONFIG_IEC61850_LOG_SERVICE 1
 
+/* include support for IEC 61850 service tracking */
+#define CONFIG_IEC61850_SERVICE_TRACKING 1
+
 /* allow user to control read access by callback */
 #define CONFIG_IEC61850_SUPPORT_USER_READ_ACCESS_CONTROL 1
 

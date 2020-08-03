@@ -308,6 +308,257 @@ ReportControl_getRCBValue(ReportControl* rc, char* elementName)
     return NULL ;
 }
 
+#if (CONFIG_IEC61850_SERVICE_TRACKING == 1)
+
+static void
+copyRCBValuesToTrackingObject(MmsMapping* self, ReportControl* rc)
+{
+    if (rc->buffered) {
+        if (self->brcbTrk) {
+            BrcbTrkInstance trkInst = self->brcbTrk;
+
+            if (trkInst->rptID)
+                MmsValue_update(trkInst->rptID->mmsValue, ReportControl_getRCBValue(rc, "RptID"));
+
+            if (trkInst->rptEna)
+                MmsValue_update(trkInst->rptEna->mmsValue, ReportControl_getRCBValue(rc, "RptEna"));
+
+            if (trkInst->datSet)
+                MmsValue_update(trkInst->datSet->mmsValue, ReportControl_getRCBValue(rc, "DatSet"));
+
+            if (trkInst->confRev)
+                MmsValue_update(trkInst->confRev->mmsValue, ReportControl_getRCBValue(rc, "ConfRev"));
+
+            if (trkInst->optFlds)
+                MmsValue_update(trkInst->optFlds->mmsValue, ReportControl_getRCBValue(rc, "OptFlds"));
+
+            if (trkInst->bufTm)
+                MmsValue_update(trkInst->bufTm->mmsValue, ReportControl_getRCBValue(rc, "BufTm"));
+
+            if (trkInst->sqNum)
+                MmsValue_update(trkInst->sqNum->mmsValue, ReportControl_getRCBValue(rc, "SqNum"));
+
+            if (trkInst->trgOps)
+                MmsValue_update(trkInst->trgOps->mmsValue, ReportControl_getRCBValue(rc, "TrgOps"));
+
+            if (trkInst->intgPd)
+                MmsValue_update(trkInst->intgPd->mmsValue, ReportControl_getRCBValue(rc, "IntgPd"));
+
+            if (trkInst->gi)
+                MmsValue_update(trkInst->gi->mmsValue, ReportControl_getRCBValue(rc, "GI"));
+
+            if (trkInst->purgeBuf)
+                MmsValue_update(trkInst->purgeBuf->mmsValue, ReportControl_getRCBValue(rc, "PurgeBuf"));
+
+            if (trkInst->entryID)
+                MmsValue_update(trkInst->entryID->mmsValue, ReportControl_getRCBValue(rc, "EntryID"));
+
+            if (trkInst->timeOfEntry) {
+                MmsValue* timeofEntryValue = ReportControl_getRCBValue(rc, "TimeofEntry");
+
+                if (timeofEntryValue)
+                    MmsValue_update(trkInst->timeOfEntry->mmsValue, timeofEntryValue);
+            }
+
+
+            if (trkInst->resvTms) {
+                MmsValue* resvTmsValue = ReportControl_getRCBValue(rc, "ResvTms");
+
+                if (resvTmsValue)
+                    MmsValue_update(trkInst->resvTms->mmsValue, resvTmsValue);
+            }
+        }
+    }
+    else {
+        if (self->urcbTrk) {
+            UrcbTrkInstance trkInst = self->urcbTrk;
+
+            if (trkInst->rptID)
+                MmsValue_update(trkInst->rptID->mmsValue, ReportControl_getRCBValue(rc, "RptID"));
+
+            if (trkInst->rptEna)
+                MmsValue_update(trkInst->rptEna->mmsValue, ReportControl_getRCBValue(rc, "RptEna"));
+
+            if (trkInst->resv)
+                MmsValue_update(trkInst->rptEna->mmsValue, ReportControl_getRCBValue(rc, "Resv"));
+
+            if (trkInst->datSet)
+                MmsValue_update(trkInst->datSet->mmsValue, ReportControl_getRCBValue(rc, "DatSet"));
+
+            if (trkInst->confRev)
+                MmsValue_update(trkInst->confRev->mmsValue, ReportControl_getRCBValue(rc, "ConfRev"));
+
+            if (trkInst->optFlds)
+                MmsValue_update(trkInst->optFlds->mmsValue, ReportControl_getRCBValue(rc, "OptFlds"));
+
+            if (trkInst->bufTm)
+                MmsValue_update(trkInst->bufTm->mmsValue, ReportControl_getRCBValue(rc, "BufTm"));
+
+            if (trkInst->sqNum)
+                MmsValue_update(trkInst->sqNum->mmsValue, ReportControl_getRCBValue(rc, "SqNum"));
+
+            if (trkInst->trgOps)
+                MmsValue_update(trkInst->trgOps->mmsValue, ReportControl_getRCBValue(rc, "TrgOps"));
+
+            if (trkInst->intgPd)
+                MmsValue_update(trkInst->intgPd->mmsValue, ReportControl_getRCBValue(rc, "IntgPd"));
+
+            if (trkInst->gi)
+                MmsValue_update(trkInst->gi->mmsValue, ReportControl_getRCBValue(rc, "GI"));
+        }
+    }
+}
+
+static void
+updateSingleTrackingValue(MmsMapping* self, ReportControl* rc, char* name, MmsValue* newValue)
+{
+    if (rc->buffered) {
+        if (self->brcbTrk) {
+            BrcbTrkInstance trkInst = self->brcbTrk;
+
+            DataAttribute* attributeToUpdate = NULL;
+
+            if (!strcmp(name, "RptID"))
+                attributeToUpdate = trkInst->rptID;
+            else if (!strcmp(name, "RptEna"))
+                attributeToUpdate = trkInst->rptEna;
+            else if (!strcmp(name, "DatSet"))
+                attributeToUpdate = trkInst->datSet;
+            else if (!strcmp(name, "ConfRev"))
+                attributeToUpdate = trkInst->confRev;
+            else if (!strcmp(name, "OptFlds"))
+                attributeToUpdate = trkInst->optFlds;
+            else if (!strcmp(name, "BufTm"))
+                attributeToUpdate = trkInst->bufTm;
+            else if (!strcmp(name, "SqNum"))
+                attributeToUpdate = trkInst->sqNum;
+            else if (!strcmp(name, "TrgOps"))
+                attributeToUpdate = trkInst->trgOps;
+            else if (!strcmp(name, "IntgPd"))
+                attributeToUpdate = trkInst->intgPd;
+            else if (!strcmp(name, "GI"))
+                attributeToUpdate = trkInst->gi;
+            else if (!strcmp(name, "PurgeBuf"))
+                attributeToUpdate = trkInst->purgeBuf;
+            else if (!strcmp(name, "TimeofEntry"))
+                attributeToUpdate = trkInst->timeOfEntry;
+            else if (!strcmp(name, "EntryID"))
+                attributeToUpdate = trkInst->entryID;
+            else if (!strcmp(name, "ResvTms"))
+                attributeToUpdate = trkInst->resvTms;
+
+            if (attributeToUpdate)
+                MmsValue_update(attributeToUpdate->mmsValue, newValue);
+        }
+    }
+    else {
+        if (self->urcbTrk) {
+            UrcbTrkInstance trkInst = self->urcbTrk;
+
+            DataAttribute* attributeToUpdate = NULL;
+
+            if (!strcmp(name, "RptID"))
+                attributeToUpdate = trkInst->rptID;
+            else if (!strcmp(name, "RptEna"))
+                attributeToUpdate = trkInst->rptEna;
+            else if (!strcmp(name, "Resv"))
+                attributeToUpdate = trkInst->resv;
+            else if (!strcmp(name, "DatSet"))
+                attributeToUpdate = trkInst->datSet;
+            else if (!strcmp(name, "ConfRev"))
+                attributeToUpdate = trkInst->confRev;
+            else if (!strcmp(name, "OptFlds"))
+                attributeToUpdate = trkInst->optFlds;
+            else if (!strcmp(name, "BufTm"))
+                attributeToUpdate = trkInst->bufTm;
+            else if (!strcmp(name, "SqNum"))
+                attributeToUpdate = trkInst->sqNum;
+            else if (!strcmp(name, "TrgOps"))
+                attributeToUpdate = trkInst->trgOps;
+            else if (!strcmp(name, "IntgPd"))
+                attributeToUpdate = trkInst->intgPd;
+            else if (!strcmp(name, "GI"))
+                attributeToUpdate = trkInst->gi;
+
+            if (attributeToUpdate)
+                MmsValue_update(attributeToUpdate->mmsValue, newValue);
+        }
+    }
+}
+
+static IEC61850_ServiceError
+convertMmsDataAccessErrorToServiceError(MmsDataAccessError mmsError)
+{
+    IEC61850_ServiceError errVal = IEC61850_SERVICE_ERROR_NO_ERROR;
+
+    switch (mmsError) {
+    case DATA_ACCESS_ERROR_SUCCESS:
+        break;
+    case DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE:
+        errVal = IEC61850_SERVICE_ERROR_INSTANCE_LOCKED_BY_OTHER_CLIENT;
+        break;
+    case DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED:
+        errVal = IEC61850_SERVICE_ERROR_ACCESS_VIOLATION;
+        break;
+    case DATA_ACCESS_ERROR_TYPE_INCONSISTENT:
+        errVal = IEC61850_SERVICE_ERROR_PARAMETER_VALUE_INCONSISTENT;
+        break;
+    case DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT:
+        errVal = IEC61850_SERVICE_ERROR_INSTANCE_NOT_AVAILABLE;
+        break;
+    default:
+        printf("Data access error %i not mapped!\n", mmsError);
+        errVal = IEC61850_SERVICE_ERROR_FAILED_DUE_TO_SERVER_CONSTRAINT;
+        break;
+    }
+
+    return errVal;
+}
+
+static void
+updateGenericTrackingObjectValues(MmsMapping* self, ReportControl* rc, IEC61850_ServiceType serviceType, MmsDataAccessError errVal)
+{
+    ServiceTrkInstance trkInst = NULL;
+
+    if (rc->buffered) {
+        if (self->brcbTrk) {
+            trkInst = (ServiceTrkInstance) self->brcbTrk;
+        }
+    }
+    else {
+        if (self->urcbTrk) {
+            trkInst = (ServiceTrkInstance) self->urcbTrk;
+        }
+    }
+
+    if (trkInst) {
+        if (trkInst->serviceType)
+            MmsValue_setInt32(trkInst->serviceType->mmsValue, (int) serviceType);
+
+        if (trkInst->t)
+            MmsValue_setUtcTimeMs(trkInst->t->mmsValue, Hal_getTimeInMs());
+
+        if (trkInst->errorCode)
+            MmsValue_setInt32(trkInst->errorCode->mmsValue, convertMmsDataAccessErrorToServiceError(errVal));
+
+        char objRef[129];
+
+        /* create object reference */
+        LogicalNode* ln = (LogicalNode*) rc->parentLN;
+        LogicalDevice* ld = (LogicalDevice*) ln->parent;
+
+        char* iedName = self->iedServer->mmsDevice->deviceName;
+
+        snprintf(objRef, 129, "%s%s/%s", iedName, ld->name, rc->name);
+
+        if (trkInst->objRef) {
+            IedServer_updateVisibleStringAttributeValue(self->iedServer, trkInst->objRef, objRef);
+        }
+    }
+}
+
+#endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
+
 static inline void
 clearInclusionFlags(ReportControl* reportControl)
 {
@@ -1233,8 +1484,10 @@ increaseConfRev(ReportControl* self)
     MmsValue_setUint32(self->confRev, confRev);
 }
 
+
+
 static void
-checkReservationTimeout(ReportControl* rc)
+checkReservationTimeout(MmsMapping* self, ReportControl* rc)
 {
     if (rc->enabled == false) {
         if (rc->resvTms > 0) {
@@ -1250,17 +1503,22 @@ checkReservationTimeout(ReportControl* rc)
                 rc->reservationTimeout = 0;
                 updateOwner(rc, NULL);
                 rc->reserved = false;
+
+#if (CONFIG_IEC61850_SERVICE_TRACKING == 1)
+                copyRCBValuesToTrackingObject(self, rc);
+                updateGenericTrackingObjectValues(self, rc, IEC61850_SERVICE_TYPE_INTERNAL_CHANGE, DATA_ACCESS_ERROR_SUCCESS);
+#endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
             }
         }
     }
 }
 
 void
-ReportControl_readAccess(ReportControl* rc, char* elementName)
+ReportControl_readAccess(ReportControl* rc, MmsMapping* mmsMapping, char* elementName)
 {
     /* check reservation timeout */
     if (rc->buffered) {
-        checkReservationTimeout(rc);
+        checkReservationTimeout(mmsMapping, rc);
     }
 }
 
@@ -1323,7 +1581,7 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
     /* check reservation timeout for buffered RCBs */
     if (rc->buffered) {
 
-        checkReservationTimeout(rc);
+        checkReservationTimeout(self, rc);
 
         if (rc->resvTms == 0) {
             /* nothing to to */
@@ -1690,7 +1948,20 @@ exit_function:
         }
     }
 
+#if (CONFIG_IEC61850_SERVICE_TRACKING == 1)
+
+    copyRCBValuesToTrackingObject(self, rc);
+    updateSingleTrackingValue(self, rc, elementName, value);
+
+#endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
+
     ReportControl_unlockNotify(rc);
+
+#if (CONFIG_IEC61850_SERVICE_TRACKING == 1)
+
+    updateGenericTrackingObjectValues(self, rc, IEC61850_SERVICE_TYPE_SET_BRCB_VALUES, retVal);
+
+#endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
 
     return retVal;
 }
@@ -1731,6 +2002,11 @@ Reporting_deactivateReportsForConnection(MmsMapping* self, MmsServerConnection c
                      rc->reservationTimeout = Hal_getTimeInMs() + (rc->resvTms * 1000);
                 }
             }
+
+#if (CONFIG_IEC61850_SERVICE_TRACKING == 1)
+            copyRCBValuesToTrackingObject(self, rc);
+            updateGenericTrackingObjectValues(self, rc, IEC61850_SERVICE_TYPE_INTERNAL_CHANGE, DATA_ACCESS_ERROR_SUCCESS);
+#endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
         }
     }
 }
