@@ -1026,6 +1026,45 @@ getUrcbTrackingAttributes(UrcbTrkInstance svcTrkInst, DataObject* trkObj)
 }
 
 static void
+getControlTrackingAttributes(ControlTrkInstance svcTrkInst, DataObject* trkObj)
+{
+    ModelNode* modelNode = trkObj->firstChild;
+
+    while (modelNode) {
+        if (modelNode->modelType == DataAttributeModelType) {
+            DataAttribute* da = (DataAttribute*) modelNode;
+
+            if (!strcmp(da->name, "ctlVal")) {
+                svcTrkInst->ctlVal = da;
+            }
+            else if (!strcmp(da->name, "operTm")) {
+                svcTrkInst->operTm = da;
+            }
+            else if (!strcmp(da->name, "origin")) {
+                svcTrkInst->origin = da;
+            }
+            else if (!strcmp(da->name, "ctlNum")) {
+                svcTrkInst->ctlNum = da;
+            }
+            else if (!strcmp(da->name, "T")) {
+                svcTrkInst->T = da;
+            }
+            else if (!strcmp(da->name, "Test")) {
+                svcTrkInst->Test = da;
+            }
+            else if (!strcmp(da->name, "Check")) {
+                svcTrkInst->Check = da;
+            }
+            else if (!strcmp(da->name, "respAddCause")) {
+                svcTrkInst->respAddCause = da;
+            }
+        }
+
+        modelNode = modelNode->sibling;
+    }
+}
+
+static void
 checkForServiceTrackingVariables(MmsMapping* self, LogicalNode* logicalNode)
 {
     ModelNode* modelNode = logicalNode->firstChild;
@@ -1035,6 +1074,23 @@ checkForServiceTrackingVariables(MmsMapping* self, LogicalNode* logicalNode)
         if (!strcmp(modelNode->name, "SpcTrk")) {
             if (DEBUG_IED_SERVER)
                 printf("SpcTrk data object found!\n");
+
+            DataObject* spcTrk = (DataObject*) modelNode;
+
+            if (self->spcTrk) {
+                if (DEBUG_IED_SERVER)
+                    printf("IED_SERVER: ERROR: multiple SpcTrk instances found in server\n");
+            }
+            else {
+                self->spcTrk = (ControlTrkInstance) GLOBAL_CALLOC(1, sizeof(struct sControlTrkInstance));
+
+                if (self->spcTrk) {
+                    self->spcTrk->dobj = spcTrk;
+
+                    getCommonTrackingAttributes((ServiceTrkInstance) self->spcTrk, spcTrk);
+                    getControlTrackingAttributes(self->spcTrk, spcTrk);
+                }
+            }
 
         }
         else if (!strcmp(modelNode->name, "BrcbTrk")) {

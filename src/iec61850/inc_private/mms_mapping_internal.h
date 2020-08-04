@@ -172,6 +172,29 @@ struct sUrcbTrkInstance
     DataAttribute* gi;
 };
 
+typedef struct sControlTrkInstance* ControlTrkInstance;
+
+struct sControlTrkInstance
+{
+    /* inherited from ServiceTrkInstance */
+    DataObject* dobj;
+    DataAttribute* objRef;
+    DataAttribute* serviceType;
+    DataAttribute* errorCode;
+    DataAttribute* originatorID; /* optional */
+    DataAttribute* t;
+
+    /* CTS specific attributes */
+    DataAttribute* ctlVal;
+    DataAttribute* operTm; /* conditional */
+    DataAttribute* origin;
+    DataAttribute* ctlNum;
+    DataAttribute* T;
+    DataAttribute* Test;
+    DataAttribute* Check;
+    DataAttribute* respAddCause;
+};
+
 #endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
 
 struct sMmsMapping {
@@ -217,6 +240,7 @@ struct sMmsMapping {
 
     BrcbTrkInstance brcbTrk;
     UrcbTrkInstance urcbTrk;
+    ControlTrkInstance spcTrk;
 
 #endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
 
