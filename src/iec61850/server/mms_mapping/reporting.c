@@ -1958,9 +1958,10 @@ exit_function:
     ReportControl_unlockNotify(rc);
 
 #if (CONFIG_IEC61850_SERVICE_TRACKING == 1)
-
-    updateGenericTrackingObjectValues(self, rc, IEC61850_SERVICE_TYPE_SET_BRCB_VALUES, retVal);
-
+    if (rc->buffered)
+        updateGenericTrackingObjectValues(self, rc, IEC61850_SERVICE_TYPE_SET_BRCB_VALUES, retVal);
+    else
+        updateGenericTrackingObjectValues(self, rc, IEC61850_SERVICE_TYPE_SET_URCB_VALUES, retVal);
 #endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
 
     return retVal;
