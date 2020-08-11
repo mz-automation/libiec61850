@@ -376,12 +376,10 @@ updateGenericTrackingObjectValues(MmsMapping* self, ControlObject* controlObject
         char objRef[129];
 
         /* create object reference */
-        LogicalNode* ln = (LogicalNode*) controlObject->dataObject->parent; /* TODO also handle SDO case ! */
-        LogicalDevice* ld = (LogicalDevice*) ln->parent;
+        char* ldName = controlObject->mmsDomain->domainName;
+        char* lnName = controlObject->lnName;
 
-        char* iedName = self->iedServer->mmsDevice->deviceName;
-
-        snprintf(objRef, 129, "%s%s/%s", iedName, ld->name, controlObject->name);
+        snprintf(objRef, 129, "%s/%s.%s", ldName, lnName, controlObject->name);
 
         if (trkInst->objRef) {
             IedServer_updateVisibleStringAttributeValue(self->iedServer, trkInst->objRef, objRef);
