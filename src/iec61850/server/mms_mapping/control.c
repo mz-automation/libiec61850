@@ -2131,6 +2131,9 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
         if (controlObject->timeActivatedOperate) {
             controlObject->timeActivatedOperate = false;
             abortControlOperation(controlObject);
+
+            indication = DATA_ACCESS_ERROR_SUCCESS;
+
             goto free_and_return;
         }
     }
