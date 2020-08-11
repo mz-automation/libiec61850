@@ -63,29 +63,216 @@ ControlObject_sendCommandTerminationPositive(ControlObject* self);
 void
 ControlObject_sendCommandTerminationNegative(ControlObject* self);
 
+static MmsValue*
+getOperParameterCtlNum(MmsValue* operParameters)
+{
+    if (MmsValue_getType(operParameters) == MMS_STRUCTURE) {
+        if (MmsValue_getArraySize(operParameters) == 7)
+            return MmsValue_getElement(operParameters, 3);
+        else if (MmsValue_getArraySize(operParameters) == 6)
+            return MmsValue_getElement(operParameters, 2);
+    }
+
+    return NULL;
+}
+
+static MmsValue*
+getCancelParameterCtlNum(MmsValue* operParameters)
+{
+    if (MmsValue_getType(operParameters) == MMS_STRUCTURE) {
+        if (MmsValue_getArraySize(operParameters) == 6)
+            return MmsValue_getElement(operParameters, 3);
+        else if (MmsValue_getArraySize(operParameters) == 5)
+            return MmsValue_getElement(operParameters, 2);
+    }
+
+    return NULL;
+}
+
+static MmsValue*
+getCancelParameterOrigin(MmsValue* operParameters)
+{
+    if (MmsValue_getType(operParameters) == MMS_STRUCTURE) {
+        if (MmsValue_getArraySize(operParameters) == 6)
+            return MmsValue_getElement(operParameters, 2);
+        else if (MmsValue_getArraySize(operParameters) == 5)
+            return MmsValue_getElement(operParameters, 1);
+    }
+
+    return NULL;
+}
+
+static MmsValue*
+getOperParameterTest(MmsValue* operParameters)
+{
+    if (MmsValue_getType(operParameters) == MMS_STRUCTURE)
+    {
+        if (MmsValue_getArraySize(operParameters) == 7)
+            return MmsValue_getElement(operParameters, 5);
+        else if (MmsValue_getArraySize(operParameters) == 6)
+            return MmsValue_getElement(operParameters, 4);
+    }
+
+    return NULL;
+}
+
+static MmsValue*
+getOperParameterCheck(MmsValue* operParameters)
+{
+    if (MmsValue_getType(operParameters) == MMS_STRUCTURE)
+    {
+        if (MmsValue_getArraySize(operParameters) == 7)
+            return MmsValue_getElement(operParameters, 6);
+        else if (MmsValue_getArraySize(operParameters) == 6)
+            return MmsValue_getElement(operParameters, 5);
+    }
+
+    return NULL;
+}
+
+static MmsValue*
+getOperParameterOrigin(MmsValue* operParameters)
+{
+    if (MmsValue_getType(operParameters) == MMS_STRUCTURE)
+    {
+        if (MmsValue_getArraySize(operParameters) == 7)
+            return MmsValue_getElement(operParameters, 2);
+        else if (MmsValue_getArraySize(operParameters) == 6)
+            return MmsValue_getElement(operParameters, 1);
+    }
+
+    return NULL;
+}
+
+static MmsValue*
+getCancelParameterTest(MmsValue* operParameters)
+{
+    if (MmsValue_getType(operParameters) == MMS_STRUCTURE)
+    {
+        if (MmsValue_getArraySize(operParameters) == 6)
+            return MmsValue_getElement(operParameters, 5);
+        else if (MmsValue_getArraySize(operParameters) == 5)
+            return MmsValue_getElement(operParameters, 4);
+    }
+
+    return NULL;
+}
+
+static MmsValue*
+getOperParameterTime(MmsValue* operParameters)
+{
+    MmsValue* timeParameter = NULL;
+
+    if (MmsValue_getType(operParameters) == MMS_STRUCTURE)
+    {
+        if (MmsValue_getArraySize(operParameters) == 7)
+            timeParameter = MmsValue_getElement(operParameters, 4);
+        else if (MmsValue_getArraySize(operParameters) == 6)
+            timeParameter = MmsValue_getElement(operParameters, 3);
+    }
+
+    if (timeParameter != NULL)
+        if ((MmsValue_getType(timeParameter) == MMS_UTC_TIME) || (MmsValue_getType(timeParameter) == MMS_BINARY_TIME))
+            return timeParameter;
+
+    return NULL;
+}
+
+static MmsValue*
+getCancelParameterTime(MmsValue* operParameters)
+{
+    MmsValue* timeParameter = NULL;
+
+    if (MmsValue_getType(operParameters) == MMS_STRUCTURE)
+    {
+        if (MmsValue_getArraySize(operParameters) == 6)
+            timeParameter = MmsValue_getElement(operParameters, 4);
+        else if (MmsValue_getArraySize(operParameters) == 5)
+            timeParameter = MmsValue_getElement(operParameters, 3);
+    }
+
+    if (timeParameter != NULL)
+        if ((MmsValue_getType(timeParameter) == MMS_UTC_TIME) || (MmsValue_getType(timeParameter) == MMS_BINARY_TIME))
+            return timeParameter;
+
+    return NULL;
+}
+
 #if (CONFIG_IEC61850_SERVICE_TRACKING == 1)
 
 static void
-copyControlValuesToTrackingObject(MmsMapping* self, ControlObject* controlObject)
+copyControlValuesToTrackingObject(MmsMapping* self, ControlObject* controlObject, IEC61850_ServiceType serviceType)
 {
     //TODO determine type!
+
     if (controlObject->ctlVal) {
+
+        ControlTrkInstance trkInst = NULL;
+
         if (MmsValue_getType(controlObject->ctlVal) == MMS_BOOLEAN) {
+
+            //TODO handle binary controlled step position
+            //TODO handle binary controlled integer/analog
+
             if (self->spcTrk) {
-                if (self->spcTrk->ctlVal)
-                    MmsValue_update(self->spcTrk->ctlVal->mmsValue, controlObject->ctlVal);
 
-                if (self->spcTrk->origin)
-                    MmsValue_update(self->spcTrk->origin->mmsValue, controlObject->origin);
+                trkInst = self->spcTrk;
 
-                if (self->spcTrk->ctlNum)
-                    MmsValue_update(self->spcTrk->ctlNum->mmsValue, controlObject->ctlNum);
-
-                if (self->spcTrk->operTm)
-                    MmsValue_setUtcTimeMs(self->spcTrk->operTm->mmsValue, controlObject->operateTime);
-
-                // TODO implement remaining fields
+                if (trkInst->ctlVal)
+                    MmsValue_update(trkInst->ctlVal->mmsValue, controlObject->ctlVal);
             }
+
+        }
+
+        if (trkInst) {
+            if (trkInst->origin)
+                MmsValue_update(trkInst->origin->mmsValue, controlObject->origin);
+
+            if (trkInst->ctlNum)
+                MmsValue_update(trkInst->ctlNum->mmsValue, controlObject->ctlNum);
+
+            if (trkInst->operTm)
+                MmsValue_setUtcTimeMs(trkInst->operTm->mmsValue, controlObject->operateTime);
+
+            if (trkInst->respAddCause)
+                MmsValue_update(trkInst->respAddCause->mmsValue, controlObject->addCause);
+
+            MmsValue* operVal = NULL;
+
+            if (serviceType == IEC61850_SERVICE_TYPE_SELECT_WITH_VALUES) {
+                if (controlObject->sbow)
+                    operVal = controlObject->sbow;
+            }
+            else if (serviceType == IEC61850_SERVICE_TYPE_OPERATE) {
+                if (controlObject->oper)
+                    operVal = controlObject->oper;
+            }
+            else if (serviceType == IEC61850_SERVICE_TYPE_CANCEL) {
+                if (controlObject->cancel) {
+                    if (trkInst->Test) {
+                        MmsValue_update(trkInst->Test->mmsValue, getCancelParameterTest(operVal));
+                    }
+
+                    if (trkInst->T) {
+                        MmsValue_update(trkInst->T->mmsValue, getCancelParameterTime(operVal));
+                    }
+                }
+            }
+
+            if (operVal) {
+                if (trkInst->Test) {
+                    MmsValue_update(trkInst->Test->mmsValue, getOperParameterTest(operVal));
+                }
+
+                if (trkInst->Check) {
+                    MmsValue_update(trkInst->Check->mmsValue, getOperParameterCheck(operVal));
+                }
+
+                if (trkInst->T) {
+                    MmsValue_update(trkInst->T->mmsValue, getOperParameterTime(operVal));
+                }
+            }
+
         }
     }
 }
@@ -165,7 +352,7 @@ convertCheckHandlerResultToServiceError(CheckHandlerResult controlHandlerResult)
 static void
 updateGenericTrackingObjectValues(MmsMapping* self, ControlObject* controlObject, IEC61850_ServiceType serviceType, IEC61850_ServiceError errVal)
 {
-    copyControlValuesToTrackingObject(self, controlObject);
+    copyControlValuesToTrackingObject(self, controlObject, serviceType);
 
     ServiceTrkInstance trkInst = NULL;
 
@@ -1125,107 +1312,6 @@ getCtlVal(MmsValue* operParameters)
             return MmsValue_getElement(operParameters, 0);
         }
     }
-
-    return NULL;
-}
-
-static MmsValue*
-getOperParameterCtlNum(MmsValue* operParameters)
-{
-    if (MmsValue_getType(operParameters) == MMS_STRUCTURE) {
-        if (MmsValue_getArraySize(operParameters) == 7)
-            return MmsValue_getElement(operParameters, 3);
-        else if (MmsValue_getArraySize(operParameters) == 6)
-            return MmsValue_getElement(operParameters, 2);
-    }
-
-    return NULL;
-}
-
-static MmsValue*
-getCancelParameterCtlNum(MmsValue* operParameters)
-{
-    if (MmsValue_getType(operParameters) == MMS_STRUCTURE) {
-        if (MmsValue_getArraySize(operParameters) == 6)
-            return MmsValue_getElement(operParameters, 3);
-        else if (MmsValue_getArraySize(operParameters) == 5)
-            return MmsValue_getElement(operParameters, 2);
-    }
-
-    return NULL;
-}
-
-static MmsValue*
-getCancelParameterOrigin(MmsValue* operParameters)
-{
-    if (MmsValue_getType(operParameters) == MMS_STRUCTURE) {
-        if (MmsValue_getArraySize(operParameters) == 6)
-            return MmsValue_getElement(operParameters, 2);
-        else if (MmsValue_getArraySize(operParameters) == 5)
-            return MmsValue_getElement(operParameters, 1);
-    }
-
-    return NULL;
-}
-
-static MmsValue*
-getOperParameterTest(MmsValue* operParameters)
-{
-    if (MmsValue_getType(operParameters) == MMS_STRUCTURE)
-    {
-        if (MmsValue_getArraySize(operParameters) == 7)
-            return MmsValue_getElement(operParameters, 5);
-        else if (MmsValue_getArraySize(operParameters) == 6)
-            return MmsValue_getElement(operParameters, 4);
-    }
-
-    return NULL;
-}
-
-static MmsValue*
-getOperParameterCheck(MmsValue* operParameters)
-{
-    if (MmsValue_getType(operParameters) == MMS_STRUCTURE)
-    {
-        if (MmsValue_getArraySize(operParameters) == 7)
-            return MmsValue_getElement(operParameters, 6);
-        else if (MmsValue_getArraySize(operParameters) == 6)
-            return MmsValue_getElement(operParameters, 5);
-    }
-
-    return NULL;
-}
-
-static MmsValue*
-getOperParameterOrigin(MmsValue* operParameters)
-{
-    if (MmsValue_getType(operParameters) == MMS_STRUCTURE)
-    {
-        if (MmsValue_getArraySize(operParameters) == 7)
-            return MmsValue_getElement(operParameters, 2);
-        else if (MmsValue_getArraySize(operParameters) == 6)
-            return MmsValue_getElement(operParameters, 1);
-    }
-
-    return NULL;
-}
-
-static MmsValue*
-getOperParameterTime(MmsValue* operParameters)
-{
-    MmsValue* timeParameter = NULL;
-
-    if (MmsValue_getType(operParameters) == MMS_STRUCTURE)
-    {
-        if (MmsValue_getArraySize(operParameters) == 7)
-            timeParameter = MmsValue_getElement(operParameters, 4);
-        else if (MmsValue_getArraySize(operParameters) == 6)
-            timeParameter = MmsValue_getElement(operParameters, 3);
-    }
-
-    if (timeParameter != NULL)
-        if ((MmsValue_getType(timeParameter) == MMS_UTC_TIME) || (MmsValue_getType(timeParameter) == MMS_BINARY_TIME))
-            return timeParameter;
 
     return NULL;
 }

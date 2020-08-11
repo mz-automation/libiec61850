@@ -225,84 +225,88 @@ MmsValue_equalTypes(const MmsValue* self, const MmsValue* otherValue)
 bool
 MmsValue_update(MmsValue* self, const MmsValue* update)
 {
-    if (self->type == update->type) {
-        switch (self->type)
-        {
-        case MMS_STRUCTURE:
-            case MMS_ARRAY:
-            if (updateStructuredComponent(self, update) == false)
-                return false;
-            break;
-        case MMS_BOOLEAN:
-            self->value.boolean = update->value.boolean;
-            break;
-        case MMS_FLOAT:
-            if (self->value.floatingPoint.formatWidth == update->value.floatingPoint.formatWidth) {
-                self->value.floatingPoint.exponentWidth = update->value.floatingPoint.exponentWidth;
-                memcpy(self->value.floatingPoint.buf, update->value.floatingPoint.buf,
-                        self->value.floatingPoint.formatWidth / 8);
-            }
-            else
-                return false;
-            break;
-        case MMS_INTEGER:
-        case MMS_UNSIGNED:
-            if (BerInteger_setFromBerInteger(self->value.integer, update->value.integer))
-                return true;
-            else
-                return false;
-            break;
-        case MMS_UTC_TIME:
-            memcpy(self->value.utcTime, update->value.utcTime, 8);
-            break;
-        case MMS_BIT_STRING:
-            if (self->value.bitString.size == update->value.bitString.size)
-                memcpy(self->value.bitString.buf, update->value.bitString.buf, bitStringByteSize(self));
-            else if (update->value.bitString.size < self->value.bitString.size) {
-                int i;
-
-                for (i = 0; i < update->value.bitString.size; i++) {
-                    MmsValue_setBitStringBit(self, i, MmsValue_getBitStringBit(update, i));
-                }
-            }
-            else
-                return false;
-            break;
-        case MMS_OCTET_STRING:
+    if (self && update) {
+        if (self->type == update->type) {
+            switch (self->type)
             {
-                int size = update->value.octetString.size;
-
-                if (size > self->value.octetString.maxSize) {
-                    GLOBAL_FREEMEM(self->value.octetString.buf);
-                    self->value.octetString.buf = (uint8_t*) GLOBAL_MALLOC(size);
-
-                    if (self->value.octetString.buf == NULL)
-                        return false;
-
-                    self->value.octetString.maxSize = size;
+            case MMS_STRUCTURE:
+                case MMS_ARRAY:
+                if (updateStructuredComponent(self, update) == false)
+                    return false;
+                break;
+            case MMS_BOOLEAN:
+                self->value.boolean = update->value.boolean;
+                break;
+            case MMS_FLOAT:
+                if (self->value.floatingPoint.formatWidth == update->value.floatingPoint.formatWidth) {
+                    self->value.floatingPoint.exponentWidth = update->value.floatingPoint.exponentWidth;
+                    memcpy(self->value.floatingPoint.buf, update->value.floatingPoint.buf,
+                            self->value.floatingPoint.formatWidth / 8);
                 }
+                else
+                    return false;
+                break;
+            case MMS_INTEGER:
+            case MMS_UNSIGNED:
+                if (BerInteger_setFromBerInteger(self->value.integer, update->value.integer))
+                    return true;
+                else
+                    return false;
+                break;
+            case MMS_UTC_TIME:
+                memcpy(self->value.utcTime, update->value.utcTime, 8);
+                break;
+            case MMS_BIT_STRING:
+                if (self->value.bitString.size == update->value.bitString.size)
+                    memcpy(self->value.bitString.buf, update->value.bitString.buf, bitStringByteSize(self));
+                else if (update->value.bitString.size < self->value.bitString.size) {
+                    int i;
 
-                memcpy(self->value.octetString.buf, update->value.octetString.buf, size);
+                    for (i = 0; i < update->value.bitString.size; i++) {
+                        MmsValue_setBitStringBit(self, i, MmsValue_getBitStringBit(update, i));
+                    }
+                }
+                else
+                    return false;
+                break;
+            case MMS_OCTET_STRING:
+                {
+                    int size = update->value.octetString.size;
 
-                self->value.octetString.size = size;
+                    if (size > self->value.octetString.maxSize) {
+                        GLOBAL_FREEMEM(self->value.octetString.buf);
+                        self->value.octetString.buf = (uint8_t*) GLOBAL_MALLOC(size);
+
+                        if (self->value.octetString.buf == NULL)
+                            return false;
+
+                        self->value.octetString.maxSize = size;
+                    }
+
+                    memcpy(self->value.octetString.buf, update->value.octetString.buf, size);
+
+                    self->value.octetString.size = size;
+                }
+                break;
+            case MMS_VISIBLE_STRING:
+                MmsValue_setVisibleString(self, update->value.visibleString.buf);
+                break;
+            case MMS_STRING:
+                MmsValue_setMmsString(self, update->value.visibleString.buf);
+                break;
+            case MMS_BINARY_TIME:
+                self->value.binaryTime.size = update->value.binaryTime.size;
+                memcpy(self->value.binaryTime.buf, update->value.binaryTime.buf,
+                        update->value.binaryTime.size);
+                break;
+            default:
+                return false;
+                break;
             }
-            break;
-        case MMS_VISIBLE_STRING:
-            MmsValue_setVisibleString(self, update->value.visibleString.buf);
-            break;
-        case MMS_STRING:
-            MmsValue_setMmsString(self, update->value.visibleString.buf);
-            break;
-        case MMS_BINARY_TIME:
-            self->value.binaryTime.size = update->value.binaryTime.size;
-            memcpy(self->value.binaryTime.buf, update->value.binaryTime.buf,
-                    update->value.binaryTime.size);
-            break;
-        default:
-            return false;
-            break;
+            return true;
         }
-        return true;
+        else
+            return false;
     }
     else
         return false;
