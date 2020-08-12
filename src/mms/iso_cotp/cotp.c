@@ -720,6 +720,9 @@ CotpConnection_readToTpktBuffer(CotpConnection* self)
             goto exit_waiting;
     }
 
+    if (self->packetSize <= bufPos)
+        goto exit_error;
+
     readBytes = readFromSocket(self, buffer + bufPos, self->packetSize - bufPos);
 
     if (readBytes < 0)
