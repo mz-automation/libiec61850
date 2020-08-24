@@ -69,13 +69,19 @@ LIB61850_INTERNAL void
 MmsGooseControlBlock_checkAndPublish(MmsGooseControlBlock self, uint64_t currentTime);
 
 LIB61850_INTERNAL void
-MmsGooseControlBlock_observedObjectChanged(MmsGooseControlBlock self);
+MmsGooseControlBlock_setStateChangePending(MmsGooseControlBlock self);
+
+LIB61850_INTERNAL void
+MmsGooseControlBlock_publishNewState(MmsGooseControlBlock self);
 
 LIB61850_INTERNAL void
 MmsGooseControlBlock_enable(MmsGooseControlBlock self);
 
 LIB61850_INTERNAL void
 MmsGooseControlBlock_disable(MmsGooseControlBlock self);
+
+LIB61850_INTERNAL void
+GOOSE_sendPendingEvents(MmsMapping* self);
 
 LIB61850_INTERNAL MmsVariableSpecification*
 GOOSE_createGOOSEControlBlocks(MmsMapping* self, MmsDomain* domain,

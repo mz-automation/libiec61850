@@ -104,12 +104,29 @@ int main(int argc, char** argv) {
 
 	float anIn1 = 0.f;
 
+	int eventCount = 10;
+
 	while (running) {
 
 	    IedServer_lockDataModel(iedServer);
 
         IedServer_updateUTCTimeAttributeValue(iedServer, IEDMODEL_GenericIO_GGIO1_AnIn1_t, Hal_getTimeInMs());
 	    IedServer_updateFloatAttributeValue(iedServer, IEDMODEL_GenericIO_GGIO1_AnIn1_mag_f, anIn1);
+
+	    if (eventCount) {
+	        IedServer_updateUTCTimeAttributeValue(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO4_t, Hal_getTimeInMs());
+
+	        if (eventCount % 2) {
+	            IedServer_updateQuality(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO4_q, QUALITY_VALIDITY_GOOD);
+	            IedServer_updateBooleanAttributeValue(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO4_stVal, true);
+	        }
+	        else {
+                IedServer_updateQuality(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO4_q, QUALITY_VALIDITY_INVALID);
+                IedServer_updateBooleanAttributeValue(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO4_stVal, false);
+	        }
+
+	        eventCount--;
+	    }
 
 	    IedServer_unlockDataModel(iedServer);
 

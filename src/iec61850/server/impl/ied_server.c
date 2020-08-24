@@ -34,6 +34,7 @@
 
 #include "libiec61850_platform_includes.h"
 #include "mms_sv.h"
+#include "mms_goose.h"
 
 #ifndef DEBUG_IED_SERVER
 #define DEBUG_IED_SERVER 0
@@ -728,6 +729,11 @@ IedServer_lockDataModel(IedServer self)
 void
 IedServer_unlockDataModel(IedServer self)
 {
+#if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
+    /* check if GOOSE messages have to be sent */
+    GOOSE_sendPendingEvents(self->mmsMapping);
+#endif /* (CONFIG_INCLUDE_GOOSE_SUPPORT == 1) */
+
     /* check if reports have to be sent! */
     Reporting_processReportEventsAfterUnlock(self->mmsMapping);
 
