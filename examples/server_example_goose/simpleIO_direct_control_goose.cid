@@ -68,6 +68,17 @@
               <FCDA ldInst="GenericIO" lnClass="GGIO" fc="ST" lnInst="1" doName="SPCSO3" />
               <FCDA ldInst="GenericIO" lnClass="GGIO" fc="ST" lnInst="1" doName="SPCSO4" />
             </DataSet>
+            
+            <DataSet name="Events3" desc="Events3">
+              <FCDA ldInst="GenericIO" lnClass="GGIO" fc="ST" lnInst="1" doName="SPCSO1" daName="stVal" />
+              <FCDA ldInst="GenericIO" lnClass="GGIO" fc="ST" lnInst="1" doName="SPCSO1" daName="q" />
+              <FCDA ldInst="GenericIO" lnClass="GGIO" fc="ST" lnInst="1" doName="SPCSO2" daName="stVal" />
+              <FCDA ldInst="GenericIO" lnClass="GGIO" fc="ST" lnInst="1" doName="SPCSO2" daName="q" />
+              <FCDA ldInst="GenericIO" lnClass="GGIO" fc="ST" lnInst="1" doName="SPCSO3" daName="stVal" />
+              <FCDA ldInst="GenericIO" lnClass="GGIO" fc="ST" lnInst="1" doName="SPCSO3" daName="q" />
+              <FCDA ldInst="GenericIO" lnClass="GGIO" fc="ST" lnInst="1" doName="SPCSO4" daName="stVal" />
+              <FCDA ldInst="GenericIO" lnClass="GGIO" fc="ST" lnInst="1" doName="SPCSO4" daName="q" />
+            </DataSet>
 
             <DataSet name="AnalogValues" desc="analog values">
               <FCDA ldInst="GenericIO" lnClass="GGIO" fc="MX" lnInst="1" doName="AnIn1" />
@@ -88,7 +99,7 @@
               <RptEnabled max="1" />
             </ReportControl>
 
-            <GSEControl appID="events" name="gcbEvents" type="GOOSE" datSet="Events" confRev="2" />
+            <GSEControl appID="events" name="gcbEvents" type="GOOSE" datSet="Events3" confRev="2" />
             <GSEControl appID="analog" name="gcbAnalogValues" type="GOOSE" datSet="AnalogValues" confRev="2"/>
 
             <DOI name="Mod">

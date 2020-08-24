@@ -9,6 +9,7 @@ static void initializeValues();
 
 extern DataSet iedModelds_GenericIO_LLN0_Events;
 extern DataSet iedModelds_GenericIO_LLN0_Events2;
+extern DataSet iedModelds_GenericIO_LLN0_Events3;
 extern DataSet iedModelds_GenericIO_LLN0_AnalogValues;
 
 
@@ -115,6 +116,103 @@ DataSet iedModelds_GenericIO_LLN0_Events2 = {
   "LLN0$Events2",
   4,
   &iedModelds_GenericIO_LLN0_Events2_fcda0,
+  &iedModelds_GenericIO_LLN0_Events3
+};
+
+extern DataSetEntry iedModelds_GenericIO_LLN0_Events3_fcda0;
+extern DataSetEntry iedModelds_GenericIO_LLN0_Events3_fcda1;
+extern DataSetEntry iedModelds_GenericIO_LLN0_Events3_fcda2;
+extern DataSetEntry iedModelds_GenericIO_LLN0_Events3_fcda3;
+extern DataSetEntry iedModelds_GenericIO_LLN0_Events3_fcda4;
+extern DataSetEntry iedModelds_GenericIO_LLN0_Events3_fcda5;
+extern DataSetEntry iedModelds_GenericIO_LLN0_Events3_fcda6;
+extern DataSetEntry iedModelds_GenericIO_LLN0_Events3_fcda7;
+
+DataSetEntry iedModelds_GenericIO_LLN0_Events3_fcda0 = {
+  "GenericIO",
+  false,
+  "GGIO1$ST$SPCSO1$stVal",
+  -1,
+  NULL,
+  NULL,
+  &iedModelds_GenericIO_LLN0_Events3_fcda1
+};
+
+DataSetEntry iedModelds_GenericIO_LLN0_Events3_fcda1 = {
+  "GenericIO",
+  false,
+  "GGIO1$ST$SPCSO1$q",
+  -1,
+  NULL,
+  NULL,
+  &iedModelds_GenericIO_LLN0_Events3_fcda2
+};
+
+DataSetEntry iedModelds_GenericIO_LLN0_Events3_fcda2 = {
+  "GenericIO",
+  false,
+  "GGIO1$ST$SPCSO2$stVal",
+  -1,
+  NULL,
+  NULL,
+  &iedModelds_GenericIO_LLN0_Events3_fcda3
+};
+
+DataSetEntry iedModelds_GenericIO_LLN0_Events3_fcda3 = {
+  "GenericIO",
+  false,
+  "GGIO1$ST$SPCSO2$q",
+  -1,
+  NULL,
+  NULL,
+  &iedModelds_GenericIO_LLN0_Events3_fcda4
+};
+
+DataSetEntry iedModelds_GenericIO_LLN0_Events3_fcda4 = {
+  "GenericIO",
+  false,
+  "GGIO1$ST$SPCSO3$stVal",
+  -1,
+  NULL,
+  NULL,
+  &iedModelds_GenericIO_LLN0_Events3_fcda5
+};
+
+DataSetEntry iedModelds_GenericIO_LLN0_Events3_fcda5 = {
+  "GenericIO",
+  false,
+  "GGIO1$ST$SPCSO3$q",
+  -1,
+  NULL,
+  NULL,
+  &iedModelds_GenericIO_LLN0_Events3_fcda6
+};
+
+DataSetEntry iedModelds_GenericIO_LLN0_Events3_fcda6 = {
+  "GenericIO",
+  false,
+  "GGIO1$ST$SPCSO4$stVal",
+  -1,
+  NULL,
+  NULL,
+  &iedModelds_GenericIO_LLN0_Events3_fcda7
+};
+
+DataSetEntry iedModelds_GenericIO_LLN0_Events3_fcda7 = {
+  "GenericIO",
+  false,
+  "GGIO1$ST$SPCSO4$q",
+  -1,
+  NULL,
+  NULL,
+  NULL
+};
+
+DataSet iedModelds_GenericIO_LLN0_Events3 = {
+  "GenericIO",
+  "LLN0$Events3",
+  8,
+  &iedModelds_GenericIO_LLN0_Events3_fcda0,
   &iedModelds_GenericIO_LLN0_AnalogValues
 };
 
@@ -1896,7 +1994,7 @@ static PhyComAddress iedModel_GenericIO_LLN0_gse0_address = {
   {0x1, 0xc, 0xcd, 0x1, 0x0, 0x1}
 };
 
-GSEControlBlock iedModel_GenericIO_LLN0_gse0 = {&iedModel_GenericIO_LLN0, "gcbEvents", "events", "Events", 2, false, &iedModel_GenericIO_LLN0_gse0_address, 1000, 3000, &iedModel_GenericIO_LLN0_gse1};
+GSEControlBlock iedModel_GenericIO_LLN0_gse0 = {&iedModel_GenericIO_LLN0, "gcbEvents", "events", "Events3", 2, false, &iedModel_GenericIO_LLN0_gse0_address, 1000, 3000, &iedModel_GenericIO_LLN0_gse1};
 
 static PhyComAddress iedModel_GenericIO_LLN0_gse1_address = {
   4,

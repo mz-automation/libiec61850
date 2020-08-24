@@ -2921,6 +2921,8 @@ MmsMapping_triggerGooseObservers(MmsMapping* self, MmsValue* value)
 {
     LinkedList element = self->gseControls;
 
+    bool modelLocked = self->isModelLocked;
+
     while ((element = LinkedList_getNext(element)) != NULL) {
         MmsGooseControlBlock gcb = (MmsGooseControlBlock) element->data;
 
@@ -2928,7 +2930,11 @@ MmsMapping_triggerGooseObservers(MmsMapping* self, MmsValue* value)
             DataSet* dataSet = MmsGooseControlBlock_getDataSet(gcb);
 
             if (DataSet_isMemberValue(dataSet, value, NULL)) {
-                MmsGooseControlBlock_observedObjectChanged(gcb);
+                MmsGooseControlBlock_setStateChangePending(gcb);
+
+                if (modelLocked == false) {
+                    MmsGooseControlBlock_publishNewState(gcb);
+                }
             }
         }
     }

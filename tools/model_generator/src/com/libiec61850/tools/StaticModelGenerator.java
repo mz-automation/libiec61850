@@ -1028,77 +1028,83 @@ public class StaticModelGenerator {
         for (GSEControl gseControlBlock : gseControlBlocks) {
 
             GSE gse = connectedAP.lookupGSE(logicalDeviceName, gseControlBlock.getName());
-
-            PhyComAddress gseAddress = gse.getAddress();
             
-            String gseString = "";
+            if (gse != null) {
+                PhyComAddress gseAddress = gse.getAddress();
+                
+                String gseString = "";
 
-            String phyComAddrName = "";
+                String phyComAddrName = "";
 
-            if (gseAddress != null) {
-                phyComAddrName = lnPrefix + "_gse" + gseControlNumber + "_address";
+                if (gseAddress != null) {
+                    phyComAddrName = lnPrefix + "_gse" + gseControlNumber + "_address";
 
-                gseString += "\nstatic PhyComAddress " + phyComAddrName + " = {\n";
-                gseString += "  " + gseAddress.getVlanPriority() + ",\n";
-                gseString += "  " + gseAddress.getVlanId() + ",\n";
-                gseString += "  " + gseAddress.getAppId() + ",\n";
-                gseString += "  {";
+                    gseString += "\nstatic PhyComAddress " + phyComAddrName + " = {\n";
+                    gseString += "  " + gseAddress.getVlanPriority() + ",\n";
+                    gseString += "  " + gseAddress.getVlanId() + ",\n";
+                    gseString += "  " + gseAddress.getAppId() + ",\n";
+                    gseString += "  {";
 
-                for (int i = 0; i < 6; i++) {
-                    gseString += "0x" + Integer.toHexString(gseAddress.getMacAddress()[i]);
-                    if (i == 5)
-                        gseString += "}\n";
-                    else
-                        gseString += ", ";
+                    for (int i = 0; i < 6; i++) {
+                        gseString += "0x" + Integer.toHexString(gseAddress.getMacAddress()[i]);
+                        if (i == 5)
+                            gseString += "}\n";
+                        else
+                            gseString += ", ";
+                    }
+
+                    gseString += "};\n\n";
                 }
 
-                gseString += "};\n\n";
+                String gseVariableName = lnPrefix + "_gse" + gseControlNumber;
+
+                gseString += "GSEControlBlock " + gseVariableName + " = {";
+                gseString += "&" + lnPrefix + ", ";
+
+                gseString += "\"" + gseControlBlock.getName() + "\", ";
+
+                if (gseControlBlock.getAppID() == null)
+                    gseString += "NULL, ";
+                else
+                    gseString += "\"" + gseControlBlock.getAppID() + "\", ";
+
+                if (gseControlBlock.getDataSet() != null)
+                    gseString += "\"" + gseControlBlock.getDataSet() + "\", ";
+                else
+                    gseString += "NULL, ";
+
+                gseString += gseControlBlock.getConfRev() + ", ";
+
+                if (gseControlBlock.isFixedOffs())
+                    gseString += "true, ";
+                else
+                    gseString += "false, ";
+
+                if (gseAddress != null)
+                    gseString += "&" + phyComAddrName + ", ";
+                else
+                    gseString += "NULL, ";
+                
+                gseString += gse.getMinTime() + ", ";
+                gseString += gse.getMaxTime() + ", ";
+
+                currentGseVariableNumber++;
+                
+                if (currentGseVariableNumber < gseVariableNames.size())
+                    gseString += "&" + gseVariableNames.get(currentGseVariableNumber);
+                else
+                    gseString += "NULL";
+
+                gseString += "};\n";
+
+                this.gseControlBlocks.append(gseString);
+
+                gseControlNumber++;
+            }
+            else {
+                System.out.println("GSE not found for GoCB " + gseControlBlock.getName());
             }
 
-            String gseVariableName = lnPrefix + "_gse" + gseControlNumber;
-
-            gseString += "GSEControlBlock " + gseVariableName + " = {";
-            gseString += "&" + lnPrefix + ", ";
-
-            gseString += "\"" + gseControlBlock.getName() + "\", ";
-
-            if (gseControlBlock.getAppID() == null)
-                gseString += "NULL, ";
-            else
-                gseString += "\"" + gseControlBlock.getAppID() + "\", ";
-
-            if (gseControlBlock.getDataSet() != null)
-                gseString += "\"" + gseControlBlock.getDataSet() + "\", ";
-            else
-                gseString += "NULL, ";
-
-            gseString += gseControlBlock.getConfRev() + ", ";
-
-            if (gseControlBlock.isFixedOffs())
-                gseString += "true, ";
-            else
-                gseString += "false, ";
-
-            if (gseAddress != null)
-                gseString += "&" + phyComAddrName + ", ";
-            else
-                gseString += "NULL, ";
-            
-            gseString += gse.getMinTime() + ", ";
-            gseString += gse.getMaxTime() + ", ";
-
-            currentGseVariableNumber++;
-            
-            if (currentGseVariableNumber < gseVariableNames.size())
-                gseString += "&" + gseVariableNames.get(currentGseVariableNumber);
-            else
-                gseString += "NULL";
-
-            gseString += "};\n";
-
-            this.gseControlBlocks.append(gseString);
-
-            gseControlNumber++;
         }
     }
     

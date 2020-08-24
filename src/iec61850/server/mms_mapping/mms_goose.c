@@ -71,6 +71,8 @@ struct sMmsGooseControlBlock {
     char* dataSetRef;
 
     char* gooseInterfaceId;
+
+    bool stateChangePending;
 };
 
 MmsGooseControlBlock
@@ -257,37 +259,44 @@ MmsGooseControlBlock_enable(MmsGooseControlBlock self)
             else
                 self->publisher = GoosePublisher_createEx(&commParameters, self->mmsMapping->gooseInterfaceId, self->useVlanTag);
 
-            self->minTime = MmsValue_toUint32(MmsValue_getElement(self->mmsValue, 6));
-            self->maxTime = MmsValue_toUint32(MmsValue_getElement(self->mmsValue, 7));
+            if (self->publisher) {
+                self->minTime = MmsValue_toUint32(MmsValue_getElement(self->mmsValue, 6));
+                self->maxTime = MmsValue_toUint32(MmsValue_getElement(self->mmsValue, 7));
 
-            GoosePublisher_setTimeAllowedToLive(self->publisher, self->maxTime * 3);
+                GoosePublisher_setTimeAllowedToLive(self->publisher, self->maxTime * 3);
 
-            GoosePublisher_setDataSetRef(self->publisher, self->dataSetRef);
+                GoosePublisher_setDataSetRef(self->publisher, self->dataSetRef);
 
-            GoosePublisher_setGoCbRef(self->publisher, self->goCBRef);
+                GoosePublisher_setGoCbRef(self->publisher, self->goCBRef);
 
-            uint32_t confRev = MmsValue_toUint32(MmsValue_getElement(self->mmsValue, 3));
+                uint32_t confRev = MmsValue_toUint32(MmsValue_getElement(self->mmsValue, 3));
 
-            GoosePublisher_setConfRev(self->publisher, confRev);
+                GoosePublisher_setConfRev(self->publisher, confRev);
 
-            bool needsCom = MmsValue_getBoolean(MmsValue_getElement(self->mmsValue, 4));
+                bool needsCom = MmsValue_getBoolean(MmsValue_getElement(self->mmsValue, 4));
 
-            GoosePublisher_setNeedsCommission(self->publisher, needsCom);
+                GoosePublisher_setNeedsCommission(self->publisher, needsCom);
 
-            if (self->goId != NULL)
-                GoosePublisher_setGoID(self->publisher, self->goId);
+                if (self->goId != NULL)
+                    GoosePublisher_setGoID(self->publisher, self->goId);
 
-            /* prepare data set values */
-            self->dataSetValues = LinkedList_create();
+                /* prepare data set values */
+                self->dataSetValues = LinkedList_create();
 
-            DataSetEntry* dataSetEntry = self->dataSet->fcdas;
+                DataSetEntry* dataSetEntry = self->dataSet->fcdas;
 
-            while (dataSetEntry != NULL) {
-                LinkedList_add(self->dataSetValues, dataSetEntry->value);
-                dataSetEntry = dataSetEntry->sibling;
+                while (dataSetEntry != NULL) {
+                    LinkedList_add(self->dataSetValues, dataSetEntry->value);
+                    dataSetEntry = dataSetEntry->sibling;
+                }
+
+                self->goEna = true;
+            }
+            else {
+                if (DEBUG_IED_SERVER)
+                    printf("IED_SERVER: Failed to create GOOSE publisher!\n");
             }
 
-            self->goEna = true;
         }
 
     }
@@ -363,8 +372,15 @@ MmsGooseControlBlock_checkAndPublish(MmsGooseControlBlock self, uint64_t current
 }
 
 void
-MmsGooseControlBlock_observedObjectChanged(MmsGooseControlBlock self)
+MmsGooseControlBlock_setStateChangePending(MmsGooseControlBlock self)
 {
+    self->stateChangePending = true;
+}
+
+void
+MmsGooseControlBlock_publishNewState(MmsGooseControlBlock self)
+{
+    if (self->stateChangePending) {
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_wait(self->publisherMutex);
 #endif
@@ -386,9 +402,12 @@ MmsGooseControlBlock_observedObjectChanged(MmsGooseControlBlock self)
 
     GoosePublisher_publish(self->publisher, self->dataSetValues);
 
+    self->stateChangePending = false;
+
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_post(self->publisherMutex);
 #endif
+    }
 }
 
 static MmsVariableSpecification*
@@ -494,6 +513,20 @@ createDataSetReference(char* domainName, char* lnName, char* dataSetName)
     dataSetReference = StringUtils_createString(5, domainName, "/", lnName, "$", dataSetName);
 
     return dataSetReference;
+}
+
+void
+GOOSE_sendPendingEvents(MmsMapping* self)
+{
+    LinkedList element = self->gseControls;
+
+    while ((element = LinkedList_getNext(element)) != NULL) {
+        MmsGooseControlBlock gcb = (MmsGooseControlBlock) element->data;
+
+        if (MmsGooseControlBlock_isEnabled(gcb)) {
+            MmsGooseControlBlock_publishNewState(gcb);
+        }
+    }
 }
 
 MmsVariableSpecification*
@@ -605,6 +638,8 @@ GOOSE_createGOOSEControlBlocks(MmsMapping* self, MmsDomain* domain,
         MmsValue_setUint32(maxTime, mmsGCB->maxTime);
 
         mmsGCB->mmsMapping = self;
+
+        mmsGCB->stateChangePending = false;
 
         LinkedList_add(self->gseControls, mmsGCB);
 
