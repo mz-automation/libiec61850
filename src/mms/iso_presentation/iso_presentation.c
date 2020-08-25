@@ -677,6 +677,7 @@ IsoPresentation_parseConnect(IsoPresentation* self, ByteBuffer* byteBuffer)
 {
     uint8_t* buffer = byteBuffer->buffer;
     int maxBufPos = byteBuffer->size;
+    bool hasNormalModeParameters = false;
 
     int bufPos = 0;
 
@@ -745,6 +746,9 @@ IsoPresentation_parseConnect(IsoPresentation* self, ByteBuffer* byteBuffer)
                     printf("PRES: error parsing normal-mode-parameters\n");
                 return 0;
             }
+            else {
+                hasNormalModeParameters = true;
+            }
 
             break;
         case 0x00: /* indefinite length end tag -> ignore */
@@ -755,6 +759,13 @@ IsoPresentation_parseConnect(IsoPresentation* self, ByteBuffer* byteBuffer)
             bufPos += len;
             break;
         }
+    }
+
+    if (hasNormalModeParameters == false) {
+        if (DEBUG_PRES)
+            printf("PRES: error - normal mode parameters are missing\n");
+
+        return 0;
     }
 
     return 1;
