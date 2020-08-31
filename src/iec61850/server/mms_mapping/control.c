@@ -203,28 +203,43 @@ getCancelParameterTime(MmsValue* operParameters)
 static void
 copyControlValuesToTrackingObject(MmsMapping* self, ControlObject* controlObject, IEC61850_ServiceType serviceType)
 {
-    //TODO determine type!
-
     if (controlObject->ctlVal) {
 
         ControlTrkInstance trkInst = NULL;
 
-        if (MmsValue_getType(controlObject->ctlVal) == MMS_BOOLEAN) {
-
-            //TODO handle binary controlled step position
-            //TODO handle binary controlled integer/analog
-
-            if (self->spcTrk) {
-
-                trkInst = self->spcTrk;
-
-                if (trkInst->ctlVal)
-                    MmsValue_update(trkInst->ctlVal->mmsValue, controlObject->ctlVal);
-            }
-
+        switch (controlObject->cdc) {
+        case CST_SPCTRK:
+            trkInst = self->spcTrk;
+            break;
+        case CST_DPCTRK:
+            trkInst = self->dpcTrk;
+            break;
+        case CST_INCTRK:
+            trkInst = self->incTrk;
+            break;
+        case CST_APCFTRK:
+            trkInst = self->apcFTrk;
+            break;
+        case CST_APCINTTRK:
+            trkInst = self->apcIntTrk;
+            break;
+        case CST_BSCTRK:
+            trkInst = self->bscTrk;
+            break;
+        case CST_ISCTRK:
+            trkInst = self->iscTrk;
+            break;
+        case CST_BACTRK:
+            trkInst = self->bacTrk;
+            break;
+        default:
+            break;
         }
 
         if (trkInst) {
+            if (trkInst->ctlVal)
+                MmsValue_update(trkInst->ctlVal->mmsValue, controlObject->ctlVal);
+
             if (trkInst->origin)
                 MmsValue_update(trkInst->origin->mmsValue, controlObject->origin);
 
@@ -956,6 +971,97 @@ ControlObject_initialize(ControlObject* self)
 
         MmsValue_setVisibleString(self->sbo, controlObjectReference);
     }
+
+#if (CONFIG_IEC61850_SERVICE_TRACKING == 1)
+
+    /* determine CDC of control object for service tracking */
+
+    char* daName = NULL;
+    DataAttribute* da = NULL;
+
+    DataAttributeType ctlValType = -1;
+    DataAttributeType stValType = -1;
+    DataAttributeType mxValType = -1;
+
+    daName = StringUtils_createStringInBuffer(strBuf, 6, self->mmsDomain->domainName, "/", self->lnName, ".", self->name, ".Oper.ctlVal");
+    da = (DataAttribute*) IedModel_getModelNodeByObjectReference(self->iedServer->model, daName);
+
+    if (da) {
+        ctlValType = da->type;
+    }
+
+    daName = StringUtils_createStringInBuffer(strBuf, 6, self->mmsDomain->domainName, "/", self->lnName, ".", self->name, ".stVal");
+    da = (DataAttribute*) IedModel_getModelNodeByObjectReference(self->iedServer->model, daName);
+
+    if (da) {
+        stValType = da->type;
+    }
+
+    daName = StringUtils_createStringInBuffer(strBuf, 6, self->mmsDomain->domainName, "/", self->lnName, ".", self->name, ".mxVal.f");
+    da = (DataAttribute*) IedModel_getModelNodeByObjectReference(self->iedServer->model, daName);
+
+    if (da) {
+        mxValType = da->type;
+    }
+
+    daName = StringUtils_createStringInBuffer(strBuf, 6, self->mmsDomain->domainName, "/", self->lnName, ".", self->name, ".mxVal.i");
+    da = (DataAttribute*) IedModel_getModelNodeByObjectReference(self->iedServer->model, daName);
+
+    if (da) {
+        mxValType = da->type;
+    }
+
+    daName = StringUtils_createStringInBuffer(strBuf, 6, self->mmsDomain->domainName, "/", self->lnName, ".", self->name, ".valWTr");
+    da = (DataAttribute*) IedModel_getModelNodeByObjectReference(self->iedServer->model, daName);
+
+    if (da) {
+        mxValType = da->type;
+    }
+
+
+    if (stValType == IEC61850_BOOLEAN && ctlValType == IEC61850_BOOLEAN)
+    {
+        self->cdc = CST_SPCTRK; /* SPC */
+    }
+    else if (stValType == IEC61850_CODEDENUM && ctlValType == IEC61850_BOOLEAN)
+    {
+        self->cdc = CST_DPCTRK; /* DPC */
+    }
+    else if (stValType == IEC61850_INT32 && ctlValType == IEC61850_INT32)
+    {
+        self->cdc = CST_INCTRK; /* INC */
+    }
+    else if (stValType == IEC61850_ENUMERATED && ctlValType == IEC61850_ENUMERATED)
+    {
+        self->cdc = CST_ENCTRK1; /* ENC */
+    }
+    else if (stValType == IEC61850_CONSTRUCTED && ctlValType == IEC61850_CODEDENUM)
+    {
+        self->cdc = CST_BSCTRK; /* BSC */
+    }
+    else if (stValType == IEC61850_CONSTRUCTED && ctlValType == IEC61850_INT8)
+    {
+        self->cdc = CST_ISCTRK; /* ISC */
+    }
+    else if ((mxValType == IEC61850_FLOAT32 || mxValType == IEC61850_FLOAT64) && (ctlValType == IEC61850_CONSTRUCTED))
+    {
+        self->cdc = CST_APCFTRK; /* APC (float) */
+    }
+    else if ((mxValType == IEC61850_INT32) && (ctlValType == IEC61850_CONSTRUCTED))
+    {
+        self->cdc = CST_APCINTTRK; /* APC (int) */
+    }
+    else if ((stValType == IEC61850_FLOAT32 || stValType == IEC61850_FLOAT64) && ctlValType == IEC61850_CODEDENUM)
+    {
+        self->cdc = CST_BACTRK; /* BAC */
+    }
+    else
+    {
+        if (DEBUG_IED_SERVER)
+            printf("IED_SERVER:  ERROR - stValType or ctlValType could not be determined!\n");
+        self->cdc = CST_NONE;
+    }
+#endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
 
     char* stSeldName = StringUtils_createStringInBuffer(strBuf, 6, self->mmsDomain->domainName, "/", self->lnName, ".", self->name, ".stSeld");
 

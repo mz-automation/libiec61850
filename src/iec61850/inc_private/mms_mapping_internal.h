@@ -172,6 +172,27 @@ struct sUrcbTrkInstance
     DataAttribute* gi;
 };
 
+typedef struct sGocbTrkInstance* GocbTrkInstance;
+
+struct sGocbTrkInstance
+{
+    /* inherited from ServiceTrkInstance */
+    DataObject* dobj;
+    DataAttribute* objRef;
+    DataAttribute* serviceType;
+    DataAttribute* errorCode;
+    DataAttribute* originatorID; /* optional */
+    DataAttribute* t;
+
+    /* GocbTrk specific attributes */
+    DataAttribute* goEna;
+    DataAttribute* goID;
+    DataAttribute* datSet;
+    DataAttribute* confRev;
+    DataAttribute* ndsCom;
+    DataAttribute* dstAddress;
+};
+
 typedef struct sControlTrkInstance* ControlTrkInstance;
 
 struct sControlTrkInstance
@@ -193,6 +214,26 @@ struct sControlTrkInstance
     DataAttribute* Test;
     DataAttribute* Check;
     DataAttribute* respAddCause;
+};
+
+typedef struct sSgcbTrkInstance* SgcbTrkInstance;
+
+struct sSgcbTrkInstance
+{
+    /* inherited from ServiceTrkInstance */
+    DataObject* dobj;
+    DataAttribute* objRef;
+    DataAttribute* serviceType;
+    DataAttribute* errorCode;
+    DataAttribute* originatorID; /* optional */
+    DataAttribute* t;
+
+    /* SgcbTrk specific attributes */
+    DataAttribute* numOfSG;
+    DataAttribute* actSG;
+    DataAttribute* editSG;
+    DataAttribute* cnfEdit;
+    DataAttribute* lActTm;
 };
 
 #endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
@@ -237,11 +278,19 @@ struct sMmsMapping {
 #endif
 
 #if (CONFIG_IEC61850_SERVICE_TRACKING == 1)
-
     BrcbTrkInstance brcbTrk;
     UrcbTrkInstance urcbTrk;
+    GocbTrkInstance gocbTrk;
     ControlTrkInstance spcTrk;
-
+    ControlTrkInstance dpcTrk;
+    ControlTrkInstance incTrk;
+    ControlTrkInstance encTrk1;
+    ControlTrkInstance apcFTrk;
+    ControlTrkInstance apcIntTrk;
+    ControlTrkInstance bscTrk;
+    ControlTrkInstance iscTrk;
+    ControlTrkInstance bacTrk;
+    SgcbTrkInstance sgcbTrk;
 #endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
 
     /* flag indicates if data model is locked --> prevents reports to be sent */

@@ -35,6 +35,22 @@
 
 #include "libiec61850_platform_includes.h"
 
+#if (CONFIG_IEC61850_SERVICE_TRACKING == 1)
+typedef enum
+{
+    CST_NONE,
+    CST_SPCTRK,
+    CST_DPCTRK,
+    CST_INCTRK,
+    CST_ENCTRK1,
+    CST_APCFTRK,
+    CST_APCINTTRK,
+    CST_BSCTRK,
+    CST_ISCTRK,
+    CST_BACTRK
+} ControlServiceCDC;
+#endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
+
 typedef struct sControlObject ControlObject;
 
 struct sControlObject
@@ -112,6 +128,11 @@ struct sControlObject
 
     ControlWaitForExecutionHandler waitForExecutionHandler;
     void* waitForExecutionHandlerParameter;
+
+#if (CONFIG_IEC61850_SERVICE_TRACKING == 1)
+    /* Common data class (CDC) of control object */
+    ControlServiceCDC cdc;
+#endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
 
     DataObject* dataObject;
 };

@@ -36,6 +36,7 @@
 
 #include "mms_goose.h"
 #include "goose_publisher.h"
+#include "ied_server_private.h"
 
 struct sMmsGooseControlBlock {
     char* name;
@@ -72,6 +73,104 @@ struct sMmsGooseControlBlock {
 
     char* gooseInterfaceId;
 };
+
+#if (CONFIG_IEC61850_SERVICE_TRACKING == 1)
+
+static void
+copyGCBValuesToTrackingObject(MmsGooseControlBlock gc)
+{
+    if (gc->mmsMapping->gocbTrk) {
+        GocbTrkInstance trkInst = gc->mmsMapping->gocbTrk;
+
+        if (trkInst->goEna)
+            MmsValue_setBoolean(trkInst->goEna->mmsValue, MmsGooseControlBlock_isEnabled(gc));
+
+        if (trkInst->goID)
+            MmsValue_setMmsString(trkInst->goID->mmsValue, gc->goId);
+
+        if (trkInst->datSet)
+            MmsValue_setMmsString(trkInst->datSet->mmsValue, gc->dataSet->name);
+
+        if (trkInst->confRev) {
+            uint32_t confRev = MmsValue_toUint32(MmsValue_getElement(gc->mmsValue, 3));
+            MmsValue_setUint32(trkInst->confRev->mmsValue, confRev);
+        }
+        if (trkInst->ndsCom) {
+            bool ndsCom = MmsValue_getBoolean(MmsValue_getElement(gc->mmsValue, 4));
+            MmsValue_setBoolean(trkInst->ndsCom->mmsValue, ndsCom);
+        }
+
+        if (trkInst->dstAddress) {
+          MmsValue_update(trkInst->dstAddress->mmsValue, MmsValue_getElement(gc->mmsValue, 5));
+        }
+    }
+}
+
+static IEC61850_ServiceError
+convertMmsDataAccessErrorToServiceError(MmsDataAccessError mmsError)
+{
+    IEC61850_ServiceError errVal = IEC61850_SERVICE_ERROR_NO_ERROR;
+
+    switch (mmsError) {
+    case DATA_ACCESS_ERROR_SUCCESS:
+        break;
+    case DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE:
+        errVal = IEC61850_SERVICE_ERROR_INSTANCE_LOCKED_BY_OTHER_CLIENT;
+        break;
+    case DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED:
+        errVal = IEC61850_SERVICE_ERROR_ACCESS_VIOLATION;
+        break;
+    case DATA_ACCESS_ERROR_TYPE_INCONSISTENT:
+        errVal = IEC61850_SERVICE_ERROR_PARAMETER_VALUE_INCONSISTENT;
+        break;
+    case DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT:
+        errVal = IEC61850_SERVICE_ERROR_INSTANCE_NOT_AVAILABLE;
+        break;
+    default:
+        printf("Data access error %i not mapped!\n", mmsError);
+        errVal = IEC61850_SERVICE_ERROR_FAILED_DUE_TO_SERVER_CONSTRAINT;
+        break;
+    }
+
+    return errVal;
+}
+
+static void
+updateGenericTrackingObjectValues(MmsGooseControlBlock gc, IEC61850_ServiceType serviceType, MmsDataAccessError errVal)
+{
+    ServiceTrkInstance trkInst = NULL;
+
+    if (gc->mmsMapping->gocbTrk) {
+        trkInst = (ServiceTrkInstance) gc->mmsMapping->gocbTrk;
+    }
+
+    if (trkInst) {
+        if (trkInst->serviceType)
+            MmsValue_setInt32(trkInst->serviceType->mmsValue, (int) serviceType);
+
+        if (trkInst->t)
+            MmsValue_setUtcTimeMs(trkInst->t->mmsValue, Hal_getTimeInMs());
+
+        if (trkInst->errorCode)
+            MmsValue_setInt32(trkInst->errorCode->mmsValue, convertMmsDataAccessErrorToServiceError(errVal));
+
+        char objRef[129];
+
+        /* create object reference */
+        LogicalNode* ln = (LogicalNode*) gc->logicalNode;
+        LogicalDevice* ld = (LogicalDevice*) ln->parent;
+
+        char* iedName = gc->mmsMapping->iedServer->mmsDevice->deviceName;
+
+        snprintf(objRef, 129, "%s%s/%s", iedName, ld->name, gc->name);
+
+        if (trkInst->objRef) {
+            IedServer_updateVisibleStringAttributeValue(gc->mmsMapping->iedServer, trkInst->objRef, objRef);
+        }
+    }
+}
+
+#endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
 
 MmsGooseControlBlock
 MmsGooseControlBlock_create()
@@ -288,6 +387,12 @@ MmsGooseControlBlock_enable(MmsGooseControlBlock self)
             }
 
             self->goEna = true;
+
+#if (CONFIG_IEC61850_SERVICE_TRACKING == 1)
+            MmsDataAccessError retVal = DATA_ACCESS_ERROR_SUCCESS;
+            copyGCBValuesToTrackingObject(self);
+            updateGenericTrackingObjectValues(self, IEC61850_SERVICE_TYPE_SET_GOCB_VALUES, retVal);
+#endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
         }
 
     }
@@ -317,6 +422,12 @@ MmsGooseControlBlock_disable(MmsGooseControlBlock self)
             LinkedList_destroyStatic(self->dataSetValues);
             self->dataSetValues = NULL;
         }
+
+#if (CONFIG_IEC61850_SERVICE_TRACKING == 1)
+        MmsDataAccessError retVal = DATA_ACCESS_ERROR_SUCCESS;
+        copyGCBValuesToTrackingObject(self);
+        updateGenericTrackingObjectValues(self, IEC61850_SERVICE_TYPE_SET_GOCB_VALUES, retVal);
+#endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
         Semaphore_post(self->publisherMutex);

@@ -584,6 +584,103 @@ unselectAllSettingGroups(MmsMapping* self, MmsServerConnection serverCon)
     }
 }
 
+#if (CONFIG_IEC61850_SERVICE_TRACKING == 1)
+
+static void
+copySGCBValuesToTrackingObject(MmsMapping* self, SettingGroupControlBlock* sgcb)
+{
+    if (self->sgcbTrk) {
+        SgcbTrkInstance trkInst = self->sgcbTrk;
+
+        if (trkInst->numOfSG)
+            MmsValue_setUint8(trkInst->numOfSG->mmsValue, sgcb->numOfSGs);
+
+        if (trkInst->actSG)
+            MmsValue_setUint8(trkInst->actSG->mmsValue, sgcb->actSG);
+
+        if (trkInst->editSG)
+            MmsValue_setUint8(trkInst->editSG->mmsValue, sgcb->editSG);
+
+        if (trkInst->cnfEdit)
+            MmsValue_setBoolean(trkInst->cnfEdit->mmsValue, sgcb->cnfEdit);
+
+        if (trkInst->lActTm) {
+            SettingGroup* sg = getSettingGroupBySGCB(self, sgcb);
+            MmsValue* lActTm = MmsValue_getElement(sg->sgcbMmsValues, 4);
+            MmsValue_update(trkInst->lActTm->mmsValue, lActTm);
+        }
+    }
+}
+
+static IEC61850_ServiceError
+convertMmsDataAccessErrorToServiceError(MmsDataAccessError mmsError)
+{
+    IEC61850_ServiceError errVal = IEC61850_SERVICE_ERROR_NO_ERROR;
+
+    switch (mmsError) {
+    case DATA_ACCESS_ERROR_SUCCESS:
+        break;
+    case DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE:
+        errVal = IEC61850_SERVICE_ERROR_INSTANCE_LOCKED_BY_OTHER_CLIENT;
+        break;
+    case DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED:
+        errVal = IEC61850_SERVICE_ERROR_ACCESS_VIOLATION;
+        break;
+    case DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID:
+        errVal = IEC61850_SERVICE_ERROR_PARAMETER_VALUE_INAPPROPRIATE;
+        break;
+    case DATA_ACCESS_ERROR_TYPE_INCONSISTENT:
+        errVal = IEC61850_SERVICE_ERROR_PARAMETER_VALUE_INCONSISTENT;
+        break;
+    case DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT:
+        errVal = IEC61850_SERVICE_ERROR_INSTANCE_NOT_AVAILABLE;
+        break;
+    default:
+        printf("Data access error %i not mapped!\n", mmsError);
+        errVal = IEC61850_SERVICE_ERROR_FAILED_DUE_TO_SERVER_CONSTRAINT;
+        break;
+    }
+
+    return errVal;
+}
+
+static void
+updateGenericTrackingObjectValues(MmsMapping* self, SettingGroupControlBlock* sgcb, IEC61850_ServiceType serviceType, MmsDataAccessError errVal)
+{
+    ServiceTrkInstance trkInst = NULL;
+
+    if (self->sgcbTrk) {
+        trkInst = (ServiceTrkInstance) self->sgcbTrk;
+    }
+
+    if (trkInst) {
+        if (trkInst->serviceType)
+            MmsValue_setInt32(trkInst->serviceType->mmsValue, (int) serviceType);
+
+        if (trkInst->t)
+            MmsValue_setUtcTimeMs(trkInst->t->mmsValue, Hal_getTimeInMs());
+
+        if (trkInst->errorCode)
+            MmsValue_setInt32(trkInst->errorCode->mmsValue, convertMmsDataAccessErrorToServiceError(errVal));
+
+        char objRef[129];
+
+        /* create object reference */
+        LogicalNode* ln = (LogicalNode*) sgcb->parent;
+        LogicalDevice* ld = (LogicalDevice*) ln->parent;
+
+        char* iedName = self->iedServer->mmsDevice->deviceName;
+
+        snprintf(objRef, 129, "%s%s/%s.SGCB", iedName, ld->name, sgcb->parent->name);
+
+        if (trkInst->objRef) {
+            IedServer_updateVisibleStringAttributeValue(self->iedServer, trkInst->objRef, objRef);
+        }
+    }
+}
+
+#endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
+
 void
 MmsMapping_checkForSettingGroupReservationTimeouts(MmsMapping* self, uint64_t currentTime)
 {
@@ -699,6 +796,12 @@ MmsMapping_changeActiveSettingGroup(MmsMapping* self, SettingGroupControlBlock* 
 
             MmsValue_setUint8(actSg, sgcb->actSG);
             MmsValue_setUtcTimeMs(lActTm, Hal_getTimeInMs());
+
+#if (CONFIG_IEC61850_SERVICE_TRACKING == 1)
+            copySGCBValuesToTrackingObject(self, sgcb);
+            updateGenericTrackingObjectValues(self, sgcb, IEC61850_SERVICE_TYPE_SELECT_ACTIVE_SG, DATA_ACCESS_ERROR_SUCCESS);
+#endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
+
         }
     }
 }
@@ -1026,6 +1129,89 @@ getUrcbTrackingAttributes(UrcbTrkInstance svcTrkInst, DataObject* trkObj)
 }
 
 static void
+getGocbTrackingAttributes(GocbTrkInstance svcTrkInst, DataObject* trkObj)
+{
+    ModelNode* modelNode = trkObj->firstChild;
+
+    while (modelNode) {
+        if (modelNode->modelType == DataAttributeModelType) {
+            DataAttribute* da = (DataAttribute*) modelNode;
+
+            if (!strcmp(da->name, "goEna")) {
+                svcTrkInst->goEna = da;
+            }
+            if (!strcmp(da->name, "goID")) {
+                svcTrkInst->goID = da;
+            }
+            else if (!strcmp(da->name, "datSet")) {
+                svcTrkInst->datSet = da;
+            }
+            else if (!strcmp(da->name, "confRev")) {
+                svcTrkInst->confRev = da;
+            }
+            else if (!strcmp(da->name, "ndsCom")) {
+                svcTrkInst->ndsCom = da;
+            }
+            else if (!strcmp(da->name, "dstAddress")) {
+                svcTrkInst->dstAddress = da;
+            }
+        }
+
+        modelNode = modelNode->sibling;
+    }
+
+    /* check if all mandatory attributes are present */
+    if (svcTrkInst->goEna && svcTrkInst->goID && svcTrkInst->datSet && svcTrkInst->confRev &&
+        svcTrkInst->ndsCom && svcTrkInst->dstAddress) {
+
+    }
+    else {
+        if (DEBUG_IED_SERVER)
+            printf("IED_SERVER: required attribute missing in gocbTrk service tracking object %s\n",trkObj->name);
+    }
+}
+
+static void
+getSgcbTrackingAttributes(SgcbTrkInstance svcTrkInst, DataObject* trkObj)
+{
+    ModelNode* modelNode = trkObj->firstChild;
+
+    while (modelNode) {
+        if (modelNode->modelType == DataAttributeModelType) {
+            DataAttribute* da = (DataAttribute*) modelNode;
+
+            if (!strcmp(da->name, "numOfSG")) {
+                svcTrkInst->numOfSG = da;
+            }
+            if (!strcmp(da->name, "actSG")) {
+                svcTrkInst->actSG = da;
+            }
+            else if (!strcmp(da->name, "editSG")) {
+                svcTrkInst->editSG = da;
+            }
+            else if (!strcmp(da->name, "cnfEdit")) {
+                svcTrkInst->cnfEdit = da;
+            }
+            else if (!strcmp(da->name, "lActTm")) {
+                svcTrkInst->lActTm = da;
+            }
+        }
+
+        modelNode = modelNode->sibling;
+    }
+
+    /* check if all mandatory attributes are present */
+    if (svcTrkInst->numOfSG && svcTrkInst->actSG && svcTrkInst->editSG && svcTrkInst->cnfEdit &&
+        svcTrkInst->lActTm) {
+
+    }
+    else {
+        if (DEBUG_IED_SERVER)
+            printf("IED_SERVER: required attribute missing in sgcbTrk service tracking object %s\n",trkObj->name);
+    }
+}
+
+static void
 getControlTrackingAttributes(ControlTrkInstance svcTrkInst, DataObject* trkObj)
 {
     ModelNode* modelNode = trkObj->firstChild;
@@ -1071,24 +1257,49 @@ checkForServiceTrackingVariables(MmsMapping* self, LogicalNode* logicalNode)
 
     while (modelNode) {
 
-        if (!strcmp(modelNode->name, "SpcTrk")) {
+        if (!strcmp(modelNode->name, "SpcTrk") || !strcmp(modelNode->name, "DpcTrk") || 
+                !strcmp(modelNode->name, "IncTrk") || !strcmp(modelNode->name, "EncTrk1") || 
+                !strcmp(modelNode->name, "ApcFTrk") || !strcmp(modelNode->name, "ApcIntTrk") ||
+                !strcmp(modelNode->name, "BscTrk") || !strcmp(modelNode->name, "IscTrk") || 
+                !strcmp(modelNode->name, "BacIntTrk"))
+        {
             if (DEBUG_IED_SERVER)
-                printf("SpcTrk data object found!\n");
+                printf("%s data object found!\n", modelNode->name);
 
-            DataObject* spcTrk = (DataObject*) modelNode;
+            DataObject* actTrk = (DataObject*) modelNode;
+            ControlTrkInstance* actInstance = NULL;
 
-            if (self->spcTrk) {
+            if (!strcmp(modelNode->name, "SpcTrk"))
+                actInstance = &self->spcTrk;
+            else if (!strcmp(modelNode->name, "DpcTrk"))
+                actInstance = &self->spcTrk;
+            else if (!strcmp(modelNode->name, "IncTrk"))
+                actInstance = &self->incTrk;
+            else if (!strcmp(modelNode->name, "EncTrk1"))
+                actInstance = &self->encTrk1;
+            else if (!strcmp(modelNode->name, "ApcFTrk"))
+                actInstance = &self->apcFTrk;
+            else if (!strcmp(modelNode->name, "ApcIntTrk"))
+                actInstance = &self->apcIntTrk;
+            else if (!strcmp(modelNode->name, "BscTrk"))
+                actInstance = &self->bscTrk;
+            else if (!strcmp(modelNode->name, "IscTrk"))
+                actInstance = &self->iscTrk;
+            else if (!strcmp(modelNode->name, "BacTrk"))
+                actInstance = &self->bacTrk;
+
+            if (*actInstance != NULL) {
                 if (DEBUG_IED_SERVER)
-                    printf("IED_SERVER: ERROR: multiple SpcTrk instances found in server\n");
+                    printf("IED_SERVER: ERROR: multiple %s instances found in server\n", modelNode->name);
             }
             else {
-                self->spcTrk = (ControlTrkInstance) GLOBAL_CALLOC(1, sizeof(struct sControlTrkInstance));
+                *actInstance = (ControlTrkInstance) GLOBAL_CALLOC(1, sizeof(struct sControlTrkInstance));
 
-                if (self->spcTrk) {
-                    self->spcTrk->dobj = spcTrk;
+                if (*actInstance != NULL) {
+                    (*actInstance)->dobj = actTrk;
 
-                    getCommonTrackingAttributes((ServiceTrkInstance) self->spcTrk, spcTrk);
-                    getControlTrackingAttributes(self->spcTrk, spcTrk);
+                    getCommonTrackingAttributes((ServiceTrkInstance) *actInstance, actTrk);
+                    getControlTrackingAttributes(*actInstance, actTrk);
                 }
             }
 
@@ -1128,7 +1339,7 @@ checkForServiceTrackingVariables(MmsMapping* self, LogicalNode* logicalNode)
                     printf("IED_SERVER: ERROR: multiple UrcbTrk instances found in server\n");
             }
             else {
-                /* Setup BrcbTrk references */
+                /* Setup UrcbTrk references */
                 self->urcbTrk = (UrcbTrkInstance) GLOBAL_CALLOC(1, sizeof(struct sUrcbTrkInstance));
 
                 if (self->urcbTrk) {
@@ -1140,7 +1351,52 @@ checkForServiceTrackingVariables(MmsMapping* self, LogicalNode* logicalNode)
 
             }
         }
+        else if (!strcmp(modelNode->name, "GocbTrk")) {
+            if (DEBUG_IED_SERVER)
+                printf("GocbTrk data object found!\n");
 
+            DataObject* gocbTrk = (DataObject*) modelNode;
+
+            if (self->gocbTrk) {
+                if (DEBUG_IED_SERVER)
+                    printf("IED_SERVER: ERROR: multiple GocbTrk instances found in server\n");
+            }
+            else {
+                /* Setup GocbTrk references */
+                self->gocbTrk = (GocbTrkInstance) GLOBAL_CALLOC(1, sizeof(struct sGocbTrkInstance));
+
+                if (self->gocbTrk) {
+                    self->gocbTrk->dobj = gocbTrk;
+
+                    getCommonTrackingAttributes((ServiceTrkInstance) self->gocbTrk, gocbTrk);
+                    getGocbTrackingAttributes(self->gocbTrk, gocbTrk);
+                }
+
+            }
+        }
+        else if (!strcmp(modelNode->name, "SgcbTrk")) {
+            if (DEBUG_IED_SERVER)
+                printf("SgcbTrk data object found!\n");
+
+            DataObject* sgcbTrk = (DataObject*) modelNode;
+
+            if (self->sgcbTrk) {
+                if (DEBUG_IED_SERVER)
+                    printf("IED_SERVER: ERROR: multiple SgcbTrk instances found in server\n");
+            }
+            else {
+                /* Setup SgcbTrk references */
+                self->sgcbTrk = (SgcbTrkInstance) GLOBAL_CALLOC(1, sizeof(struct sSgcbTrkInstance));
+
+                if (self->sgcbTrk) {
+                    self->sgcbTrk->dobj = sgcbTrk;
+
+                    getCommonTrackingAttributes((ServiceTrkInstance) self->sgcbTrk, sgcbTrk);
+                    getSgcbTrackingAttributes(self->sgcbTrk, sgcbTrk);
+                }
+
+            }
+        }
         modelNode = modelNode->sibling;
     }
 
@@ -2225,6 +2481,7 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
 
             if (strcmp(nameId, "ActSG") == 0) {
                 SettingGroup* sg = getSettingGroupByMmsDomain(self, domain);
+                MmsDataAccessError retVal = DATA_ACCESS_ERROR_SUCCESS;
 
                 if (sg != NULL) {
                     uint32_t val = MmsValue_toUint32(value);
@@ -2246,68 +2503,86 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
                                 }
 
                                 else
-                                    return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+                                    retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
                             }
                             else
-                                return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
-
+                                retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
                         }
-
-                        return DATA_ACCESS_ERROR_SUCCESS;
                     }
                     else
-                        return DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+                        retVal = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
                 }
+#if (CONFIG_IEC61850_SERVICE_TRACKING == 1)
+                copySGCBValuesToTrackingObject(self, sg->sgcb);
+                updateGenericTrackingObjectValues(self, sg->sgcb, IEC61850_SERVICE_TYPE_SELECT_ACTIVE_SG, retVal);
+#endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
+                return retVal;
             }
             else if (strcmp(nameId, "EditSG") == 0) {
                 SettingGroup* sg = getSettingGroupByMmsDomain(self, domain);
+                MmsDataAccessError retVal = DATA_ACCESS_ERROR_SUCCESS;
 
                 if (sg != NULL) {
                     uint32_t val = MmsValue_toUint32(value);
 
-                    if ((sg->editingClient != NULL) && ( sg->editingClient != (ClientConnection) connection))
+                    if ((sg->editingClient != NULL) && ( sg->editingClient != (ClientConnection) connection)) {
                     	/* Edit SG was set by other client */
-                    	return DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
+                    	retVal = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
+                    }
+                    else {
+                        if (val == 0) {
+                            unselectEditSettingGroup(sg);
+                            retVal = DATA_ACCESS_ERROR_SUCCESS;
+                        }
+                        else {
 
-					if (val == 0) {
-						unselectEditSettingGroup(sg);
-						return DATA_ACCESS_ERROR_SUCCESS;
-					}
+                            if ((val > 0) && (val <= sg->sgcb->numOfSGs)) {
 
-					if ((val > 0) && (val <= sg->sgcb->numOfSGs)) {
+                                if (sg->editSgChangedHandler != NULL) {
 
-						if (sg->editSgChangedHandler != NULL) {
+                                    if (sg->editSgChangedHandler(sg->editSgChangedHandlerParameter, sg->sgcb,
+                                            (uint8_t) val, (ClientConnection) connection))
+                                    {
+                                        sg->sgcb->editSG = val;
+                                        sg->editingClient = (ClientConnection) connection;
 
-							if (sg->editSgChangedHandler(sg->editSgChangedHandlerParameter, sg->sgcb,
-									(uint8_t) val, (ClientConnection) connection))
-							{
-								sg->sgcb->editSG = val;
-								sg->editingClient = (ClientConnection) connection;
+                                        sg->reservationTimeout = Hal_getTimeInMs() + (sg->sgcb->resvTms * 1000);
 
-								sg->reservationTimeout = Hal_getTimeInMs() + (sg->sgcb->resvTms * 1000);
+                                        MmsValue* editSg = MmsValue_getElement(sg->sgcbMmsValues, 2);
+                                        MmsValue* resvTms = MmsValue_getElement(sg->sgcbMmsValues, 5);
 
-								MmsValue* editSg = MmsValue_getElement(sg->sgcbMmsValues, 2);
-								MmsValue* resvTms = MmsValue_getElement(sg->sgcbMmsValues, 5);
+                                        MmsValue_setUint16(resvTms, sg->sgcb->resvTms);
+                                        MmsValue_setUint8(editSg, sg->sgcb->editSG);
 
-								MmsValue_setUint16(resvTms, sg->sgcb->resvTms);
-								MmsValue_setUint8(editSg, sg->sgcb->editSG);
+                                        retVal = DATA_ACCESS_ERROR_SUCCESS;
+                                    }
+                                    else
+                                        retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+                                }
+                                else
+                                    retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
 
-								return DATA_ACCESS_ERROR_SUCCESS;
-							}
-							else
-								return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
-						}
-						else
-							return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+                            }
+                            else
+                                retVal = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
 
-					}
-					else
-						return DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
-
+                        }
+                    }
                 }
+                else {
+                    retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_UNSUPPORTED;
+                }
+
+#if (CONFIG_IEC61850_SERVICE_TRACKING == 1)
+                copySGCBValuesToTrackingObject(self, sg->sgcb);
+                updateGenericTrackingObjectValues(self, sg->sgcb, IEC61850_SERVICE_TYPE_SELECT_EDIT_SG, retVal);
+#endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
+                return retVal;
+
             }
             else if (strcmp(nameId, "CnfEdit") == 0) {
                 SettingGroup* sg = getSettingGroupByMmsDomain(self, domain);
+                MmsDataAccessError retVal = DATA_ACCESS_ERROR_SUCCESS;
 
                 if (sg != NULL) {
                     bool val = MmsValue_getBoolean(value);
@@ -2321,20 +2596,29 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
 
                                     unselectEditSettingGroup(sg);
 
-                                    return DATA_ACCESS_ERROR_SUCCESS;
+                                    retVal = DATA_ACCESS_ERROR_SUCCESS;
                                 }
                                 else
-                                    return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+                                    retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
                             }
                             else
-                                return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+                                retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
                         }
                         else
-                            return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+                            retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
                     }
                     else
-                        return DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+                        retVal = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
                 }
+                else {
+                    retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_UNSUPPORTED;
+                }
+
+#if (CONFIG_IEC61850_SERVICE_TRACKING == 1)
+                copySGCBValuesToTrackingObject(self, sg->sgcb);
+                updateGenericTrackingObjectValues(self, sg->sgcb, IEC61850_SERVICE_TYPE_CONFIRM_EDIT_SG_VALUES, retVal);
+#endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
+                return retVal;
             }
         }
 
