@@ -24,7 +24,6 @@
 #ifndef GOOSE_PUBLISHER_H_
 #define GOOSE_PUBLISHER_H_
 
-#include "libiec61850_platform_includes.h"
 #include "linked_list.h"
 #include "mms_value.h"
 
