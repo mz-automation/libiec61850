@@ -25,7 +25,6 @@
 #ifndef LIBIEC61850_SRC_SAMPLED_VALUES_SV_PUBLISHER_H_
 #define LIBIEC61850_SRC_SAMPLED_VALUES_SV_PUBLISHER_H_
 
-#include "libiec61850_platform_includes.h"
 #include "iec61850_common.h"
 
 #ifdef __cplusplus
