@@ -1603,10 +1603,7 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
             if (rc->buffered)
                 purgeBuf(rc);
 
-            if (strlen(MmsValue_toString(value)) == 0)
-                updateWithDefaultRptId(rc, rptId);
-            else
-                MmsValue_update(rptId, value);
+            MmsValue_update(rptId, value);
 
             goto exit_function;
         }
@@ -2283,7 +2280,25 @@ sendNextReportEntrySegment(ReportControl* self)
         MmsValue_setOctetString(entryIdValue, (uint8_t*) report->entryId, 8);
     }
 
-    MmsValue* rptId = ReportControl_getRCBValue(self, "RptID");
+    char rptIdBuf[130];
+
+    MmsValue rptId;
+    rptId.type = MMS_VISIBLE_STRING;
+    rptId.value.visibleString.size = sizeof(rptIdBuf);
+    rptId.value.visibleString.buf = rptIdBuf;
+
+    MmsValue* rptIdFromRcb = ReportControl_getRCBValue(self, "RptID");
+
+    const char* rptIdStr = MmsValue_toString(rptIdFromRcb);
+
+    if (rptIdStr[0] == 0) {
+        /* use default rptId when RptID is empty in RCB */
+        updateWithDefaultRptId(self, &rptId);
+    }
+    else {
+        MmsValue_setVisibleString(&rptId, rptIdStr);
+    }
+
     MmsValue* optFlds = ReportControl_getRCBValue(self, "OptFlds");
 
     if (isBuffered == false) {
@@ -2292,7 +2307,7 @@ sendNextReportEntrySegment(ReportControl* self)
         MmsValue_setBitStringBit(optFlds, 7, false); /* entryID */
     }
 
-    accessResultSize += MmsValue_encodeMmsData(rptId, NULL, 0, false);
+    accessResultSize += MmsValue_encodeMmsData(&rptId, NULL, 0, false);
     accessResultSize += 5; /* add size of OptFlds */
 
     MmsValue _inclusionField;
@@ -2569,7 +2584,7 @@ sendNextReportEntrySegment(ReportControl* self)
 
     /* encode access-results */
 
-    bufPos = MmsValue_encodeMmsData(rptId, buffer, bufPos, true);
+    bufPos = MmsValue_encodeMmsData(&rptId, buffer, bufPos, true);
     bufPos = MmsValue_encodeMmsData(optFlds, buffer, bufPos, true);
 
     if (hasSeqNum)
