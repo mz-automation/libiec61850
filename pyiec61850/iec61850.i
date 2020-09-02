@@ -105,3 +105,38 @@ EventSubscriber* EventSubscriber::m_last_created_event_subscriber = nullptr;
 %include "eventHandler.hpp"
 %include "reportControlBlockHandler.hpp"
 %include "gooseHandler.hpp"
+
+/* Goose Publisher section */
+%{
+#include "goose_publisher.h"
+
+void LinkedList_destroyDeep_MmsValueDelete(LinkedList dataSetValues)
+{
+    LinkedList_destroyDeep(dataSetValues, (LinkedListValueDeleteFunction) MmsValue_delete);
+}
+void CommParameters_setDstAddress(CommParameters *gooseCommParameters,
+                                  uint8_t dst_mac_0,
+                                  uint8_t dst_mac_1,
+                                  uint8_t dst_mac_2,
+                                  uint8_t dst_mac_3,
+                                  uint8_t dst_mac_4,
+                                  uint8_t dst_mac_5)
+{
+    gooseCommParameters->dstAddress[0] = dst_mac_0;
+    gooseCommParameters->dstAddress[1] = dst_mac_1;
+    gooseCommParameters->dstAddress[2] = dst_mac_2;
+    gooseCommParameters->dstAddress[3] = dst_mac_3;
+    gooseCommParameters->dstAddress[4] = dst_mac_4;
+    gooseCommParameters->dstAddress[5] = dst_mac_5;
+}
+%}
+%include "goose_publisher.h"
+void LinkedList_destroyDeep_MmsValueDelete(LinkedList dataSetValues);
+void CommParameters_setDstAddress(CommParameters *gooseCommParameters,
+                                  uint8_t dst_mac_0,
+                                  uint8_t dst_mac_1,
+                                  uint8_t dst_mac_2,
+                                  uint8_t dst_mac_3,
+                                  uint8_t dst_mac_4,
+                                  uint8_t dst_mac_5);
+
