@@ -2447,15 +2447,19 @@ MmsConnection_readMultipleVariablesAsync(MmsConnection self, MmsError* mmsError,
 
     invokeId = getNextInvokeId(self);
 
-    mmsClient_createReadRequestMultipleValues(invokeId, domainId, items, payload);
+    if (mmsClient_createReadRequestMultipleValues(invokeId, domainId, items, payload) > 0) {
+        MmsClientInternalParameter intParam;
+        intParam.ptr = NULL;
 
-    MmsClientInternalParameter intParam;
-    intParam.ptr = NULL;
+        MmsError err = sendAsyncRequest(self, invokeId, payload, MMS_CALL_TYPE_READ_MULTIPLE_VARIABLES, handler, parameter, intParam);
 
-    MmsError err = sendAsyncRequest(self, invokeId, payload, MMS_CALL_TYPE_READ_MULTIPLE_VARIABLES, handler, parameter, intParam);
-
-    if (mmsError)
-        *mmsError = err;
+        if (mmsError)
+            *mmsError = err;
+    }
+    else {
+        if (mmsError)
+            *mmsError = MMS_ERROR_RESOURCE_CAPABILITY_UNAVAILABLE;
+    }
 
 exit_function:
     return invokeId;
