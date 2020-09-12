@@ -89,7 +89,7 @@ getChildSubString (const char* itemId, char* parentId)
 }
 
 static MmsValue*
-searchCacheForValue(MmsValueCache self, const char* itemId, char* parentId)
+searchCacheForValue(MmsValueCache self, const char* itemId, char* parentId, MmsVariableSpecification** outSpec)
 {
 	MmsValueCacheEntry* cacheEntry;
 	MmsValue* value = NULL;
@@ -100,7 +100,7 @@ searchCacheForValue(MmsValueCache self, const char* itemId, char* parentId)
 		char* parentItemId = getParentSubString(parentId);
 
 		if (parentItemId != NULL) {
-			value = searchCacheForValue(self, itemId, parentItemId);
+			value = searchCacheForValue(self, itemId, parentItemId, outSpec);
 		}
 	}
 	else {
@@ -109,13 +109,18 @@ searchCacheForValue(MmsValueCache self, const char* itemId, char* parentId)
 
 		MmsVariableSpecification* typeSpec = MmsDomain_getNamedVariable(self->domain, parentId);
 		value = MmsVariableSpecification_getChildValue(typeSpec, cacheEntry->value, childId);
+
+		if (outSpec) {
+		    *outSpec = MmsVariableSpecification_getNamedVariableRecursive(typeSpec, childId);
+		}
+
 	}
 
 	return value;
 }
 
 MmsValue*
-MmsValueCache_lookupValue(MmsValueCache self, const char* itemId)
+MmsValueCache_lookupValue(MmsValueCache self, const char* itemId, MmsVariableSpecification** outSpec)
 {
 	/*
 	 * get value for first matching key substring!
@@ -133,14 +138,20 @@ MmsValueCache_lookupValue(MmsValueCache self, const char* itemId)
 		char* parentItemId = getParentSubString(itemIdCopy);
 
 		if (parentItemId != NULL) {
-			value = searchCacheForValue(self, itemId, parentItemId);
+			value = searchCacheForValue(self, itemId, parentItemId, outSpec);
 		}
 
 		GLOBAL_FREEMEM(itemIdCopy);
 	}
 
-	if (cacheEntry != NULL)
+	if (cacheEntry != NULL) {
+
+	    if (outSpec) {
+	        *outSpec = cacheEntry->typeSpec;
+	    }
+
 		return cacheEntry->value;
+	}
 	else
 		return value;
 }

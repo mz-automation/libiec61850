@@ -46,6 +46,8 @@ void
 MmsNamedVariableListEntry_destroy(MmsNamedVariableListEntry self)
 {
 	GLOBAL_FREEMEM(self->variableName);
+	if (self->componentName)
+	    GLOBAL_FREEMEM(self->componentName);
 	GLOBAL_FREEMEM(self);
 }
 

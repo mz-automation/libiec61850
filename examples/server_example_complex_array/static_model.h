@@ -1,7 +1,7 @@
 /*
  * static_model.h
  *
- * automatically generated from mhai_array.icd
+ * automatically generated from mhai_array.cid
  */
 
 #ifndef STATIC_MODEL_H_

@@ -354,49 +354,12 @@ mmsClient_createDefineNamedVariableListRequest(
                 domainspecific.itemId.buf = (uint8_t*) StringUtils_copyString(variableSpec->itemId);
 
         if (variableSpec->arrayIndex != -1) {
-
-            AlternateAccess_t* alternateAccess = (AlternateAccess_t*) GLOBAL_CALLOC(1, sizeof(AlternateAccess_t));
-            alternateAccess->list.count = 1;
-            alternateAccess->list.array = (struct AlternateAccess__Member**) GLOBAL_CALLOC(1, sizeof(struct AlternateAccess__Member*));
-            alternateAccess->list.array[0] = (struct AlternateAccess__Member*) GLOBAL_CALLOC(1, sizeof(struct AlternateAccess__Member));
-
-            alternateAccess->list.array[0]->present = AlternateAccess__Member_PR_unnamed;
-            alternateAccess->list.array[0]->choice.unnamed = (AlternateAccessSelection_t*) GLOBAL_CALLOC(1, sizeof(AlternateAccessSelection_t));
-
-            alternateAccess->list.array[0]->choice.unnamed->present = AlternateAccessSelection_PR_selectAlternateAccess;
-
-            alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.accessSelection.present =
-                    AlternateAccessSelection__selectAlternateAccess__accessSelection_PR_index;
-
-            asn_long2INTEGER(&(alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.accessSelection.choice.index),
-                    variableSpec->arrayIndex);
-
-            if (variableSpec->componentName != NULL) {
-
-                AlternateAccess_t* componentAccess = (AlternateAccess_t*) GLOBAL_CALLOC(1, sizeof(AlternateAccess_t));
-
-                componentAccess->list.count = 1;
-                componentAccess->list.array = (struct AlternateAccess__Member**) GLOBAL_CALLOC(1, sizeof(struct AlternateAccess__Member*));
-                componentAccess->list.array[0] = (struct AlternateAccess__Member*) GLOBAL_CALLOC(1, sizeof(struct AlternateAccess__Member));
-
-                componentAccess->list.array[0]->present = AlternateAccess__Member_PR_unnamed;
-                componentAccess->list.array[0]->choice.unnamed = (AlternateAccessSelection_t*) GLOBAL_CALLOC(1, sizeof(AlternateAccessSelection_t));
-
-                componentAccess->list.array[0]->choice.unnamed->present = AlternateAccessSelection_PR_selectAccess;
-                componentAccess->list.array[0]->choice.unnamed->choice.selectAccess.present =
-                        AlternateAccessSelection__selectAccess_PR_component;
-
-                Identifier_t* componentIdentifier =
-                        &(componentAccess->list.array[0]->choice.unnamed->choice.selectAccess.choice.component);
-
-                componentIdentifier->size = strlen(variableSpec->componentName);
-                componentIdentifier->buf = (uint8_t*) StringUtils_copyString(variableSpec->componentName);
-
-                alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess
-                = componentAccess;
+            if (variableSpec->componentName) {
+                request->listOfVariable.list.array[i]->alternateAccess = mmsClient_createAlternateAccessIndexComponent(variableSpec->arrayIndex, variableSpec->componentName);
             }
-
-            request->listOfVariable.list.array[i]->alternateAccess = alternateAccess;
+            else {
+                request->listOfVariable.list.array[i]->alternateAccess = mmsClient_createAlternateAccess(variableSpec->arrayIndex, 0);
+            }
         }
 
         element = LinkedList_getNext(element);
@@ -404,8 +367,15 @@ mmsClient_createDefineNamedVariableListRequest(
         i++;
     }
 
-    der_encode(&asn_DEF_MmsPdu, mmsPdu,
+    asn_enc_rval_t rval = der_encode(&asn_DEF_MmsPdu, mmsPdu,
             (asn_app_consume_bytes_f*) mmsClient_write_out, (void*) writeBuffer);
+
+    if (rval.encoded == -1) {
+        writeBuffer->size = 0;
+
+        if (DEBUG_MMS_SERVER)
+            printf("MMS_CLIENT: createDefineNamedVariableListRequest - failed to encode request!\n");
+    }
 
     asn_DEF_MmsPdu.free_struct(&asn_DEF_MmsPdu, mmsPdu, 0);
 }

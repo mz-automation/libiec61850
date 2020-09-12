@@ -377,18 +377,64 @@ updateDataSetsWithCachedValues(IedServer self)
 
                 MmsDomain* domain = MmsDevice_getDomain(self->mmsDevice, domainName);
 
-                MmsValue* value = MmsServer_getValueFromCache(self->mmsServer, domain, dataSetEntry->variableName);
+                char variableName[66];
+
+                strncpy(variableName, dataSetEntry->variableName, 65);
+                variableName[65] = 0;
+
+                MmsVariableSpecification* typeSpec = NULL;
+
+                MmsValue* value = MmsServer_getValueFromCacheEx(self->mmsServer, domain, variableName, &typeSpec);
 
                 if (value == NULL) {
                     if (DEBUG_IED_SERVER) {
-                        printf("LD: %s dataset: %s : error cannot get value from cache for %s -> %s!\n",
+                        printf("IED_SERVER: LD: %s dataset: %s : error cannot get value from cache for %s -> %s!\n",
                                 dataSet->logicalDeviceName, dataSet->name,
                                 dataSetEntry->logicalDeviceName,
                                 dataSetEntry->variableName);
                     }
                 }
-                else
-                    dataSetEntry->value = value;
+                else {
+                    /* check if array element */
+
+                    if (dataSetEntry->index != -1) {
+                        if (typeSpec->type == MMS_ARRAY) {
+                            MmsValue* elementValue = MmsValue_getElement(value, dataSetEntry->index);
+
+                            if (elementValue) {
+
+                                if (dataSetEntry->componentName) {
+                                    MmsVariableSpecification* elementType = typeSpec->typeSpec.array.elementTypeSpec;
+
+                                    MmsValue* subElementValue = MmsVariableSpecification_getChildValue(elementType, elementValue, dataSetEntry->componentName);
+
+                                    if (subElementValue) {
+                                        dataSetEntry->value = subElementValue;
+                                    }
+                                    else {
+                                        if (DEBUG_IED_SERVER)
+                                            printf("IED_SERVER: ERROR - component %s of array element not found\n", dataSetEntry->componentName);
+                                    }
+
+                                }
+                                else {
+                                    dataSetEntry->value = elementValue;
+                                }
+                            }
+                            else {
+                                if (DEBUG_IED_SERVER)
+                                    printf("IED_SERVER: ERROR - array element %i not found\n", dataSetEntry->index);
+                            }
+                        }
+                        else {
+                            if (DEBUG_IED_SERVER)
+                                printf("IED_SERVER: ERROR - variable %s/%s is not an array\n", dataSetEntry->logicalDeviceName, dataSetEntry->variableName);
+                        }
+                    }
+                    else {
+                        dataSetEntry->value = value;
+                    }
+                }
 
                 dataSetEntry = dataSetEntry->sibling;
             }

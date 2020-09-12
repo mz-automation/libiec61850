@@ -177,6 +177,9 @@ mmsClient_createAlternateAccess(uint32_t index, uint32_t elementCount);
 LIB61850_INTERNAL void
 mmsClient_deleteAlternateAccess(AlternateAccess_t* alternateAccess);
 
+LIB61850_INTERNAL AlternateAccess_t*
+mmsClient_createAlternateAccessComponent(const char* componentName);
+
 LIB61850_INTERNAL void
 mmsClient_deleteAlternateAccessIndexComponent(AlternateAccess_t* alternateAccess);
 

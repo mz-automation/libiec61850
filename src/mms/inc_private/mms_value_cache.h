@@ -36,7 +36,7 @@ LIB61850_INTERNAL void
 MmsValueCache_insertValue(MmsValueCache self, char* itemId, MmsValue* value);
 
 LIB61850_INTERNAL MmsValue*
-MmsValueCache_lookupValue(MmsValueCache self, const char* itemId);
+MmsValueCache_lookupValue(MmsValueCache self, const char* itemId, MmsVariableSpecification** outSpec);
 
 LIB61850_INTERNAL void
 MmsValueCache_destroy(MmsValueCache self);

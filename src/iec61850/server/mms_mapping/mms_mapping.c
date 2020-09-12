@@ -3144,7 +3144,6 @@ MmsMapping_createDataSetByNamedVariableList(MmsMapping* self, MmsNamedVariableLi
 
         /* use variable name part of domain name as logicalDeviceName */
         dataSetEntry->logicalDeviceName = MmsDomain_getName(listEntry->domain) + strlen(self->model->name);
-
         dataSetEntry->variableName = listEntry->variableName;
         dataSetEntry->index = listEntry->arrayIndex;
         dataSetEntry->componentName = listEntry->componentName;
@@ -3155,8 +3154,49 @@ MmsMapping_createDataSetByNamedVariableList(MmsMapping* self, MmsNamedVariableLi
         else
             lastDataSetEntry->sibling = dataSetEntry;
 
-        dataSetEntry->value =
-                MmsServer_getValueFromCache(self->mmsServer, listEntry->domain, listEntry->variableName);
+        MmsVariableSpecification* dataSetEntryVarSpec = NULL;
+
+        MmsValue* dataSetEntryValue = MmsServer_getValueFromCacheEx(self->mmsServer, listEntry->domain, listEntry->variableName, &dataSetEntryVarSpec);
+
+        if (dataSetEntryValue) {
+            if (dataSetEntry->index != -1) {
+                if (dataSetEntryVarSpec->type == MMS_ARRAY) {
+                    MmsValue* elementValue = MmsValue_getElement(dataSetEntryValue, dataSetEntry->index);
+
+                    if (elementValue) {
+
+                        if (dataSetEntry->componentName) {
+                            MmsVariableSpecification* elementType = dataSetEntryVarSpec->typeSpec.array.elementTypeSpec;
+
+                            MmsValue* subElementValue = MmsVariableSpecification_getChildValue(elementType, elementValue, dataSetEntry->componentName);
+
+                            if (subElementValue) {
+                                dataSetEntry->value = subElementValue;
+                            }
+                            else {
+                                if (DEBUG_IED_SERVER)
+                                    printf("IED_SERVER: ERROR - component %s of array element not found\n", dataSetEntry->componentName);
+                            }
+
+                        }
+                        else {
+                            dataSetEntry->value = elementValue;
+                        }
+                    }
+                    else {
+                        if (DEBUG_IED_SERVER)
+                            printf("IED_SERVER: ERROR - array element %i not found\n", dataSetEntry->index);
+                    }
+                }
+                else {
+                    if (DEBUG_IED_SERVER)
+                        printf("IED_SERVER: ERROR - variable %s/%s is not an array\n", dataSetEntry->logicalDeviceName, dataSetEntry->variableName);
+                }
+            }
+            else {
+                dataSetEntry->value = dataSetEntryValue;
+            }
+        }
 
         lastDataSetEntry = dataSetEntry;
 

@@ -1,7 +1,7 @@
 /*
  *  mms_named_variable_list_service.c
  *
- *  Copyright 2013-2015 Michael Zillgith
+ *  Copyright 2013-2020 Michael Zillgith
  *
  *	This file is part of libIEC61850.
  *
@@ -23,6 +23,7 @@
 
 #include "libiec61850_platform_includes.h"
 #include "mms_server_internal.h"
+#include "mms_client_internal.h"
 #include "mms_named_variable_list.h"
 
 #include "ber_encoder.h"
@@ -281,6 +282,8 @@ checkIfVariableExists(MmsDevice* device, MmsAccessSpecifier* accessSpecifier)
             return false;
 
         if (accessSpecifier->componentName != NULL) {
+            variableSpec = variableSpec->typeSpec.array.elementTypeSpec;
+
             if (MmsVariableSpecification_getNamedVariableRecursive(variableSpec, accessSpecifier->componentName) == NULL)
                 return false;
         }
@@ -289,6 +292,74 @@ checkIfVariableExists(MmsDevice* device, MmsAccessSpecifier* accessSpecifier)
     return true;
 }
 
+static char*
+getComponentNameFromAlternateAccess(AlternateAccess_t* alternateAccess, char* componentNameBuf, int nameBufPos)
+{
+    if (alternateAccess->list.count == 1) {
+
+        if (alternateAccess->list.array[0]->present == AlternateAccess__Member_PR_unnamed) {
+
+            if (alternateAccess->list.array[0]->choice.unnamed->present == AlternateAccessSelection_PR_selectAlternateAccess) {
+
+                if (alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.accessSelection.present ==
+                                AlternateAccessSelection__selectAlternateAccess__accessSelection_PR_component)
+                {
+                    Identifier_t componentIdentifier = alternateAccess->list.array[0]->choice.unnamed->
+                            choice.selectAlternateAccess.accessSelection.choice.component;
+
+                    AlternateAccess_t* nextAlternateAccess = alternateAccess->list.array[0]->choice.unnamed->
+                            choice.selectAlternateAccess.alternateAccess;
+
+                    if (nextAlternateAccess) {
+                        if (nameBufPos + componentIdentifier.size + 1 < 65) {
+                            memcpy(componentNameBuf + nameBufPos, componentIdentifier.buf, componentIdentifier.size);
+                            nameBufPos += componentIdentifier.size;
+                            componentNameBuf[nameBufPos++] = '$';
+                            return getComponentNameFromAlternateAccess(nextAlternateAccess, componentNameBuf, nameBufPos);
+                        }
+                        else {
+                            if (DEBUG_MMS_SERVER)
+                                printf("MMS_SERVER: component identifier name too long!\n");
+                        }
+                    }
+                    else {
+                        if (DEBUG_MMS_SERVER)
+                            printf("MMS_SERVER: next alternate access specification is missing!\n");
+                    }
+                }
+            }
+            else if (alternateAccess->list.array[0]->choice.unnamed->present == AlternateAccessSelection_PR_selectAccess) {
+
+                /* final component part */
+
+                if (alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.present ==
+                        AlternateAccessSelection__selectAccess_PR_component)
+                {
+                    Identifier_t componentIdentifier = alternateAccess->list.array[0]->choice.unnamed->
+                            choice.selectAccess.choice.component;
+
+                    if (nameBufPos + componentIdentifier.size + 1 < 65) {
+                        memcpy(componentNameBuf + nameBufPos, componentIdentifier.buf, componentIdentifier.size);
+                        nameBufPos += componentIdentifier.size;
+                        componentNameBuf[nameBufPos++] = 0;
+                        return componentNameBuf;
+                    }
+                    else {
+                        if (DEBUG_MMS_SERVER)
+                            printf("MMS_SERVER: component identifier name too long!\n");
+                    }
+                }
+            }
+
+        }
+
+    }
+
+    if (DEBUG_MMS_SERVER)
+        printf("MMS_SERVER: invalid component access specification\n");
+
+    return NULL;
+}
 
 static MmsNamedVariableList
 createNamedVariableList(MmsServer server, MmsDomain* domain, MmsDevice* device,
@@ -298,6 +369,9 @@ createNamedVariableList(MmsServer server, MmsDomain* domain, MmsDevice* device,
     MmsNamedVariableList namedVariableList = NULL;
 
 	int variableCount = request->listOfVariable.list.count;
+
+	if (DEBUG_MMS_SERVER)
+	    printf("MMS_SERVER: create-named-variable-list (%i variable(s) | max=%i)\n", variableCount, server->maxDataSetEntries);
 
 #if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
 	if ((variableCount == 0 ) || (variableCount > server->maxDataSetEntries)) {
@@ -324,6 +398,10 @@ createNamedVariableList(MmsServer server, MmsDomain* domain, MmsDevice* device,
 		if (request->listOfVariable.list.array[i]->alternateAccess != NULL) {
 
 			if (request->listOfVariable.list.array[i]->alternateAccess->list.count != 1) {
+
+                if (DEBUG_MMS_SERVER)
+                    printf("MMS_SERVER: create-named-variable list - only one alternate access specification allowed!\n");
+
 				MmsNamedVariableList_destroy(namedVariableList);
 				namedVariableList = NULL;
 				break;
@@ -334,21 +412,31 @@ createNamedVariableList(MmsServer server, MmsDomain* domain, MmsDevice* device,
 						request->listOfVariable.list.array[i]->alternateAccess->list.array[0];
 
 				if ((alternateAccess->present == AlternateAccess__Member_PR_unnamed)
-				    &&(alternateAccess->choice.unnamed->present == AlternateAccessSelection_PR_selectAlternateAccess)
+				    && (alternateAccess->choice.unnamed->present == AlternateAccessSelection_PR_selectAlternateAccess)
 				    && (alternateAccess->choice.unnamed->choice.selectAlternateAccess.accessSelection.present ==
 				               AlternateAccessSelection__selectAlternateAccess__accessSelection_PR_index))
 				{
 					asn_INTEGER2long(&(alternateAccess->choice.unnamed->choice.selectAlternateAccess.accessSelection.choice.index),
 							&arrayIndex);
 
-					Identifier_t componentIdentifier = alternateAccess->choice.unnamed->
-                            choice.selectAlternateAccess.alternateAccess->list.array[0]->
-                            choice.unnamed->choice.selectAccess.choice.component;
+					if (alternateAccess->choice.unnamed->choice.selectAlternateAccess.alternateAccess) {
+					    componentNameBuf[0] = 0;
 
-					componentName =
-					        StringUtils_createStringFromBufferInBuffer(componentNameBuf,
-					                componentIdentifier.buf, componentIdentifier.size);
-
+					    componentName = getComponentNameFromAlternateAccess(
+					            alternateAccess->choice.unnamed->choice.selectAlternateAccess.alternateAccess,
+					            componentNameBuf, 0);
+					}
+                    else {
+                        if (DEBUG_MMS_SERVER)
+                            printf("MMS_SERVER: create-named-variable-list - component specification is missing!\n");
+                    }
+				}
+				else if ((alternateAccess->present == AlternateAccess__Member_PR_unnamed)
+				         && (alternateAccess->choice.unnamed->present == AlternateAccessSelection_PR_selectAccess)
+				         && (alternateAccess->choice.unnamed->choice.selectAccess.present == AlternateAccessSelection__selectAccess_PR_index)
+				         )
+				{
+				    asn_INTEGER2long(&(alternateAccess->choice.unnamed->choice.selectAccess.choice.index), &arrayIndex);
 				}
 				else {
 					MmsNamedVariableList_destroy(namedVariableList);
@@ -356,9 +444,7 @@ createNamedVariableList(MmsServer server, MmsDomain* domain, MmsDevice* device,
 					*mmsError = MMS_ERROR_DEFINITION_INVALID_ADDRESS;
 					break;
 				}
-
 			}
-
 		}
 
 		if (varSpec->present == VariableSpecification_PR_name) {
@@ -383,15 +469,21 @@ createNamedVariableList(MmsServer server, MmsDomain* domain, MmsDevice* device,
 			accessSpecifier.arrayIndex = arrayIndex;
 			accessSpecifier.componentName = componentName;
 
+			if (DEBUG_MMS_SERVER)
+			    printf("MMS SERVER: add named variable list entry: %s/%s(%li)%s\n", MmsDomain_getName(elementDomain), variableName, arrayIndex, componentName);
+
 			/* check if element exists */
 			if (checkIfVariableExists(device, &accessSpecifier) == true) {
-
                 MmsNamedVariableListEntry variable =
                         MmsNamedVariableListEntry_create(accessSpecifier);
 
                 MmsNamedVariableList_addVariable(namedVariableList, variable);
 			}
 			else {
+
+			    if (DEBUG_MMS_SERVER)
+			        printf("MMS_SERVER: failed - variable does not exist!\n");
+
 			    MmsNamedVariableList_destroy(namedVariableList);
                 namedVariableList = NULL;
                 i = variableCount; /* exit loop after freeing loop variables */
@@ -654,6 +746,15 @@ createGetNamedVariableListAttributesResponse(int invokeId, ByteBuffer* response,
 
 		varListResponse->listOfVariable.list.array[i]->variableSpecification.choice.name.choice.
 			domainspecific.itemId.size = strlen(variableEntry->variableName);
+
+		if (variableEntry->arrayIndex != -1) {
+		    varListResponse->listOfVariable.list.array[i]->alternateAccess =
+		            mmsClient_createAlternateAccessIndexComponent(variableEntry->arrayIndex, variableEntry->componentName);
+		}
+		else if (variableEntry->componentName) {
+		    varListResponse->listOfVariable.list.array[i]->alternateAccess =
+		            mmsClient_createAlternateAccessComponent(variableEntry->componentName);
+		}
 
 		variable = LinkedList_getNext(variable);
 	}

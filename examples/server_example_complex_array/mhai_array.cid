@@ -102,6 +102,20 @@
           </LN>
           
           <LN lnClass="MHAI" lnType="MHAI1" inst="1" prefix=""> 
+       		<DataSet name="TestMHAI">
+       		    <FCDA ldInst="ComplexArray" lnClass="MHAI" lnInst="1" doName="HA" fc="MX" daName="phsAHar(7)"/>
+       		    <FCDA ldInst="ComplexArray" lnClass="MHAI" lnInst="1" doName="HA" fc="MX" daName="phsAHar(8)"/>
+       		    <FCDA ldInst="ComplexArray" lnClass="MHAI" lnInst="1" doName="HA" fc="MX" daName="phsAHar(9).cVal"/>
+       		    <FCDA ldInst="ComplexArray" lnClass="MHAI" lnInst="1" doName="HA" fc="MX" daName="phsAHar(10).cVal.mag"/>
+                <FCDA ldInst="ComplexArray" lnClass="MHAI" lnInst="1" doName="HA" fc="MX" daName="phsAHar(11).cVal.mag.f"/>
+            </DataSet>
+            
+            <ReportControl name="MHAIRCB" confRev="1" datSet="TestMHAI" rptID="TestMHAI" buffered="false" intgPd="1000" bufTime="50">
+              <TrgOps period="true" />
+              <OptFields seqNum="true" timeStamp="true" dataSet="true" reasonCode="true" configRef="true" />
+              <RptEnabled max="1" />
+            </ReportControl>
+                
             <DOI name="HA">
                <DAI name="numHar">
                  <Val>16</Val>
