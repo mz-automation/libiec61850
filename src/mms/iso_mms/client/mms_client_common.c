@@ -137,8 +137,8 @@ mmsClient_deleteAlternateAccess(AlternateAccess_t* alternateAccess)
     GLOBAL_FREEMEM(alternateAccess);
 }
 
-static AlternateAccess_t*
-createAlternateAccessComponent(const char* componentName)
+AlternateAccess_t*
+mmsClient_createAlternateAccessComponent(const char* componentName)
 {
     AlternateAccess_t* alternateAccess = (AlternateAccess_t*) GLOBAL_CALLOC(1, sizeof(AlternateAccess_t));
     alternateAccess->list.count = 1;
@@ -161,7 +161,7 @@ createAlternateAccessComponent(const char* componentName)
             (uint8_t*) StringUtils_copySubString((char*) componentName, (char*) separator);
         alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.accessSelection.choice.component.size = size;
 
-        alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess = createAlternateAccessComponent(separator + 1);
+        alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess = mmsClient_createAlternateAccessComponent(separator + 1);
     }
     else {
         int size = strlen(componentName);
@@ -201,7 +201,7 @@ mmsClient_createAlternateAccessIndexComponent(uint32_t index, const char* compon
 
         asn_long2INTEGER(asnIndex, index);
 
-        alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess = createAlternateAccessComponent(componentName);
+        alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess = mmsClient_createAlternateAccessComponent(componentName);
     }
     else {
         alternateAccess->list.array[0]->choice.unnamed->present = AlternateAccessSelection_PR_selectAccess;
@@ -217,3 +217,4 @@ mmsClient_createAlternateAccessIndexComponent(uint32_t index, const char* compon
 
     return alternateAccess;
 }
+

@@ -444,7 +444,18 @@ MmsServer_getValueFromCache(MmsServer self, MmsDomain* domain, const char* itemI
     MmsValueCache cache = (MmsValueCache) Map_getEntry(self->valueCaches, domain);
 
     if (cache != NULL)
-        return MmsValueCache_lookupValue(cache, itemId);
+        return MmsValueCache_lookupValue(cache, itemId, NULL);
+
+    return NULL ;
+}
+
+MmsValue*
+MmsServer_getValueFromCacheEx(MmsServer self, MmsDomain* domain, const char* itemId, MmsVariableSpecification** typeSpec)
+{
+    MmsValueCache cache = (MmsValueCache) Map_getEntry(self->valueCaches, domain);
+
+    if (cache != NULL)
+        return MmsValueCache_lookupValue(cache, itemId, typeSpec);
 
     return NULL ;
 }

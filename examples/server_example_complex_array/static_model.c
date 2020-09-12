@@ -1,13 +1,78 @@
 /*
  * static_model.c
  *
- * automatically generated from mhai_array.icd
+ * automatically generated from mhai_array.cid
  */
 #include "static_model.h"
 
 static void initializeValues();
 
+extern DataSet iedModelds_ComplexArray_MHAI1_TestMHAI;
 
+
+extern DataSetEntry iedModelds_ComplexArray_MHAI1_TestMHAI_fcda0;
+extern DataSetEntry iedModelds_ComplexArray_MHAI1_TestMHAI_fcda1;
+extern DataSetEntry iedModelds_ComplexArray_MHAI1_TestMHAI_fcda2;
+extern DataSetEntry iedModelds_ComplexArray_MHAI1_TestMHAI_fcda3;
+extern DataSetEntry iedModelds_ComplexArray_MHAI1_TestMHAI_fcda4;
+
+DataSetEntry iedModelds_ComplexArray_MHAI1_TestMHAI_fcda0 = {
+  "ComplexArray",
+  false,
+  "MHAI1$MX$HA$phsAHar", 
+  7,
+  NULL,
+  NULL,
+  &iedModelds_ComplexArray_MHAI1_TestMHAI_fcda1
+};
+
+DataSetEntry iedModelds_ComplexArray_MHAI1_TestMHAI_fcda1 = {
+  "ComplexArray",
+  false,
+  "MHAI1$MX$HA$phsAHar", 
+  8,
+  NULL,
+  NULL,
+  &iedModelds_ComplexArray_MHAI1_TestMHAI_fcda2
+};
+
+DataSetEntry iedModelds_ComplexArray_MHAI1_TestMHAI_fcda2 = {
+  "ComplexArray",
+  false,
+  "MHAI1$MX$HA$phsAHar", 
+  9,
+  "cVal",
+  NULL,
+  &iedModelds_ComplexArray_MHAI1_TestMHAI_fcda3
+};
+
+DataSetEntry iedModelds_ComplexArray_MHAI1_TestMHAI_fcda3 = {
+  "ComplexArray",
+  false,
+  "MHAI1$MX$HA$phsAHar", 
+  10,
+  "cVal$mag",
+  NULL,
+  &iedModelds_ComplexArray_MHAI1_TestMHAI_fcda4
+};
+
+DataSetEntry iedModelds_ComplexArray_MHAI1_TestMHAI_fcda4 = {
+  "ComplexArray",
+  false,
+  "MHAI1$MX$HA$phsAHar", 
+  11,
+  "cVal$mag$f",
+  NULL,
+  NULL
+};
+
+DataSet iedModelds_ComplexArray_MHAI1_TestMHAI = {
+  "ComplexArray",
+  "MHAI1$TestMHAI",
+  5,
+  &iedModelds_ComplexArray_MHAI1_TestMHAI_fcda0,
+  NULL
+};
 
 LogicalDevice iedModel_ComplexArray = {
     LogicalDeviceModelType,
@@ -1977,7 +2042,9 @@ DataAttribute iedModel_ComplexArray_MHAI1_HA_frequency = {
     NULL,
     0};
 
+extern ReportControlBlock iedModel_ComplexArray_MHAI1_report0;
 
+ReportControlBlock iedModel_ComplexArray_MHAI1_report0 = {&iedModel_ComplexArray_MHAI1, "MHAIRCB01", "TestMHAI", false, "TestMHAI", 1, 24, 175, 50, 1000, {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, NULL};
 
 
 
@@ -1988,8 +2055,8 @@ DataAttribute iedModel_ComplexArray_MHAI1_HA_frequency = {
 IedModel iedModel = {
     "test",
     &iedModel_ComplexArray,
-    NULL,
-    NULL,
+    &iedModelds_ComplexArray_MHAI1_TestMHAI,
+    &iedModel_ComplexArray_MHAI1_report0,
     NULL,
     NULL,
     NULL,

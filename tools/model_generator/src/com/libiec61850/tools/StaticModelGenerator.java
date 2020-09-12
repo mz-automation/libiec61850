@@ -1565,12 +1565,41 @@ public class StaticModelGenerator {
 
                         if (fcda.getDaName() != null)
                             mmsVariableName += "$" + toMmsString(fcda.getDaName());
-
-                        // TODO implement index processing!
+                        
+                        int arrayStart = mmsVariableName.indexOf('(');
+                        
+                        String variableName = mmsVariableName;
+                        int arrayIndex = -1;
+                        String componentName = null;
+                        
+                        if (arrayStart != -1) {
+                            variableName = mmsVariableName.substring(0, arrayStart);
+                            
+                            int arrayEnd = mmsVariableName.indexOf(')');
+                            
+                            String arrayIndexStr = mmsVariableName.substring(arrayStart + 1, arrayEnd);
+                            arrayIndex = Integer.parseInt(arrayIndexStr);
+                            
+                            String componentNamePart = mmsVariableName.substring(arrayEnd + 1);
+                            
+                            if ((componentNamePart != null) && (componentNamePart.length() > 0)) {
+                                if (componentNamePart.charAt(0) == '$') {
+                                    componentNamePart = componentNamePart.substring(1);
+                                }
+                                
+                                if ((componentNamePart != null) && (componentNamePart.length() > 0))
+                                    componentName = componentNamePart;
+                            }
+                        }
+                        
                         cOut.println("  false,");
-                        cOut.println("  \"" + mmsVariableName + "\",");
-                        cOut.println("  -1,");
-                        cOut.println("  NULL,");
+                        cOut.println("  \"" + variableName + "\", ");
+                        cOut.println("  " + arrayIndex + ",");
+                        if (componentName == null)
+                            cOut.println("  NULL,");
+                        else
+                            cOut.println("  \"" + componentName + "\",");
+                        
                         cOut.println("  NULL,");
 
                         if (fcdaCount + 1 < numberOfFcdas)

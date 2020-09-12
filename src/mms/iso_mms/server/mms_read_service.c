@@ -269,9 +269,6 @@ alternateArrayAccess(MmsServerConnection connection,
 		int lowIndex = mmsServer_getLowIndex(alternateAccess);
 		int numberOfElements = mmsServer_getNumberOfElements(alternateAccess);
 
-		if (DEBUG_MMS_SERVER) printf("Alternate access index: %i elements %i\n",
-				lowIndex, numberOfElements);
-
 		int index = lowIndex;
 
 		MmsValue* arrayValue = mmsServer_getValue(connection->server, domain, itemId, connection, false);
@@ -708,6 +705,61 @@ exit:
 #if (MMS_DATA_SET_SERVICE == 1)
 
 static void
+addNamedVariableToNamedVariableListResultList(MmsVariableSpecification* namedVariable, MmsDomain* domain, char* nameIdStr,
+        LinkedList /*<MmsValue>*/ values, MmsServerConnection connection, MmsNamedVariableListEntry listEntry)
+{
+    if (namedVariable != NULL) {
+
+        if (DEBUG_MMS_SERVER)
+            printf("MMS read: found named variable %s with search string %s\n",
+                    namedVariable->name, nameIdStr);
+
+        MmsValue* value = mmsServer_getValue(connection->server, domain, nameIdStr, connection, false);
+
+        if (value) {
+            if (listEntry->arrayIndex != -1) {
+                if (MmsValue_getType(value) == MMS_ARRAY) {
+
+                    MmsValue* elementValue = MmsValue_getElement(value, listEntry->arrayIndex);
+
+                    if (listEntry->componentName) {
+                        MmsVariableSpecification* elementType = namedVariable->typeSpec.array.elementTypeSpec;
+
+                        MmsValue* subElementValue = MmsVariableSpecification_getChildValue(elementType, elementValue, listEntry->componentName);
+
+                        if (subElementValue) {
+                            appendValueToResultList(subElementValue, values);
+                        }
+                        else {
+                            if (DEBUG_IED_SERVER)
+                                printf("IED_SERVER: ERROR - component %s of array element not found\n", listEntry->componentName);
+                        }
+                    }
+                    else {
+                        appendValueToResultList(elementValue, values);
+                    }
+
+                }
+                else {
+                    if (DEBUG_MMS_SERVER)
+                        printf("MMS_SERVER: data set entry of unexpected type!\n");
+
+                    appendErrorToResultList(values, DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT);
+                }
+            }
+            else {
+                appendValueToResultList(value, values);
+            }
+        }
+        else {
+            appendErrorToResultList(values, DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT);
+        }
+    }
+    else
+        appendErrorToResultList(values, DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT);
+}
+
+static void
 createNamedVariableListResponse(MmsServerConnection connection, MmsNamedVariableList namedList,
 		int invokeId, ByteBuffer* response, bool isSpecWithResult, VarAccessSpec* accessSpec)
 {
@@ -731,8 +783,8 @@ createNamedVariableListResponse(MmsServerConnection connection, MmsNamedVariable
 		MmsVariableSpecification* namedVariable = MmsDomain_getNamedVariable(variableDomain,
 				variableName);
 
-		addNamedVariableToResultList(namedVariable, variableDomain, variableName,
-								values, connection, NULL, false);
+		addNamedVariableToNamedVariableListResultList(namedVariable, variableDomain, variableName,
+								values, connection, variableListEntry);
 
 		variable = LinkedList_getNext(variable);
 	}
