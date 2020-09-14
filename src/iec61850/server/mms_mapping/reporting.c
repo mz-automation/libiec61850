@@ -2576,7 +2576,7 @@ sendNextReportEntrySegment(ReportControl* self)
 
     MmsValue rptId;
     rptId.type = MMS_VISIBLE_STRING;
-    rptId.value.visibleString.size = sizeof(rptIdBuf);
+    rptId.value.visibleString.size = sizeof(rptIdBuf) - 1;
     rptId.value.visibleString.buf = rptIdBuf;
 
     MmsValue* rptIdFromRcb = ReportControl_getRCBValue(self, "RptID");

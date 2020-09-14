@@ -3736,6 +3736,7 @@ MmsMapping_createDataSetByNamedVariableList(MmsMapping* self, MmsNamedVariableLi
         dataSetEntry->index = listEntry->arrayIndex;
         dataSetEntry->componentName = listEntry->componentName;
         dataSetEntry->sibling = NULL;
+        dataSetEntry->value = NULL;
 
         if (lastDataSetEntry == NULL)
             dataSet->fcdas =dataSetEntry;
