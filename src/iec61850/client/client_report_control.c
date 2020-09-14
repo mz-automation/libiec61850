@@ -201,7 +201,10 @@ ClientReportControlBlock_getConfRev(ClientReportControlBlock self)
 int
 ClientReportControlBlock_getOptFlds(ClientReportControlBlock self)
 {
-    return (MmsValue_getBitStringAsInteger(self->optFlds) / 2);
+    if (self->optFlds)
+        return (MmsValue_getBitStringAsInteger(self->optFlds) / 2);
+    else
+        return 0;
 }
 
 void

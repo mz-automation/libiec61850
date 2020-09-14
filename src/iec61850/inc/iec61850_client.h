@@ -1582,6 +1582,7 @@ ClientReportControlBlock_getConfRev(ClientReportControlBlock self);
  * \brief Gets the OptFlds parameter of the RCB (decides what information to include in a report)
  *
  * \param self the RCB instance
+ *
  * \return bit field representing the optional fields of a report (uses flags from \ref REPORT_OPTIONS)
  */
 LIB61850_API int
