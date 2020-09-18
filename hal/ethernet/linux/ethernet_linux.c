@@ -24,6 +24,7 @@
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <poll.h>
+#include <linux/filter.h>
 #include <linux/if_packet.h>
 #include <linux/if_ether.h>
 #include <linux/if_arp.h>
@@ -193,7 +194,7 @@ Ethernet_createSocket(const char* interfaceId, uint8_t* destAddress)
         }
 
         ethernetSocket->socketAddress.sll_family = PF_PACKET;
-        ethernetSocket->socketAddress.sll_protocol = htons(ETH_P_IP);
+        ethernetSocket->socketAddress.sll_protocol = htons(ETH_P_ALL);
 
         int ifcIdx =  getInterfaceIndex(ethernetSocket->rawSocket, interfaceId);
 
@@ -223,7 +224,41 @@ Ethernet_createSocket(const char* interfaceId, uint8_t* destAddress)
 void
 Ethernet_setProtocolFilter(EthernetSocket ethSocket, uint16_t etherType)
 {
-    ethSocket->socketAddress.sll_protocol = htons(etherType);
+    if (etherType == 0x88b8)
+    {
+        struct sock_fprog fprog;
+
+        /*  sudo tcpdump -i lo ether proto 0x88B8 and ether dst 01:0c:cd:01:00:01 -dd
+         struct sock_filter filter[] = {
+         { 0x28, 0, 0, 0x0000000c },
+         { 0x15, 0, 5, 0x000088b8 },
+         { 0x20, 0, 0, 0x00000002 },
+         { 0x15, 0, 3, 0xcd010001 },
+         { 0x28, 0, 0, 0x00000000 },
+         { 0x15, 0, 1, 0x0000010c },
+         { 0x6, 0, 0, 0x00040000 },
+         { 0x6, 0, 0, 0x00000000 }
+         };
+         */
+        /* sudo tcpdump -i lo ether proto 0x88B8 -dd # no DST MAC filter */
+        struct sock_filter filter[] = {
+                { 0x28, 0, 0, 0x0000000c },
+                { 0x15, 0, 1, 0x000088b8 },
+                { 0x6, 0, 0, 0x00040000 },
+                { 0x6, 0, 0, 0x00000000 }
+        };
+
+        fprog.len = sizeof(filter) / sizeof(*filter);
+        fprog.filter = filter;
+
+        if (setsockopt(ethSocket->rawSocket, SOL_SOCKET, SO_ATTACH_FILTER, &fprog, sizeof(fprog)) == -1)
+            if (DEBUG_SOCKET)
+                printf("ETHERNET_LINUX: Applying filter failed");
+    }
+    else
+    {
+        ethSocket->socketAddress.sll_protocol = htons(etherType);
+    }
 }
 
 

@@ -778,23 +778,34 @@ parseGooseMessage(GooseReceiver self, uint8_t* buffer, int numbytes)
 
 #if (CONFIG_MMS_THREADLESS_STACK == 0)
 static void
-gooseReceiverLoop(void* threadParameter)
+gooseReceiverLoop(void *threadParameter)
 {
     GooseReceiver self = (GooseReceiver) threadParameter;
+    EthernetHandleSet handleSet = EthernetHandleSet_new();
+    EthernetHandleSet_addSocket(handleSet, self->ethSocket);
 
     if (self->running) {
 
         while (self->running) {
-
-            if (GooseReceiver_tick(self) == false)
-                Thread_sleep(1);
-
+            switch (EthernetHandleSet_waitReady(handleSet, 100))
+            {
+            case -1:
+                if (DEBUG_GOOSE_SUBSCRIBER)
+                    printf("GOOSE_SUBSCRIBER: EhtnernetHandleSet_waitReady() failure\n");
+                break;
+            case 0:
+                break;
+            default:
+                GooseReceiver_tick(self);
+            }
             if (self->stop)
                 break;
         }
 
         GooseReceiver_stopThreadless(self);
     }
+
+    EthernetHandleSet_destroy(handleSet);
 }
 #endif
 
