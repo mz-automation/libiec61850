@@ -541,7 +541,7 @@ updateGenericTrackingObjectValues(MmsMapping* self, ReportControl* rc, IEC61850_
         if (trkInst->errorCode)
             MmsValue_setInt32(trkInst->errorCode->mmsValue, convertMmsDataAccessErrorToServiceError(errVal));
 
-        char objRef[129];
+        char objRef[130];
 
         /* create object reference */
         LogicalNode* ln = (LogicalNode*) rc->parentLN;
@@ -550,6 +550,21 @@ updateGenericTrackingObjectValues(MmsMapping* self, ReportControl* rc, IEC61850_
         char* iedName = self->iedServer->mmsDevice->deviceName;
 
         snprintf(objRef, 129, "%s%s/%s", iedName, ld->name, rc->name);
+
+        /* convert MMS name to ACSI object reference */
+        int pos = 0;
+        bool replace = false;
+        do {
+            if (replace) {
+                objRef[pos] = objRef[pos + 3];
+            }
+            else {
+                if (objRef[pos] == '$') {
+                    objRef[pos] = '.';
+                    replace = true;
+                }
+            }
+        } while (objRef[pos++]);
 
         if (trkInst->objRef) {
             IedServer_updateVisibleStringAttributeValue(self->iedServer, trkInst->objRef, objRef);

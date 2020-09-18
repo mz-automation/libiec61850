@@ -154,7 +154,7 @@ updateGenericTrackingObjectValues(MmsGooseControlBlock gc, IEC61850_ServiceType 
         if (trkInst->errorCode)
             MmsValue_setInt32(trkInst->errorCode->mmsValue, convertMmsDataAccessErrorToServiceError(errVal));
 
-        char objRef[129];
+        char objRef[130];
 
         /* create object reference */
         LogicalNode* ln = (LogicalNode*) gc->logicalNode;
@@ -162,7 +162,8 @@ updateGenericTrackingObjectValues(MmsGooseControlBlock gc, IEC61850_ServiceType 
 
         char* iedName = gc->mmsMapping->iedServer->mmsDevice->deviceName;
 
-        snprintf(objRef, 129, "%s%s/%s", iedName, ld->name, gc->name);
+        snprintf(objRef, 129, "%s%s/%s.%s", iedName, ld->name, gc->logicalNode->name, gc->name);
+        objRef[129] = 0;
 
         if (trkInst->objRef) {
             IedServer_updateVisibleStringAttributeValue(gc->mmsMapping->iedServer, trkInst->objRef, objRef);
