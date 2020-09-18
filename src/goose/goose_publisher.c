@@ -44,6 +44,7 @@ struct sGoosePublisher {
     EthernetSocket ethernetSocket;
     int lengthField;
     int payloadStart;
+    int payloadLength;
 
     char* goID;
     char* goCBRef;
@@ -143,6 +144,18 @@ void
 GoosePublisher_setSimulation(GoosePublisher self, bool simulation)
 {
     self->simulation = simulation;
+}
+
+void
+GoosePublisher_setStNum(GoosePublisher self, uint32_t stNum)
+{
+  self->stNum = stNum;
+}
+
+void
+GoosePublisher_setSqNum(GoosePublisher self, uint32_t sqNum)
+{
+  self->sqNum = sqNum;
 }
 
 void
@@ -390,9 +403,9 @@ GoosePublisher_publish(GoosePublisher self, LinkedList dataSet)
 
     size_t maxPayloadSize = GOOSE_MAX_MESSAGE_SIZE - self->payloadStart;
 
-    int32_t payloadLength = createGoosePayload(self, dataSet, buffer, maxPayloadSize);
+    self->payloadLength = createGoosePayload(self, dataSet, buffer, maxPayloadSize);
 
-    if (payloadLength == -1)
+    if (self->payloadLength == -1)
         return -1;
 
     self->sqNum++;
@@ -402,7 +415,7 @@ GoosePublisher_publish(GoosePublisher self, LinkedList dataSet)
 
     int lengthIndex = self->lengthField;
 
-    size_t gooseLength = payloadLength + 8;
+    size_t gooseLength = self->payloadLength + 8;
 
     self->buffer[lengthIndex] = gooseLength / 256;
     self->buffer[lengthIndex + 1] = gooseLength & 0xff;
@@ -410,7 +423,26 @@ GoosePublisher_publish(GoosePublisher self, LinkedList dataSet)
     if (DEBUG_GOOSE_PUBLISHER)
         printf("GOOSE_PUBLISHER: send GOOSE message\n");
 
-    Ethernet_sendPacket(self->ethernetSocket, self->buffer, self->payloadStart + payloadLength);
+    Ethernet_sendPacket(self->ethernetSocket, self->buffer, self->payloadStart + self->payloadLength);
 
     return 0;
+}
+
+int
+GoosePublisher_publishAndDump(GoosePublisher self, LinkedList dataSet, char *msgBuf, int32_t *msgLen, int32_t bufSize)
+{
+    int rc = GoosePublisher_publish(self, dataSet);
+
+    if (rc == 0)
+            {
+        int copied = self->payloadStart + self->payloadLength;
+
+        if (bufSize < copied)
+            copied = bufSize;
+
+        memcpy(msgBuf, self->buffer, copied);
+        *msgLen = copied;
+    }
+
+    return rc;
 }
