@@ -40,7 +40,9 @@ GooseSubscriber_create(char* goCbRef, MmsValue* dataSetValues)
 {
     GooseSubscriber self = (GooseSubscriber) GLOBAL_CALLOC(1, sizeof(struct sGooseSubscriber));
 
-    self->goCBRef = StringUtils_copyString(goCbRef);
+    strncpy(self->goCBRef, goCbRef, 129);
+    self->goCBRef[129] = 0;
+
     self->goCBRefLen = strlen(goCbRef);
     self->timestamp = MmsValue_newUtcTime(0);
     self->dataSetValues = dataSetValues;
@@ -51,6 +53,8 @@ GooseSubscriber_create(char* goCbRef, MmsValue* dataSetValues)
     memset(self->dstMac, 0xFF, 6);
     self->dstMacSet = false;
     self->appId = -1;
+    self->isObserver = false;
+    self->vlanSet = false;
 
     return self;
 }
@@ -83,8 +87,6 @@ GooseSubscriber_setAppId(GooseSubscriber self, uint16_t appId)
 void
 GooseSubscriber_destroy(GooseSubscriber self)
 {
-    GLOBAL_FREEMEM(self->goCBRef);
-
     MmsValue_delete(self->timestamp);
 
     if (self->dataSetValuesSelfAllocated)
@@ -98,6 +100,42 @@ GooseSubscriber_setListener(GooseSubscriber self, GooseListener listener, void* 
 {
     self->listener = listener;
     self->listenerParameter = parameter;
+}
+
+int32_t
+GooseSubscriber_getAppId(GooseSubscriber self)
+{
+    return self->appId;
+}
+
+char *
+GooseSubscriber_getGoId(GooseSubscriber self)
+{
+    return self->goId;
+}
+
+char *
+GooseSubscriber_getGoCbRef(GooseSubscriber self)
+{
+    return self->goCBRef;
+}
+
+char *
+GooseSubscriber_getDataSet(GooseSubscriber self)
+{
+    return self->datSet;
+}
+
+void 
+GooseSubscriber_getSrcMac(GooseSubscriber self, uint8_t *buffer)
+{
+    memcpy(buffer, self->srcMac,6);
+}
+
+void 
+GooseSubscriber_getDstMac(GooseSubscriber self, uint8_t *buffer)
+{
+    memcpy(buffer, self->dstMac,6);
 }
 
 uint32_t
@@ -148,10 +186,26 @@ GooseSubscriber_getDataSetValues(GooseSubscriber self)
     return self->dataSetValues;
 }
 
+bool
+GooseSubscriber_isVlanSet(GooseSubscriber self)
+{
+    return self->vlanSet;
+}
 
+uint16_t
+GooseSubscriber_getVlanId(GooseSubscriber self)
+{
+    return self->vlanId;
+}
 
+uint8_t
+GooseSubscriber_getVlanPrio(GooseSubscriber self)
+{
+    return self->vlanPrio;
+}
 
-
-
-
-
+void
+GooseSubscriber_setObserver(GooseSubscriber self)
+{
+    self->isObserver = true;
+}

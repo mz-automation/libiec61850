@@ -46,6 +46,7 @@ endif(WITH_MBEDTLS)
 
 if(${BUILD_SV_GOOSE_EXAMPLES})
     add_subdirectory(server_example_goose)
+    add_subdirectory(goose_observer)
     add_subdirectory(goose_subscriber)
     add_subdirectory(goose_publisher)
     add_subdirectory(sv_subscriber)

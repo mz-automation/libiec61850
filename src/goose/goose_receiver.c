@@ -549,7 +549,21 @@ parseGoosePayload(GooseReceiver self, uint8_t* buffer, int apduLength)
                     while (element != NULL) {
                         GooseSubscriber subscriber = (GooseSubscriber) LinkedList_getData(element);
 
-                        if (subscriber->goCBRefLen == elementLength) {
+                        if (subscriber->isObserver)
+                        {
+                            if (elementLength > 129) {
+                                if (DEBUG_GOOSE_SUBSCRIBER)
+                                    printf("GOOSE_SUBSCRIBER:   gocbRef too long!\n");
+                            }
+                            else {
+                                memcpy(subscriber->goCBRef, buffer + bufPos, elementLength);
+                                subscriber->goCBRef[elementLength] = 0;
+                            }
+
+                            matchingSubscriber = subscriber;
+                            break;
+                        }
+                        else if (subscriber->goCBRefLen == elementLength) {
                             if (memcmp(subscriber->goCBRef, buffer + bufPos, elementLength) == 0) {
                                 if (DEBUG_GOOSE_SUBSCRIBER)
                                     printf("GOOSE_SUBSCRIBER:   gocbRef is matching!\n");
@@ -579,11 +593,41 @@ parseGoosePayload(GooseReceiver self, uint8_t* buffer, int apduLength)
             case 0x82:
                 if (DEBUG_GOOSE_SUBSCRIBER)
                     printf("GOOSE_SUBSCRIBER:   Found dataSet\n");
+                {
+                    if (matchingSubscriber) {
+                        if (matchingSubscriber->isObserver)
+                        {
+                            if (elementLength > 64) {
+                                if (DEBUG_GOOSE_SUBSCRIBER)
+                                    printf("GOOSE_SUBSCRIBER:   datSet too long!\n");
+                            }
+                            else {
+                                memcpy(matchingSubscriber->datSet, buffer + bufPos, elementLength);
+                                matchingSubscriber->datSet[elementLength] = 0;
+                            }
+                        }
+                    }
+                }
                 break;
 
             case 0x83:
                 if (DEBUG_GOOSE_SUBSCRIBER)
                     printf("GOOSE_SUBSCRIBER:   Found goId\n");
+                {
+                    if (matchingSubscriber) {
+                        if (matchingSubscriber->isObserver)
+                        {
+                            if (elementLength > 64) {
+                                if (DEBUG_GOOSE_SUBSCRIBER)
+                                    printf("GOOSE_SUBSCRIBER:   goId too long!\n");
+                            }
+                            else {
+                                memcpy(matchingSubscriber->goId, buffer + bufPos, elementLength);
+                                matchingSubscriber->goId[elementLength] = 0;
+                            }
+                        }
+                    }
+                }
                 break;
 
             case 0x84:
@@ -708,8 +752,14 @@ parseGooseMessage(GooseReceiver self, uint8_t* buffer, int numbytes)
     bufPos = 12;
     int headerLength = 14;
 
+    uint8_t priority = 0;
+    uint16_t vlanId = 0;
+    bool vlanSet = false;
     /* check for VLAN tag */
     if ((buffer[bufPos] == 0x81) && (buffer[bufPos + 1] == 0x00)) {
+        priority = buffer[bufPos + 2] & 0xF8 >> 5;
+        vlanId = ((buffer[bufPos + 2] & 0x07) << 8) + buffer[bufPos + 3];
+        vlanSet = true;
         bufPos += 4; /* skip VLAN tag */
         headerLength += 4;
     }
@@ -719,6 +769,9 @@ parseGooseMessage(GooseReceiver self, uint8_t* buffer, int numbytes)
         return;
     if (buffer[bufPos++] != 0xb8)
         return;
+    
+    uint8_t srcMac[6];
+    memcpy(srcMac,&buffer[6],6);
 
     uint8_t dstMac[6];
     memcpy(dstMac,buffer,6);
@@ -758,6 +811,18 @@ parseGooseMessage(GooseReceiver self, uint8_t* buffer, int numbytes)
 
     while (element != NULL) {
         GooseSubscriber subscriber = (GooseSubscriber) LinkedList_getData(element);
+        
+        if (subscriber->isObserver)
+        {
+            subscriber->appId = appId;
+            memcpy(subscriber->srcMac, srcMac,6);
+            memcpy(subscriber->dstMac, dstMac, 6);
+            subscriberFound = true;
+            subscriber->vlanSet = vlanSet;
+            subscriber->vlanId = vlanId;
+            subscriber->vlanPrio = priority;
+            break;
+        }
 
         if (((subscriber->appId == -1) || (subscriber->appId == appId)) &&
                 (!subscriber->dstMacSet || (memcmp(subscriber->dstMac, dstMac,6) == 0))) {

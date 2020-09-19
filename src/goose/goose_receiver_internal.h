@@ -35,7 +35,9 @@
 
 
 struct sGooseSubscriber {
-    char* goCBRef;
+    char goCBRef[130];
+    char datSet[65];
+    char goId[65];
     int goCBRefLen;
     uint32_t timeAllowedToLive;
     uint32_t stNum;
@@ -48,12 +50,17 @@ struct sGooseSubscriber {
     uint64_t invalidityTime;
     bool stateValid;
 
+    uint8_t srcMac[6]; /* source mac address */
     uint8_t dstMac[6]; /* destination mac address */
     int32_t appId; /* APPID or -1 if APPID should be ignored */
 
     MmsValue* dataSetValues;
     bool dataSetValuesSelfAllocated;
     bool dstMacSet;
+    bool isObserver;
+    bool vlanSet;
+    uint16_t vlanId;
+    uint8_t vlanPrio;
 
     GooseListener listener;
     void* listenerParameter;

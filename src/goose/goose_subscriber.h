@@ -70,9 +70,14 @@ typedef void (*GooseListener)(GooseSubscriber subscriber, void* parameter);
 LIB61850_API GooseSubscriber
 GooseSubscriber_create(char* goCbRef, MmsValue* dataSetValues);
 
-/* char*
+LIB61850_API char*
+GooseSubscriber_getGoId(GooseSubscriber self);
+
+LIB61850_API char*
 GooseSubscriber_getGoCbRef(GooseSubscriber self);
-*/
+
+LIB61850_API char*
+GooseSubscriber_getDataSet(GooseSubscriber self);
 
 /**
  * \brief set the destination mac address used by the subscriber to filter relevant messages.
@@ -119,6 +124,14 @@ GooseSubscriber_destroy(GooseSubscriber self);
 LIB61850_API void
 GooseSubscriber_setListener(GooseSubscriber self, GooseListener listener, void* parameter);
 
+LIB61850_API int32_t
+GooseSubscriber_getAppId(GooseSubscriber self);
+
+LIB61850_API void
+GooseSubscriber_getSrcMac(GooseSubscriber self, uint8_t *buffer);
+
+LIB61850_API void
+GooseSubscriber_getDstMac(GooseSubscriber self, uint8_t *buffer);
 /**
  * \brief return the state number (stNum) of the last received GOOSE message.
  *
@@ -214,6 +227,23 @@ GooseSubscriber_getTimestamp(GooseSubscriber self);
 LIB61850_API MmsValue*
 GooseSubscriber_getDataSetValues(GooseSubscriber self);
 
+LIB61850_API bool
+GooseSubscriber_isVlanSet(GooseSubscriber self);
+
+LIB61850_API uint16_t
+GooseSubscriber_getVlanId(GooseSubscriber self);
+
+LIB61850_API uint8_t
+GooseSubscriber_getVlanPrio(GooseSubscriber self);
+
+/**
+ * \brief Configure the Subscriber to listen to any received GOOSE message
+ *
+ * NOTE: When the observer flag is set the subscriber also has access to the
+ * goCbRef, goId, and datSet values of the received GOOSE message
+ */
+LIB61850_API void
+GooseSubscriber_setObserver(GooseSubscriber self);
 #ifdef __cplusplus
 }
 #endif

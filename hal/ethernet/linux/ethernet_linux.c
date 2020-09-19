@@ -226,26 +226,15 @@ Ethernet_setProtocolFilter(EthernetSocket ethSocket, uint16_t etherType)
 {
     if (etherType == 0x88b8)
     {
-        struct sock_fprog fprog;
+        /* enable linux kernel filtering for GOOSE */
 
-        /*  sudo tcpdump -i lo ether proto 0x88B8 and ether dst 01:0c:cd:01:00:01 -dd
-         struct sock_filter filter[] = {
-         { 0x28, 0, 0, 0x0000000c },
-         { 0x15, 0, 5, 0x000088b8 },
-         { 0x20, 0, 0, 0x00000002 },
-         { 0x15, 0, 3, 0xcd010001 },
-         { 0x28, 0, 0, 0x00000000 },
-         { 0x15, 0, 1, 0x0000010c },
-         { 0x6, 0, 0, 0x00040000 },
-         { 0x6, 0, 0, 0x00000000 }
-         };
-         */
-        /* sudo tcpdump -i lo ether proto 0x88B8 -dd # no DST MAC filter */
+        struct sock_fprog fprog;
         struct sock_filter filter[] = {
-                { 0x28, 0, 0, 0x0000000c },
-                { 0x15, 0, 1, 0x000088b8 },
-                { 0x6, 0, 0, 0x00040000 },
-                { 0x6, 0, 0, 0x00000000 }
+            /* sudo tcpdump -i enx88d7f6377223 '(ether proto 0x88b8)' -dd */
+            { 0x28, 0, 0, 0x0000000c },
+            { 0x15, 0, 1, 0x000088b8 },
+            { 0x6, 0, 0, 0x00040000 },
+            { 0x6, 0, 0, 0x00000000 }
         };
 
         fprog.len = sizeof(filter) / sizeof(*filter);
