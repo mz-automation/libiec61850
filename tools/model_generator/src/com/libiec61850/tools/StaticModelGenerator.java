@@ -1566,6 +1566,8 @@ public class StaticModelGenerator {
                         if (fcda.getDaName() != null)
                             mmsVariableName += "$" + toMmsString(fcda.getDaName());
                         
+                        /* check for array index and component */
+                        
                         int arrayStart = mmsVariableName.indexOf('(');
                         
                         String variableName = mmsVariableName;

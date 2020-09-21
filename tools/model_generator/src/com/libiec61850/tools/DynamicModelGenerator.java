@@ -96,7 +96,7 @@ public class DynamicModelGenerator {
         output.println("}");
     }
 
-    private void exportLogicalNodes(PrintStream output, LogicalDevice logicalDevice) {
+    private void exportLogicalNodes(PrintStream output, LogicalDevice logicalDevice) throws SclParserException {
         for (LogicalNode logicalNode : logicalDevice.getLogicalNodes()) {
             output.print("LN(" + logicalNode.getName() + "){\n");
 
@@ -110,7 +110,7 @@ public class DynamicModelGenerator {
         return iecString.replace('.', '$');
     }
 
-    private void exportLogicalNode(PrintStream output, LogicalNode logicalNode, LogicalDevice logicalDevice) {
+    private void exportLogicalNode(PrintStream output, LogicalNode logicalNode, LogicalDevice logicalDevice)  throws SclParserException {
     	
     	for (SettingControl sgcb : logicalNode.getSettingGroupControlBlocks()) {
     		output.print("SG(" + sgcb.getActSG() + " " + sgcb.getNumOfSGs() + ")\n");
@@ -271,7 +271,7 @@ public class DynamicModelGenerator {
         output.println(");");
     }
 
-    private void exportDataSet(PrintStream output, DataSet dataSet, LogicalNode logicalNode) {
+    private void exportDataSet(PrintStream output, DataSet dataSet, LogicalNode logicalNode) throws SclParserException {
         output.print("DS(" + dataSet.getName() + "){\n");
         for (FunctionalConstraintData fcda : dataSet.getFcda()) {
             String mmsVariableName = "";
@@ -291,6 +291,40 @@ public class DynamicModelGenerator {
             if (fcda.getDaName() != null)
                 mmsVariableName += "$" + toMmsString(fcda.getDaName());
             
+            /* check for array index and component */
+            
+            int arrayStart = mmsVariableName.indexOf('(');
+            
+            String variableName = mmsVariableName;
+            int arrayIndex = -1;
+            String componentName = null;
+            
+            if (arrayStart != -1) {
+                variableName = mmsVariableName.substring(0, arrayStart);
+                
+                int arrayEnd = mmsVariableName.indexOf(')');
+                
+                String arrayIndexStr = mmsVariableName.substring(arrayStart + 1, arrayEnd);
+                arrayIndex = Integer.parseInt(arrayIndexStr);
+                
+                if (arrayIndex < 0) {
+                    throw new SclParserException("Array index out of range in data set entry definition");
+                }
+                
+                String componentNamePart = mmsVariableName.substring(arrayEnd + 1);
+                
+                if ((componentNamePart != null) && (componentNamePart.length() > 0)) {
+                    if (componentNamePart.charAt(0) == '$') {
+                        componentNamePart = componentNamePart.substring(1);
+                    }
+                    
+                    if ((componentNamePart != null) && (componentNamePart.length() > 0))
+                        componentName = componentNamePart;
+                }
+            }
+            
+            /* check for LD name */
+            
             String logicalDeviceName = null;
             
             if (fcda.getLdInstance() != null) {
@@ -300,12 +334,18 @@ public class DynamicModelGenerator {
             	}
             }
             
+            if (logicalDeviceName != null)
+                variableName = logicalDeviceName + "/" + variableName;
             
-            if (logicalDeviceName != null)         
-            	output.print("DE(" + logicalDeviceName + "/" + mmsVariableName + ");\n");
-            else
-            	output.print("DE(" + mmsVariableName + ");\n");
-            
+            if (variableName != null && arrayIndex != -1 && componentName != null) {
+                output.print("DE(" + variableName + " " + arrayIndex + " " + componentName + ");\n");
+            }
+            else if (variableName != null && arrayIndex != -1) {
+                output.print("DE(" + variableName + " " + arrayIndex + ");\n");
+            }
+            else if (variableName != null) {
+                output.print("DE(" + variableName + ");\n");
+            }            
         }
         output.println("}");
     }

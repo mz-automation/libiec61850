@@ -434,10 +434,36 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
                         }
                     }
                     else if (StringUtils_startsWith((char*) lineBuffer, "DE")) {
-                        sscanf((char*) lineBuffer, "DE(%s)", nameString);
-                        terminateString(nameString, ')');
+                        char* start = strchr(lineBuffer, '(');
 
-                        DataSetEntry_create(currentDataSet, nameString, -1, NULL);
+                        if (start) {
+                            start++;
+                            strncpy(nameString, start, 129);
+                            terminateString(nameString, ')');
+
+                            int indexVal = -1;
+                            char* componentVal = NULL;
+
+                            /* check for index */
+                            char* sep = strchr(nameString, ' ');
+
+                            if (sep) {
+                                char* indexStr = sep + 1;
+                                *sep = 0;
+
+                                /* check for component */
+                                char* sep = strchr(indexStr, ' ');
+
+                                if (sep) {
+                                    componentVal = sep + 1;
+                                    *sep = 0;
+                                }
+
+                                indexVal = atoi(indexStr);
+                            }
+
+                            DataSetEntry_create(currentDataSet, nameString, indexVal, componentVal);
+                        }
                     }
                     else if (StringUtils_startsWith((char*) lineBuffer, "PA")) {
                         uint32_t vlanPrio;
