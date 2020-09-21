@@ -87,6 +87,7 @@ typedef struct sLogControlBlock LogControlBlock;
 typedef struct sLog Log;
 
 typedef enum {
+	IEC61850_UNKNOWN_TYPE = -1,
 	IEC61850_BOOLEAN = 0,/* int */
 	IEC61850_INT8 = 1,   /* int8_t */
 	IEC61850_INT16 = 2,  /* int16_t */
