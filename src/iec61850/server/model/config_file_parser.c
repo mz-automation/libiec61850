@@ -434,7 +434,7 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
                         }
                     }
                     else if (StringUtils_startsWith((char*) lineBuffer, "DE")) {
-                        char* start = strchr(lineBuffer, '(');
+                        char* start = strchr((char*) lineBuffer, '(');
 
                         if (start) {
                             start++;
