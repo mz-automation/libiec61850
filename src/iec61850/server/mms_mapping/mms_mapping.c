@@ -2509,6 +2509,11 @@ mmsReadAccessHandler (void* parameter, MmsDomain* domain, char* variableId, MmsS
                                 StringUtils_createStringFromBufferInBuffer(str, (uint8_t*) (doStart + 1), doEnd - doStart);
                             }
 
+                            if (fc == IEC61850_FC_SP) {
+                                if (!strcmp(str, "SGCB"))
+                                    return DATA_ACCESS_ERROR_SUCCESS;
+                            }
+
                             ModelNode* dobj = ModelNode_getChild((ModelNode*) ln, str);
 
                             if (dobj != NULL) {
