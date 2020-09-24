@@ -979,9 +979,9 @@ ControlObject_initialize(ControlObject* self)
     char* daName = NULL;
     DataAttribute* da = NULL;
 
-    DataAttributeType ctlValType = -1;
-    DataAttributeType stValType = -1;
-    DataAttributeType mxValType = -1;
+    DataAttributeType ctlValType = IEC61850_UNKNOWN_TYPE;
+    DataAttributeType stValType = IEC61850_UNKNOWN_TYPE;
+    DataAttributeType mxValType = IEC61850_UNKNOWN_TYPE;
 
     daName = StringUtils_createStringInBuffer(strBuf, 6, self->mmsDomain->domainName, "/", self->lnName, ".", self->name, ".Oper.ctlVal");
     da = (DataAttribute*) IedModel_getModelNodeByObjectReference(self->iedServer->model, daName);
