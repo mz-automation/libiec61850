@@ -595,16 +595,13 @@ parseGoosePayload(GooseReceiver self, uint8_t* buffer, int apduLength)
                     printf("GOOSE_SUBSCRIBER:   Found dataSet\n");
                 {
                     if (matchingSubscriber) {
-                        if (matchingSubscriber->isObserver)
-                        {
-                            if (elementLength > 64) {
-                                if (DEBUG_GOOSE_SUBSCRIBER)
-                                    printf("GOOSE_SUBSCRIBER:   datSet too long!\n");
-                            }
-                            else {
-                                memcpy(matchingSubscriber->datSet, buffer + bufPos, elementLength);
-                                matchingSubscriber->datSet[elementLength] = 0;
-                            }
+                        if (elementLength > 64) {
+                            if (DEBUG_GOOSE_SUBSCRIBER)
+                                printf("GOOSE_SUBSCRIBER:   datSet too long!\n");
+                        }
+                        else {
+                            memcpy(matchingSubscriber->datSet, buffer + bufPos, elementLength);
+                            matchingSubscriber->datSet[elementLength] = 0;
                         }
                     }
                 }
@@ -615,16 +612,13 @@ parseGoosePayload(GooseReceiver self, uint8_t* buffer, int apduLength)
                     printf("GOOSE_SUBSCRIBER:   Found goId\n");
                 {
                     if (matchingSubscriber) {
-                        if (matchingSubscriber->isObserver)
-                        {
-                            if (elementLength > 64) {
-                                if (DEBUG_GOOSE_SUBSCRIBER)
-                                    printf("GOOSE_SUBSCRIBER:   goId too long!\n");
-                            }
-                            else {
-                                memcpy(matchingSubscriber->goId, buffer + bufPos, elementLength);
-                                matchingSubscriber->goId[elementLength] = 0;
-                            }
+                        if (elementLength > 64) {
+                            if (DEBUG_GOOSE_SUBSCRIBER)
+                                printf("GOOSE_SUBSCRIBER:   goId too long!\n");
+                        }
+                        else {
+                            memcpy(matchingSubscriber->goId, buffer + bufPos, elementLength);
+                            matchingSubscriber->goId[elementLength] = 0;
                         }
                     }
                 }
@@ -702,6 +696,11 @@ parseGoosePayload(GooseReceiver self, uint8_t* buffer, int apduLength)
                     printf("GOOSE_SUBSCRIBER: GOOSE message has no time stamp\n");
 
                 MmsValue_setUtcTime(matchingSubscriber->timestamp, 0);
+            }
+            
+            if (matchingSubscriber->isObserver && matchingSubscriber->dataSetValues != NULL) {
+                MmsValue_delete(matchingSubscriber->dataSetValues);
+                matchingSubscriber->dataSetValues = NULL;
             }
 
             if (matchingSubscriber->dataSetValues == NULL)
