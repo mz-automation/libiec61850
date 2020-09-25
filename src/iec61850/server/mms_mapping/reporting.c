@@ -1600,10 +1600,12 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
         else if (strcmp(elementName, "RptID") == 0) {
             MmsValue* rptId = ReportControl_getRCBValue(rc, elementName);
 
-            if (rc->buffered)
-                purgeBuf(rc);
+            if (!MmsValue_equals(rptId, value)) {
+                MmsValue_update(rptId, value);
 
-            MmsValue_update(rptId, value);
+                if (rc->buffered)
+                    purgeBuf(rc);
+            }
 
             goto exit_function;
         }
