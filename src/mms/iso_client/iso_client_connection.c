@@ -283,8 +283,10 @@ releaseSocket(IsoClientConnection self)
     if (self->socket) {
 
 #if (CONFIG_MMS_SUPPORT_TLS == 1)
-    if (self->cotpConnection->tlsSocket)
+    if (self->cotpConnection->tlsSocket) {
         TLSSocket_close(self->cotpConnection->tlsSocket);
+        self->cotpConnection->tlsSocket = NULL;
+    }
 #endif
 
         Socket_destroy(self->socket);
