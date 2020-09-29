@@ -79,6 +79,8 @@ typedef struct {
 
     int triggerOps;
 
+    bool hasOwner; /* indicate that owner field is present */
+
     /* information for segmented reporting */
     bool segmented; /* indicates that a segmented report is in process */
     int startIndexForNextSegment; /* start data set index for the next report segment */
