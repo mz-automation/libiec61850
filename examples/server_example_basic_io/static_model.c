@@ -20,7 +20,7 @@ extern DataSetEntry iedModelds_GenericIO_LLN0_Events_fcda3;
 DataSetEntry iedModelds_GenericIO_LLN0_Events_fcda0 = {
   "GenericIO",
   false,
-  "GGIO1$ST$SPCSO1$stVal",
+  "GGIO1$ST$SPCSO1$stVal", 
   -1,
   NULL,
   NULL,
@@ -30,7 +30,7 @@ DataSetEntry iedModelds_GenericIO_LLN0_Events_fcda0 = {
 DataSetEntry iedModelds_GenericIO_LLN0_Events_fcda1 = {
   "GenericIO",
   false,
-  "GGIO1$ST$SPCSO2$stVal",
+  "GGIO1$ST$SPCSO2$stVal", 
   -1,
   NULL,
   NULL,
@@ -40,7 +40,7 @@ DataSetEntry iedModelds_GenericIO_LLN0_Events_fcda1 = {
 DataSetEntry iedModelds_GenericIO_LLN0_Events_fcda2 = {
   "GenericIO",
   false,
-  "GGIO1$ST$SPCSO3$stVal",
+  "GGIO1$ST$SPCSO3$stVal", 
   -1,
   NULL,
   NULL,
@@ -50,7 +50,7 @@ DataSetEntry iedModelds_GenericIO_LLN0_Events_fcda2 = {
 DataSetEntry iedModelds_GenericIO_LLN0_Events_fcda3 = {
   "GenericIO",
   false,
-  "GGIO1$ST$SPCSO4$stVal",
+  "GGIO1$ST$SPCSO4$stVal", 
   -1,
   NULL,
   NULL,
@@ -73,7 +73,7 @@ extern DataSetEntry iedModelds_GenericIO_LLN0_Events2_fcda3;
 DataSetEntry iedModelds_GenericIO_LLN0_Events2_fcda0 = {
   "GenericIO",
   false,
-  "GGIO1$ST$SPCSO1",
+  "GGIO1$ST$SPCSO1", 
   -1,
   NULL,
   NULL,
@@ -83,7 +83,7 @@ DataSetEntry iedModelds_GenericIO_LLN0_Events2_fcda0 = {
 DataSetEntry iedModelds_GenericIO_LLN0_Events2_fcda1 = {
   "GenericIO",
   false,
-  "GGIO1$ST$SPCSO2",
+  "GGIO1$ST$SPCSO2", 
   -1,
   NULL,
   NULL,
@@ -93,7 +93,7 @@ DataSetEntry iedModelds_GenericIO_LLN0_Events2_fcda1 = {
 DataSetEntry iedModelds_GenericIO_LLN0_Events2_fcda2 = {
   "GenericIO",
   false,
-  "GGIO1$ST$SPCSO3",
+  "GGIO1$ST$SPCSO3", 
   -1,
   NULL,
   NULL,
@@ -103,7 +103,7 @@ DataSetEntry iedModelds_GenericIO_LLN0_Events2_fcda2 = {
 DataSetEntry iedModelds_GenericIO_LLN0_Events2_fcda3 = {
   "GenericIO",
   false,
-  "GGIO1$ST$SPCSO4",
+  "GGIO1$ST$SPCSO4", 
   -1,
   NULL,
   NULL,
@@ -130,7 +130,7 @@ extern DataSetEntry iedModelds_GenericIO_LLN0_Measurements_fcda7;
 DataSetEntry iedModelds_GenericIO_LLN0_Measurements_fcda0 = {
   "GenericIO",
   false,
-  "GGIO1$MX$AnIn1$mag$f",
+  "GGIO1$MX$AnIn1$mag$f", 
   -1,
   NULL,
   NULL,
@@ -140,7 +140,7 @@ DataSetEntry iedModelds_GenericIO_LLN0_Measurements_fcda0 = {
 DataSetEntry iedModelds_GenericIO_LLN0_Measurements_fcda1 = {
   "GenericIO",
   false,
-  "GGIO1$MX$AnIn1$q",
+  "GGIO1$MX$AnIn1$q", 
   -1,
   NULL,
   NULL,
@@ -150,7 +150,7 @@ DataSetEntry iedModelds_GenericIO_LLN0_Measurements_fcda1 = {
 DataSetEntry iedModelds_GenericIO_LLN0_Measurements_fcda2 = {
   "GenericIO",
   false,
-  "GGIO1$MX$AnIn2$mag$f",
+  "GGIO1$MX$AnIn2$mag$f", 
   -1,
   NULL,
   NULL,
@@ -160,7 +160,7 @@ DataSetEntry iedModelds_GenericIO_LLN0_Measurements_fcda2 = {
 DataSetEntry iedModelds_GenericIO_LLN0_Measurements_fcda3 = {
   "GenericIO",
   false,
-  "GGIO1$MX$AnIn2$q",
+  "GGIO1$MX$AnIn2$q", 
   -1,
   NULL,
   NULL,
@@ -170,7 +170,7 @@ DataSetEntry iedModelds_GenericIO_LLN0_Measurements_fcda3 = {
 DataSetEntry iedModelds_GenericIO_LLN0_Measurements_fcda4 = {
   "GenericIO",
   false,
-  "GGIO1$MX$AnIn3$mag$f",
+  "GGIO1$MX$AnIn3$mag$f", 
   -1,
   NULL,
   NULL,
@@ -180,7 +180,7 @@ DataSetEntry iedModelds_GenericIO_LLN0_Measurements_fcda4 = {
 DataSetEntry iedModelds_GenericIO_LLN0_Measurements_fcda5 = {
   "GenericIO",
   false,
-  "GGIO1$MX$AnIn3$q",
+  "GGIO1$MX$AnIn3$q", 
   -1,
   NULL,
   NULL,
@@ -190,7 +190,7 @@ DataSetEntry iedModelds_GenericIO_LLN0_Measurements_fcda5 = {
 DataSetEntry iedModelds_GenericIO_LLN0_Measurements_fcda6 = {
   "GenericIO",
   false,
-  "GGIO1$MX$AnIn4$mag$f",
+  "GGIO1$MX$AnIn4$mag$f", 
   -1,
   NULL,
   NULL,
@@ -200,7 +200,7 @@ DataSetEntry iedModelds_GenericIO_LLN0_Measurements_fcda6 = {
 DataSetEntry iedModelds_GenericIO_LLN0_Measurements_fcda7 = {
   "GenericIO",
   false,
-  "GGIO1$MX$AnIn4$q",
+  "GGIO1$MX$AnIn4$q", 
   -1,
   NULL,
   NULL,
@@ -2012,16 +2012,16 @@ extern ReportControlBlock iedModel_GenericIO_LLN0_report7;
 extern ReportControlBlock iedModel_GenericIO_LLN0_report8;
 extern ReportControlBlock iedModel_GenericIO_LLN0_report9;
 
-ReportControlBlock iedModel_GenericIO_LLN0_report0 = {&iedModel_GenericIO_LLN0, "EventsRCB01", "Events1", false, "Events", 1, 24, 175, 50, 1000, {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, &iedModel_GenericIO_LLN0_report1};
-ReportControlBlock iedModel_GenericIO_LLN0_report1 = {&iedModel_GenericIO_LLN0, "EventsRCBPreConf01", "Events1", false, "Events", 1, 24, 175, 50, 1000, {0x4, 0xc0, 0xa8, 0x2, 0x9, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, &iedModel_GenericIO_LLN0_report2};
-ReportControlBlock iedModel_GenericIO_LLN0_report2 = {&iedModel_GenericIO_LLN0, "EventsBRCB01", "Events2", true, "Events", 1, 24, 175, 50, 1000, {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, &iedModel_GenericIO_LLN0_report3};
-ReportControlBlock iedModel_GenericIO_LLN0_report3 = {&iedModel_GenericIO_LLN0, "EventsBRCBPreConf01", "Events2", true, "Events", 1, 24, 175, 50, 1000, {0x4, 0xc0, 0xa8, 0x2, 0x9, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, &iedModel_GenericIO_LLN0_report4};
-ReportControlBlock iedModel_GenericIO_LLN0_report4 = {&iedModel_GenericIO_LLN0, "EventsIndexed01", "Events2", false, "Events", 1, 24, 175, 50, 1000, {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, &iedModel_GenericIO_LLN0_report5};
-ReportControlBlock iedModel_GenericIO_LLN0_report5 = {&iedModel_GenericIO_LLN0, "EventsIndexed02", "Events2", false, "Events", 1, 24, 175, 50, 1000, {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, &iedModel_GenericIO_LLN0_report6};
-ReportControlBlock iedModel_GenericIO_LLN0_report6 = {&iedModel_GenericIO_LLN0, "EventsIndexed03", "Events2", false, "Events", 1, 24, 175, 50, 1000, {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, &iedModel_GenericIO_LLN0_report7};
-ReportControlBlock iedModel_GenericIO_LLN0_report7 = {&iedModel_GenericIO_LLN0, "Measurements01", "Measurements", true, "Measurements", 1, 16, 239, 50, 1000, {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, &iedModel_GenericIO_LLN0_report8};
-ReportControlBlock iedModel_GenericIO_LLN0_report8 = {&iedModel_GenericIO_LLN0, "Measurements02", "Measurements", true, "Measurements", 1, 16, 239, 50, 1000, {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, &iedModel_GenericIO_LLN0_report9};
-ReportControlBlock iedModel_GenericIO_LLN0_report9 = {&iedModel_GenericIO_LLN0, "Measurements03", "Measurements", true, "Measurements", 1, 16, 239, 50, 1000, {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, NULL};
+ReportControlBlock iedModel_GenericIO_LLN0_report0 = {&iedModel_GenericIO_LLN0, "EventsRCB01", "Events1", false, "Events", 1, 88, 175, 50, 1000, {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, &iedModel_GenericIO_LLN0_report1};
+ReportControlBlock iedModel_GenericIO_LLN0_report1 = {&iedModel_GenericIO_LLN0, "EventsRCBPreConf01", "Events1", false, "Events", 1, 88, 175, 50, 1000, {0x4, 0xc0, 0xa8, 0x2, 0x9, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, &iedModel_GenericIO_LLN0_report2};
+ReportControlBlock iedModel_GenericIO_LLN0_report2 = {&iedModel_GenericIO_LLN0, "EventsBRCB01", "Events2", true, "Events", 1, 88, 175, 50, 1000, {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, &iedModel_GenericIO_LLN0_report3};
+ReportControlBlock iedModel_GenericIO_LLN0_report3 = {&iedModel_GenericIO_LLN0, "EventsBRCBPreConf01", "Events2", true, "Events", 1, 88, 175, 50, 1000, {0x4, 0xc0, 0xa8, 0x2, 0x9, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, &iedModel_GenericIO_LLN0_report4};
+ReportControlBlock iedModel_GenericIO_LLN0_report4 = {&iedModel_GenericIO_LLN0, "EventsIndexed01", "Events2", false, "Events", 1, 88, 175, 50, 1000, {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, &iedModel_GenericIO_LLN0_report5};
+ReportControlBlock iedModel_GenericIO_LLN0_report5 = {&iedModel_GenericIO_LLN0, "EventsIndexed02", "Events2", false, "Events", 1, 88, 175, 50, 1000, {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, &iedModel_GenericIO_LLN0_report6};
+ReportControlBlock iedModel_GenericIO_LLN0_report6 = {&iedModel_GenericIO_LLN0, "EventsIndexed03", "Events2", false, "Events", 1, 88, 175, 50, 1000, {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, &iedModel_GenericIO_LLN0_report7};
+ReportControlBlock iedModel_GenericIO_LLN0_report7 = {&iedModel_GenericIO_LLN0, "Measurements01", "Measurements", true, "Measurements", 1, 80, 239, 50, 1000, {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, &iedModel_GenericIO_LLN0_report8};
+ReportControlBlock iedModel_GenericIO_LLN0_report8 = {&iedModel_GenericIO_LLN0, "Measurements02", "Measurements", true, "Measurements", 1, 80, 239, 50, 1000, {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, &iedModel_GenericIO_LLN0_report9};
+ReportControlBlock iedModel_GenericIO_LLN0_report9 = {&iedModel_GenericIO_LLN0, "Measurements03", "Measurements", true, "Measurements", 1, 80, 239, 50, 1000, {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, NULL};
 
 
 
