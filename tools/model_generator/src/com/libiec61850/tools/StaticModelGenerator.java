@@ -60,9 +60,11 @@ import com.libiec61850.scl.model.LogControl;
 import com.libiec61850.scl.model.LogicalDevice;
 import com.libiec61850.scl.model.LogicalNode;
 import com.libiec61850.scl.model.ReportControlBlock;
+import com.libiec61850.scl.model.ReportSettings;
 import com.libiec61850.scl.model.RptEnabled;
 import com.libiec61850.scl.model.SampledValueControl;
 import com.libiec61850.scl.model.Server;
+import com.libiec61850.scl.model.Services;
 import com.libiec61850.scl.model.SettingControl;
 import com.libiec61850.scl.model.TriggerOptions;
 
@@ -113,6 +115,8 @@ public class StaticModelGenerator {
 	private boolean initializeOnce;
 	
 	private SclParser sclParser;
+	
+    private boolean hasOwner = false;
 
     public StaticModelGenerator(InputStream stream, String icdFile, PrintStream cOut, PrintStream hOut,
     		String outputFileName, String iedName, String accessPointName, String modelPrefix,
@@ -162,6 +166,16 @@ public class StaticModelGenerator {
 
         if (ied == null)
             System.out.println("IED model not found in SCL file! Exit.");
+        
+        Services services = ied.getServices();
+        
+        if (services != null) {
+            ReportSettings rptSettings = services.getReportSettings();
+            
+            if (rptSettings != null) {
+                hasOwner = rptSettings.hasOwner();
+            }
+        }
        
         accessPoint = null;
 
@@ -1422,6 +1436,9 @@ public class StaticModelGenerator {
 
         if (rcb.getTriggerOptions() != null)
         	triggerOps = rcb.getTriggerOptions().getIntValue();
+        
+        if (hasOwner)
+            triggerOps += 64;
 
         rcbString += triggerOps + ", ";
 

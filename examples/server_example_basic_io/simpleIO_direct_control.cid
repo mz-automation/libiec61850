@@ -42,7 +42,7 @@
       <ReadWrite />
       <GetCBValues />
       <ConfLNs fixPrefix="true" fixLnInst="true" />
-      <ReportSettings cbName="Conf" datSet="Dyn" rptID="Dyn" optFields="Dyn" bufTime="Dyn" trgOps="Dyn" intgPd="Dyn" />
+      <ReportSettings cbName="Conf" datSet="Dyn" rptID="Dyn" optFields="Dyn" bufTime="Dyn" trgOps="Dyn" intgPd="Dyn" owner="true" />
       <GOOSE max="5" />
       <GSSE max="5" />
       <FileHandling />

@@ -34,10 +34,13 @@ public class IED {
 	private String name;
 	private List<AccessPoint> accessPoints;
 	private TypeDeclarations typeDeclarations;
+	private Node self;
 
 	public IED(Node iedNode, TypeDeclarations typeDeclarations)
 			throws SclParserException {
 		this.name = ParserUtils.parseAttribute(iedNode, "name");
+		
+		self = iedNode;
 		
 		List<Node> accessPointNodes = ParserUtils.getChildNodesWithTag(iedNode, "AccessPoint");
 
@@ -76,4 +79,13 @@ public class IED {
 		return accessPoints.get(0);
 	}
 
+	public Services getServices() {
+        Node servicesNode = ParserUtils.getChildNodeWithTag(self, "Services");
+        
+        if (servicesNode != null) {
+            return new Services(servicesNode);
+        }
+        else
+            return null;
+    }
 }

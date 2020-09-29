@@ -50,12 +50,15 @@ import com.libiec61850.scl.model.LogControl;
 import com.libiec61850.scl.model.LogicalDevice;
 import com.libiec61850.scl.model.LogicalNode;
 import com.libiec61850.scl.model.ReportControlBlock;
+import com.libiec61850.scl.model.ReportSettings;
+import com.libiec61850.scl.model.Services;
 import com.libiec61850.scl.model.SettingControl;
 
 public class DynamicModelGenerator {
 
     private ConnectedAP connectedAP;
     private IED ied = null;
+    private boolean hasOwner = false;
     
     public DynamicModelGenerator(InputStream stream, String icdFile, PrintStream output, String iedName, String accessPointName) 
     		throws SclParserException {
@@ -69,7 +72,17 @@ public class DynamicModelGenerator {
 
         if (ied == null)
             throw new SclParserException("No data model present in SCL file! Exit.");
-
+        
+        Services services = ied.getServices();
+        
+        if (services != null) {
+            ReportSettings rptSettings = services.getReportSettings();
+            
+            if (rptSettings != null) {
+                hasOwner = rptSettings.hasOwner();
+            }
+        }
+       
         AccessPoint accessPoint = null;
         
         if (accessPointName != null)
@@ -257,7 +270,13 @@ public class DynamicModelGenerator {
             output.print("- ");
         
         output.print(rcb.getConfRef() + " ");
-        output.print(rcb.getTriggerOptions().getIntValue() + " ");
+        
+        int triggerOptions = rcb.getTriggerOptions().getIntValue();
+        
+        if (hasOwner)
+            triggerOptions += 64;
+        
+        output.print(triggerOptions + " ");
         
         output.print(rcb.getOptionFields().getIntValue() + " ");
 
