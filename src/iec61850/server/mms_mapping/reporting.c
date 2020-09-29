@@ -122,6 +122,7 @@ ReportControl_create(bool buffered, LogicalNode* parentLN, int reportBufferSize,
     self->timeOfEntry = NULL;
     self->reservationTimeout = 0;
     self->triggerOps = 0;
+    self->hasOwner = false;
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     self->createNotificationsMutex = Semaphore_create(1);
@@ -675,12 +676,12 @@ createUnbufferedReportControlBlock(ReportControlBlock* reportControlBlock,
     mmsValue->deleteValue = false;
     mmsValue->type = MMS_STRUCTURE;
 
-    int structSize;
+    int structSize = 11;
 
-    if (reportControl->server->edition >= IEC_61850_EDITION_2)
-        structSize = 12;
-    else
-        structSize = 11;
+    if (reportControl->server->edition >= IEC_61850_EDITION_2) {
+        if (reportControl->hasOwner)
+            structSize = 12;
+    }
 
     mmsValue->value.structure.size = structSize;
     mmsValue->value.structure.components = (MmsValue**) GLOBAL_CALLOC(structSize, sizeof(MmsValue*));
@@ -783,21 +784,24 @@ createUnbufferedReportControlBlock(ReportControlBlock* reportControlBlock,
     mmsValue->value.structure.components[10] = MmsValue_newBoolean(false);
 
     if (reportControl->server->edition >= IEC_61850_EDITION_2) {
-        namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-        namedVariable->name = StringUtils_copyString("Owner");
-        namedVariable->type = MMS_OCTET_STRING;
-        namedVariable->typeSpec.octetString = -64;
-        rcb->typeSpec.structure.elements[11] = namedVariable;
-        mmsValue->value.structure.components[11] = MmsValue_newOctetString(0, 16); /* size 16 is enough to store client IPv6 address */
 
-        /* initialize pre configured owner */
-        if (reportControlBlock->clientReservation[0] == 4) {
-            reportControl->resvTms = -1;
-            MmsValue_setOctetString(mmsValue->value.structure.components[11], reportControlBlock->clientReservation + 1, 4);
-        }
-        else if (reportControlBlock->clientReservation[0] == 6) {
-            reportControl->resvTms = -1;
-            MmsValue_setOctetString(mmsValue->value.structure.components[11], reportControlBlock->clientReservation + 1, 16);
+        if (reportControl->hasOwner) {
+            namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
+            namedVariable->name = StringUtils_copyString("Owner");
+            namedVariable->type = MMS_OCTET_STRING;
+            namedVariable->typeSpec.octetString = -64;
+            rcb->typeSpec.structure.elements[11] = namedVariable;
+            mmsValue->value.structure.components[11] = MmsValue_newOctetString(0, 16); /* size 16 is enough to store client IPv6 address */
+
+            /* initialize pre configured owner */
+            if (reportControlBlock->clientReservation[0] == 4) {
+                reportControl->resvTms = -1;
+                MmsValue_setOctetString(mmsValue->value.structure.components[11], reportControlBlock->clientReservation + 1, 4);
+            }
+            else if (reportControlBlock->clientReservation[0] == 6) {
+                reportControl->resvTms = -1;
+                MmsValue_setOctetString(mmsValue->value.structure.components[11], reportControlBlock->clientReservation + 1, 16);
+            }
         }
     }
 
@@ -828,7 +832,8 @@ createBufferedReportControlBlock(ReportControlBlock* reportControlBlock,
         brcbElementCount++;
 #endif
 
-        brcbElementCount++;
+        if (reportControl->hasOwner)
+            brcbElementCount++;
     }
 
     MmsValue* mmsValue = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
@@ -955,6 +960,9 @@ createBufferedReportControlBlock(ReportControlBlock* reportControlBlock,
         int currentIndex = 13;
 
 #if (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1)
+
+        int resvTmsIndex = currentIndex;
+
         namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
         namedVariable->name = StringUtils_copyString("ResvTms");
         namedVariable->type = MMS_INTEGER;
@@ -964,25 +972,27 @@ createBufferedReportControlBlock(ReportControlBlock* reportControlBlock,
         currentIndex++;
 #endif /* (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1) */
 
-        namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-        namedVariable->name = StringUtils_copyString("Owner");
-        namedVariable->type = MMS_OCTET_STRING;
-        namedVariable->typeSpec.octetString = -64;
-        rcb->typeSpec.structure.elements[currentIndex] = namedVariable;
-        mmsValue->value.structure.components[currentIndex] = MmsValue_newOctetString(0, 16); /* size 16 is enough to store client IPv6 address */
+        if (reportControl->hasOwner) {
+            namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
+            namedVariable->name = StringUtils_copyString("Owner");
+            namedVariable->type = MMS_OCTET_STRING;
+            namedVariable->typeSpec.octetString = -64;
+            rcb->typeSpec.structure.elements[currentIndex] = namedVariable;
+            mmsValue->value.structure.components[currentIndex] = MmsValue_newOctetString(0, 16); /* size 16 is enough to store client IPv6 address */
 
-        /* initialize pre configured owner */
-        if (reportControlBlock->clientReservation[0] == 4) {
-            reportControl->resvTms = -1;
-            MmsValue_setOctetString(mmsValue->value.structure.components[currentIndex], reportControlBlock->clientReservation + 1, 4);
-        }
-        else if (reportControlBlock->clientReservation[0] == 6) {
-            reportControl->resvTms = -1;
-            MmsValue_setOctetString(mmsValue->value.structure.components[currentIndex], reportControlBlock->clientReservation + 1, 16);
+            /* initialize pre configured owner */
+            if (reportControlBlock->clientReservation[0] == 4) {
+                reportControl->resvTms = -1;
+                MmsValue_setOctetString(mmsValue->value.structure.components[currentIndex], reportControlBlock->clientReservation + 1, 4);
+            }
+            else if (reportControlBlock->clientReservation[0] == 6) {
+                reportControl->resvTms = -1;
+                MmsValue_setOctetString(mmsValue->value.structure.components[currentIndex], reportControlBlock->clientReservation + 1, 16);
+            }
         }
 
 #if (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1)
-        MmsValue_setInt16(mmsValue->value.structure.components[13], reportControl->resvTms);
+        MmsValue_setInt16(mmsValue->value.structure.components[resvTmsIndex], reportControl->resvTms);
 #endif
     }
 
@@ -1045,6 +1055,9 @@ Reporting_createMmsBufferedRCBs(MmsMapping* self, MmsDomain* domain,
         ReportControlBlock* reportControlBlock = getRCBForLogicalNodeWithIndex(
                 self, logicalNode, currentReport, true);
 
+        if (reportControlBlock->trgOps & RPT_OPT_HAS_OWNER)
+            rc->hasOwner = true;
+
         rc->name = StringUtils_createString(3, logicalNode->name, "$BR$",
                 reportControlBlock->name);
 
@@ -1081,6 +1094,9 @@ Reporting_createMmsUnbufferedRCBs(MmsMapping* self, MmsDomain* domain,
 
         ReportControlBlock* reportControlBlock = getRCBForLogicalNodeWithIndex(
                 self, logicalNode, currentReport, false);
+
+        if (reportControlBlock->trgOps & RPT_OPT_HAS_OWNER)
+            rc->hasOwner = true;
 
         rc->name = StringUtils_createString(3, logicalNode->name, "$RP$",
                 reportControlBlock->name);
@@ -1127,7 +1143,7 @@ updateOwner(ReportControl* rc, MmsServerConnection connection)
 {
     rc->clientConnection = connection;
 
-    if (rc->server->edition >= IEC_61850_EDITION_2) {
+    if (rc->server->edition >= IEC_61850_EDITION_2 && rc->hasOwner) {
 
         MmsValue* owner = ReportControl_getRCBValue(rc, "Owner");
 

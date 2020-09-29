@@ -107,6 +107,9 @@ typedef enum {
 /** Report will be triggered by GI (general interrogation) request */
 #define TRG_OPT_GI 16
 
+/** RCB has the owner attribute */
+#define RPT_OPT_HAS_OWNER 64
+
 /** Report will be triggered only on rising edge (transient variable */
 #define TRG_OPT_TRANSIENT 128
 /** @} */
