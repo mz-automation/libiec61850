@@ -136,6 +136,12 @@ main(int argc, char** argv)
 
     IedServer_setConnectionIndicationHandler(iedServer, (IedConnectionIndicationHandler) connectionHandler, NULL);
 
+    /* By default access to variables with FC=DC and FC=CF is not allowed.
+     * This allow to write to simpleIOGenericIO/GGIO1.NamPlt.vendor variable used
+     * by iec61850_client_example1.
+     */
+    IedServer_setWriteAccessPolicy(iedServer, IEC61850_FC_DC, ACCESS_POLICY_ALLOW);
+
     /* MMS server will be instructed to start listening for client connections. */
     IedServer_start(iedServer, 102);
 
