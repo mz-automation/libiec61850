@@ -115,6 +115,15 @@ main(int argc, char** argv)
     /* configuration object is no longer required */
     IedServerConfig_destroy(config);
 
+    if (argc > 1) {
+        char* ethernetIfcID = argv[1];
+
+        printf("Using GOOSE interface: %s\n", ethernetIfcID);
+
+        /* set GOOSE interface for all GOOSE publishers (GCBs) */
+        IedServer_setGooseInterfaceId(iedServer, ethernetIfcID);
+    }
+
     /* set the identity values for MMS identify service */
     IedServer_setServerIdentity(iedServer, "MZ", "service_tracking", "1.0.0");
 

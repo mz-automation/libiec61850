@@ -18,6 +18,16 @@
           <P type="OSI-TSEL">0001</P>
           <P type="MMS-Port">102</P>
         </Address>
+        <GSE ldInst="GenericIO" cbName="gcbEvents">
+           <Address>
+                <P type="VLAN-ID">1</P>
+                <P type="VLAN-PRIORITY">4</P>
+                <P type="MAC-Address">01-0c-cd-01-00-01</P>
+                <P type="APPID">1000</P>
+           </Address>
+           <MinTime>1000</MinTime>
+           <MaxTime>3000</MaxTime>
+	    </GSE>
       </ConnectedAP>
     </SubNetwork>
   </Communication>
@@ -93,6 +103,9 @@
               <OptFields configRef="true" entryID="true" reasonCode="true"/>
               <RptEnabled max="3"/>
             </ReportControl>
+            
+            <GSEControl appID="events" name="gcbEvents" type="GOOSE" datSet="Events" confRev="3" />
+            
             <DOI name="Mod">
               <DAI name="stVal">
                 <Val>on</Val>

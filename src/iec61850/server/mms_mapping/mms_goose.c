@@ -88,10 +88,10 @@ copyGCBValuesToTrackingObject(MmsGooseControlBlock gc)
             MmsValue_setBoolean(trkInst->goEna->mmsValue, MmsGooseControlBlock_isEnabled(gc));
 
         if (trkInst->goID)
-            MmsValue_setMmsString(trkInst->goID->mmsValue, gc->goId);
+            MmsValue_setVisibleString(trkInst->goID->mmsValue, gc->goId);
 
         if (trkInst->datSet)
-            MmsValue_setMmsString(trkInst->datSet->mmsValue, gc->dataSet->name);
+            MmsValue_setVisibleString(trkInst->datSet->mmsValue, gc->dataSet->name);
 
         if (trkInst->confRev) {
             uint32_t confRev = MmsValue_toUint32(MmsValue_getElement(gc->mmsValue, 3));

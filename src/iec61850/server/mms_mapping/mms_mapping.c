@@ -1947,6 +1947,22 @@ MmsMapping_destroy(MmsMapping* self)
     LinkedList_destroyDeep(self->logInstances, (LinkedListValueDeleteFunction) LogInstance_destroy);
 #endif
 
+#if (CONFIG_IEC61850_SERVICE_TRACKING == 1)
+    if (self->brcbTrk) GLOBAL_FREEMEM(self->brcbTrk);
+    if (self->urcbTrk) GLOBAL_FREEMEM(self->urcbTrk);
+    if (self->gocbTrk) GLOBAL_FREEMEM(self->gocbTrk);
+    if (self->spcTrk) GLOBAL_FREEMEM(self->spcTrk);
+    if (self->dpcTrk) GLOBAL_FREEMEM(self->dpcTrk);
+    if (self->incTrk) GLOBAL_FREEMEM(self->incTrk);
+    if (self->encTrk1) GLOBAL_FREEMEM(self->encTrk1);
+    if (self->apcFTrk) GLOBAL_FREEMEM(self->apcFTrk);
+    if (self->apcIntTrk) GLOBAL_FREEMEM(self->apcIntTrk);
+    if (self->bscTrk) GLOBAL_FREEMEM(self->bscTrk);
+    if (self->iscTrk) GLOBAL_FREEMEM(self->iscTrk);
+    if (self->bacTrk) GLOBAL_FREEMEM(self->bacTrk);
+    if (self->sgcbTrk) GLOBAL_FREEMEM(self->sgcbTrk);
+#endif
+
     LinkedList_destroy(self->attributeAccessHandlers);
 
     IedModel_setAttributeValuesToNull(self->model);

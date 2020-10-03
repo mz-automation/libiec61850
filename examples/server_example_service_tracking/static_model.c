@@ -21,7 +21,7 @@ extern DataSetEntry iedModelds_GenericIO_LLN0_Events_fcda3;
 DataSetEntry iedModelds_GenericIO_LLN0_Events_fcda0 = {
   "GenericIO",
   false,
-  "GGIO1$ST$SPCSO1$stVal",
+  "GGIO1$ST$SPCSO1$stVal", 
   -1,
   NULL,
   NULL,
@@ -31,7 +31,7 @@ DataSetEntry iedModelds_GenericIO_LLN0_Events_fcda0 = {
 DataSetEntry iedModelds_GenericIO_LLN0_Events_fcda1 = {
   "GenericIO",
   false,
-  "GGIO1$ST$SPCSO2$stVal",
+  "GGIO1$ST$SPCSO2$stVal", 
   -1,
   NULL,
   NULL,
@@ -41,7 +41,7 @@ DataSetEntry iedModelds_GenericIO_LLN0_Events_fcda1 = {
 DataSetEntry iedModelds_GenericIO_LLN0_Events_fcda2 = {
   "GenericIO",
   false,
-  "GGIO1$ST$SPCSO3$stVal",
+  "GGIO1$ST$SPCSO3$stVal", 
   -1,
   NULL,
   NULL,
@@ -51,7 +51,7 @@ DataSetEntry iedModelds_GenericIO_LLN0_Events_fcda2 = {
 DataSetEntry iedModelds_GenericIO_LLN0_Events_fcda3 = {
   "GenericIO",
   false,
-  "GGIO1$ST$SPCSO4$stVal",
+  "GGIO1$ST$SPCSO4$stVal", 
   -1,
   NULL,
   NULL,
@@ -74,7 +74,7 @@ extern DataSetEntry iedModelds_GenericIO_LLN0_Events2_fcda3;
 DataSetEntry iedModelds_GenericIO_LLN0_Events2_fcda0 = {
   "GenericIO",
   false,
-  "GGIO1$ST$SPCSO1",
+  "GGIO1$ST$SPCSO1", 
   -1,
   NULL,
   NULL,
@@ -84,7 +84,7 @@ DataSetEntry iedModelds_GenericIO_LLN0_Events2_fcda0 = {
 DataSetEntry iedModelds_GenericIO_LLN0_Events2_fcda1 = {
   "GenericIO",
   false,
-  "GGIO1$ST$SPCSO2",
+  "GGIO1$ST$SPCSO2", 
   -1,
   NULL,
   NULL,
@@ -94,7 +94,7 @@ DataSetEntry iedModelds_GenericIO_LLN0_Events2_fcda1 = {
 DataSetEntry iedModelds_GenericIO_LLN0_Events2_fcda2 = {
   "GenericIO",
   false,
-  "GGIO1$ST$SPCSO3",
+  "GGIO1$ST$SPCSO3", 
   -1,
   NULL,
   NULL,
@@ -104,7 +104,7 @@ DataSetEntry iedModelds_GenericIO_LLN0_Events2_fcda2 = {
 DataSetEntry iedModelds_GenericIO_LLN0_Events2_fcda3 = {
   "GenericIO",
   false,
-  "GGIO1$ST$SPCSO4",
+  "GGIO1$ST$SPCSO4", 
   -1,
   NULL,
   NULL,
@@ -131,7 +131,7 @@ extern DataSetEntry iedModelds_GenericIO_LLN0_Measurements_fcda7;
 DataSetEntry iedModelds_GenericIO_LLN0_Measurements_fcda0 = {
   "GenericIO",
   false,
-  "GGIO1$MX$AnIn1$mag$f",
+  "GGIO1$MX$AnIn1$mag$f", 
   -1,
   NULL,
   NULL,
@@ -141,7 +141,7 @@ DataSetEntry iedModelds_GenericIO_LLN0_Measurements_fcda0 = {
 DataSetEntry iedModelds_GenericIO_LLN0_Measurements_fcda1 = {
   "GenericIO",
   false,
-  "GGIO1$MX$AnIn1$q",
+  "GGIO1$MX$AnIn1$q", 
   -1,
   NULL,
   NULL,
@@ -151,7 +151,7 @@ DataSetEntry iedModelds_GenericIO_LLN0_Measurements_fcda1 = {
 DataSetEntry iedModelds_GenericIO_LLN0_Measurements_fcda2 = {
   "GenericIO",
   false,
-  "GGIO1$MX$AnIn2$mag$f",
+  "GGIO1$MX$AnIn2$mag$f", 
   -1,
   NULL,
   NULL,
@@ -161,7 +161,7 @@ DataSetEntry iedModelds_GenericIO_LLN0_Measurements_fcda2 = {
 DataSetEntry iedModelds_GenericIO_LLN0_Measurements_fcda3 = {
   "GenericIO",
   false,
-  "GGIO1$MX$AnIn2$q",
+  "GGIO1$MX$AnIn2$q", 
   -1,
   NULL,
   NULL,
@@ -171,7 +171,7 @@ DataSetEntry iedModelds_GenericIO_LLN0_Measurements_fcda3 = {
 DataSetEntry iedModelds_GenericIO_LLN0_Measurements_fcda4 = {
   "GenericIO",
   false,
-  "GGIO1$MX$AnIn3$mag$f",
+  "GGIO1$MX$AnIn3$mag$f", 
   -1,
   NULL,
   NULL,
@@ -181,7 +181,7 @@ DataSetEntry iedModelds_GenericIO_LLN0_Measurements_fcda4 = {
 DataSetEntry iedModelds_GenericIO_LLN0_Measurements_fcda5 = {
   "GenericIO",
   false,
-  "GGIO1$MX$AnIn3$q",
+  "GGIO1$MX$AnIn3$q", 
   -1,
   NULL,
   NULL,
@@ -191,7 +191,7 @@ DataSetEntry iedModelds_GenericIO_LLN0_Measurements_fcda5 = {
 DataSetEntry iedModelds_GenericIO_LLN0_Measurements_fcda6 = {
   "GenericIO",
   false,
-  "GGIO1$MX$AnIn4$mag$f",
+  "GGIO1$MX$AnIn4$mag$f", 
   -1,
   NULL,
   NULL,
@@ -201,7 +201,7 @@ DataSetEntry iedModelds_GenericIO_LLN0_Measurements_fcda6 = {
 DataSetEntry iedModelds_GenericIO_LLN0_Measurements_fcda7 = {
   "GenericIO",
   false,
-  "GGIO1$MX$AnIn4$q",
+  "GGIO1$MX$AnIn4$q", 
   -1,
   NULL,
   NULL,
@@ -227,7 +227,7 @@ extern DataSetEntry iedModelds_GenericIO_LLN0_ServiceTracking_fcda6;
 DataSetEntry iedModelds_GenericIO_LLN0_ServiceTracking_fcda0 = {
   "GenericIO",
   false,
-  "LTRK1$SR$SpcTrk",
+  "LTRK1$SR$SpcTrk", 
   -1,
   NULL,
   NULL,
@@ -237,7 +237,7 @@ DataSetEntry iedModelds_GenericIO_LLN0_ServiceTracking_fcda0 = {
 DataSetEntry iedModelds_GenericIO_LLN0_ServiceTracking_fcda1 = {
   "GenericIO",
   false,
-  "LTRK1$SR$DpcTrk",
+  "LTRK1$SR$DpcTrk", 
   -1,
   NULL,
   NULL,
@@ -247,7 +247,7 @@ DataSetEntry iedModelds_GenericIO_LLN0_ServiceTracking_fcda1 = {
 DataSetEntry iedModelds_GenericIO_LLN0_ServiceTracking_fcda2 = {
   "GenericIO",
   false,
-  "LTRK1$SR$IncTrk",
+  "LTRK1$SR$IncTrk", 
   -1,
   NULL,
   NULL,
@@ -257,7 +257,7 @@ DataSetEntry iedModelds_GenericIO_LLN0_ServiceTracking_fcda2 = {
 DataSetEntry iedModelds_GenericIO_LLN0_ServiceTracking_fcda3 = {
   "GenericIO",
   false,
-  "LTRK1$SR$BscTrk",
+  "LTRK1$SR$BscTrk", 
   -1,
   NULL,
   NULL,
@@ -267,7 +267,7 @@ DataSetEntry iedModelds_GenericIO_LLN0_ServiceTracking_fcda3 = {
 DataSetEntry iedModelds_GenericIO_LLN0_ServiceTracking_fcda4 = {
   "GenericIO",
   false,
-  "LTRK1$SR$UrcbTrk",
+  "LTRK1$SR$UrcbTrk", 
   -1,
   NULL,
   NULL,
@@ -277,7 +277,7 @@ DataSetEntry iedModelds_GenericIO_LLN0_ServiceTracking_fcda4 = {
 DataSetEntry iedModelds_GenericIO_LLN0_ServiceTracking_fcda5 = {
   "GenericIO",
   false,
-  "LTRK1$SR$BrcbTrk",
+  "LTRK1$SR$BrcbTrk", 
   -1,
   NULL,
   NULL,
@@ -287,7 +287,7 @@ DataSetEntry iedModelds_GenericIO_LLN0_ServiceTracking_fcda5 = {
 DataSetEntry iedModelds_GenericIO_LLN0_ServiceTracking_fcda6 = {
   "GenericIO",
   false,
-  "LTRK1$SR$GocbTrk",
+  "LTRK1$SR$GocbTrk", 
   -1,
   NULL,
   NULL,
@@ -4011,6 +4011,16 @@ ReportControlBlock iedModel_GenericIO_LLN0_report8 = {&iedModel_GenericIO_LLN0, 
 ReportControlBlock iedModel_GenericIO_LLN0_report9 = {&iedModel_GenericIO_LLN0, "brcbServiceTracking03", "ServiceTracking", true, "ServiceTracking", 1, 19, 228, 0, 0, {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, NULL};
 
 
+extern GSEControlBlock iedModel_GenericIO_LLN0_gse0;
+
+static PhyComAddress iedModel_GenericIO_LLN0_gse0_address = {
+  4,
+  1,
+  4096,
+  {0x1, 0xc, 0xcd, 0x1, 0x0, 0x1}
+};
+
+GSEControlBlock iedModel_GenericIO_LLN0_gse0 = {&iedModel_GenericIO_LLN0, "gcbEvents", "events", "Events", 3, false, &iedModel_GenericIO_LLN0_gse0_address, 1000, 3000, NULL};
 
 
 
@@ -4021,7 +4031,7 @@ IedModel iedModel = {
     &iedModel_GenericIO,
     &iedModelds_GenericIO_LLN0_Events,
     &iedModel_GenericIO_LLN0_report0,
-    NULL,
+    &iedModel_GenericIO_LLN0_gse0,
     NULL,
     NULL,
     NULL,
