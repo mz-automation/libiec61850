@@ -25,6 +25,77 @@ sigint_handler(int signalId)
     running = 0;
 }
 
+typedef struct {
+    float strVal;
+    int opDlTmms;
+    int rsDlTmms;
+    int rstTms;
+} PTOC1Settings;
+
+static PTOC1Settings ptoc1Settings[] = {
+        {1.0f, 500, 500, 500},
+        {2.0f, 1500, 2500, 750},
+        {3.0f, 500, 1500, 750},
+        {3.5f, 1250, 1750, 500},
+        {3.75f, 1250, 1750, 750}
+};
+
+static void
+loadActiveSgValues (int actSG)
+{
+    IedServer_updateFloatAttributeValue(iedServer, IEDMODEL_GenericIO_PTOC1_StrVal_setMag_f, ptoc1Settings[actSG - 1].strVal);
+    IedServer_updateInt32AttributeValue(iedServer, IEDMODEL_GenericIO_PTOC1_OpDlTmms_setVal, ptoc1Settings[actSG - 1].opDlTmms);
+    IedServer_updateInt32AttributeValue(iedServer, IEDMODEL_GenericIO_PTOC1_RsDlTmms_setVal, ptoc1Settings[actSG - 1].rsDlTmms);
+    IedServer_updateInt32AttributeValue(iedServer, IEDMODEL_GenericIO_PTOC1_RstTms_setVal, ptoc1Settings[actSG - 1].rstTms);
+}
+
+static void
+loadEditSgValues (int editSG)
+{
+    IedServer_updateFloatAttributeValue(iedServer, IEDMODEL_SE_GenericIO_PTOC1_StrVal_setMag_f, ptoc1Settings[editSG - 1].strVal);
+    IedServer_updateInt32AttributeValue(iedServer, IEDMODEL_SE_GenericIO_PTOC1_OpDlTmms_setVal, ptoc1Settings[editSG - 1].opDlTmms);
+    IedServer_updateInt32AttributeValue(iedServer, IEDMODEL_SE_GenericIO_PTOC1_RsDlTmms_setVal, ptoc1Settings[editSG - 1].rsDlTmms);
+    IedServer_updateInt32AttributeValue(iedServer, IEDMODEL_SE_GenericIO_PTOC1_RstTms_setVal, ptoc1Settings[editSG - 1].rstTms);
+}
+
+static bool
+activeSgChangedHandler (void* parameter, SettingGroupControlBlock* sgcb,
+        uint8_t newActSg, ClientConnection connection)
+{
+    printf("Switch to setting group %i\n", (int) newActSg);
+
+    loadActiveSgValues(newActSg);
+
+    return true;
+}
+
+static bool
+editSgChangedHandler (void* parameter, SettingGroupControlBlock* sgcb,
+        uint8_t newEditSg, ClientConnection connection)
+{
+    printf("Set edit setting group to %i\n", (int) newEditSg);
+
+    loadEditSgValues(newEditSg);
+
+    return true;
+}
+
+static void
+editSgConfirmedHandler(void* parameter, SettingGroupControlBlock* sgcb,
+        uint8_t editSg)
+{
+    printf("Received edit sg confirm for sg %i\n", editSg);
+
+    ptoc1Settings[editSg - 1].strVal = MmsValue_toFloat(IEDMODEL_SE_GenericIO_PTOC1_StrVal_setMag_f->mmsValue);
+    ptoc1Settings[editSg - 1].opDlTmms = MmsValue_toInt32(IEDMODEL_SE_GenericIO_PTOC1_OpDlTmms_setVal->mmsValue);
+    ptoc1Settings[editSg - 1].rsDlTmms = MmsValue_toInt32(IEDMODEL_SE_GenericIO_PTOC1_RsDlTmms_setVal->mmsValue);
+    ptoc1Settings[editSg - 1].rstTms = MmsValue_toInt32(IEDMODEL_SE_GenericIO_PTOC1_RstTms_setVal->mmsValue);
+
+    if (IedServer_getActiveSettingGroup(iedServer, sgcb) == editSg) {
+        loadActiveSgValues(editSg);
+    }
+}
+
 static ControlHandlerResult
 controlHandlerForBinaryOutput(ControlAction action, void* parameter, MmsValue* value, bool test)
 {
@@ -114,6 +185,14 @@ main(int argc, char** argv)
 
     /* configuration object is no longer required */
     IedServerConfig_destroy(config);
+
+    SettingGroupControlBlock* sgcb = LogicalDevice_getSettingGroupControlBlock(IEDMODEL_GenericIO);
+
+    loadActiveSgValues(sgcb->actSG);
+
+    IedServer_setActiveSettingGroupChangedHandler(iedServer, sgcb, activeSgChangedHandler, NULL);
+    IedServer_setEditSettingGroupChangedHandler(iedServer, sgcb, editSgChangedHandler, NULL);
+    IedServer_setEditSettingGroupConfirmationHandler(iedServer, sgcb, editSgConfirmedHandler, NULL);
 
     if (argc > 1) {
         char* ethernetIfcID = argv[1];

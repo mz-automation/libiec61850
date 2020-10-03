@@ -106,6 +106,8 @@
             
             <GSEControl appID="events" name="gcbEvents" type="GOOSE" datSet="Events" confRev="3" />
             
+            <SettingControl desc="parameter set" numOfSGs="5" actSG="1" />
+            
             <DOI name="Mod">
               <DAI name="stVal">
                 <Val>on</Val>
@@ -183,6 +185,7 @@
               </DAI>
             </DOI>
           </LN>
+          <LN desc="example for setting groups" inst="1" lnClass="PTOC" lnType="PTOC1"/>
           <LN desc="Service Tracking Information" inst="1" lnClass="LTRK" lnType="myLTRK"/>
         </LDevice>
       </Server>
@@ -218,6 +221,16 @@
       <DO name="Ind3" type="SPS_1_Proxy"/>
       <DO name="Ind4" type="SPS_1_Proxy"/>
     </LNodeType>
+	<LNodeType id="PTOC1" lnClass="PTOC">
+		<DO name="Mod" type="ENC_1_Mod" />
+		<DO name="Beh" type="ENS_1_Beh" />
+		<DO name="Str" type="ACD_Str" />
+		<DO name="Op" type="ACT_Op" />
+		<DO name="StrVal" type="ASG_SE" />
+		<DO name="OpDlTmms" type="ING_SE" />
+		<DO name="RsDlTmms" type="ING_SE" />
+		<DO name="RstTms" type="ING_SE"/>
+	</LNodeType>
     <LNodeType id="myLTRK" lnClass="LTRK">
       <DO name="Beh" type="myENS_Beh" desc=""/>
       <DO name="SpcTrk" type="myCTS_Bool" desc=""/>
@@ -227,7 +240,25 @@
       <DO name="UrcbTrk" type="myUTS" desc=""/>
       <DO name="BrcbTrk" type="myBTS" desc=""/>
       <DO name="GocbTrk" type="myGTS" desc=""/>
+      <DO name="SgcbTrk" type="mySTS" desc=""/>
     </LNodeType>
+	<DOType cdc="ACD" id="ACD_Str">
+		<DA bType="BOOLEAN" dchg="true" fc="ST" name="general" />
+		<DA bType="Enum" dchg="true" fc="ST" name="dirGeneral" type="dirGeneral" />
+		<DA bType="Quality" fc="ST" name="q" qchg="true" />
+		<DA bType="Timestamp" fc="ST" name="t" />
+	</DOType>
+	<DOType cdc="ACT" id="ACT_Op">
+      <DA bType="BOOLEAN" dchg="true" fc="ST" name="general"/>
+      <DA bType="Quality" fc="ST" name="q" qchg="true"/>
+      <DA bType="Timestamp" fc="ST" name="t"/>
+    </DOType>
+    <DOType cdc="ASG" id="ASG_SE">
+       <DA bType="Struct" fc="SE" name="setMag" type="AnalogueValue_1"/>
+    </DOType>
+	<DOType id="ING_SE" cdc="ING">
+		<DA name="setVal" bType="INT32" fc="SE" dchg="true" />
+	</DOType>
     <DOType id="myCTS_Bool" cdc="CTS" desc="">
       <DA name="objRef" bType="ObjRef" fc="SR" desc="" dupd="true"/>
       <DA name="serviceType" bType="Enum" type="ServiceType" fc="SR" desc=""/>
@@ -354,6 +385,24 @@
       <DA name="confRev" bType="INT32U" fc="SR" desc=""/>
       <DA name="ndsCom" bType="BOOLEAN" fc="SR" desc=""/>
       <DA name="dstAddress" bType="PhyComAddr" fc="SR" desc=""/>
+    </DOType>
+    <DOType id="mySTS" cdc="STS" desc="">
+      <DA name="objRef" bType="ObjRef" fc="SR" desc="" dupd="true"/>
+      <DA name="serviceType" bType="Enum" type="ServiceType" fc="SR" desc=""/>
+      <DA name="errorCode" bType="Enum" type="ServiceError" fc="SR" desc=""/>
+      <DA name="originatorID" bType="Octet64" fc="SR" desc=""/>
+      <DA name="t" bType="Timestamp" fc="SR" desc=""/>
+      <DA name="d" bType="VisString255" fc="DC" desc=""/>
+      <DA name="dU" bType="Unicode255" fc="DC" desc=""/>
+      <DA name="cdcNs" bType="VisString255" fc="EX" desc=""/>
+      <DA name="cdcName" bType="VisString255" fc="EX" desc=""/>
+      <DA name="dataNs" bType="VisString255" fc="EX" desc=""/>
+	  <DA name="numOfSG" bType="INT8U" fc="SR" desc=""/>
+	  <DA name="actSG" bType="INT8U" fc="SR" desc=""/>
+	  <DA name="editSG" bType="INT8U" fc="SR" desc=""/>
+	  <DA name="cnfEdit" bType="BOOLEAN" fc="SR" desc=""/>
+	  <DA name="lActTm" bType="Timestamp" fc="SR" desc=""/>
+	  <DA name="resvTms" bType="INT16U" fc="SR" desc=""/>
     </DOType>
     <DOType id="ENC_1_Mod" cdc="ENC">
       <DA name="stVal" bType="Enum" type="Beh" fc="ST" dchg="true"/>
@@ -564,5 +613,11 @@
       <EnumVal ord="53">TimeSynchronisation</EnumVal>
       <EnumVal ord="54">InternalChange</EnumVal>
     </EnumType>
+    <EnumType id="dirGeneral">
+      <EnumVal ord="0">unknown</EnumVal>
+      <EnumVal ord="1">forward</EnumVal>
+      <EnumVal ord="2">backward</EnumVal>
+      <EnumVal ord="3">both</EnumVal>
+    </EnumType>		
   </DataTypeTemplates>
 </SCL>

@@ -679,7 +679,7 @@ LogicalNode iedModel_GenericIO_GGIO1 = {
     LogicalNodeModelType,
     "GGIO1",
     (ModelNode*) &iedModel_GenericIO,
-    (ModelNode*) &iedModel_GenericIO_LTRK1,
+    (ModelNode*) &iedModel_GenericIO_PTOC1,
     (ModelNode*) &iedModel_GenericIO_GGIO1_Mod,
 };
 
@@ -2085,6 +2085,398 @@ DataAttribute iedModel_GenericIO_GGIO1_Ind4_t = {
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
+    NULL,
+    0};
+
+LogicalNode iedModel_GenericIO_PTOC1 = {
+    LogicalNodeModelType,
+    "PTOC1",
+    (ModelNode*) &iedModel_GenericIO,
+    (ModelNode*) &iedModel_GenericIO_LTRK1,
+    (ModelNode*) &iedModel_GenericIO_PTOC1_Mod,
+};
+
+DataObject iedModel_GenericIO_PTOC1_Mod = {
+    DataObjectModelType,
+    "Mod",
+    (ModelNode*) &iedModel_GenericIO_PTOC1,
+    (ModelNode*) &iedModel_GenericIO_PTOC1_Beh,
+    (ModelNode*) &iedModel_GenericIO_PTOC1_Mod_stVal,
+    0
+};
+
+DataAttribute iedModel_GenericIO_PTOC1_Mod_stVal = {
+    DataAttributeModelType,
+    "stVal",
+    (ModelNode*) &iedModel_GenericIO_PTOC1_Mod,
+    (ModelNode*) &iedModel_GenericIO_PTOC1_Mod_q,
+    NULL,
+    0,
+    IEC61850_FC_ST,
+    IEC61850_ENUMERATED,
+    0 + TRG_OPT_DATA_CHANGED,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_PTOC1_Mod_q = {
+    DataAttributeModelType,
+    "q",
+    (ModelNode*) &iedModel_GenericIO_PTOC1_Mod,
+    (ModelNode*) &iedModel_GenericIO_PTOC1_Mod_t,
+    NULL,
+    0,
+    IEC61850_FC_ST,
+    IEC61850_QUALITY,
+    0 + TRG_OPT_QUALITY_CHANGED,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_PTOC1_Mod_t = {
+    DataAttributeModelType,
+    "t",
+    (ModelNode*) &iedModel_GenericIO_PTOC1_Mod,
+    (ModelNode*) &iedModel_GenericIO_PTOC1_Mod_ctlModel,
+    NULL,
+    0,
+    IEC61850_FC_ST,
+    IEC61850_TIMESTAMP,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_PTOC1_Mod_ctlModel = {
+    DataAttributeModelType,
+    "ctlModel",
+    (ModelNode*) &iedModel_GenericIO_PTOC1_Mod,
+    NULL,
+    NULL,
+    0,
+    IEC61850_FC_CF,
+    IEC61850_ENUMERATED,
+    0,
+    NULL,
+    0};
+
+DataObject iedModel_GenericIO_PTOC1_Beh = {
+    DataObjectModelType,
+    "Beh",
+    (ModelNode*) &iedModel_GenericIO_PTOC1,
+    (ModelNode*) &iedModel_GenericIO_PTOC1_Str,
+    (ModelNode*) &iedModel_GenericIO_PTOC1_Beh_stVal,
+    0
+};
+
+DataAttribute iedModel_GenericIO_PTOC1_Beh_stVal = {
+    DataAttributeModelType,
+    "stVal",
+    (ModelNode*) &iedModel_GenericIO_PTOC1_Beh,
+    (ModelNode*) &iedModel_GenericIO_PTOC1_Beh_q,
+    NULL,
+    0,
+    IEC61850_FC_ST,
+    IEC61850_ENUMERATED,
+    0 + TRG_OPT_DATA_CHANGED,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_PTOC1_Beh_q = {
+    DataAttributeModelType,
+    "q",
+    (ModelNode*) &iedModel_GenericIO_PTOC1_Beh,
+    (ModelNode*) &iedModel_GenericIO_PTOC1_Beh_t,
+    NULL,
+    0,
+    IEC61850_FC_ST,
+    IEC61850_QUALITY,
+    0 + TRG_OPT_QUALITY_CHANGED,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_PTOC1_Beh_t = {
+    DataAttributeModelType,
+    "t",
+    (ModelNode*) &iedModel_GenericIO_PTOC1_Beh,
+    NULL,
+    NULL,
+    0,
+    IEC61850_FC_ST,
+    IEC61850_TIMESTAMP,
+    0,
+    NULL,
+    0};
+
+DataObject iedModel_GenericIO_PTOC1_Str = {
+    DataObjectModelType,
+    "Str",
+    (ModelNode*) &iedModel_GenericIO_PTOC1,
+    (ModelNode*) &iedModel_GenericIO_PTOC1_Op,
+    (ModelNode*) &iedModel_GenericIO_PTOC1_Str_general,
+    0
+};
+
+DataAttribute iedModel_GenericIO_PTOC1_Str_general = {
+    DataAttributeModelType,
+    "general",
+    (ModelNode*) &iedModel_GenericIO_PTOC1_Str,
+    (ModelNode*) &iedModel_GenericIO_PTOC1_Str_dirGeneral,
+    NULL,
+    0,
+    IEC61850_FC_ST,
+    IEC61850_BOOLEAN,
+    0 + TRG_OPT_DATA_CHANGED,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_PTOC1_Str_dirGeneral = {
+    DataAttributeModelType,
+    "dirGeneral",
+    (ModelNode*) &iedModel_GenericIO_PTOC1_Str,
+    (ModelNode*) &iedModel_GenericIO_PTOC1_Str_q,
+    NULL,
+    0,
+    IEC61850_FC_ST,
+    IEC61850_ENUMERATED,
+    0 + TRG_OPT_DATA_CHANGED,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_PTOC1_Str_q = {
+    DataAttributeModelType,
+    "q",
+    (ModelNode*) &iedModel_GenericIO_PTOC1_Str,
+    (ModelNode*) &iedModel_GenericIO_PTOC1_Str_t,
+    NULL,
+    0,
+    IEC61850_FC_ST,
+    IEC61850_QUALITY,
+    0 + TRG_OPT_QUALITY_CHANGED,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_PTOC1_Str_t = {
+    DataAttributeModelType,
+    "t",
+    (ModelNode*) &iedModel_GenericIO_PTOC1_Str,
+    NULL,
+    NULL,
+    0,
+    IEC61850_FC_ST,
+    IEC61850_TIMESTAMP,
+    0,
+    NULL,
+    0};
+
+DataObject iedModel_GenericIO_PTOC1_Op = {
+    DataObjectModelType,
+    "Op",
+    (ModelNode*) &iedModel_GenericIO_PTOC1,
+    (ModelNode*) &iedModel_GenericIO_PTOC1_StrVal,
+    (ModelNode*) &iedModel_GenericIO_PTOC1_Op_general,
+    0
+};
+
+DataAttribute iedModel_GenericIO_PTOC1_Op_general = {
+    DataAttributeModelType,
+    "general",
+    (ModelNode*) &iedModel_GenericIO_PTOC1_Op,
+    (ModelNode*) &iedModel_GenericIO_PTOC1_Op_q,
+    NULL,
+    0,
+    IEC61850_FC_ST,
+    IEC61850_BOOLEAN,
+    0 + TRG_OPT_DATA_CHANGED,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_PTOC1_Op_q = {
+    DataAttributeModelType,
+    "q",
+    (ModelNode*) &iedModel_GenericIO_PTOC1_Op,
+    (ModelNode*) &iedModel_GenericIO_PTOC1_Op_t,
+    NULL,
+    0,
+    IEC61850_FC_ST,
+    IEC61850_QUALITY,
+    0 + TRG_OPT_QUALITY_CHANGED,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_PTOC1_Op_t = {
+    DataAttributeModelType,
+    "t",
+    (ModelNode*) &iedModel_GenericIO_PTOC1_Op,
+    NULL,
+    NULL,
+    0,
+    IEC61850_FC_ST,
+    IEC61850_TIMESTAMP,
+    0,
+    NULL,
+    0};
+
+DataObject iedModel_GenericIO_PTOC1_StrVal = {
+    DataObjectModelType,
+    "StrVal",
+    (ModelNode*) &iedModel_GenericIO_PTOC1,
+    (ModelNode*) &iedModel_GenericIO_PTOC1_OpDlTmms,
+    (ModelNode*) &iedModel_GenericIO_PTOC1_StrVal_setMag,
+    0
+};
+
+DataAttribute iedModel_GenericIO_PTOC1_StrVal_setMag = {
+    DataAttributeModelType,
+    "setMag",
+    (ModelNode*) &iedModel_GenericIO_PTOC1_StrVal,
+    (ModelNode*) &iedModel_SE_GenericIO_PTOC1_StrVal_setMag,
+    (ModelNode*) &iedModel_GenericIO_PTOC1_StrVal_setMag_f,
+    0,
+    IEC61850_FC_SG,
+    IEC61850_CONSTRUCTED,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_PTOC1_StrVal_setMag_f = {
+    DataAttributeModelType,
+    "f",
+    (ModelNode*) &iedModel_GenericIO_PTOC1_StrVal_setMag,
+    NULL,
+    NULL,
+    0,
+    IEC61850_FC_SG,
+    IEC61850_FLOAT32,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_SE_GenericIO_PTOC1_StrVal_setMag = {
+    DataAttributeModelType,
+    "setMag",
+    (ModelNode*) &iedModel_GenericIO_PTOC1_StrVal,
+    NULL,
+    (ModelNode*) &iedModel_SE_GenericIO_PTOC1_StrVal_setMag_f,
+    0,
+    IEC61850_FC_SE,
+    IEC61850_CONSTRUCTED,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_SE_GenericIO_PTOC1_StrVal_setMag_f = {
+    DataAttributeModelType,
+    "f",
+    (ModelNode*) &iedModel_SE_GenericIO_PTOC1_StrVal_setMag,
+    NULL,
+    NULL,
+    0,
+    IEC61850_FC_SE,
+    IEC61850_FLOAT32,
+    0,
+    NULL,
+    0};
+
+DataObject iedModel_GenericIO_PTOC1_OpDlTmms = {
+    DataObjectModelType,
+    "OpDlTmms",
+    (ModelNode*) &iedModel_GenericIO_PTOC1,
+    (ModelNode*) &iedModel_GenericIO_PTOC1_RsDlTmms,
+    (ModelNode*) &iedModel_GenericIO_PTOC1_OpDlTmms_setVal,
+    0
+};
+
+DataAttribute iedModel_GenericIO_PTOC1_OpDlTmms_setVal = {
+    DataAttributeModelType,
+    "setVal",
+    (ModelNode*) &iedModel_GenericIO_PTOC1_OpDlTmms,
+    (ModelNode*) &iedModel_SE_GenericIO_PTOC1_OpDlTmms_setVal,
+    NULL,
+    0,
+    IEC61850_FC_SG,
+    IEC61850_INT32,
+    0 + TRG_OPT_DATA_CHANGED,
+    NULL,
+    0};
+
+DataAttribute iedModel_SE_GenericIO_PTOC1_OpDlTmms_setVal = {
+    DataAttributeModelType,
+    "setVal",
+    (ModelNode*) &iedModel_GenericIO_PTOC1_OpDlTmms,
+    NULL,
+    NULL,
+    0,
+    IEC61850_FC_SE,
+    IEC61850_INT32,
+    0 + TRG_OPT_DATA_CHANGED,
+    NULL,
+    0};
+
+DataObject iedModel_GenericIO_PTOC1_RsDlTmms = {
+    DataObjectModelType,
+    "RsDlTmms",
+    (ModelNode*) &iedModel_GenericIO_PTOC1,
+    (ModelNode*) &iedModel_GenericIO_PTOC1_RstTms,
+    (ModelNode*) &iedModel_GenericIO_PTOC1_RsDlTmms_setVal,
+    0
+};
+
+DataAttribute iedModel_GenericIO_PTOC1_RsDlTmms_setVal = {
+    DataAttributeModelType,
+    "setVal",
+    (ModelNode*) &iedModel_GenericIO_PTOC1_RsDlTmms,
+    (ModelNode*) &iedModel_SE_GenericIO_PTOC1_RsDlTmms_setVal,
+    NULL,
+    0,
+    IEC61850_FC_SG,
+    IEC61850_INT32,
+    0 + TRG_OPT_DATA_CHANGED,
+    NULL,
+    0};
+
+DataAttribute iedModel_SE_GenericIO_PTOC1_RsDlTmms_setVal = {
+    DataAttributeModelType,
+    "setVal",
+    (ModelNode*) &iedModel_GenericIO_PTOC1_RsDlTmms,
+    NULL,
+    NULL,
+    0,
+    IEC61850_FC_SE,
+    IEC61850_INT32,
+    0 + TRG_OPT_DATA_CHANGED,
+    NULL,
+    0};
+
+DataObject iedModel_GenericIO_PTOC1_RstTms = {
+    DataObjectModelType,
+    "RstTms",
+    (ModelNode*) &iedModel_GenericIO_PTOC1,
+    NULL,
+    (ModelNode*) &iedModel_GenericIO_PTOC1_RstTms_setVal,
+    0
+};
+
+DataAttribute iedModel_GenericIO_PTOC1_RstTms_setVal = {
+    DataAttributeModelType,
+    "setVal",
+    (ModelNode*) &iedModel_GenericIO_PTOC1_RstTms,
+    (ModelNode*) &iedModel_SE_GenericIO_PTOC1_RstTms_setVal,
+    NULL,
+    0,
+    IEC61850_FC_SG,
+    IEC61850_INT32,
+    0 + TRG_OPT_DATA_CHANGED,
+    NULL,
+    0};
+
+DataAttribute iedModel_SE_GenericIO_PTOC1_RstTms_setVal = {
+    DataAttributeModelType,
+    "setVal",
+    (ModelNode*) &iedModel_GenericIO_PTOC1_RstTms,
+    NULL,
+    NULL,
+    0,
+    IEC61850_FC_SE,
+    IEC61850_INT32,
+    0 + TRG_OPT_DATA_CHANGED,
     NULL,
     0};
 
@@ -3775,7 +4167,7 @@ DataObject iedModel_GenericIO_LTRK1_GocbTrk = {
     DataObjectModelType,
     "GocbTrk",
     (ModelNode*) &iedModel_GenericIO_LTRK1,
-    NULL,
+    (ModelNode*) &iedModel_GenericIO_LTRK1_SgcbTrk,
     (ModelNode*) &iedModel_GenericIO_LTRK1_GocbTrk_objRef,
     0
 };
@@ -3988,6 +4380,223 @@ DataAttribute iedModel_GenericIO_LTRK1_GocbTrk_dstAddress = {
     NULL,
     0};
 
+DataObject iedModel_GenericIO_LTRK1_SgcbTrk = {
+    DataObjectModelType,
+    "SgcbTrk",
+    (ModelNode*) &iedModel_GenericIO_LTRK1,
+    NULL,
+    (ModelNode*) &iedModel_GenericIO_LTRK1_SgcbTrk_objRef,
+    0
+};
+
+DataAttribute iedModel_GenericIO_LTRK1_SgcbTrk_objRef = {
+    DataAttributeModelType,
+    "objRef",
+    (ModelNode*) &iedModel_GenericIO_LTRK1_SgcbTrk,
+    (ModelNode*) &iedModel_GenericIO_LTRK1_SgcbTrk_serviceType,
+    NULL,
+    0,
+    IEC61850_FC_SR,
+    IEC61850_VISIBLE_STRING_129,
+    0 + TRG_OPT_DATA_UPDATE,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_LTRK1_SgcbTrk_serviceType = {
+    DataAttributeModelType,
+    "serviceType",
+    (ModelNode*) &iedModel_GenericIO_LTRK1_SgcbTrk,
+    (ModelNode*) &iedModel_GenericIO_LTRK1_SgcbTrk_errorCode,
+    NULL,
+    0,
+    IEC61850_FC_SR,
+    IEC61850_ENUMERATED,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_LTRK1_SgcbTrk_errorCode = {
+    DataAttributeModelType,
+    "errorCode",
+    (ModelNode*) &iedModel_GenericIO_LTRK1_SgcbTrk,
+    (ModelNode*) &iedModel_GenericIO_LTRK1_SgcbTrk_originatorID,
+    NULL,
+    0,
+    IEC61850_FC_SR,
+    IEC61850_ENUMERATED,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_LTRK1_SgcbTrk_originatorID = {
+    DataAttributeModelType,
+    "originatorID",
+    (ModelNode*) &iedModel_GenericIO_LTRK1_SgcbTrk,
+    (ModelNode*) &iedModel_GenericIO_LTRK1_SgcbTrk_t,
+    NULL,
+    0,
+    IEC61850_FC_SR,
+    IEC61850_OCTET_STRING_64,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_LTRK1_SgcbTrk_t = {
+    DataAttributeModelType,
+    "t",
+    (ModelNode*) &iedModel_GenericIO_LTRK1_SgcbTrk,
+    (ModelNode*) &iedModel_GenericIO_LTRK1_SgcbTrk_d,
+    NULL,
+    0,
+    IEC61850_FC_SR,
+    IEC61850_TIMESTAMP,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_LTRK1_SgcbTrk_d = {
+    DataAttributeModelType,
+    "d",
+    (ModelNode*) &iedModel_GenericIO_LTRK1_SgcbTrk,
+    (ModelNode*) &iedModel_GenericIO_LTRK1_SgcbTrk_dU,
+    NULL,
+    0,
+    IEC61850_FC_DC,
+    IEC61850_VISIBLE_STRING_255,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_LTRK1_SgcbTrk_dU = {
+    DataAttributeModelType,
+    "dU",
+    (ModelNode*) &iedModel_GenericIO_LTRK1_SgcbTrk,
+    (ModelNode*) &iedModel_GenericIO_LTRK1_SgcbTrk_cdcNs,
+    NULL,
+    0,
+    IEC61850_FC_DC,
+    IEC61850_UNICODE_STRING_255,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_LTRK1_SgcbTrk_cdcNs = {
+    DataAttributeModelType,
+    "cdcNs",
+    (ModelNode*) &iedModel_GenericIO_LTRK1_SgcbTrk,
+    (ModelNode*) &iedModel_GenericIO_LTRK1_SgcbTrk_cdcName,
+    NULL,
+    0,
+    IEC61850_FC_EX,
+    IEC61850_VISIBLE_STRING_255,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_LTRK1_SgcbTrk_cdcName = {
+    DataAttributeModelType,
+    "cdcName",
+    (ModelNode*) &iedModel_GenericIO_LTRK1_SgcbTrk,
+    (ModelNode*) &iedModel_GenericIO_LTRK1_SgcbTrk_dataNs,
+    NULL,
+    0,
+    IEC61850_FC_EX,
+    IEC61850_VISIBLE_STRING_255,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_LTRK1_SgcbTrk_dataNs = {
+    DataAttributeModelType,
+    "dataNs",
+    (ModelNode*) &iedModel_GenericIO_LTRK1_SgcbTrk,
+    (ModelNode*) &iedModel_GenericIO_LTRK1_SgcbTrk_numOfSG,
+    NULL,
+    0,
+    IEC61850_FC_EX,
+    IEC61850_VISIBLE_STRING_255,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_LTRK1_SgcbTrk_numOfSG = {
+    DataAttributeModelType,
+    "numOfSG",
+    (ModelNode*) &iedModel_GenericIO_LTRK1_SgcbTrk,
+    (ModelNode*) &iedModel_GenericIO_LTRK1_SgcbTrk_actSG,
+    NULL,
+    0,
+    IEC61850_FC_SR,
+    IEC61850_INT8U,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_LTRK1_SgcbTrk_actSG = {
+    DataAttributeModelType,
+    "actSG",
+    (ModelNode*) &iedModel_GenericIO_LTRK1_SgcbTrk,
+    (ModelNode*) &iedModel_GenericIO_LTRK1_SgcbTrk_editSG,
+    NULL,
+    0,
+    IEC61850_FC_SR,
+    IEC61850_INT8U,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_LTRK1_SgcbTrk_editSG = {
+    DataAttributeModelType,
+    "editSG",
+    (ModelNode*) &iedModel_GenericIO_LTRK1_SgcbTrk,
+    (ModelNode*) &iedModel_GenericIO_LTRK1_SgcbTrk_cnfEdit,
+    NULL,
+    0,
+    IEC61850_FC_SR,
+    IEC61850_INT8U,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_LTRK1_SgcbTrk_cnfEdit = {
+    DataAttributeModelType,
+    "cnfEdit",
+    (ModelNode*) &iedModel_GenericIO_LTRK1_SgcbTrk,
+    (ModelNode*) &iedModel_GenericIO_LTRK1_SgcbTrk_lActTm,
+    NULL,
+    0,
+    IEC61850_FC_SR,
+    IEC61850_BOOLEAN,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_LTRK1_SgcbTrk_lActTm = {
+    DataAttributeModelType,
+    "lActTm",
+    (ModelNode*) &iedModel_GenericIO_LTRK1_SgcbTrk,
+    (ModelNode*) &iedModel_GenericIO_LTRK1_SgcbTrk_resvTms,
+    NULL,
+    0,
+    IEC61850_FC_SR,
+    IEC61850_TIMESTAMP,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_LTRK1_SgcbTrk_resvTms = {
+    DataAttributeModelType,
+    "resvTms",
+    (ModelNode*) &iedModel_GenericIO_LTRK1_SgcbTrk,
+    NULL,
+    NULL,
+    0,
+    IEC61850_FC_SR,
+    IEC61850_INT16U,
+    0,
+    NULL,
+    0};
+
 extern ReportControlBlock iedModel_GenericIO_LLN0_report0;
 extern ReportControlBlock iedModel_GenericIO_LLN0_report1;
 extern ReportControlBlock iedModel_GenericIO_LLN0_report2;
@@ -4022,6 +4631,9 @@ static PhyComAddress iedModel_GenericIO_LLN0_gse0_address = {
 
 GSEControlBlock iedModel_GenericIO_LLN0_gse0 = {&iedModel_GenericIO_LLN0, "gcbEvents", "events", "Events", 3, false, &iedModel_GenericIO_LLN0_gse0_address, 1000, 3000, NULL};
 
+extern SettingGroupControlBlock iedModel_GenericIO_LLN0_sgcb;
+
+SettingGroupControlBlock iedModel_GenericIO_LLN0_sgcb = {&iedModel_GenericIO_LLN0, 1, 5, 0, false, 0, 0, NULL};
 
 
 
@@ -4033,7 +4645,7 @@ IedModel iedModel = {
     &iedModel_GenericIO_LLN0_report0,
     &iedModel_GenericIO_LLN0_gse0,
     NULL,
-    NULL,
+    &iedModel_GenericIO_LLN0_sgcb,
     NULL,
     NULL,
     initializeValues

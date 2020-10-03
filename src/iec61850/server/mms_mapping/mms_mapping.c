@@ -1264,7 +1264,7 @@ checkForServiceTrackingVariables(MmsMapping* self, LogicalNode* logicalNode)
                 !strcmp(modelNode->name, "BacIntTrk"))
         {
             if (DEBUG_IED_SERVER)
-                printf("%s data object found!\n", modelNode->name);
+                printf("IED_SERVER: %s data object found!\n", modelNode->name);
 
             DataObject* actTrk = (DataObject*) modelNode;
             ControlTrkInstance* actInstance = NULL;
@@ -1306,7 +1306,7 @@ checkForServiceTrackingVariables(MmsMapping* self, LogicalNode* logicalNode)
         }
         else if (!strcmp(modelNode->name, "BrcbTrk")) {
             if (DEBUG_IED_SERVER)
-                printf("BrcbTrk data object found!\n");
+                printf("IED_SERVER: BrcbTrk data object found!\n");
 
             DataObject* brcbTrk = (DataObject*) modelNode;
 
@@ -1330,7 +1330,7 @@ checkForServiceTrackingVariables(MmsMapping* self, LogicalNode* logicalNode)
         }
         else if (!strcmp(modelNode->name, "UrcbTrk")) {
             if (DEBUG_IED_SERVER)
-                printf("UrcbTrk data object found!\n");
+                printf("IED_SERVER: UrcbTrk data object found!\n");
 
             DataObject* urcbTrk = (DataObject*) modelNode;
 
@@ -1353,7 +1353,7 @@ checkForServiceTrackingVariables(MmsMapping* self, LogicalNode* logicalNode)
         }
         else if (!strcmp(modelNode->name, "GocbTrk")) {
             if (DEBUG_IED_SERVER)
-                printf("GocbTrk data object found!\n");
+                printf("IED_SERVER: GocbTrk data object found!\n");
 
             DataObject* gocbTrk = (DataObject*) modelNode;
 
@@ -1376,7 +1376,7 @@ checkForServiceTrackingVariables(MmsMapping* self, LogicalNode* logicalNode)
         }
         else if (!strcmp(modelNode->name, "SgcbTrk")) {
             if (DEBUG_IED_SERVER)
-                printf("SgcbTrk data object found!\n");
+                printf("IED_SERVER: SgcbTrk data object found!\n");
 
             DataObject* sgcbTrk = (DataObject*) modelNode;
 
@@ -1397,6 +1397,28 @@ checkForServiceTrackingVariables(MmsMapping* self, LogicalNode* logicalNode)
 
             }
         }
+        else if (!strcmp(modelNode->name, "GenTrk")) {
+            if (DEBUG_IED_SERVER)
+                printf("IED_SERVER: GenTrk data object found!\n");
+
+            DataObject* genTrk = (DataObject*) modelNode;
+
+            if (self->genTrk) {
+                if (DEBUG_IED_SERVER)
+                    printf("IED_SERVER: ERROR: multiple GenTrk instances found in server\n");
+            }
+            else {
+                /* Setup GenTrk references */
+                self->genTrk = (ServiceTrkInstance) GLOBAL_CALLOC(1, sizeof(struct sServiceTrkInstance));
+
+                if (self->genTrk) {
+                    self->genTrk->dobj = genTrk;
+
+                    getCommonTrackingAttributes((ServiceTrkInstance) self->genTrk, genTrk);
+                }
+            }
+        }
+
         modelNode = modelNode->sibling;
     }
 
@@ -1961,6 +1983,7 @@ MmsMapping_destroy(MmsMapping* self)
     if (self->iscTrk) GLOBAL_FREEMEM(self->iscTrk);
     if (self->bacTrk) GLOBAL_FREEMEM(self->bacTrk);
     if (self->sgcbTrk) GLOBAL_FREEMEM(self->sgcbTrk);
+    if (self->genTrk) GLOBAL_FREEMEM(self->genTrk);
 #endif
 
     LinkedList_destroy(self->attributeAccessHandlers);
