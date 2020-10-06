@@ -293,38 +293,6 @@ copyControlValuesToTrackingObject(MmsMapping* self, ControlObject* controlObject
 }
 
 static IEC61850_ServiceError
-convertMmsDataAccessErrorToServiceError(MmsDataAccessError mmsError)
-{
-    IEC61850_ServiceError errVal = IEC61850_SERVICE_ERROR_NO_ERROR;
-
-    switch (mmsError) {
-    case DATA_ACCESS_ERROR_SUCCESS:
-    case DATA_ACCESS_ERROR_NO_RESPONSE:
-        break;
-    case DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE:
-        errVal = IEC61850_SERVICE_ERROR_INSTANCE_LOCKED_BY_OTHER_CLIENT;
-        break;
-    case DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED:
-        errVal = IEC61850_SERVICE_ERROR_ACCESS_VIOLATION;
-        break;
-    case DATA_ACCESS_ERROR_TYPE_INCONSISTENT:
-        errVal = IEC61850_SERVICE_ERROR_PARAMETER_VALUE_INCONSISTENT;
-        break;
-    case DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT:
-        errVal = IEC61850_SERVICE_ERROR_INSTANCE_NOT_AVAILABLE;
-        break;
-    default:
-        if (DEBUG_IED_SERVER)
-            printf("IED_SERVER: Data access error %i not mapped!\n", mmsError);
-
-        errVal = IEC61850_SERVICE_ERROR_FAILED_DUE_TO_SERVER_CONSTRAINT;
-        break;
-    }
-
-    return errVal;
-}
-
-static IEC61850_ServiceError
 convertCheckHandlerResultToServiceError(CheckHandlerResult controlHandlerResult)
 {
     IEC61850_ServiceError serviceError;
@@ -2248,7 +2216,8 @@ free_and_return:
 
 #if (CONFIG_IEC61850_SERVICE_TRACKING == 1)
     if (serviceError == IEC61850_SERVICE_ERROR_NO_ERROR)
-        updateGenericTrackingObjectValues(self, controlObject, serviceType, convertMmsDataAccessErrorToServiceError(indication));
+        updateGenericTrackingObjectValues(self, controlObject, serviceType,
+                private_IedServer_convertMmsDataAccessErrorToServiceError(indication));
     else
         updateGenericTrackingObjectValues(self, controlObject, serviceType, serviceError);
 #endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */

@@ -223,6 +223,8 @@ extern DataSetEntry iedModelds_GenericIO_LLN0_ServiceTracking_fcda3;
 extern DataSetEntry iedModelds_GenericIO_LLN0_ServiceTracking_fcda4;
 extern DataSetEntry iedModelds_GenericIO_LLN0_ServiceTracking_fcda5;
 extern DataSetEntry iedModelds_GenericIO_LLN0_ServiceTracking_fcda6;
+extern DataSetEntry iedModelds_GenericIO_LLN0_ServiceTracking_fcda7;
+extern DataSetEntry iedModelds_GenericIO_LLN0_ServiceTracking_fcda8;
 
 DataSetEntry iedModelds_GenericIO_LLN0_ServiceTracking_fcda0 = {
   "GenericIO",
@@ -291,13 +293,33 @@ DataSetEntry iedModelds_GenericIO_LLN0_ServiceTracking_fcda6 = {
   -1,
   NULL,
   NULL,
+  &iedModelds_GenericIO_LLN0_ServiceTracking_fcda7
+};
+
+DataSetEntry iedModelds_GenericIO_LLN0_ServiceTracking_fcda7 = {
+  "GenericIO",
+  false,
+  "LTRK1$SR$SgcbTrk", 
+  -1,
+  NULL,
+  NULL,
+  &iedModelds_GenericIO_LLN0_ServiceTracking_fcda8
+};
+
+DataSetEntry iedModelds_GenericIO_LLN0_ServiceTracking_fcda8 = {
+  "GenericIO",
+  false,
+  "LTRK1$SR$LocbTrk", 
+  -1,
+  NULL,
+  NULL,
   NULL
 };
 
 DataSet iedModelds_GenericIO_LLN0_ServiceTracking = {
   "GenericIO",
   "LLN0$ServiceTracking",
-  7,
+  9,
   &iedModelds_GenericIO_LLN0_ServiceTracking_fcda0,
   NULL
 };
@@ -4384,7 +4406,7 @@ DataObject iedModel_GenericIO_LTRK1_SgcbTrk = {
     DataObjectModelType,
     "SgcbTrk",
     (ModelNode*) &iedModel_GenericIO_LTRK1,
-    NULL,
+    (ModelNode*) &iedModel_GenericIO_LTRK1_LocbTrk,
     (ModelNode*) &iedModel_GenericIO_LTRK1_SgcbTrk_objRef,
     0
 };
@@ -4597,6 +4619,236 @@ DataAttribute iedModel_GenericIO_LTRK1_SgcbTrk_resvTms = {
     NULL,
     0};
 
+DataObject iedModel_GenericIO_LTRK1_LocbTrk = {
+    DataObjectModelType,
+    "LocbTrk",
+    (ModelNode*) &iedModel_GenericIO_LTRK1,
+    NULL,
+    (ModelNode*) &iedModel_GenericIO_LTRK1_LocbTrk_objRef,
+    0
+};
+
+DataAttribute iedModel_GenericIO_LTRK1_LocbTrk_objRef = {
+    DataAttributeModelType,
+    "objRef",
+    (ModelNode*) &iedModel_GenericIO_LTRK1_LocbTrk,
+    (ModelNode*) &iedModel_GenericIO_LTRK1_LocbTrk_serviceType,
+    NULL,
+    0,
+    IEC61850_FC_SR,
+    IEC61850_VISIBLE_STRING_129,
+    0 + TRG_OPT_DATA_UPDATE,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_LTRK1_LocbTrk_serviceType = {
+    DataAttributeModelType,
+    "serviceType",
+    (ModelNode*) &iedModel_GenericIO_LTRK1_LocbTrk,
+    (ModelNode*) &iedModel_GenericIO_LTRK1_LocbTrk_errorCode,
+    NULL,
+    0,
+    IEC61850_FC_SR,
+    IEC61850_ENUMERATED,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_LTRK1_LocbTrk_errorCode = {
+    DataAttributeModelType,
+    "errorCode",
+    (ModelNode*) &iedModel_GenericIO_LTRK1_LocbTrk,
+    (ModelNode*) &iedModel_GenericIO_LTRK1_LocbTrk_originatorID,
+    NULL,
+    0,
+    IEC61850_FC_SR,
+    IEC61850_ENUMERATED,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_LTRK1_LocbTrk_originatorID = {
+    DataAttributeModelType,
+    "originatorID",
+    (ModelNode*) &iedModel_GenericIO_LTRK1_LocbTrk,
+    (ModelNode*) &iedModel_GenericIO_LTRK1_LocbTrk_t,
+    NULL,
+    0,
+    IEC61850_FC_SR,
+    IEC61850_OCTET_STRING_64,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_LTRK1_LocbTrk_t = {
+    DataAttributeModelType,
+    "t",
+    (ModelNode*) &iedModel_GenericIO_LTRK1_LocbTrk,
+    (ModelNode*) &iedModel_GenericIO_LTRK1_LocbTrk_d,
+    NULL,
+    0,
+    IEC61850_FC_SR,
+    IEC61850_TIMESTAMP,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_LTRK1_LocbTrk_d = {
+    DataAttributeModelType,
+    "d",
+    (ModelNode*) &iedModel_GenericIO_LTRK1_LocbTrk,
+    (ModelNode*) &iedModel_GenericIO_LTRK1_LocbTrk_dU,
+    NULL,
+    0,
+    IEC61850_FC_DC,
+    IEC61850_VISIBLE_STRING_255,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_LTRK1_LocbTrk_dU = {
+    DataAttributeModelType,
+    "dU",
+    (ModelNode*) &iedModel_GenericIO_LTRK1_LocbTrk,
+    (ModelNode*) &iedModel_GenericIO_LTRK1_LocbTrk_cdcNs,
+    NULL,
+    0,
+    IEC61850_FC_DC,
+    IEC61850_UNICODE_STRING_255,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_LTRK1_LocbTrk_cdcNs = {
+    DataAttributeModelType,
+    "cdcNs",
+    (ModelNode*) &iedModel_GenericIO_LTRK1_LocbTrk,
+    (ModelNode*) &iedModel_GenericIO_LTRK1_LocbTrk_cdcName,
+    NULL,
+    0,
+    IEC61850_FC_EX,
+    IEC61850_VISIBLE_STRING_255,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_LTRK1_LocbTrk_cdcName = {
+    DataAttributeModelType,
+    "cdcName",
+    (ModelNode*) &iedModel_GenericIO_LTRK1_LocbTrk,
+    (ModelNode*) &iedModel_GenericIO_LTRK1_LocbTrk_dataNs,
+    NULL,
+    0,
+    IEC61850_FC_EX,
+    IEC61850_VISIBLE_STRING_255,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_LTRK1_LocbTrk_dataNs = {
+    DataAttributeModelType,
+    "dataNs",
+    (ModelNode*) &iedModel_GenericIO_LTRK1_LocbTrk,
+    (ModelNode*) &iedModel_GenericIO_LTRK1_LocbTrk_logEna,
+    NULL,
+    0,
+    IEC61850_FC_EX,
+    IEC61850_VISIBLE_STRING_255,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_LTRK1_LocbTrk_logEna = {
+    DataAttributeModelType,
+    "logEna",
+    (ModelNode*) &iedModel_GenericIO_LTRK1_LocbTrk,
+    (ModelNode*) &iedModel_GenericIO_LTRK1_LocbTrk_datSet,
+    NULL,
+    0,
+    IEC61850_FC_SR,
+    IEC61850_BOOLEAN,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_LTRK1_LocbTrk_datSet = {
+    DataAttributeModelType,
+    "datSet",
+    (ModelNode*) &iedModel_GenericIO_LTRK1_LocbTrk,
+    (ModelNode*) &iedModel_GenericIO_LTRK1_LocbTrk_optFlds,
+    NULL,
+    0,
+    IEC61850_FC_SR,
+    IEC61850_VISIBLE_STRING_129,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_LTRK1_LocbTrk_optFlds = {
+    DataAttributeModelType,
+    "optFlds",
+    (ModelNode*) &iedModel_GenericIO_LTRK1_LocbTrk,
+    (ModelNode*) &iedModel_GenericIO_LTRK1_LocbTrk_bufTm,
+    NULL,
+    0,
+    IEC61850_FC_SR,
+    IEC61850_OPTFLDS,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_LTRK1_LocbTrk_bufTm = {
+    DataAttributeModelType,
+    "bufTm",
+    (ModelNode*) &iedModel_GenericIO_LTRK1_LocbTrk,
+    (ModelNode*) &iedModel_GenericIO_LTRK1_LocbTrk_trgOps,
+    NULL,
+    0,
+    IEC61850_FC_SR,
+    IEC61850_INT32U,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_LTRK1_LocbTrk_trgOps = {
+    DataAttributeModelType,
+    "trgOps",
+    (ModelNode*) &iedModel_GenericIO_LTRK1_LocbTrk,
+    (ModelNode*) &iedModel_GenericIO_LTRK1_LocbTrk_intgPd,
+    NULL,
+    0,
+    IEC61850_FC_SR,
+    IEC61850_TRGOPS,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_LTRK1_LocbTrk_intgPd = {
+    DataAttributeModelType,
+    "intgPd",
+    (ModelNode*) &iedModel_GenericIO_LTRK1_LocbTrk,
+    (ModelNode*) &iedModel_GenericIO_LTRK1_LocbTrk_logRef,
+    NULL,
+    0,
+    IEC61850_FC_SR,
+    IEC61850_INT32U,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_GenericIO_LTRK1_LocbTrk_logRef = {
+    DataAttributeModelType,
+    "logRef",
+    (ModelNode*) &iedModel_GenericIO_LTRK1_LocbTrk,
+    NULL,
+    NULL,
+    0,
+    IEC61850_FC_SR,
+    IEC61850_VISIBLE_STRING_129,
+    0,
+    NULL,
+    0};
+
 extern ReportControlBlock iedModel_GenericIO_LLN0_report0;
 extern ReportControlBlock iedModel_GenericIO_LLN0_report1;
 extern ReportControlBlock iedModel_GenericIO_LLN0_report2;
@@ -4635,7 +4887,15 @@ extern SettingGroupControlBlock iedModel_GenericIO_LLN0_sgcb;
 
 SettingGroupControlBlock iedModel_GenericIO_LLN0_sgcb = {&iedModel_GenericIO_LLN0, 1, 5, 0, false, 0, 0, NULL};
 
+extern LogControlBlock iedModel_GenericIO_LLN0_lcb0;
+extern LogControlBlock iedModel_GenericIO_LLN0_lcb1;
+LogControlBlock iedModel_GenericIO_LLN0_lcb0 = {&iedModel_GenericIO_LLN0, "EventLog", "Events", "GenericIO/LLN0$EventLog", 3, 0, true, true, &iedModel_GenericIO_LLN0_lcb1};
+LogControlBlock iedModel_GenericIO_LLN0_lcb1 = {&iedModel_GenericIO_LLN0, "GeneralLog", NULL, NULL, 3, 0, true, true, NULL};
 
+extern Log iedModel_GenericIO_LLN0_log0;
+extern Log iedModel_GenericIO_LLN0_log1;
+Log iedModel_GenericIO_LLN0_log0 = {&iedModel_GenericIO_LLN0, "GeneralLog", &iedModel_GenericIO_LLN0_log1};
+Log iedModel_GenericIO_LLN0_log1 = {&iedModel_GenericIO_LLN0, "EventLog", NULL};
 
 
 IedModel iedModel = {
@@ -4646,8 +4906,8 @@ IedModel iedModel = {
     &iedModel_GenericIO_LLN0_gse0,
     NULL,
     &iedModel_GenericIO_LLN0_sgcb,
-    NULL,
-    NULL,
+    &iedModel_GenericIO_LLN0_lcb0,
+    &iedModel_GenericIO_LLN0_log0,
     initializeValues
 };
 

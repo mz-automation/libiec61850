@@ -487,35 +487,6 @@ updateSingleTrackingValue(MmsMapping* self, ReportControl* rc, char* name, MmsVa
     }
 }
 
-static IEC61850_ServiceError
-convertMmsDataAccessErrorToServiceError(MmsDataAccessError mmsError)
-{
-    IEC61850_ServiceError errVal = IEC61850_SERVICE_ERROR_NO_ERROR;
-
-    switch (mmsError) {
-    case DATA_ACCESS_ERROR_SUCCESS:
-        break;
-    case DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE:
-        errVal = IEC61850_SERVICE_ERROR_INSTANCE_LOCKED_BY_OTHER_CLIENT;
-        break;
-    case DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED:
-        errVal = IEC61850_SERVICE_ERROR_ACCESS_VIOLATION;
-        break;
-    case DATA_ACCESS_ERROR_TYPE_INCONSISTENT:
-        errVal = IEC61850_SERVICE_ERROR_PARAMETER_VALUE_INCONSISTENT;
-        break;
-    case DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT:
-        errVal = IEC61850_SERVICE_ERROR_INSTANCE_NOT_AVAILABLE;
-        break;
-    default:
-        printf("Data access error %i not mapped!\n", mmsError);
-        errVal = IEC61850_SERVICE_ERROR_FAILED_DUE_TO_SERVER_CONSTRAINT;
-        break;
-    }
-
-    return errVal;
-}
-
 static void
 updateGenericTrackingObjectValues(MmsMapping* self, ReportControl* rc, IEC61850_ServiceType serviceType, MmsDataAccessError errVal)
 {
@@ -540,7 +511,8 @@ updateGenericTrackingObjectValues(MmsMapping* self, ReportControl* rc, IEC61850_
             MmsValue_setUtcTimeMs(trkInst->t->mmsValue, Hal_getTimeInMs());
 
         if (trkInst->errorCode)
-            MmsValue_setInt32(trkInst->errorCode->mmsValue, convertMmsDataAccessErrorToServiceError(errVal));
+            MmsValue_setInt32(trkInst->errorCode->mmsValue,
+                    private_IedServer_convertMmsDataAccessErrorToServiceError(errVal));
 
         char objRef[130];
 

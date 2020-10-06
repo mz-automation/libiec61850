@@ -236,6 +236,26 @@ struct sSgcbTrkInstance
     DataAttribute* lActTm;
 };
 
+typedef struct sLocbTrkInstance* LocbTrkInstance;
+
+struct sLocbTrkInstance
+{
+    /* inherited from ServiceTrkInstance */
+    DataObject* dobj;
+    DataAttribute* objRef;
+    DataAttribute* serviceType;
+    DataAttribute* errorCode;
+    DataAttribute* originatorID; /* optional */
+    DataAttribute* t;
+
+    /* LocbTrk specific attributes */
+    DataAttribute* logEna;
+    DataAttribute* datSet;
+    DataAttribute* trgOps;
+    DataAttribute* intgPd;
+    DataAttribute* logRef;
+};
+
 #endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
 
 struct sMmsMapping {
@@ -292,6 +312,7 @@ struct sMmsMapping {
     ControlTrkInstance bacTrk;
     SgcbTrkInstance sgcbTrk;
     ServiceTrkInstance genTrk;
+    LocbTrkInstance locbTrk;
 #endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
 
     /* flag indicates if data model is locked --> prevents reports to be sent */

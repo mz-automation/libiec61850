@@ -31,6 +31,7 @@
 #include "simple_allocator.h"
 #include "mem_alloc_linked_list.h"
 
+#include "ied_server_private.h"
 #include "mms_mapping_internal.h"
 #include "mms_value_internal.h"
 
@@ -367,10 +368,75 @@ freeDynamicDataSet(LogControl* self)
     }
 }
 
+#if (CONFIG_IEC61850_SERVICE_TRACKING == 1)
+
+static void
+updateGenericTrackingObjectValues(MmsMapping* self, LogControl* logControl, IEC61850_ServiceType serviceType, MmsDataAccessError errVal)
+{
+    ServiceTrkInstance trkInst = (ServiceTrkInstance) self->locbTrk;
+
+    if (trkInst) {
+        if (trkInst->serviceType)
+            MmsValue_setInt32(trkInst->serviceType->mmsValue, (int) serviceType);
+
+        if (trkInst->t)
+            MmsValue_setUtcTimeMs(trkInst->t->mmsValue, Hal_getTimeInMs());
+
+        if (trkInst->errorCode)
+            MmsValue_setInt32(trkInst->errorCode->mmsValue,
+                    private_IedServer_convertMmsDataAccessErrorToServiceError(errVal));
+
+        char objRef[130];
+
+        /* create object reference */
+        LogicalNode* ln =  logControl->logControlBlock->parent;
+        LogicalDevice* ld = (LogicalDevice*) ln->parent;
+
+        char* iedName = self->iedServer->model->name;
+
+        snprintf(objRef, 129, "%s%s/%s.%s", iedName, ld->name, ln->name, logControl->logControlBlock->name);
+
+        if (trkInst->objRef) {
+            IedServer_updateVisibleStringAttributeValue(self->iedServer, trkInst->objRef, objRef);
+        }
+    }
+}
+
+static void
+copyLCBValuesToTrackingObject(MmsMapping* self, LogControl* logControl)
+{
+    if (self->locbTrk) {
+        LocbTrkInstance trkInst = self->locbTrk;
+
+        if (trkInst->logEna)
+            MmsValue_setBoolean(trkInst->logEna->mmsValue, logControl->enabled);
+
+        if (trkInst->logRef)
+            MmsValue_setVisibleString(trkInst->logRef->mmsValue, logControl->logControlBlock->logRef);
+
+        if (trkInst->datSet) {
+            MmsValue_setVisibleString(trkInst->datSet->mmsValue, logControl->dataSetRef);
+        }
+
+        if (trkInst->intgPd)
+            MmsValue_setUint32(trkInst->intgPd->mmsValue, logControl->intgPd);
+
+        if (trkInst->trgOps) {
+            MmsValue_setBitStringFromInteger(trkInst->trgOps->mmsValue, logControl->triggerOps * 2);
+        }
+
+        /* TODO update other attributes? */
+    }
+}
+
+#endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
+
 MmsDataAccessError
 LIBIEC61850_LOG_SVC_writeAccessLogControlBlock(MmsMapping* self, MmsDomain* domain, char* variableIdOrig,
         MmsValue* value, MmsServerConnection connection)
 {
+    MmsDataAccessError retVal = DATA_ACCESS_ERROR_SUCCESS;
+
     bool updateValue = false;
 
     char variableId[130];
@@ -416,8 +482,10 @@ LIBIEC61850_LOG_SVC_writeAccessLogControlBlock(MmsMapping* self, MmsDomain* doma
                 if (DEBUG_IED_SERVER)
                     printf("IED_SERVER: enabled log control %s\n", logControl->name);
             }
-            else
-                return DATA_ACCESS_ERROR_OBJECT_ATTRIBUTE_INCONSISTENT;
+            else {
+                retVal = DATA_ACCESS_ERROR_OBJECT_ATTRIBUTE_INCONSISTENT;
+                goto exit_function;
+            }
         }
 
        updateValue = true;
@@ -459,14 +527,17 @@ LIBIEC61850_LOG_SVC_writeAccessLogControlBlock(MmsMapping* self, MmsDomain* doma
                        logControl->logInstance = logInstance;
                        updateValue = true;
                    }
-                   else
-                       return DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
-
+                   else {
+                       retVal = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+                       goto exit_function;
+                   }
                }
             }
         }
-        else
-            return DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
+        else {
+            retVal = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
+            goto exit_function;
+        }
     }
     else if (strcmp(varName, "DatSet") == 0) {
 
@@ -521,30 +592,36 @@ LIBIEC61850_LOG_SVC_writeAccessLogControlBlock(MmsMapping* self, MmsDomain* doma
                 if (dataSet == NULL) {
                     if (DEBUG_IED_SERVER)
                         printf("IED_SERVER:   data set (%s) not found!\n", logControl->dataSetRef);
-                    return DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+
+                    retVal = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+                    goto exit_function;
                 }
             }
-
-
         }
-        else
-            return DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
+        else {
+            retVal = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
+            goto exit_function;
+        }
     }
     else if (strcmp(varName, "IntgPd") == 0) {
         if (logControl->enabled == false) {
             logControl->intgPd = MmsValue_toUint32(value);
             updateValue = true;
         }
-        else
-            return DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
+        else {
+            retVal = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
+            goto exit_function;
+        }
     }
     else if (strcmp(varName, "TrgOps") == 0) {
         if (logControl->enabled == false) {
             logControl->triggerOps = (MmsValue_getBitStringAsInteger(value) / 2);
             updateValue = true;
         }
-        else
-            return DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
+        else {
+            retVal = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
+            goto exit_function;
+        }
     }
 
     if (updateValue) {
@@ -552,10 +629,20 @@ LIBIEC61850_LOG_SVC_writeAccessLogControlBlock(MmsMapping* self, MmsDomain* doma
 
         MmsValue_update(element, value);
 
-        return DATA_ACCESS_ERROR_SUCCESS;
+        retVal = DATA_ACCESS_ERROR_SUCCESS;
+        goto exit_function;
     }
 
-    return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+    retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+
+exit_function:
+
+#if (CONFIG_IEC61850_SERVICE_TRACKING == 1)
+    copyLCBValuesToTrackingObject(self, logControl);
+    updateGenericTrackingObjectValues(self, logControl, IEC61850_SERVICE_TYPE_SET_LCB_VALUES, retVal);
+#endif
+
+    return retVal;
 }
 
 MmsValue*

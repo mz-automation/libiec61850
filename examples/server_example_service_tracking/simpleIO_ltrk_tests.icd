@@ -82,6 +82,8 @@
               <FCDA doName="UrcbTrk" fc="SR" ldInst="GenericIO" lnClass="LTRK" lnInst="1"/>
               <FCDA doName="BrcbTrk" fc="SR" ldInst="GenericIO" lnClass="LTRK" lnInst="1"/>
               <FCDA doName="GocbTrk" fc="SR" ldInst="GenericIO" lnClass="LTRK" lnInst="1"/>
+              <FCDA doName="SgcbTrk" fc="SR" ldInst="GenericIO" lnClass="LTRK" lnInst="1"/>
+              <FCDA doName="LocbTrk" fc="SR" ldInst="GenericIO" lnClass="LTRK" lnInst="1"/>
             </DataSet>
             <ReportControl name="EventsRCB" confRev="1" datSet="Events2" rptID="Events1" buffered="false" intgPd="1000" bufTime="50">
               <TrgOps period="true"/>
@@ -103,6 +105,17 @@
               <OptFields configRef="true" entryID="true" reasonCode="true"/>
               <RptEnabled max="3"/>
             </ReportControl>
+            
+			<LogControl name="EventLog" datSet="Events" logName="EventLog" logEna="true">
+				<TrgOps dchg="true" qchg="true" />
+			</LogControl>
+
+			<LogControl name="GeneralLog" datSet="" logName="">
+				<TrgOps dchg="true" qchg="true" />
+			</LogControl>
+
+			<Log />
+			<Log name="EventLog" />
             
             <GSEControl appID="events" name="gcbEvents" type="GOOSE" datSet="Events" confRev="3" />
             
@@ -241,6 +254,7 @@
       <DO name="BrcbTrk" type="myBTS" desc=""/>
       <DO name="GocbTrk" type="myGTS" desc=""/>
       <DO name="SgcbTrk" type="mySTS" desc=""/>
+      <DO name="LocbTrk" type="myLTS" desc=""/>
     </LNodeType>
 	<DOType cdc="ACD" id="ACD_Str">
 		<DA bType="BOOLEAN" dchg="true" fc="ST" name="general" />
@@ -403,6 +417,24 @@
 	  <DA name="cnfEdit" bType="BOOLEAN" fc="SR" desc=""/>
 	  <DA name="lActTm" bType="Timestamp" fc="SR" desc=""/>
 	  <DA name="resvTms" bType="INT16U" fc="SR" desc=""/>
+    </DOType>
+    <DOType id="myLTS" cdc="LTS" desc="">
+      <DA name="objRef" bType="ObjRef" fc="SR" desc="" dupd="true"/>
+      <DA name="serviceType" bType="Enum" type="ServiceType" fc="SR" desc=""/>
+      <DA name="errorCode" bType="Enum" type="ServiceError" fc="SR" desc=""/>
+      <DA name="originatorID" bType="Octet64" fc="SR" desc=""/>
+      <DA name="t" bType="Timestamp" fc="SR" desc=""/>
+      <DA name="d" bType="VisString255" fc="DC" desc=""/>
+      <DA name="dU" bType="Unicode255" fc="DC" desc=""/>
+      <DA name="cdcNs" bType="VisString255" fc="EX" desc=""/>
+      <DA name="cdcName" bType="VisString255" fc="EX" desc=""/>
+      <DA name="dataNs" bType="VisString255" fc="EX" desc=""/>
+      <DA name="logEna" bType="BOOLEAN" fc="SR" desc=""/>
+      <DA name="datSet" bType="ObjRef" fc="SR" desc=""/>
+      <DA name="bufTm" bType="INT32U" fc="SR" desc=""/>
+      <DA name="trgOps" bType="TrgOps" fc="SR" desc=""/>
+      <DA name="intgPd" bType="INT32U" fc="SR" desc=""/>
+      <DA name="logRef" bType="ObjRef" fc="SR" desc=""/>
     </DOType>
     <DOType id="ENC_1_Mod" cdc="ENC">
       <DA name="stVal" bType="Enum" type="Beh" fc="ST" dchg="true"/>

@@ -73,6 +73,9 @@ struct sIedServer
 };
 
 
+LIB61850_INTERNAL IEC61850_ServiceError
+private_IedServer_convertMmsDataAccessErrorToServiceError(MmsDataAccessError mmsError);
+
 LIB61850_INTERNAL ClientConnection
 private_IedServer_getClientConnectionByHandle(IedServer self, void* serverConnectionHandle);
 

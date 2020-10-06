@@ -175,7 +175,7 @@ main(int argc, char** argv)
     IedServerConfig_enableDynamicDataSetService(config, true);
 
     /* disable log service */
-    IedServerConfig_enableLogService(config, false);
+    IedServerConfig_enableLogService(config, true);
 
     /* set maximum number of clients */
     IedServerConfig_setMaxMmsConnections(config, 5);

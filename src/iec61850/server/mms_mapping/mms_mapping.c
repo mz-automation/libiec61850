@@ -612,8 +612,8 @@ copySGCBValuesToTrackingObject(MmsMapping* self, SettingGroupControlBlock* sgcb)
     }
 }
 
-static IEC61850_ServiceError
-convertMmsDataAccessErrorToServiceError(MmsDataAccessError mmsError)
+IEC61850_ServiceError
+private_IedServer_convertMmsDataAccessErrorToServiceError(MmsDataAccessError mmsError)
 {
     IEC61850_ServiceError errVal = IEC61850_SERVICE_ERROR_NO_ERROR;
 
@@ -661,7 +661,8 @@ updateGenericTrackingObjectValues(MmsMapping* self, SettingGroupControlBlock* sg
             MmsValue_setUtcTimeMs(trkInst->t->mmsValue, Hal_getTimeInMs());
 
         if (trkInst->errorCode)
-            MmsValue_setInt32(trkInst->errorCode->mmsValue, convertMmsDataAccessErrorToServiceError(errVal));
+            MmsValue_setInt32(trkInst->errorCode->mmsValue,
+                    private_IedServer_convertMmsDataAccessErrorToServiceError(errVal));
 
         char objRef[129];
 
@@ -1212,6 +1213,37 @@ getSgcbTrackingAttributes(SgcbTrkInstance svcTrkInst, DataObject* trkObj)
 }
 
 static void
+getLocbTrackingAttributes(LocbTrkInstance svcTrkInst, DataObject* trkObj)
+{
+    ModelNode* modelNode = trkObj->firstChild;
+
+    while (modelNode) {
+        if (modelNode->modelType == DataAttributeModelType) {
+            DataAttribute* da = (DataAttribute*) modelNode;
+
+            if (!strcmp(da->name, "logEna")) {
+                svcTrkInst->logEna = da;
+            }
+            if (!strcmp(da->name, "datSet")) {
+                svcTrkInst->datSet = da;
+            }
+            else if (!strcmp(da->name, "trgOps")) {
+                svcTrkInst->trgOps = da;
+            }
+            else if (!strcmp(da->name, "intgPd")) {
+                svcTrkInst->intgPd = da;
+            }
+            else if (!strcmp(da->name, "logRef")) {
+                svcTrkInst->logRef = da;
+            }
+        }
+
+        modelNode = modelNode->sibling;
+    }
+
+}
+
+static void
 getControlTrackingAttributes(ControlTrkInstance svcTrkInst, DataObject* trkObj)
 {
     ModelNode* modelNode = trkObj->firstChild;
@@ -1394,7 +1426,28 @@ checkForServiceTrackingVariables(MmsMapping* self, LogicalNode* logicalNode)
                     getCommonTrackingAttributes((ServiceTrkInstance) self->sgcbTrk, sgcbTrk);
                     getSgcbTrackingAttributes(self->sgcbTrk, sgcbTrk);
                 }
+            }
+        }
+        else if (!strcmp(modelNode->name, "LocbTrk")) {
+            if (DEBUG_IED_SERVER)
+                printf("IED_SERVER: LocbTrk data object found!\n");
 
+            DataObject* locbTrk = (DataObject*) modelNode;
+
+            if (self->locbTrk) {
+                if (DEBUG_IED_SERVER)
+                    printf("IED_SERVER: ERROR: multiple LocbTrk instances found in server\n");
+            }
+            else {
+                /* Setup LocbTrk references */
+                self->locbTrk = (LocbTrkInstance) GLOBAL_CALLOC(1, sizeof(struct sLocbTrkInstance));
+
+                if (self->locbTrk) {
+                    self->locbTrk->dobj = locbTrk;
+
+                    getCommonTrackingAttributes((ServiceTrkInstance) self->locbTrk, locbTrk);
+                    getLocbTrackingAttributes(self->locbTrk, locbTrk);
+                }
             }
         }
         else if (!strcmp(modelNode->name, "GenTrk")) {
@@ -1984,6 +2037,7 @@ MmsMapping_destroy(MmsMapping* self)
     if (self->bacTrk) GLOBAL_FREEMEM(self->bacTrk);
     if (self->sgcbTrk) GLOBAL_FREEMEM(self->sgcbTrk);
     if (self->genTrk) GLOBAL_FREEMEM(self->genTrk);
+    if (self->locbTrk) GLOBAL_FREEMEM(self->locbTrk);
 #endif
 
     LinkedList_destroy(self->attributeAccessHandlers);
