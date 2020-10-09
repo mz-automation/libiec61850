@@ -24,8 +24,6 @@
 #ifndef MMS_GOOSE_H_
 #define MMS_GOOSE_H_
 
-typedef struct sMmsGooseControlBlock* MmsGooseControlBlock;
-
 LIB61850_INTERNAL MmsGooseControlBlock
 MmsGooseControlBlock_create(void);
 
@@ -41,14 +39,8 @@ MmsGooseControlBlock_useGooseVlanTag(MmsGooseControlBlock self, bool useVlanTag)
 LIB61850_INTERNAL void
 MmsGooseControlBlock_setGooseInterfaceId(MmsGooseControlBlock self, const char* interfaceId);
 
-LIB61850_INTERNAL LogicalNode*
-MmsGooseControlBlock_getLogicalNode(MmsGooseControlBlock self);
-
 LIB61850_INTERNAL char*
 MmsGooseControlBlock_getLogicalNodeName(MmsGooseControlBlock self);
-
-LIB61850_INTERNAL char*
-MmsGooseControlBlock_getName(MmsGooseControlBlock self);
 
 LIB61850_INTERNAL MmsValue*
 MmsGooseControlBlock_getGCBValue(MmsGooseControlBlock self, char* elementName);
@@ -58,9 +50,6 @@ MmsGooseControlBlock_getMmsValues(MmsGooseControlBlock self);
 
 LIB61850_INTERNAL MmsVariableSpecification*
 MmsGooseControlBlock_getVariableSpecification(MmsGooseControlBlock self);
-
-LIB61850_INTERNAL DataSet*
-MmsGooseControlBlock_getDataSet(MmsGooseControlBlock self);
 
 LIB61850_INTERNAL bool
 MmsGooseControlBlock_isEnabled(MmsGooseControlBlock self);
@@ -75,10 +64,10 @@ LIB61850_INTERNAL void
 MmsGooseControlBlock_publishNewState(MmsGooseControlBlock self);
 
 LIB61850_INTERNAL void
-MmsGooseControlBlock_enable(MmsGooseControlBlock self);
+MmsGooseControlBlock_enable(MmsGooseControlBlock self, MmsMapping* mmsMapping);
 
 LIB61850_INTERNAL void
-MmsGooseControlBlock_disable(MmsGooseControlBlock self);
+MmsGooseControlBlock_disable(MmsGooseControlBlock self, MmsMapping* mmsMapping);
 
 LIB61850_INTERNAL void
 GOOSE_sendPendingEvents(MmsMapping* self);

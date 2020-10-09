@@ -270,8 +270,13 @@ struct sMmsMapping {
 #endif
 
 #if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
+    bool useIntegratedPublisher;
+
     LinkedList gseControls;
     const char* gooseInterfaceId;
+
+    GoCBEventHandler goCbHandler;
+    void* goCbHandlerParameter;
 #endif
 
 #if (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1)

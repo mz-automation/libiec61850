@@ -715,7 +715,6 @@ MmsMapping_initializeControlObjects(MmsMapping* self)
 void
 MmsMapping_configureSettingGroups(MmsMapping* self)
 {
-
     LinkedList settingGroupElement = LinkedList_getNext(self->settingGroups);
 
     while (settingGroupElement != NULL) {
@@ -745,6 +744,12 @@ MmsMapping_configureSettingGroups(MmsMapping* self)
 
         settingGroupElement = LinkedList_getNext(settingGroupElement);
     }
+}
+
+void
+MmsMapping_useIntegratedGoosePublisher(MmsMapping* self, bool enable)
+{
+    self->useIntegratedPublisher = enable;
 }
 
 void
@@ -1958,8 +1963,13 @@ MmsMapping_create(IedModel* model, IedServer iedServer)
 #endif
 
 #if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
+    self->useIntegratedPublisher = true;
+
     self->gseControls = LinkedList_create();
     self->gooseInterfaceId = NULL;
+
+    self->goCbHandler = NULL;
+    self->goCbHandlerParameter = NULL;
 #endif
 
 #if (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1)
@@ -2277,10 +2287,18 @@ writeAccessGooseControlBlock(MmsMapping* self, MmsDomain* domain, char* variable
         if (MmsValue_getType(value) != MMS_BOOLEAN)
             return DATA_ACCESS_ERROR_TYPE_INCONSISTENT;
 
-        if (MmsValue_getBoolean(value))
-            MmsGooseControlBlock_enable(mmsGCB);
-        else
-            MmsGooseControlBlock_disable(mmsGCB);
+        if (MmsValue_getBoolean(value)) {
+            MmsGooseControlBlock_enable(mmsGCB, self);
+
+            if (self->goCbHandler)
+                self->goCbHandler(mmsGCB, IEC61850_GOCB_EVENT_ENABLE, self->goCbHandlerParameter);
+        }
+        else {
+            MmsGooseControlBlock_disable(mmsGCB, self);
+
+            if (self->goCbHandler)
+                self->goCbHandler(mmsGCB, IEC61850_GOCB_EVENT_ENABLE, self->goCbHandlerParameter);
+        }
 
         return DATA_ACCESS_ERROR_SUCCESS;
     }
@@ -3635,7 +3653,7 @@ MmsMapping_enableGoosePublishing(MmsMapping* self)
     while ((element = LinkedList_getNext(element)) != NULL) {
         MmsGooseControlBlock gcb = (MmsGooseControlBlock) element->data;
 
-        MmsGooseControlBlock_enable(gcb);
+        MmsGooseControlBlock_enable(gcb, self);
     }
 
 }
@@ -3686,7 +3704,7 @@ MmsMapping_disableGoosePublishing(MmsMapping* self)
     while ((element = LinkedList_getNext(element)) != NULL) {
         MmsGooseControlBlock gcb = (MmsGooseControlBlock) element->data;
 
-        MmsGooseControlBlock_disable(gcb);
+        MmsGooseControlBlock_disable(gcb, self);
     }
 }
 
@@ -3732,7 +3750,8 @@ processPeriodicTasks(MmsMapping* self)
     uint64_t currentTimeInMs = Hal_getTimeInMs();
 
 #if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
-    GOOSE_processGooseEvents(self, currentTimeInMs);
+    if (self->useIntegratedPublisher)
+        GOOSE_processGooseEvents(self, currentTimeInMs);
 #endif
 
 #if (CONFIG_IEC61850_CONTROL_SERVICE == 1)

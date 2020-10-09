@@ -75,6 +75,9 @@ struct sIedServerConfig
     /** when true (default) enable log service */
     bool enableLogService;
 
+    /** when true (default) the integrated GOOSE publisher is used */
+    bool useIntegratedGoosePublisher;
+
     /** IEC 61850 edition (0 = edition 1, 1 = edition 2, 2 = edition 2.1, ...) */
     uint8_t edition;
 
@@ -269,10 +272,20 @@ IedServerConfig_getMaxDatasSetEntries(IedServerConfig self);
 /**
  * \brief Enable/disable the log service for MMS
  *
- * \param[in] enable set true to enable dynamic data set service, otherwise false
+ * \param[in] enable set true to enable log service, otherwise false
  */
 LIB61850_API void
 IedServerConfig_enableLogService(IedServerConfig self, bool enable);
+
+/**
+ * \brief Enable/disable using the integrated GOOSE publisher for configured GoCBs
+ *
+ * This is enabled by default. Disable it when you want to use a separate GOOSE publisher
+ *
+ * \param[in] enable set true to enable the integrated GOOSE publisher, otherwise false
+ */
+LIB61850_API void
+IedServerConfig_useIntegratedGoosePublisher(IedServerConfig self, bool enable);
 
 /**
  * \brief Is the log service for MMS enabled or disabled
@@ -1443,6 +1456,48 @@ typedef void (*SVCBEventHandler) (SVControlBlock* svcb, int event, void* paramet
  */
 LIB61850_API void
 IedServer_setSVCBHandler(IedServer self, SVControlBlock* svcb, SVCBEventHandler handler, void* parameter);
+
+/**@}*/
+
+/**
+ * @defgroup IEC61850_SERVER_GOCB Server side GOOSE control block (GoCB) handling
+ *
+ * @{
+ */
+
+typedef struct sMmsGooseControlBlock* MmsGooseControlBlock;
+
+/** Control block has been enabled by client */
+#define IEC61850_GOCB_EVENT_ENABLE 1
+
+/** Control block has been disabled by client */
+#define IEC61850_GOCB_EVENT_DISABLE 0
+
+typedef void (*GoCBEventHandler) (MmsGooseControlBlock goCb, int event, void* parameter);
+
+LIB61850_API void
+IedServer_setGoCBHandler(IedServer self, GoCBEventHandler handler, void* parameter);
+
+LIB61850_API char*
+MmsGooseControlBlock_getName(MmsGooseControlBlock self);
+
+LIB61850_API LogicalNode*
+MmsGooseControlBlock_getLogicalNode(MmsGooseControlBlock self);
+
+LIB61850_API DataSet*
+MmsGooseControlBlock_getDataSet(MmsGooseControlBlock self);
+
+LIB61850_API bool
+MmsGooseControlBlock_getGoEna(MmsGooseControlBlock self);
+
+LIB61850_API int
+MmsGooseControlBlock_getMinTime(MmsGooseControlBlock self);
+
+LIB61850_API int
+MmsGooseControlBlock_getMaxTime(MmsGooseControlBlock self);
+
+LIB61850_API bool
+MmsGooseControlBlock_getFixedOffs(MmsGooseControlBlock self);
 
 /**@}*/
 

@@ -51,6 +51,7 @@ IedServerConfig_create()
         self->maxDomainSpecificDataSets = CONFIG_MMS_MAX_NUMBER_OF_DOMAIN_SPECIFIC_DATA_SETS;
         self->maxDataSetEntries = CONFIG_MMS_MAX_NUMBER_OF_DATA_SET_MEMBERS;
         self->enableLogService = true;
+        self->useIntegratedGoosePublisher = true;
         self->edition = IEC_61850_EDITION_2;
         self->maxMmsConnections = 5;
     }
@@ -183,6 +184,12 @@ void
 IedServerConfig_enableLogService(IedServerConfig self, bool enable)
 {
     self->enableLogService = enable;
+}
+
+void
+IedServerConfig_useIntegratedGoosePublisher(IedServerConfig self, bool enable)
+{
+    self->useIntegratedGoosePublisher = enable;
 }
 
 bool

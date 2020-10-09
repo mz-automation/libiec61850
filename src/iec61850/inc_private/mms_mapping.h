@@ -107,6 +107,9 @@ LIB61850_INTERNAL void
 MmsMapping_disableGoosePublishing(MmsMapping* self);
 
 LIB61850_INTERNAL void
+MmsMapping_useIntegratedGoosePublisher(MmsMapping* self, bool enable);
+
+LIB61850_INTERNAL void
 MmsMapping_useGooseVlanTag(MmsMapping* self, LogicalNode* ln, const char* gcbName, bool useVlanTag);
 
 LIB61850_INTERNAL void

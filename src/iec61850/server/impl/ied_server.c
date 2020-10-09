@@ -534,6 +534,13 @@ IedServer_createWithConfig(IedModel* dataModel, TLSConfiguration tlsConfiguratio
 #if (CONFIG_IEC61850_SETTING_GROUPS == 1)
         MmsMapping_configureSettingGroups(self->mmsMapping);
 #endif
+
+#if (CONFIG_INCLUDE_GOOSE_SUPPORT)
+        if (serverConfiguration) {
+            MmsMapping_useIntegratedGoosePublisher(self->mmsMapping, serverConfiguration->useIntegratedGoosePublisher);
+        }
+
+#endif
     }
 
     return self;
@@ -884,6 +891,17 @@ IedServer_setSVCBHandler(IedServer self, SVControlBlock* svcb, SVCBEventHandler 
 }
 
 #endif /* (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1) */
+
+#if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
+
+void
+IedServer_setGoCBHandler(IedServer self, GoCBEventHandler handler, void* parameter)
+{
+    self->mmsMapping->goCbHandler = handler;
+    self->mmsMapping->goCbHandlerParameter = parameter;
+}
+
+#endif /* (CONFIG_INCLUDE_GOOSE_SUPPORT == 1) */
 
 MmsValue*
 IedServer_getAttributeValue(IedServer self, DataAttribute* dataAttribute)

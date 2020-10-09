@@ -51,9 +51,20 @@ controlHandlerForBinaryOutput(ControlAction action, void* parameter, MmsValue* v
     }
 }
 
+static void
+goCbEventHandler(MmsGooseControlBlock goCb, int event, void* parameter)
+{
+    printf("Access to GoCB: %s\n", MmsGooseControlBlock_getName(goCb));
+    printf("         GoEna: %i\n", MmsGooseControlBlock_getGoEna(goCb));
+}
+
 int main(int argc, char** argv) {
 
-	iedServer = IedServer_create(&iedModel);
+    IedServerConfig config = IedServerConfig_create();
+
+	iedServer = IedServer_createWithConfig(&iedModel, NULL, config);
+
+	IedServerConfig_destroy(config);
 
 	if (argc > 1) {
 		char* ethernetIfcID = argv[1];
@@ -73,6 +84,7 @@ int main(int argc, char** argv) {
 	    IedServer_setGooseInterfaceIdEx(iedServer, IEDMODEL_GenericIO_LLN0, "gcbAnalogValues", ethernetIfcID);
 	}
 
+	IedServer_setGoCBHandler(iedServer, goCbEventHandler, NULL);
 
 	/* MMS server will be instructed to start listening to client connections. */
 	IedServer_start(iedServer, 102);
