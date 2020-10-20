@@ -630,13 +630,15 @@ private_IedServer_convertMmsDataAccessErrorToServiceError(MmsDataAccessError mms
         errVal = IEC61850_SERVICE_ERROR_PARAMETER_VALUE_INAPPROPRIATE;
         break;
     case DATA_ACCESS_ERROR_TYPE_INCONSISTENT:
+    case DATA_ACCESS_ERROR_OBJECT_ATTRIBUTE_INCONSISTENT:
         errVal = IEC61850_SERVICE_ERROR_PARAMETER_VALUE_INCONSISTENT;
         break;
     case DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT:
         errVal = IEC61850_SERVICE_ERROR_INSTANCE_NOT_AVAILABLE;
         break;
     default:
-        printf("Data access error %i not mapped!\n", mmsError);
+        if (DEBUG_IED_SERVER)
+            printf("IED_SERVER: Data access error %i not mapped!\n", mmsError);
         errVal = IEC61850_SERVICE_ERROR_FAILED_DUE_TO_SERVER_CONSTRAINT;
         break;
     }

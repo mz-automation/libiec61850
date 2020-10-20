@@ -278,7 +278,7 @@ struct sLogControlBlock {
     char* name;
 
     char* dataSetName;
-    char* logRef;        /* object reference to the journal. Defaults to <MMS DomainName>/<LNName>$GeneralLog */
+    char* logRef;        /* object reference to the journal */
 
     uint8_t trgOps;      /* TrgOps - trigger conditions */
     uint32_t intPeriod;  /* IntgPd - integrity period */

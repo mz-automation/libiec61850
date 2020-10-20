@@ -181,6 +181,7 @@ LogControl_create(LogicalNode* parentLN, MmsMapping* mmsMapping)
     self->logInstance = NULL;
     self->intgPd = 0;
     self->nextIntegrityScan = 0;
+    self->logRef = NULL;
 
     return self;
 }
@@ -195,6 +196,9 @@ LogControl_destroy(LogControl* self)
 
         if (self->dataSetRef != NULL)
             GLOBAL_FREEMEM(self->dataSetRef);
+
+        if (self->logRef)
+            GLOBAL_FREEMEM(self->logRef);
 
         GLOBAL_FREEMEM(self);
     }
@@ -412,10 +416,22 @@ copyLCBValuesToTrackingObject(MmsMapping* self, LogControl* logControl)
             MmsValue_setBoolean(trkInst->logEna->mmsValue, logControl->enabled);
 
         if (trkInst->logRef)
-            MmsValue_setVisibleString(trkInst->logRef->mmsValue, logControl->logControlBlock->logRef);
+            MmsValue_setVisibleString(trkInst->logRef->mmsValue, logControl->logRef);
 
         if (trkInst->datSet) {
-            MmsValue_setVisibleString(trkInst->datSet->mmsValue, logControl->dataSetRef);
+            char datSet[130];
+
+            if (logControl->dataSetRef) {
+                strncpy(datSet, logControl->dataSetRef, 129);
+                datSet[129] = 0;
+
+                StringUtils_replace(datSet, '$', '.');
+            }
+            else {
+                datSet[0] = 0;
+            }
+
+            MmsValue_setVisibleString(trkInst->datSet->mmsValue, datSet);
         }
 
         if (trkInst->intgPd)
@@ -776,6 +792,10 @@ createLogControlBlock(MmsMapping* self, LogControlBlock* logControlBlock,
         strncat(logRef, logControlBlock->logRef, maxLogRefLength);
 
         mmsValue->value.structure.components[1] = MmsValue_newVisibleString(logRef);
+
+        StringUtils_replace(logRef, '$', '.');
+
+        logControl->logRef = StringUtils_copyString(logRef);
     }
     else {
         char* logRef = StringUtils_createString(4, logControl->domain->domainName, "/", logControlBlock->parent->name,
@@ -783,7 +803,9 @@ createLogControlBlock(MmsMapping* self, LogControlBlock* logControlBlock,
 
         mmsValue->value.structure.components[1] = MmsValue_newVisibleString(logRef);
 
-        GLOBAL_FREEMEM(logRef);
+        StringUtils_replace(logRef, '$', '.');
+
+        logControl->logRef = logRef;
     }
 
     /* DatSet */

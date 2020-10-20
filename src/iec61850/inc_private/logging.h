@@ -46,6 +46,8 @@ typedef struct {
     LogControlBlock* logControlBlock;
     MmsMapping* mmsMapping;
 
+    char* logRef;
+
     DataSet* dataSet;
     char* dataSetRef;
     bool isDynamicDataSet;

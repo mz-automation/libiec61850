@@ -324,8 +324,19 @@ copyRCBValuesToTrackingObject(MmsMapping* self, ReportControl* rc)
             if (trkInst->rptEna)
                 MmsValue_update(trkInst->rptEna->mmsValue, ReportControl_getRCBValue(rc, "RptEna"));
 
-            if (trkInst->datSet)
-                MmsValue_update(trkInst->datSet->mmsValue, ReportControl_getRCBValue(rc, "DatSet"));
+            if (trkInst->datSet) {
+                char datSet[130];
+                const char* datSetStr = MmsValue_toString(ReportControl_getRCBValue(rc, "DatSet"));
+
+                if (datSetStr) {
+                    strncpy(datSet, datSetStr, 129);
+                    datSet[129] = 0;
+
+                    StringUtils_replace(datSet, '$', '.');
+
+                    MmsValue_setVisibleString(trkInst->datSet->mmsValue, datSet);
+                }
+            }
 
             if (trkInst->confRev)
                 MmsValue_update(trkInst->confRev->mmsValue, ReportControl_getRCBValue(rc, "ConfRev"));
@@ -383,8 +394,19 @@ copyRCBValuesToTrackingObject(MmsMapping* self, ReportControl* rc)
             if (trkInst->resv)
                 MmsValue_update(trkInst->rptEna->mmsValue, ReportControl_getRCBValue(rc, "Resv"));
 
-            if (trkInst->datSet)
-                MmsValue_update(trkInst->datSet->mmsValue, ReportControl_getRCBValue(rc, "DatSet"));
+            if (trkInst->datSet) {
+                char datSet[130];
+                const char* datSetStr = MmsValue_toString(ReportControl_getRCBValue(rc, "DatSet"));
+
+                if (datSetStr) {
+                    strncpy(datSet, datSetStr, 129);
+                    datSet[129] = 0;
+
+                    StringUtils_replace(datSet, '$', '.');
+
+                    MmsValue_setVisibleString(trkInst->datSet->mmsValue, datSet);
+                }
+            }
 
             if (trkInst->confRev)
                 MmsValue_update(trkInst->confRev->mmsValue, ReportControl_getRCBValue(rc, "ConfRev"));
@@ -423,8 +445,20 @@ updateSingleTrackingValue(MmsMapping* self, ReportControl* rc, char* name, MmsVa
                 attributeToUpdate = trkInst->rptID;
             else if (!strcmp(name, "RptEna"))
                 attributeToUpdate = trkInst->rptEna;
-            else if (!strcmp(name, "DatSet"))
-                attributeToUpdate = trkInst->datSet;
+            else if (!strcmp(name, "DatSet")) {
+
+                char datSet[130];
+                const char* datSetStr = MmsValue_toString(newValue);
+
+                if (datSetStr) {
+                    strncpy(datSet, datSetStr, 129);
+                    datSet[129] = 0;
+
+                    StringUtils_replace(datSet, '$', '.');
+
+                    MmsValue_setVisibleString(trkInst->datSet->mmsValue, datSet);
+                }
+            }
             else if (!strcmp(name, "ConfRev"))
                 attributeToUpdate = trkInst->confRev;
             else if (!strcmp(name, "OptFlds"))
@@ -464,8 +498,20 @@ updateSingleTrackingValue(MmsMapping* self, ReportControl* rc, char* name, MmsVa
                 attributeToUpdate = trkInst->rptEna;
             else if (!strcmp(name, "Resv"))
                 attributeToUpdate = trkInst->resv;
-            else if (!strcmp(name, "DatSet"))
-                attributeToUpdate = trkInst->datSet;
+            else if (!strcmp(name, "DatSet")) {
+
+                char datSet[130];
+                const char* datSetStr = MmsValue_toString(newValue);
+
+                if (datSetStr) {
+                    strncpy(datSet, datSetStr, 129);
+                    datSet[129] = 0;
+
+                    StringUtils_replace(datSet, '$', '.');
+
+                    MmsValue_setVisibleString(trkInst->datSet->mmsValue, datSet);
+                }
+            }
             else if (!strcmp(name, "ConfRev"))
                 attributeToUpdate = trkInst->confRev;
             else if (!strcmp(name, "OptFlds"))
