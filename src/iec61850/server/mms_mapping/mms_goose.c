@@ -156,7 +156,16 @@ copyGCBValuesToTrackingObject(MmsGooseControlBlock gc)
             MmsValue_setVisibleString(trkInst->goID->mmsValue, gc->goId);
 
         if (trkInst->datSet)
-            MmsValue_setVisibleString(trkInst->datSet->mmsValue, gc->dataSet->name);
+        {
+            char datSet[130];
+            LogicalNode* ln = (LogicalNode*) gc->logicalNode;
+            LogicalDevice* ld = (LogicalDevice*) ln->parent;
+            char* iedName = gc->mmsMapping->mmsDevice->deviceName;
+            snprintf(datSet, 129, "%s%s/%s", iedName, ld->name, gc->dataSet->name);
+            datSet[129] = 0;
+            StringUtils_replace(datSet, '$', '.');
+            MmsValue_setVisibleString(trkInst->datSet->mmsValue, datSet);
+        }
 
         if (trkInst->confRev) {
             uint32_t confRev = MmsValue_toUint32(MmsValue_getElement(gc->mmsValue, 3));
