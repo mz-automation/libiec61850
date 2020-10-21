@@ -45,6 +45,7 @@ DataAttribute* toDataAttribute(ModelNode * MN)
 %include "iec61850_dynamic_model.h"
 %include "iec61850_cdc.h"
 %include "linked_list.h"
+%include "iec61850_config_file_parser.h"
 
 /* User-defined data types, also used: */
 typedef uint64_t msSinceEpoch;
