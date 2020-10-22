@@ -43,6 +43,7 @@ typedef struct {
     int localRef;
     int protocolClass;
 
+    HandleSet handleSet;
     Socket socket;
 #if (CONFIG_MMS_SUPPORT_TLS == 1)
     TLSSocket tlsSocket;

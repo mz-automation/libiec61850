@@ -769,8 +769,11 @@ IsoClientConnection_destroy(IsoClientConnection self)
         GLOBAL_FREEMEM(self->receiveBuf);
     if (self->receiveBuffer != NULL)
         GLOBAL_FREEMEM(self->receiveBuffer);
-    if (self->cotpConnection != NULL)
+    if (self->cotpConnection != NULL) {
+        if ( self->cotpConnection->handleSet != NULL )
+            Handleset_destroy(self->cotpConnection->handleSet);
         GLOBAL_FREEMEM(self->cotpConnection);
+    }
 
     if (self->cotpReadBuffer != NULL)
         GLOBAL_FREEMEM(self->cotpReadBuffer);
