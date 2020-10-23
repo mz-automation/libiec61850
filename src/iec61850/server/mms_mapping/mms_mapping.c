@@ -2014,6 +2014,7 @@ MmsMapping_destroy(MmsMapping* self)
 
 #if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
     LinkedList_destroyDeep(self->gseControls, (LinkedListValueDeleteFunction) MmsGooseControlBlock_destroy);
+    if (self->gooseInterfaceId) GLOBAL_FREEMEM(self->gooseInterfaceId);
 #endif
 
 #if (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1)
