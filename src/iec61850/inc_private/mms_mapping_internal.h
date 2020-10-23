@@ -273,7 +273,7 @@ struct sMmsMapping {
     bool useIntegratedPublisher;
 
     LinkedList gseControls;
-    const char* gooseInterfaceId;
+    char* gooseInterfaceId;
 
     GoCBEventHandler goCbHandler;
     void* goCbHandlerParameter;
