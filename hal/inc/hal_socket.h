@@ -143,7 +143,7 @@ PAL_API ServerSocket
 TcpServerSocket_create(const char* address, int port);
 
 PAL_API UdpSocket
-UdpSocket_create();
+UdpSocket_create(void);
 
 PAL_API bool
 UdpSocket_bind(UdpSocket self, const char* address, int port);

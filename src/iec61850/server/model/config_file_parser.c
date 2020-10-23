@@ -452,7 +452,7 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
                                 *sep = 0;
 
                                 /* check for component */
-                                char* sep = strchr(indexStr, ' ');
+                                sep = strchr(indexStr, ' ');
 
                                 if (sep) {
                                     componentVal = sep + 1;

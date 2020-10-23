@@ -1739,7 +1739,6 @@ createNamedVariableFromLogicalNode(MmsMapping* self, MmsDomain* domain,
             printf("Service tracking elements detected\n");
 
         /* TODO set flag to enable service tracking */
-        MmsVariableSpecification* trackingVariables = namedVariable->typeSpec.structure.elements[currentComponent];
 
         checkForServiceTrackingVariables(self, logicalNode);
 

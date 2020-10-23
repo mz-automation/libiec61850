@@ -152,6 +152,10 @@ LIB61850_INTERNAL MmsDataAccessError
 Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* variableIdOrig,
                          MmsValue* value, MmsServerConnection connection);
 
+LIB61850_INTERNAL MmsValue*
+Control_readAccessControlObject(MmsMapping* self, MmsDomain* domain, char* variableIdOrig,
+        MmsServerConnection connection, bool isDirectAccess);
+
 LIB61850_INTERNAL ControlObject*
 Control_lookupControlObject(MmsMapping* self, MmsDomain* domain, char* lnName, char* objectName);
 

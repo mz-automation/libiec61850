@@ -69,7 +69,7 @@ Hal_getTimeInMs(void);
  * \return the system time with nanosecond resolution.
  */
 PAL_API nsSinceEpoch
-Hal_getTimeInNs();
+Hal_getTimeInNs(void);
 
 PAL_API bool
 Hal_setTimeInNs(nsSinceEpoch nsTime);
