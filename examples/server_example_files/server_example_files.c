@@ -95,5 +95,6 @@ main(int argc, char** argv)
 
     /* Cleanup - free all resources */
     IedServer_destroy(iedServer);
+    return 0;
 
 } /* main() */

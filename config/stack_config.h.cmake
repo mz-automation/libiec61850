@@ -65,8 +65,8 @@
 
 /* Ethernet interface ID for GOOSE and SV */
 #define CONFIG_ETHERNET_INTERFACE_ID "eth0"
-//#define CONFIG_ETHERNET_INTERFACE_ID "vboxnet0"
-//#define CONFIG_ETHERNET_INTERFACE_ID "en0"  // OS X uses enX in place of ethX as ethernet NIC names.
+/* #define CONFIG_ETHERNET_INTERFACE_ID "vboxnet0" */
+/* #define CONFIG_ETHERNET_INTERFACE_ID "en0"  // OS X uses enX in place of ethX as ethernet NIC names. */
 
 /* Set to 1 to include GOOSE support in the build. Otherwise set to 0 */
 #cmakedefine01 CONFIG_INCLUDE_GOOSE_SUPPORT

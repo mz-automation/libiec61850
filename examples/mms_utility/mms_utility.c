@@ -1,4 +1,3 @@
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -439,5 +438,7 @@ int main(int argc, char** argv)
     free(componentName);
 
     MmsConnection_destroy(con);
+
+    return 0;
 }
 

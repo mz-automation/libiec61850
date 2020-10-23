@@ -82,4 +82,6 @@ main(int argc, char** argv)
     GooseReceiver_stop(receiver);
 
     GooseReceiver_destroy(receiver);
+
+    return 0;
 }

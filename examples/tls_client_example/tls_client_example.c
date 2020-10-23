@@ -154,6 +154,7 @@ int main(int argc, char** argv) {
     IedConnection_destroy(con);
 
     TLSConfiguration_destroy(tlsConfig);
+    return 0;
 }
 
 

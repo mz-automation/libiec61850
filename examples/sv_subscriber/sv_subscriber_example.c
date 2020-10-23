@@ -90,4 +90,5 @@ main(int argc, char** argv)
 
     /* Cleanup and free resources */
     SVReceiver_destroy(receiver);
+    return 0;
 }

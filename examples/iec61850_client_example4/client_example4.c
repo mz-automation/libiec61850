@@ -97,6 +97,7 @@ int main(int argc, char** argv) {
     }
 
     IedConnection_destroy(con);
+    return 0;
 }
 
 

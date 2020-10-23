@@ -225,4 +225,5 @@ main(int argc, char** argv)
 
     TLSConfiguration_destroy(tlsConfig);
 
+    return 0;
 } /* main() */

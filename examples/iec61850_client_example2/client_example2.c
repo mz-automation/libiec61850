@@ -201,5 +201,6 @@ main(int argc, char** argv)
 
 cleanup_and_exit:
     IedConnection_destroy(con);
+    return 0;
 }
 

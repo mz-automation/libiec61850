@@ -125,4 +125,5 @@ main(int argc, char** argv)
 	IedServer_destroy(iedServer);
 
 	IedModel_destroy(model);
+  return 0;
 } /* main() */

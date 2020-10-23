@@ -38,9 +38,8 @@ static int running = 0;
 
 void sigint_handler(int signalId)
 {
-	running = 0;
+    running = 0;
 }
-
 
 bool
 controlHandlerForIntegerOutput(ControlAction action, void* parameter, MmsValue* value, bool test)
@@ -60,43 +59,46 @@ controlHandlerForIntegerOutput(ControlAction action, void* parameter, MmsValue* 
     return true;
 }
 
-int main(int argc, char** argv) {
-
+int
+main(int argc, char** argv)
+{
     int tcpPort = 102;
 
     if (argc > 1) {
         tcpPort = atoi(argv[1]);
     }
 
-	iedServer = IedServer_create(&iedModel);
+    iedServer = IedServer_create(&iedModel);
 
-	/* set control model for WTUR1.SetTurOp.actSt to direct-control-with-normal-security */
-	IedServer_updateInt32AttributeValue(iedServer, IEDMODEL_WTG_WTUR1_SetTurOp_actSt_ctlModel, 1);
+    /* set control model for WTUR1.SetTurOp.actSt to direct-control-with-normal-security */
+    IedServer_updateInt32AttributeValue(iedServer, IEDMODEL_WTG_WTUR1_SetTurOp_actSt_ctlModel, 1);
 
     IedServer_setControlHandler(iedServer, IEDMODEL_WTG_WTUR1_SetTurOp_actSt,
             (ControlHandler) controlHandlerForIntegerOutput,
             IEDMODEL_WTG_WTUR1_SetTurOp_actSt);
 
-	/* MMS server will be instructed to start listening to client connections. */
-	IedServer_start(iedServer, tcpPort);
+    /* MMS server will be instructed to start listening to client connections. */
+    IedServer_start(iedServer, tcpPort);
 
-	if (!IedServer_isRunning(iedServer)) {
-		printf("Starting server failed! Exit.\n");
-		IedServer_destroy(iedServer);
-		exit(-1);
-	}
+    if (!IedServer_isRunning(iedServer)) {
+        printf("Starting server failed! Exit.\n");
+        IedServer_destroy(iedServer);
+        exit(-1);
+    }
 
-	running = 1;
+    running = 1;
 
-	signal(SIGINT, sigint_handler);
+    signal(SIGINT, sigint_handler);
 
-	while (running) {
-		Thread_sleep(1);
-	}
+    while (running) {
+        Thread_sleep(1);
+    }
 
-	/* stop MMS server - close TCP server socket and all client sockets */
-	IedServer_stop(iedServer);
+    /* stop MMS server - close TCP server socket and all client sockets */
+    IedServer_stop(iedServer);
 
-	/* Cleanup - free all resources */
-	IedServer_destroy(iedServer);
+    /* Cleanup - free all resources */
+    IedServer_destroy(iedServer);
+
+    return 0;
 } /* main() */

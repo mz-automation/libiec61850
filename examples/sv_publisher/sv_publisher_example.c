@@ -81,4 +81,5 @@ main(int argc, char** argv)
     else {
         printf("Failed to create SV publisher\n");
     }
+    return 0;
 }

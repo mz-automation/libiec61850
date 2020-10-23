@@ -22,11 +22,11 @@ static int running = 0;
 static void
 sigint_handler(int signalId)
 {
-	running = 0;
+    running = 0;
 }
 
 static void
-updateCMVArrayElement(MmsValue* cval, int index, float magnitude, float angle, Quality quality, Timestamp timestamp)
+updateCMVArrayElement(MmsValue *cval, int index, float magnitude, float angle, Quality quality, Timestamp timestamp)
 {
     MmsValue* cmv = MmsValue_getElement(cval, index);
 
@@ -48,7 +48,9 @@ updateCMVArrayElement(MmsValue* cval, int index, float magnitude, float angle, Q
     MmsValue_setUtcTimeByBuffer(t, timestamp.val);
 }
 
-int main(int argc, char** argv) {
+int
+main(int argc, char **argv)
+{
 
     int tcpPort = 102;
 
@@ -56,15 +58,14 @@ int main(int argc, char** argv) {
         tcpPort = atoi(argv[1]);
     }
 
-	IedServer iedServer = IedServer_create(&iedModel);
+    IedServer iedServer = IedServer_create(&iedModel);
 
-	/* Get access to the MHAI1.HA data object handle - for static and dynamic model*/
+    /* Get access to the MHAI1.HA data object handle - for static and dynamic model*/
     DataObject* mhai1_ha_phsAHar = (DataObject*)
             IedModel_getModelNodeByObjectReference(&iedModel, "testComplexArray/MHAI1.HA.phsAHar");
 
     /* Get access to the corresponding MMS value data structure - the MX(FC) part of the data object */
     MmsValue* mhai1_ha_phsAHar_mx = IedServer_getFunctionalConstrainedData(iedServer, mhai1_ha_phsAHar, IEC61850_FC_MX);
-
 
     /* assuming the array has 16 elements */
     float mag = 200.f;
@@ -82,45 +83,47 @@ int main(int argc, char** argv) {
         angle += 0.01f;
     }
 
-	/* MMS server will be instructed to start listening to client connections. */
-	IedServer_start(iedServer, tcpPort);
+    /* MMS server will be instructed to start listening to client connections. */
+    IedServer_start(iedServer, tcpPort);
 
-	if (!IedServer_isRunning(iedServer)) {
-		printf("Starting server failed! Exit.\n");
-		IedServer_destroy(iedServer);
-		exit(-1);
-	}
+    if (!IedServer_isRunning(iedServer)) {
+        printf("Starting server failed! Exit.\n");
+        IedServer_destroy(iedServer);
+        exit(-1);
+    }
 
-	running = 1;
+    running = 1;
 
-	signal(SIGINT, sigint_handler);
+    signal(SIGINT, sigint_handler);
 
-	int counter = 0;
+    int counter = 0;
 
-	while (running) {
-		Thread_sleep(1000);
+    while (running) {
+        Thread_sleep(1000);
 
-	    Timestamp_setTimeInMilliseconds(&timestamp, Hal_getTimeInMs());
+        Timestamp_setTimeInMilliseconds(&timestamp, Hal_getTimeInMs());
 
-	    IedServer_lockDataModel(iedServer);
-	    for (i = 0; i < 16; i++) {
-	        updateCMVArrayElement(mhai1_ha_phsAHar_mx, i, mag, angle, quality, timestamp);
-	        mag += 0.1f;
-	        angle += 0.05f;
-	    }
-	    IedServer_unlockDataModel(iedServer);
+        IedServer_lockDataModel(iedServer);
+        for (i = 0; i < 16; i++) {
+            updateCMVArrayElement(mhai1_ha_phsAHar_mx, i, mag, angle, quality, timestamp);
+            mag += 0.1f;
+            angle += 0.05f;
+        }
+        IedServer_unlockDataModel(iedServer);
 
-	    if (counter == 10) {
-	        /* Now a problem occurs - measurements are invalid */
-	        quality = QUALITY_VALIDITY_INVALID | QUALITY_DETAIL_FAILURE;
-	    }
+        if (counter == 10) {
+            /* Now a problem occurs - measurements are invalid */
+            quality = QUALITY_VALIDITY_INVALID | QUALITY_DETAIL_FAILURE;
+        }
 
-	    counter++;
-	}
+        counter++;
+    }
 
-	/* stop MMS server - close TCP server socket and all client sockets */
-	IedServer_stop(iedServer);
+    /* stop MMS server - close TCP server socket and all client sockets */
+    IedServer_stop(iedServer);
 
-	/* Cleanup - free all resources */
-	IedServer_destroy(iedServer);
+    /* Cleanup - free all resources */
+    IedServer_destroy(iedServer);
+
+    return 0;
 } /* main() */

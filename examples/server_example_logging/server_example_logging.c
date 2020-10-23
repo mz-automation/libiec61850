@@ -238,5 +238,6 @@ main(int argc, char** argv)
 
     /* Release connection to database and free resources */
     LogStorage_destroy(statusLog);
+    return 0;
 
 } /* main() */

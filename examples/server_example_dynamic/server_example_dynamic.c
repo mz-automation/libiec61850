@@ -101,4 +101,5 @@ int main(int argc, char** argv) {
 
 	/* destroy dynamic data model */
 	IedModel_destroy(model);
+  return 0;
 } /* main() */

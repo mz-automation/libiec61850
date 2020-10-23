@@ -137,6 +137,7 @@ close_connection:
     }
 
     IedConnection_destroy(con);
+    return 0;
 }
 
 

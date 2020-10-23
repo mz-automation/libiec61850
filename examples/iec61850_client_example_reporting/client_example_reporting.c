@@ -188,6 +188,7 @@ exit_error:
     }
 
     IedConnection_destroy(con);
+    return 0;
 }
 
 

@@ -455,6 +455,7 @@ main(int argc, char** argv) {
         ClientDataSet_destroy(clientDataSet);
 
     IedConnection_destroy(con);
+    return 0;
 }
 
 
