@@ -1692,6 +1692,6 @@ void
 IedServer_setGooseInterfaceId(IedServer self, const char* interfaceId)
 {
 #if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
-    self->mmsMapping->gooseInterfaceId = interfaceId;
+    self->mmsMapping->gooseInterfaceId = StringUtils_copyString(interfaceId);
 #endif
 }
