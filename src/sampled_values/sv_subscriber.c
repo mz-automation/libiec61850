@@ -879,6 +879,24 @@ SVSubscriber_ASDU_getDataSize(SVSubscriber_ASDU self)
 }
 
 uint16_t
+SVSubscriber_ASDU_getSmpSynch(SVSubscriber_ASDU self)
+{
+    uint16_t retVal;
+    uint8_t* valBytes = (uint8_t*) &retVal;
+
+#if (ORDER_LITTLE_ENDIAN == 1)
+    valBytes[0] = self->smpSynch[1];
+    valBytes[1] = self->smpSynch[0];
+#else
+    valBytes[0] = self->smpSynch[0];
+    valBytes[1] = self->smpSynch[1];
+#endif
+
+    return retVal;
+
+}
+
+uint16_t
 SVClientASDU_getSmpCnt(SVSubscriber_ASDU self)
 {
     return SVSubscriber_ASDU_getSmpCnt(self);
