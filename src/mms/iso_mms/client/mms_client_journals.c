@@ -320,8 +320,10 @@ parseListOfJournalEntries(uint8_t* buffer, int bufPos, int maxLength, LinkedList
 }
 
 bool
-mmsClient_parseReadJournalResponse(MmsConnection self, ByteBuffer* response, int respBufPos, bool* moreFollows, LinkedList* result)
+mmsClient_parseReadJournalResponse(ByteBuffer* response, int respBufPos, bool* moreFollows, LinkedList* result)
 {
+
+
     uint8_t* buffer = ByteBuffer_getBuffer(response);
     int maxBufPos = ByteBuffer_getSize(response);
     int bufPos = respBufPos;

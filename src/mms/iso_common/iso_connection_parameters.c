@@ -83,6 +83,9 @@ IsoConnectionParameters_setTlsConfiguration(IsoConnectionParameters self, TLSCon
 {
 #if (CONFIG_MMS_SUPPORT_TLS == 1)
     self->tlsConfiguration = tlsConfig;
+#else
+    (void)self;
+    (void)tlsConfig;
 #endif
 }
 

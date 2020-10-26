@@ -2423,7 +2423,7 @@ checkIfValueBelongsToModelNode(DataAttribute* dataAttribute, MmsValue* value, Mm
 }
 
 static FunctionalConstraint
-getFunctionalConstraintForWritableNode(MmsMapping* self, char* separator)
+getFunctionalConstraintForWritableNode(char* separator)
 {
     if (isFunctionalConstraintCF(separator))
         return IEC61850_FC_CF;
@@ -2739,7 +2739,7 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
     }
 #endif /* (CONFIG_IEC61850_SETTING_GROUPS == 1) */
 
-    FunctionalConstraint fc = getFunctionalConstraintForWritableNode(self, separator);
+    FunctionalConstraint fc = getFunctionalConstraintForWritableNode(separator);
 
 #if (CONFIG_IEC61850_SETTING_GROUPS == 1)
      if (fc == IEC61850_FC_SE) {
@@ -3141,6 +3141,8 @@ mmsReadAccessHandler (void* parameter, MmsDomain* domain, char* variableId, MmsS
 {
     MmsMapping* self = (MmsMapping*) parameter;
 
+    (void)isDirectAccess;
+
     if (DEBUG_IED_SERVER)
         printf("IED_SERVER: mmsReadAccessHandler: Requested %s\n", variableId);
 
@@ -3246,6 +3248,10 @@ variableListChangedHandler (void* parameter, bool create, MmsVariableListType li
         char* listName, MmsServerConnection connection)
 {
     MmsError allow = MMS_ERROR_NONE;
+
+    (void)connection;
+
+    /* TODO add log message */
 
 #if (DEBUG_IED_SERVER == 1)
     if (create)
@@ -3784,7 +3790,7 @@ IedServer_performPeriodicTasks(IedServer self)
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
 /* single worker thread for all enabled GOOSE and report control blocks */
-static void
+static void*
 eventWorkerThread(MmsMapping* self)
 {
     bool running = true;
@@ -3800,6 +3806,8 @@ eventWorkerThread(MmsMapping* self)
 
     if (DEBUG_IED_SERVER)
         printf("IED_SERVER: event worker thread finished!\n");
+
+    return NULL;
 }
 
 void

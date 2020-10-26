@@ -152,7 +152,7 @@ SVReceiver_removeSubscriber(SVReceiver self, SVSubscriber subscriber)
 #endif
 }
 
-static void
+static void*
 svReceiverLoop(void* threadParameter)
 {
     SVReceiver self = (SVReceiver) threadParameter;
@@ -166,6 +166,8 @@ svReceiverLoop(void* threadParameter)
     }
 
     self->stopped = true;
+
+    return NULL;
 }
 
 void
@@ -257,6 +259,8 @@ SVReceiver_stopThreadless(SVReceiver self)
 static void
 parseASDU(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, int length)
 {
+    (void)self;
+
     int bufPos = 0;
     int svIdLength = 0;
     int datSetLength = 0;

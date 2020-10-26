@@ -110,6 +110,8 @@ mmsClient_createInitiateRequest(MmsConnection self, ByteBuffer* message)
 int
 mmsClient_createConcludeRequest(MmsConnection self, ByteBuffer* message)
 {
+    (void)self;
+
     if (message->maxSize > 1) {
         message->buffer[0] = 0x8b;
         message->buffer[1] = 0;

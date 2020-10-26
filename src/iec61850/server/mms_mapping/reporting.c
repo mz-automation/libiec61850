@@ -1102,7 +1102,7 @@ createUnbufferedReportControlBlock(ReportControlBlock* reportControlBlock,
 
 static MmsVariableSpecification*
 createBufferedReportControlBlock(ReportControlBlock* reportControlBlock,
-        ReportControl* reportControl, MmsMapping* mmsMapping)
+        ReportControl* reportControl)
 {
     MmsVariableSpecification* rcb = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
     rcb->name = StringUtils_copyString(reportControlBlock->name);
@@ -1346,7 +1346,7 @@ Reporting_createMmsBufferedRCBs(MmsMapping* self, MmsDomain* domain,
                 reportControlBlock->name);
 
         namedVariable->typeSpec.structure.elements[currentReport] =
-                createBufferedReportControlBlock(reportControlBlock, rc, self);
+                createBufferedReportControlBlock(reportControlBlock, rc);
 
         LinkedList_add(self->reportControls, rc);
 
@@ -1565,6 +1565,10 @@ checkReservationTimeout(MmsMapping* self, ReportControl* rc)
 void
 ReportControl_readAccess(ReportControl* rc, MmsMapping* mmsMapping, char* elementName)
 {
+    (void)elementName;
+
+    /* TODO add log message */
+
     /* check reservation timeout */
     if (rc->buffered) {
         checkReservationTimeout(mmsMapping, rc);

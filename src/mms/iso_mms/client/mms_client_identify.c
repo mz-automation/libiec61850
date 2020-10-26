@@ -52,6 +52,8 @@ mmsClient_createIdentifyRequest(uint32_t invokeId, ByteBuffer* request)
 bool
 mmsClient_parseIdentifyResponse(MmsConnection self, ByteBuffer* response, uint32_t respBufPos, uint32_t invokeId, MmsConnection_IdentifyHandler handler, void* parameter)
 {
+    (void)self;
+
     uint8_t* buffer = ByteBuffer_getBuffer(response);
     int maxBufPos = ByteBuffer_getSize(response);
     int length;

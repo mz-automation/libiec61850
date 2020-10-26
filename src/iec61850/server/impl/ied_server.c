@@ -906,12 +906,15 @@ IedServer_setGoCBHandler(IedServer self, GoCBEventHandler handler, void* paramet
 MmsValue*
 IedServer_getAttributeValue(IedServer self, DataAttribute* dataAttribute)
 {
+    (void)self;
     return dataAttribute->mmsValue;
 }
 
 bool
 IedServer_getBooleanAttributeValue(IedServer self, const DataAttribute* dataAttribute)
 {
+    (void)self;
+
     assert(self != NULL);
     assert(dataAttribute != NULL);
     assert(dataAttribute->mmsValue != NULL);
@@ -923,6 +926,8 @@ IedServer_getBooleanAttributeValue(IedServer self, const DataAttribute* dataAttr
 int32_t
 IedServer_getInt32AttributeValue(IedServer self, const DataAttribute* dataAttribute)
 {
+    (void)self;
+
     assert(self != NULL);
     assert(dataAttribute != NULL);
     assert(dataAttribute->mmsValue != NULL);
@@ -935,6 +940,8 @@ IedServer_getInt32AttributeValue(IedServer self, const DataAttribute* dataAttrib
 int64_t
 IedServer_getInt64AttributeValue(IedServer self, const DataAttribute* dataAttribute)
 {
+    (void)self;
+
     assert(self != NULL);
     assert(dataAttribute != NULL);
     assert(dataAttribute->mmsValue != NULL);
@@ -947,6 +954,8 @@ IedServer_getInt64AttributeValue(IedServer self, const DataAttribute* dataAttrib
 uint32_t
 IedServer_getUInt32AttributeValue(IedServer self, const DataAttribute* dataAttribute)
 {
+    (void)self;
+
     assert(self != NULL);
     assert(dataAttribute != NULL);
     assert(dataAttribute->mmsValue != NULL);
@@ -959,6 +968,8 @@ IedServer_getUInt32AttributeValue(IedServer self, const DataAttribute* dataAttri
 float
 IedServer_getFloatAttributeValue(IedServer self, const DataAttribute* dataAttribute)
 {
+    (void)self;
+
     assert(self != NULL);
     assert(dataAttribute != NULL);
     assert(dataAttribute->mmsValue != NULL);
@@ -970,6 +981,8 @@ IedServer_getFloatAttributeValue(IedServer self, const DataAttribute* dataAttrib
 uint64_t
 IedServer_getUTCTimeAttributeValue(IedServer self, const DataAttribute* dataAttribute)
 {
+    (void)self;
+
     assert(self != NULL);
     assert(dataAttribute != NULL);
     assert(dataAttribute->mmsValue != NULL);
@@ -981,6 +994,8 @@ IedServer_getUTCTimeAttributeValue(IedServer self, const DataAttribute* dataAttr
 uint32_t
 IedServer_getBitStringAttributeValue(IedServer self, const DataAttribute* dataAttribute)
 {
+    (void)self;
+
     assert(self != NULL);
     assert(dataAttribute != NULL);
     assert(dataAttribute->mmsValue != NULL);
@@ -993,6 +1008,8 @@ IedServer_getBitStringAttributeValue(IedServer self, const DataAttribute* dataAt
 const char*
 IedServer_getStringAttributeValue(IedServer self, const DataAttribute* dataAttribute)
 {
+    (void)self;
+
     assert(self != NULL);
     assert(dataAttribute != NULL);
     assert(dataAttribute->mmsValue != NULL);
@@ -1571,6 +1588,8 @@ IedServer_changeActiveSettingGroup(IedServer self, SettingGroupControlBlock* sgc
 uint8_t
 IedServer_getActiveSettingGroup(IedServer self, SettingGroupControlBlock* sgcb)
 {
+    (void)self;
+
     return sgcb->actSG;
 }
 

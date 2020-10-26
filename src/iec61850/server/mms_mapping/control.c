@@ -49,9 +49,9 @@
 #define PENDING_EVENT_OP_OK_TRUE 16
 #define PENDING_EVENT_OP_OK_FALSE 32
 
-static MmsValue emptyString = {MMS_STRUCTURE};
+static MmsValue emptyString = {MMS_STRUCTURE, false, {0}};
 
-static MmsValue delayedResponse = {MMS_DATA_ACCESS_ERROR, 0, {DATA_ACCESS_ERROR_NO_RESPONSE}};
+static MmsValue delayedResponse = {MMS_DATA_ACCESS_ERROR, false, {DATA_ACCESS_ERROR_NO_RESPONSE}};
 
 void
 ControlObject_sendLastApplError(ControlObject* self, MmsServerConnection connection, char* ctlVariable, int error,

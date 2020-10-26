@@ -1195,6 +1195,9 @@ CDC_STV_create(const char* dataObjectName, ModelNode* parent,
         uint32_t wpOptions,
         bool hasOldStatus)
 {
+    (void)controlOptions; /* TODO implement */
+    (void)wpOptions; /* TODO implement */
+
     DataObject* newSTV = DataObject_create(dataObjectName, parent, 0);
 
     CDC_INS_create("actSt", (ModelNode*) newSTV, 0);
@@ -1214,6 +1217,9 @@ CDC_ALM_create(const char* dataObjectName, ModelNode* parent,
         uint32_t wpOptions,
         bool hasOldStatus)
 {
+    (void)controlOptions; /* TODO implement */
+    (void)wpOptions; /* TODO implement */
+
     DataObject* newALM = DataObject_create(dataObjectName, parent, 0);
 
     CDC_SPC_create("almAck", (ModelNode*) newALM, 0, CDC_CTL_MODEL_DIRECT_NORMAL | CDC_CTL_OPTION_ORIGIN);
@@ -1237,6 +1243,9 @@ CDC_CMD_create(const char* dataObjectName, ModelNode* parent,
         bool hasCmTm,
         bool hasCmCt)
 {
+    (void)hasCmTm; /* TODO implement */
+    (void)hasCmCt; /* TODO implement */
+
     DataObject* newCMD = DataObject_create(dataObjectName, parent, 0);
 
     CDC_INC_create("actSt", (ModelNode*) newCMD, 0, controlOptions);
@@ -1263,6 +1272,8 @@ CDC_CTE_create(const char* dataObjectName, ModelNode* parent,
         uint32_t wpOptions,
         bool hasHisRs)
 {
+    (void)controlOptions; /* TODO implement */
+
     DataObject* newCTE = DataObject_create(dataObjectName, parent, 0);
 
     CDC_SPC_create("manRs", (ModelNode*) newCTE, 0, CDC_CTL_MODEL_DIRECT_NORMAL | CDC_CTL_OPTION_ORIGIN);
@@ -1302,6 +1313,8 @@ CDC_TMS_create(const char* dataObjectName, ModelNode* parent,
         uint32_t wpOptions,
         bool hasHisRs)
 {
+    (void)controlOptions; /* TODO implement */
+
     DataObject* newTMS = DataObject_create(dataObjectName, parent, 0);
 
     CDC_SPC_create("manRs", (ModelNode*) newTMS, 0, CDC_CTL_MODEL_DIRECT_NORMAL | CDC_CTL_OPTION_ORIGIN);

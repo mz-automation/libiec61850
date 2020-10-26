@@ -555,6 +555,8 @@ IedConnection_setState(IedConnection self, IedConnectionState newState)
 static void
 mmsConnectionStateChangedHandler(MmsConnection connection, void* parameter, MmsConnectionState newState)
 {
+    (void)connection;
+
     IedConnection self = (IedConnection) parameter;
 
     if (newState == MMS_CONNECTION_STATE_CONNECTED) {
@@ -1894,6 +1896,8 @@ struct sClientProvidedFileReadHandler {
 static void
 mmsFileReadHandler(void* parameter, int32_t frsmId, uint8_t* buffer, uint32_t bytesReceived)
 {
+    (void)frsmId;
+
     struct sClientProvidedFileReadHandler* handler = (struct sClientProvidedFileReadHandler*) parameter;
 
     handler->retVal = handler->handler(handler->handlerParameter, buffer, bytesReceived);
@@ -1955,6 +1959,11 @@ IedConnection_getFile(IedConnection self, IedClientError* error, const char* fil
 static void
 mmsConnectionFileCloseHandler (uint32_t invokeId, void* parameter, MmsError mmsError, bool success)
 {
+    (void)mmsError;
+    (void)success;
+
+    /* TODO log error */
+
     IedConnection self = (IedConnection) parameter;
 
     IedConnectionOutstandingCall call = iedConnection_lookupOutstandingCall(self, invokeId);
@@ -2033,6 +2042,9 @@ mmsConnectionFileReadHandler (uint32_t invokeId, void* parameter, MmsError mmsEr
 static void
 mmsConnectionFileOpenHandler (uint32_t invokeId, void* parameter, MmsError mmsError, int32_t frsmId, uint32_t fileSize, uint64_t lastModified)
 {
+    (void)fileSize;
+    (void)lastModified;
+
     IedConnection self = (IedConnection) parameter;
 
     IedConnectionOutstandingCall call = iedConnection_lookupOutstandingCall(self, invokeId);
@@ -2131,6 +2143,8 @@ IedConnection_setFile(IedConnection self, IedClientError* error, const char* sou
 static void
 deleteFileAndSetFileHandler (uint32_t invokeId, void* parameter, MmsError mmsError, bool success)
 {
+    (void)success;
+
     IedConnection self = (IedConnection) parameter;
 
     IedConnectionOutstandingCall call = iedConnection_lookupOutstandingCall(self, invokeId);

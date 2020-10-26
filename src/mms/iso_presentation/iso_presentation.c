@@ -541,7 +541,7 @@ IsoPresentation_parseAcceptMessage(IsoPresentation* self, ByteBuffer* byteBuffer
 void
 IsoPresentation_init(IsoPresentation* self)
 {
-
+    (void)self;
 }
 
 void

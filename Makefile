@@ -135,7 +135,7 @@ CFLAGS += -Wnested-externs
 CFLAGS += -Wmissing-declarations 
 CFLAGS += -Wshadow
 CFLAGS += -Wall
-CGLAGS += -Wextra
+CFLAGS += -Wextra
 #CFLAGS += -Werror  
 
 all:	lib

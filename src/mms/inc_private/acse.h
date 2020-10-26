@@ -71,9 +71,6 @@ typedef struct sAcseConnection
 LIB61850_INTERNAL void
 AcseConnection_init(AcseConnection* self, AcseAuthenticator authenticator, void* parameter, TLSSocket tlsSocket);
 
-LIB61850_INTERNAL void
-AcseConnection_destroy(AcseConnection* self);
-
 LIB61850_INTERNAL AcseIndication
 AcseConnection_parseMessage(AcseConnection* self, ByteBuffer* message);
 

@@ -873,7 +873,7 @@ handleAsyncResponse(MmsConnection self, ByteBuffer* response, uint32_t bufPos, M
             bool moreFollows = false;
             LinkedList entries = NULL;
 
-            if (mmsClient_parseReadJournalResponse(self, response, bufPos, &moreFollows, &entries) == false) {
+            if (mmsClient_parseReadJournalResponse(response, bufPos, &moreFollows, &entries) == false) {
                 handler(outstandingCall->invokeId, outstandingCall->userParameter, MMS_ERROR_PARSING_RESPONSE, NULL, false);
             }
             else {
@@ -1463,6 +1463,8 @@ MmsConnection_createInternal(TLSConfiguration tlsConfig, bool createThread)
         if (tlsConfig) {
             IsoConnectionParameters_setTlsConfiguration(self->isoParameters, tlsConfig);
         }
+#else
+        (void)tlsConfig;
 #endif /* (CONFIG_MMS_SUPPORT_TLS == 1) */
 
 #if (CONFIG_MMS_THREADLESS_STACK == 0)
@@ -1956,6 +1958,8 @@ struct getNameListParameters
 static void
 getNameListHandler(uint32_t invokeId, void* parameter, MmsError mmsError, LinkedList nameList, bool moreFollows)
 {
+    (void)invokeId;
+
     struct getNameListParameters* parameters = (struct getNameListParameters*) parameter;
 
     parameters->err = mmsError;
@@ -2129,6 +2133,8 @@ struct readNVParameters
 static void
 readVariableHandler(uint32_t invokeId, void* parameter, MmsError mmsError, MmsValue* value)
 {
+    (void)invokeId;
+
     struct readNVParameters* parameters = (struct readNVParameters*) parameter;
 
     parameters->err = mmsError;
@@ -2609,6 +2615,8 @@ struct readNVLDirectoryParameters
 static void
 readNVLDirectoryHandler(uint32_t invokeId, void* parameter, MmsError mmsError, LinkedList /* <MmsVariableAccessSpecification*> */ specs, bool deletable)
 {
+    (void)invokeId;
+
     struct readNVLDirectoryParameters* parameters = (struct readNVLDirectoryParameters*) parameter;
 
     parameters->err = mmsError;
@@ -2765,6 +2773,8 @@ struct defineNVLParameters
 static void
 defineNVLHandler(uint32_t invokeId, void* parameter, MmsError mmsError, bool success)
 {
+    (void)invokeId;
+
     struct defineNVLParameters* parameters = (struct defineNVLParameters*) parameter;
 
     parameters->err = mmsError;
@@ -3022,6 +3032,8 @@ struct getVarAccessAttrParameters
 static void
 getAccessAttrHandler(uint32_t invokeId, void* parameter, MmsError mmsError, MmsVariableSpecification* typeSpec)
 {
+    (void)invokeId;
+
     struct getVarAccessAttrParameters* parameters = (struct getVarAccessAttrParameters*) parameter;
 
     parameters->err = mmsError;
@@ -3102,6 +3114,8 @@ struct identifyParameters
 static void
 identifyHandler(uint32_t invokeId, void* parameter, MmsError mmsError, char* vendorName, char* modelName, char* revision)
 {
+    (void)invokeId;
+
     struct identifyParameters* parameters = (struct identifyParameters*) parameter;
 
     parameters->err = mmsError;
@@ -3188,6 +3202,8 @@ struct getServerStatusParameters
 static void
 getServerStatusHandler(uint32_t invokeId, void* parameter, MmsError mmsError, int vmdLogicalStatus, int vmdPhysicalStatus)
 {
+    (void)invokeId;
+
     struct getServerStatusParameters* parameters = (struct getServerStatusParameters*) parameter;
 
     parameters->err = mmsError;
@@ -3285,19 +3301,19 @@ MmsJournalEntry_destroy(MmsJournalEntry self)
     }
 }
 
-const MmsValue*
+MmsValue*
 MmsJournalEntry_getEntryID(MmsJournalEntry self)
 {
     return self->entryID;
 }
 
-const MmsValue*
+MmsValue*
 MmsJournalEntry_getOccurenceTime(MmsJournalEntry self)
 {
     return self->occurenceTime;
 }
 
-const LinkedList /* <MmsJournalVariable> */
+LinkedList /* <MmsJournalVariable> */
 MmsJournalEntry_getJournalVariables(MmsJournalEntry self)
 {
     return self->journalVariables;
@@ -3309,7 +3325,7 @@ MmsJournalVariable_getTag(MmsJournalVariable self)
     return self->tag;
 }
 
-const MmsValue*
+MmsValue*
 MmsJournalVariable_getValue(MmsJournalVariable self)
 {
     return self->value;
@@ -3326,6 +3342,8 @@ struct readJournalParameters
 static void
 readJournalHandler(uint32_t invokeId, void* parameter, MmsError mmsError, LinkedList entries, bool moreFollows)
 {
+    (void)invokeId;
+
     struct readJournalParameters* parameters = (struct readJournalParameters*) parameter;
 
     parameters->err = mmsError;
@@ -3493,6 +3511,8 @@ struct fileOpenParameters
 static void
 fileOpenHandler(uint32_t invokeId, void* parameter, MmsError mmsError, int32_t frsmId, uint32_t fileSize, uint64_t lastModified)
 {
+    (void)invokeId;
+
     struct fileOpenParameters* parameters = (struct fileOpenParameters*) parameter;
 
     parameters->err = mmsError;
@@ -3600,6 +3620,8 @@ struct fileOperationParameters
 static void
 fileOperationHandler(uint32_t invokeId, void* parameter, MmsError mmsError, bool success)
 {
+    (void)invokeId;
+
     struct fileOperationParameters* parameters = (struct fileOperationParameters*) parameter;
 
     parameters->err = mmsError;
@@ -3769,6 +3791,8 @@ static void
 fileReadHandler(uint32_t invokeId, void* parameter, MmsError mmsError, int frsmId, uint8_t* buffer, uint32_t byteReceived,
         bool moreFollows)
 {
+    (void)invokeId;
+
     struct fileReadParameters* parameters = (struct fileReadParameters*) parameter;
 
     parameters->err = mmsError;
@@ -3874,6 +3898,8 @@ static void
 getFileDirHandler(uint32_t invokeId, void* parameter, MmsError mmsError, char* filename, uint32_t size, uint64_t lastModified,
         bool moreFollows)
 {
+    (void)invokeId;
+
     struct getFileDirParameters* parameters = (struct getFileDirParameters*) parameter;
 
     parameters->err = mmsError;
@@ -4129,6 +4155,8 @@ exit_function:
 static void
 writeVariableHandler(uint32_t invokeId, void* parameter, MmsError mmsError, MmsDataAccessError accessError)
 {
+    (void)invokeId;
+
     struct writeVariableParameters* parameters = (struct writeVariableParameters*) parameter;
 
     parameters->err = mmsError;
@@ -4274,6 +4302,8 @@ struct writeMultipleVariablesParameter
 static void
 writeMultipleVariablesHandler(uint32_t invokeId, void* parameter, MmsError mmsError, LinkedList /* <MmsValue*> */ accessResults)
 {
+    (void)invokeId;
+
     struct writeMultipleVariablesParameter* parameters = (struct writeMultipleVariablesParameter*) parameter;
 
     parameters->err = mmsError;

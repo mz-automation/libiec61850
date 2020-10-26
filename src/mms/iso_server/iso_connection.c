@@ -114,7 +114,6 @@ finalizeIsoConnection(IsoConnection self)
 
     GLOBAL_FREEMEM(self->session);
     GLOBAL_FREEMEM(self->presentation);
-    AcseConnection_destroy(self->acseConnection);
     GLOBAL_FREEMEM(self->acseConnection);
 
     GLOBAL_FREEMEM(self->cotpReadBuf);
@@ -462,7 +461,7 @@ exit_function:
 
 #if ((CONFIG_MMS_SINGLE_THREADED == 0) && (CONFIG_MMS_THREADLESS_STACK == 0))
 /* only for multi-thread mode */
-static void
+static void*
 handleTcpConnection(void* parameter)
 {
     IsoConnection self = (IsoConnection) parameter;
@@ -475,6 +474,8 @@ handleTcpConnection(void* parameter)
     finalizeIsoConnection(self);
 
     self->state = ISO_CON_STATE_TERMINATED;
+
+    return NULL;
 }
 #endif /* (CONFIG_MMS_SINGLE_THREADED == 0) */
 

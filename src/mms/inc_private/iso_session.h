@@ -58,10 +58,10 @@ LIB61850_INTERNAL void
 IsoSession_createConnectSpdu(IsoSession* self, IsoConnectionParameters isoParameters, BufferChain buffer, BufferChain payload);
 
 LIB61850_INTERNAL IsoSessionIndication
-IsoSession_parseMessage(IsoSession* session, ByteBuffer* message);
+IsoSession_parseMessage(IsoSession* self, ByteBuffer* message);
 
 LIB61850_INTERNAL void
-IsoSession_createDataSpdu(IsoSession* session, BufferChain buffer, BufferChain payload);
+IsoSession_createDataSpdu(IsoSession* self, BufferChain buffer, BufferChain payload);
 
 LIB61850_INTERNAL void
 IsoSession_createAcceptSpdu(IsoSession* self, BufferChain buffer, BufferChain payload);

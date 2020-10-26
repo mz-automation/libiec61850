@@ -527,7 +527,7 @@ handleIsoConnections(IsoServer self, bool isSingleThread)
 
 #if (CONFIG_MMS_SINGLE_THREADED == 0) && (CONFIG_MMS_THREADLESS_STACK == 0)
 /* only required for multi-threaded server! */
-static void
+static void*
 isoServerThread(void* isoServerParam)
 {
     IsoServer self = (IsoServer) isoServerParam;
@@ -557,6 +557,8 @@ cleanUp:
 
     if (DEBUG_ISO_SERVER)
         printf("ISO_SERVER: isoServerThread %p stopped\n", isoServerParam);
+
+    return NULL;
 }
 #endif
 
@@ -708,7 +710,7 @@ IsoServer_waitReady(IsoServer self, unsigned int timeoutMs)
    if (getState(self) == ISO_SVR_STATE_RUNNING) {
 
        if (self->handleset) {
-           result = Handleset_waitReady(self->handleset, 10);
+           result = Handleset_waitReady(self->handleset, timeoutMs);
        }
        else {
            if (DEBUG_ISO_SERVER)

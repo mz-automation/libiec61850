@@ -154,6 +154,8 @@ LogInstance_logEntryData(LogInstance* self, uint64_t entryID, const char* dataRe
 void
 LogInstance_logEntryFinished(LogInstance* self, uint64_t entryID)
 {
+    (void)entryID;
+
     self->locked = false;
 }
 
@@ -451,6 +453,8 @@ MmsDataAccessError
 LIBIEC61850_LOG_SVC_writeAccessLogControlBlock(MmsMapping* self, MmsDomain* domain, char* variableIdOrig,
         MmsValue* value, MmsServerConnection connection)
 {
+    (void)connection;
+
     MmsDataAccessError retVal = DATA_ACCESS_ERROR_SUCCESS;
 
     bool updateValue = false;

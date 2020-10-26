@@ -52,6 +52,8 @@ mmsClient_createStatusRequest(uint32_t invokeId, ByteBuffer* request, bool exten
 bool
 mmsClient_parseStatusResponse(MmsConnection self, ByteBuffer* response, int bufPos, int* vmdLogicalStatus, int* vmdPhysicalStatus)
 {
+    (void)self;
+
     uint8_t* buffer = ByteBuffer_getBuffer(response);
     int maxBufPos = ByteBuffer_getSize(response);
     int length;

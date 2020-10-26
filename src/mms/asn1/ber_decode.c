@@ -105,6 +105,9 @@ BerDecoder_decodeLength(uint8_t* buffer, int* length, int bufPos, int maxBufPos)
 char*
 BerDecoder_decodeString(uint8_t* buffer, int strlen, int bufPos, int maxBufPos)
 {
+    if (maxBufPos - bufPos < 0)
+        return NULL;
+
     char* string = (char*) GLOBAL_MALLOC(strlen + 1);
     memcpy(string, buffer + bufPos, strlen);
     string[strlen] = 0;

@@ -354,7 +354,7 @@ mmsClient_createReadJournalRequestStartAfter(uint32_t invokeId, ByteBuffer* requ
         MmsValue* timeSpecification, MmsValue* entrySpecification);
 
 LIB61850_INTERNAL bool
-mmsClient_parseReadJournalResponse(MmsConnection self, ByteBuffer* response, int respBufPos, bool* moreFollows, LinkedList* result);
+mmsClient_parseReadJournalResponse(ByteBuffer* response, int respBufPos, bool* moreFollows, LinkedList* result);
 
 LIB61850_INTERNAL void
 mmsClient_handleFileOpenRequest(MmsConnection connection,

@@ -43,6 +43,10 @@ readLine(FileHandle fileHandle, uint8_t* buffer, int maxSize)
 
     /* eat up leading cr or lf */
     while (fileReadResult > 0) {
+
+        if (bytesRead == maxSize)
+            break;
+
         fileReadResult = FileSystem_readFile(fileHandle, buffer + bufPos, 1);
 
         if (fileReadResult == 1) {
@@ -57,6 +61,10 @@ readLine(FileHandle fileHandle, uint8_t* buffer, int maxSize)
 
     if (fileReadResult > 0) {
         while (fileReadResult > 0) {
+
+            if (bytesRead == maxSize)
+                break;
+
             fileReadResult = FileSystem_readFile(fileHandle, buffer + bufPos, 1);
 
             if (fileReadResult == 1) {

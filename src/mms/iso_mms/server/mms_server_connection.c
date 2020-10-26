@@ -409,6 +409,8 @@ handleConfirmedErrorPdu(
         uint8_t* buffer, int bufPos, int maxBufPos,
         ByteBuffer* response)
 {
+    (void)response;
+
     uint32_t invokeId = 0;
     bool hasInvokeId = false;
     MmsServiceError serviceError;
@@ -457,6 +459,10 @@ getUploadTaskByInvokeId(MmsServer mmsServer, uint32_t invokeId)
 static void
 mmsFileReadHandler(uint32_t invokeId, void* parameter, MmsError mmsError, int32_t frsmId, uint8_t* buffer, uint32_t bytesReceived, bool moreFollows)
 {
+    (void)invokeId;
+    (void)frsmId;
+    (void)moreFollows;
+
     MmsObtainFileTask task = (MmsObtainFileTask) parameter;
 
     if (mmsError == MMS_ERROR_NONE) {

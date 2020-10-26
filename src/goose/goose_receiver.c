@@ -841,7 +841,7 @@ parseGooseMessage(GooseReceiver self, uint8_t* buffer, int numbytes)
 }
 
 #if (CONFIG_MMS_THREADLESS_STACK == 0)
-static void
+static void*
 gooseReceiverLoop(void *threadParameter)
 {
     GooseReceiver self = (GooseReceiver) threadParameter;
@@ -870,6 +870,8 @@ gooseReceiverLoop(void *threadParameter)
     }
 
     EthernetHandleSet_destroy(handleSet);
+
+    return NULL;
 }
 #endif
 

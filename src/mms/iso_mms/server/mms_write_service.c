@@ -34,6 +34,8 @@ void
 mmsServer_createMmsWriteResponse(MmsServerConnection connection,
         uint32_t invokeId, ByteBuffer* response, int numberOfItems, MmsDataAccessError* accessResults)
 {
+    (void)connection;
+
     int bufPos = 0;
     uint8_t* buffer = response->buffer;
 
@@ -54,6 +56,13 @@ mmsServer_createMmsWriteResponse(MmsServerConnection connection,
     uint32_t writeResponseLength = 2 + invokeIdLength
                                  + 1 + BerEncoder_determineLengthSize(accessResultsLength)
                                  + accessResultsLength;
+
+    if ((int)(writeResponseLength + 1) > response->maxSize) {
+        /* TODO add log message */
+
+        response->size = 0;
+        return;
+    }
 
     /* Encode write response */
 
@@ -478,6 +487,9 @@ mmsServer_handleWriteRequest(
 		uint32_t invokeId,
 		ByteBuffer* response)
 {
+    (void)bufPos;
+    (void)maxBufPos;
+
 	MmsPdu_t* mmsPdu = 0;
 
 	asn_dec_rval_t rval; /* Decoder return value  */

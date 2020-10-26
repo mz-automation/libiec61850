@@ -1251,19 +1251,19 @@ struct sMmsJournalVariable {
 LIB61850_API void
 MmsJournalEntry_destroy(MmsJournalEntry self);
 
-LIB61850_API const MmsValue*
+LIB61850_API MmsValue*
 MmsJournalEntry_getEntryID(MmsJournalEntry self);
 
-LIB61850_API const MmsValue*
+LIB61850_API MmsValue*
 MmsJournalEntry_getOccurenceTime(MmsJournalEntry self);
 
-LIB61850_API const LinkedList /* <MmsJournalVariable> */
+LIB61850_API LinkedList /* <MmsJournalVariable> */
 MmsJournalEntry_getJournalVariables(MmsJournalEntry self);
 
 LIB61850_API const char*
 MmsJournalVariable_getTag(MmsJournalVariable self);
 
-LIB61850_API const MmsValue*
+LIB61850_API MmsValue*
 MmsJournalVariable_getValue(MmsJournalVariable self);
 
 typedef void

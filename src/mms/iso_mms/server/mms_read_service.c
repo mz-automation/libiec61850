@@ -911,6 +911,9 @@ mmsServer_handleReadRequest(
 		uint32_t invokeId,
 		ByteBuffer* response)
 {
+    (void)bufPos;
+    (void)maxBufPos;
+
 	ReadRequest_t* request = 0; /* allow asn1c to allocate structure */
 
 	MmsPdu_t* mmsPdu = 0;

@@ -118,6 +118,8 @@ mmsServer_handleDeleteNamedVariableListRequest(MmsServerConnection connection,
 		uint32_t invokeId,
 		ByteBuffer* response)
 {
+    (void)bufPos;
+
 	DeleteNamedVariableListRequest_t* request = 0;
 
     MmsPdu_t* mmsPdu = 0;
@@ -265,6 +267,8 @@ createDefineNamedVariableListResponse(uint32_t invokeId, ByteBuffer* response)
 static bool
 checkIfVariableExists(MmsDevice* device, MmsAccessSpecifier* accessSpecifier)
 {
+    (void)device;
+
     if (accessSpecifier->domain == NULL)
         return false;
 
@@ -510,6 +514,8 @@ mmsServer_handleDefineNamedVariableListRequest(
 		uint32_t invokeId,
 		ByteBuffer* response)
 {
+    (void)bufPos;
+
 	DefineNamedVariableListRequest_t* request = 0;
 
 	MmsPdu_t* mmsPdu = 0;

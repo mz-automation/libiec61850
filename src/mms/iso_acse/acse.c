@@ -407,15 +407,12 @@ AcseConnection_init(AcseConnection* self, AcseAuthenticator authenticator, void*
 
 #if (CONFIG_MMS_SUPPORT_TLS == 1)
     self->tlsSocket = tlsSocket;
+#else
+    (void)tlsSocket;
 #endif
 
     memset(&(self->applicationReference), 0,
             sizeof(self->applicationReference));
-}
-
-void
-AcseConnection_destroy(AcseConnection* connection)
-{
 }
 
 AcseIndication
@@ -575,6 +572,8 @@ AcseConnection_createAssociateRequestMessage(AcseConnection* self,
         BufferChain payload,
         AcseAuthenticationParameter authParameter)
 {
+    (void)self;
+
     assert(self != NULL);
     assert(writeBuffer != NULL);
     assert(payload != NULL);
@@ -777,6 +776,8 @@ AcseConnection_createAssociateRequestMessage(AcseConnection* self,
 void
 AcseConnection_createAbortMessage(AcseConnection* self, BufferChain writeBuffer, bool isProvider)
 {
+    (void)self;
+
     uint8_t* buffer = writeBuffer->buffer;
 
     buffer[0] = 0x64; /* [APPLICATION 4] */
@@ -797,6 +798,8 @@ AcseConnection_createAbortMessage(AcseConnection* self, BufferChain writeBuffer,
 void
 AcseConnection_createReleaseRequestMessage(AcseConnection* self, BufferChain writeBuffer)
 {
+    (void)self;
+
     uint8_t* buffer = writeBuffer->buffer;
 
     buffer[0] = 0x62;
@@ -813,6 +816,8 @@ AcseConnection_createReleaseRequestMessage(AcseConnection* self, BufferChain wri
 void
 AcseConnection_createReleaseResponseMessage(AcseConnection* self, BufferChain writeBuffer)
 {
+    (void)self;
+
     uint8_t* buffer = writeBuffer->buffer;
 
     buffer[0] = 0x63;

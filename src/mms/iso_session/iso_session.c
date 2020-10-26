@@ -225,8 +225,10 @@ parseSessionHeaderParameters(IsoSession* session, ByteBuffer* message, int param
 static const uint8_t dataSpdu[] = { 0x01, 0x00, 0x01, 0x00 };
 
 void
-IsoSession_createDataSpdu(IsoSession* session, BufferChain buffer, BufferChain payload)
+IsoSession_createDataSpdu(IsoSession* self, BufferChain buffer, BufferChain payload)
 {
+    (void)self;
+
     buffer->buffer = (uint8_t*) dataSpdu;
     buffer->partLength = 4;
     buffer->length = 4 + payload->length;
@@ -286,7 +288,7 @@ encodeCalledSessionSelector(IsoSession* self, uint8_t* buf, int offset)
 }
 
 static int
-encodeSessionUserData(IsoSession* self, uint8_t* buf, int offset, uint8_t payloadLength)
+encodeSessionUserData(uint8_t* buf, int offset, uint8_t payloadLength)
 {
     buf[offset++] = 0xc1;
     buf[offset++] = payloadLength;
@@ -316,7 +318,7 @@ IsoSession_createConnectSpdu(IsoSession* self, IsoConnectionParameters isoParame
 
     offset = encodeCalledSessionSelector(self, buf, offset);
 
-    offset = encodeSessionUserData(self, buf, offset, payload->length);
+    offset = encodeSessionUserData(buf, offset, payload->length);
 
     int spduLength = (offset - lengthOffset - 1) + payload->length;
 
@@ -330,6 +332,8 @@ IsoSession_createConnectSpdu(IsoSession* self, IsoConnectionParameters isoParame
 void
 IsoSession_createAbortSpdu(IsoSession* self, BufferChain buffer, BufferChain payload)
 {
+    (void)self;
+
     int offset = 0;
     uint8_t* buf = buffer->buffer;
 
@@ -349,6 +353,8 @@ IsoSession_createAbortSpdu(IsoSession* self, BufferChain buffer, BufferChain pay
 void
 IsoSession_createFinishSpdu(IsoSession* self, BufferChain buffer, BufferChain payload)
 {
+    (void)self;
+
     int offset = 0;
     uint8_t* buf = buffer->buffer;
 
@@ -366,6 +372,8 @@ IsoSession_createFinishSpdu(IsoSession* self, BufferChain buffer, BufferChain pa
 void
 IsoSession_createDisconnectSpdu(IsoSession* self, BufferChain buffer, BufferChain payload)
 {
+    (void)self;
+
     int offset = 0;
     uint8_t* buf = buffer->buffer;
 
@@ -399,7 +407,7 @@ IsoSession_createAcceptSpdu(IsoSession* self, BufferChain buffer, BufferChain pa
 
     offset = encodeCalledSessionSelector(self, buf, offset);
 
-    offset = encodeSessionUserData(self, buf, offset, payloadLength);
+    offset = encodeSessionUserData(buf, offset, payloadLength);
 
     int spduLength = (offset - lengthOffset - 1) + payloadLength;
 
@@ -432,7 +440,7 @@ IsoSession_getUserData(IsoSession* session)
 }
 
 IsoSessionIndication
-IsoSession_parseMessage(IsoSession* session, ByteBuffer* message)
+IsoSession_parseMessage(IsoSession* self, ByteBuffer* message)
 {
     uint8_t* buffer = message->buffer;
     uint8_t id;
@@ -449,7 +457,7 @@ IsoSession_parseMessage(IsoSession* session, ByteBuffer* message)
     case 13: /* CONNECT(CN) SPDU */
         if (length != (message->size - 2))
             return SESSION_ERROR;
-        if (parseSessionHeaderParameters(session, message, length) == SESSION_OK)
+        if (parseSessionHeaderParameters(self, message, length) == SESSION_OK)
             return SESSION_CONNECT;
         else {
             if (DEBUG_SESSION)
@@ -460,7 +468,7 @@ IsoSession_parseMessage(IsoSession* session, ByteBuffer* message)
     case 14: /* ACCEPT SPDU */
         if (length != (message->size - 2))
             return SESSION_ERROR;
-        if (parseSessionHeaderParameters(session, message, length) == SESSION_OK)
+        if (parseSessionHeaderParameters(self, message, length) == SESSION_OK)
             return SESSION_CONNECT;
         else {
             if (DEBUG_SESSION)
@@ -474,7 +482,7 @@ IsoSession_parseMessage(IsoSession* session, ByteBuffer* message)
             return SESSION_ERROR;
 
         if ((length == 0) && (buffer[2] == 1) && (buffer[3] == 0)) {
-            ByteBuffer_wrap(&session->userData, message->buffer + 4, message->size - 4, message->maxSize - 4);
+            ByteBuffer_wrap(&self->userData, message->buffer + 4, message->size - 4, message->maxSize - 4);
 
             return SESSION_DATA;
         }
@@ -490,7 +498,7 @@ IsoSession_parseMessage(IsoSession* session, ByteBuffer* message)
         if (length != (message->size - 2))
             return SESSION_ERROR;
 
-        if (parseSessionHeaderParameters(session, message, length) == SESSION_OK)
+        if (parseSessionHeaderParameters(self, message, length) == SESSION_OK)
             return SESSION_FINISH;
         else
             return SESSION_ERROR;
@@ -504,7 +512,7 @@ IsoSession_parseMessage(IsoSession* session, ByteBuffer* message)
         if (length != (message->size - 2))
             return SESSION_ERROR;
 
-        if (parseSessionHeaderParameters(session, message, length) == SESSION_OK)
+        if (parseSessionHeaderParameters(self, message, length) == SESSION_OK)
             return SESSION_DISCONNECT;
         else
             return SESSION_ERROR;
