@@ -535,7 +535,7 @@ SVSubscriber_ASDU_getDataSize(SVSubscriber_ASDU self);
  *
  * \param self ASDU object instance
  */
-uint16_t
+uint8_t
 SVSubscriber_ASDU_getSmpSynch(SVSubscriber_ASDU self);
 
 #ifndef DEPRECATED
