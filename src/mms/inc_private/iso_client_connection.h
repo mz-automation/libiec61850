@@ -44,7 +44,7 @@ typedef enum
     ISO_IND_TICK
 } IsoIndication;
 
-typedef void*
+typedef bool
 (*IsoIndicationCallback)(IsoIndication indication, void* param, ByteBuffer* payload);
 
 /**
