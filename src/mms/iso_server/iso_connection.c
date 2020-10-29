@@ -119,7 +119,13 @@ finalizeIsoConnection(IsoConnection self)
     GLOBAL_FREEMEM(self->cotpReadBuf);
     GLOBAL_FREEMEM(self->cotpWriteBuf);
 
+    if (self->cotpConnection) {
+        if (self->cotpConnection->handleSet)
+            Handleset_destroy(self->cotpConnection->handleSet);
+    }
+
     GLOBAL_FREEMEM(self->cotpConnection);
+    self->cotpConnection = NULL;
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_destroy(self->conMutex);
@@ -589,6 +595,11 @@ IsoConnection_destroy(IsoConnection self)
 
     if (self->socket != NULL)
         Socket_destroy(self->socket);
+
+    if (self->cotpConnection) {
+        if (self->cotpConnection->handleSet)
+            Handleset_destroy(self->cotpConnection->handleSet);
+    }
 
     GLOBAL_FREEMEM(self);
 }

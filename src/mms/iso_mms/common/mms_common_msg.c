@@ -449,11 +449,14 @@ void
 mmsMsg_createExtendedFilename(const char* basepath, char* extendedFileName, char* fileName)
 {
 #if (CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME == 1)
-    strncpy(extendedFileName, basepath, 512);
-    strncat(extendedFileName, fileName, 512);
+    strncpy(extendedFileName, basepath, 511);
+    extendedFileName[511] = 0;
+    strncat(extendedFileName, fileName, 511);
+    extendedFileName[511] = 0;
 #else
     strcpy(extendedFileName, CONFIG_VIRTUAL_FILESTORE_BASEPATH);
-    strncat(extendedFileName, fileName, sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 256);
+    strncat(extendedFileName, fileName, sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 255);
+    extendedFileName[sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 255] = 0;
 #endif
 }
 

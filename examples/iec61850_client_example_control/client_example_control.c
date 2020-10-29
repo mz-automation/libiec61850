@@ -48,6 +48,7 @@ int main(int argc, char** argv) {
     if (error == IED_ERROR_OK) {
 
 
+#if 0
         /************************
          * Direct control
          ***********************/
@@ -149,29 +150,31 @@ int main(int argc, char** argv) {
         else {
             printf("Reading status for simpleIOGenericIO/GGIO1.SPCSO3 failed!\n");
         }
+#endif
+
 
         /***********************************************
          * Select before operate with enhanced security
          ***********************************************/
 
-        control = ControlObjectClient_create("simpleIOGenericIO/GGIO1.SPCSO4", con);
+        ControlObjectClient control = ControlObjectClient_create("TESTIED1LD0/CBCSWI1.Pos", con);
 
         ControlObjectClient_setCommandTerminationHandler(control, commandTerminationHandler, NULL);
 
-        ctlVal = MmsValue_newBoolean(true);
+        MmsValue* ctlVal = MmsValue_newBoolean(true);
 
         if (ControlObjectClient_selectWithValue(control, ctlVal)) {
 
             if (ControlObjectClient_operate(control, ctlVal, 0 /* operate now */)) {
-                printf("simpleIOGenericIO/GGIO1.SPCSO4 operated successfully\n");
+                printf("TESTIED1LD0/CBCSWI1.Pos\n");
             }
             else {
-                printf("failed to operate simpleIOGenericIO/GGIO1.SPCSO4!\n");
+                printf("TESTIED1LD0/CBCSWI1.Pos!\n");
             }
 
         }
         else {
-            printf("failed to select simpleIOGenericIO/GGIO1.SPCSO4!\n");
+            printf("failed to select TESTIED1LD0/CBCSWI1.Pos!\n");
         }
 
         MmsValue_delete(ctlVal);
@@ -181,7 +184,7 @@ int main(int argc, char** argv) {
 
         ControlObjectClient_destroy(control);
 
-
+#if 0
         /*********************************************************************
          * Direct control with enhanced security (expect CommandTermination-)
          *********************************************************************/
@@ -205,6 +208,7 @@ int main(int argc, char** argv) {
         Thread_sleep(1000);
 
         ControlObjectClient_destroy(control);
+#endif
 
 
         IedConnection_close(con);
