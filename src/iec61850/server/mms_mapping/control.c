@@ -267,6 +267,7 @@ copyControlValuesToTrackingObject(MmsMapping* self, ControlObject* controlObject
             }
             else if (serviceType == IEC61850_SERVICE_TYPE_CANCEL) {
                 if (controlObject->cancel) {
+                    operVal = controlObject->cancel;
                     if (trkInst->Test) {
                         MmsValue_update(trkInst->Test->mmsValue, getCancelParameterTest(operVal));
                     }
