@@ -138,10 +138,8 @@ MmsVariableSpecification_isValueOfType(MmsVariableSpecification* self, MmsValue*
             if (self->typeSpec.bitString == value->value.bitString.size)
                 return true;
 
-            if (self->typeSpec.bitString < 0) {
-                if (value->value.bitString.size <= (-self->typeSpec.bitString))
-                    return true;
-            }
+            if (self->typeSpec.bitString < 0)
+                return true;
         }
         else if (self->type == MMS_FLOAT) {
             if ((self->typeSpec.floatingpoint.exponentWidth == value->value.floatingPoint.exponentWidth) &&
