@@ -1034,7 +1034,6 @@ checkForUpdateTrigger(IedServer self, DataAttribute* dataAttribute)
                 LOG_CONTROL_VALUE_UPDATE);
 #endif
 
-
     }
 #endif /* ((CONFIG_IEC61850_REPORT_SERVICE == 1) || (CONFIG_IEC61850_LOG_SERVICE == 1)) */
 }
@@ -1089,9 +1088,7 @@ IedServer_updateAttributeValue(IedServer self, DataAttribute* dataAttribute, Mms
     assert(dataAttribute != NULL);
     assert(MmsValue_getType(dataAttribute->mmsValue) == MmsValue_getType(value));
 
-    if (MmsValue_equals(dataAttribute->mmsValue, value))
-        checkForUpdateTrigger(self, dataAttribute);
-    else {
+    if (MmsValue_equals(dataAttribute->mmsValue, value) == false) {
 
         if (dataAttribute->type == IEC61850_BOOLEAN) {
             /* Special treatment because of transient option */
@@ -1111,6 +1108,8 @@ IedServer_updateAttributeValue(IedServer self, DataAttribute* dataAttribute, Mms
             checkForChangedTriggers(self, dataAttribute);
         }
     }
+
+    checkForUpdateTrigger(self, dataAttribute);
 }
 
 void
@@ -1122,10 +1121,8 @@ IedServer_updateFloatAttributeValue(IedServer self, DataAttribute* dataAttribute
 
     float currentValue = MmsValue_toFloat(dataAttribute->mmsValue);
 
-    if (currentValue == value) {
-        checkForUpdateTrigger(self, dataAttribute);
-    }
-    else {
+    if (currentValue != value) {
+
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
         Semaphore_wait(self->dataModelLock);
 #endif
@@ -1135,6 +1132,8 @@ IedServer_updateFloatAttributeValue(IedServer self, DataAttribute* dataAttribute
 #endif
         checkForChangedTriggers(self, dataAttribute);
     }
+
+    checkForUpdateTrigger(self, dataAttribute);
 }
 
 void
@@ -1146,10 +1145,8 @@ IedServer_updateInt32AttributeValue(IedServer self, DataAttribute* dataAttribute
 
     int32_t currentValue = MmsValue_toInt32(dataAttribute->mmsValue);
 
-    if (currentValue == value) {
-        checkForUpdateTrigger(self, dataAttribute);
-    }
-    else {
+    if (currentValue != value) {
+
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
         Semaphore_wait(self->dataModelLock);
 #endif
@@ -1160,6 +1157,8 @@ IedServer_updateInt32AttributeValue(IedServer self, DataAttribute* dataAttribute
 
         checkForChangedTriggers(self, dataAttribute);
     }
+
+    checkForUpdateTrigger(self, dataAttribute);
 }
 
 void
@@ -1167,10 +1166,8 @@ IedServer_updateDbposValue(IedServer self, DataAttribute* dataAttribute, Dbpos v
 {
     Dbpos currentValue = Dbpos_fromMmsValue(dataAttribute->mmsValue);
 
-    if (currentValue == value) {
-        checkForUpdateTrigger(self, dataAttribute);
-    }
-    else {
+    if (currentValue != value) {
+
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
         Semaphore_wait(self->dataModelLock);
 #endif
@@ -1181,6 +1178,8 @@ IedServer_updateDbposValue(IedServer self, DataAttribute* dataAttribute, Dbpos v
 
         checkForChangedTriggers(self, dataAttribute);
     }
+
+    checkForUpdateTrigger(self, dataAttribute);
 }
 
 void
@@ -1192,10 +1191,8 @@ IedServer_updateInt64AttributeValue(IedServer self, DataAttribute* dataAttribute
 
     int64_t currentValue = MmsValue_toInt64(dataAttribute->mmsValue);
 
-    if (currentValue == value) {
-        checkForUpdateTrigger(self, dataAttribute);
-    }
-    else {
+    if (currentValue != value) {
+
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
         Semaphore_wait(self->dataModelLock);
 #endif
@@ -1206,6 +1203,8 @@ IedServer_updateInt64AttributeValue(IedServer self, DataAttribute* dataAttribute
 
         checkForChangedTriggers(self, dataAttribute);
     }
+
+    checkForUpdateTrigger(self, dataAttribute);
 }
 
 void
@@ -1217,10 +1216,8 @@ IedServer_updateUnsignedAttributeValue(IedServer self, DataAttribute* dataAttrib
 
     uint32_t currentValue = MmsValue_toUint32(dataAttribute->mmsValue);
 
-    if (currentValue == value) {
-        checkForUpdateTrigger(self, dataAttribute);
-    }
-    else {
+    if (currentValue != value) {
+
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
         Semaphore_wait(self->dataModelLock);
 #endif
@@ -1231,6 +1228,8 @@ IedServer_updateUnsignedAttributeValue(IedServer self, DataAttribute* dataAttrib
 
         checkForChangedTriggers(self, dataAttribute);
     }
+
+    checkForUpdateTrigger(self, dataAttribute);
 }
 
 void
@@ -1242,10 +1241,8 @@ IedServer_updateBitStringAttributeValue(IedServer self, DataAttribute* dataAttri
 
     uint32_t currentValue = MmsValue_getBitStringAsInteger(dataAttribute->mmsValue);
 
-    if (currentValue == value) {
-        checkForUpdateTrigger(self, dataAttribute);
-    }
-    else {
+    if (currentValue != value) {
+
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
         Semaphore_wait(self->dataModelLock);
 #endif
@@ -1256,6 +1253,8 @@ IedServer_updateBitStringAttributeValue(IedServer self, DataAttribute* dataAttri
 
         checkForChangedTriggers(self, dataAttribute);
     }
+
+    checkForUpdateTrigger(self, dataAttribute);
 }
 
 void
@@ -1267,11 +1266,7 @@ IedServer_updateBooleanAttributeValue(IedServer self, DataAttribute* dataAttribu
 
     bool currentValue = MmsValue_getBoolean(dataAttribute->mmsValue);
 
-    if (currentValue == value) {
-        checkForUpdateTrigger(self, dataAttribute);
-    }
-    else {
-
+    if (currentValue != value) {
         bool callCheckTriggers = true;
 
         if (dataAttribute->triggerOptions & TRG_OPT_TRANSIENT) {
@@ -1290,6 +1285,8 @@ IedServer_updateBooleanAttributeValue(IedServer self, DataAttribute* dataAttribu
         if (callCheckTriggers)
             checkForChangedTriggers(self, dataAttribute);
     }
+
+    checkForUpdateTrigger(self, dataAttribute);
 }
 
 void
@@ -1299,12 +1296,9 @@ IedServer_updateVisibleStringAttributeValue(IedServer self, DataAttribute* dataA
     assert(dataAttribute != NULL);
     assert(self != NULL);
 
-    const char *currentValue = MmsValue_toString(dataAttribute->mmsValue);
+    const char* currentValue = MmsValue_toString(dataAttribute->mmsValue);
 
-    if (!strcmp(currentValue ,value)) {
-        checkForUpdateTrigger(self, dataAttribute);
-    }
-    else {
+    if (strcmp(currentValue, value)) {
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
         Semaphore_wait(self->dataModelLock);
 #endif
@@ -1315,6 +1309,8 @@ IedServer_updateVisibleStringAttributeValue(IedServer self, DataAttribute* dataA
 
         checkForChangedTriggers(self, dataAttribute);
     }
+
+    checkForUpdateTrigger(self, dataAttribute);
 }
 
 void
@@ -1326,10 +1322,8 @@ IedServer_updateUTCTimeAttributeValue(IedServer self, DataAttribute* dataAttribu
 
     uint64_t currentValue = MmsValue_getUtcTimeInMs(dataAttribute->mmsValue);
 
-    if (currentValue == value) {
-        checkForUpdateTrigger(self, dataAttribute);
-    }
-    else {
+    if (currentValue != value) {
+
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
         Semaphore_wait(self->dataModelLock);
 #endif
@@ -1340,6 +1334,8 @@ IedServer_updateUTCTimeAttributeValue(IedServer self, DataAttribute* dataAttribu
 
         checkForChangedTriggers(self, dataAttribute);
     }
+
+    checkForUpdateTrigger(self, dataAttribute);
 }
 
 void
@@ -1349,10 +1345,8 @@ IedServer_updateTimestampAttributeValue(IedServer self, DataAttribute* dataAttri
     assert(dataAttribute != NULL);
     assert(self != NULL);
 
-    if (memcmp(dataAttribute->mmsValue->value.utcTime, timestamp->val, 8) == 0) {
-        checkForUpdateTrigger(self, dataAttribute);
-    }
-    else {
+    if (memcmp(dataAttribute->mmsValue->value.utcTime, timestamp->val, 8)) {
+
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
         Semaphore_wait(self->dataModelLock);
 #endif
@@ -1363,6 +1357,8 @@ IedServer_updateTimestampAttributeValue(IedServer self, DataAttribute* dataAttri
 
         checkForChangedTriggers(self, dataAttribute);
     }
+
+    checkForUpdateTrigger(self, dataAttribute);
 }
 
 void
