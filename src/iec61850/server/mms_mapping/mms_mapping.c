@@ -1311,7 +1311,7 @@ checkForServiceTrackingVariables(MmsMapping* self, LogicalNode* logicalNode)
             if (!strcmp(modelNode->name, "SpcTrk"))
                 actInstance = &self->spcTrk;
             else if (!strcmp(modelNode->name, "DpcTrk"))
-                actInstance = &self->spcTrk;
+                actInstance = &self->dpcTrk;
             else if (!strcmp(modelNode->name, "IncTrk"))
                 actInstance = &self->incTrk;
             else if (!strcmp(modelNode->name, "EncTrk1"))

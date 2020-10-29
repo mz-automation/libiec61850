@@ -217,6 +217,9 @@ copyControlValuesToTrackingObject(MmsMapping* self, ControlObject* controlObject
         case CST_INCTRK:
             trkInst = self->incTrk;
             break;
+        case CST_ENCTRK1:
+            trkInst = self->encTrk1;
+            break;
         case CST_APCFTRK:
             trkInst = self->apcFTrk;
             break;
@@ -340,9 +343,39 @@ updateGenericTrackingObjectValues(MmsMapping* self, ControlObject* controlObject
     ServiceTrkInstance trkInst = NULL;
 
     if (controlObject->ctlVal) {
-        if (MmsValue_getType(controlObject->ctlVal) == MMS_BOOLEAN) {
-            // assume SPC (could also be binary controller step position or analog control!!!)
-            trkInst = (ServiceTrkInstance) self->spcTrk;
+        switch(controlObject->cdc)
+        {
+            case CST_SPCTRK:
+                trkInst = (ServiceTrkInstance) self->spcTrk;
+                break;
+            case CST_DPCTRK:
+                trkInst = (ServiceTrkInstance) self->dpcTrk;
+                break;
+            case CST_INCTRK:
+                trkInst = (ServiceTrkInstance) self->incTrk;
+                break;
+            case CST_ENCTRK1:
+                trkInst = (ServiceTrkInstance) self->encTrk1;
+                break;
+            case CST_APCFTRK:
+                trkInst = (ServiceTrkInstance) self->apcFTrk;
+                break;
+            case CST_APCINTTRK:
+                trkInst = (ServiceTrkInstance) self->apcIntTrk;
+                break;
+            case CST_BSCTRK:
+                trkInst = (ServiceTrkInstance) self->bscTrk;
+                break;
+            case CST_ISCTRK:
+                trkInst = (ServiceTrkInstance) self->iscTrk;
+                break;
+            case CST_BACTRK:
+                trkInst = (ServiceTrkInstance) self->bacTrk;
+                break;
+            default:
+                if (DEBUG_IED_SERVER)
+                    printf("IED_SERVER: could not determine servicetracking type\n");
+                break;
         }
     }
 
