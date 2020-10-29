@@ -579,8 +579,6 @@ isSboClassOperateOnce(ControlObject* self)
         return true; /* default is operate-once ! */
 }
 
-
-
 static MmsValue*
 getOperParameterOperTime(MmsValue* operParameters)
 {
@@ -648,6 +646,14 @@ operateControl(ControlObject* self, MmsValue* value, uint64_t currentTime, bool 
         return self->operateHandler((ControlAction) self, self->operateHandlerParameter, value, testCondition);
 
     return CONTROL_RESULT_OK;
+}
+
+static void
+resetAddCause(ControlObject* self)
+{
+    self->addCauseValue = ADD_CAUSE_UNKNOWN;
+
+    MmsValue_setInt32(self->addCause, self->addCauseValue);
 }
 
 static void
@@ -732,6 +738,8 @@ executeStateMachine:
                             convertCheckHandlerResultToServiceError(checkHandlerResult));
 #endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
 
+                    resetAddCause(controlObject);
+
                     if (DEBUG_IED_SERVER)
                         printf("IED_SERVER: SBOw - select rejected by application!\n");
                 }
@@ -784,6 +792,8 @@ executeStateMachine:
                 updateGenericTrackingObjectValues(self, controlObject, IEC61850_SERVICE_TYPE_TIME_ACTIVATED_OPERATE, IEC61850_SERVICE_ERROR_ACCESS_NOT_ALLOWED_IN_CURRENT_STATE);
 #endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
             }
+
+            resetAddCause(controlObject);
 
             abortControlOperation(controlObject);
             exitControlTask(controlObject);
@@ -854,6 +864,8 @@ executeStateMachine:
             exitControlTask(controlObject);
 
             setOpOk(controlObject, false, currentTimeInMs);
+
+            resetAddCause(controlObject);
         }
     }
     break;
@@ -1365,12 +1377,17 @@ Control_processControlActions(MmsMapping* self, uint64_t currentTimeInMs)
                             controlObject->errorValue, controlObject->addCauseValue,
                                 controlObject->ctlNum, controlObject->origin, false);
 
-                    //TODO add service tracking code (time activated control)
+#if (CONFIG_IEC61850_SERVICE_TRACKING == 1)
+                    updateGenericTrackingObjectValues(self, controlObject, IEC61850_SERVICE_TYPE_TIME_ACTIVATED_OPERATE,
+                            convertCheckHandlerResultToServiceError(checkResult));
+#endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
 
                     /* leave state Perform Test */
                     setOpRcvd(controlObject, false);
 
                     abortControlOperation(controlObject);
+
+                    resetAddCause(controlObject);
                 }
             }
 
@@ -2249,12 +2266,17 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
 free_and_return:
 
 #if (CONFIG_IEC61850_SERVICE_TRACKING == 1)
-    if (serviceError == IEC61850_SERVICE_ERROR_NO_ERROR)
-        updateGenericTrackingObjectValues(self, controlObject, serviceType,
-                private_IedServer_convertMmsDataAccessErrorToServiceError(indication));
+    if (serviceError == IEC61850_SERVICE_ERROR_NO_ERROR) {
+        if (indication != DATA_ACCESS_ERROR_NO_RESPONSE) {
+            updateGenericTrackingObjectValues(self, controlObject, serviceType,
+                    private_IedServer_convertMmsDataAccessErrorToServiceError(indication));
+        }
+    }
     else
         updateGenericTrackingObjectValues(self, controlObject, serviceType, serviceError);
 #endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
+
+    resetAddCause(controlObject);
 
     return indication;
 }
