@@ -191,6 +191,7 @@ struct sMmsServerConnection {
     int maxServOutstandingCalling;
     int maxServOutstandingCalled;
     int dataStructureNestingLevel;
+    uint8_t negotiatedParameterCBC[2];
     uint32_t maxPduSize; /* local detail */
     IsoConnection isoConnection;
     MmsServer server;
@@ -258,6 +259,9 @@ mmsServer_createConfirmedResponse(uint32_t invokeId);
 
 LIB61850_INTERNAL void
 mmsMsg_createServiceErrorPdu(uint32_t invokeId, ByteBuffer* response, MmsError errorType);
+
+LIB61850_INTERNAL void
+mmsMsg_createInitiateErrorPdu(ByteBuffer* response, uint8_t initiateErrorCode);
 
 LIB61850_INTERNAL void
 mmsServer_createServiceErrorPduWithServiceSpecificInfo(uint32_t invokeId, ByteBuffer* response,

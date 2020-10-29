@@ -701,7 +701,7 @@ MmsServerConnection_parseMessage(MmsServerConnection self, ByteBuffer* message, 
 
     return;
 
-    parsing_error:
+parsing_error:
     if (DEBUG_MMS_SERVER)
         printf("MMS_SERVER: error parsing message\n");
 
