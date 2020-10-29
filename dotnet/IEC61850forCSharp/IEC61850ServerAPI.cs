@@ -659,6 +659,23 @@ namespace IEC61850
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern void IedServer_setConnectionIndicationHandler(IntPtr self, InternalConnectionHandler handler, IntPtr parameter);
 
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr IedServer_getMmsServer(IntPtr self);
+
+			public delegate MmsError FileAccessHandler(object parameter, ClientConnection clientConnection, MmsFileServiceType service, string localFilename, string otherFilename);
+
+			private FileAccessHandler mmsFileAccessHandler = null;
+			private object mmsFileAccessHandlerParameter = null;
+
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+			private delegate int InternalMmsFileAccessHandler (IntPtr parameter, IntPtr connection, int service, [MarshalAs(UnmanagedType.LPStr)] string localFilename, [MarshalAs(UnmanagedType.LPStr)] string otherFilename);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern void MmsServer_installFileAccessHandler(IntPtr self, InternalMmsFileAccessHandler handler, IntPtr parameter);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern void MmsServer_setFilestoreBasepath(IntPtr self, [MarshalAs(UnmanagedType.LPStr)] string basepath);
+
 			private IntPtr self = IntPtr.Zero;
 
 			private InternalControlHandler internalControlHandlerRef = null;
@@ -787,6 +804,15 @@ namespace IEC61850
 
 			private Dictionary<IntPtr, ClientConnection> clientConnections = new Dictionary<IntPtr, ClientConnection> ();
 
+			int fileAccessHandler (IntPtr parameter, IntPtr connection, int service, string localFilename, string otherFilename)
+			{
+				ClientConnection con = null;
+
+				clientConnections.TryGetValue(connection, out con);
+
+				return (int) mmsFileAccessHandler (mmsFileAccessHandlerParameter, con, (MmsFileServiceType) service, localFilename, otherFilename);
+			}
+
 
 
 			public IedServer(IedModel iedModel, IedServerConfig config = null)
@@ -823,6 +849,7 @@ namespace IEC61850
 			//}
 
 			private InternalConnectionHandler internalConnectionHandler = null;
+			private InternalMmsFileAccessHandler internalMmsFileAccessHandler = null;
 
 			/// <summary>
 			/// Sets the local ip address for listening
@@ -940,7 +967,20 @@ namespace IEC61850
 
 				IedServer_setWaitForExecutionHandler(self, controlObject.self, internalControlWaitForExecutionHandlerRef, GCHandle.ToIntPtr(info.handle));
 			}
-				
+
+			public void SetFileAccessHandler (FileAccessHandler handler, object parameter)
+			{
+				mmsFileAccessHandler = handler;
+				mmsFileAccessHandlerParameter = parameter;
+
+				if (internalMmsFileAccessHandler == null)
+					internalMmsFileAccessHandler = new InternalMmsFileAccessHandler (fileAccessHandler);
+
+				IntPtr mmsServer = IedServer_getMmsServer(self);
+
+				MmsServer_installFileAccessHandler(mmsServer, internalMmsFileAccessHandler, IntPtr.Zero);
+			}
+
 			public void HandleWriteAccess (DataAttribute dataAttr, WriteAccessHandler handler, object parameter)
 			{
 				writeAccessHandlers.Add (dataAttr.self, new WriteAccessHandlerInfo(handler, parameter, dataAttr));
@@ -952,6 +992,13 @@ namespace IEC61850
 			public void SetWriteAccessPolicy(FunctionalConstraint fc, AccessPolicy policy)
 			{
 				IedServer_setWriteAccessPolicy (self, fc, policy);
+			}
+
+			public void SetFilestoreBasepath(string basepath)
+			{
+				IntPtr mmsServer = IedServer_getMmsServer(self);
+
+				MmsServer_setFilestoreBasepath(mmsServer, basepath);
 			}
 		
 
