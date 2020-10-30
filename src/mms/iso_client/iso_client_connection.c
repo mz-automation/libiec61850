@@ -191,8 +191,6 @@ IsoClientConnection_create(IsoConnectionParameters parameters, IsoIndicationCall
     return self;
 }
 
-
-
 static bool
 sendConnectionRequestMessage(IsoClientConnection self)
 {
@@ -212,13 +210,12 @@ sendConnectionRequestMessage(IsoClientConnection self)
         else {
 
             if (DEBUG_ISO_CLIENT)
-                printf("TLS handshake failed!\n");
+                printf("ISO_CLIENT: TLS handshake failed!\n");
 
             return false;
         }
     }
 #endif /* (CONFIG_MMS_SUPPORT_TLS == 1) */
-
 
     /* COTP (ISO transport) handshake */
     CotpIndication cotpIndication =
@@ -366,7 +363,7 @@ IsoClientConnection_handleConnection(IsoClientConnection self)
             if (currentTime > self->nextReadTimeout) {
 
                 if (DEBUG_ISO_CLIENT)
-                    printf("Timeout waiting for COTP CR\n");
+                    printf("ISO_CLIENT: Timeout waiting for COTP CR\n");
 
                 IsoClientConnection_releaseTransmitBuffer(self);
 
@@ -384,7 +381,7 @@ IsoClientConnection_handleConnection(IsoClientConnection self)
 
                     if (cotpIndication != COTP_CONNECT_INDICATION) {
                         if (DEBUG_ISO_CLIENT)
-                            printf("Unexpected COTP state (%i)\n", cotpIndication);
+                            printf("ISO_CLIENT: Unexpected COTP state (%i)\n", cotpIndication);
 
                         IsoClientConnection_releaseTransmitBuffer(self);
 
@@ -402,7 +399,7 @@ IsoClientConnection_handleConnection(IsoClientConnection self)
                 }
                 else if (packetState == TPKT_ERROR) {
                     if (DEBUG_ISO_CLIENT)
-                        printf("Error receiving COTP message\n");
+                        printf("ISO_CLIENT: Error receiving COTP message\n");
 
                     IsoClientConnection_releaseTransmitBuffer(self);
 
@@ -425,7 +422,7 @@ IsoClientConnection_handleConnection(IsoClientConnection self)
             if (currentTime > self->nextReadTimeout) {
 
                 if (DEBUG_ISO_CLIENT)
-                    printf("Timeout waiting for ACSE initiate response\n");
+                    printf("ISO_CLIENT: Timeout waiting for ACSE initiate response\n");
 
                 self->callback(ISO_IND_ASSOCIATION_FAILED, self->callbackParameter, NULL);
 
@@ -441,7 +438,7 @@ IsoClientConnection_handleConnection(IsoClientConnection self)
 
                     if (cotpIndication != COTP_DATA_INDICATION) {
                         if (DEBUG_ISO_CLIENT)
-                            printf("Unexpected COTP state (%i)\n", cotpIndication);
+                            printf("ISO_CLIENT: Unexpected COTP state (%i)\n", cotpIndication);
 
                         self->callback(ISO_IND_ASSOCIATION_FAILED, self->callbackParameter, NULL);
 
@@ -458,7 +455,7 @@ IsoClientConnection_handleConnection(IsoClientConnection self)
 
                        if (sessionIndication != SESSION_CONNECT) {
                            if (DEBUG_ISO_CLIENT)
-                               printf("IsoClientConnection_associate: no session connect indication\n");
+                               printf("ISO_CLIENT: IsoClientConnection_associate: no session connect indication\n");
 
                            self->callback(ISO_IND_ASSOCIATION_FAILED, self->callbackParameter, NULL);
 
@@ -469,7 +466,7 @@ IsoClientConnection_handleConnection(IsoClientConnection self)
                            if (IsoPresentation_parseAcceptMessage(self->presentation, IsoSession_getUserData(self->session)) == false) {
 
                                if (DEBUG_ISO_CLIENT)
-                                   printf("IsoClientConnection_associate: no presentation ok indication\n");
+                                   printf("ISO_CLIENT: IsoClientConnection_associate: no presentation ok indication\n");
 
                                self->callback(ISO_IND_ASSOCIATION_FAILED, self->callbackParameter, NULL);
 
@@ -481,7 +478,7 @@ IsoClientConnection_handleConnection(IsoClientConnection self)
 
                                if (acseIndication != ACSE_ASSOCIATE) {
                                    if (DEBUG_ISO_CLIENT)
-                                       printf("IsoClientConnection_associate: no ACSE_ASSOCIATE indication\n");
+                                       printf("ISO_CLIENT: IsoClientConnection_associate: no ACSE_ASSOCIATE indication\n");
 
                                    self->callback(ISO_IND_ASSOCIATION_FAILED, self->callbackParameter, NULL);
 
@@ -509,7 +506,7 @@ IsoClientConnection_handleConnection(IsoClientConnection self)
                 }
                 else if (packetState == TPKT_ERROR) {
                     if (DEBUG_ISO_CLIENT)
-                        printf("Error receiving COTP message\n");
+                        printf("ISO_CLIENT: Error receiving COTP message\n");
 
                     self->callback(ISO_IND_ASSOCIATION_FAILED, self->callbackParameter, NULL);
 

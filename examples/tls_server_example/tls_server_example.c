@@ -98,6 +98,10 @@ clientAuthenticator(void* parameter, AcseAuthenticationParameter authParameter, 
     printf("  client ae-qualifier: %i\n", appRef->aeQualifier);
     printf("  auth-mechanism: %i\n", authParameter->mechanism);
 
+    if (authParameter->mechanism == ACSE_AUTH_TLS) {
+        printf("  Has certificate with size: %i\n", authParameter->value.certificate.length);
+    }
+
     return true;
 }
 

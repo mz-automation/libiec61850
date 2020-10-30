@@ -662,10 +662,26 @@ CotpConnection_resetPayload(CotpConnection* self)
     self->payload->size = 0;
 }
 
-
 static int
 readFromSocket(CotpConnection* self, uint8_t* buf, int size)
 {
+#if (CONFIG_MMS_SUPPORT_TLS == 1)
+    if (self->tlsSocket)
+        return TLSSocket_read(self->tlsSocket, buf, size);
+    else {
+        switch (Handleset_waitReady(self->handleSet, 10))
+        {
+            case -1:
+                return -1;
+            case 0:
+                return 0;
+            default:
+                break;
+        }
+
+        return Socket_read(self->socket, buf, size);
+    }
+#else
     switch (Handleset_waitReady(self->handleSet, 10))
     {
         case -1:
@@ -675,12 +691,7 @@ readFromSocket(CotpConnection* self, uint8_t* buf, int size)
         default:
             break;
     }
-#if (CONFIG_MMS_SUPPORT_TLS == 1)
-    if (self->tlsSocket)
-        return TLSSocket_read(self->tlsSocket, buf, size);
-    else
-        return Socket_read(self->socket, buf, size);
-#else
+
     return Socket_read(self->socket, buf, size);
 #endif
 }
