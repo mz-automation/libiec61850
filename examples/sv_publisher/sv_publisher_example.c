@@ -48,6 +48,8 @@ main(int argc, char** argv)
         int ts2 = SVPublisher_ASDU_addTimestamp(asdu2);
 
         SVPublisher_setupComplete(svPublisher);
+        SVPublisher_ASDU_setSmpSynch(asdu1, 2);
+        SVPublisher_ASDU_setSmpSynch(asdu2, 1);
 
         float fVal1 = 1234.5678f;
         float fVal2 = 0.12345f;

@@ -876,6 +876,12 @@ SVSubscriber_ASDU_getDataSize(SVSubscriber_ASDU self)
     return self->dataBufferLength;
 }
 
+uint8_t
+SVSubscriber_ASDU_getSmpSynch(SVSubscriber_ASDU self)
+{
+    return self->smpSynch[0];
+}
+
 uint16_t
 SVClientASDU_getSmpCnt(SVSubscriber_ASDU self)
 {
