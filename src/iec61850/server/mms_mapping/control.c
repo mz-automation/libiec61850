@@ -279,6 +279,7 @@ copyControlValuesToTrackingObject(MmsMapping* self, ControlObject* controlObject
             }
 
             if (operVal) {
+
                 if (trkInst->Test) {
                     MmsValue_update(trkInst->Test->mmsValue, getOperParameterTest(operVal));
                 }
@@ -1910,6 +1911,13 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
         serviceType = IEC61850_SERVICE_TYPE_SELECT_WITH_VALUES;
 
         if (controlObject->ctlModel == 4) {
+
+            if (controlObject->sbow) {
+                if (MmsValue_update(controlObject->sbow, value) == false) {
+                    if (DEBUG_IED_SERVER)
+                        printf("IED_SERVER: SBOw - type mismatch\n");
+                }
+            }
 
             MmsValue* ctlVal = getCtlVal(value);
 
