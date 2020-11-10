@@ -268,11 +268,11 @@ createNamedVariableFromDataAttribute(DataAttribute* attribute)
             MmsMapping_createPhyComAddrStructure(namedVariable);
             break;
         case IEC61850_OPTFLDS:
-            namedVariable->typeSpec.bitString = 10;
+            namedVariable->typeSpec.bitString = -10;
             namedVariable->type = MMS_BIT_STRING;
             break;
         case IEC61850_TRGOPS:
-            namedVariable->typeSpec.bitString = 6;
+            namedVariable->typeSpec.bitString = -6;
             namedVariable->type = MMS_BIT_STRING;
             break;
 

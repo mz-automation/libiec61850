@@ -419,11 +419,19 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
                                 break;
 
                             case IEC61850_OPTFLDS:
+                                {
+                                    int value;
+                                    if (sscanf(valueIndicator + 1, "%i", &value) != 1) goto exit_error;
+                                    dataAttribute->mmsValue = MmsValue_newBitString(-10);
+                                    MmsValue_setBitStringFromIntegerBigEndian(dataAttribute->mmsValue, value);
+                                }
+                                break;
+
                             case IEC61850_TRGOPS:
                                 {
                                     int value;
                                     if (sscanf(valueIndicator + 1, "%i", &value) != 1) goto exit_error;
-                                    dataAttribute->mmsValue = MmsValue_newBitString(2);
+                                    dataAttribute->mmsValue = MmsValue_newBitString(-6);
                                     MmsValue_setBitStringFromIntegerBigEndian(dataAttribute->mmsValue, value);
                                 }
                                 break;
