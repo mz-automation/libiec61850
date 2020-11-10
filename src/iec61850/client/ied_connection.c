@@ -1332,6 +1332,30 @@ IedConnection_readUnsigned32Value(IedConnection self, IedClientError* error, con
     return retVal;
 }
 
+uint32_t
+IedConnection_readBitStringAsIntegerBigEndian(IedConnection self, IedClientError* error, const char* objectReference, FunctionalConstraint fc)
+{
+    MmsValue* value = IedConnection_readObject(self, error, objectReference, fc);
+
+    if (value != NULL) {
+        if(MmsValue_getType(value) == MMS_BIT_STRING)
+        {
+            return MmsValue_getBitStringAsIntegerBigEndian(value);
+        }
+        else
+        {
+            if (MmsValue_getType(value) == MMS_DATA_ACCESS_ERROR)
+                *error = iedConnection_mapDataAccessErrorToIedError(MmsValue_getDataAccessError(value));
+            else
+                *error = IED_ERROR_UNEXPECTED_VALUE_RECEIVED;
+        }
+
+        MmsValue_delete(value);
+    }
+
+    return 0;
+}
+
 int64_t
 IedConnection_readInt64Value(IedConnection self, IedClientError* error, const char* objectReference, FunctionalConstraint fc)
 {
@@ -3827,4 +3851,3 @@ FileDirectoryEntry_getLastModified(FileDirectoryEntry self)
 {
     return self->lastModified;
 }
-
