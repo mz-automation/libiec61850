@@ -83,6 +83,12 @@ struct sIedServerConfig
 
     /** maximum number of MMS (TCP) connections */
     int maxMmsConnections;
+
+    /** enable EditSG service (default: true) */
+    bool enableEditSG;
+
+    /** enable visibility of SGCB.ResvTms (default: true) */
+    bool enableResvTmsForSGCB;
 };
 
 /**
@@ -276,6 +282,27 @@ IedServerConfig_getMaxDatasSetEntries(IedServerConfig self);
  */
 LIB61850_API void
 IedServerConfig_enableLogService(IedServerConfig self, bool enable);
+
+/**
+ * \brief Enable/disable the EditSG service to allow clients to change setting groups (default is enabled)
+ *
+ * NOTE: When disabled SGCB.ResvTms is not available online and the setting of \ref IedServerConfig_enableResvTmsForSGCB
+ * is ignored.
+ *
+ * \param[in] enable set true to enable, otherwise false (default value it true)
+ */
+LIB61850_API void
+IedServerConfig_enableEditSG(IedServerConfig self, bool enable);
+
+/**
+ * \brief Enable/disable the SGCB.ResvTms when EditSG is enabled
+ *
+ * NOTE: When EditSG is disabled (see \ref IedServerConfig_enableEditSG) then this setting is ignored.
+ *
+ * \param[in] enable set true to enable, otherwise false (default value it true)
+ */
+LIB61850_API void
+IedServerConfig_enableResvTmsForSGCB(IedServerConfig self, bool enable);
 
 /**
  * \brief Enable/disable using the integrated GOOSE publisher for configured GoCBs

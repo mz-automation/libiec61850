@@ -108,7 +108,14 @@ readAccessHandler(LogicalDevice* ld, LogicalNode* ln, DataObject* dataObject, Fu
 int 
 main(int argc, char** argv)
 {
-    iedServer = IedServer_create(&iedModel);
+    IedServerConfig config = IedServerConfig_create();
+
+    //IedServerConfig_enableEditSG(config, false);
+    IedServerConfig_enableResvTmsForSGCB(config, false);
+
+    iedServer = IedServer_createWithConfig(&iedModel, NULL, config);
+
+    IedServerConfig_destroy(config);
 
     LogicalDevice* ld = IEDMODEL_PROT;
 

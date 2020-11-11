@@ -294,6 +294,7 @@ struct sMmsMapping {
 #endif
 
 #if (CONFIG_IEC61850_SETTING_GROUPS == 1)
+    bool allowEditSg;
     LinkedList settingGroups;
 #endif
 

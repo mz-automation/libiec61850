@@ -54,6 +54,7 @@ IedServerConfig_create()
         self->useIntegratedGoosePublisher = true;
         self->edition = IEC_61850_EDITION_2;
         self->maxMmsConnections = 5;
+        self->enableEditSG = true;
     }
 
     return self;
@@ -184,6 +185,18 @@ void
 IedServerConfig_enableLogService(IedServerConfig self, bool enable)
 {
     self->enableLogService = enable;
+}
+
+void
+IedServerConfig_enableEditSG(IedServerConfig self, bool enable)
+{
+    self->enableEditSG = enable;
+}
+
+void
+IedServerConfig_enableResvTmsForSGCB(IedServerConfig self, bool enable)
+{
+    self->enableResvTmsForSGCB = enable;
 }
 
 void

@@ -489,6 +489,17 @@ IedServer_createWithConfig(IedModel* dataModel, TLSConfiguration tlsConfiguratio
         }
 #endif
 
+#if (CONFIG_IEC61850_SETTING_GROUPS == 1)
+        if (serverConfiguration) {
+            self->enableEditSG = serverConfiguration->enableEditSG;
+            self->hasSGCBResvTms = serverConfiguration->enableResvTmsForSGCB;
+        }
+        else {
+            self->enableEditSG = true;
+            self->hasSGCBResvTms = true;
+        }
+#endif
+
         self->mmsMapping = MmsMapping_create(dataModel, self);
 
         self->mmsDevice = MmsMapping_getMmsDeviceModel(self->mmsMapping);

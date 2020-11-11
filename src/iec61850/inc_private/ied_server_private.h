@@ -67,6 +67,11 @@ struct sIedServer
     char* revision;
 #endif
 
+#if (CONFIG_IEC61850_SETTING_GROUPS == 1)
+    bool enableEditSG;
+    bool hasSGCBResvTms;
+#endif
+
     uint8_t edition;
 
     bool running;

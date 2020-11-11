@@ -417,15 +417,20 @@ createFCNamedVariable(LogicalNode* logicalNode, FunctionalConstraint fc)
 #if (CONFIG_IEC61850_SETTING_GROUPS == 1)
 
 static MmsVariableSpecification*
-createSGCB(void)
+createSGCB(bool withResvTms)
 {
+    int numberOfElements = 5;
+
+    if (withResvTms)
+        numberOfElements = 6;
+
     MmsVariableSpecification* namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1,
             sizeof(MmsVariableSpecification));
     namedVariable->name = StringUtils_copyString("SGCB");
     namedVariable->type = MMS_STRUCTURE;
 
-    namedVariable->typeSpec.structure.elementCount = 6;
-    namedVariable->typeSpec.structure.elements = (MmsVariableSpecification**) GLOBAL_CALLOC(6,
+    namedVariable->typeSpec.structure.elementCount = numberOfElements;
+    namedVariable->typeSpec.structure.elements = (MmsVariableSpecification**) GLOBAL_CALLOC(numberOfElements,
             sizeof(MmsVariableSpecification*));
 
     MmsVariableSpecification* element;
@@ -458,18 +463,19 @@ createSGCB(void)
     element->type = MMS_UTC_TIME;
     namedVariable->typeSpec.structure.elements[4] = element;
 
-    element = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    element->name = StringUtils_copyString("ResvTms");
-    element->type = MMS_UNSIGNED;
-    element->typeSpec.integer = 16;
-    namedVariable->typeSpec.structure.elements[5] = element;
+    if (withResvTms) {
+        element = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
+        element->name = StringUtils_copyString("ResvTms");
+        element->type = MMS_UNSIGNED;
+        element->typeSpec.integer = 16;
+        namedVariable->typeSpec.structure.elements[5] = element;
+    }
 
     return namedVariable;
 }
 
-
 static MmsVariableSpecification*
-createFCNamedVariableSPWithSGCB(LogicalNode* logicalNode)
+createFCNamedVariableSPWithSGCB(LogicalNode* logicalNode, bool withResvTms)
 {
     MmsVariableSpecification* namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1,
             sizeof(MmsVariableSpecification));
@@ -493,7 +499,7 @@ createFCNamedVariableSPWithSGCB(LogicalNode* logicalNode)
 
     dataObjectCount = 1;
 
-    namedVariable->typeSpec.structure.elements[0] = createSGCB();
+    namedVariable->typeSpec.structure.elements[0] = createSGCB(withResvTms);
 
     dataObject = (DataObject*) logicalNode->firstChild;
 
@@ -563,10 +569,14 @@ unselectEditSettingGroup(SettingGroup* settingGroup)
 
 	settingGroup->sgcb->editSG = 0;
     settingGroup->editingClient = NULL;
+
     MmsValue* editSg = MmsValue_getElement(settingGroup->sgcbMmsValues, 2);
-    MmsValue_setUint8(editSg, 0U);
+    if (editSg)
+        MmsValue_setUint8(editSg, 0U);
+
     MmsValue* resvTms = MmsValue_getElement(settingGroup->sgcbMmsValues, 5);
-    MmsValue_setUint16(resvTms, 0U);
+    if (resvTms)
+        MmsValue_setUint16(resvTms, 0U);
 }
 
 static void
@@ -737,7 +747,9 @@ MmsMapping_configureSettingGroups(MmsMapping* self)
 
             MmsValue_setUint8(numOfSg, settingGroup->sgcb->numOfSGs);
             MmsValue_setUint8(actSg, settingGroup->sgcb->actSG);
-            MmsValue_setUint16(resvTms, 0U);
+
+            if (resvTms)
+                MmsValue_setUint16(resvTms, 0U);
 
             settingGroup->sgcbMmsValues = values;
         }
@@ -1626,8 +1638,15 @@ createNamedVariableFromLogicalNode(MmsMapping* self, MmsDomain* domain,
 
 #if (CONFIG_IEC61850_SETTING_GROUPS == 1)
     if (sgControlBlock != NULL) {
+
+        bool withResvTms = false;
+
+        if (self->iedServer->enableEditSG) {
+            withResvTms = self->iedServer->hasSGCBResvTms;
+        }
+
         namedVariable->typeSpec.structure.elements[currentComponent] =
-                createFCNamedVariableSPWithSGCB(logicalNode);
+                createFCNamedVariableSPWithSGCB(logicalNode, withResvTms);
         currentComponent++;
     }
     else
@@ -2027,6 +2046,7 @@ MmsMapping_destroy(MmsMapping* self)
 
 #if (CONFIG_IEC61850_SETTING_GROUPS == 1)
     LinkedList_destroy(self->settingGroups);
+    self->allowEditSg = true;
 #endif
 
 #if (CONFIG_IEC61850_LOG_SERVICE == 1)
@@ -2632,54 +2652,66 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
                 return retVal;
             }
             else if (strcmp(nameId, "EditSG") == 0) {
+
                 SettingGroup* sg = getSettingGroupByMmsDomain(self, domain);
                 MmsDataAccessError retVal = DATA_ACCESS_ERROR_SUCCESS;
 
-                if (sg != NULL) {
-                    uint32_t val = MmsValue_toUint32(value);
+                if (self->iedServer->enableEditSG) {
 
-                    if ((sg->editingClient != NULL) && ( sg->editingClient != (ClientConnection) connection)) {
-                    	/* Edit SG was set by other client */
-                    	retVal = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
-                    }
-                    else {
-                        if (val == 0) {
-                            unselectEditSettingGroup(sg);
-                            retVal = DATA_ACCESS_ERROR_SUCCESS;
+                    if (sg != NULL) {
+                        uint32_t val = MmsValue_toUint32(value);
+
+                        if ((sg->editingClient != NULL) && ( sg->editingClient != (ClientConnection) connection)) {
+                            /* Edit SG was set by other client */
+                            retVal = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
                         }
                         else {
+                            if (val == 0) {
+                                unselectEditSettingGroup(sg);
+                                retVal = DATA_ACCESS_ERROR_SUCCESS;
+                            }
+                            else {
 
-                            if ((val > 0) && (val <= sg->sgcb->numOfSGs)) {
+                                if ((val > 0) && (val <= sg->sgcb->numOfSGs)) {
 
-                                if (sg->editSgChangedHandler != NULL) {
+                                    if (sg->editSgChangedHandler != NULL) {
 
-                                    if (sg->editSgChangedHandler(sg->editSgChangedHandlerParameter, sg->sgcb,
-                                            (uint8_t) val, (ClientConnection) connection))
-                                    {
-                                        sg->sgcb->editSG = val;
-                                        sg->editingClient = (ClientConnection) connection;
+                                        if (sg->editSgChangedHandler(sg->editSgChangedHandlerParameter, sg->sgcb,
+                                                (uint8_t) val, (ClientConnection) connection))
+                                        {
+                                            sg->sgcb->editSG = val;
+                                            sg->editingClient = (ClientConnection) connection;
 
-                                        sg->reservationTimeout = Hal_getTimeInMs() + (sg->sgcb->resvTms * 1000);
+                                            sg->reservationTimeout = Hal_getTimeInMs() + (sg->sgcb->resvTms * 1000);
 
-                                        MmsValue* editSg = MmsValue_getElement(sg->sgcbMmsValues, 2);
-                                        MmsValue* resvTms = MmsValue_getElement(sg->sgcbMmsValues, 5);
+                                            MmsValue* editSg = MmsValue_getElement(sg->sgcbMmsValues, 2);
 
-                                        MmsValue_setUint16(resvTms, sg->sgcb->resvTms);
-                                        MmsValue_setUint8(editSg, sg->sgcb->editSG);
+                                            if (editSg)
+                                                MmsValue_setUint8(editSg, sg->sgcb->editSG);
 
-                                        retVal = DATA_ACCESS_ERROR_SUCCESS;
+                                            MmsValue* resvTms = MmsValue_getElement(sg->sgcbMmsValues, 5);
+
+                                            if (resvTms)
+                                                MmsValue_setUint16(resvTms, sg->sgcb->resvTms);
+
+
+                                            retVal = DATA_ACCESS_ERROR_SUCCESS;
+                                        }
+                                        else
+                                            retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
                                     }
                                     else
                                         retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+
                                 }
                                 else
-                                    retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+                                    retVal = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
 
                             }
-                            else
-                                retVal = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
-
                         }
+                    }
+                    else {
+                        retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_UNSUPPORTED;
                     }
                 }
                 else {
@@ -2697,19 +2729,24 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
                 SettingGroup* sg = getSettingGroupByMmsDomain(self, domain);
                 MmsDataAccessError retVal = DATA_ACCESS_ERROR_SUCCESS;
 
-                if (sg != NULL) {
-                    bool val = MmsValue_getBoolean(value);
+                if (self->iedServer->enableEditSG) {
 
-                    if (val == true) {
-                        if (sg->sgcb->editSG != 0) {
-                            if (sg->editingClient == (ClientConnection) connection) {
-                                if (sg->editSgConfirmedHandler != NULL) {
-                                    sg->editSgConfirmedHandler(sg->editSgConfirmedHandlerParameter, sg->sgcb,
-                                            sg->sgcb->editSG);
+                    if (sg != NULL) {
+                        bool val = MmsValue_getBoolean(value);
 
-                                    unselectEditSettingGroup(sg);
+                        if (val == true) {
+                            if (sg->sgcb->editSG != 0) {
+                                if (sg->editingClient == (ClientConnection) connection) {
+                                    if (sg->editSgConfirmedHandler != NULL) {
+                                        sg->editSgConfirmedHandler(sg->editSgConfirmedHandlerParameter, sg->sgcb,
+                                                sg->sgcb->editSG);
 
-                                    retVal = DATA_ACCESS_ERROR_SUCCESS;
+                                        unselectEditSettingGroup(sg);
+
+                                        retVal = DATA_ACCESS_ERROR_SUCCESS;
+                                    }
+                                    else
+                                        retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
                                 }
                                 else
                                     retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
@@ -2718,10 +2755,11 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
                                 retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
                         }
                         else
-                            retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+                            retVal = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
                     }
-                    else
-                        retVal = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+                    else {
+                        retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_UNSUPPORTED;
+                    }
                 }
                 else {
                     retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_UNSUPPORTED;
