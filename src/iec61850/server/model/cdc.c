@@ -564,7 +564,7 @@ addCommonControlAttributes(DataObject* dobj, uint32_t controlOptions)
         DataAttribute_create("opOk", (ModelNode*) dobj, IEC61850_BOOLEAN, IEC61850_FC_OR, TRG_OPT_DATA_CHANGED, 0, 0);
 
     if (controlOptions & CDC_CTL_OPTION_T_OP_OK)
-        DataAttribute_create("tOpOk", (ModelNode*) dobj, IEC61850_BOOLEAN, IEC61850_FC_OR, TRG_OPT_DATA_CHANGED, 0, 0);
+        DataAttribute_create("tOpOk", (ModelNode*) dobj, IEC61850_TIMESTAMP, IEC61850_FC_OR, TRG_OPT_DATA_CHANGED, 0, 0);
 }
 
 /**
