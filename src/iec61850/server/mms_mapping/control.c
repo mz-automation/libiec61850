@@ -620,14 +620,19 @@ exitControlTask(ControlObject* self)
 }
 
 static void
-abortControlOperation(ControlObject* self)
+abortControlOperation(ControlObject* self, bool unconditional)
 {
     if ((self->ctlModel == 2) || (self->ctlModel == 4)) {
 
-        if (isSboClassOperateOnce(self))
+        if (unconditional) {
             unselectObject(self);
-        else
-            setState(self, STATE_READY);
+        }
+        else {
+            if (isSboClassOperateOnce(self))
+                unselectObject(self);
+            else
+                setState(self, STATE_READY);
+        }
     }
     else
         setState(self, STATE_READY);
@@ -796,7 +801,7 @@ executeStateMachine:
 
             resetAddCause(controlObject);
 
-            abortControlOperation(controlObject);
+            abortControlOperation(controlObject, false);
             exitControlTask(controlObject);
         }
         else if (dynamicCheckResult == CONTROL_RESULT_OK) {
@@ -861,7 +866,7 @@ executeStateMachine:
 #endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
             }
 
-            abortControlOperation(controlObject);
+            abortControlOperation(controlObject, false);
             exitControlTask(controlObject);
 
             setOpOk(controlObject, false, currentTimeInMs);
@@ -1284,7 +1289,7 @@ bool
 ControlObject_unselect(ControlObject* self, MmsServerConnection connection)
 {
     if (self->mmsConnection == connection) {
-        abortControlOperation(self);
+        abortControlOperation(self, true);
         return true;
     }
     else
@@ -1386,7 +1391,7 @@ Control_processControlActions(MmsMapping* self, uint64_t currentTimeInMs)
                     /* leave state Perform Test */
                     setOpRcvd(controlObject, false);
 
-                    abortControlOperation(controlObject);
+                    abortControlOperation(controlObject, false);
 
                     resetAddCause(controlObject);
                 }
@@ -2189,7 +2194,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                     /* leave state Perform Test */
                     setOpRcvd(controlObject, false);
 
-                    abortControlOperation(controlObject);
+                    abortControlOperation(controlObject, false);
 
                     if ((controlObject->ctlModel == 2) || (controlObject->ctlModel == 4))
                         unselectObject(controlObject);
@@ -2263,7 +2268,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
 
         if (controlObject->timeActivatedOperate) {
             controlObject->timeActivatedOperate = false;
-            abortControlOperation(controlObject);
+            abortControlOperation(controlObject, false);
 
             indication = DATA_ACCESS_ERROR_SUCCESS;
 
