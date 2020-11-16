@@ -677,6 +677,9 @@ executeStateMachine:
     {
         controlObject->isSelect = 1;
 
+        controlObject->errorValue = 0;
+        controlObject->addCauseValue = ADD_CAUSE_SELECT_FAILED;
+
         CheckHandlerResult checkHandlerResult = controlObject->checkHandler((ControlAction) controlObject, controlObject->checkHandlerParameter, NULL, false, false);
 
         controlObject->isSelect = 0;
@@ -734,8 +737,8 @@ executeStateMachine:
 
                     setState(controlObject, STATE_UNSELECTED);
 
-                    ControlObject_sendLastApplError(controlObject, controlObject->mmsConnection, "SBOw", 0,
-                            ADD_CAUSE_SELECT_FAILED, controlObject->ctlNum, controlObject->origin, false);
+                    ControlObject_sendLastApplError(controlObject, controlObject->mmsConnection, "SBOw",
+                            controlObject->errorValue, controlObject->addCauseValue, controlObject->ctlNum, controlObject->origin, false);
 
                     MmsServerConnection_sendWriteResponse(controlObject->mmsConnection, controlObject->operateInvokeId, (MmsDataAccessError) checkHandlerResult, false);
 
