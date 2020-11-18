@@ -696,7 +696,8 @@ executeStateMachine:
         controlObject->errorValue = 0;
         controlObject->addCauseValue = ADD_CAUSE_SELECT_FAILED;
 
-        CheckHandlerResult checkHandlerResult = controlObject->checkHandler((ControlAction) controlObject, controlObject->checkHandlerParameter, NULL, false, false);
+        CheckHandlerResult checkHandlerResult = controlObject->checkHandler((ControlAction) controlObject, controlObject->checkHandlerParameter,
+                controlObject->ctlVal, controlObject->testMode, controlObject->interlockCheck);
 
         controlObject->isSelect = 0;
 
@@ -2003,6 +2004,8 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                     controlObject->addCauseValue = ADD_CAUSE_SELECT_FAILED;
 
                     updateControlParameters(controlObject, ctlVal, ctlNum, origin, synchroCheck, interlockCheck);
+
+                    controlObject->testMode = testCondition;
 
                     if (controlObject->checkHandler != NULL) { /* perform operative tests */
 
