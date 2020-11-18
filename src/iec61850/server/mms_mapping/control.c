@@ -408,7 +408,7 @@ updateGenericTrackingObjectValues(MmsMapping* self, ControlObject* controlObject
 #endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
 
 static void
-unselectObject(ControlObject* self);
+unselectObject(ControlObject* self, SelectStateChangedReason reason);
 
 static void
 setState(ControlObject* self, int newState)
@@ -488,17 +488,33 @@ selectObject(ControlObject* self, uint64_t selectTime, MmsServerConnection conne
     self->mmsConnection = connection;
     setStSeld(self, true);
     setState(self, STATE_READY);
+
+    if (self->selectStateChangedHandler) {
+        self->selectStateChangedHandler((ControlAction) self,
+                self->selectStateChangedHandlerParameter,
+                true,
+                SELECT_STATE_REASON_SELECTED);
+    }
 }
 
 static void
-unselectObject(ControlObject* self)
+unselectObject(ControlObject* self, SelectStateChangedReason reason)
 {
-    setState(self, STATE_UNSELECTED);
+    if (getState(self) != STATE_UNSELECTED) {
+        setState(self, STATE_UNSELECTED);
 
-    setStSeld(self, false);
+        setStSeld(self, false);
 
-    if (DEBUG_IED_SERVER)
-        printf("IED_SERVER: control %s/%s.%s unselected\n", MmsDomain_getName(self->mmsDomain), self->lnName, self->name);
+        if (self->selectStateChangedHandler) {
+            self->selectStateChangedHandler((ControlAction) self,
+                    self->selectStateChangedHandlerParameter,
+                    false,
+                    reason);
+        }
+
+        if (DEBUG_IED_SERVER)
+            printf("IED_SERVER: control %s/%s.%s unselected\n", MmsDomain_getName(self->mmsDomain), self->lnName, self->name);
+    }
 }
 
 static void
@@ -513,7 +529,7 @@ checkSelectTimeout(ControlObject* self, uint64_t currentTime)
                         printf("IED_SERVER: select-timeout (timeout-val = %i) for control %s/%s.%s\n",
                                 self->selectTimeout, MmsDomain_getName(self->mmsDomain), self->lnName, self->name);
 
-                    unselectObject(self);
+                    unselectObject(self, SELECT_STATE_REASON_TIMEOUT);
                 }
             }
         }
@@ -620,16 +636,16 @@ exitControlTask(ControlObject* self)
 }
 
 static void
-abortControlOperation(ControlObject* self, bool unconditional)
+abortControlOperation(ControlObject* self, bool unconditional, SelectStateChangedReason reason)
 {
     if ((self->ctlModel == 2) || (self->ctlModel == 4)) {
 
         if (unconditional) {
-            unselectObject(self);
+            unselectObject(self, reason);
         }
         else {
             if (isSboClassOperateOnce(self))
-                unselectObject(self);
+                unselectObject(self, reason);
             else
                 setState(self, STATE_READY);
         }
@@ -804,7 +820,7 @@ executeStateMachine:
 
             resetAddCause(controlObject);
 
-            abortControlOperation(controlObject, false);
+            abortControlOperation(controlObject, false, SELECT_STATE_REASON_OPERATE_FAILED);
             exitControlTask(controlObject);
         }
         else if (dynamicCheckResult == CONTROL_RESULT_OK) {
@@ -854,6 +870,8 @@ executeStateMachine:
                     updateGenericTrackingObjectValues(self, controlObject, IEC61850_SERVICE_TYPE_COMMAND_TERMINATION, IEC61850_SERVICE_ERROR_NO_ERROR);
 #endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
                 }
+
+                abortControlOperation(controlObject, false, SELECT_STATE_REASON_OPERATED);
             }
             else {
 
@@ -867,9 +885,10 @@ executeStateMachine:
 #if (CONFIG_IEC61850_SERVICE_TRACKING == 1)
                 updateGenericTrackingObjectValues(self, controlObject, IEC61850_SERVICE_TYPE_COMMAND_TERMINATION, IEC61850_SERVICE_ERROR_FAILED_DUE_TO_SERVER_CONSTRAINT);
 #endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
+
+                abortControlOperation(controlObject, false, SELECT_STATE_REASON_OPERATE_FAILED);
             }
 
-            abortControlOperation(controlObject, false);
             exitControlTask(controlObject);
 
             setOpOk(controlObject, false, currentTimeInMs);
@@ -1292,7 +1311,7 @@ bool
 ControlObject_unselect(ControlObject* self, MmsServerConnection connection)
 {
     if (self->mmsConnection == connection) {
-        abortControlOperation(self, true);
+        abortControlOperation(self, true, SELECT_STATE_REASON_DISCONNECTED);
         return true;
     }
     else
@@ -1319,6 +1338,14 @@ ControlObject_installWaitForExecutionHandler(ControlObject* self, ControlWaitFor
 {
     self->waitForExecutionHandler = handler;
     self->waitForExecutionHandlerParameter = parameter;
+}
+
+void
+ControlObject_installSelectStateChangedHandler(ControlObject* self, ControlSelectStateChangedHandler handler,
+        void* parameter)
+{
+    self->selectStateChangedHandler = handler;
+    self->selectStateChangedHandlerParameter = parameter;
 }
 
 void
@@ -1394,7 +1421,7 @@ Control_processControlActions(MmsMapping* self, uint64_t currentTimeInMs)
                     /* leave state Perform Test */
                     setOpRcvd(controlObject, false);
 
-                    abortControlOperation(controlObject, false);
+                    abortControlOperation(controlObject, false, SELECT_STATE_REASON_OPERATE_FAILED);
 
                     resetAddCause(controlObject);
                 }
@@ -2056,7 +2083,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                         CONTROL_ERROR_NO_ERROR, ADD_CAUSE_INCONSISTENT_PARAMETERS,
                             ctlNum, origin, true);
 
-                unselectObject(controlObject);
+                unselectObject(controlObject, SELECT_STATE_REASON_OPERATE_FAILED);
             }
 
             goto free_and_return;
@@ -2112,7 +2139,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                                 CONTROL_ERROR_NO_ERROR, ADD_CAUSE_INCONSISTENT_PARAMETERS,
                                     ctlNum, origin, true);
 
-                        unselectObject(controlObject);
+                        unselectObject(controlObject, SELECT_STATE_REASON_OPERATE_FAILED);
 
                         goto free_and_return;
                     }
@@ -2197,10 +2224,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                     /* leave state Perform Test */
                     setOpRcvd(controlObject, false);
 
-                    abortControlOperation(controlObject, false);
-
-                    if ((controlObject->ctlModel == 2) || (controlObject->ctlModel == 4))
-                        unselectObject(controlObject);
+                    abortControlOperation(controlObject, false, SELECT_STATE_REASON_OPERATE_FAILED);
                 }
             }
 
@@ -2254,7 +2278,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
             if (state != STATE_UNSELECTED) {
                 if (controlObject->mmsConnection == connection) {
                     indication = DATA_ACCESS_ERROR_SUCCESS;
-                    unselectObject(controlObject);
+                    unselectObject(controlObject, SELECT_STATE_REASON_CANCELED);
                     goto free_and_return;
                 }
                 else {
@@ -2271,7 +2295,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
 
         if (controlObject->timeActivatedOperate) {
             controlObject->timeActivatedOperate = false;
-            abortControlOperation(controlObject, false);
+            abortControlOperation(controlObject, false, SELECT_STATE_REASON_CANCELED);
 
             indication = DATA_ACCESS_ERROR_SUCCESS;
 

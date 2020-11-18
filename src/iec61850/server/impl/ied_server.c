@@ -853,7 +853,7 @@ IedServer_setControlHandler(
 {
     ControlObject* controlObject = lookupControlObject(self, node);
 
-    if (controlObject != NULL) {
+    if (controlObject) {
         ControlObject_installListener(controlObject, listener, parameter);
         if (DEBUG_IED_SERVER)
             printf("IED_SERVER: Installed control handler for %s!\n", node->name);
@@ -868,7 +868,7 @@ IedServer_setPerformCheckHandler(IedServer self, DataObject* node, ControlPerfor
 {
     ControlObject* controlObject = lookupControlObject(self, node);
 
-    if (controlObject != NULL)
+    if (controlObject)
         ControlObject_installCheckHandler(controlObject, handler, parameter);
 }
 
@@ -878,8 +878,18 @@ IedServer_setWaitForExecutionHandler(IedServer self, DataObject* node, ControlWa
 {
     ControlObject* controlObject = lookupControlObject(self, node);
 
-    if (controlObject != NULL)
+    if (controlObject)
         ControlObject_installWaitForExecutionHandler(controlObject, handler, parameter);
+}
+
+void
+IedServer_setSelectStateChangedHandler(IedServer self, DataObject* node, ControlSelectStateChangedHandler handler,
+        void* parameter)
+{
+    ControlObject* controlObject = lookupControlObject(self, node);
+
+    if (controlObject)
+        ControlObject_installSelectStateChangedHandler(controlObject, handler, parameter);
 }
 
 void

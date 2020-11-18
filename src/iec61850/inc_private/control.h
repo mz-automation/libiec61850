@@ -129,6 +129,9 @@ struct sControlObject
     ControlWaitForExecutionHandler waitForExecutionHandler;
     void* waitForExecutionHandlerParameter;
 
+    ControlSelectStateChangedHandler selectStateChangedHandler;
+    void* selectStateChangedHandlerParameter;
+
 #if (CONFIG_IEC61850_SERVICE_TRACKING == 1)
     /* Common data class (CDC) of control object */
     ControlServiceCDC cdc;
@@ -181,6 +184,10 @@ ControlObject_installCheckHandler(ControlObject* self, ControlPerformCheckHandle
 
 LIB61850_INTERNAL void
 ControlObject_installWaitForExecutionHandler(ControlObject* self, ControlWaitForExecutionHandler handler, void* parameter);
+
+LIB61850_INTERNAL void
+ControlObject_installSelectStateChangedHandler(ControlObject* self, ControlSelectStateChangedHandler handler,
+        void* parameter);
 
 LIB61850_INTERNAL void
 ControlObject_updateControlModel(ControlObject* self, ControlModel value, DataObject* ctlObject);

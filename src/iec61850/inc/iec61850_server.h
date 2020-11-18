@@ -1211,22 +1211,22 @@ IedServer_setEditSettingGroupConfirmationHandler(IedServer self, SettingGroupCon
  * \brief result code for ControlPerformCheckHandler
  */
 typedef enum {
-    CONTROL_ACCEPTED = -1, /** check passed */
-    CONTROL_WAITING_FOR_SELECT = 0, /** select operation in progress - handler will be called again later */
-    CONTROL_HARDWARE_FAULT = 1, /** check failed due to hardware fault */
-    CONTROL_TEMPORARILY_UNAVAILABLE = 2, /** control is already selected or operated */
-    CONTROL_OBJECT_ACCESS_DENIED = 3, /** check failed due to access control reason - access denied for this client or state */
-    CONTROL_OBJECT_UNDEFINED = 4, /** object not visible in this security context ??? */
-    CONTROL_VALUE_INVALID = 11 /** ctlVal out of range */
+    CONTROL_ACCEPTED = -1, /**< check passed */
+    CONTROL_WAITING_FOR_SELECT = 0, /**< select operation in progress - handler will be called again later */
+    CONTROL_HARDWARE_FAULT = 1, /**< check failed due to hardware fault */
+    CONTROL_TEMPORARILY_UNAVAILABLE = 2, /**< control is already selected or operated */
+    CONTROL_OBJECT_ACCESS_DENIED = 3, /**< check failed due to access control reason - access denied for this client or state */
+    CONTROL_OBJECT_UNDEFINED = 4, /**< object not visible in this security context ??? */
+    CONTROL_VALUE_INVALID = 11 /**< ctlVal out of range */
 } CheckHandlerResult;
 
 /**
  * \brief result codes for control handler (ControlWaitForExecutionHandler and ControlHandler)
  */
 typedef enum {
-    CONTROL_RESULT_FAILED = 0, /** check or operation failed */
-    CONTROL_RESULT_OK = 1,     /** check or operation was successful */
-    CONTROL_RESULT_WAITING = 2 /** check or operation is in progress */
+    CONTROL_RESULT_FAILED = 0, /**< check or operation failed */
+    CONTROL_RESULT_OK = 1,     /**< check or operation was successful */
+    CONTROL_RESULT_WAITING = 2 /**< check or operation is in progress */
 } ControlHandlerResult;
 
 typedef void* ControlAction;
@@ -1388,6 +1388,30 @@ typedef ControlHandlerResult (*ControlWaitForExecutionHandler) (ControlAction ac
 typedef ControlHandlerResult (*ControlHandler) (ControlAction action, void* parameter, MmsValue* ctlVal, bool test);
 
 /**
+ * \brief Reason why a select state of a control object changed
+ */
+typedef enum {
+    SELECT_STATE_REASON_SELECTED, /**< control has been selected */
+    SELECT_STATE_REASON_CANCELED, /**< cancel received for the control */
+    SELECT_STATE_REASON_TIMEOUT,  /**< unselected due to timeout (sboTimeout) */
+    SELECT_STATE_REASON_OPERATED, /**< unselected due to successful operate */
+    SELECT_STATE_REASON_OPERATE_FAILED, /**< unselected due to failed operate */
+    SELECT_STATE_REASON_DISCONNECTED /**< unselected due to disconnection of selecting client */
+} SelectStateChangedReason;
+
+/**
+ * \brief Control model callback that is called when the select state of a control changes
+ *
+ * New in version 1.5
+ *
+ * \param action the control action parameter that provides access to additional context information
+ * \param parameter the parameter that was specified when setting the control handler
+ * \param isSelected true when the control is selected, false otherwise
+ * \param reason reason why the select state changed
+ */
+typedef void (*ControlSelectStateChangedHandler) (ControlAction action, void* parameter, bool isSelected, SelectStateChangedReason reason);
+
+/**
  * \brief Set control handler for controllable data object
  *
  * This functions sets a user provided control handler for a data object. The data object
@@ -1436,6 +1460,25 @@ IedServer_setPerformCheckHandler(IedServer self, DataObject* node, ControlPerfor
  */
 LIB61850_API void
 IedServer_setWaitForExecutionHandler(IedServer self, DataObject* node, ControlWaitForExecutionHandler handler, void* parameter);
+
+
+/**
+ * \brief Set a callback handler for a controllable data object to track select state changes
+ *
+ * The callback is called whenever the select state of a control changes. Reason for changes can be:
+ * - a successful select or select-with-value by a client
+ * - select timeout
+ * - operate or failed operate
+ * - cancel request by a client
+ * - the client that selected the control has been disconnected
+ *
+ * \param self the instance of IedServer to operate on.
+ * \param node the controllable data object handle
+ * \param handler a callback function of type ControlHandler
+ * \param parameter a user provided parameter that is passed to the control handler.
+ */
+LIB61850_API void
+IedServer_setSelectStateChangedHandler(IedServer self, DataObject* node, ControlSelectStateChangedHandler handler, void* parameter);
 
 /**
  * \brief Update the control model for the specified controllable data object with the given value and
