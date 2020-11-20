@@ -34,10 +34,26 @@ Hal_getTimeInMs()
 	uint64_t now;
 
 	static const uint64_t DIFF_TO_UNIXTIME = 11644473600000LL;
-
+	                                         
 	GetSystemTimeAsFileTime(&ft);
 
 	now = (LONGLONG)ft.dwLowDateTime + ((LONGLONG)(ft.dwHighDateTime) << 32LL);
 
 	return (now / 10000LL) - DIFF_TO_UNIXTIME;
+}
+
+nsSinceEpoch
+Hal_getTimeInNs()
+{
+	FILETIME ft;
+
+	static const uint64_t DIFF_TO_UNIXTIME = 11644473600000000000LL;
+
+	GetSystemTimeAsFileTime(&ft);
+
+	nsSinceEpoch nsTime = (LONGLONG)ft.dwLowDateTime + ((LONGLONG)(ft.dwHighDateTime) << 32LL);
+
+	nsTime = nsTime * 100LL - DIFF_TO_UNIXTIME;
+
+	return nsTime;
 }
