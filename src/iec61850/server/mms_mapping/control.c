@@ -49,7 +49,7 @@
 #define PENDING_EVENT_OP_OK_TRUE 16
 #define PENDING_EVENT_OP_OK_FALSE 32
 
-static MmsValue emptyString = {MMS_STRUCTURE, false, {0}};
+static MmsValue emptyString = {MMS_STRUCTURE, false, {DATA_ACCESS_ERROR_OBJECT_INVALIDATED}};
 
 static MmsValue delayedResponse = {MMS_DATA_ACCESS_ERROR, false, {DATA_ACCESS_ERROR_NO_RESPONSE}};
 
