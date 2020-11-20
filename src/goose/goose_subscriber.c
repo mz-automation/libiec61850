@@ -72,6 +72,12 @@ GooseSubscriber_isValid(GooseSubscriber self)
     return true;
 }
 
+GooseParseError
+GooseSubscriber_getParseError(GooseSubscriber self)
+{
+    return self->parseError;
+}
+
 void
 GooseSubscriber_setDstMac(GooseSubscriber self, uint8_t dstMac[6])
 {
