@@ -32,6 +32,7 @@ gooseListener(GooseSubscriber subscriber, void* parameter)
     uint64_t timestamp = GooseSubscriber_getTimestamp(subscriber);
 
     printf("  timestamp: %u.%u\n", (uint32_t) (timestamp / 1000), (uint32_t) (timestamp % 1000));
+    printf("  message is %s\n", GooseSubscriber_isValid(subscriber) ? "valid" : "INVALID");
 
     MmsValue* values = GooseSubscriber_getDataSetValues(subscriber);
 
@@ -39,7 +40,7 @@ gooseListener(GooseSubscriber subscriber, void* parameter)
 
     MmsValue_printToBuffer(values, buffer, 1024);
 
-    printf("%s\n", buffer);
+    printf("  allData: %s\n", buffer);
 }
 
 int

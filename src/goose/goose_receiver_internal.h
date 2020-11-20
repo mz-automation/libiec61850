@@ -49,6 +49,7 @@ struct sGooseSubscriber {
 
     uint64_t invalidityTime;
     bool stateValid;
+    GooseParseError parseError;
 
     uint8_t srcMac[6]; /* source mac address */
     uint8_t dstMac[6]; /* destination mac address */

@@ -37,6 +37,18 @@ extern "C" {
 
 #include "mms_value.h"
 
+typedef enum
+{
+    GOOSE_PARSE_ERROR_NO_ERROR = 0,
+    GOOSE_PARSE_ERROR_UNKNOWN_TAG,
+    GOOSE_PARSE_ERROR_TAGDECODE,
+    GOOSE_PARSE_ERROR_SUBLEVEL,
+    GOOSE_PARSE_ERROR_OVERFLOW,
+    GOOSE_PARSE_ERROR_UNDERFLOW,
+    GOOSE_PARSE_ERROR_TYPE_MISMATCH,
+    GOOSE_PARSE_ERROR_LENGTH_MISMATCH,
+} GooseParseError;
+
 typedef struct sGooseSubscriber* GooseSubscriber;
 
 /**
@@ -110,6 +122,16 @@ GooseSubscriber_setAppId(GooseSubscriber self, uint16_t appId);
  */
 LIB61850_API bool
 GooseSubscriber_isValid(GooseSubscriber self);
+
+/**
+ * \brief Get parse error in case of invalid subscriber state
+ *
+ * \param self GooseSubscriber instance to operate on.
+ *
+ * \return the error code representing a message parse problem of the last received message
+ */
+LIB61850_API GooseParseError
+GooseSubscriber_getParseError(GooseSubscriber self);
 
 LIB61850_API void
 GooseSubscriber_destroy(GooseSubscriber self);

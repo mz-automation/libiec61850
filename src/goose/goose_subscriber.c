@@ -55,6 +55,7 @@ GooseSubscriber_create(char* goCbRef, MmsValue* dataSetValues)
     self->appId = -1;
     self->isObserver = false;
     self->vlanSet = false;
+    self->parseError = GOOSE_PARSE_ERROR_NO_ERROR;
 
     return self;
 }

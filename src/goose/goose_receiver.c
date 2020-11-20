@@ -129,7 +129,7 @@ createNewStringFromBufferElement(MmsValue* value, uint8_t* bufferSrc, int elemen
     value->value.visibleString.size = elementLength;
 }
 
-static int
+static GooseParseError
 parseAllData(uint8_t* buffer, int allDataLength, MmsValue* dataSetValues)
 {
     int bufPos = 0;
@@ -138,37 +138,41 @@ parseAllData(uint8_t* buffer, int allDataLength, MmsValue* dataSetValues)
     int elementIndex = 0;
 
     int maxIndex = MmsValue_getArraySize(dataSetValues) - 1;
+    GooseParseError pe = GOOSE_PARSE_ERROR_NO_ERROR;
+    uint8_t tag;
 
     while (bufPos < allDataLength) {
-        uint8_t tag = buffer[bufPos++];
+        tag = buffer[bufPos++];
 
         if (elementIndex > maxIndex) {
-            if (DEBUG_GOOSE_SUBSCRIBER)
-                printf("GOOSE_SUBSCRIBER: Malformed message: too much elements!\n");
-            return 0;
+            pe = GOOSE_PARSE_ERROR_OVERFLOW;
+            break; /* from while */
         }
 
         MmsValue* value = MmsValue_getElement(dataSetValues, elementIndex);
 
         bufPos = BerDecoder_decodeLength(buffer, &elementLength, bufPos, allDataLength);
         if (bufPos < 0) {
-            if (DEBUG_GOOSE_SUBSCRIBER)
-                printf("GOOSE_SUBSCRIBER: Malformed message: failed to decode BER length tag!\n");
-            return 0;
+            pe = GOOSE_PARSE_ERROR_TAGDECODE;
+            break; /* from while */
         }
 
         switch (tag)
         {
         case 0x80: /* reserved for access result */
-            printf("GOOSE_SUBSCRIBER:    found reserved value (tag 0x80)!\n");
+            if (DEBUG_GOOSE_SUBSCRIBER)
+              printf("GOOSE_SUBSCRIBER:    found reserved value (tag 0x80)!\n");
             break;
 
         case 0xa1: /* array */
             if (DEBUG_GOOSE_SUBSCRIBER)
                 printf("GOOSE_SUBSCRIBER:    found array\n");
             if (MmsValue_getType(value) == MMS_ARRAY) {
-                if (!parseAllData(buffer + bufPos, elementLength, value))
-                    return -1;
+                if (parseAllData(buffer + bufPos, elementLength, value) != GOOSE_PARSE_ERROR_NO_ERROR)
+                    pe = GOOSE_PARSE_ERROR_SUBLEVEL;
+            }
+            else {
+                pe = GOOSE_PARSE_ERROR_TYPE_MISMATCH;
             }
             break;
 
@@ -176,8 +180,11 @@ parseAllData(uint8_t* buffer, int allDataLength, MmsValue* dataSetValues)
             if (DEBUG_GOOSE_SUBSCRIBER)
                 printf("GOOSE_SUBSCRIBER:    found structure\n");
             if (MmsValue_getType(value) == MMS_STRUCTURE) {
-                if (!parseAllData(buffer + bufPos, elementLength, value))
-                    return -1;
+                if (parseAllData(buffer + bufPos, elementLength, value) != GOOSE_PARSE_ERROR_NO_ERROR)
+                    pe = GOOSE_PARSE_ERROR_SUBLEVEL;
+            }
+            else {
+                pe = GOOSE_PARSE_ERROR_TYPE_MISMATCH;
             }
             break;
 
@@ -188,9 +195,9 @@ parseAllData(uint8_t* buffer, int allDataLength, MmsValue* dataSetValues)
             if (MmsValue_getType(value) == MMS_BOOLEAN) {
                 MmsValue_setBoolean(value, BerDecoder_decodeBoolean(buffer, bufPos));
             }
-            else
-            if (DEBUG_GOOSE_SUBSCRIBER)
-                printf("GOOSE_SUBSCRIBER:      message contains value of wrong type!\n");
+            else {
+                pe = GOOSE_PARSE_ERROR_TYPE_MISMATCH;
+            }
 
             break;
 
@@ -202,9 +209,12 @@ parseAllData(uint8_t* buffer, int allDataLength, MmsValue* dataSetValues)
                     memcpy(value->value.bitString.buf, buffer + bufPos + 1,
                             elementLength - 1);
                 }
-                else
-                if (DEBUG_GOOSE_SUBSCRIBER)
-                    printf("bit-string is of wrong size");
+                else {
+                    pe = GOOSE_PARSE_ERROR_LENGTH_MISMATCH;
+                }
+            }
+            else {
+                pe = GOOSE_PARSE_ERROR_TYPE_MISMATCH;
             }
             break;
 
@@ -214,6 +224,12 @@ parseAllData(uint8_t* buffer, int allDataLength, MmsValue* dataSetValues)
                     value->value.integer->size = elementLength;
                     memcpy(value->value.integer->octets, buffer + bufPos, elementLength);
                 }
+                else {
+                    pe = GOOSE_PARSE_ERROR_LENGTH_MISMATCH;
+                }
+            }
+            else {
+                pe = GOOSE_PARSE_ERROR_TYPE_MISMATCH;
             }
             break;
 
@@ -223,6 +239,12 @@ parseAllData(uint8_t* buffer, int allDataLength, MmsValue* dataSetValues)
                     value->value.integer->size = elementLength;
                     memcpy(value->value.integer->octets, buffer + bufPos, elementLength);
                 }
+                else {
+                    pe = GOOSE_PARSE_ERROR_LENGTH_MISMATCH;
+                }
+            }
+            else {
+                pe = GOOSE_PARSE_ERROR_TYPE_MISMATCH;
             }
             break;
 
@@ -234,6 +256,12 @@ parseAllData(uint8_t* buffer, int allDataLength, MmsValue* dataSetValues)
                 else if (elementLength == 5) {
                     MmsValue_setFloat(value, BerDecoder_decodeFloat(buffer, bufPos));
                 }
+                else {
+                    pe = GOOSE_PARSE_ERROR_LENGTH_MISMATCH;
+                }
+            }
+            else {
+                pe = GOOSE_PARSE_ERROR_TYPE_MISMATCH;
             }
             break;
 
@@ -243,6 +271,9 @@ parseAllData(uint8_t* buffer, int allDataLength, MmsValue* dataSetValues)
                     value->value.octetString.size = elementLength;
                     memcpy(value->value.octetString.buf, buffer + bufPos, elementLength);
                 }
+            }
+            else {
+                pe = GOOSE_PARSE_ERROR_TYPE_MISMATCH;
             }
             break;
 
@@ -264,6 +295,9 @@ parseAllData(uint8_t* buffer, int allDataLength, MmsValue* dataSetValues)
                     createNewStringFromBufferElement(value, buffer + bufPos, elementLength);
 
             }
+            else {
+                pe = GOOSE_PARSE_ERROR_TYPE_MISMATCH;
+            }
             break;
 
         case 0x8c: /* binary time */
@@ -272,6 +306,9 @@ parseAllData(uint8_t* buffer, int allDataLength, MmsValue* dataSetValues)
                     memcpy(value->value.binaryTime.buf, buffer + bufPos, elementLength);
                 }
             }
+            else {
+                pe = GOOSE_PARSE_ERROR_TYPE_MISMATCH;
+            }
             break;
 
         case 0x91: /* Utctime */
@@ -279,19 +316,22 @@ parseAllData(uint8_t* buffer, int allDataLength, MmsValue* dataSetValues)
                 if (MmsValue_getType(value) == MMS_UTC_TIME) {
                     MmsValue_setUtcTimeByBuffer(value, buffer + bufPos);
                 }
-                else
-                if (DEBUG_GOOSE_SUBSCRIBER)
-                    printf("GOOSE_SUBSCRIBER:      message contains value of wrong type!\n");
+                else {
+                  pe = GOOSE_PARSE_ERROR_TYPE_MISMATCH;
+                }
             }
-            else
-            if (DEBUG_GOOSE_SUBSCRIBER)
-                printf("GOOSE_SUBSCRIBER:      UTCTime element is of wrong size!\n");
+            else {
+              pe = GOOSE_PARSE_ERROR_LENGTH_MISMATCH;
+            }
             break;
 
         default:
-            if (DEBUG_GOOSE_SUBSCRIBER)
-                printf("GOOSE_SUBSCRIBER:    found unkown tag %02x\n", tag);
+            pe = GOOSE_PARSE_ERROR_UNKNOWN_TAG;
             break;
+        }
+
+        if ( pe != GOOSE_PARSE_ERROR_NO_ERROR ) {
+            break; /* from while */
         }
 
         bufPos += elementLength;
@@ -299,7 +339,39 @@ parseAllData(uint8_t* buffer, int allDataLength, MmsValue* dataSetValues)
         elementIndex++;
     }
 
-    return 1;
+    if (elementIndex < maxIndex) {
+        pe = GOOSE_PARSE_ERROR_UNDERFLOW;
+    }
+
+    if (DEBUG_GOOSE_SUBSCRIBER) {
+        switch ( pe ) {
+            case GOOSE_PARSE_ERROR_UNKNOWN_TAG:
+                printf("GOOSE_SUBSCRIBER: Found unkown tag %02x!\n", tag);
+            break;
+            case GOOSE_PARSE_ERROR_TAGDECODE:
+                printf("GOOSE_SUBSCRIBER: Malformed message: failed to decode BER length tag!\n");
+                break;
+            case GOOSE_PARSE_ERROR_SUBLEVEL:
+                /* already printed at sublevel */
+                break;
+            case GOOSE_PARSE_ERROR_OVERFLOW:
+                printf("GOOSE_SUBSCRIBER: Malformed message: too many elements!\n");
+                break;
+            case GOOSE_PARSE_ERROR_UNDERFLOW:
+                printf("GOOSE_SUBSCRIBER: Malformed message: too few elements!\n");
+                break;
+            case GOOSE_PARSE_ERROR_TYPE_MISMATCH:
+                printf("GOOSE_SUBSCRIBER: Message contains value of wrong type!\n");
+                break;
+            case GOOSE_PARSE_ERROR_LENGTH_MISMATCH:
+                printf("GOOSE_SUBSCRIBER: Message contains value of wrong length!\n");
+                break;
+            default:
+                break;
+        }
+    }
+
+    return pe;
 }
 
 static MmsValue*
@@ -685,9 +757,16 @@ parseGoosePayload(GooseReceiver self, uint8_t* buffer, int apduLength)
         if (matchingSubscriber != NULL) {
 
             matchingSubscriber->timeAllowedToLive = timeAllowedToLive;
-            matchingSubscriber->confRev = confRev;
             matchingSubscriber->ndsCom = ndsCom;
             matchingSubscriber->simulation = simulation;
+
+            /* when confRev changed replaced old data set */
+            if ((matchingSubscriber->dataSetValues != NULL) && (matchingSubscriber->confRev != confRev)) {
+                MmsValue_delete(matchingSubscriber->dataSetValues);
+                matchingSubscriber->dataSetValues = NULL;
+            }
+
+            matchingSubscriber->confRev = confRev;
 
             if (timestampBufPos)
                 MmsValue_setUtcTimeByBuffer(matchingSubscriber->timestamp, timestampBufPos);
@@ -703,12 +782,19 @@ parseGoosePayload(GooseReceiver self, uint8_t* buffer, int apduLength)
                 matchingSubscriber->dataSetValues = NULL;
             }
 
+            bool isValid = true;
+
             if (matchingSubscriber->dataSetValues == NULL)
                 matchingSubscriber->dataSetValues = parseAllDataUnknownValue(matchingSubscriber, dataSetBufferAddress, dataSetBufferLength, false);
-            else
-                parseAllData(dataSetBufferAddress, dataSetBufferLength, matchingSubscriber->dataSetValues);
+            else {
+                GooseParseError parseError = parseAllData(dataSetBufferAddress, dataSetBufferLength, matchingSubscriber->dataSetValues);
 
-            bool isValid = true;
+                if (parseError != GOOSE_PARSE_ERROR_NO_ERROR) {
+                    isValid = false;
+                }
+
+                matchingSubscriber->parseError = parseError;
+            }
 
             if (matchingSubscriber->stNum == stNum) {
                 if (matchingSubscriber->sqNum >= sqNum) {
