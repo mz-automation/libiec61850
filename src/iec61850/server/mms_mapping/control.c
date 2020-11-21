@@ -2081,11 +2081,11 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
         if (checkValidityOfOriginParameter(origin) == false) {
             indication = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
 
-            if ((controlObject->ctlModel == 2) || (controlObject->ctlModel == 4)) {
-                ControlObject_sendLastApplError(controlObject, connection, "Oper",
-                        CONTROL_ERROR_NO_ERROR, ADD_CAUSE_INCONSISTENT_PARAMETERS,
-                            ctlNum, origin, true);
+            ControlObject_sendLastApplError(controlObject, connection, "Oper",
+                    CONTROL_ERROR_NO_ERROR, ADD_CAUSE_INCONSISTENT_PARAMETERS,
+                        ctlNum, origin, true);
 
+            if ((controlObject->ctlModel == 2) || (controlObject->ctlModel == 4)) {
                 unselectObject(controlObject, SELECT_STATE_REASON_OPERATE_FAILED);
             }
 
