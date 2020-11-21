@@ -37,7 +37,7 @@
 struct sGooseSubscriber {
     char goCBRef[130];
     char datSet[130];
-    char goId[66];
+    char goId[130];
     int goCBRefLen;
     uint32_t timeAllowedToLive;
     uint32_t stNum;

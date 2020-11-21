@@ -684,7 +684,7 @@ parseGoosePayload(GooseReceiver self, uint8_t* buffer, int apduLength)
                     printf("GOOSE_SUBSCRIBER:   Found goId\n");
                 {
                     if (matchingSubscriber) {
-                        if (elementLength > 65) {
+                        if (elementLength > 129) {
                             if (DEBUG_GOOSE_SUBSCRIBER)
                                 printf("GOOSE_SUBSCRIBER:   goId too long!\n");
                         }

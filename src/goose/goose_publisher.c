@@ -40,7 +40,7 @@ prepareGooseBuffer(GoosePublisher self, CommParameters* parameters, const char* 
 
 struct sGoosePublisher {
     uint8_t* buffer;
-    /* uint16_t appId; */
+
     EthernetSocket ethernetSocket;
     int lengthField;
     int payloadStart;
@@ -49,10 +49,6 @@ struct sGoosePublisher {
     char* goID;
     char* goCBRef;
     char* dataSetRef;
-
-    /* uint16_t minTime; */
-    /* uint16_t maxTime; */
-    /* bool fixedOffs; */
 
     uint32_t confRev;
     uint32_t stNum;
