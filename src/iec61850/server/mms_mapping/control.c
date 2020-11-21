@@ -2136,8 +2136,8 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                          (controlObject->synchroCheck == synchroCheck)
                          ) == false)
                     {
-
                         indication = DATA_ACCESS_ERROR_TYPE_INCONSISTENT;
+
                         ControlObject_sendLastApplError(controlObject, connection, "Oper",
                                 CONTROL_ERROR_NO_ERROR, ADD_CAUSE_INCONSISTENT_PARAMETERS,
                                     ctlNum, origin, true);

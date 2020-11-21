@@ -662,12 +662,12 @@ parseGoosePayload(GooseReceiver self, uint8_t* buffer, int apduLength)
 
                 break;
 
-            case 0x82:
+            case 0x82: /* DatSet */
                 if (DEBUG_GOOSE_SUBSCRIBER)
                     printf("GOOSE_SUBSCRIBER:   Found dataSet\n");
                 {
                     if (matchingSubscriber) {
-                        if (elementLength > 64) {
+                        if (elementLength > 129) {
                             if (DEBUG_GOOSE_SUBSCRIBER)
                                 printf("GOOSE_SUBSCRIBER:   datSet too long!\n");
                         }
@@ -679,12 +679,12 @@ parseGoosePayload(GooseReceiver self, uint8_t* buffer, int apduLength)
                 }
                 break;
 
-            case 0x83:
+            case 0x83: /* GoID **/
                 if (DEBUG_GOOSE_SUBSCRIBER)
                     printf("GOOSE_SUBSCRIBER:   Found goId\n");
                 {
                     if (matchingSubscriber) {
-                        if (elementLength > 64) {
+                        if (elementLength > 65) {
                             if (DEBUG_GOOSE_SUBSCRIBER)
                                 printf("GOOSE_SUBSCRIBER:   goId too long!\n");
                         }
