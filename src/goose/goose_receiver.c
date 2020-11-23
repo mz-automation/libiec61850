@@ -339,7 +339,7 @@ parseAllData(uint8_t* buffer, int allDataLength, MmsValue* dataSetValues)
         elementIndex++;
     }
 
-    if (elementIndex < maxIndex) {
+    if (elementIndex <= maxIndex) {
         pe = GOOSE_PARSE_ERROR_UNDERFLOW;
     }
 
