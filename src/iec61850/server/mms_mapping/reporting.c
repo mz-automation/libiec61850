@@ -1627,8 +1627,6 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 {
     MmsDataAccessError retVal = DATA_ACCESS_ERROR_SUCCESS;
 
-    ReportControl_lockNotify(rc);
-
     bool resvTmsAccess = false;
 
     /* check reservation timeout for buffered RCBs */
@@ -1675,6 +1673,8 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
             }
         }
     }
+
+    ReportControl_lockNotify(rc);
 
     if ((rc->reserved) && (rc->clientConnection != connection)) {
         retVal = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
