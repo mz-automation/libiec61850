@@ -1475,7 +1475,7 @@ IedServer_setWaitForExecutionHandler(IedServer self, DataObject* node, ControlWa
  * \param self the instance of IedServer to operate on.
  * \param node the controllable data object handle
  * \param handler a callback function of type ControlHandler
- * \param parameter a user provided parameter that is passed to the control handler.
+ * \param parameter a user provided parameter that is passed to the callback handler.
  */
 LIB61850_API void
 IedServer_setSelectStateChangedHandler(IedServer self, DataObject* node, ControlSelectStateChangedHandler handler, void* parameter);

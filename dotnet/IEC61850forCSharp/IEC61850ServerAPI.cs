@@ -749,6 +749,9 @@ namespace IEC61850
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern int ModelNode_getType(IntPtr self);
 
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr ModelNode_getObjectReference(IntPtr self, IntPtr objectReference);
+
 			public IntPtr self;
 
 			internal ModelNode()
@@ -787,9 +790,24 @@ namespace IEC61850
 				}
 
 			}
+
+			public string GetObjectReference()
+			{
+				IntPtr objRefPtr = ModelNode_getObjectReference(self, IntPtr.Zero);
+
+				if (objRefPtr != IntPtr.Zero) {
+					string objRef = Marshal.PtrToStringAnsi(objRefPtr);
+
+					Marshal.FreeHGlobal(objRefPtr);
+
+					return objRef;
+				}
+				else {
+					return null;
+				}
+			}
+
 		}
-
-
 
 		public class DataSet
 		{
@@ -1021,6 +1039,42 @@ namespace IEC61850
 		public delegate MmsDataAccessError WriteAccessHandler (DataAttribute dataAttr, MmsValue value, 
 			ClientConnection connection, object parameter);
 
+		/// <summary>
+		/// Reason for the select state change
+		/// </summary>
+		public enum SelectStateChangedReason
+		{
+			/// <summary>
+			/// Control has been selected
+			/// </summary>
+			SELECT_STATE_REASON_SELECTED = 0,
+			/// <summary>
+			/// Cancel received for the control
+			/// </summary>
+			SELECT_STATE_REASON_CANCELED = 1,
+			/// <summary>
+			/// Unselected due to timeout (sboTimeout)
+			/// </summary>
+			SELECT_STATE_REASON_TIMEOUT = 2,
+			/// <summary>
+			/// Unselected due to successful operate
+			/// </summary>
+			SELECT_STATE_REASON_OPERATED = 3,
+			/// <summary>
+			/// Unselected due to failed operate
+			/// </summary>
+			SELECT_STATE_REASON_OPERATE_FAILED = 4,
+			/// <summary>
+			/// Unselected due to disconnection of selecting client
+			/// </summary>
+			SELECT_STATE_REASON_DISCONNECTED = 5
+		}
+
+		public delegate void ControlSelectStateChangedHandler(ControlAction action, object parameter, bool isSelected, SelectStateChangedReason reason);
+
+		/// <summary>
+		/// Return type of ControlHandler and ControlWaitForExecutionHandler
+		/// </summary>
 		public enum ControlHandlerResult {
 			/// <summary>
 			/// check or operation failed
@@ -1141,6 +1195,9 @@ namespace IEC61850
 			[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 			private delegate int InternalControlHandler (IntPtr action, IntPtr parameter, IntPtr ctlVal, [MarshalAs(UnmanagedType.I1)] bool test);
 
+			[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+			private delegate void InternalSelectStateChangedHandler(IntPtr action, IntPtr parameter, [MarshalAs(UnmanagedType.I1)] bool isSelected, int reason);
+
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern void IedServer_setWaitForExecutionHandler(IntPtr self, IntPtr node, InternalControlWaitForExecutionHandler handler, IntPtr parameter);
 
@@ -1149,6 +1206,9 @@ namespace IEC61850
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern void IedServer_setControlHandler (IntPtr self, IntPtr node, InternalControlHandler handler, IntPtr parameter);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern void IedServer_setSelectStateChangedHandler(IntPtr self, IntPtr node, InternalSelectStateChangedHandler handler, IntPtr parameter);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern void IedServer_setWriteAccessPolicy(IntPtr self, FunctionalConstraint fc, AccessPolicy policy);
@@ -1182,6 +1242,7 @@ namespace IEC61850
 			private InternalControlHandler internalControlHandlerRef = null;
 			private InternalControlPerformCheckHandler internalControlPerformCheckHandlerRef = null;
 			private InternalControlWaitForExecutionHandler internalControlWaitForExecutionHandlerRef = null;
+			private InternalSelectStateChangedHandler internalSelectedStateChangedHandlerRef = null;
 
 			internal class ControlHandlerInfo {
 				public DataObject controlObject = null;
@@ -1196,15 +1257,19 @@ namespace IEC61850
 				public ControlWaitForExecutionHandler waitForExecHandler = null;
 				public object waitForExecHandlerParameter = null;
 
+				public ControlSelectStateChangedHandler selectStateChangedHandler = null;
+				public object selectStateChangedHandlerParameter = null;
+
 				public ControlHandlerInfo(DataObject controlObject)
 				{
 					this.controlObject = controlObject;
 					this.handle = GCHandle.Alloc(this);
 				}
-				~ControlHandlerInfo() {
+
+				~ControlHandlerInfo()
+				{
 					this.handle.Free();
 				}
-					
 			}
 
 			private Dictionary<DataObject, ControlHandlerInfo> controlHandlers = new Dictionary<DataObject, ControlHandlerInfo> ();
@@ -1217,7 +1282,7 @@ namespace IEC61850
 
                 ControlAction controlAction = new ControlAction (action, info, this);
 
-				if (info != null & info.controlHandler != null)
+				if (info != null && info.controlHandler != null)
 					return (int)info.controlHandler (controlAction, info.controlHandlerParameter, new MmsValue (ctlVal), test);
 				else
 					return (int)ControlHandlerResult.FAILED;
@@ -1229,8 +1294,8 @@ namespace IEC61850
 
 				ControlHandlerInfo info = (ControlHandlerInfo)handle.Target;
 
-				if (info != null & info.checkHandler != null) {
-
+				if (info != null && info.checkHandler != null) 
+				{
                     ControlAction controlAction = new ControlAction (action, info, this);
 
 					return (int)info.checkHandler (controlAction, info.checkHandlerParameter, new MmsValue (ctlVal), test, interlockCheck); 
@@ -1244,14 +1309,28 @@ namespace IEC61850
 
 				ControlHandlerInfo info = (ControlHandlerInfo)handle.Target;
 
-				if (info != null & info.waitForExecHandler != null) {
-
+				if (info != null && info.waitForExecHandler != null)
+				{
                     ControlAction controlAction = new ControlAction (action, info, this);
 
                     return (int)info.waitForExecHandler (controlAction, info.waitForExecHandlerParameter, new MmsValue (ctlVal), test, synchoCheck);
 				} 
 				else
 					return (int)ControlHandlerResult.FAILED;
+			}
+
+			void InternalSelectStateChangedHandlerImpl(IntPtr action, IntPtr parameter, bool isSelected, int reason)
+			{
+				GCHandle handle = GCHandle.FromIntPtr(parameter);
+
+				ControlHandlerInfo info = (ControlHandlerInfo)handle.Target;
+
+				if (info != null && info.selectStateChangedHandler != null)
+				{
+					ControlAction controlAction = new ControlAction(action, info, this);
+
+					info.selectStateChangedHandler(controlAction, info.selectStateChangedHandlerParameter, isSelected, (SelectStateChangedReason)reason);
+				}
 			}
 
 			private struct WriteAccessHandlerInfo {
@@ -1269,7 +1348,6 @@ namespace IEC61850
 
 			int WriteAccessHandlerImpl (IntPtr dataAttribute, IntPtr value, IntPtr connection, IntPtr parameter)
 			{
-				//object info = writeAccessHandlers.Item [dataAttribute];
 				WriteAccessHandlerInfo info;
 
 				writeAccessHandlers.TryGetValue (dataAttribute, out info);
@@ -1332,15 +1410,6 @@ namespace IEC61850
 
 				self = IedServer_createWithConfig (iedModel.self, nativeTLSConfig, nativeConfig);
 			}
-
-			// causes undefined behavior
-			//~IedServer()
-			//{
-			//    if (self != IntPtr.Zero)
-			//    {
-			//        IedServer_destroy(self);
-			//    }
-			//}
 
 			private InternalConnectionHandler internalConnectionHandler = null;
 
@@ -1484,11 +1553,29 @@ namespace IEC61850
 
 				IedServer_setWaitForExecutionHandler(self, controlObject.self, internalControlWaitForExecutionHandlerRef, GCHandle.ToIntPtr(info.handle));
 			}
-				
+
+			/// <summary>
+			/// Set a callback handler for a controllable data object to track select state changes
+			/// </summary>
+			/// <param name="controlObject">Control object.</param>
+			/// <param name="handler">Handler.</param>
+			/// <param name="parameter">A user provided parameter that is passed to the callback handler.</param>
+			public void SetSelectStateChangedHandler(DataObject controlObject, ControlSelectStateChangedHandler handler, object parameter)
+			{
+				ControlHandlerInfo info = GetControlHandlerInfo(controlObject);
+
+				info.selectStateChangedHandler = handler;
+				info.selectStateChangedHandlerParameter = parameter;
+
+				if (internalSelectedStateChangedHandlerRef == null)
+					internalSelectedStateChangedHandlerRef = new InternalSelectStateChangedHandler(InternalSelectStateChangedHandlerImpl);
+
+				IedServer_setSelectStateChangedHandler(self, controlObject.self, internalSelectedStateChangedHandlerRef, GCHandle.ToIntPtr(info.handle));
+			}
+
 			public void HandleWriteAccess (DataAttribute dataAttr, WriteAccessHandler handler, object parameter)
 			{
 				writeAccessHandlers.Add (dataAttr.self, new WriteAccessHandlerInfo(handler, parameter, dataAttr));
-				//writeAccessHandlers.Item [dataAttr.self] = handler;
 
 				IedServer_handleWriteAccess (self, dataAttr.self, WriteAccessHandlerImpl, IntPtr.Zero);
 			}
