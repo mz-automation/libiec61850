@@ -1955,14 +1955,15 @@ IedConnection_getFile(IedConnection self, IedClientError* error, const char* fil
     return clientFileReadHandler.byteReceived;
 }
 
-
 static void
 mmsConnectionFileCloseHandler (uint32_t invokeId, void* parameter, MmsError mmsError, bool success)
 {
-    (void)mmsError;
     (void)success;
 
-    /* TODO log error */
+    if (mmsError != MMS_ERROR_NONE) {
+        if (DEBUG_IED_CLIENT)
+            printf("IED_CLIENT: failed to close file error: %i (mms-error: %i)\n", iedConnection_mapMmsErrorToIedError(mmsError), mmsError);
+    }
 
     IedConnection self = (IedConnection) parameter;
 
@@ -1994,11 +1995,19 @@ mmsConnectionFileReadHandler (uint32_t invokeId, void* parameter, MmsError mmsEr
 
             handler(call->specificParameter2.getFileInfo.originalInvokeId, call->callbackParameter, err, invokeId, NULL, 0, false);
 
-            /* close file */
-            call->invokeId = MmsConnection_fileCloseAsync(self->connection, &mmsError, frsmId, mmsConnectionFileCloseHandler, self);
+            if (mmsError != MMS_ERROR_SERVICE_TIMEOUT) {
+                /* close file */
+                call->invokeId = MmsConnection_fileCloseAsync(self->connection, &mmsError, frsmId, mmsConnectionFileCloseHandler, self);
 
-            if (mmsError != MMS_ERROR_NONE)
+                if (mmsError != MMS_ERROR_NONE)
+                    iedConnection_releaseOutstandingCall(self, call);
+            }
+            else {
+                if (DEBUG_IED_CLIENT)
+                    printf("IED_CLIENT: getFile timeout -> stop download\n");
+
                 iedConnection_releaseOutstandingCall(self, call);
+            }
         }
         else {
             bool cont = handler(call->specificParameter2.getFileInfo.originalInvokeId, call->callbackParameter, IED_ERROR_OK, invokeId, buffer, byteReceived, moreFollows);
