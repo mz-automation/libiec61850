@@ -30,6 +30,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/time.h>
+#include <sys/select.h>
 
 #include "hal_serial.h"
 #include "hal_time.h"
