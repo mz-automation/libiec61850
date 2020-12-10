@@ -62,13 +62,12 @@
 #define MMS_SERVICE_CONCLUDE 0x10
 #define MMS_SERVICE_CANCEL 0x08
 
-/* negotiated parameter CBB */
+/* our supported parameter CBB: str1, str2, vnam, vlis, valt */
 static uint8_t parameterCBB[] =
 {
         0xf1,
         0x00
 };
-
 
 /**********************************************************************************************
  * MMS Initiate Service
@@ -86,7 +85,10 @@ encodeInitResponseDetail(MmsServerConnection self, uint8_t* buffer, int bufPos, 
 
     bufPos = BerEncoder_encodeUInt32WithTL(0x80, 1, buffer, bufPos); /* negotiated protocol version */
 
-    bufPos = BerEncoder_encodeBitString(0x81, 11, parameterCBB, buffer, bufPos);
+    self->negotiatedParameterCBC[0] = self->negotiatedParameterCBC[0] & parameterCBB[0];
+    self->negotiatedParameterCBC[1] = self->negotiatedParameterCBC[1] & parameterCBB[1];
+
+    bufPos = BerEncoder_encodeBitString(0x81, 11, self->negotiatedParameterCBC, buffer, bufPos);
 
 #if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
 
@@ -156,7 +158,6 @@ encodeInitResponseDetail(MmsServerConnection self, uint8_t* buffer, int bufPos, 
         servicesSupported[8] |= MMS_SERVICE_READ_JOURNAL;
 #endif
     }
-
 
 #else
     uint8_t servicesSupported[] =
@@ -254,6 +255,67 @@ createInitiateResponse(MmsServerConnection self, ByteBuffer* writeBuffer)
 }
 
 static bool
+parseInitRequestDetail(MmsServerConnection self, uint8_t* buffer, int bufPos, int maxBufPos)
+{
+    while (bufPos < maxBufPos) {
+        uint8_t tag = buffer[bufPos++];
+        int length;
+
+        bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
+
+        if (bufPos < 0)  {
+            /* TODO write initiate error PDU! */
+            return false;
+        }
+
+        if (bufPos + length > maxBufPos) {
+            if (DEBUG_MMS_SERVER)
+                printf("MMS_SERVER: length field too long\n");
+
+            return false;
+        }
+
+        switch(tag) {
+        case 0x80: /* proposed-version-number */
+            {
+                uint32_t protocolVersion = BerDecoder_decodeUint32(buffer, length, bufPos);
+
+                if (protocolVersion != 1) {
+                    if (DEBUG_MMS_SERVER)
+                        printf("MMS_SERVER: invalid protocol version %u\n", protocolVersion);
+
+                    return false;
+                }
+            }
+
+            break;
+
+        case 0x81: /* proposed-parameter-CBC */
+
+            if (length == 3) {
+                self->negotiatedParameterCBC[0] = buffer[bufPos + 1];
+                self->negotiatedParameterCBC[1] = buffer[bufPos + 2];
+
+                if (DEBUG_MMS_SERVER)
+                    printf("MMS_SERVER: requested parameter CBC: %02x %02x\n",
+                            self->negotiatedParameterCBC[0],
+                            self->negotiatedParameterCBC[1]);
+            }
+            else {
+                if (DEBUG_MMS_SERVER)
+                    printf("MMS_SERVER: unexpected parameter CBC length\n");
+            }
+
+            break;
+        }
+
+        bufPos += length;
+    }
+
+    return true;
+}
+
+static bool
 parseInitiateRequestPdu(MmsServerConnection self, uint8_t* buffer, int bufPos, int maxBufPos)
 {
     self->maxPduSize = CONFIG_MMS_MAXIMUM_PDU_SIZE;
@@ -265,6 +327,9 @@ parseInitiateRequestPdu(MmsServerConnection self, uint8_t* buffer, int bufPos, i
 
     self->maxServOutstandingCalling = DEFAULT_MAX_SERV_OUTSTANDING_CALLING;
 
+    self->negotiatedParameterCBC[0] = 0;
+    self->negotiatedParameterCBC[1] = 0;
+
     while (bufPos < maxBufPos) {
         uint8_t tag = buffer[bufPos++];
         int length;
@@ -273,6 +338,13 @@ parseInitiateRequestPdu(MmsServerConnection self, uint8_t* buffer, int bufPos, i
 
         if (bufPos < 0)  {
             /* TODO write initiate error PDU! */
+            return false;
+        }
+
+        if (bufPos + length > maxBufPos) {
+            if (DEBUG_MMS_SERVER)
+                printf("MMS_SERVER: length field too long\n");
+
             return false;
         }
 
@@ -305,7 +377,10 @@ parseInitiateRequestPdu(MmsServerConnection self, uint8_t* buffer, int bufPos, i
             break;
 
         case 0xa4: /* mms-init-request-detail */
-            /* we ignore this */
+
+            if (parseInitRequestDetail(self, buffer, bufPos, bufPos + length) == false)
+                return false;
+
             break;
 
         case 0x00: /* indefinite length end tag -> ignore */
@@ -328,10 +403,12 @@ mmsServer_handleInitiateRequest (
         ByteBuffer* response)
 {
 
-    if (parseInitiateRequestPdu(self, buffer, bufPos, maxBufPos))
+    if (parseInitiateRequestPdu(self, buffer, bufPos, maxBufPos)) {
         createInitiateResponse(self, response);
+    }
     else {
-        /* TODO send initiate error PDU */
+        /* send initiate error PDU */
+        mmsMsg_createInitiateErrorPdu(response, 0);
     }
 
 }

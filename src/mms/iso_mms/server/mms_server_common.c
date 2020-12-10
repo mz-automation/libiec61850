@@ -216,6 +216,27 @@ mmsMsg_createServiceErrorPdu(uint32_t invokeId, ByteBuffer* response, MmsError e
     mmsServer_createServiceErrorPduWithServiceSpecificInfo(invokeId, response, errorType, NULL, 0);
 }
 
+void
+mmsMsg_createInitiateErrorPdu(ByteBuffer* response, uint8_t initiateErrorCode)
+{
+    /* determine encoded size */
+
+    uint32_t serviceErrorContentSize = 5; /* errorClass */
+
+    /* encode */
+    uint8_t* buffer = response->buffer;
+    int bufPos = response->size;
+
+    bufPos = BerEncoder_encodeTL(0xaa, serviceErrorContentSize, buffer, bufPos); /* serviceError */
+    bufPos = BerEncoder_encodeTL(0xa0, 3, buffer, bufPos); /* serviceError */
+
+    buffer[bufPos++] = 8; /* initiate */
+    buffer[bufPos++] = 1;
+    buffer[bufPos++] = initiateErrorCode;
+
+    response->size = bufPos;
+}
+
 bool
 mmsServer_isIndexAccess(AlternateAccess_t* alternateAccess)
 {

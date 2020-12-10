@@ -499,7 +499,9 @@ IsoClientConnection_handleConnection(IsoClientConnection self)
                            setState(self, STATE_CONNECTED);
                            nextState = INT_STATE_WAIT_FOR_DATA_MSG;
 
-                           self->callback(ISO_IND_ASSOCIATION_SUCCESS, self->callbackParameter, self->receivePayloadBuffer);
+                           if (self->callback(ISO_IND_ASSOCIATION_SUCCESS, self->callbackParameter, self->receivePayloadBuffer) == false) {
+                               nextState = INT_STATE_CLOSE_ON_ERROR;
+                           }
 
                            CotpConnection_resetPayload(self->cotpConnection);
                        }

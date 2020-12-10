@@ -32,6 +32,7 @@ svUpdateListener (SVSubscriber subscriber, void* parameter, SVSubscriber_ASDU as
 
     printf("  smpCnt: %i\n", SVSubscriber_ASDU_getSmpCnt(asdu));
     printf("  confRev: %u\n", SVSubscriber_ASDU_getConfRev(asdu));
+    printf("  smpSynch: %u\n", SVSubscriber_ASDU_getSmpSynch(asdu));
 
     /*
      * Access to the data requires a priori knowledge of the data set.
