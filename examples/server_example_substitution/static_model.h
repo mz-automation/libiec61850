@@ -1,7 +1,7 @@
 /*
  * static_model.h
  *
- * automatically generated from substitution_example.icd
+ * automatically generated from substitution_example.cid
  */
 
 #ifndef STATIC_MODEL_H_
@@ -32,6 +32,7 @@ extern DataAttribute iedModel_LD1_LPHD1_Proxy_subEna;
 extern DataAttribute iedModel_LD1_LPHD1_Proxy_subVal;
 extern DataAttribute iedModel_LD1_LPHD1_Proxy_subQ;
 extern DataAttribute iedModel_LD1_LPHD1_Proxy_subID;
+extern DataAttribute iedModel_LD1_LPHD1_Proxy_blkEna;
 extern LogicalNode   iedModel_LD1_MMDC1;
 extern DataObject    iedModel_LD1_MMDC1_Beh;
 extern DataAttribute iedModel_LD1_MMDC1_Beh_stVal;
@@ -47,6 +48,7 @@ extern DataAttribute iedModel_LD1_MMDC1_Watt_subMag;
 extern DataAttribute iedModel_LD1_MMDC1_Watt_subMag_f;
 extern DataAttribute iedModel_LD1_MMDC1_Watt_subQ;
 extern DataAttribute iedModel_LD1_MMDC1_Watt_subID;
+extern DataAttribute iedModel_LD1_MMDC1_Watt_blkEna;
 extern DataObject    iedModel_LD1_MMDC1_Amp;
 extern DataAttribute iedModel_LD1_MMDC1_Amp_mag;
 extern DataAttribute iedModel_LD1_MMDC1_Amp_mag_f;
@@ -57,6 +59,7 @@ extern DataAttribute iedModel_LD1_MMDC1_Amp_subMag;
 extern DataAttribute iedModel_LD1_MMDC1_Amp_subMag_f;
 extern DataAttribute iedModel_LD1_MMDC1_Amp_subQ;
 extern DataAttribute iedModel_LD1_MMDC1_Amp_subID;
+extern DataAttribute iedModel_LD1_MMDC1_Amp_blkEna;
 extern DataObject    iedModel_LD1_MMDC1_Vol;
 extern DataAttribute iedModel_LD1_MMDC1_Vol_mag;
 extern DataAttribute iedModel_LD1_MMDC1_Vol_mag_f;
@@ -67,6 +70,7 @@ extern DataAttribute iedModel_LD1_MMDC1_Vol_subMag;
 extern DataAttribute iedModel_LD1_MMDC1_Vol_subMag_f;
 extern DataAttribute iedModel_LD1_MMDC1_Vol_subQ;
 extern DataAttribute iedModel_LD1_MMDC1_Vol_subID;
+extern DataAttribute iedModel_LD1_MMDC1_Vol_blkEna;
 extern LogicalNode   iedModel_LD1_GGIO1;
 extern DataObject    iedModel_LD1_GGIO1_Beh;
 extern DataAttribute iedModel_LD1_GGIO1_Beh_stVal;
@@ -80,6 +84,7 @@ extern DataAttribute iedModel_LD1_GGIO1_Ind1_subEna;
 extern DataAttribute iedModel_LD1_GGIO1_Ind1_subVal;
 extern DataAttribute iedModel_LD1_GGIO1_Ind1_subQ;
 extern DataAttribute iedModel_LD1_GGIO1_Ind1_subID;
+extern DataAttribute iedModel_LD1_GGIO1_Ind1_blkEna;
 extern DataObject    iedModel_LD1_GGIO1_AnIn1;
 extern DataAttribute iedModel_LD1_GGIO1_AnIn1_mag;
 extern DataAttribute iedModel_LD1_GGIO1_AnIn1_mag_f;
@@ -90,6 +95,7 @@ extern DataAttribute iedModel_LD1_GGIO1_AnIn1_subMag;
 extern DataAttribute iedModel_LD1_GGIO1_AnIn1_subMag_f;
 extern DataAttribute iedModel_LD1_GGIO1_AnIn1_subQ;
 extern DataAttribute iedModel_LD1_GGIO1_AnIn1_subID;
+extern DataAttribute iedModel_LD1_GGIO1_AnIn1_blkEna;
 
 
 
@@ -114,6 +120,7 @@ extern DataAttribute iedModel_LD1_GGIO1_AnIn1_subID;
 #define IEDMODEL_LD1_LPHD1_Proxy_subVal (&iedModel_LD1_LPHD1_Proxy_subVal)
 #define IEDMODEL_LD1_LPHD1_Proxy_subQ (&iedModel_LD1_LPHD1_Proxy_subQ)
 #define IEDMODEL_LD1_LPHD1_Proxy_subID (&iedModel_LD1_LPHD1_Proxy_subID)
+#define IEDMODEL_LD1_LPHD1_Proxy_blkEna (&iedModel_LD1_LPHD1_Proxy_blkEna)
 #define IEDMODEL_LD1_MMDC1 (&iedModel_LD1_MMDC1)
 #define IEDMODEL_LD1_MMDC1_Beh (&iedModel_LD1_MMDC1_Beh)
 #define IEDMODEL_LD1_MMDC1_Beh_stVal (&iedModel_LD1_MMDC1_Beh_stVal)
@@ -129,6 +136,7 @@ extern DataAttribute iedModel_LD1_GGIO1_AnIn1_subID;
 #define IEDMODEL_LD1_MMDC1_Watt_subMag_f (&iedModel_LD1_MMDC1_Watt_subMag_f)
 #define IEDMODEL_LD1_MMDC1_Watt_subQ (&iedModel_LD1_MMDC1_Watt_subQ)
 #define IEDMODEL_LD1_MMDC1_Watt_subID (&iedModel_LD1_MMDC1_Watt_subID)
+#define IEDMODEL_LD1_MMDC1_Watt_blkEna (&iedModel_LD1_MMDC1_Watt_blkEna)
 #define IEDMODEL_LD1_MMDC1_Amp (&iedModel_LD1_MMDC1_Amp)
 #define IEDMODEL_LD1_MMDC1_Amp_mag (&iedModel_LD1_MMDC1_Amp_mag)
 #define IEDMODEL_LD1_MMDC1_Amp_mag_f (&iedModel_LD1_MMDC1_Amp_mag_f)
@@ -139,6 +147,7 @@ extern DataAttribute iedModel_LD1_GGIO1_AnIn1_subID;
 #define IEDMODEL_LD1_MMDC1_Amp_subMag_f (&iedModel_LD1_MMDC1_Amp_subMag_f)
 #define IEDMODEL_LD1_MMDC1_Amp_subQ (&iedModel_LD1_MMDC1_Amp_subQ)
 #define IEDMODEL_LD1_MMDC1_Amp_subID (&iedModel_LD1_MMDC1_Amp_subID)
+#define IEDMODEL_LD1_MMDC1_Amp_blkEna (&iedModel_LD1_MMDC1_Amp_blkEna)
 #define IEDMODEL_LD1_MMDC1_Vol (&iedModel_LD1_MMDC1_Vol)
 #define IEDMODEL_LD1_MMDC1_Vol_mag (&iedModel_LD1_MMDC1_Vol_mag)
 #define IEDMODEL_LD1_MMDC1_Vol_mag_f (&iedModel_LD1_MMDC1_Vol_mag_f)
@@ -149,6 +158,7 @@ extern DataAttribute iedModel_LD1_GGIO1_AnIn1_subID;
 #define IEDMODEL_LD1_MMDC1_Vol_subMag_f (&iedModel_LD1_MMDC1_Vol_subMag_f)
 #define IEDMODEL_LD1_MMDC1_Vol_subQ (&iedModel_LD1_MMDC1_Vol_subQ)
 #define IEDMODEL_LD1_MMDC1_Vol_subID (&iedModel_LD1_MMDC1_Vol_subID)
+#define IEDMODEL_LD1_MMDC1_Vol_blkEna (&iedModel_LD1_MMDC1_Vol_blkEna)
 #define IEDMODEL_LD1_GGIO1 (&iedModel_LD1_GGIO1)
 #define IEDMODEL_LD1_GGIO1_Beh (&iedModel_LD1_GGIO1_Beh)
 #define IEDMODEL_LD1_GGIO1_Beh_stVal (&iedModel_LD1_GGIO1_Beh_stVal)
@@ -162,6 +172,7 @@ extern DataAttribute iedModel_LD1_GGIO1_AnIn1_subID;
 #define IEDMODEL_LD1_GGIO1_Ind1_subVal (&iedModel_LD1_GGIO1_Ind1_subVal)
 #define IEDMODEL_LD1_GGIO1_Ind1_subQ (&iedModel_LD1_GGIO1_Ind1_subQ)
 #define IEDMODEL_LD1_GGIO1_Ind1_subID (&iedModel_LD1_GGIO1_Ind1_subID)
+#define IEDMODEL_LD1_GGIO1_Ind1_blkEna (&iedModel_LD1_GGIO1_Ind1_blkEna)
 #define IEDMODEL_LD1_GGIO1_AnIn1 (&iedModel_LD1_GGIO1_AnIn1)
 #define IEDMODEL_LD1_GGIO1_AnIn1_mag (&iedModel_LD1_GGIO1_AnIn1_mag)
 #define IEDMODEL_LD1_GGIO1_AnIn1_mag_f (&iedModel_LD1_GGIO1_AnIn1_mag_f)
@@ -172,6 +183,7 @@ extern DataAttribute iedModel_LD1_GGIO1_AnIn1_subID;
 #define IEDMODEL_LD1_GGIO1_AnIn1_subMag_f (&iedModel_LD1_GGIO1_AnIn1_subMag_f)
 #define IEDMODEL_LD1_GGIO1_AnIn1_subQ (&iedModel_LD1_GGIO1_AnIn1_subQ)
 #define IEDMODEL_LD1_GGIO1_AnIn1_subID (&iedModel_LD1_GGIO1_AnIn1_subID)
+#define IEDMODEL_LD1_GGIO1_AnIn1_blkEna (&iedModel_LD1_GGIO1_AnIn1_blkEna)
 
 #endif /* STATIC_MODEL_H_ */
 

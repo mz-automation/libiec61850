@@ -32,6 +32,7 @@
 #define ALLOW_WRITE_ACCESS_SP 4
 #define ALLOW_WRITE_ACCESS_SV 8
 #define ALLOW_WRITE_ACCESS_SE 16
+#define ALLOW_WRITE_ACCESS_BL 32
 
 struct sIedServer
 {

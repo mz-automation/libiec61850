@@ -2,7 +2,8 @@
  *  server_example_substitution.c
  *
  *  - How to use the IEC 61850 substitution service
- *  - Two data objects can be substituted:
+ *  - How to use the blocking service
+ *  - Two data objects can be substituted and/or blocked:
  *  -- GGIO1.AnIn1
  *  -- GGIO1.Ind1
  */
@@ -24,6 +25,8 @@ static IedServer iedServer = NULL;
 
 static bool subsAnIn1 = false;
 static bool subsInd1 = false;
+static bool blkEnaAnIn1 = false;
+static bool blkEnaInd1 = false;
 
 static float an1 = 0.f;
 static uint64_t timestamp = 0;
@@ -34,7 +37,6 @@ sigint_handler(int signalId)
 {
     running = 0;
 }
-
 
 static void
 connectionHandler (IedServer self, ClientConnection connection, bool connected, void* parameter)
@@ -54,13 +56,13 @@ updateProcessValues()
     Timestamp_setTimeInMilliseconds(&iecTimestamp, timestamp);
     Timestamp_setLeapSecondKnown(&iecTimestamp, true);
 
-    if (subsAnIn1 == false) {
+    if ((subsAnIn1 == false) && (blkEnaAnIn1 == false)) {
         IedServer_updateTimestampAttributeValue(iedServer, IEDMODEL_LD1_GGIO1_AnIn1_t, &iecTimestamp);
         IedServer_updateQuality(iedServer, IEDMODEL_LD1_GGIO1_AnIn1_q, QUALITY_VALIDITY_GOOD);
         IedServer_updateFloatAttributeValue(iedServer, IEDMODEL_LD1_GGIO1_AnIn1_mag_f, an1);
     }
 
-    if (subsInd1 == false) {
+    if ((subsInd1 == false) && (blkEnaInd1 == false)) {
         IedServer_updateTimestampAttributeValue(iedServer, IEDMODEL_LD1_GGIO1_Ind1_t, &iecTimestamp);
         IedServer_updateQuality(iedServer, IEDMODEL_LD1_GGIO1_Ind1_q, QUALITY_VALIDITY_GOOD);
         IedServer_updateBooleanAttributeValue(iedServer, IEDMODEL_LD1_GGIO1_Ind1_stVal, ind1);
@@ -116,6 +118,23 @@ writeAccessHandler (DataAttribute* dataAttribute, MmsValue* value, ClientConnect
         }
 
     }
+    else if (dataAttribute == IEDMODEL_LD1_GGIO1_AnIn1_blkEna) {
+        printf("Received GGIO1.AnIn1.blkEna: %i\n", MmsValue_getBoolean(value));
+
+        blkEnaAnIn1 = MmsValue_getBoolean(value);
+
+        /* Update quality flags */
+
+        Quality quality =
+                Quality_fromMmsValue(IedServer_getAttributeValue(iedServer, IEDMODEL_LD1_GGIO1_AnIn1_q));
+
+        if (blkEnaAnIn1)
+            Quality_setFlag(&quality, QUALITY_OPERATOR_BLOCKED);
+        else
+            Quality_unsetFlag(&quality, QUALITY_OPERATOR_BLOCKED);
+
+        IedServer_updateQuality(iedServer, IEDMODEL_LD1_GGIO1_AnIn1_q, quality);
+    }
     else if (dataAttribute == IEDMODEL_LD1_GGIO1_Ind1_subEna) {
         printf("Received GGIO1.Ind1.subEna: %i\n", MmsValue_getBoolean(value));
 
@@ -160,6 +179,23 @@ writeAccessHandler (DataAttribute* dataAttribute, MmsValue* value, ClientConnect
         }
 
     }
+    else if (dataAttribute == IEDMODEL_LD1_GGIO1_Ind1_blkEna) {
+        printf("Received GGIO1.Ind1.blkEna: %i\n", MmsValue_getBoolean(value));
+
+        blkEnaInd1 = MmsValue_getBoolean(value);
+
+        /* Update quality flags */
+
+        Quality quality =
+                Quality_fromMmsValue(IedServer_getAttributeValue(iedServer, IEDMODEL_LD1_GGIO1_Ind1_q));
+
+        if (blkEnaAnIn1)
+            Quality_setFlag(&quality, QUALITY_OPERATOR_BLOCKED);
+        else
+            Quality_unsetFlag(&quality, QUALITY_OPERATOR_BLOCKED);
+
+        IedServer_updateQuality(iedServer, IEDMODEL_LD1_GGIO1_Ind1_q, quality);
+    }
 
     return DATA_ACCESS_ERROR_SUCCESS;
 }
@@ -179,10 +215,12 @@ main(int argc, char** argv)
     IedServer_handleWriteAccess(iedServer, IEDMODEL_LD1_GGIO1_AnIn1_subEna, writeAccessHandler, NULL);
     IedServer_handleWriteAccess(iedServer, IEDMODEL_LD1_GGIO1_AnIn1_subMag_f, writeAccessHandler, NULL);
     IedServer_handleWriteAccess(iedServer, IEDMODEL_LD1_GGIO1_AnIn1_subQ, writeAccessHandler, NULL);
+    IedServer_handleWriteAccess(iedServer, IEDMODEL_LD1_GGIO1_AnIn1_blkEna, writeAccessHandler, NULL);
 
     IedServer_handleWriteAccess(iedServer, IEDMODEL_LD1_GGIO1_Ind1_subEna, writeAccessHandler, NULL);
     IedServer_handleWriteAccess(iedServer, IEDMODEL_LD1_GGIO1_Ind1_subVal, writeAccessHandler, NULL);
     IedServer_handleWriteAccess(iedServer, IEDMODEL_LD1_GGIO1_Ind1_subQ, writeAccessHandler, NULL);
+    IedServer_handleWriteAccess(iedServer, IEDMODEL_LD1_GGIO1_Ind1_blkEna, writeAccessHandler, NULL);
 
     /* MMS server will be instructed to start listening for client connections. */
     IedServer_start(iedServer, 102);
@@ -226,4 +264,5 @@ main(int argc, char** argv)
     /* Cleanup - free all resources */
     IedServer_destroy(iedServer);
 
+    return 0;
 } /* main() */
