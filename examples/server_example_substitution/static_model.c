@@ -1,7 +1,7 @@
 /*
  * static_model.c
  *
- * automatically generated from substitution_example.icd
+ * automatically generated from substitution_example.cid
  */
 #include "static_model.h"
 
@@ -242,11 +242,24 @@ DataAttribute iedModel_LD1_LPHD1_Proxy_subID = {
     DataAttributeModelType,
     "subID",
     (ModelNode*) &iedModel_LD1_LPHD1_Proxy,
-    NULL,
+    (ModelNode*) &iedModel_LD1_LPHD1_Proxy_blkEna,
     NULL,
     0,
     IEC61850_FC_SV,
     IEC61850_VISIBLE_STRING_64,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_LD1_LPHD1_Proxy_blkEna = {
+    DataAttributeModelType,
+    "blkEna",
+    (ModelNode*) &iedModel_LD1_LPHD1_Proxy,
+    NULL,
+    NULL,
+    0,
+    IEC61850_FC_BL,
+    IEC61850_BOOLEAN,
     0,
     NULL,
     0};
@@ -424,11 +437,24 @@ DataAttribute iedModel_LD1_MMDC1_Watt_subID = {
     DataAttributeModelType,
     "subID",
     (ModelNode*) &iedModel_LD1_MMDC1_Watt,
-    NULL,
+    (ModelNode*) &iedModel_LD1_MMDC1_Watt_blkEna,
     NULL,
     0,
     IEC61850_FC_SV,
     IEC61850_VISIBLE_STRING_64,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_LD1_MMDC1_Watt_blkEna = {
+    DataAttributeModelType,
+    "blkEna",
+    (ModelNode*) &iedModel_LD1_MMDC1_Watt,
+    NULL,
+    NULL,
+    0,
+    IEC61850_FC_BL,
+    IEC61850_BOOLEAN,
     0,
     NULL,
     0};
@@ -550,11 +576,24 @@ DataAttribute iedModel_LD1_MMDC1_Amp_subID = {
     DataAttributeModelType,
     "subID",
     (ModelNode*) &iedModel_LD1_MMDC1_Amp,
-    NULL,
+    (ModelNode*) &iedModel_LD1_MMDC1_Amp_blkEna,
     NULL,
     0,
     IEC61850_FC_SV,
     IEC61850_VISIBLE_STRING_64,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_LD1_MMDC1_Amp_blkEna = {
+    DataAttributeModelType,
+    "blkEna",
+    (ModelNode*) &iedModel_LD1_MMDC1_Amp,
+    NULL,
+    NULL,
+    0,
+    IEC61850_FC_BL,
+    IEC61850_BOOLEAN,
     0,
     NULL,
     0};
@@ -676,11 +715,24 @@ DataAttribute iedModel_LD1_MMDC1_Vol_subID = {
     DataAttributeModelType,
     "subID",
     (ModelNode*) &iedModel_LD1_MMDC1_Vol,
-    NULL,
+    (ModelNode*) &iedModel_LD1_MMDC1_Vol_blkEna,
     NULL,
     0,
     IEC61850_FC_SV,
     IEC61850_VISIBLE_STRING_64,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_LD1_MMDC1_Vol_blkEna = {
+    DataAttributeModelType,
+    "blkEna",
+    (ModelNode*) &iedModel_LD1_MMDC1_Vol,
+    NULL,
+    NULL,
+    0,
+    IEC61850_FC_BL,
+    IEC61850_BOOLEAN,
     0,
     NULL,
     0};
@@ -832,11 +884,24 @@ DataAttribute iedModel_LD1_GGIO1_Ind1_subID = {
     DataAttributeModelType,
     "subID",
     (ModelNode*) &iedModel_LD1_GGIO1_Ind1,
-    NULL,
+    (ModelNode*) &iedModel_LD1_GGIO1_Ind1_blkEna,
     NULL,
     0,
     IEC61850_FC_SV,
     IEC61850_VISIBLE_STRING_64,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_LD1_GGIO1_Ind1_blkEna = {
+    DataAttributeModelType,
+    "blkEna",
+    (ModelNode*) &iedModel_LD1_GGIO1_Ind1,
+    NULL,
+    NULL,
+    0,
+    IEC61850_FC_BL,
+    IEC61850_BOOLEAN,
     0,
     NULL,
     0};
@@ -958,11 +1023,24 @@ DataAttribute iedModel_LD1_GGIO1_AnIn1_subID = {
     DataAttributeModelType,
     "subID",
     (ModelNode*) &iedModel_LD1_GGIO1_AnIn1,
-    NULL,
+    (ModelNode*) &iedModel_LD1_GGIO1_AnIn1_blkEna,
     NULL,
     0,
     IEC61850_FC_SV,
     IEC61850_VISIBLE_STRING_64,
+    0,
+    NULL,
+    0};
+
+DataAttribute iedModel_LD1_GGIO1_AnIn1_blkEna = {
+    DataAttributeModelType,
+    "blkEna",
+    (ModelNode*) &iedModel_LD1_GGIO1_AnIn1,
+    NULL,
+    NULL,
+    0,
+    IEC61850_FC_BL,
+    IEC61850_BOOLEAN,
     0,
     NULL,
     0};

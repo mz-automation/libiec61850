@@ -2100,45 +2100,9 @@ isReportControlBlock(char* separator)
 #endif /* (CONFIG_IEC61850_REPORT_SERVICE == 1) */
 
 static bool
-isFunctionalConstraintCF(char* separator)
+isFunctionalConstraint(const char* fcStr, char* separator)
 {
-    if (strncmp(separator + 1, "CF", 2) == 0)
-        return true;
-    else
-        return false;
-}
-
-static bool
-isFunctionalConstraintDC(char* separator)
-{
-    if (strncmp(separator + 1, "DC", 2) == 0)
-        return true;
-    else
-        return false;
-}
-
-static bool
-isFunctionalConstraintSP(char* separator)
-{
-    if (strncmp(separator + 1, "SP", 2) == 0)
-        return true;
-    else
-        return false;
-}
-
-static bool
-isFunctionalConstraintSV(char* separator)
-{
-    if (strncmp(separator + 1, "SV", 2) == 0)
-        return true;
-    else
-        return false;
-}
-
-static bool
-isFunctionalConstraintSE(char* separator)
-{
-    if (strncmp(separator + 1, "SE", 2) == 0)
+    if (strncmp(separator + 1, fcStr, 2) == 0)
         return true;
     else
         return false;
@@ -2445,16 +2409,18 @@ checkIfValueBelongsToModelNode(DataAttribute* dataAttribute, MmsValue* value, Mm
 static FunctionalConstraint
 getFunctionalConstraintForWritableNode(char* separator)
 {
-    if (isFunctionalConstraintCF(separator))
+    if (isFunctionalConstraint("CF", separator))
         return IEC61850_FC_CF;
-    if (isFunctionalConstraintDC(separator))
+    if (isFunctionalConstraint("DC", separator))
         return IEC61850_FC_DC;
-    if (isFunctionalConstraintSP(separator))
+    if (isFunctionalConstraint("SP", separator))
         return IEC61850_FC_SP;
-    if (isFunctionalConstraintSV(separator))
+    if (isFunctionalConstraint("SV", separator))
         return IEC61850_FC_SV;
-    if (isFunctionalConstraintSE(separator))
+    if (isFunctionalConstraint("SE", separator))
         return IEC61850_FC_SE;
+    if (isFunctionalConstraint("BL", separator))
+        return IEC61850_FC_BL;
 
     return IEC61850_FC_NONE;
 }
@@ -2492,6 +2458,13 @@ getAccessPolicyForFC(MmsMapping* self, FunctionalConstraint fc)
 
     if (fc == IEC61850_FC_SE) {
         if (self->iedServer->writeAccessPolicies & ALLOW_WRITE_ACCESS_SE)
+            return ACCESS_POLICY_ALLOW;
+        else
+            return ACCESS_POLICY_DENY;
+    }
+
+    if (fc == IEC61850_FC_BL) {
+        if (self->iedServer->writeAccessPolicies & ALLOW_WRITE_ACCESS_BL)
             return ACCESS_POLICY_ALLOW;
         else
             return ACCESS_POLICY_DENY;
@@ -2811,7 +2784,7 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
                 printf("IED_SERVER: write to %s policy:%i\n", variableId, nodeAccessPolicy);
 
 #if (CONFIG_IEC61850_SETTING_GROUPS == 1)
-            if (isFunctionalConstraintSE(separator)) {
+            if (isFunctionalConstraint("SE", separator)) {
                 SettingGroup* sg = getSettingGroupByMmsDomain(self, domain);
 
                 if (sg != NULL) {
@@ -3189,7 +3162,7 @@ mmsReadAccessHandler (void* parameter, MmsDomain* domain, char* variableId, MmsS
 #if (CONFIG_IEC61850_SETTING_GROUPS == 1)
 
     if (separator) {
-        if (isFunctionalConstraintSE(separator)) {
+        if (isFunctionalConstraint("SE", separator)) {
             SettingGroup* sg = getSettingGroupByMmsDomain(self, domain);
 
             if (sg != NULL) {
