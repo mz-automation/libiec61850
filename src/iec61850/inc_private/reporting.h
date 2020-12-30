@@ -106,6 +106,8 @@ typedef struct {
     ReportBuffer* reportBuffer;
     MmsValue* timeOfEntry;
 
+    ReportControlBlock* rcb;
+
     IedServer server;
 } ReportControl;
 
