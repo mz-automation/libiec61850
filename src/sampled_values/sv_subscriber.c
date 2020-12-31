@@ -165,7 +165,7 @@ svReceiverLoop(void* threadParameter)
             switch (EthernetHandleSet_waitReady(handleSet, 100))
             {
             case -1:
-                if (DEBUG_GOOSE_SUBSCRIBER)
+                if (DEBUG_SV_SUBSCRIBER)
                     printf("SV_SUBSCRIBER: EhtnernetHandleSet_waitReady() failure\n");
                 break;
             case 0:
@@ -177,6 +177,7 @@ svReceiverLoop(void* threadParameter)
     }
 
     self->stopped = true;
+    EthernetHandleSet_destroy(handleSet);
 }
 
 void
