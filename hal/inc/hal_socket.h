@@ -151,8 +151,19 @@ UdpSocket_bind(UdpSocket self, const char* address, int port);
 PAL_API bool
 UdpSocket_sendTo(UdpSocket self, const char* address, int port, uint8_t* msg, int msgSize);
 
+/**
+ * \brief Receive data from UDP socket (store data and (optionally) the IP address of the sender
+ *
+ * \param self UDP socket instance
+ * \param address (optional) buffer to store the IP address as string
+ * \param maxAddrSize (optional) size of the provided buffer to store the IP address
+ * \param msg buffer to store the UDP message data
+ * \param msgSize the maximum size of the message to receive
+ *
+ * \return number of received bytes or -1 in case of an error
+ */
 PAL_API int
-UdpSocket_receiveFrom(UdpSocket self, char** address, int maxAddrSize, uint8_t* msg, int msgSize);
+UdpSocket_receiveFrom(UdpSocket self, char* address, int maxAddrSize, uint8_t* msg, int msgSize);
 
 
 PAL_API void
