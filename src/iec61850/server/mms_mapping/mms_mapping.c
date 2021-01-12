@@ -64,7 +64,7 @@ typedef struct
     EditSettingGroupConfirmationHandler editSgConfirmedHandler;
     void* editSgConfirmedHandlerParameter;
 
-    ClientConnection editingClient;
+    MmsServerConnection editingClient;
     uint64_t reservationTimeout;
 } SettingGroup;
 
@@ -587,7 +587,7 @@ unselectAllSettingGroups(MmsMapping* self, MmsServerConnection serverCon)
     while (settingGroupElement != NULL) {
         SettingGroup* settingGroup = (SettingGroup*) LinkedList_getData(settingGroupElement);
 
-        if (settingGroup->editingClient == (ClientConnection) serverCon)
+        if (settingGroup->editingClient == serverCon)
             unselectEditSettingGroup(settingGroup);
 
         settingGroupElement = LinkedList_getNext(settingGroupElement);
@@ -2595,9 +2595,12 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
                     if ((val > 0) && (val <= sg->sgcb->numOfSGs)) {
                         if (val != sg->sgcb->actSG) {
 
-                            if (sg->actSgChangedHandler != NULL) {
+                            if (sg->actSgChangedHandler) {
+
+                                ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer, connection);
+
                                 if (sg->actSgChangedHandler(sg->actSgChangedHandlerParameter, sg->sgcb,
-                                        (uint8_t) val, (ClientConnection) connection))
+                                        (uint8_t) val, clientConnection))
                                 {
                                     sg->sgcb->actSG = val;
 
@@ -2607,7 +2610,6 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
                                     MmsValue_setUint8(actSg, sg->sgcb->actSG);
                                     MmsValue_setUtcTimeMs(lActTm, Hal_getTimeInMs());
                                 }
-
                                 else
                                     retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
                             }
@@ -2634,7 +2636,7 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
                     if (sg != NULL) {
                         uint32_t val = MmsValue_toUint32(value);
 
-                        if ((sg->editingClient != NULL) && ( sg->editingClient != (ClientConnection) connection)) {
+                        if ((sg->editingClient != NULL) && ( sg->editingClient != connection)) {
                             /* Edit SG was set by other client */
                             retVal = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
                         }
@@ -2647,13 +2649,15 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
 
                                 if ((val > 0) && (val <= sg->sgcb->numOfSGs)) {
 
-                                    if (sg->editSgChangedHandler != NULL) {
+                                    if (sg->editSgChangedHandler) {
+
+                                        ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer, connection);
 
                                         if (sg->editSgChangedHandler(sg->editSgChangedHandlerParameter, sg->sgcb,
-                                                (uint8_t) val, (ClientConnection) connection))
+                                                (uint8_t) val, clientConnection))
                                         {
                                             sg->sgcb->editSG = val;
-                                            sg->editingClient = (ClientConnection) connection;
+                                            sg->editingClient = connection;
 
                                             sg->reservationTimeout = Hal_getTimeInMs() + (sg->sgcb->resvTms * 1000);
 
@@ -2709,8 +2713,8 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
 
                         if (val == true) {
                             if (sg->sgcb->editSG != 0) {
-                                if (sg->editingClient == (ClientConnection) connection) {
-                                    if (sg->editSgConfirmedHandler != NULL) {
+                                if (sg->editingClient == connection) {
+                                    if (sg->editSgConfirmedHandler) {
                                         sg->editSgConfirmedHandler(sg->editSgConfirmedHandlerParameter, sg->sgcb,
                                                 sg->sgcb->editSG);
 
@@ -2757,7 +2761,7 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
          SettingGroup* sg = getSettingGroupByMmsDomain(self, domain);
 
          if (sg != NULL) {
-             if (sg->editingClient != (ClientConnection) connection)
+             if (sg->editingClient != connection)
                  return DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
          }
          else
