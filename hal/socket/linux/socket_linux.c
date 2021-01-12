@@ -753,11 +753,12 @@ UdpSocket_sendTo(UdpSocket self, const char* address, int port, uint8_t* msg, in
 }
 
 int
-UdpSocket_receiveFrom(UdpSocket self, char** address, int maxAddrSize, uint8_t* msg, int msgSize)
+UdpSocket_receiveFrom(UdpSocket self, char* address, int maxAddrSize, uint8_t* msg, int msgSize)
 {
     struct sockaddr_storage remoteAddress;
+    socklen_t structSize = sizeof(struct sockaddr_storage);
 
-    int result = recvfrom(self->fd, msg, msgSize, MSG_DONTWAIT, (struct sockaddr*)&remoteAddress, sizeof(struct sockaddr_storage));
+    int result = recvfrom(self->fd, msg, msgSize, MSG_DONTWAIT, (struct sockaddr*)&remoteAddress, &structSize);
 
     if (result == -1) {
         if (DEBUG_SOCKET)
@@ -782,12 +783,12 @@ UdpSocket_receiveFrom(UdpSocket self, char** address, int maxAddrSize, uint8_t* 
             isIPv6 = true;
         }
         else
-            return NULL ;
+            return result ;
 
         if (isIPv6)
-            snprintf(*address, maxAddrSize, "[%s]:%i", addrString, port);
+            snprintf(address, maxAddrSize, "[%s]:%i", addrString, port);
         else
-            snprintf(*address, maxAddrSize, "%s:%i", addrString, port);
+            snprintf(address, maxAddrSize, "%s:%i", addrString, port);
     }
 
     return result;
