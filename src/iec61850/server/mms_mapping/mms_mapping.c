@@ -1900,9 +1900,11 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
                     if ((val > 0) && (val <= sg->sgcb->numOfSGs)) {
                         if (val != sg->sgcb->actSG) {
 
+                            ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer, connection);
+
                             if (sg->actSgChangedHandler != NULL) {
                                 if (sg->actSgChangedHandler(sg->actSgChangedHandlerParameter, sg->sgcb,
-                                        (uint8_t) val, (ClientConnection) connection))
+                                        (uint8_t) val, clientConnection))
                                 {
                                     sg->sgcb->actSG = val;
 
@@ -1946,8 +1948,10 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
 
 						if (sg->editSgChangedHandler != NULL) {
 
+                            ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer, connection);
+
 							if (sg->editSgChangedHandler(sg->editSgChangedHandlerParameter, sg->sgcb,
-									(uint8_t) val, (ClientConnection) connection))
+									(uint8_t) val, clientConnection))
 							{
 								sg->sgcb->editSG = val;
 								sg->editingClient = (ClientConnection) connection;
