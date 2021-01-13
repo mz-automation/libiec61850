@@ -1957,14 +1957,32 @@ ControlObjectClient_createEx(const char* objectReference, IedConnection connecti
 LIB61850_API void
 ControlObjectClient_destroy(ControlObjectClient self);
 
+/**
+ * Cause of the \ref ControlObjectClient_ControlActionHandler invocation
+ */
 typedef enum
 {
-    CONTROL_ACTION_TYPE_SELECT = 0,
-    CONTROL_ACTION_TYPE_OPERATE = 1,
-    CONTROL_ACTION_TYPE_CANCEL = 2
+    CONTROL_ACTION_TYPE_SELECT = 0, /** < callback was invoked because of a select command */
+    CONTROL_ACTION_TYPE_OPERATE = 1,  /** < callback was invoked because of an operate command */
+    CONTROL_ACTION_TYPE_CANCEL = 2 /** < callback was invoked because of a cancel command */
 } ControlActionType;
 
-
+/**
+ * \brief A callback handler that is invoked when a command termination message is received.
+ *
+ * This callback is invoked whenever a CommandTermination+ or CommandTermination- message is received.
+ * To distinguish between a CommandTermination+ and CommandTermination- please use the
+ * ControlObjectClient_getLastApplError function.
+ *
+ * NOTE: Do not call \ref ControlObjectClient_destroy inside of this callback! Doing so will cause a dead-lock.
+ *
+ * \param invokeId invoke ID of the command sent by the client
+ * \param parameter the user parameter that is passed to the callback function
+ * \param err the error code when an error occurred, or IED_ERROR_OK
+ * \param type control action type that caused the callback
+ * \param success true, when the command was successful, false otherwise
+ *
+ */
 typedef void
 (*ControlObjectClient_ControlActionHandler) (uint32_t invokeId, void* parameter, IedClientError err, ControlActionType type, bool success);
 
@@ -2196,7 +2214,7 @@ ControlObjectClient_setOrigin(ControlObjectClient self, const char* orIdent, int
  * NOTE: Some non-standard compliant servers may require this to accept oper/cancel requests
  *
  * \param self the ControlObjectClient instance
- * \param useContantT enable this behaviour with true, disable with false
+ * \param useContantT enable this behavior with true, disable with false
  */
 LIB61850_API void
 ControlObjectClient_useConstantT(ControlObjectClient self, bool useConstantT);
@@ -2233,13 +2251,15 @@ ControlObjectClient_setSynchroCheck(ControlObjectClient self, bool value);
 
 
 /**
- * \brief Private a callback handler that is invoked when a command termination message is received.
+ * \brief A callback handler that is invoked when a command termination message is received.
  *
  * This callback is invoked whenever a CommandTermination+ or CommandTermination- message is received.
  * To distinguish between a CommandTermination+ and CommandTermination- please use the
  * ControlObjectClient_getLastApplError function.
  *
- * \param parameter the user paramter that is passed to the callback function
+ * NOTE: Do not call \ref ControlObjectClient_destroy inside of this callback! Doing so will cause a dead-lock.
+ *
+ * \param parameter the user parameter that is passed to the callback function
  * \param controlClient the ControlObjectClient instance
  */
 typedef void (*CommandTerminationHandler) (void* parameter, ControlObjectClient controlClient);
