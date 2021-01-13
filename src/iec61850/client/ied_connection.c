@@ -473,8 +473,12 @@ handleLastApplErrorMessage(IedConnection self, MmsValue* lastApplError)
     self->lastApplError.ctlNum = MmsValue_toUint32(ctlNum);
     self->lastApplError.addCause = (ControlAddCause) MmsValue_toInt32(addCause);
     self->lastApplError.error = (ControlLastApplError) MmsValue_toInt32(error);
+
+    Semaphore_wait(self->clientControlsLock);
+
     LinkedList control = LinkedList_getNext(self->clientControls);
-    while (control != NULL) {
+
+    while (control) {
         ControlObjectClient object = (ControlObjectClient) control->data;
 
         const char* objectRef = ControlObjectClient_getObjectReference(object);
@@ -485,6 +489,8 @@ handleLastApplErrorMessage(IedConnection self, MmsValue* lastApplError)
 
         control = LinkedList_getNext(control);
     }
+
+    Semaphore_post(self->clientControlsLock);
 }
 
 static void
@@ -515,9 +521,11 @@ informationReportHandler(void* parameter, char* domainName,
             if (DEBUG_IED_CLIENT)
                 printf("IED_CLIENT: RCVD CommandTermination for %s/%s\n", domainName, variableListName);
 
+            Semaphore_wait(self->clientControlsLock);
+
             LinkedList control = LinkedList_getNext(self->clientControls);
 
-            while (control != NULL) {
+            while (control) {
                ControlObjectClient object = (ControlObjectClient) control->data;
 
                const char* objectRef = ControlObjectClient_getObjectReference(object);
@@ -527,6 +535,8 @@ informationReportHandler(void* parameter, char* domainName,
 
                control = LinkedList_getNext(control);
             }
+
+            Semaphore_post(self->clientControlsLock);
         }
 
         MmsValue_delete(value);
@@ -585,6 +595,7 @@ createNewConnectionObject(TLSConfiguration tlsConfig, bool useThreads)
     if (self) {
         self->enabledReports = LinkedList_create();
         self->logicalDevices = NULL;
+        self->clientControlsLock = Semaphore_create(1);
         self->clientControls = LinkedList_create();
 
 
@@ -810,6 +821,7 @@ IedConnection_destroy(IedConnection self)
 
     LinkedList_destroyStatic(self->clientControls);
 
+    Semaphore_destroy(self->clientControlsLock);
     Semaphore_destroy(self->outstandingCallsLock);
     Semaphore_destroy(self->stateMutex);
     Semaphore_destroy(self->reportHandlerMutex);
@@ -3796,13 +3808,21 @@ IedConnection_getLastApplError(IedConnection self)
 void
 iedConnection_addControlClient(IedConnection self, ControlObjectClient control)
 {
+    Semaphore_wait(self->clientControlsLock);
+
     LinkedList_add(self->clientControls, control);
+
+    Semaphore_post(self->clientControlsLock);
 }
 
 void
 iedConnection_removeControlClient(IedConnection self, ControlObjectClient control)
 {
+    Semaphore_wait(self->clientControlsLock);
+
     LinkedList_remove(self->clientControls, control);
+
+    Semaphore_post(self->clientControlsLock);
 }
 
 FileDirectoryEntry

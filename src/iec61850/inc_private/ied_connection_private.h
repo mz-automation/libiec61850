@@ -56,7 +56,10 @@ struct sIedConnection
     IedConnectionState state;
     LinkedList enabledReports;
     LinkedList logicalDevices;
+
+    Semaphore clientControlsLock;
     LinkedList clientControls;
+
     LastApplError lastApplError;
 
     Semaphore stateMutex;
