@@ -523,14 +523,15 @@ ControlObjectClient_operate(ControlObjectClient self, MmsValue* ctlVal, uint64_t
 
     MmsValue_update(self->ctlVal, ctlVal);
 
-    if (self->analogValue)
-        MmsValue_setElement(self->analogValue, 0, NULL);
-
     self->opertime = operTime;
 
     success = true;
 
 exit_function:
+
+    if (self->analogValue)
+        MmsValue_setElement(self->analogValue, 0, NULL);
+
     return success;
 }
 
@@ -624,13 +625,14 @@ ControlObjectClient_operateAsync(ControlObjectClient self, IedClientError* err, 
     else {
         MmsValue_update(self->ctlVal, ctlVal);
 
-        if (self->analogValue)
-            MmsValue_setElement(self->analogValue, 0, NULL);
-
         self->opertime = operTime;
     }
 
 exit_function:
+
+    if (self->analogValue)
+        MmsValue_setElement(self->analogValue, 0, NULL);
+
     return invokeId;
 }
 
@@ -703,6 +705,8 @@ prepareSBOwParameters(ControlObjectClient self, MmsValue* ctlVal)
 bool
 ControlObjectClient_selectWithValue(ControlObjectClient self, MmsValue* ctlVal)
 {
+    bool retVal = true;
+
     resetLastApplError(self);
 
     char domainId[65];
@@ -741,22 +745,30 @@ ControlObjectClient_selectWithValue(ControlObjectClient self, MmsValue* ctlVal)
     if (mmsError != MMS_ERROR_NONE) {
         if (DEBUG_IED_CLIENT)
             printf("IED_CLIENT: select-with-value failed!\n");
-        return false;
+
+        retVal = false;
+
+        goto exit_function;
     }
     else {
         if (writeResult != DATA_ACCESS_ERROR_SUCCESS) {
             if (DEBUG_IED_CLIENT)
                 printf("IED_CLIENT: select-with-value failed!\n");
-            return false;
+
+            retVal = false;
+
+            goto exit_function;
         }
     }
 
     MmsValue_update(self->ctlVal, ctlVal);
 
+exit_function:
+
     if (self->analogValue)
         MmsValue_setElement(self->analogValue, 0, NULL);
 
-    return true;
+    return retVal;
 }
 
 static void
@@ -857,12 +869,13 @@ ControlObjectClient_selectWithValueAsync(ControlObjectClient self, IedClientErro
     }
     else {
         MmsValue_update(self->ctlVal, ctlVal);
-
-        if (self->analogValue)
-            MmsValue_setElement(self->analogValue, 0, NULL);
     }
 
 exit_function:
+
+    if (self->analogValue)
+        MmsValue_setElement(self->analogValue, 0, NULL);
+
     return invokeId;
 }
 
