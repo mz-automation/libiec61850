@@ -2769,16 +2769,17 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
     }
 #endif /* (CONFIG_IEC61850_SETTING_GROUPS == 1) */
 
-    /* writable data model elements - SP, SV, CF, DC */
+    /* writable data model elements - SP, SV, CF, DC, BL */
     if (fc != IEC61850_FC_NONE) {
         MmsValue* cachedValue;
 
         cachedValue = MmsServer_getValueFromCache(self->mmsServer, domain, variableId);
 
-        if (cachedValue != NULL) {
+        if (cachedValue) {
 
-            if (!MmsValue_equalTypes(cachedValue, value))
+            if (!MmsValue_equalTypes(cachedValue, value)) {
                 return DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+            }
 
             bool handlerFound = false;
 
@@ -2800,6 +2801,8 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
             }
 #endif
 
+            bool updateValue = true;
+
             /* Call write access handlers */
             LinkedList writeHandlerListElement = LinkedList_getNext(self->attributeAccessHandlers);
 
@@ -2820,12 +2823,16 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
                             accessHandler->handler(dataAttribute, matchingValue, clientConnection,
                             		accessHandler->parameter);
 
-                        if (handlerResult == DATA_ACCESS_ERROR_SUCCESS)
+                        if ((handlerResult == DATA_ACCESS_ERROR_SUCCESS) || (handlerResult == DATA_ACCESS_ERROR_SUCCESS_NO_UPDATE)) {
                             handlerFound = true;
+
+                            if (handlerResult == DATA_ACCESS_ERROR_SUCCESS_NO_UPDATE)
+                                updateValue = false;
+                        }
+
                         else
                             return handlerResult;
                     }
-
                 }
                 else { /* if ACCESS_POLICY_DENY only allow direct access to handled data attribute */
                     if (dataAttribute->mmsValue == cachedValue) {
@@ -2837,14 +2844,17 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
                             accessHandler->handler(dataAttribute, value, clientConnection,
                             		accessHandler->parameter);
 
-                        if (handlerResult == DATA_ACCESS_ERROR_SUCCESS) {
+                        if ((handlerResult == DATA_ACCESS_ERROR_SUCCESS) || (handlerResult == DATA_ACCESS_ERROR_SUCCESS_NO_UPDATE)) {
                             handlerFound = true;
+
+                            if (handlerResult == DATA_ACCESS_ERROR_SUCCESS_NO_UPDATE)
+                                updateValue = false;
+
                             break;
                         }
                         else
                             return handlerResult;
                     }
-
                 }
 
                 writeHandlerListElement = LinkedList_getNext(writeHandlerListElement);
@@ -2858,12 +2868,14 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
 
             }
 
-            DataAttribute* da = IedModel_lookupDataAttributeByMmsValue(self->model, cachedValue);
+            if (updateValue) {
+                DataAttribute* da = IedModel_lookupDataAttributeByMmsValue(self->model, cachedValue);
 
-            if (da != NULL)
-                IedServer_updateAttributeValue(self->iedServer, da, value);
-            else
-                return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+                if (da)
+                    IedServer_updateAttributeValue(self->iedServer, da, value);
+                else
+                    return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+            }
 
             return DATA_ACCESS_ERROR_SUCCESS;
         }

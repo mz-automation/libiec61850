@@ -1591,13 +1591,17 @@ MmsGooseControlBlock_getFixedOffs(MmsGooseControlBlock self);
  * One application can be to allow write access only from a specific client. Another
  * application could be to check if the value is in the allowed range before the write
  * is accepted.
+ * When the callback returns DATA_ACCESS_ERROR_SUCCESS the write access is accepted and the stack will
+ * update the value automatically.
+ * When the callback returns DATA_ACCESS_ERROR_SUCCESS_NO_UPDATE the write access is accepted but the
+ * stack will not update the value automatically.
  *
  * \param the data attribute that has been written by an MMS client.
  * \param the value the client want to write to the data attribute
  * \param connection the connection object of the client connection that invoked the write operation
  * \param parameter the user provided parameter
  *
- * \return DATA_ACCESS_ERROR_SUCCESS if access is accepted, DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED if access is denied.
+ * \return DATA_ACCESS_ERROR_SUCCESS, or DATA_ACCESS_ERROR_SUCCESS_NO_UPDATE if access is accepted, DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED if access is denied.
  */
 typedef MmsDataAccessError
 (*WriteAccessHandler) (DataAttribute* dataAttribute, MmsValue* value, ClientConnection connection, void* parameter);
