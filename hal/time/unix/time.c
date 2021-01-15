@@ -1,7 +1,7 @@
 /*
  *  time.c
  *
- *  Copyright 2013, 2014 Michael Zillgith
+ *  Copyright 2013-2021 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *

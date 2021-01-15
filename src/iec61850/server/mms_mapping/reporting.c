@@ -40,7 +40,7 @@
 #include <string.h>
 
 /* if not explicitly set by client "ResvTms" will be set to this value */
-#define RESV_TMS_IMPLICIT_VALUE 30
+#define RESV_TMS_IMPLICIT_VALUE 10
 
 #ifndef DEBUG_IED_SERVER
 #define DEBUG_IED_SERVER 0
@@ -1345,6 +1345,8 @@ Reporting_createMmsBufferedRCBs(MmsMapping* self, MmsDomain* domain,
         rc->name = StringUtils_createString(3, logicalNode->name, "$BR$",
                 reportControlBlock->name);
 
+        rc->rcb = reportControlBlock;
+
         namedVariable->typeSpec.structure.elements[currentReport] =
                 createBufferedReportControlBlock(reportControlBlock, rc);
 
@@ -1384,6 +1386,8 @@ Reporting_createMmsUnbufferedRCBs(MmsMapping* self, MmsDomain* domain,
 
         rc->name = StringUtils_createString(3, logicalNode->name, "$RP$",
                 reportControlBlock->name);
+
+        rc->rcb = reportControlBlock;
 
         namedVariable->typeSpec.structure.elements[currentReport] =
                 createUnbufferedReportControlBlock(reportControlBlock, rc);
@@ -1472,8 +1476,19 @@ updateOwner(ReportControl* rc, MmsServerConnection connection)
                 }
             }
             else {
-                uint8_t emptyAddr[1];
-                MmsValue_setOctetString(owner, emptyAddr, 0);
+                if (rc->resvTms != -1) {
+                    uint8_t emptyAddr[1];
+                    MmsValue_setOctetString(owner, emptyAddr, 0);
+                }
+                else {
+                    /* Set to pre-configured owner */
+                    if (rc->rcb->clientReservation[0] == 4) {
+                        MmsValue_setOctetString(owner, rc->rcb->clientReservation + 1, 4);
+                    }
+                    else if (rc->rcb->clientReservation[0] == 6) {
+                        MmsValue_setOctetString(owner, rc->rcb->clientReservation + 1, 16);
+                    }
+                }
             }
         }
     }
@@ -1539,9 +1554,14 @@ static void
 checkReservationTimeout(MmsMapping* self, ReportControl* rc)
 {
     if (rc->enabled == false) {
-        if (rc->resvTms > 0) {
+        if (rc->reservationTimeout > 0) {
             if (Hal_getTimeInMs() > rc->reservationTimeout) {
-                rc->resvTms = 0;
+
+                if (rc->resvTms != -1)
+                    rc->resvTms = 0;
+
+                if (DEBUG_IED_SERVER)
+                    printf("IED_SERVER: reservation timeout expired for %s.%s\n", rc->parentLN->name, rc->name);
 
 #if (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1)
                 MmsValue* resvTmsVal = ReportControl_getRCBValue(rc, "ResvTms");
@@ -1646,6 +1666,10 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
                     rc->reserved = true;
                     rc->clientConnection = connection;
                 }
+                else {
+                    if (DEBUG_IED_SERVER)
+                        printf("IED_SERVER: client IP not matching with pre-assigned owner\n");
+                }
 #else
                 rc->reserved = true;
                 rc->clientConnection = connection;
@@ -1681,6 +1705,18 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
         goto exit_function;
     }
 
+#if (CONFIG_IEC61850_RCB_ALLOW_ONLY_PRECONFIGURED_CLIENT == 1)
+    if (isIpAddressMatchingWithOwner(rc, MmsServerConnection_getClientAddress(connection)) == false) {
+        retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+
+        if (DEBUG_IED_SERVER)
+            printf("IED_SERVER: client IP not matching with pre-assigned owner --> write access denied!\n");
+
+        goto exit_function;
+    }
+#endif
+
+
     if (strcmp(elementName, "RptEna") == 0) {
 
         if (value->value.boolean == true) {
@@ -1696,8 +1732,7 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 
             if (updateReportDataset(self, rc, NULL, connection)) {
 
-                if (rc->resvTms != -1)
-                    updateOwner(rc, connection);
+                updateOwner(rc, connection);
 
                 MmsValue* rptEna = ReportControl_getRCBValue(rc, "RptEna");
 
@@ -1996,6 +2031,9 @@ exit_function:
         if (rc->resvTms == 0) {
             rc->resvTms = RESV_TMS_IMPLICIT_VALUE;
 
+            reserveRcb(rc, connection);
+        }
+        else if (rc->resvTms == -1) {
             reserveRcb(rc, connection);
         }
     }

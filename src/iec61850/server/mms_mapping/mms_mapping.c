@@ -64,7 +64,7 @@ typedef struct
     EditSettingGroupConfirmationHandler editSgConfirmedHandler;
     void* editSgConfirmedHandlerParameter;
 
-    ClientConnection editingClient;
+    MmsServerConnection editingClient;
     uint64_t reservationTimeout;
 } SettingGroup;
 
@@ -587,7 +587,7 @@ unselectAllSettingGroups(MmsMapping* self, MmsServerConnection serverCon)
     while (settingGroupElement != NULL) {
         SettingGroup* settingGroup = (SettingGroup*) LinkedList_getData(settingGroupElement);
 
-        if (settingGroup->editingClient == (ClientConnection) serverCon)
+        if (settingGroup->editingClient == serverCon)
             unselectEditSettingGroup(settingGroup);
 
         settingGroupElement = LinkedList_getNext(settingGroupElement);
@@ -2100,45 +2100,9 @@ isReportControlBlock(char* separator)
 #endif /* (CONFIG_IEC61850_REPORT_SERVICE == 1) */
 
 static bool
-isFunctionalConstraintCF(char* separator)
+isFunctionalConstraint(const char* fcStr, char* separator)
 {
-    if (strncmp(separator + 1, "CF", 2) == 0)
-        return true;
-    else
-        return false;
-}
-
-static bool
-isFunctionalConstraintDC(char* separator)
-{
-    if (strncmp(separator + 1, "DC", 2) == 0)
-        return true;
-    else
-        return false;
-}
-
-static bool
-isFunctionalConstraintSP(char* separator)
-{
-    if (strncmp(separator + 1, "SP", 2) == 0)
-        return true;
-    else
-        return false;
-}
-
-static bool
-isFunctionalConstraintSV(char* separator)
-{
-    if (strncmp(separator + 1, "SV", 2) == 0)
-        return true;
-    else
-        return false;
-}
-
-static bool
-isFunctionalConstraintSE(char* separator)
-{
-    if (strncmp(separator + 1, "SE", 2) == 0)
+    if (strncmp(separator + 1, fcStr, 2) == 0)
         return true;
     else
         return false;
@@ -2445,16 +2409,18 @@ checkIfValueBelongsToModelNode(DataAttribute* dataAttribute, MmsValue* value, Mm
 static FunctionalConstraint
 getFunctionalConstraintForWritableNode(char* separator)
 {
-    if (isFunctionalConstraintCF(separator))
+    if (isFunctionalConstraint("CF", separator))
         return IEC61850_FC_CF;
-    if (isFunctionalConstraintDC(separator))
+    if (isFunctionalConstraint("DC", separator))
         return IEC61850_FC_DC;
-    if (isFunctionalConstraintSP(separator))
+    if (isFunctionalConstraint("SP", separator))
         return IEC61850_FC_SP;
-    if (isFunctionalConstraintSV(separator))
+    if (isFunctionalConstraint("SV", separator))
         return IEC61850_FC_SV;
-    if (isFunctionalConstraintSE(separator))
+    if (isFunctionalConstraint("SE", separator))
         return IEC61850_FC_SE;
+    if (isFunctionalConstraint("BL", separator))
+        return IEC61850_FC_BL;
 
     return IEC61850_FC_NONE;
 }
@@ -2492,6 +2458,13 @@ getAccessPolicyForFC(MmsMapping* self, FunctionalConstraint fc)
 
     if (fc == IEC61850_FC_SE) {
         if (self->iedServer->writeAccessPolicies & ALLOW_WRITE_ACCESS_SE)
+            return ACCESS_POLICY_ALLOW;
+        else
+            return ACCESS_POLICY_DENY;
+    }
+
+    if (fc == IEC61850_FC_BL) {
+        if (self->iedServer->writeAccessPolicies & ALLOW_WRITE_ACCESS_BL)
             return ACCESS_POLICY_ALLOW;
         else
             return ACCESS_POLICY_DENY;
@@ -2622,9 +2595,12 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
                     if ((val > 0) && (val <= sg->sgcb->numOfSGs)) {
                         if (val != sg->sgcb->actSG) {
 
-                            if (sg->actSgChangedHandler != NULL) {
+                            if (sg->actSgChangedHandler) {
+
+                                ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer, connection);
+
                                 if (sg->actSgChangedHandler(sg->actSgChangedHandlerParameter, sg->sgcb,
-                                        (uint8_t) val, (ClientConnection) connection))
+                                        (uint8_t) val, clientConnection))
                                 {
                                     sg->sgcb->actSG = val;
 
@@ -2634,7 +2610,6 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
                                     MmsValue_setUint8(actSg, sg->sgcb->actSG);
                                     MmsValue_setUtcTimeMs(lActTm, Hal_getTimeInMs());
                                 }
-
                                 else
                                     retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
                             }
@@ -2661,7 +2636,7 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
                     if (sg != NULL) {
                         uint32_t val = MmsValue_toUint32(value);
 
-                        if ((sg->editingClient != NULL) && ( sg->editingClient != (ClientConnection) connection)) {
+                        if ((sg->editingClient != NULL) && ( sg->editingClient != connection)) {
                             /* Edit SG was set by other client */
                             retVal = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
                         }
@@ -2674,13 +2649,15 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
 
                                 if ((val > 0) && (val <= sg->sgcb->numOfSGs)) {
 
-                                    if (sg->editSgChangedHandler != NULL) {
+                                    if (sg->editSgChangedHandler) {
+
+                                        ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer, connection);
 
                                         if (sg->editSgChangedHandler(sg->editSgChangedHandlerParameter, sg->sgcb,
-                                                (uint8_t) val, (ClientConnection) connection))
+                                                (uint8_t) val, clientConnection))
                                         {
                                             sg->sgcb->editSG = val;
-                                            sg->editingClient = (ClientConnection) connection;
+                                            sg->editingClient = connection;
 
                                             sg->reservationTimeout = Hal_getTimeInMs() + (sg->sgcb->resvTms * 1000);
 
@@ -2736,8 +2713,8 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
 
                         if (val == true) {
                             if (sg->sgcb->editSG != 0) {
-                                if (sg->editingClient == (ClientConnection) connection) {
-                                    if (sg->editSgConfirmedHandler != NULL) {
+                                if (sg->editingClient == connection) {
+                                    if (sg->editSgConfirmedHandler) {
                                         sg->editSgConfirmedHandler(sg->editSgConfirmedHandlerParameter, sg->sgcb,
                                                 sg->sgcb->editSG);
 
@@ -2784,7 +2761,7 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
          SettingGroup* sg = getSettingGroupByMmsDomain(self, domain);
 
          if (sg != NULL) {
-             if (sg->editingClient != (ClientConnection) connection)
+             if (sg->editingClient != connection)
                  return DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
          }
          else
@@ -2811,7 +2788,7 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
                 printf("IED_SERVER: write to %s policy:%i\n", variableId, nodeAccessPolicy);
 
 #if (CONFIG_IEC61850_SETTING_GROUPS == 1)
-            if (isFunctionalConstraintSE(separator)) {
+            if (isFunctionalConstraint("SE", separator)) {
                 SettingGroup* sg = getSettingGroupByMmsDomain(self, domain);
 
                 if (sg != NULL) {
@@ -3189,7 +3166,7 @@ mmsReadAccessHandler (void* parameter, MmsDomain* domain, char* variableId, MmsS
 #if (CONFIG_IEC61850_SETTING_GROUPS == 1)
 
     if (separator) {
-        if (isFunctionalConstraintSE(separator)) {
+        if (isFunctionalConstraint("SE", separator)) {
             SettingGroup* sg = getSettingGroupByMmsDomain(self, domain);
 
             if (sg != NULL) {
