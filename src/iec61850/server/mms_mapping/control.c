@@ -27,8 +27,13 @@
 #include "iec61850_server.h"
 #include "ied_server_private.h"
 #include "mms_value_internal.h"
+#include <stdio.h>
 
 #if (CONFIG_IEC61850_CONTROL_SERVICE == 1)
+
+#if defined(_MSC_VER) && _MSC_VER < 1900
+#define snprintf(buf,len, format,...) _snprintf_s(buf, len,len, format, __VA_ARGS__)
+#endif
 
 #ifndef DEBUG_IED_SERVER
 #define DEBUG_IED_SERVER 0

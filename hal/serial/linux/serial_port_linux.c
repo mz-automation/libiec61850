@@ -183,7 +183,7 @@ SerialPort_open(SerialPort self)
         tios.c_iflag |= INPCK;
     }
 
-    tios.c_iflag &= ~(IXON | IXOFF | IXANY);
+    tios.c_iflag &= ~(IXON | IXOFF | IXANY | ICRNL);
     tios.c_iflag |= IGNBRK; /* Set ignore break to allow 0xff characters */
     tios.c_iflag |= IGNPAR;
     tios.c_oflag &=~ OPOST;
@@ -265,7 +265,7 @@ SerialPort_readByte(SerialPort self)
 int
 SerialPort_write(SerialPort self, uint8_t* buffer, int startPos, int bufSize)
 {
-    //TODO assure minimum line idle time
+    /* TODO assure minimum line idle time? */
 
     self->lastError = SERIAL_PORT_ERROR_NONE;
 

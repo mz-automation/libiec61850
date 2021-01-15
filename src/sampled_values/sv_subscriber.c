@@ -627,7 +627,7 @@ decodeUtcTimeToNsTime(uint8_t* buffer, uint8_t* timeQuality)
     if (timeQuality != NULL)
         *timeQuality = buffer[7];
 
-    uint64_t timeval64 = (uint64_t) timeval32 * 1000000000LLU + nsVal;
+    uint64_t timeval64 = (uint64_t) timeval32 * 1000000000ULL + nsVal;
 
     return timeval64;
 }
@@ -640,7 +640,7 @@ SVSubscriber_ASDU_getRefrTmAsMs(SVSubscriber_ASDU self)
     if (self->refrTm != NULL)
         msTime = decodeUtcTimeToNsTime(self->refrTm, NULL);
 
-    return (msTime / 1000000LLU);
+    return (msTime / 1000000ULL);
 }
 
 nsSinceEpoch

@@ -381,7 +381,7 @@ Timestamp_setTimeInMilliseconds(Timestamp* self, msSinceEpoch millisSinceEpoch)
 void
 Timestamp_setTimeInNanoseconds(Timestamp* self, nsSinceEpoch nsTime)
 {
-    uint32_t timeval32 = (nsTime / 1000000000LLU);
+    uint32_t timeval32 = (uint32_t)(nsTime / 1000000000ULL);
 
     uint8_t* valueArray = self->val;
 
@@ -390,7 +390,7 @@ Timestamp_setTimeInNanoseconds(Timestamp* self, nsSinceEpoch nsTime)
     valueArray[2] = (timeval32 / 0x100 & 0xff);
     valueArray[3] = (timeval32 & 0xff);
 
-    uint64_t remainder = (nsTime % 1000000000LLU);
+    uint64_t remainder = (nsTime % 1000000000ULL);
 
     remainder = remainder << 24;
     remainder = remainder / 1000000000UL;
@@ -465,7 +465,7 @@ Timestamp_getTimeInNs(Timestamp* self)
     nsVal = nsVal * 1000000000UL;
     nsVal = nsVal >> 24;
 
-    uint64_t timeval64 = (uint64_t) timeval32 * 1000000000LLU + nsVal;
+    uint64_t timeval64 = (uint64_t) timeval32 * 1000000000ULL + nsVal;
 
     return timeval64;
 }
@@ -571,7 +571,8 @@ MmsMapping_createMmsVariableNameFromObjectReference(const char* objectReference,
         else
             mmsVariableName = buffer;
 
-        strcpy(mmsVariableName, objectReference + i);
+        strncpy(mmsVariableName, objectReference + i, len);
+		mmsVariableName[len - 1] = 0;
 
         return mmsVariableName;
     }

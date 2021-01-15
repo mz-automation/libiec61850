@@ -38,6 +38,10 @@
 #include "goose_publisher.h"
 #include "ied_server_private.h"
 
+#if defined(_MSC_VER) && _MSC_VER < 1900
+#define snprintf(buf,len, format,...) _snprintf_s(buf, len,len, format, __VA_ARGS__)
+#endif
+
 struct sMmsGooseControlBlock {
     char* name;
     bool goEna;
