@@ -41,14 +41,6 @@ DataAttribute* toDataAttribute(ModelNode * MN)
 %include "iec61850_dynamic_model.h"
 %include "iec61850_cdc.h"
 %include "linked_list.h"
-%include "hal_base.h"
-%include "hal_time.h"
-%include "hal_thread.h"
-%include "hal_filesystem.h"
-%include "hal_ethernet.h"
-%include "hal_socket.h"
-%include "tls_config.h"
-%include "tls_socket.h"
 ModelNode* toModelNode(LogicalNode *);
 ModelNode* toModelNode(DataObject *);
 DataAttribute* toDataAttribute(DataObject *);
