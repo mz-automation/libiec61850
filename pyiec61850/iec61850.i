@@ -48,6 +48,7 @@ DataAttribute* toDataAttribute(ModelNode * MN)
 %include "hal_ethernet.h"
 %include "hal_socket.h"
 %include "tls_config.h"
+%include "tls_socket.h"
 ModelNode* toModelNode(LogicalNode *);
 ModelNode* toModelNode(DataObject *);
 DataAttribute* toDataAttribute(DataObject *);
