@@ -3,10 +3,10 @@ set(iec61850_client_example_control_SRCS
    client_example_control.c
 )
 
-IF(WIN32)
+IF(MSVC)
 set_source_files_properties(${iec61850_client_example_control_SRCS}
                                        PROPERTIES LANGUAGE CXX)
-ENDIF(WIN32)
+ENDIF(MSVC)
 
 add_executable(client_example_control
   ${iec61850_client_example_control_SRCS}

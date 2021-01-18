@@ -3,10 +3,10 @@ set(mms_utility_SRCS
    mms_utility.c
 )
 
-IF(WIN32)
+IF(MSVC)
 set_source_files_properties(${mms_utility_SRCS}
                                        PROPERTIES LANGUAGE CXX)
-ENDIF(WIN32)
+ENDIF(MSVC)
 
 add_executable(mms_utility
   ${mms_utility_SRCS}

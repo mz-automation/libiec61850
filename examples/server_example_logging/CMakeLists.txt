@@ -19,10 +19,10 @@ set(sqlite_SRCS
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DSQLITE_THREADSAFE=0 -DSQLITE_OMIT_LOAD_EXTENSION")
 
-IF(WIN32)
+IF(MSVC)
 set_source_files_properties(${server_example_SRCS}
                                        PROPERTIES LANGUAGE CXX)
-ENDIF(WIN32)
+ENDIF(MSVC)
 
 add_executable(server_example_logging
   ${server_example_SRCS}
