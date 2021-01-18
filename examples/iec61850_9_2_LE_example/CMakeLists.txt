@@ -7,10 +7,10 @@ set(sv_9_2_LE_example_SRCS
    static_model.c
 )
 
-IF(WIN32)
+IF(MSVC)
 set_source_files_properties(${sv_9_2_LE_example_SRCS}
                                        PROPERTIES LANGUAGE CXX)
-ENDIF(WIN32)
+ENDIF(MSVC)
 
 add_executable(sv_9_2_LE_example
   ${sv_9_2_LE_example_SRCS}

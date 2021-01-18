@@ -7,10 +7,10 @@ set(server_example_61400_25_SRCS
    static_model.c
 )
 
-IF(WIN32)
+IF(MSVC)
 set_source_files_properties(${server_example_61400_25_SRCS}
                                        PROPERTIES LANGUAGE CXX)
-ENDIF(WIN32)
+ENDIF(MSVC)
 
 add_executable(server_example_61400_25
   ${server_example_61400_25_SRCS}
