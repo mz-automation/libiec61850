@@ -1089,6 +1089,11 @@ createUnbufferedReportControlBlock(ReportControlBlock* reportControlBlock,
         }
     }
 
+    /* check if there is a pre configured owner */
+    if (reportControlBlock->clientReservation[0] > 0) {
+        MmsValue_setBoolean(mmsValue->value.structure.components[2], true);
+    }
+
     reportControl->rcbValues = mmsValue;
 
     reportControl->timeOfEntry = MmsValue_newBinaryTime(false);
@@ -1553,7 +1558,7 @@ increaseConfRev(ReportControl* self)
 static void
 checkReservationTimeout(MmsMapping* self, ReportControl* rc)
 {
-    if (rc->enabled == false) {
+    if (rc->enabled == false && (rc->clientConnection == NULL)) {
         if (rc->reservationTimeout > 0) {
             if (Hal_getTimeInMs() > rc->reservationTimeout) {
 
@@ -1602,6 +1607,9 @@ isIpAddressMatchingWithOwner(ReportControl* rc, const char* ipAddress)
 
     if (owner != NULL) {
 
+        if (MmsValue_getOctetStringSize(owner) == 0)
+            return true;
+
         if (strchr(ipAddress, '.') != NULL) {
             uint8_t ipV4Addr[4];
 
@@ -1631,23 +1639,31 @@ reserveRcb(ReportControl* rc,  MmsServerConnection connection)
     rc->reserved = true;
     rc->clientConnection = connection;
 
+    if (rc->buffered) {
 #if (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1)
-    MmsValue* resvTmsVal = ReportControl_getRCBValue(rc, "ResvTms");
-    if (resvTmsVal)
-        MmsValue_setInt16(resvTmsVal, rc->resvTms);
+        MmsValue* resvTmsVal = ReportControl_getRCBValue(rc, "ResvTms");
+        if (resvTmsVal)
+            MmsValue_setInt16(resvTmsVal, rc->resvTms);
 #endif
+    }
+    else {
+        MmsValue* resvVal = ReportControl_getRCBValue(rc, "Resv");
+        if (resvVal)
+            MmsValue_setBoolean(resvVal, true);
+    }
 
-    rc->reservationTimeout = Hal_getTimeInMs() + (RESV_TMS_IMPLICIT_VALUE * 1000);
     updateOwner(rc, connection);
 }
 
+#if 1
 MmsDataAccessError
 Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* elementName, MmsValue* value,
         MmsServerConnection connection)
 {
     MmsDataAccessError retVal = DATA_ACCESS_ERROR_SUCCESS;
 
-    bool resvTmsAccess = false;
+    bool resvTmsAccess = false; /* access is to RecvTms or Resv */
+    bool dontUpdate = false;
 
     /* check reservation timeout for buffered RCBs */
     if (rc->buffered) {
@@ -1824,6 +1840,8 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
         }
 
         if (strcmp(elementName, "Resv") == 0) {
+            resvTmsAccess = true;
+
             rc->reserved = value->value.boolean;
 
             if (rc->reserved == true) {
@@ -1833,6 +1851,9 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
             else {
                 updateOwner(rc, NULL);
                 rc->clientConnection = NULL;
+
+                if (rc->resvTms == -1)
+                    dontUpdate = true;
             }
 
         }
@@ -2012,8 +2033,11 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 
         MmsValue* rcbValue = ReportControl_getRCBValue(rc, elementName);
 
-        if (rcbValue != NULL)
-            MmsValue_update(rcbValue, value);
+        if (rcbValue) {
+            if (dontUpdate == false) {
+                MmsValue_update(rcbValue, value);
+            }
+        }
         else {
             retVal = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
             goto exit_function;
@@ -2027,13 +2051,20 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 exit_function:
 
     /* every successful write access reserves the RCB */
-    if ((rc->buffered) && (retVal == DATA_ACCESS_ERROR_SUCCESS) && (resvTmsAccess == false)) {
-        if (rc->resvTms == 0) {
-            rc->resvTms = RESV_TMS_IMPLICIT_VALUE;
+    if ((retVal == DATA_ACCESS_ERROR_SUCCESS) && (resvTmsAccess == false)) {
+        if (rc->buffered) {
+            rc->reservationTimeout = Hal_getTimeInMs() + (RESV_TMS_IMPLICIT_VALUE * 1000);
 
-            reserveRcb(rc, connection);
+            if (rc->resvTms == 0) {
+                rc->resvTms = RESV_TMS_IMPLICIT_VALUE;
+
+                reserveRcb(rc, connection);
+            }
+            else if (rc->resvTms == -1) {
+                reserveRcb(rc, connection);
+            }
         }
-        else if (rc->resvTms == -1) {
+        else {
             reserveRcb(rc, connection);
         }
     }
@@ -2056,6 +2087,7 @@ exit_function:
 
     return retVal;
 }
+#endif
 
 void
 Reporting_deactivateReportsForConnection(MmsMapping* self, MmsServerConnection connection)
@@ -2077,8 +2109,10 @@ Reporting_deactivateReportsForConnection(MmsMapping* self, MmsServerConnection c
 
             if (rc->buffered == false) {
 
-                MmsValue* resv = ReportControl_getRCBValue(rc, "Resv");
-                MmsValue_setBoolean(resv, false);
+                if (rc->resvTms != -1) {
+                    MmsValue* resv = ReportControl_getRCBValue(rc, "Resv");
+                    MmsValue_setBoolean(resv, false);
+                }
 
                 if (rc->resvTms != -1)
                     updateOwner(rc, NULL);
