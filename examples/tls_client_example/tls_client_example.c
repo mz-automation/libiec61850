@@ -36,7 +36,7 @@ int main(int argc, char** argv) {
 
     if (argc > 2) {
         hostname = argv[1];
-        port_number = argv[2];
+        port_number = atoi(argv[2]);
     }
     else
         hostname = "localhost";

@@ -106,7 +106,7 @@ main(int argc, char** argv)
 {
     int port_number = 8102;
     if (argc > 1)
-        port_number = argv[1];
+        port_number = atoi(argv[1]);
 
     printf("Using libIEC61850 version %s\n", LibIEC61850_getVersionString());
     printf("libIEC61850 IedServer server will listen on %d\n", port_number);
