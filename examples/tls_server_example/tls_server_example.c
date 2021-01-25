@@ -104,7 +104,12 @@ clientAuthenticator(void* parameter, AcseAuthenticationParameter authParameter, 
 int
 main(int argc, char** argv)
 {
+    int port_number = 8102;
+    if (argc > 1)
+        port_number = argv[1];
+
     printf("Using libIEC61850 version %s\n", LibIEC61850_getVersionString());
+    printf("libIEC61850 IedServer server will listen on %d\n", port_number);
 
     TLSConfiguration tlsConfig = TLSConfiguration_create();
 
@@ -164,7 +169,7 @@ main(int argc, char** argv)
     IedServer_setConnectionIndicationHandler(iedServer, (IedConnectionIndicationHandler) connectionHandler, NULL);
 
     /* MMS server will be instructed to start listening to client connections. */
-    IedServer_start(iedServer, -1);
+    IedServer_start(iedServer, port_number);
 
     if (!IedServer_isRunning(iedServer)) {
         printf("Starting server failed! Exit.\n");
