@@ -32,9 +32,12 @@ reportCallbackFunction(void* parameter, ClientReport report)
 int main(int argc, char** argv) {
 
     char* hostname;
+    int port_number = -1;
 
-    if (argc > 1)
+    if (argc > 2) {
         hostname = argv[1];
+        port_number = argv[2];
+    }
     else
         hostname = "localhost";
 
@@ -62,7 +65,7 @@ int main(int argc, char** argv) {
 
     IedConnection con = IedConnection_createWithTlsSupport(tlsConfig);
 
-    IedConnection_connect(con, &error, hostname, -1);
+    IedConnection_connect(con, &error, hostname, port_number);
 
     if (error == IED_ERROR_OK) {
 
