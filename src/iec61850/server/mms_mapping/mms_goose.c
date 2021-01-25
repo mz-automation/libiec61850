@@ -508,37 +508,39 @@ MmsGooseControlBlock_disable(MmsGooseControlBlock self, MmsMapping* mmsMapping)
 void
 MmsGooseControlBlock_checkAndPublish(MmsGooseControlBlock self, uint64_t currentTime)
 {
-    if (currentTime >= self->nextPublishTime) {
+    if (self->publisher) {
+        if (currentTime >= self->nextPublishTime) {
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
-        Semaphore_wait(self->publisherMutex);
+            Semaphore_wait(self->publisherMutex);
 #endif
 
-        GoosePublisher_publish(self->publisher, self->dataSetValues);
+            GoosePublisher_publish(self->publisher, self->dataSetValues);
 
-        if (self->retransmissionsLeft > 0) {
-            self->nextPublishTime = currentTime + self->minTime;
+            if (self->retransmissionsLeft > 0) {
+                self->nextPublishTime = currentTime + self->minTime;
 
 
-            if (self->retransmissionsLeft > 1)
-                GoosePublisher_setTimeAllowedToLive(self->publisher, self->minTime * 3);
-            else
+                if (self->retransmissionsLeft > 1)
+                    GoosePublisher_setTimeAllowedToLive(self->publisher, self->minTime * 3);
+                else
+                    GoosePublisher_setTimeAllowedToLive(self->publisher, self->maxTime * 3);
+
+                self->retransmissionsLeft--;
+            }
+            else {
                 GoosePublisher_setTimeAllowedToLive(self->publisher, self->maxTime * 3);
 
-            self->retransmissionsLeft--;
-        }
-        else {
-            GoosePublisher_setTimeAllowedToLive(self->publisher, self->maxTime * 3);
-
-            self->nextPublishTime = currentTime + self->maxTime;
-        }
+                self->nextPublishTime = currentTime + self->maxTime;
+            }
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
-        Semaphore_post(self->publisherMutex);
+            Semaphore_post(self->publisherMutex);
 #endif
-    }
-    else if ((self->nextPublishTime - currentTime) > ((uint32_t) self->maxTime * 2)) {
-        self->nextPublishTime = currentTime + self->minTime;
+        }
+        else if ((self->nextPublishTime - currentTime) > ((uint32_t) self->maxTime * 2)) {
+            self->nextPublishTime = currentTime + self->minTime;
+        }
     }
 }
 
@@ -551,6 +553,9 @@ MmsGooseControlBlock_setStateChangePending(MmsGooseControlBlock self)
 void
 MmsGooseControlBlock_publishNewState(MmsGooseControlBlock self)
 {
+    if (self->publisher == false)
+        return;
+
     if (self->stateChangePending) {
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_wait(self->publisherMutex);
