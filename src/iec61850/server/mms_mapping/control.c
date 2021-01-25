@@ -1014,8 +1014,8 @@ ControlObject_initialize(ControlObject* self)
     updateSboTimeoutValue(self);
 
     if (self->sbo) {
-        char* controlObjectReference = StringUtils_createStringInBuffer(strBuf, 6, self->mmsDomain->domainName,
-                "/", self->lnName, "$CO$", self->name, "$SBO");
+        char* controlObjectReference = StringUtils_createStringInBuffer(strBuf, 5, self->mmsDomain->domainName,
+                "/", self->lnName, "$CO$", self->name);
 
         MmsValue_setVisibleString(self->sbo, controlObjectReference);
     }
