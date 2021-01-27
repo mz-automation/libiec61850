@@ -77,6 +77,11 @@ MmsGooseControlBlock_publishNewState(MmsGooseControlBlock self);
 LIB61850_INTERNAL void
 MmsGooseControlBlock_enable(MmsGooseControlBlock self);
 
+
+LIB61850_INTERNAL void
+MmsGooseControlBlock_setSimulation(MmsGooseControlBlock self, bool test);
+
+
 LIB61850_INTERNAL void
 MmsGooseControlBlock_disable(MmsGooseControlBlock self);
 

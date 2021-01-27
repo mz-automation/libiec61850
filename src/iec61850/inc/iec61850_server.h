@@ -508,6 +508,9 @@ IedServer_getMmsServer(IedServer self);
 LIB61850_API void
 IedServer_enableGoosePublishing(IedServer self);
 
+LIB61850_API void
+IedServer_setGoosePublishingSimulation(IedServer self, bool test);
+
 /**
  * \brief Disable all GOOSE control blocks.
  *
