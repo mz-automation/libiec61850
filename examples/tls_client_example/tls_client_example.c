@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
         }
 
         /* write a variable to the server */
-        value = MmsValue_newVisibleString("libiec61850.com");
+        value = MmsValue_newVisibleString(hostname);
         IedConnection_writeObject(con, &error, "simpleIOGenericIO/GGIO1.NamPlt.vendor", IEC61850_FC_DC, value);
 
         if (error != IED_ERROR_OK)
