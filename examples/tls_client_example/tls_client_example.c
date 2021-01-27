@@ -1,5 +1,5 @@
 /*
- * tls_client_exmaple.c
+ * tls_client_example.c
  *
  * This example shows how to configure TLS
  */
@@ -12,34 +12,57 @@
 #include "hal_thread.h"
 
 void
-reportCallbackFunction(void* parameter, ClientReport report)
+printSpaces(int spaces)
 {
-    MmsValue* dataSetValues = ClientReport_getDataSetValues(report);
-
-    printf("received report for %s\n", ClientReport_getRcbReference(report));
-
     int i;
-    for (i = 0; i < 4; i++) {
-        ReasonForInclusion reason = ClientReport_getReasonForInclusion(report, i);
 
-        if (reason != IEC61850_REASON_NOT_INCLUDED) {
-            printf("  GGIO1.SPCSO%i.stVal: %i (included for reason %i)\n", i,
-                    MmsValue_getBoolean(MmsValue_getElement(dataSetValues, i)), reason);
-        }
-    }
+    for (i = 0; i < spaces; i++)
+        printf(" ");
 }
 
-int main(int argc, char** argv) {
+void
+printDataDirectory(char* doRef, IedConnection con, int spaces)
+{
+    IedClientError error;
+
+    LinkedList dataAttributes = IedConnection_getDataDirectory(con, &error, doRef);
+
+    //LinkedList dataAttributes = IedConnection_getDataDirectoryByFC(con, &error, doRef, MX);
+
+    if (dataAttributes != NULL) {
+        LinkedList dataAttribute = LinkedList_getNext(dataAttributes);
+
+        while (dataAttribute != NULL) {
+            char* daName = (char*) dataAttribute->data;
+
+            printSpaces(spaces);
+            printf("DA: %s\n", (char*) dataAttribute->data);
+
+            dataAttribute = LinkedList_getNext(dataAttribute);
+
+            char daRef[130];
+            sprintf(daRef, "%s.%s", doRef, daName);
+            printDataDirectory(daRef, con, spaces + 2);
+        }
+    }
+
+    LinkedList_destroy(dataAttributes);
+}
+
+int
+main(int argc, char** argv)
+{
 
     char* hostname;
-    int port_number = -1;
+    int tcpPort = 8102;
 
-    if (argc > 2) {
+    if (argc > 1)
         hostname = argv[1];
-        port_number = atoi(argv[2]);
-    }
     else
         hostname = "localhost";
+
+    if (argc > 2)
+        tcpPort = atoi(argv[2]);
 
     TLSConfiguration tlsConfig = TLSConfiguration_create();
 
@@ -61,102 +84,147 @@ int main(int argc, char** argv) {
         return 0;
     }
 
+
     IedClientError error;
 
     IedConnection con = IedConnection_createWithTlsSupport(tlsConfig);
 
-    IedConnection_connect(con, &error, hostname, port_number);
+    IedConnection_connect(con, &error, hostname, tcpPort);
 
     if (error == IED_ERROR_OK) {
 
-        LinkedList serverDirectory = IedConnection_getServerDirectory(con, &error, false);
+        printf("Get logical device list...\n");
+        LinkedList deviceList = IedConnection_getLogicalDeviceList(con, &error);
 
-        if (error != IED_ERROR_OK)
-            printf("failed to read server directory (error=%i)\n", error);
-
-        if (serverDirectory)
-            LinkedList_destroy(serverDirectory);
-
-        /* read an analog measurement value from server */
-        MmsValue* value = IedConnection_readObject(con, &error, "simpleIOGenericIO/GGIO1.AnIn1.mag.f", IEC61850_FC_MX);
-
-        if (value != NULL) {
-            float fval = MmsValue_toFloat(value);
-            printf("read float value: %f\n", fval);
-            MmsValue_delete(value);
+        if (error != IED_ERROR_OK) {
+            printf("Failed to read device list (error code: %i)\n", error);
+            goto cleanup_and_exit;
         }
 
-        /* write a variable to the server */
-        value = MmsValue_newVisibleString("libiec61850.com");
-        IedConnection_writeObject(con, &error, "simpleIOGenericIO/GGIO1.NamPlt.vendor", IEC61850_FC_DC, value);
+        LinkedList device = LinkedList_getNext(deviceList);
 
-        if (error != IED_ERROR_OK)
-            printf("failed to write simpleIOGenericIO/GGIO1.NamPlt.vendor!\n");
+        while (device != NULL) {
+            printf("LD: %s\n", (char*) device->data);
 
-        MmsValue_delete(value);
+            LinkedList logicalNodes = IedConnection_getLogicalDeviceDirectory(con, &error,
+                    (char*) device->data);
 
+            LinkedList logicalNode = LinkedList_getNext(logicalNodes);
 
-        /* read data set */
-        ClientDataSet clientDataSet = IedConnection_readDataSetValues(con, &error, "simpleIOGenericIO/LLN0.Events", NULL);
+            while (logicalNode != NULL) {
+                printf("  LN: %s\n", (char*) logicalNode->data);
 
-        if (clientDataSet == NULL)
-            printf("failed to read dataset\n");
+                char lnRef[129];
 
-        /* Read RCB values */
-        ClientReportControlBlock rcb =
-                IedConnection_getRCBValues(con, &error, "simpleIOGenericIO/LLN0.RP.EventsRCB01", NULL);
+                sprintf(lnRef, "%s/%s", (char*) device->data, (char*) logicalNode->data);
 
+                LinkedList dataObjects = IedConnection_getLogicalNodeDirectory(con, &error,
+                        lnRef, ACSI_CLASS_DATA_OBJECT);
 
-        bool rptEna = ClientReportControlBlock_getRptEna(rcb);
+                LinkedList dataObject = LinkedList_getNext(dataObjects);
 
-        printf("RptEna = %i\n", rptEna);
+                while (dataObject != NULL) {
+                    char* dataObjectName = (char*) dataObject->data;
 
-        /* Install handler for reports */
-        IedConnection_installReportHandler(con, "simpleIOGenericIO/LLN0.RP.EventsRCB01",
-                ClientReportControlBlock_getRptId(rcb), reportCallbackFunction, NULL);
+                    printf("    DO: %s\n", dataObjectName);
 
-        /* Set trigger options and enable report */
-        ClientReportControlBlock_setTrgOps(rcb, TRG_OPT_DATA_UPDATE | TRG_OPT_INTEGRITY | TRG_OPT_GI);
-        ClientReportControlBlock_setRptEna(rcb, true);
-        ClientReportControlBlock_setIntgPd(rcb, 5000);
-        IedConnection_setRCBValues(con, &error, rcb, RCB_ELEMENT_RPT_ENA | RCB_ELEMENT_TRG_OPS | RCB_ELEMENT_INTG_PD, true);
+                    dataObject = LinkedList_getNext(dataObject);
 
-        if (error != IED_ERROR_OK)
-            printf("report activation failed (code: %i)\n", error);
+                    char doRef[129];
 
-        Thread_sleep(1000);
+                    sprintf(doRef, "%s/%s.%s", (char*) device->data, (char*) logicalNode->data, dataObjectName);
 
-        /* trigger GI report */
-        ClientReportControlBlock_setGI(rcb, true);
-        IedConnection_setRCBValues(con, &error, rcb, RCB_ELEMENT_GI, true);
+                    printDataDirectory(doRef, con, 6);
+                }
 
-        if (error != IED_ERROR_OK)
-            printf("Error triggering a GI report (code: %i)\n", error);
+                LinkedList_destroy(dataObjects);
 
-        Thread_sleep(60000);
+                LinkedList dataSets = IedConnection_getLogicalNodeDirectory(con, &error, lnRef,
+                        ACSI_CLASS_DATA_SET);
 
-        /* disable reporting */
-        ClientReportControlBlock_setRptEna(rcb, false);
-        IedConnection_setRCBValues(con, &error, rcb, RCB_ELEMENT_RPT_ENA, true);
+                LinkedList dataSet = LinkedList_getNext(dataSets);
 
-        if (error != IED_ERROR_OK)
-            printf("disable reporting failed (code: %i)\n", error);
+                while (dataSet != NULL) {
+                    char* dataSetName = (char*) dataSet->data;
+                    bool isDeletable;
+                    char dataSetRef[130];
+                    sprintf(dataSetRef, "%s.%s", lnRef, dataSetName);
 
-        ClientDataSet_destroy(clientDataSet);
+                    LinkedList dataSetMembers = IedConnection_getDataSetDirectory(con, &error, dataSetRef,
+                            &isDeletable);
 
-        ClientReportControlBlock_destroy(rcb);
+                    if (isDeletable)
+                        printf("    Data set: %s (deletable)\n", dataSetName);
+                    else
+                        printf("    Data set: %s (not deletable)\n", dataSetName);
 
-        close_connection:
+                    LinkedList dataSetMemberRef = LinkedList_getNext(dataSetMembers);
+
+                    while (dataSetMemberRef != NULL) {
+
+                        char* memberRef = (char*) dataSetMemberRef->data;
+
+                        printf("      %s\n", memberRef);
+
+                        dataSetMemberRef = LinkedList_getNext(dataSetMemberRef);
+                    }
+
+                    LinkedList_destroy(dataSetMembers);
+
+                    dataSet = LinkedList_getNext(dataSet);
+                }
+
+                LinkedList_destroy(dataSets);
+
+                LinkedList reports = IedConnection_getLogicalNodeDirectory(con, &error, lnRef,
+                        ACSI_CLASS_URCB);
+
+                LinkedList report = LinkedList_getNext(reports);
+
+                while (report != NULL) {
+                    char* reportName = (char*) report->data;
+
+                    printf("    RP: %s\n", reportName);
+
+                    report = LinkedList_getNext(report);
+                }
+
+                LinkedList_destroy(reports);
+
+                reports = IedConnection_getLogicalNodeDirectory(con, &error, lnRef,
+                        ACSI_CLASS_BRCB);
+
+                report = LinkedList_getNext(reports);
+
+                while (report != NULL) {
+                    char* reportName = (char*) report->data;
+
+                    printf("    BR: %s\n", reportName);
+
+                    report = LinkedList_getNext(report);
+                }
+
+                LinkedList_destroy(reports);
+
+                logicalNode = LinkedList_getNext(logicalNode);
+            }
+
+            LinkedList_destroy(logicalNodes);
+
+            device = LinkedList_getNext(device);
+        }
+
+        LinkedList_destroy(deviceList);
 
         IedConnection_close(con);
+        TLSConfiguration_destroy(tlsConfig);
     }
     else {
-        printf("Failed to connect to %s\n", hostname);
+        printf("Connection failed!\n");
     }
 
+cleanup_and_exit:
     IedConnection_destroy(con);
-
     TLSConfiguration_destroy(tlsConfig);
 }
-
 
