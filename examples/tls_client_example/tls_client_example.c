@@ -86,16 +86,6 @@ int main(int argc, char** argv) {
             MmsValue_delete(value);
         }
 
-        /* write a variable to the server */
-        value = MmsValue_newVisibleString(hostname);
-        IedConnection_writeObject(con, &error, "simpleIOGenericIO/GGIO1.NamPlt.vendor", IEC61850_FC_DC, value);
-
-        if (error != IED_ERROR_OK)
-            printf("failed to write simpleIOGenericIO/GGIO1.NamPlt.vendor!\n");
-
-        MmsValue_delete(value);
-
-
         /* read data set */
         ClientDataSet clientDataSet = IedConnection_readDataSetValues(con, &error, "simpleIOGenericIO/LLN0.Events", NULL);
 
