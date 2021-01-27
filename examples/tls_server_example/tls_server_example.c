@@ -145,28 +145,30 @@ main(int argc, char** argv)
         return 0;
     }
 
+    // Create Model IED
+    IedModel* myModel = IedModel_create("testmodel");
+
+    // Create Logical Device
+    LogicalDevice* lDevice1 = LogicalDevice_create("SENSORS", myModel);
+
+    // Create Logical Node
+    LogicalNode* ttmp1 = LogicalNode_create("TTMP1", lDevice1);
+
+    // Create Model Node
+    CDC_ASG_create("TmpSp", (ModelNode*) ttmp1, 0, False);
+    CDC_VSG_create("TmpSt", (ModelNode*) ttmp1, 0);
+
+    // Create Data Object
+    DataObject* do1 = DataObject_create("Temp1", (ModelNode*) ttmp1, 0);
+
+    // Create Data Attribute
+    DataAttribute* fl = DataAttribute_create("float", (ModelNode*) do1, IEC61850_FLOAT64, IEC61850_FC_MX, 0, 0, 0);
+    DataAttribute* st = DataAttribute_create("string", (ModelNode*) do1, IEC61850_VISIBLE_STRING_255, IEC61850_FC_DC,0, 0, 0);
+
+    // Create Server Connection
     iedServer = IedServer_createWithTlsSupport(&iedModel, tlsConfig);
 
     IedServer_setAuthenticator(iedServer, clientAuthenticator, NULL);
-
-    /* Install handler for operate command */
-    IedServer_setControlHandler(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO1,
-            (ControlHandler) controlHandlerForBinaryOutput,
-            IEDMODEL_GenericIO_GGIO1_SPCSO1);
-
-    IedServer_setControlHandler(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO2,
-            (ControlHandler) controlHandlerForBinaryOutput,
-            IEDMODEL_GenericIO_GGIO1_SPCSO2);
-
-    IedServer_setControlHandler(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO3,
-            (ControlHandler) controlHandlerForBinaryOutput,
-            IEDMODEL_GenericIO_GGIO1_SPCSO3);
-
-    IedServer_setControlHandler(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO4,
-            (ControlHandler) controlHandlerForBinaryOutput,
-            IEDMODEL_GenericIO_GGIO1_SPCSO4);
-
-    IedServer_setConnectionIndicationHandler(iedServer, (IedConnectionIndicationHandler) connectionHandler, NULL);
 
     /* MMS server will be instructed to start listening to client connections. */
     IedServer_start(iedServer, port_number);
