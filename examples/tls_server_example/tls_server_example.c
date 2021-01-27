@@ -155,7 +155,7 @@ main(int argc, char** argv)
     LogicalNode* ttmp1 = LogicalNode_create("TTMP1", lDevice1);
 
     // Create Model Node
-    CDC_ASG_create("TmpSp", (ModelNode*) ttmp1, 0, False);
+    CDC_ASG_create("TmpSp", (ModelNode*) ttmp1, 0, false);
     CDC_VSG_create("TmpSt", (ModelNode*) ttmp1, 0);
 
     // Create Data Object
