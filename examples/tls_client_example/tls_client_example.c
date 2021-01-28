@@ -1,5 +1,5 @@
 /*
- * tls_client_exmaple.c
+ * tls_client_example.c
  *
  * This example shows how to configure TLS
  */
