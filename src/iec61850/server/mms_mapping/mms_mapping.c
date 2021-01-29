@@ -1150,26 +1150,29 @@ createMmsDomainFromIedDevice(MmsMapping* self, LogicalDevice* logicalDevice)
         /* add logs (journals) */
         Log* log = self->model->logs;
 
-        while (log != NULL) {
+        while (log) {
 
-            char journalName[65];
+            /* Check if log belongs to this logical device */
+            if (log->parent->parent == (ModelNode*)logicalDevice) {
+                char journalName[65];
 
-            int nameLength = strlen(log->parent->name) + strlen(log->name);
+                int nameLength = strlen(log->parent->name) + strlen(log->name);
 
-            if (nameLength > 63) {
-                if (DEBUG_IED_SERVER)
-                    printf("IED_SERVER: Log name %s invalid! Resulting journal name too long! Skip log\n", log->name);
-            }
-            else {
-                strcpy(journalName, log->parent->name);
-                strcat(journalName, "$");
-                strcat(journalName, log->name);
+                if (nameLength > 63) {
+                    if (DEBUG_IED_SERVER)
+                        printf("IED_SERVER: Log name %s invalid! Resulting journal name too long! Skip log\n", log->name);
+                }
+                else {
+                    strcpy(journalName, log->parent->name);
+                    strcat(journalName, "$");
+                    strcat(journalName, log->name);
 
-                MmsDomain_addJournal(domain, journalName);
+                    MmsDomain_addJournal(domain, journalName);
 
-                LogInstance* logInstance = LogInstance_create(log->parent, log->name);
+                    LogInstance* logInstance = LogInstance_create(log->parent, log->name);
 
-                LinkedList_add(self->logInstances, (void*) logInstance);
+                    LinkedList_add(self->logInstances, (void*) logInstance);
+                }
             }
 
             log = log->sibling;
