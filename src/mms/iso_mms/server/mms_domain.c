@@ -84,7 +84,6 @@ MmsDomain_addJournal(MmsDomain* self, const char* name)
     LinkedList_add(self->journals, (void*) journal);
 }
 
-
 MmsJournal
 MmsDomain_getJournal(MmsDomain* self, const char* name)
 {
