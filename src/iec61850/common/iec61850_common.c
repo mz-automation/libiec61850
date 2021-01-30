@@ -567,12 +567,12 @@ MmsMapping_createMmsVariableNameFromObjectReference(const char* objectReference,
         char* mmsVariableName;
 
         if (buffer == NULL)
-            mmsVariableName = (char*) GLOBAL_MALLOC(len);
+            mmsVariableName = (char*) GLOBAL_MALLOC(len + 1);
         else
             mmsVariableName = buffer;
 
         strncpy(mmsVariableName, objectReference + i, len);
-		mmsVariableName[len - 1] = 0;
+		mmsVariableName[len] = 0;
 
         return mmsVariableName;
     }
