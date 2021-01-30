@@ -115,18 +115,22 @@ ENDIF(WIN32)
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC" )
 #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC" )
 
-if(EXISTS ${CMAKE_CURRENT_LIST_DIR}/../third_party/mbedtls/mbedtls-2.16)
-message("Found mbedtls -> can compile with TLS support")
+if(WITH_MBEDTLS)
+message("Found mbedtls -> can compile HAL with TLS support")
 set(WITH_MBEDTLS 1)
-endif(EXISTS ${CMAKE_CURRENT_LIST_DIR}/../third_party/mbedtls/mbedtls-2.16)
+endif(WITH_MBEDTLS)
 
 if(WITH_MBEDTLS)
 include_directories(
 	${CMAKE_CURRENT_LIST_DIR}/tls/mbedtls
-    ${CMAKE_CURRENT_LIST_DIR}/../third_party/mbedtls/mbedtls-2.16/include
+    ${MBEDTLS_INCLUDE_DIR}
 )
 
+if(CONFIG_USE_EXTERNAL_MBEDTLS_DYNLIB)
+link_directories(${CONFIG_EXTERNAL_MBEDTLS_DYNLIB_PATH})
+else()
 file(GLOB tls_SRCS ${CMAKE_CURRENT_LIST_DIR}/../third_party/mbedtls/mbedtls-2.16/library/*.c)
+endif(CONFIG_USE_EXTERNAL_MBEDTLS_DYNLIB)
 
 add_definitions(-DMBEDTLS_CONFIG_FILE="mbedtls_config.h")
 
@@ -165,6 +169,11 @@ IF(UNIX)
      )
   ENDIF (CONFIG_SYSTEM_HAS_CLOCK_GETTIME)
 ENDIF(UNIX)
+
+IF(CONFIG_USE_EXTERNAL_MBEDTLS_DYNLIB)
+  target_link_libraries(hal mbedcrypto mbedx509 mbedtls)
+ENDIF(CONFIG_USE_EXTERNAL_MBEDTLS_DYNLIB)
+
 IF(MINGW)
   target_link_libraries(hal ws2_32 iphlpapi)
 ENDIF(MINGW)
