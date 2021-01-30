@@ -438,10 +438,10 @@ mmsServer_handleGetNameListRequest(
     int objectScope = -1;
 
     char* domainId = NULL;
-    int domainIdLength;
+    int domainIdLength = 0;
 
     char* continueAfter = NULL;
-    int continueAfterLength;
+    int continueAfterLength = 0;
 
     while (bufPos < maxBufPos) {
         uint8_t tag = buffer[bufPos++];

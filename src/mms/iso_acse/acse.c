@@ -418,7 +418,7 @@ AcseConnection_init(AcseConnection* self, AcseAuthenticator authenticator, void*
 AcseIndication
 AcseConnection_parseMessage(AcseConnection* self, ByteBuffer* message)
 {
-    AcseIndication indication;
+    AcseIndication indication = ACSE_ERROR;
 
     uint8_t* buffer = message->buffer;
 

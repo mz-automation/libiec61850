@@ -83,7 +83,7 @@ EthernetHandleSet_removeSocket(EthernetHandleSet self, const EthernetSocket sock
  * The function will return after \p timeoutMs ms if no data is pending.
  *
  * \param self the HandleSet instance
- * \param timeout in milliseconds (ms)
+ * \param timeoutMs in milliseconds (ms)
  * \return It returns the number of sockets on which data is pending
  *   or 0 if no data is pending on any of the monitored connections.
  *   The function shall return -1 if a socket error occures.
@@ -145,7 +145,7 @@ Ethernet_setProtocolFilter(EthernetSocket ethSocket, uint16_t etherType);
  *
  * \param ethSocket the ethernet socket handle
  * \param buffer the buffer to copy the message to
- * \param the maximum size of the buffer
+ * \param bufferSize the maximum size of the buffer
  *
  * \return size of message received in bytes
  */

@@ -574,7 +574,7 @@ parseGoosePayload(GooseReceiver self, uint8_t* buffer, int apduLength)
     uint32_t timeAllowedToLive = 0;
     uint32_t stNum = 0;
     uint32_t sqNum = 0;
-    uint32_t confRev;
+    uint32_t confRev = 0;
     bool simulation = false;
     bool ndsCom = false;
     GooseSubscriber matchingSubscriber = NULL;

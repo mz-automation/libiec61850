@@ -1191,7 +1191,7 @@ IedConnection_readObject(IedConnection self, IedClientError* error, const char* 
         return NULL;
     }
 
-    MmsError mmsError;
+    MmsError mmsError = MMS_ERROR_NONE;
 
     /* check if item ID contains an array "(..)" */
     char* brace = strchr(itemId, '(');
@@ -2482,22 +2482,20 @@ IedConnection_getLogicalNodeDirectory(IedConnection self, IedClientError* error,
 
     LinkedList device = LinkedList_getNext(self->logicalDevices);
 
-    bool deviceFound = false;
-
-    ICLogicalDevice* ld;
+    ICLogicalDevice* ld = NULL;
 
     while (device != NULL) {
-        ld = (ICLogicalDevice*) device->data;
+        ICLogicalDevice* ldCandidate = (ICLogicalDevice*) device->data;
 
-        if (strcmp(logicalDeviceName, ld->name) == 0) {
-            deviceFound = true;
+        if (strcmp(logicalDeviceName, ldCandidate->name) == 0) {
+            ld = ldCandidate;
             break;
         }
 
         device = LinkedList_getNext(device);
     }
 
-    if (!deviceFound) {
+    if (ld == NULL) {
         *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
         return NULL;
     }
@@ -2630,22 +2628,20 @@ IedConnection_getLogicalNodeVariables(IedConnection self, IedClientError* error,
 
     LinkedList device = LinkedList_getNext(self->logicalDevices);
 
-    bool deviceFound = false;
-
-    ICLogicalDevice* ld;
+    ICLogicalDevice* ld = NULL;
 
     while (device != NULL) {
-        ld = (ICLogicalDevice*) device->data;
+        ICLogicalDevice* ldCandidate = (ICLogicalDevice*) device->data;
 
-        if (strcmp(logicalDeviceName, ld->name) == 0) {
-            deviceFound = true;
+        if (strcmp(logicalDeviceName, ldCandidate->name) == 0) {
+            ld = ldCandidate;
             break;
         }
 
         device = LinkedList_getNext(device);
     }
 
-    if (!deviceFound) {
+    if (ld == NULL) {
         *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
         return NULL;
     }
@@ -2731,22 +2727,20 @@ getDataDirectory(IedConnection self, IedClientError* error,
 
     LinkedList device = LinkedList_getNext(self->logicalDevices);
 
-    bool deviceFound = false;
-
-    ICLogicalDevice* ld;
+    ICLogicalDevice* ld = NULL;
 
     while (device != NULL) {
-        ld = (ICLogicalDevice*) device->data;
+        ICLogicalDevice* ldCandidate = (ICLogicalDevice*) device->data;
 
-        if (strcmp(logicalDeviceName, ld->name) == 0) {
-            deviceFound = true;
+        if (strcmp(logicalDeviceName, ldCandidate->name) == 0) {
+            ld = ldCandidate;
             break;
         }
 
         device = LinkedList_getNext(device);
     }
 
-    if (!deviceFound) {
+    if (ld == NULL) {
         *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
         return NULL;
     }
@@ -2900,22 +2894,20 @@ getDataDirectoryByFc(IedConnection self, IedClientError* error,
 
     LinkedList device = LinkedList_getNext(self->logicalDevices);
 
-    bool deviceFound = false;
-
-    ICLogicalDevice* ld;
+    ICLogicalDevice* ld = NULL;
 
     while (device != NULL) {
-        ld = (ICLogicalDevice*) device->data;
+        ICLogicalDevice* ldCandidate = (ICLogicalDevice*) device->data;
 
-        if (strcmp(logicalDeviceName, ld->name) == 0) {
-            deviceFound = true;
+        if (strcmp(logicalDeviceName, ldCandidate->name) == 0) {
+            ld = ldCandidate;
             break;
         }
 
         device = LinkedList_getNext(device);
     }
 
-    if (!deviceFound) {
+    if (ld == NULL) {
         *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
         return NULL;
     }

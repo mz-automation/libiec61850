@@ -70,7 +70,7 @@ ber_check_tags(asn_codec_ctx_t *opt_codec_ctx,
 	ssize_t tag_len;
 	ssize_t len_len;
 	ber_tlv_tag_t tlv_tag;
-	ber_tlv_len_t tlv_len;
+	ber_tlv_len_t tlv_len = -1;
 	ber_tlv_len_t limit_len = -1;
 	int expect_00_terminators = 0;
 	int tlv_constr = -1;	/* If CHOICE, opt_tlv_form is not given */

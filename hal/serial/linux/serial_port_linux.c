@@ -62,7 +62,7 @@ SerialPort_create(const char* interfaceName, int baudRate, uint8_t dataBits, cha
         self->lastSentTime = 0;
         self->timeout.tv_sec = 0;
         self->timeout.tv_usec = 100000; /* 100 ms */
-        strncpy(self->interfaceName, interfaceName, 100);
+        strncpy(self->interfaceName, interfaceName, 99);
         self->lastError = SERIAL_PORT_ERROR_NONE;
     }
 

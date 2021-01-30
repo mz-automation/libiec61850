@@ -48,7 +48,7 @@ struct sEthernetSocket {
 };
 
 struct sEthernetHandleSet {
-    struct pollfd *handles;
+    struct pollfd* handles;
     int nhandles;
 };
 
@@ -125,7 +125,7 @@ getInterfaceIndex(int sock, const char* deviceName)
 {
     struct ifreq ifr;
 
-    strncpy(ifr.ifr_name, deviceName, IFNAMSIZ);
+    strncpy(ifr.ifr_name, deviceName, IFNAMSIZ - 1);
 
     if (ioctl(sock, SIOCGIFINDEX, &ifr) == -1) {
         if (DEBUG_SOCKET)
@@ -163,7 +163,7 @@ Ethernet_getInterfaceMACAddress(const char* interfaceId, uint8_t* addr)
 
     memset(&buffer, 0x00, sizeof(buffer));
 
-    strncpy(buffer.ifr_name, interfaceId, IFNAMSIZ);
+    strncpy(buffer.ifr_name, interfaceId, IFNAMSIZ - 1);
 
     ioctl(sock, SIOCGIFHWADDR, &buffer);
 

@@ -37,15 +37,15 @@ BerEncoder_encodeLength(uint32_t length, uint8_t* buffer, int bufPos)
     else if (length < 65535) {
         buffer[bufPos++] = 0x82;
 
-        buffer[bufPos++] = length / 256;
-        buffer[bufPos++] = length % 256;
+        buffer[bufPos++] = (uint8_t) (length / 256);
+        buffer[bufPos++] = (uint8_t) (length % 256);
     }
     else {
         buffer[bufPos++] = 0x83;
 
-        buffer[bufPos++] = length / 0x10000;
-        buffer[bufPos++] = (length & 0xffff) / 0x100;
-        buffer[bufPos++] = length % 256;
+        buffer[bufPos++] = (uint8_t) (length / 0x10000);
+        buffer[bufPos++] = (uint8_t) ((length & 0xffff) / 0x100);
+        buffer[bufPos++] = (uint8_t) (length % 256);
     }
 
     return bufPos;
@@ -80,13 +80,13 @@ BerEncoder_encodeStringWithTag(uint8_t tag, const char* string, uint8_t* buffer,
     buffer[bufPos++] = tag;
 
     if (string != NULL) {
-        int length = strlen(string);
+        int length = (int) strlen(string);
 
-        bufPos = BerEncoder_encodeLength(length, buffer, bufPos);
+        bufPos = BerEncoder_encodeLength((uint32_t) length, buffer, bufPos);
 
         int i;
         for (i = 0; i < length; i++) {
-            buffer[bufPos++] = string[i];
+            buffer[bufPos++] = (uint8_t) string[i];
         }
     }
     else
@@ -316,8 +316,7 @@ int
 BerEncoder_encodeFloat(uint8_t* floatValue, uint8_t formatWidth, uint8_t exponentWidth,
         uint8_t* buffer, int bufPos)
 {
-    /* TODO operate on encoding buffer directly */
-    uint8_t valueBuffer[9];
+    uint8_t* valueBuffer = buffer + bufPos;
 
     int byteSize = formatWidth / 8;
 
@@ -332,9 +331,7 @@ BerEncoder_encodeFloat(uint8_t* floatValue, uint8_t formatWidth, uint8_t exponen
     BerEncoder_revertByteOrder(valueBuffer + 1, byteSize);
 #endif
 
-    for (i = 0; i < byteSize + 1; i++) {
-        buffer[bufPos++] = valueBuffer[i];
-    }
+    bufPos = bufPos + 1 + byteSize;
 
     return bufPos;
 }

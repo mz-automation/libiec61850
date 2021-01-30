@@ -654,7 +654,7 @@ void
 MmsValue_setInt16(MmsValue* self, int16_t integer)
 {
     if (self->type == MMS_INTEGER) {
-        if (Asn1PrimitiveValue_getMaxSize(self->value.integer) >= 1) {
+        if (Asn1PrimitiveValue_getMaxSize(self->value.integer) >= 2) {
             BerInteger_setInt32(self->value.integer, (int32_t) integer);
         }
     }

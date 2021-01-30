@@ -705,7 +705,7 @@ IsoServer_startListeningThreadless(IsoServer self)
 int
 IsoServer_waitReady(IsoServer self, unsigned int timeoutMs)
 {
-   int result;
+   int result = -1;
 
    if (getState(self) == ISO_SVR_STATE_RUNNING) {
 
@@ -717,8 +717,6 @@ IsoServer_waitReady(IsoServer self, unsigned int timeoutMs)
                printf("ISO_SERVER: internal error - no handleset!\n");
        }
 
-   } else {
-       result = -1;
    }
 
    return result;

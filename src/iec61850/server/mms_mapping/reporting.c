@@ -1410,7 +1410,7 @@ convertIPv4AddressStringToByteArray(const char* clientAddressString, uint8_t ipV
 {
     int addrElementCount = 0;
 
-    char* separator = (char*) clientAddressString;
+    const char* separator = clientAddressString;
 
     while (separator != NULL && addrElementCount < 4) {
         int intVal = atoi(separator);

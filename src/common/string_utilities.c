@@ -271,7 +271,7 @@ getCharWeight(int c)
 {
 	static bool initialized = false;
 	static char lookupTable[LT_MAX_CHARS + 1];
-	static char* charOrder = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz$_0123456789";
+	static const char* charOrder = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz$_0123456789";
 
 	if (!initialized) {
 		int ltIndex;

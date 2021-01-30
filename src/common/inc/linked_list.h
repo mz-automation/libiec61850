@@ -1,7 +1,7 @@
 /*
  *  linked_list.h
  *
- *  Copyright 2013-2018 Michael Zillgith
+ *  Copyright 2013-2021 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -153,7 +153,7 @@ LinkedList_getNext(LinkedList self);
 /**
  * \brief Get the last element in the list.
  *
- * \param listElement the LinkedList instance
+ * \param self the LinkedList instance
  */
 LIB61850_API LinkedList
 LinkedList_getLastElement(LinkedList self);

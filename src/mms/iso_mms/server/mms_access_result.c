@@ -1,7 +1,7 @@
 /*
  *  mms_access_result.c
  *
- *  Copyright 2013, 2016 Michael Zillgith
+ *  Copyright 2013-2021 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -329,7 +329,7 @@ exit_with_error:
 int
 MmsValue_encodeMmsData(MmsValue* self, uint8_t* buffer, int bufPos, bool encode)
 {
-    int size;
+    int size = 0;
 
     switch (self->type) {
     case MMS_BOOLEAN:
@@ -446,4 +446,3 @@ MmsValue_encodeMmsData(MmsValue* self, uint8_t* buffer, int bufPos, bool encode)
     else
         return size;
 }
-

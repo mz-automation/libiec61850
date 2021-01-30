@@ -22,6 +22,7 @@
  */
 
 #include "stack_config.h"
+#include <inttypes.h>
 
 #include "libiec61850_platform_includes.h"
 
@@ -355,8 +356,10 @@ parseASDU(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, int length)
         
         if (SVSubscriber_ASDU_hasDatSet(&asdu))
             printf("SV_SUBSCRIBER:     DatSet: %s\n", asdu.datSet);
+#ifdef PRIu64
         if (SVSubscriber_ASDU_hasRefrTm(&asdu))
-            printf("SV_SUBSCRIBER:     RefrTm[ns]: %llu\n", SVSubscriber_ASDU_getRefrTmAsNs(&asdu));
+            printf("SV_SUBSCRIBER:     RefrTm[ns]: %"PRIu64"\n", SVSubscriber_ASDU_getRefrTmAsNs(&asdu));
+#endif
         if (SVSubscriber_ASDU_hasSmpMod(&asdu))
             printf("SV_SUBSCRIBER:     SmpMod: %d\n", SVSubscriber_ASDU_getSmpMod(&asdu));
         if (SVSubscriber_ASDU_hasSmpRate(&asdu))
@@ -455,7 +458,6 @@ static void
 parseSVMessage(SVReceiver self, int numbytes)
 {
     int bufPos;
-    bool subscriberFound = false;
     uint8_t* buffer = self->buffer;
 
     if (numbytes < 22) return;
@@ -507,25 +509,24 @@ parseSVMessage(SVReceiver self, int numbytes)
         printf("SV_SUBSCRIBER:   APDU length: %i\n", apduLength);
     }
 
-
     /* check if there is a matching subscriber */
 
 #if (CONFIG_MMS_THREADLESS_STACK == 0)
     Semaphore_wait(self->subscriberListLock);
 #endif
 
+    SVSubscriber subscriber = NULL;
+
     LinkedList element = LinkedList_getNext(self->subscriberList);
 
-    SVSubscriber subscriber;
-
     while (element != NULL) {
-        subscriber = (SVSubscriber) LinkedList_getData(element);
+        SVSubscriber subscriberElem = (SVSubscriber) LinkedList_getData(element);
 
-        if (subscriber->appId == appId) {
+        if (subscriberElem->appId == appId) {
 
             if (self->checkDestAddr) {
-                if (memcmp(dstAddr, subscriber->ethAddr, 6) == 0) {
-                    subscriberFound = true;
+                if (memcmp(dstAddr, subscriberElem->ethAddr, 6) == 0) {
+                    subscriber = subscriberElem;
                     break;
                 }
                 else
@@ -533,10 +534,9 @@ parseSVMessage(SVReceiver self, int numbytes)
                         printf("SV_SUBSCRIBER: Checking ethernet dest address failed!\n");
             }
             else {
-                subscriberFound = true;
+                subscriber = subscriberElem;
                 break;
             }
-
 
         }
 
@@ -547,8 +547,7 @@ parseSVMessage(SVReceiver self, int numbytes)
     Semaphore_post(self->subscriberListLock);
 #endif
 
-
-    if (subscriberFound)
+    if (subscriber)
         parseSVPayload(self, subscriber, buffer + bufPos, apduLength);
     else {
         if (DEBUG_SV_SUBSCRIBER)

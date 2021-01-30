@@ -122,7 +122,7 @@ LIB_SOURCES = $(call get_sources,$(LIB_SOURCE_DIRS))
 LIB_OBJS = $(call src_to,.o,$(LIB_SOURCES))
 
 CFLAGS += -std=gnu99
-#CFLAGS += -Wno-error=format 
+CFLAGS += -Wno-error=format 
 CFLAGS += -Wstrict-prototypes
 
 ifneq ($(HAL_IMPL), WIN32)
@@ -136,6 +136,8 @@ CFLAGS += -Wmissing-declarations
 CFLAGS += -Wshadow
 CFLAGS += -Wall
 CFLAGS += -Wextra
+CFLAGS += -Wno-format
+#CFLAGS += -Wconditional-uninitialized
 #CFLAGS += -Werror  
 
 all:	lib

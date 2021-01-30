@@ -678,9 +678,11 @@ operateControl(ControlObject* self, MmsValue* value, uint64_t currentTime, bool 
 static void
 resetAddCause(ControlObject* self)
 {
-    self->addCauseValue = ADD_CAUSE_UNKNOWN;
+    if (self) {
+        self->addCauseValue = ADD_CAUSE_UNKNOWN;
 
-    MmsValue_setInt32(self->addCause, self->addCauseValue);
+        MmsValue_setInt32(self->addCause, self->addCauseValue);
+    }
 }
 
 static void
@@ -1869,6 +1871,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
 {
     MmsDataAccessError indication = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
     IEC61850_ServiceError serviceError = IEC61850_SERVICE_ERROR_NO_ERROR;
+    ControlObject* controlObject = NULL;
 
     if (DEBUG_IED_SERVER)
         printf("IED_SERVER: writeAccessControlObject: %s\n", variableIdOrig);
@@ -1935,7 +1938,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
         goto free_and_return;
     }
 
-    ControlObject* controlObject = Control_lookupControlObject(self, domain, lnName, objectName);
+    controlObject = Control_lookupControlObject(self, domain, lnName, objectName);
 
     if (controlObject == NULL) {
         indication = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
