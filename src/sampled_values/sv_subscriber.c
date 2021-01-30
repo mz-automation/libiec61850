@@ -356,7 +356,7 @@ parseASDU(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, int length)
         if (SVSubscriber_ASDU_hasDatSet(&asdu))
             printf("SV_SUBSCRIBER:     DatSet: %s\n", asdu.datSet);
         if (SVSubscriber_ASDU_hasRefrTm(&asdu))
-            printf("SV_SUBSCRIBER:     RefrTm[ns]: %lu\n", SVSubscriber_ASDU_getRefrTmAsNs(&asdu));
+            printf("SV_SUBSCRIBER:     RefrTm[ns]: %llu\n", SVSubscriber_ASDU_getRefrTmAsNs(&asdu));
         if (SVSubscriber_ASDU_hasSmpMod(&asdu))
             printf("SV_SUBSCRIBER:     SmpMod: %d\n", SVSubscriber_ASDU_getSmpMod(&asdu));
         if (SVSubscriber_ASDU_hasSmpRate(&asdu))

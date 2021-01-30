@@ -102,13 +102,13 @@ downloadHandler(void* parameter, uint8_t* buffer, uint32_t bytesRead)
     printf("received %i bytes\n", bytesRead);
 
     if (bytesRead > 0) {
-        if (fwrite(buffer, bytesRead, 1, fp) == 1)
-            return true;
-        else {
+        if (fwrite(buffer, bytesRead, 1, fp) != 1) {
             printf("Failed to write local file!\n");
             return false;
         }
     }
+
+    return true;
 }
 
 static void

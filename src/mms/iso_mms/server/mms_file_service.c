@@ -535,6 +535,7 @@ mmsServer_fileUploadTask(MmsServer self, MmsObtainFileTask task)
                     FileSystem_closeFile(task->fileHandle);
                     task->fileHandle = NULL;
                 }
+                
                 deleteFile(MmsServerConnection_getFilesystemBasepath(task->connection), task->destinationFilename);
 
                 if (DEBUG_MMS_SERVER)
@@ -563,7 +564,7 @@ mmsServer_fileUploadTask(MmsServer self, MmsObtainFileTask task)
                     FileSystem_closeFile(task->fileHandle);
                     task->fileHandle = NULL;
 
-                    if (task->destinationFilename)
+                    if (task->destinationFilename[0])
                         deleteFile(MmsServerConnection_getFilesystemBasepath(task->connection), task->destinationFilename);
                 }
 
@@ -599,10 +600,12 @@ mmsServer_fileUploadTask(MmsServer self, MmsObtainFileTask task)
             {
                 if (DEBUG_MMS_SERVER)
                     printf("MMS_SERVER: file service interrupted, due to client disconnection\n");
+
                 if (task->fileHandle){
                     FileSystem_closeFile(task->fileHandle);
                     task->fileHandle = NULL;
-                    if (task->destinationFilename)
+
+                    if (task->destinationFilename[0])
                         deleteFile(MmsServerConnection_getFilesystemBasepath(task->connection), task->destinationFilename);
                 }
                 task->state = MMS_FILE_UPLOAD_STATE_NOT_USED;
