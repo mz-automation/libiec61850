@@ -3113,8 +3113,7 @@ unselectControlsForConnection(MmsMapping* self, MmsServerConnection connection)
     while (controlObjectElement != NULL) {
         ControlObject* controlObject = (ControlObject*) controlObjectElement->data;
 
-        if (ControlObject_unselect(controlObject, connection))
-            break;
+        ControlObject_unselect(controlObject, connection);
 
         controlObjectElement = LinkedList_getNext(controlObjectElement);
     }
