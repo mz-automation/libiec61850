@@ -185,6 +185,8 @@ main(int argc, char** argv)
 
     IedServer_setAuthenticator(iedServer, clientAuthenticator, NULL);
 
+    IedServer_setWriteAccessPolicy(iedServer, IEC61850_FC_DC, ACCESS_POLICY_ALLOW);
+
     /*
      * For SPCSO1 we want the user be able to change the control model by online service -
      * so we install a write access handler to change the control model when the client
