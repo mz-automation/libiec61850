@@ -24,7 +24,7 @@ reportCallbackFunction(void* parameter, ClientReport report)
 
         if (reason != IEC61850_REASON_NOT_INCLUDED) {
             printf("  GGIO1.SPCSO%i.stVal: %i (included for reason %i)\n", i,
-                    MmsValue_getBoolean(MmsValue_getElement(dataSetValues, i)), reason);
+                MmsValue_getBoolean(MmsValue_getElement(dataSetValues, i)), reason);
         }
     }
 }
@@ -85,6 +85,15 @@ int main(int argc, char** argv) {
             printf("read float value: %f\n", fval);
             MmsValue_delete(value);
         }
+
+        /* write a variable to the server */
+        value = MmsValue_newVisibleString("libiec61850_itri");
+        IedConnection_writeObject(con, &error, "simpleIOGenericIO/GGIO1.NamPlt.vendor", IEC61850_FC_DC, value);
+
+        if (error != IED_ERROR_OK)
+            printf("failed to write simpleIOGenericIO/GGIO1.NamPlt.vendor!\n");
+
+        MmsValue_delete(value);
 
         /* read data set */
         ClientDataSet clientDataSet = IedConnection_readDataSetValues(con, &error, "simpleIOGenericIO/LLN0.Events", NULL);
