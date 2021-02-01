@@ -25,6 +25,14 @@ sigint_handler(int signalId)
     running = 0;
 }
 
+static bool
+writeAccessHandler (DataAttribute* dataAttribute, MmsValue* value, ClientConnection connection)
+{
+    printf("New visible string value for OutVarSet_setMag_f = %s\n",
+        MmsValue_toString(value));
+    return true;
+}
+
 static ControlHandlerResult
 controlHandlerForBinaryOutput(ControlAction action, void* parameter, MmsValue* value, bool test)
 {
@@ -166,6 +174,10 @@ main(int argc, char** argv)
 
     // Create Server Connection
     iedServer = IedServer_createWithTlsSupport(&iedModel, tlsConfig);
+
+    // Install writer handler
+    IedServer_handleWriteAccess(iedServer, IEDMODEL_GenericIO_GGIO1_NamPlt_vendor,
+       writeAccessHandler);
 
     IedServer_setAuthenticator(iedServer, clientAuthenticator, NULL);
 
