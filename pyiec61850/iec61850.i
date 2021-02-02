@@ -98,15 +98,18 @@ void GooseSubscriber_setDstMac(GooseSubscriber subscriber,
 /* Event Handler section */
 %feature("director") RCBHandler;
 %feature("director") GooseHandler;
+%feature("director") CommandTermHandler;
 %{
 #include "eventHandlers/eventHandler.hpp"
 #include "eventHandlers/reportControlBlockHandler.hpp"
 #include "eventHandlers/gooseHandler.hpp"
+#include "eventHandlers/commandTermHandler.hpp"
 EventSubscriber* EventSubscriber::m_last_created_event_subscriber = nullptr;
 %}
 %include "eventHandlers/eventHandler.hpp"
 %include "eventHandlers/reportControlBlockHandler.hpp"
 %include "eventHandlers/gooseHandler.hpp"
+%include "eventHandlers/commandTermHandler.hpp"
 
 /* Goose Publisher section */
 %{
