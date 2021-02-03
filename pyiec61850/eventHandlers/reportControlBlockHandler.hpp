@@ -22,8 +22,21 @@ class RCBHandler: public EventHandler {
 
 class RCBSubscriber: public EventSubscriber {
     public:
+        RCBSubscriber(): EventSubscriber()
+        {
+            m_ied_connection = nullptr;
+        }
+
+        virtual ~RCBSubscriber() {}
+
 
         virtual void subscribe() {
+            // preconditions
+            if (nullptr == m_ied_connection) {
+                fprintf(stderr, "RCBSubscriber::subscribe() failed: 'IedConnection' is null\n");
+                return;
+            }
+
             // install the libiec61850 callback:
             // the 'function pointer' is the 'static' method of this class
             IedConnection_installReportHandler(m_ied_connection,
@@ -38,6 +51,12 @@ class RCBSubscriber: public EventSubscriber {
         {
             PyThreadStateLock PyThreadLock;
 
+            // Preconditions
+            if (nullptr == report) {
+                fprintf(stderr, "RCBSubscriber::triggerRCBHandler() failed: input object is null\n");
+                return;
+            }
+
             // TODO: search the appropriate 'EventSubscriber' object
             if (m_last_created_event_subscriber) {
                 EventHandler *l_event_handler_p = m_last_created_event_subscriber->getEventHandler();
@@ -46,8 +65,11 @@ class RCBSubscriber: public EventSubscriber {
                     l_event_handler_p->trigger();
                 }
                 else {
-                    printf("The EventHandler is undefined\n");
+                    fprintf(stderr, "RCBSubscriber::triggerRCBHandler() failed: EventHandler is undefined\n");
                 }
+            }
+            else {
+                fprintf(stderr, "RCBSubscriber::triggerRCBHandler() failed: subscriber is not registered\n");
             }
         }
 

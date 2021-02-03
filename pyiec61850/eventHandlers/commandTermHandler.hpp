@@ -26,8 +26,21 @@ class CommandTermHandler: public EventHandler {
  */
 class CommandTermSubscriber: public EventSubscriber {
     public:
+        CommandTermSubscriber(): EventSubscriber()
+        {
+            m_libiec61850_control_object_client = nullptr;
+        }
 
-        virtual void subscribe() {
+        virtual ~CommandTermSubscriber() {}
+
+        virtual void subscribe()
+        {
+            // preconditions
+            if (nullptr == m_libiec61850_control_object_client) {
+                fprintf(stderr, "CommandTermSubscriber::subscribe() failed: 'control object client' is null\n");
+                return;
+            }
+
             // install the libiec61850 callback:
             // the 'function pointer' is the 'static' method of this class
             ControlObjectClient_setCommandTerminationHandler(
@@ -41,6 +54,12 @@ class CommandTermSubscriber: public EventSubscriber {
         {
             PyThreadStateLock PyThreadLock;
 
+            // Preconditions
+            if (nullptr == connection) {
+                fprintf(stderr, "CommandTermSubscriber::triggerCommandTermHandler() failed: input object is null\n");
+                return;
+            }
+
             // TODO: search the appropriate 'EventSubscriber' object
             if (m_last_created_event_subscriber) {
                 EventHandler *l_event_handler_p = m_last_created_event_subscriber->getEventHandler();
@@ -49,8 +68,11 @@ class CommandTermSubscriber: public EventSubscriber {
                     l_event_handler_p->trigger();
                 }
                 else {
-                    printf("The EventHandler is undefined\n");
+                    fprintf(stderr, "CommandTermSubscriber::triggerCommandTermHandler() failed: EventHandler is undefined\n");
                 }
+            }
+            else {
+                fprintf(stderr, "CommandTermSubscriber::triggerCommandTermHandler() failed: subscriber is not registered\n");
             }
         }
 
