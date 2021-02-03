@@ -33,7 +33,7 @@ Hal_getTimeInMs()
 	FILETIME ft;
 	uint64_t now;
 
-	static const uint64_t DIFF_TO_UNIXTIME = 11644473600000LL;
+	static const uint64_t DIFF_TO_UNIXTIME = 11644473600000ULL;
 	                                         
 	GetSystemTimeAsFileTime(&ft);
 
@@ -47,7 +47,7 @@ Hal_getTimeInNs()
 {
 	FILETIME ft;
 
-	static const uint64_t DIFF_TO_UNIXTIME = 11644473600000000000LL;
+	static const uint64_t DIFF_TO_UNIXTIME = 11644473600000000000ULL;
 
 	GetSystemTimeAsFileTime(&ft);
 
