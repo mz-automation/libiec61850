@@ -29,12 +29,11 @@ class RCBSubscriber: public EventSubscriber {
 
         virtual ~RCBSubscriber() {}
 
-
-        virtual void subscribe() {
+        virtual bool subscribe() {
             // preconditions
             if (nullptr == m_ied_connection) {
                 fprintf(stderr, "RCBSubscriber::subscribe() failed: 'IedConnection' is null\n");
-                return;
+                return false;
             }
 
             // install the libiec61850 callback:
@@ -44,6 +43,8 @@ class RCBSubscriber: public EventSubscriber {
                                                m_rcb_rpt_id.c_str(),
                                                RCBSubscriber::triggerRCBHandler,
                                                NULL);
+
+            return (EventSubscriber::registerNewSubscriber(this, m_rcb_reference));
         }
 
         // Static method: it is the 'callback' for libiec61850 in C
@@ -57,9 +58,12 @@ class RCBSubscriber: public EventSubscriber {
                 return;
             }
 
-            // TODO: search the appropriate 'EventSubscriber' object
-            if (m_last_created_event_subscriber) {
-                EventHandler *l_event_handler_p = m_last_created_event_subscriber->getEventHandler();
+            // Search the appropriate 'EventSubscriber' object
+            std::string l_subscriber_id = ClientReport_getRcbReference(report);
+            EventSubscriber *l_registered_subscriber = EventSubscriber::findSubscriber(l_subscriber_id);
+
+            if (l_registered_subscriber) {
+                EventHandler *l_event_handler_p = l_registered_subscriber->getEventHandler();
                 if (l_event_handler_p) {
                     l_event_handler_p->setReceivedData(&report);
                     l_event_handler_p->trigger();
