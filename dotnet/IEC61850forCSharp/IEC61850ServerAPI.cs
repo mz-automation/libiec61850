@@ -54,7 +54,7 @@ namespace IEC61850
         /// <summary>
         /// Representation of the IED server data model
         /// </summary>
-		public class IedModel
+		public class IedModel : IDisposable
 		{
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern IntPtr IedModel_create(string name);
@@ -71,7 +71,10 @@ namespace IEC61850
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern int ModelNode_getType(IntPtr self);
 
-			internal IntPtr self = IntPtr.Zero;
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedModel_setIedNameForDynamicModel(IntPtr self, string iedName);
+
+            internal IntPtr self = IntPtr.Zero;
 
 			internal IedModel(IntPtr self)
 			{
@@ -87,24 +90,46 @@ namespace IEC61850
 				self = IedModel_create(name);
 			}
 
-			// causes undefined behavior
-			//~IedModel()
-			//{
-			//    if (self != IntPtr.Zero)
-			//    {
-			//        IedModel_destroy(self);
-			//    }
-			//}
+            ~IedModel()
+            {
+                Dispose();    
+            }
 
-			public void Destroy()
+            /// <summary>
+            /// Releases all resource used by the <see cref="IEC61850.Server.IedModel"/> object.
+            /// </summary>
+            public void Destroy()
 			{
-				IedModel_destroy(self);
-				self = IntPtr.Zero;
+                Dispose();
 			}
 
-			public static IedModel CreateFromFile(string filePath)
+            /// <summary>
+            /// Releases all resource used by the <see cref="IEC61850.Server.IedModel"/> object.
+            /// </summary>
+            /// <remarks>Call <see cref="Dispose"/> when you are done using the <see cref="IEC61850.Server.IedModel"/>. The
+            /// <see cref="Dispose"/> method leaves the <see cref="IEC61850.Server.IedModel"/> in an unusable state. After
+            /// calling <see cref="Dispose"/>, you must release all references to the <see cref="IEC61850.Server.IedModel"/> so
+            /// the garbage collector can reclaim the memory that the <see cref="IEC61850.Server.IedModel"/> was occupying.</remarks>
+            public void Dispose()
+            {
+                lock (this)
+                {
+                    if (self != IntPtr.Zero)
+                    {
+                        IedModel_destroy(self);
+                        self = IntPtr.Zero;
+                    }
+                }
+            }
+
+            /// <summary>
+            /// Creates a new <see cref="IEC61850.Server.IedModel"/> instance with the data model of <see langword="async"/> config file.
+            /// </summary>
+            /// <returns>new <see cref="IEC61850.Server.IedModel"/> instance</returns>
+            /// <param name="filename">fila name of the configuration (.cfg) file</param>
+            public static IedModel CreateFromFile(string filename)
 			{
-				return ConfigFileParser.CreateModelFromConfigFile(filePath);
+				return ConfigFileParser.CreateModelFromConfigFile(filename);
 			}
 
 			private ModelNode getModelNodeFromNodeRef(IntPtr nodeRef)
@@ -129,6 +154,20 @@ namespace IEC61850
 				}
 			}
 
+            /// <summary>
+            /// Change the IED name of the data model
+            /// </summary>
+            /// <param name="iedName">the new IED name</param>
+            public void SetIedName(string iedName)
+            {
+                IedModel_setIedNameForDynamicModel(self, iedName);
+            }
+
+            /// <summary>
+            /// Gets the model node by full object reference.
+            /// </summary>
+            /// <returns>The model node</returns>
+            /// <param name="objectReference">Full object reference including the IED name</param>
 			public ModelNode GetModelNodeByObjectReference(string objectReference)
 			{
 				IntPtr nodeRef = IedModel_getModelNodeByObjectReference(self, objectReference);
@@ -139,6 +178,11 @@ namespace IEC61850
 				return getModelNodeFromNodeRef (nodeRef);
 			}
 
+            /// <summary>
+            /// Gets the model node by short object reference (without IED name)
+            /// </summary>
+            /// <returns>The model node</returns>
+            /// <param name="objectReference">Object reference without IED name (e.g. LD0/GGIO1.Ind1.stVal)</param>
 			public ModelNode GetModelNodeByShortObjectReference(string objectReference)
 			{
 				IntPtr nodeRef = IedModel_getModelNodeByShortObjectReference(self, objectReference);
@@ -148,9 +192,10 @@ namespace IEC61850
 
 				return getModelNodeFromNodeRef (nodeRef);
 			}
-		}
 
-		public class LogicalDevice : ModelNode
+        }
+
+        public class LogicalDevice : ModelNode
 		{
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern IntPtr LogicalDevice_create(string name, IntPtr parent);
@@ -1123,7 +1168,7 @@ namespace IEC61850
 		/// This class acts as the entry point for the IEC 61850 client API. It represents a single
 		/// (MMS) connection to a server.
 		/// </summary>
-		public class IedServer
+		public class IedServer : IDisposable
 		{
 			[DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
 			static extern IntPtr IedServer_createWithConfig(IntPtr modelRef, IntPtr tlsConfiguration, IntPtr serverConfiguratio);
@@ -1387,8 +1432,13 @@ namespace IEC61850
 
 			internal Dictionary<IntPtr, ClientConnection> clientConnections = new Dictionary<IntPtr, ClientConnection> ();
 
+            /* store IedModel instance to prevent garbage collector */
+            private IedModel iedModel = null;
+
 			public IedServer(IedModel iedModel, IedServerConfig config = null)
 			{
+                this.iedModel = iedModel;
+
 				IntPtr nativeConfig = IntPtr.Zero;
 
 				if (config != null)
@@ -1399,7 +1449,9 @@ namespace IEC61850
 
 			public IedServer(IedModel iedModel, TLSConfiguration tlsConfig, IedServerConfig config = null)
 			{
-				IntPtr nativeConfig = IntPtr.Zero;
+                this.iedModel = iedModel;
+
+                IntPtr nativeConfig = IntPtr.Zero;
 				IntPtr nativeTLSConfig = IntPtr.Zero;
 
 				if (config != null)
@@ -1461,16 +1513,40 @@ namespace IEC61850
 				internalConnectionHandler = null;
 			}
 
-			/// <summary>
-			/// Release all server resources.
-			/// </summary>
-			/// <description>This function releases all MMS server resources.</description>
-			public void Destroy()
+            /// <summary>
+            /// Release all server resources (same as <see cref="Dispose"/>)
+            /// </summary>
+            /// <description>This function releases all MMS server resources.</description>
+            public void Destroy()
 			{
-				IedServer_destroy(self);
-				self = IntPtr.Zero;
-				internalConnectionHandler = null;
+                Dispose();
 			}
+
+            /// <summary>
+            /// Releases all resource used by the <see cref="IEC61850.Server.IedServer"/> object.
+            /// </summary>
+            /// <remarks>Call <see cref="Dispose"/> when you are done using the <see cref="IEC61850.Server.IedServer"/>. The
+            /// <see cref="Dispose"/> method leaves the <see cref="IEC61850.Server.IedServer"/> in an unusable state. After
+            /// calling <see cref="Dispose"/>, you must release all references to the <see cref="IEC61850.Server.IedServer"/> so
+            /// the garbage collector can reclaim the memory that the <see cref="IEC61850.Server.IedServer"/> was occupying.</remarks>
+            public void Dispose()
+            {
+                lock (this)
+                {
+                    if (self != IntPtr.Zero)
+                    {
+                        IedServer_destroy(self);
+                        self = IntPtr.Zero;
+                        internalConnectionHandler = null;
+                        this.iedModel = null;
+                    }
+                }
+            }
+
+            ~IedServer()
+            {
+                Dispose();
+            }
 
             /// <summary>
             /// Set the identify for the MMS identify service

@@ -58,7 +58,7 @@ IedModel_create(const char* name/*, MemoryAllocator allocator*/);
 /**
  * \brief Set the name of the IED (use only for dynamic model!)
  *
- * This will change the default name (usualy "TEMPLATE") to a user configured values.
+ * This will change the default name (usually "TEMPLATE") to a user configured values.
  * NOTE: This function has to be called before IedServer_create !
  * NOTE: For dynamic model (and configuration file date model) this function has to be
  * used instead of IedModel_setIedName.
