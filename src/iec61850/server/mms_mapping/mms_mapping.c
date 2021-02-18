@@ -3684,15 +3684,15 @@ MmsMapping_triggerGooseObservers(MmsMapping* self, MmsValue* value)
 void
 MmsMapping_enableGoosePublishing(MmsMapping* self)
 {
+    LinkedList element = LinkedList_getNext(self->gseControls);
 
-    LinkedList element = self->gseControls;
-
-    while ((element = LinkedList_getNext(element)) != NULL) {
-        MmsGooseControlBlock gcb = (MmsGooseControlBlock) element->data;
+    while (element) {
+        MmsGooseControlBlock gcb = (MmsGooseControlBlock) LinkedList_getData(element);
 
         MmsGooseControlBlock_enable(gcb, self);
-    }
 
+        element = LinkedList_getNext(element);
+    }
 }
 
 void

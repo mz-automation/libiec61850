@@ -1828,8 +1828,13 @@ Control_readAccessControlObject(MmsMapping* self, MmsDomain* domain, char* varia
                         ControlObject_getTypeSpec(controlObject), varName);
             }
         }
-        else
+        else {
             value = ControlObject_getMmsValue(controlObject);
+        }
+    }
+    else {
+        if (DEBUG_IED_SERVER)
+            printf("IED_SERVER: Control object not found %s/%s.%s\n", domain->domainName, lnName, objectName);
     }
 
     return value;
