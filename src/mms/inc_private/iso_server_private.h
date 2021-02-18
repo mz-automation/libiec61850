@@ -70,18 +70,6 @@ private_IsoServer_decreaseConnectionCounter(IsoServer self);
 LIB61850_INTERNAL int
 private_IsoServer_getConnectionCounter(IsoServer self);
 
-/**
- * \brief User provided lock that will be called when higher layer (MMS) is called
- */
-LIB61850_INTERNAL void
-IsoServer_setUserLock(IsoServer self, Semaphore userLock);
-
-LIB61850_INTERNAL void
-IsoServer_userLock(IsoServer self);
-
-LIB61850_INTERNAL void
-IsoServer_userUnlock(IsoServer self);
-
 LIB61850_INTERNAL bool
 IsoConnection_isRunning(IsoConnection self);
 

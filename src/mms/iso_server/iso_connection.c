@@ -329,7 +329,6 @@ IsoConnection_handleTcpConnection(IsoConnection self, bool isSingleThread)
                     ByteBuffer mmsResponseBuffer;
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
-                    IsoServer_userLock(self->isoServer);
                     IsoConnection_lock(self);
 #endif
 
@@ -370,7 +369,6 @@ IsoConnection_handleTcpConnection(IsoConnection self, bool isSingleThread)
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
                     IsoConnection_unlock(self);
-                    IsoServer_userUnlock(self->isoServer);
 #endif
                 }
                 else {
@@ -389,7 +387,6 @@ IsoConnection_handleTcpConnection(IsoConnection self, bool isSingleThread)
                         printf("ISO_SERVER: iso_connection: presentation ok\n");
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
-                    IsoServer_userLock(self->isoServer);
                     IsoConnection_lock(self);
 #endif
 
@@ -418,7 +415,6 @@ IsoConnection_handleTcpConnection(IsoConnection self, bool isSingleThread)
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
                     IsoConnection_unlock(self);
-                    IsoServer_userUnlock(self->isoServer);
 #endif
                 }
 

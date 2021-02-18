@@ -501,6 +501,8 @@ mmsServer_handleWriteRequest(
 	    goto exit_function;
 	}
 
+        MmsServer_lockModel(connection->server);
+
 	WriteRequest_t* writeRequest = &(mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.choice.write);
 
 	if (writeRequest->variableAccessSpecification.present == VariableAccessSpecification_PR_variableListName) {
@@ -695,13 +697,16 @@ end_of_main_loop:
         if (sendResponse)
             mmsServer_createMmsWriteResponse(connection, invokeId, response, numberOfWriteItems, accessResults);
     }
-	else { /* unknown request type */
+    else { /* unknown request type */
         mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
         goto exit_function;
-	}
+    }
 
 exit_function:
-	asn_DEF_MmsPdu.free_struct(&asn_DEF_MmsPdu, mmsPdu, 0);
+
+    MmsServer_unlockModel(connection->server);
+
+    asn_DEF_MmsPdu.free_struct(&asn_DEF_MmsPdu, mmsPdu, 0);
 }
 
 #endif /* (MMS_WRITE_SERVICE == 1) */

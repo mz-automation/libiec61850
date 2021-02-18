@@ -81,10 +81,6 @@ MmsServer_create(MmsDevice* device, TLSConfiguration tlsConfiguration)
             if (isoServer == NULL)
                 goto exit_error;
 
-    #if (CONFIG_MMS_THREADLESS_STACK != 1)
-            IsoServer_setUserLock(isoServer, self->modelMutex);
-    #endif
-
             LinkedList_add(self->isoServerList, isoServer);
         }
 
@@ -131,8 +127,6 @@ MmsServer_addAP(MmsServer self, const char* ipAddr, int tcpPort, TLSConfiguratio
     IsoServer isoServer = IsoServer_create(tlsConfiguration);
 
     if (isoServer) {
-
-        IsoServer_setUserLock(isoServer, self->modelMutex);
 
         IsoServer_setLocalIpAddress(isoServer, ipAddr);
 
@@ -479,7 +473,8 @@ mmsServer_setValue(MmsServer self, MmsDomain* domain, char* itemId, MmsValue* va
     if (self->writeHandler != NULL) {
         indication = self->writeHandler(self->writeHandlerParameter, domain,
                 itemId, value, connection);
-    } else {
+    }
+    else {
         MmsValue* cachedValue;
 
         if (domain == NULL)
@@ -496,7 +491,6 @@ mmsServer_setValue(MmsServer self, MmsDomain* domain, char* itemId, MmsValue* va
 
     return indication;
 }
-
 
 MmsValue*
 mmsServer_getValue(MmsServer self, MmsDomain* domain, char* itemId, MmsServerConnection connection, bool isDirectAccess)
