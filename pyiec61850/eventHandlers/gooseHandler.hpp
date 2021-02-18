@@ -22,13 +22,30 @@ class GooseHandler: public EventHandler {
 
 class GooseSubscriberForPython: public EventSubscriber {
     public:
+        GooseSubscriberForPython(): EventSubscriber()
+        {
+            m_libiec61850_goose_subscriber = nullptr;
+        }
 
-        virtual void subscribe() {
+        virtual ~GooseSubscriberForPython() {}
+
+        virtual bool subscribe()
+        {
+            // preconditions
+            if (nullptr == m_libiec61850_goose_subscriber) {
+                fprintf(stderr, "GooseSubscriberForPython::subscribe() failed: 'GOOSE subscriber' is null\n");
+                return false;
+            }
+
             // install the libiec61850 callback:
             // the 'function pointer' is the 'static' method of this class
             GooseSubscriber_setListener(m_libiec61850_goose_subscriber,
                                         GooseSubscriberForPython::triggerGooseHandler,
                                         NULL);
+
+            std::string l_go_cb_ref = GooseSubscriber_getGoCbRef(m_libiec61850_goose_subscriber);
+
+            return (EventSubscriber::registerNewSubscriber(this, l_go_cb_ref));
         }
 
         // Static method: it is the 'callback' for libiec61850 in C
@@ -36,16 +53,28 @@ class GooseSubscriberForPython: public EventSubscriber {
         {
             PyThreadStateLock PyThreadLock;
 
-            // TODO: search the appropriate 'EventSubscriber' object
-            if (m_last_created_event_subscriber) {
-                EventHandler *l_event_handler_p = m_last_created_event_subscriber->getEventHandler();
+            // Preconditions
+            if (nullptr == subscriber) {
+                fprintf(stderr, "GooseSubscriberForPython::triggerGooseHandler() failed: input object is null\n");
+                return;
+            }
+
+            // Search the appropriate 'EventSubscriber' object
+            std::string l_subscriber_id = GooseSubscriber_getGoCbRef(subscriber);
+            EventSubscriber *l_registered_subscriber = EventSubscriber::findSubscriber(l_subscriber_id);
+
+            if (l_registered_subscriber) {
+                EventHandler *l_event_handler_p = l_registered_subscriber->getEventHandler();
                 if (l_event_handler_p) {
                     l_event_handler_p->setReceivedData(&subscriber);
                     l_event_handler_p->trigger();
                 }
                 else {
-                    printf("The EventHandler is undefined\n");
+                    fprintf(stderr, "GooseSubscriberForPython::triggerGooseHandler() failed: EventHandler is undefined\n");
                 }
+            }
+            else {
+                fprintf(stderr, "GooseSubscriberForPython::triggerGooseHandler() failed: subscriber is not registered\n");
             }
         }
 

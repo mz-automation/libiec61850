@@ -28,6 +28,7 @@ private:
 
 class EventHandler {
     public:
+        EventHandler() {}
         virtual ~EventHandler() {}
         virtual void setReceivedData(void *i_data_p) = 0;
         virtual void trigger() = 0;
@@ -36,13 +37,9 @@ class EventHandler {
 
 class EventSubscriber {
     public:
-        // TODO: use a map to store and find the instantiated EventSubscriber
-        static EventSubscriber* m_last_created_event_subscriber;
 
         EventSubscriber(): _event_handler_p(nullptr)
         {
-            m_last_created_event_subscriber = this;
-
             // add python thread support
             Py_Initialize();
             PyEval_InitThreads();
@@ -50,11 +47,11 @@ class EventSubscriber {
 
         virtual ~EventSubscriber()
         {
+            EventSubscriber::unregisterSubscriber(m_subscriber_id);
             deleteEventHandler();
-            m_last_created_event_subscriber = nullptr;
         }
 
-        virtual void subscribe() = 0;
+        virtual bool subscribe() = 0;
 
         void deleteEventHandler()
         {
@@ -75,8 +72,59 @@ class EventSubscriber {
             return _event_handler_p;
         }
 
+        void setSubscriberId(const std::string &i_id)
+        {
+            m_subscriber_id = i_id;
+        }
+
+    protected:
+        static std::map<std::string, EventSubscriber*> m_subscriber_map;
+
+        static bool registerNewSubscriber(EventSubscriber *i_new_subscriber, const std::string &i_id)
+        {
+            // Preconditions
+            if (i_id.empty()) {
+                fprintf(stderr, "EventSubscriber::subscribe() failed: the subscriber id is empty\n");
+                return false;
+            }
+            if (m_subscriber_map.end() != m_subscriber_map.find(i_id)) {
+                fprintf(stderr, "EventSubscriber::subscribe() failed: the subscriber is already registered\n");
+                return false;
+            }
+
+            m_subscriber_map[i_id] = i_new_subscriber;
+            i_new_subscriber->setSubscriberId(i_id);
+
+            return true;
+        }
+
+        static EventSubscriber* findSubscriber(const std::string &i_id)
+        {
+            EventSubscriber *o_found_event_subscriber_p = nullptr;
+            std::map<std::string, EventSubscriber*>::iterator l_it = m_subscriber_map.find(i_id);
+
+            if (m_subscriber_map.end() != l_it) {
+                o_found_event_subscriber_p = l_it->second;
+            }
+
+            return o_found_event_subscriber_p;
+        }
+
+        static void unregisterSubscriber(const std::string &i_subscriber_id)
+        {
+            std::map<std::string, EventSubscriber*>::iterator l_it = m_subscriber_map.find(i_subscriber_id);
+
+            if (m_subscriber_map.end() != l_it) {
+                m_subscriber_map.erase(l_it);
+            }
+            else {
+                fprintf(stderr, "EventSubscriber::unregisterSubscriber() failed: '%s' is not registered\n");
+            }
+        }
+
     private:
         EventHandler *_event_handler_p;
+        std::string m_subscriber_id;
 };
 
 #endif
