@@ -205,6 +205,8 @@
 #define MMS_IDENTIFY_SERVICE 1
 #define MMS_FILE_SERVICE 1
 #define MMS_OBTAIN_FILE_SERVICE 1
+#define MMS_DELETE_FILE_SERVICE 1
+#define MMS_RENAME_FILE_SERVICE 0
 #endif /* MMS_DEFAULT_PROFILE */
 
 /* Sort getNameList response according to the MMS specified collation order - this is required by the standard

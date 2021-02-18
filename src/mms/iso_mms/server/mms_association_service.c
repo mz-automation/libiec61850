@@ -137,8 +137,12 @@ encodeInitResponseDetail(MmsServerConnection self, uint8_t* buffer, int bufPos, 
         servicesSupported[9] |= MMS_SERVICE_FILE_OPEN;
         servicesSupported[9] |= MMS_SERVICE_FILE_READ;
         servicesSupported[9] |= MMS_SERVICE_FILE_CLOSE;
+#if (MMS_RENAME_FILE_SERVICE == 1)
         servicesSupported[9] |= MMS_SERVICE_FILE_RENAME;
+#endif
+#if (MMS_DELETE_FILE_SERVICE == 1)
         servicesSupported[9] |= MMS_SERVICE_FILE_DELETE;
+#endif
         servicesSupported[9] |= MMS_SERVICE_FILE_DIRECTORY;
 #endif /* (MMS_FILE_SERVICE == 1) */
 
