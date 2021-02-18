@@ -797,7 +797,10 @@ namespace IEC61850
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern IntPtr ModelNode_getObjectReference(IntPtr self, IntPtr objectReference);
 
-			public IntPtr self;
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr ModelNode_getObjectReferenceEx(IntPtr self, IntPtr objectReference, [MarshalAs(UnmanagedType.I1)] bool withoutIedName);
+
+            public IntPtr self;
 
 			internal ModelNode()
 			{
@@ -836,9 +839,14 @@ namespace IEC61850
 
 			}
 
-			public string GetObjectReference()
+            /// <summary>
+            /// Gets the object reference of the model node
+            /// </summary>
+            /// <returns>the object reference</returns>
+            /// <param name="withoutIedName">If set to <c>true</c> the object reference is created without IED name.</param>
+			public string GetObjectReference(bool withoutIedName = false)
 			{
-				IntPtr objRefPtr = ModelNode_getObjectReference(self, IntPtr.Zero);
+				IntPtr objRefPtr = ModelNode_getObjectReferenceEx(self, IntPtr.Zero, withoutIedName);
 
 				if (objRefPtr != IntPtr.Zero) {
 					string objRef = Marshal.PtrToStringAnsi(objRefPtr);

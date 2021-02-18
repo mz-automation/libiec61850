@@ -398,6 +398,19 @@ LIB61850_API char*
 ModelNode_getObjectReference(ModelNode* self, char* objectReference);
 
 /**
+ * \brief Return the IEC 61850 object reference of a model node
+ *
+ * \param self the model node instance
+ * \param objectReference pointer to a buffer where to write the object reference string. If NULL
+ *        is given the buffer is allocated by the function.
+ * \param withoutIedName create object reference without IED name part
+ *
+ * \return the object reference string
+ */
+LIB61850_API char*
+ModelNode_getObjectReferenceEx(ModelNode* node, char* objectReference, bool withoutIedName);
+
+/**
  * \brief Get the type of the ModelNode
  *
  * \param self the ModelNode instance

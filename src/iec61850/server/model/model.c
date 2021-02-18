@@ -513,12 +513,12 @@ LogicalDevice_getChildByMmsVariableName(LogicalDevice* logicalDevice, const char
 }
 
 static int
-createObjectReference(ModelNode* node, char* objectReference)
+createObjectReference(ModelNode* node, char* objectReference, bool withoutIedName)
 {
     int bufPos;
 
     if (node->modelType != LogicalNodeModelType) {
-        bufPos = createObjectReference(node->parent, objectReference);
+        bufPos = createObjectReference(node->parent, objectReference, withoutIedName);
 
         objectReference[bufPos++] = '.';
     }
@@ -531,10 +531,18 @@ createObjectReference(ModelNode* node, char* objectReference)
 
         bufPos = 0;
 
-        int nameLength = strlen (iedModel->name) + strlen(lDevice->name);
+        int nameLength = 0;
 
-        strncpy(objectReference, iedModel->name, 64);
-        strncat(objectReference, lDevice->name, 64);
+        if (withoutIedName) {
+            nameLength = strlen(lDevice->name);
+            strncpy(objectReference, lDevice->name, 64);
+        }
+        else {
+            nameLength = strlen (iedModel->name) + strlen(lDevice->name);
+
+            strncpy(objectReference, iedModel->name, 64);
+            strncat(objectReference, lDevice->name, 64);
+        }
 
         bufPos += nameLength;
 
@@ -558,7 +566,20 @@ ModelNode_getObjectReference(ModelNode* node, char* objectReference)
     if (objectReference == NULL)
         objectReference = (char*) GLOBAL_MALLOC(130);
 
-    int bufPos = createObjectReference(node, objectReference);
+    int bufPos = createObjectReference(node, objectReference, false);
+
+    objectReference[bufPos] = 0;
+
+    return objectReference;
+}
+
+char*
+ModelNode_getObjectReferenceEx(ModelNode* node, char* objectReference, bool withoutIedName)
+{
+    if (objectReference == NULL)
+        objectReference = (char*) GLOBAL_MALLOC(130);
+
+    int bufPos = createObjectReference(node, objectReference, withoutIedName);
 
     objectReference[bufPos] = 0;
 
