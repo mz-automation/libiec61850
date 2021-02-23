@@ -421,6 +421,36 @@ LIB61850_API ModelNodeType
 ModelNode_getType(ModelNode* self);
 
 /**
+ * \brief Get the name of the ModelNode
+ *
+ * \param self the ModelNode instance
+ *
+ * \return the name of the ModelNode
+ */
+LIB61850_API const char*
+ModelNode_getName(ModelNode* self);
+
+/**
+ * \brief Get the parent ModelNode of this ModelNode instance
+ *
+ * \param self the ModelNode instance
+ *
+ * \return the parent instance, or NULL when the ModelNode has no parent
+ */
+LIB61850_API ModelNode*
+ModelNode_getParent(ModelNode* self);
+
+/**
+ * \brief Get the list of direct child nodes
+ *
+ * \param self the ModelNode instance
+ *
+ * \return the list of private child nodes, or NULL when the node has no children
+ */
+LIB61850_API LinkedList
+ModelNode_getChildren(ModelNode* self);
+
+/**
  * \brief Set the name of the IED
  *
  * This will change the default name (usualy "TEMPLATE") to a user configured values.

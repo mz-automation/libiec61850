@@ -706,6 +706,37 @@ ModelNode_getType(ModelNode* self)
     return self->modelType;
 }
 
+const char*
+ModelNode_getName(ModelNode* self)
+{
+    return self->name;
+}
+
+ModelNode*
+ModelNode_getParent(ModelNode* self)
+{
+    return self->parent;
+}
+
+LinkedList
+ModelNode_getChildren(ModelNode* self)
+{
+    LinkedList childNodes = NULL;
+
+    if (self->firstChild)
+        childNodes = LinkedList_create();
+
+    ModelNode* childNode = self->firstChild;
+
+    while (childNode) {
+        LinkedList_add(childNodes, childNode);
+
+        childNode = childNode->sibling;
+    }
+
+    return childNodes;
+}
+
 LogicalNode*
 LogicalDevice_getLogicalNode(LogicalDevice* self, const char* nodeName)
 {
