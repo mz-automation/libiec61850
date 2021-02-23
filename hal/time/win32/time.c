@@ -57,3 +57,21 @@ Hal_getTimeInNs()
 
 	return nsTime;
 }
+
+bool
+Hal_setTimeInNs(nsSinceEpoch nsTime)
+{
+    uint64_t t = (nsTime / 100ULL) + 116444736000000000ULL;                               
+
+    FILETIME ft;
+
+	ft.dwLowDateTime = (uint32_t)(t & 0xffffffff);
+	ft.dwHighDateTime = (uint32_t)(t >> 32);
+
+    SYSTEMTIME st;
+
+    FileTimeToSystemTime(&ft, &st);
+
+    return SetSystemTime(&st);
+}
+
