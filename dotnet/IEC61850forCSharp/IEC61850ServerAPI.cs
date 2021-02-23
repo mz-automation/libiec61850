@@ -54,41 +54,44 @@ namespace IEC61850
         /// <summary>
         /// Representation of the IED server data model
         /// </summary>
-		public class IedModel : IDisposable
-		{
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr IedModel_create(string name);
+        public class IedModel : IDisposable
+        {
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr IedModel_create(string name);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr IedModel_destroy(IntPtr self);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr IedModel_destroy(IntPtr self);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr IedModel_getModelNodeByObjectReference(IntPtr self, string objectReference);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr IedModel_getModelNodeByObjectReference(IntPtr self, string objectReference);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr IedModel_getModelNodeByShortObjectReference(IntPtr self, string objectReference);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr IedModel_getModelNodeByShortObjectReference(IntPtr self, string objectReference);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern int ModelNode_getType(IntPtr self);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern int ModelNode_getType(IntPtr self);
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern void IedModel_setIedNameForDynamicModel(IntPtr self, string iedName);
 
             internal IntPtr self = IntPtr.Zero;
 
-			internal IedModel(IntPtr self)
-			{
-				this.self = self;
-			}
+            internal IedModel(IntPtr self)
+            {
+                this.self = self;
+            }
+
+            /* cache managed ModelNode instances of the IedModel */
+            internal Dictionary<IntPtr, ModelNode> modelNodes = new Dictionary<IntPtr, ModelNode>();
 
             /// <summary>
             /// Initializes a new instance of the <see cref="T:IEC61850.Server.IedModel"/> class.
             /// </summary>
             /// <param name="name">IED name</param>
-			public IedModel(string name)
-			{
-				self = IedModel_create(name);
-			}
+            public IedModel(string name)
+            {
+                self = IedModel_create(name);
+            }
 
             ~IedModel()
             {
@@ -99,9 +102,9 @@ namespace IEC61850
             /// Releases all resource used by the <see cref="IEC61850.Server.IedModel"/> object.
             /// </summary>
             public void Destroy()
-			{
+            {
                 Dispose();
-			}
+            }
 
             /// <summary>
             /// Releases all resource used by the <see cref="IEC61850.Server.IedModel"/> object.
@@ -128,31 +131,117 @@ namespace IEC61850
             /// <returns>new <see cref="IEC61850.Server.IedModel"/> instance</returns>
             /// <param name="filename">fila name of the configuration (.cfg) file</param>
             public static IedModel CreateFromFile(string filename)
-			{
-				return ConfigFileParser.CreateModelFromConfigFile(filename);
-			}
+            {
+                return ConfigFileParser.CreateModelFromConfigFile(filename);
+            }
 
-			private ModelNode getModelNodeFromNodeRef(IntPtr nodeRef)
-			{				
-				int nodeType = ModelNode_getType (nodeRef);
+            /// <summary>
+            /// Get parent node. When not found create the parent node and add to modelNode list
+            /// </summary>
+            /// <returns>The parent node, or <see langword="null"/> when not found</returns>
+            /// <param name="nodeRef">the native reference of the model node</param>
+            private ModelNode GetParent(IntPtr nodeRef)
+            {
+                ModelNode parentNode = null;
 
-				switch (nodeType) {
-				case 0:
-					return new LogicalDevice (nodeRef);
+                IntPtr parentNodeRef = ModelNode.GetNativeParent(nodeRef);
 
-				case 1:
-					return new LogicalNode (nodeRef);
+                if (parentNodeRef != IntPtr.Zero)
+                {
+                    if (modelNodes.TryGetValue(parentNodeRef, out parentNode) == false)
+                    {
+                        int nodeType = ModelNode_getType(parentNodeRef);
 
-				case 2:
-					return new DataObject (nodeRef);
+                        if (nodeType == 0)
+                        {
+                            parentNode = new LogicalDevice(parentNodeRef, this);
+                        }
+                        else
+                        {
+                            ModelNode parentOfParent = GetParent(parentNodeRef);
 
-				case 3:
-					return new DataAttribute (nodeRef);
+                            if (parentOfParent != null)
+                            {
+                                switch (nodeType)
+                                {
+                                    case 1:
+                                        parentNode = new LogicalNode(parentNodeRef, parentOfParent);
+                                        break;
 
-				default:
-					return new ModelNode (nodeRef);
-				}
-			}
+                                    case 2:
+                                        parentNode = new DataObject(parentNodeRef, parentOfParent);
+                                        break;
+
+                                    case 3:
+                                        parentNode = new DataAttribute(parentNodeRef, parentOfParent);
+                                        break;
+
+                                    default:
+                                        parentNode = new ModelNode(parentNodeRef, parentOfParent);
+                                        break;
+                                }
+                            }
+                        }
+
+                        if (parentNode != null)
+                        {
+                            modelNodes.Add(parentNodeRef, parentNode);
+                        }
+                    }
+                }
+
+                return parentNode;
+            }
+
+            private ModelNode GetModelNodeFromNodeRef(IntPtr nodeRef)
+            {
+                ModelNode modelNode = null;
+
+                modelNodes.TryGetValue(nodeRef, out modelNode);
+
+                if (modelNode == null)
+                {
+                    int nodeType = ModelNode_getType(nodeRef);
+
+                    if (nodeType == 0)
+                    {
+                        modelNode = new LogicalDevice(nodeRef, this);
+                    }
+                    else
+                    {
+                        ModelNode parent = GetParent(nodeRef);
+
+                        if (parent != null)
+                        {
+                            switch (nodeType)
+                            {
+                                case 1:
+                                    modelNode = new LogicalNode(nodeRef, parent);
+                                    break;
+
+                                case 2:
+                                    modelNode = new DataObject(nodeRef, parent);
+                                    break;
+
+                                case 3:
+                                    modelNode = new DataAttribute(nodeRef, parent);
+                                    break;
+
+                                default:
+                                    modelNode = new ModelNode(nodeRef, parent);
+                                    break;
+                            }
+                        }
+                    }
+
+                    if (modelNode != null)
+                    {
+                        modelNodes.Add(nodeRef, modelNode);
+                    }
+                }
+
+                return modelNode;
+            }
 
             /// <summary>
             /// Change the IED name of the data model
@@ -168,775 +257,971 @@ namespace IEC61850
             /// </summary>
             /// <returns>The model node</returns>
             /// <param name="objectReference">Full object reference including the IED name</param>
-			public ModelNode GetModelNodeByObjectReference(string objectReference)
-			{
-				IntPtr nodeRef = IedModel_getModelNodeByObjectReference(self, objectReference);
+            public ModelNode GetModelNodeByObjectReference(string objectReference)
+            {
+                IntPtr nodeRef = IedModel_getModelNodeByObjectReference(self, objectReference);
 
-				if (nodeRef == IntPtr.Zero)
-					return null;
+                if (nodeRef == IntPtr.Zero)
+                    return null;
 
-				return getModelNodeFromNodeRef (nodeRef);
-			}
+                return GetModelNodeFromNodeRef (nodeRef);
+            }
 
             /// <summary>
             /// Gets the model node by short object reference (without IED name)
             /// </summary>
             /// <returns>The model node</returns>
             /// <param name="objectReference">Object reference without IED name (e.g. LD0/GGIO1.Ind1.stVal)</param>
-			public ModelNode GetModelNodeByShortObjectReference(string objectReference)
-			{
-				IntPtr nodeRef = IedModel_getModelNodeByShortObjectReference(self, objectReference);
+            public ModelNode GetModelNodeByShortObjectReference(string objectReference)
+            {
+                IntPtr nodeRef = IedModel_getModelNodeByShortObjectReference(self, objectReference);
 
-				if (nodeRef == IntPtr.Zero)
-					return null;
+                if (nodeRef == IntPtr.Zero)
+                    return null;
 
-				return getModelNodeFromNodeRef (nodeRef);
-			}
+                return GetModelNodeFromNodeRef (nodeRef);
+            }
 
         }
 
         public class LogicalDevice : ModelNode
-		{
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr LogicalDevice_create(string name, IntPtr parent);
-
-			public LogicalDevice (IntPtr self) : base (self)
-			{
-			}
-
-			public LogicalDevice(string name, IedModel parent)
-			{
-				self = LogicalDevice_create(name, parent.self);
-			}
-		}
-
-		public class LogicalNode : ModelNode
-		{
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr LogicalNode_create(string name, IntPtr parent);
-
-			public LogicalNode (IntPtr self) : base(self)
-			{
-			}
-
-			public LogicalNode(string name, LogicalDevice parent)
-			{
-				base.self = LogicalNode_create(name, parent.self);
-			}
-		}
-
-		public enum AccessPolicy {
-			ACCESS_POLICY_ALLOW = 0,
-			ACCESS_POLICY_DENY = 1
-		}
-
-		public enum DataAttributeType {
-			BOOLEAN = 0,
-			INT8 = 1,
-			INT16 = 2,
-			INT32 = 3,
-			INT64 = 4, 
-			INT128 = 5, 
-			INT8U = 6,
-			INT16U = 7,
-			INT24U = 8,
-			INT32U = 9,
-			FLOAT32 = 10,
-			FLOAT64 = 11,
-			ENUMERATED = 12,
-			OCTET_STRING_64 = 13,
-			OCTET_STRING_6 = 14,
-			OCTET_STRING_8 = 15,
-			VISIBLE_STRING_32 = 16,
-			VISIBLE_STRING_64 = 17,
-			VISIBLE_STRING_65 = 18,
-			VISIBLE_STRING_129 = 19,
-			VISIBLE_STRING_255 = 20,
-			UNICODE_STRING_255 = 21,
-			TIMESTAMP = 22,
-			QUALITY = 23,
-			CHECK = 24,
-			CODEDENUM = 25,
-			GENERIC_BITSTRING = 26,
-			CONSTRUCTED = 27,
-			ENTRY_TIME = 28,
-			PHYCOMADDR = 29,
-			CURRENCY = 30
-		}
-
-		public enum ModeValues
-		{
-			ON = 1,
-			BLOCKED = 2,
-			TEST = 3,
-			TEST_BLOCKED = 4,
-			OFF = 5
-		}
-
-		public enum HealthValues
-		{
-			OK = 1,
-			WARNING = 2,
-			ALARM = 3
-		}
-
-		/// <summary>
-		/// The CDC class contains helper functions to create DataObject instances for the
-		/// most common Common Data Classes.
-		/// </summary>
-		public class CDC 
-		{
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr CDC_SPS_create(string name, IntPtr parent, uint options);
-
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr CDC_DPS_create(string name, IntPtr parent, uint options);
-
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr CDC_VSS_create(string name, IntPtr parent, uint options);
-
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr CDC_SEC_create(string name, IntPtr parent, uint options);
+        {
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr LogicalDevice_create(string name, IntPtr parent);
+
+            private IedModel iedModel = null;
+
+            public IedModel IedModel { get => iedModel; }
+
+            public LogicalDevice (IntPtr self, IedModel iedModel) : base (self)
+            {
+                this.iedModel = iedModel;
+            }
+
+            public LogicalDevice(string name, IedModel parent)
+            {
+                this.iedModel = parent;
+
+                self = LogicalDevice_create(name, parent.self);
+            }
+        }
+
+        public class LogicalNode : ModelNode
+        {
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr LogicalNode_create(string name, IntPtr parent);
+
+            public LogicalNode (IntPtr self, ModelNode parent) : base(self)
+            {
+                this.parent = parent;
+            }
+
+            public LogicalNode(string name, LogicalDevice parent)
+            {
+                this.parent = parent;
+
+                base.self = LogicalNode_create(name, parent.self);
+            }
+        }
+
+        public enum AccessPolicy {
+            ACCESS_POLICY_ALLOW = 0,
+            ACCESS_POLICY_DENY = 1
+        }
+
+        public enum DataAttributeType {
+            BOOLEAN = 0,
+            INT8 = 1,
+            INT16 = 2,
+            INT32 = 3,
+            INT64 = 4, 
+            INT128 = 5, 
+            INT8U = 6,
+            INT16U = 7,
+            INT24U = 8,
+            INT32U = 9,
+            FLOAT32 = 10,
+            FLOAT64 = 11,
+            ENUMERATED = 12,
+            OCTET_STRING_64 = 13,
+            OCTET_STRING_6 = 14,
+            OCTET_STRING_8 = 15,
+            VISIBLE_STRING_32 = 16,
+            VISIBLE_STRING_64 = 17,
+            VISIBLE_STRING_65 = 18,
+            VISIBLE_STRING_129 = 19,
+            VISIBLE_STRING_255 = 20,
+            UNICODE_STRING_255 = 21,
+            TIMESTAMP = 22,
+            QUALITY = 23,
+            CHECK = 24,
+            CODEDENUM = 25,
+            GENERIC_BITSTRING = 26,
+            CONSTRUCTED = 27,
+            ENTRY_TIME = 28,
+            PHYCOMADDR = 29,
+            CURRENCY = 30
+        }
+
+        public enum ModeValues
+        {
+            ON = 1,
+            BLOCKED = 2,
+            TEST = 3,
+            TEST_BLOCKED = 4,
+            OFF = 5
+        }
+
+        public enum HealthValues
+        {
+            OK = 1,
+            WARNING = 2,
+            ALARM = 3
+        }
+
+        /// <summary>
+        /// The CDC class contains helper functions to create DataObject instances for the
+        /// most common Common Data Classes.
+        /// </summary>
+        public class CDC 
+        {
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr CDC_SPS_create(string name, IntPtr parent, uint options);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr CDC_CMV_create(string name, IntPtr parent, uint options);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr CDC_DPS_create(string name, IntPtr parent, uint options);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr CDC_SAV_create(string name, IntPtr parent, uint options, [MarshalAs(UnmanagedType.I1)] bool isIntegerNotFloat);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr CDC_VSS_create(string name, IntPtr parent, uint options);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr CDC_ACD_create(string name, IntPtr parent, uint options);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr CDC_SEC_create(string name, IntPtr parent, uint options);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr CDC_ACT_create(string name, IntPtr parent, uint options);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr CDC_CMV_create(string name, IntPtr parent, uint options);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr CDC_SPG_create(string name, IntPtr parent, uint options);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr CDC_SAV_create(string name, IntPtr parent, uint options, [MarshalAs(UnmanagedType.I1)] bool isIntegerNotFloat);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr CDC_VSG_create(string name, IntPtr parent, uint options);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr CDC_ACD_create(string name, IntPtr parent, uint options);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr CDC_ENG_create(string name, IntPtr parent, uint options);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr CDC_ACT_create(string name, IntPtr parent, uint options);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr CDC_ING_create(string name, IntPtr parent, uint options);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr CDC_SPG_create(string name, IntPtr parent, uint options);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr CDC_ASG_create(string name, IntPtr parent, uint options, [MarshalAs(UnmanagedType.I1)] bool isIntegerNotFloat);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr CDC_VSG_create(string name, IntPtr parent, uint options);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr CDC_WYE_create(string name, IntPtr parent, uint options);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr CDC_ENG_create(string name, IntPtr parent, uint options);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr CDC_DEL_create(string name, IntPtr parent, uint options);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr CDC_ING_create(string name, IntPtr parent, uint options);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr CDC_HST_create(string name, IntPtr parent, uint options, ushort maxPts);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr CDC_ASG_create(string name, IntPtr parent, uint options, [MarshalAs(UnmanagedType.I1)] bool isIntegerNotFloat);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr CDC_INS_create(string name, IntPtr parent, uint options);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr CDC_WYE_create(string name, IntPtr parent, uint options);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr CDC_MV_create(string name, IntPtr parent, uint options, [MarshalAs(UnmanagedType.I1)] bool isIntegerNotFloat);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr CDC_DEL_create(string name, IntPtr parent, uint options);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr CDC_INC_create(string name, IntPtr parent, uint options, uint controlOptions);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr CDC_HST_create(string name, IntPtr parent, uint options, ushort maxPts);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr CDC_LPL_create(string name, IntPtr parent, uint options);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr CDC_INS_create(string name, IntPtr parent, uint options);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr CDC_DPL_create(string name, IntPtr parent, uint options);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr CDC_MV_create(string name, IntPtr parent, uint options, [MarshalAs(UnmanagedType.I1)] bool isIntegerNotFloat);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr CDC_ENS_create(string name, IntPtr parent, uint options);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr CDC_INC_create(string name, IntPtr parent, uint options, uint controlOptions);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr CDC_SPC_create(string name, IntPtr parent, uint options, uint controlOptions);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr CDC_LPL_create(string name, IntPtr parent, uint options);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr CDC_DPC_create(string name, IntPtr parent, uint options, uint controlOptions);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr CDC_DPL_create(string name, IntPtr parent, uint options);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr CDC_BSC_create(string name, IntPtr parent, uint options, uint controlOptions, [MarshalAs(UnmanagedType.I1)] bool hasTransientIndicator);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr CDC_ENS_create(string name, IntPtr parent, uint options);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr CDC_APC_create(string name, IntPtr parent, uint options, uint controlOptions, [MarshalAs(UnmanagedType.I1)] bool isIntegerNotFloat);
-			
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr CDC_BCR_create(string name, IntPtr parent, uint options);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr CDC_SPC_create(string name, IntPtr parent, uint options, uint controlOptions);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr CDC_ENC_create(string name, IntPtr parent, uint options, uint controlOptions);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr CDC_DPC_create(string name, IntPtr parent, uint options, uint controlOptions);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr CDC_SPV_create(string name, IntPtr parent, uint options, uint controlOptions, uint wpOptions, [MarshalAs(UnmanagedType.I1)] bool hasChaManRs);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr CDC_BSC_create(string name, IntPtr parent, uint options, uint controlOptions, [MarshalAs(UnmanagedType.I1)] bool hasTransientIndicator);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr CDC_STV_create(string name, IntPtr parent, uint options, uint controlOptions, uint wpOptions, [MarshalAs(UnmanagedType.I1)] bool hasOldStatus);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr CDC_APC_create(string name, IntPtr parent, uint options, uint controlOptions, [MarshalAs(UnmanagedType.I1)] bool isIntegerNotFloat);
+            
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr CDC_BCR_create(string name, IntPtr parent, uint options);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr CDC_CMD_create(string name, IntPtr parent, uint options, uint controlOptions, uint wpOptions, [MarshalAs(UnmanagedType.I1)] bool hasOldStatus, [MarshalAs(UnmanagedType.I1)] bool hasCmTm, [MarshalAs(UnmanagedType.I1)] bool hasCmCt);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr CDC_ENC_create(string name, IntPtr parent, uint options, uint controlOptions);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr CDC_ALM_create(string name, IntPtr parent, uint options, uint controlOptions, uint wpOptions, [MarshalAs(UnmanagedType.I1)] bool hasOldStatus);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr CDC_SPV_create(string name, IntPtr parent, uint options, uint controlOptions, uint wpOptions, [MarshalAs(UnmanagedType.I1)] bool hasChaManRs);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr CDC_CTE_create(string name, IntPtr parent, uint options, uint controlOptions, uint wpOptions, [MarshalAs(UnmanagedType.I1)] bool hasHisRs);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr CDC_STV_create(string name, IntPtr parent, uint options, uint controlOptions, uint wpOptions, [MarshalAs(UnmanagedType.I1)] bool hasOldStatus);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr CDC_TMS_create(string name, IntPtr parent, uint options, uint controlOptions, uint wpOptions, [MarshalAs(UnmanagedType.I1)] bool hasHisRs);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr CDC_CMD_create(string name, IntPtr parent, uint options, uint controlOptions, uint wpOptions, [MarshalAs(UnmanagedType.I1)] bool hasOldStatus, [MarshalAs(UnmanagedType.I1)] bool hasCmTm, [MarshalAs(UnmanagedType.I1)] bool hasCmCt);
 
-			public const int CDC_OPTION_DESC = (1 << 2);
-			public const int CDC_OPTION_DESC_UNICODE = (1 << 3);
-			public const int CDC_OPTION_AC_DLNDA = (1 << 4);
-			public const int CDC_OPTION_AC_DLN = (1 << 5);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr CDC_ALM_create(string name, IntPtr parent, uint options, uint controlOptions, uint wpOptions, [MarshalAs(UnmanagedType.I1)] bool hasOldStatus);
 
-			// options that are only valid for DPL CDC
-			public const int CDC_OPTION_DPL_HWREV = (1 << 17);
-			public const int CDC_OPTION_DPL_SWREV = (1 << 18);
-			public const int CDC_OPTION_DPL_SERNUM = (1 << 19);
-			public const int CDC_OPTION_DPL_MODEL = (1 << 20);
-			public const int CDC_OPTION_DPL_LOCATION = (1 << 21);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr CDC_CTE_create(string name, IntPtr parent, uint options, uint controlOptions, uint wpOptions, [MarshalAs(UnmanagedType.I1)] bool hasHisRs);
 
-			// mandatory data attributes for LLN0 (e.g. LBL configRef)
-			public const int CDC_OPTION_AC_LN0_M = (1 << 24);
-			public const int CDC_OPTION_AC_LN0_EX = (1 << 25);
-			public const int CDC_OPTION_AC_DLD_M = (1 << 26);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr CDC_TMS_create(string name, IntPtr parent, uint options, uint controlOptions, uint wpOptions, [MarshalAs(UnmanagedType.I1)] bool hasHisRs);
 
-
-			public static DataObject Create_CDC_SPS(ModelNode parent, string name, uint options)
-			{
-				IntPtr self = CDC_SPS_create(name, parent.self, options);
-
-				if (self != IntPtr.Zero)
-					return new DataObject (self);
-				else
-					return null;
-			}
-			
-			public static DataObject Create_CDC_DPS(ModelNode parent, string name, uint options)
-			{
-				IntPtr self = CDC_DPS_create(name, parent.self, options);
-
-				if (self != IntPtr.Zero)
-					return new DataObject(self);
-				else
-					return null;
-			}
-
-			public static DataObject Create_CDC_VSS(ModelNode parent, string name, uint options)
-			{
-				IntPtr self = CDC_VSS_create(name, parent.self, options);
-
-				if (self != IntPtr.Zero)
-					return new DataObject(self);
-				else
-					return null;
-			}
-
-			public static DataObject Create_CDC_SEC(ModelNode parent, string name, uint options)
-			{
-				IntPtr self = CDC_SEC_create(name, parent.self, options);
-
-				if (self != IntPtr.Zero)
-					return new DataObject(self);
-				else
-					return null;
-			}
-
-			public static DataObject Create_CDC_CMV(ModelNode parent, string name, uint options)
-			{
-				IntPtr self = CDC_CMV_create(name, parent.self, options);
-
-				if (self != IntPtr.Zero)
-					return new DataObject(self);
-				else
-					return null;
-			}
-
-			public static DataObject Create_CDC_SAV(ModelNode parent, string name, uint options, bool isIntegerNotFloat)
-			{
-				IntPtr self = CDC_SAV_create(name, parent.self, options, isIntegerNotFloat);
-
-				if (self != IntPtr.Zero)
-					return new DataObject(self);
-				else
-					return null;
-			}
-
-			public static DataObject Create_CDC_ACD(ModelNode parent, string name, uint options)
-			{
-				IntPtr self = CDC_ACD_create(name, parent.self, options);
-
-				if (self != IntPtr.Zero)
-					return new DataObject(self);
-				else
-					return null;
-			}
-
-			public static DataObject Create_CDC_ACT(ModelNode parent, string name, uint options)
-			{
-				IntPtr self = CDC_ACT_create(name, parent.self, options);
-
-				if (self != IntPtr.Zero)
-					return new DataObject(self);
-				else
-					return null;
-			}
-
-			public static DataObject Create_CDC_SPG(ModelNode parent, string name, uint options)
-			{
-				IntPtr self = CDC_SPG_create(name, parent.self, options);
-
-				if (self != IntPtr.Zero)
-					return new DataObject(self);
-				else
-					return null;
-			}
-
-			public static DataObject Create_CDC_VSG(ModelNode parent, string name, uint options)
-			{
-				IntPtr self = CDC_VSG_create(name, parent.self, options);
-
-				if (self != IntPtr.Zero)
-					return new DataObject(self);
-				else
-					return null;
-			}
-
-			public static DataObject Create_CDC_ENG(ModelNode parent, string name, uint options)
-			{
-				IntPtr self = CDC_ENG_create(name, parent.self, options);
-
-				if (self != IntPtr.Zero)
-					return new DataObject(self);
-				else
-					return null;
-			}
-
-			public static DataObject Create_CDC_ING(ModelNode parent, string name, uint options)
-			{
-				IntPtr self = CDC_ING_create(name, parent.self, options);
-
-				if (self != IntPtr.Zero)
-					return new DataObject(self);
-				else
-					return null;
-			}
-
-			public static DataObject Create_CDC_ASG(ModelNode parent, string name, uint options, bool isIntegerNotFloat)
-			{
-				IntPtr self = CDC_ASG_create(name, parent.self, options, isIntegerNotFloat);
-
-				if (self != IntPtr.Zero)
-					return new DataObject(self);
-				else
-					return null;
-			}
-
-			public static DataObject Create_CDC_WYE(ModelNode parent, string name, uint options)
-			{
-				IntPtr self = CDC_WYE_create(name, parent.self, options);
-
-				if (self != IntPtr.Zero)
-					return new DataObject(self);
-				else
-					return null;
-			}
-
-			public static DataObject Create_CDC_DEL(ModelNode parent, string name, uint options)
-			{
-				IntPtr self = CDC_DEL_create(name, parent.self, options);
-
-				if (self != IntPtr.Zero)
-					return new DataObject(self);
-				else
-					return null;
-			}
-
-			public static DataObject Create_CDC_HST(ModelNode parent, string name, uint options, ushort maxPts)
-			{
-				IntPtr self = CDC_HST_create(name, parent.self, options, maxPts);
-
-				if (self != IntPtr.Zero)
-					return new DataObject(self);
-				else
-					return null;
-			}
-
-			public static DataObject Create_CDC_INS(ModelNode parent, string name, uint options)
-			{
-				IntPtr self = CDC_INS_create(name, parent.self, options);
-
-				if (self != IntPtr.Zero)
-					return new DataObject (self);
-				else
-					return null;
-			}
-
-			public static DataObject Create_CDC_MV(ModelNode parent, string name, uint options, bool isIntegerNotFloat)
-			{
-				IntPtr self = CDC_MV_create(name, parent.self, options, isIntegerNotFloat);
-
-				if (self != IntPtr.Zero)
-					return new DataObject (self);
-				else
-					return null;
-			}
-
-			public static DataObject Create_CDC_INC(ModelNode parent, string name, uint options, uint controlOptions)
-			{
-				IntPtr self = CDC_INC_create(name, parent.self, options, controlOptions);
-
-				if (self != IntPtr.Zero)
-					return new DataObject (self);
-				else
-					return null;
-			}
-
-			public static DataObject Create_CDC_LPL(ModelNode parent, string name, uint options)
-			{
-				IntPtr self = CDC_LPL_create(name, parent.self, options);
-
-				if (self != IntPtr.Zero)
-					return new DataObject (self);
-				else
-					return null;
-			}
-
-			public static DataObject Create_CDC_DPL(ModelNode parent, string name, uint options)
-			{
-				IntPtr self = CDC_DPL_create(name, parent.self, options);
-
-				if (self != IntPtr.Zero)
-					return new DataObject (self);
-				else
-					return null;
-			}
-
-			public static DataObject Create_CDC_ENS(ModelNode parent, string name, uint options)
-			{
-				IntPtr self = CDC_ENS_create(name, parent.self, options);
-
-				if (self != IntPtr.Zero)
-					return new DataObject(self);
-				else
-					return null;
-			}
-
-			public static DataObject Create_CDC_SPC(ModelNode parent, string name, uint options, uint controlOptions)
-			{
-				IntPtr self = CDC_SPC_create(name, parent.self, options, controlOptions);
-
-				if (self != IntPtr.Zero)
-					return new DataObject(self);
-				else
-					return null;
-			}
-
-			public static DataObject Create_CDC_DPC(ModelNode parent, string name, uint options, uint controlOptions)
-			{
-				IntPtr self = CDC_DPC_create(name, parent.self, options, controlOptions);
-
-				if (self != IntPtr.Zero)
-					return new DataObject(self);
-				else
-					return null;
-			}
-
-			public static DataObject Create_CDC_BSC(ModelNode parent, string name, uint options, uint controlOptions, bool hasTransientIndicator)
-			{
-				IntPtr self = CDC_BSC_create(name, parent.self, options, controlOptions, hasTransientIndicator);
-
-				if (self != IntPtr.Zero)
-					return new DataObject(self);
-				else
-					return null;
-			}
-
-			public static DataObject Create_CDC_APC(ModelNode parent, string name, uint options, uint controlOptions, bool isIntegerNotFloat)
-			{
-				IntPtr self = CDC_APC_create(name, parent.self, options, controlOptions, isIntegerNotFloat);
-
-				if (self != IntPtr.Zero)
-					return new DataObject(self);
-				else
-					return null;
-			}
-
-			public static DataObject Create_CDC_BCR(ModelNode parent, string name, uint options)
-			{
-				IntPtr self = CDC_BCR_create(name, parent.self, options);
-
-				if (self != IntPtr.Zero)
-					return new DataObject(self);
-				else
-					return null;
-			}
-
-			public static DataObject Create_CDC_ENC(ModelNode parent, string name, uint options, uint controlOptions)
-			{
-				IntPtr self = CDC_ENC_create(name, parent.self, options, controlOptions);
-
-				if (self != IntPtr.Zero)
-					return new DataObject(self);
-				else
-					return null;
-			}
-
-			public static DataObject Create_CDC_SPV(ModelNode parent, string name, uint options, uint controlOptions, uint wpOptions, bool hasChaManRs)
-			{
-				IntPtr self = CDC_SPV_create(name, parent.self, options, controlOptions, wpOptions, hasChaManRs);
-
-				if (self != IntPtr.Zero)
-					return new DataObject(self);
-				else
-					return null;
-			}
-
-			public static DataObject Create_CDC_STV(ModelNode parent, string name, uint options, uint controlOptions, uint wpOptions, bool hasOldStatus)
-			{
-				IntPtr self = CDC_STV_create(name, parent.self, options, controlOptions, wpOptions, hasOldStatus);
-
-				if (self != IntPtr.Zero)
-					return new DataObject(self);
-				else
-					return null;
-			}
-
-			public static DataObject Create_CDC_CMD(ModelNode parent, string name, uint options, uint controlOptions, uint wpOptions, bool hasOldStatus, bool hasCmTm, bool hasCmCt)
-			{
-				IntPtr self = CDC_CMD_create(name, parent.self, options, controlOptions, wpOptions, hasOldStatus, hasCmTm, hasCmCt);
-
-				if (self != IntPtr.Zero)
-					return new DataObject(self);
-				else
-					return null;
-			}
-
-			public static DataObject Create_CDC_ALM(ModelNode parent, string name, uint options, uint controlOptions, uint wpOptions, bool hasOldStatus)
-			{
-				IntPtr self = CDC_ALM_create(name, parent.self, options, controlOptions, wpOptions, hasOldStatus);
-
-				if (self != IntPtr.Zero)
-					return new DataObject(self);
-				else
-					return null;
-			}
-
-			public static DataObject Create_CDC_CTE(ModelNode parent, string name, uint options, uint controlOptions, uint wpOptions, bool hasHisRs)
-			{
-				IntPtr self = CDC_CTE_create(name, parent.self, options, controlOptions, wpOptions, hasHisRs);
-
-				if (self != IntPtr.Zero)
-					return new DataObject(self);
-				else
-					return null;
-			}
-
-			public static DataObject Create_CDC_TMS(ModelNode parent, string name, uint options, uint controlOptions, uint wpOptions, bool hasHisRs)
-			{
-				IntPtr self = CDC_TMS_create(name, parent.self, options, controlOptions, wpOptions, hasHisRs);
-
-				if (self != IntPtr.Zero)
-					return new DataObject(self);
-				else
-					return null;
-			}
-		}
-
-		public class DataObject : ModelNode
-		{
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr DataObject_create(string name, IntPtr parent, int arrayElements);
-
-			internal DataObject(IntPtr self) : base(self)
-			{
-			}
-
-			public DataObject(string name, ModelNode parent) : this(name, parent, 0)
-			{
-			}
-
-			public DataObject(string name, ModelNode parent, int arrayElements)
-			{
-				self = DataObject_create (name, parent.self, arrayElements);
-			}
-
-		}
-
-		public class DataAttribute : ModelNode
-		{
-
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr DataAttribute_create(string name, IntPtr parent, int type, int fc,
-				byte triggerOptions, int arrayElements, UInt32 sAddr);
-
-			internal DataAttribute(IntPtr self) : base(self)
-			{
-			}
-
-			public DataAttribute (string name, ModelNode parent, DataAttributeType type, FunctionalConstraint fc, TriggerOptions trgOps,
-				int arrayElements, UInt32 sAddr)
-			{
-				self = DataAttribute_create (name, parent.self, (int)type, (int)fc, (byte)trgOps, arrayElements, sAddr);
-			}
-
-		}
-
-		public class ModelNode
-		{
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr ModelNode_getChild(IntPtr self, string name);
-
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern int ModelNode_getType(IntPtr self);
-
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr ModelNode_getObjectReference(IntPtr self, IntPtr objectReference);
+            public const int CDC_OPTION_DESC = (1 << 2);
+            public const int CDC_OPTION_DESC_UNICODE = (1 << 3);
+            public const int CDC_OPTION_AC_DLNDA = (1 << 4);
+            public const int CDC_OPTION_AC_DLN = (1 << 5);
+
+            // options that are only valid for DPL CDC
+            public const int CDC_OPTION_DPL_HWREV = (1 << 17);
+            public const int CDC_OPTION_DPL_SWREV = (1 << 18);
+            public const int CDC_OPTION_DPL_SERNUM = (1 << 19);
+            public const int CDC_OPTION_DPL_MODEL = (1 << 20);
+            public const int CDC_OPTION_DPL_LOCATION = (1 << 21);
+
+            // mandatory data attributes for LLN0 (e.g. LBL configRef)
+            public const int CDC_OPTION_AC_LN0_M = (1 << 24);
+            public const int CDC_OPTION_AC_LN0_EX = (1 << 25);
+            public const int CDC_OPTION_AC_DLD_M = (1 << 26);
+
+
+            public static DataObject Create_CDC_SPS(ModelNode parent, string name, uint options)
+            {
+                IntPtr self = CDC_SPS_create(name, parent.self, options);
+
+                if (self != IntPtr.Zero)
+                    return new DataObject (self, parent);
+                else
+                    return null;
+            }
+            
+            public static DataObject Create_CDC_DPS(ModelNode parent, string name, uint options)
+            {
+                IntPtr self = CDC_DPS_create(name, parent.self, options);
+
+                if (self != IntPtr.Zero)
+                    return new DataObject(self, parent);
+                else
+                    return null;
+            }
+
+            public static DataObject Create_CDC_VSS(ModelNode parent, string name, uint options)
+            {
+                IntPtr self = CDC_VSS_create(name, parent.self, options);
+
+                if (self != IntPtr.Zero)
+                    return new DataObject(self, parent);
+                else
+                    return null;
+            }
+
+            public static DataObject Create_CDC_SEC(ModelNode parent, string name, uint options)
+            {
+                IntPtr self = CDC_SEC_create(name, parent.self, options);
+
+                if (self != IntPtr.Zero)
+                    return new DataObject(self, parent);
+                else
+                    return null;
+            }
+
+            public static DataObject Create_CDC_CMV(ModelNode parent, string name, uint options)
+            {
+                IntPtr self = CDC_CMV_create(name, parent.self, options);
+
+                if (self != IntPtr.Zero)
+                    return new DataObject(self, parent);
+                else
+                    return null;
+            }
+
+            public static DataObject Create_CDC_SAV(ModelNode parent, string name, uint options, bool isIntegerNotFloat)
+            {
+                IntPtr self = CDC_SAV_create(name, parent.self, options, isIntegerNotFloat);
+
+                if (self != IntPtr.Zero)
+                    return new DataObject(self, parent);
+                else
+                    return null;
+            }
+
+            public static DataObject Create_CDC_ACD(ModelNode parent, string name, uint options)
+            {
+                IntPtr self = CDC_ACD_create(name, parent.self, options);
+
+                if (self != IntPtr.Zero)
+                    return new DataObject(self, parent);
+                else
+                    return null;
+            }
+
+            public static DataObject Create_CDC_ACT(ModelNode parent, string name, uint options)
+            {
+                IntPtr self = CDC_ACT_create(name, parent.self, options);
+
+                if (self != IntPtr.Zero)
+                    return new DataObject(self, parent);
+                else
+                    return null;
+            }
+
+            public static DataObject Create_CDC_SPG(ModelNode parent, string name, uint options)
+            {
+                IntPtr self = CDC_SPG_create(name, parent.self, options);
+
+                if (self != IntPtr.Zero)
+                    return new DataObject(self, parent);
+                else
+                    return null;
+            }
+
+            public static DataObject Create_CDC_VSG(ModelNode parent, string name, uint options)
+            {
+                IntPtr self = CDC_VSG_create(name, parent.self, options);
+
+                if (self != IntPtr.Zero)
+                    return new DataObject(self, parent);
+                else
+                    return null;
+            }
+
+            public static DataObject Create_CDC_ENG(ModelNode parent, string name, uint options)
+            {
+                IntPtr self = CDC_ENG_create(name, parent.self, options);
+
+                if (self != IntPtr.Zero)
+                    return new DataObject(self, parent);
+                else
+                    return null;
+            }
+
+            public static DataObject Create_CDC_ING(ModelNode parent, string name, uint options)
+            {
+                IntPtr self = CDC_ING_create(name, parent.self, options);
+
+                if (self != IntPtr.Zero)
+                    return new DataObject(self, parent);
+                else
+                    return null;
+            }
+
+            public static DataObject Create_CDC_ASG(ModelNode parent, string name, uint options, bool isIntegerNotFloat)
+            {
+                IntPtr self = CDC_ASG_create(name, parent.self, options, isIntegerNotFloat);
+
+                if (self != IntPtr.Zero)
+                    return new DataObject(self, parent);
+                else
+                    return null;
+            }
+
+            public static DataObject Create_CDC_WYE(ModelNode parent, string name, uint options)
+            {
+                IntPtr self = CDC_WYE_create(name, parent.self, options);
+
+                if (self != IntPtr.Zero)
+                    return new DataObject(self, parent);
+                else
+                    return null;
+            }
+
+            public static DataObject Create_CDC_DEL(ModelNode parent, string name, uint options)
+            {
+                IntPtr self = CDC_DEL_create(name, parent.self, options);
+
+                if (self != IntPtr.Zero)
+                    return new DataObject(self, parent);
+                else
+                    return null;
+            }
+
+            public static DataObject Create_CDC_HST(ModelNode parent, string name, uint options, ushort maxPts)
+            {
+                IntPtr self = CDC_HST_create(name, parent.self, options, maxPts);
+
+                if (self != IntPtr.Zero)
+                    return new DataObject(self, parent);
+                else
+                    return null;
+            }
+
+            public static DataObject Create_CDC_INS(ModelNode parent, string name, uint options)
+            {
+                IntPtr self = CDC_INS_create(name, parent.self, options);
+
+                if (self != IntPtr.Zero)
+                    return new DataObject (self, parent);
+                else
+                    return null;
+            }
+
+            public static DataObject Create_CDC_MV(ModelNode parent, string name, uint options, bool isIntegerNotFloat)
+            {
+                IntPtr self = CDC_MV_create(name, parent.self, options, isIntegerNotFloat);
+
+                if (self != IntPtr.Zero)
+                    return new DataObject (self, parent);
+                else
+                    return null;
+            }
+
+            public static DataObject Create_CDC_INC(ModelNode parent, string name, uint options, uint controlOptions)
+            {
+                IntPtr self = CDC_INC_create(name, parent.self, options, controlOptions);
+
+                if (self != IntPtr.Zero)
+                    return new DataObject (self, parent);
+                else
+                    return null;
+            }
+
+            public static DataObject Create_CDC_LPL(ModelNode parent, string name, uint options)
+            {
+                IntPtr self = CDC_LPL_create(name, parent.self, options);
+
+                if (self != IntPtr.Zero)
+                    return new DataObject (self, parent);
+                else
+                    return null;
+            }
+
+            public static DataObject Create_CDC_DPL(ModelNode parent, string name, uint options)
+            {
+                IntPtr self = CDC_DPL_create(name, parent.self, options);
+
+                if (self != IntPtr.Zero)
+                    return new DataObject (self, parent);
+                else
+                    return null;
+            }
+
+            public static DataObject Create_CDC_ENS(ModelNode parent, string name, uint options)
+            {
+                IntPtr self = CDC_ENS_create(name, parent.self, options);
+
+                if (self != IntPtr.Zero)
+                    return new DataObject(self, parent);
+                else
+                    return null;
+            }
+
+            public static DataObject Create_CDC_SPC(ModelNode parent, string name, uint options, uint controlOptions)
+            {
+                IntPtr self = CDC_SPC_create(name, parent.self, options, controlOptions);
+
+                if (self != IntPtr.Zero)
+                    return new DataObject(self, parent);
+                else
+                    return null;
+            }
+
+            public static DataObject Create_CDC_DPC(ModelNode parent, string name, uint options, uint controlOptions)
+            {
+                IntPtr self = CDC_DPC_create(name, parent.self, options, controlOptions);
+
+                if (self != IntPtr.Zero)
+                    return new DataObject(self, parent);
+                else
+                    return null;
+            }
+
+            public static DataObject Create_CDC_BSC(ModelNode parent, string name, uint options, uint controlOptions, bool hasTransientIndicator)
+            {
+                IntPtr self = CDC_BSC_create(name, parent.self, options, controlOptions, hasTransientIndicator);
+
+                if (self != IntPtr.Zero)
+                    return new DataObject(self, parent);
+                else
+                    return null;
+            }
+
+            public static DataObject Create_CDC_APC(ModelNode parent, string name, uint options, uint controlOptions, bool isIntegerNotFloat)
+            {
+                IntPtr self = CDC_APC_create(name, parent.self, options, controlOptions, isIntegerNotFloat);
+
+                if (self != IntPtr.Zero)
+                    return new DataObject(self, parent);
+                else
+                    return null;
+            }
+
+            public static DataObject Create_CDC_BCR(ModelNode parent, string name, uint options)
+            {
+                IntPtr self = CDC_BCR_create(name, parent.self, options);
+
+                if (self != IntPtr.Zero)
+                    return new DataObject(self, parent);
+                else
+                    return null;
+            }
+
+            public static DataObject Create_CDC_ENC(ModelNode parent, string name, uint options, uint controlOptions)
+            {
+                IntPtr self = CDC_ENC_create(name, parent.self, options, controlOptions);
+
+                if (self != IntPtr.Zero)
+                    return new DataObject(self, parent);
+                else
+                    return null;
+            }
+
+            public static DataObject Create_CDC_SPV(ModelNode parent, string name, uint options, uint controlOptions, uint wpOptions, bool hasChaManRs)
+            {
+                IntPtr self = CDC_SPV_create(name, parent.self, options, controlOptions, wpOptions, hasChaManRs);
+
+                if (self != IntPtr.Zero)
+                    return new DataObject(self, parent);
+                else
+                    return null;
+            }
+
+            public static DataObject Create_CDC_STV(ModelNode parent, string name, uint options, uint controlOptions, uint wpOptions, bool hasOldStatus)
+            {
+                IntPtr self = CDC_STV_create(name, parent.self, options, controlOptions, wpOptions, hasOldStatus);
+
+                if (self != IntPtr.Zero)
+                    return new DataObject(self, parent);
+                else
+                    return null;
+            }
+
+            public static DataObject Create_CDC_CMD(ModelNode parent, string name, uint options, uint controlOptions, uint wpOptions, bool hasOldStatus, bool hasCmTm, bool hasCmCt)
+            {
+                IntPtr self = CDC_CMD_create(name, parent.self, options, controlOptions, wpOptions, hasOldStatus, hasCmTm, hasCmCt);
+
+                if (self != IntPtr.Zero)
+                    return new DataObject(self, parent);
+                else
+                    return null;
+            }
+
+            public static DataObject Create_CDC_ALM(ModelNode parent, string name, uint options, uint controlOptions, uint wpOptions, bool hasOldStatus)
+            {
+                IntPtr self = CDC_ALM_create(name, parent.self, options, controlOptions, wpOptions, hasOldStatus);
+
+                if (self != IntPtr.Zero)
+                    return new DataObject(self, parent);
+                else
+                    return null;
+            }
+
+            public static DataObject Create_CDC_CTE(ModelNode parent, string name, uint options, uint controlOptions, uint wpOptions, bool hasHisRs)
+            {
+                IntPtr self = CDC_CTE_create(name, parent.self, options, controlOptions, wpOptions, hasHisRs);
+
+                if (self != IntPtr.Zero)
+                    return new DataObject(self, parent);
+                else
+                    return null;
+            }
+
+            public static DataObject Create_CDC_TMS(ModelNode parent, string name, uint options, uint controlOptions, uint wpOptions, bool hasHisRs)
+            {
+                IntPtr self = CDC_TMS_create(name, parent.self, options, controlOptions, wpOptions, hasHisRs);
+
+                if (self != IntPtr.Zero)
+                    return new DataObject(self, parent);
+                else
+                    return null;
+            }
+        }
+
+        public class DataObject : ModelNode
+        {
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr DataObject_create(string name, IntPtr parent, int arrayElements);
+
+            internal DataObject(IntPtr self, ModelNode parent) : base(self)
+            {
+                this.parent = parent;
+            }
+
+            public DataObject(string name, ModelNode parent) : this(name, parent, 0)
+            {
+            }
+
+            public DataObject(string name, ModelNode parent, int arrayElements)
+            {
+                this.parent = parent;
+
+                self = DataObject_create (name, parent.self, arrayElements);
+            }
+
+        }
+
+        public class DataAttribute : ModelNode
+        {
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr DataAttribute_create(string name, IntPtr parent, int type, int fc,
+                byte triggerOptions, int arrayElements, UInt32 sAddr);
+
+            internal DataAttribute(IntPtr self, ModelNode parent) : base(self)
+            {
+                this.parent = parent;
+            }
+
+            public DataAttribute (string name, ModelNode parent, DataAttributeType type, FunctionalConstraint fc, TriggerOptions trgOps,
+                int arrayElements, UInt32 sAddr)
+            {
+                this.parent = parent;
+
+                self = DataAttribute_create (name, parent.self, (int)type, (int)fc, (byte)trgOps, arrayElements, sAddr);
+            }
+
+        }
+
+        public class ModelNode
+        {
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr ModelNode_getChild(IntPtr self, string name);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern int ModelNode_getType(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr ModelNode_getObjectReference(IntPtr self, IntPtr objectReference);
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern IntPtr ModelNode_getObjectReferenceEx(IntPtr self, IntPtr objectReference, [MarshalAs(UnmanagedType.I1)] bool withoutIedName);
 
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr ModelNode_getParent(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr ModelNode_getChildren(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr ModelNode_getName(IntPtr self);
+
+            /****************
+            * LinkedList
+            ***************/
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr LinkedList_getNext(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr LinkedList_getData(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void LinkedList_destroyStatic(IntPtr self);
+
             public IntPtr self;
 
-			internal ModelNode()
-			{
-			}
+            internal ModelNode parent = null;
 
-			public ModelNode(IntPtr self)
-			{
-				this.self = self;
-			}
+            static internal IntPtr GetNativeParent(IntPtr self)
+            {
+                return ModelNode_getParent(self);
+            }
 
-			public ModelNode GetChild(string name)
-			{
-				IntPtr childPtr = ModelNode_getChild(self, name);
+            internal ModelNode()
+            {
+                self = IntPtr.Zero;
+            }
 
-				if (childPtr == IntPtr.Zero)
-					return null;
+            internal ModelNode(IntPtr self, ModelNode parent)
+            {
+                this.self = self;
+                this.parent = parent;
+            }
 
-				int nodeType = ModelNode_getType (childPtr);
+            internal ModelNode(IntPtr self)
+            {
+                this.self = self;
+            }
 
-				switch (nodeType) {
-				case 0:
-					return new LogicalDevice (childPtr);
+            /// <summary>
+            /// Gets the IedModel for this ModelNode instance
+            /// </summary>
+            /// <returns>the IedModel instance of this ModelNode.</returns>
+            public IedModel GetIedModel()
+            {
+                if (this is LogicalDevice)
+                {
+                    return (this as LogicalDevice).IedModel;
+                }
+                else
+                {
+                    if (this.parent != null)
+                        return parent.GetIedModel();
+                    else
+                        return null;
+                }
+            }
 
-				case 1:
-					return new LogicalNode (childPtr);
+            /// <summary>
+            /// Gets the name of the model node
+            /// </summary>
+            /// <returns>name of the model node</returns>
+            public string GetName()
+            {
+                return Marshal.PtrToStringAnsi(ModelNode_getName(self));
+            }
 
-				case 2:
-					return new DataObject (childPtr);
+            /// <summary>
+            /// Gets the parent node of this model node
+            /// </summary>
+            /// <returns>The parent node</returns>
+            public ModelNode GetParent()
+            {
+                return parent;
+            }
 
-				case 3:
-					return new DataAttribute (childPtr);
 
-				default:
-					return new ModelNode (childPtr);
-				}
+            /// <summary>
+            /// Get the child node of this model node with the given name
+            /// </summary>
+            /// <returns>The child node or null when there is no child with the given name</returns>
+            /// <param name="name">name of the child node</param>
+            public ModelNode GetChild(string name)
+            {
+                IntPtr childPtr = ModelNode_getChild(self, name);
 
-			}
+                if (childPtr == IntPtr.Zero)
+                    return null;
+
+                ModelNode child = null;
+
+                IedModel iedModel = GetIedModel();
+
+                if (iedModel != null)
+                {
+                    iedModel.modelNodes.TryGetValue(childPtr, out child);
+                }
+
+                if (child == null)
+                {
+                    int nodeType = ModelNode_getType(childPtr);
+
+                    switch (nodeType)
+                    {
+                        case 0:
+                            child = new LogicalDevice(childPtr, iedModel);
+                            break;
+
+                        case 1:
+                            child = new LogicalNode(childPtr, this);
+                            break;
+
+                        case 2:
+                            child = new DataObject(childPtr, this);
+                            break;
+
+                        case 3:
+                            child = new DataAttribute(childPtr, this);
+                            break;
+
+                        default:
+                            child = new ModelNode(childPtr, this);
+                            break;
+                    }
+
+                    if (child != null && iedModel != null)
+                    {
+                        iedModel.modelNodes.Add(childPtr, child);
+                    }
+                }
+
+                return child;
+            }
+
+            internal static ModelNode CreateInstance(IntPtr instPtr, ModelNode parent)
+            {
+                int nodeType = ModelNode_getType(instPtr);
+
+                ModelNode newInstance = null;
+
+                switch (nodeType)
+                {
+                    case 1:
+                        newInstance = new LogicalNode(instPtr, parent);
+                        break;
+
+                    case 2:
+                        newInstance = new DataObject(instPtr, parent);
+                        break;
+
+                    case 3:
+                        newInstance = new DataAttribute(instPtr, parent);
+                        break;
+
+                    default:
+                        newInstance = new ModelNode(instPtr, parent);
+                        break;
+                }
+
+                return newInstance;
+            }
+
+            /// <summary>
+            /// Gets the direct child nodes of this ModelNode instance
+            /// </summary>
+            /// <returns>List of child nodes</returns>
+            public LinkedList<ModelNode> GetChildren()
+            {
+                LinkedList<ModelNode> children = new LinkedList<ModelNode>();
+
+                IntPtr childListPtr = ModelNode_getChildren(self);
+
+                if (childListPtr != IntPtr.Zero)
+                {
+                    IedModel iedModel = GetIedModel();
+
+                    IntPtr listElem = LinkedList_getNext(childListPtr);
+
+                    while (listElem != IntPtr.Zero)
+                    {
+                        IntPtr modelNodePtr = LinkedList_getData(listElem);
+
+                        ModelNode childNode = null;
+
+                        if (iedModel != null)
+                        {
+                            iedModel.modelNodes.TryGetValue(modelNodePtr, out childNode);
+                        }
+
+                        if (childNode == null)
+                        {
+                            childNode =  ModelNode.CreateInstance(modelNodePtr, this);
+
+                            if ((childNode != null) && (iedModel != null))
+                            {
+                                iedModel.modelNodes.Add(modelNodePtr, childNode);
+                            }
+
+                        }
+
+                        if (childNode != null)
+                            children.AddLast(childNode);
+
+                        listElem = LinkedList_getNext(listElem);
+                    }
+
+                    LinkedList_destroyStatic(childListPtr);
+                }
+
+                return children;
+            }
 
             /// <summary>
             /// Gets the object reference of the model node
             /// </summary>
             /// <returns>the object reference</returns>
             /// <param name="withoutIedName">If set to <c>true</c> the object reference is created without IED name.</param>
-			public string GetObjectReference(bool withoutIedName = false)
-			{
-				IntPtr objRefPtr = ModelNode_getObjectReferenceEx(self, IntPtr.Zero, withoutIedName);
+            public string GetObjectReference(bool withoutIedName = false)
+            {
+                IntPtr objRefPtr = ModelNode_getObjectReferenceEx(self, IntPtr.Zero, withoutIedName);
 
-				if (objRefPtr != IntPtr.Zero) {
-					string objRef = Marshal.PtrToStringAnsi(objRefPtr);
+                if (objRefPtr != IntPtr.Zero) {
+                    string objRef = Marshal.PtrToStringAnsi(objRefPtr);
 
-					Marshal.FreeHGlobal(objRefPtr);
+                    Marshal.FreeHGlobal(objRefPtr);
 
-					return objRef;
-				}
-				else {
-					return null;
-				}
-			}
+                    return objRef;
+                }
+                else {
+                    return null;
+                }
+            }
 
-		}
+        }
 
-		public class DataSet
-		{
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr DataSet_create(string name, IntPtr parent);
+        public class DataSet
+        {
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr DataSet_create(string name, IntPtr parent);
 
-			public IntPtr self = IntPtr.Zero;
+            public IntPtr self = IntPtr.Zero;
 
-			public DataSet(string name, LogicalNode parent)
-			{
-				self = DataSet_create(name, parent.self);
-			}
-		}
+            public DataSet(string name, LogicalNode parent)
+            {
+                self = DataSet_create(name, parent.self);
+            }
+        }
 
-		public class DataSetEntry
-		{
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr DataSetEntry_create(IntPtr dataSet, string variable, int index, string component);
+        public class DataSetEntry
+        {
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr DataSetEntry_create(IntPtr dataSet, string variable, int index, string component);
 
-			public IntPtr self = IntPtr.Zero;
+            public IntPtr self = IntPtr.Zero;
 
-			public DataSetEntry(DataSet dataSet, string variable, int index, string component)
-			{
-				self = DataSetEntry_create(dataSet.self, variable, index, component);
-			}
-		}
+            public DataSetEntry(DataSet dataSet, string variable, int index, string component)
+            {
+                self = DataSetEntry_create(dataSet.self, variable, index, component);
+            }
+        }
 
-		public class ReportControlBlock
-		{
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr ReportControlBlock_create(string name, IntPtr parent, string rptId, [MarshalAs(UnmanagedType.I1)] bool isBuffered,
-				string dataSetName, uint confRef, byte trgOps, byte options, uint bufTm, uint intgPd);
+        public class ReportControlBlock
+        {
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr ReportControlBlock_create(string name, IntPtr parent, string rptId, [MarshalAs(UnmanagedType.I1)] bool isBuffered,
+                string dataSetName, uint confRef, byte trgOps, byte options, uint bufTm, uint intgPd);
 
-			public IntPtr self = IntPtr.Zero;
+            public IntPtr self = IntPtr.Zero;
 
-			public ReportControlBlock(string name, LogicalNode parent, string rptId, bool isBuffered,
-				string dataSetName, uint confRev, byte trgOps, byte options, uint bufTm, uint intgPd)
-			{
-				self = ReportControlBlock_create(name, parent.self, rptId, isBuffered, dataSetName, confRev, trgOps, options, bufTm, intgPd);
-			}
-		}
+            public ReportControlBlock(string name, LogicalNode parent, string rptId, bool isBuffered,
+                string dataSetName, uint confRev, byte trgOps, byte options, uint bufTm, uint intgPd)
+            {
+                self = ReportControlBlock_create(name, parent.self, rptId, isBuffered, dataSetName, confRev, trgOps, options, bufTm, intgPd);
+            }
+        }
 
-		public class ClientConnection 
-		{
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr ClientConnection_getPeerAddress(IntPtr self);
+        public class ClientConnection 
+        {
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr ClientConnection_getPeerAddress(IntPtr self);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr ClientConnection_getLocalAddress(IntPtr self);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr ClientConnection_getLocalAddress(IntPtr self);
 
-			internal IntPtr self;
+            internal IntPtr self;
 
-			internal ClientConnection (IntPtr self) {
-				this.self = self;
-			}
+            internal ClientConnection (IntPtr self) {
+                this.self = self;
+            }
 
-			public string GetPeerAddress()
-			{
-				IntPtr peerAddrPtr = ClientConnection_getPeerAddress (self);
+            public string GetPeerAddress()
+            {
+                IntPtr peerAddrPtr = ClientConnection_getPeerAddress (self);
 
-				if (peerAddrPtr != IntPtr.Zero)
-					return Marshal.PtrToStringAnsi (peerAddrPtr);
-				else
-					return null;
-			}
+                if (peerAddrPtr != IntPtr.Zero)
+                    return Marshal.PtrToStringAnsi (peerAddrPtr);
+                else
+                    return null;
+            }
 
-			public string GetLocalAddress()
-			{
-				IntPtr localAddrPtr = ClientConnection_getLocalAddress(self);
+            public string GetLocalAddress()
+            {
+                IntPtr localAddrPtr = ClientConnection_getLocalAddress(self);
 
-				if (localAddrPtr != IntPtr.Zero)
-					return Marshal.PtrToStringAnsi(localAddrPtr);
-				else
-					return null;
-			}
-		}
+                if (localAddrPtr != IntPtr.Zero)
+                    return Marshal.PtrToStringAnsi(localAddrPtr);
+                else
+                    return null;
+            }
+        }
 
         /// <summary>
         /// Represents additional context information of the control action that caused the callback invokation
@@ -1089,446 +1374,457 @@ namespace IEC61850
             }
         }
 
-		public delegate MmsDataAccessError WriteAccessHandler (DataAttribute dataAttr, MmsValue value, 
-			ClientConnection connection, object parameter);
+        public delegate MmsDataAccessError WriteAccessHandler (DataAttribute dataAttr, MmsValue value, 
+            ClientConnection connection, object parameter);
 
-		/// <summary>
-		/// Reason for the select state change
-		/// </summary>
-		public enum SelectStateChangedReason
-		{
-			/// <summary>
-			/// Control has been selected
-			/// </summary>
-			SELECT_STATE_REASON_SELECTED = 0,
-			/// <summary>
-			/// Cancel received for the control
-			/// </summary>
-			SELECT_STATE_REASON_CANCELED = 1,
-			/// <summary>
-			/// Unselected due to timeout (sboTimeout)
-			/// </summary>
-			SELECT_STATE_REASON_TIMEOUT = 2,
-			/// <summary>
-			/// Unselected due to successful operate
-			/// </summary>
-			SELECT_STATE_REASON_OPERATED = 3,
-			/// <summary>
-			/// Unselected due to failed operate
-			/// </summary>
-			SELECT_STATE_REASON_OPERATE_FAILED = 4,
-			/// <summary>
-			/// Unselected due to disconnection of selecting client
-			/// </summary>
-			SELECT_STATE_REASON_DISCONNECTED = 5
-		}
+        /// <summary>
+        /// Reason for the select state change
+        /// </summary>
+        public enum SelectStateChangedReason
+        {
+            /// <summary>
+            /// Control has been selected
+            /// </summary>
+            SELECT_STATE_REASON_SELECTED = 0,
+            /// <summary>
+            /// Cancel received for the control
+            /// </summary>
+            SELECT_STATE_REASON_CANCELED = 1,
+            /// <summary>
+            /// Unselected due to timeout (sboTimeout)
+            /// </summary>
+            SELECT_STATE_REASON_TIMEOUT = 2,
+            /// <summary>
+            /// Unselected due to successful operate
+            /// </summary>
+            SELECT_STATE_REASON_OPERATED = 3,
+            /// <summary>
+            /// Unselected due to failed operate
+            /// </summary>
+            SELECT_STATE_REASON_OPERATE_FAILED = 4,
+            /// <summary>
+            /// Unselected due to disconnection of selecting client
+            /// </summary>
+            SELECT_STATE_REASON_DISCONNECTED = 5
+        }
 
-		public delegate void ControlSelectStateChangedHandler(ControlAction action, object parameter, bool isSelected, SelectStateChangedReason reason);
+        public delegate void ControlSelectStateChangedHandler(ControlAction action, object parameter, bool isSelected, SelectStateChangedReason reason);
 
-		/// <summary>
-		/// Return type of ControlHandler and ControlWaitForExecutionHandler
-		/// </summary>
-		public enum ControlHandlerResult {
-			/// <summary>
-			/// check or operation failed
-			/// </summary>
-			FAILED = 0,
-			/// <summary>
-			/// check or operation was successful
-			/// </summary>
-			OK = 1,
-			/// <summary>
-			/// check or operation is in progress
-			/// </summary>
-			WAITING = 2
-		}
+        /// <summary>
+        /// Return type of ControlHandler and ControlWaitForExecutionHandler
+        /// </summary>
+        public enum ControlHandlerResult {
+            /// <summary>
+            /// check or operation failed
+            /// </summary>
+            FAILED = 0,
+            /// <summary>
+            /// check or operation was successful
+            /// </summary>
+            OK = 1,
+            /// <summary>
+            /// check or operation is in progress
+            /// </summary>
+            WAITING = 2
+        }
 
-		public delegate ControlHandlerResult ControlWaitForExecutionHandler (ControlAction action, object parameter, MmsValue ctlVal, bool test, bool synchroCheck);
+        public delegate ControlHandlerResult ControlWaitForExecutionHandler (ControlAction action, object parameter, MmsValue ctlVal, bool test, bool synchroCheck);
 
-		public delegate ControlHandlerResult ControlHandler (ControlAction action, object parameter, MmsValue ctlVal, bool test);
+        public delegate ControlHandlerResult ControlHandler (ControlAction action, object parameter, MmsValue ctlVal, bool test);
 
-		public enum CheckHandlerResult {
-			/// <summary>
-			/// check passed
-			/// </summary>
-			ACCEPTED = -1,
-			/// <summary>
-			/// check failed due to hardware fault
-			/// </summary>
-			HARDWARE_FAULT = 1,
-			/// <summary>
-			/// control is already selected or operated
-			/// </summary>
-			TEMPORARILY_UNAVAILABLE = 2,
-			/// <summary>
-			/// check failed due to access control reason - access denied for this client or state
-			/// </summary>
-			OBJECT_ACCESS_DENIED = 3,
-			/// <summary>
-			/// object not visible in this security context ??? 
-			/// </summary>
-			OBJECT_UNDEFINED = 4
-		}
+        public enum CheckHandlerResult {
+            /// <summary>
+            /// check passed
+            /// </summary>
+            ACCEPTED = -1,
+            /// <summary>
+            /// check failed due to hardware fault
+            /// </summary>
+            HARDWARE_FAULT = 1,
+            /// <summary>
+            /// control is already selected or operated
+            /// </summary>
+            TEMPORARILY_UNAVAILABLE = 2,
+            /// <summary>
+            /// check failed due to access control reason - access denied for this client or state
+            /// </summary>
+            OBJECT_ACCESS_DENIED = 3,
+            /// <summary>
+            /// object not visible in this security context ??? 
+            /// </summary>
+            OBJECT_UNDEFINED = 4
+        }
 
-		public delegate CheckHandlerResult CheckHandler (ControlAction action, object parameter, MmsValue ctlVal, bool test, bool interlockCheck);
+        public delegate CheckHandlerResult CheckHandler (ControlAction action, object parameter, MmsValue ctlVal, bool test, bool interlockCheck);
 
-		/// <summary>
-		/// This class acts as the entry point for the IEC 61850 client API. It represents a single
-		/// (MMS) connection to a server.
-		/// </summary>
-		public class IedServer : IDisposable
-		{
-			[DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
-			static extern IntPtr IedServer_createWithConfig(IntPtr modelRef, IntPtr tlsConfiguration, IntPtr serverConfiguratio);
+        /// <summary>
+        /// This class acts as the entry point for the IEC 61850 client API. It represents a single
+        /// (MMS) connection to a server.
+        /// </summary>
+        public class IedServer : IDisposable
+        {
+            [DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
+            static extern IntPtr IedServer_createWithConfig(IntPtr modelRef, IntPtr tlsConfiguration, IntPtr serverConfiguratio);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern void IedServer_setLocalIpAddress(IntPtr self, string localIpAddress);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedServer_setLocalIpAddress(IntPtr self, string localIpAddress);
 
-			[DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
-			static extern void IedServer_start(IntPtr self, int tcpPort);
+            [DllImport ("iec61850", CallingConvention=CallingConvention.Cdecl)]
+            static extern void IedServer_start(IntPtr self, int tcpPort);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern void IedServer_stop(IntPtr self);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedServer_stop(IntPtr self);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern void IedServer_destroy(IntPtr self);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedServer_destroy(IntPtr self);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			[return: MarshalAs(UnmanagedType.Bool)]
-			static extern bool IedServer_isRunning(IntPtr self);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            static extern bool IedServer_isRunning(IntPtr self);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern int IedServer_getNumberOfOpenConnections(IntPtr self);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern int IedServer_getNumberOfOpenConnections(IntPtr self);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern void IedServer_lockDataModel(IntPtr self);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedServer_lockDataModel(IntPtr self);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern void IedServer_unlockDataModel(IntPtr self);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedServer_unlockDataModel(IntPtr self);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern void IedServer_updateAttributeValue(IntPtr self, IntPtr DataAttribute, IntPtr MmsValue);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedServer_updateAttributeValue(IntPtr self, IntPtr DataAttribute, IntPtr MmsValue);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern void IedServer_updateBooleanAttributeValue(IntPtr self, IntPtr dataAttribute, [MarshalAs(UnmanagedType.I1)] bool value);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedServer_updateBooleanAttributeValue(IntPtr self, IntPtr dataAttribute, [MarshalAs(UnmanagedType.I1)] bool value);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern void IedServer_updateInt32AttributeValue(IntPtr self, IntPtr dataAttribute, int value);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedServer_updateInt32AttributeValue(IntPtr self, IntPtr dataAttribute, int value);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern void IedServer_updateInt64AttributeValue(IntPtr self, IntPtr dataAttribute, Int64 value);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedServer_updateInt64AttributeValue(IntPtr self, IntPtr dataAttribute, Int64 value);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern void IedServer_updateFloatAttributeValue(IntPtr self, IntPtr dataAttribute, float value);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedServer_updateFloatAttributeValue(IntPtr self, IntPtr dataAttribute, float value);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern void IedServer_updateVisibleStringAttributeValue(IntPtr self, IntPtr dataAttribute, string value);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedServer_updateVisibleStringAttributeValue(IntPtr self, IntPtr dataAttribute, string value);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern void IedServer_updateUTCTimeAttributeValue(IntPtr self, IntPtr dataAttribute, ulong value);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedServer_updateUTCTimeAttributeValue(IntPtr self, IntPtr dataAttribute, ulong value);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern void IedServer_updateTimestampAttributeValue(IntPtr self, IntPtr dataAttribute, IntPtr timestamp);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedServer_updateTimestampAttributeValue(IntPtr self, IntPtr dataAttribute, IntPtr timestamp);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern void IedServer_updateQuality(IntPtr self, IntPtr dataAttribute, ushort value);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedServer_updateQuality(IntPtr self, IntPtr dataAttribute, ushort value);
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern void IedServer_setServerIdentity(IntPtr self, string vendor, string model, string revision);
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr IedServer_getAttributeValue(IntPtr self, IntPtr dataAttribute);
+            static extern IntPtr IedServer_getAttributeValue(IntPtr self, IntPtr dataAttribute);
 
-			[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-			private delegate int InternalControlPerformCheckHandler (IntPtr action, IntPtr parameter, IntPtr ctlVal, [MarshalAs(UnmanagedType.I1)] bool test, [MarshalAs(UnmanagedType.I1)] bool interlockCheck);
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            private delegate int InternalControlPerformCheckHandler (IntPtr action, IntPtr parameter, IntPtr ctlVal, [MarshalAs(UnmanagedType.I1)] bool test, [MarshalAs(UnmanagedType.I1)] bool interlockCheck);
 
-			[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-			private delegate int InternalControlWaitForExecutionHandler (IntPtr action, IntPtr parameter, IntPtr ctlVal, [MarshalAs(UnmanagedType.I1)] bool test, [MarshalAs(UnmanagedType.I1)] bool synchoCheck);
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            private delegate int InternalControlWaitForExecutionHandler (IntPtr action, IntPtr parameter, IntPtr ctlVal, [MarshalAs(UnmanagedType.I1)] bool test, [MarshalAs(UnmanagedType.I1)] bool synchoCheck);
 
-			[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-			private delegate int InternalControlHandler (IntPtr action, IntPtr parameter, IntPtr ctlVal, [MarshalAs(UnmanagedType.I1)] bool test);
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            private delegate int InternalControlHandler (IntPtr action, IntPtr parameter, IntPtr ctlVal, [MarshalAs(UnmanagedType.I1)] bool test);
 
-			[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-			private delegate void InternalSelectStateChangedHandler(IntPtr action, IntPtr parameter, [MarshalAs(UnmanagedType.I1)] bool isSelected, int reason);
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            private delegate void InternalSelectStateChangedHandler(IntPtr action, IntPtr parameter, [MarshalAs(UnmanagedType.I1)] bool isSelected, int reason);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern void IedServer_setWaitForExecutionHandler(IntPtr self, IntPtr node, InternalControlWaitForExecutionHandler handler, IntPtr parameter);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedServer_setWaitForExecutionHandler(IntPtr self, IntPtr node, InternalControlWaitForExecutionHandler handler, IntPtr parameter);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern void IedServer_setPerformCheckHandler(IntPtr self, IntPtr node, InternalControlPerformCheckHandler handler, IntPtr parameter);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedServer_setPerformCheckHandler(IntPtr self, IntPtr node, InternalControlPerformCheckHandler handler, IntPtr parameter);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern void IedServer_setControlHandler (IntPtr self, IntPtr node, InternalControlHandler handler, IntPtr parameter);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedServer_setControlHandler (IntPtr self, IntPtr node, InternalControlHandler handler, IntPtr parameter);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern void IedServer_setSelectStateChangedHandler(IntPtr self, IntPtr node, InternalSelectStateChangedHandler handler, IntPtr parameter);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedServer_setSelectStateChangedHandler(IntPtr self, IntPtr node, InternalSelectStateChangedHandler handler, IntPtr parameter);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern void IedServer_setWriteAccessPolicy(IntPtr self, FunctionalConstraint fc, AccessPolicy policy);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedServer_setWriteAccessPolicy(IntPtr self, FunctionalConstraint fc, AccessPolicy policy);
 
-			[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-			private delegate int InternalWriteAccessHandler (IntPtr dataAttribute, IntPtr value, IntPtr connection, IntPtr parameter);
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            private delegate int InternalWriteAccessHandler (IntPtr dataAttribute, IntPtr value, IntPtr connection, IntPtr parameter);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern void IedServer_handleWriteAccess(IntPtr self, IntPtr dataAttribute,
-				InternalWriteAccessHandler handler, IntPtr parameter);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedServer_handleWriteAccess(IntPtr self, IntPtr dataAttribute,
+                InternalWriteAccessHandler handler, IntPtr parameter);
 
-			public delegate void ConnectionIndicationHandler(IedServer iedServer, ClientConnection clientConnection, bool connected, object parameter);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedServer_handleWriteAccessForComplexAttribute(IntPtr self, IntPtr dataAttribute,
+                InternalWriteAccessHandler handler, IntPtr parameter);
 
-			private ConnectionIndicationHandler connectionHandler = null;
-			private object connectionHandlerParameter = null;
+            public delegate void ConnectionIndicationHandler(IedServer iedServer, ClientConnection clientConnection, bool connected, object parameter);
 
-			public void SetConnectionIndicationHandler(ConnectionIndicationHandler handler, object parameter)
-			{
-				connectionHandler = handler;
-				connectionHandlerParameter = parameter;
-			}
+            private ConnectionIndicationHandler connectionHandler = null;
+            private object connectionHandlerParameter = null;
 
-			[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-			private delegate void InternalConnectionHandler (IntPtr iedServer, IntPtr clientConnection, [MarshalAs(UnmanagedType.I1)] bool connected, IntPtr parameter);
+            public void SetConnectionIndicationHandler(ConnectionIndicationHandler handler, object parameter)
+            {
+                connectionHandler = handler;
+                connectionHandlerParameter = parameter;
+            }
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern void IedServer_setConnectionIndicationHandler(IntPtr self, InternalConnectionHandler handler, IntPtr parameter);
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            private delegate void InternalConnectionHandler (IntPtr iedServer, IntPtr clientConnection, [MarshalAs(UnmanagedType.I1)] bool connected, IntPtr parameter);
 
-			private IntPtr self = IntPtr.Zero;
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedServer_setConnectionIndicationHandler(IntPtr self, InternalConnectionHandler handler, IntPtr parameter);
 
-			private InternalControlHandler internalControlHandlerRef = null;
-			private InternalControlPerformCheckHandler internalControlPerformCheckHandlerRef = null;
-			private InternalControlWaitForExecutionHandler internalControlWaitForExecutionHandlerRef = null;
-			private InternalSelectStateChangedHandler internalSelectedStateChangedHandlerRef = null;
+            private IntPtr self = IntPtr.Zero;
 
-			internal class ControlHandlerInfo {
-				public DataObject controlObject = null;
-				public GCHandle handle;
+            private InternalControlHandler internalControlHandlerRef = null;
+            private InternalControlPerformCheckHandler internalControlPerformCheckHandlerRef = null;
+            private InternalControlWaitForExecutionHandler internalControlWaitForExecutionHandlerRef = null;
+            private InternalSelectStateChangedHandler internalSelectedStateChangedHandlerRef = null;
 
-				public ControlHandler controlHandler = null;
-				public object controlHandlerParameter = null;
+            internal class ControlHandlerInfo {
+                public DataObject controlObject = null;
+                public GCHandle handle;
 
-				public CheckHandler checkHandler = null;
-				public object checkHandlerParameter = null;
+                public ControlHandler controlHandler = null;
+                public object controlHandlerParameter = null;
 
-				public ControlWaitForExecutionHandler waitForExecHandler = null;
-				public object waitForExecHandlerParameter = null;
+                public CheckHandler checkHandler = null;
+                public object checkHandlerParameter = null;
 
-				public ControlSelectStateChangedHandler selectStateChangedHandler = null;
-				public object selectStateChangedHandlerParameter = null;
+                public ControlWaitForExecutionHandler waitForExecHandler = null;
+                public object waitForExecHandlerParameter = null;
 
-				public ControlHandlerInfo(DataObject controlObject)
-				{
-					this.controlObject = controlObject;
-					this.handle = GCHandle.Alloc(this);
-				}
+                public ControlSelectStateChangedHandler selectStateChangedHandler = null;
+                public object selectStateChangedHandlerParameter = null;
 
-				~ControlHandlerInfo()
-				{
-					this.handle.Free();
-				}
-			}
+                public ControlHandlerInfo(DataObject controlObject)
+                {
+                    this.controlObject = controlObject;
+                    this.handle = GCHandle.Alloc(this);
+                }
 
-			private Dictionary<DataObject, ControlHandlerInfo> controlHandlers = new Dictionary<DataObject, ControlHandlerInfo> ();
+                ~ControlHandlerInfo()
+                {
+                    this.handle.Free();
+                }
+            }
 
-			int InternalControlHandlerImpl (IntPtr action, IntPtr parameter, IntPtr ctlVal, bool test)
-			{
-				GCHandle handle = GCHandle.FromIntPtr (parameter);
+            private Dictionary<DataObject, ControlHandlerInfo> controlHandlers = new Dictionary<DataObject, ControlHandlerInfo> ();
 
-				ControlHandlerInfo info = (ControlHandlerInfo)handle.Target;
+            int InternalControlHandlerImpl (IntPtr action, IntPtr parameter, IntPtr ctlVal, bool test)
+            {
+                GCHandle handle = GCHandle.FromIntPtr (parameter);
+
+                ControlHandlerInfo info = (ControlHandlerInfo)handle.Target;
 
                 ControlAction controlAction = new ControlAction (action, info, this);
 
-				if (info != null && info.controlHandler != null)
-					return (int)info.controlHandler (controlAction, info.controlHandlerParameter, new MmsValue (ctlVal), test);
-				else
-					return (int)ControlHandlerResult.FAILED;
-			}
+                if (info != null && info.controlHandler != null)
+                    return (int)info.controlHandler (controlAction, info.controlHandlerParameter, new MmsValue (ctlVal), test);
+                else
+                    return (int)ControlHandlerResult.FAILED;
+            }
 
-			int InternalCheckHandlerImpl(IntPtr action, IntPtr parameter, IntPtr ctlVal, bool test, bool interlockCheck)
-			{
-				GCHandle handle = GCHandle.FromIntPtr (parameter);
+            int InternalCheckHandlerImpl(IntPtr action, IntPtr parameter, IntPtr ctlVal, bool test, bool interlockCheck)
+            {
+                GCHandle handle = GCHandle.FromIntPtr (parameter);
 
-				ControlHandlerInfo info = (ControlHandlerInfo)handle.Target;
+                ControlHandlerInfo info = (ControlHandlerInfo)handle.Target;
 
-				if (info != null && info.checkHandler != null) 
-				{
+                if (info != null && info.checkHandler != null) 
+                {
                     ControlAction controlAction = new ControlAction (action, info, this);
 
-					return (int)info.checkHandler (controlAction, info.checkHandlerParameter, new MmsValue (ctlVal), test, interlockCheck); 
-				} else
-					return (int)CheckHandlerResult.OBJECT_UNDEFINED;
-			}
+                    return (int)info.checkHandler (controlAction, info.checkHandlerParameter, new MmsValue (ctlVal), test, interlockCheck); 
+                } else
+                    return (int)CheckHandlerResult.OBJECT_UNDEFINED;
+            }
 
-			int InternalControlWaitForExecutionHandlerImpl (IntPtr action, IntPtr parameter, IntPtr ctlVal, bool test, bool synchoCheck)
-			{
-				GCHandle handle = GCHandle.FromIntPtr (parameter);
+            int InternalControlWaitForExecutionHandlerImpl (IntPtr action, IntPtr parameter, IntPtr ctlVal, bool test, bool synchoCheck)
+            {
+                GCHandle handle = GCHandle.FromIntPtr (parameter);
 
-				ControlHandlerInfo info = (ControlHandlerInfo)handle.Target;
+                ControlHandlerInfo info = (ControlHandlerInfo)handle.Target;
 
-				if (info != null && info.waitForExecHandler != null)
-				{
+                if (info != null && info.waitForExecHandler != null)
+                {
                     ControlAction controlAction = new ControlAction (action, info, this);
 
                     return (int)info.waitForExecHandler (controlAction, info.waitForExecHandlerParameter, new MmsValue (ctlVal), test, synchoCheck);
-				} 
-				else
-					return (int)ControlHandlerResult.FAILED;
-			}
+                } 
+                else
+                    return (int)ControlHandlerResult.FAILED;
+            }
 
-			void InternalSelectStateChangedHandlerImpl(IntPtr action, IntPtr parameter, bool isSelected, int reason)
-			{
-				GCHandle handle = GCHandle.FromIntPtr(parameter);
+            void InternalSelectStateChangedHandlerImpl(IntPtr action, IntPtr parameter, bool isSelected, int reason)
+            {
+                GCHandle handle = GCHandle.FromIntPtr(parameter);
 
-				ControlHandlerInfo info = (ControlHandlerInfo)handle.Target;
+                ControlHandlerInfo info = (ControlHandlerInfo)handle.Target;
 
-				if (info != null && info.selectStateChangedHandler != null)
-				{
-					ControlAction controlAction = new ControlAction(action, info, this);
+                if (info != null && info.selectStateChangedHandler != null)
+                {
+                    ControlAction controlAction = new ControlAction(action, info, this);
 
-					info.selectStateChangedHandler(controlAction, info.selectStateChangedHandlerParameter, isSelected, (SelectStateChangedReason)reason);
-				}
-			}
+                    info.selectStateChangedHandler(controlAction, info.selectStateChangedHandlerParameter, isSelected, (SelectStateChangedReason)reason);
+                }
+            }
 
-			private struct WriteAccessHandlerInfo {
-				public WriteAccessHandler handler;
-				public object parameter;
-				public DataAttribute dataAttribute;
+            private struct WriteAccessHandlerInfo {
+                public WriteAccessHandler handler;
+                public object parameter;
+                public DataAttribute dataAttribute;
 
-				public WriteAccessHandlerInfo (WriteAccessHandler h, object p, DataAttribute da) 
-				{
-					handler = h;
-					parameter = p;
-					dataAttribute = da;
-				}
-			}
+                public WriteAccessHandlerInfo (WriteAccessHandler h, object p, DataAttribute da) 
+                {
+                    handler = h;
+                    parameter = p;
+                    dataAttribute = da;
+                }
+            }
 
-			int WriteAccessHandlerImpl (IntPtr dataAttribute, IntPtr value, IntPtr connection, IntPtr parameter)
-			{
-				WriteAccessHandlerInfo info;
+            int WriteAccessHandlerImpl (IntPtr dataAttribute, IntPtr value, IntPtr connection, IntPtr parameter)
+            {
+                WriteAccessHandlerInfo info;
 
-				writeAccessHandlers.TryGetValue (dataAttribute, out info);
+                if (writeAccessHandlers.TryGetValue(dataAttribute, out info) == true)
+                {
+                    ClientConnection con = null;
 
-				ClientConnection con = null;
+                    clientConnections.TryGetValue(connection, out con);
 
-				clientConnections.TryGetValue (connection, out con);
+                    MmsValue mmsValue = new MmsValue(value);
 
-				return (int) info.handler (info.dataAttribute, new MmsValue (value), con, info.parameter);
-			}
+                    return (int)info.handler(info.dataAttribute, mmsValue.Clone(), con, info.parameter);
+                }
+                else
+                {
+                    return (int) MmsDataAccessError.OBJECT_ACCESS_DENIED;
+                }
+            }
 
-			private Dictionary<IntPtr, WriteAccessHandlerInfo> writeAccessHandlers = new Dictionary<IntPtr, WriteAccessHandlerInfo> ();
+            private Dictionary<IntPtr, WriteAccessHandlerInfo> writeAccessHandlers = new Dictionary<IntPtr, WriteAccessHandlerInfo> ();
 
-			private void ConnectionIndicationHandlerImpl (IntPtr iedServer, IntPtr clientConnection, bool connected, IntPtr parameter)
-			{
-				if (connected == false) {
-					ClientConnection con = null;
+            private void ConnectionIndicationHandlerImpl (IntPtr iedServer, IntPtr clientConnection, bool connected, IntPtr parameter)
+            {
+                if (connected == false) {
+                    ClientConnection con = null;
 
-					clientConnections.TryGetValue (clientConnection, out con);
+                    clientConnections.TryGetValue (clientConnection, out con);
 
-					if (con != null) {
-						
-						if (connectionHandler != null)
-							connectionHandler (this, con, false, connectionHandlerParameter);
+                    if (con != null) {
+                        
+                        if (connectionHandler != null)
+                            connectionHandler (this, con, false, connectionHandlerParameter);
 
-						clientConnections.Remove (clientConnection);
-					}
-				} else {
-					ClientConnection con = new ClientConnection (clientConnection);
+                        clientConnections.Remove (clientConnection);
+                    }
+                } else {
+                    ClientConnection con = new ClientConnection (clientConnection);
 
-					clientConnections.Add (clientConnection, con);
+                    clientConnections.Add (clientConnection, con);
 
-					if (connectionHandler != null)
-						connectionHandler (this, con, true, connectionHandlerParameter);
-				}
-			}
+                    if (connectionHandler != null)
+                        connectionHandler (this, con, true, connectionHandlerParameter);
+                }
+            }
 
-			internal Dictionary<IntPtr, ClientConnection> clientConnections = new Dictionary<IntPtr, ClientConnection> ();
+            internal Dictionary<IntPtr, ClientConnection> clientConnections = new Dictionary<IntPtr, ClientConnection> ();
 
             /* store IedModel instance to prevent garbage collector */
             private IedModel iedModel = null;
 
-			public IedServer(IedModel iedModel, IedServerConfig config = null)
-			{
-                this.iedModel = iedModel;
-
-				IntPtr nativeConfig = IntPtr.Zero;
-
-				if (config != null)
-					nativeConfig = config.self;
-
-				self = IedServer_createWithConfig (iedModel.self, IntPtr.Zero, nativeConfig);
-			}
-
-			public IedServer(IedModel iedModel, TLSConfiguration tlsConfig, IedServerConfig config = null)
-			{
+            public IedServer(IedModel iedModel, IedServerConfig config = null)
+            {
                 this.iedModel = iedModel;
 
                 IntPtr nativeConfig = IntPtr.Zero;
-				IntPtr nativeTLSConfig = IntPtr.Zero;
 
-				if (config != null)
-					nativeConfig = config.self;
+                if (config != null)
+                    nativeConfig = config.self;
 
-				if (tlsConfig != null)
-					nativeTLSConfig = tlsConfig.GetNativeInstance ();
+                self = IedServer_createWithConfig (iedModel.self, IntPtr.Zero, nativeConfig);
+            }
 
-				self = IedServer_createWithConfig (iedModel.self, nativeTLSConfig, nativeConfig);
-			}
+            public IedServer(IedModel iedModel, TLSConfiguration tlsConfig, IedServerConfig config = null)
+            {
+                this.iedModel = iedModel;
 
-			private InternalConnectionHandler internalConnectionHandler = null;
+                IntPtr nativeConfig = IntPtr.Zero;
+                IntPtr nativeTLSConfig = IntPtr.Zero;
 
-			/// <summary>
-			/// Sets the local ip address for listening
-			/// </summary>
-			/// <param name="localIpAddress">Local IP address.</param>
-			public void SetLocalIpAddress(string localIpAddress)
-			{
-				IedServer_setLocalIpAddress (self, localIpAddress);
-			}
+                if (config != null)
+                    nativeConfig = config.self;
 
-			/// <summary>
-			/// Start MMS server
-			/// </summary>
-			/// <param name="localIpAddress">Local IP address.</param>
-			/// <param name="tcpPort">TCP port to use</param>
-			public void Start(string localIpAddress, int tcpPort)
-			{
-				SetLocalIpAddress (localIpAddress);
-				Start (tcpPort);
-			}
+                if (tlsConfig != null)
+                    nativeTLSConfig = tlsConfig.GetNativeInstance ();
 
-			/// <summary>Start MMS server</summary>
-			/// <param name="tcpPort">TCP port to use</param>
-			public void Start(int tcpPort)
-			{
-				if (internalConnectionHandler == null)
-					internalConnectionHandler = new InternalConnectionHandler (ConnectionIndicationHandlerImpl);					
+                self = IedServer_createWithConfig (iedModel.self, nativeTLSConfig, nativeConfig);
+            }
 
-				IedServer_setConnectionIndicationHandler (self, internalConnectionHandler, IntPtr.Zero);
+            private InternalConnectionHandler internalConnectionHandler = null;
 
-				IedServer_start(self, tcpPort);
-			}
+            /// <summary>
+            /// Sets the local ip address for listening
+            /// </summary>
+            /// <param name="localIpAddress">Local IP address.</param>
+            public void SetLocalIpAddress(string localIpAddress)
+            {
+                IedServer_setLocalIpAddress (self, localIpAddress);
+            }
 
-			/// <summary>Start MMS server</summary>
-			public void Start ()
-			{
-				Start(-1);
-			}
+            /// <summary>
+            /// Start MMS server
+            /// </summary>
+            /// <param name="localIpAddress">Local IP address.</param>
+            /// <param name="tcpPort">TCP port to use</param>
+            public void Start(string localIpAddress, int tcpPort)
+            {
+                SetLocalIpAddress (localIpAddress);
+                Start (tcpPort);
+            }
 
-			/// <summary>
-			/// Stop the MMS server.
-			/// </summary>
-			/// <description>This function will stop the server. This will close the TCP server socket and all client sockets.</description>
-			public void Stop()
-			{
-				IedServer_stop(self);
-				internalConnectionHandler = null;
-			}
+            /// <summary>Start MMS server</summary>
+            /// <param name="tcpPort">TCP port to use</param>
+            public void Start(int tcpPort)
+            {
+                if (internalConnectionHandler == null)
+                    internalConnectionHandler = new InternalConnectionHandler (ConnectionIndicationHandlerImpl);                    
+
+                IedServer_setConnectionIndicationHandler (self, internalConnectionHandler, IntPtr.Zero);
+
+                IedServer_start(self, tcpPort);
+            }
+
+            /// <summary>Start MMS server</summary>
+            public void Start ()
+            {
+                Start(-1);
+            }
+
+            /// <summary>
+            /// Stop the MMS server.
+            /// </summary>
+            /// <description>This function will stop the server. This will close the TCP server socket and all client sockets.</description>
+            public void Stop()
+            {
+                IedServer_stop(self);
+                internalConnectionHandler = null;
+            }
 
             /// <summary>
             /// Release all server resources (same as <see cref="Dispose"/>)
             /// </summary>
             /// <description>This function releases all MMS server resources.</description>
             public void Destroy()
-			{
+            {
                 Dispose();
-			}
+            }
 
             /// <summary>
             /// Releases all resource used by the <see cref="IEC61850.Server.IedServer"/> object.
@@ -1571,176 +1867,246 @@ namespace IEC61850
             /// Check if server is running (accepting client connections)
             /// </summary>
             /// <returns><c>true</c>, if running, <c>false</c> otherwise.</returns>
-			public bool IsRunning()
+            public bool IsRunning()
             {
                 return IedServer_isRunning(self);
             }
 
-			/// <summary>
-			/// Get number of open MMS connections
-			/// </summary>
-			/// <returns>the number of open and accepted MMS connections</returns>
-			public int GetNumberOfOpenConnections()
-			{
-				return IedServer_getNumberOfOpenConnections(self);
-			}
+            /// <summary>
+            /// Get number of open MMS connections
+            /// </summary>
+            /// <returns>the number of open and accepted MMS connections</returns>
+            public int GetNumberOfOpenConnections()
+            {
+                return IedServer_getNumberOfOpenConnections(self);
+            }
 
             private ControlHandlerInfo GetControlHandlerInfo(DataObject controlObject)
-			{
-				ControlHandlerInfo info;
+            {
+                ControlHandlerInfo info;
 
-				controlHandlers.TryGetValue (controlObject, out info);
+                controlHandlers.TryGetValue (controlObject, out info);
 
-				if (info == null) {
-					info = new ControlHandlerInfo (controlObject);
-					controlHandlers.Add (controlObject, info);
-				}
+                if (info == null) {
+                    info = new ControlHandlerInfo (controlObject);
+                    controlHandlers.Add (controlObject, info);
+                }
 
-				return info;
-			}
+                return info;
+            }
 
-			public void SetControlHandler (DataObject controlObject, ControlHandler handler, object parameter)
-			{
-				ControlHandlerInfo info = GetControlHandlerInfo (controlObject);
+            public void SetControlHandler (DataObject controlObject, ControlHandler handler, object parameter)
+            {
+                ControlHandlerInfo info = GetControlHandlerInfo (controlObject);
 
-				info.controlHandler = handler;
-				info.controlHandlerParameter = parameter;
+                info.controlHandler = handler;
+                info.controlHandlerParameter = parameter;
 
-				if (internalControlHandlerRef == null)
-					internalControlHandlerRef = new InternalControlHandler (InternalControlHandlerImpl);
+                if (internalControlHandlerRef == null)
+                    internalControlHandlerRef = new InternalControlHandler (InternalControlHandlerImpl);
 
-				IedServer_setControlHandler(self, controlObject.self, internalControlHandlerRef, GCHandle.ToIntPtr(info.handle));
-			}
+                IedServer_setControlHandler(self, controlObject.self, internalControlHandlerRef, GCHandle.ToIntPtr(info.handle));
+            }
 
-			public void SetCheckHandler (DataObject controlObject, CheckHandler handler, object parameter)
-			{
-				ControlHandlerInfo info = GetControlHandlerInfo (controlObject);
+            public void SetCheckHandler (DataObject controlObject, CheckHandler handler, object parameter)
+            {
+                ControlHandlerInfo info = GetControlHandlerInfo (controlObject);
 
-				info.checkHandler = handler;
-				info.checkHandlerParameter = parameter;
+                info.checkHandler = handler;
+                info.checkHandlerParameter = parameter;
 
-				if (internalControlPerformCheckHandlerRef == null)
-					internalControlPerformCheckHandlerRef = new InternalControlPerformCheckHandler (InternalCheckHandlerImpl);
+                if (internalControlPerformCheckHandlerRef == null)
+                    internalControlPerformCheckHandlerRef = new InternalControlPerformCheckHandler (InternalCheckHandlerImpl);
 
-				IedServer_setPerformCheckHandler(self, controlObject.self, internalControlPerformCheckHandlerRef, GCHandle.ToIntPtr(info.handle));
-			}
+                IedServer_setPerformCheckHandler(self, controlObject.self, internalControlPerformCheckHandlerRef, GCHandle.ToIntPtr(info.handle));
+            }
 
-			public void SetWaitForExecutionHandler (DataObject controlObject, ControlWaitForExecutionHandler handler, object parameter)
-			{
-				ControlHandlerInfo info = GetControlHandlerInfo (controlObject);
+            public void SetWaitForExecutionHandler (DataObject controlObject, ControlWaitForExecutionHandler handler, object parameter)
+            {
+                ControlHandlerInfo info = GetControlHandlerInfo (controlObject);
 
-				info.waitForExecHandler = handler;
-				info.waitForExecHandlerParameter = parameter;
+                info.waitForExecHandler = handler;
+                info.waitForExecHandlerParameter = parameter;
 
-				if (internalControlWaitForExecutionHandlerRef == null)
-					internalControlWaitForExecutionHandlerRef = new InternalControlWaitForExecutionHandler (InternalControlWaitForExecutionHandlerImpl);
+                if (internalControlWaitForExecutionHandlerRef == null)
+                    internalControlWaitForExecutionHandlerRef = new InternalControlWaitForExecutionHandler (InternalControlWaitForExecutionHandlerImpl);
 
-				IedServer_setWaitForExecutionHandler(self, controlObject.self, internalControlWaitForExecutionHandlerRef, GCHandle.ToIntPtr(info.handle));
-			}
+                IedServer_setWaitForExecutionHandler(self, controlObject.self, internalControlWaitForExecutionHandlerRef, GCHandle.ToIntPtr(info.handle));
+            }
 
-			/// <summary>
-			/// Set a callback handler for a controllable data object to track select state changes
-			/// </summary>
-			/// <param name="controlObject">Control object.</param>
-			/// <param name="handler">Handler.</param>
-			/// <param name="parameter">A user provided parameter that is passed to the callback handler.</param>
-			public void SetSelectStateChangedHandler(DataObject controlObject, ControlSelectStateChangedHandler handler, object parameter)
-			{
-				ControlHandlerInfo info = GetControlHandlerInfo(controlObject);
+            /// <summary>
+            /// Set a callback handler for a controllable data object to track select state changes
+            /// </summary>
+            /// <param name="controlObject">Control object.</param>
+            /// <param name="handler">Handler.</param>
+            /// <param name="parameter">A user provided parameter that is passed to the callback handler.</param>
+            public void SetSelectStateChangedHandler(DataObject controlObject, ControlSelectStateChangedHandler handler, object parameter)
+            {
+                ControlHandlerInfo info = GetControlHandlerInfo(controlObject);
 
-				info.selectStateChangedHandler = handler;
-				info.selectStateChangedHandlerParameter = parameter;
+                info.selectStateChangedHandler = handler;
+                info.selectStateChangedHandlerParameter = parameter;
 
-				if (internalSelectedStateChangedHandlerRef == null)
-					internalSelectedStateChangedHandlerRef = new InternalSelectStateChangedHandler(InternalSelectStateChangedHandlerImpl);
+                if (internalSelectedStateChangedHandlerRef == null)
+                    internalSelectedStateChangedHandlerRef = new InternalSelectStateChangedHandler(InternalSelectStateChangedHandlerImpl);
 
-				IedServer_setSelectStateChangedHandler(self, controlObject.self, internalSelectedStateChangedHandlerRef, GCHandle.ToIntPtr(info.handle));
-			}
+                IedServer_setSelectStateChangedHandler(self, controlObject.self, internalSelectedStateChangedHandlerRef, GCHandle.ToIntPtr(info.handle));
+            }
 
-			public void HandleWriteAccess (DataAttribute dataAttr, WriteAccessHandler handler, object parameter)
-			{
-				writeAccessHandlers.Add (dataAttr.self, new WriteAccessHandlerInfo(handler, parameter, dataAttr));
+            /// <summary>
+            /// Install a WriteAccessHandler for a data attribute.
+            /// </summary>
+            /// This instructs the server to monitor write attempts by MMS clients to specific
+            /// data attributes.If a client tries to write to the monitored data attribute the
+            /// handler is invoked.The handler can decide if the write access will be allowed
+            /// or denied.If a WriteAccessHandler is set for a specific data attribute - the
+            /// default write access policy will not be performed for that data attribute.
+            /// <remarks>
+            /// NOTE: If the data attribute has sub data attributes, the WriteAccessHandler is not
+            /// set for the sub data attributes and will not be called when the sub data attribute is
+            /// written directly!
+            /// </remarks>
+            /// <param name="dataAttr">the data attribute to monitor</param>
+            /// <param name="handler">the callback function that is invoked if a client tries to write to the monitored data attribute.</param>
+            /// <param name="parameter">a user provided parameter that is passed to the WriteAccessHandler when called.</param>
+            public void HandleWriteAccess (DataAttribute dataAttr, WriteAccessHandler handler, object parameter)
+            {
+                writeAccessHandlers.Add (dataAttr.self, new WriteAccessHandlerInfo(handler, parameter, dataAttr));
 
-				IedServer_handleWriteAccess (self, dataAttr.self, WriteAccessHandlerImpl, IntPtr.Zero);
-			}
+                IedServer_handleWriteAccess (self, dataAttr.self, WriteAccessHandlerImpl, IntPtr.Zero);
+            }
 
-			public void SetWriteAccessPolicy(FunctionalConstraint fc, AccessPolicy policy)
-			{
-				IedServer_setWriteAccessPolicy (self, fc, policy);
-			}
-		
+            private void AddHandlerInfoForDataAttributeRecursive(DataAttribute da, WriteAccessHandler handler, object parameter)
+            {
+                writeAccessHandlers.Add(da.self, new WriteAccessHandlerInfo(handler, parameter, da));
 
-			public void LockDataModel()
-			{
-				IedServer_lockDataModel(self);
-			}
+                foreach (ModelNode child in da.GetChildren())
+                {
+                    if (child is DataAttribute)
+                    {
+                        AddHandlerInfoForDataAttributeRecursive(child as DataAttribute, handler, parameter);
+                    }
+                }
+            }
 
-			public void UnlockDataModel()
-			{
-				IedServer_unlockDataModel(self);
-			}
+            /// <summary>
+            /// Install a WriteAccessHandler for a data attribute and for all sub data attributes
+            /// </summary>
+            /// This instructs the server to monitor write attempts by MMS clients to specific
+            /// data attributes.If a client tries to write to the monitored data attribute the
+            /// handler is invoked.The handler can decide if the write access will be allowed
+            /// or denied.If a WriteAccessHandler is set for a specific data attribute - the
+            /// default write access policy will not be performed for that data attribute.
+            /// <remarks>
+            /// NOTE: When the data attribute is a complex attribute then the handler will also be installed
+            /// for all sub data attributes. When the data attribute is a basic data attribute then
+            /// this function behaves like  <see cref="HandleWriteAccess"/>.
+            /// </remarks>
+            /// <param name="dataAttr">the data attribute to monitor</param>
+            /// <param name="handler">the callback function that is invoked if a client tries to write to the monitored data attribute.</param>
+            /// <param name="parameter">a user provided parameter that is passed to the WriteAccessHandler when called.</param>
+            public void HandleWriteAccessForComplexAttribute(DataAttribute dataAttr, WriteAccessHandler handler, object parameter)
+            {
+                AddHandlerInfoForDataAttributeRecursive(dataAttr, handler, parameter);
 
-			public void UpdateAttributeValue(DataAttribute dataAttr, MmsValue value)
-			{
-				IedServer_updateAttributeValue (self, dataAttr.self, value.valueReference);
-			}
+                IedServer_handleWriteAccessForComplexAttribute(self, dataAttr.self, WriteAccessHandlerImpl, IntPtr.Zero);
+            }
 
-			public void UpdateBooleanAttributeValue(DataAttribute dataAttr, bool value)
-			{
-				IedServer_updateBooleanAttributeValue(self, dataAttr.self, value);
-			}
+            public void SetWriteAccessPolicy(FunctionalConstraint fc, AccessPolicy policy)
+            {
+                IedServer_setWriteAccessPolicy (self, fc, policy);
+            }
 
-			public void UpdateFloatAttributeValue(DataAttribute dataAttr, float value)
-			{
-				IedServer_updateFloatAttributeValue(self, dataAttr.self, value);
-			}
+            /// <summary>
+            /// Locks the data model for data update.
+            /// </summary>
+            /// This function should be called before the data model is updated.
+            /// After updating the data model the function <see cref="UnlockDataModel"/> should be called.
+            /// 
+            /// <remarks>
+            /// his method should never be called inside of a library callback function. In the context of
+            /// a library callback the data model is always already locked! Calling this function inside of a
+            /// library callback may lead to a deadlock condition.
+            /// </remarks>
+            public void LockDataModel()
+            {
+                IedServer_lockDataModel(self);
+            }
 
-			public void UpdateInt32AttributeValue(DataAttribute dataAttr, int value)
-			{
-				IedServer_updateInt32AttributeValue(self, dataAttr.self, value);
-			}
+            /// <summary>
+            /// Unlocks the data model and process pending client requests.
+            /// </summary>
+            /// 
+            /// <remarks>
+            /// This method should never be called inside of a library callback function. In the context of
+            /// a library callback the data model is always already locked!
+            /// </remarks>
+            public void UnlockDataModel()
+            {
+                IedServer_unlockDataModel(self);
+            }
 
-			public void UpdateInt64AttributeValue(DataAttribute dataAttr, Int64 value)
-			{
-				IedServer_updateInt64AttributeValue (self, dataAttr.self, value);
-			}
+            public void UpdateAttributeValue(DataAttribute dataAttr, MmsValue value)
+            {
+                IedServer_updateAttributeValue (self, dataAttr.self, value.valueReference);
+            }
 
-			public void UpdateVisibleStringAttributeValue(DataAttribute dataAttr, string value)
-			{
-				IedServer_updateVisibleStringAttributeValue(self, dataAttr.self, value);
-			}
+            public void UpdateBooleanAttributeValue(DataAttribute dataAttr, bool value)
+            {
+                IedServer_updateBooleanAttributeValue(self, dataAttr.self, value);
+            }
 
-			public void UpdateUTCTimeAttributeValue(DataAttribute dataAttr, DateTime timestamp)
-			{
-				DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-				DateTime timestampUTC = timestamp.ToUniversalTime();
+            public void UpdateFloatAttributeValue(DataAttribute dataAttr, float value)
+            {
+                IedServer_updateFloatAttributeValue(self, dataAttr.self, value);
+            }
 
-				TimeSpan timeDiff = timestampUTC - epoch;
-				ulong timeVal = Convert.ToUInt64(timeDiff.TotalMilliseconds);
+            public void UpdateInt32AttributeValue(DataAttribute dataAttr, int value)
+            {
+                IedServer_updateInt32AttributeValue(self, dataAttr.self, value);
+            }
 
-				IedServer_updateUTCTimeAttributeValue(self, dataAttr.self, timeVal);
-			}
+            public void UpdateInt64AttributeValue(DataAttribute dataAttr, Int64 value)
+            {
+                IedServer_updateInt64AttributeValue (self, dataAttr.self, value);
+            }
 
-			public void UpdateTimestampAttributeValue(DataAttribute dataAttr, Timestamp timestamp)
-			{
-				IedServer_updateTimestampAttributeValue (self, dataAttr.self, timestamp.timestampRef);
-			}
+            public void UpdateVisibleStringAttributeValue(DataAttribute dataAttr, string value)
+            {
+                IedServer_updateVisibleStringAttributeValue(self, dataAttr.self, value);
+            }
 
-			public void UpdateQuality(DataAttribute dataAttr, ushort value)
-			{
-				IedServer_updateQuality(self, dataAttr.self, value);
-			}
+            public void UpdateUTCTimeAttributeValue(DataAttribute dataAttr, DateTime timestamp)
+            {
+                DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+                DateTime timestampUTC = timestamp.ToUniversalTime();
 
-			public MmsValue GetAttributeValue(DataAttribute dataAttr)
-			{
-				IntPtr mmsValuePtr = IedServer_getAttributeValue (self, dataAttr.self);
+                TimeSpan timeDiff = timestampUTC - epoch;
+                ulong timeVal = Convert.ToUInt64(timeDiff.TotalMilliseconds);
 
-				if (mmsValuePtr != IntPtr.Zero)
-					return new MmsValue (mmsValuePtr);
-				else
-					return null;
-			}
-		}
+                IedServer_updateUTCTimeAttributeValue(self, dataAttr.self, timeVal);
+            }
 
-	}
+            public void UpdateTimestampAttributeValue(DataAttribute dataAttr, Timestamp timestamp)
+            {
+                IedServer_updateTimestampAttributeValue (self, dataAttr.self, timestamp.timestampRef);
+            }
+
+            public void UpdateQuality(DataAttribute dataAttr, ushort value)
+            {
+                IedServer_updateQuality(self, dataAttr.self, value);
+            }
+
+            public MmsValue GetAttributeValue(DataAttribute dataAttr)
+            {
+                IntPtr mmsValuePtr = IedServer_getAttributeValue (self, dataAttr.self);
+
+                if (mmsValuePtr != IntPtr.Zero)
+                    return new MmsValue (mmsValuePtr);
+                else
+                    return null;
+            }
+        }
+
+    }
 }
