@@ -1,7 +1,7 @@
 /*
  *  mms_mapping.c
  *
- *  Copyright 2013-2019 Michael Zillgith
+ *  Copyright 2013-2021 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -2374,6 +2374,7 @@ writeAccessGooseControlBlock(MmsMapping* self, MmsDomain* domain, char* variable
 
 #endif /* (CONFIG_INCLUDE_GOOSE_SUPPORT == 1) */
 
+#if 0
 static MmsValue*
 checkIfValueBelongsToModelNode(DataAttribute* dataAttribute, MmsValue* value, MmsValue* newValue)
 {
@@ -2408,6 +2409,7 @@ checkIfValueBelongsToModelNode(DataAttribute* dataAttribute, MmsValue* value, Mm
 
     return NULL;
 }
+#endif
 
 static FunctionalConstraint
 getFunctionalConstraintForWritableNode(char* separator)
@@ -2813,51 +2815,25 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
                 AttributeAccessHandler* accessHandler = (AttributeAccessHandler*) writeHandlerListElement->data;
                 DataAttribute* dataAttribute = accessHandler->attribute;
 
-                if (nodeAccessPolicy == ACCESS_POLICY_ALLOW) {
+                if (dataAttribute->mmsValue == cachedValue) {
 
-                    MmsValue* matchingValue = checkIfValueBelongsToModelNode(dataAttribute, cachedValue, value);
+                    ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer,
+                            connection);
 
-                    if (matchingValue != NULL) {
+                    MmsDataAccessError handlerResult =
+                        accessHandler->handler(dataAttribute, value, clientConnection,
+                                accessHandler->parameter);
 
-                        ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer,
-                                connection);
+                    if ((handlerResult == DATA_ACCESS_ERROR_SUCCESS) || (handlerResult == DATA_ACCESS_ERROR_SUCCESS_NO_UPDATE)) {
+                        handlerFound = true;
 
-                        MmsDataAccessError handlerResult =
-                            accessHandler->handler(dataAttribute, matchingValue, clientConnection,
-                            		accessHandler->parameter);
+                        if (handlerResult == DATA_ACCESS_ERROR_SUCCESS_NO_UPDATE)
+                            updateValue = false;
 
-                        if ((handlerResult == DATA_ACCESS_ERROR_SUCCESS) || (handlerResult == DATA_ACCESS_ERROR_SUCCESS_NO_UPDATE)) {
-                            handlerFound = true;
-
-                            if (handlerResult == DATA_ACCESS_ERROR_SUCCESS_NO_UPDATE)
-                                updateValue = false;
-                        }
-
-                        else
-                            return handlerResult;
+                        break;
                     }
-                }
-                else { /* if ACCESS_POLICY_DENY only allow direct access to handled data attribute */
-                    if (dataAttribute->mmsValue == cachedValue) {
-
-                        ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer,
-                                connection);
-
-                        MmsDataAccessError handlerResult =
-                            accessHandler->handler(dataAttribute, value, clientConnection,
-                            		accessHandler->parameter);
-
-                        if ((handlerResult == DATA_ACCESS_ERROR_SUCCESS) || (handlerResult == DATA_ACCESS_ERROR_SUCCESS_NO_UPDATE)) {
-                            handlerFound = true;
-
-                            if (handlerResult == DATA_ACCESS_ERROR_SUCCESS_NO_UPDATE)
-                                updateValue = false;
-
-                            break;
-                        }
-                        else
-                            return handlerResult;
-                    }
+                    else
+                        return handlerResult;
                 }
 
                 writeHandlerListElement = LinkedList_getNext(writeHandlerListElement);

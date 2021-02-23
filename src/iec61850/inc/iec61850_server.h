@@ -1615,6 +1615,10 @@ typedef MmsDataAccessError
  * or denied. If a WriteAccessHandler is set for a specific data attribute - the
  * default write access policy will not be performed for that data attribute.
  *
+ * NOTE: If the data attribute has sub data attributes, the WriteAccessHandler is not
+ * set for the sub data attributes and will not be called when the sub data attribute is
+ * written directly!
+ *
  * \param self the instance of IedServer to operate on.
  * \param dataAttribute the data attribute to monitor
  * \param handler the callback function that is invoked if a client tries to write to
@@ -1623,6 +1627,29 @@ typedef MmsDataAccessError
  */
 LIB61850_API void
 IedServer_handleWriteAccess(IedServer self, DataAttribute* dataAttribute,
+        WriteAccessHandler handler, void* parameter);
+
+/**
+ * \brief Install a WriteAccessHandler for a data attribute and for all sub data attributes
+ *
+ * This instructs the server to monitor write attempts by MMS clients to specific
+ * data attributes. If a client tries to write to the monitored data attribute the
+ * handler is invoked. The handler can decide if the write access will be allowed
+ * or denied. If a WriteAccessHandler is set for a specific data attribute - the
+ * default write access policy will not be performed for that data attribute.
+ *
+ * When the data attribute is a complex attribute then the handler will also be installed
+ * for all sub data attributes. When the data attribute is a basic data attribute then
+ * this function behaves like \ref IedServer_handleWriteAccess.
+ *
+ * \param self the instance of IedServer to operate on.
+ * \param dataAttribute the data attribute to monitor
+ * \param handler the callback function that is invoked if a client tries to write to
+ *        the monitored data attribute.
+ * \param parameter a user provided parameter that is passed to the WriteAccessHandler when called.
+ */
+LIB61850_API void
+IedServer_handleWriteAccessForComplexAttribute(IedServer self, DataAttribute* dataAttribute,
         WriteAccessHandler handler, void* parameter);
 
 typedef enum {

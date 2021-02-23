@@ -1513,6 +1513,26 @@ IedServer_handleWriteAccess(IedServer self, DataAttribute* dataAttribute, WriteA
 }
 
 void
+IedServer_handleWriteAccessForComplexAttribute(IedServer self, DataAttribute* dataAttribute, WriteAccessHandler handler, void* parameter)
+{
+    if (dataAttribute == NULL) {
+        if (DEBUG_IED_SERVER)
+            printf("IED_SERVER: IedServer_handleWriteAccessForComplexAttribute - dataAttribute == NULL!\n");
+    }
+    else {
+        MmsMapping_installWriteAccessHandler(self->mmsMapping, dataAttribute, handler, parameter);
+
+        DataAttribute* subDa = (DataAttribute*) dataAttribute->firstChild;
+
+        while (subDa) {
+            IedServer_handleWriteAccessForComplexAttribute(self, subDa, handler, parameter);
+
+            subDa = (DataAttribute*) subDa->sibling;
+        }
+    }
+}
+
+void
 IedServer_setReadAccessHandler(IedServer self, ReadAccessHandler handler, void* parameter)
 {
     MmsMapping_installReadAccessHandler(self->mmsMapping, handler, parameter);
