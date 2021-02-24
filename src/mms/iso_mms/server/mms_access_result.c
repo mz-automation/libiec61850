@@ -159,6 +159,9 @@ MmsValue_decodeMmsData(uint8_t* buffer, int bufPos, int bufferLength, int* endBu
 
     int dataEndBufPos = bufferLength;
 
+    if (bufferLength < 1)
+        goto exit_with_error;
+
     uint8_t tag = buffer[bufPos++];
 
     int dataLength;
@@ -166,6 +169,10 @@ MmsValue_decodeMmsData(uint8_t* buffer, int bufPos, int bufferLength, int* endBu
     bufPos = BerDecoder_decodeLength(buffer, &dataLength, bufPos, dataEndBufPos);
 
     if (bufPos < 0)
+        goto exit_with_error;
+
+    /* if not indefinite length end tag, data length must be > 0 */
+    if ((tag != 0) && (dataLength == 0))
         goto exit_with_error;
 
     switch (tag) {
@@ -253,6 +260,7 @@ MmsValue_decodeMmsData(uint8_t* buffer, int bufPos, int bufferLength, int* endBu
         value = MmsValue_newUnsigned(dataLength * 8);
         memcpy(value->value.integer->octets, buffer + bufPos, dataLength);
         value->value.integer->size = dataLength;
+
         bufPos += dataLength;
         break;
 

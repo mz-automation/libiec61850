@@ -30,7 +30,7 @@ getIndefiniteLength(uint8_t* buffer, int bufPos, int maxBufPos)
     int length = 0;
 
     while (bufPos < maxBufPos) {
-        if ((buffer[bufPos] == 0) && (buffer[bufPos+1] == 0)) {
+        if ((buffer[bufPos] == 0) && ((bufPos + 1) < maxBufPos) && (buffer[bufPos+1] == 0)) {
             return length + 2;
         }
         else {
@@ -78,6 +78,9 @@ BerDecoder_decodeLength(uint8_t* buffer, int* length, int bufPos, int maxBufPos)
             int i;
             for (i = 0; i < lenLength; i++) {
                 if (bufPos >= maxBufPos)
+                    return -1;
+
+                if (bufPos + (*length) > maxBufPos)
                     return -1;
 
                 *length <<= 8;
