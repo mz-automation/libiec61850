@@ -8,8 +8,10 @@ int LLVMFuzzerTestOneInput(const char *data, size_t size) {
     int out;
     MmsValue* value = NULL;
     value = MmsValue_decodeMmsData(data, 0, size, &out);
+
     if (value != NULL) {
-        free(value);
+        MmsValue_delete(value);
     }
+
     return 0;
 }
