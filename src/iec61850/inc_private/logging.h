@@ -82,6 +82,9 @@ LIB61850_INTERNAL void
 LogInstance_setLogStorage(LogInstance* self, LogStorage logStorage);
 
 LIB61850_INTERNAL void
+LogInstance_updateStatus(LogInstance* self);
+
+LIB61850_INTERNAL void
 LogInstance_logSingleData(LogInstance* self, const char* dataRef, MmsValue* value, uint8_t flag);
 
 LIB61850_INTERNAL uint64_t
