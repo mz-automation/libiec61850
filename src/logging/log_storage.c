@@ -30,6 +30,12 @@ LogStorage_setMaxLogEntries(LogStorage self, int maxEntries)
     self->maxLogEntries = maxEntries;
 }
 
+int
+LogStorage_getMaxLogEntries(LogStorage self)
+{
+    return self->maxLogEntries;
+}
+
 uint64_t
 LogStorage_addEntry(LogStorage self, uint64_t timestamp)
 {

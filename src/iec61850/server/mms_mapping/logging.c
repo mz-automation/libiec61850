@@ -157,12 +157,20 @@ LogInstance_logEntryFinished(LogInstance* self, uint64_t entryID)
 }
 
 void
+LogInstance_updateStatus(LogInstance* self)
+{
+    if (self->logStorage) {
+        LogStorage_getOldestAndNewestEntries(self->logStorage, &(self->newEntryId), &(self->newEntryTime),
+                &(self->oldEntryId), &(self->oldEntryTime));
+    }
+}
+
+void
 LogInstance_setLogStorage(LogInstance* self, LogStorage logStorage)
 {
     self->logStorage = logStorage;
 
-    LogStorage_getOldestAndNewestEntries(logStorage, &(self->newEntryId), &(self->newEntryTime),
-            &(self->oldEntryId), &(self->oldEntryTime));
+    LogInstance_updateStatus(self);
 }
 
 LogControl*
@@ -346,6 +354,9 @@ updateLogStatusInLCB(LogControl* self)
     LogInstance* logInstance = self->logInstance;
 
     if (logInstance != NULL) {
+
+        LogInstance_updateStatus(logInstance);
+
         MmsValue_setBinaryTime(self->oldEntrTm, logInstance->oldEntryTime);
         MmsValue_setBinaryTime(self->newEntrTm, logInstance->newEntryTime);
 
