@@ -193,6 +193,9 @@ MmsValue_equals(const MmsValue* self, const MmsValue* otherValue)
 bool
 MmsValue_equalTypes(const MmsValue* self, const MmsValue* otherValue)
 {
+    if ((self == NULL) || (otherValue == NULL))
+        return false;
+
     if (self->type == otherValue->type) {
         switch (self->type)
         {
