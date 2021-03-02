@@ -482,10 +482,16 @@ IedServer_createWithConfig(IedModel* dataModel, TLSConfiguration tlsConfiguratio
         if (serverConfiguration) {
             self->reportBufferSizeBRCBs = serverConfiguration->reportBufferSize;
             self->reportBufferSizeURCBs = serverConfiguration->reportBufferSizeURCBs;
+            self->enableBRCBResvTms = serverConfiguration->enableResvTmsForBRCB;
         }
         else {
             self->reportBufferSizeBRCBs = CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE;
             self->reportBufferSizeURCBs = CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE;
+#if (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1)
+            self->enableBRCBResvTms = true;
+#else
+            self->enableBRCBResvTms = false;
+#endif
         }
 #endif
 

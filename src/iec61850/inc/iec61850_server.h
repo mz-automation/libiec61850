@@ -89,6 +89,9 @@ struct sIedServerConfig
 
     /** enable visibility of SGCB.ResvTms (default: true) */
     bool enableResvTmsForSGCB;
+
+    /** BRCB has resvTms attribute - only edition 2 (default: true) */
+    bool enableResvTmsForBRCB;
 };
 
 /**
@@ -303,6 +306,22 @@ IedServerConfig_enableEditSG(IedServerConfig self, bool enable);
  */
 LIB61850_API void
 IedServerConfig_enableResvTmsForSGCB(IedServerConfig self, bool enable);
+
+/**
+ * \brief Enable/disable the presence of BRCB.ResvTms
+ *
+ * \param[in] enable set true to enable, otherwise false (default value it true)
+ */
+LIB61850_API void
+IedServerConfig_enableResvTmsForBRCB(IedServerConfig self, bool enable);
+
+/**
+ * \brief ResvTms for BRCB enabled (visible)
+ *
+ * \return true if enabled, false otherwise
+ */
+LIB61850_API  bool
+IedServerConfig_isResvTmsForBRCBEnabled(IedServerConfig self);
 
 /**
  * \brief Enable/disable using the integrated GOOSE publisher for configured GoCBs

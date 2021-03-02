@@ -55,6 +55,7 @@ IedServerConfig_create()
         self->edition = IEC_61850_EDITION_2;
         self->maxMmsConnections = 5;
         self->enableEditSG = true;
+        self->enableResvTmsForBRCB = true;
     }
 
     return self;
@@ -198,6 +199,19 @@ IedServerConfig_enableResvTmsForSGCB(IedServerConfig self, bool enable)
 {
     self->enableResvTmsForSGCB = enable;
 }
+
+void
+IedServerConfig_enableResvTmsForBRCB(IedServerConfig self, bool enable)
+{
+    self->enableResvTmsForBRCB = enable;
+}
+
+bool
+IedServerConfig_isResvTmsForBRCBEnabled(IedServerConfig self)
+{
+    return self->enableResvTmsForBRCB;
+}
+
 
 void
 IedServerConfig_useIntegratedGoosePublisher(IedServerConfig self, bool enable)
