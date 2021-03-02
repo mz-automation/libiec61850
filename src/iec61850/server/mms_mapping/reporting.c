@@ -1354,8 +1354,7 @@ Reporting_createMmsBufferedRCBs(MmsMapping* self, MmsDomain* domain,
         ReportControlBlock* reportControlBlock = getRCBForLogicalNodeWithIndex(
                 self, logicalNode, currentReport, true);
 
-        if (reportControlBlock->trgOps & RPT_OPT_HAS_OWNER)
-            rc->hasOwner = true;
+        rc->hasOwner = self->iedServer->enableOwnerForRCB;
 
         rc->name = StringUtils_createString(3, logicalNode->name, "$BR$",
                 reportControlBlock->name);
@@ -1396,8 +1395,7 @@ Reporting_createMmsUnbufferedRCBs(MmsMapping* self, MmsDomain* domain,
         ReportControlBlock* reportControlBlock = getRCBForLogicalNodeWithIndex(
                 self, logicalNode, currentReport, false);
 
-        if (reportControlBlock->trgOps & RPT_OPT_HAS_OWNER)
-            rc->hasOwner = true;
+        rc->hasOwner = self->iedServer->enableOwnerForRCB;
 
         rc->name = StringUtils_createString(3, logicalNode->name, "$RP$",
                 reportControlBlock->name);

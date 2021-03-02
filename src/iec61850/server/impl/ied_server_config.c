@@ -56,6 +56,7 @@ IedServerConfig_create()
         self->maxMmsConnections = 5;
         self->enableEditSG = true;
         self->enableResvTmsForBRCB = true;
+        self->enableOwnerForRCB = false;
     }
 
     return self;
@@ -212,6 +213,17 @@ IedServerConfig_isResvTmsForBRCBEnabled(IedServerConfig self)
     return self->enableResvTmsForBRCB;
 }
 
+void
+IedServerConfig_enableOwnerForRCB(IedServerConfig self, bool enable)
+{
+    self->enableOwnerForRCB = enable;
+}
+
+bool
+IedServerConfig_isOwnerForRCBEnabled(IedServerConfig self)
+{
+    return self->enableOwnerForRCB;
+}
 
 void
 IedServerConfig_useIntegratedGoosePublisher(IedServerConfig self, bool enable)

@@ -48,6 +48,7 @@ struct sIedServer
     int reportBufferSizeBRCBs;
     int reportBufferSizeURCBs;
     bool enableBRCBResvTms;
+    bool enableOwnerForRCB;
 #endif
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)

@@ -92,6 +92,9 @@ struct sIedServerConfig
 
     /** BRCB has resvTms attribute - only edition 2 (default: true) */
     bool enableResvTmsForBRCB;
+
+    /** RCB has owner attribute (default: true) */
+    bool enableOwnerForRCB;
 };
 
 /**
@@ -308,9 +311,9 @@ LIB61850_API void
 IedServerConfig_enableResvTmsForSGCB(IedServerConfig self, bool enable);
 
 /**
- * \brief Enable/disable the presence of BRCB.ResvTms
+ * \brief Enable/disable the presence of BRCB.ResvTms (default value is true)
  *
- * \param[in] enable set true to enable, otherwise false (default value it true)
+ * \param[in] enable set true to enable, otherwise false
  */
 LIB61850_API void
 IedServerConfig_enableResvTmsForBRCB(IedServerConfig self, bool enable);
@@ -322,6 +325,22 @@ IedServerConfig_enableResvTmsForBRCB(IedServerConfig self, bool enable);
  */
 LIB61850_API  bool
 IedServerConfig_isResvTmsForBRCBEnabled(IedServerConfig self);
+
+/**
+ * \brief Enable/disable the presence of owner in report control blocks (default value is false);
+ *
+ * \param[in] enable set true to enable, otherwise false
+ */
+LIB61850_API void
+IedServerConfig_enableOwnerForRCB(IedServerConfig self, bool enable);
+
+/**
+ * \brief Owner for RCBs enabled (visible)
+ *
+ * \return true if enabled, false otherwise
+ */
+LIB61850_API  bool
+IedServerConfig_isOwnerForRCBEnabled(IedServerConfig self);
 
 /**
  * \brief Enable/disable using the integrated GOOSE publisher for configured GoCBs

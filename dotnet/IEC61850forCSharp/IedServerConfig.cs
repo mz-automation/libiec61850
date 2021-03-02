@@ -114,6 +114,13 @@ namespace IEC61850.Server
         [return: MarshalAs(UnmanagedType.I1)]
         static extern bool IedServerConfig_isResvTmsForBRCBEnabled(IntPtr self);
 
+        [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+        static extern void IedServerConfig_enableOwnerForRCB(IntPtr self, [MarshalAs(UnmanagedType.I1)] bool enable);
+
+        [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.I1)]
+        static extern bool IedServerConfig_isOwnerForRCBEnabled(IntPtr self);
+
         internal IntPtr self;
 
         public IedServerConfig()
@@ -300,7 +307,7 @@ namespace IEC61850.Server
         /// <summary>
         /// Enable/Disable the presence of ResvTms attribute in BRCBs (buffered report control blocks)
         /// </summary>
-        /// <value><c>true</c> if BRCB has ResvTms; otherwise, <c>false</c>.</value>
+        /// <value><c>true</c> if BRCB has ResvTms; otherwise, <c>false</c>. Defaults to true</value>
         public bool BRCBHasResvTms
         {
             get
@@ -310,6 +317,22 @@ namespace IEC61850.Server
             set
             {
                 IedServerConfig_enableResvTmsForBRCB(self, value);
+            }
+        }
+
+        /// <summary>
+        /// Enable/Disable the presence of Owner attribute in RCBs (report control blocks)
+        /// </summary>
+        /// <value><c>true</c> if RCB has Owner; otherwise, <c>false</c>. Defaults to false</value>
+        public bool RCBHasOwner
+        {
+            get
+            {
+                return IedServerConfig_isOwnerForRCBEnabled(self);
+            }
+            set
+            {
+                IedServerConfig_enableOwnerForRCB(self, value);
             }
         }
 
