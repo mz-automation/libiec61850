@@ -20,6 +20,7 @@ EXAMPLE_DIRS += server_example_threadless
 EXAMPLE_DIRS += server_example_setting_groups
 EXAMPLE_DIRS += server_example_files
 EXAMPLE_DIRS += server_example_substitution
+EXAMPLE_DIRS += server_example_deadband
 EXAMPLE_DIRS += goose_subscriber
 EXAMPLE_DIRS += goose_publisher
 EXAMPLE_DIRS += sv_subscriber

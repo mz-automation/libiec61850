@@ -13,6 +13,7 @@ add_subdirectory(server_example_logging)
 add_subdirectory(server_example_files)
 add_subdirectory(server_example_substitution)
 add_subdirectory(server_example_service_tracking)
+add_subdirectory(server_example_deadband)
 
 add_subdirectory(iec61850_client_example1)
 add_subdirectory(iec61850_client_example2)
