@@ -3015,7 +3015,7 @@ GOOSE_processGooseEvents(MmsMapping* self, uint64_t currentTimeInMs)
         MmsGooseControlBlock mmsGCB = (MmsGooseControlBlock) element->data;
 
         if (MmsGooseControlBlock_isEnabled(mmsGCB)) {
-            MmsGooseControlBlock_checkAndPublish(mmsGCB, currentTimeInMs);
+            MmsGooseControlBlock_checkAndPublish(mmsGCB, currentTimeInMs, self);
         }
 
         element = LinkedList_getNext(element);
