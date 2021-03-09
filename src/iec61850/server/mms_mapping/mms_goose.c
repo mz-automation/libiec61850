@@ -337,7 +337,8 @@ MmsGooseControlBlock_disable(MmsGooseControlBlock self)
 void
 MmsGooseControlBlock_checkAndPublish(MmsGooseControlBlock self, uint64_t currentTime, MmsMapping* mapping)
 {
-    if (currentTime >= self->nextPublishTime) {
+    if (self->publisher) {
+        if (currentTime >= self->nextPublishTime) {
 
             IedServer_lockDataModel(mapping->iedServer);
 
@@ -352,8 +353,6 @@ MmsGooseControlBlock_checkAndPublish(MmsGooseControlBlock self, uint64_t current
                 if (self->retransmissionsLeft > 0) {
                     self->nextPublishTime = currentTime + self->minTime;
 
-        if (self->retransmissionsLeft > 0) {
-            self->nextPublishTime = currentTime + self->minTime;
 
                     if (self->retransmissionsLeft > 1)
                         GoosePublisher_setTimeAllowedToLive(self->publisher, self->minTime * 3);
