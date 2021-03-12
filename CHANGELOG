@@ -1,3 +1,46 @@
+Changes in version 1.4.3
+------------------------
+
+- Fixed problem with installed headers - application code does not compile only with installed headers
+- IED server: integrated GOOSE publisher - lock data model during GOOSE retransmission to avoid corrupted GOOSE data
+- IED server: fixed bug in log service - old-entry and old-entry-time not update
+- IED server: control models - fixed bug that only one control is unselected when connection closes
+- IED server: fixed bug - logs (journals) are added to all logical devices instead of just the parents
+- fixed some buffer overflow and other issues in BER/MmsValue decoder code caused by malformed messages
+- IED server: make compatible with tissue 1178
+- IED server: reporting - implemented behavior according to tissue 1432
+- IEC 61850 client: avoid double free when operate and select-with-value on APC fails
+- fixed wrong connection objects in setting group handlers (#289)
+- IED server: fixed problem with CONFIG_IEC61850_RCB_ALLOW_ONLY_PRECONFIGURED_CLIENT configuration option enabled
+- IED server: handle BRCB.Owner correctly when client uses pre-assigned RCB instance
+- IED server: fixed problem that BL FC is not writable (#287)
+- IEC 61850 client: fixed dead lock in IedConnection_getFileAsync when fileRead times out (#285)
+- Client: fixed - IedConnection_getRCBValues doesn't check type of server response (#283)
+- MMS: changed handling of variable sized bit strings (now also accepts bit strings of larger size, ignoring the bits that exceed the specified size)
+- IED server: add support for correct CBB handling (required for test case sAss4) and initiate error PDU
+- Java Tools: Add support to handle Services.ReportSettings@owner attribute
+- IED server: add support for tissue 807 (owner attribute in RCB is only present when ReportSettings@owner attribute is true)
+- IED server: implemented tissue 1453 also for writing to "RptId" (purgeBuf only executed when value changes)
+- added function SVPublisher_ASDU_getSmpSynch
+- IED server: fixed issue - read access to SGCB is not possible when read access handler is installed
+- IED server: added configuration file support for data set entries with array elements or array element components
+- fixed problems in handling array elements and array element components
+- fixed bug in MmsConnection_readMultipleVariables: send invaid messsage and memory access errors when too many items are passed to the function exhausting MMS payload size
+- IEC 61850 server: fixed problem with test case sRp4 - RCB RptID attribute is not empty after writing empty string
+- IED Server/GOOSE: Don't send GOOSE message with new event while data model is locked
+- COTP: fixed possible heap buffer overflow when handling message with invalid (zero) value in length field (#250)
+- IEC 61850 server: fixed - cancel command for time activated control returns object-access-denied even in case of success
+- IEC 61850 client: fixed bug - IedConnection_setRCBValuesAsync always return 0 instead of invoke-ID
+- MMS: fixed problem in handling of indefinite length encoded BER elements
+- GOOSE subscriber: added optional destination address check for GOOSE messages
+- IEC 61850/MMS server: control - allow WaitForExecutionHandler to trigger LastApplError message
+- IEC 61850 server: report service - combine quality and value change of a FCDO in the same report when model is locked (send data set entry with multiple reason-for-inclusion)
+- IEC 61850 server: Added ControlAction_setError function - with this function the user application can control the error code used in LastApplError and CommandTermination messages
+- IEC 61850 server: fixed - control model - peer connection is not always available when control handlers are called (#232)
+- GOOSE subscriber: fixed crash when GOOSE messages misses time stamp
+- IEC 61850 server: fixed problem with logging when log data set contains FCDO (#225)
+- ... and other small bug fixes and code improvements
+
 Changes to version 1.4.2.1
 --------------------------
 
