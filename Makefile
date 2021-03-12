@@ -105,6 +105,7 @@ LIB_API_HEADER_FILES += src/mms/inc/mms_common.h
 LIB_API_HEADER_FILES += src/mms/inc/mms_types.h
 LIB_API_HEADER_FILES += src/mms/inc/mms_type_spec.h
 LIB_API_HEADER_FILES += src/mms/inc/mms_client_connection.h
+LIB_API_HEADER_FILES += src/mms/inc/mms_server.h
 LIB_API_HEADER_FILES += src/mms/inc/iso_connection_parameters.h
 LIB_API_HEADER_FILES += src/goose/goose_subscriber.h
 LIB_API_HEADER_FILES += src/goose/goose_receiver.h
