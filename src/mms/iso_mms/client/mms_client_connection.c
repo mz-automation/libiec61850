@@ -677,7 +677,7 @@ exit_error:
     return -1;
 }
 
-void
+static void
 handleAsyncResponse(MmsConnection self, ByteBuffer* response, uint32_t bufPos, MmsOutstandingCall outstandingCall, MmsError err)
 {
 
