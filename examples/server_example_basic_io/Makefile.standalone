@@ -1,0 +1,35 @@
+LIBIEC_HOME=../..
+
+PROJECT_BINARY_NAME = server_example_basic_io
+PROJECT_SOURCES = server_example_basic_io.c
+PROJECT_SOURCES += static_model.c
+
+PROJECT_ICD_FILE = simpleIO_direct_control.cid
+
+all:	$(PROJECT_BINARY_NAME)
+
+LDLIBS += -lm -lpthread
+
+CP = cp
+
+LIBIEC61850_INSTALL_DIR = ../../.install
+
+LIBIEC61850_LIB_DIR = $(LIBIEC61850_INSTALL_DIR)/lib
+LIBIEC61850_INC_DIR = $(LIBIEC61850_INSTALL_DIR)/include
+LIBIEC61850_INCLUDES = -I$(LIBIEC61850_INC_DIR)
+
+INCLUDES += $(LIBIEC61850_INCLUDES)
+
+model:	$(PROJECT_ICD_FILE)
+	java -jar $(LIBIEC_HOME)/tools/model_generator/genmodel.jar $(PROJECT_ICD_FILE)
+
+$(PROJECT_BINARY_NAME):	$(PROJECT_SOURCES) $(LIB_NAME)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $(PROJECT_BINARY_NAME) $(PROJECT_SOURCES) $(INCLUDES) -L$(LIBIEC61850_LIB_DIR) -liec61850  $(LDLIBS)
+	mkdir -p vmd-filestore
+	$(CP) $(PROJECT_BINARY_NAME) vmd-filestore/IEDSERVER.BIN
+
+clean:
+	rm -f $(PROJECT_BINARY_NAME)
+	rm -f vmd-filestore/IEDSERVER.BIN
+
+

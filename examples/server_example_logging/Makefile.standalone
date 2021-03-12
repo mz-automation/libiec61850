@@ -1,0 +1,33 @@
+LIBIEC_HOME=../..
+
+PROJECT_BINARY_NAME = server_example_logging
+PROJECT_SOURCES = server_example_logging.c
+PROJECT_SOURCES += static_model.c
+PROJECT_SOURCES += $(LIBIEC_HOME)/src/logging/drivers/sqlite/log_storage_sqlite.c
+
+PROJECT_ICD_FILE = simpleIO_direct_control.cid
+
+all:	$(PROJECT_BINARY_NAME)
+
+LDLIBS += -lm -lpthread -lsqlite3
+
+CP = cp
+
+LIBIEC61850_INSTALL_DIR = ../../.install
+
+LIBIEC61850_LIB_DIR = $(LIBIEC61850_INSTALL_DIR)/lib
+LIBIEC61850_INC_DIR = $(LIBIEC61850_INSTALL_DIR)/include
+LIBIEC61850_INCLUDES = -I$(LIBIEC61850_INC_DIR)
+
+INCLUDES += $(LIBIEC61850_INCLUDES)
+
+model:	$(PROJECT_ICD_FILE)
+	java -jar $(LIBIEC_HOME)/tools/model_generator/genmodel.jar $(PROJECT_ICD_FILE)
+
+$(PROJECT_BINARY_NAME):	$(PROJECT_SOURCES) $(LIB_NAME)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $(PROJECT_BINARY_NAME) $(PROJECT_SOURCES) $(INCLUDES) -L$(LIBIEC61850_LIB_DIR) -liec61850 $(LDLIBS)
+
+clean:
+	rm -f $(PROJECT_BINARY_NAME)
+
+

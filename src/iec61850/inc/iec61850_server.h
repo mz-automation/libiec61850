@@ -39,6 +39,7 @@ extern "C" {
 #include "iec61850_dynamic_model.h"
 #include "iec61850_model.h"
 #include "hal_filesystem.h"
+#include "iso_connection_parameters.h"
 #include "iec61850_config_file_parser.h"
 
 /**
