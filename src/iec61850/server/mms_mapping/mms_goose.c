@@ -754,7 +754,7 @@ GOOSE_createGOOSEControlBlocks(MmsMapping* self, MmsDomain* domain,
             mmsGCB->goId = StringUtils_copyString(gooseControlBlock->appId);
         }
 
-        if (gooseControlBlock->dataSetName != NULL)
+        if ((gooseControlBlock->dataSetName != NULL) && (gooseControlBlock->dataSetName[0] != 0))
         	mmsGCB->dataSetRef = createDataSetReference(MmsDomain_getName(domain),
         			logicalNode->name, gooseControlBlock->dataSetName);
         else
