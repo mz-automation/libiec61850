@@ -1655,6 +1655,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                 /* enter state Perform Test */
                 setOpRcvd(controlObject, true);
 
+                controlObject->errorValue = CONTROL_ERROR_NO_ERROR;
                 controlObject->addCauseValue = ADD_CAUSE_UNKNOWN;
                 controlObject->mmsConnection = connection;
 
@@ -1688,6 +1689,12 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
 
                     if ((controlObject->ctlModel == 2) || (controlObject->ctlModel == 4))
                         unselectObject(controlObject);
+
+                    if ((controlObject->ctlModel == 3) || (controlObject->ctlModel == 4)) {
+                        ControlObject_sendLastApplError(controlObject, connection, "Oper",
+                                controlObject->errorValue, controlObject->addCauseValue,
+                                    ctlNum, origin, true);
+                    }
                 }
             }
 
