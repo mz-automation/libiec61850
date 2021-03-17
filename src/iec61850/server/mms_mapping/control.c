@@ -2211,6 +2211,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                 /* enter state Perform Test */
                 setOpRcvd(controlObject, true);
 
+                controlObject->errorValue = CONTROL_ERROR_NO_ERROR;
                 controlObject->addCauseValue = ADD_CAUSE_UNKNOWN;
                 controlObject->mmsConnection = connection;
 
@@ -2241,6 +2242,12 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                     setOpRcvd(controlObject, false);
 
                     abortControlOperation(controlObject, false, SELECT_STATE_REASON_OPERATE_FAILED);
+
+                    if ((controlObject->ctlModel == 3) || (controlObject->ctlModel == 4)) {
+                        ControlObject_sendLastApplError(controlObject, connection, "Oper",
+                                controlObject->errorValue, controlObject->addCauseValue,
+                                    ctlNum, origin, true);
+                    }
                 }
             }
 
