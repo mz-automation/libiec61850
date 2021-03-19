@@ -607,6 +607,17 @@ DataAttribute_create(const char* name, ModelNode* parent, DataAttributeType type
     return self;
 }
 
+void
+DataAttribute_setValue(DataAttribute* self, MmsValue* value)
+{
+    if (self->mmsValue) {
+        MmsValue_update(self->mmsValue, value);
+    }
+    else {
+        self->mmsValue = MmsValue_clone(value);
+    }
+}
+
 DataSet*
 DataSet_create(const char* name, LogicalNode* parent)
 {

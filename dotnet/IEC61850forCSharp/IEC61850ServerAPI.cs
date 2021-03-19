@@ -871,10 +871,12 @@ namespace IEC61850
 
         public class DataAttribute : ModelNode
         {
-
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern IntPtr DataAttribute_create(string name, IntPtr parent, int type, int fc,
                 byte triggerOptions, int arrayElements, UInt32 sAddr);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void DataAttribute_setValue(IntPtr self, IntPtr mmsValue);
 
             internal DataAttribute(IntPtr self, ModelNode parent) : base(self)
             {
@@ -889,6 +891,14 @@ namespace IEC61850
                 self = DataAttribute_create (name, parent.self, (int)type, (int)fc, (byte)trgOps, arrayElements, sAddr);
             }
 
+            /// <summary>
+            /// Set the value of the data attribute (can be used to set default values before server is created)
+            /// </summary>
+            /// <param name="value">New value for the data attribute</param>
+            public void SetValue(MmsValue value)
+            {
+                DataAttribute_setValue(self, value.valueReference);
+            }
         }
 
         public class ModelNode

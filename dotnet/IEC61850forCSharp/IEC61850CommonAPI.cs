@@ -123,7 +123,9 @@ namespace IEC61850
 			/** periodic transmission of all data set values */
 			INTEGRITY = 8,
 			/** general interrogation (on client request) */
-			GI = 16
+			GI = 16,
+			/** Report will be triggered only on rising edge (transient variable) */
+			TRG_OPT_TRANSIENT = 128
 		}
 
 		/// <summary>

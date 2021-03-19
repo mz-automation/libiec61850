@@ -138,6 +138,15 @@ DataAttribute_create(const char* name, ModelNode* parent, DataAttributeType type
         uint8_t triggerOptions, int arrayElements, uint32_t sAddr);
 
 /**
+ * \brief Set the value of the data attribute (can be used to set default values before server is created)
+ * 
+ * \param self the data attribute instance
+ * \param value the new default value
+ */
+LIB61850_API void
+DataAttribute_setValue(DataAttribute* self, MmsValue* value);
+
+/**
  * \brief create a new report control block (RCB)
  *
  * Create a new report control block (RCB) and add it to the given logical node (LN).
