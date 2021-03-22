@@ -2276,11 +2276,17 @@ writeAccessGooseControlBlock(MmsMapping* self, MmsDomain* domain, char* variable
         if (MmsValue_getType(value) != MMS_BOOLEAN)
             return DATA_ACCESS_ERROR_TYPE_INCONSISTENT;
 
-        if (MmsValue_getBoolean(value)) {
-            MmsGooseControlBlock_enable(mmsGCB, self);
+        if (MmsGooseControlBlock_getNdsCom(mmsGCB))
+            return DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
 
-            if (self->goCbHandler)
-                self->goCbHandler(mmsGCB, IEC61850_GOCB_EVENT_ENABLE, self->goCbHandlerParameter);
+        if (MmsValue_getBoolean(value)) {
+            if (MmsGooseControlBlock_enable(mmsGCB, self)) {
+                if (self->goCbHandler)
+                    self->goCbHandler(mmsGCB, IEC61850_GOCB_EVENT_ENABLE, self->goCbHandlerParameter);
+            }
+            else {
+                return DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+            }
         }
         else {
             MmsGooseControlBlock_disable(mmsGCB, self);
@@ -3618,7 +3624,6 @@ MmsMapping_triggerReportObservers(MmsMapping* self, MmsValue* value, int flag)
             }
 
             if (DataSet_isMemberValue(rc->dataSet, value, &index)) {
-
                 ReportControl_valueUpdated(rc, index, flag, modelLocked);
             }
         }
@@ -3665,7 +3670,10 @@ MmsMapping_enableGoosePublishing(MmsMapping* self)
     while (element) {
         MmsGooseControlBlock gcb = (MmsGooseControlBlock) LinkedList_getData(element);
 
-        MmsGooseControlBlock_enable(gcb, self);
+        if (MmsGooseControlBlock_enable(gcb, self) == false) {
+            if (DEBUG_IED_SERVER)
+                printf("IED_SERVER: failed to enable GoCB %s\n", MmsGooseControlBlock_getName(gcb));
+        }
 
         element = LinkedList_getNext(element);
     }

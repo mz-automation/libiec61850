@@ -569,6 +569,8 @@ IedConnection_setGoCBValues(IedConnection self, IedClientError* error, ClientGoo
     if (singleRequest) {
         LinkedList accessResults = NULL;
 
+        *error = IED_ERROR_OK;
+
         MmsConnection_writeMultipleVariables(self->connection, &mmsError, domainId, itemIds, values, &accessResults);
 
         if (accessResults != NULL) {
@@ -577,8 +579,12 @@ IedConnection_setGoCBValues(IedConnection self, IedClientError* error, ClientGoo
             while (element != NULL) {
                 MmsValue* accessResult = (MmsValue*) element->data;
 
+                MmsDataAccessError resErr = MmsValue_getDataAccessError(accessResult);
+
                 if (MmsValue_getDataAccessError(accessResult) != DATA_ACCESS_ERROR_SUCCESS) {
-                    mmsError = MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT;
+
+                    *error = iedConnection_mapDataAccessErrorToIedError(resErr);
+
                     break;
                 }
 
@@ -587,8 +593,6 @@ IedConnection_setGoCBValues(IedConnection self, IedClientError* error, ClientGoo
 
             LinkedList_destroyDeep(accessResults, (LinkedListValueDeleteFunction) MmsValue_delete);
         }
-
-        *error = iedConnection_mapMmsErrorToIedError(mmsError);
 
         goto exit_function;
     }

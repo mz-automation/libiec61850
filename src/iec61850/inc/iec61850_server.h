@@ -1607,6 +1607,9 @@ MmsGooseControlBlock_getMaxTime(MmsGooseControlBlock self);
 LIB61850_API bool
 MmsGooseControlBlock_getFixedOffs(MmsGooseControlBlock self);
 
+LIB61850_API bool
+MmsGooseControlBlock_getNdsCom(MmsGooseControlBlock self);
+
 /**@}*/
 
 /**

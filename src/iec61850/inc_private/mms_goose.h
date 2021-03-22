@@ -63,7 +63,7 @@ MmsGooseControlBlock_setStateChangePending(MmsGooseControlBlock self);
 LIB61850_INTERNAL void
 MmsGooseControlBlock_publishNewState(MmsGooseControlBlock self);
 
-LIB61850_INTERNAL void
+LIB61850_INTERNAL bool
 MmsGooseControlBlock_enable(MmsGooseControlBlock self, MmsMapping* mmsMapping);
 
 LIB61850_INTERNAL void
