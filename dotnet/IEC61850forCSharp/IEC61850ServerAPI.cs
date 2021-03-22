@@ -878,6 +878,8 @@ namespace IEC61850
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern void DataAttribute_setValue(IntPtr self, IntPtr mmsValue);
 
+            private DataAttributeType daType;
+
             internal DataAttribute(IntPtr self, ModelNode parent) : base(self)
             {
                 this.parent = parent;
@@ -887,8 +889,20 @@ namespace IEC61850
                 int arrayElements, UInt32 sAddr)
             {
                 this.parent = parent;
+                this.daType = type;
 
                 self = DataAttribute_create (name, parent.self, (int)type, (int)fc, (byte)trgOps, arrayElements, sAddr);
+            }
+
+            /// <summary>
+            /// Get IEC 61850 data attribute type of the data attribute
+            /// </summary>
+            public DataAttributeType Type
+            {
+                get
+                {
+                    return daType;
+                }
             }
 
             /// <summary>
