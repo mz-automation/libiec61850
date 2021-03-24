@@ -1203,12 +1203,23 @@ namespace IEC61850
             static extern IntPtr ReportControlBlock_create(string name, IntPtr parent, string rptId, [MarshalAs(UnmanagedType.I1)] bool isBuffered,
                 string dataSetName, uint confRef, byte trgOps, byte options, uint bufTm, uint intgPd);
 
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void ReportControlBlock_setPreconfiguredClient(IntPtr self, byte type, [Out] byte[] buf);
+
             public IntPtr self = IntPtr.Zero;
 
             public ReportControlBlock(string name, LogicalNode parent, string rptId, bool isBuffered,
                 string dataSetName, uint confRev, byte trgOps, byte options, uint bufTm, uint intgPd)
             {
                 self = ReportControlBlock_create(name, parent.self, rptId, isBuffered, dataSetName, confRev, trgOps, options, bufTm, intgPd);
+            }
+
+            public void SetPreconfiguredClient(byte[] clientAddress)
+            {
+                if (clientAddress.Length == 4)
+                    ReportControlBlock_setPreconfiguredClient(self, 4, clientAddress);
+                else if (clientAddress.Length == 6)
+                    ReportControlBlock_setPreconfiguredClient(self, 6, clientAddress);
             }
         }
 
