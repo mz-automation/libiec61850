@@ -1197,6 +1197,9 @@ namespace IEC61850
             }
         }
 
+        /// <summary>
+        /// Report control block (RCB) instance for server data model
+        /// </summary>
         public class ReportControlBlock
         {
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
@@ -1223,6 +1226,9 @@ namespace IEC61850
             }
         }
 
+        /// <summary>
+        /// GOOSE/GSE control block instance for server data model
+        /// </summary>
         public class GSEControlBlock
         {
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
@@ -1254,6 +1260,39 @@ namespace IEC61850
                 {
                     Console.WriteLine("ERROR: Failed to create native PhyComAddress instance!");
                 }
+            }
+        }
+
+        /// <summary>
+        /// Log control block (LCB) instance for server data model
+        /// </summary>
+        public class LogControlBlock
+        {
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr LogControlBlock_create(string name, IntPtr parent, string dataSetName, string logRef, byte trgOps, UInt32 intPeriod,
+                    [MarshalAs(UnmanagedType.I1)] bool logEna, [MarshalAs(UnmanagedType.I1)] bool reasonCode);
+
+            internal IntPtr self = IntPtr.Zero;
+
+            public LogControlBlock(string name, LogicalNode parent, string dataSet, string logRef, byte trgOps, UInt32 intPerdiod, bool logEna, bool reasonCode)
+            {
+                self = LogControlBlock_create(name, parent.self, dataSet, logRef, trgOps, intPerdiod, logEna, reasonCode);
+            }
+        }
+
+        /// <summary>
+        /// Setting group control block for server data model
+        /// </summary>
+        public class SettingGroupControlBlock
+        {
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr SettingGroupControlBlock_create(IntPtr parent, byte actSG, byte numOfSGs);
+
+            internal IntPtr self = IntPtr.Zero;
+
+            public SettingGroupControlBlock(LogicalNode parent, UInt32 actSG, UInt32 numOfSGs)
+            {
+                self = SettingGroupControlBlock_create(parent.self, (byte) actSG, (byte)  numOfSGs);
             }
         }
 
