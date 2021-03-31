@@ -1,7 +1,7 @@
 /*
- * sv_subscriber_example.c
+ * sv_publisher_example.c
  *
- * Example program for Sampled Values (SV) subscriber
+ * Example program for Sampled Values (SV) publisher
  *
  */
 
