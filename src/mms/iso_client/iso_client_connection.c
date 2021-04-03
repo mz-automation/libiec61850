@@ -147,7 +147,6 @@ IsoClientConnection_create(IsoConnectionParameters parameters, IsoIndicationCall
     IsoClientConnection self = (IsoClientConnection) GLOBAL_CALLOC(1, sizeof(struct sIsoClientConnection));
 
     if (self) {
-
         self->parameters = parameters;
         self->callback = callback;
         self->callbackParameter = callbackParameter;
@@ -194,6 +193,13 @@ IsoClientConnection_create(IsoConnectionParameters parameters, IsoIndicationCall
 static bool
 sendConnectionRequestMessage(IsoClientConnection self)
 {
+    if (self->cotpConnection) {
+        /* Destroy existing handle set when connection is reused */
+        if (self->cotpConnection->handleSet)
+            Handleset_destroy(self->cotpConnection->handleSet);
+        self->cotpConnection->handleSet = NULL;
+    }
+
     /* COTP (ISO transport) handshake */
     CotpConnection_init(self->cotpConnection, self->socket, self->receiveBuffer, self->cotpReadBuffer, self->cotpWriteBuffer);
 
@@ -280,10 +286,10 @@ releaseSocket(IsoClientConnection self)
     if (self->socket) {
 
 #if (CONFIG_MMS_SUPPORT_TLS == 1)
-    if (self->cotpConnection->tlsSocket) {
-        TLSSocket_close(self->cotpConnection->tlsSocket);
-        self->cotpConnection->tlsSocket = NULL;
-    }
+        if (self->cotpConnection->tlsSocket) {
+            TLSSocket_close(self->cotpConnection->tlsSocket);
+            self->cotpConnection->tlsSocket = NULL;
+        }
 #endif
 
         Socket_destroy(self->socket);
@@ -750,7 +756,7 @@ void
 IsoClientConnection_destroy(IsoClientConnection self)
 {
     if (DEBUG_ISO_CLIENT)
-        printf("ISO_CLIENT: IsoClientConnection_destroy\n");
+        printf("ISO_CLIENT: IsoClientConnection_destroy(%p)\n", self);
 
     int state = getState(self);
 

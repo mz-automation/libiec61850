@@ -451,8 +451,9 @@ CotpConnection_init(CotpConnection* self, Socket socket,
 {
     self->state = 0;
     self->socket = socket;
-    self->handleSet = Handleset_new( );
+    self->handleSet = Handleset_new();
     Handleset_addSocket( self->handleSet, self->socket );
+
 #if (CONFIG_MMS_SUPPORT_TLS == 1)
     self->tlsSocket = NULL;
 #endif
