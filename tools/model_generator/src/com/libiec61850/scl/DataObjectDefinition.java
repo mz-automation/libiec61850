@@ -28,11 +28,18 @@ import org.w3c.dom.Node;
 public class DataObjectDefinition {
     private String name;
     private String type;
+    private boolean trans = false; /* transient attribute value */
     private int count = 0;
 
     public DataObjectDefinition(Node dataObjectNode) throws SclParserException {
         this.name = ParserUtils.parseAttribute(dataObjectNode, "name");
         this.type = ParserUtils.parseAttribute(dataObjectNode, "type");
+        
+        
+        Boolean isTransient = ParserUtils.parseBooleanAttribute(dataObjectNode, "transient");
+        
+        if (isTransient != null)
+            this.trans = isTransient;
 
         if ((this.type == null) || (this.name == null))
             throw new SclParserException(dataObjectNode, "DO misses required attribute.");
@@ -52,6 +59,10 @@ public class DataObjectDefinition {
 
     public int getCount() {
         return count;
+    }
+    
+    public boolean isTransient() {
+        return trans;
     }
 
 }
