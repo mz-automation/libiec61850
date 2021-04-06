@@ -74,6 +74,9 @@ namespace IEC61850
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern void IedModel_setIedNameForDynamicModel(IntPtr self, string iedName);
 
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr IedModel_getDeviceByInst(IntPtr self, string ldInst);
+
             internal IntPtr self = IntPtr.Zero;
 
             internal IedModel(IntPtr self)
@@ -191,6 +194,18 @@ namespace IEC61850
                 }
 
                 return parentNode;
+            }
+
+            public LogicalDevice GetDeviceByInst(string ldInst)
+            {
+                IntPtr ldPtr = IedModel_getDeviceByInst(self, ldInst);
+
+                if (ldPtr != IntPtr.Zero)
+                {
+                    return new LogicalDevice(ldPtr, this);
+                }
+                else
+                    return null;
             }
 
             private ModelNode GetModelNodeFromNodeRef(IntPtr nodeRef)
