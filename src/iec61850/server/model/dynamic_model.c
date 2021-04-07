@@ -607,6 +607,30 @@ DataAttribute_create(const char* name, ModelNode* parent, DataAttributeType type
     return self;
 }
 
+const char*
+DataAttribute_getName(DataAttribute* self)
+{
+    return self->name;
+}
+
+DataAttributeType
+DataAttribute_getType(DataAttribute* self)
+{
+    return self->type;
+}
+
+FunctionalConstraint
+DataAttribute_getFC(DataAttribute* self)
+{
+    return self->fc;
+}
+
+uint8_t
+DataAttribute_getTrgOps(DataAttribute* self)
+{
+    return self->triggerOptions;
+}
+
 void
 DataAttribute_setValue(DataAttribute* self, MmsValue* value)
 {
