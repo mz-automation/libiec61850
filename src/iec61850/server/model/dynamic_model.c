@@ -607,12 +607,6 @@ DataAttribute_create(const char* name, ModelNode* parent, DataAttributeType type
     return self;
 }
 
-const char*
-DataAttribute_getName(DataAttribute* self)
-{
-    return self->name;
-}
-
 DataAttributeType
 DataAttribute_getType(DataAttribute* self)
 {

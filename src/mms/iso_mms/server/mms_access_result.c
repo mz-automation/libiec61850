@@ -394,7 +394,7 @@ MmsValue_getMaxEncodedSize(MmsValue* self)
         size = 2 + self->value.binaryTime.size;
         break;
     case MMS_OCTET_STRING:
-        elementSize = abs(self->value.octetString.maxSize);
+        elementSize = self->value.octetString.maxSize;
         size = 1 + BerEncoder_determineLengthSize(elementSize) + elementSize;
         break;
     case MMS_FLOAT:
