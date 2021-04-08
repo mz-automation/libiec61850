@@ -53,6 +53,13 @@ LIB_SOURCE_DIRS += hal/ethernet/bsd
 LIB_SOURCE_DIRS += hal/filesystem/linux
 LIB_SOURCE_DIRS += hal/time/unix
 LIB_SOURCE_DIRS += hal/memory
+else ifeq ($(HAL_IMPL), MACOS)
+LIB_SOURCE_DIRS += hal/socket/bsd
+LIB_SOURCE_DIRS += hal/thread/macos
+LIB_SOURCE_DIRS += hal/ethernet/bsd
+LIB_SOURCE_DIRS += hal/filesystem/linux
+LIB_SOURCE_DIRS += hal/time/unix
+LIB_SOURCE_DIRS += hal/memory
 endif
 LIB_INCLUDE_DIRS += config
 LIB_INCLUDE_DIRS += hal/inc
