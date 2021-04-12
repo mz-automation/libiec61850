@@ -28,43 +28,75 @@ struct sThread {
    bool autodestroy;
 };
 
+typedef struct sSemaphore* mSemaphore;
+
+struct sSemaphore
+{
+    sem_t* sem;
+};
+
 Semaphore
 Semaphore_create(int initialValue)
 {
+    mSemaphore self = NULL;
+
     char tmpname[] = {"/tmp/libiec61850.XXXXXX"};
-    mktemp(tmpname);
+    char* res = mktemp(tmpname);
 
-    Semaphore self = (Semaphore) sem_open(tmpname, O_CREAT, 0666, initialValue);
+    if (res) {
+        self = (mSemaphore) GLOBAL_CALLOC(1, sizeof(struct sSemaphore));
 
-    if (self == SEM_FAILED) {
-        printf("ERROR: Failed to create semaphore (errno =  %i)\n", errno);    
+        if (self) {
+            self->sem = sem_open(tmpname, O_CREAT, 0666, initialValue);
+
+            if (self->sem == SEM_FAILED) {
+                printf("ERROR: Failed to create semaphore (errno = %i)\n", errno);
+
+                GLOBAL_FREEMEM(self);
+                self = NULL;
+            }
+            else {
+                int ret = sem_unlink(tmpname);
+
+                if (ret == -1)
+                    printf("ERROR: Failed to unlink semaphore %s\n", tmpname);
+            }
+        }
     }
-    
-    int ret = sem_unlink(tmpname);
 
-    if (ret == -1)
-        printf("ERROR: Failed to unlink semaphore %s\n", tmpname);
-
-    return self;
+    return (Semaphore)self;
 }
 
 /* Wait until semaphore value is more than zero. Then decrease the semaphore value. */
 void
 Semaphore_wait(Semaphore self)
 {
-    sem_wait((sem_t*) self);
+    mSemaphore mSelf = (mSemaphore) self;
+
+    sem_wait(mSelf->sem);
 }
 
 void
 Semaphore_post(Semaphore self)
 {
-    sem_post((sem_t*) self);
+    mSemaphore mSelf = (mSemaphore) self;
+
+    sem_post(mSelf->sem);
 }
 
 void
 Semaphore_destroy(Semaphore self)
 {
-    sem_close(self);
+    if (self) {
+        mSemaphore mSelf = (mSemaphore) self;
+
+        int ret = sem_close(mSelf->sem);
+
+        if (ret == -1)
+            printf("ERROR: Failed to close semaphore (errno = %i)\n", errno);
+
+        GLOBAL_FREEMEM(mSelf);
+    }    
 }
 
 Thread
