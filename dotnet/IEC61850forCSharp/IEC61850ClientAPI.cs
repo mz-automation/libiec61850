@@ -548,7 +548,7 @@ namespace IEC61850
             /// <summary>
             /// Called when there is a change in the connection state
             /// </summary>
-            public delegate void StateChangedHandler(IedConnection connection,IedConnectionState newState);
+            public delegate void StateChangedHandler(IedConnection connection, IedConnectionState newState);
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern void IedConnection_installStateChangedHandler(IntPtr connection, InternalStateChangedHandler handler, IntPtr parameter);
@@ -1788,7 +1788,7 @@ namespace IEC61850
             /// by a prior function call.</description>
             /// <param name="handler">The user provided callback handler</param>
             /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
-            [Obsolete("ConnectionClosedHandler is deprecated, please use ConnectionEventHandler instead")]
+            [Obsolete("ConnectionClosedHandler is deprecated, please use StateChangedHandler instead")]
             public void InstallConnectionClosedHandler(ConnectionClosedHandler handler)
             {
                 if (connectionClosedHandler == null)
