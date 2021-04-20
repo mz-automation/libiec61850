@@ -1,7 +1,7 @@
 /*
  *  control.c
  *
- *  Copyright 2013-2020 Michael Zillgith
+ *  Copyright 2013-2021 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -39,13 +39,13 @@
 #define DEBUG_IED_SERVER 0
 #endif
 
-#define STATE_UNSELECTED 0
-#define STATE_READY 1
-#define STATE_WAIT_FOR_ACTIVATION_TIME 2
-#define STATE_PERFORM_TEST 3
-#define STATE_WAIT_FOR_EXECUTION 4
-#define STATE_OPERATE 5
-#define STATE_WAIT_FOR_SELECT 6
+#define STATE_UNSELECTED 0               /* idle state for SBO controls */
+#define STATE_READY 1                    /* idle state for direct controls, or selected state for SBO controls */
+#define STATE_WAIT_FOR_ACTIVATION_TIME 2 /* time activated control is waiting for execution time */
+#define STATE_PERFORM_TEST 3             /* waiting for application to perform tests */
+#define STATE_WAIT_FOR_EXECUTION 4       /* control is scheduled and waiting for execution */
+#define STATE_OPERATE 5                  /* waiting for application to execute the command */
+#define STATE_WAIT_FOR_SELECT 6          /* waiting for application to perform/confirm selection */
 
 #define PENDING_EVENT_SELECTED 1
 #define PENDING_EVENT_UNSELECTED 2
@@ -1989,20 +1989,37 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                     goto free_and_return;
                 }
 
+                int state = getState(controlObject);
+
                 uint64_t currentTime = Hal_getTimeInMs();
 
                 checkSelectTimeout(controlObject, currentTime);
 
-                int state = getState(controlObject);
-
                 if (state != STATE_UNSELECTED) {
-                    indication = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
 
-                    ControlObject_sendLastApplError(controlObject, connection, "SBOw", CONTROL_ERROR_NO_ERROR,
-                            ADD_CAUSE_OBJECT_ALREADY_SELECTED, ctlNum, origin, true);
+                    if ((state == STATE_OPERATE) || (state == STATE_WAIT_FOR_EXECUTION)) {
+                        indication = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
 
-                    if (DEBUG_IED_SERVER)
-                        printf("IED_SERVER: SBOw - select failed!\n");
+                        ControlObject_sendLastApplError(controlObject, connection, "SBOw",
+                                CONTROL_ERROR_NO_ERROR, ADD_CAUSE_COMMAND_ALREADY_IN_EXECUTION,
+                                ctlNum, origin, true);
+
+                        if (DEBUG_IED_SERVER)
+                            printf("IED_SERVER: SBOw - select failed - already in execution!\n");
+
+                        goto free_and_return;
+                    }
+                    else {
+                        indication = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
+
+                        ControlObject_sendLastApplError(controlObject, connection, "SBOw", CONTROL_ERROR_NO_ERROR,
+                                ADD_CAUSE_OBJECT_ALREADY_SELECTED, ctlNum, origin, true);
+
+                        if (DEBUG_IED_SERVER)
+                            printf("IED_SERVER: SBOw - select failed - already selected!\n");
+
+                        goto free_and_return;
+                    }
                 }
                 else {
 
@@ -2282,10 +2299,10 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
 
         serviceType = IEC61850_SERVICE_TYPE_CANCEL;
 
-        if (DEBUG_IED_SERVER)
-            printf("IED_SERVER: control received cancel!\n");
-
         int state = getState(controlObject);
+
+        if (DEBUG_IED_SERVER)
+            printf("IED_SERVER: control received cancel (state: %i)!\n", state);
 
         MmsValue* ctlNum = getCancelParameterCtlNum(value);
         MmsValue* origin = getCancelParameterOrigin(value);
@@ -2294,6 +2311,16 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
             indication = DATA_ACCESS_ERROR_TYPE_INCONSISTENT;
             if (DEBUG_IED_SERVER)
                 printf("IED_SERVER: Invalid cancel message!\n");
+            goto free_and_return;
+        }
+
+        if ((state == STATE_OPERATE) || (state == STATE_WAIT_FOR_EXECUTION)) {
+            indication = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
+
+            ControlObject_sendLastApplError(controlObject, connection, "Cancel",
+                    CONTROL_ERROR_NO_ERROR, ADD_CAUSE_COMMAND_ALREADY_IN_EXECUTION,
+                    ctlNum, origin, true);
+
             goto free_and_return;
         }
 
