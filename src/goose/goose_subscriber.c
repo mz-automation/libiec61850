@@ -47,8 +47,10 @@ GooseSubscriber_create(char* goCbRef, MmsValue* dataSetValues)
     self->timestamp = MmsValue_newUtcTime(0);
     self->dataSetValues = dataSetValues;
 
-    if (dataSetValues != NULL)
+    if (dataSetValues)
         self->dataSetValuesSelfAllocated = false;
+    else
+        self->dataSetValuesSelfAllocated = true;
 
     memset(self->dstMac, 0xFF, 6);
     self->dstMacSet = false;

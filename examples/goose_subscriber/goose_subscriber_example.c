@@ -9,6 +9,7 @@
 #include "goose_receiver.h"
 #include "goose_subscriber.h"
 #include "hal_thread.h"
+#include "linked_list.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -16,12 +17,13 @@
 
 static int running = 1;
 
-void sigint_handler(int signalId)
+static void
+sigint_handler(int signalId)
 {
     running = 0;
 }
 
-void
+static void
 gooseListener(GooseSubscriber subscriber, void* parameter)
 {
     printf("GOOSE event:\n");
@@ -48,14 +50,14 @@ main(int argc, char** argv)
 {
     GooseReceiver receiver = GooseReceiver_create();
 
-     if (argc > 1) {
-         printf("Set interface id: %s\n", argv[1]);
-         GooseReceiver_setInterfaceId(receiver, argv[1]);
-     }
-     else {
-         printf("Using interface eth0\n");
-         GooseReceiver_setInterfaceId(receiver, "eth0");
-     }
+    if (argc > 1) {
+        printf("Set interface id: %s\n", argv[1]);
+        GooseReceiver_setInterfaceId(receiver, argv[1]);
+    }
+    else {
+        printf("Using interface eth0\n");
+        GooseReceiver_setInterfaceId(receiver, "eth0");
+    }
 
     GooseSubscriber subscriber = GooseSubscriber_create("simpleIOGenericIO/LLN0$GO$gcbAnalogValues", NULL);
 
