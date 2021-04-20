@@ -2232,6 +2232,12 @@ LIB61850_API DEPRECATED void
 ControlObjectClient_enableSynchroCheck(ControlObjectClient self);
 
 /**
+ * \deprecated Do not use (ctlNum is handled automatically by the library)! Intended for test purposes only.
+ */
+LIB61850_API DEPRECATED void
+ControlObjectClient_setCtlNum(ControlObjectClient self, uint8_t ctlNum);
+
+/**
  * \brief Set the value of the interlock check flag when a control command is sent
  *
  * \param self the ControlObjectClient instance

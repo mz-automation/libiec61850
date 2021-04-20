@@ -2144,8 +2144,6 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
 
             bool testCondition = MmsValue_getBoolean(test);
 
-            controlObject->testMode = testCondition;
-
             if ((controlObject->ctlModel == 2) || (controlObject->ctlModel == 4)) {
                 if (controlObject->mmsConnection != connection) {
                     indication = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
@@ -2163,7 +2161,8 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                          MmsValue_equals(origin, controlObject->origin) &&
                          MmsValue_equals(ctlNum, controlObject->ctlNum) &&
                          (controlObject->interlockCheck == interlockCheck) &&
-                         (controlObject->synchroCheck == synchroCheck)
+                         (controlObject->synchroCheck == synchroCheck) &&
+                         (controlObject->testMode == testCondition)
                          ) == false)
                     {
                         indication = DATA_ACCESS_ERROR_TYPE_INCONSISTENT;
@@ -2191,6 +2190,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                     controlObject->synchroCheck = synchroCheck;
                     controlObject->interlockCheck = interlockCheck;
                     controlObject->mmsConnection = connection;
+                    controlObject->testMode = testCondition;
 
                     CheckHandlerResult checkResult = CONTROL_ACCEPTED;
                     if (controlObject->checkHandler != NULL) { /* perform operative tests */

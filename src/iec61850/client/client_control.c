@@ -1286,6 +1286,12 @@ ControlObjectClient_getLastApplError(ControlObjectClient self)
 }
 
 void
+ControlObjectClient_setCtlNum(ControlObjectClient self, uint8_t ctlNum)
+{
+    self->ctlNum = ctlNum;
+}
+
+void
 controlObjectClient_invokeCommandTerminationHandler(ControlObjectClient self)
 {
     if (self->commandTerminationHandler != NULL)
