@@ -124,6 +124,7 @@ static int
 getInterfaceIndex(int sock, const char* deviceName)
 {
     struct ifreq ifr;
+    memset(&ifr, 0, sizeof(struct ifreq));
 
     strncpy(ifr.ifr_name, deviceName, IFNAMSIZ - 1);
 
