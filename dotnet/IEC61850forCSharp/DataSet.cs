@@ -34,6 +34,11 @@ namespace IEC61850
         /// This class is used to represent a data set. It is used to store the values
         /// of a data set.
         /// </summary>
+        /// <remarks>
+        /// This class manages native resource. Take care that the finalizer/Dispose is not
+        /// called while running a method or the object is still in use by another object.
+        /// If in doubt please use the "using" statement.
+        /// </remarks>
         public class DataSet : IDisposable
         {
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
@@ -108,21 +113,34 @@ namespace IEC61850
                 return ClientDataSet_getDataSetSize(nativeObject);
             }
 
-            public void Dispose()
+            private bool disposed = false;
+
+            protected virtual void Dispose(bool disposing)
             {
                 lock (this)
                 {
-                    if (nativeObject != IntPtr.Zero)
+                    if (!disposed)
                     {
-                        ClientDataSet_destroy(nativeObject);
-                        nativeObject = IntPtr.Zero;
+                        if (nativeObject != IntPtr.Zero)
+                        {
+                            ClientDataSet_destroy(nativeObject);
+                            nativeObject = IntPtr.Zero;
+                        }
+
+                        disposed = true;
                     }
                 }
             }
 
+            public void Dispose()
+            {
+                Dispose(true);
+                GC.SuppressFinalize(this);
+            }
+
             ~DataSet()
             {
-                Dispose();
+                Dispose(false);
             }
 
             internal IntPtr getNativeInstance()
