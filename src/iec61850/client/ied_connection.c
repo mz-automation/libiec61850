@@ -2171,10 +2171,11 @@ deleteFileAndSetFileHandler (uint32_t invokeId, void* parameter, MmsError mmsErr
     IedConnectionOutstandingCall call = iedConnection_lookupOutstandingCall(self, invokeId);
 
     if (call) {
-
         IedConnection_GenericServiceHandler handler =  (IedConnection_GenericServiceHandler) call->callback;
 
         handler(invokeId, call->callbackParameter, iedConnection_mapMmsErrorToIedError(mmsError));
+
+        iedConnection_releaseOutstandingCall(self, call);
     }
     else {
         if (DEBUG_IED_CLIENT)
