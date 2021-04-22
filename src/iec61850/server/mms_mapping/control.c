@@ -953,7 +953,6 @@ ControlObject_create(IedServer iedServer, MmsDomain* domain, char* lnName, char*
             printf("IED_SERVER: control object %s/%s.%s has no ctlVal element!\n", domain->domainName, lnName, name);
     }
 
-
     MmsVariableSpecification* originSpec = MmsVariableSpecification_getChildSpecificationByName(operSpec, "origin", NULL);
 
     if (originSpec) {
@@ -2178,6 +2177,8 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                 }
             }
 
+            controlObject->testMode = testCondition;
+
             updateControlParameters(controlObject, ctlVal, ctlNum, origin, synchroCheck, interlockCheck);
 
             MmsValue* operTm = getOperParameterOperTime(value);
@@ -2185,12 +2186,11 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
             if (operTm != NULL) {
                 controlObject->operateTime = MmsValue_getUtcTimeInMs(operTm);
 
-                if (controlObject->operateTime != 0) {
+                if (controlObject->operateTime > currentTime) {
                     controlObject->timeActivatedOperate = true;
                     controlObject->synchroCheck = synchroCheck;
                     controlObject->interlockCheck = interlockCheck;
                     controlObject->mmsConnection = connection;
-                    controlObject->testMode = testCondition;
 
                     CheckHandlerResult checkResult = CONTROL_ACCEPTED;
                     if (controlObject->checkHandler != NULL) { /* perform operative tests */
