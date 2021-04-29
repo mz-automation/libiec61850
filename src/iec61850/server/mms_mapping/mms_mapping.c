@@ -763,7 +763,9 @@ MmsMapping_configureSettingGroups(MmsMapping* self)
 void
 MmsMapping_useIntegratedGoosePublisher(MmsMapping* self, bool enable)
 {
+#if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
     self->useIntegratedPublisher = enable;
+#endif
 }
 
 void
