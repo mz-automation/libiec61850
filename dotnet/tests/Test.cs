@@ -200,7 +200,7 @@ namespace tests
 		[Test ()]
 		public void CreateModelFromFile()
 		{			
-			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../model.cfg");
+			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("model.cfg");
 
 			Assert.NotNull (iedModel);
 		}
@@ -208,7 +208,7 @@ namespace tests
 		[Test ()]
 		public void StartStopSimpleServer()
 		{	
-			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../model.cfg");
+			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("model.cfg");
 
 			IedServer iedServer = new IedServer (iedModel);
 
@@ -228,7 +228,7 @@ namespace tests
 		[Test ()]
 		public void ConnectToServer()
 		{	
-			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../model.cfg");
+			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("model.cfg");
 
 			IedServer iedServer = new IedServer (iedModel);
 
@@ -252,7 +252,7 @@ namespace tests
 		[Test ()]
 		public void ReadNonExistingObject()
 		{	
-			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../model.cfg");
+			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("model.cfg");
 
 			IedServer iedServer = new IedServer (iedModel);
 
@@ -276,7 +276,7 @@ namespace tests
 		[Test ()]
 		public void AccessDataModelServerSide()
 		{
-			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../model.cfg");
+			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("model.cfg");
 
 			ModelNode modelNode = iedModel.GetModelNodeByShortObjectReference ("GenericIO/GGIO1.AnIn1");
 
@@ -292,7 +292,7 @@ namespace tests
 		[Test ()]
 		public void AccessDataModelClientServer()
 		{
-            IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile("../../model.cfg");
+            IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile("model.cfg");
 
 			ModelNode ind1 = iedModel.GetModelNodeByShortObjectReference ("GenericIO/GGIO1.Ind1.stVal");
 
@@ -330,7 +330,7 @@ namespace tests
 		public void ControlWriteAccessToServer()
 		{
 
-			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../model.cfg");
+			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("model.cfg");
 
 			IEC61850.Server.DataAttribute opDlTmms = (IEC61850.Server.DataAttribute) iedModel.GetModelNodeByShortObjectReference("GenericIO/PDUP1.OpDlTmms.setVal");
 			IEC61850.Server.DataAttribute rsDlTmms = (IEC61850.Server.DataAttribute)iedModel.GetModelNodeByShortObjectReference ("GenericIO/PDUP1.RsDlTmms.setVal");
@@ -386,7 +386,7 @@ namespace tests
 		public void WriteAccessPolicy()
 		{
 
-			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../model.cfg");
+			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("model.cfg");
 
 			IEC61850.Server.DataAttribute opDlTmms = (IEC61850.Server.DataAttribute) iedModel.GetModelNodeByShortObjectReference("GenericIO/PDUP1.OpDlTmms.setVal");
             IEC61850.Server.DataAttribute rsDlTmms = (IEC61850.Server.DataAttribute)iedModel.GetModelNodeByShortObjectReference("GenericIO/PDUP1.RsDlTmms.setVal");
@@ -432,7 +432,7 @@ namespace tests
         [Ignore("has to be fixed")]
 		public void ControlHandler()
 		{
-			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../model.cfg");
+			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("model.cfg");
 
 			DataObject spcso1 = (DataObject)iedModel.GetModelNodeByShortObjectReference ("GenericIO/GGIO1.SPCSO1");
 
@@ -483,7 +483,7 @@ namespace tests
 		[Test()]
 		public void ConnectionHandler()
 		{
-			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../model.cfg");
+			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("model.cfg");
 
 			int handlerCalled = 0;
 			int connectionCount = 0;
