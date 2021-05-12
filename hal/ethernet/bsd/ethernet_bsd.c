@@ -176,7 +176,7 @@ Ethernet_getInterfaceMACAddress(const char* interfaceId, uint8_t* addr)
     /* Get info about all local network interfaces. */
     if (getifaddrs(&ifap))
     {
-        printf("Error getting network interfaces list!");
+        printf("Error getting network interfaces list!\n");
         return;
     }
 
@@ -197,7 +197,7 @@ Ethernet_getInterfaceMACAddress(const char* interfaceId, uint8_t* addr)
         memcpy(addr, LLADDR(link), link->sdl_alen);
     }
     else
-        printf("Could not find the network interface %s!", interfaceId);
+        printf("Could not find the network interface %s!\n", interfaceId);
 
     /* Free network interface info structure. */
     freeifaddrs(ifap);
@@ -313,7 +313,8 @@ Ethernet_createSocket(const char* interfaceId, uint8_t* destAddress)
     }
 
     /* Activate immediate mode. */
-    if (ioctl(self->bpf, BIOCIMMEDIATE, &self->bpfBufferSize) == -1)
+    optval = 1;
+    if (ioctl(self->bpf, BIOCIMMEDIATE, &optval) == -1)
     {
         printf("Unable to activate immediate mode!\n");
         GLOBAL_FREEMEM(self->bpfProgram.bf_insns);
