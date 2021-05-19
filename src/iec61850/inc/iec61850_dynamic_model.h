@@ -330,6 +330,16 @@ LIB61850_API DataSet*
 DataSet_create(const char* name, LogicalNode* parent);
 
 /**
+ * \brief Get the name of the data set
+ *
+ * \param self the instance of the data set
+ *
+ * \returns the name of the data set (not the object reference).
+ */
+LIB61850_API const char*
+DataSet_getName(DataSet* self);
+
+/**
  * \brief returns the number of elements (entries) of the data set
  *
  * \param self the instance of the data set

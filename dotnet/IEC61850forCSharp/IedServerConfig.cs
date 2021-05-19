@@ -121,6 +121,9 @@ namespace IEC61850.Server
         [return: MarshalAs(UnmanagedType.I1)]
         static extern bool IedServerConfig_isOwnerForRCBEnabled(IntPtr self);
 
+        [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+        static extern void IedServerConfig_useIntegratedGoosePublisher(IntPtr self, [MarshalAs(UnmanagedType.I1)] bool enable);
+
         internal IntPtr self;
 
         public IedServerConfig()
@@ -333,6 +336,18 @@ namespace IEC61850.Server
             set
             {
                 IedServerConfig_enableOwnerForRCB(self, value);
+            }
+        }
+
+        /// <summary>
+        /// Enable/disable using the integrated GOOSE publisher for configured GoCBs
+        /// </summary>
+        /// <value><c>true</c> when integrated GOOSE publisher is used; otherwise, <c>false</c>. Defaults to true</value>
+        public bool UseIntegratedGoosePublisher
+        {
+            set
+            {
+                IedServerConfig_useIntegratedGoosePublisher(self, value);
             }
         }
 

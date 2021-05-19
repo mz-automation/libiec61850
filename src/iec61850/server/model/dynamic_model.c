@@ -654,6 +654,12 @@ DataSet_create(const char* name, LogicalNode* parent)
     return self;
 }
 
+const char*
+DataSet_getName(DataSet* self)
+{
+    return self->name;
+}
+
 int
 DataSet_getSize(DataSet* self)
 {

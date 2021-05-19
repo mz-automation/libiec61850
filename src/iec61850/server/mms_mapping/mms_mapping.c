@@ -2294,7 +2294,7 @@ writeAccessGooseControlBlock(MmsMapping* self, MmsDomain* domain, char* variable
             MmsGooseControlBlock_disable(mmsGCB, self);
 
             if (self->goCbHandler)
-                self->goCbHandler(mmsGCB, IEC61850_GOCB_EVENT_ENABLE, self->goCbHandlerParameter);
+                self->goCbHandler(mmsGCB, IEC61850_GOCB_EVENT_DISABLE, self->goCbHandlerParameter);
         }
 
         return DATA_ACCESS_ERROR_SUCCESS;

@@ -637,7 +637,7 @@ IedServer_setGooseInterfaceId(IedServer self, const char* interfaceId);
  * Note: This function has no effect when CONFIG_INCLUDE_GOOSE_SUPPORT is not set.
  *
  * \param self the instance of IedServer to operate on.
- * \param ln the logical node that contains the GCB or NULL to enable/disable VLAN tagging for all GCBs
+ * \param ln the logical node that contains the GCB or NULL to set the ethernet interface ID for all GCBs
  * \param gcbName the name (not object reference!) of the GCB
  * \param interfaceId the ID of the ethernet interface to be used for GOOSE publishing
  */
@@ -1584,6 +1584,16 @@ typedef struct sMmsGooseControlBlock* MmsGooseControlBlock;
 
 typedef void (*GoCBEventHandler) (MmsGooseControlBlock goCb, int event, void* parameter);
 
+/**
+ * \brief Set a callback handler for GoCB events (enabled/disabled)
+ *
+ * The callback handler is called whenever a GOOSE control block is enabled or disabled.
+ * It can be used to integrate the external GOOSE publisher with the IEC 61850/MMS server.
+ *
+ * \param self the instance of IedServer to operate on.
+ * \param handler the callback handler
+ * \param parameter user provided parameter that is passed to the callback handler
+ */
 LIB61850_API void
 IedServer_setGoCBHandler(IedServer self, GoCBEventHandler handler, void* parameter);
 

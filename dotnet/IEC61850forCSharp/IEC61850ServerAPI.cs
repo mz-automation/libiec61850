@@ -208,7 +208,7 @@ namespace IEC61850
                     return null;
             }
 
-            private ModelNode GetModelNodeFromNodeRef(IntPtr nodeRef)
+            internal ModelNode GetModelNodeFromNodeRef(IntPtr nodeRef)
             {
                 ModelNode modelNode = null;
 
@@ -1248,11 +1248,27 @@ namespace IEC61850
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern IntPtr DataSet_create(string name, IntPtr parent);
 
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr DataSet_getName(IntPtr self);
+
             public IntPtr self = IntPtr.Zero;
+
+            internal DataSet(IntPtr dataSetPtr)
+            {
+                self = dataSetPtr;
+            }
 
             public DataSet(string name, LogicalNode parent)
             {
                 self = DataSet_create(name, parent.self);
+            }
+
+            public string Name
+            {
+                get
+                {
+                    return Marshal.PtrToStringAnsi(DataSet_getName(self));
+                }
             }
         }
 
@@ -1400,6 +1416,121 @@ namespace IEC61850
                     return Marshal.PtrToStringAnsi(localAddrPtr);
                 else
                     return null;
+            }
+        }
+
+        public class MmsGooseControlBlock
+        {
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr MmsGooseControlBlock_getName(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr MmsGooseControlBlock_getLogicalNode(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr MmsGooseControlBlock_getDataSet(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
+            static extern bool MmsGooseControlBlock_getGoEna(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern int MmsGooseControlBlock_getMinTime(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern int MmsGooseControlBlock_getMaxTime(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
+            static extern bool MmsGooseControlBlock_getFixedOffs(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
+            static extern bool MmsGooseControlBlock_getNdsCom(IntPtr self);
+
+            private IntPtr self;
+            private LogicalNode ln = null;
+            private DataSet dataSet = null;
+
+            internal MmsGooseControlBlock(IntPtr self, IedModel iedModel)
+            {
+                this.self = self;
+
+                IntPtr lnPtr = MmsGooseControlBlock_getLogicalNode(self);
+
+                ModelNode lnModelNode = iedModel.GetModelNodeFromNodeRef(lnPtr);
+
+                if (lnModelNode != null && lnModelNode is LogicalNode)
+                {
+                    this.ln = lnModelNode as LogicalNode;
+                }
+            }
+
+            public string Name
+            {
+                get
+                {
+                    return Marshal.PtrToStringAnsi(MmsGooseControlBlock_getName(self));
+                }
+            }
+
+            public LogicalNode LN
+            {
+                get
+                {
+                    return ln;
+                }
+            }
+
+            public DataSet DataSet
+            {
+                get
+                {
+                    if (dataSet == null)
+                        dataSet = new DataSet(MmsGooseControlBlock_getDataSet(self));
+
+                    return dataSet;
+                }
+            }
+
+            public bool GoEna
+            {
+                get
+                {
+                    return MmsGooseControlBlock_getGoEna(self);
+                }
+            }
+
+            public int MinTime
+            {
+                get
+                {
+                    return MmsGooseControlBlock_getMinTime(self);
+                }
+            }
+
+            public int MaxTime
+            {
+                get
+                {
+                    return MmsGooseControlBlock_getMaxTime(self);
+                }
+            }
+
+            public bool FixedOffs
+            {
+                get
+                {
+                    return MmsGooseControlBlock_getFixedOffs(self);
+                }
+            }
+
+            public bool NdsCom
+            {
+                get
+                {
+                    return MmsGooseControlBlock_getNdsCom(self);
+                }
             }
         }
 
@@ -1553,6 +1684,8 @@ namespace IEC61850
                 return ControlAction_isSelect(self);
             }
         }
+
+        public delegate void GoCBEventHandler(MmsGooseControlBlock goCB, int cbEvent, object parameter);
 
         public delegate MmsDataAccessError WriteAccessHandler (DataAttribute dataAttr, MmsValue value, 
             ClientConnection connection, object parameter);
@@ -1758,6 +1891,27 @@ namespace IEC61850
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern void IedServer_setConnectionIndicationHandler(IntPtr self, InternalConnectionHandler handler, IntPtr parameter);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedServer_enableGoosePublishing(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedServer_disableGoosePublishing(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedServer_setGooseInterfaceId(IntPtr self, string interfaceId);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedServer_setGooseInterfaceIdEx(IntPtr self, IntPtr ln, string gcbName, string interfaceId);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedServer_useGooseVlanTag(IntPtr self, IntPtr ln, string gcbName, [MarshalAs(UnmanagedType.I1)] bool useVlanTag);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            private delegate void InternalGoCBEventHandler(IntPtr goCB, int cbEvent, IntPtr parameter);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedServer_setGoCBHandler(IntPtr self, InternalGoCBEventHandler handler, IntPtr parameter);
 
             private IntPtr self = IntPtr.Zero;
 
@@ -2286,6 +2440,112 @@ namespace IEC61850
                 else
                     return null;
             }
+
+            /// <summary>
+            /// Enable all GOOSE control blocks.
+            /// </summary>
+            /// This will set the GoEna attribute of all configured GOOSE control blocks
+            /// to true. If this method is not called at the startup or reset of the server
+            /// then configured GOOSE control blocks keep inactive until a MMS client enables
+            /// them by writing to the GOOSE control block.
+            public void EnableGoosePublishing()
+            {
+                IedServer_enableGoosePublishing(self);
+            }
+
+            /// <summary>
+            /// Disable all GOOSE control blocks.
+            /// </summary>
+            /// This will set the GoEna attribute of all configured GOOSE control blocks
+            /// to false. This will stop GOOSE transmission.
+            public void DisableGoosePublishing()
+            {
+                IedServer_disableGoosePublishing(self);
+            }
+
+            /// <summary>
+            /// Set the Ethernet interface to be used by GOOSE publishing
+            /// </summary>
+            /// 
+            /// This function can be used to set the GOOSE interface ID. If not used or set to null the
+            /// default interface ID from stack_config.h is used.Note the interface ID is operating system
+            /// specific!
+            /// 
+            /// <param name="interfaceId">the ID of the ethernet interface to be used for GOOSE publishing</param>
+            public void SetGooseInterfaceId(string interfaceId)
+            {
+                IedServer_setGooseInterfaceId(self, interfaceId);
+            }
+
+            /// <summary>
+            /// Set the Ethernet interface to be used by GOOSE publishing
+            /// </summary>
+            /// 
+            /// This function can be used to set the GOOSE interface ID for all GCBs (parameter ln = null) or for
+            /// a specific GCB specified by the logical node instance and the GCB name.
+            /// 
+            /// <param name="ln">ln the logical node that contains the GCB or null to set the ethernet interface ID for all GCBs</param>
+            /// <param name="gcbName">the name (not object reference!) of the GCB</param>
+            /// <param name="interfaceId">the ID of the ethernet interface to be used for GOOSE publishing</param>
+            public void SetGooseInterfaceId(LogicalNode ln, string gcbName, string interfaceId)
+            {
+                if (ln == null)
+                    IedServer_setGooseInterfaceIdEx(self, IntPtr.Zero, gcbName, interfaceId);
+                else
+                    IedServer_setGooseInterfaceIdEx(self, ln.self, gcbName, interfaceId);
+            }
+
+            /// <summary>
+            /// Enable/disable the use of VLAN tags in GOOSE messages
+            /// </summary>
+            /// 
+            /// This function can be used to enable/disable VLAN tagging for all GCBs (parameter ln = null) or for
+            /// a specific GCB specified by the logical node instance and the GCB name.
+            /// 
+            /// <param name="ln">the logical node that contains the GCB or null to enable/disable VLAN tagging for all GCBs</param>
+            /// <param name="gcbName">the name (not object reference!) of the GCB</param>
+            /// <param name="useVlanTag">true to enable VLAN tagging, false otherwise</param>
+            public void UseGooseVlanTag(LogicalNode ln, string gcbName, bool useVlanTag)
+            {
+                if (ln == null)
+                    IedServer_useGooseVlanTag(self, IntPtr.Zero, gcbName, useVlanTag);
+                else
+                    IedServer_useGooseVlanTag(self, ln.self, gcbName, useVlanTag);
+            }
+
+            private GoCBEventHandler goCbEventHandler = null;
+            private object goCbEventHandlerParameter = null;
+
+            private InternalGoCBEventHandler internalGoCBEventHandler = null;
+
+            private void InternalGoCBEventHandlerImplementation(IntPtr goCB, int cbEvent, IntPtr parameter)
+            {
+                if (goCbEventHandler != null)
+                {
+                    MmsGooseControlBlock mmsGoCb = new MmsGooseControlBlock(goCB, iedModel);
+
+                    goCbEventHandler.Invoke(mmsGoCb, cbEvent, goCbEventHandlerParameter);
+                }
+            }
+
+            /// <summary>
+            /// Set a callback handler for GoCB events (enabled/disabled)
+            /// </summary>
+            /// <param name="handler">the callback handler</param>
+            /// <param name="parameter">user provided parameter that is passed to the callback handler</param>
+            public void SetGoCBHandler(GoCBEventHandler handler, object parameter)
+            {
+                goCbEventHandler = handler;
+                goCbEventHandlerParameter = parameter;
+   
+                if (internalGoCBEventHandler == null)
+                {
+                    internalGoCBEventHandler = new InternalGoCBEventHandler(InternalGoCBEventHandlerImplementation);
+
+                    IedServer_setGoCBHandler(self, internalGoCBEventHandler, IntPtr.Zero);
+                }
+            }
+
         }
 
     }
