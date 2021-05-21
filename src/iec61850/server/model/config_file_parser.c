@@ -130,6 +130,7 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
     ModelNode* currentModelNode = NULL;
     DataSet* currentDataSet = NULL;
     GSEControlBlock* currentGoCB = NULL;
+    SVControlBlock* currentSMVCB = NULL;
 
     char nameString[130];
     char nameString2[130];
@@ -289,6 +290,23 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
                         indendation = 4;
 
                     }
+                    else if (StringUtils_startsWith((char*) lineBuffer, "SMVC")) {
+                        uint32_t confRev;
+                        int smpMod;
+                        int smpRate;
+                        int optFlds;
+                        int isUnicast;
+
+                        int matchedItems = sscanf((char*) lineBuffer, "SMVC(%s %s %s %u %i %i %i %i)",
+                                nameString, nameString2, nameString3, &confRev, &smpMod, &smpRate, &optFlds, &isUnicast);
+
+                        if (matchedItems < 5) goto exit_error;
+
+                        currentSMVCB = SVControlBlock_create(nameString, currentLN, nameString2, nameString3, confRev, smpMod, smpRate, optFlds, (bool) isUnicast);
+
+                        indendation = 4;
+
+                    }
 #if (CONFIG_IEC61850_SETTING_GROUPS == 1)
                     else if (StringUtils_startsWith((char*) lineBuffer, "SG")) {
 
@@ -442,7 +460,7 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
                             }
                         }
 
-                        int lineLength = strlen((char*) lineBuffer);
+                        int lineLength = (int) strlen((char*) lineBuffer);
 
                         if (lineBuffer[lineLength - 1] == '{') {
                             indendation++;
@@ -488,7 +506,7 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
 
                         int matchedItems = sscanf((char*) lineBuffer, "PA(%u %u %u %s)", &vlanPrio, &vlanId, &appId, nameString);
 
-                        if ((matchedItems != 4) || (currentGoCB == NULL)) goto exit_error;
+                        if ((matchedItems != 4) || ((currentGoCB == NULL) && (currentSMVCB == NULL))) goto exit_error;
 
                         terminateString(nameString, ')');
 
@@ -502,8 +520,13 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
                                 PhyComAddress_create((uint8_t) vlanPrio, (uint16_t) vlanId, (uint16_t) appId,
                                         (uint8_t*) nameString2);
 
-                        GSEControlBlock_addPhyComAddress(currentGoCB, dstAddress);
+                        if (currentGoCB) {
+                            GSEControlBlock_addPhyComAddress(currentGoCB, dstAddress);
+                        }
 
+                        if (currentSMVCB) {
+                            SVControlBlock_addPhyComAddress(currentSMVCB, dstAddress);
+                        }
                     }
                     else
                         goto exit_error;
@@ -535,7 +558,8 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
 
 exit_error:
     if (DEBUG_IED_SERVER)
-        printf("IED_SERVER: error parsing line %i (indendation level = %i)\n", currentLine, indendation);
+        printf("IED_SERVER: error parsing line %i (indentation level = %i)\n", currentLine, indendation);
+
     IedModel_destroy(model);
     return NULL;
 }
