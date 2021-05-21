@@ -49,11 +49,11 @@ namespace server_goose_publisher
             {
                 if (cbEvent == 1)
                 {
-                    Console.WriteLine("GCB " + goCB.LN.GetName() + ":" + goCB.Name + " enabled");
+                    Console.WriteLine("GCB " + goCB.LN.GetObjectReference() + ":" + goCB.Name + " enabled");
                 }
                 else
                 {
-                    Console.WriteLine("GCB " + goCB.LN.GetName() + ":" + goCB.Name + " disabled");
+                    Console.WriteLine("GCB " + goCB.LN.GetObjectReference() + ":" + goCB.Name + " disabled");
                 }
             }, null);
 

@@ -1227,16 +1227,20 @@ namespace IEC61850
             /// <param name="withoutIedName">If set to <c>true</c> the object reference is created without IED name.</param>
             public string GetObjectReference(bool withoutIedName = false)
             {
-                IntPtr objRefPtr = ModelNode_getObjectReferenceEx(self, IntPtr.Zero, withoutIedName);
+                IntPtr nativeMemory = Marshal.AllocHGlobal(130);
+
+                IntPtr objRefPtr = ModelNode_getObjectReferenceEx(self, nativeMemory, withoutIedName);
 
                 if (objRefPtr != IntPtr.Zero) {
                     string objRef = Marshal.PtrToStringAnsi(objRefPtr);
 
-                    Marshal.FreeHGlobal(objRefPtr);
+                    Marshal.FreeHGlobal(nativeMemory);
 
                     return objRef;
                 }
                 else {
+                    Marshal.FreeHGlobal(nativeMemory);
+
                     return null;
                 }
             }
