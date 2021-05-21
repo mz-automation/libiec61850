@@ -66,13 +66,13 @@ BerInteger_createInt64(void);
 LIB61850_INTERNAL int
 BerInteger_setInt64(Asn1PrimitiveValue* self, int64_t value);
 
-LIB61850_INTERNAL int /* 1 - if conversion is possible, 0 - out of range */
+LIB61850_INTERNAL void
 BerInteger_toInt32(Asn1PrimitiveValue* self, int32_t* nativeValue);
 
-LIB61850_INTERNAL int /* 1 - if conversion is possible, 0 - out of range */
+LIB61850_INTERNAL void
 BerInteger_toUint32(Asn1PrimitiveValue* self, uint32_t* nativeValue);
 
-LIB61850_INTERNAL int /* 1 - if conversion is possible, 0 - out of range */
+LIB61850_INTERNAL void
 BerInteger_toInt64(Asn1PrimitiveValue* self, int64_t* nativeValue);
 
 #ifdef __cplusplus
