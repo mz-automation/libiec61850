@@ -33,6 +33,9 @@
 #define DEBUG_HAL_ETHERNET 1
 #endif
 
+// Set to 1 to workaround WaitForMutlipleObjects problem (returns timeout even when packets are received)
+#define ETHERNET_WIN32_DISABLE_ETHERNET_HANDLESET 1
+
 #if (CONFIG_INCLUDE_ETHERNET_WINDOWS == 1)
 
 
@@ -137,6 +140,8 @@ EthernetHandleSet_new(void)
 void
 EthernetHandleSet_addSocket(EthernetHandleSet self, const EthernetSocket sock)
 {
+#if ETHERNET_WIN32_DISABLE_ETHERNET_HANDLESET == 1
+#else
     if (self != NULL && sock != NULL) {
 
         int i = self->nhandles++;
@@ -145,11 +150,14 @@ EthernetHandleSet_addSocket(EthernetHandleSet self, const EthernetSocket sock)
             
         self->handles[i] = pcap_getevent(sock->rawSocket);
     }
+#endif
 }
 
 void
 EthernetHandleSet_removeSocket(EthernetHandleSet self, const EthernetSocket sock)
 {
+#if ETHERNET_WIN32_DISABLE_ETHERNET_HANDLESET == 1
+#else
     if ((self != NULL) && (sock != NULL)) {
         HANDLE h = pcap_getevent(sock->rawSocket);
 
@@ -163,21 +171,33 @@ EthernetHandleSet_removeSocket(EthernetHandleSet self, const EthernetSocket sock
             }
         }
     }
+#endif
 }
 
 int
 EthernetHandleSet_waitReady(EthernetHandleSet self, unsigned int timeoutMs)
 {
+#if ETHERNET_WIN32_DISABLE_ETHERNET_HANDLESET == 1
+	return 1;
+#else
     int result;
 
     if ((self != NULL) && (self->nhandles > 0)) {
-        result = WaitForMultipleObjects(self->nhandles, self->handles, 0, timeoutMs);
+        DWORD ret = WaitForMultipleObjects(self->nhandles, self->handles, 0, timeoutMs);
+
+        if (ret == WAIT_TIMEOUT)
+            result = 0;
+        else if (ret == WAIT_FAILED)
+            result = -1;
+        else
+            result = (int)ret;
     }
     else {
        result = -1;
     }
 
     return result;
+#endif
 }
 
 void
@@ -328,7 +348,7 @@ Ethernet_createSocket(const char* interfaceId, uint8_t* destAddress)
 
     char* interfaceName = getInterfaceName(interfaceIndex);
 
-    if ((pcapSocket = pcap_open_live(interfaceName, 65536, PCAP_OPENFLAG_PROMISCUOUS, 10, errbuf)) == NULL)
+    if ((pcapSocket = pcap_open_live(interfaceName, 65536, PCAP_OPENFLAG_PROMISCUOUS, 1, errbuf)) == NULL)
     {
         printf("Open ethernet socket failed for device %s\n", interfaceName);
         free(interfaceName);
