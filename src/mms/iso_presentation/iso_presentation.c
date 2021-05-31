@@ -789,7 +789,7 @@ IsoPresentation_createAbortUserMessage(IsoPresentation* self, BufferChain writeB
 
     contentLength = +encodeUserData(NULL, 0, payload, false, self->acseContextId);
 
-    contentLength += BerEncoder_determineLengthSize(contentLength) + 1;
+    contentLength += BerEncoder_determineLengthSize(contentLength) - 1;
 
     uint8_t* buffer = writeBuffer->buffer;
     int bufPos = 0;
