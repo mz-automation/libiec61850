@@ -803,7 +803,7 @@ Control_processControlActions(MmsMapping* self, uint64_t currentTimeInMs)
                     controlObject->errorValue = CONTROL_ERROR_NO_ERROR;
                     controlObject->addCauseValue = ADD_CAUSE_BLOCKED_BY_INTERLOCKING;
 
-                    checkResult = controlObject->checkHandler((ControlAction) self,
+                    checkResult = controlObject->checkHandler((ControlAction) controlObject,
                             controlObject->checkHandlerParameter, controlObject->ctlVal, controlObject->testMode,
                             controlObject->interlockCheck);
                 }
