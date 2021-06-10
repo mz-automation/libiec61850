@@ -2939,6 +2939,19 @@ MmsMapping_enableGoosePublishing(MmsMapping* self)
 }
 
 void
+MmsMapping_setGoosePublishingSimulation(MmsMapping* self, bool test)
+{
+    LinkedList element = self->gseControls;
+
+    while ((element = LinkedList_getNext(element)) != NULL) {
+        MmsGooseControlBlock gcb = (MmsGooseControlBlock) element->data;
+
+        MmsGooseControlBlock_setSimulation(gcb, test);
+    }
+
+}
+
+void
 MmsMapping_useGooseVlanTag(MmsMapping* self, LogicalNode* ln, const char* gcbName, bool useVlanTag)
 {
     LinkedList element = self->gseControls;
