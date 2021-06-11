@@ -1035,6 +1035,25 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
         if (self->connectionLostHandler != NULL)
             self->connectionLostHandler(self, self->connectionLostHandlerParameter);
 
+
+        /* Cleanup outstanding calls */
+        {
+            int i;
+
+            for (i = 0; i < OUTSTANDING_CALLS; i++) {
+                if (self->outstandingCalls[i].isUsed) {
+
+                    if (self->outstandingCalls[i].type != MMS_CALL_TYPE_NONE)
+                        handleAsyncResponse(self, NULL, 0, &(self->outstandingCalls[i]), MMS_ERROR_SERVICE_TIMEOUT);
+
+                    self->outstandingCalls[i].isUsed = false;
+                    break;
+                }
+            }
+        }
+
+        Semaphore_post(self->outstandingCallsLock);
+
         return true;
     }
 
@@ -1539,6 +1558,9 @@ MmsConnection_destroy(MmsConnection self)
     if (self->filestoreBasepath != NULL)
         GLOBAL_FREEMEM(self->filestoreBasepath);
 #endif
+
+    /* Close outstanding open files */
+    mmsClient_closeOutstandingOpenFiles(self);
 #endif
 
     GLOBAL_FREEMEM(self);

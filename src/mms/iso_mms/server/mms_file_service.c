@@ -431,7 +431,7 @@ mmsServer_fileUploadTask(MmsServer self, MmsObtainFileTask task)
                         FileSystem_closeFile(task->fileHandle);
                         task->fileHandle = NULL;
                     }
-                    deleteFile(MmsServerConnection_getFilesystemBasepath(task->connection), task->destinationFilename);
+                    deleteFile(MmsServer_getFilesystemBasepath(self), task->destinationFilename);
                 }
             }
             break;
@@ -471,7 +471,7 @@ mmsServer_fileUploadTask(MmsServer self, MmsObtainFileTask task)
                     FileSystem_closeFile(task->fileHandle);
                     task->fileHandle = NULL;
                 }
-                deleteFile(MmsServerConnection_getFilesystemBasepath(task->connection), task->destinationFilename);
+                deleteFile(MmsServer_getFilesystemBasepath(self), task->destinationFilename);
             }
 
             break;
@@ -510,7 +510,7 @@ mmsServer_fileUploadTask(MmsServer self, MmsObtainFileTask task)
 
                 FileSystem_closeFile(task->fileHandle);
                 task->fileHandle = NULL;
-                deleteFile(MmsServerConnection_getFilesystemBasepath(task->connection), task->destinationFilename);
+                deleteFile(MmsServer_getFilesystemBasepath(self), task->destinationFilename);
             }
 
             break;
@@ -535,7 +535,8 @@ mmsServer_fileUploadTask(MmsServer self, MmsObtainFileTask task)
                     FileSystem_closeFile(task->fileHandle);
                     task->fileHandle = NULL;
                 }
-                deleteFile(MmsServerConnection_getFilesystemBasepath(task->connection), task->destinationFilename);
+                
+                deleteFile(MmsServer_getFilesystemBasepath(self), task->destinationFilename);
 
                 if (DEBUG_MMS_SERVER)
                     printf("MMS_SERVER: ObtainFile service: failed to open file from client\n");
@@ -563,8 +564,8 @@ mmsServer_fileUploadTask(MmsServer self, MmsObtainFileTask task)
                     FileSystem_closeFile(task->fileHandle);
                     task->fileHandle = NULL;
 
-                    if (task->destinationFilename)
-                        deleteFile(MmsServerConnection_getFilesystemBasepath(task->connection), task->destinationFilename);
+                    if (task->destinationFilename[0])
+                        deleteFile(MmsServer_getFilesystemBasepath(self), task->destinationFilename);
                 }
 
                 if (DEBUG_MMS_SERVER)
@@ -602,8 +603,9 @@ mmsServer_fileUploadTask(MmsServer self, MmsObtainFileTask task)
                 if (task->fileHandle){
                     FileSystem_closeFile(task->fileHandle);
                     task->fileHandle = NULL;
-                    if (task->destinationFilename)
-                        deleteFile(MmsServerConnection_getFilesystemBasepath(task->connection), task->destinationFilename);
+
+                    if (task->destinationFilename[0])
+                        deleteFile(MmsServer_getFilesystemBasepath(self), task->destinationFilename);
                 }
                 task->state = MMS_FILE_UPLOAD_STATE_NOT_USED;
             }
@@ -625,8 +627,13 @@ mmsServerConnection_stopFileUploadTasks(MmsServerConnection self)
         if (server->fileUploadTasks[i].state != 0) {
 
             if (server->fileUploadTasks[i].connection == self) {
+
+                Semaphore_wait(server->fileUploadTasks[i].taskLock);
+
                 /* stop file upload task */
                 server->fileUploadTasks[i].state = MMS_FILE_UPLOAD_STATE_INTERRUPTED;
+
+                Semaphore_post(server->fileUploadTasks[i].taskLock);
             }
 
         }

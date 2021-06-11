@@ -98,6 +98,9 @@ struct sMmsObtainFileTask {
     uint64_t nextTimeout;
     int32_t frmsId;
     int state;
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore taskLock;
+#endif
 };
 
 #endif /* (MMS_OBTAIN_FILE_SERVICE == 1) */

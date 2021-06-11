@@ -224,6 +224,19 @@ mmsClient_handleFileCloseRequest(
         mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_OTHER);
 }
 
+void
+mmsClient_closeOutstandingOpenFiles(MmsConnection connection)
+{
+    int i;
+
+    for (i = 0; i < CONFIG_MMS_MAX_NUMBER_OF_OPEN_FILES_PER_CONNECTION; i++) {
+        if (connection->frsms[i].fileHandle != NULL) {
+            FileSystem_closeFile(connection->frsms[i].fileHandle);
+            connection->frsms[i].fileHandle = NULL;
+        }
+    }
+}
+
 
 #endif /* (MMS_OBTAIN_FILE_SERVICE == 1) */
 

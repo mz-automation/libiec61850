@@ -187,4 +187,7 @@ MmsServer_getConnectionCounter(MmsServer self);
 LIB61850_INTERNAL void
 MmsServer_stopListeningThreadless(MmsServer self);
 
+LIB61850_INTERNAL  const char*
+MmsServer_getFilesystemBasepath(MmsServer self);
+
 #endif /* MMS_SERVER_LIBINTERNAL_H_ */

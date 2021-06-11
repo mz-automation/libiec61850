@@ -202,6 +202,8 @@ MmsServer_getObtainFileTask(MmsServer self)
 
         if (self->fileUploadTasks[i].state == 0) {
             self->fileUploadTasks[i].state = 1;
+            if (self->fileUploadTasks[i].taskLock == NULL)
+                self->fileUploadTasks[i].taskLock = Semaphore_create(1);
             return &(self->fileUploadTasks[i]);
         }
 
@@ -312,6 +314,16 @@ MmsServer_destroy(MmsServer self)
 #if (CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME == 1)
     if (self->filestoreBasepath != NULL)
         GLOBAL_FREEMEM(self->filestoreBasepath);
+#endif
+
+#if (MMS_OBTAIN_FILE_SERVICE == 1)
+    {
+        int i;
+        for (i = 0; i < CONFIG_MMS_SERVER_MAX_GET_FILE_TASKS; i++) {
+            if (self->fileUploadTasks[i].taskLock)
+                Semaphore_destroy(self->fileUploadTasks[i].taskLock);
+        }
+    }
 #endif
 
     GLOBAL_FREEMEM(self);
@@ -508,8 +520,15 @@ MmsServer_handleBackgroundTasks(MmsServer self)
     int i;
     for (i = 0; i < CONFIG_MMS_SERVER_MAX_GET_FILE_TASKS; i++)
     {
-        if (self->fileUploadTasks[i].state != 0)
-            mmsServer_fileUploadTask(self, &(self->fileUploadTasks[i]));
+        if (self->fileUploadTasks[i].state != 0) {
+
+            Semaphore_wait(self->fileUploadTasks[i].taskLock);
+
+            if (self->fileUploadTasks[i].state != 0)
+                mmsServer_fileUploadTask(self, &(self->fileUploadTasks[i]));
+
+            Semaphore_post(self->fileUploadTasks[i].taskLock);
+        }
     }
 
 #endif /* (MMS_OBTAIN_FILE_SERVICE == 1) */
@@ -534,4 +553,18 @@ MmsServer_stopListeningThreadless(MmsServer self)
 {
     IsoServer_stopListeningThreadless(self->isoServer);
 }
+
+const char*
+MmsServer_getFilesystemBasepath(MmsServer self)
+{
+#if (CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME == 1)
+    if (self->filestoreBasepath != NULL)
+        return self->filestoreBasepath;
+    else
+        return CONFIG_VIRTUAL_FILESTORE_BASEPATH;
+#else
+    return CONFIG_VIRTUAL_FILESTORE_BASEPATH;
+#endif
+}
+
 
