@@ -250,6 +250,7 @@ installDefaultValuesForDataAttribute(IedServer self, DataAttribute* dataAttribut
     char domainName[65];
 
     strncpy(domainName, self->model->name, 64);
+    domainName[64] = 0;
 
     MmsMapping_getMmsDomainFromObjectReference(objectReference, domainName + strlen(domainName));
 
@@ -451,7 +452,6 @@ IedServer_createWithConfig(IedModel* dataModel, TLSConfiguration tlsConfiguratio
     IedServer self = (IedServer) GLOBAL_CALLOC(1, sizeof(struct sIedServer));
 
     if (self) {
-
         self->model = dataModel;
 
         self->running = false;
@@ -510,56 +510,63 @@ IedServer_createWithConfig(IedModel* dataModel, TLSConfiguration tlsConfiguratio
 
         self->mmsMapping = MmsMapping_create(dataModel, self);
 
-        self->mmsDevice = MmsMapping_getMmsDeviceModel(self->mmsMapping);
+        if (self->mmsMapping) {
 
-        self->mmsServer = MmsServer_create(self->mmsDevice, tlsConfiguration);
+            self->mmsDevice = MmsMapping_getMmsDeviceModel(self->mmsMapping);
+
+            self->mmsServer = MmsServer_create(self->mmsDevice, tlsConfiguration);
 
 #if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
-        if (serverConfiguration) {
-            MmsServer_enableFileService(self->mmsServer, serverConfiguration->enableFileService);
-            MmsServer_enableDynamicNamedVariableListService(self->mmsServer, serverConfiguration->enableDynamicDataSetService);
-            MmsServer_setMaxAssociationSpecificDataSets(self->mmsServer, serverConfiguration->maxAssociationSpecificDataSets);
-            MmsServer_setMaxDomainSpecificDataSets(self->mmsServer, serverConfiguration->maxDomainSpecificDataSets);
-            MmsServer_setMaxDataSetEntries(self->mmsServer, serverConfiguration->maxDataSetEntries);
-            MmsServer_enableJournalService(self->mmsServer, serverConfiguration->enableLogService);
-            MmsServer_setFilestoreBasepath(self->mmsServer, serverConfiguration->fileServiceBasepath);
-            MmsServer_setMaxConnections(self->mmsServer, serverConfiguration->maxMmsConnections);
-        }
+            if (serverConfiguration) {
+                MmsServer_enableFileService(self->mmsServer, serverConfiguration->enableFileService);
+                MmsServer_enableDynamicNamedVariableListService(self->mmsServer, serverConfiguration->enableDynamicDataSetService);
+                MmsServer_setMaxAssociationSpecificDataSets(self->mmsServer, serverConfiguration->maxAssociationSpecificDataSets);
+                MmsServer_setMaxDomainSpecificDataSets(self->mmsServer, serverConfiguration->maxDomainSpecificDataSets);
+                MmsServer_setMaxDataSetEntries(self->mmsServer, serverConfiguration->maxDataSetEntries);
+                MmsServer_enableJournalService(self->mmsServer, serverConfiguration->enableLogService);
+                MmsServer_setFilestoreBasepath(self->mmsServer, serverConfiguration->fileServiceBasepath);
+                MmsServer_setMaxConnections(self->mmsServer, serverConfiguration->maxMmsConnections);
+            }
 #endif
 
-        MmsMapping_setMmsServer(self->mmsMapping, self->mmsServer);
+            MmsMapping_setMmsServer(self->mmsMapping, self->mmsServer);
 
-        MmsMapping_installHandlers(self->mmsMapping);
+            MmsMapping_installHandlers(self->mmsMapping);
 
-        createMmsServerCache(self);
+            createMmsServerCache(self);
 
-        dataModel->initializer();
+            dataModel->initializer();
 
-        installDefaultValuesInCache(self); /* This will also connect cached MmsValues to DataAttributes */
+            installDefaultValuesInCache(self); /* This will also connect cached MmsValues to DataAttributes */
 
-        updateDataSetsWithCachedValues(self);
+            updateDataSetsWithCachedValues(self);
 
-        self->clientConnections = LinkedList_create();
+            self->clientConnections = LinkedList_create();
 
-        /* default write access policy allows access to SP, SE and SV FCDAs but denies access to DC and CF FCDAs */
-        self->writeAccessPolicies = ALLOW_WRITE_ACCESS_SP | ALLOW_WRITE_ACCESS_SV | ALLOW_WRITE_ACCESS_SE;
+            /* default write access policy allows access to SP, SE and SV FCDAs but denies access to DC and CF FCDAs */
+            self->writeAccessPolicies = ALLOW_WRITE_ACCESS_SP | ALLOW_WRITE_ACCESS_SV | ALLOW_WRITE_ACCESS_SE;
 
-        MmsMapping_initializeControlObjects(self->mmsMapping);
+            MmsMapping_initializeControlObjects(self->mmsMapping);
 
 #if (CONFIG_IEC61850_REPORT_SERVICE == 1)
-        Reporting_activateBufferedReports(self->mmsMapping);
+            Reporting_activateBufferedReports(self->mmsMapping);
 #endif
 
 #if (CONFIG_IEC61850_SETTING_GROUPS == 1)
-        MmsMapping_configureSettingGroups(self->mmsMapping);
+            MmsMapping_configureSettingGroups(self->mmsMapping);
 #endif
 
 #if (CONFIG_INCLUDE_GOOSE_SUPPORT)
-        if (serverConfiguration) {
-            MmsMapping_useIntegratedGoosePublisher(self->mmsMapping, serverConfiguration->useIntegratedGoosePublisher);
-        }
-
+		    if (serverConfiguration) {
+                MmsMapping_useIntegratedGoosePublisher(self->mmsMapping, serverConfiguration->useIntegratedGoosePublisher);
+		    }
 #endif
+
+        }
+        else {
+            IedServer_destroy(self);
+            self = NULL;
+        }
     }
 
     return self;
@@ -602,7 +609,8 @@ IedServer_destroy(IedServer self)
     if (self->localIpAddress != NULL)
         GLOBAL_FREEMEM(self->localIpAddress);
 
-    MmsMapping_destroy(self->mmsMapping);
+    if (self->mmsMapping)
+        MmsMapping_destroy(self->mmsMapping);
 
     LinkedList_destroyDeep(self->clientConnections, (LinkedListValueDeleteFunction) private_ClientConnection_destroy);
 
