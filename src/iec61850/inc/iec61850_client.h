@@ -930,6 +930,34 @@ IedConnection_readStringValue(IedConnection self, IedClientError* error, const c
 LIB61850_API int32_t
 IedConnection_readInt32Value(IedConnection self, IedClientError* error, const char* objectReference, FunctionalConstraint fc);
 
+
+/**
+ * \brief read a functional constrained data attribute (FCDA) of type BitString (BigEndian) and return the result as uint32_t
+ *
+ * \param self  the connection object to operate on
+ * \param error the error code if an error occurs
+ * \param object reference of the data attribute to read
+ * \param fc the functional constraint of the data attribute to read
+ *
+ * \return an uint32_t value of the read data attributes
+ */
+uint32_t
+IedConnection_readBitStringAsIntegerBigEndian(IedConnection self, IedClientError* error, const char* objectReference, FunctionalConstraint fc);
+
+
+/**
+ * \brief read a functional constrained data attribute (FCDA) of type BitString (LittleEndian) and return the result as uint32_t
+ *
+ * \param self  the connection object to operate on
+ * \param error the error code if an error occurs
+ * \param object reference of the data attribute to read
+ * \param fc the functional constraint of the data attribute to read
+ *
+ * \return an uint32_t value of the read data attributes
+ */
+uint32_t
+IedConnection_readBitStringAsInteger(IedConnection self, IedClientError* error, const char* objectReference, FunctionalConstraint fc);
+
 /**
  * \brief read a functional constrained data attribute (FCDA) of type Integer or Unsigned and return the result as int64_t
  *
