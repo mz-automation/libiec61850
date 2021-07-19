@@ -886,7 +886,7 @@ namespace IEC61850
             /// Creates a new SampledValuesControlBlock instance.
             /// </summary>
             /// <returns>The new GoCB instance</returns>
-            /// <param name="gocbObjectReference">The object reference of the GoCB</param>
+            /// <param name="gocbObjectReference">The object reference of the GoCB (e.g. "simpleIOGenericIO/LLN0.gcbAnalogValues")</param>
             public GooseControlBlock GetGooseControlBlock(string gocbObjectReference)
             {
                 return new GooseControlBlock(gocbObjectReference, connection);

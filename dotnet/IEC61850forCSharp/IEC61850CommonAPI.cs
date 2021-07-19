@@ -86,9 +86,9 @@ namespace IEC61850
 			public UInt16 vlanId;
 			public UInt16 appId;
 
-			[MarshalAs(UnmanagedType.ByValArray, SizeConst=6)]
-			public byte[] dstAddress = new byte[6];
-		}
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst=6)]
+            public byte[] dstAddress = new byte[6];
+        }
 
 		/// <summary>
 		/// MMS data access error for MmsValue type MMS_DATA_ACCESS_ERROR
