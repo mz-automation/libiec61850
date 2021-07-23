@@ -187,6 +187,7 @@ struct sLogicalDevice {
     ModelNode* parent;
     ModelNode* sibling;
     ModelNode* firstChild;
+    char* ldName;
 };
 
 struct sModelNode {
@@ -212,7 +213,8 @@ struct sDataObject {
     ModelNode* sibling;
     ModelNode* firstChild;
 
-    int elementCount; /* > 0 if this is an array */
+    int elementCount; /* value > 0 if this is an array */
+    //int arrayIndex; /* value > -1 when this is an array element */
 };
 
 struct sDataAttribute {
@@ -222,7 +224,8 @@ struct sDataAttribute {
     ModelNode* sibling;
     ModelNode* firstChild;
 
-    int elementCount; /* > 0 if this is an array */
+    int elementCount; /* value > 0 if this is an array */
+   // int arrayIndex; /* value > -1 when this is an array element */
 
     FunctionalConstraint fc;
     DataAttributeType type;
@@ -235,7 +238,7 @@ struct sDataAttribute {
 };
 
 typedef struct sDataSetEntry {
-    char* logicalDeviceName;
+    char* logicalDeviceName; /* logical device instance name */
     bool isLDNameDynamicallyAllocated;
     char* variableName;
     int index;
@@ -245,7 +248,7 @@ typedef struct sDataSetEntry {
 } DataSetEntry;
 
 struct sDataSet {
-    char* logicalDeviceName;
+    char* logicalDeviceName; /* logical device instance name */
     char* name; /* eg. MMXU1$dataset1 */
     int elementCount;
     DataSetEntry* fcdas;
@@ -425,6 +428,8 @@ IedModel_setIedName(IedModel* self, const char* iedName);
  * This function uses the full logical device name as part of the object reference
  * as it happens to appear on the wire. E.g. if IED name in SCL file would be "IED1"
  * and the logical device "WD1" the resulting LD name would be "IED1WD".
+ * When using functional naming in the LD (with ldName attribute) then the logical
+ * device name is identical with the ldName attribute.
  *
  * \param self the IedModel instance that holds the model node
  * \param objectReference the IEC 61850 object reference

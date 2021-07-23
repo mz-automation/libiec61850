@@ -73,8 +73,6 @@ IedModel_setAttributeValuesToNull(IedModel* iedModel)
     }
 }
 
-
-
 int
 IedModel_getLogicalDeviceCount(IedModel* self)
 {
@@ -113,15 +111,30 @@ IedModel_lookupDataSet(IedModel* self, const char* dataSetReference  /* e.g. ied
 
 	while (dataSet != NULL) {
 
-	    domainName[modelNameLen] = 0;
+	    LogicalDevice* ld = IedModel_getDeviceByInst(self, dataSet->logicalDeviceName);
 
-	    strncat(domainName, dataSet->logicalDeviceName, 64);
+	    if (ld) {
+	        if (ld->ldName == NULL) {
+	            domainName[modelNameLen] = 0;
 
-		if (strncmp(domainName, dataSetReference, ldNameLen) == 0) {
-			if (strcmp(dataSet->name, separator + 1) == 0) {
-				return dataSet;
-			}
-		}
+	            strncat(domainName, dataSet->logicalDeviceName, 64);
+
+	            if (strncmp(domainName, dataSetReference, ldNameLen) == 0) {
+	                if (strcmp(dataSet->name, separator + 1) == 0) {
+	                    return dataSet;
+	                }
+	            }
+	        }
+	        else {
+	            /* functional naming */
+                if (strncmp(ld->ldName, dataSetReference, ldNameLen) == 0) {
+                    if (strcmp(dataSet->name, separator + 1) == 0) {
+                        return dataSet;
+                    }
+                }
+	        }
+
+	    }
 
 		dataSet = dataSet->sibling;
 	}
@@ -136,13 +149,21 @@ IedModel_getDevice(IedModel* self, const char* deviceName)
 
     while (device != NULL) {
 
-        char domainName[65];
+        if (device->ldName) {
+            /* functional naming */
+            if (strcmp(device->ldName, deviceName) == 0)
+                return device;
+        }
+        else {
+            char domainName[65];
 
-        strncpy(domainName, self->name, 64);
-        strncat(domainName, device->name, 64);
+            strncpy(domainName, self->name, 64);
+            strncat(domainName, device->name, 64);
+            domainName[64] = 0;
 
-        if (strcmp(domainName, deviceName) == 0)
-            return device;
+            if (strcmp(domainName, deviceName) == 0)
+                return device;
+        }
 
         device = (LogicalDevice*) device->sibling;
     }

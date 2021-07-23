@@ -52,7 +52,7 @@
     <AccessPoint name="accessPoint1">
       <Server>
         <Authentication />
-        <LDevice inst="GenericIO">
+        <LDevice inst="GenericIO" ldName="Q1E1P2">
           <LN0 lnClass="LLN0" lnType="LLN01" inst="">
           
           	<DataSet name="Events" desc="Events">

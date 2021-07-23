@@ -177,6 +177,7 @@ main(int argc, char** argv)
         if (((int) t % 2) == 0)
             Timestamp_setClockNotSynchronized(&iecTimestamp, true);
 
+#if 1
         IedServer_lockDataModel(iedServer);
 
         IedServer_updateTimestampAttributeValue(iedServer, IEDMODEL_GenericIO_GGIO1_AnIn1_t, &iecTimestamp);
@@ -192,6 +193,7 @@ main(int argc, char** argv)
         IedServer_updateFloatAttributeValue(iedServer, IEDMODEL_GenericIO_GGIO1_AnIn4_mag_f, an4);
 
         IedServer_unlockDataModel(iedServer);
+#endif
 
         Thread_sleep(100);
     }

@@ -1790,13 +1790,23 @@ createMmsDomainFromIedDevice(MmsMapping* self, LogicalDevice* logicalDevice)
     MmsDomain* domain = NULL;
     char domainName[65];
 
-    int modelNameLength = strlen(self->model->name);
+    if (logicalDevice->ldName == NULL) {
+        int modelNameLength = strlen(self->model->name);
 
-    if (modelNameLength > 64)
-        goto exit_function;
+        if (modelNameLength > 64)
+            goto exit_function;
 
-    strncpy(domainName, self->model->name, 64);
-    strncat(domainName, logicalDevice->name, 64 - modelNameLength);
+        strncpy(domainName, self->model->name, 64);
+        strncat(domainName, logicalDevice->name, 64 - modelNameLength);
+        domainName[64] = 0;
+    }
+    else {
+        if (strlen(logicalDevice->ldName) > 64)
+            goto exit_function;
+
+        strncpy(domainName, logicalDevice->ldName, 64);
+        domainName[64] = 0;
+    }
 
     domain = MmsDomain_create(domainName);
 
@@ -1902,45 +1912,72 @@ createDataSets(MmsDevice* mmsDevice, IedModel* iedModel)
     }
 
     while (dataset != NULL) {
-        strncpy(domainName, iedModel->name, 64);
-        strncat(domainName, dataset->logicalDeviceName, 64 - iedModelNameLength);
 
-        MmsDomain* dataSetDomain = MmsDevice_getDomain(mmsDevice, domainName);
+        LogicalDevice* ld = IedModel_getDeviceByInst(iedModel, dataset->logicalDeviceName);
 
-        if (dataSetDomain == NULL) {
+        if (ld) {
+
+            if (ld->ldName) {
+                strncpy(domainName, ld->ldName, 64);
+                domainName[64] = 0;
+            }
+            else {
+                strncpy(domainName, iedModel->name, 64);
+                strncat(domainName, dataset->logicalDeviceName, 64 - iedModelNameLength);
+                domainName[64] = 0;
+            }
+
+            MmsDomain* dataSetDomain = MmsDevice_getDomain(mmsDevice, domainName);
+
+            if (dataSetDomain == NULL) {
+
+                if (DEBUG_IED_SERVER)
+                    printf("IED_SERVER: MMS domain for dataset does not exist!\n");
+
+                goto exit_function;
+            }
 
             if (DEBUG_IED_SERVER)
+                printf("IED_SERVER: create dataset: %s/%s\n", domainName, dataset->name);
+
+            MmsNamedVariableList varList = MmsNamedVariableList_create(dataSetDomain, dataset->name, false);
+
+            DataSetEntry* dataSetEntry = dataset->fcdas;
+
+            while (dataSetEntry != NULL) {
+
+                MmsAccessSpecifier accessSpecifier;
+
+                if (ld->ldName) {
+                    strncpy(domainName, ld->ldName, 64);
+                    domainName[64] = 0;
+                }
+                else {
+                    strncpy(domainName, iedModel->name, 64);
+                    strncat(domainName, dataset->logicalDeviceName, 64 - iedModelNameLength);
+                    domainName[64] = 0;
+                }
+
+                accessSpecifier.domain = MmsDevice_getDomain(mmsDevice, domainName);
+
+                accessSpecifier.variableName = dataSetEntry->variableName;
+                accessSpecifier.arrayIndex = dataSetEntry->index;
+                accessSpecifier.componentName = dataSetEntry->componentName;
+
+                MmsNamedVariableListEntry variableListEntry =
+                        MmsNamedVariableListEntry_create(accessSpecifier);
+
+                MmsNamedVariableList_addVariable(varList, variableListEntry);
+
+                dataSetEntry = dataSetEntry->sibling;
+            }
+
+            MmsDomain_addNamedVariableList(dataSetDomain, varList);
+        }
+        else {
+            if (DEBUG_IED_SERVER)
                 printf("IED_SERVER: LD for dataset does not exist!\n");
-
-            goto exit_function;
         }
-
-        MmsNamedVariableList varList = MmsNamedVariableList_create(dataSetDomain, dataset->name, false);
-
-        DataSetEntry* dataSetEntry = dataset->fcdas;
-
-        while (dataSetEntry != NULL) {
-
-            MmsAccessSpecifier accessSpecifier;
-
-            strncpy(domainName, iedModel->name, 64);
-            strncat(domainName, dataSetEntry->logicalDeviceName, 64 - iedModelNameLength);
-
-            accessSpecifier.domain = MmsDevice_getDomain(mmsDevice, domainName);
-
-            accessSpecifier.variableName = dataSetEntry->variableName;
-            accessSpecifier.arrayIndex = dataSetEntry->index;
-            accessSpecifier.componentName = dataSetEntry->componentName;
-
-            MmsNamedVariableListEntry variableListEntry =
-                    MmsNamedVariableListEntry_create(accessSpecifier);
-
-            MmsNamedVariableList_addVariable(varList, variableListEntry);
-
-            dataSetEntry = dataSetEntry->sibling;
-        }
-
-        MmsDomain_addNamedVariableList(dataSetDomain, varList);
 
         dataset = dataset->sibling;
     }

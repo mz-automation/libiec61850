@@ -295,9 +295,9 @@ public class StaticModelGenerator {
         }
     }
 
-    private String getLogicalDeviceInst(LogicalDevice logicalDevice) {
-    	return logicalDevice.getInst();
-    }
+//    private String getLogicalDeviceInst(LogicalDevice logicalDevice) {
+//    	return logicalDevice.getInst();
+//    }
     
     private void printDeviceModelDefinitions() {
 
@@ -320,18 +320,18 @@ public class StaticModelGenerator {
         for (int i = 0; i < logicalDevices.size(); i++) {
 
             LogicalDevice logicalDevice = logicalDevices.get(i);
-
+            
+            String ldInst = logicalDevice.getInst();
+            
             String ldName = modelPrefix + "_" + logicalDevice.getInst();
 
             variablesList.add(ldName);
-
-            String logicalDeviceName = getLogicalDeviceInst(logicalDevice);
 
             cOut.println("\nLogicalDevice " + ldName + " = {");
 
             cOut.println("    LogicalDeviceModelType,");
 
-            cOut.println("    \"" + logicalDeviceName + "\",");
+            cOut.println("    \"" + ldInst + "\",");
 
             cOut.println("    (ModelNode*) &" + modelPrefix + ",");
 
@@ -342,7 +342,13 @@ public class StaticModelGenerator {
 
             String firstChildName = ldName + "_" + logicalDevice.getLogicalNodes().get(0).getName();
 
-            cOut.println("    (ModelNode*) &" + firstChildName);
+            cOut.println("    (ModelNode*) &" + firstChildName + ",");
+            
+            if (logicalDevice.getLdName() != null)
+                cOut.println("    \"" + logicalDevice.getLdName() + "\"");
+            else
+                cOut.println("    NULL");
+            
             cOut.println("};\n");
 
             printLogicalNodeDefinitions(ldName, logicalDevice, logicalDevice.getLogicalNodes());

@@ -221,7 +221,7 @@ createMmsServerCache(IedServer self)
                         goto exit_function;
 
                     if (DEBUG_IED_SERVER)
-                        printf("ied_server.c: Insert into cache %s - %s\n", logicalDevice->domainName, variableName);
+                        printf("IED_SERVER: Insert into cache %s - %s\n", logicalDevice->domainName, variableName);
 
                     MmsServer_insertIntoCache(self->mmsServer, logicalDevice, variableName, defaultValue);
                 }
@@ -236,7 +236,7 @@ exit_function:
 }
 
 static void
-installDefaultValuesForDataAttribute(IedServer self, DataAttribute* dataAttribute,
+installDefaultValuesForDataAttribute(IedServer self, LogicalDevice* ld, DataAttribute* dataAttribute,
         char* objectReference, int position)
 {
     sprintf(objectReference + position, ".%s", dataAttribute->name);
@@ -248,8 +248,12 @@ installDefaultValuesForDataAttribute(IedServer self, DataAttribute* dataAttribut
     MmsMapping_createMmsVariableNameFromObjectReference(objectReference, dataAttribute->fc, mmsVariableName);
 
     char domainName[65];
+    domainName[0] = 0;
 
-    strncpy(domainName, self->model->name, 64);
+    if (ld->ldName == NULL) {
+        strncpy(domainName, self->model->name, 64);
+        domainName[64] = 0;
+    }
 
     MmsMapping_getMmsDomainFromObjectReference(objectReference, domainName + strlen(domainName));
 
@@ -284,14 +288,14 @@ installDefaultValuesForDataAttribute(IedServer self, DataAttribute* dataAttribut
     DataAttribute* subDataAttribute = (DataAttribute*) dataAttribute->firstChild;
 
     while (subDataAttribute != NULL) {
-        installDefaultValuesForDataAttribute(self, subDataAttribute, objectReference, childPosition);
+        installDefaultValuesForDataAttribute(self, ld, subDataAttribute, objectReference, childPosition);
 
         subDataAttribute = (DataAttribute*) subDataAttribute->sibling;
     }
 }
 
 static void
-installDefaultValuesForDataObject(IedServer self, DataObject* dataObject,
+installDefaultValuesForDataObject(IedServer self, LogicalDevice* ld, DataObject* dataObject,
         char* objectReference, int position)
 {
     if (dataObject->elementCount > 0) {
@@ -309,10 +313,10 @@ installDefaultValuesForDataObject(IedServer self, DataObject* dataObject,
 
     while (childNode != NULL) {
         if (childNode->modelType == DataObjectModelType) {
-            installDefaultValuesForDataObject(self, (DataObject*) childNode, objectReference, childPosition);
+            installDefaultValuesForDataObject(self, ld, (DataObject*) childNode, objectReference, childPosition);
         }
         else if (childNode->modelType == DataAttributeModelType) {
-            installDefaultValuesForDataAttribute(self, (DataAttribute*) childNode, objectReference, childPosition);
+            installDefaultValuesForDataAttribute(self, ld, (DataAttribute*) childNode, objectReference, childPosition);
         }
 
         childNode = childNode->sibling;
@@ -329,7 +333,11 @@ installDefaultValuesInCache(IedServer self)
     LogicalDevice* logicalDevice = model->firstChild;
 
     while (logicalDevice != NULL) {
-        sprintf(objectReference, "%s", logicalDevice->name);
+
+        if (logicalDevice->ldName)
+            sprintf(objectReference, "%s", logicalDevice->ldName);
+        else
+            sprintf(objectReference, "%s", logicalDevice->name);
 
         LogicalNode* logicalNode = (LogicalNode*) logicalDevice->firstChild;
 
@@ -343,7 +351,7 @@ installDefaultValuesInCache(IedServer self)
             int refPosition = strlen(objectReference);
 
             while (dataObject != NULL) {
-                installDefaultValuesForDataObject(self, dataObject, objectReference, refPosition);
+                installDefaultValuesForDataObject(self, logicalDevice, dataObject, objectReference, refPosition);
 
                 dataObject = (DataObject*) dataObject->sibling;
             }
@@ -370,12 +378,30 @@ updateDataSetsWithCachedValues(IedServer self)
 
             while (dataSetEntry != NULL) {
 
-                char domainName[65];
+                MmsDomain* domain = NULL;
 
-                strncpy(domainName, self->model->name, 64);
-                strncat(domainName, dataSetEntry->logicalDeviceName, 64 - iedNameLength);
+                LogicalDevice* ld = IedModel_getDeviceByInst(self->model, dataSetEntry->logicalDeviceName);
 
-                MmsDomain* domain = MmsDevice_getDomain(self->mmsDevice, domainName);
+                if (ld) {
+
+                    if (ld->ldName) {
+                        domain = MmsDevice_getDomain(self->mmsDevice, ld->ldName);
+                    }
+
+                    if (domain == NULL) {
+                        char domainName[65];
+
+                        strncpy(domainName, self->model->name, 64);
+                        strncat(domainName, dataSetEntry->logicalDeviceName, 64 - iedNameLength);
+
+                        domain = MmsDevice_getDomain(self->mmsDevice, domainName);
+                    }
+
+                }
+                else {
+                    if (DEBUG_IED_SERVER)
+                        printf("IED_SERVER: ERROR - LD %s not found\n", dataSetEntry->logicalDeviceName);
+                }
 
                 char variableName[66];
 
