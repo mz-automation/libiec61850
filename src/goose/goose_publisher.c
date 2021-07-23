@@ -318,7 +318,14 @@ createGoosePayload(GoosePublisher self, LinkedList dataSetValues, uint8_t* buffe
     while (element != NULL) {
         MmsValue* dataSetEntry = (MmsValue*) element->data;
 
-        dataSetSize += MmsValue_encodeMmsData(dataSetEntry, NULL, 0, false);
+        if (dataSetEntry) {
+            dataSetSize += MmsValue_encodeMmsData(dataSetEntry, NULL, 0, false);
+        }
+        else {
+            /* TODO encode MMS NULL */
+            if (DEBUG_GOOSE_PUBLISHER)
+                printf("GOOSE_PUBLISHER: NULL value in data set!\n");
+        }
 
         element = LinkedList_getNext(element);
     }
@@ -384,7 +391,12 @@ createGoosePayload(GoosePublisher self, LinkedList dataSetValues, uint8_t* buffe
     while (element != NULL) {
         MmsValue* dataSetEntry = (MmsValue*) element->data;
 
-        bufPos = MmsValue_encodeMmsData(dataSetEntry, buffer, bufPos, true);
+        if (dataSetEntry) {
+            bufPos = MmsValue_encodeMmsData(dataSetEntry, buffer, bufPos, true);
+        }
+        else {
+            /* TODO encode MMS NULL */
+        }
 
         element = LinkedList_getNext(element);
     }

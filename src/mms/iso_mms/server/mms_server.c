@@ -81,10 +81,6 @@ MmsServer_create(MmsDevice* device, TLSConfiguration tlsConfiguration)
             if (isoServer == NULL)
                 goto exit_error;
 
-    #if (CONFIG_MMS_THREADLESS_STACK != 1)
-            IsoServer_setUserLock(isoServer, self->modelMutex);
-    #endif
-
             LinkedList_add(self->isoServerList, isoServer);
         }
 
@@ -131,8 +127,6 @@ MmsServer_addAP(MmsServer self, const char* ipAddr, int tcpPort, TLSConfiguratio
     IsoServer isoServer = IsoServer_create(tlsConfiguration);
 
     if (isoServer) {
-
-        IsoServer_setUserLock(isoServer, self->modelMutex);
 
         IsoServer_setLocalIpAddress(isoServer, ipAddr);
 
@@ -285,10 +279,11 @@ MmsServer_reserveTransmitBuffer(MmsServer self)
 void
 MmsServer_releaseTransmitBuffer(MmsServer self)
 {
+    self->transmitBuffer->size = 0;
+
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_post(self->transmitBufferMutex);
 #endif
-    self->transmitBuffer->size = 0;
 }
 
 #if (MMS_OBTAIN_FILE_SERVICE == 1)
@@ -302,6 +297,8 @@ MmsServer_getObtainFileTask(MmsServer self)
 
         if (self->fileUploadTasks[i].state == 0) {
             self->fileUploadTasks[i].state = 1;
+            if (self->fileUploadTasks[i].taskLock == NULL)
+                self->fileUploadTasks[i].taskLock = Semaphore_create(1);
             return &(self->fileUploadTasks[i]);
         }
 
@@ -415,7 +412,7 @@ MmsServer_destroy(MmsServer self)
         Map_deleteDeep(self->openConnections, false, closeConnection);
         Map_deleteDeep(self->valueCaches, false, (void (*) (void*)) deleteSingleCache);
 
-    #if (CONFIG_MMS_THREADLESS_STACK != 1)
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
         if (self->openConnectionsLock)
             Semaphore_destroy(self->openConnectionsLock);
 
@@ -424,15 +421,23 @@ MmsServer_destroy(MmsServer self)
 
         if (self->transmitBufferMutex)
             Semaphore_destroy(self->transmitBufferMutex);
-    #endif
+#endif
 
         if (self->transmitBuffer)
             ByteBuffer_destroy(self->transmitBuffer);
 
-    #if (CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME == 1)
+#if (CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME == 1)
         if (self->filestoreBasepath != NULL)
             GLOBAL_FREEMEM(self->filestoreBasepath);
-    #endif
+#endif
+
+#if (MMS_OBTAIN_FILE_SERVICE == 1)
+        int i;
+        for (i = 0; i < CONFIG_MMS_SERVER_MAX_GET_FILE_TASKS; i++) {
+            if (self->fileUploadTasks[i].taskLock)
+                Semaphore_destroy(self->fileUploadTasks[i].taskLock);
+        }
+#endif
 
         GLOBAL_FREEMEM(self);
     }
@@ -479,7 +484,8 @@ mmsServer_setValue(MmsServer self, MmsDomain* domain, char* itemId, MmsValue* va
     if (self->writeHandler != NULL) {
         indication = self->writeHandler(self->writeHandlerParameter, domain,
                 itemId, value, connection);
-    } else {
+    }
+    else {
         MmsValue* cachedValue;
 
         if (domain == NULL)
@@ -496,7 +502,6 @@ mmsServer_setValue(MmsServer self, MmsDomain* domain, char* itemId, MmsValue* va
 
     return indication;
 }
-
 
 MmsValue*
 mmsServer_getValue(MmsServer self, MmsDomain* domain, char* itemId, MmsServerConnection connection, bool isDirectAccess)
@@ -705,8 +710,15 @@ MmsServer_handleBackgroundTasks(MmsServer self)
     int i;
     for (i = 0; i < CONFIG_MMS_SERVER_MAX_GET_FILE_TASKS; i++)
     {
-        if (self->fileUploadTasks[i].state != 0)
-            mmsServer_fileUploadTask(self, &(self->fileUploadTasks[i]));
+        if (self->fileUploadTasks[i].state != 0) {
+
+            Semaphore_wait(self->fileUploadTasks[i].taskLock);
+
+            if (self->fileUploadTasks[i].state != 0)
+                mmsServer_fileUploadTask(self, &(self->fileUploadTasks[i]));
+
+            Semaphore_post(self->fileUploadTasks[i].taskLock);
+        }
     }
 
 #endif /* (MMS_OBTAIN_FILE_SERVICE == 1) */
@@ -755,4 +767,18 @@ MmsServer_stopListeningThreadless(MmsServer self)
         }
     }
 }
+
+const char*
+MmsServer_getFilesystemBasepath(MmsServer self)
+{
+#if (CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME == 1)
+    if (self->filestoreBasepath != NULL)
+        return self->filestoreBasepath;
+    else
+        return CONFIG_VIRTUAL_FILESTORE_BASEPATH;
+#else
+    return CONFIG_VIRTUAL_FILESTORE_BASEPATH;
+#endif
+}
+
 

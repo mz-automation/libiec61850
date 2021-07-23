@@ -760,10 +760,12 @@ parseGoosePayload(GooseReceiver self, uint8_t* buffer, int apduLength)
             matchingSubscriber->ndsCom = ndsCom;
             matchingSubscriber->simulation = simulation;
 
-            /* when confRev changed replaced old data set */
-            if ((matchingSubscriber->dataSetValues != NULL) && (matchingSubscriber->confRev != confRev)) {
-                MmsValue_delete(matchingSubscriber->dataSetValues);
-                matchingSubscriber->dataSetValues = NULL;
+            if (matchingSubscriber->dataSetValuesSelfAllocated) {
+                /* when confRev changed replaced old data set */
+                if ((matchingSubscriber->dataSetValues != NULL) && (matchingSubscriber->confRev != confRev)) {
+                    MmsValue_delete(matchingSubscriber->dataSetValues);
+                    matchingSubscriber->dataSetValues = NULL;
+                }
             }
 
             matchingSubscriber->confRev = confRev;

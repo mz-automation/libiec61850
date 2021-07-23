@@ -42,11 +42,13 @@ public class DataObject implements DataModelNode {
     private List<DataObject> subDataObjects = null;
     private SclType sclType;
     private DataModelNode parent;
+    private boolean trans = false;
 
     public DataObject(DataObjectDefinition doDefinition, TypeDeclarations typeDeclarations, DataModelNode parent) throws SclParserException {
         this.name = doDefinition.getName();
         this.count = doDefinition.getCount();
         this.parent = parent;
+        this.trans = doDefinition.isTransient();
 
         this.dataAttributes = new LinkedList<DataAttribute>();
         this.subDataObjects = new LinkedList<DataObject>();
@@ -108,6 +110,10 @@ public class DataObject implements DataModelNode {
 
     public int getCount() {
         return count;
+    }
+    
+    public boolean isTransient() {
+        return trans;
     }
 
     @Override

@@ -203,63 +203,45 @@ BerInteger_createFromInt64(int64_t value)
     return asn1Value;
 }
 
-int /* 1 - if conversion is possible, 0 - out of range */
+void
 BerInteger_toInt32(Asn1PrimitiveValue* self, int32_t* nativeValue)
 {
-    if (self->size < 5) {
-        uint8_t* buf = self->octets;
-        int i;
+    uint8_t* buf = self->octets;
+    int i;
 
-        if (buf[0] & 0x80) /* sign extension */
-            *nativeValue = 0xffffffff;
-        else
-            *nativeValue = 0;
-
-        for (i = 0; i < self->size; i++)
-            *nativeValue = (*nativeValue << 8) | buf[i];
-
-        return 1;
-    }
+    if (buf[0] & 0x80) /* sign extension */
+        *nativeValue = 0xffffffff;
     else
-        return 0;
-}
-
-int /* 1 - if conversion is possible, 0 - out of range */
-BerInteger_toUint32(Asn1PrimitiveValue* self, uint32_t* nativeValue)
-{
-    if (self->size < 6) {
-        uint8_t* buf = self->octets;
-        int i;
-
         *nativeValue = 0;
 
-        for (i = 0; i < self->size; i++)
-            *nativeValue = (*nativeValue << 8) | buf[i];
-
-        return 1;
-    }
-    else
-        return 0;
+    for (i = 0; i < self->size; i++)
+        *nativeValue = (*nativeValue << 8) | buf[i];
 }
 
-int /* 1 - if conversion is possible, 0 - out of range */
+void
+BerInteger_toUint32(Asn1PrimitiveValue* self, uint32_t* nativeValue)
+{
+    uint8_t* buf = self->octets;
+    int i;
+
+    *nativeValue = 0;
+
+    for (i = 0; i < self->size; i++)
+        *nativeValue = (*nativeValue << 8) | buf[i];
+}
+
+void
 BerInteger_toInt64(Asn1PrimitiveValue* self, int64_t* nativeValue)
 {
-    if (self->size < 9) {
-        uint8_t* buf = self->octets;
-        int i;
+    uint8_t* buf = self->octets;
+    int i;
 
-        if (buf[0] & 0x80) /* sign extension */
-            *nativeValue = 0xffffffffffffffff;
-        else
-            *nativeValue = 0;
-
-        for (i = 0; i < self->size; i++)
-            *nativeValue = (*nativeValue << 8) | buf[i];
-
-        return 1;
-    }
+    if (buf[0] & 0x80) /* sign extension */
+        *nativeValue = 0xffffffffffffffff;
     else
-        return 0;
+        *nativeValue = 0;
+
+    for (i = 0; i < self->size; i++)
+        *nativeValue = (*nativeValue << 8) | buf[i];
 }
 

@@ -244,7 +244,9 @@ namespace tests
 
 			Assert.AreEqual (list.ToArray () [0], "simpleIOGenericIO");
 
-			iedServer.Stop ();
+            Assert.IsTrue(iedServer.IsRunning());
+
+            iedServer.Stop ();
 
 			iedServer.Destroy ();
 		}
@@ -289,7 +291,35 @@ namespace tests
 			Assert.IsNotNull (modelNode);
 		}
 
-		[Test ()]
+        [Test()]
+        public void AccessDataModelServerSideNavigateModelNode()
+        {
+            IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile("../../model.cfg");
+
+            ModelNode modelNode = iedModel.GetModelNodeByShortObjectReference("GenericIO/GGIO1.AnIn1");
+
+            Assert.IsNotNull(modelNode);
+
+            Assert.IsTrue(modelNode.GetType().Equals(typeof(DataObject)));
+
+            var children = modelNode.GetChildren();
+
+            Assert.AreEqual(3, children.Count);
+
+            ModelNode mag = children.First.Value;
+
+            Assert.AreEqual("mag", mag.GetName());
+
+            ModelNode t = children.Last.Value;
+
+            Assert.AreEqual("t", t.GetName());
+
+            //modelNode = iedModel.GetModelNodeByShortObjectReference("GenericIO/GGIO1.AnIn1.mag.f");
+
+            //Assert.IsTrue(modelNode.GetType().Equals(typeof(IEC61850.Server.DataAttribute)));
+        }
+
+        [Test ()]
 		public void AccessDataModelClientServer()
 		{
             IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile("../../model.cfg");
@@ -382,10 +412,62 @@ namespace tests
 			iedServer.Destroy ();
 		}
 
-		[Test()]
+        [Test()]
+        public void ControlWriteAccessComplexDAToServer()
+        {
+            IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile("../../model2.cfg");
+
+            IEC61850.Server.DataAttribute setAnVal_setMag = (IEC61850.Server.DataAttribute)iedModel.GetModelNodeByShortObjectReference("GenericIO/LLN0.SetAnVal.setMag");
+
+            IedServer iedServer = new IedServer(iedModel);
+
+            int handlerCalled = 0;
+
+            MmsValue receivedValue = null;
+
+            iedServer.SetWriteAccessPolicy(FunctionalConstraint.SP, AccessPolicy.ACCESS_POLICY_DENY);
+
+            iedServer.HandleWriteAccessForComplexAttribute(setAnVal_setMag, delegate (IEC61850.Server.DataAttribute dataAttr, MmsValue value, ClientConnection con, object parameter) {
+                receivedValue = value;
+                handlerCalled++;
+                return MmsDataAccessError.SUCCESS;
+            }, null);
+
+            iedServer.Start(10002);
+
+            IedConnection connection = new IedConnection();
+
+            connection.Connect("localhost", 10002);
+
+            MmsValue complexValue = MmsValue.NewEmptyStructure(1);
+            complexValue.SetElement(0, new MmsValue((float)1.0));
+
+            connection.WriteValue("simpleIOGenericIO/LLN0.SetAnVal.setMag", FunctionalConstraint.SP, complexValue);
+
+            Assert.NotNull(receivedValue);
+            Assert.AreEqual(MmsType.MMS_STRUCTURE, receivedValue.GetType());
+            Assert.AreEqual(1.0, receivedValue.GetElement(0).ToFloat());
+
+            receivedValue.Dispose();
+
+            receivedValue = null;
+
+            connection.WriteValue("simpleIOGenericIO/LLN0.SetAnVal.setMag.f", FunctionalConstraint.SP, new MmsValue((float)2.0));
+
+            Assert.NotNull(receivedValue);
+            Assert.AreEqual(MmsType.MMS_FLOAT, receivedValue.GetType());
+            Assert.AreEqual(2.0, receivedValue.ToFloat());
+
+            connection.Abort();
+
+            iedServer.Stop();
+
+            iedServer.Dispose();
+        }
+
+        [Test()]
 		public void WriteAccessPolicy()
 		{
-
 			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../model.cfg");
 
 			IEC61850.Server.DataAttribute opDlTmms = (IEC61850.Server.DataAttribute) iedModel.GetModelNodeByShortObjectReference("GenericIO/PDUP1.OpDlTmms.setVal");
@@ -393,7 +475,7 @@ namespace tests
 
 			IedServer iedServer = new IedServer (iedModel);
 
-			iedServer.HandleWriteAccess (opDlTmms, delegate(IEC61850.Server.DataAttribute dataAttr, MmsValue value, ClientConnection con, object parameter) {
+            iedServer.HandleWriteAccess (opDlTmms, delegate(IEC61850.Server.DataAttribute dataAttr, MmsValue value, ClientConnection con, object parameter) {
 				return MmsDataAccessError.SUCCESS;
 			}, null);
 				
@@ -404,7 +486,9 @@ namespace tests
 
 			connection.Connect ("localhost", 10002);
 
-			connection.WriteValue ("simpleIOGenericIO/PDUP1.RsDlTmms.setVal", FunctionalConstraint.SP, new MmsValue ((int)1234));
+            iedServer.SetWriteAccessPolicy(FunctionalConstraint.SP, AccessPolicy.ACCESS_POLICY_ALLOW);
+
+            connection.WriteValue ("simpleIOGenericIO/PDUP1.RsDlTmms.setVal", FunctionalConstraint.SP, new MmsValue ((int)1234));
 
 			iedServer.SetWriteAccessPolicy (FunctionalConstraint.SP, AccessPolicy.ACCESS_POLICY_DENY);
 
@@ -425,11 +509,10 @@ namespace tests
 
 			iedServer.Stop ();
 
-			iedServer.Destroy ();
+			iedServer.Dispose();
 		}
 
 		[Test()]
-        [Ignore("has to be fixed")]
 		public void ControlHandler()
 		{
 			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../model.cfg");
@@ -476,7 +559,7 @@ namespace tests
 
 			iedServer.Stop ();
 
-			iedServer.Destroy ();
+			iedServer.Dispose();
 		}
 
 
@@ -525,6 +608,8 @@ namespace tests
 			Assert.AreEqual ("127.0.0.1:", ipAddress.Substring (0, 10));
 
 			iedServer.Stop ();
+
+            iedServer.Dispose();
 		}
 
 		[Test()]
@@ -555,7 +640,7 @@ namespace tests
 		}
 
         [Test()]
-        public void MmsValaueCreateStructureAndAddElement()
+        public void MmsValueCreateStructureAndAddElement()
         {
             MmsValue structure1 = MmsValue.NewEmptyStructure(1);
             MmsValue structure2 = MmsValue.NewEmptyStructure(1);

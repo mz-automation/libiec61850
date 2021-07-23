@@ -2,8 +2,57 @@ Changes to version 1.5.0
 ------------------------
 - added support for time with ns resolution
 - IEC 61850 server: control models - allow delaying select response with check handler (new handler return value CONTROL_WAITING_FOR_SELECT)
-- added support for server to listen on multiple ports
+- IEC 61850 server: added support to listen on multiple IP addresses and ports (new function IedServer_addAccessPoint)
 - added support for service tracking
+- added tool support for transient data objects
+- .NET API: added more functions to create and access server data model
+- IED server - control model - send AddCause with operate- for DOes, SBOes control models
+- IED server: integrated GOOSE publisher - lock data model during GOOSE retransmission to avoid corrupted GOOSE data
+- added server example for dead band handling
+- IED server: make presence of RCB.Owner configurable at runtime with function IedServerConfig_enableOwnerForRCB (B1502/S1634)
+- IED server: make presence of BRCB.ResvTms configurable at runtime with function IedServerConfig_enableResvTmsForBRCB (F1558)
+- restrict maximum recursion depth in BerDecoder_decodeLength when indefinite length encoding is used to avoid stack overflow when receiving malformed messages
+- fixed oss-fuzz issues 31399, 31340, 31341, 31344, 31346
+- IED server: fixed bug in log service - old-entry and old-entry-time not updated
+- IED server: added new function IedServer_handleWriteAccessForComplexAttribute. Changed WriteAccessHandler behavior when ACCESS_POLICY_ALLOW.
+- MMS server: add compile time configuration options to enable/disable fileDelete and fileRename services (fileRename is now disabled by default)
+- MMS server: better data model lock handling for performance improvements
+- Linux - Ethernet: replace IFF_PROMISC by IFF_ALLMULTI
+- improvements in Python wrapper code
+- IED server: control models - fixed bug that only one control is unselected when connection closes
+- IED server: fixed bug - logs (journals) are added to all logical devices instead of just the parents
+- IED Server: prevent integrated GOOSE publisher to crash when ethernet socket cannot be created
+- IED server: make compatible with tissue 1178
+- IED server: reporting - implemented behavior according to tissue 1432
+- IED server: WriteAccessHandler can tell the stack not to update the value when returning DATA_ACCESS_ERROR_SUCCESS_NO_UPDATE
+- IED server: fixed problem that BL FC is not writable (#287)
+- IEC 61850 client: fixed dead lock in IedConnection_getFileAsync when fileRead times out (#285)
+- IED server: added ControlSelectStateChangedHandler callback for control mode
+- Client: fixed - IedConnection_getRCBValues doesn't check type of server response (#283)
+- GOOSE subscriber: changed maximum GoID size according to tissue 770 (129 bytes)
+- IED server: send AddCause for invalid origin also in case of direct control models
+- IED server: support for configuration of EditSG service and online visibility of SGCB.ResvTms at runtime
+- IED server: changed types TrkOps and OptFlds to variable length bit strings
+- MMS: changed handling of variable sized bit strings (now also accepts bit strings of larger size, ignoring the bits that exceed the specified size)
+- IED server: add support for correct CBB handling (required for test case sAss4) and initiate error PDU
+- IED server: add support for tissue 807 (owner attribute in RCB is only present when ReportSettings@owner attribute is true)
+- IED server: implemented tissue 1453 also for writing to "RptId" (purgeBuf only executed when value changes)
+- GOOSE subscriber: always copy GoID and DatSet from GOOSE message; always create new MmsValue instance for GOOSE data set when subscriber is observer
+- IED server: added configuration file support for data set entries with array elements or array element components
+- fixed problems in handling array elements and array element components
+- fixed bug in MmsConnection_readMultipleVariables: send invaid messsage and memory access errors when too many items are passed to the function exhausting MMS payload size
+- IEC 61850 server: fixed problem with test case sRp4 - RCB RptID attribute is not empty after writing empty string
+- fixed program crash when normal mode parameers are missing in presentation layer (#252)
+- IED Server/GOOSE: Don't send GOOSE message with new event while data model is locked
+- GOOSE: added GOOSE observer feature (GooseSubscriber listening to all GOOSE messages)  and GOOSE observer example
+- COTP: fixed possible heap buffer overflow when handling message with invalid (zero) value in length field (#250)
+- IEC 61850 server: fixed - cancel command for time activated control returns object-access-denied even in case of success
+- IEC 61850 client: fixed bug - IedConnection_setRCBValuesAsync always return 0 instead of invoke-ID
+- MMS: fixed problem in handling of indefinite length encoded BER elements
+- IEC 61850 client: reporting - support data set entries with multiple reasons for inclusion
+- Java tools: moved minTime, maxTime from GSEControl to GSE; updated GOOSE server example CID file
+- IEC 61850 server: Added ControlAction_setError function - with this function the user application can control the error code used in LastApplError and CommandTermination messages
+- IEC 61850 server: fixed problem with logging when log data set contains FCDO (#225)
 
 Changes to version 1.4.2.1
 --------------------------

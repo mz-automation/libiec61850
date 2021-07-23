@@ -106,7 +106,7 @@ Handleset_waitReady(HandleSet self, unsigned int timeoutMs)
 {
    int result;
 
-   if ((self != NULL) && (self->maxHandle >= 0)) {
+   if ((self != NULL) && (self->maxHandle != INVALID_SOCKET)) {
        struct timeval timeout;
 
        timeout.tv_sec = timeoutMs / 1000;
@@ -136,12 +136,14 @@ static int socketCount = 0;
 void
 Socket_activateTcpKeepAlive(Socket self, int idleTime, int interval, int count)
 {
+    (void)count; /* not supported in windows socket API */
+
     struct tcp_keepalive keepalive;
     DWORD retVal=0;
 
     keepalive.onoff = 1;
-    keepalive.keepalivetime = CONFIG_TCP_KEEPALIVE_IDLE * 1000;
-    keepalive.keepaliveinterval = CONFIG_TCP_KEEPALIVE_INTERVAL * 1000;
+    keepalive.keepalivetime = idleTime * 1000;
+    keepalive.keepaliveinterval = interval * 1000;
 
      if (WSAIoctl(self->fd, SIO_KEEPALIVE_VALS, &keepalive, sizeof(keepalive),
                 NULL, 0, &retVal, NULL, NULL) == SOCKET_ERROR)
@@ -192,7 +194,8 @@ prepareServerAddress(const char* address, int port, struct sockaddr_in* sockaddr
     return true;
 }
 
-static bool wsaStartUp()
+static bool
+wsaStartUp(void)
 {
     if (wsaStartupCalled == false) {
         int ec;
@@ -213,7 +216,8 @@ static bool wsaStartUp()
         return true;
 }
 
-static void wsaShutdown()
+static void
+wsaShutdown(void)
 {
     if (wsaStartupCalled) {
         if (socketCount == 0) {
@@ -286,13 +290,11 @@ ServerSocket_listen(ServerSocket self)
 Socket
 ServerSocket_accept(ServerSocket self)
 {
-    int fd;
-
     Socket conSocket = NULL;
 
-    fd = accept(self->fd, NULL, NULL);
+    SOCKET fd = accept(self->fd, NULL, NULL);
 
-    if (fd >= 0) {
+    if (fd != INVALID_SOCKET) {
         conSocket = (Socket) GLOBAL_CALLOC(1, sizeof(struct sSocket));
         conSocket->fd = fd;
 
@@ -339,7 +341,7 @@ TcpSocket_create()
     if (wsaStartUp() == false)
         return NULL;
 
-    int sock = socket(AF_INET, SOCK_STREAM, 0);
+    SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
 
     if (sock != INVALID_SOCKET) {
         self = (Socket) GLOBAL_MALLOC(sizeof(struct sSocket));
@@ -623,9 +625,9 @@ UdpSocket_create()
 {
     UdpSocket self = NULL;
 
-    int sock = socket(AF_INET, SOCK_DGRAM, 0);
+    SOCKET sock = socket(AF_INET, SOCK_DGRAM, 0);
 
-    if (sock != -1) {
+    if (sock != INVALID_SOCKET) {
         self = (UdpSocket) GLOBAL_MALLOC(sizeof(struct sSocket));
 
         self->fd = sock;
@@ -697,11 +699,12 @@ UdpSocket_sendTo(UdpSocket self, const char* address, int port, uint8_t* msg, in
 }
 
 int
-UdpSocket_receiveFrom(UdpSocket self, char** address, int maxAddrSize, uint8_t* msg, int msgSize)
+UdpSocket_receiveFrom(UdpSocket self, char* address, int maxAddrSize, uint8_t* msg, int msgSize)
 {
-    struct sockaddr_in remoteAddress;
+    struct sockaddr_storage remoteAddress;
+    socklen_t structSize = sizeof(struct sockaddr_storage);
 
-    int result = recvfrom(self->fd, (char*) msg, msgSize, 0, NULL, NULL);
+    int result = recvfrom(self->fd, (char*) msg, msgSize, 0, (struct sockaddr*)&remoteAddress, &structSize);
 
     if (result == 0) /* peer has closed socket */
         return -1;
@@ -711,6 +714,32 @@ UdpSocket_receiveFrom(UdpSocket self, char** address, int maxAddrSize, uint8_t* 
             return 0;
         else
             return -1;
+    }
+
+    if (address) {
+        bool isIPv6;
+        char addrString[INET6_ADDRSTRLEN + 7];
+        int port;
+
+        if (remoteAddress.ss_family == AF_INET) {
+            struct sockaddr_in* ipv4Addr = (struct sockaddr_in*) &remoteAddress;
+            port = ntohs(ipv4Addr->sin_port);
+            inet_ntop(AF_INET, &(ipv4Addr->sin_addr), addrString, INET_ADDRSTRLEN);
+            isIPv6 = false;
+        }
+        else if (remoteAddress.ss_family == AF_INET6) {
+            struct sockaddr_in6* ipv6Addr = (struct sockaddr_in6*) &remoteAddress;
+            port = ntohs(ipv6Addr->sin6_port);
+            inet_ntop(AF_INET6, &(ipv6Addr->sin6_addr), addrString, INET6_ADDRSTRLEN);
+            isIPv6 = true;
+        }
+        else
+            return result ;
+
+        if (isIPv6)
+            snprintf(address, maxAddrSize, "[%s]:%i", addrString, port);
+        else
+            snprintf(address, maxAddrSize, "%s:%i", addrString, port);
     }
 
     return result;

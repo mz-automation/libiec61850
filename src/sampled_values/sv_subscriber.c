@@ -21,6 +21,7 @@
  *  See COPYING file for the complete license text.
  */
 
+#define __STDC_FORMAT_MACROS 1
 #include "stack_config.h"
 #include <inttypes.h>
 
@@ -356,9 +357,12 @@ parseASDU(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, int length)
         
         if (SVSubscriber_ASDU_hasDatSet(&asdu))
             printf("SV_SUBSCRIBER:     DatSet: %s\n", asdu.datSet);
-#ifdef PRIu64
+
         if (SVSubscriber_ASDU_hasRefrTm(&asdu))
+#ifndef _MSC_VER
             printf("SV_SUBSCRIBER:     RefrTm[ns]: %"PRIu64"\n", SVSubscriber_ASDU_getRefrTmAsNs(&asdu));
+#else
+            printf("SV_SUBSCRIBER:     RefrTm[ns]: %llu\n", SVSubscriber_ASDU_getRefrTmAsNs(&asdu));
 #endif
         if (SVSubscriber_ASDU_hasSmpMod(&asdu))
             printf("SV_SUBSCRIBER:     SmpMod: %d\n", SVSubscriber_ASDU_getSmpMod(&asdu));

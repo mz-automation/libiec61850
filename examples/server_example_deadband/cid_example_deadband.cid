@@ -1,0 +1,442 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<SCL xmlns="http://www.iec.ch/61850/2003/SCL" revision="A" version="2007">
+  <Header id="" nameStructure="IEDName" toolID="FUHUA Model Designer ICT">
+    <History>
+      <Hitem revision="" version="" when="" />
+    </History>
+  </Header>
+  <Communication>
+    <SubNetwork name="W1">
+      <ConnectedAP apName="AP1" iedName="IED1">
+        <Address>
+          <P type="OSI-AP-Title">1,1,1,999,1</P>
+          <P type="OSI-AE-Qualifier">12</P>
+          <P type="OSI-PSEL">00000001</P>
+          <P type="OSI-SSEL">0001</P>
+          <P type="OSI-TSEL">0001</P>
+          <P type="IP">0.0.0.0</P>
+          <P type="IP-SUBNET">255.255.255.0</P>
+          <P type="IP-GATEWAY">0.0.0.0</P>
+        </Address>
+      </ConnectedAP>
+    </SubNetwork>
+  </Communication>
+  <IED name="IED1" originalSclRevision="B" originalSclVersion="2007">
+    <Services nameLength="64">
+      <ClientServices />
+      <ConfDataSet max="50" maxAttributes="100" />
+      <ConfReportControl max="50" />
+      <ReportSettings bufTime="Dyn" cbName="Conf" datSet="Conf" intgPd="Dyn" optFields="Dyn" trgOps="Dyn" />
+      <ConfLNs fixLnInst="true" fixPrefix="true" />
+      <DynAssociation />
+      <GetDirectory />
+      <GetDataObjectDefinition />
+      <GetCBValues />
+      <DataObjectDirectory />
+      <GetDataSetValue />
+      <DataSetDirectory />
+      <ReadWrite />
+      <GSESettings appID="Conf" cbName="Conf" datSet="Conf" />
+      <GOOSE max="10" />
+    </Services>
+    <AccessPoint name="AP1">
+      <Server>
+        <Authentication none="true" />
+        <LDevice inst="LD1">
+          <LN0 inst="" lnClass="LLN0" lnType="LLN0_0">
+            <DataSet name="AnalogEvents">
+              <FCDA doName="AnIn1" fc="MX" ldInst="LD1" prefix="AnIn" lnClass="GGIO" lnInst="1" />
+              <FCDA doName="AnIn2" fc="MX" ldInst="LD1" prefix="AnIn" lnClass="GGIO" lnInst="1" />
+              <FCDA doName="AnIn3" fc="MX" ldInst="LD1" prefix="AnIn" lnClass="GGIO" lnInst="1" />
+              <FCDA doName="AnIn4" fc="MX" ldInst="LD1" prefix="AnIn" lnClass="GGIO" lnInst="1" />
+            </DataSet>
+            <ReportControl bufTime="0" buffered="true" confRev="1" datSet="AnalogEvents" intgPd="5000" name="BRCB_Events">
+              <TrgOps dchg="true" dupd="false" period="false" qchg="true" />
+              <OptFields configRef="true" dataRef="true" dataSet="false" entryID="true" reasonCode="true" seqNum="true" timeStamp="true" />
+              <RptEnabled max="2" />
+            </ReportControl>
+            <ReportControl bufTime="0" buffered="false" confRev="1" datSet="AnalogEvents" intgPd="5000" name="URCB_Events">
+              <TrgOps dchg="true" dupd="false" period="false" qchg="true" />
+              <OptFields configRef="true" dataRef="true" dataSet="false" reasonCode="true" seqNum="true" timeStamp="true" />
+              <RptEnabled max="2" />
+            </ReportControl>
+            <DOI name="Mod">
+              <DAI name="stVal">
+                <Val>on</Val>
+              </DAI>
+            </DOI>
+          </LN0>
+          <LN inst="1" lnClass="LPHD" lnType="LPHD" />
+          <LN inst="1" prefix="AnIn" lnClass="GGIO" lnType="GGIO_AnIn_MV">
+            <DOI name="Beh">
+              <DAI name="stVal">
+                <Val>on</Val>
+              </DAI>
+            </DOI>
+            <DOI name="AnIn1">
+              <DAI name="db">
+                <Val>10000</Val>
+              </DAI>
+              <DAI name="dbRef">
+                <Val>10</Val>
+              </DAI>
+              <DAI name="zeroDb">
+                <Val>1000</Val>
+              </DAI>
+              <DAI name="zeroDbRef">
+                <Val>10</Val>
+              </DAI>
+            </DOI>
+            <DOI name="AnIn2">
+              <DAI name="db">
+                <Val>1000</Val>
+              </DAI>
+              <DAI name="dbRef">
+                <Val>10</Val>
+              </DAI>
+              <DAI name="zeroDb">
+                <Val>1000</Val>
+              </DAI>
+              <DAI name="zeroDbRef">
+                <Val>10</Val>
+              </DAI>
+            </DOI>
+            <DOI name="AnIn3">
+              <DAI name="db">
+                <Val>10000</Val>
+              </DAI>
+              <DAI name="zeroDb">
+                <Val>1000</Val>
+              </DAI>
+              <SDI name="rangeC">
+                <SDI name="min">
+                  <DAI name="f">
+                    <Val>-5</Val>
+                  </DAI>
+                </SDI>
+                <SDI name="max">
+                  <DAI name="f">
+                    <Val>5</Val>
+                  </DAI>
+                </SDI>
+              </SDI>
+            </DOI>
+            <DOI name="AnIn4">
+              <DAI name="db">
+                <Val>1000</Val>
+              </DAI>
+              <DAI name="zeroDb">
+                <Val>1000</Val>
+              </DAI>
+              <SDI name="rangeC">
+                <SDI name="min">
+                  <DAI name="f">
+                    <Val>-100</Val>
+                  </DAI>
+                </SDI>
+                <SDI name="max">
+                  <DAI name="f">
+                    <Val>100</Val>
+                  </DAI>
+                </SDI>
+              </SDI>
+            </DOI>
+          </LN>
+        </LDevice>
+      </Server>
+    </AccessPoint>
+  </IED>
+  <DataTypeTemplates>
+    <LNodeType id="LPHD" lnClass="LPHD">
+      <DO name="PhyNam" type="DPL" />
+      <DO name="PhyHealth" type="ENS_Health" />
+      <DO name="Proxy" type="SPS" />
+    </LNodeType>
+    <LNodeType id="LLN0_0" lnClass="LLN0">
+      <DO name="Mod" type="ENC_Mod" />
+      <DO name="Beh" type="ENS_Beh" />
+      <DO name="Health" type="ENS_Health" />
+      <DO name="NamPlt" type="LPL_NamPlt" />
+    </LNodeType>
+    <LNodeType id="GGIO_AnIn_MV" lnClass="GGIO">
+      <DO name="Beh" type="ENS_Beh" />
+      <DO name="AnIn1" type="MV_db" />
+      <DO name="AnIn2" type="MV_db" />
+      <DO name="AnIn3" type="MV_db_rangeC" />
+      <DO name="AnIn4" type="MV_db_rangeC" />
+    </LNodeType>
+    <DOType cdc="DPL" id="DPL">
+      <DA bType="VisString255" fc="DC" name="vendor" />
+      <DA bType="VisString255" fc="DC" name="hwRev" />
+      <DA bType="VisString255" fc="DC" name="swRev" />
+      <DA bType="VisString255" fc="DC" name="serNum" />
+      <DA bType="VisString255" fc="DC" name="model" />
+      <DA bType="VisString255" fc="DC" name="location" />
+      <DA bType="VisString64" fc="DC" name="name" />
+      <DA bType="VisString255" fc="DC" name="owner" />
+    </DOType>
+    <DOType cdc="ENS" id="ENS_TmSyn">
+      <DA bType="Enum" fc="ST" name="stVal" type="TmSynEnum" />
+      <DA bType="Quality" fc="ST" name="q" />
+      <DA bType="Timestamp" fc="ST" name="t" />
+    </DOType>
+    <DOType cdc="ENS" id="ENS_Beh">
+      <DA bType="Enum" fc="ST" name="stVal" type="BehKind" />
+      <DA bType="Quality" fc="ST" name="q" />
+      <DA bType="Timestamp" fc="ST" name="t" />
+    </DOType>
+    <DOType cdc="SPS" id="SPS">
+      <DA bType="BOOLEAN" dchg="true" fc="ST" name="stVal" />
+      <DA bType="Quality" fc="ST" name="q" qchg="true" />
+      <DA bType="Timestamp" fc="ST" name="t" />
+      <DA bType="VisString255" fc="DC" name="d" />
+    </DOType>
+    <DOType cdc="ENC" id="ENC_Mod">
+      <DA bType="Enum" dchg="true" fc="ST" name="stVal" type="ModKind" />
+      <DA bType="Quality" fc="ST" name="q" qchg="true" />
+      <DA bType="Timestamp" fc="ST" name="t" />
+      <DA bType="Enum" fc="CF" name="ctlModel" type="ctlModel" />
+    </DOType>
+    <DOType cdc="ENC" id="ENC">
+      <DA bType="Struct" fc="CO" name="Oper" type="ENCOperate" />
+      <DA bType="VisString129" fc="CO" name="SBO" />
+      <DA bType="Struct" fc="CO" name="SBOw" type="ENCOperate" />
+      <DA bType="Struct" fc="ST" name="origin" type="Originator" />
+      <DA bType="INT8U" fc="ST" name="ctlNum" />
+      <DA bType="Enum" dchg="true" fc="ST" name="stVal" type="tempEnum" />
+      <DA bType="Quality" fc="ST" name="q" qchg="true" />
+      <DA bType="Timestamp" fc="ST" name="t" />
+      <DA bType="Enum" fc="CF" name="ctlModel" type="ctlModel" />
+    </DOType>
+    <DOType cdc="INS" id="INS">
+      <DA bType="INT32" dchg="true" fc="ST" name="stVal" />
+      <DA bType="Quality" fc="ST" name="q" qchg="true" />
+      <DA bType="Timestamp" fc="ST" name="t" />
+      <DA bType="INT32U" fc="CF" name="db" />
+      <DA bType="INT32U" fc="CF" name="zeroDb" />
+    </DOType>
+    <DOType cdc="MV" id="MV_db">
+      <DA bType="Struct" fc="MX" name="instMag" type="AnalogueValue"/>
+      <DA bType="Struct" dchg="true" dupd="false" fc="MX" name="mag" type="AnalogueValue" />
+      <DA bType="Quality" fc="MX" name="q" qchg="true" />
+      <DA bType="Timestamp" fc="MX" name="t" />
+      <DA bType="INT32U" dchg="true" fc="CF" name="db" />
+      <DA bType="INT32U" dchg="true" fc="CF" name="zeroDb" />
+      <DA bType="FLOAT32" dchg="true" fc="CF" name="dbRef" />
+      <DA bType="FLOAT32" dchg="true" fc="CF" name="zeroDbRef" />
+    </DOType>
+    <DOType cdc="MV" id="MV_db_rangeC">
+      <DA bType="Struct" fc="MX" name="instMag" type="AnalogueValue"/>
+      <DA bType="Struct" dchg="true" dupd="false" fc="MX" name="mag" type="AnalogueValue" />
+      <DA bType="Quality" fc="MX" name="q" qchg="true" />
+      <DA bType="Timestamp" fc="MX" name="t" />
+      <DA bType="INT32U" dchg="true" fc="CF" name="db" />
+      <DA bType="INT32U" dchg="true" fc="CF" name="zeroDb" />
+      <DA bType="Struct" dchg="true" fc="CF" name="rangeC" type="RangeConfig" />
+    </DOType>
+    <DOType cdc="ENS" id="ENS_Health">
+      <DA bType="Enum" dchg="true" fc="ST" name="stVal" type="HealthKind" />
+      <DA bType="Quality" fc="ST" name="q" qchg="true" />
+      <DA bType="Timestamp" fc="ST" name="t" />
+    </DOType>
+    <DOType cdc="LPL" id="LPL_NamPlt">
+      <DA bType="VisString255" fc="DC" name="vendor" />
+      <DA bType="VisString255" fc="DC" name="swRev" />
+      <DA bType="VisString255" fc="DC" name="d" />
+      <DA bType="VisString255" fc="DC" name="configRev" />
+    </DOType>
+    <DAType id="Originator">
+      <BDA bType="Enum" name="orCat" type="orCat" />
+      <BDA bType="Octet64" name="orIdent" />
+    </DAType>
+    <DAType id="ENCOperate">
+      <BDA bType="Enum" name="ctlVal" type="tempEnum" />
+      <BDA bType="Timestamp" name="operTm" />
+      <BDA bType="Struct" name="origin" type="Originator" />
+      <BDA bType="INT8U" name="ctlNum" />
+      <BDA bType="Timestamp" name="T" />
+      <BDA bType="BOOLEAN" name="Test" />
+      <BDA bType="Check" name="Check" />
+    </DAType>
+    <DAType id="ENCCancel">
+      <BDA bType="Enum" name="ctlVal" type="tempEnum" />
+      <BDA bType="Timestamp" name="operTm" />
+      <BDA bType="Struct" name="origin" type="Originator" />
+      <BDA bType="INT8U" name="ctlNum" />
+      <BDA bType="Timestamp" name="T" />
+      <BDA bType="BOOLEAN" name="Test" />
+    </DAType>
+    <DAType id="Unit">
+      <BDA bType="Enum" name="SIUnit" type="SIUnit" />
+      <BDA bType="Enum" name="multiplier" type="multiplier" />
+    </DAType>
+    <DAType id="Vector">
+      <BDA name="mag" bType="Struct" type="AnalogueValue" />
+      <BDA name="ang" bType="Struct" type="AnalogueValue" />
+    </DAType>
+    <DAType id="AnalogueValue">
+      <BDA bType="FLOAT32" name="f" />
+    </DAType>
+    <DAType id="ScaledValueConfig">
+      <BDA bType="FLOAT32" name="scaleFactor" />
+      <BDA bType="FLOAT32" name="offset" />
+    </DAType>
+    <DAType id="RangeConfig">
+      <BDA bType="Struct" name="min" type="AnalogueValue" />
+      <BDA bType="Struct" name="max" type="AnalogueValue" />
+    </DAType>
+    <DAType id="PulseConfig">
+      <BDA bType="Enum" name="cmdQual" type="cmdQual" />
+      <BDA bType="INT32U" name="onDur" />
+      <BDA bType="INT32U" name="offDur" />
+      <BDA bType="INT32U" name="numPls" />
+    </DAType>
+    <EnumType id="tempEnum">
+      <EnumVal ord="0">e1</EnumVal>
+      <EnumVal ord="1">e2</EnumVal>
+      <EnumVal ord="2">e3</EnumVal>
+      <EnumVal ord="3">e4</EnumVal>
+      <EnumVal ord="4">e5</EnumVal>
+    </EnumType>
+    <EnumType id="TmSynEnum">
+      <EnumVal ord="0">ExternalAreaClock</EnumVal>
+      <EnumVal ord="1">LocalAreaClock</EnumVal>
+      <EnumVal ord="2">GlobalAreaClock</EnumVal>
+    </EnumType>
+    <EnumType id="orCat">
+      <EnumVal ord="0">not-supported</EnumVal>
+      <EnumVal ord="1">bay-control</EnumVal>
+      <EnumVal ord="2">station-control</EnumVal>
+      <EnumVal ord="3">remote-control</EnumVal>
+      <EnumVal ord="4">automatic-bay</EnumVal>
+      <EnumVal ord="5">automatic-station</EnumVal>
+      <EnumVal ord="6">automatic-remote</EnumVal>
+      <EnumVal ord="7">maintenance</EnumVal>
+      <EnumVal ord="8">process</EnumVal>
+    </EnumType>
+    <EnumType id="ctlModel">
+      <EnumVal ord="0">status-only</EnumVal>
+      <EnumVal ord="1">direct-with-normal-security</EnumVal>
+      <EnumVal ord="2">sbo-with-normal-security</EnumVal>
+      <EnumVal ord="3">direct-with-enhanced-security</EnumVal>
+      <EnumVal ord="4">sbo-with-enhanced-security</EnumVal>
+    </EnumType>
+    <EnumType id="sboClass">
+      <EnumVal ord="0">operate-once</EnumVal>
+      <EnumVal ord="1">operate-many</EnumVal>
+    </EnumType>
+    <EnumType id="SIUnit">
+      <EnumVal ord="1">none</EnumVal>
+      <EnumVal ord="2">m</EnumVal>
+      <EnumVal ord="3">kg</EnumVal>
+      <EnumVal ord="4">s</EnumVal>
+      <EnumVal ord="5">A</EnumVal>
+      <EnumVal ord="6">K</EnumVal>
+      <EnumVal ord="7">mol</EnumVal>
+      <EnumVal ord="8">cd</EnumVal>
+      <EnumVal ord="9">deg</EnumVal>
+      <EnumVal ord="10">rad</EnumVal>
+      <EnumVal ord="11">sr</EnumVal>
+      <EnumVal ord="21">Gy</EnumVal>
+      <EnumVal ord="22">q</EnumVal>
+      <EnumVal ord="23">°C</EnumVal>
+      <EnumVal ord="24">Sv</EnumVal>
+      <EnumVal ord="25">F</EnumVal>
+      <EnumVal ord="26">C</EnumVal>
+      <EnumVal ord="27">S</EnumVal>
+      <EnumVal ord="28">H</EnumVal>
+      <EnumVal ord="29">V</EnumVal>
+      <EnumVal ord="30">ohm</EnumVal>
+      <EnumVal ord="31">J</EnumVal>
+      <EnumVal ord="32">N</EnumVal>
+      <EnumVal ord="33">Hz</EnumVal>
+      <EnumVal ord="34">lx</EnumVal>
+      <EnumVal ord="35">Lm</EnumVal>
+      <EnumVal ord="36">Wb</EnumVal>
+      <EnumVal ord="37">T</EnumVal>
+      <EnumVal ord="38">W</EnumVal>
+      <EnumVal ord="39">Pa</EnumVal>
+      <EnumVal ord="41">m²</EnumVal>
+      <EnumVal ord="42">m³</EnumVal>
+      <EnumVal ord="43">m/s</EnumVal>
+      <EnumVal ord="44">m/s²</EnumVal>
+      <EnumVal ord="45">m³/s</EnumVal>
+      <EnumVal ord="46">m/m³</EnumVal>
+      <EnumVal ord="47">M</EnumVal>
+      <EnumVal ord="48">kg/m³</EnumVal>
+      <EnumVal ord="49">m²/s</EnumVal>
+      <EnumVal ord="50">W/m K</EnumVal>
+      <EnumVal ord="51">J/K</EnumVal>
+      <EnumVal ord="52">ppm</EnumVal>
+      <EnumVal ord="53">1/s</EnumVal>
+      <EnumVal ord="54">rad/s</EnumVal>
+      <EnumVal ord="61">VA</EnumVal>
+      <EnumVal ord="62">Watts</EnumVal>
+      <EnumVal ord="63">VAr</EnumVal>
+      <EnumVal ord="64">theta</EnumVal>
+      <EnumVal ord="65">cos(theta)</EnumVal>
+      <EnumVal ord="66">Vs</EnumVal>
+      <EnumVal ord="67">V²</EnumVal>
+      <EnumVal ord="68">As</EnumVal>
+      <EnumVal ord="69">A²</EnumVal>
+      <EnumVal ord="70">A²t</EnumVal>
+      <EnumVal ord="71">VAh</EnumVal>
+      <EnumVal ord="72">Wh</EnumVal>
+      <EnumVal ord="73">VArh</EnumVal>
+      <EnumVal ord="74">V/Hz</EnumVal>
+    </EnumType>
+    <EnumType id="multiplier">
+      <EnumVal ord="-24">Yocto</EnumVal>
+      <EnumVal ord="-21">Zepto</EnumVal>
+      <EnumVal ord="-18">Atto</EnumVal>
+      <EnumVal ord="-15">Femto</EnumVal>
+      <EnumVal ord="-12">Pico</EnumVal>
+      <EnumVal ord="-9">Nano</EnumVal>
+      <EnumVal ord="-6">Micro</EnumVal>
+      <EnumVal ord="-3">Milli</EnumVal>
+      <EnumVal ord="-2">Centi</EnumVal>
+      <EnumVal ord="-1">Deci</EnumVal>
+      <EnumVal ord="0">zeroNoValue</EnumVal>
+      <EnumVal ord="1">Deca</EnumVal>
+      <EnumVal ord="2">Hecto</EnumVal>
+      <EnumVal ord="3">Kilo</EnumVal>
+      <EnumVal ord="6">Mega</EnumVal>
+      <EnumVal ord="9">Giga</EnumVal>
+      <EnumVal ord="12">Tera</EnumVal>
+      <EnumVal ord="15">Petra</EnumVal>
+      <EnumVal ord="18">Exa</EnumVal>
+      <EnumVal ord="21">Zetta</EnumVal>
+      <EnumVal ord="24">Yotta</EnumVal>
+    </EnumType>
+    <EnumType id="range">
+      <EnumVal ord="0">normal</EnumVal>
+      <EnumVal ord="1">high</EnumVal>
+      <EnumVal ord="2">low</EnumVal>
+      <EnumVal ord="3">high-high</EnumVal>
+      <EnumVal ord="4">low-low</EnumVal>
+    </EnumType>
+    <EnumType id="cmdQual">
+      <EnumVal ord="0">pulse</EnumVal>
+      <EnumVal ord="1">persistent</EnumVal>
+    </EnumType>
+    <EnumType id="HealthKind">
+      <EnumVal ord="1">Ok</EnumVal>
+      <EnumVal ord="2">Warning</EnumVal>
+      <EnumVal ord="3">Alarm</EnumVal>
+    </EnumType>
+    <EnumType id="BehKind">
+      <EnumVal ord="1">on</EnumVal>
+      <EnumVal ord="2">blocked</EnumVal>
+      <EnumVal ord="3">test</EnumVal>
+      <EnumVal ord="4">test/blocked</EnumVal>
+      <EnumVal ord="5">off</EnumVal>
+    </EnumType>
+    <EnumType id="ModKind">
+      <EnumVal ord="1">on</EnumVal>
+      <EnumVal ord="2">blocked</EnumVal>
+      <EnumVal ord="3">test</EnumVal>
+      <EnumVal ord="4">test/blocked</EnumVal>
+      <EnumVal ord="5">off</EnumVal>
+    </EnumType>
+  </DataTypeTemplates>
+</SCL>

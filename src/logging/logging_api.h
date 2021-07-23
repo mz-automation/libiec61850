@@ -108,6 +108,16 @@ LIB61850_API void
 LogStorage_setMaxLogEntries(LogStorage self, int maxEntries);
 
 /**
+ * \brief Get the maximum allowed number of log entries for this log
+ *
+ * \param self the pointer of the LogStorage instance
+ *
+ * \return the maximum number of log entries
+ */
+LIB61850_API int
+LogStorage_getMaxLogEntries(LogStorage self);
+
+/**
  * \brief Add an entry to the log
  *
  * \param self the pointer of the LogStorage instance

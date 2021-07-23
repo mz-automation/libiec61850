@@ -2232,6 +2232,12 @@ LIB61850_API DEPRECATED void
 ControlObjectClient_enableSynchroCheck(ControlObjectClient self);
 
 /**
+ * \deprecated Do not use (ctlNum is handled automatically by the library)! Intended for test purposes only.
+ */
+LIB61850_API DEPRECATED void
+ControlObjectClient_setCtlNum(ControlObjectClient self, uint8_t ctlNum);
+
+/**
  * \brief Set the value of the interlock check flag when a control command is sent
  *
  * \param self the ControlObjectClient instance
@@ -2255,7 +2261,12 @@ ControlObjectClient_setSynchroCheck(ControlObjectClient self, bool value);
  *
  * This callback is invoked whenever a CommandTermination+ or CommandTermination- message is received.
  * To distinguish between a CommandTermination+ and CommandTermination- please use the
- * ControlObjectClient_getLastApplError function.
+ * \ref ControlObjectClient_getLastApplError function.
+ *
+ * In case of CommandTermination+ the return value
+ * of \ref ControlObjectClient_getLastApplError has error=CONTROL_ERROR_NO_ERROR and
+ * addCause=ADD_CAUSE_UNKNOWN set. When addCause is different from ADD_CAUSE_UNKNOWN then the client
+ * received a CommandTermination- message.
  *
  * NOTE: Do not call \ref ControlObjectClient_destroy inside of this callback! Doing so will cause a dead-lock.
  *
@@ -2269,7 +2280,10 @@ typedef void (*CommandTerminationHandler) (void* parameter, ControlObjectClient 
  *
  * This callback is invoked whenever a CommandTermination+ or CommandTermination- message is received.
  * To distinguish between a CommandTermination+ and CommandTermination- please use the
- * ControlObjectClient_getLastApplError function.
+ * \ref ControlObjectClient_getLastApplError function. In case of CommandTermination+ the return value
+ * of \ref ControlObjectClient_getLastApplError has error=CONTROL_ERROR_NO_ERROR and
+ * addCause=ADD_CAUSE_UNKNOWN set. When addCause is different from ADD_CAUSE_UNKNOWN then the client
+ * received a CommandTermination- message.
  *
  * \param self the ControlObjectClient instance
  * \param handler the callback function to be used

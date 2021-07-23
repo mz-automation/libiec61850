@@ -22,6 +22,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using IEC61850.Common;
 
@@ -69,6 +70,8 @@ namespace IEC61850
 
 				private bool isDisposed = false;
 
+				private List<GooseSubscriber> subscribers = new List<GooseSubscriber>();
+
 				public GooseReceiver()
 				{
 					self = GooseReceiver_create ();
@@ -79,14 +82,29 @@ namespace IEC61850
 					GooseReceiver_setInterfaceId (self, interfaceId);
 				}
 					
+				/// <summary>
+				/// Add the subscriber to be handled by this receiver instance
+				/// </summary>
+				/// <remarks>A GooseSubscriber can only be added to one GooseReceiver!</remarks>
+				/// <param name="subscriber"></param>
 				public void AddSubscriber(GooseSubscriber subscriber)
 				{
-					GooseReceiver_addSubscriber (self, subscriber.self);
+					if (subscriber.attachedToReceiver == false)
+					{
+						subscriber.attachedToReceiver = true;
+						GooseReceiver_addSubscriber(self, subscriber.self);
+						subscribers.Add(subscriber);
+					}
 				}
 
 				public void RemoveSubscriber(GooseSubscriber subscriber)
 				{
-					GooseReceiver_removeSubscriber (self, subscriber.self);
+					if (subscriber.attachedToReceiver)
+					{
+						GooseReceiver_removeSubscriber(self, subscriber.self);
+						subscribers.Remove(subscriber);
+						subscriber.attachedToReceiver = false;
+					}
 				}
 
 				public void Start()
@@ -175,9 +193,21 @@ namespace IEC61850
 				[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 				private static extern void GooseSubscriber_setListener (IntPtr self, InternalGooseListener listener, IntPtr parameter);
 
+				[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+				private static extern IntPtr GooseSubscriber_getGoId(IntPtr self);
+
+				[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+				private static extern IntPtr GooseSubscriber_getGoCbRef(IntPtr self);
+
+				[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+				private static extern IntPtr GooseSubscriber_getDataSet(IntPtr self);
+
 				internal IntPtr self;
 
 				private bool isDisposed = false;
+
+				// don't call native destructor when attached to a receiver
+				internal bool attachedToReceiver = false;
 
 				private GooseListener listener = null;
 				private object listenerParameter = null;
@@ -214,7 +244,6 @@ namespace IEC61850
 					return GooseSubscriber_isValid (self);
 				}
 
-
 				public void SetListener(GooseListener listener, object parameter)
 				{
 					this.listener = listener;
@@ -225,6 +254,21 @@ namespace IEC61850
 
 						GooseSubscriber_setListener (self, internalListener, IntPtr.Zero);
 					}
+				}
+
+				public string GetGoId()
+				{
+					return Marshal.PtrToStringAnsi(GooseSubscriber_getGoId(self));
+				}
+
+				public string GetGoCbRef()
+				{
+					return Marshal.PtrToStringAnsi(GooseSubscriber_getGoCbRef(self));
+				}
+
+				public string GetDataSet()
+				{
+					return Marshal.PtrToStringAnsi(GooseSubscriber_getDataSet(self));
 				}
 
 				public UInt32 GetStNum()
@@ -300,12 +344,20 @@ namespace IEC61850
 				{
 					if (isDisposed == false) {
 						isDisposed = true;
-						GooseSubscriber_destroy (self);
+
+						if (attachedToReceiver == false)
+							GooseSubscriber_destroy (self);
+
 						self = IntPtr.Zero;
 					}
 				}
 
-			}
+				~GooseSubscriber()
+				{
+					Dispose();
+				}
+
+            }
 
 		}
 			

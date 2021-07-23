@@ -928,11 +928,19 @@ mmsServer_handleReadRequest(
 	request = &(mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.choice.read);
 
 	if (request->variableAccessSpecification.present == VariableAccessSpecification_PR_listOfVariable) {
+		MmsServer_lockModel(connection->server);
+
 		handleReadListOfVariablesRequest(connection, request, invokeId, response);
+
+		MmsServer_unlockModel(connection->server);
 	}
 #if (MMS_DATA_SET_SERVICE == 1)
 	else if (request->variableAccessSpecification.present == VariableAccessSpecification_PR_variableListName) {
+		MmsServer_lockModel(connection->server);
+
 		handleReadNamedVariableListRequest(connection, request, invokeId, response);
+
+		MmsServer_unlockModel(connection->server);
 	}
 #endif
 	else {

@@ -252,10 +252,13 @@ installDefaultValuesForDataAttribute(IedServer self, LogicalDevice* ld, DataAttr
 
     if (ld->ldName == NULL) {
         strncpy(domainName, self->model->name, 64);
+        MmsMapping_getMmsDomainFromObjectReference(objectReference, domainName + strlen(domainName));
         domainName[64] = 0;
     }
-
-    MmsMapping_getMmsDomainFromObjectReference(objectReference, domainName + strlen(domainName));
+    else {
+        strncpy(domainName, ld->ldName, 64);
+        domainName[64] = 0;
+    }
 
     MmsDomain* domain = MmsDevice_getDomain(self->mmsDevice, domainName);
 
@@ -477,7 +480,6 @@ IedServer_createWithConfig(IedModel* dataModel, TLSConfiguration tlsConfiguratio
     IedServer self = (IedServer) GLOBAL_CALLOC(1, sizeof(struct sIedServer));
 
     if (self) {
-
         self->model = dataModel;
 
         self->running = false;
@@ -508,10 +510,18 @@ IedServer_createWithConfig(IedModel* dataModel, TLSConfiguration tlsConfiguratio
         if (serverConfiguration) {
             self->reportBufferSizeBRCBs = serverConfiguration->reportBufferSize;
             self->reportBufferSizeURCBs = serverConfiguration->reportBufferSizeURCBs;
+            self->enableBRCBResvTms = serverConfiguration->enableResvTmsForBRCB;
+            self->enableOwnerForRCB = serverConfiguration->enableOwnerForRCB;
         }
         else {
             self->reportBufferSizeBRCBs = CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE;
             self->reportBufferSizeURCBs = CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE;
+            self->enableOwnerForRCB = false;
+#if (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1)
+            self->enableBRCBResvTms = true;
+#else
+            self->enableBRCBResvTms = false;
+#endif
         }
 #endif
 
@@ -528,56 +538,63 @@ IedServer_createWithConfig(IedModel* dataModel, TLSConfiguration tlsConfiguratio
 
         self->mmsMapping = MmsMapping_create(dataModel, self);
 
-        self->mmsDevice = MmsMapping_getMmsDeviceModel(self->mmsMapping);
+        if (self->mmsMapping) {
 
-        self->mmsServer = MmsServer_create(self->mmsDevice, tlsConfiguration);
+            self->mmsDevice = MmsMapping_getMmsDeviceModel(self->mmsMapping);
+
+            self->mmsServer = MmsServer_create(self->mmsDevice, tlsConfiguration);
 
 #if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
-        if (serverConfiguration) {
-            MmsServer_enableFileService(self->mmsServer, serverConfiguration->enableFileService);
-            MmsServer_enableDynamicNamedVariableListService(self->mmsServer, serverConfiguration->enableDynamicDataSetService);
-            MmsServer_setMaxAssociationSpecificDataSets(self->mmsServer, serverConfiguration->maxAssociationSpecificDataSets);
-            MmsServer_setMaxDomainSpecificDataSets(self->mmsServer, serverConfiguration->maxDomainSpecificDataSets);
-            MmsServer_setMaxDataSetEntries(self->mmsServer, serverConfiguration->maxDataSetEntries);
-            MmsServer_enableJournalService(self->mmsServer, serverConfiguration->enableLogService);
-            MmsServer_setFilestoreBasepath(self->mmsServer, serverConfiguration->fileServiceBasepath);
-            MmsServer_setMaxConnections(self->mmsServer, serverConfiguration->maxMmsConnections);
-        }
+            if (serverConfiguration) {
+                MmsServer_enableFileService(self->mmsServer, serverConfiguration->enableFileService);
+                MmsServer_enableDynamicNamedVariableListService(self->mmsServer, serverConfiguration->enableDynamicDataSetService);
+                MmsServer_setMaxAssociationSpecificDataSets(self->mmsServer, serverConfiguration->maxAssociationSpecificDataSets);
+                MmsServer_setMaxDomainSpecificDataSets(self->mmsServer, serverConfiguration->maxDomainSpecificDataSets);
+                MmsServer_setMaxDataSetEntries(self->mmsServer, serverConfiguration->maxDataSetEntries);
+                MmsServer_enableJournalService(self->mmsServer, serverConfiguration->enableLogService);
+                MmsServer_setFilestoreBasepath(self->mmsServer, serverConfiguration->fileServiceBasepath);
+                MmsServer_setMaxConnections(self->mmsServer, serverConfiguration->maxMmsConnections);
+            }
 #endif
 
-        MmsMapping_setMmsServer(self->mmsMapping, self->mmsServer);
+            MmsMapping_setMmsServer(self->mmsMapping, self->mmsServer);
 
-        MmsMapping_installHandlers(self->mmsMapping);
+            MmsMapping_installHandlers(self->mmsMapping);
 
-        createMmsServerCache(self);
+            createMmsServerCache(self);
 
-        dataModel->initializer();
+            dataModel->initializer();
 
-        installDefaultValuesInCache(self); /* This will also connect cached MmsValues to DataAttributes */
+            installDefaultValuesInCache(self); /* This will also connect cached MmsValues to DataAttributes */
 
-        updateDataSetsWithCachedValues(self);
+            updateDataSetsWithCachedValues(self);
 
-        self->clientConnections = LinkedList_create();
+            self->clientConnections = LinkedList_create();
 
-        /* default write access policy allows access to SP, SE and SV FCDAs but denies access to DC and CF FCDAs */
-        self->writeAccessPolicies = ALLOW_WRITE_ACCESS_SP | ALLOW_WRITE_ACCESS_SV | ALLOW_WRITE_ACCESS_SE;
+            /* default write access policy allows access to SP, SE and SV FCDAs but denies access to DC and CF FCDAs */
+            self->writeAccessPolicies = ALLOW_WRITE_ACCESS_SP | ALLOW_WRITE_ACCESS_SV | ALLOW_WRITE_ACCESS_SE;
 
-        MmsMapping_initializeControlObjects(self->mmsMapping);
+            MmsMapping_initializeControlObjects(self->mmsMapping);
 
 #if (CONFIG_IEC61850_REPORT_SERVICE == 1)
-        Reporting_activateBufferedReports(self->mmsMapping);
+            Reporting_activateBufferedReports(self->mmsMapping);
 #endif
 
 #if (CONFIG_IEC61850_SETTING_GROUPS == 1)
-        MmsMapping_configureSettingGroups(self->mmsMapping);
+            MmsMapping_configureSettingGroups(self->mmsMapping);
 #endif
 
 #if (CONFIG_INCLUDE_GOOSE_SUPPORT)
-        if (serverConfiguration) {
-            MmsMapping_useIntegratedGoosePublisher(self->mmsMapping, serverConfiguration->useIntegratedGoosePublisher);
-        }
-
+		    if (serverConfiguration) {
+                MmsMapping_useIntegratedGoosePublisher(self->mmsMapping, serverConfiguration->useIntegratedGoosePublisher);
+		    }
 #endif
+
+        }
+        else {
+            IedServer_destroy(self);
+            self = NULL;
+        }
     }
 
     return self;
@@ -620,7 +637,8 @@ IedServer_destroy(IedServer self)
     if (self->localIpAddress != NULL)
         GLOBAL_FREEMEM(self->localIpAddress);
 
-    MmsMapping_destroy(self->mmsMapping);
+    if (self->mmsMapping)
+        MmsMapping_destroy(self->mmsMapping);
 
     LinkedList_destroyDeep(self->clientConnections, (LinkedListValueDeleteFunction) private_ClientConnection_destroy);
 
@@ -1539,6 +1557,26 @@ IedServer_handleWriteAccess(IedServer self, DataAttribute* dataAttribute, WriteA
 }
 
 void
+IedServer_handleWriteAccessForComplexAttribute(IedServer self, DataAttribute* dataAttribute, WriteAccessHandler handler, void* parameter)
+{
+    if (dataAttribute == NULL) {
+        if (DEBUG_IED_SERVER)
+            printf("IED_SERVER: IedServer_handleWriteAccessForComplexAttribute - dataAttribute == NULL!\n");
+    }
+    else {
+        MmsMapping_installWriteAccessHandler(self->mmsMapping, dataAttribute, handler, parameter);
+
+        DataAttribute* subDa = (DataAttribute*) dataAttribute->firstChild;
+
+        while (subDa) {
+            IedServer_handleWriteAccessForComplexAttribute(self, subDa, handler, parameter);
+
+            subDa = (DataAttribute*) subDa->sibling;
+        }
+    }
+}
+
+void
 IedServer_setReadAccessHandler(IedServer self, ReadAccessHandler handler, void* parameter)
 {
     MmsMapping_installReadAccessHandler(self->mmsMapping, handler, parameter);
@@ -1668,6 +1706,10 @@ IedServer_setLogStorage(IedServer self, const char* logRef, LogStorage logStorag
 {
 #if (CONFIG_IEC61850_LOG_SERVICE == 1)
     MmsMapping_setLogStorage(self->mmsMapping, logRef, logStorage);
+#else
+    (void)self;
+    (void)logRef;
+    (void)logStorage;
 #endif
 }
 
@@ -1685,9 +1727,14 @@ IedServer_setServerIdentity(IedServer self, const char* vendor, const char* mode
     if (self->revision)
         GLOBAL_FREEMEM(self->revision);
 
-    self->vendorName = StringUtils_copyString(vendor);
-    self->modelName = StringUtils_copyString(model);
-    self->revision = StringUtils_copyString(revision);
+    if (vendor)
+    	self->vendorName = StringUtils_copyString(vendor);
+
+    if (model)
+    	self->modelName = StringUtils_copyString(model);
+
+    if (revision)
+    	self->revision = StringUtils_copyString(revision);
 
     MmsServer_setServerIdentity(self->mmsServer, self->vendorName, self->modelName, self->revision);
 #endif

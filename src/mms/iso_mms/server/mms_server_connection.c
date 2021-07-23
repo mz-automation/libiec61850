@@ -244,6 +244,8 @@ handleConfirmedRequestPdu(
                 break;
 #endif /* (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1) */
 
+#if (MMS_RENAME_FILE_SERVICE == 1)
+
 #if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
             case 0x4b: /* file-rename-request */
                 if (self->server->fileServiceEnabled)
@@ -257,6 +259,11 @@ handleConfirmedRequestPdu(
                 break;
 #endif /* (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1) */
 
+#endif /* (MMS_RENAME_FILE_SERVICE == 1) */
+
+
+#if (MMS_DELETE_FILE_SERVICE == 1)
+
 #if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
             case 0x4c: /* file-delete-request */
                 if (self->server->fileServiceEnabled)
@@ -269,6 +276,8 @@ handleConfirmedRequestPdu(
                 mmsServer_handleFileDeleteRequest(self, buffer, bufPos, bufPos + length, invokeId, response);
                 break;
 #endif /* (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1) */
+
+#endif /* (MMS_DELETE_FILE_SERVICE == 1) */
 
 #if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
             case 0x4d: /* file-directory-request */

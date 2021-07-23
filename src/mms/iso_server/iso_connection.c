@@ -329,7 +329,6 @@ IsoConnection_handleTcpConnection(IsoConnection self, bool isSingleThread)
                     ByteBuffer mmsResponseBuffer;
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
-                    IsoServer_userLock(self->isoServer);
                     IsoConnection_lock(self);
 #endif
 
@@ -370,7 +369,6 @@ IsoConnection_handleTcpConnection(IsoConnection self, bool isSingleThread)
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
                     IsoConnection_unlock(self);
-                    IsoServer_userUnlock(self->isoServer);
 #endif
                 }
                 else {
@@ -389,7 +387,6 @@ IsoConnection_handleTcpConnection(IsoConnection self, bool isSingleThread)
                         printf("ISO_SERVER: iso_connection: presentation ok\n");
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
-                    IsoServer_userLock(self->isoServer);
                     IsoConnection_lock(self);
 #endif
 
@@ -418,7 +415,6 @@ IsoConnection_handleTcpConnection(IsoConnection self, bool isSingleThread)
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
                     IsoConnection_unlock(self);
-                    IsoServer_userUnlock(self->isoServer);
 #endif
                 }
 
@@ -489,82 +485,84 @@ IsoConnection
 IsoConnection_create(Socket socket, IsoServer isoServer, bool isSingleThread)
 {
     IsoConnection self = (IsoConnection) GLOBAL_CALLOC(1, sizeof(struct sIsoConnection));
-    self->socket = socket;
+
+    if (self) {
+        self->socket = socket;
 
 #if (CONFIG_MMS_SUPPORT_TLS == 1)
-    if (IsoServer_getTLSConfiguration(isoServer) != NULL) {
-        self->tlsSocket = TLSSocket_create(socket, IsoServer_getTLSConfiguration(isoServer), true);
+        if (IsoServer_getTLSConfiguration(isoServer) != NULL) {
+            self->tlsSocket = TLSSocket_create(socket, IsoServer_getTLSConfiguration(isoServer), true);
 
-        if (self->tlsSocket == NULL) {
-            if (DEBUG_ISO_SERVER)
-                printf("ISO_SERVER: IsoConnection - TLS initialization failed\n");
+            if (self->tlsSocket == NULL) {
+                if (DEBUG_ISO_SERVER)
+                    printf("ISO_SERVER: IsoConnection - TLS initialization failed\n");
 
-            GLOBAL_FREEMEM(self);
+                GLOBAL_FREEMEM(self);
 
-            return NULL;
+                return NULL;
+            }
         }
-    }
 #endif /* (CONFIG_MMS_SUPPORT_TLS == 1) */
 
-
-    self->receiveBuffer = (uint8_t*) GLOBAL_MALLOC(RECEIVE_BUF_SIZE);
-    self->sendBuffer = (uint8_t*) GLOBAL_MALLOC(SEND_BUF_SIZE);
-    self->msgRcvdHandler = NULL;
-    self->tickHandler = NULL;
-    self->handlerParameter = NULL;
-    self->isoServer = isoServer;
-    self->state = ISO_CON_STATE_RUNNING;
-    self->clientAddress = Socket_getPeerAddress(self->socket);
-    self->localAddress = Socket_getLocalAddress(self->socket);
+        self->receiveBuffer = (uint8_t*) GLOBAL_MALLOC(RECEIVE_BUF_SIZE);
+        self->sendBuffer = (uint8_t*) GLOBAL_MALLOC(SEND_BUF_SIZE);
+        self->msgRcvdHandler = NULL;
+        self->tickHandler = NULL;
+        self->handlerParameter = NULL;
+        self->isoServer = isoServer;
+        self->state = ISO_CON_STATE_RUNNING;
+        self->clientAddress = Socket_getPeerAddress(self->socket);
+        self->localAddress = Socket_getLocalAddress(self->socket);
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
-    self->conMutex = Semaphore_create(1);
+        self->conMutex = Semaphore_create(1);
 #endif
 
-    ByteBuffer_wrap(&(self->rcvBuffer), self->receiveBuffer, 0, RECEIVE_BUF_SIZE);
+        ByteBuffer_wrap(&(self->rcvBuffer), self->receiveBuffer, 0, RECEIVE_BUF_SIZE);
 
-    self->cotpReadBuf = (uint8_t*) GLOBAL_MALLOC(CONFIG_COTP_MAX_TPDU_SIZE + TPKT_RFC1006_HEADER_SIZE);
-    self->cotpWriteBuf = (uint8_t*) GLOBAL_MALLOC(CONFIG_COTP_MAX_TPDU_SIZE + TPKT_RFC1006_HEADER_SIZE);
+        self->cotpReadBuf = (uint8_t*) GLOBAL_MALLOC(CONFIG_COTP_MAX_TPDU_SIZE + TPKT_RFC1006_HEADER_SIZE);
+        self->cotpWriteBuf = (uint8_t*) GLOBAL_MALLOC(CONFIG_COTP_MAX_TPDU_SIZE + TPKT_RFC1006_HEADER_SIZE);
 
-    ByteBuffer_wrap(&(self->cotpReadBuffer), self->cotpReadBuf, 0, CONFIG_COTP_MAX_TPDU_SIZE + TPKT_RFC1006_HEADER_SIZE);
-    ByteBuffer_wrap(&(self->cotpWriteBuffer), self->cotpWriteBuf, 0, CONFIG_COTP_MAX_TPDU_SIZE + TPKT_RFC1006_HEADER_SIZE);
+        ByteBuffer_wrap(&(self->cotpReadBuffer), self->cotpReadBuf, 0, CONFIG_COTP_MAX_TPDU_SIZE + TPKT_RFC1006_HEADER_SIZE);
+        ByteBuffer_wrap(&(self->cotpWriteBuffer), self->cotpWriteBuf, 0, CONFIG_COTP_MAX_TPDU_SIZE + TPKT_RFC1006_HEADER_SIZE);
 
-    self->cotpConnection = (CotpConnection*) GLOBAL_CALLOC(1, sizeof(CotpConnection));
-    CotpConnection_init(self->cotpConnection, self->socket, &(self->rcvBuffer), &(self->cotpReadBuffer), &(self->cotpWriteBuffer));
+        self->cotpConnection = (CotpConnection*) GLOBAL_CALLOC(1, sizeof(CotpConnection));
+        CotpConnection_init(self->cotpConnection, self->socket, &(self->rcvBuffer), &(self->cotpReadBuffer), &(self->cotpWriteBuffer));
 
 #if (CONFIG_MMS_SUPPORT_TLS == 1)
-    if (self->tlsSocket)
-        self->cotpConnection->tlsSocket = self->tlsSocket;
+        if (self->tlsSocket)
+            self->cotpConnection->tlsSocket = self->tlsSocket;
 #endif /* (CONFIG_MMS_SUPPORT_TLS == 1) */
 
-    self->session = (IsoSession*) GLOBAL_CALLOC(1, sizeof(IsoSession));
-    IsoSession_init(self->session);
+        self->session = (IsoSession*) GLOBAL_CALLOC(1, sizeof(IsoSession));
+        IsoSession_init(self->session);
 
-    self->presentation = (IsoPresentation*) GLOBAL_CALLOC(1, sizeof(IsoPresentation));
-    IsoPresentation_init(self->presentation);
+        self->presentation = (IsoPresentation*) GLOBAL_CALLOC(1, sizeof(IsoPresentation));
+        IsoPresentation_init(self->presentation);
 
-    self->acseConnection = (AcseConnection*) GLOBAL_CALLOC(1, sizeof(AcseConnection));
+        self->acseConnection = (AcseConnection*) GLOBAL_CALLOC(1, sizeof(AcseConnection));
 
 #if (CONFIG_MMS_SUPPORT_TLS == 1)
-    AcseConnection_init(self->acseConnection, IsoServer_getAuthenticator(self->isoServer),
-            IsoServer_getAuthenticatorParameter(self->isoServer), self->tlsSocket);
+        AcseConnection_init(self->acseConnection, IsoServer_getAuthenticator(self->isoServer),
+                IsoServer_getAuthenticatorParameter(self->isoServer), self->tlsSocket);
 #else
-    AcseConnection_init(self->acseConnection, IsoServer_getAuthenticator(self->isoServer),
-            IsoServer_getAuthenticatorParameter(self->isoServer), NULL);
+        AcseConnection_init(self->acseConnection, IsoServer_getAuthenticator(self->isoServer),
+                IsoServer_getAuthenticatorParameter(self->isoServer), NULL);
 #endif
 
-    if (DEBUG_ISO_SERVER)
-        printf("ISO_SERVER: IsoConnection: Start to handle connection for client %s\n", self->clientAddress);
+        if (DEBUG_ISO_SERVER)
+            printf("ISO_SERVER: IsoConnection: Start to handle connection for client %s\n", self->clientAddress);
 
 #if (CONFIG_MMS_SINGLE_THREADED == 0)
 #if (CONFIG_MMS_THREADLESS_STACK == 0)
-    if (isSingleThread == false) {
-        self->handleSet = Handleset_new();
-        Handleset_addSocket(self->handleSet, self->socket);
-        self->thread = Thread_create((ThreadExecutionFunction) handleTcpConnection, self, false);
+        if (isSingleThread == false) {
+            self->handleSet = Handleset_new();
+            Handleset_addSocket(self->handleSet, self->socket);
+            self->thread = Thread_create((ThreadExecutionFunction) handleTcpConnection, self, false);
+        }
+    #endif
+#endif
     }
-#endif
-#endif
 
     return self;
 }
@@ -595,6 +593,11 @@ IsoConnection_destroy(IsoConnection self)
 
     if (self->socket != NULL)
         Socket_destroy(self->socket);
+
+#if (CONFIG_MMS_SINGLE_THREADED != 1) || (CONFIG_MMS_THREADLESS_STACK == 1)
+    if (self->handleSet)
+        Handleset_destroy(self->handleSet);
+#endif
 
     if (self->cotpConnection) {
         if (self->cotpConnection->handleSet)

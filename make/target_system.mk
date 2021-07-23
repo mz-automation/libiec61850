@@ -20,7 +20,7 @@ TARGET=POSIX
 else ifeq ($(findstring MINGW,$(UNAME)), MINGW)
 TARGET=WIN32
 else ifeq ($(UNAME), Darwin)
-TARGET=BSD
+TARGET=MACOS
 else ifeq ($(UNAME), FreeBSD)
 TARGET=BSD
 endif
@@ -117,9 +117,13 @@ endif
 else 
 ifeq ($(TARGET), BSD)
 HAL_IMPL = BSD
+else ifeq ($(TARGET), MACOS)
+HAL_IMPL = MACOS
 else
 HAL_IMPL = POSIX
 endif
+
+
 
 LDLIBS = -lpthread
 
@@ -174,7 +178,11 @@ else
 ifeq ($(TARGET), BSD)
 DYN_LIB_NAME = $(LIB_OBJS_DIR)/libiec61850.dylib
 else
+ifeq ($(TARGET), MACOS)
+DYN_LIB_NAME = $(LIB_OBJS_DIR)/libiec61850.dylib
+else
 DYN_LIB_NAME = $(LIB_OBJS_DIR)/libiec61850.so
+endif
 endif
 
 endif

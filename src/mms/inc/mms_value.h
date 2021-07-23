@@ -985,6 +985,24 @@ MmsValue_decodeMmsData(uint8_t* buffer, int bufPos, int bufferLength, int* endBu
 LIB61850_API int
 MmsValue_encodeMmsData(MmsValue* self, uint8_t* buffer, int bufPos, bool encode);
 
+/**
+ * \brief Get the maximum possible BER encoded size of the MMS data element
+ *
+ * \param self the MmsValue instance
+ *
+ * \return the maximum encoded size in bytes of the MMS data element
+ */
+LIB61850_API int
+MmsValue_getMaxEncodedSize(MmsValue* self);
+
+/**
+ * \brief Calculate the maximum encoded size of a variable of this type
+ *
+ * \param self the MMS variable specification instance
+ */
+LIB61850_API int
+MmsVariableSpecification_getMaxEncodedSize(MmsVariableSpecification* self);
+
 /**@}*/
 
 /**@}*/

@@ -159,6 +159,9 @@ MmsValue_decodeMmsData(uint8_t* buffer, int bufPos, int bufferLength, int* endBu
 
     int dataEndBufPos = bufferLength;
 
+    if (bufferLength < 1)
+        goto exit_with_error;
+
     uint8_t tag = buffer[bufPos++];
 
     int dataLength;
@@ -166,6 +169,10 @@ MmsValue_decodeMmsData(uint8_t* buffer, int bufPos, int bufferLength, int* endBu
     bufPos = BerDecoder_decodeLength(buffer, &dataLength, bufPos, dataEndBufPos);
 
     if (bufPos < 0)
+        goto exit_with_error;
+
+    /* if not indefinite length end tag, data length must be > 0 */
+    if ((tag != 0) && (dataLength == 0))
         goto exit_with_error;
 
     switch (tag) {
@@ -253,6 +260,7 @@ MmsValue_decodeMmsData(uint8_t* buffer, int bufPos, int bufferLength, int* endBu
         value = MmsValue_newUnsigned(dataLength * 8);
         memcpy(value->value.integer->octets, buffer + bufPos, dataLength);
         value->value.integer->size = dataLength;
+
         bufPos += dataLength;
         break;
 
@@ -324,6 +332,168 @@ exit_with_error:
         MmsValue_delete(value);
 
     return NULL;
+}
+
+static int
+MmsValue_getMaxStructSize(MmsValue* self)
+{
+    int componentsSize = 0;
+    int i;
+    int size;
+
+    int componentCount = self->value.structure.size;
+
+    MmsValue** components = self->value.structure.components;
+
+    for (i = 0; i < componentCount; i++)
+        componentsSize += MmsValue_getMaxEncodedSize(components[i]);
+
+    size = 1 + componentsSize + BerEncoder_determineLengthSize(componentsSize);
+
+    return size;
+}
+
+int
+MmsValue_getMaxEncodedSize(MmsValue* self)
+{
+    int size = 0;
+    int elementSize = 0;
+
+    switch (self->type)
+    {
+    case MMS_STRUCTURE:
+        size = MmsValue_getMaxStructSize(self);
+        break;
+    case MMS_ARRAY:
+        size = MmsValue_getMaxStructSize(self);
+        break;
+    case MMS_BOOLEAN:
+        size = 3;
+        break;
+    case MMS_DATA_ACCESS_ERROR:
+        size = 7; /* TL * size of uint32 max */
+        break;
+    case MMS_VISIBLE_STRING:
+        elementSize = abs(self->value.visibleString.size);
+        size = 1 + elementSize + BerEncoder_determineLengthSize(elementSize);
+        break;
+    case MMS_UNSIGNED:
+        size = 2 + self->value.integer->maxSize;
+        break;
+    case MMS_INTEGER:
+        size = 2 + self->value.integer->maxSize;
+        break;
+    case MMS_UTC_TIME:
+        size = 10;
+        break;
+    case MMS_BIT_STRING:
+        elementSize = abs(self->value.bitString.size);
+        size = BerEncoder_determineEncodedBitStringSize(elementSize);
+        break;
+    case MMS_BINARY_TIME:
+        size = 2 + self->value.binaryTime.size;
+        break;
+    case MMS_OCTET_STRING:
+        elementSize = self->value.octetString.maxSize;
+        size = 1 + BerEncoder_determineLengthSize(elementSize) + elementSize;
+        break;
+    case MMS_FLOAT:
+        elementSize = (self->value.floatingPoint.formatWidth / 8) + 1;
+        size = elementSize + 2; /* 2 for tag and length */
+        break;
+    case MMS_STRING:
+        elementSize = abs(self->value.visibleString.size);
+        size = 1 + elementSize + BerEncoder_determineLengthSize(elementSize);
+        break;
+    default:
+        if (DEBUG_MMS_SERVER)
+            printf("MmsVariableSpecification_getMaxEncodedSize: error unsupported type!\n");
+        break;
+    }
+
+    return size;
+}
+
+static int
+getMaxStructSize(MmsVariableSpecification* variable)
+{
+    int componentsSize = 0;
+    int i;
+    int size;
+
+    int componentCount = variable->typeSpec.structure.elementCount;
+
+    MmsVariableSpecification** components = variable->typeSpec.structure.elements;
+
+    for (i = 0; i < componentCount; i++)
+        componentsSize += MmsVariableSpecification_getMaxEncodedSize(components[i]);
+
+    size = 1 + componentsSize + BerEncoder_determineLengthSize(componentsSize);
+
+    return size;
+}
+
+int
+MmsVariableSpecification_getMaxEncodedSize(MmsVariableSpecification* self)
+{
+    int size = 0;
+    int elementSize = 0;
+
+    switch (self->type)
+    {
+    case MMS_STRUCTURE:
+        size = getMaxStructSize(self);
+        break;
+    case MMS_ARRAY:
+        elementSize = MmsVariableSpecification_getMaxEncodedSize(self->typeSpec.array.elementTypeSpec)
+            * self->typeSpec.array.elementCount;
+        size = 1 + elementSize + BerEncoder_determineLengthSize(elementSize);
+        break;
+    case MMS_BOOLEAN:
+        size = 3;
+        break;
+    case MMS_DATA_ACCESS_ERROR:
+        size = 7; /* TL * size of uint32 max */
+        break;
+    case MMS_VISIBLE_STRING:
+        elementSize = abs(self->typeSpec.visibleString);
+        size = 1 + elementSize + BerEncoder_determineLengthSize(elementSize);
+        break;
+    case MMS_UNSIGNED:
+        size = 2 + (self->typeSpec.unsignedInteger / 8) + 1;
+        break;
+    case MMS_INTEGER:
+        size = 2 + (self->typeSpec.integer / 8) + 1;
+        break;
+    case MMS_UTC_TIME:
+        size = 10;
+        break;
+    case MMS_BIT_STRING:
+        elementSize = abs(self->typeSpec.bitString);
+        size = BerEncoder_determineEncodedBitStringSize(elementSize);
+        break;
+    case MMS_BINARY_TIME:
+        size = 2 + self->typeSpec.binaryTime;
+        break;
+    case MMS_OCTET_STRING:
+        elementSize = abs(self->typeSpec.octetString);
+        size = 1 + BerEncoder_determineLengthSize(elementSize) + elementSize;
+        break;
+    case MMS_FLOAT:
+        elementSize = (self->typeSpec.floatingpoint.formatWidth / 8) + 1;
+        size = elementSize + 2; /* 2 for tag and length */
+        break;
+    case MMS_STRING:
+        elementSize = abs(self->typeSpec.mmsString);
+        size = 1 + elementSize + BerEncoder_determineLengthSize(elementSize);
+        break;
+    default:
+        if (DEBUG_MMS_SERVER)
+            printf("MmsVariableSpecification_getMaxEncodedSize: error unsupported type!\n");
+        break;
+    }
+
+    return size;
 }
 
 int
@@ -436,7 +606,7 @@ MmsValue_encodeMmsData(MmsValue* self, uint8_t* buffer, int bufPos, bool encode)
         break;
     default:
         if (DEBUG_MMS_SERVER)
-            printf("encodeAccessResult: error unsupported type!\n");
+            printf("MmsValue_encodeMmsData: error unsupported type!\n");
         size = 0;
         break;
     }

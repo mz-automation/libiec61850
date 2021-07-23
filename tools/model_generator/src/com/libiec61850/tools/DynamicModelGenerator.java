@@ -132,7 +132,7 @@ public class DynamicModelGenerator {
         for (DataObject dataObject : logicalNode.getDataObjects()) {
             output.print("DO(" + dataObject.getName() + " " + dataObject.getCount() + "){\n");
 
-            exportDataObject(output, dataObject);
+            exportDataObject(output, dataObject, false);
 
             output.println("}");
         }
@@ -369,27 +369,37 @@ public class DynamicModelGenerator {
         output.println("}");
     }
 
-    private void exportDataObject(PrintStream output, DataObject dataObject) {
+    private void exportDataObject(PrintStream output, DataObject dataObject, boolean isTransient) {
+        
+        if (dataObject.isTransient())
+            isTransient = true;
+        
         for (DataObject subDataObject : dataObject.getSubDataObjects()) {
             output.print("DO(" + subDataObject.getName() + " " + subDataObject.getCount() + "){\n");
 
-            exportDataObject(output, subDataObject);
+            exportDataObject(output, subDataObject, isTransient);
 
             output.println("}");
         }
 
         for (DataAttribute dataAttribute : dataObject.getDataAttributes()) {
-            exportDataAttribute(output, dataAttribute);
+            exportDataAttribute(output, dataAttribute, isTransient);
         }
     }
 
-    private void exportDataAttribute(PrintStream output, DataAttribute dataAttribute) {
+    private void exportDataAttribute(PrintStream output, DataAttribute dataAttribute, boolean isTransient) {
 
         output.print("DA(" + dataAttribute.getName() + " ");
         output.print(dataAttribute.getCount() + " ");
         output.print(dataAttribute.getType().getIntValue() + " ");
         output.print(dataAttribute.getFc().getIntValue() + " ");
-        output.print(dataAttribute.getTriggerOptions().getIntValue() + " ");
+        
+        int trgOpsVal = dataAttribute.getTriggerOptions().getIntValue();
+        
+        if (isTransient)
+            trgOpsVal += 128;
+        
+        output.print(trgOpsVal + " ");
         
         Long sAddr = null;
         
@@ -471,7 +481,7 @@ public class DynamicModelGenerator {
             output.println("{");
 
             for (DataAttribute subDataAttribute : dataAttribute.getSubDataAttributes()) {
-                exportDataAttribute(output, subDataAttribute);
+                exportDataAttribute(output, subDataAttribute, isTransient);
             }
 
             output.println("}");

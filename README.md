@@ -146,6 +146,16 @@ Depending on the system you don't have to provide a generator to the cmake comma
 
 To select some configuration options you can use ccmake or cmake-gui.
 
+For newer version of Visual Studio you can use one of the following commands (for 64 bit builds):
+
+For Visual Studio 2017:
+
+  cmake -G "Visual Studio 15 2017 Win64" ..
+  
+For Visual Studio 2019 (new way to specify the x64 platform):
+
+  cmake -G "Visual Studio 16 2019" .. -A x64
+
 
 ## Using the log service with sqlite
 

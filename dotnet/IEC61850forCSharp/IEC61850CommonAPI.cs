@@ -86,9 +86,9 @@ namespace IEC61850
 			public UInt16 vlanId;
 			public UInt16 appId;
 
-			[MarshalAs(UnmanagedType.ByValArray, SizeConst=6)]
-			public byte[] dstAddress = new byte[6];
-		}
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst=6)]
+            public byte[] dstAddress = new byte[6];
+        }
 
 		/// <summary>
 		/// MMS data access error for MmsValue type MMS_DATA_ACCESS_ERROR
@@ -123,7 +123,9 @@ namespace IEC61850
 			/** periodic transmission of all data set values */
 			INTEGRITY = 8,
 			/** general interrogation (on client request) */
-			GI = 16
+			GI = 16,
+			/** Report will be triggered only on rising edge (transient variable) */
+			TRG_OPT_TRANSIENT = 128
 		}
 
 		/// <summary>

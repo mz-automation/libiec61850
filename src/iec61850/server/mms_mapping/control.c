@@ -1,7 +1,7 @@
 /*
  *  control.c
  *
- *  Copyright 2013-2020 Michael Zillgith
+ *  Copyright 2013-2021 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -39,13 +39,13 @@
 #define DEBUG_IED_SERVER 0
 #endif
 
-#define STATE_UNSELECTED 0
-#define STATE_READY 1
-#define STATE_WAIT_FOR_ACTIVATION_TIME 2
-#define STATE_PERFORM_TEST 3
-#define STATE_WAIT_FOR_EXECUTION 4
-#define STATE_OPERATE 5
-#define STATE_WAIT_FOR_SELECT 6
+#define STATE_UNSELECTED 0               /* idle state for SBO controls */
+#define STATE_READY 1                    /* idle state for direct controls, or selected state for SBO controls */
+#define STATE_WAIT_FOR_ACTIVATION_TIME 2 /* time activated control is waiting for execution time */
+#define STATE_PERFORM_TEST 3             /* waiting for application to perform tests */
+#define STATE_WAIT_FOR_EXECUTION 4       /* control is scheduled and waiting for execution */
+#define STATE_OPERATE 5                  /* waiting for application to execute the command */
+#define STATE_WAIT_FOR_SELECT 6          /* waiting for application to perform/confirm selection */
 
 #define PENDING_EVENT_SELECTED 1
 #define PENDING_EVENT_UNSELECTED 2
@@ -953,7 +953,6 @@ ControlObject_create(IedServer iedServer, MmsDomain* domain, char* lnName, char*
             printf("IED_SERVER: control object %s/%s.%s has no ctlVal element!\n", domain->domainName, lnName, name);
     }
 
-
     MmsVariableSpecification* originSpec = MmsVariableSpecification_getChildSpecificationByName(operSpec, "origin", NULL);
 
     if (originSpec) {
@@ -1400,7 +1399,7 @@ Control_processControlActions(MmsMapping* self, uint64_t currentTimeInMs)
                     controlObject->errorValue = CONTROL_ERROR_NO_ERROR;
                     controlObject->addCauseValue = ADD_CAUSE_BLOCKED_BY_INTERLOCKING;
 
-                    checkResult = controlObject->checkHandler((ControlAction) self,
+                    checkResult = controlObject->checkHandler((ControlAction) controlObject,
                             controlObject->checkHandlerParameter, controlObject->ctlVal, controlObject->testMode,
                             controlObject->interlockCheck);
                 }
@@ -1828,8 +1827,13 @@ Control_readAccessControlObject(MmsMapping* self, MmsDomain* domain, char* varia
                         ControlObject_getTypeSpec(controlObject), varName);
             }
         }
-        else
+        else {
             value = ControlObject_getMmsValue(controlObject);
+        }
+    }
+    else {
+        if (DEBUG_IED_SERVER)
+            printf("IED_SERVER: Control object not found %s/%s.%s\n", domain->domainName, lnName, objectName);
     }
 
     return value;
@@ -1984,20 +1988,37 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                     goto free_and_return;
                 }
 
+                int state = getState(controlObject);
+
                 uint64_t currentTime = Hal_getTimeInMs();
 
                 checkSelectTimeout(controlObject, currentTime);
 
-                int state = getState(controlObject);
-
                 if (state != STATE_UNSELECTED) {
-                    indication = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
 
-                    ControlObject_sendLastApplError(controlObject, connection, "SBOw", CONTROL_ERROR_NO_ERROR,
-                            ADD_CAUSE_OBJECT_ALREADY_SELECTED, ctlNum, origin, true);
+                    if ((state == STATE_OPERATE) || (state == STATE_WAIT_FOR_EXECUTION)) {
+                        indication = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
 
-                    if (DEBUG_IED_SERVER)
-                        printf("IED_SERVER: SBOw - select failed!\n");
+                        ControlObject_sendLastApplError(controlObject, connection, "SBOw",
+                                CONTROL_ERROR_NO_ERROR, ADD_CAUSE_COMMAND_ALREADY_IN_EXECUTION,
+                                ctlNum, origin, true);
+
+                        if (DEBUG_IED_SERVER)
+                            printf("IED_SERVER: SBOw - select failed - already in execution!\n");
+
+                        goto free_and_return;
+                    }
+                    else {
+                        indication = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
+
+                        ControlObject_sendLastApplError(controlObject, connection, "SBOw", CONTROL_ERROR_NO_ERROR,
+                                ADD_CAUSE_OBJECT_ALREADY_SELECTED, ctlNum, origin, true);
+
+                        if (DEBUG_IED_SERVER)
+                            printf("IED_SERVER: SBOw - select failed - already selected!\n");
+
+                        goto free_and_return;
+                    }
                 }
                 else {
 
@@ -2122,8 +2143,6 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
 
             bool testCondition = MmsValue_getBoolean(test);
 
-            controlObject->testMode = testCondition;
-
             if ((controlObject->ctlModel == 2) || (controlObject->ctlModel == 4)) {
                 if (controlObject->mmsConnection != connection) {
                     indication = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
@@ -2141,7 +2160,8 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                          MmsValue_equals(origin, controlObject->origin) &&
                          MmsValue_equals(ctlNum, controlObject->ctlNum) &&
                          (controlObject->interlockCheck == interlockCheck) &&
-                         (controlObject->synchroCheck == synchroCheck)
+                         (controlObject->synchroCheck == synchroCheck) &&
+                         (controlObject->testMode == testCondition)
                          ) == false)
                     {
                         indication = DATA_ACCESS_ERROR_TYPE_INCONSISTENT;
@@ -2157,6 +2177,8 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                 }
             }
 
+            controlObject->testMode = testCondition;
+
             updateControlParameters(controlObject, ctlVal, ctlNum, origin, synchroCheck, interlockCheck);
 
             MmsValue* operTm = getOperParameterOperTime(value);
@@ -2164,7 +2186,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
             if (operTm != NULL) {
                 controlObject->operateTime = MmsValue_getUtcTimeInMs(operTm);
 
-                if (controlObject->operateTime != 0) {
+                if (controlObject->operateTime > currentTime) {
                     controlObject->timeActivatedOperate = true;
                     controlObject->synchroCheck = synchroCheck;
                     controlObject->interlockCheck = interlockCheck;
@@ -2206,6 +2228,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                 /* enter state Perform Test */
                 setOpRcvd(controlObject, true);
 
+                controlObject->errorValue = CONTROL_ERROR_NO_ERROR;
                 controlObject->addCauseValue = ADD_CAUSE_UNKNOWN;
                 controlObject->mmsConnection = connection;
 
@@ -2236,6 +2259,12 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                     setOpRcvd(controlObject, false);
 
                     abortControlOperation(controlObject, false, SELECT_STATE_REASON_OPERATE_FAILED);
+
+                    if ((controlObject->ctlModel == 3) || (controlObject->ctlModel == 4)) {
+                        ControlObject_sendLastApplError(controlObject, connection, "Oper",
+                                controlObject->errorValue, controlObject->addCauseValue,
+                                    ctlNum, origin, true);
+                    }
                 }
             }
 
@@ -2270,10 +2299,10 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
 
         serviceType = IEC61850_SERVICE_TYPE_CANCEL;
 
-        if (DEBUG_IED_SERVER)
-            printf("IED_SERVER: control received cancel!\n");
-
         int state = getState(controlObject);
+
+        if (DEBUG_IED_SERVER)
+            printf("IED_SERVER: control received cancel (state: %i)!\n", state);
 
         MmsValue* ctlNum = getCancelParameterCtlNum(value);
         MmsValue* origin = getCancelParameterOrigin(value);
@@ -2282,6 +2311,16 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
             indication = DATA_ACCESS_ERROR_TYPE_INCONSISTENT;
             if (DEBUG_IED_SERVER)
                 printf("IED_SERVER: Invalid cancel message!\n");
+            goto free_and_return;
+        }
+
+        if ((state == STATE_OPERATE) || (state == STATE_WAIT_FOR_EXECUTION)) {
+            indication = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
+
+            ControlObject_sendLastApplError(controlObject, connection, "Cancel",
+                    CONTROL_ERROR_NO_ERROR, ADD_CAUSE_COMMAND_ALREADY_IN_EXECUTION,
+                    ctlNum, origin, true);
+
             goto free_and_return;
         }
 

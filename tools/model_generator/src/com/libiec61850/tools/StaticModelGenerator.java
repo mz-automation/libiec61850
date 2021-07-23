@@ -594,7 +594,7 @@ public class StaticModelGenerator {
 
             cOut.println("};\n");
 
-            printDataObjectDefinitions(lnName, logicalNode.getDataObjects(), null);
+            printDataObjectDefinitions(lnName, logicalNode.getDataObjects(), null, false);
 
             printReportControlBlocks(lnName, logicalNode);
             
@@ -610,7 +610,7 @@ public class StaticModelGenerator {
         }
     }
 
-    private void printDataObjectDefinitions(String lnName, List<DataObject> dataObjects, String dataAttributeSibling) {
+    private void printDataObjectDefinitions(String lnName, List<DataObject> dataObjects, String dataAttributeSibling, boolean isTransient) {
         for (int i = 0; i < dataObjects.size(); i++) {
             DataObject dataObject = dataObjects.get(i);
 
@@ -650,17 +650,26 @@ public class StaticModelGenerator {
             cOut.println("    " + dataObject.getCount());
 
             cOut.println("};\n");
+            
+            boolean isDoTransient = false;
+            
+            if (isTransient)
+                isDoTransient = true;
+            else {
+                if (dataObject.isTransient())
+                    isDoTransient = true;
+            }
 
             if (dataObject.getSubDataObjects() != null)
-                printDataObjectDefinitions(doName, dataObject.getSubDataObjects(), firstDataAttributeName);
+                printDataObjectDefinitions(doName, dataObject.getSubDataObjects(), firstDataAttributeName, isDoTransient);
 
             if (dataObject.getDataAttributes() != null)
-                printDataAttributeDefinitions(doName, dataObject.getDataAttributes());
+                printDataAttributeDefinitions(doName, dataObject.getDataAttributes(), isDoTransient);
 
         }
     }
 
-    private void printDataAttributeDefinitions(String doName, List<DataAttribute> dataAttributes) {
+    private void printDataAttributeDefinitions(String doName, List<DataAttribute> dataAttributes, boolean isTransient) {
         for (int i = 0; i < dataAttributes.size(); i++) {
             DataAttribute dataAttribute = dataAttributes.get(i);
 
@@ -715,6 +724,9 @@ public class StaticModelGenerator {
 
             if (trgOps.isQchg())
                 cOut.print(" + TRG_OPT_QUALITY_CHANGED");
+            
+            if (isTransient)
+                cOut.print(" + TRG_OPT_TRANSIENT");
 
             cOut.println(",");
 
@@ -737,7 +749,7 @@ public class StaticModelGenerator {
             cOut.println("};\n");
 
             if (dataAttribute.getSubDataAttributes() != null) 	
-                printDataAttributeDefinitions(daName, dataAttribute.getSubDataAttributes());
+                printDataAttributeDefinitions(daName, dataAttribute.getSubDataAttributes(), isTransient);
             
             DataModelValue value = dataAttribute.getValue();
                      

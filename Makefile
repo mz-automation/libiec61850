@@ -53,6 +53,13 @@ LIB_SOURCE_DIRS += hal/ethernet/bsd
 LIB_SOURCE_DIRS += hal/filesystem/linux
 LIB_SOURCE_DIRS += hal/time/unix
 LIB_SOURCE_DIRS += hal/memory
+else ifeq ($(HAL_IMPL), MACOS)
+LIB_SOURCE_DIRS += hal/socket/bsd
+LIB_SOURCE_DIRS += hal/thread/macos
+LIB_SOURCE_DIRS += hal/ethernet/bsd
+LIB_SOURCE_DIRS += hal/filesystem/linux
+LIB_SOURCE_DIRS += hal/time/unix
+LIB_SOURCE_DIRS += hal/memory
 endif
 LIB_INCLUDE_DIRS += config
 LIB_INCLUDE_DIRS += hal/inc
@@ -105,6 +112,7 @@ LIB_API_HEADER_FILES += src/mms/inc/mms_common.h
 LIB_API_HEADER_FILES += src/mms/inc/mms_types.h
 LIB_API_HEADER_FILES += src/mms/inc/mms_type_spec.h
 LIB_API_HEADER_FILES += src/mms/inc/mms_client_connection.h
+LIB_API_HEADER_FILES += src/mms/inc/mms_server.h
 LIB_API_HEADER_FILES += src/mms/inc/iso_connection_parameters.h
 LIB_API_HEADER_FILES += src/goose/goose_subscriber.h
 LIB_API_HEADER_FILES += src/goose/goose_receiver.h

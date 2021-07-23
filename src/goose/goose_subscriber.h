@@ -1,7 +1,7 @@
 /*
  *  goose_subscriber.h
  *
- *  Copyright 2013-2018 Michael Zillgith
+ *  Copyright 2013-2021 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -82,12 +82,27 @@ typedef void (*GooseListener)(GooseSubscriber subscriber, void* parameter);
 LIB61850_API GooseSubscriber
 GooseSubscriber_create(char* goCbRef, MmsValue* dataSetValues);
 
+/**
+ * \brief Get the GoId value of the received GOOSE message
+ *
+ * \param self GooseSubscriber instance to operate on.
+ */
 LIB61850_API char*
 GooseSubscriber_getGoId(GooseSubscriber self);
 
+/**
+ * \brief Get the GOOSE Control Block reference value of the received GOOSE message
+ *
+ * \param self GooseSubscriber instance to operate on.
+ */
 LIB61850_API char*
 GooseSubscriber_getGoCbRef(GooseSubscriber self);
 
+/**
+ * \brief Get the DatSet value of the received GOOSE message
+ *
+ * \param self GooseSubscriber instance to operate on.
+ */
 LIB61850_API char*
 GooseSubscriber_getDataSet(GooseSubscriber self);
 
@@ -133,6 +148,14 @@ GooseSubscriber_isValid(GooseSubscriber self);
 LIB61850_API GooseParseError
 GooseSubscriber_getParseError(GooseSubscriber self);
 
+/**
+ * \brief Destroy the GooseSubscriber instance
+ *
+ * Do not call this function when the GooseSubscriber instance was added to a GooseReceiver.
+ * The GooseReceiver will call the destructor when \ref GooseReceiver_destroy is called!
+ *
+ * \param self GooseSubscriber instance to operate on.
+ */
 LIB61850_API void
 GooseSubscriber_destroy(GooseSubscriber self);
 
@@ -146,14 +169,32 @@ GooseSubscriber_destroy(GooseSubscriber self);
 LIB61850_API void
 GooseSubscriber_setListener(GooseSubscriber self, GooseListener listener, void* parameter);
 
+/**
+ * \brief Get the APPID value of the received GOOSE message
+ *
+ * \param self GooseSubscriber instance to operate on.
+ */
 LIB61850_API int32_t
 GooseSubscriber_getAppId(GooseSubscriber self);
 
+/**
+ * \brief Get the source MAC address of the received GOOSE message
+ *
+ * \param self GooseSubscriber instance to operate on.
+ * \param buffer buffer to store the MAC address (at least 6 byte)
+ */
 LIB61850_API void
-GooseSubscriber_getSrcMac(GooseSubscriber self, uint8_t *buffer);
+GooseSubscriber_getSrcMac(GooseSubscriber self, uint8_t* buffer);
 
+/**
+ * \brief Get the destination MAC address of the received GOOSE message
+ *
+ * \param self GooseSubscriber instance to operate on.
+ * \param buffer buffer to store the MAC address (at least 6 byte)
+ */
 LIB61850_API void
-GooseSubscriber_getDstMac(GooseSubscriber self, uint8_t *buffer);
+GooseSubscriber_getDstMac(GooseSubscriber self, uint8_t* buffer);
+
 /**
  * \brief return the state number (stNum) of the last received GOOSE message.
  *

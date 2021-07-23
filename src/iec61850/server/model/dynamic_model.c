@@ -607,6 +607,35 @@ DataAttribute_create(const char* name, ModelNode* parent, DataAttributeType type
     return self;
 }
 
+DataAttributeType
+DataAttribute_getType(DataAttribute* self)
+{
+    return self->type;
+}
+
+FunctionalConstraint
+DataAttribute_getFC(DataAttribute* self)
+{
+    return self->fc;
+}
+
+uint8_t
+DataAttribute_getTrgOps(DataAttribute* self)
+{
+    return self->triggerOptions;
+}
+
+void
+DataAttribute_setValue(DataAttribute* self, MmsValue* value)
+{
+    if (self->mmsValue) {
+        MmsValue_update(self->mmsValue, value);
+    }
+    else {
+        self->mmsValue = MmsValue_clone(value);
+    }
+}
+
 DataSet*
 DataSet_create(const char* name, LogicalNode* parent)
 {
@@ -623,6 +652,12 @@ DataSet_create(const char* name, LogicalNode* parent)
     IedModel_addDataSet((IedModel*) ld->parent, self);
 
     return self;
+}
+
+const char*
+DataSet_getName(DataSet* self)
+{
+    return self->name;
 }
 
 int

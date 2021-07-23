@@ -58,7 +58,7 @@ IedModel_create(const char* name/*, MemoryAllocator allocator*/);
 /**
  * \brief Set the name of the IED (use only for dynamic model!)
  *
- * This will change the default name (usualy "TEMPLATE") to a user configured values.
+ * This will change the default name (usually "TEMPLATE") to a user configured values.
  * NOTE: This function has to be called before IedServer_create !
  * NOTE: For dynamic model (and configuration file date model) this function has to be
  * used instead of IedModel_setIedName.
@@ -121,12 +121,12 @@ DataObject_create(const char* name, ModelNode* parent, int arrayElements);
 /**
  * \brief create a new data attribute and add it to a parent model node
  *
- * The parent model node has to be of type LogicalNode or DataObject
+ * The parent model node has to be of type DataObject or DataAttribute
  *
  * \param name the name of the data attribute (e.g. "stVal")
  * \param parent the parent model node
  * \param type the type of the data attribute (CONSTRUCTED if the type contains sub data attributes)
- * \param fc the functional constraint (FC) of the data attribte
+ * \param fc the functional constraint (FC) of the data attribute
  * \param triggerOptions the trigger options (dupd, dchg, qchg) that cause an event notification
  * \param arrayElements the number of array elements if the data attribute is an array or 0
  * \param sAddr an optional short address
@@ -136,6 +136,45 @@ DataObject_create(const char* name, ModelNode* parent, int arrayElements);
 LIB61850_API DataAttribute*
 DataAttribute_create(const char* name, ModelNode* parent, DataAttributeType type, FunctionalConstraint fc,
         uint8_t triggerOptions, int arrayElements, uint32_t sAddr);
+
+/**
+ * \brief Get the data type of the data attribute
+ *
+ * \param self the data attribute instance
+ *
+ * \return the data attribute type
+ */
+LIB61850_API DataAttributeType
+DataAttribute_getType(DataAttribute* self);
+
+/**
+ * \brief Get the functional constraint (FC) of the data attribute
+ *
+ * \param self the data attribute instance
+ *
+ * \return the functional constraint (FC) of the data attribute
+ */
+LIB61850_API FunctionalConstraint
+DataAttribute_getFC(DataAttribute* self);
+
+/**
+ * \brief Get the trigger options of the data attribute
+ *
+ * \param self the data attribute instance
+ *
+ * \return the trigger options (dupd, dchg, qchg) that cause an event notification
+ */
+LIB61850_API uint8_t
+DataAttribute_getTrgOps(DataAttribute* self);
+
+/**
+ * \brief Set the value of the data attribute (can be used to set default values before server is created)
+ * 
+ * \param self the data attribute instance
+ * \param value the new default value
+ */
+LIB61850_API void
+DataAttribute_setValue(DataAttribute* self, MmsValue* value);
 
 /**
  * \brief create a new report control block (RCB)
@@ -289,6 +328,16 @@ PhyComAddress_create(uint8_t vlanPriority, uint16_t vlanId, uint16_t appId, uint
  */
 LIB61850_API DataSet*
 DataSet_create(const char* name, LogicalNode* parent);
+
+/**
+ * \brief Get the name of the data set
+ *
+ * \param self the instance of the data set
+ *
+ * \returns the name of the data set (not the object reference).
+ */
+LIB61850_API const char*
+DataSet_getName(DataSet* self);
 
 /**
  * \brief returns the number of elements (entries) of the data set

@@ -71,6 +71,14 @@ Hal_getTimeInMs(void);
 PAL_API nsSinceEpoch
 Hal_getTimeInNs(void);
 
+/**
+* Set the system time from ns time
+*
+* The time value returned as 64-bit unsigned integer should represent the nanoseconds
+* since the UNIX epoch (1970/01/01 00:00 UTC).
+*
+* \return true on success, otherwise false
+*/
 PAL_API bool
 Hal_setTimeInNs(nsSinceEpoch nsTime);
 

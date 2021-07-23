@@ -39,6 +39,7 @@ extern "C" {
 #include "iec61850_dynamic_model.h"
 #include "iec61850_model.h"
 #include "hal_filesystem.h"
+#include "iso_connection_parameters.h"
 #include "iec61850_config_file_parser.h"
 
 /**
@@ -89,6 +90,12 @@ struct sIedServerConfig
 
     /** enable visibility of SGCB.ResvTms (default: true) */
     bool enableResvTmsForSGCB;
+
+    /** BRCB has resvTms attribute - only edition 2 (default: true) */
+    bool enableResvTmsForBRCB;
+
+    /** RCB has owner attribute (default: true) */
+    bool enableOwnerForRCB;
 };
 
 /**
@@ -303,6 +310,38 @@ IedServerConfig_enableEditSG(IedServerConfig self, bool enable);
  */
 LIB61850_API void
 IedServerConfig_enableResvTmsForSGCB(IedServerConfig self, bool enable);
+
+/**
+ * \brief Enable/disable the presence of BRCB.ResvTms (default value is true)
+ *
+ * \param[in] enable set true to enable, otherwise false
+ */
+LIB61850_API void
+IedServerConfig_enableResvTmsForBRCB(IedServerConfig self, bool enable);
+
+/**
+ * \brief ResvTms for BRCB enabled (visible)
+ *
+ * \return true if enabled, false otherwise
+ */
+LIB61850_API  bool
+IedServerConfig_isResvTmsForBRCBEnabled(IedServerConfig self);
+
+/**
+ * \brief Enable/disable the presence of owner in report control blocks (default value is false);
+ *
+ * \param[in] enable set true to enable, otherwise false
+ */
+LIB61850_API void
+IedServerConfig_enableOwnerForRCB(IedServerConfig self, bool enable);
+
+/**
+ * \brief Owner for RCBs enabled (visible)
+ *
+ * \return true if enabled, false otherwise
+ */
+LIB61850_API  bool
+IedServerConfig_isOwnerForRCBEnabled(IedServerConfig self);
 
 /**
  * \brief Enable/disable using the integrated GOOSE publisher for configured GoCBs
@@ -598,7 +637,7 @@ IedServer_setGooseInterfaceId(IedServer self, const char* interfaceId);
  * Note: This function has no effect when CONFIG_INCLUDE_GOOSE_SUPPORT is not set.
  *
  * \param self the instance of IedServer to operate on.
- * \param ln the logical node that contains the GCB or NULL to enable/disable VLAN tagging for all GCBs
+ * \param ln the logical node that contains the GCB or NULL to set the ethernet interface ID for all GCBs
  * \param gcbName the name (not object reference!) of the GCB
  * \param interfaceId the ID of the ethernet interface to be used for GOOSE publishing
  */
@@ -1545,6 +1584,16 @@ typedef struct sMmsGooseControlBlock* MmsGooseControlBlock;
 
 typedef void (*GoCBEventHandler) (MmsGooseControlBlock goCb, int event, void* parameter);
 
+/**
+ * \brief Set a callback handler for GoCB events (enabled/disabled)
+ *
+ * The callback handler is called whenever a GOOSE control block is enabled or disabled.
+ * It can be used to integrate the external GOOSE publisher with the IEC 61850/MMS server.
+ *
+ * \param self the instance of IedServer to operate on.
+ * \param handler the callback handler
+ * \param parameter user provided parameter that is passed to the callback handler
+ */
 LIB61850_API void
 IedServer_setGoCBHandler(IedServer self, GoCBEventHandler handler, void* parameter);
 
@@ -1568,6 +1617,9 @@ MmsGooseControlBlock_getMaxTime(MmsGooseControlBlock self);
 
 LIB61850_API bool
 MmsGooseControlBlock_getFixedOffs(MmsGooseControlBlock self);
+
+LIB61850_API bool
+MmsGooseControlBlock_getNdsCom(MmsGooseControlBlock self);
 
 /**@}*/
 
@@ -1615,6 +1667,10 @@ typedef MmsDataAccessError
  * or denied. If a WriteAccessHandler is set for a specific data attribute - the
  * default write access policy will not be performed for that data attribute.
  *
+ * NOTE: If the data attribute has sub data attributes, the WriteAccessHandler is not
+ * set for the sub data attributes and will not be called when the sub data attribute is
+ * written directly!
+ *
  * \param self the instance of IedServer to operate on.
  * \param dataAttribute the data attribute to monitor
  * \param handler the callback function that is invoked if a client tries to write to
@@ -1623,6 +1679,29 @@ typedef MmsDataAccessError
  */
 LIB61850_API void
 IedServer_handleWriteAccess(IedServer self, DataAttribute* dataAttribute,
+        WriteAccessHandler handler, void* parameter);
+
+/**
+ * \brief Install a WriteAccessHandler for a data attribute and for all sub data attributes
+ *
+ * This instructs the server to monitor write attempts by MMS clients to specific
+ * data attributes. If a client tries to write to the monitored data attribute the
+ * handler is invoked. The handler can decide if the write access will be allowed
+ * or denied. If a WriteAccessHandler is set for a specific data attribute - the
+ * default write access policy will not be performed for that data attribute.
+ *
+ * When the data attribute is a complex attribute then the handler will also be installed
+ * for all sub data attributes. When the data attribute is a basic data attribute then
+ * this function behaves like \ref IedServer_handleWriteAccess.
+ *
+ * \param self the instance of IedServer to operate on.
+ * \param dataAttribute the data attribute to monitor
+ * \param handler the callback function that is invoked if a client tries to write to
+ *        the monitored data attribute.
+ * \param parameter a user provided parameter that is passed to the WriteAccessHandler when called.
+ */
+LIB61850_API void
+IedServer_handleWriteAccessForComplexAttribute(IedServer self, DataAttribute* dataAttribute,
         WriteAccessHandler handler, void* parameter);
 
 typedef enum {

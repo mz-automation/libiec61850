@@ -1,7 +1,7 @@
 /*
  *  mms_mapping.c
  *
- *  Copyright 2013-2019 Michael Zillgith
+ *  Copyright 2013-2021 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -763,7 +763,9 @@ MmsMapping_configureSettingGroups(MmsMapping* self)
 void
 MmsMapping_useIntegratedGoosePublisher(MmsMapping* self, bool enable)
 {
+#if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
     self->useIntegratedPublisher = enable;
+#endif
 }
 
 void
@@ -1710,8 +1712,6 @@ createNamedVariableFromLogicalNode(MmsMapping* self, MmsDomain* domain,
     }
 #endif /* (CONFIG_INCLUDE_GOOSE_SUPPORT == 1) */
 
-
-
     if (LogicalNode_hasFCData(logicalNode, IEC61850_FC_SV)) {
         namedVariable->typeSpec.structure.elements[currentComponent] =
                 createFCNamedVariable(logicalNode, IEC61850_FC_SV);
@@ -1763,7 +1763,6 @@ createNamedVariableFromLogicalNode(MmsMapping* self, MmsDomain* domain,
 
 #endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
 
-
         currentComponent++;
     }
 
@@ -1792,9 +1791,15 @@ createMmsDomainFromIedDevice(MmsMapping* self, LogicalDevice* logicalDevice)
 
     if (logicalDevice->ldName == NULL) {
         int modelNameLength = strlen(self->model->name);
+        int ldInstName = strlen(logicalDevice->name);
 
-        if (modelNameLength > 64)
+        if ((modelNameLength + ldInstName) > 64) {
+
+            if (DEBUG_IED_SERVER)
+                printf("IED_SERVER: Resulting domain name (IEDName+LDInst) too long (%i)\n", modelNameLength + ldInstName);
+
             goto exit_function;
+        }
 
         strncpy(domainName, self->model->name, 64);
         strncat(domainName, logicalDevice->name, 64 - modelNameLength);
@@ -1876,22 +1881,29 @@ exit_function:
     return domain;
 }
 
-static void
+static bool
 createMmsDataModel(MmsMapping* self, int iedDeviceCount,
         MmsDevice* mmsDevice, IedModel* iedModel)
 {
-    mmsDevice->domains = (MmsDomain**) GLOBAL_MALLOC((iedDeviceCount) * sizeof(MmsDomain*));
+    mmsDevice->domains = (MmsDomain**) GLOBAL_CALLOC(1, (iedDeviceCount) * sizeof(MmsDomain*));
     mmsDevice->domainCount = iedDeviceCount;
 
     LogicalDevice* logicalDevice = iedModel->firstChild;
 
     int i = 0;
     while (logicalDevice != NULL) {
-        mmsDevice->domains[i] = createMmsDomainFromIedDevice(self,
-                logicalDevice);
+        mmsDevice->domains[i] = createMmsDomainFromIedDevice(self, logicalDevice);
+
+        if (mmsDevice->domains[i] == NULL) {
+        	mmsDevice->domainCount = i;
+        	return false;
+        }
+
         i++;
         logicalDevice = (LogicalDevice*) logicalDevice->sibling;
     }
+
+    return true;
 }
 
 static void
@@ -1997,9 +2009,13 @@ createMmsModelFromIedModel(MmsMapping* self, IedModel* iedModel)
 
         int iedDeviceCount = IedModel_getLogicalDeviceCount(iedModel);
 
-        createMmsDataModel(self, iedDeviceCount, mmsDevice, iedModel);
-
-        createDataSets(mmsDevice, iedModel);
+        if (createMmsDataModel(self, iedDeviceCount, mmsDevice, iedModel)) {
+            createDataSets(mmsDevice, iedModel);
+        }
+        else {
+        	MmsDevice_destroy(mmsDevice);
+        	mmsDevice = NULL;
+        }
     }
 
     return mmsDevice;
@@ -2050,6 +2066,11 @@ MmsMapping_create(IedModel* model, IedServer iedServer)
     /* create data model specification */
     self->mmsDevice = createMmsModelFromIedModel(self, model);
 
+    if (self->mmsDevice == false) {
+    	MmsMapping_destroy(self);
+    	self = NULL;
+    }
+
     return self;
 }
 
@@ -2064,7 +2085,7 @@ MmsMapping_destroy(MmsMapping* self)
     }
 #endif
 
-    if (self->mmsDevice != NULL)
+    if (self->mmsDevice)
         MmsDevice_destroy(self->mmsDevice);
 
 #if (CONFIG_IEC61850_REPORT_SERVICE == 1)
@@ -2313,17 +2334,23 @@ writeAccessGooseControlBlock(MmsMapping* self, MmsDomain* domain, char* variable
         if (MmsValue_getType(value) != MMS_BOOLEAN)
             return DATA_ACCESS_ERROR_TYPE_INCONSISTENT;
 
-        if (MmsValue_getBoolean(value)) {
-            MmsGooseControlBlock_enable(mmsGCB, self);
+        if (MmsGooseControlBlock_getNdsCom(mmsGCB))
+            return DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
 
-            if (self->goCbHandler)
-                self->goCbHandler(mmsGCB, IEC61850_GOCB_EVENT_ENABLE, self->goCbHandlerParameter);
+        if (MmsValue_getBoolean(value)) {
+            if (MmsGooseControlBlock_enable(mmsGCB, self)) {
+                if (self->goCbHandler)
+                    self->goCbHandler(mmsGCB, IEC61850_GOCB_EVENT_ENABLE, self->goCbHandlerParameter);
+            }
+            else {
+                return DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+            }
         }
         else {
             MmsGooseControlBlock_disable(mmsGCB, self);
 
             if (self->goCbHandler)
-                self->goCbHandler(mmsGCB, IEC61850_GOCB_EVENT_ENABLE, self->goCbHandlerParameter);
+                self->goCbHandler(mmsGCB, IEC61850_GOCB_EVENT_DISABLE, self->goCbHandlerParameter);
         }
 
         return DATA_ACCESS_ERROR_SUCCESS;
@@ -2411,6 +2438,7 @@ writeAccessGooseControlBlock(MmsMapping* self, MmsDomain* domain, char* variable
 
 #endif /* (CONFIG_INCLUDE_GOOSE_SUPPORT == 1) */
 
+#if 0
 static MmsValue*
 checkIfValueBelongsToModelNode(DataAttribute* dataAttribute, MmsValue* value, MmsValue* newValue)
 {
@@ -2445,6 +2473,7 @@ checkIfValueBelongsToModelNode(DataAttribute* dataAttribute, MmsValue* value, Mm
 
     return NULL;
 }
+#endif
 
 static FunctionalConstraint
 getFunctionalConstraintForWritableNode(char* separator)
@@ -2850,51 +2879,25 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
                 AttributeAccessHandler* accessHandler = (AttributeAccessHandler*) writeHandlerListElement->data;
                 DataAttribute* dataAttribute = accessHandler->attribute;
 
-                if (nodeAccessPolicy == ACCESS_POLICY_ALLOW) {
+                if (dataAttribute->mmsValue == cachedValue) {
 
-                    MmsValue* matchingValue = checkIfValueBelongsToModelNode(dataAttribute, cachedValue, value);
+                    ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer,
+                            connection);
 
-                    if (matchingValue != NULL) {
+                    MmsDataAccessError handlerResult =
+                        accessHandler->handler(dataAttribute, value, clientConnection,
+                                accessHandler->parameter);
 
-                        ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer,
-                                connection);
+                    if ((handlerResult == DATA_ACCESS_ERROR_SUCCESS) || (handlerResult == DATA_ACCESS_ERROR_SUCCESS_NO_UPDATE)) {
+                        handlerFound = true;
 
-                        MmsDataAccessError handlerResult =
-                            accessHandler->handler(dataAttribute, matchingValue, clientConnection,
-                            		accessHandler->parameter);
+                        if (handlerResult == DATA_ACCESS_ERROR_SUCCESS_NO_UPDATE)
+                            updateValue = false;
 
-                        if ((handlerResult == DATA_ACCESS_ERROR_SUCCESS) || (handlerResult == DATA_ACCESS_ERROR_SUCCESS_NO_UPDATE)) {
-                            handlerFound = true;
-
-                            if (handlerResult == DATA_ACCESS_ERROR_SUCCESS_NO_UPDATE)
-                                updateValue = false;
-                        }
-
-                        else
-                            return handlerResult;
+                        break;
                     }
-                }
-                else { /* if ACCESS_POLICY_DENY only allow direct access to handled data attribute */
-                    if (dataAttribute->mmsValue == cachedValue) {
-
-                        ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer,
-                                connection);
-
-                        MmsDataAccessError handlerResult =
-                            accessHandler->handler(dataAttribute, value, clientConnection,
-                            		accessHandler->parameter);
-
-                        if ((handlerResult == DATA_ACCESS_ERROR_SUCCESS) || (handlerResult == DATA_ACCESS_ERROR_SUCCESS_NO_UPDATE)) {
-                            handlerFound = true;
-
-                            if (handlerResult == DATA_ACCESS_ERROR_SUCCESS_NO_UPDATE)
-                                updateValue = false;
-
-                            break;
-                        }
-                        else
-                            return handlerResult;
-                    }
+                    else
+                        return handlerResult;
                 }
 
                 writeHandlerListElement = LinkedList_getNext(writeHandlerListElement);
@@ -3679,7 +3682,6 @@ MmsMapping_triggerReportObservers(MmsMapping* self, MmsValue* value, int flag)
             }
 
             if (DataSet_isMemberValue(rc->dataSet, value, &index)) {
-
                 ReportControl_valueUpdated(rc, index, flag, modelLocked);
             }
         }
@@ -3721,15 +3723,18 @@ MmsMapping_triggerGooseObservers(MmsMapping* self, MmsValue* value)
 void
 MmsMapping_enableGoosePublishing(MmsMapping* self)
 {
+    LinkedList element = LinkedList_getNext(self->gseControls);
 
-    LinkedList element = self->gseControls;
+    while (element) {
+        MmsGooseControlBlock gcb = (MmsGooseControlBlock) LinkedList_getData(element);
 
-    while ((element = LinkedList_getNext(element)) != NULL) {
-        MmsGooseControlBlock gcb = (MmsGooseControlBlock) element->data;
+        if (MmsGooseControlBlock_enable(gcb, self) == false) {
+            if (DEBUG_IED_SERVER)
+                printf("IED_SERVER: failed to enable GoCB %s\n", MmsGooseControlBlock_getName(gcb));
+        }
 
-        MmsGooseControlBlock_enable(gcb, self);
+        element = LinkedList_getNext(element);
     }
-
 }
 
 void
@@ -3809,7 +3814,7 @@ GOOSE_processGooseEvents(MmsMapping* self, uint64_t currentTimeInMs)
         MmsGooseControlBlock mmsGCB = (MmsGooseControlBlock) element->data;
 
         if (MmsGooseControlBlock_isEnabled(mmsGCB)) {
-            MmsGooseControlBlock_checkAndPublish(mmsGCB, currentTimeInMs);
+            MmsGooseControlBlock_checkAndPublish(mmsGCB, currentTimeInMs, self);
         }
 
         element = LinkedList_getNext(element);

@@ -84,11 +84,6 @@ struct sIsoServer {
     IsoConnection openClientConnections[CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS];
 #endif /* (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS == -1) */
 
-#if (CONFIG_MMS_THREADLESS_STACK != 1)
-    /* used to control access to server data model */
-    Semaphore userLock;
-#endif
-
 #if (CONFIG_MMS_THREADLESS_STACK != 1) && (CONFIG_MMS_SINGLE_THREADED == 0)
     Semaphore openClientConnectionsMutex; /* mutex for openClientConnections list */
     Semaphore connectionCounterMutex;
@@ -878,26 +873,3 @@ private_IsoServer_getConnectionCounter(IsoServer self)
     return connectionCounter;
 }
 
-#if (CONFIG_MMS_THREADLESS_STACK != 1)
-
-void
-IsoServer_setUserLock(IsoServer self, Semaphore userLock)
-{
-    self->userLock = userLock;
-}
-
-void
-IsoServer_userLock(IsoServer self)
-{
-    if (self->userLock != NULL)
-        Semaphore_wait(self->userLock);
-}
-
-void
-IsoServer_userUnlock(IsoServer self)
-{
-    if (self->userLock != NULL)
-        Semaphore_post(self->userLock);
-}
-
-#endif /* (CONFIG_MMS_THREADLESS_STACK != 1) */

@@ -55,7 +55,7 @@ LIB61850_INTERNAL bool
 MmsGooseControlBlock_isEnabled(MmsGooseControlBlock self);
 
 LIB61850_INTERNAL void
-MmsGooseControlBlock_checkAndPublish(MmsGooseControlBlock self, uint64_t currentTime);
+MmsGooseControlBlock_checkAndPublish(MmsGooseControlBlock self, uint64_t currentTime, MmsMapping* mapping);
 
 LIB61850_INTERNAL void
 MmsGooseControlBlock_setStateChangePending(MmsGooseControlBlock self);
@@ -63,7 +63,7 @@ MmsGooseControlBlock_setStateChangePending(MmsGooseControlBlock self);
 LIB61850_INTERNAL void
 MmsGooseControlBlock_publishNewState(MmsGooseControlBlock self);
 
-LIB61850_INTERNAL void
+LIB61850_INTERNAL bool
 MmsGooseControlBlock_enable(MmsGooseControlBlock self, MmsMapping* mmsMapping);
 
 LIB61850_INTERNAL void

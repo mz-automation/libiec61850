@@ -124,6 +124,7 @@ static int
 getInterfaceIndex(int sock, const char* deviceName)
 {
     struct ifreq ifr;
+    memset(&ifr, 0, sizeof(struct ifreq));
 
     strncpy(ifr.ifr_name, deviceName, IFNAMSIZ - 1);
 
@@ -142,7 +143,8 @@ getInterfaceIndex(int sock, const char* deviceName)
         return -1;
     }
 
-    ifr.ifr_flags |= IFF_PROMISC;
+    /* replace IFF_ALLMULTI by IFF_PROMISC to also receive unicast messages for other nodes */
+    ifr.ifr_flags |= IFF_ALLMULTI;
     if (ioctl (sock, SIOCSIFFLAGS, &ifr) == -1)
     {
         if (DEBUG_SOCKET)

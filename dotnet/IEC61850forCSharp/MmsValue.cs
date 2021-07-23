@@ -148,6 +148,12 @@ namespace IEC61850
             static extern IntPtr MmsValue_newVisibleString(string value);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr MmsValue_newVisibleStringWithSize(int size);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern void MmsValue_setVisibleString(IntPtr self, string value);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern IntPtr MmsValue_createArray(IntPtr elementType, int size);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
@@ -201,7 +207,7 @@ namespace IEC61850
 
 			internal IntPtr valueReference; /* reference to native MmsValue instance */
 
-			private bool responsableForDeletion; /* if .NET wrapper is responsable for the deletion of the native MmsValue instance */
+			private bool responsableForDeletion = false; /* if .NET wrapper is responsable for the deletion of the native MmsValue instance */
 
 			internal MmsValue (IntPtr value)
 			{
@@ -415,13 +421,34 @@ namespace IEC61850
                 return new MmsValue (newValue, true);
             }
 
-            /// <summary>
-            /// Gets the type of the value
+			/// <summary>
+            /// Create a new MmsValue instance of type MMS_VISIBLE_STRING - empty string with given maximum size
             /// </summary>
-            /// <returns>
-            /// The type.
-            /// </returns>
-			public new MmsType GetType ()
+            /// <param name="size">The maximum size </param>
+            /// <returns></returns>
+			public static MmsValue NewVisibleString(int size, bool responsibleForDeletion = false)
+            {
+				IntPtr newValue = MmsValue_newVisibleStringWithSize(size);
+
+				return new MmsValue(newValue, responsibleForDeletion);
+            }
+
+			/// <summary>
+            /// Set the value of an MmsValue instance of type MMS_VISIBLE_STRING
+            /// </summary>
+            /// <param name="value">the new string value</param>
+			public void SetVisibleString(string value)
+            {
+				MmsValue_setVisibleString(valueReference, value);
+            }
+
+		    /// <summary>
+		    /// Gets the type of the value
+		    /// </summary>
+		    /// <returns>
+		    /// The type.
+		    /// </returns>
+		    public new MmsType GetType ()
 			{
 				return (MmsType)MmsValue_getType (valueReference);
 			}

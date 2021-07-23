@@ -269,10 +269,16 @@ ReportControl_getRCBValue(ReportControl* rc, char* elementName)
 
         if (rc->server->edition >= IEC_61850_EDITION_2) {
 #if (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1)
-            if (strcmp(elementName, "ResvTms") == 0)
-                return MmsValue_getElement(rc->rcbValues, 13);
-            if (strcmp(elementName, "Owner") == 0)
-                return MmsValue_getElement(rc->rcbValues, 14);
+            if (rc->server->enableBRCBResvTms) {
+                if (strcmp(elementName, "ResvTms") == 0)
+                    return MmsValue_getElement(rc->rcbValues, 13);
+                if (strcmp(elementName, "Owner") == 0)
+                    return MmsValue_getElement(rc->rcbValues, 14);
+            }
+            else {
+                if (strcmp(elementName, "Owner") == 0)
+                    return MmsValue_getElement(rc->rcbValues, 13);
+            }
 #else
             if (strcmp(elementName, "Owner") == 0)
                 return MmsValue_getElement(rc->rcbValues, 13);
@@ -1118,7 +1124,8 @@ createBufferedReportControlBlock(ReportControlBlock* reportControlBlock,
     if (reportControl->server->edition >= IEC_61850_EDITION_2) {
 
 #if (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1)
-        brcbElementCount++;
+        if (reportControl->server->enableBRCBResvTms)
+            brcbElementCount++;
 #endif
 
         if (reportControl->hasOwner)
@@ -1249,16 +1256,17 @@ createBufferedReportControlBlock(ReportControlBlock* reportControlBlock,
         int currentIndex = 13;
 
 #if (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1)
-
         int resvTmsIndex = currentIndex;
 
-        namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-        namedVariable->name = StringUtils_copyString("ResvTms");
-        namedVariable->type = MMS_INTEGER;
-        namedVariable->typeSpec.integer = 16;
-        rcb->typeSpec.structure.elements[currentIndex] = namedVariable;
-        mmsValue->value.structure.components[currentIndex] = MmsValue_newInteger(16);
-        currentIndex++;
+        if (reportControl->server->enableBRCBResvTms) {
+            namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
+            namedVariable->name = StringUtils_copyString("ResvTms");
+            namedVariable->type = MMS_INTEGER;
+            namedVariable->typeSpec.integer = 16;
+            rcb->typeSpec.structure.elements[currentIndex] = namedVariable;
+            mmsValue->value.structure.components[currentIndex] = MmsValue_newInteger(16);
+            currentIndex++;
+        }
 #endif /* (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1) */
 
         if (reportControl->hasOwner) {
@@ -1281,7 +1289,9 @@ createBufferedReportControlBlock(ReportControlBlock* reportControlBlock,
         }
 
 #if (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1)
-        MmsValue_setInt16(mmsValue->value.structure.components[resvTmsIndex], reportControl->resvTms);
+        if (reportControl->server->enableBRCBResvTms) {
+            MmsValue_setInt16(mmsValue->value.structure.components[resvTmsIndex], reportControl->resvTms);
+        }
 #endif
     }
 
@@ -1344,8 +1354,7 @@ Reporting_createMmsBufferedRCBs(MmsMapping* self, MmsDomain* domain,
         ReportControlBlock* reportControlBlock = getRCBForLogicalNodeWithIndex(
                 self, logicalNode, currentReport, true);
 
-        if (reportControlBlock->trgOps & RPT_OPT_HAS_OWNER)
-            rc->hasOwner = true;
+        rc->hasOwner = self->iedServer->enableOwnerForRCB;
 
         rc->name = StringUtils_createString(3, logicalNode->name, "$BR$",
                 reportControlBlock->name);
@@ -1386,8 +1395,7 @@ Reporting_createMmsUnbufferedRCBs(MmsMapping* self, MmsDomain* domain,
         ReportControlBlock* reportControlBlock = getRCBForLogicalNodeWithIndex(
                 self, logicalNode, currentReport, false);
 
-        if (reportControlBlock->trgOps & RPT_OPT_HAS_OWNER)
-            rc->hasOwner = true;
+        rc->hasOwner = self->iedServer->enableOwnerForRCB;
 
         rc->name = StringUtils_createString(3, logicalNode->name, "$RP$",
                 reportControlBlock->name);
@@ -1569,9 +1577,11 @@ checkReservationTimeout(MmsMapping* self, ReportControl* rc)
                     printf("IED_SERVER: reservation timeout expired for %s.%s\n", rc->parentLN->name, rc->name);
 
 #if (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1)
-                MmsValue* resvTmsVal = ReportControl_getRCBValue(rc, "ResvTms");
-                if (resvTmsVal)
-                    MmsValue_setInt16(resvTmsVal, rc->resvTms);
+                if (self->iedServer->enableBRCBResvTms) {
+                    MmsValue* resvTmsVal = ReportControl_getRCBValue(rc, "ResvTms");
+                    if (resvTmsVal)
+                        MmsValue_setInt16(resvTmsVal, rc->resvTms);
+                }
 #endif
 
                 rc->reservationTimeout = 0;
@@ -1641,9 +1651,11 @@ reserveRcb(ReportControl* rc,  MmsServerConnection connection)
 
     if (rc->buffered) {
 #if (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1)
-        MmsValue* resvTmsVal = ReportControl_getRCBValue(rc, "ResvTms");
-        if (resvTmsVal)
-            MmsValue_setInt16(resvTmsVal, rc->resvTms);
+        if (rc->server->enableBRCBResvTms) {
+            MmsValue* resvTmsVal = ReportControl_getRCBValue(rc, "ResvTms");
+            if (resvTmsVal)
+                MmsValue_setInt16(resvTmsVal, rc->resvTms);
+        }
 #endif
     }
     else {
@@ -1655,7 +1667,6 @@ reserveRcb(ReportControl* rc,  MmsServerConnection connection)
     updateOwner(rc, connection);
 }
 
-#if 1
 MmsDataAccessError
 Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* elementName, MmsValue* value,
         MmsServerConnection connection)
@@ -2087,7 +2098,6 @@ exit_function:
 
     return retVal;
 }
-#endif
 
 void
 Reporting_deactivateReportsForConnection(MmsMapping* self, MmsServerConnection connection)

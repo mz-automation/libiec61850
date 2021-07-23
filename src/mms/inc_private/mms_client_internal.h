@@ -370,10 +370,13 @@ mmsClient_handleFileReadRequest(
 
 LIB61850_INTERNAL void
 mmsClient_handleFileCloseRequest(
-MmsConnection connection,
-uint8_t* buffer, int bufPos, int maxBufPos,
-uint32_t invokeId,
-ByteBuffer* response);
+    MmsConnection connection,
+    uint8_t* buffer, int bufPos, int maxBufPos,
+    uint32_t invokeId,
+    ByteBuffer* response);
+
+LIB61850_INTERNAL void
+mmsClient_closeOutstandingOpenFiles(MmsConnection connection);
 
 LIB61850_INTERNAL MmsOutstandingCall
 mmsClient_getMatchingObtainFileRequest(MmsConnection self, const char* filename);
