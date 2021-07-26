@@ -183,11 +183,11 @@ struct sIedModel {
 
 struct sLogicalDevice {
     ModelNodeType modelType;
-    char* name;
+    char* name; /* LD instance */
     ModelNode* parent;
     ModelNode* sibling;
     ModelNode* firstChild;
-    char* ldName;
+    char* ldName; /* ldName (when using functional naming) */
 };
 
 struct sModelNode {
@@ -489,7 +489,9 @@ IedModel_getSVControlBlock(IedModel* self, LogicalNode* parentLN, const char* sv
  * \brief Lookup a model node by its short (normalized) reference
  *
  * This version uses the object reference that does not contain the
- * IED name as part of the logical device name. This function is useful for
+ * IED name or functional name as part of the logical device name.
+ * Instead the LD part consists of the LD instance name ("inst" attribute).
+ * This function is useful for
  * devices where the IED name can be configured.
  *
  * \param self the IedModel instance that holds the model node

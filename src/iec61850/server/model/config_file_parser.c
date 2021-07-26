@@ -172,12 +172,22 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
                     if (StringUtils_startsWith((char*) lineBuffer, "LD")) {
                         indendation = 2;
 
-                        if (sscanf((char*) lineBuffer, "LD(%s)", nameString) < 1)
+                        char ldName[65];
+                        ldName[0] = 0;
+
+                        if (sscanf((char*) lineBuffer, "LD(%s %s)", nameString, ldName) < 1)
                             goto exit_error;
 
                         terminateString(nameString, ')');
 
-                        currentLD = LogicalDevice_create(nameString, model);
+                        if (ldName[0] != 0) {
+                            terminateString(ldName, ')');
+
+                            currentLD = LogicalDevice_createEx(nameString, model, ldName);
+                        }
+                        else {
+                            currentLD = LogicalDevice_create(nameString, model);
+                        }
                     }
                     else
                         goto exit_error;

@@ -375,11 +375,11 @@ IedModel_getModelNodeByShortObjectReference(IedModel* model, const char* objectR
     if (separator != NULL)
         *separator = 0;
 
-    char ldName[65];
-    strcpy(ldName, model->name);
-    strcat(ldName, objRef);
+    char ldInst[65];
+    strncpy(ldInst, objRef, 64);
+    ldInst[64] = 0;
 
-    LogicalDevice* ld = IedModel_getDevice(model, ldName);
+    LogicalDevice* ld = IedModel_getDeviceByInst(model, ldInst);
 
     if (ld == NULL) return NULL;
 
@@ -557,12 +557,22 @@ createObjectReference(ModelNode* node, char* objectReference, bool withoutIedNam
         if (withoutIedName) {
             nameLength = strlen(lDevice->name);
             strncpy(objectReference, lDevice->name, 64);
+            objectReference[64] = 0;
         }
         else {
-            nameLength = strlen (iedModel->name) + strlen(lDevice->name);
+            if (lDevice->ldName) {
+                nameLength = strlen(lDevice->ldName);
+                strncpy(objectReference, lDevice->ldName, 64);
+                objectReference[64] = 0;
+            }
+            else {
+                nameLength = strlen (iedModel->name) + strlen(lDevice->name);
 
-            strncpy(objectReference, iedModel->name, 64);
-            strncat(objectReference, lDevice->name, 64);
+                strncpy(objectReference, iedModel->name, 64);
+                strncat(objectReference, lDevice->name, 64);
+
+                objectReference[64] = 0;
+            }
         }
 
         bufPos += nameLength;

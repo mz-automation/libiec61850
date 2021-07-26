@@ -51,10 +51,10 @@ main(int argc, char** argv)
 	/* Access to data attributes by object reference */
 
     DataAttribute* anIn1_mag_f = (DataAttribute*)
-            IedModel_getModelNodeByObjectReference(model, "simpleIOGenericIO/GGIO1.AnIn1.mag.f");
+            IedModel_getModelNodeByShortObjectReference(model, "GenericIO/GGIO1.AnIn1.mag.f");
 
     DataAttribute* anIn1_t = (DataAttribute*)
-            IedModel_getModelNodeByObjectReference(model, "simpleIOGenericIO/GGIO1.AnIn1.t");
+            IedModel_getModelNodeByShortObjectReference(model, "GenericIO/GGIO1.AnIn1.t");
 
     if (anIn1_mag_f == NULL)
         printf("Error getting AnIn1.mag.f data attribute!\n");

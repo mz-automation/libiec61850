@@ -82,7 +82,7 @@ LIB61850_API void
 IedModel_destroy(IedModel* model);
 
 /**
- * \brief Create a new logical device model and add it to the IED model
+ * \brief Create a new logical device and add it to the IED model
  *
  * \param name the name of the new logical device
  * \param parent the parent IED model
@@ -92,6 +92,17 @@ IedModel_destroy(IedModel* model);
 LIB61850_API LogicalDevice*
 LogicalDevice_create(const char* name, IedModel* parent);
 
+/**
+ * \brief Create a new logical device and add it to the IED model
+ *
+ * \param name the name of the new logical device
+ * \param parent the parent IED model
+ * \param ldName when not NULL functional naming is used for this LD (ldName <= 64 chars)
+ *
+ * \return the newly created LogicalDevice instance
+ */
+LIB61850_API LogicalDevice*
+LogicalDevice_createEx(const char* inst, IedModel* parent, const char* ldName);
 
 /**
  * \brief Create a new logical mode  and add it to a logical device

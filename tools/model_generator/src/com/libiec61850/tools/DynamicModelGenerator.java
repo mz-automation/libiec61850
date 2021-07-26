@@ -100,7 +100,10 @@ public class DynamicModelGenerator {
         output.println("MODEL(" + ied.getName() + "){");
         for (LogicalDevice logicalDevice : logicalDevices) {
             output.print("LD(");
-            output.print(logicalDevice.getInst() + "){\n");
+            output.print(logicalDevice.getInst());
+            if (logicalDevice.getLdName() != null)
+                output.print(" " + logicalDevice.getLdName());
+            output.print("){\n");
 
             exportLogicalNodes(output, logicalDevice);
 

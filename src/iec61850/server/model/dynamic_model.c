@@ -180,18 +180,31 @@ IedModel_addGSEControlBlock(IedModel* self, GSEControlBlock* gcb)
 }
 
 LogicalDevice*
-LogicalDevice_create(const char* name, IedModel* parent)
+LogicalDevice_createEx(const char* inst, IedModel* parent, const char* ldName)
 {
     LogicalDevice* self = (LogicalDevice*) GLOBAL_CALLOC(1, sizeof(LogicalDevice));
 
-    self->name = StringUtils_copyString(name);
-    self->modelType = LogicalDeviceModelType;
-    self->parent = (ModelNode*) parent;
-    self->sibling = NULL;
+    if (self) {
+        self->name = StringUtils_copyString(inst);
+        self->modelType = LogicalDeviceModelType;
+        self->parent = (ModelNode*) parent;
+        self->sibling = NULL;
 
-    IedModel_addLogicalDevice(parent, self);
+        if (ldName)
+            self->ldName = StringUtils_copyString(ldName);
+        else
+            self->ldName = NULL;
+
+        IedModel_addLogicalDevice(parent, self);
+    }
 
     return self;
+}
+
+LogicalDevice*
+LogicalDevice_create(const char* inst, IedModel* parent)
+{
+    return LogicalDevice_createEx(inst, parent, NULL);
 }
 
 static LogicalNode*
@@ -778,6 +791,9 @@ IedModel_destroy(IedModel* model)
 
     while (ld != NULL) {
         GLOBAL_FREEMEM (ld->name);
+
+        if (ld->ldName)
+            GLOBAL_FREEMEM (ld->ldName);
 
         LogicalNode* ln = (LogicalNode*) ld->firstChild;
 
