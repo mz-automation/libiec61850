@@ -560,7 +560,8 @@ exit_error:
     if (DEBUG_IED_SERVER)
         printf("IED_SERVER: error parsing line %i (indentation level = %i)\n", currentLine, indendation);
 
-    IedModel_destroy(model);
+    if (model != NULL)
+        IedModel_destroy(model);
     return NULL;
 }
 
