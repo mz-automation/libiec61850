@@ -26,26 +26,30 @@ sigint_handler(int signalId)
 }
 
 static void
-updateCMVArrayElement(MmsValue *cval, int index, float magnitude, float angle, Quality quality, Timestamp timestamp)
+updateCMVArrayElement(IedServer server, DataObject* phsAHar, int idx, float magnitude, float angle, Quality quality, Timestamp timestamp)
 {
-    MmsValue* cmv = MmsValue_getElement(cval, index);
+    DataObject* phsAHarArrayElem = (DataObject*)ModelNode_getChildWithIdx((ModelNode*)phsAHar, idx);
 
-    MmsValue* cValElement = MmsValue_getElement(cmv, 0);
+    if (phsAHarArrayElem) {
 
-    assert(MmsValue_getArraySize(cValElement) == 2);
+        DataAttribute* mag = (DataAttribute*)ModelNode_getChild((ModelNode*)phsAHarArrayElem, "cVal.mag.f");
+        DataAttribute* ang = (DataAttribute*)ModelNode_getChild((ModelNode*)phsAHarArrayElem, "cVal.ang.f");
+        DataAttribute* q = (DataAttribute*)ModelNode_getChild((ModelNode*)phsAHarArrayElem, "q");
+        DataAttribute* t = (DataAttribute*)ModelNode_getChild((ModelNode*)phsAHarArrayElem, "t");
 
-    MmsValue* cValElement_mag_f = MmsValue_getElement(MmsValue_getElement(cValElement, 0), 0);
-
-    MmsValue* cValElement_ang_f = MmsValue_getElement(MmsValue_getElement(cValElement, 1), 0);
-
-    MmsValue_setFloat(cValElement_mag_f, magnitude);
-    MmsValue_setFloat(cValElement_ang_f, angle);
-
-    MmsValue* q = MmsValue_getElement(cmv, 1);
-    MmsValue_setBitStringFromInteger(q, (int) quality);
-
-    MmsValue* t = MmsValue_getElement(cmv, 2);
-    MmsValue_setUtcTimeByBuffer(t, timestamp.val);
+        if (mag && ang && q && t) {
+            IedServer_updateQuality(server, q, quality);
+            IedServer_updateTimestampAttributeValue(server, t, &timestamp);
+            IedServer_updateFloatAttributeValue(server, mag, magnitude);
+            IedServer_updateFloatAttributeValue(server, ang, angle);
+        }
+        else {
+            printf("one of mag, ang, q, t not found\n");
+        }
+    }
+    else {
+        printf("Element with index %i not found\n", idx);
+    }
 }
 
 int
@@ -62,10 +66,7 @@ main(int argc, char **argv)
 
     /* Get access to the MHAI1.HA data object handle - for static and dynamic model*/
     DataObject* mhai1_ha_phsAHar = (DataObject*)
-            IedModel_getModelNodeByObjectReference(&iedModel, "testComplexArray/MHAI1.HA.phsAHar");
-
-    /* Get access to the corresponding MMS value data structure - the MX(FC) part of the data object */
-    MmsValue* mhai1_ha_phsAHar_mx = IedServer_getFunctionalConstrainedData(iedServer, mhai1_ha_phsAHar, IEC61850_FC_MX);
+            IedModel_getModelNodeByShortObjectReference(&iedModel, "ComplexArray/MHAI1.HA.phsAHar");
 
     /* assuming the array has 16 elements */
     float mag = 200.f;
@@ -78,7 +79,7 @@ main(int argc, char **argv)
 
     int i;
     for (i = 0; i < 16; i++) {
-        updateCMVArrayElement(mhai1_ha_phsAHar_mx, i, mag, angle, quality, timestamp);
+        updateCMVArrayElement(iedServer, mhai1_ha_phsAHar, i, mag, angle, quality, timestamp);
         mag += 1.f;
         angle += 0.01f;
     }
@@ -104,11 +105,13 @@ main(int argc, char **argv)
         Timestamp_setTimeInMilliseconds(&timestamp, Hal_getTimeInMs());
 
         IedServer_lockDataModel(iedServer);
+
         for (i = 0; i < 16; i++) {
-            updateCMVArrayElement(mhai1_ha_phsAHar_mx, i, mag, angle, quality, timestamp);
+            updateCMVArrayElement(iedServer, mhai1_ha_phsAHar, i, mag, angle, quality, timestamp);
             mag += 0.1f;
             angle += 0.05f;
         }
+
         IedServer_unlockDataModel(iedServer);
 
         if (counter == 10) {

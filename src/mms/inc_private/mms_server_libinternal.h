@@ -82,6 +82,9 @@ MmsServer_getValueFromCache(MmsServer self, MmsDomain* domain, const char* itemI
 LIB61850_INTERNAL MmsValue*
 MmsServer_getValueFromCacheEx(MmsServer self, MmsDomain* domain, const char* itemId, MmsVariableSpecification** typeSpec);
 
+LIB61850_INTERNAL MmsValue*
+MmsServer_getValueFromCacheEx2(MmsServer self, MmsDomain* domain, const char* itemId, int idx, const char* componentId);
+
 LIB61850_INTERNAL bool
 MmsServer_isLocked(MmsServer self);
 

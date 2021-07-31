@@ -554,10 +554,31 @@ DataObject_create(const char* name, ModelNode* parent, int arrayElements)
 
     self->name = StringUtils_copyString(name);
     self->modelType = DataObjectModelType;
-    self->elementCount = arrayElements;
     self->firstChild = NULL;
     self->parent = parent;
     self->sibling = NULL;
+
+    self->elementCount = arrayElements;
+    self->arrayIndex = -1;
+
+    if (arrayElements > 0) {
+        int i;
+
+        for (i = 0; i < arrayElements; i++) {
+            DataObject* arrayElement = (DataObject*) GLOBAL_MALLOC(sizeof(DataObject));
+
+            self->name = NULL;
+            self->modelType = DataObjectModelType;
+            self->firstChild = NULL;
+            self->parent = parent;
+            self->sibling = NULL;
+
+            self->elementCount = 0;
+            self->arrayIndex = i;
+
+            DataObject_addChild(self, (ModelNode*) arrayElement);
+        }
+    }
 
     if (parent->modelType == LogicalNodeModelType)
         LogicalNode_addDataObject((LogicalNode*) parent, self);

@@ -1107,7 +1107,7 @@ ControlObject_initialize(ControlObject* self)
     else
     {
         if (DEBUG_IED_SERVER)
-            printf("IED_SERVER:  ERROR - stValType or ctlValType could not be determined!\n");
+            printf("IED_SERVER:  ERROR - stValType (%i) or ctlValType (%i) could not be determined!\n", stValType, ctlValType);
         self->cdc = CST_NONE;
     }
 #endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */

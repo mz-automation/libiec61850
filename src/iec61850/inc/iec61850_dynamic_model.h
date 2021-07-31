@@ -116,9 +116,12 @@ LIB61850_API LogicalNode*
 LogicalNode_create(const char* name, LogicalDevice* parent);
 
 /**
- * \brief create a new data object and add it to a parent model node
+ * \brief create a new data object or array data object and add it to a parent model node
  *
  * The parent model node has to be of type DataObject or LogicalNode.
+ * 
+ * NOTE: When the data object is an array the array elements will also be created by this function.
+ * This will result in child DataObject instances for each array element.
  *
  * \param name the name of the data object (e.h. "Mod", "Health" ...)
  * \param parent the parent model node

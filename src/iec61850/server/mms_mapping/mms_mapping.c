@@ -330,6 +330,9 @@ createFCNamedVariableFromDataObject(DataObject* dataObject,
         namedVariable->typeSpec.array.elementTypeSpec = (MmsVariableSpecification*) GLOBAL_CALLOC(1,
                 sizeof(MmsVariableSpecification));
         namedVariable = namedVariable->typeSpec.array.elementTypeSpec;
+
+        /* for arrays use the first child as type template */
+        dataObject = (DataObject*)dataObject->firstChild;
     }
 
     namedVariable->type = MMS_STRUCTURE;

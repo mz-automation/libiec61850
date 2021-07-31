@@ -594,7 +594,7 @@ public class StaticModelGenerator {
 
             cOut.println("};\n");
 
-            printDataObjectDefinitions(lnName, logicalNode.getDataObjects(), null, false);
+            printDataObjectDefinitions(lnName, logicalNode.getDataObjects(), null, false, -1);
 
             printReportControlBlocks(lnName, logicalNode);
             
@@ -609,11 +609,19 @@ public class StaticModelGenerator {
             printSettingControlBlock(lnName, logicalNode);
         }
     }
+	
+	
 
-    private void printDataObjectDefinitions(String lnName, List<DataObject> dataObjects, String dataAttributeSibling, boolean isTransient) {
+    private void printDataObjectDefinitions(String lnName, List<DataObject> dataObjects, String dataAttributeSibling, boolean isTransient, int arrayIdx) {
         for (int i = 0; i < dataObjects.size(); i++) {
+            boolean isArray = false;
+            
             DataObject dataObject = dataObjects.get(i);
-
+                       
+            if (dataObject.getCount() > 0) {
+                isArray = true;
+            }
+            
             String doName = lnName + "_" + dataObject.getName();
 
             variablesList.add(doName);
@@ -629,27 +637,6 @@ public class StaticModelGenerator {
                 cOut.println("    (ModelNode*) &" + dataAttributeSibling + ",");
             else
                 cOut.println("    NULL,");
-
-            String firstSubDataObjectName = null;
-            String firstDataAttributeName = null;
-
-            if ((dataObject.getSubDataObjects() != null) && (dataObject.getSubDataObjects().size() > 0))
-                firstSubDataObjectName = doName + "_" + dataObject.getSubDataObjects().get(0).getName();
-
-            if ((dataObject.getDataAttributes() != null) && (dataObject.getDataAttributes().size() > 0))
-                firstDataAttributeName = doName + "_" + dataObject.getDataAttributes().get(0).getName();
-
-            if (firstSubDataObjectName != null) {
-                cOut.println("    (ModelNode*) &" + firstSubDataObjectName + ",");
-            } else if (firstDataAttributeName != null) {
-                cOut.println("    (ModelNode*) &" + firstDataAttributeName + ",");
-            } else {
-                cOut.println("    NULL,");
-            }
-
-            cOut.println("    " + dataObject.getCount());
-
-            cOut.println("};\n");
             
             boolean isDoTransient = false;
             
@@ -659,17 +646,99 @@ public class StaticModelGenerator {
                 if (dataObject.isTransient())
                     isDoTransient = true;
             }
+            
+            if (isArray) {
+                String childName = doName + "_0";
+                
+                cOut.println("    (ModelNode*) &" + childName + ",");
+                
+                cOut.println("    " + dataObject.getCount() + ",");
+                
+                cOut.println("    0" + arrayIdx);
+                
+                cOut.println("};\n");
+                
+                /* Print array elements */
+                
+                for (int idx = 0; idx < dataObject.getCount(); idx++) {
+                    
+                    String arrayElementdoName = doName + "_" + idx;
+                    
+                    cOut.println("DataObject " + arrayElementdoName + " = {");
+                    cOut.println("    DataObjectModelType,");
+                    cOut.println("    \"" + dataObject.getName() + "\",");
+                    cOut.println("    (ModelNode*) &" + doName + ",");
+                    
+                    /* sibling */
+                    if (idx != dataObject.getCount() - 1)
+                        cOut.println("    (ModelNode*) &" + doName + "_" + (idx + 1) + ",");
+                    else
+                        cOut.println("    NULL,");
+                    
+                    String firstSubDataObjectName = null;
+                    String firstDataAttributeName = null;
 
-            if (dataObject.getSubDataObjects() != null)
-                printDataObjectDefinitions(doName, dataObject.getSubDataObjects(), firstDataAttributeName, isDoTransient);
+                    if ((dataObject.getSubDataObjects() != null) && (dataObject.getSubDataObjects().size() > 0))
+                        firstSubDataObjectName = arrayElementdoName + "_" + dataObject.getSubDataObjects().get(0).getName();
 
-            if (dataObject.getDataAttributes() != null)
-                printDataAttributeDefinitions(doName, dataObject.getDataAttributes(), isDoTransient);
+                    if ((dataObject.getDataAttributes() != null) && (dataObject.getDataAttributes().size() > 0))
+                        firstDataAttributeName = arrayElementdoName + "_" + dataObject.getDataAttributes().get(0).getName();
+                    
+                    if (firstSubDataObjectName != null) {
+                        cOut.println("    (ModelNode*) &" + firstSubDataObjectName + ",");
+                    } else if (firstDataAttributeName != null) {
+                        cOut.println("    (ModelNode*) &" + firstDataAttributeName + ",");
+                    } else {
+                        cOut.println("    NULL,");
+                    }
+                    
+                    cOut.println("    0,");
+                    
+                    cOut.println("    " + idx);
+                    
+                    cOut.println("};\n");
+                    
+                    if (dataObject.getSubDataObjects() != null)
+                        printDataObjectDefinitions(arrayElementdoName, dataObject.getSubDataObjects(), firstDataAttributeName, isDoTransient, -1);
 
+                    if (dataObject.getDataAttributes() != null)
+                        printDataAttributeDefinitions(arrayElementdoName, dataObject.getDataAttributes(), isDoTransient, -1); 
+                }
+            }
+            else {
+                String firstSubDataObjectName = null;
+                String firstDataAttributeName = null;
+
+                if ((dataObject.getSubDataObjects() != null) && (dataObject.getSubDataObjects().size() > 0))
+                    firstSubDataObjectName = doName + "_" + dataObject.getSubDataObjects().get(0).getName();
+
+                if ((dataObject.getDataAttributes() != null) && (dataObject.getDataAttributes().size() > 0))
+                    firstDataAttributeName = doName + "_" + dataObject.getDataAttributes().get(0).getName();
+
+                if (firstSubDataObjectName != null) {
+                    cOut.println("    (ModelNode*) &" + firstSubDataObjectName + ",");
+                } else if (firstDataAttributeName != null) {
+                    cOut.println("    (ModelNode*) &" + firstDataAttributeName + ",");
+                } else {
+                    cOut.println("    NULL,");
+                }
+                
+                cOut.println("    0,");
+                
+                cOut.println("    " + arrayIdx);
+                
+                cOut.println("};\n");
+                
+                if (dataObject.getSubDataObjects() != null)
+                    printDataObjectDefinitions(doName, dataObject.getSubDataObjects(), firstDataAttributeName, isDoTransient, -1);
+
+                if (dataObject.getDataAttributes() != null)
+                    printDataAttributeDefinitions(doName, dataObject.getDataAttributes(), isDoTransient, -1);    
+            }
         }
     }
 
-    private void printDataAttributeDefinitions(String doName, List<DataAttribute> dataAttributes, boolean isTransient) {
+    private void printDataAttributeDefinitions(String doName, List<DataAttribute> dataAttributes, boolean isTransient, int arrayIdx) {
         for (int i = 0; i < dataAttributes.size(); i++) {
             DataAttribute dataAttribute = dataAttributes.get(i);
 
@@ -708,6 +777,7 @@ public class StaticModelGenerator {
                 cOut.println("    NULL,");
 
             cOut.println("    " + dataAttribute.getCount() + ",");
+            cOut.println("    -1,");
             cOut.println("    IEC61850_FC_" + dataAttribute.getFc().toString() + ",");
             cOut.println("    IEC61850_" + dataAttribute.getType() + ",");
 
@@ -749,7 +819,8 @@ public class StaticModelGenerator {
             cOut.println("};\n");
 
             if (dataAttribute.getSubDataAttributes() != null) 	
-                printDataAttributeDefinitions(daName, dataAttribute.getSubDataAttributes(), isTransient);
+                printDataAttributeDefinitions(daName, dataAttribute.getSubDataAttributes(), isTransient, -1);
+            //TODO handle array case
             
             DataModelValue value = dataAttribute.getValue();
                      
@@ -899,12 +970,28 @@ public class StaticModelGenerator {
             String doName = prefix + "_" + dataObject.getName();
 
             hOut.println("extern DataObject    " + doName + ";");
+            
+            if (dataObject.getCount() > 0) {
+                for (int idx = 0; idx < dataObject.getCount(); idx++) {
+                    String arrayElemDoName = doName + "_" + idx;
+                    
+                    hOut.println("extern DataObject    " + arrayElemDoName + ";");
+                    
+                    if (dataObject.getSubDataObjects() != null) {
+                        printDataObjectForwardDeclarations(arrayElemDoName, dataObject.getSubDataObjects());
+                    }
 
-            if (dataObject.getSubDataObjects() != null) {
-                printDataObjectForwardDeclarations(doName, dataObject.getSubDataObjects());
+                    printDataAttributeForwardDeclarations(arrayElemDoName, dataObject.getDataAttributes());
+                }
+            }
+            else {
+                if (dataObject.getSubDataObjects() != null) {
+                    printDataObjectForwardDeclarations(doName, dataObject.getSubDataObjects());
+                }
+
+                printDataAttributeForwardDeclarations(doName, dataObject.getDataAttributes());
             }
 
-            printDataAttributeForwardDeclarations(doName, dataObject.getDataAttributes());
         }
     }
 

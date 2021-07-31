@@ -1,7 +1,7 @@
 /*
  *  mms_value_cache.h
  *
- *  Copyright 2013-2018 Michael Zillgith
+ *  Copyright 2013-2021 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -37,6 +37,9 @@ MmsValueCache_insertValue(MmsValueCache self, char* itemId, MmsValue* value);
 
 LIB61850_INTERNAL MmsValue*
 MmsValueCache_lookupValue(MmsValueCache self, const char* itemId, MmsVariableSpecification** outSpec);
+
+LIB61850_INTERNAL MmsValue*
+MmsValueCache_lookupValueEx(MmsValueCache self, const char* itemId, int idx, const char* componentId, MmsVariableSpecification** outSpec);
 
 LIB61850_INTERNAL void
 MmsValueCache_destroy(MmsValueCache self);

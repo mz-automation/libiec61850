@@ -237,9 +237,17 @@ exit_function:
 
 static void
 installDefaultValuesForDataAttribute(IedServer self, LogicalDevice* ld, DataAttribute* dataAttribute,
-        char* objectReference, int position)
+        char* objectReference, int position, int idx, char* componentId, int compIdPos)
 {
-    sprintf(objectReference + position, ".%s", dataAttribute->name);
+    if (idx == -1) {
+        sprintf(objectReference + position, ".%s", dataAttribute->name);
+    }
+    else {
+        if (compIdPos == 0)
+            sprintf(componentId, "%s", dataAttribute->name);
+        else
+            sprintf(componentId + compIdPos, "$%s", dataAttribute->name);
+    }
 
     char mmsVariableName[65]; /* maximum size is 64 according to 61850-8-1 */
 
@@ -268,7 +276,12 @@ installDefaultValuesForDataAttribute(IedServer self, LogicalDevice* ld, DataAttr
         return;
     }
 
-    MmsValue* cacheValue = MmsServer_getValueFromCache(self->mmsServer, domain, mmsVariableName);
+    MmsValue* cacheValue = NULL;
+
+    if (idx == -1)
+        cacheValue = MmsServer_getValueFromCache(self->mmsServer, domain, mmsVariableName);
+    else
+        cacheValue = MmsServer_getValueFromCacheEx2(self->mmsServer, domain, mmsVariableName, idx, componentId);
 
     dataAttribute->mmsValue = cacheValue;
 
@@ -280,7 +293,6 @@ installDefaultValuesForDataAttribute(IedServer self, LogicalDevice* ld, DataAttr
         #if (DEBUG_IED_SERVER == 1)
             if (cacheValue == NULL) {
                 printf("IED_SERVER: exception: invalid initializer for %s\n", mmsVariableName);
-                exit(-1);
             }
         #endif
 
@@ -288,10 +300,12 @@ installDefaultValuesForDataAttribute(IedServer self, LogicalDevice* ld, DataAttr
     }
 
     int childPosition = strlen(objectReference);
+    int childCompIdPos = strlen(componentId);
+
     DataAttribute* subDataAttribute = (DataAttribute*) dataAttribute->firstChild;
 
     while (subDataAttribute != NULL) {
-        installDefaultValuesForDataAttribute(self, ld, subDataAttribute, objectReference, childPosition);
+        installDefaultValuesForDataAttribute(self, ld, subDataAttribute, objectReference, childPosition, idx, componentId, childCompIdPos);
 
         subDataAttribute = (DataAttribute*) subDataAttribute->sibling;
     }
@@ -299,27 +313,54 @@ installDefaultValuesForDataAttribute(IedServer self, LogicalDevice* ld, DataAttr
 
 static void
 installDefaultValuesForDataObject(IedServer self, LogicalDevice* ld, DataObject* dataObject,
-        char* objectReference, int position)
+        char* objectReference, int position, int idx, char* componentId, int compIdPos)
 {
     if (dataObject->elementCount > 0) {
         if (DEBUG_IED_SERVER)
-            printf("IED_SERVER: DataObject is an array. Skip installing default values in cache\n");
+            printf("IED_SERVER: DataObject %s is an array\n", dataObject->name);
+
+        ModelNode* arrayElemNode = dataObject->firstChild;
+
+        sprintf(objectReference + position, ".%s", dataObject->name);
+        int childPosition = strlen(objectReference);
+
+        int arrayIdx = 0;
+
+        while (arrayElemNode) {
+            installDefaultValuesForDataObject(self, ld, (DataObject*)arrayElemNode, objectReference, childPosition, arrayIdx, componentId, compIdPos);
+
+            arrayIdx++;
+            arrayElemNode = arrayElemNode->sibling;
+        }
 
         return;
     }
 
-    sprintf(objectReference + position, ".%s", dataObject->name);
+    if (dataObject->arrayIndex == -1) {
+        if (idx == -1)
+            sprintf(objectReference + position, ".%s", dataObject->name);
+        else {
+            if (compIdPos == 0)
+                sprintf(componentId, "%s", dataObject->name);
+            else
+                sprintf(componentId + compIdPos, "$%s", dataObject->name);
+        }
+    }
+
+    if (compIdPos == 0)
+        componentId[0] = 0;
 
     ModelNode* childNode = dataObject->firstChild;
 
     int childPosition = strlen(objectReference);
+    int childCompIdPos = strlen(componentId);
 
-    while (childNode != NULL) {
+    while (childNode) {
         if (childNode->modelType == DataObjectModelType) {
-            installDefaultValuesForDataObject(self, ld, (DataObject*) childNode, objectReference, childPosition);
+            installDefaultValuesForDataObject(self, ld, (DataObject*) childNode, objectReference, childPosition, idx, componentId, childCompIdPos);
         }
         else if (childNode->modelType == DataAttributeModelType) {
-            installDefaultValuesForDataAttribute(self, ld, (DataAttribute*) childNode, objectReference, childPosition);
+            installDefaultValuesForDataAttribute(self, ld, (DataAttribute*) childNode, objectReference, childPosition, idx, componentId, childCompIdPos);
         }
 
         childNode = childNode->sibling;
@@ -332,6 +373,8 @@ installDefaultValuesInCache(IedServer self)
     IedModel* model = self->model;
 
     char objectReference[130];
+    char componentId[130];
+    componentId[0] = 0;
 
     LogicalDevice* logicalDevice = model->firstChild;
 
@@ -354,7 +397,7 @@ installDefaultValuesInCache(IedServer self)
             int refPosition = strlen(objectReference);
 
             while (dataObject != NULL) {
-                installDefaultValuesForDataObject(self, logicalDevice, dataObject, objectReference, refPosition);
+                installDefaultValuesForDataObject(self, logicalDevice, dataObject, objectReference, refPosition, -1, componentId, 0);
 
                 dataObject = (DataObject*) dataObject->sibling;
             }

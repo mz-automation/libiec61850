@@ -1,7 +1,7 @@
 /*
  *  mms_value_cache.c
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013-2021 Michael Zillgith
  *
  *	This file is part of libIEC61850.
  *
@@ -62,7 +62,8 @@ MmsValueCache_insertValue(MmsValueCache self, char* itemId, MmsValue* value)
 		Map_addEntry(self->map, StringUtils_copyString(itemId), cacheEntry);
 	}
 	else
-		if (DEBUG) printf("Cannot insert value into cache %s : no typeSpec found!\n", itemId);
+		if (DEBUG)
+		    printf("Cannot insert value into cache %s : no typeSpec found!\n", itemId);
 }
 
 static char*
@@ -126,34 +127,131 @@ MmsValueCache_lookupValue(MmsValueCache self, const char* itemId, MmsVariableSpe
 	 * get value for first matching key substring!
 	 * Then iterate the value for the exact value.
      */
-
 	MmsValue* value = NULL;
 
-	MmsValueCacheEntry* cacheEntry;
+	MmsValueCacheEntry* cacheEntry = (MmsValueCacheEntry*) Map_getEntry(self->map, (void*) itemId);
 
-	cacheEntry = (MmsValueCacheEntry*) Map_getEntry(self->map, (void*) itemId);
+	if (cacheEntry) {
 
-	if (cacheEntry == NULL) {
-		char* itemIdCopy = StringUtils_copyString(itemId);
+        if (outSpec) {
+            *outSpec = cacheEntry->typeSpec;
+        }
+
+        return cacheEntry->value;
+	}
+	else {
+	    char itemIdCopy[65];
+	    StringUtils_copyStringToBuffer(itemId, itemIdCopy);
+
 		char* parentItemId = getParentSubString(itemIdCopy);
 
 		if (parentItemId != NULL) {
 			value = searchCacheForValue(self, itemId, parentItemId, outSpec);
 		}
-
-		GLOBAL_FREEMEM(itemIdCopy);
 	}
 
-	if (cacheEntry != NULL) {
+	return value;
+}
 
-	    if (outSpec) {
-	        *outSpec = cacheEntry->typeSpec;
-	    }
+static MmsValue*
+searchCacheForValueEx(MmsValueCache self, const char* itemId, char* parentId, int idx, char* componentId, MmsVariableSpecification** outSpec)
+{
+    MmsValueCacheEntry* cacheEntry;
+    MmsValue* value = NULL;
 
-		return cacheEntry->value;
-	}
-	else
-		return value;
+    cacheEntry = (MmsValueCacheEntry*) Map_getEntry(self->map, (void*) parentId);
+
+    if (cacheEntry == NULL) {
+        char* parentItemId = getParentSubString(parentId);
+
+        if (parentItemId) {
+            value = searchCacheForValueEx(self, itemId, parentItemId, idx, componentId, outSpec);
+        }
+    }
+    else {
+
+        const char* childId = getChildSubString(itemId, parentId);
+
+        if (childId) {
+
+            MmsVariableSpecification* typeSpec = MmsDomain_getNamedVariable(self->domain, parentId);
+
+            value = MmsVariableSpecification_getChildValue(typeSpec, cacheEntry->value, childId);
+
+            if (value) {
+                if (idx != -1) {
+                    if (MmsValue_getType(value) == MMS_ARRAY) {
+                        MmsValue* elementValue = MmsValue_getElement(value, idx);
+
+
+                        if (elementValue) {
+                            if (componentId) {
+                                MmsVariableSpecification* childSpec = MmsVariableSpecification_getNamedVariableRecursive(typeSpec, childId);
+
+                                if (childSpec) {
+                                    MmsVariableSpecification* elementSpec = childSpec->typeSpec.array.elementTypeSpec;
+
+                                    if (elementSpec) {
+                                        MmsValue* componentValue = MmsVariableSpecification_getChildValue(elementSpec, elementValue, componentId);
+
+                                        if (componentValue) {
+                                            value = componentValue;
+                                        }
+                                    }
+                                }
+                            }
+                            else {
+                                value = elementValue;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (outSpec) {
+                *outSpec = MmsVariableSpecification_getNamedVariableRecursive(typeSpec, childId);
+            }
+        }
+    }
+
+    return value;
+}
+
+MmsValue*
+MmsValueCache_lookupValueEx(MmsValueCache self, const char* itemId, int idx, const char* componentId, MmsVariableSpecification** outSpec)
+{
+    MmsValue* value = NULL;
+
+    MmsValueCacheEntry* cacheEntry = (MmsValueCacheEntry*) Map_getEntry(self->map, (void*) itemId);
+
+    if (cacheEntry) {
+        if (outSpec) {
+            *outSpec = cacheEntry->typeSpec;
+        }
+
+        return cacheEntry->value;
+    }
+    else {
+        char itemIdCopy[65];
+        char componentIdCopyBuf[65];
+
+        StringUtils_copyStringToBuffer(itemId, itemIdCopy);
+
+        char* componentIdCopy = NULL;
+
+        if (componentId) {
+            componentIdCopy = StringUtils_copyStringToBuffer(componentId, componentIdCopyBuf);
+
+        }
+
+        char* parentItemId = getParentSubString(itemIdCopy);
+
+        if (parentItemId != NULL) {
+            value = searchCacheForValueEx(self, itemId, parentItemId, idx, componentIdCopy, outSpec);
+        }
+    }
+
+    return value;
 }
 
 static void

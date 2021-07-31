@@ -214,7 +214,7 @@ struct sDataObject {
     ModelNode* firstChild;
 
     int elementCount; /* value > 0 if this is an array */
-    //int arrayIndex; /* value > -1 when this is an array element */
+    int arrayIndex; /* value > -1 when this is an array element */
 };
 
 struct sDataAttribute {
@@ -225,7 +225,7 @@ struct sDataAttribute {
     ModelNode* firstChild;
 
     int elementCount; /* value > 0 if this is an array */
-   // int arrayIndex; /* value > -1 when this is an array element */
+    int arrayIndex; /* value > -1 when this is an array element */
 
     FunctionalConstraint fc;
     DataAttributeType type;
@@ -234,7 +234,7 @@ struct sDataAttribute {
 
     MmsValue* mmsValue;
 
-    uint32_t sAddr;
+    uint32_t sAddr; /* TODO remove in version 2.0 */
 };
 
 typedef struct sDataSetEntry {
@@ -367,10 +367,21 @@ ModelNode_getChildCount(ModelNode* self);
  * \param self the model node instance
  * \param name the name of the child model node
  *
- * \return  the model node instance or NULL if model node does not exist.
+ * \return the model node instance or NULL if model node does not exist.
  */
 LIB61850_API ModelNode*
 ModelNode_getChild(ModelNode* self, const char* name);
+
+/**
+ * \brief return the child node of an array or other structure
+ *
+ * \param self the model node instance
+ * \param idx the index (e.g. array index) starting with 0
+ *
+ * \return the model node instance or NULL if model node with given index does not exist.
+ */
+LIB61850_API ModelNode*
+ModelNode_getChildWithIdx(ModelNode* self, int idx);
 
 /**
  * \brief return a child model node with a given functional constraint

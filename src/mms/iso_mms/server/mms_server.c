@@ -465,6 +465,17 @@ MmsServer_getValueFromCacheEx(MmsServer self, MmsDomain* domain, const char* ite
     return NULL ;
 }
 
+MmsValue*
+MmsServer_getValueFromCacheEx2(MmsServer self, MmsDomain* domain, const char* itemId, int idx, const char* componentId)
+{
+    MmsValueCache cache = (MmsValueCache) Map_getEntry(self->valueCaches, domain);
+
+    if (cache != NULL)
+        return MmsValueCache_lookupValueEx(cache, itemId, idx, componentId, NULL);
+
+    return NULL ;
+}
+
 void
 MmsServer_insertIntoCache(MmsServer self, MmsDomain* domain, char* itemId, MmsValue* value)
 {

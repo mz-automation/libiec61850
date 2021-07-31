@@ -185,6 +185,10 @@ MmsVariableSpecification_getStructureElements(MmsVariableSpecification* self)
 MmsVariableSpecification*
 MmsVariableSpecification_getNamedVariableRecursive(MmsVariableSpecification* variable, const char* nameId)
 {
+    if (variable->type == MMS_ARRAY) {
+        return MmsVariableSpecification_getNamedVariableRecursive(variable->typeSpec.array.elementTypeSpec, nameId);
+    }
+
     const char* separator = strchr(nameId, '$');
 
     int i;

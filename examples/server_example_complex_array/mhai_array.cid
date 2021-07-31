@@ -103,11 +103,11 @@
           
           <LN lnClass="MHAI" lnType="MHAI1" inst="1" prefix=""> 
        		<DataSet name="TestMHAI">
-       		    <FCDA ldInst="ComplexArray" lnClass="MHAI" lnInst="1" doName="HA" fc="MX" daName="phsAHar(7)"/>
-       		    <FCDA ldInst="ComplexArray" lnClass="MHAI" lnInst="1" doName="HA" fc="MX" daName="phsAHar(8)"/>
-       		    <FCDA ldInst="ComplexArray" lnClass="MHAI" lnInst="1" doName="HA" fc="MX" daName="phsAHar(9).cVal"/>
-       		    <FCDA ldInst="ComplexArray" lnClass="MHAI" lnInst="1" doName="HA" fc="MX" daName="phsAHar(10).cVal.mag"/>
-                <FCDA ldInst="ComplexArray" lnClass="MHAI" lnInst="1" doName="HA" fc="MX" daName="phsAHar(11).cVal.mag.f"/>
+       		    <FCDA ldInst="ComplexArray" lnClass="MHAI" lnInst="1" doName="HA" fc="MX" daName="phsAHar(7)" ix="7"/>
+       		    <FCDA ldInst="ComplexArray" lnClass="MHAI" lnInst="1" doName="HA" fc="MX" daName="phsAHar(8)" ix="8"/>
+       		    <FCDA ldInst="ComplexArray" lnClass="MHAI" lnInst="1" doName="HA" fc="MX" daName="phsAHar(9).cVal" ix="9"/>
+       		    <FCDA ldInst="ComplexArray" lnClass="MHAI" lnInst="1" doName="HA" fc="MX" daName="phsAHar(10).cVal.mag" ix="10"/>
+                <FCDA ldInst="ComplexArray" lnClass="MHAI" lnInst="1" doName="HA" fc="MX" daName="phsAHar(11).cVal.mag.f" ix="11"/>
             </DataSet>
             
             <ReportControl name="MHAIRCB" confRev="1" datSet="TestMHAI" rptID="TestMHAI" buffered="false" intgPd="1000" bufTime="50">

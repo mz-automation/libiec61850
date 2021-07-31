@@ -635,8 +635,75 @@ ModelNode_getChildCount(ModelNode* modelNode) {
 ModelNode*
 ModelNode_getChild(ModelNode* self, const char* name)
 {
-   /* check for separator */
+   /* check for element separator */
    const char* separator = strchr(name, '.');
+
+   /* allow first character to be "." */
+   if (separator == name)
+       name++;
+
+   /* check for array separator */
+   const char* arraySeparator = strchr(name, '(');
+
+   if (arraySeparator) {
+
+       const char* arraySeparator2 = strchr(arraySeparator, ')');
+
+       if (arraySeparator2) {
+           int idx = (int) strtol(arraySeparator + 1, NULL, 10);
+
+           ModelNode* arrayNode = NULL;
+
+           if (name == arraySeparator) {
+               arrayNode = ModelNode_getChildWithIdx(self, idx);
+           }
+           else {
+               char nameCopy[65];
+
+               const char* pos = name;
+
+               int cpyIdx = 0;
+
+               while (pos < arraySeparator) {
+                   nameCopy[cpyIdx] = *pos;
+                   cpyIdx++;
+                   pos++;
+               }
+
+               nameCopy[cpyIdx] = 0;
+
+               ModelNode* childNode = ModelNode_getChild(self, nameCopy);
+
+               if (childNode) {
+                   arrayNode = ModelNode_getChildWithIdx(childNode, idx);
+               }
+               else
+                   return NULL;
+           }
+
+           if (arrayNode) {
+
+               if (*(arraySeparator2 + 1) == 0) {
+                   return arrayNode;
+               }
+               else {
+                   if (*(arraySeparator2 + 1) == '.')
+                       return ModelNode_getChild(arrayNode, arraySeparator2 + 2);
+                   else
+                       return ModelNode_getChild(arrayNode, arraySeparator2 + 1);
+               }
+
+           }
+           else
+               return NULL;
+
+       }
+       else {
+           /* invalid name */
+           return NULL;
+       }
+
+   }
 
    int nameElementLength = 0;
 
@@ -649,7 +716,7 @@ ModelNode_getChild(ModelNode* self, const char* name)
 
    ModelNode* matchingNode = NULL;
 
-   while (nextNode != NULL) {
+   while (nextNode) {
        int nodeNameLen = strlen(nextNode->name);
 
        if (nodeNameLen == nameElementLength) {
@@ -667,6 +734,31 @@ ModelNode_getChild(ModelNode* self, const char* name)
    }
    else
        return matchingNode;
+}
+
+ModelNode*
+ModelNode_getChildWithIdx(ModelNode* self, int idx)
+{
+    ModelNode* foundElement = NULL;
+
+    if (self->modelType == DataObjectModelType || self->modelType == DataAttributeModelType) {
+        ModelNode* nextNode = self->firstChild;
+
+        int currentIdx = 0;
+
+        while (nextNode) {
+            if (currentIdx == idx) {
+                foundElement = nextNode;
+                break;
+            }
+
+            currentIdx++;
+
+            nextNode = nextNode->sibling;
+        }
+    }
+
+    return foundElement;
 }
 
 ModelNode*
