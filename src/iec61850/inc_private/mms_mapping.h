@@ -103,6 +103,11 @@ MmsMapping_triggerGooseObservers(MmsMapping* self, MmsValue* value);
 LIB61850_INTERNAL void
 MmsMapping_enableGoosePublishing(MmsMapping* self);
 
+
+LIB61850_INTERNAL void
+MmsMapping_setGoosePublishingSimulation(MmsMapping* self, bool test);
+
+
 LIB61850_INTERNAL void
 MmsMapping_disableGoosePublishing(MmsMapping* self);
 

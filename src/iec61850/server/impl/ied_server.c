@@ -1385,6 +1385,14 @@ IedServer_enableGoosePublishing(IedServer self)
 }
 
 void
+IedServer_setGoosePublishingSimulation(IedServer self, bool test)
+{
+#if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
+    MmsMapping_setGoosePublishingSimulation(self->mmsMapping, test);
+#endif /* (CONFIG_INCLUDE_GOOSE_SUPPORT == 1) */
+}
+
+void
 IedServer_disableGoosePublishing(IedServer self)
 {
 #if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)

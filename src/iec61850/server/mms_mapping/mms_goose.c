@@ -192,6 +192,23 @@ MmsGooseControlBlock_isEnabled(MmsGooseControlBlock self)
 }
 
 void
+MmsGooseControlBlock_setSimulation(MmsGooseControlBlock self, bool test)
+{
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_wait(self->publisherMutex);
+#endif
+
+    if(self->publisher){
+        GoosePublisher_setSimulation(self->publisher, test);
+    }
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_post(self->publisherMutex);
+#endif
+
+}
+
+void
 MmsGooseControlBlock_enable(MmsGooseControlBlock self)
 {
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
