@@ -743,6 +743,28 @@ typedef void (*IedConnectionIndicationHandler) (IedServer self, ClientConnection
 LIB61850_API void
 IedServer_setConnectionIndicationHandler(IedServer self, IedConnectionIndicationHandler handler, void* parameter);
 
+/**
+ * \brief User provided callback function that is invoked whenever a client writes RCB element value.
+ *
+ * \param self the instance of IedServer where the connection event occured.
+ * \param domainName the domain name.
+ * \param rcbName the RCB name.
+ * \param elementName the element name.
+ * \param value the new value to write.
+ * \param connection the connect object
+ * \param parameter a user provided parameter
+ */
+typedef void (*IedRCBWriteAccessHandler) (IedServer self, char* domainName, char* rcbName, char* elementName, MmsValue* value, ClientConnection connection, void* parameter);
+
+/**
+ * \brief set a callback function that will be called on write events.
+ *
+ * \param self the instance of IedServer to operate on.
+ * \param handler the user provided callback function
+ * \param parameter a user provided parameter that is passed to the callback function.
+ */
+LIB61850_API void
+IedServer_setRCBWriteAccessHandler(IedServer self, IedRCBWriteAccessHandler handler, void* parameter);
 
 /**@}*/
 

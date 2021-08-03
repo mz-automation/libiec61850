@@ -2214,6 +2214,23 @@ namespace IEC61850
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern void IedServer_setConnectionIndicationHandler(IntPtr self, InternalConnectionHandler handler, IntPtr parameter);
 
+            public delegate void RCBWriteAccessHandler(IedServer iedServer, string domainName, string rcbName, string elementName, MmsValue value, ClientConnection clientConnection, object parameter);
+
+            private RCBWriteAccessHandler rcbWriteAccessHandler = null;
+            private object rcbWriteAccessHandlerParameter = null;
+
+            public void SetRCBWriteAccessHandler(RCBWriteAccessHandler handler, object parameter)
+            {
+                rcbWriteAccessHandler = handler;
+                rcbWriteAccessHandlerParameter = parameter;
+            }
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            private delegate void InternalRCBWriteAccessHandler(IntPtr iedServer, string domainName, string rcbName, string elementName, IntPtr value, IntPtr clientConnection, IntPtr parameter);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedServer_setRCBWriteAccessHandler(IntPtr self, InternalRCBWriteAccessHandler handler, IntPtr parameter);
+
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern void IedServer_enableGoosePublishing(IntPtr self);
 
@@ -2400,6 +2417,18 @@ namespace IEC61850
 
             internal Dictionary<IntPtr, ClientConnection> clientConnections = new Dictionary<IntPtr, ClientConnection> ();
 
+            private void RCBWriteAccessHandlerImpl(IntPtr iedServer, string domainName, string rcbName, string elementName, IntPtr value, IntPtr clientConnection, IntPtr parameter)
+            {
+                if (rcbWriteAccessHandler != null)
+                {
+                    MmsValue v = new MmsValue(value);
+
+                    ClientConnection con = new ClientConnection(clientConnection);
+
+                    rcbWriteAccessHandler(this, domainName, rcbName, elementName, v, con, rcbWriteAccessHandlerParameter);
+                }
+            }
+
             /* store IedModel instance to prevent garbage collector */
             private IedModel iedModel = null;
 
@@ -2432,6 +2461,7 @@ namespace IEC61850
             }
 
             private InternalConnectionHandler internalConnectionHandler = null;
+            private InternalRCBWriteAccessHandler internalRCBWriteAccessHandler = null;
 
             /// <summary>
             /// Sets the local ip address for listening
@@ -2462,6 +2492,11 @@ namespace IEC61850
 
                 IedServer_setConnectionIndicationHandler (self, internalConnectionHandler, IntPtr.Zero);
 
+                if (internalRCBWriteAccessHandler == null)
+                    internalRCBWriteAccessHandler = new InternalRCBWriteAccessHandler(RCBWriteAccessHandlerImpl);
+
+                IedServer_setRCBWriteAccessHandler(self, internalRCBWriteAccessHandler, IntPtr.Zero);
+
                 IedServer_start(self, tcpPort);
             }
 
@@ -2479,6 +2514,7 @@ namespace IEC61850
             {
                 IedServer_stop(self);
                 internalConnectionHandler = null;
+                internalRCBWriteAccessHandler = null;
             }
 
             /// <summary>
@@ -2506,6 +2542,7 @@ namespace IEC61850
                         IedServer_destroy(self);
                         self = IntPtr.Zero;
                         internalConnectionHandler = null;
+                        internalRCBWriteAccessHandler = null;
                         this.iedModel = null;
                     }
                 }

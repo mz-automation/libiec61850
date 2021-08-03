@@ -140,6 +140,9 @@ LIB61850_INTERNAL void
 MmsMapping_setConnectionIndicationHandler(MmsMapping* self, IedConnectionIndicationHandler handler, void* parameter);
 
 LIB61850_INTERNAL void
+MmsMapping_setRCBWriteAccessHandler(MmsMapping* self, IedRCBWriteAccessHandler handler, void* parameter);
+
+LIB61850_INTERNAL void
 MmsMapping_setLogStorage(MmsMapping* self, const char* logRef, LogStorage logStorage);
 
 LIB61850_INTERNAL void

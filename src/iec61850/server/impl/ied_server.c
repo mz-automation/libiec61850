@@ -1570,6 +1570,12 @@ IedServer_setConnectionIndicationHandler(IedServer self, IedConnectionIndication
     MmsMapping_setConnectionIndicationHandler(self->mmsMapping, handler, parameter);
 }
 
+void
+IedServer_setRCBWriteAccessHandler(IedServer self, IedRCBWriteAccessHandler handler, void* parameter)
+{
+    MmsMapping_setRCBWriteAccessHandler(self->mmsMapping, handler, parameter);
+}
+
 MmsValue*
 IedServer_getFunctionalConstrainedData(IedServer self, DataObject* dataObject, FunctionalConstraint fc)
 {

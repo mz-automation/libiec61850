@@ -2618,6 +2618,13 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
                     if (strncmp(variableId, rc->name, variableIdLen) == 0) {
                         char* elementName = variableId + rcNameLen + 1;
 
+                        ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer, connection);
+
+                        /* call user provided handler function */
+                        if (self->rcbWriteAccessHandler != NULL)
+                            self->rcbWriteAccessHandler(self->iedServer, domain->domainName, rc->name, elementName, value, clientConnection,
+                                self->rcbWriteAccessHandlerParameter);
+
                         return Reporting_RCBWriteAccessHandler(self, rc, elementName, value, connection);
                     }
                 }
@@ -3471,6 +3478,13 @@ MmsMapping_setConnectionIndicationHandler(MmsMapping* self, IedConnectionIndicat
 {
     self->connectionIndicationHandler = handler;
     self->connectionIndicationHandlerParameter = parameter;
+}
+
+void
+MmsMapping_setRCBWriteAccessHandler(MmsMapping* self, IedRCBWriteAccessHandler handler, void* parameter)
+{
+    self->rcbWriteAccessHandler = handler;
+    self->rcbWriteAccessHandlerParameter = parameter;
 }
 
 static bool
