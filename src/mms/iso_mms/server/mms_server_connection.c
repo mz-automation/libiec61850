@@ -796,10 +796,10 @@ MmsServerConnection_getMaxMmsPduSize(MmsServerConnection self)
     return self->maxPduSize;
 }
 
-void
+bool
 MmsServerConnection_sendMessage(MmsServerConnection self, ByteBuffer* message)
 {
-    IsoConnection_sendMessage(self->isoConnection, message);
+    return IsoConnection_sendMessage(self->isoConnection, message);
 }
 
 #if (MMS_DYNAMIC_DATA_SETS == 1)

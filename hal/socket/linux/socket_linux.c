@@ -329,6 +329,8 @@ ServerSocket_accept(ServerSocket self)
         conSocket = (Socket) GLOBAL_CALLOC(1, sizeof(struct sSocket));
         conSocket->fd = fd;
 
+        setSocketNonBlocking(conSocket);
+
         activateTcpNoDelay(conSocket);
     }
 
@@ -657,6 +659,10 @@ Socket_write(Socket self, uint8_t* buf, int size)
             if (DEBUG_SOCKET)
                 printf("DEBUG_SOCKET: send returned error (errno=%i)\n", errno);
         }
+    }
+    else {
+        if (size != retVal)
+            printf("send(%i)->%i\n", size, retVal);
     }
 
     return retVal;

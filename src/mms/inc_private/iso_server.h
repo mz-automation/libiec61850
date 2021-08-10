@@ -98,7 +98,7 @@ IsoConnection_getSecurityToken(IsoConnection self);
  * \param handlerMode specifies if this function is used in the context of the connection handling thread
  *        (handlerMode)
  */
-LIB61850_INTERNAL void
+LIB61850_INTERNAL bool
 IsoConnection_sendMessage(IsoConnection self, ByteBuffer* message);
 
 LIB61850_INTERNAL IsoServer

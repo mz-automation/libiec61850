@@ -55,6 +55,10 @@ typedef struct {
     ByteBuffer* writeBuffer;  /* buffer to store TPKT packet to send */
     ByteBuffer* readBuffer;   /* buffer to store received TPKT packet */
     uint16_t packetSize;      /* size of the packet currently received */
+
+    uint8_t* socketExtensionBuffer; /* buffer to store data when TCP socket is not accepting all data */
+    int socketExtensionBufferSize; /* maximum number of bytes to store in the extension buffer */
+    int socketExtensionBufferFill; /* number of bytes in the extension buffer (bytes to write) */
 } CotpConnection;
 
 typedef enum {

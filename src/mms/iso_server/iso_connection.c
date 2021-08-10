@@ -635,9 +635,11 @@ IsoConnection_unlock(IsoConnection self)
 #endif
 }
 
-void
+bool
 IsoConnection_sendMessage(IsoConnection self, ByteBuffer* message)
 {
+    bool success = false;
+
     if (self->state == ISO_CON_STATE_STOPPED) {
         if (DEBUG_ISO_SERVER)
             printf("DEBUG_ISO_SERVER: sendMessage: connection already stopped!\n");
@@ -677,8 +679,11 @@ IsoConnection_sendMessage(IsoConnection self, ByteBuffer* message)
             printf("ISO_SERVER: IsoConnection_sendMessage success!\n");
     }
 
+    if (indication == COTP_OK)
+        success = true;
+
 exit_error:
-    return;
+    return success;
 }
 
 void
