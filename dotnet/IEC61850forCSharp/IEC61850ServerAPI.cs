@@ -2015,14 +2015,16 @@ namespace IEC61850
 
             private struct WriteAccessHandlerInfo {
                 public WriteAccessHandler handler;
+                public InternalWriteAccessHandler internalHandler;
                 public object parameter;
                 public DataAttribute dataAttribute;
 
-                public WriteAccessHandlerInfo (WriteAccessHandler h, object p, DataAttribute da) 
+                public WriteAccessHandlerInfo (WriteAccessHandler h, object p, DataAttribute da, InternalWriteAccessHandler internalHandler) 
                 {
                     handler = h;
                     parameter = p;
                     dataAttribute = da;
+                    this.internalHandler = internalHandler;
                 }
             }
 
@@ -2309,20 +2311,22 @@ namespace IEC61850
             /// <param name="parameter">a user provided parameter that is passed to the WriteAccessHandler when called.</param>
             public void HandleWriteAccess (DataAttribute dataAttr, WriteAccessHandler handler, object parameter)
             {
-                writeAccessHandlers.Add (dataAttr.self, new WriteAccessHandlerInfo(handler, parameter, dataAttr));
+                InternalWriteAccessHandler internalHandler = new InternalWriteAccessHandler(WriteAccessHandlerImpl);
+ 
+                writeAccessHandlers.Add (dataAttr.self, new WriteAccessHandlerInfo(handler, parameter, dataAttr, internalHandler));
 
-                IedServer_handleWriteAccess (self, dataAttr.self, WriteAccessHandlerImpl, IntPtr.Zero);
+                IedServer_handleWriteAccess (self, dataAttr.self, internalHandler, IntPtr.Zero);
             }
 
-            private void AddHandlerInfoForDataAttributeRecursive(DataAttribute da, WriteAccessHandler handler, object parameter)
+            private void AddHandlerInfoForDataAttributeRecursive(DataAttribute da, WriteAccessHandler handler, object parameter, InternalWriteAccessHandler internalHandler)
             {
-                writeAccessHandlers.Add(da.self, new WriteAccessHandlerInfo(handler, parameter, da));
+                writeAccessHandlers.Add(da.self, new WriteAccessHandlerInfo(handler, parameter, da, internalHandler));
 
                 foreach (ModelNode child in da.GetChildren())
                 {
                     if (child is DataAttribute)
                     {
-                        AddHandlerInfoForDataAttributeRecursive(child as DataAttribute, handler, parameter);
+                        AddHandlerInfoForDataAttributeRecursive(child as DataAttribute, handler, parameter, internalHandler);
                     }
                 }
             }
@@ -2345,11 +2349,18 @@ namespace IEC61850
             /// <param name="parameter">a user provided parameter that is passed to the WriteAccessHandler when called.</param>
             public void HandleWriteAccessForComplexAttribute(DataAttribute dataAttr, WriteAccessHandler handler, object parameter)
             {
-                AddHandlerInfoForDataAttributeRecursive(dataAttr, handler, parameter);
+                InternalWriteAccessHandler internalHandler = new InternalWriteAccessHandler(WriteAccessHandlerImpl);
 
-                IedServer_handleWriteAccessForComplexAttribute(self, dataAttr.self, WriteAccessHandlerImpl, IntPtr.Zero);
+                AddHandlerInfoForDataAttributeRecursive(dataAttr, handler, parameter, internalHandler);
+
+                IedServer_handleWriteAccessForComplexAttribute(self, dataAttr.self, internalHandler, IntPtr.Zero);
             }
 
+            /// <summary>
+            /// Set the defualt write access policy for a specific FC. The default policy is applied when no handler is installed for a data attribute
+            /// </summary>
+            /// <param name="fc">The functional constraint (FC)</param>
+            /// <param name="policy">The new default access policy</param>
             public void SetWriteAccessPolicy(FunctionalConstraint fc, AccessPolicy policy)
             {
                 IedServer_setWriteAccessPolicy (self, fc, policy);

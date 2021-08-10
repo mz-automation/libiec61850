@@ -1712,8 +1712,6 @@ createNamedVariableFromLogicalNode(MmsMapping* self, MmsDomain* domain,
     }
 #endif /* (CONFIG_INCLUDE_GOOSE_SUPPORT == 1) */
 
-
-
     if (LogicalNode_hasFCData(logicalNode, IEC61850_FC_SV)) {
         namedVariable->typeSpec.structure.elements[currentComponent] =
                 createFCNamedVariable(logicalNode, IEC61850_FC_SV);
@@ -1765,7 +1763,6 @@ createNamedVariableFromLogicalNode(MmsMapping* self, MmsDomain* domain,
 
 #endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
 
-
         currentComponent++;
     }
 
@@ -1793,12 +1790,19 @@ createMmsDomainFromIedDevice(MmsMapping* self, LogicalDevice* logicalDevice)
     char domainName[65];
 
     int modelNameLength = strlen(self->model->name);
+    int ldInstName = strlen(logicalDevice->name);
 
-    if (modelNameLength > 64)
+    if ((modelNameLength + ldInstName) > 64) {
+
+        if (DEBUG_IED_SERVER)
+            printf("IED_SERVER: Resulting domain name (IEDName+LDInst) too long (%i)\n", modelNameLength + ldInstName);
+
         goto exit_function;
+    }
 
     strncpy(domainName, self->model->name, 64);
     strncat(domainName, logicalDevice->name, 64 - modelNameLength);
+    domainName[64] = 0;
 
     domain = MmsDomain_create(domainName);
 
@@ -1868,22 +1872,29 @@ exit_function:
     return domain;
 }
 
-static void
+static bool
 createMmsDataModel(MmsMapping* self, int iedDeviceCount,
         MmsDevice* mmsDevice, IedModel* iedModel)
 {
-    mmsDevice->domains = (MmsDomain**) GLOBAL_MALLOC((iedDeviceCount) * sizeof(MmsDomain*));
+    mmsDevice->domains = (MmsDomain**) GLOBAL_CALLOC(1, (iedDeviceCount) * sizeof(MmsDomain*));
     mmsDevice->domainCount = iedDeviceCount;
 
     LogicalDevice* logicalDevice = iedModel->firstChild;
 
     int i = 0;
     while (logicalDevice != NULL) {
-        mmsDevice->domains[i] = createMmsDomainFromIedDevice(self,
-                logicalDevice);
+        mmsDevice->domains[i] = createMmsDomainFromIedDevice(self, logicalDevice);
+
+        if (mmsDevice->domains[i] == NULL) {
+        	mmsDevice->domainCount = i;
+        	return false;
+        }
+
         i++;
         logicalDevice = (LogicalDevice*) logicalDevice->sibling;
     }
+
+    return true;
 }
 
 static void
@@ -1962,9 +1973,13 @@ createMmsModelFromIedModel(MmsMapping* self, IedModel* iedModel)
 
         int iedDeviceCount = IedModel_getLogicalDeviceCount(iedModel);
 
-        createMmsDataModel(self, iedDeviceCount, mmsDevice, iedModel);
-
-        createDataSets(mmsDevice, iedModel);
+        if (createMmsDataModel(self, iedDeviceCount, mmsDevice, iedModel)) {
+            createDataSets(mmsDevice, iedModel);
+        }
+        else {
+        	MmsDevice_destroy(mmsDevice);
+        	mmsDevice = NULL;
+        }
     }
 
     return mmsDevice;
@@ -2015,6 +2030,11 @@ MmsMapping_create(IedModel* model, IedServer iedServer)
     /* create data model specification */
     self->mmsDevice = createMmsModelFromIedModel(self, model);
 
+    if (self->mmsDevice == false) {
+    	MmsMapping_destroy(self);
+    	self = NULL;
+    }
+
     return self;
 }
 
@@ -2029,7 +2049,7 @@ MmsMapping_destroy(MmsMapping* self)
     }
 #endif
 
-    if (self->mmsDevice != NULL)
+    if (self->mmsDevice)
         MmsDevice_destroy(self->mmsDevice);
 
 #if (CONFIG_IEC61850_REPORT_SERVICE == 1)

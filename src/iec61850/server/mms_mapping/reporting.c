@@ -3321,6 +3321,7 @@ processEventsForReport(ReportControl* rc, uint64_t currentTimeInMs)
         if (rc->triggerOps & TRG_OPT_INTEGRITY) {
 
             if (rc->intgPd > 0) {
+
                 if (currentTimeInMs >= rc->nextIntgReportTime) {
 
                     /* send current events in event buffer before integrity report */
@@ -3329,11 +3330,23 @@ processEventsForReport(ReportControl* rc, uint64_t currentTimeInMs)
                         rc->triggered = false;
                     }
 
-                    rc->nextIntgReportTime = currentTimeInMs + rc->intgPd;
+                    rc->nextIntgReportTime = rc->nextIntgReportTime + rc->intgPd;
+
+                    /* check for system time change effects */
+                    if ((rc->nextIntgReportTime < currentTimeInMs) || (rc->nextIntgReportTime > currentTimeInMs + rc->intgPd)) {
+                        rc->nextIntgReportTime = currentTimeInMs + rc->intgPd;
+                    }
 
                     enqueueReport(rc, true, false, currentTimeInMs);
 
                     rc->triggered = false;
+                }
+                else {
+                    /* check for system time change effects */
+                    if ((rc->nextIntgReportTime < currentTimeInMs) || (rc->nextIntgReportTime > currentTimeInMs + rc->intgPd)) {
+                        rc->nextIntgReportTime = currentTimeInMs + rc->intgPd;
+                    }
+
                 }
             }
         }
