@@ -660,10 +660,6 @@ Socket_write(Socket self, uint8_t* buf, int size)
                 printf("DEBUG_SOCKET: send returned error (errno=%i)\n", errno);
         }
     }
-    else {
-        if (size != retVal)
-            printf("send(%i)->%i\n", size, retVal);
-    }
 
     return retVal;
 }

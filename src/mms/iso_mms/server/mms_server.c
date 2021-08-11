@@ -279,10 +279,11 @@ MmsServer_reserveTransmitBuffer(MmsServer self)
 void
 MmsServer_releaseTransmitBuffer(MmsServer self)
 {
+    self->transmitBuffer->size = 0;
+
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_post(self->transmitBufferMutex);
 #endif
-    self->transmitBuffer->size = 0;
 }
 
 #if (MMS_OBTAIN_FILE_SERVICE == 1)
