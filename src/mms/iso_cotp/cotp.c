@@ -503,7 +503,8 @@ cpo_error:
 
 void
 CotpConnection_init(CotpConnection* self, Socket socket,
-        ByteBuffer* payloadBuffer, ByteBuffer* readBuffer, ByteBuffer* writeBuffer)
+        ByteBuffer* payloadBuffer, ByteBuffer* readBuffer, ByteBuffer* writeBuffer,
+        uint8_t* socketExtensionBuffer, int socketExtensionBufferSize)
 {
     self->state = 0;
     self->socket = socket;
@@ -536,8 +537,8 @@ CotpConnection_init(CotpConnection* self, Socket socket,
     self->readBuffer = readBuffer;
     self->packetSize = 0;
 
-    self->socketExtensionBuffer = GLOBAL_MALLOC(CONFIG_MMS_MAXIMUM_PDU_SIZE + 120);
-    self->socketExtensionBufferSize = CONFIG_MMS_MAXIMUM_PDU_SIZE + 120;
+    self->socketExtensionBuffer = socketExtensionBuffer;
+    self->socketExtensionBufferSize = socketExtensionBufferSize;
     self->socketExtensionBufferFill = 0;
 }
 

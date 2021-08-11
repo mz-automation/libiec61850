@@ -84,7 +84,8 @@ CotpConnection_setTpduSize(CotpConnection* self, int tpduSize /* in byte */);
 
 LIB61850_INTERNAL void
 CotpConnection_init(CotpConnection* self, Socket socket,
-        ByteBuffer* payloadBuffer, ByteBuffer* readBuffer, ByteBuffer* writeBuffer);
+        ByteBuffer* payloadBuffer, ByteBuffer* readBuffer, ByteBuffer* writeBuffer,
+        uint8_t* socketExtensionBuffer, int socketExtensionBufferSize);
 
 LIB61850_INTERNAL CotpIndication
 CotpConnection_parseIncomingMessage(CotpConnection* self);
