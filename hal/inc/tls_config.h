@@ -39,6 +39,8 @@ typedef struct sTLSConfiguration* TLSConfiguration;
 /**
  * \brief Create a new \ref TLSConfiguration object to represent TLS configuration and certificates
  *
+ * WARNING: Configuration cannot be changed after using for the first time.
+ *
  * \return the new TLS configuration
  */
 PAL_API TLSConfiguration

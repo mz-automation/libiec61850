@@ -52,6 +52,8 @@ struct sTLSConfiguration {
 
     /* TLS session renegotioation time in milliseconds */
     int renegotiationTimeInMs;
+
+    bool setupComplete;
 };
 
 struct sTLSSocket {
@@ -181,6 +183,7 @@ TLSConfiguration_create()
         /* default behavior is to allow all certificates that are signed by the CA */
         self->chainValidation = true;
         self->allowOnlyKnownCertificates = false;
+        self->setupComplete = false;
     }
 
     return self;
@@ -348,6 +351,28 @@ readFunction(void* ctx, unsigned char* buf, size_t len)
     return ret;
 }
 
+/*
+ * Finish configuration when used the first time.
+ */
+static bool
+TLSConfiguration_setupComplete(TLSConfiguration self)
+{
+    if (self->setupComplete == false) {
+        mbedtls_ssl_conf_ca_chain( &(self->conf), &(self->cacerts), NULL );
+
+        int ret = mbedtls_ssl_conf_own_cert( &(self->conf), &(self->ownCertificate), &(self->ownKey));
+
+        if (ret != 0) {
+            DEBUG_PRINT("TLS", "mbedtls_ssl_conf_own_cert returned %d\n", ret);
+            return false;
+        }
+
+        self->setupComplete = true;
+    }
+
+    return true;
+}
+
 TLSSocket
 TLSSocket_create(Socket socket, TLSConfiguration configuration, bool storeClientCert)
 {
@@ -361,20 +386,13 @@ TLSSocket_create(Socket socket, TLSConfiguration configuration, bool storeClient
         self->peerCert = NULL;
         self->peerCertLength = 0;
 
+        TLSConfiguration_setupComplete(configuration);
+
         memcpy(&(self->conf), &(configuration->conf), sizeof(mbedtls_ssl_config));
 
         mbedtls_ssl_conf_verify(&(self->conf), verifyCertificate, (void*) self);
 
-        int ret;
-
-        mbedtls_ssl_conf_ca_chain( &(self->conf), &(configuration->cacerts), NULL );
-
-        ret = mbedtls_ssl_conf_own_cert( &(self->conf), &(configuration->ownCertificate), &(configuration->ownKey));
-
-        if (ret != 0)
-            DEBUG_PRINT("TLS", "mbedtls_ssl_conf_own_cert returned %d\n", ret);
-
-        ret = mbedtls_ssl_setup( &(self->ssl), &(self->conf) );
+        int ret = mbedtls_ssl_setup( &(self->ssl), &(self->conf) );
 
         if (ret != 0)
             DEBUG_PRINT("TLS", "mbedtls_ssl_setup returned %d\n", ret);
@@ -388,7 +406,6 @@ TLSSocket_create(Socket socket, TLSConfiguration configuration, bool storeClient
             {
                 DEBUG_PRINT("TLS", "mbedtls_ssl_handshake returned %d\n\n", ret );
 
-                mbedtls_ssl_config_free(&(self->conf));
                 mbedtls_ssl_free(&(self->ssl));
 
                 GLOBAL_FREEMEM(self);
@@ -492,7 +509,6 @@ TLSSocket_close(TLSSocket self)
 
     Thread_sleep(10);
 
-    mbedtls_ssl_config_free(&(self->conf));
     mbedtls_ssl_free(&(self->ssl));
 
     if (self->peerCert)
