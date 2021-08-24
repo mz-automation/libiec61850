@@ -31,7 +31,7 @@ namespace IEC61850
 	namespace Client
 	{
 
-		public class GooseControlBlock {
+		public class GooseControlBlock : IDisposable {
 		
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern IntPtr ClientGooseControlBlock_create (string dataAttributeReference);
@@ -83,6 +83,18 @@ namespace IEC61850
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern PhyComAddress ClientGooseControlBlock_getDstAddress (IntPtr self);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern IntPtr ClientGooseControlBlock_getDstAddress_addr(IntPtr self);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern byte ClientGooseControlBlock_getDstAddress_priority(IntPtr self);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern UInt16 ClientGooseControlBlock_getDstAddress_vid(IntPtr self);
+
+			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+			static extern UInt16 ClientGooseControlBlock_getDstAddress_appid(IntPtr self);
 
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern void ClientGooseControlBlock_setDstAddress (IntPtr self, PhyComAddress value);
@@ -232,7 +244,23 @@ namespace IEC61850
 
 			public PhyComAddress GetDstAddress()
 			{
-				return ClientGooseControlBlock_getDstAddress (self);
+				PhyComAddress addr = new PhyComAddress();
+
+				IntPtr value = ClientGooseControlBlock_getDstAddress_addr(self);
+
+				MmsValue mmsValue = new MmsValue(value);
+
+				byte[] dstMacAddr = mmsValue.getOctetString();
+
+				dstMacAddr.CopyTo(addr.dstAddress, 0);
+
+				addr.dstAddress = dstMacAddr;
+
+				addr.appId = ClientGooseControlBlock_getDstAddress_appid(self);
+				addr.vlanId = ClientGooseControlBlock_getDstAddress_vid(self);
+				addr.vlanPriority = ClientGooseControlBlock_getDstAddress_priority(self);
+
+				return addr;
 			}
 
 			public void SetDstAddress(PhyComAddress value)
