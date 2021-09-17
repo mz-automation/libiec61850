@@ -1094,7 +1094,17 @@ IedConnection_setRCBValues(IedConnection self, IedClientError* error, ClientRepo
     LinkedList itemIds = LinkedList_create();
     LinkedList values = LinkedList_create();
 
-    /* add resv/resvTms as first element and rptEna as last element */
+    /* add rptEna = false as first element */
+    if (ClientReportControlBlock_getRptEna(rcb) == false)  {
+        if (parametersMask & RCB_ELEMENT_RPT_ENA) {
+            strcpy(itemId + itemIdLen, "$RptEna");
+
+            LinkedList_add(itemIds, StringUtils_copyString(itemId));
+            LinkedList_add(values, rcb->rptEna);
+        }
+    }
+
+    /* add resv/resvTms as first element and rptEna as last element when enabling a report */
     if (parametersMask & RCB_ELEMENT_RESV) {
         if (isBuffered)
             goto error_invalid_parameter;
@@ -1199,11 +1209,13 @@ IedConnection_setRCBValues(IedConnection self, IedClientError* error, ClientRepo
         LinkedList_add(values, rcb->timeOfEntry);
     }
 
-    if (parametersMask & RCB_ELEMENT_RPT_ENA) {
-        strcpy(itemId + itemIdLen, "$RptEna");
+    if (ClientReportControlBlock_getRptEna(rcb) == true)  {
+        if (parametersMask & RCB_ELEMENT_RPT_ENA) {
+            strcpy(itemId + itemIdLen, "$RptEna");
 
-        LinkedList_add(itemIds, StringUtils_copyString(itemId));
-        LinkedList_add(values, rcb->rptEna);
+            LinkedList_add(itemIds, StringUtils_copyString(itemId));
+            LinkedList_add(values, rcb->rptEna);
+        }
     }
 
     if (sendGILast) {
