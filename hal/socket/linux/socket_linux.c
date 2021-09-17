@@ -150,6 +150,10 @@ Handleset_waitReady(HandleSet self, unsigned int timeoutMs)
     if (self->fds && self->nfds > 0) {
         int result = poll(self->fds, self->nfds, timeoutMs);
 
+        if (result == -1 && errno == EINTR) {
+            result = 0;
+        }
+
         if (result == -1) {
             if (DEBUG_SOCKET)
                 printf("SOCKET: poll error (errno: %i)\n", errno);
