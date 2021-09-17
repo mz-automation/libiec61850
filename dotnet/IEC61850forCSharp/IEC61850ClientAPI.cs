@@ -1568,7 +1568,13 @@ namespace IEC61850
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern UInt32 IedConnection_getFile(IntPtr self, out int error, string fileName, InternalIedClientGetFileHandler handler,
-                                                       IntPtr handlerParameter);
+                                                       IntPtr handlerParameter); 
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedConnection_setFile(IntPtr self, out int error, string sourceFilename, string destinationFilename); 
+            
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedConnection_setFilestoreBasepath(IntPtr self, string fileName);
 
 
             public delegate bool GetFileHandler(object parameter,byte[] data);
@@ -1613,6 +1619,31 @@ namespace IEC61850
                     throw new IedConnectionException("Error reading file", error);
 
                 handle.Free();
+            }
+
+            /// <summary>
+            /// Set the virtual filestore basepath for the setFile service
+            /// </summary>
+            /// <param name="basepath">The new virtual filestore basepath</param>
+            public void SetFilestoreBasepath(string basepath)
+            {
+                IedConnection_setFilestoreBasepath(connection, basepath);
+            }
+
+            /// <summary>
+            /// Upload a file to the server.
+            /// </summary>
+            /// <param name="sourceFilename">The filename of the local (client side) file</param>
+            /// <param name="destinationFilename">The filename of the remote (service side) file</param>
+            public void SetFile(string sourceFilename, string destinationFilename)
+            {
+                int error;
+
+                IedConnection_setFile(connection, out error, sourceFilename,  destinationFilename);
+
+                if (error != 0)
+                    throw new IedConnectionException("Error uploading file", error);
+
             }
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
