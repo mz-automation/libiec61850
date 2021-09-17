@@ -1,24 +1,10 @@
 /*
  *  socket_hal.h
  *
- *  Copyright 2013-2020 Michael Zillgith
+ *  Copyright 2013-2021 Michael Zillgith
  *
- *	This file is part of libIEC61850.
- *
- *  libIEC61850 is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  libIEC61850 is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with libIEC61850.  If not, see <http://www.gnu.org/licenses/>.
- *
- *  See COPYING file for the complete license text.
+ *  This file is part of Platform Abstraction Layer (libpal)
+ *  for libiec61850, libmms, and lib60870.
  */
 
 #ifndef SOCKET_HAL_H_
@@ -241,6 +227,20 @@ TcpSocket_create(void);
  */
 PAL_API void
 Socket_setConnectTimeout(Socket self, uint32_t timeoutInMs);
+
+/**
+ * \brief bind a socket to a particular IP address and port (for TcpSocket)
+ * 
+ * NOTE: Don't use the socket when this functions returns false!
+ * 
+ * \param self the client socket instance
+ * \param srcAddress the local IP address or hostname as C string
+ * \param srcPort the local TCP port to use. When < 1 the OS will chose the TCP port to use.
+ * 
+ * \return true in case of success, false otherwise
+ */ 
+PAL_API bool
+Socket_bind(Socket self, const char* srcAddress, int srcPort);
 
 /**
  * \brief connect to a server
