@@ -1,7 +1,7 @@
 /*
  *  client_control.c
  *
- *  Copyright 2013-2018 Michael Zillgith
+ *  Copyright 2013-2021 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -1011,6 +1011,9 @@ internalSelectHandler(uint32_t invokeId, void* parameter, MmsError err, MmsValue
 uint32_t
 ControlObjectClient_selectAsync(ControlObjectClient self, IedClientError* err, ControlObjectClient_ControlActionHandler handler, void* parameter)
 {
+    *err = IED_ERROR_OK;
+    uint32_t invokeId = 0;
+
     resetLastApplError(self);
 
     char domainId[65];
@@ -1040,11 +1043,15 @@ ControlObjectClient_selectAsync(ControlObjectClient self, IedClientError* err, C
     call->invokeId = MmsConnection_readVariableAsync(IedConnection_getMmsConnection(self->connection),
             &mmsError, domainId, itemId, internalSelectHandler, self);
 
+    invokeId = call->invokeId;
+
+    *err = iedConnection_mapMmsErrorToIedError(mmsError);
+
     if (mmsError != MMS_ERROR_NONE) {
         iedConnection_releaseOutstandingCall(self->connection, call);
     }
 
-    return call->invokeId;
+    return invokeId;
 }
 
 static MmsValue*
