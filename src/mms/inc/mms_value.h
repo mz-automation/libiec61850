@@ -552,7 +552,7 @@ MmsValue_getBinaryTimeAsUtcMs(const MmsValue* self);
  * \param size the size of the buffer that contains the new value
  */
 LIB61850_API void
-MmsValue_setOctetString(MmsValue* self, uint8_t* buf, int size);
+MmsValue_setOctetString(MmsValue* self, const uint8_t* buf, int size);
 
 /**
  * \brief Returns the size in bytes of an MmsValue object of type MMS_OCTET_STRING.

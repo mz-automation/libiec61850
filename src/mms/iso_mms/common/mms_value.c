@@ -1418,7 +1418,7 @@ MmsValue_newOctetString(int size, int maxSize)
 }
 
 void
-MmsValue_setOctetString(MmsValue* self, uint8_t* buf, int size)
+MmsValue_setOctetString(MmsValue* self, const uint8_t* buf, int size)
 {
     if (size <= self->value.octetString.maxSize) {
         memcpy(self->value.octetString.buf, buf, size);
