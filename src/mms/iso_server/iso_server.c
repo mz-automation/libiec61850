@@ -309,6 +309,7 @@ closeAllOpenClientConnections(IsoServer self)
         if (self->openClientConnections[i] != NULL) {
             IsoConnection_close(self->openClientConnections[i]);
             IsoConnection_destroy(self->openClientConnections[i]);
+            self->openClientConnections[i] = NULL;
         }
     }
 #endif /* (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS == -1) */
@@ -427,7 +428,9 @@ setupIsoServer(IsoServer self)
         goto exit_function;
     }
 
-    self->handleset = Handleset_new();
+    if (self->handleset == NULL)
+        self->handleset = Handleset_new();
+
     Handleset_addSocket(self->handleset, self->serverSocket);
 
 #if (CONFIG_ACTIVATE_TCP_KEEPALIVE == 1)
@@ -748,6 +751,11 @@ IsoServer_stopListeningThreadless(IsoServer self)
 
     closeAllOpenClientConnections(self);
 
+    if (self->handleset) {
+        Handleset_destroy(self->handleset);
+        self->handleset = NULL;
+    }
+
     if (DEBUG_ISO_SERVER)
         printf("ISO_SERVER: IsoServer_stopListeningThreadless finished!\n");
 }
@@ -771,6 +779,11 @@ IsoServer_stopListening(IsoServer self)
     /* Wait for connection threads to finish */
     while (private_IsoServer_getConnectionCounter(self) > 0)
         Thread_sleep(10);
+
+    if (self->handleset) {
+        Handleset_destroy(self->handleset);
+        self->handleset = NULL;
+    }
 
     if (DEBUG_ISO_SERVER)
         printf("ISO_SERVER: IsoServer_stopListening finished!\n");
