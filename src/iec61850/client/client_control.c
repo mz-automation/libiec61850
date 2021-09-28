@@ -610,7 +610,7 @@ ControlObjectClient_operateAsync(ControlObjectClient self, IedClientError* err, 
 
     MmsError mmsError;
 
-    call->invokeId = MmsConnection_writeVariableAsync(self->connection->connection, &mmsError, domainId, itemId, operParameters, internalOperateHandler, self);
+    MmsConnection_writeVariableAsync(self->connection->connection, &(call->invokeId), &mmsError, domainId, itemId, operParameters, internalOperateHandler, self);
 
     invokeId = call->invokeId;
 
@@ -855,7 +855,7 @@ ControlObjectClient_selectWithValueAsync(ControlObjectClient self, IedClientErro
     if (DEBUG_IED_CLIENT)
         printf("IED_CLIENT: select with value: %s/%s\n", domainId, itemId);
 
-    call->invokeId = MmsConnection_writeVariableAsync(self->connection->connection, &mmsError, domainId, itemId, selValParameters, internalSelWithValHandler, self);
+    MmsConnection_writeVariableAsync(self->connection->connection, &(call->invokeId), &mmsError, domainId, itemId, selValParameters, internalSelWithValHandler, self);
 
     invokeId = call->invokeId;
 
@@ -1040,8 +1040,8 @@ ControlObjectClient_selectAsync(ControlObjectClient self, IedClientError* err, C
     if (DEBUG_IED_CLIENT)
         printf("IED_CLIENT: select: %s/%s\n", domainId, itemId);
 
-    call->invokeId = MmsConnection_readVariableAsync(IedConnection_getMmsConnection(self->connection),
-            &mmsError, domainId, itemId, internalSelectHandler, self);
+    MmsConnection_readVariableAsync(IedConnection_getMmsConnection(self->connection),
+            &(call->invokeId), &mmsError, domainId, itemId, internalSelectHandler, self);
 
     invokeId = call->invokeId;
 
@@ -1227,7 +1227,7 @@ ControlObjectClient_cancelAsync(ControlObjectClient self, IedClientError* err, C
     if (DEBUG_IED_CLIENT)
         printf("IED_CLIENT: select with value: %s/%s\n", domainId, itemId);
 
-    call->invokeId = MmsConnection_writeVariableAsync(self->connection->connection, &mmsError, domainId, itemId, cancelParameters, internalCancelHandler, self);
+    MmsConnection_writeVariableAsync(self->connection->connection, &(call->invokeId), &mmsError, domainId, itemId, cancelParameters, internalCancelHandler, self);
 
     invokeId = call->invokeId;
 

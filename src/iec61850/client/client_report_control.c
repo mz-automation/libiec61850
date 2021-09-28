@@ -624,7 +624,7 @@ IedConnection_getRCBValuesAsync(IedConnection self, IedClientError* error, const
 
     MmsError err = MMS_ERROR_NONE;
 
-    call->invokeId = MmsConnection_readVariableAsync(self->connection, &err, domainId, itemId, readObjectHandlerInternal, self);
+    MmsConnection_readVariableAsync(self->connection, &(call->invokeId), &err, domainId, itemId, readObjectHandlerInternal, self);
 
     *error = iedConnection_mapMmsErrorToIedError(err);
 
@@ -758,7 +758,7 @@ writeMultipleVariablesHandler(uint32_t invokeId, void* parameter, MmsError mmsEr
     }
     else {
         if (DEBUG_IED_CLIENT)
-            printf("IED_CLIENT: internal error - no matching outstanding call!\n");
+            printf("IED_CLIENT: internal error - no matching outstanding call with invoke ID: %u!\n", invokeId);
     }
 }
 
@@ -828,7 +828,7 @@ writeVariableHandler(uint32_t invokeId, void* parameter, MmsError mmsError, MmsD
 
             MmsError writeError;
 
-            call->invokeId = MmsConnection_writeVariableAsync(self->connection, &writeError, param->domainId, itemId, value, writeVariableHandler, self);
+            MmsConnection_writeVariableAsync(self->connection, &(call->invokeId), &writeError, param->domainId, itemId, value, writeVariableHandler, self);
 
             if (writeError != MMS_ERROR_NONE) {
                 handler(param->originalInvokeId, call->callbackParameter, iedConnection_mapMmsErrorToIedError(writeError));
@@ -1006,7 +1006,7 @@ IedConnection_setRCBValuesAsync(IedConnection self, IedClientError* error, Clien
 
      if (singleRequest) {
 
-         call->invokeId = MmsConnection_writeMultipleVariablesAsync(self->connection, &err, domainId, itemIds, values, writeMultipleVariablesHandler, self);
+         MmsConnection_writeMultipleVariablesAsync(self->connection, &(call->invokeId), &err, domainId, itemIds, values, writeMultipleVariablesHandler, self);
 
          *error = iedConnection_mapMmsErrorToIedError(err);
 
@@ -1035,7 +1035,7 @@ IedConnection_setRCBValuesAsync(IedConnection self, IedClientError* error, Clien
          char* variableId = (char*) LinkedList_getData(param->currentItemId);
          MmsValue* value = (MmsValue*) LinkedList_getData(param->currentValue);
 
-         call->invokeId = MmsConnection_writeVariableAsync(self->connection, &err, domainId, variableId, value, writeVariableHandler, self);
+         MmsConnection_writeVariableAsync(self->connection, &(call->invokeId), &err, domainId, variableId, value, writeVariableHandler, self);
 
          param->originalInvokeId = call->invokeId;
 

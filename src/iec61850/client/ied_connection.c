@@ -942,7 +942,7 @@ IedConnection_getVariableSpecificationAsync(IedConnection self, IedClientError* 
     call->callback = handler;
     call->callbackParameter = parameter;
 
-    call->invokeId = MmsConnection_getVariableAccessAttributesAsync(self->connection, &err, domainId, itemId, getAccessAttrHandler, self);
+    MmsConnection_getVariableAccessAttributesAsync(self->connection, &(call->invokeId), &err, domainId, itemId, getAccessAttrHandler, self);
 
     invokeId = call->invokeId;
 
@@ -991,7 +991,7 @@ IedConnection_getServerDirectoryAsync(IedConnection self, IedClientError* error,
 
     MmsError err = MMS_ERROR_NONE;
 
-    call->invokeId = MmsConnection_getDomainNamesAsync(self->connection, &err, continueAfter, result, getNameListHandler, self);
+    MmsConnection_getDomainNamesAsync(self->connection, &(call->invokeId), &err, continueAfter, result, getNameListHandler, self);
 
     if (err != MMS_ERROR_NONE) {
         *error = iedConnection_mapMmsErrorToIedError(err);
@@ -1006,9 +1006,6 @@ IedConnection_getServerDirectoryAsync(IedConnection self, IedClientError* error,
 
     return call->invokeId;
 }
-
-
-
 
 uint32_t
 IedConnection_getLogicalDeviceVariablesAsync(IedConnection self, IedClientError* error, const char* ldName, const char* continueAfter, LinkedList result,
@@ -1026,7 +1023,7 @@ IedConnection_getLogicalDeviceVariablesAsync(IedConnection self, IedClientError*
 
     MmsError err = MMS_ERROR_NONE;
 
-    call->invokeId = MmsConnection_getDomainVariableNamesAsync(self->connection, &err, ldName, continueAfter, result, getNameListHandler, self);
+    MmsConnection_getDomainVariableNamesAsync(self->connection, &err, &(call->invokeId), ldName, continueAfter, result, getNameListHandler, self);
 
     if (err != MMS_ERROR_NONE) {
         *error = iedConnection_mapMmsErrorToIedError(err);
@@ -1058,7 +1055,7 @@ IedConnection_getLogicalDeviceDataSetsAsync(IedConnection self, IedClientError* 
 
     MmsError err = MMS_ERROR_NONE;
 
-    call->invokeId = MmsConnection_getDomainVariableListNamesAsync(self->connection, &err, ldName, continueAfter, result, getNameListHandler, self);
+    MmsConnection_getDomainVariableListNamesAsync(self->connection, &(call->invokeId), &err, ldName, continueAfter, result, getNameListHandler, self);
 
     if (err != MMS_ERROR_NONE) {
         *error = iedConnection_mapMmsErrorToIedError(err);
@@ -1146,7 +1143,7 @@ IedConnection_readObjectAsync(IedConnection self, IedClientError* error, const c
 
                 *brace = 0;
 
-                call->invokeId = MmsConnection_readSingleArrayElementWithComponentAsync(self->connection, &err, domainId, itemId, index, component, readObjectHandlerInternal, self);
+                MmsConnection_readSingleArrayElementWithComponentAsync(self->connection, &(call->invokeId), &err, domainId, itemId, index, component, readObjectHandlerInternal, self);
             }
             else
                 *error = IED_ERROR_USER_PROVIDED_INVALID_ARGUMENT;
@@ -1155,7 +1152,7 @@ IedConnection_readObjectAsync(IedConnection self, IedClientError* error, const c
             *error = IED_ERROR_USER_PROVIDED_INVALID_ARGUMENT;
     }
     else
-        call->invokeId = MmsConnection_readVariableAsync(self->connection, &err, domainId, itemId, readObjectHandlerInternal, self);
+        MmsConnection_readVariableAsync(self->connection, &(call->invokeId), &err, domainId, itemId, readObjectHandlerInternal, self);
 
     if ((err != MMS_ERROR_NONE) || (*error != IED_ERROR_OK)) {
 
@@ -1559,7 +1556,7 @@ IedConnection_writeObjectAsync(IedConnection self, IedClientError* error, const 
 
                 *brace = 0;
 
-                call->invokeId = MmsConnection_writeSingleArrayElementWithComponentAsync(self->connection, &err, domainId, itemId, index, component, value,
+                MmsConnection_writeSingleArrayElementWithComponentAsync(self->connection, &(call->invokeId), &err, domainId, itemId, index, component, value,
                         writeVariableHandler, self);
 
                 *error = iedConnection_mapMmsErrorToIedError(err);
@@ -1571,7 +1568,7 @@ IedConnection_writeObjectAsync(IedConnection self, IedClientError* error, const 
             *error = IED_ERROR_USER_PROVIDED_INVALID_ARGUMENT;
     }
     else {
-        call->invokeId = MmsConnection_writeVariableAsync(self->connection, &err, domainId, itemId, value, writeVariableHandler, self);
+        MmsConnection_writeVariableAsync(self->connection, &(call->invokeId), &err, domainId, itemId, value, writeVariableHandler, self);
 
         *error = iedConnection_mapMmsErrorToIedError(err);
     }
@@ -1885,7 +1882,7 @@ IedConnection_getFileDirectoryAsyncEx(IedConnection self, IedClientError* error,
     call->callbackParameter = parameter;
     call->specificParameter2.getFileDirectory.cont = true;
 
-    call->invokeId = MmsConnection_getFileDirectoryAsync(self->connection, &err, directoryName, continueAfter,
+    MmsConnection_getFileDirectoryAsync(self->connection, &(call->invokeId), &err, directoryName, continueAfter,
             fileDirectoryHandlerEx, self);
 
     *error = iedConnection_mapMmsErrorToIedError(err);
@@ -2009,7 +2006,7 @@ mmsConnectionFileReadHandler (uint32_t invokeId, void* parameter, MmsError mmsEr
 
             if (mmsError != MMS_ERROR_SERVICE_TIMEOUT) {
                 /* close file */
-                call->invokeId = MmsConnection_fileCloseAsync(self->connection, &mmsError, frsmId, mmsConnectionFileCloseHandler, self);
+                MmsConnection_fileCloseAsync(self->connection, &(call->invokeId), &mmsError, frsmId, mmsConnectionFileCloseHandler, self);
 
                 if (mmsError != MMS_ERROR_NONE)
                     iedConnection_releaseOutstandingCall(self, call);
@@ -2026,7 +2023,7 @@ mmsConnectionFileReadHandler (uint32_t invokeId, void* parameter, MmsError mmsEr
 
             if ((moreFollows == false) || (cont == false)) {
                 /* close file */
-                call->invokeId = MmsConnection_fileCloseAsync(self->connection, &mmsError, frsmId, mmsConnectionFileCloseHandler, self);
+                MmsConnection_fileCloseAsync(self->connection, &(call->invokeId), &mmsError, frsmId, mmsConnectionFileCloseHandler, self);
 
                 if (mmsError != MMS_ERROR_NONE)
                     iedConnection_releaseOutstandingCall(self, call);
@@ -2034,7 +2031,7 @@ mmsConnectionFileReadHandler (uint32_t invokeId, void* parameter, MmsError mmsEr
             else {
                 /* send next read request */
 
-                call->invokeId = MmsConnection_fileReadAsync(self->connection, &mmsError, frsmId,
+                MmsConnection_fileReadAsync(self->connection, &(call->invokeId), &mmsError, frsmId,
                         mmsConnectionFileReadHandler, self);
 
                 if (mmsError != MMS_ERROR_NONE) {
@@ -2043,7 +2040,7 @@ mmsConnectionFileReadHandler (uint32_t invokeId, void* parameter, MmsError mmsEr
                     handler(invokeId, call->callbackParameter, err, invokeId, NULL, 0, false);
 
                     /* close file */
-                    call->invokeId = MmsConnection_fileCloseAsync(self->connection, &mmsError, frsmId, mmsConnectionFileCloseHandler, self);
+                    MmsConnection_fileCloseAsync(self->connection, &(call->invokeId), &mmsError, frsmId, mmsConnectionFileCloseHandler, self);
 
                     if (mmsError != MMS_ERROR_NONE) {
                         iedConnection_releaseOutstandingCall(self, call);
@@ -2085,7 +2082,7 @@ mmsConnectionFileOpenHandler (uint32_t invokeId, void* parameter, MmsError mmsEr
         }
         else {
             call->specificParameter2.getFileInfo.originalInvokeId = invokeId;
-            call->invokeId = MmsConnection_fileReadAsync(self->connection, &mmsError, frsmId, mmsConnectionFileReadHandler, self);
+            MmsConnection_fileReadAsync(self->connection, &(call->invokeId), &mmsError, frsmId, mmsConnectionFileReadHandler, self);
 
             if (mmsError != MMS_ERROR_NONE) {
                 IedClientError err = iedConnection_mapMmsErrorToIedError(mmsError);
@@ -2093,7 +2090,7 @@ mmsConnectionFileOpenHandler (uint32_t invokeId, void* parameter, MmsError mmsEr
                 handler(invokeId, call->callbackParameter, err, invokeId, NULL, 0, false);
 
                 /* close file */
-                call->invokeId = MmsConnection_fileCloseAsync(self->connection, &mmsError, frsmId, mmsConnectionFileCloseHandler, self);
+                MmsConnection_fileCloseAsync(self->connection, &(call->invokeId), &mmsError, frsmId, mmsConnectionFileCloseHandler, self);
 
                 if (mmsError != MMS_ERROR_NONE)
                     iedConnection_releaseOutstandingCall(self, call);
@@ -2124,7 +2121,7 @@ IedConnection_getFileAsync(IedConnection self, IedClientError* error, const char
     call->callback = handler;
     call->callbackParameter = parameter;
 
-    call->invokeId = MmsConnection_fileOpenAsync(self->connection, &err, fileName, 0, mmsConnectionFileOpenHandler, self);
+    MmsConnection_fileOpenAsync(self->connection, &(call->invokeId), &err, fileName, 0, mmsConnectionFileOpenHandler, self);
 
     *error = iedConnection_mapMmsErrorToIedError(err);
 
@@ -2199,7 +2196,7 @@ IedConnection_setFileAsync(IedConnection self, IedClientError* error, const char
     call->callback = handler;
     call->callbackParameter = parameter;
 
-    call->invokeId = MmsConnection_obtainFileAsync(self->connection, &err, sourceFilename, destinationFilename, deleteFileAndSetFileHandler, self);
+    MmsConnection_obtainFileAsync(self->connection, &(call->invokeId), &err, sourceFilename, destinationFilename, deleteFileAndSetFileHandler, self);
 
     *error = iedConnection_mapMmsErrorToIedError(err);
 
@@ -2239,7 +2236,7 @@ IedConnection_deleteFileAsync(IedConnection self, IedClientError* error, const c
     call->callback = handler;
     call->callbackParameter = parameter;
 
-    call->invokeId = MmsConnection_fileDeleteAsync(self->connection, &err, fileName, deleteFileAndSetFileHandler, self);
+    MmsConnection_fileDeleteAsync(self->connection, &(call->invokeId), &err, fileName, deleteFileAndSetFileHandler, self);
 
     *error = iedConnection_mapMmsErrorToIedError(err);
 
@@ -3410,10 +3407,10 @@ IedConnection_readDataSetValuesAsync(IedConnection self, IedClientError* error, 
     MmsError err = MMS_ERROR_NONE;
 
     if (isAssociationSpecific)
-        call->invokeId = MmsConnection_readNamedVariableListValuesAssociationSpecificAsync(self->connection,
+        MmsConnection_readNamedVariableListValuesAssociationSpecificAsync(self->connection, &(call->invokeId),
                 &err, itemId, true, getDataSetHandlerInternal, self);
     else
-        call->invokeId = MmsConnection_readNamedVariableListValuesAsync(self->connection, &err,
+        MmsConnection_readNamedVariableListValuesAsync(self->connection, &(call->invokeId), &err,
                     domainId, itemId, true, getDataSetHandlerInternal, self);
 
     *error = iedConnection_mapMmsErrorToIedError(err);
@@ -3569,7 +3566,7 @@ IedConnection_writeDataSetValuesAsync(IedConnection self, IedClientError* error,
 
     MmsError err = MMS_ERROR_NONE;
 
-    call->invokeId = MmsConnection_writeNamedVariableListAsync(self->connection, &err, isAssociationSpecific, domainId, itemId, values, writeDataSetHandlerInternal, self);
+    MmsConnection_writeNamedVariableListAsync(self->connection, &(call->invokeId), &err, isAssociationSpecific, domainId, itemId, values, writeDataSetHandlerInternal, self);
 
     *error = iedConnection_mapMmsErrorToIedError(err);
 
@@ -3681,7 +3678,7 @@ IedConnection_queryLogByTimeAsync(IedConnection self, IedClientError* error, con
         MmsValue* endTimeMms = MmsValue_newBinaryTime(false);
         MmsValue_setBinaryTime(endTimeMms, endTime);
 
-        call->invokeId = MmsConnection_readJournalTimeRangeAsync(self->connection, &err, logDomain, logName,
+        MmsConnection_readJournalTimeRangeAsync(self->connection, &(call->invokeId), &err, logDomain, logName,
                 startTimeMms, endTimeMms, readJournalHandler, self);
 
         MmsValue_delete(startTimeMms);
@@ -3734,7 +3731,7 @@ IedConnection_queryLogAfterAsync(IedConnection self, IedClientError* error, cons
         MmsValue* timeStampMms = MmsValue_newBinaryTime(false);
         MmsValue_setBinaryTime(timeStampMms, timeStamp);
 
-        call->invokeId = MmsConnection_readJournalStartAfterAsync(self->connection, &err, logDomain, logName,
+        MmsConnection_readJournalStartAfterAsync(self->connection, &(call->invokeId), &err, logDomain, logName,
                timeStampMms, entryID, readJournalHandler, self);
 
         MmsValue_delete(timeStampMms);
