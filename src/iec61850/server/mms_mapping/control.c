@@ -348,6 +348,9 @@ convertCheckHandlerResultToServiceError(CheckHandlerResult controlHandlerResult)
 static void
 updateGenericTrackingObjectValues(MmsMapping* self, ControlObject* controlObject, IEC61850_ServiceType serviceType, IEC61850_ServiceError errVal)
 {
+    if (controlObject == NULL)
+        return;
+
     copyControlValuesToTrackingObject(self, controlObject, serviceType);
 
     ServiceTrkInstance trkInst = NULL;
