@@ -568,7 +568,7 @@ mmsServer_handleGetNameListRequest(
                 StringUtils_sortList(nameList);
 #endif
 
-                createNameListResponse(connection, invokeId, nameList, response, continueAfter);
+                createNameListResponse(connection, invokeId, nameList, response, continueAfterId);
                 LinkedList_destroy(nameList);
             }
         }
@@ -592,7 +592,7 @@ mmsServer_handleGetNameListRequest(
             StringUtils_sortList(nameList);
 #endif
 
-            createNameListResponse(connection, invokeId, nameList, response, continueAfter);
+            createNameListResponse(connection, invokeId, nameList, response, continueAfterId);
 
             LinkedList_destroyStatic(nameList);
         }
@@ -601,7 +601,7 @@ mmsServer_handleGetNameListRequest(
         else if (objectClass == OBJECT_CLASS_NAMED_VARIABLE) {
             LinkedList nameList = getNameListVMDSpecific(connection);
 
-            createNameListResponse(connection, invokeId, nameList, response, continueAfter);
+            createNameListResponse(connection, invokeId, nameList, response, continueAfterId);
 
             LinkedList_destroyStatic(nameList);
         }
@@ -615,7 +615,7 @@ mmsServer_handleGetNameListRequest(
             StringUtils_sortList(nameList);
 #endif
 
-            createNameListResponse(connection, invokeId, nameList, response, continueAfter);
+            createNameListResponse(connection, invokeId, nameList, response, continueAfterId);
 
             LinkedList_destroy(nameList);
         }
@@ -627,7 +627,7 @@ mmsServer_handleGetNameListRequest(
 
             LinkedList nameList = LinkedList_create();
 
-            createNameListResponse(connection, invokeId, nameList, response, continueAfter);
+            createNameListResponse(connection, invokeId, nameList, response, continueAfterId);
 
             LinkedList_destroy(nameList);
         }
@@ -651,7 +651,7 @@ mmsServer_handleGetNameListRequest(
             StringUtils_sortList(nameList);
 #endif
 
-            createNameListResponse(connection, invokeId, nameList, response, continueAfter);
+            createNameListResponse(connection, invokeId, nameList, response, continueAfterId);
 
             LinkedList_destroy(nameList);
         }
