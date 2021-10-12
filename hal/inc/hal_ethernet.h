@@ -22,7 +22,7 @@ extern "C" {
    */
 
 /**
- * @defgroup HAL_ETHERNET Direct access to the ethernet layer (optional - required by GOOSE and Sampled Values)
+ * @defgroup HAL_ETHERNET Direct access to the Ethernet layer (optional - required by GOOSE and Sampled Values)
  *
  * @{
  */
@@ -33,7 +33,7 @@ extern "C" {
  */
 typedef struct sEthernetSocket* EthernetSocket;
 
-/** Opaque reference for a set of ethernet socket handles */
+/** Opaque reference for a set of Ethernet socket handles */
 typedef struct sEthernetHandleSet* EthernetHandleSet;
 
 /**
@@ -101,7 +101,7 @@ Ethernet_getInterfaceMACAddress(const char* interfaceId, uint8_t* addr);
  * destination MAC address.
  *
  * \param interfaceId the ID of the Ethernet interface
- * \param destAddress byte array that contains the Ethernet MAC address
+ * \param destAddress byte array that contains the Ethernet destination MAC address for sending
  */
 PAL_API EthernetSocket
 Ethernet_createSocket(const char* interfaceId, uint8_t* destAddress);
@@ -119,6 +119,9 @@ Ethernet_sendPacket(EthernetSocket ethSocket, uint8_t* buffer, int packetSize);
 
 /*
  * \brief set a protocol filter for the specified etherType
+ *
+ * NOTE: Implementation is not required but can improve the performance when the ethertype
+ * filtering can be done on OS/network stack layer.
  *
  * \param ethSocket the ethernet socket handle
  * \param etherType the ether type of messages to accept
