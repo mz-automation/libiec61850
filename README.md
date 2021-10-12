@@ -54,6 +54,7 @@ The library support the following IEC 61850 protocol features:
 * MMS file services (browse, get file, set file, delete/rename file)
 ** required to download COMTRADE files
 * Setting group handling
+* Support for service tracking
 * GOOSE and SV control block handling
 * TLS support
 * C and C#/.NET API
@@ -179,6 +180,18 @@ The experimental Python binding can be created using SWIG with cmake.
 To enable the bindings you have to select the phyton configuration option with ccmake of cmake-gui.
 
 We don't provide any support for the Python bindings!
+
+## Known limitations
+
+### MacOS hal_thread.h implementation
+
+The MacOS implementation of the Semaphore types uses POSIX named semaphores. The number of these semaphores depends on the limit of open file descriptors which is 256 by default.
+
+There can be problems to create new Semaphore instances when this limit is reached. Depending on your application it can be required to increase this limit.
+
+E.g. to increase the limit to 1000 you can use the command
+
+  ulimit -n 1000 
 
 ## Commercial licenses and support
 
