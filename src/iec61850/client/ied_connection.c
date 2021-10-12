@@ -1023,7 +1023,7 @@ IedConnection_getLogicalDeviceVariablesAsync(IedConnection self, IedClientError*
 
     MmsError err = MMS_ERROR_NONE;
 
-    MmsConnection_getDomainVariableNamesAsync(self->connection, &err, &(call->invokeId), ldName, continueAfter, result, getNameListHandler, self);
+    MmsConnection_getDomainVariableNamesAsync(self->connection, &(call->invokeId), &err, ldName, continueAfter, result, getNameListHandler, self);
 
     if (err != MMS_ERROR_NONE) {
         *error = iedConnection_mapMmsErrorToIedError(err);
