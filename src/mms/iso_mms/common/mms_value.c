@@ -1418,7 +1418,7 @@ MmsValue_newOctetString(int size, int maxSize)
 }
 
 void
-MmsValue_setOctetString(MmsValue* self, uint8_t* buf, int size)
+MmsValue_setOctetString(MmsValue* self, const uint8_t* buf, int size)
 {
     if (size <= self->value.octetString.maxSize) {
         memcpy(self->value.octetString.buf, buf, size);
@@ -1691,7 +1691,7 @@ MmsValue_newVisibleStringWithSize(int size)
 }
 
 MmsValue*
-MmsValue_newMmsString(char* string)
+MmsValue_newMmsString(const char* string)
 {
     return MmsValue_newString(string, MMS_STRING);
 }
@@ -1832,13 +1832,13 @@ exit_function:
 }
 
 MmsValue*
-MmsValue_newVisibleStringFromByteArray(uint8_t* byteArray, int size)
+MmsValue_newVisibleStringFromByteArray(const uint8_t* byteArray, int size)
 {
     return MmsValue_newStringFromByteArray(byteArray, size, MMS_VISIBLE_STRING);
 }
 
 MmsValue*
-MmsValue_newMmsStringFromByteArray(uint8_t* byteArray, int size)
+MmsValue_newMmsStringFromByteArray(const uint8_t* byteArray, int size)
 {
     return MmsValue_newStringFromByteArray(byteArray, size, MMS_STRING);
 }
@@ -1913,7 +1913,7 @@ MmsValue_newUtcTimeByMsTime(uint64_t timeval)
 }
 
 MmsValue*
-MmsValue_createArray(MmsVariableSpecification* elementType, int size)
+MmsValue_createArray(const MmsVariableSpecification* elementType, int size)
 {
     MmsValue* self = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
 

@@ -80,7 +80,7 @@ typedef struct sMmsValue MmsValue;
  * \return a newly created array instance
  */
 LIB61850_API MmsValue*
-MmsValue_createArray(MmsVariableSpecification* elementType, int size);
+MmsValue_createArray(const MmsVariableSpecification* elementType, int size);
 
 /**
  * \brief Get the size of an array.
@@ -552,7 +552,7 @@ MmsValue_getBinaryTimeAsUtcMs(const MmsValue* self);
  * \param size the size of the buffer that contains the new value
  */
 LIB61850_API void
-MmsValue_setOctetString(MmsValue* self, uint8_t* buf, int size);
+MmsValue_setOctetString(MmsValue* self, const uint8_t* buf, int size);
 
 /**
  * \brief Returns the size in bytes of an MmsValue object of type MMS_OCTET_STRING.
@@ -839,7 +839,7 @@ MmsValue_newBinaryTime(bool timeOfDay);
  * \return new MmsValue instance of type MMS_VISIBLE_STRING
  */
 LIB61850_API MmsValue*
-MmsValue_newVisibleStringFromByteArray(uint8_t* byteArray, int size);
+MmsValue_newVisibleStringFromByteArray(const uint8_t* byteArray, int size);
 
 /**
  * \brief Create a new MmsValue instance of type MMS_STRING from the specified byte array
@@ -850,7 +850,7 @@ MmsValue_newVisibleStringFromByteArray(uint8_t* byteArray, int size);
  * \return new MmsValue instance of type MMS_STRING
  */
 LIB61850_API MmsValue*
-MmsValue_newMmsStringFromByteArray(uint8_t* byteArray, int size);
+MmsValue_newMmsStringFromByteArray(const uint8_t* byteArray, int size);
 
 /**
  * \brief Create a new MmsValue instance of type MMS_STRING.
@@ -860,7 +860,7 @@ MmsValue_newMmsStringFromByteArray(uint8_t* byteArray, int size);
  * \return new MmsValue instance of type MMS_STRING
  */
 LIB61850_API MmsValue*
-MmsValue_newMmsString(char* string);
+MmsValue_newMmsString(const char* string);
 
 /**
  * \brief Set the value of MmsValue instance of type MMS_STRING

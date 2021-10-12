@@ -423,7 +423,7 @@ LIB61850_API Timestamp*
 Timestamp_create(void);
 
 LIB61850_API Timestamp*
-Timestamp_createFromByteArray(uint8_t* byteArray);
+Timestamp_createFromByteArray(const uint8_t* byteArray);
 
 LIB61850_API void
 Timestamp_destroy(Timestamp* self);
@@ -504,7 +504,7 @@ LIB61850_API void
 Timestamp_setTimeInNanoseconds(Timestamp* self, nsSinceEpoch nsTime);
 
 LIB61850_API void
-Timestamp_setByMmsUtcTime(Timestamp* self, MmsValue* mmsValue);
+Timestamp_setByMmsUtcTime(Timestamp* self, const MmsValue* mmsValue);
 
 /**
  * \brief Set an MmsValue instance of type UTCTime to the timestamp value

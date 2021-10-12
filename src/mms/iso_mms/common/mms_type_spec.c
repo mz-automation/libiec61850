@@ -103,7 +103,7 @@ MmsVariableSpecification_getType(MmsVariableSpecification* self)
 }
 
 bool
-MmsVariableSpecification_isValueOfType(MmsVariableSpecification* self, MmsValue* value)
+MmsVariableSpecification_isValueOfType(MmsVariableSpecification* self, const MmsValue* value)
 {
     if ((self->type) == (value->type)) {
 

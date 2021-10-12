@@ -296,7 +296,7 @@ LogicalNode_addLogControlBlock(LogicalNode* self, LogControlBlock* lcb)
 }
 
 LogControlBlock*
-LogControlBlock_create(const char* name, LogicalNode* parent, char* dataSetName, char* logRef, uint8_t trgOps,
+LogControlBlock_create(const char* name, LogicalNode* parent, const char* dataSetName, const char* logRef, uint8_t trgOps,
         uint32_t intPeriod, bool logEna, bool reasonCode)
 {
     LogControlBlock* self = (LogControlBlock*) GLOBAL_MALLOC(sizeof(LogControlBlock));
@@ -334,7 +334,7 @@ LogicalNode_addReportControlBlock(LogicalNode* self, ReportControlBlock* rcb)
 }
 
 ReportControlBlock*
-ReportControlBlock_create(const char* name, LogicalNode* parent, char* rptId, bool isBuffered, char*
+ReportControlBlock_create(const char* name, LogicalNode* parent, const char* rptId, bool isBuffered, const char*
         dataSetName, uint32_t confRef, uint8_t trgOps, uint8_t options, uint32_t bufTm, uint32_t intgPd)
 {
     ReportControlBlock* self = (ReportControlBlock*) GLOBAL_MALLOC(sizeof(ReportControlBlock));
@@ -368,7 +368,7 @@ ReportControlBlock_create(const char* name, LogicalNode* parent, char* rptId, bo
 }
 
 void
-ReportControlBlock_setPreconfiguredClient(ReportControlBlock* self, uint8_t clientType, uint8_t* clientAddress)
+ReportControlBlock_setPreconfiguredClient(ReportControlBlock* self, uint8_t clientType, const uint8_t* clientAddress)
 {
     if (clientType == 4) { /* IPv4 address */
         self->clientReservation[0] = 4;
@@ -421,7 +421,7 @@ LogicalNode_addGSEControlBlock(LogicalNode* self, GSEControlBlock* gcb)
 }
 
 GSEControlBlock*
-GSEControlBlock_create(const char* name, LogicalNode* parent, char* appId, char* dataSet, uint32_t confRef, bool fixedOffs,
+GSEControlBlock_create(const char* name, LogicalNode* parent, const char* appId, const char* dataSet, uint32_t confRef, bool fixedOffs,
         int minTime, int maxTime)
 {
     GSEControlBlock* self = (GSEControlBlock*) GLOBAL_MALLOC(sizeof(GSEControlBlock));
@@ -455,7 +455,7 @@ GSEControlBlock_create(const char* name, LogicalNode* parent, char* appId, char*
 }
 
 SVControlBlock*
-SVControlBlock_create(const char* name, LogicalNode* parent, char* svID, char* dataSet, uint32_t confRev, uint8_t smpMod,
+SVControlBlock_create(const char* name, LogicalNode* parent, const char* svID, const char* dataSet, uint32_t confRev, uint8_t smpMod,
         uint16_t smpRate, uint8_t optFlds, bool isUnicast)
 {
     SVControlBlock* self = (SVControlBlock*) GLOBAL_MALLOC(sizeof(SVControlBlock));
@@ -926,13 +926,11 @@ IedModel_destroy(IedModel* model)
         log = nextLog;
     }
 
-
     /* delete generic model parts */
 
     if (model->name)
         GLOBAL_FREEMEM(model->name);
 
     GLOBAL_FREEMEM(model);
-
 }
 

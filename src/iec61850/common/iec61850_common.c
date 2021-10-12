@@ -242,7 +242,7 @@ Timestamp_create()
 }
 
 Timestamp*
-Timestamp_createFromByteArray(uint8_t* byteArray)
+Timestamp_createFromByteArray(const uint8_t* byteArray)
 {
     Timestamp* self = Timestamp_create();
 
@@ -471,7 +471,7 @@ Timestamp_getTimeInNs(Timestamp* self)
 }
 
 void
-Timestamp_setByMmsUtcTime(Timestamp* self, MmsValue* mmsValue)
+Timestamp_setByMmsUtcTime(Timestamp* self, const MmsValue* mmsValue)
 {
     if (MmsValue_getType(mmsValue) == MMS_UTC_TIME)
         memcpy(self->val, mmsValue->value.utcTime, 8);

@@ -101,7 +101,7 @@ MmsVariableSpecification_getType(MmsVariableSpecification* self);
  * \return true if type is matching, false otherwise
  */
 LIB61850_API bool
-MmsVariableSpecification_isValueOfType(MmsVariableSpecification* self, MmsValue* value);
+MmsVariableSpecification_isValueOfType(MmsVariableSpecification* self, const MmsValue* value);
 
 /**
  * \brief get the name of the variable
