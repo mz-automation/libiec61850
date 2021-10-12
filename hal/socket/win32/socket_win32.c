@@ -1,26 +1,14 @@
 /*
  *  socket_win32.c
  *
- *  Copyright 2013-2020 Michael Zillgith
+ *  Copyright 2013-2021 Michael Zillgith
  *
- *	This file is part of libIEC61850.
- *
- *	libIEC61850 is free software: you can redistribute it and/or modify
- *	it under the terms of the GNU General Public License as published by
- *	the Free Software Foundation, either version 3 of the License, or
- *	(at your option) any later version.
- *
- *	libIEC61850 is distributed in the hope that it will be useful,
- *	but WITHOUT ANY WARRANTY; without even the implied warranty of
- *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *	GNU General Public License for more details.
- *
- *	You should have received a copy of the GNU General Public License
- *	along with libIEC61850.  If not, see <http://www.gnu.org/licenses/>.
- *
- *	See COPYING file for the complete license text.
+ *  This file is part of Platform Abstraction Layer (libpal)
+ *  for libiec61850, libmms, and lib60870.
  */
 
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <windows.h>
@@ -65,13 +53,14 @@ struct sUdpSocket {
 HandleSet
 Handleset_new(void)
 {
-   HandleSet result = (HandleSet) GLOBAL_MALLOC(sizeof(struct sHandleSet));
+    HandleSet result = (HandleSet) GLOBAL_MALLOC(sizeof(struct sHandleSet));
 
-   if (result != NULL) {
-       FD_ZERO(&result->handles);
-       result->maxHandle = INVALID_SOCKET;
-   }
-   return result;
+    if (result != NULL) {
+        FD_ZERO(&result->handles);
+        result->maxHandle = INVALID_SOCKET;
+    }
+
+    return result;
 }
 
 void
@@ -97,37 +86,40 @@ void
 Handleset_removeSocket(HandleSet self, const Socket sock)
 {
     if (self != NULL && sock != NULL && sock->fd != INVALID_SOCKET) {
-        FD_CLR(sock->fd, &self->handles);
+        FD_SET(sock->fd, &self->handles);
+
+        if ((sock->fd > self->maxHandle) || (self->maxHandle == INVALID_SOCKET))
+            self->maxHandle = sock->fd;
     }
 }
 
 int
 Handleset_waitReady(HandleSet self, unsigned int timeoutMs)
 {
-   int result;
+    int result;
 
-   if ((self != NULL) && (self->maxHandle != INVALID_SOCKET)) {
-       struct timeval timeout;
+    if ((self != NULL) && (self->maxHandle != INVALID_SOCKET)) {
+        struct timeval timeout;
 
-       timeout.tv_sec = timeoutMs / 1000;
-       timeout.tv_usec = (timeoutMs % 1000) * 1000;
+        timeout.tv_sec = timeoutMs / 1000;
+        timeout.tv_usec = (timeoutMs % 1000) * 1000;
 
-       fd_set handles;
+        fd_set handles;
 
-       memcpy((void*)&handles, &(self->handles), sizeof(fd_set));
+        memcpy((void*)&handles, &(self->handles), sizeof(fd_set));
 
-       result = select(self->maxHandle + 1, &handles, NULL, NULL, &timeout);
-   } else {
-       result = -1;
-   }
+        result = select(self->maxHandle + 1, &handles, NULL, NULL, &timeout);
+    } else {
+        result = -1;
+    }
 
-   return result;
+    return result;
 }
 
 void
 Handleset_destroy(HandleSet self)
 {
-   GLOBAL_FREEMEM(self);
+    GLOBAL_FREEMEM(self);
 }
 
 static bool wsaStartupCalled = false;
@@ -172,18 +164,18 @@ setSocketNonBlocking(Socket self)
 }
 
 static bool
-prepareServerAddress(const char* address, int port, struct sockaddr_in* sockaddr)
+prepareAddress(const char *address, int port, struct sockaddr_in *sockaddr)
 {
-
-    memset((char *) sockaddr , 0, sizeof(struct sockaddr_in));
+    memset((char *)sockaddr, 0, sizeof(struct sockaddr_in));
 
     if (address != NULL) {
         struct hostent *server;
         server = gethostbyname(address);
 
-        if (server == NULL) return false;
+        if (server == NULL)
+            return false;
 
-        memcpy((char *) &sockaddr->sin_addr.s_addr, (char *) server->h_addr, server->h_length);
+        memcpy((char *)&sockaddr->sin_addr.s_addr, (char *)server->h_addr, server->h_length);
     }
     else
         sockaddr->sin_addr.s_addr = htonl(INADDR_ANY);
@@ -240,7 +232,7 @@ TcpServerSocket_create(const char* address, int port)
 
     struct sockaddr_in server_addr;
 
-    if (!prepareServerAddress(address, port, &server_addr))
+    if (!prepareAddress(address, port, &server_addr))
         return NULL;
 
     listen_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -269,14 +261,20 @@ TcpServerSocket_create(const char* address, int port)
         return NULL;
     }
 
-    serverSocket = (ServerSocket) GLOBAL_MALLOC(sizeof(struct sServerSocket));
+    serverSocket = (ServerSocket)GLOBAL_MALLOC(sizeof(struct sServerSocket));
 
-    serverSocket->fd = listen_socket;
-    serverSocket->backLog = 10;
+    if (serverSocket) {
+        serverSocket->fd = listen_socket;
+        serverSocket->backLog = 10;
 
-    setSocketNonBlocking((Socket) serverSocket);
+        setSocketNonBlocking((Socket)serverSocket);
 
-    socketCount++;
+        socketCount++;
+    }
+    else {
+        closesocket(listen_socket);
+        wsaShutdown();
+    }
 
     return serverSocket;
 }
@@ -346,14 +344,24 @@ TcpSocket_create()
     if (sock != INVALID_SOCKET) {
         self = (Socket) GLOBAL_MALLOC(sizeof(struct sSocket));
 
-        self->fd = sock;
-        self->connectTimeout = 5000;
+        if (self) {
+            self->fd = sock;
+            self->connectTimeout = 5000;
 
-        socketCount++;
+            socketCount++;
+        }
+        else {
+            if (DEBUG_SOCKET)
+                printf("SOCKET: failed to create socket - cannot allocate memory\n");
+
+            closesocket(sock);
+            wsaShutdown();
+        }
+
     }
     else {
         if (DEBUG_SOCKET)
-            printf("WIN32_SOCKET: failed to create socket (error code=%i)\n", WSAGetLastError());
+            printf("SOCKET: failed to create socket (error code=%i)\n", WSAGetLastError());
     }
 
     return self;
@@ -363,6 +371,29 @@ void
 Socket_setConnectTimeout(Socket self, uint32_t timeoutInMs)
 {
     self->connectTimeout = timeoutInMs;
+}
+
+bool
+Socket_bind(Socket self, const char* srcAddress, int srcPort)
+{
+    struct sockaddr_in localAddress;
+
+    if (!prepareAddress(srcAddress, srcPort, &localAddress))
+        return false;
+
+    int result = bind(self->fd, (struct sockaddr*)&localAddress, sizeof(localAddress));
+
+    if (result == SOCKET_ERROR) {
+        if (DEBUG_SOCKET)
+            printf("SOCKET: failed to bind TCP socket (errno=%i)\n", WSAGetLastError());
+
+        closesocket(self->fd);
+        self->fd = -1;
+
+        return false;
+    ]
+
+    return true;
 }
 
 bool
@@ -381,7 +412,7 @@ Socket_connectAsync(Socket self, const char* address, int port)
         return false;
     }
 
-    if (!prepareServerAddress(address, port, &serverAddress))
+    if (!prepareAddress(address, port, &serverAddress))
         return false;
 
     setSocketNonBlocking(self);
@@ -438,7 +469,7 @@ Socket_connect(Socket self, const char* address, int port)
 {
     struct sockaddr_in serverAddress;
 
-    if (!prepareServerAddress(address, port, &serverAddress))
+    if (!prepareAddress(address, port, &serverAddress))
         return false;
 
     setSocketNonBlocking(self);
@@ -456,7 +487,7 @@ Socket_connect(Socket self, const char* address, int port)
     timeout.tv_sec = self->connectTimeout / 1000;
     timeout.tv_usec = (self->connectTimeout % 1000) * 1000;
 
-    if (select(self->fd + 1, NULL, &fdSet, NULL, &timeout) <= 0)
+    if (select((int)self->fd + 1, NULL, &fdSet, NULL, &timeout) <= 0)
         return false;
     else
         return true;
@@ -647,7 +678,7 @@ UdpSocket_bind(UdpSocket self, const char* address, int port)
 {
     struct sockaddr_in localAddress;
 
-    if (!prepareServerAddress(address, port, &localAddress)) {
+    if (!prepareAddress(address, port, &localAddress)) {
 		closesocket(self->fd);
         self->fd = 0;
         return false;
@@ -673,7 +704,7 @@ UdpSocket_sendTo(UdpSocket self, const char* address, int port, uint8_t* msg, in
 {
     struct sockaddr_in remoteAddress;
 
-    if (!prepareServerAddress(address, port, &remoteAddress)) {
+    if (!prepareAddress(address, port, &remoteAddress)) {
 
         if (DEBUG_SOCKET)
             printf("SOCKET: failed to lookup remote address %s\n", address);
