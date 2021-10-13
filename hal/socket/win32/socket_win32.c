@@ -391,7 +391,7 @@ Socket_bind(Socket self, const char* srcAddress, int srcPort)
         self->fd = -1;
 
         return false;
-    ]
+    }
 
     return true;
 }
