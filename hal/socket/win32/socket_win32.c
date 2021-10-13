@@ -86,10 +86,7 @@ void
 Handleset_removeSocket(HandleSet self, const Socket sock)
 {
     if (self != NULL && sock != NULL && sock->fd != INVALID_SOCKET) {
-        FD_SET(sock->fd, &self->handles);
-
-        if ((sock->fd > self->maxHandle) || (self->maxHandle == INVALID_SOCKET))
-            self->maxHandle = sock->fd;
+        FD_CLR(sock->fd, &self->handles);
     }
 }
 
