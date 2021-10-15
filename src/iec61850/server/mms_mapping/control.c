@@ -1003,9 +1003,23 @@ ControlObject_initialize(ControlObject* self)
 
     self->ctlNumSt = MmsServer_getValueFromCache(mmsServer, self->mmsDomain, ctlNumName);
 
+    if (self->ctlNumSt == NULL) {
+        /* for APC */
+        ctlNumName = StringUtils_createStringInBuffer(strBuf, 4, self->lnName, "$MX$", self->name, "$ctlNum");
+
+        self->ctlNumSt = MmsServer_getValueFromCache(mmsServer, self->mmsDomain, ctlNumName);
+    }
+
     char* originName = StringUtils_createStringInBuffer(strBuf, 4, self->lnName, "$ST$", self->name, "$origin");
 
     self->originSt = MmsServer_getValueFromCache(mmsServer, self->mmsDomain, originName);
+
+    if (self->originSt == NULL) {
+        /* for APC */
+        originName = StringUtils_createStringInBuffer(strBuf, 4, self->lnName, "$MX$", self->name, "$origin");
+
+        self->originSt = MmsServer_getValueFromCache(mmsServer, self->mmsDomain, originName);
+    }
 
     char* sboTimeoutName = StringUtils_createStringInBuffer(strBuf, 4, self->lnName, "$CF$", self->name, "$sboTimeout");
 
