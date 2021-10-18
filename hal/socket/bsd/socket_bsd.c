@@ -399,7 +399,7 @@ Socket_connectAsync(Socket self, const char* address, int port)
     if (DEBUG_SOCKET)
         printf("SOCKET: connect: %s:%i\n", address, port);
 
-    if (!prepareServerAddress(address, port, &serverAddress))
+    if (!prepareAddress(address, port, &serverAddress))
         return false;
 
     fd_set fdSet;
