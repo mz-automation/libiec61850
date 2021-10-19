@@ -1,7 +1,7 @@
 /*
  *  iec61850_client.h
  *
- *  Copyright 2013-2019 Michael Zillgith
+ *  Copyright 2013-2021 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -1775,6 +1775,26 @@ IedConnection_createDataSet(IedConnection self, IedClientError* error, const cha
 LIB61850_API bool
 IedConnection_deleteDataSet(IedConnection self, IedClientError* error, const char* dataSetReference);
 
+/**
+ * \brief delete a deletable data set at the connected server device - async version
+ *
+ * This function deletes a data set at the server. The parameter dataSetReference is the name of the data set
+ * to delete. It is either in the form LDName/LNodeName.dataSetName or @dataSetName for an association specific data set.
+ *
+ * The data set was deleted successfully when the callback parameter "error" is IED_ERROR_OK. Otherwise the "error"
+ * parameter contains a particular error code.
+ *
+ * \param connection the connection object
+ * \param error the error code if an error occurs
+ * \param dataSetReference object reference of the data set
+ * \param handler the callback handler that is called when the response is received or timeout
+ * \param parameter user provided parameter that is passed to the callback handler
+ *
+ * \return the invoke ID of the request
+ */
+LIB61850_API uint32_t
+IedConnection_deleteDataSetAsync(IedConnection self, IedClientError* error, const char* dataSetReference,
+        IedConnection_GenericServiceHandler handler, void* parameter);
 
 /**
  * \brief returns the object references of the elements of a data set

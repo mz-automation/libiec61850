@@ -3134,6 +3134,122 @@ exit_function:
     return isDeleted;
 }
 
+static void
+deleteNamedVariableListHandler(uint32_t invokeId, void* parameter, MmsError mmsError, bool success)
+{
+    IedConnection self = (IedConnection) parameter;
+
+    IedConnectionOutstandingCall call = iedConnection_lookupOutstandingCall(self, invokeId);
+
+    if (call) {
+
+        IedConnection_GenericServiceHandler handler = (IedConnection_GenericServiceHandler)call->callback;
+
+        IedClientError err = iedConnection_mapMmsErrorToIedError(mmsError);
+
+        if (err == IED_ERROR_OK) {
+            if (success == false)
+                err = IED_ERROR_ACCESS_DENIED;
+        }
+
+        handler(invokeId, call->callbackParameter, err);
+
+        iedConnection_releaseOutstandingCall(self, call);
+    }
+    else {
+        if (DEBUG_IED_CLIENT)
+            printf("IED_CLIENT: internal error - no matching outstanding call!\n");
+    }
+}
+
+uint32_t
+IedConnection_deleteDataSetAsync(IedConnection self, IedClientError* error, const char* dataSetReference,
+       IedConnection_GenericServiceHandler handler, void* parameter)
+{
+    *error = IED_ERROR_OK;
+
+    char domainIdBuf[65];
+    char *domainId = domainIdBuf;
+    char itemId[DATA_SET_MAX_NAME_LENGTH + 1];
+    bool isAssociationSpecific = false;
+    bool isDeleted = false;
+
+    int dataSetReferenceLength = strlen(dataSetReference);
+
+    if (dataSetReference[0] != '@') {
+        if ((dataSetReference[0] == '/')
+                || (strchr(dataSetReference, '/') == NULL)) {
+            domainId = NULL;
+
+            if (dataSetReference[0] == '/')
+                strcpy(itemId, dataSetReference + 1);
+            else
+                strcpy(itemId, dataSetReference);
+        }
+        else {
+
+            if (MmsMapping_getMmsDomainFromObjectReference(dataSetReference,
+                    domainId) == NULL) {
+                *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
+                return 0;
+            }
+
+            const char *itemIdString = dataSetReference + strlen(domainId) + 1;
+
+            if (strlen(itemIdString) > DATA_SET_MAX_NAME_LENGTH) {
+                *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
+                return 0;
+            }
+
+            StringUtils_copyStringToBuffer(itemIdString, itemId);
+
+            StringUtils_replace(itemId, '.', '$');
+        }
+    }
+    else {
+        if (dataSetReferenceLength > 33) {
+            *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
+            return 0;
+        }
+
+        strcpy(itemId, dataSetReference + 1);
+
+        isAssociationSpecific = true;
+    }
+
+    MmsError mmsError;
+
+    if ((domainId == NULL) || (itemId == NULL)) {
+        *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
+        return 0;
+    }
+
+    IedConnectionOutstandingCall call = iedConnection_allocateOutstandingCall(self);
+
+    if (call == NULL) {
+        *error = IED_ERROR_OUTSTANDING_CALL_LIMIT_REACHED;
+        return 0;
+    }
+
+    call->callback = handler;
+    call->callbackParameter = parameter;
+    call->invokeId = 0;
+
+    if (isAssociationSpecific) {
+        MmsConnection_deleteAssociationSpecificNamedVariableListAsync(self->connection, &(call->invokeId), &mmsError, itemId, deleteNamedVariableListHandler, self);
+    }
+    else {
+        MmsConnection_deleteNamedVariableListAsync(self->connection, &(call->invokeId), &mmsError, domainId, itemId, deleteNamedVariableListHandler, self);
+    }
+
+    if (*error != IED_ERROR_OK) {
+        iedConnection_releaseOutstandingCall(self, call);
+        return 0;
+    }
+
+    return call->invokeId;
+}
+
 LinkedList /* <char*> */
 IedConnection_getDataSetDirectory(IedConnection self, IedClientError* error, const char* dataSetReference, bool* isDeletable)
 {

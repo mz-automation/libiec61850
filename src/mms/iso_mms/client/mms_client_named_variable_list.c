@@ -117,7 +117,7 @@ mmsClient_createDeleteAssociationSpecificNamedVariableListRequest(
 }
 
 bool
-mmsClient_parseDeleteNamedVariableListResponse(ByteBuffer* message, uint32_t* invokeId)
+mmsClient_parseDeleteNamedVariableListResponse(ByteBuffer* message, uint32_t* invokeId, long* numberDeleted, long* numberMatched)
 {
     MmsPdu_t* mmsPdu = 0;
 
@@ -138,11 +138,10 @@ mmsClient_parseDeleteNamedVariableListResponse(ByteBuffer* message, uint32_t* in
                 DeleteNamedVariableListResponse_t* response =
                         &(mmsPdu->choice.confirmedResponsePdu.confirmedServiceResponse.choice.deleteNamedVariableList);
 
-                long numberDeleted;
+                asn_INTEGER2long(&(response->numberDeleted), numberDeleted);
+                asn_INTEGER2long(&(response->numberMatched), numberMatched);
 
-                asn_INTEGER2long(&(response->numberDeleted), &numberDeleted);
-
-                if (numberDeleted == 1)
+                if (*numberDeleted == 1)
                     retVal = true;
             }
         }
