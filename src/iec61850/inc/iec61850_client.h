@@ -1760,6 +1760,31 @@ LIB61850_API void
 IedConnection_createDataSet(IedConnection self, IedClientError* error, const char* dataSetReference, LinkedList /* char* */ dataSetElements);
 
 /**
+ * \brief create a new data set at the connected server device
+ *
+ * This function creates a new data set at the server. The parameter dataSetReference is the name of the new data set
+ * to create. It is either in the form LDName/LNodeName.dataSetName for permanent domain or VMD scope data sets or
+ * @dataSetName for an association specific data set. If the LDName part of the reference is missing the resulting
+ * data set will be of VMD scope.
+ *
+ * The dataSetElements parameter contains a linked list containing the object references of FCDs or FCDAs. The format of
+ * this object references is LDName/LNodeName.item(arrayIndex)component[FC].
+ *
+ * \param connection the connection object
+ * \param error the error code if an error occurs
+ * \param dataSetReference object reference of the data set
+ * \param dataSetElements a list of object references defining the members of the new data set
+ *
+ * \param handler the callback handler that is called when the response is received or timeout
+ * \param parameter user provided parameter that is passed to the callback handler
+ *
+ * \return the invoke ID of the request
+ */
+LIB61850_API uint32_t
+IedConnection_createDataSetAsync(IedConnection self, IedClientError* error, const char* dataSetReference, LinkedList /* char* */ dataSetElements,
+        IedConnection_GenericServiceHandler handler, void* parameter);
+
+/**
  * \brief delete a deletable data set at the connected server device
  *
  * This function deletes a data set at the server. The parameter dataSetReference is the name of the data set
