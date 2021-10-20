@@ -3171,7 +3171,6 @@ IedConnection_deleteDataSetAsync(IedConnection self, IedClientError* error, cons
     char *domainId = domainIdBuf;
     char itemId[DATA_SET_MAX_NAME_LENGTH + 1];
     bool isAssociationSpecific = false;
-    bool isDeleted = false;
 
     int dataSetReferenceLength = strlen(dataSetReference);
 
