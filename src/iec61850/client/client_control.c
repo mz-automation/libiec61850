@@ -441,8 +441,12 @@ prepareOperParameters(ControlObjectClient self, MmsValue* ctlVal, uint64_t operT
 
     MmsValue* ctlTime;
 
-    if (self->edition == 2)
+    if (self->edition == 2) {
         ctlTime = MmsValue_newUtcTimeByMsTime(timestamp);
+
+        if (self->connection)
+            MmsValue_setUtcTimeQuality(ctlTime, self->connection->timeQuality);
+    }
     else {
         ctlTime = MmsValue_newBinaryTime(false);
         MmsValue_setBinaryTime(ctlTime, timestamp);
@@ -682,8 +686,12 @@ prepareSBOwParameters(ControlObjectClient self, MmsValue* ctlVal)
     if (self->useConstantT)
         self->constantT = timestamp;
 
-    if (self->edition == 2)
+    if (self->edition == 2) {
         ctlTime = MmsValue_newUtcTimeByMsTime(timestamp);
+
+        if (self->connection)
+            MmsValue_setUtcTimeQuality(ctlTime, self->connection->timeQuality);
+    }
     else {
         ctlTime = MmsValue_newBinaryTime(false);
         MmsValue_setBinaryTime(ctlTime, timestamp);
@@ -1089,8 +1097,12 @@ createCancelParameters(ControlObjectClient self)
 
     MmsValue* ctlTime;
 
-    if (self->edition == 2)
+    if (self->edition == 2) {
         ctlTime = MmsValue_newUtcTimeByMsTime(timestamp);
+
+        if (self->connection)
+            MmsValue_setUtcTimeQuality(ctlTime, self->connection->timeQuality);
+    }
     else {
         ctlTime = MmsValue_newBinaryTime(false);
         MmsValue_setBinaryTime(ctlTime, timestamp);

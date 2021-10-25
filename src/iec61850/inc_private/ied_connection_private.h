@@ -75,6 +75,8 @@ struct sIedConnection
     void* connectionStateChangedHandlerParameter;
 
     uint32_t connectionTimeout;
+
+    uint8_t timeQuality;
 };
 
 struct sClientReportControlBlock {
