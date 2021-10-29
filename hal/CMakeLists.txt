@@ -147,43 +147,49 @@ list (APPEND libhal_SRCS ${tls_SRCS})
 
 endif(WITH_MBEDTLS)
 
-add_library (hal STATIC ${libhal_SRCS})
+if (CONFIG_IEC61850_HAL_STATIC)
+  add_library (hal STATIC ${libhal_SRCS})
+endif (CONFIG_IEC61850_HAL_STATIC)
 
-add_library (hal-shared STATIC ${libhal_SRCS})
+if (CONFIG_IEC61850_HAL_SHARED)
+  add_library (hal-shared STATIC ${libhal_SRCS})
 
-target_compile_definitions(hal-shared PRIVATE EXPORT_FUNCTIONS_FOR_DLL)
+  target_compile_definitions(hal-shared PRIVATE EXPORT_FUNCTIONS_FOR_DLL)
 
-SET_TARGET_PROPERTIES(hal-shared PROPERTIES
-  COMPILE_FLAGS "-fPIC"
-)
+  SET_TARGET_PROPERTIES(hal-shared PROPERTIES
+    COMPILE_FLAGS "-fPIC"
+  )
+endif (CONFIG_IEC61850_HAL_SHARED)
 
-IF(UNIX)
-  IF (CONFIG_SYSTEM_HAS_CLOCK_GETTIME)
-     target_link_libraries (hal
-         -lpthread
-         -lrt
-     )
-  ELSE ()
-     target_link_libraries (hal
-         -lpthread
-     )
-  ENDIF (CONFIG_SYSTEM_HAS_CLOCK_GETTIME)
-ENDIF(UNIX)
+if (CONFIG_IEC61850_HAL_STATIC)
+  IF(UNIX)
+    IF (CONFIG_SYSTEM_HAS_CLOCK_GETTIME)
+       target_link_libraries (hal
+           -lpthread
+           -lrt
+       )
+    ELSE ()
+       target_link_libraries (hal
+           -lpthread
+       )
+    ENDIF (CONFIG_SYSTEM_HAS_CLOCK_GETTIME)
+  ENDIF(UNIX)
 
-IF(CONFIG_USE_EXTERNAL_MBEDTLS_DYNLIB)
-  target_link_libraries(hal mbedcrypto mbedx509 mbedtls)
-ENDIF(CONFIG_USE_EXTERNAL_MBEDTLS_DYNLIB)
+  IF(CONFIG_USE_EXTERNAL_MBEDTLS_DYNLIB)
+    target_link_libraries(hal mbedcrypto mbedx509 mbedtls)
+  ENDIF(CONFIG_USE_EXTERNAL_MBEDTLS_DYNLIB)
 
-IF(MINGW)
-  target_link_libraries(hal ws2_32 iphlpapi)
-ENDIF(MINGW)
+  IF(MINGW)
+    target_link_libraries(hal ws2_32 iphlpapi)
+  ENDIF(MINGW)
 
-iF(WITH_WPCAP)
-target_link_libraries(hal
-	${CMAKE_CURRENT_SOURCE_DIR}/../third_party/winpcap/Lib/wpcap.lib
-	${CMAKE_CURRENT_SOURCE_DIR}/../third_party/winpcap/Lib/packet.lib
-)
-ENDIF(WITH_WPCAP)
+  iF(WITH_WPCAP)
+  target_link_libraries(hal
+	  ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/winpcap/Lib/wpcap.lib
+	  ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/winpcap/Lib/packet.lib
+  )
+  ENDIF(WITH_WPCAP)
+endif (CONFIG_IEC61850_HAL_STATIC)
 
 set(BINDIR "bin")
 set(LIBDIR "lib")
@@ -194,8 +200,18 @@ if(UNIX)
     set(BINDIR ${CMAKE_INSTALL_BINDIR})
 endif()
 
-install (TARGETS hal hal-shared
-	RUNTIME DESTINATION ${BINDIR} COMPONENT Applications
-	ARCHIVE DESTINATION ${LIBDIR} COMPONENT Libraries
-    LIBRARY DESTINATION ${LIBDIR} COMPONENT Libraries
-)
+if (CONFIG_IEC61850_HAL_STATIC)
+  install (TARGETS hal
+	    RUNTIME DESTINATION ${BINDIR} COMPONENT Applications
+	    ARCHIVE DESTINATION ${LIBDIR} COMPONENT Libraries
+        LIBRARY DESTINATION ${LIBDIR} COMPONENT Libraries
+    )
+endif (CONFIG_IEC61850_HAL_STATIC)
+
+if (CONFIG_IEC61850_HAL_SHARED)
+  install (TARGETS hal-shared
+	  RUNTIME DESTINATION ${BINDIR} COMPONENT Applications
+	  ARCHIVE DESTINATION ${LIBDIR} COMPONENT Libraries
+      LIBRARY DESTINATION ${LIBDIR} COMPONENT Libraries
+  )
+endif (CONFIG_IEC61850_HAL_SHARED)

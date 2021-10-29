@@ -49,6 +49,11 @@ option(CONFIG_IEC61850_SERVICE_TRACKING "Build with support for IEC 61850 servic
 option(CONFIG_IEC61850_SETTING_GROUPS "Build with support for IEC 61850 setting group services" ON)
 option(CONFIG_IEC61850_SUPPORT_USER_READ_ACCESS_CONTROL "Allow user provided callback to control read access" ON)
 
+option(CONFIG_IEC61850_HAL_STATIC "Build the static hal library" ON)
+option(CONFIG_IEC61850_HAL_SHARED "Build the shared hal library" ON)
+option(CONFIG_IEC61850_IEC61850_STATIC "Build the static iec61850 library" ON)
+option(CONFIG_IEC61850_IEC61850_SHARED "Build the shared iec61850 library" ON)
+
 set(CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE "65536" CACHE STRING "Default buffer size for buffered reports in byte" )
 
 # advanced options
