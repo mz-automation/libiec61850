@@ -1,3 +1,6 @@
 build/
 Debug/
+bin/
+obj/
 third_party/winpcap/
+

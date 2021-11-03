@@ -43,6 +43,7 @@
 #if defined(_MSC_VER) && _MSC_VER < 1900
 #define snprintf(buf,len, format,...) _snprintf_s(buf, len,len, format, __VA_ARGS__)
 #endif
+#include <math.h>
 
 struct sMmsGooseControlBlock {
     char* name;
@@ -600,22 +601,23 @@ MmsGooseControlBlock_checkAndPublish(MmsGooseControlBlock self, uint64_t current
 
                 GoosePublisher_publish(self->publisher, self->dataSetValues);
 
-                if (self->retransmissionsLeft > 0) {
-                    self->nextPublishTime = currentTime + self->minTime;
+                int period;
 
+                if (self->retransmissionsLeft > 0) {
+                    period = self->minTime * pow(2, CONFIG_GOOSE_EVENT_RETRANSMISSION_COUNT - self->retransmissionsLeft);
 
                     if (self->retransmissionsLeft > 1)
-                        GoosePublisher_setTimeAllowedToLive(self->publisher, self->minTime * 3);
+                        GoosePublisher_setTimeAllowedToLive(self->publisher, period * 2 * 2);
                     else
-                        GoosePublisher_setTimeAllowedToLive(self->publisher, self->maxTime * 3);
+                        GoosePublisher_setTimeAllowedToLive(self->publisher, self->maxTime * 2);
 
                     self->retransmissionsLeft--;
                 }
                 else {
-                    GoosePublisher_setTimeAllowedToLive(self->publisher, self->maxTime * 3);
-
-                    self->nextPublishTime = currentTime + self->maxTime;
+                    period = self->maxTime;
                 }
+
+                self->nextPublishTime = currentTime + period;
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
                 Semaphore_post(self->publisherMutex);
@@ -652,18 +654,9 @@ MmsGooseControlBlock_publishNewState(MmsGooseControlBlock self)
 
     self->retransmissionsLeft = CONFIG_GOOSE_EVENT_RETRANSMISSION_COUNT;
 
-    if (self->retransmissionsLeft > 0) {
-        self->nextPublishTime = currentTime + self->minTime;
+    GoosePublisher_setTimeAllowedToLive(self->publisher, self->minTime * 2);
 
-        GoosePublisher_setTimeAllowedToLive(self->publisher, self->minTime * 3);
-    }
-    else {
-        self->nextPublishTime = currentTime + self->maxTime;
-
-        GoosePublisher_setTimeAllowedToLive(self->publisher, self->maxTime * 3);
-    }
-
-    GoosePublisher_publish(self->publisher, self->dataSetValues);
+    self->nextPublishTime = currentTime;
 
     self->stateChangePending = false;
 
