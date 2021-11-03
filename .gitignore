@@ -1,2 +1,3 @@
 build/
-/Debug/
+Debug/
+third_party/winpcap/
