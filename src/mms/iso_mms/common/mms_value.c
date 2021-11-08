@@ -232,7 +232,7 @@ bool
 MmsValue_update(MmsValue* self, const MmsValue* update)
 {
     if (self && update) {
-        if (self->type == update->type) {
+        if (self->type == update->type || (self->type == MMS_STRUCTURE && update->type == MMS_ARRAY)) {
             switch (self->type)
             {
             case MMS_STRUCTURE:
