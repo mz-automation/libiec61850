@@ -2370,14 +2370,17 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
 free_and_return:
 
 #if (CONFIG_IEC61850_SERVICE_TRACKING == 1)
-    if (serviceError == IEC61850_SERVICE_ERROR_NO_ERROR) {
-        if (indication != DATA_ACCESS_ERROR_NO_RESPONSE) {
-            updateGenericTrackingObjectValues(self, controlObject, serviceType,
-                    private_IedServer_convertMmsDataAccessErrorToServiceError(indication));
+    if (controlObject) {
+        if (serviceError == IEC61850_SERVICE_ERROR_NO_ERROR) {
+            if (indication != DATA_ACCESS_ERROR_NO_RESPONSE) {
+                updateGenericTrackingObjectValues(self, controlObject, serviceType,
+                        private_IedServer_convertMmsDataAccessErrorToServiceError(indication));
+            }
+        }
+        else {
+            updateGenericTrackingObjectValues(self, controlObject, serviceType, serviceError);
         }
     }
-    else
-        updateGenericTrackingObjectValues(self, controlObject, serviceType, serviceError);
 #endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
 
     resetAddCause(controlObject);
