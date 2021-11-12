@@ -99,6 +99,17 @@ MmsValue_newUnsignedFromBerInteger(Asn1PrimitiveValue* berInteger)
 }
 
 bool
+equalType(const MmsValue* self, const MmsValue* otherValue)
+{
+    if (self->type == otherValue->type ||
+        (self->type == MMS_STRUCTURE && otherValue->type == MMS_ARRAY) ||
+        (self->type == MMS_ARRAY && otherValue->type == MMS_STRUCTURE))
+        return true;
+
+    return false;
+}
+
+bool
 MmsValue_equals(const MmsValue* self, const MmsValue* otherValue)
 {
     if (equalType(self, otherValue)) {
@@ -190,23 +201,13 @@ MmsValue_equals(const MmsValue* self, const MmsValue* otherValue)
         return false;
 }
 
-static bool
-equalType(const MmsValue* self, const MmsValue* otherValue) {
-    if (self->type == otherValue->type ||
-        (self->type == MMS_STRUCTURE && otherValue->type == MMS_ARRAY) ||
-        (self->type == MMS_ARRAY && otherValue->type == MMS_STRUCTURE))
-        return true;
-
-    return false;
-}
-
 bool
 MmsValue_equalTypes(const MmsValue* self, const MmsValue* otherValue)
 {
     if ((self == NULL) || (otherValue == NULL))
         return false;
 
-    if (equalType(self ,otherValue)) {
+    if (equalType(self, otherValue)) {
 
         switch (self->type)
         {
