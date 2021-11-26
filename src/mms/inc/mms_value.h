@@ -555,6 +555,21 @@ LIB61850_API void
 MmsValue_setOctetString(MmsValue* self, const uint8_t* buf, int size);
 
 /**
+ * \brief Set a single octet of an MmsValue object of type MMS_OCTET_STRING.
+ *
+ * This method will copy the provided octet to the internal buffer of the
+ * MmsValue instance, at the 'octetPos' position. This will only happen
+ * if the internal buffer size is large enough. Otherwise the object value is not changed.
+ *
+ * \param self MmsValue instance to operate on. Has to be of a type MMS_OCTET_STRING.
+ * \param octetPos the position of the octet in the octet string. Starting with 0.
+ *        The octet with position 0 is the first octet if the MmsValue instance is serialized.
+ * \param value the new value of the octet (0 to 255, or 0x00 to 0xFF)
+ */
+LIB61850_API void
+MmsValue_setOctetStringOctet(MmsValue* self, int octetPos, uint8_t value);
+
+/**
  * \brief Returns the size in bytes of an MmsValue object of type MMS_OCTET_STRING.
  *
  * NOTE: To access the byte in the buffer the function \ref MmsValue_getOctetStringBuffer
@@ -591,6 +606,20 @@ MmsValue_getOctetStringMaxSize(MmsValue* self);
  */
 LIB61850_API uint8_t*
 MmsValue_getOctetStringBuffer(MmsValue* self);
+
+/**
+ * \brief Get the value of a single octet of an MmsType object of type MMS_OCTET_STRING
+ *
+ * NOTE: The octet quantity of the octet string can be requested with
+ * the \ref MmsValue_getOctetStringSize function.
+ *
+ * \param self MmsValue instance to operate on. Has to be of a type MMS_OCTET_STRING.
+ * \param octetPos the position of the octet in the octet string. Starting with 0. The octet
+ *        with position 0 is the first octet if the MmsValue instance is serialized.
+ * \return the value of the octet (0 to 255, or 0x00 to 0xFF)
+ */
+LIB61850_API uint8_t
+MmsValue_getOctetStringOctet(MmsValue* self, int octetPos);
 
 /**
  * \brief Update the value of an MmsValue instance by the value of another MmsValue instance.
