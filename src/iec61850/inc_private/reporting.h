@@ -154,6 +154,9 @@ LIB61850_INTERNAL void
 Reporting_sendReports(MmsMapping* self, MmsServerConnection connection);
 
 LIB61850_INTERNAL void
+Reporting_deactivateAllReports(MmsMapping* self);
+
+LIB61850_INTERNAL void
 Reporting_deactivateReportsForConnection(MmsMapping* self, MmsServerConnection connection);
 
 #endif /* REPORTING_H_ */

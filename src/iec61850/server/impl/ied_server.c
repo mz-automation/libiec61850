@@ -719,6 +719,8 @@ IedServer_stop(IedServer self)
 
         MmsMapping_stopEventWorkerThread(self->mmsMapping);
 
+        Reporting_deactivateAllReports(self->mmsMapping);
+
 #if (CONFIG_MMS_SINGLE_THREADED == 1)
         Thread_destroy(self->serverThread);
         self->serverThread = NULL;

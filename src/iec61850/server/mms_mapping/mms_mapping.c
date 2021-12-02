@@ -3135,6 +3135,11 @@ mmsConnectionHandler(void* parameter, MmsServerConnection connection, MmsServerE
     else if (event == MMS_SERVER_CONNECTION_CLOSED) {
         ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer, connection);
 
+        if (clientConnection == NULL) {
+            printf("clientConnection == NULL -> exit\n");
+            exit(-1);
+        }
+
         /* call user provided handler function */
         if (self->connectionIndicationHandler != NULL)
             self->connectionIndicationHandler(self->iedServer, clientConnection, false,

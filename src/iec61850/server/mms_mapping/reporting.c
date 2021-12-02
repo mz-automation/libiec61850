@@ -2099,50 +2099,71 @@ exit_function:
     return retVal;
 }
 
+static void
+Reporting_disableReportControlInstance(MmsMapping* self, ReportControl* rc)
+{
+    rc->enabled = false;
+    rc->clientConnection = NULL;
+
+    MmsValue* rptEna = ReportControl_getRCBValue(rc, "RptEna");
+    MmsValue_setBoolean(rptEna, false);
+
+    rc->reserved = false;
+
+    if (rc->buffered == false) {
+
+        if (rc->resvTms != -1) {
+            MmsValue* resv = ReportControl_getRCBValue(rc, "Resv");
+            MmsValue_setBoolean(resv, false);
+        }
+
+        if (rc->resvTms != -1)
+            updateOwner(rc, NULL);
+
+        /* delete buffer content */
+        purgeBuf(rc);
+    }
+    else {
+        if (rc->resvTms == 0)
+            updateOwner(rc, NULL);
+        else if (rc->resvTms > 0) {
+             rc->reservationTimeout = Hal_getTimeInMs() + (rc->resvTms * 1000);
+        }
+    }
+
+#if (CONFIG_IEC61850_SERVICE_TRACKING == 1)
+    copyRCBValuesToTrackingObject(self, rc);
+    updateGenericTrackingObjectValues(self, rc, IEC61850_SERVICE_TYPE_INTERNAL_CHANGE, DATA_ACCESS_ERROR_SUCCESS);
+#endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
+}
+
+void
+Reporting_deactivateAllReports(MmsMapping* self)
+{
+    LinkedList rcElem = LinkedList_getNext(self->reportControls);
+
+    while (rcElem) {
+        ReportControl* rc = (ReportControl*)LinkedList_getData(rcElem);
+
+        Reporting_disableReportControlInstance(self, rc);
+
+        rcElem = LinkedList_getNext(rcElem);
+    }
+}
+
 void
 Reporting_deactivateReportsForConnection(MmsMapping* self, MmsServerConnection connection)
 {
-    LinkedList reportControl = self->reportControls;
+    LinkedList rcElem = LinkedList_getNext(self->reportControls);
 
-    while ((reportControl = LinkedList_getNext(reportControl)) != NULL) {
-        ReportControl* rc = (ReportControl*) reportControl->data;
+    while (rcElem) {
+        ReportControl* rc = (ReportControl*)LinkedList_getData(rcElem);
 
         if (rc->clientConnection == connection) {
-
-            rc->enabled = false;
-            rc->clientConnection = NULL;
-
-            MmsValue* rptEna = ReportControl_getRCBValue(rc, "RptEna");
-            MmsValue_setBoolean(rptEna, false);
-
-            rc->reserved = false;
-
-            if (rc->buffered == false) {
-
-                if (rc->resvTms != -1) {
-                    MmsValue* resv = ReportControl_getRCBValue(rc, "Resv");
-                    MmsValue_setBoolean(resv, false);
-                }
-
-                if (rc->resvTms != -1)
-                    updateOwner(rc, NULL);
-
-                /* delete buffer content */
-                purgeBuf(rc);
-            }
-            else {
-                if (rc->resvTms == 0)
-                    updateOwner(rc, NULL);
-                else if (rc->resvTms > 0) {
-                     rc->reservationTimeout = Hal_getTimeInMs() + (rc->resvTms * 1000);
-                }
-            }
-
-#if (CONFIG_IEC61850_SERVICE_TRACKING == 1)
-            copyRCBValuesToTrackingObject(self, rc);
-            updateGenericTrackingObjectValues(self, rc, IEC61850_SERVICE_TYPE_INTERNAL_CHANGE, DATA_ACCESS_ERROR_SUCCESS);
-#endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
+            Reporting_disableReportControlInstance(self, rc);
         }
+
+        rcElem = LinkedList_getNext(rcElem);
     }
 }
 
@@ -2224,6 +2245,8 @@ removeAllGIReportsFromReportBuffer(ReportBuffer* reportBuffer)
                 printf("\n");
 #endif
 
+            reportBuffer->reportsCount--;
+
             if (reportBuffer->nextToTransmit == currentReport)
                 reportBuffer->nextToTransmit = currentReport->next;
 
@@ -2253,16 +2276,16 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
             reportControl->name, (unsigned) reportControl->sqNum, reportControl->enabled,
             reportControl->isBuffering, reportControl->buffered, isIntegrity, isGI);
 
+    ReportBuffer* buffer = reportControl->reportBuffer;
+
+    Semaphore_wait(buffer->lock);
+
     bool isBuffered = reportControl->buffered;
     bool overflow = false;
 
     updateTimeOfEntry(reportControl, Hal_getTimeInMs());
 
     int inclusionBitStringSize = MmsValue_getBitStringSize(reportControl->inclusionField);
-
-    ReportBuffer* buffer = reportControl->reportBuffer;
-
-    Semaphore_wait(buffer->lock);
 
     /* calculate size of complete buffer entry */
     int bufferEntrySize = MemoryAllocator_getAlignedSize(sizeof(ReportBufferEntry));
@@ -2417,9 +2440,8 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
 #if (DEBUG_IED_SERVER == 1)
                     printf("IED_SERVER: REMOVE report with ID ");
                     printReportId(buffer->oldestReport);
-                    printf("\n");
+                    printf(" (index: %li, size: %i)\n", (void*)(buffer->oldestReport) - (void*)(buffer->memoryBlock), buffer->oldestReport->entryLength);
 #endif
-
                     buffer->oldestReport = buffer->oldestReport->next;
 
                     buffer->reportsCount--;
@@ -2451,7 +2473,7 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
                     }
 
 #if (DEBUG_IED_SERVER == 1)
-                    printf("IED_SERVER: REMOVE report with ID ");
+                    printf("IED_SERVER: REMOVE[1] report with ID ");
                     printReportId(buffer->oldestReport);
                     printf("\n");
 #endif
@@ -2474,7 +2496,7 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
                     }
 
 #if (DEBUG_IED_SERVER == 1)
-                    printf("IED_SERVER: REMOVE report with ID ");
+                    printf("IED_SERVER: REMOVE[2] report with ID ");
                     printReportId(buffer->oldestReport);
                     printf("\n");
 #endif
@@ -2498,7 +2520,7 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
                     }
 
 #if (DEBUG_IED_SERVER == 1)
-                    printf("IED_SERVER: REMOVE report with ID ");
+                    printf("IED_SERVER: REMOVE[3] report with ID ");
                     printReportId(buffer->oldestReport);
                     printf("\n");
 #endif
@@ -3031,8 +3053,6 @@ sendNextReportEntrySegment(ReportControl* self)
         DataSetEntry* dataSetEntry = getDataSetEntryWithIndex(self->dataSet->fcdas, startElementIndex);
 
         for (i = startElementIndex; i < maxIndex; i++) {
-            assert(dataSetEntry->value != NULL);
-
             bool addReferenceForEntry = false;
 
             if (report->flags > 0)
