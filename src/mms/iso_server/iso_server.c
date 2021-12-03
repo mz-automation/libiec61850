@@ -440,6 +440,11 @@ setupIsoServer(IsoServer self)
             CONFIG_TCP_KEEPALIVE_CNT);
 #endif
 
+#if (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS == -1)
+    if (self->openClientConnections == NULL)
+        self->openClientConnections = LinkedList_create();
+#endif
+
     ServerSocket_setBacklog((ServerSocket) self->serverSocket, BACKLOG);
 
     ServerSocket_listen((ServerSocket) self->serverSocket);
@@ -666,6 +671,11 @@ IsoServer_startListening(IsoServer self)
     }
 
     self->state = ISO_SVR_STATE_IDLE;
+
+#if (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS == -1)
+    if (self->openClientConnections == NULL)
+        self->openClientConnections = LinkedList_create();
+#endif
 
     self->serverThread = Thread_create((ThreadExecutionFunction) isoServerThread, self, false);
 
