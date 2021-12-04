@@ -3280,7 +3280,7 @@ uint32_t
 IedConnection_createDataSetAsync(IedConnection self, IedClientError* error, const char* dataSetReference, LinkedList /* char* */ dataSetElements,
         IedConnection_GenericServiceHandler handler, void* parameter)
 {
-    int invokeId = 0;
+    uint32_t invokeId = 0;
 
     char domainIdBuffer[65];
     char itemIdBuffer[DATA_SET_MAX_NAME_LENGTH + 1];
@@ -3443,8 +3443,8 @@ IedConnection_getDataSetDirectory(IedConnection self, IedClientError* error, con
 
         dataSetMembers = LinkedList_create();
 
-        while (entry != NULL) {
-            MmsVariableAccessSpecification* varAccessSpec = (MmsVariableAccessSpecification*) entry->data;
+        while (entry) {
+            MmsVariableAccessSpecification* varAccessSpec = (MmsVariableAccessSpecification*)LinkedList_getData(entry);
 
             char* objectReference = MmsMapping_varAccessSpecToObjectReference(varAccessSpec);
 
@@ -3463,6 +3463,120 @@ IedConnection_getDataSetDirectory(IedConnection self, IedClientError* error, con
 
 exit_function:
     return dataSetMembers;
+}
+
+static void
+getDataSetDirectoryAsyncHandler(uint32_t invokeId, void* parameter, MmsError mmsError, LinkedList /* <MmsVariableAccessSpecification*> */ specs, bool deletable)
+{
+    IedConnection self = (IedConnection)parameter;
+
+    IedClientError err = IED_ERROR_OK;
+
+    IedConnectionOutstandingCall call = iedConnection_lookupOutstandingCall(self, invokeId);
+
+    if (call) {
+        LinkedList dataSetMembers = NULL;
+
+        if (mmsError != MMS_ERROR_NONE)
+            err = iedConnection_mapMmsErrorToIedError(mmsError);
+
+        if (specs) {
+            dataSetMembers = LinkedList_create();
+            LinkedList specElem = LinkedList_getNext(specs);
+
+            while (specElem) {
+                MmsVariableAccessSpecification* varAccessSpec = (MmsVariableAccessSpecification*)LinkedList_getData(specElem);
+
+                char* objectReference = MmsMapping_varAccessSpecToObjectReference(varAccessSpec);
+
+                LinkedList_add(dataSetMembers, objectReference);
+
+                specElem = LinkedList_getNext(specElem);
+            }
+        }
+
+        IedConnection_GetDataSetDirectoryHandler handler = (IedConnection_GetDataSetDirectoryHandler)call->callback;
+
+        if (handler)
+            handler(call->invokeId, call->callbackParameter, err, dataSetMembers, deletable);
+    }
+
+    if (specs)
+        LinkedList_destroyDeep(specs, (LinkedListValueDeleteFunction) MmsVariableAccessSpecification_destroy);
+}
+
+uint32_t
+IedConnection_getDataSetDirectoryAsync(IedConnection self, IedClientError* error, const char* dataSetReference,
+        IedConnection_GetDataSetDirectoryHandler handler, void* parameter)
+{
+    uint32_t invokeId = 0;
+
+    IedConnectionOutstandingCall call = iedConnection_allocateOutstandingCall(self);
+
+    if (call == NULL) {
+        *error = IED_ERROR_OUTSTANDING_CALL_LIMIT_REACHED;
+        return 0;
+    }
+
+    call->callback = handler;
+    call->callbackParameter = parameter;
+    call->invokeId = 0;
+
+    char domainIdBuffer[65];
+    char itemIdBuffer[DATA_SET_MAX_NAME_LENGTH + 1];
+
+    const char* domainId = NULL;
+    const char* itemId = NULL;
+
+    bool isAssociationSpecific = false;
+
+    if (dataSetReference[0] != '@') {
+        if ((dataSetReference[0] == '/') || (strchr(dataSetReference, '/') == NULL)) {
+            domainId = NULL;
+
+            if (dataSetReference[0] == '/')
+                itemId = dataSetReference + 1;
+            else
+                itemId = dataSetReference;
+        }
+        else {
+            domainId = MmsMapping_getMmsDomainFromObjectReference(dataSetReference, domainIdBuffer);
+
+            if (domainId == NULL) {
+                *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
+                goto exit_function;
+            }
+
+            const char* itemIdRef = dataSetReference + strlen(domainId) + 1;
+
+            if (strlen(itemIdRef) > DATA_SET_MAX_NAME_LENGTH) {
+                *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
+                goto exit_function;
+            }
+
+            char* itemIdRefInBuffer = StringUtils_copyStringToBuffer(itemIdRef, itemIdBuffer);
+            StringUtils_replace(itemIdRefInBuffer, '.', '$');
+            itemId = itemIdRefInBuffer;
+        }
+    }
+    else {
+        itemId = dataSetReference + 1;
+        isAssociationSpecific = true;
+    }
+
+    MmsError mmsError = MMS_ERROR_NONE;
+
+
+    if (isAssociationSpecific)
+        MmsConnection_readNamedVariableListDirectoryAssociationSpecificAsync(self->connection, &(call->invokeId), &mmsError, itemId, getDataSetDirectoryAsyncHandler, self);
+
+    else
+        MmsConnection_readNamedVariableListDirectoryAsync(self->connection, &(call->invokeId), &mmsError, domainId, itemId, getDataSetDirectoryAsyncHandler, self);
+
+    *error = iedConnection_mapMmsErrorToIedError(mmsError);
+
+exit_function:
+    return invokeId;
 }
 
 ClientDataSet

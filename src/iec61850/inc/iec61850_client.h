@@ -1801,7 +1801,7 @@ LIB61850_API bool
 IedConnection_deleteDataSet(IedConnection self, IedClientError* error, const char* dataSetReference);
 
 /**
- * \brief delete a deletable data set at the connected server device - async version
+ * \brief delete a deletable data set at the connected server device - asynchronous version
  *
  * This function deletes a data set at the server. The parameter dataSetReference is the name of the data set
  * to delete. It is either in the form LDName/LNodeName.dataSetName or @dataSetName for an association specific data set.
@@ -1822,7 +1822,7 @@ IedConnection_deleteDataSetAsync(IedConnection self, IedClientError* error, cons
         IedConnection_GenericServiceHandler handler, void* parameter);
 
 /**
- * \brief returns the object references of the elements of a data set
+ * \brief read the data set directory
  *
  * The return value contains a linked list containing the object references of FCDs or FCDAs. The format of
  * this object references is LDName/LNodeName.item(arrayIndex)component[FC].
@@ -1837,6 +1837,34 @@ IedConnection_deleteDataSetAsync(IedConnection self, IedClientError* error, cons
  */
 LIB61850_API LinkedList /* <char*> */
 IedConnection_getDataSetDirectory(IedConnection self, IedClientError* error, const char* dataSetReference, bool* isDeletable);
+
+/**
+ * \brief GetDataSetDirectory response or timeout callback
+ *
+ * \param dataSetDirectory a linked list containing the object references of FCDs or FCDAs. The format of
+ *                         this object references is LDName/LNodeName.item(arrayIndex)component[FC].
+ * \param isDeletable this is an output parameter indicating that the requested data set is deletable by clients.
+ */
+typedef void
+(*IedConnection_GetDataSetDirectoryHandler) (uint32_t invokeId, void* parameter, IedClientError err, LinkedList /* <char*> */ dataSetDirectory, bool isDeletable);
+
+/**
+ * \brief read the data set directory - asynchronous version
+ *
+ * The result data is a linked list containing the object references of FCDs or FCDAs. The format of
+ * this object references is LDName/LNodeName.item(arrayIndex)component[FC].
+ *
+ * \param connection the connection object
+ * \param[out] error the error code if an error occurs
+ * \param dataSetReference object reference of the data set
+ * \param handler the callback handler that is called when the response is received or timeout
+ * \param parameter user provided parameter that is passed to the callback handler
+ *
+ * \return the invoke ID of the request
+ */
+LIB61850_API uint32_t
+IedConnection_getDataSetDirectoryAsync(IedConnection self, IedClientError* error, const char* dataSetReference,
+        IedConnection_GetDataSetDirectoryHandler handler, void* parameter);
 
 /**
  * \brief Write the data set values to the server
