@@ -1,7 +1,7 @@
 /*
  *  IEC61850ClientAPI.cs
  *
- *  Copyright 2014-2019 Michael Zillgith
+ *  Copyright 2014-2021 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -622,12 +622,30 @@ namespace IEC61850
                                                         int fc, IedConnection_GetVariableSpecificationHandler handler, IntPtr parameter);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            private delegate void IedConnection_ReadDataSetHandler(UInt32 invokeId,IntPtr parameter,int err,IntPtr dataSet);
+            private delegate void IedConnection_ReadDataSetHandler(UInt32 invokeId, IntPtr parameter, int err, IntPtr dataSet);
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)] 
             static extern UInt32
             IedConnection_readDataSetValuesAsync(IntPtr self, out int error, string dataSetReference, IntPtr dataSet,
                                                  IedConnection_ReadDataSetHandler handler, IntPtr parameter);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern UInt32
+            IedConnection_createDataSetAsync(IntPtr self, out int error, [MarshalAs(UnmanagedType.LPStr)] string dataSetReference, IntPtr dataSet,
+                IedConnection_GenericServiceHandler handler, IntPtr parameter);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern UInt32
+            IedConnection_deleteDataSetAsync(IntPtr self, out int error, [MarshalAs(UnmanagedType.LPStr)] string dataSetReference,
+                IedConnection_GenericServiceHandler handler, IntPtr parameter);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            private delegate void IedConnection_GetDataSetDirectoryHandler(UInt32 invokeId, IntPtr parameter, int err, IntPtr dataSetDirectory, [MarshalAs(UnmanagedType.I1)] bool isDeletable);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern UInt32
+            IedConnection_getDataSetDirectoryAsync(IntPtr self, out int error, [MarshalAs(UnmanagedType.LPStr)] string dataSetReference,
+                IedConnection_GetDataSetDirectoryHandler handler, IntPtr parameter);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             private delegate void IedConnection_GetRCBValuesHandler(UInt32 invokeId,IntPtr parameter,int err,IntPtr rcb);
@@ -1727,9 +1745,6 @@ namespace IEC61850
                 return invokeId;
             }
 
-
-
-
             /// <summary>
             /// Abort (close) the connection.
             /// </summary>
@@ -1990,6 +2005,47 @@ namespace IEC61850
             }
 
             /// <summary>
+            /// Create a new data set - asynchronous version.
+            /// </summary>
+            /// <description>This function creates a new data set at the server. The data set consists of the members defined
+            /// by the list of object references provided.</description>
+            /// <param name="dataSetReference">The object reference of the data set</param>
+            /// <param name="dataSetElements">A list of object references of the data set elements</param>
+            /// <param name="handler">Callback function to handle the received response or service timeout</param>
+            /// <param name="parameter">User provided callback parameter. Will be passed to the callback function</param>
+            /// <returns>the invoke ID of the sent request</returns>
+            /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
+            public UInt32 CreateDataSetAsync(string dataSetReference, List<string> dataSetElements, GenericServiceHandler handler, object parameter)
+            {
+                int error = 0;
+
+                IntPtr linkedList = LinkedList_create();
+
+                foreach (string dataSetElement in dataSetElements)
+                {
+                    IntPtr dataSetElementHandle = System.Runtime.InteropServices.Marshal.StringToHGlobalAnsi(dataSetElement);
+
+                    LinkedList_add(linkedList, dataSetElementHandle);
+                }
+
+                Tuple<GenericServiceHandler, object> callbackInfo = Tuple.Create(handler, parameter);
+
+                GCHandle handle = GCHandle.Alloc(callbackInfo);
+
+                UInt32 invokeId = IedConnection_createDataSetAsync(connection, out error, dataSetReference, linkedList, nativeGenericServiceHandler, GCHandle.ToIntPtr(handle));
+
+                LinkedList_destroyDeep(linkedList, new LinkedListValueDeleteFunction(FreeHGlobaleDeleteFunction));
+
+                if (error != 0)
+                {
+                    handle.Free();
+                    throw new IedConnectionException("Create data set failed", error);
+                }
+
+                return invokeId;
+            }
+
+            /// <summary>
             /// Delete a data set.
             /// </summary>
             /// <description>This function will delete a data set at the server. This function may fail if the data set is not
@@ -2007,6 +2063,35 @@ namespace IEC61850
                     throw new IedConnectionException("Failed to delete data set", error);
 
                 return isDeleted;
+            }
+
+            /// <summary>
+            /// Delete a data set - asynchronous version.
+            /// </summary>
+            /// <description>This function will delete a data set at the server. This function may fail if the data set is not
+            /// deletable.</description>
+            /// <param name="dataSetReference">The object reference of the data set</param>
+            /// <param name="handler">Callback function to handle the received response or service timeout</param>
+            /// <param name="parameter">User provided callback parameter. Will be passed to the callback function</param>
+            /// <returns>the invoke ID of the sent request</returns>
+            /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
+            public UInt32 DeleteDataSetAsync(string dataSetReference, GenericServiceHandler handler, object parameter)
+            {
+                int error = 0;
+
+                Tuple<GenericServiceHandler, object> callbackInfo = Tuple.Create(handler, parameter);
+
+                GCHandle handle = GCHandle.Alloc(callbackInfo);
+
+                UInt32 invokeId = IedConnection_deleteDataSetAsync(connection, out error, dataSetReference, nativeGenericServiceHandler, GCHandle.ToIntPtr(handle));
+
+                if (error != 0)
+                {
+                    handle.Free();
+                    throw new IedConnectionException("Delete data set failed", error);
+                }
+
+                return invokeId;
             }
 
             /// <summary>
@@ -2058,6 +2143,72 @@ namespace IEC61850
                 return newList;
             }
 
+            /// <summary>
+            /// Get data set directory handler.
+            /// </summary>
+            /// <param name="invokeId">The invoke ID of the reqeust triggering this callback</param>
+            /// <param name="parameter">user provided callback parameter</param>
+            /// <param name="err">Error code of response or timeout error in case of a response timeout</param>
+            /// <param name="dataSetDirectory">the list of data set entry references</param>
+            /// <param name="isDeletable">data set can be deleted by a client (dynamic data set)</param>
+            public delegate void GetDataSetDirectoryHandler(UInt32 invokeId, object parameter, IedClientError err, List<string> dataSetDirectory, bool isDeletable);
+
+            private void nativeGetDataSetDirectoryHandler(UInt32 invokeId, IntPtr parameter, int err, IntPtr dataSetDirectory, bool isDeletable)
+            {
+                GCHandle handle = GCHandle.FromIntPtr(parameter);
+
+                Tuple<GetDataSetDirectoryHandler, object> callbackInfo = handle.Target as Tuple<GetDataSetDirectoryHandler, object>;
+
+                GetDataSetDirectoryHandler handler = callbackInfo.Item1;
+                object handlerParameter = callbackInfo.Item2;
+
+                IntPtr element = LinkedList_getNext(dataSetDirectory);
+
+                handle.Free();
+
+                List<string> newList = new List<string>();
+
+                while (element != IntPtr.Zero)
+                {
+                    string dataObject = Marshal.PtrToStringAnsi(LinkedList_getData(element));
+
+                    newList.Add(dataObject);
+
+                    element = LinkedList_getNext(element);
+                }
+
+                LinkedList_destroy(dataSetDirectory);
+
+                handler.Invoke(invokeId, handlerParameter, (IedClientError)err, newList, isDeletable);
+            }
+
+            /// <summary>
+            /// Read the data set directory - asynchronous version
+            /// </summary>
+            /// <returns>The data set directory async.</returns>
+            /// <param name="dataSetReference">Data set reference.</param>
+            /// <param name="handler">Callback function to handle the received response or service timeout</param>
+            /// <param name="parameter">User provided callback parameter. Will be passed to the callback function</param>
+            /// <returns>the invoke ID of the sent request</returns>
+            /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
+            public UInt32 GetDataSetDirectoryAsync(string dataSetReference, GetDataSetDirectoryHandler handler, object parameter)
+            {
+                int error = 0;
+
+                Tuple<GetDataSetDirectoryHandler, object> callbackInfo = Tuple.Create(handler, parameter);
+
+                GCHandle handle = GCHandle.Alloc(callbackInfo);
+
+                UInt32 invokeId = IedConnection_getDataSetDirectoryAsync(connection, out error, dataSetReference, nativeGetDataSetDirectoryHandler, GCHandle.ToIntPtr(handle));
+
+                if (error != 0)
+                {
+                    handle.Free();
+                    throw new IedConnectionException("Get data set directory failed", error);
+                }
+
+                return invokeId;
+            }
 
             /// <summary>
             /// Read object handler.
