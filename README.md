@@ -101,6 +101,8 @@ make WITH_MBEDTLS=1
 
 When using CMake the library is built automatically with TLS support when the folder third_party/mbedtls/mbedtls-2.16 is present.
 
+With CMake it's also possible to link against an externally provided dynamic build of mbedtls-2.16. Use the CMake `CONFIG_USE_EXTERNAL_MBEDTLS_DYNLIB` option to enable this feature and tune the library realted paths with variables `CONFIG_EXTERNAL_MBEDTLS_INCLUDE_PATH` and `CONFIG_EXTERNAL_MBEDTLS_DYNLIB_PATH` according to your environment.
+
 ## Installing the library and the API headers
 
 The make and cmake build scripts provide an install target. This target copies the API header files and the static library to a single directory for the headers (INSTALL_PREFIX/include) and the static library (INSTALL_PREFIX/lib). With this feature it is more easy to integrate libiec61850 in an external application since you only have to add a simple include directory to the build tool of your choice.
