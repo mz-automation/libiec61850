@@ -804,8 +804,18 @@ handleAsyncResponse(MmsConnection self, ByteBuffer* response, uint32_t bufPos, M
         else {
             bool success = false;
 
-            if (mmsClient_parseDeleteNamedVariableListResponse(response, NULL))
+            long numberMatched = 0;
+            long numberDeleted = 0;
+
+            if (mmsClient_parseDeleteNamedVariableListResponse(response, NULL, &numberDeleted, &numberMatched))
                 success = true;
+
+            if (numberMatched == 0)
+                err = MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT;
+            else {
+                if (numberDeleted == 0)
+                    err = MMS_ERROR_ACCESS_OBJECT_ACCESS_DENIED;
+            }
 
             handler(outstandingCall->invokeId, outstandingCall->userParameter, err, success);
         }
