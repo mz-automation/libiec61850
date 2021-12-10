@@ -1429,7 +1429,7 @@ MmsValue_setOctetString(MmsValue* self, const uint8_t* buf, int size)
 void
 MmsValue_setOctetStringOctet(MmsValue* self, int octetPos, uint8_t value)
 {
-    if (octetPos < self->value.octetString.maxSize) {
+    if ((octetPos >= 0) && (octetPos < self->value.octetString.maxSize)) {
         self->value.octetString.buf[octetPos] = value;
 
         if (octetPos >= self->value.octetString.size) {
@@ -1460,9 +1460,11 @@ uint8_t
 MmsValue_getOctetStringOctet(MmsValue* self, int octetPos)
 {
     uint8_t octet = 0x00; /* default value, for out of range request */
+
     if (octetPos < self->value.octetString.size) {
         octet = self->value.octetString.buf[octetPos];
     }
+
     return octet;
 }
 
