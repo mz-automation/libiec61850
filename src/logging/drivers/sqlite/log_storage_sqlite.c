@@ -295,7 +295,6 @@ SqliteLogStorage_addEntry(LogStorage self, uint64_t timestamp)
 
     sqlite3* db = instanceData->db;
     int rc;
-    char *zErrMsg = 0;
 
     rc = sqlite3_bind_int64(instanceData->insertEntryStmt, 1, (sqlite_int64) timestamp);
 
@@ -336,11 +335,7 @@ SqliteLogStorage_addEntryData(LogStorage self, uint64_t entryID, const char* dat
 {
     SqliteLogStorage* instanceData = (SqliteLogStorage*) (self->instanceData);
 
-    sqlite3* db = instanceData->db;
-
     int rc;
-
-    char *zErrMsg = 0;
 
     rc = sqlite3_bind_int64(instanceData->insertEntryDataStmt, 1, (sqlite_int64) entryID);
 
@@ -431,8 +426,6 @@ SqliteLogStorage_getEntries(LogStorage self, uint64_t startingTime, uint64_t end
 {
     SqliteLogStorage* instanceData = (SqliteLogStorage*) (self->instanceData);
 
-    sqlite3* db = instanceData->db;
-
     int rc;
 
     rc = sqlite3_bind_int64(instanceData->getEntriesWithRange, 1, startingTime);
@@ -488,8 +481,6 @@ SqliteLogStorage_getOldestAndNewestEntries(LogStorage self, uint64_t* newEntry, 
 
     SqliteLogStorage* instanceData = (SqliteLogStorage*) (self->instanceData);
 
-    sqlite3* db = instanceData->db;
-
     int rc;
 
     /* Get oldest entry */
@@ -531,8 +522,6 @@ SqliteLogStorage_getEntriesAfter(LogStorage self, uint64_t startingTime, uint64_
         LogEntryCallback entryCallback, LogEntryDataCallback entryDataCallback, void* parameter)
 {
     SqliteLogStorage* instanceData = (SqliteLogStorage*) (self->instanceData);
-
-    sqlite3* db = instanceData->db;
 
     int rc;
 
