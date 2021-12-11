@@ -183,16 +183,30 @@ sendBuffer(CotpConnection* self)
 
     bool retVal = false;
 
-    do {
-        int sentBytes = writeToSocket(self, buffer, remainingSize);
+    int sentBytes = writeToSocket(self, buffer, remainingSize);
 
-        if (sentBytes == -1)
+    if (sentBytes == -1)
+        goto exit_function;
+
+    if (sentBytes != remainingSize) {
+
+        /* write additional data to extension buffer */
+        if (self->socketExtensionBuffer) {
+            uint8_t* extBuf = self->socketExtensionBuffer;
+            int extCurrentPos = self->socketExtensionBufferFill;
+            int bytesNotSent = remainingSize - sentBytes;
+
+            int i;
+            for (i = 0; i < bytesNotSent; i++) {
+                extBuf[i + extCurrentPos] = buffer[sentBytes + i];
+            }
+
+            self->socketExtensionBufferFill = extCurrentPos + bytesNotSent;
+        }
+        else {
             goto exit_function;
-
-        buffer += sentBytes;
-        remainingSize -= sentBytes;
-
-    } while (remainingSize > 0);
+        }
+    }
 
     retVal = true;
 
@@ -200,6 +214,33 @@ sendBuffer(CotpConnection* self)
 
 exit_function:
     return retVal;
+}
+
+static void
+flushBuffer(CotpConnection* self)
+{
+    if (self->socketExtensionBufferFill > 0) {
+
+        int sentBytes = writeToSocket(self, self->socketExtensionBuffer, self->socketExtensionBufferFill);
+
+        if (sentBytes > 0) {
+
+            if (sentBytes != self->socketExtensionBufferFill) {
+                int target = 0;
+                int i;
+                uint8_t* buf = self->socketExtensionBuffer;
+
+                for (i = sentBytes; i < self->socketExtensionBufferFill; i++) {
+                    buf[target++] = buf[i];
+                }
+
+                self->socketExtensionBufferFill = self->socketExtensionBufferFill - sentBytes;
+            }
+            else {
+                self->socketExtensionBufferFill = 0;
+            }
+        }
+    }
 }
 
 CotpIndication
@@ -216,6 +257,21 @@ CotpConnection_sendDataMessage(CotpConnection* self, BufferChain payload)
 
         if ((payload->length % fragmentPayloadSize) != 0)
             fragments += 1;
+    }
+
+    /* calculate total size of fragmented message */
+    int totalSize = (fragments * (COTP_DATA_HEADER_SIZE + 4)) + payload->length;
+
+    /* try to flush extension buffer */
+    flushBuffer(self);
+
+    /* check if totalSize will fit in extension buffer */
+    if (self->socketExtensionBuffer) {
+        int freeExtBufSize = self->socketExtensionBufferSize - self->socketExtensionBufferFill;
+
+        if (freeExtBufSize < totalSize) {
+            return COTP_ERROR;
+        }
     }
 
     int currentBufPos = 0;
@@ -447,7 +503,8 @@ cpo_error:
 
 void
 CotpConnection_init(CotpConnection* self, Socket socket,
-        ByteBuffer* payloadBuffer, ByteBuffer* readBuffer, ByteBuffer* writeBuffer)
+        ByteBuffer* payloadBuffer, ByteBuffer* readBuffer, ByteBuffer* writeBuffer,
+        uint8_t* socketExtensionBuffer, int socketExtensionBufferSize)
 {
     self->state = 0;
     self->socket = socket;
@@ -479,6 +536,10 @@ CotpConnection_init(CotpConnection* self, Socket socket,
     self->writeBuffer = writeBuffer;
     self->readBuffer = readBuffer;
     self->packetSize = 0;
+
+    self->socketExtensionBuffer = socketExtensionBuffer;
+    self->socketExtensionBufferSize = socketExtensionBufferSize;
+    self->socketExtensionBufferFill = 0;
 }
 
 int /* in byte */
