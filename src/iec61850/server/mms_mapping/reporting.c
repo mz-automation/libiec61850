@@ -71,10 +71,11 @@ ReportBuffer_create(int bufferSize)
             GLOBAL_FREEMEM(self);
             self = NULL;
         }
-
+        else {
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
-        self->lock = Semaphore_create(1);
+            self->lock = Semaphore_create(1);
 #endif
+        }
     }
 
     return self;
@@ -1561,8 +1562,6 @@ increaseConfRev(ReportControl* self)
     MmsValue_setUint32(self->confRev, confRev);
 }
 
-
-
 static void
 checkReservationTimeout(MmsMapping* self, ReportControl* rc)
 {
@@ -2993,7 +2992,7 @@ sendNextReportEntrySegment(ReportControl* self)
 
     if ((int) completeMessageSize > maxMmsPduSize) {
         if (DEBUG_IED_SERVER)
-            printf("IED_SERVER: report message too large %i (max = %i) -> skip message!\n", completeMessageSize, maxMmsPduSize);
+            printf("IED_SERVER: report message too large %u (max = %i) -> skip message!\n", completeMessageSize, maxMmsPduSize);
 
         goto exit_function;
     }
