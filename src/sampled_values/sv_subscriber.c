@@ -602,6 +602,13 @@ SVSubscriber_setListener(SVSubscriber self,  SVUpdateListener listener, void* pa
     self->listenerParameter = parameter;
 }
 
+uint8_t
+SVSubscriber_ASDU_getSmpSynch(SVSubscriber_ASDU self)
+{
+    return self->smpSynch[0];
+}
+
+
 uint16_t
 SVSubscriber_ASDU_getSmpCnt(SVSubscriber_ASDU self)
 {

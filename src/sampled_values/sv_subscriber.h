@@ -539,6 +539,16 @@ SVSubscriber_ASDU_getQuality(SVSubscriber_ASDU self, int index);
 LIB61850_API int
 SVSubscriber_ASDU_getDataSize(SVSubscriber_ASDU self);
 
+/**
+ * \brief return the SmpSynch value included in the SV ASDU
+ *
+ * The SmpSynch gives information about the clock synchronization.
+ *
+ * \param self ASDU object instance
+ */
+uint8_t
+SVSubscriber_ASDU_getSmpSynch(SVSubscriber_ASDU self);
+
 #ifndef DEPRECATED
 #if defined(__GNUC__) || defined(__clang__)
   #define DEPRECATED __attribute__((deprecated))
