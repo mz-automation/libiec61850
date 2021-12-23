@@ -308,6 +308,10 @@ IsoConnection_handleTcpConnection(IsoConnection self, bool isSingleThread)
                     }
 
                 }
+                else {
+                    self->state = ISO_CON_STATE_STOPPED;
+                }
+
                 break;
             case SESSION_DATA:
                 if (DEBUG_ISO_SERVER)
