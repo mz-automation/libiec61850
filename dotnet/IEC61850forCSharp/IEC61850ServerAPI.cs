@@ -908,6 +908,12 @@ namespace IEC61850
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern int DataAttribute_getFC(IntPtr self);
+			
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern int DataAttribute_getSize(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern int DataAttribute_getIndex(IntPtr self);
 
             internal DataAttribute(IntPtr self, ModelNode parent) : base(self)
             {
@@ -991,6 +997,28 @@ namespace IEC61850
             public void SetValue(MmsValue value)
             {
                 DataAttribute_setValue(self, value.valueReference);
+            }
+			
+			/// <summary>
+            /// The size of the data attribute
+            /// </summary>
+            public int Size
+            {
+                get
+                {
+                    return DataAttribute_getSize(self);
+                }
+            }
+
+            /// <summary>
+            /// The index of the data attribute
+            /// </summary>
+            public int Index
+            {
+                get
+                {
+                    return DataAttribute_getIndex(self);
+                }
             }
         }
 

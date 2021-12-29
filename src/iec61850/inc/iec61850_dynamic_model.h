@@ -158,6 +158,26 @@ LIB61850_API FunctionalConstraint
 DataAttribute_getFC(DataAttribute* self);
 
 /**
+ * \brief Get the size of the data attribute
+ *
+ * \param self the data attribute instance
+ *
+ * \return the size of the data attribute
+ */
+LIB61850_API int
+DataAttribute_getSize(DataAttribute* self);
+
+/**
+ * \brief Get the index of the data attribute
+ *
+ * \param self the data attribute instance
+ *
+ * \return the index of the data attribute
+ */
+LIB61850_API int
+DataAttribute_getIndex(DataAttribute* self);
+
+/**
  * \brief Get the trigger options of the data attribute
  *
  * \param self the data attribute instance

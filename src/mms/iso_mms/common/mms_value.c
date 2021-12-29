@@ -98,7 +98,7 @@ MmsValue_newUnsignedFromBerInteger(Asn1PrimitiveValue* berInteger)
     return self;
 }
 
-bool
+static bool
 equalType(const MmsValue* self, const MmsValue* otherValue)
 {
     if (self->type == otherValue->type ||

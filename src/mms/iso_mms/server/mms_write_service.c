@@ -615,6 +615,7 @@ mmsServer_handleWriteRequest(
                 continue;
             }
 
+#if 0
             if (alternateAccess != NULL) {
 
                if (domain == NULL)
@@ -674,6 +675,7 @@ mmsServer_handleWriteRequest(
                 goto end_of_main_loop;
 
             }
+#endif
 
             /* Check for correct type */
             if (MmsVariableSpecification_isValueOfType(variable, value) == false) {

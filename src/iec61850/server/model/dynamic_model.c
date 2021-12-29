@@ -543,12 +543,17 @@ DataObject_getLastChild(DataObject* self)
 static void
 DataObject_addChild(DataObject* self, ModelNode* child)
 {
-    if (self->firstChild == NULL)
+    if (self->firstChild == NULL) {
         self->firstChild = child;
+
+        ((DataAttribute*)child)->index = 0;
+    }
     else {
         ModelNode* lastChild = DataObject_getLastChild(self);
 
         lastChild->sibling = child;
+
+        ((DataAttribute*)child)->index = ((DataAttribute*)lastChild)->index + 1;
     }
 }
 
@@ -590,12 +595,17 @@ DataAttribute_getLastChild(DataAttribute* self)
 static void
 DataAttribute_addChild(DataAttribute* self, ModelNode* child)
 {
-    if (self->firstChild == NULL)
+    if (self->firstChild == NULL) {
         self->firstChild = child;
+
+        ((DataAttribute*)child)->index = 0;
+    }
     else {
         ModelNode* lastChild = DataAttribute_getLastChild(self);
 
         lastChild->sibling = child;
+
+        ((DataAttribute*)child)->index = ((DataAttribute*)lastChild)->index + 1;
     }
 }
 
@@ -616,6 +626,7 @@ DataAttribute_create(const char* name, ModelNode* parent, DataAttributeType type
     self->sibling = NULL;
     self->triggerOptions = triggerOptions;
     self->sAddr = sAddr;
+    self->index = -1;
 
     if (parent->modelType == DataObjectModelType)
         DataObject_addChild((DataObject*) parent, (ModelNode*) self);
@@ -635,6 +646,18 @@ FunctionalConstraint
 DataAttribute_getFC(DataAttribute* self)
 {
     return self->fc;
+}
+
+int
+DataAttribute_getSize(DataAttribute* self)
+{
+    return self->elementCount;
+}
+
+int
+DataAttribute_getIndex(DataAttribute* self)
+{
+    return self->index;
 }
 
 uint8_t

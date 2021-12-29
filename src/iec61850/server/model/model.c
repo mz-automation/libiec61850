@@ -607,6 +607,11 @@ ModelNode_getChild(ModelNode* self, const char* name)
    /* check for separator */
    const char* separator = strchr(name, '.');
 
+   /* skip array node */
+   if (name[0] == '[') {
+       return ModelNode_getChild(self, separator + 1);
+   }
+
    int nameElementLength = 0;
 
    if (separator != NULL)

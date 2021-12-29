@@ -102,10 +102,21 @@ MmsVariableSpecification_getType(MmsVariableSpecification* self)
     return self->type;
 }
 
+static bool
+equalType(const MmsVariableSpecification* self, const MmsValue* otherValue)
+{
+    if (self->type == otherValue->type ||
+        (self->type == MMS_STRUCTURE && otherValue->type == MMS_ARRAY) ||
+        (self->type == MMS_ARRAY && otherValue->type == MMS_STRUCTURE))
+        return true;
+
+    return false;
+}
+
 bool
 MmsVariableSpecification_isValueOfType(MmsVariableSpecification* self, const MmsValue* value)
 {
-    if ((self->type) == (value->type)) {
+    if (equalType(self, value)) {
 
         if ((self->type == MMS_STRUCTURE) || (self->type == MMS_ARRAY)) {
 
@@ -132,6 +143,7 @@ MmsVariableSpecification_isValueOfType(MmsVariableSpecification* self, const Mms
                     if (MmsVariableSpecification_isValueOfType(self->typeSpec.array.elementTypeSpec, MmsValue_getElement(value, i)) == false)
                         return false;
                 }
+                return true;
             }
         }
         else if (self->type == MMS_BIT_STRING) {

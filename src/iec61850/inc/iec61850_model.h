@@ -223,6 +223,7 @@ struct sDataAttribute {
     ModelNode* firstChild;
 
     int elementCount; /* > 0 if this is an array */
+    int index;
 
     FunctionalConstraint fc;
     DataAttributeType type;
