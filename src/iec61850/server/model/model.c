@@ -607,17 +607,21 @@ ModelNode_getChild(ModelNode* self, const char* name)
    /* check for separator */
    const char* separator = strchr(name, '.');
 
-   /* skip array node */
-   if (name[0] == '[') {
-       return ModelNode_getChild(self, separator + 1);
-   }
+   /* check if name contains an array "(..)" */
+   const char* brace = strchr(name, '(');
 
    int nameElementLength = 0;
 
    if (separator != NULL)
-       nameElementLength = (separator - name);
+       if ((brace != NULL) && (brace < separator))
+           nameElementLength = (brace - name);
+       else
+           nameElementLength = (separator - name);
    else
-       nameElementLength = strlen(name);
+       if (brace != NULL)
+           nameElementLength = (brace - name);
+       else
+           nameElementLength = strlen(name);
 
    ModelNode* nextNode = self->firstChild;
 
