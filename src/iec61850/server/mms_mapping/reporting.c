@@ -1687,19 +1687,23 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 
             if (rc->reserved == false) {
 
+                if (self->iedServer->edition < IEC_61850_EDITION_2_1) {
+
 #if (CONFIG_IEC61850_RCB_ALLOW_ONLY_PRECONFIGURED_CLIENT == 1)
-                if (isIpAddressMatchingWithOwner(rc, MmsServerConnection_getClientAddress(connection))) {
+                    if (isIpAddressMatchingWithOwner(rc, MmsServerConnection_getClientAddress(connection))) {
+                        rc->reserved = true;
+                        rc->clientConnection = connection;
+                    }
+                    else {
+                        if (DEBUG_IED_SERVER)
+                            printf("IED_SERVER: client IP not matching with pre-assigned owner\n");
+                    }
+#else
                     rc->reserved = true;
                     rc->clientConnection = connection;
-                }
-                else {
-                    if (DEBUG_IED_SERVER)
-                        printf("IED_SERVER: client IP not matching with pre-assigned owner\n");
-                }
-#else
-                rc->reserved = true;
-                rc->clientConnection = connection;
 #endif
+
+                }
             }
         }
         else if (rc->resvTms > 0) {
@@ -1725,6 +1729,16 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
     }
 
     ReportControl_lockNotify(rc);
+
+    /* for edition 2.1 don't allow implicit RCB reservation */
+    if (self->iedServer->edition == IEC_61850_EDITION_2_1) {
+        if (rc->reserved == false) {
+            if ((strcmp(elementName, "Resv")) && (strcmp(elementName, "ResvTms"))) {
+                retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+                goto exit_function;
+            }
+        }
+    }
 
     if ((rc->reserved) && (rc->clientConnection != connection)) {
         retVal = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
@@ -2019,7 +2033,15 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
                         retVal = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
                 }
                 else {
-                    retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+                    if (self->iedServer->edition < IEC_61850_EDITION_2_1) {
+
+                        retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+                    }
+                    else {
+                        rc->reservationTimeout = Hal_getTimeInMs() + (RESV_TMS_IMPLICIT_VALUE * 1000);
+
+                        reserveRcb(rc, connection);
+                    }
                 }
 
                 goto exit_function;
@@ -2061,7 +2083,7 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 
 exit_function:
 
-    /* every successful write access reserves the RCB */
+    /* every successful write access reserves the RCB (or for edition 2.1 it means that there is already a reservation) */
     if ((retVal == DATA_ACCESS_ERROR_SUCCESS) && (resvTmsAccess == false)) {
         if (rc->buffered) {
             rc->reservationTimeout = Hal_getTimeInMs() + (RESV_TMS_IMPLICIT_VALUE * 1000);
