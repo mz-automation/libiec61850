@@ -1732,16 +1732,17 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
     }
 
 #if (CONFIG_IEC61850_RCB_ALLOW_ONLY_PRECONFIGURED_CLIENT == 1)
-    if (isIpAddressMatchingWithOwner(rc, MmsServerConnection_getClientAddress(connection)) == false) {
-        retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+    if (rc->resvTms == -1) {
+        if (isIpAddressMatchingWithOwner(rc, MmsServerConnection_getClientAddress(connection)) == false) {
+            retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
 
-        if (DEBUG_IED_SERVER)
-            printf("IED_SERVER: client IP not matching with pre-assigned owner --> write access denied!\n");
+            if (DEBUG_IED_SERVER)
+                printf("IED_SERVER: client IP not matching with pre-assigned owner --> write access denied!\n");
 
-        goto exit_function;
+            goto exit_function;
+        }
     }
 #endif
-
 
     if (strcmp(elementName, "RptEna") == 0) {
 
