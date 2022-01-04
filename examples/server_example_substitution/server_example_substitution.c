@@ -70,7 +70,7 @@ updateProcessValues()
 }
 
 static MmsDataAccessError
-writeAccessHandler (DataAttribute* dataAttribute, MmsValue* value, ClientConnection connection, void* parameter)
+writeAccessHandler (DataAttribute* dataAttribute, char* dataRef, MmsValue* value, ClientConnection connection, void* parameter)
 {
     if (dataAttribute == IEDMODEL_LD1_GGIO1_AnIn1_subEna) {
 

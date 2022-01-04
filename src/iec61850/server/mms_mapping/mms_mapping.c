@@ -2530,7 +2530,7 @@ getAccessPolicyForFC(MmsMapping* self, FunctionalConstraint fc)
 
 static MmsDataAccessError
 mmsWriteHandler(void* parameter, MmsDomain* domain,
-        char* variableId, MmsValue* value, MmsServerConnection connection)
+        char* variableId, char* dataRef, MmsValue* value, MmsServerConnection connection)
 {
     MmsMapping* self = (MmsMapping*) parameter;
 
@@ -2838,11 +2838,6 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
         cachedValue = MmsServer_getValueFromCache(self->mmsServer, domain, variableId);
 
         if (cachedValue) {
-
-            if (!MmsValue_equalTypes(cachedValue, value)) {
-                return DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
-            }
-
             bool handlerFound = false;
 
             AccessPolicy nodeAccessPolicy = getAccessPolicyForFC(self, fc);
@@ -2878,7 +2873,7 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
                             connection);
 
                     MmsDataAccessError handlerResult =
-                        accessHandler->handler(dataAttribute, value, clientConnection,
+                        accessHandler->handler(dataAttribute, dataRef, value, clientConnection,
                                 accessHandler->parameter);
 
                     if ((handlerResult == DATA_ACCESS_ERROR_SUCCESS) || (handlerResult == DATA_ACCESS_ERROR_SUCCESS_NO_UPDATE)) {

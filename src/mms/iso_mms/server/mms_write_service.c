@@ -615,74 +615,22 @@ mmsServer_handleWriteRequest(
                 continue;
             }
 
+            MmsDataAccessError valueIndication;
+
             if (alternateAccess != NULL) {
-
-               if (domain == NULL)
-                    domain = (MmsDomain*) device;
-
-                MmsValue* cachedArray = MmsServer_getValueFromCache(connection->server, domain, nameIdStr);
-
-                if (cachedArray == NULL) {
-                    accessResults[i] = DATA_ACCESS_ERROR_OBJECT_ATTRIBUTE_INCONSISTENT;
+                valueIndication =
+                    mmsServer_setValueWithAlternateAccess(connection->server, domain, nameIdStr, alternateAccess, variable, value, connection);
+            }
+            else {
+                /* Check for correct type */
+                if (MmsVariableSpecification_isValueOfType(variable, value) == false) {
+                    accessResults[i] = DATA_ACCESS_ERROR_TYPE_INCONSISTENT;
                     goto end_of_main_loop;
                 }
 
-                int index = mmsServer_getLowIndex(alternateAccess);
-                int numberOfElements = mmsServer_getNumberOfElements(alternateAccess);
-
-                if (numberOfElements == 0) { /* select single array element with index */
-
-                    MmsValue* elementValue = MmsValue_getElement(cachedArray, index);
-
-                    if (elementValue == NULL) {
-                        accessResults[i] = DATA_ACCESS_ERROR_OBJECT_ATTRIBUTE_INCONSISTENT;
-                        goto end_of_main_loop;
-                    }
-
-                    if (MmsValue_update(elementValue, value) == false) {
-                        accessResults[i] = DATA_ACCESS_ERROR_TYPE_INCONSISTENT;
-                        goto end_of_main_loop;
-                    }
-                }
-                else { /* select sub-array with start-index and number-of-elements */
-
-                    if (MmsValue_getType(value) != MMS_ARRAY) {
-                        accessResults[i] = DATA_ACCESS_ERROR_TYPE_INCONSISTENT;
-                        goto end_of_main_loop;
-                    }
-
-                    int elementNo;
-
-                    for (elementNo = 0; elementNo < numberOfElements; elementNo++) {
-                        MmsValue* newElement = MmsValue_getElement(value, elementNo);
-                        MmsValue* elementValue = MmsValue_getElement(cachedArray, index++);
-
-                        if ((elementValue == NULL) || (newElement == NULL) ) {
-                            accessResults[i] = DATA_ACCESS_ERROR_TYPE_INCONSISTENT;
-                            goto end_of_main_loop;
-                        }
-
-                        if (MmsValue_update(elementValue, newElement) == false) {
-                            accessResults[i] = DATA_ACCESS_ERROR_TYPE_INCONSISTENT;
-                            goto end_of_main_loop;
-                        }
-
-                    }
-                }
-
-                accessResults[i] = DATA_ACCESS_ERROR_SUCCESS;
-                goto end_of_main_loop;
-
-            }
-
-            /* Check for correct type */
-            if (MmsVariableSpecification_isValueOfType(variable, value) == false) {
-                accessResults[i] = DATA_ACCESS_ERROR_TYPE_INCONSISTENT;
-                goto end_of_main_loop;
-            }
-
-            MmsDataAccessError valueIndication =
+                valueIndication =
                     mmsServer_setValue(connection->server, domain, nameIdStr, value, connection);
+            }
 
             if (valueIndication == DATA_ACCESS_ERROR_NO_RESPONSE)
                 sendResponse = false;

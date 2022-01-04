@@ -403,6 +403,10 @@ LIB61850_INTERNAL MmsDataAccessError
 mmsServer_setValue(MmsServer self, MmsDomain* domain, char* itemId, MmsValue* value,
         MmsServerConnection connection);
 
+LIB61850_INTERNAL MmsDataAccessError
+mmsServer_setValueWithAlternateAccess(MmsServer self, MmsDomain* domain, char* itemId, AlternateAccess_t* alternateAccess, 
+        MmsVariableSpecification* variable, MmsValue* value, MmsServerConnection connection);
+
 /**
  * \brief Get the current value of a variable in the server data model
  *

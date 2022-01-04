@@ -1713,6 +1713,7 @@ MmsGooseControlBlock_getNdsCom(MmsGooseControlBlock self);
  * stack will not update the value automatically.
  *
  * \param the data attribute that has been written by an MMS client.
+ * \param the dataRef the data reference for alternate access
  * \param the value the client want to write to the data attribute
  * \param connection the connection object of the client connection that invoked the write operation
  * \param parameter the user provided parameter
@@ -1720,7 +1721,7 @@ MmsGooseControlBlock_getNdsCom(MmsGooseControlBlock self);
  * \return DATA_ACCESS_ERROR_SUCCESS, or DATA_ACCESS_ERROR_SUCCESS_NO_UPDATE if access is accepted, DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED if access is denied.
  */
 typedef MmsDataAccessError
-(*WriteAccessHandler) (DataAttribute* dataAttribute, MmsValue* value, ClientConnection connection, void* parameter);
+(*WriteAccessHandler) (DataAttribute* dataAttribute, char* dataRef, MmsValue* value, ClientConnection connection, void* parameter);
 
 /**
  * \brief Install a WriteAccessHandler for a data attribute.

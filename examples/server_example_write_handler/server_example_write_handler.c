@@ -22,7 +22,7 @@ void sigint_handler(int signalId)
 }
 
 static MmsDataAccessError
-writeAccessHandler (DataAttribute* dataAttribute, MmsValue* value, ClientConnection connection, void* parameter)
+writeAccessHandler (DataAttribute* dataAttribute, char* dataRef, MmsValue* value, ClientConnection connection, void* parameter)
 {
     if (dataAttribute == IEDMODEL_Inverter_ZINV1_OutVarSet_setMag_f) {
 

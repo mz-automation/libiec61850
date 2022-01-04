@@ -128,7 +128,7 @@ controlHandlerForBinaryOutput(ControlAction action, void* parameter, MmsValue* v
 
 
 static MmsDataAccessError
-writeAccessHandler (DataAttribute* dataAttribute, MmsValue* value, ClientConnection connection, void* parameter)
+writeAccessHandler (DataAttribute* dataAttribute, char* dataRef, MmsValue* value, ClientConnection connection, void* parameter)
 {
     void* securityToken = ClientConnection_getSecurityToken(connection);
 

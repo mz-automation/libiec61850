@@ -481,15 +481,116 @@ MmsServer_insertIntoCache(MmsServer self, MmsDomain* domain, char* itemId, MmsVa
     }
 }
 
+static bool
+isAccessToArrayComponent(AlternateAccess_t* alternateAccess)
+{
+    if (alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess != NULL)
+    {
+        if (alternateAccess->list.array[0]->choice.unnamed->
+            choice.selectAlternateAccess.alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.accessSelection.present ==
+            AlternateAccessSelection__selectAlternateAccess__accessSelection_PR_component)
+        {
+            return true;
+        }
+        else
+            return false;
+    }
+    else
+        return false;
+}
+
+static MmsValue*
+getComponentOfArrayElement(AlternateAccess_t* alternateAccess, MmsVariableSpecification* namedVariable,
+    MmsValue* structuredValue, char* dataRefBuf)
+{
+    MmsValue* retValue = NULL ;
+
+    if (isAccessToArrayComponent(alternateAccess))
+    {
+        Identifier_t component = alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess
+            ->list.array[0]->choice.unnamed->choice.selectAccess.choice.component;
+
+        if (component.size > 129)
+            goto exit_function;
+
+        MmsVariableSpecification* structSpec;
+
+        if (namedVariable->type == MMS_ARRAY)
+            structSpec = namedVariable->typeSpec.array.elementTypeSpec;
+        else if (namedVariable->type == MMS_STRUCTURE)
+            structSpec = namedVariable;
+        else
+            goto exit_function;
+
+        int i;
+        for (i = 0; i < structSpec->typeSpec.structure.elementCount; i++) {
+
+            if ((int)strlen(structSpec->typeSpec.structure.elements[i]->name)
+                == component.size) {
+                if (strncmp(structSpec->typeSpec.structure.elements[i]->name,
+                    (char*)component.buf, component.size) == 0) {
+
+                    snprintf(dataRefBuf, 129, "%s.%s", dataRefBuf, (char*)component.buf);
+
+                    MmsValue* value = MmsValue_getElement(structuredValue, i);
+
+                    if (isAccessToArrayComponent(
+                        alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess)) {
+                        retValue =
+                            getComponentOfArrayElement(
+                                alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess,
+                                structSpec->typeSpec.structure.elements[i],
+                                value, dataRefBuf);
+                    }
+                    else
+                        retValue = value;
+
+                    goto exit_function;
+                }
+            }
+        }
+    }
+
+exit_function:
+    return retValue;
+}
+
+static char*
+mmsServer_getDataRef(MmsDomain* domain, char* itemId) {
+    char dataRefBuf[130];
+
+    const char* separator = strchr(itemId, '$');
+
+    if (separator != NULL) {
+        snprintf(dataRefBuf, 129, "%s/", domain->domainName);
+
+        int bufOffset = strlen(domain->domainName) + 1;
+
+        strncpy(dataRefBuf + bufOffset, itemId, 129 - bufOffset);
+
+        bufOffset += separator - itemId;
+
+        strncpy(dataRefBuf + bufOffset, separator + 3, 129 - bufOffset);
+    }
+
+    dataRefBuf[129] = 0;
+
+    StringUtils_replace(dataRefBuf, '$', '.');
+
+    return dataRefBuf;
+}
+
 MmsDataAccessError
 mmsServer_setValue(MmsServer self, MmsDomain* domain, char* itemId, MmsValue* value,
         MmsServerConnection connection)
 {
     MmsDataAccessError indication;
 
+    char* dataRefBuf = mmsServer_getDataRef(domain, itemId);
+
     if (self->writeHandler != NULL) {
         indication = self->writeHandler(self->writeHandlerParameter, domain,
-                itemId, value, connection);
+                itemId, dataRefBuf, value, connection);
     }
     else {
         MmsValue* cachedValue;
@@ -506,6 +607,96 @@ mmsServer_setValue(MmsServer self, MmsDomain* domain, char* itemId, MmsValue* va
             indication = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
     }
 
+    return indication;
+}
+
+MmsDataAccessError
+mmsServer_setValueWithAlternateAccess(MmsServer self, MmsDomain* domain, char* itemId, AlternateAccess_t* alternateAccess, MmsVariableSpecification* variable,
+    MmsValue* value, MmsServerConnection connection)
+{
+    MmsDataAccessError indication;
+
+    char* dataRefBuf = mmsServer_getDataRef(domain, itemId);
+
+    MmsValue* cachedArray;
+
+    if (domain == NULL)
+        domain = (MmsDomain*)self->device;
+
+    cachedArray = MmsServer_getValueFromCache(self, domain, itemId);
+
+    if (cachedArray != NULL) {
+
+        int index = mmsServer_getLowIndex(alternateAccess);
+        int numberOfElements = mmsServer_getNumberOfElements(alternateAccess);
+
+        snprintf(dataRefBuf, 129, "%s(%d)", dataRefBuf, index);
+
+        if (numberOfElements == 0) { /* select single array element with index */
+
+            MmsValue* elementValue;
+
+            if (isAccessToArrayComponent(alternateAccess)) {
+                if (variable->typeSpec.array.elementTypeSpec->type != MMS_STRUCTURE) {
+                    indication = DATA_ACCESS_ERROR_OBJECT_ATTRIBUTE_INCONSISTENT;
+                    goto exit_function;
+                }
+
+                MmsValue* structValue = MmsValue_getElement(cachedArray, index);
+
+                if (structValue == NULL) {
+                    indication = DATA_ACCESS_ERROR_OBJECT_ATTRIBUTE_INCONSISTENT;
+                    goto exit_function;
+                }
+
+                elementValue = getComponentOfArrayElement(alternateAccess, variable, structValue, dataRefBuf);
+            }
+            else {
+                elementValue = MmsValue_getElement(cachedArray, index);
+            }
+
+            if (self->writeHandler == NULL) {
+                if (MmsValue_update(elementValue, value) == false) {
+                    indication = DATA_ACCESS_ERROR_TYPE_INCONSISTENT;
+                    goto exit_function;
+                }
+            }
+        }
+        else { /* select sub-array with start-index and number-of-elements */
+
+            if (MmsValue_getType(value) != MMS_ARRAY) {
+                indication = DATA_ACCESS_ERROR_TYPE_INCONSISTENT;
+            }
+            else {
+                if (self->writeHandler == NULL) {
+                    int elementNo;
+
+                    for (elementNo = 0; elementNo < numberOfElements; elementNo++) {
+                        MmsValue* newElement = MmsValue_getElement(value, elementNo);
+                        MmsValue* elementValue = MmsValue_getElement(cachedArray, index++);
+
+                        if ((elementValue == NULL) || (newElement == NULL))
+                            indication = DATA_ACCESS_ERROR_TYPE_INCONSISTENT;
+                        else if (MmsValue_update(elementValue, newElement) == false) {
+                            indication = DATA_ACCESS_ERROR_TYPE_INCONSISTENT;
+                            goto exit_function;
+                        }
+                    }
+                }
+            }
+        }
+
+        indication = DATA_ACCESS_ERROR_SUCCESS;
+
+        if (self->writeHandler != NULL) {
+            indication = self->writeHandler(self->writeHandlerParameter, domain,
+                itemId, dataRefBuf, value, connection);
+        }
+    }
+    else
+        indication = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+
+exit_function:
     return indication;
 }
 

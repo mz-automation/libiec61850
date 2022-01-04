@@ -2034,7 +2034,7 @@ namespace IEC61850
 
         public delegate void RCBEventHandler(object parameter, ReportControlBlock rcb, ClientConnection con, RCBEventType eventType, string parameterName, MmsDataAccessError serviceError);
 
-        public delegate MmsDataAccessError WriteAccessHandler (DataAttribute dataAttr, MmsValue value, 
+        public delegate MmsDataAccessError WriteAccessHandler (DataAttribute dataAttr, string dataRef, MmsValue value, 
             ClientConnection connection, object parameter);
 
         /// <summary>
@@ -2215,7 +2215,7 @@ namespace IEC61850
             static extern void IedServer_setWriteAccessPolicy(IntPtr self, FunctionalConstraint fc, AccessPolicy policy);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            private delegate int InternalWriteAccessHandler (IntPtr dataAttribute, IntPtr value, IntPtr connection, IntPtr parameter);
+            private delegate int InternalWriteAccessHandler (IntPtr dataAttribute, IntPtr dataRef, IntPtr value, IntPtr connection, IntPtr parameter);
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern void IedServer_handleWriteAccess(IntPtr self, IntPtr dataAttribute,
@@ -2397,7 +2397,7 @@ namespace IEC61850
                 }
             }
 
-            int WriteAccessHandlerImpl (IntPtr dataAttribute, IntPtr value, IntPtr connection, IntPtr parameter)
+            int WriteAccessHandlerImpl (IntPtr dataAttribute, IntPtr dataRef, IntPtr value, IntPtr connection, IntPtr parameter)
             {
                 WriteAccessHandlerInfo info;
 
@@ -2407,9 +2407,11 @@ namespace IEC61850
 
                     clientConnections.TryGetValue(connection, out con);
 
+                    string dataRefereence = Marshal.PtrToStringAnsi(dataRef);
+
                     MmsValue mmsValue = new MmsValue(value);
 
-                    return (int)info.handler(info.dataAttribute, mmsValue.Clone(), con, info.parameter);
+                    return (int)info.handler(info.dataAttribute, dataRefereence, mmsValue.Clone(), con, info.parameter);
                 }
                 else
                 {
