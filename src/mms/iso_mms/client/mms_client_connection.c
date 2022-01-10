@@ -1008,22 +1008,30 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
 
         int i = 0;
 
-        Semaphore_wait(self->outstandingCallsLock);
-
         for (i = 0; i < OUTSTANDING_CALLS; i++) {
+
+            Semaphore_wait(self->outstandingCallsLock);
+
             if (self->outstandingCalls[i].isUsed) {
+
+                Semaphore_post(self->outstandingCallsLock);
+
                 if (currentTime > self->outstandingCalls[i].timeout) {
 
                     if (self->outstandingCalls[i].type != MMS_CALL_TYPE_NONE)
                         handleAsyncResponse(self, NULL, 0, &(self->outstandingCalls[i]), MMS_ERROR_SERVICE_TIMEOUT);
 
+                    Semaphore_wait(self->outstandingCallsLock);
+
                     self->outstandingCalls[i].isUsed = false;
-                    break;
+
+                    Semaphore_post(self->outstandingCallsLock);
                 }
             }
+            else {
+                Semaphore_post(self->outstandingCallsLock);
+            }
         }
-
-        Semaphore_post(self->outstandingCallsLock);
 
         if (self->concludeHandler) {
             if (currentTime > self->concludeTimeout) {
@@ -1045,24 +1053,29 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
         if (self->connectionLostHandler != NULL)
             self->connectionLostHandler(self, self->connectionLostHandlerParameter);
 
-
         /* Cleanup outstanding calls */
         {
             int i;
 
             for (i = 0; i < OUTSTANDING_CALLS; i++) {
+
+                Semaphore_wait(self->outstandingCallsLock);
+
                 if (self->outstandingCalls[i].isUsed) {
+
+                    Semaphore_post(self->outstandingCallsLock);
 
                     if (self->outstandingCalls[i].type != MMS_CALL_TYPE_NONE)
                         handleAsyncResponse(self, NULL, 0, &(self->outstandingCalls[i]), MMS_ERROR_SERVICE_TIMEOUT);
 
+                    Semaphore_wait(self->outstandingCallsLock);
+
                     self->outstandingCalls[i].isUsed = false;
-                    break;
                 }
+
+                Semaphore_post(self->outstandingCallsLock);
             }
         }
-
-        Semaphore_post(self->outstandingCallsLock);
 
         return true;
     }
