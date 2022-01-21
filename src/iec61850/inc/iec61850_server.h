@@ -3,7 +3,7 @@
  *
  *  IEC 61850 server API for libiec61850.
  *
- *  Copyright 2013-2020 Michael Zillgith
+ *  Copyright 2013-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -1531,6 +1531,42 @@ IedServer_setSelectStateChangedHandler(IedServer self, DataObject* node, Control
  */
 LIB61850_API void
 IedServer_updateCtlModel(IedServer self, DataObject* ctlObject, ControlModel value);
+
+/**@}*/
+
+/**
+ * @defgroup IEC61850_SERVER_RCB Server side report control block (RCB) handling
+ *
+ * @{
+ */
+
+typedef enum {
+    RCB_EVENT_GET_PARAMETER, /* << parameter read by client (not implemented) */
+    RCB_EVENT_SET_PARAMETER, /* << parameter set by client */
+    RCB_EVENT_UNRESERVED,    /* << RCB reservation canceled */
+    RCB_EVENT_RESERVED,      /* << RCB reserved */
+    RCB_EVENT_ENABLE,        /* << RCB enabled */
+    RCB_EVENT_DISABLE,       /* << RCB disabled */
+    RCB_EVENT_GI,            /* << GI report triggered */
+    RCB_EVENT_PURGEBUF       /* << Purge buffer procedure executed */
+} IedServer_RCBEventType;
+
+/**
+ * \brief Callback that is called in case of RCB event
+ *
+ * \param parameter user provided paramter
+ */
+typedef void (*IedServer_RCBEventHandler) (void* parameter, ReportControlBlock* rcb, ClientConnection connection, IedServer_RCBEventType event, const char* parameterName, MmsDataAccessError serviceError);
+
+/**
+ * \brief Set a handler for report control block (RCB) events
+ *
+ * \param self the instance of IedServer to operate on.
+ * \param handler the event handler to be used
+ * \param parameter a user provided parameter that is passed to the handler.
+ */
+LIB61850_API void
+IedServer_setRCBEventHandler(IedServer self, IedServer_RCBEventHandler handler, void* parameter);
 
 /**@}*/
 

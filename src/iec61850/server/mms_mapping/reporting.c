@@ -1,7 +1,7 @@
 /*
  *  reporting.c
  *
- *  Copyright 2013-2020 Michael Zillgith
+ *  Copyright 2013-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -1675,6 +1675,8 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
     bool resvTmsAccess = false; /* access is to RecvTms or Resv */
     bool dontUpdate = false;
 
+    ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer, connection);
+
     /* check reservation timeout for buffered RCBs */
     if (rc->buffered) {
 
@@ -1713,6 +1715,10 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
                     rc->reserved = true;
                     rc->clientConnection = connection;
                     rc->reservationTimeout = Hal_getTimeInMs() + (rc->resvTms * 1000);
+
+                    if (self->rcbEventHandler) {
+                         self->rcbEventHandler(self->rcbEventHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_RESERVED, NULL, DATA_ACCESS_ERROR_SUCCESS);
+                    }
                 }
                 else {
                     if (DEBUG_IED_SERVER)
@@ -1735,6 +1741,7 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
         if (rc->reserved == false) {
             if ((strcmp(elementName, "Resv")) && (strcmp(elementName, "ResvTms"))) {
                 retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+
                 goto exit_function;
             }
         }
@@ -1742,6 +1749,7 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 
     if ((rc->reserved) && (rc->clientConnection != connection)) {
         retVal = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
+
         goto exit_function;
     }
 
@@ -1764,6 +1772,7 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 
             if (rc->enabled == true) {
                 retVal = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
+
                 goto exit_function;
             }
 
@@ -1803,6 +1812,11 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
                 MmsValue_setUint32(sqNum, 0U);
 
                 retVal = DATA_ACCESS_ERROR_SUCCESS;
+
+                if (self->rcbEventHandler) {
+                     self->rcbEventHandler(self->rcbEventHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_ENABLE, NULL, DATA_ACCESS_ERROR_SUCCESS);
+                }
+
                 goto exit_function;
             }
             else {
@@ -1816,6 +1830,7 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 
             if (((rc->enabled) || (rc->reserved)) && (rc->clientConnection != connection)) {
                 retVal = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
+
                 goto exit_function;
             }
 
@@ -1833,6 +1848,14 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 
                 /* clear report buffer */
                 purgeBuf(rc);
+
+                if (self->rcbEventHandler) {
+                     self->rcbEventHandler(self->rcbEventHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_GI, NULL, DATA_ACCESS_ERROR_SUCCESS);
+                }
+            }
+
+            if (self->rcbEventHandler) {
+                 self->rcbEventHandler(self->rcbEventHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_DISABLE, NULL, DATA_ACCESS_ERROR_SUCCESS);
             }
 
             rc->enabled = false;
@@ -1849,10 +1872,16 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
             }
 
             retVal = DATA_ACCESS_ERROR_SUCCESS;
+
+            if (self->rcbEventHandler) {
+                 self->rcbEventHandler(self->rcbEventHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_GI, NULL, DATA_ACCESS_ERROR_SUCCESS);
+            }
+
             goto exit_function;
         }
         else {
             retVal = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
+
             goto exit_function;
         }
     }
@@ -1861,6 +1890,7 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 
         if ((rc->reserved) && (rc->clientConnection != connection)) {
             retVal = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
+
             goto exit_function;
         }
 
@@ -1870,6 +1900,11 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
             rc->reserved = value->value.boolean;
 
             if (rc->reserved == true) {
+
+                if (self->rcbEventHandler) {
+                    self->rcbEventHandler(self->rcbEventHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_RESERVED, NULL, DATA_ACCESS_ERROR_SUCCESS);
+                }
+
                 updateOwner(rc, connection);
                 rc->clientConnection = connection;
             }
@@ -1888,6 +1923,11 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
                 if (MmsValue_getBoolean(value) == true) {
                     purgeBuf(rc);
                     retVal = DATA_ACCESS_ERROR_SUCCESS;
+
+                    if (self->rcbEventHandler) {
+                        self->rcbEventHandler(self->rcbEventHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_PURGEBUF, NULL, DATA_ACCESS_ERROR_SUCCESS);
+                    }
+
                     goto exit_function;
                 }
             }
@@ -1900,8 +1940,13 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 
                 if (updateReportDataset(self, rc, value, connection)) {
 
-                    if (rc->buffered)
+                    if (rc->buffered) {
                         purgeBuf(rc);
+
+                        if (self->rcbEventHandler) {
+                            self->rcbEventHandler(self->rcbEventHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_PURGEBUF, NULL, DATA_ACCESS_ERROR_SUCCESS);
+                        }
+                    }
 
                     MmsValue_update(datSet, value);
 
@@ -1909,6 +1954,7 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
                 }
                 else {
                     retVal = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+
                     goto exit_function;
                 }
             }
@@ -1927,6 +1973,10 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
                 if (rc->buffered) {
                     rc->nextIntgReportTime = 0;
                     purgeBuf(rc);
+
+                    if (self->rcbEventHandler) {
+                        self->rcbEventHandler(self->rcbEventHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_PURGEBUF, NULL, DATA_ACCESS_ERROR_SUCCESS);
+                    }
                 }
             }
 
@@ -1938,8 +1988,13 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
             if (!MmsValue_equals(trgOps, value)) {
                 MmsValue_update(trgOps, value);
 
-                if (rc->buffered)
+                if (rc->buffered) {
                     purgeBuf(rc);
+
+                    if (self->rcbEventHandler) {
+                        self->rcbEventHandler(self->rcbEventHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_PURGEBUF, NULL, DATA_ACCESS_ERROR_SUCCESS);
+                    }
+                }
 
                 refreshTriggerOptions(rc);
             }
@@ -1949,7 +2004,9 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
         else if (strcmp(elementName, "EntryID") == 0) {
 
             if (MmsValue_getOctetStringSize(value) != 8) {
+
                 retVal = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+
                 goto exit_function;
             }
 
@@ -1957,7 +2014,9 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 
                 if (!checkReportBufferForEntryID(rc, value)) {
                     rc->reportBuffer->isOverflow = true;
+
                     retVal = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+
                     goto exit_function;
                 }
 
@@ -1981,8 +2040,13 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
             if (!MmsValue_equals(bufTm, value)) {
                 MmsValue_update(bufTm, value);
 
-                if (rc->buffered)
+                if (rc->buffered) {
                     purgeBuf(rc);
+
+                    if (self->rcbEventHandler) {
+                        self->rcbEventHandler(self->rcbEventHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_PURGEBUF, NULL, DATA_ACCESS_ERROR_SUCCESS);
+                    }
+                }
 
                 refreshBufferTime(rc);
             }
@@ -1995,8 +2059,13 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
             if (!MmsValue_equals(rptId, value)) {
                 MmsValue_update(rptId, value);
 
-                if (rc->buffered)
+                if (rc->buffered) {
                     purgeBuf(rc);
+
+                    if (self->rcbEventHandler) {
+                        self->rcbEventHandler(self->rcbEventHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_PURGEBUF, NULL, DATA_ACCESS_ERROR_SUCCESS);
+                    }
+                }
             }
 
             goto exit_function;
@@ -2017,11 +2086,19 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
                             rc->reservationTimeout = 0;
                             rc->reserved = false;
                             updateOwner(rc, NULL);
+
+                            if (self->rcbEventHandler) {
+                                self->rcbEventHandler(self->rcbEventHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_UNRESERVED, NULL, DATA_ACCESS_ERROR_SUCCESS);
+                            }
                         }
                         else {
                             rc->reservationTimeout = Hal_getTimeInMs() + (rc->resvTms * 1000);
 
                             reserveRcb(rc, connection);
+
+                            if (self->rcbEventHandler) {
+                                self->rcbEventHandler(self->rcbEventHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_RESERVED, NULL, DATA_ACCESS_ERROR_SUCCESS);
+                            }
                         }
 
                         MmsValue* resvTmsVal = ReportControl_getRCBValue(rc, "ResvTms");
@@ -2029,18 +2106,22 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
                         if (resvTmsVal != NULL)
                             MmsValue_update(resvTmsVal, value);
                     }
-                    else
+                    else {
                         retVal = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+                    }
                 }
                 else {
                     if (self->iedServer->edition < IEC_61850_EDITION_2_1) {
-
                         retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
                     }
                     else {
                         rc->reservationTimeout = Hal_getTimeInMs() + (RESV_TMS_IMPLICIT_VALUE * 1000);
 
                         reserveRcb(rc, connection);
+
+                        if (self->rcbEventHandler) {
+                            self->rcbEventHandler(self->rcbEventHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_RESERVED, NULL, DATA_ACCESS_ERROR_SUCCESS);
+                        }
                     }
                 }
 
@@ -2049,18 +2130,22 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
         }
         else if (strcmp(elementName, "ConfRev") == 0) {
             retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+
             goto exit_function;
         }
         else if (strcmp(elementName, "SqNum") == 0) {
             retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+
             goto exit_function;
         }
         else if (strcmp(elementName, "Owner") == 0) {
             retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+
             goto exit_function;
         }
         else if (strcmp(elementName, "TimeofEntry") == 0) {
             retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+
             goto exit_function;
         }
 
@@ -2073,6 +2158,7 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
         }
         else {
             retVal = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+
             goto exit_function;
         }
 
@@ -2117,6 +2203,10 @@ exit_function:
     else
         updateGenericTrackingObjectValues(self, rc, IEC61850_SERVICE_TYPE_SET_URCB_VALUES, retVal);
 #endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
+
+    if (self->rcbEventHandler) {
+        self->rcbEventHandler(self->rcbEventHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_SET_PARAMETER, elementName, retVal);
+    }
 
     return retVal;
 }

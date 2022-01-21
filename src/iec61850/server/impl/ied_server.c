@@ -585,6 +585,13 @@ IedServer_createWithTlsSupport(IedModel* dataModel, TLSConfiguration tlsConfigur
 }
 
 void
+IedServer_setRCBEventHandler(IedServer self, IedServer_RCBEventHandler handler, void* parameter)
+{
+    self->mmsMapping->rcbEventHandler = handler;
+    self->mmsMapping->rcbEventHandlerParameter = parameter;
+}
+
+void
 IedServer_destroy(IedServer self)
 {
 
