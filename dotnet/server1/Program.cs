@@ -67,6 +67,18 @@ namespace server1
 
             }, null);
 
+            iedServer.SetRCBEventHandler(delegate (object parameter, ReportControlBlock rcb, ClientConnection con, RCBEventType eventType, string parameterName, MmsDataAccessError serviceError) 
+            {
+                Console.WriteLine("RCB: " + rcb.Parent.GetObjectReference() + "." + rcb.Name + " event: " + eventType.ToString());
+
+                if (eventType == RCBEventType.SET_PARAMETER)
+                {
+                    Console.WriteLine("   param:  " + parameterName);
+                    Console.WriteLine("   result: " + serviceError.ToString());
+                }
+
+            }, null);
+
             iedServer.Start(102);
 
             if (iedServer.IsRunning())
