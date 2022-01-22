@@ -1591,6 +1591,12 @@ checkReservationTimeout(MmsMapping* self, ReportControl* rc)
                 copyRCBValuesToTrackingObject(self, rc);
                 updateGenericTrackingObjectValues(self, rc, IEC61850_SERVICE_TYPE_INTERNAL_CHANGE, DATA_ACCESS_ERROR_SUCCESS);
 #endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
+
+                if (self->rcbEventHandler) {
+                    ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer, rc->clientConnection);
+
+                    self->rcbEventHandler(self->rcbEventHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_UNRESERVED, NULL, DATA_ACCESS_ERROR_SUCCESS);
+                }
             }
         }
     }
@@ -1695,6 +1701,10 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
                     if (isIpAddressMatchingWithOwner(rc, MmsServerConnection_getClientAddress(connection))) {
                         rc->reserved = true;
                         rc->clientConnection = connection;
+
+                        if (self->rcbEventHandler) {
+                             self->rcbEventHandler(self->rcbEventHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_RESERVED, NULL, DATA_ACCESS_ERROR_SUCCESS);
+                        }
                     }
                     else {
                         if (DEBUG_IED_SERVER)
@@ -1703,6 +1713,10 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 #else
                     rc->reserved = true;
                     rc->clientConnection = connection;
+
+                    if (self->rcbEventHandler) {
+                         self->rcbEventHandler(self->rcbEventHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_RESERVED, NULL, DATA_ACCESS_ERROR_SUCCESS);
+                    }
 #endif
 
                 }
@@ -1914,6 +1928,10 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 
                 if (rc->resvTms == -1)
                     dontUpdate = true;
+
+                if (self->rcbEventHandler) {
+                    self->rcbEventHandler(self->rcbEventHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_UNRESERVED, NULL, DATA_ACCESS_ERROR_SUCCESS);
+                }
             }
 
         }
@@ -2178,13 +2196,25 @@ exit_function:
                 rc->resvTms = RESV_TMS_IMPLICIT_VALUE;
 
                 reserveRcb(rc, connection);
+
+                if (self->rcbEventHandler) {
+                    self->rcbEventHandler(self->rcbEventHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_RESERVED, NULL, DATA_ACCESS_ERROR_SUCCESS);
+                }
             }
             else if (rc->resvTms == -1) {
                 reserveRcb(rc, connection);
+
+                if (self->rcbEventHandler) {
+                    self->rcbEventHandler(self->rcbEventHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_RESERVED, NULL, DATA_ACCESS_ERROR_SUCCESS);
+                }
             }
         }
         else {
             reserveRcb(rc, connection);
+
+            if (self->rcbEventHandler) {
+                self->rcbEventHandler(self->rcbEventHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_RESERVED, NULL, DATA_ACCESS_ERROR_SUCCESS);
+            }
         }
     }
 
@@ -2214,13 +2244,29 @@ exit_function:
 static void
 Reporting_disableReportControlInstance(MmsMapping* self, ReportControl* rc)
 {
+    if (rc->enabled) {
+        if (self->rcbEventHandler) {
+            ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer, rc->clientConnection);
+
+            self->rcbEventHandler(self->rcbEventHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_DISABLE, NULL, DATA_ACCESS_ERROR_SUCCESS);
+        }
+    }
+
     rc->enabled = false;
     rc->clientConnection = NULL;
 
     MmsValue* rptEna = ReportControl_getRCBValue(rc, "RptEna");
     MmsValue_setBoolean(rptEna, false);
 
-    rc->reserved = false;
+    if (rc->reserved) {
+        rc->reserved = false;
+
+        if (self->rcbEventHandler) {
+            ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer, rc->clientConnection);
+
+            self->rcbEventHandler(self->rcbEventHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_UNRESERVED, NULL, DATA_ACCESS_ERROR_SUCCESS);
+        }
+    }
 
     if (rc->buffered == false) {
 
@@ -2239,7 +2285,7 @@ Reporting_disableReportControlInstance(MmsMapping* self, ReportControl* rc)
         if (rc->resvTms == 0)
             updateOwner(rc, NULL);
         else if (rc->resvTms > 0) {
-             rc->reservationTimeout = Hal_getTimeInMs() + (rc->resvTms * 1000);
+            rc->reservationTimeout = Hal_getTimeInMs() + (rc->resvTms * 1000);
         }
     }
 

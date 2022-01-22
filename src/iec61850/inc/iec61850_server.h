@@ -1554,7 +1554,12 @@ typedef enum {
 /**
  * \brief Callback that is called in case of RCB event
  *
- * \param parameter user provided paramter
+ * \param parameter user provided parameter
+ * \param rcb affected report control block
+ * \param connection client connection that is involved
+ * \param event event type
+ * \param parameterName name of the parameter in case of RCB_EVENT_SET_PARAMETER
+ * \param serviceError service error in case of RCB_EVENT_SET_PARAMETER
  */
 typedef void (*IedServer_RCBEventHandler) (void* parameter, ReportControlBlock* rcb, ClientConnection connection, IedServer_RCBEventType event, const char* parameterName, MmsDataAccessError serviceError);
 
