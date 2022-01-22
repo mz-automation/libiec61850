@@ -212,6 +212,38 @@ LIB61850_API void
 ReportControlBlock_setPreconfiguredClient(ReportControlBlock* self, uint8_t clientType, const uint8_t* clientAddress);
 
 /**
+ * \brief Get the name of the RCB instance
+ *
+ * NOTE: the returned string is only valid during the lifetime of the ReportControlBlock instance!
+ *
+ * \param self the RCB instance
+ *
+ * \return the RCB instance name
+ */
+LIB61850_API const char*
+ReportControlBlock_getName(ReportControlBlock* self);
+
+/**
+ * \brief Is the RCB buffered or unbuffered?
+ *
+ * \param self the RCB instance
+ *
+ * \return true, in case of a buffered RCB, false otherwise
+ */
+LIB61850_API bool
+ReportControlBlock_isBuffered(ReportControlBlock* self);
+
+/**
+ * \brief Get the parent (LogicalNode) of the RCB instance
+ *
+ * \param self the RCB instance
+ *
+ * \return the parent (LogicalNode) of the RCB instance
+ */
+LIB61850_API LogicalNode*
+ReportControlBlock_getParent(ReportControlBlock* self);
+
+/**
  * \brief create a new log control block (LCB)
  *
  * Create a new log control block (LCB) and add it to the given logical node (LN).
