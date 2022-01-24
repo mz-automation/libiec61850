@@ -226,6 +226,10 @@ ReportControl_destroy(ReportControl* self)
         }
     }
 
+    /* restore original sibling of ReportControlBlock */
+    self->rcb->sibling = self->sibling;
+    self->rcb->trgOps &= ~(64); /* clear runtime mode flag */
+
     ReportBuffer_destroy(self->reportBuffer);
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
@@ -1603,15 +1607,19 @@ checkReservationTimeout(MmsMapping* self, ReportControl* rc)
 }
 
 void
-ReportControl_readAccess(ReportControl* rc, MmsMapping* mmsMapping, char* elementName)
+ReportControl_readAccess(ReportControl* rc, MmsMapping* mmsMapping, MmsServerConnection connection, char* elementName)
 {
     (void)elementName;
-
-    /* TODO add log message */
 
     /* check reservation timeout */
     if (rc->buffered) {
         checkReservationTimeout(mmsMapping, rc);
+    }
+
+    if (mmsMapping->rcbEventHandler) {
+        ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(mmsMapping->iedServer, connection);
+
+        mmsMapping->rcbEventHandler(mmsMapping->rcbEventHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_GET_PARAMETER, elementName, DATA_ACCESS_ERROR_SUCCESS);
     }
 }
 
@@ -3641,5 +3649,93 @@ ReportControl_valueUpdated(ReportControl* self, int dataSetEntryIndex, int flag,
 
     ReportControl_unlockNotify(self);
 }
+
+int
+ReportControlBlock_getRptEna(ReportControlBlock* self)
+{
+    if (self->trgOps & 64) {
+        ReportControl* rc = (ReportControl*)(self->sibling);
+
+        return rc->enabled;
+    }
+    else {
+        return false;
+    }
+}
+
+char*
+ReportControlBlock_getRptID(ReportControlBlock* self)
+{
+    if (self->trgOps & 64) {
+        ReportControl* rc = (ReportControl*)(self->sibling);
+
+        MmsValue* rptIdValue = ReportControl_getRCBValue(rc, "RptID");
+
+        return strdup(MmsValue_toString(rptIdValue));
+    }
+    else {
+        return self->rptId;
+    }
+}
+
+char*
+ReportControlBlock_getDataSet(ReportControlBlock* self)
+{
+    if (self->trgOps & 64) {
+        ReportControl* rc = (ReportControl*)(self->sibling);
+
+        MmsValue* dataSetValue = ReportControl_getRCBValue(rc, "DatSet");
+
+        return strdup(MmsValue_toString(dataSetValue));
+    }
+    else {
+        return self->dataSetName;
+    }
+}
+
+int
+ReportControlBlock_getTrgOps(ReportControlBlock* self)
+{
+    if (self->trgOps & 64) {
+        ReportControl* rc = (ReportControl*)(self->sibling);
+
+        return rc->triggerOps;
+    }
+    else {
+        return (int)(self->trgOps);
+    }
+}
+
+uint32_t
+ReportControlBlock_getIntgPd(ReportControlBlock* self)
+{
+    if (self->trgOps & 64) {
+        ReportControl* rc = (ReportControl*)(self->sibling);
+
+        return rc->intgPd;
+    }
+    else {
+        return self->intPeriod;
+    }
+}
+
+MmsValue*
+ReportControlBlock_getOwner(ReportControlBlock* self)
+{
+    if (self->trgOps & 64) {
+        ReportControl* rc = (ReportControl*)(self->sibling);
+
+        if (rc->hasOwner) {
+            return ReportControl_getRCBValue(rc, "Owner");
+        }
+        else
+            return NULL;
+    }
+    else {
+        return NULL;
+    }
+}
+
+
 
 #endif /* (CONFIG_IEC61850_REPORT_SERVICE == 1) */

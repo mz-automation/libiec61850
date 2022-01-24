@@ -71,7 +71,14 @@ namespace server1
             {
                 Console.WriteLine("RCB: " + rcb.Parent.GetObjectReference() + "." + rcb.Name + " event: " + eventType.ToString());
 
-                if (eventType == RCBEventType.SET_PARAMETER)
+                if (eventType == RCBEventType.ENABLED)
+                {
+                    //Console.WriteLine("   RptID: " + rcb.RptID);
+                    //Console.WriteLine("   DatSet: " + rcb.DataSet);
+                    Console.WriteLine("   TrgOps: " + rcb.TrgOps.ToString());
+                }
+
+                if ((eventType == RCBEventType.SET_PARAMETER) || (eventType == RCBEventType.GET_PARAMETER))
                 {
                     Console.WriteLine("   param:  " + parameterName);
                     Console.WriteLine("   result: " + serviceError.ToString());

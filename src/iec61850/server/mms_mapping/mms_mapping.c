@@ -2034,6 +2034,24 @@ MmsMapping_create(IedModel* model, IedServer iedServer)
     	MmsMapping_destroy(self);
     	self = NULL;
     }
+    else {
+        LinkedList rcElem = LinkedList_getNext(self->reportControls);
+
+        while (rcElem) {
+            ReportControl* rc = (ReportControl*)LinkedList_getData(rcElem);
+
+            /* backup original sibling of ReportControlBlock */;
+            rc->sibling = rc->rcb->sibling;
+
+            /* reuse ReportControlBlock.sibling as reference to runtime information (ReportControl) */
+            rc->rcb->sibling = (ReportControlBlock*)rc;
+
+            /* set runtime mode flag (indicate that sibling field contains now runtime information reference!) */
+            rc->rcb->trgOps |= 64;
+
+            rcElem = LinkedList_getNext(rcElem);
+        }
+    }
 
     return self;
 }
@@ -3075,7 +3093,7 @@ mmsReadHandler(void* parameter, MmsDomain* domain, char* variableId, MmsServerCo
 
                         char* elementName = MmsMapping_getNextNameElement(reportName);
 
-                        ReportControl_readAccess(rc, self, elementName);
+                        ReportControl_readAccess(rc, self, connection, elementName);
 
                         MmsValue* value = NULL;
 

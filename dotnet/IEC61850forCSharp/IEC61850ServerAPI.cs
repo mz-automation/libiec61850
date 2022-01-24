@@ -1311,6 +1311,28 @@ namespace IEC61850
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern string ReportControlBlock_getName(IntPtr self);
 
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
+            static extern bool ReportControlBlock_getRptEna(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr ReportControlBlock_getRptID(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr ReportControlBlock_getDataSet(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern int ReportControlBlock_getTrgOps(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern UInt32 ReportControlBlock_getIntgPd(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr ReportControlBlock_getOwner(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void Memory_free(IntPtr self);
+
             public IntPtr self = IntPtr.Zero;
 
             private string name = null;
@@ -1360,6 +1382,57 @@ namespace IEC61850
                 }
             }
 
+            public bool RptEna
+            {
+                get
+                {
+                    return ReportControlBlock_getRptEna(self);
+                }
+            }
+
+            public string RptID
+            {
+                get
+                {
+                    IntPtr rptIdPtr = ReportControlBlock_getRptID(self);
+
+                    string rptId = Marshal.PtrToStringAnsi(rptIdPtr);
+
+                    Memory_free(rptIdPtr);
+
+                    return rptId;
+                }
+            }
+
+            public string DataSet
+            {
+                get
+                {
+                    IntPtr dataSetPtr = ReportControlBlock_getDataSet(self);
+
+                    string dataSet = Marshal.PtrToStringAnsi(dataSetPtr);
+
+                    Memory_free(dataSetPtr);
+
+                    return dataSet;
+                }
+            }
+
+            public TriggerOptions TrgOps
+            {
+                get
+                {
+                    return (TriggerOptions)ReportControlBlock_getTrgOps(self);
+                }
+            }
+
+            public UInt32 IntgPd
+            {
+                get
+                {
+                    return ReportControlBlock_getIntgPd(self);
+                }
+            }
         }
 
         /// <summary>

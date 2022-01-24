@@ -107,6 +107,7 @@ typedef struct {
     MmsValue* timeOfEntry;
 
     ReportControlBlock* rcb;
+    ReportControlBlock* sibling; /* backup sibling field of original ReportControlBlock */
 
     IedServer server;
 } ReportControl;
@@ -136,7 +137,7 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
         MmsServerConnection connection);
 
 LIB61850_INTERNAL void
-ReportControl_readAccess(ReportControl* rc, MmsMapping* mmsMapping, char* elementName);
+ReportControl_readAccess(ReportControl* rc, MmsMapping* mmsMapping, MmsServerConnection connection, char* elementName);
 
 LIB61850_INTERNAL void
 Reporting_activateBufferedReports(MmsMapping* self);

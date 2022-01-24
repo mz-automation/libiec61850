@@ -243,6 +243,24 @@ ReportControlBlock_isBuffered(ReportControlBlock* self);
 LIB61850_API LogicalNode*
 ReportControlBlock_getParent(ReportControlBlock* self);
 
+LIB61850_API int
+ReportControlBlock_getRptEna(ReportControlBlock* self);
+
+LIB61850_API char*
+ReportControlBlock_getRptID(ReportControlBlock* self);
+
+LIB61850_API char*
+ReportControlBlock_getDataSet(ReportControlBlock* self);
+
+LIB61850_API int
+ReportControlBlock_getTrgOps(ReportControlBlock* self);
+
+LIB61850_API uint32_t
+ReportControlBlock_getIntgPd(ReportControlBlock* self);
+
+LIB61850_API MmsValue*
+ReportControlBlock_getOwner(ReportControlBlock* self);
+
 /**
  * \brief create a new log control block (LCB)
  *
