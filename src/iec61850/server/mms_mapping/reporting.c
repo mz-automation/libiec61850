@@ -1804,6 +1804,14 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 
             if (updateReportDataset(self, rc, NULL, connection)) {
 
+                if (rc->reserved == false) {
+                    reserveRcb(rc, connection);
+
+                    if (self->rcbEventHandler) {
+                        self->rcbEventHandler(self->rcbEventHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_RESERVED, NULL, DATA_ACCESS_ERROR_SUCCESS);
+                    }
+                }
+
                 updateOwner(rc, connection);
 
                 MmsValue* rptEna = ReportControl_getRCBValue(rc, "RptEna");
@@ -2201,27 +2209,36 @@ exit_function:
             rc->reservationTimeout = Hal_getTimeInMs() + (RESV_TMS_IMPLICIT_VALUE * 1000);
 
             if (rc->resvTms == 0) {
-                rc->resvTms = RESV_TMS_IMPLICIT_VALUE;
 
-                reserveRcb(rc, connection);
+                if (rc->reserved == false) {
+                    rc->resvTms = RESV_TMS_IMPLICIT_VALUE;
 
-                if (self->rcbEventHandler) {
-                    self->rcbEventHandler(self->rcbEventHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_RESERVED, NULL, DATA_ACCESS_ERROR_SUCCESS);
+                    reserveRcb(rc, connection);
+
+                    if (self->rcbEventHandler) {
+                        self->rcbEventHandler(self->rcbEventHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_RESERVED, NULL, DATA_ACCESS_ERROR_SUCCESS);
+                    }
                 }
+
+
             }
             else if (rc->resvTms == -1) {
-                reserveRcb(rc, connection);
+                if (rc->reserved == false) {
+                    reserveRcb(rc, connection);
 
-                if (self->rcbEventHandler) {
-                    self->rcbEventHandler(self->rcbEventHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_RESERVED, NULL, DATA_ACCESS_ERROR_SUCCESS);
+                    if (self->rcbEventHandler) {
+                        self->rcbEventHandler(self->rcbEventHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_RESERVED, NULL, DATA_ACCESS_ERROR_SUCCESS);
+                    }
                 }
             }
         }
         else {
-            reserveRcb(rc, connection);
+            if (rc->reserved == false) {
+                reserveRcb(rc, connection);
 
-            if (self->rcbEventHandler) {
-                self->rcbEventHandler(self->rcbEventHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_RESERVED, NULL, DATA_ACCESS_ERROR_SUCCESS);
+                if (self->rcbEventHandler) {
+                    self->rcbEventHandler(self->rcbEventHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_RESERVED, NULL, DATA_ACCESS_ERROR_SUCCESS);
+                }
             }
         }
     }
