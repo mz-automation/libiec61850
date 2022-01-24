@@ -243,20 +243,47 @@ ReportControlBlock_isBuffered(ReportControlBlock* self);
 LIB61850_API LogicalNode*
 ReportControlBlock_getParent(ReportControlBlock* self);
 
+LIB61850_API char*
+ReportControlBlock_getRptID(ReportControlBlock* self);
+
 LIB61850_API int
 ReportControlBlock_getRptEna(ReportControlBlock* self);
 
 LIB61850_API char*
-ReportControlBlock_getRptID(ReportControlBlock* self);
-
-LIB61850_API char*
 ReportControlBlock_getDataSet(ReportControlBlock* self);
 
-LIB61850_API int
+LIB61850_API uint32_t
+ReportControlBlock_getConfRev(ReportControlBlock* self);
+
+LIB61850_API uint32_t
+ReportControlBlock_getOptFlds(ReportControlBlock* self);
+
+LIB61850_API uint32_t
+ReportControlBlock_getBufTm(ReportControlBlock* self);
+
+LIB61850_API uint16_t
+ReportControlBlock_getSqNum(ReportControlBlock* self);
+
+LIB61850_API uint32_t
 ReportControlBlock_getTrgOps(ReportControlBlock* self);
 
 LIB61850_API uint32_t
 ReportControlBlock_getIntgPd(ReportControlBlock* self);
+
+LIB61850_API bool
+ReportControlBlock_getGI(ReportControlBlock* self);
+
+LIB61850_API bool
+ReportControlBlock_getPurgeBuf(ReportControlBlock* self);
+
+LIB61850_API MmsValue*
+ReportControlBlock_getEntryId(ReportControlBlock* self);
+
+LIB61850_API uint64_t
+ReportControlBlock_getTimeofEntry(ReportControlBlock* self);
+
+LIB61850_API int16_t
+ReportControlBlock_getResvTms(ReportControlBlock* self);
 
 LIB61850_API MmsValue*
 ReportControlBlock_getOwner(ReportControlBlock* self);

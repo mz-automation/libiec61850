@@ -3693,7 +3693,75 @@ ReportControlBlock_getDataSet(ReportControlBlock* self)
     }
 }
 
-int
+uint32_t
+ReportControlBlock_getConfRev(ReportControlBlock* self)
+{
+    if (self->trgOps & 64) {
+        ReportControl* rc = (ReportControl*)(self->sibling);
+
+        MmsValue* confRevValue = ReportControl_getRCBValue(rc, "ConfRev");
+
+        uint32_t confRev = MmsValue_toUint32(confRevValue);
+
+        return confRev;
+    }
+    else {
+        return self->confRef;
+    }
+}
+
+uint32_t
+ReportControlBlock_getOptFlds(ReportControlBlock* self)
+{
+    if (self->trgOps & 64) {
+        ReportControl* rc = (ReportControl*)(self->sibling);
+
+        MmsValue* optFldsValue = ReportControl_getRCBValue(rc, "OptFlds");
+
+        uint32_t optFlds = MmsValue_getBitStringAsInteger(optFldsValue) / 2;
+
+        return optFlds;
+    }
+    else {
+        return self->options;
+    }
+}
+
+uint32_t
+ReportControlBlock_getBufTm(ReportControlBlock* self)
+{
+    if (self->trgOps & 64) {
+        ReportControl* rc = (ReportControl*)(self->sibling);
+
+        MmsValue* bufTmValue = ReportControl_getRCBValue(rc, "BufTm");
+
+        uint32_t bufTm = MmsValue_toUint32(bufTmValue);
+
+        return bufTm;
+    }
+    else {
+        return self->bufferTime;
+    }
+}
+
+uint16_t
+ReportControlBlock_getSqNum(ReportControlBlock* self)
+{
+    if (self->trgOps & 64) {
+        ReportControl* rc = (ReportControl*)(self->sibling);
+
+        MmsValue* sqNumValue = ReportControl_getRCBValue(rc, "SqNum");
+
+        uint16_t sqNum = (uint16_t)MmsValue_toUint32(sqNumValue);
+
+        return sqNum;
+    }
+    else {
+        return 0;
+    }
+}
+
+uint32_t
 ReportControlBlock_getTrgOps(ReportControlBlock* self)
 {
     if (self->trgOps & 64) {
@@ -3716,6 +3784,91 @@ ReportControlBlock_getIntgPd(ReportControlBlock* self)
     }
     else {
         return self->intPeriod;
+    }
+}
+
+bool
+ReportControlBlock_getGI(ReportControlBlock* self)
+{
+    if (self->trgOps & 64) {
+        ReportControl* rc = (ReportControl*)(self->sibling);
+
+        MmsValue* giValue = ReportControl_getRCBValue(rc, "GI");
+
+        bool gi = MmsValue_getBoolean(giValue);
+
+        return gi;
+    }
+    else {
+        return false;
+    }
+}
+
+bool
+ReportControlBlock_getPurgeBuf(ReportControlBlock* self)
+{
+    if (self->trgOps & 64) {
+        ReportControl* rc = (ReportControl*)(self->sibling);
+
+        MmsValue* purgeBufValue = ReportControl_getRCBValue(rc, "PurgeBuf");
+
+        bool purgeBuf = MmsValue_getBoolean(purgeBufValue);
+
+        return purgeBuf;
+    }
+    else {
+        return false;
+    }
+}
+
+MmsValue*
+ReportControlBlock_getEntryId(ReportControlBlock* self)
+{
+    if (self->trgOps & 64) {
+        ReportControl* rc = (ReportControl*)(self->sibling);
+
+        MmsValue* entryIdValue = ReportControl_getRCBValue(rc, "EntryID");
+
+        MmsValue* entryId = MmsValue_clone(entryIdValue);
+
+        return entryId;
+    }
+    else {
+        return NULL;
+    }
+}
+
+uint64_t
+ReportControlBlock_getTimeofEntry(ReportControlBlock* self)
+{
+    if (self->trgOps & 64) {
+        ReportControl* rc = (ReportControl*)(self->sibling);
+
+        MmsValue* timeofEntryValue = ReportControl_getRCBValue(rc, "TimeofEntry");
+
+        uint64_t timeofEntry = MmsValue_getBinaryTimeAsUtcMs(timeofEntryValue);
+
+        return timeofEntry;
+    }
+    else {
+        return 0;
+    }
+}
+
+int16_t
+ReportControlBlock_getResvTms(ReportControlBlock* self)
+{
+    if (self->trgOps & 64) {
+        ReportControl* rc = (ReportControl*)(self->sibling);
+
+        MmsValue* resvTmsValue = ReportControl_getRCBValue(rc, "ResvTms");
+
+        int16_t resvTms = (int16_t)MmsValue_toInt32(resvTmsValue);
+
+        return resvTms;
+    }
+    else {
+        return 0;
     }
 }
 
