@@ -53,8 +53,13 @@ typedef struct {
     LogicalNode* parentLN;
 
     MmsValue* rcbValues;
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore rcbValuesLock;
+#endif
+
     MmsValue* inclusionField;
-    MmsValue* confRev;
+    MmsValue* confRev; /* TODO Is this field required? */
 
     DataSet* dataSet;
     bool isDynamicDataSet;

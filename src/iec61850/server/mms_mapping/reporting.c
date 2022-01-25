@@ -101,6 +101,11 @@ ReportControl_create(bool buffered, LogicalNode* parentLN, int reportBufferSize,
     self->domain = NULL;
     self->parentLN = parentLN;
     self->rcbValues = NULL;
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    self->rcbValuesLock = Semaphore_create(1);
+#endif
+
     self->confRev = NULL;
     self->subSeqVal = MmsValue_newUnsigned(16);
     self->segmented = false;
@@ -234,6 +239,7 @@ ReportControl_destroy(ReportControl* self)
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_destroy(self->createNotificationsMutex);
+    Semaphore_destroy(self->rcbValuesLock);
 #endif
 
     GLOBAL_FREEMEM(self->name);
@@ -325,6 +331,10 @@ ReportControl_getRCBValue(ReportControl* rc, char* elementName)
 static void
 copyRCBValuesToTrackingObject(MmsMapping* self, ReportControl* rc)
 {
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_wait(rc->rcbValuesLock);
+#endif
+
     if (rc->buffered) {
         if (self->brcbTrk) {
             BrcbTrkInstance trkInst = self->brcbTrk;
@@ -441,6 +451,10 @@ copyRCBValuesToTrackingObject(MmsMapping* self, ReportControl* rc)
                 MmsValue_update(trkInst->gi->mmsValue, ReportControl_getRCBValue(rc, "GI"));
         }
     }
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_post(rc->rcbValuesLock);
+#endif
 }
 
 static void
@@ -682,7 +696,6 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
     else
         dataSetValue = ReportControl_getRCBValue(rc, "DatSet");
 
-
     bool dataSetChanged = true;
 
     /* check if old and new data sets are the same */
@@ -724,7 +737,6 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
                 purgeBuf(rc);
         }
     }
-
 
     if (rc->isDynamicDataSet) {
         if (rc->dataSet && dataSetChanged) {
@@ -820,6 +832,7 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
     }
 
 exit_function:
+
     return success;
 }
 
@@ -886,6 +899,10 @@ createTrgOps(ReportControlBlock* reportControlBlock) {
 static void
 refreshTriggerOptions(ReportControl* rc)
 {
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_wait(rc->rcbValuesLock);
+#endif
+
     rc->triggerOps = 0;
     MmsValue* trgOps = ReportControl_getRCBValue(rc, "TrgOps");
     if (MmsValue_getBitStringBit(trgOps, 1))
@@ -902,13 +919,25 @@ refreshTriggerOptions(ReportControl* rc)
 
     if (MmsValue_getBitStringBit(trgOps, 5))
         rc->triggerOps += TRG_OPT_GI;
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_post(rc->rcbValuesLock);
+#endif
 }
 
 static void
 refreshIntegrityPeriod(ReportControl* rc)
 {
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_wait(rc->rcbValuesLock);
+#endif
+
     MmsValue* intgPd = ReportControl_getRCBValue(rc, "IntgPd");
     rc->intgPd = MmsValue_toUint32(intgPd);
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_post(rc->rcbValuesLock);
+#endif
 
     if (rc->buffered == false)
         rc->nextIntgReportTime = Hal_getTimeInMs() + rc->intgPd;
@@ -917,8 +946,16 @@ refreshIntegrityPeriod(ReportControl* rc)
 static void
 refreshBufferTime(ReportControl* rc)
 {
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_wait(rc->rcbValuesLock);
+#endif
+
     MmsValue* bufTm = ReportControl_getRCBValue(rc, "BufTm");
     rc->bufTm = MmsValue_toUint32(bufTm);
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_post(rc->rcbValuesLock);
+#endif
 }
 
 static void
@@ -1449,6 +1486,10 @@ updateOwner(ReportControl* rc, MmsServerConnection connection)
 {
     rc->clientConnection = connection;
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_wait(rc->rcbValuesLock);
+#endif
+
     if (rc->server->edition >= IEC_61850_EDITION_2 && rc->hasOwner) {
 
         MmsValue* owner = ReportControl_getRCBValue(rc, "Owner");
@@ -1510,6 +1551,10 @@ updateOwner(ReportControl* rc, MmsServerConnection connection)
             }
         }
     }
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_post(rc->rcbValuesLock);
+#endif
 }
 
 static bool
@@ -1581,9 +1626,16 @@ checkReservationTimeout(MmsMapping* self, ReportControl* rc)
 
 #if (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1)
                 if (self->iedServer->enableBRCBResvTms) {
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+                    Semaphore_wait(rc->rcbValuesLock);
+#endif
                     MmsValue* resvTmsVal = ReportControl_getRCBValue(rc, "ResvTms");
                     if (resvTmsVal)
                         MmsValue_setInt16(resvTmsVal, rc->resvTms);
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+                    Semaphore_post(rc->rcbValuesLock);
+#endif
                 }
 #endif
 
@@ -1626,34 +1678,53 @@ ReportControl_readAccess(ReportControl* rc, MmsMapping* mmsMapping, MmsServerCon
 static bool
 isIpAddressMatchingWithOwner(ReportControl* rc, const char* ipAddress)
 {
+    bool retVal = false;
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_wait(rc->rcbValuesLock);
+#endif
+
     MmsValue* owner = ReportControl_getRCBValue(rc, "Owner");
 
     if (owner != NULL) {
 
-        if (MmsValue_getOctetStringSize(owner) == 0)
-            return true;
+        if (MmsValue_getOctetStringSize(owner) == 0) {
+            retVal = true;
+            goto exit_function;
+        }
 
         if (strchr(ipAddress, '.') != NULL) {
             uint8_t ipV4Addr[4];
 
             if (convertIPv4AddressStringToByteArray(ipAddress, ipV4Addr)) {
-                if (memcmp(ipV4Addr, MmsValue_getOctetStringBuffer(owner), 4) == 0)
-                    return true;
+                if (memcmp(ipV4Addr, MmsValue_getOctetStringBuffer(owner), 4) == 0) {
+                    retVal = true;
+                    goto exit_function;
+                }
             }
         }
         else {
             uint8_t ipV6Addr[16];
 
             if (StringUtils_convertIPv6AdddressStringToByteArray(ipAddress, ipV6Addr)) {
-                if (memcmp(ipV6Addr, MmsValue_getOctetStringBuffer(owner), 16) == 0)
-                    return true;
+                if (memcmp(ipV6Addr, MmsValue_getOctetStringBuffer(owner), 16) == 0) {
+                    retVal = true;
+                    goto exit_function;
+                }
             }
-            else
-                return false;
+            else {
+                goto exit_function;
+            }
         }
     }
 
-    return false;
+exit_function:
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_post(rc->rcbValuesLock);
+#endif
+
+    return retVal;
 }
 
 static void
@@ -1661,6 +1732,10 @@ reserveRcb(ReportControl* rc,  MmsServerConnection connection)
 {
     rc->reserved = true;
     rc->clientConnection = connection;
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_wait(rc->rcbValuesLock);
+#endif
 
     if (rc->buffered) {
 #if (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1)
@@ -1676,6 +1751,10 @@ reserveRcb(ReportControl* rc,  MmsServerConnection connection)
         if (resvVal)
             MmsValue_setBoolean(resvVal, true);
     }
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_post(rc->rcbValuesLock);
+#endif
 
     updateOwner(rc, connection);
 }
@@ -1814,9 +1893,16 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 
                 updateOwner(rc, connection);
 
-                MmsValue* rptEna = ReportControl_getRCBValue(rc, "RptEna");
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+                Semaphore_wait(rc->rcbValuesLock);
+#endif
 
+                MmsValue* rptEna = ReportControl_getRCBValue(rc, "RptEna");
                 MmsValue_update(rptEna, value);
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+                Semaphore_post(rc->rcbValuesLock);
+#endif
 
                 if (rc->buffered) {
 
@@ -1837,9 +1923,17 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 
                 rc->sqNum = 0;
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+                Semaphore_wait(rc->rcbValuesLock);
+#endif
+
                 MmsValue* sqNum = ReportControl_getRCBValue(rc, "SqNum");
 
                 MmsValue_setUint32(sqNum, 0U);
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+                Semaphore_post(rc->rcbValuesLock);
+#endif
 
                 retVal = DATA_ACCESS_ERROR_SUCCESS;
 
@@ -1968,11 +2062,22 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 
         }
         else if (strcmp(elementName, "DatSet") == 0) {
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+            Semaphore_wait(rc->rcbValuesLock);
+#endif
+
             MmsValue* datSet = ReportControl_getRCBValue(rc, "DatSet");
 
             if (!MmsValue_equals(datSet, value)) {
 
                 if (updateReportDataset(self, rc, value, connection)) {
+
+                    MmsValue_update(datSet, value);
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+                    Semaphore_post(rc->rcbValuesLock);
+#endif
 
                     if (rc->buffered) {
                         purgeBuf(rc);
@@ -1982,25 +2087,41 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
                         }
                     }
 
-                    MmsValue_update(datSet, value);
-
                     increaseConfRev(rc);
                 }
                 else {
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+                    Semaphore_post(rc->rcbValuesLock);
+#endif
+
                     retVal = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
 
                     goto exit_function;
                 }
+            }
+            else {
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+                Semaphore_post(rc->rcbValuesLock);
+#endif
             }
 
             retVal = DATA_ACCESS_ERROR_SUCCESS;
             goto exit_function;
         }
         else if (strcmp(elementName, "IntgPd") == 0) {
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+            Semaphore_wait(rc->rcbValuesLock);
+#endif
+
             MmsValue* intgPd = ReportControl_getRCBValue(rc, elementName);
 
             if (!MmsValue_equals(intgPd, value)) {
                 MmsValue_update(intgPd, value);
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+                Semaphore_post(rc->rcbValuesLock);
+#endif
 
                 refreshIntegrityPeriod(rc);
 
@@ -2013,14 +2134,28 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
                     }
                 }
             }
+            else {
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+                Semaphore_post(rc->rcbValuesLock);
+#endif
+            }
 
             goto exit_function;
         }
         else if (strcmp(elementName, "TrgOps") == 0) {
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+            Semaphore_wait(rc->rcbValuesLock);
+#endif
+
             MmsValue* trgOps = ReportControl_getRCBValue(rc, elementName);
 
             if (!MmsValue_equals(trgOps, value)) {
                 MmsValue_update(trgOps, value);
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+                Semaphore_post(rc->rcbValuesLock);
+#endif
 
                 if (rc->buffered) {
                     purgeBuf(rc);
@@ -2031,6 +2166,11 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
                 }
 
                 refreshTriggerOptions(rc);
+            }
+            else {
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+                Semaphore_post(rc->rcbValuesLock);
+#endif
             }
 
             goto exit_function;
@@ -2062,17 +2202,33 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
                 rc->isResync = false;
             }
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+            Semaphore_wait(rc->rcbValuesLock);
+#endif
             MmsValue* entryID = ReportControl_getRCBValue(rc, elementName);
             MmsValue_update(entryID, value);
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+            Semaphore_post(rc->rcbValuesLock);
+#endif
 
             goto exit_function;
         }
 
         else if (strcmp(elementName, "BufTm") == 0) {
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+            Semaphore_wait(rc->rcbValuesLock);
+#endif
+
             MmsValue* bufTm = ReportControl_getRCBValue(rc, elementName);
 
             if (!MmsValue_equals(bufTm, value)) {
                 MmsValue_update(bufTm, value);
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+                Semaphore_post(rc->rcbValuesLock);
+#endif
 
                 if (rc->buffered) {
                     purgeBuf(rc);
@@ -2084,14 +2240,28 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 
                 refreshBufferTime(rc);
             }
+            else {
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+                Semaphore_post(rc->rcbValuesLock);
+#endif
+            }
 
             goto exit_function;
         }
         else if (strcmp(elementName, "RptID") == 0) {
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+            Semaphore_wait(rc->rcbValuesLock);
+#endif
+
             MmsValue* rptId = ReportControl_getRCBValue(rc, elementName);
 
             if (!MmsValue_equals(rptId, value)) {
                 MmsValue_update(rptId, value);
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+                Semaphore_post(rc->rcbValuesLock);
+#endif
 
                 if (rc->buffered) {
                     purgeBuf(rc);
@@ -2100,6 +2270,11 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
                         self->rcbEventHandler(self->rcbEventHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_PURGEBUF, NULL, DATA_ACCESS_ERROR_SUCCESS);
                     }
                 }
+            }
+            else {
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+                Semaphore_post(rc->rcbValuesLock);
+#endif
             }
 
             goto exit_function;
@@ -2183,14 +2358,26 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
             goto exit_function;
         }
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_wait(rc->rcbValuesLock);
+#endif
+
         MmsValue* rcbValue = ReportControl_getRCBValue(rc, elementName);
 
         if (rcbValue) {
             if (dontUpdate == false) {
                 MmsValue_update(rcbValue, value);
             }
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+            Semaphore_post(rc->rcbValuesLock);
+#endif
         }
         else {
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+            Semaphore_post(rc->rcbValuesLock);
+#endif
+
             retVal = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
 
             goto exit_function;
@@ -2280,8 +2467,16 @@ Reporting_disableReportControlInstance(MmsMapping* self, ReportControl* rc)
     rc->enabled = false;
     rc->clientConnection = NULL;
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_wait(rc->rcbValuesLock);
+#endif
+
     MmsValue* rptEna = ReportControl_getRCBValue(rc, "RptEna");
     MmsValue_setBoolean(rptEna, false);
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_post(rc->rcbValuesLock);
+#endif
 
     if (rc->reserved) {
         rc->reserved = false;
@@ -2296,8 +2491,16 @@ Reporting_disableReportControlInstance(MmsMapping* self, ReportControl* rc)
     if (rc->buffered == false) {
 
         if (rc->resvTms != -1) {
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+            Semaphore_wait(rc->rcbValuesLock);
+#endif
+
             MmsValue* resv = ReportControl_getRCBValue(rc, "Resv");
             MmsValue_setBoolean(resv, false);
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+            Semaphore_post(rc->rcbValuesLock);
+#endif
         }
 
         if (rc->resvTms != -1)
@@ -2461,7 +2664,9 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
 
     ReportBuffer* buffer = reportControl->reportBuffer;
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_wait(buffer->lock);
+#endif
 
     bool isBuffered = reportControl->buffered;
     bool overflow = false;
@@ -2747,8 +2952,16 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
     #endif
 
         if (reportControl->enabled == false) {
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+            Semaphore_wait(reportControl->rcbValuesLock);
+#endif
+
             MmsValue* entryIdValue = MmsValue_getElement(reportControl->rcbValues, 11);
             MmsValue_setOctetString(entryIdValue, (uint8_t*) entry->entryId, 8);
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+            Semaphore_post(reportControl->rcbValuesLock);
+#endif
         }
 
         reportControl->lastEntryId = entryId;
@@ -2851,7 +3064,9 @@ exit_function:
         /* TODO call user callback handler */
     }
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_post(buffer->lock);
+#endif
 
     return;
 } /* enqueuReport() */
@@ -2892,6 +3107,10 @@ sendNextReportEntrySegment(ReportControl* self)
     if (isBuffered)
         printReportId(report);
     printf(" size: %i\n", report->entryLength);
+#endif
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_wait(self->rcbValuesLock);
 #endif
 
     if (isBuffered) {
@@ -3424,6 +3643,11 @@ sendNextReportEntrySegment(ReportControl* self)
     }
 
 exit_function:
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_post(self->rcbValuesLock);
+#endif
+
     self->segmented = segmented;
     return moreFollows;
 }
@@ -3431,7 +3655,9 @@ exit_function:
 static void
 sendNextReportEntry(ReportControl* self)
 {
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_wait(self->reportBuffer->lock);
+#endif
 
     int messageCount = 0;
 
@@ -3445,7 +3671,9 @@ sendNextReportEntry(ReportControl* self)
             break;
     }
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_post(self->reportBuffer->lock);
+#endif
 }
 
 void
@@ -3457,10 +3685,18 @@ Reporting_activateBufferedReports(MmsMapping* self)
         ReportControl* rc = (ReportControl*) element->data;
 
         if (rc->buffered) {
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+            Semaphore_wait(rc->rcbValuesLock);
+#endif
+
             if (updateReportDataset(self, rc, NULL, NULL))
                 rc->isBuffering = true;
             else
                 rc->isBuffering = false;
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+            Semaphore_post(rc->rcbValuesLock);
+#endif
         }
     }
 }
@@ -3686,9 +3922,19 @@ ReportControlBlock_getRptID(ReportControlBlock* self)
     if (self->trgOps & 64) {
         ReportControl* rc = (ReportControl*)(self->sibling);
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_wait(rc->rcbValuesLock);
+#endif
+
         MmsValue* rptIdValue = ReportControl_getRCBValue(rc, "RptID");
 
-        return strdup(MmsValue_toString(rptIdValue));
+        char* rptIdStr = strdup(MmsValue_toString(rptIdValue));
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_post(rc->rcbValuesLock);
+#endif
+
+        return rptIdStr;
     }
     else {
         return self->rptId;
@@ -3701,9 +3947,19 @@ ReportControlBlock_getDataSet(ReportControlBlock* self)
     if (self->trgOps & 64) {
         ReportControl* rc = (ReportControl*)(self->sibling);
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_wait(rc->rcbValuesLock);
+#endif
+
         MmsValue* dataSetValue = ReportControl_getRCBValue(rc, "DatSet");
 
-        return strdup(MmsValue_toString(dataSetValue));
+        char* dataSetStr = strdup(MmsValue_toString(dataSetValue));
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_post(rc->rcbValuesLock);
+#endif
+
+        return dataSetStr;
     }
     else {
         return self->dataSetName;
@@ -3716,9 +3972,17 @@ ReportControlBlock_getConfRev(ReportControlBlock* self)
     if (self->trgOps & 64) {
         ReportControl* rc = (ReportControl*)(self->sibling);
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_wait(rc->rcbValuesLock);
+#endif
+
         MmsValue* confRevValue = ReportControl_getRCBValue(rc, "ConfRev");
 
         uint32_t confRev = MmsValue_toUint32(confRevValue);
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_post(rc->rcbValuesLock);
+#endif
 
         return confRev;
     }
@@ -3733,9 +3997,17 @@ ReportControlBlock_getOptFlds(ReportControlBlock* self)
     if (self->trgOps & 64) {
         ReportControl* rc = (ReportControl*)(self->sibling);
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_wait(rc->rcbValuesLock);
+#endif
+
         MmsValue* optFldsValue = ReportControl_getRCBValue(rc, "OptFlds");
 
         uint32_t optFlds = MmsValue_getBitStringAsInteger(optFldsValue) / 2;
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_post(rc->rcbValuesLock);
+#endif
 
         return optFlds;
     }
@@ -3750,9 +4022,17 @@ ReportControlBlock_getBufTm(ReportControlBlock* self)
     if (self->trgOps & 64) {
         ReportControl* rc = (ReportControl*)(self->sibling);
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_wait(rc->rcbValuesLock);
+#endif
+
         MmsValue* bufTmValue = ReportControl_getRCBValue(rc, "BufTm");
 
         uint32_t bufTm = MmsValue_toUint32(bufTmValue);
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_post(rc->rcbValuesLock);
+#endif
 
         return bufTm;
     }
@@ -3767,9 +4047,17 @@ ReportControlBlock_getSqNum(ReportControlBlock* self)
     if (self->trgOps & 64) {
         ReportControl* rc = (ReportControl*)(self->sibling);
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_wait(rc->rcbValuesLock);
+#endif
+
         MmsValue* sqNumValue = ReportControl_getRCBValue(rc, "SqNum");
 
         uint16_t sqNum = (uint16_t)MmsValue_toUint32(sqNumValue);
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_post(rc->rcbValuesLock);
+#endif
 
         return sqNum;
     }
@@ -3810,9 +4098,17 @@ ReportControlBlock_getGI(ReportControlBlock* self)
     if (self->trgOps & 64) {
         ReportControl* rc = (ReportControl*)(self->sibling);
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_wait(rc->rcbValuesLock);
+#endif
+
         MmsValue* giValue = ReportControl_getRCBValue(rc, "GI");
 
         bool gi = MmsValue_getBoolean(giValue);
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_post(rc->rcbValuesLock);
+#endif
 
         return gi;
     }
@@ -3827,9 +4123,17 @@ ReportControlBlock_getPurgeBuf(ReportControlBlock* self)
     if (self->trgOps & 64) {
         ReportControl* rc = (ReportControl*)(self->sibling);
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_wait(rc->rcbValuesLock);
+#endif
+
         MmsValue* purgeBufValue = ReportControl_getRCBValue(rc, "PurgeBuf");
 
         bool purgeBuf = MmsValue_getBoolean(purgeBufValue);
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_post(rc->rcbValuesLock);
+#endif
 
         return purgeBuf;
     }
@@ -3844,9 +4148,17 @@ ReportControlBlock_getEntryId(ReportControlBlock* self)
     if (self->trgOps & 64) {
         ReportControl* rc = (ReportControl*)(self->sibling);
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_wait(rc->rcbValuesLock);
+#endif
+
         MmsValue* entryIdValue = ReportControl_getRCBValue(rc, "EntryID");
 
         MmsValue* entryId = MmsValue_clone(entryIdValue);
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_post(rc->rcbValuesLock);
+#endif
 
         return entryId;
     }
@@ -3861,9 +4173,17 @@ ReportControlBlock_getTimeofEntry(ReportControlBlock* self)
     if (self->trgOps & 64) {
         ReportControl* rc = (ReportControl*)(self->sibling);
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_wait(rc->rcbValuesLock);
+#endif
+
         MmsValue* timeofEntryValue = ReportControl_getRCBValue(rc, "TimeofEntry");
 
         uint64_t timeofEntry = MmsValue_getBinaryTimeAsUtcMs(timeofEntryValue);
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_post(rc->rcbValuesLock);
+#endif
 
         return timeofEntry;
     }
@@ -3878,9 +4198,17 @@ ReportControlBlock_getResvTms(ReportControlBlock* self)
     if (self->trgOps & 64) {
         ReportControl* rc = (ReportControl*)(self->sibling);
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_wait(rc->rcbValuesLock);
+#endif
+
         MmsValue* resvTmsValue = ReportControl_getRCBValue(rc, "ResvTms");
 
         int16_t resvTms = (int16_t)MmsValue_toInt32(resvTmsValue);
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_post(rc->rcbValuesLock);
+#endif
 
         return resvTms;
     }
@@ -3896,9 +4224,18 @@ ReportControlBlock_getOwner(ReportControlBlock* self)
         ReportControl* rc = (ReportControl*)(self->sibling);
 
         if (rc->hasOwner) {
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+            Semaphore_wait(rc->rcbValuesLock);
+#endif
+
             MmsValue* ownerValue = ReportControl_getRCBValue(rc, "Owner");
 
             MmsValue* ownerValueCopy = MmsValue_clone(ownerValue);
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+            Semaphore_post(rc->rcbValuesLock);
+#endif
 
             return ownerValueCopy;
         }

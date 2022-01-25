@@ -3097,10 +3097,23 @@ mmsReadHandler(void* parameter, MmsDomain* domain, char* variableId, MmsServerCo
 
                         MmsValue* value = NULL;
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+                        Semaphore_wait(rc->rcbValuesLock);
+#endif
+
                         if (elementName != NULL)
                             value = ReportControl_getRCBValue(rc, elementName);
                         else
                             value = rc->rcbValues;
+
+                        if (value) {
+                            value = MmsValue_clone(value);
+                            MmsValue_setDeletableRecursive(value);
+                        }
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+                        Semaphore_post(rc->rcbValuesLock);
+#endif
 
                         retValue = value;
 
