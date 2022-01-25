@@ -3896,7 +3896,11 @@ ReportControlBlock_getOwner(ReportControlBlock* self)
         ReportControl* rc = (ReportControl*)(self->sibling);
 
         if (rc->hasOwner) {
-            return ReportControl_getRCBValue(rc, "Owner");
+            MmsValue* ownerValue = ReportControl_getRCBValue(rc, "Owner");
+
+            MmsValue* ownerValueCopy = MmsValue_clone(ownerValue);
+
+            return ownerValueCopy;
         }
         else
             return NULL;
@@ -3905,7 +3909,5 @@ ReportControlBlock_getOwner(ReportControlBlock* self)
         return NULL;
     }
 }
-
-
 
 #endif /* (CONFIG_IEC61850_REPORT_SERVICE == 1) */

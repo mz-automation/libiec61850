@@ -1322,10 +1322,39 @@ namespace IEC61850
             static extern IntPtr ReportControlBlock_getDataSet(IntPtr self);
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-            static extern int ReportControlBlock_getTrgOps(IntPtr self);
+            static extern UInt32 ReportControlBlock_getConfRev(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern UInt32 ReportControlBlock_getOptFlds(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern UInt32 ReportControlBlock_getBufTm(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern UInt16 ReportControlBlock_getSqNum(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern UInt32 ReportControlBlock_getTrgOps(IntPtr self);
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern UInt32 ReportControlBlock_getIntgPd(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
+            static extern bool ReportControlBlock_getGI(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
+            static extern bool ReportControlBlock_getPurgeBuf(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr ReportControlBlock_getEntryId(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern UInt64 ReportControlBlock_getTimeofEntry(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern UInt16 ReportControlBlock_getResvTms(IntPtr self);
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern IntPtr ReportControlBlock_getOwner(IntPtr self);
@@ -1418,6 +1447,38 @@ namespace IEC61850
                 }
             }
 
+            public UInt32 ConfRev
+            {
+                get
+                {
+                    return ReportControlBlock_getConfRev(self);
+                }
+            }
+
+            public ReportOptions OptFlds
+            {
+                get
+                {
+                    return (ReportOptions)ReportControlBlock_getOptFlds(self);
+                }
+            }
+
+            public UInt32 BufTm
+            {
+                get
+                {
+                    return ReportControlBlock_getBufTm(self);
+                }
+            }
+
+            public UInt16 SqNum
+            {
+                get
+                {
+                    return ReportControlBlock_getSqNum(self);
+                }
+            }
+
             public TriggerOptions TrgOps
             {
                 get
@@ -1433,6 +1494,82 @@ namespace IEC61850
                     return ReportControlBlock_getIntgPd(self);
                 }
             }
+
+            public bool GI
+            {
+                get
+                {
+                    return ReportControlBlock_getGI(self);
+                }
+            }
+
+            public bool PurgeBuf
+            {
+                get
+                {
+                    return ReportControlBlock_getPurgeBuf(self);
+                }
+            }
+
+            public byte[] EntryID
+            {
+                get
+                {
+                    IntPtr entryIdPtr = ReportControlBlock_getEntryId(self);
+
+                    if (entryIdPtr != IntPtr.Zero)
+                    {
+                        byte[] entryId = null;
+
+                        MmsValue octetStringVal = new MmsValue(entryIdPtr, true);
+
+                        entryId = octetStringVal.getOctetString();
+
+                        return entryId;
+                    }
+                    else
+                        return null;
+                }
+            }
+
+            public UInt64 TimeofEntry
+            {
+                get
+                {
+                    return ReportControlBlock_getTimeofEntry(self);
+                }
+            }
+
+            public UInt16 ResvTms
+            {
+                get
+                {
+                    return ReportControlBlock_getResvTms(self);
+                }
+            }
+
+            public byte[] Owner
+            {
+                get
+                {
+                    IntPtr mmsValuePtr = ReportControlBlock_getOwner(self);
+
+                    if (mmsValuePtr != IntPtr.Zero)
+                    {
+                        byte[] owner = null;
+
+                        MmsValue octetStringVal = new MmsValue(mmsValuePtr, true);
+
+                        owner = octetStringVal.getOctetString();
+
+                        return owner;
+                    }
+                    else
+                        return null;
+                }
+
+            }
+
         }
 
         /// <summary>
