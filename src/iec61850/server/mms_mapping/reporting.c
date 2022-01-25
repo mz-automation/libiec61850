@@ -106,7 +106,6 @@ ReportControl_create(bool buffered, LogicalNode* parentLN, int reportBufferSize,
     self->rcbValuesLock = Semaphore_create(1);
 #endif
 
-    self->confRev = NULL;
     self->subSeqVal = MmsValue_newUnsigned(16);
     self->segmented = false;
     self->startIndexForNextSegment = 0;
@@ -1070,8 +1069,6 @@ createUnbufferedReportControlBlock(ReportControlBlock* reportControlBlock,
     mmsValue->value.structure.components[4] =
             MmsValue_newUnsignedFromUint32(reportControlBlock->confRef);
 
-    reportControl->confRev = mmsValue->value.structure.components[4];
-
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
     namedVariable->name = StringUtils_copyString("OptFlds");
     namedVariable->type = MMS_BIT_STRING;
@@ -1226,8 +1223,6 @@ createBufferedReportControlBlock(ReportControlBlock* reportControlBlock,
     rcb->typeSpec.structure.elements[3] = namedVariable;
     mmsValue->value.structure.components[3] =
             MmsValue_newUnsignedFromUint32(reportControlBlock->confRef);
-
-    reportControl->confRev = mmsValue->value.structure.components[3];
 
     namedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
     namedVariable->name = StringUtils_copyString("OptFlds");
@@ -1601,14 +1596,16 @@ checkReportBufferForEntryID(ReportControl* rc, MmsValue* value)
 static void
 increaseConfRev(ReportControl* self)
 {
-    uint32_t confRev = MmsValue_toUint32(self->confRev);
+    MmsValue* confRevValue = ReportControl_getRCBValue(self, "ConfRev");
+
+    uint32_t confRev = MmsValue_toUint32(confRevValue);
 
     confRev++;
 
     if (confRev == 0)
         confRev = 1;
 
-    MmsValue_setUint32(self->confRev, confRev);
+    MmsValue_setUint32(confRevValue, confRev);
 }
 
 static void
@@ -2075,6 +2072,8 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 
                     MmsValue_update(datSet, value);
 
+                    increaseConfRev(rc);
+
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
                     Semaphore_post(rc->rcbValuesLock);
 #endif
@@ -2086,8 +2085,6 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
                             self->rcbEventHandler(self->rcbEventHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_PURGEBUF, NULL, DATA_ACCESS_ERROR_SUCCESS);
                         }
                     }
-
-                    increaseConfRev(rc);
                 }
                 else {
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
@@ -3113,6 +3110,8 @@ sendNextReportEntrySegment(ReportControl* self)
     Semaphore_wait(self->rcbValuesLock);
 #endif
 
+    MmsValue* confRev = ReportControl_getRCBValue(self, "ConfRev");
+
     if (isBuffered) {
         MmsValue* entryIdValue = MmsValue_getElement(self->rcbValues, 11);
         MmsValue_setOctetString(entryIdValue, (uint8_t*) report->entryId, 8);
@@ -3240,7 +3239,7 @@ sendNextReportEntrySegment(ReportControl* self)
 
     if (MmsValue_getBitStringBit(optFlds, 8)) {
         hasConfRev = true;
-        accessResultSize += MmsValue_encodeMmsData(self->confRev, NULL, 0, false);
+        accessResultSize += MmsValue_encodeMmsData(confRev, NULL, 0, false);
     }
 
     accessResultSize += MmsValue_encodeMmsData(self->inclusionField, NULL, 0, false);
@@ -3441,7 +3440,7 @@ sendNextReportEntrySegment(ReportControl* self)
         bufPos = MmsValue_encodeMmsData(entryId, buffer, bufPos, true);
 
     if (hasConfRev)
-        bufPos = MmsValue_encodeMmsData(self->confRev, buffer, bufPos, true);
+        bufPos = MmsValue_encodeMmsData(confRev, buffer, bufPos, true);
 
     if (segmented) {
         bufPos = MmsValue_encodeMmsData(subSeqNum, buffer, bufPos, true);

@@ -59,7 +59,6 @@ typedef struct {
 #endif
 
     MmsValue* inclusionField;
-    MmsValue* confRev; /* TODO Is this field required? */
 
     DataSet* dataSet;
     bool isDynamicDataSet;
