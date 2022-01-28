@@ -1,7 +1,7 @@
 /*
  *  iso_presentation.c
  *
- *  Copyright 2013-2019 Michael Zillgith
+ *  Copyright 2013-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -234,6 +234,10 @@ parseFullyEncodedData(IsoPresentation* self, uint8_t* buffer, int len, int bufPo
             }
             break;
 
+        case 0x06: /* transfer-syntax-name */
+            bufPos += length;
+            break;
+
         case 0xa0:
             if (DEBUG_PRES)
                 printf("PRES: fully-encoded-data\n");
@@ -451,10 +455,25 @@ parseNormalModeParameters(IsoPresentation* self, uint8_t* buffer, int totalLengt
             bufPos += len;
             break;
 
+        case 0x83: /* responding-presentation-selector */
+
+            if (len > 16) {
+                if (DEBUG_PRES)
+                    printf("PRES: responding-presentation-sel too large\n");
+            }
+
+            bufPos += len;
+            break;
+
         case 0xa4: /* presentation-context-definition list */
             if (DEBUG_PRES)
                 printf("PRES: pcd list\n");
             bufPos = parsePresentationContextDefinitionList(self, buffer, len, bufPos);
+            break;
+
+        case 0xa5: /* context-definition-result-list */
+
+            bufPos += len;
             break;
 
         case 0x61: /* user data */
@@ -625,12 +644,13 @@ IsoPresentation_createUserDataACSE(IsoPresentation* self, BufferChain writeBuffe
 int
 IsoPresentation_parseUserData(IsoPresentation* self, ByteBuffer* readBuffer)
 {
-    int length = readBuffer->size;
     uint8_t* buffer = readBuffer->buffer;
+    int maxBufPos = readBuffer->size;
+    bool hasAbstractSyntaxName = false;
 
     int bufPos = 0;
 
-    if (length < 9)
+    if (maxBufPos < 9)
         return 0;
 
     if (buffer[bufPos++] != 0x61)
@@ -638,7 +658,7 @@ IsoPresentation_parseUserData(IsoPresentation* self, ByteBuffer* readBuffer)
 
     int len;
 
-    bufPos = BerDecoder_decodeLength(buffer, &len, bufPos, length);
+    bufPos = BerDecoder_decodeLength(buffer, &len, bufPos, maxBufPos);
 
     if (bufPos < 0) {
         if (DEBUG_PRES)
@@ -649,7 +669,7 @@ IsoPresentation_parseUserData(IsoPresentation* self, ByteBuffer* readBuffer)
     if (buffer[bufPos++] != 0x30)
         return 0;
 
-    bufPos = BerDecoder_decodeLength(buffer, &len, bufPos, length);
+    bufPos = BerDecoder_decodeLength(buffer, &len, bufPos, maxBufPos);
 
     if (bufPos < 0) {
         if (DEBUG_PRES)
@@ -657,37 +677,64 @@ IsoPresentation_parseUserData(IsoPresentation* self, ByteBuffer* readBuffer)
         return 0;
     }
 
-    if (buffer[bufPos++] != 0x02)
-        return 0;
+    while (bufPos < maxBufPos) {
+        uint8_t tag = buffer[bufPos++];
+        uint8_t lenField = buffer[bufPos];
 
-    if (buffer[bufPos++] != 0x01)
-        return 0;
+        bufPos = BerDecoder_decodeLength(buffer, &len, bufPos, maxBufPos);
 
-    self->nextContextId = buffer[bufPos++];
+        if (bufPos < 0) {
+            if (DEBUG_PRES)
+                printf("PRES: wrong parameter length\n");
+            return 0;
+        }
 
-    if (buffer[bufPos++] != 0xa0)
-        return 0;
+        switch (tag) {
+        case 0x02: /* abstract-syntax-name */
+            self->nextContextId = buffer[bufPos];
+            hasAbstractSyntaxName = true;
+            bufPos += len;
+            break;
 
-    int userDataLength;
+        case 0x06: /* transfer-syntax-name */
+            {
+                /* check if basic-encoding (2.1.1 - 51 01) */
+                if ((buffer[bufPos] != 0x51) || (buffer[bufPos + 1] != 0x01)) {
+                    if (DEBUG_PRES) {
+                        printf("PRES: unknown transfer-syntax-name\n");
+                    }
 
-    uint8_t lengthByte = buffer[bufPos];
+                    return 0;
+                }
 
-    bufPos = BerDecoder_decodeLength(buffer, &userDataLength, bufPos, length);
+                bufPos += len;
+            }
+            break;
 
-    if (bufPos < 0) {
-        if (DEBUG_PRES)
-            printf("PRES: invalid message!\n");
-        return 0;
+
+        case 0xa0: /* presentation data */
+            {
+                if (hasAbstractSyntaxName == false) {
+                    if (DEBUG_PRES)
+                        printf("PRES: abstract-syntax-name missing!\n");
+
+                    return 0;
+                }
+
+                int userDataLength = len;
+
+                if (lenField == 0x80)
+                    userDataLength = userDataLength - 2;
+
+                ByteBuffer_wrap(&(self->nextPayload), buffer + bufPos, userDataLength, userDataLength);
+
+                return 1;
+            }
+            break;
+        }
     }
 
-    if (lengthByte == 0x80) {
-        /* remove end element from user data length when indefinite length encoded */
-        userDataLength = userDataLength - 2;
-    }
-
-    ByteBuffer_wrap(&(self->nextPayload), buffer + bufPos, userDataLength, userDataLength);
-
-    return 1;
+    return 0;
 }
 
 int
