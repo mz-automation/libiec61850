@@ -1,7 +1,7 @@
 /*
  * iec61850_common.c
  *
- *  Copyright 2013-2020 Michael Zillgith
+ *  Copyright 2013-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -68,6 +68,20 @@ Quality
 Quality_fromMmsValue(const MmsValue* mmsValue)
 {
     return (Quality) MmsValue_getBitStringAsInteger(mmsValue);
+}
+
+MmsValue*
+Quality_toMmsValue(Quality* self, MmsValue* mmsValue)
+{
+    if (mmsValue == NULL) {
+        mmsValue = MmsValue_newBitString(13);
+    }
+
+    if (mmsValue) {
+        MmsValue_setBitStringFromInteger(mmsValue, *self);
+    }
+
+    return mmsValue;
 }
 
 Dbpos
@@ -489,6 +503,25 @@ Timestamp_toMmsValue(Timestamp* self, MmsValue* mmsValue)
         memcpy(convertedValue->value.utcTime, self->val, 8);
 
     return convertedValue;
+}
+
+Timestamp*
+Timestamp_fromMmsValue(Timestamp* self, MmsValue* mmsValue)
+{
+    if (mmsValue->type == MMS_UTC_TIME) {
+
+        if (self == NULL)
+            self = Timestamp_create();
+
+        if (self) {
+            memcpy(self->val, mmsValue->value.utcTime, 8);
+        }
+
+        return self;
+    }
+    else {
+        return NULL;
+    }
 }
 
 char*

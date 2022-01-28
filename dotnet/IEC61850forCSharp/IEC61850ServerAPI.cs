@@ -1,7 +1,7 @@
 ﻿/*
  *  IEC61850ServerAPI.cs
  *
- *  Copyright 2016 Michael Zillgith
+ *  Copyright 2016-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -331,11 +331,18 @@ namespace IEC61850
                 this.parent = parent;
             }
 
+            internal Dictionary<IntPtr, ReportControlBlock> rcbs = new Dictionary<IntPtr, ReportControlBlock>();
+
             public LogicalNode(string name, LogicalDevice parent)
             {
                 this.parent = parent;
 
                 base.self = LogicalNode_create(name, parent.self);
+            }
+
+            internal void AddRcb(ReportControlBlock rcb)
+            {
+                rcbs.Add(rcb.self, rcb);
             }
         }
 
@@ -1301,12 +1308,78 @@ namespace IEC61850
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern void ReportControlBlock_setPreconfiguredClient(IntPtr self, byte type, [Out] byte[] buf);
 
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern string ReportControlBlock_getName(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
+            static extern bool ReportControlBlock_getRptEna(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr ReportControlBlock_getRptID(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr ReportControlBlock_getDataSet(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern UInt32 ReportControlBlock_getConfRev(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern UInt32 ReportControlBlock_getOptFlds(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern UInt32 ReportControlBlock_getBufTm(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern UInt16 ReportControlBlock_getSqNum(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern UInt32 ReportControlBlock_getTrgOps(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern UInt32 ReportControlBlock_getIntgPd(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
+            static extern bool ReportControlBlock_getGI(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
+            static extern bool ReportControlBlock_getPurgeBuf(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr ReportControlBlock_getEntryId(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern UInt64 ReportControlBlock_getTimeofEntry(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern UInt16 ReportControlBlock_getResvTms(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr ReportControlBlock_getOwner(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void Memory_free(IntPtr self);
+
             public IntPtr self = IntPtr.Zero;
+
+            private string name = null;
+            private LogicalNode parent = null;
 
             public ReportControlBlock(string name, LogicalNode parent, string rptId, bool isBuffered,
                 string dataSetName, uint confRev, byte trgOps, byte options, uint bufTm, uint intgPd)
             {
                 self = ReportControlBlock_create(name, parent.self, rptId, isBuffered, dataSetName, confRev, trgOps, options, bufTm, intgPd);
+                parent.AddRcb(this);
+                this.parent = parent;
+            }
+
+            internal ReportControlBlock(IntPtr self, LogicalNode parent)
+            {
+                this.parent = parent;
+                this.self = self;
+                parent.AddRcb(this);
             }
 
             public void SetPreconfiguredClient(byte[] clientAddress)
@@ -1316,6 +1389,187 @@ namespace IEC61850
                 else if (clientAddress.Length == 6)
                     ReportControlBlock_setPreconfiguredClient(self, 6, clientAddress);
             }
+
+            public string Name
+            {
+                get
+                {
+                    if (name == null)
+                    {
+                        name = ReportControlBlock_getName(self);
+                    }
+
+                    return name;
+                }
+            }
+
+            public LogicalNode Parent
+            {
+                get
+                {
+                    return parent;
+                }
+            }
+
+            public bool RptEna
+            {
+                get
+                {
+                    return ReportControlBlock_getRptEna(self);
+                }
+            }
+
+            public string RptID
+            {
+                get
+                {
+                    IntPtr rptIdPtr = ReportControlBlock_getRptID(self);
+
+                    string rptId = Marshal.PtrToStringAnsi(rptIdPtr);
+
+                    Memory_free(rptIdPtr);
+
+                    return rptId;
+                }
+            }
+
+            public string DataSet
+            {
+                get
+                {
+                    IntPtr dataSetPtr = ReportControlBlock_getDataSet(self);
+
+                    string dataSet = Marshal.PtrToStringAnsi(dataSetPtr);
+
+                    Memory_free(dataSetPtr);
+
+                    return dataSet;
+                }
+            }
+
+            public UInt32 ConfRev
+            {
+                get
+                {
+                    return ReportControlBlock_getConfRev(self);
+                }
+            }
+
+            public ReportOptions OptFlds
+            {
+                get
+                {
+                    return (ReportOptions)ReportControlBlock_getOptFlds(self);
+                }
+            }
+
+            public UInt32 BufTm
+            {
+                get
+                {
+                    return ReportControlBlock_getBufTm(self);
+                }
+            }
+
+            public UInt16 SqNum
+            {
+                get
+                {
+                    return ReportControlBlock_getSqNum(self);
+                }
+            }
+
+            public TriggerOptions TrgOps
+            {
+                get
+                {
+                    return (TriggerOptions)ReportControlBlock_getTrgOps(self);
+                }
+            }
+
+            public UInt32 IntgPd
+            {
+                get
+                {
+                    return ReportControlBlock_getIntgPd(self);
+                }
+            }
+
+            public bool GI
+            {
+                get
+                {
+                    return ReportControlBlock_getGI(self);
+                }
+            }
+
+            public bool PurgeBuf
+            {
+                get
+                {
+                    return ReportControlBlock_getPurgeBuf(self);
+                }
+            }
+
+            public byte[] EntryID
+            {
+                get
+                {
+                    IntPtr entryIdPtr = ReportControlBlock_getEntryId(self);
+
+                    if (entryIdPtr != IntPtr.Zero)
+                    {
+                        byte[] entryId = null;
+
+                        MmsValue octetStringVal = new MmsValue(entryIdPtr, true);
+
+                        entryId = octetStringVal.getOctetString();
+
+                        return entryId;
+                    }
+                    else
+                        return null;
+                }
+            }
+
+            public UInt64 TimeofEntry
+            {
+                get
+                {
+                    return ReportControlBlock_getTimeofEntry(self);
+                }
+            }
+
+            public UInt16 ResvTms
+            {
+                get
+                {
+                    return ReportControlBlock_getResvTms(self);
+                }
+            }
+
+            public byte[] Owner
+            {
+                get
+                {
+                    IntPtr mmsValuePtr = ReportControlBlock_getOwner(self);
+
+                    if (mmsValuePtr != IntPtr.Zero)
+                    {
+                        byte[] owner = null;
+
+                        MmsValue octetStringVal = new MmsValue(mmsValuePtr, true);
+
+                        owner = octetStringVal.getOctetString();
+
+                        return owner;
+                    }
+                    else
+                        return null;
+                }
+
+            }
+
         }
 
         /// <summary>
@@ -1691,6 +1945,47 @@ namespace IEC61850
 
         public delegate void GoCBEventHandler(MmsGooseControlBlock goCB, int cbEvent, object parameter);
 
+        /// <summary>
+        /// Report control block event types
+        /// </summary>
+        public enum RCBEventType
+        {
+            /// <summary>
+            /// parameter read by client (not implemented).
+            /// </summary>
+            GET_PARAMETER = 0,
+            /// <summary>
+            /// parameter set by client.
+            /// </summary>
+            SET_PARAMETER = 1,
+            /// <summary>
+            /// reservation canceled.
+            /// </summary>
+            UNRESERVED = 2,
+            /// <summary>
+            /// reservation
+            /// </summary>
+            RESERVED = 3,
+            /// <summary>
+            /// RCB enabled
+            /// </summary>
+            ENABLED = 4,
+            /// <summary>
+            /// RCB disabled
+            /// </summary>
+            DISABLED = 5,
+            /// <summary>
+            /// GI report triggered
+            /// </summary>
+            GI = 6,
+            /// <summary>
+            /// Purge buffer procedure executed
+            /// </summary>
+            PURGEBUF = 7
+        }
+
+        public delegate void RCBEventHandler(object parameter, ReportControlBlock rcb, ClientConnection con, RCBEventType eventType, string parameterName, MmsDataAccessError serviceError);
+
         public delegate MmsDataAccessError WriteAccessHandler (DataAttribute dataAttr, MmsValue value, 
             ClientConnection connection, object parameter);
 
@@ -1916,6 +2211,12 @@ namespace IEC61850
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern void IedServer_setGoCBHandler(IntPtr self, InternalGoCBEventHandler handler, IntPtr parameter);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            private delegate void InternalRCBEventHandler(IntPtr paramter, IntPtr rcb, IntPtr connection, int eventType, string parameterName, int serviceError);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedServer_setRCBEventHandler(IntPtr self, InternalRCBEventHandler handler, IntPtr parameter);
 
             private IntPtr self = IntPtr.Zero;
 
@@ -2558,6 +2859,70 @@ namespace IEC61850
                     internalGoCBEventHandler = new InternalGoCBEventHandler(InternalGoCBEventHandlerImplementation);
 
                     IedServer_setGoCBHandler(self, internalGoCBEventHandler, IntPtr.Zero);
+                }
+            }
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr ReportControlBlock_getParent(IntPtr self);
+
+
+            private RCBEventHandler rcbEventHandler = null;
+            private object rcbEventHandlerParameter = null;
+
+            private InternalRCBEventHandler internalRCBEventHandler = null;
+
+            private void InternalRCBEventHandlerImplementation(IntPtr parameter, IntPtr rcb, IntPtr connection, int eventType, string parameterName, int serviceError)
+            {
+                if (rcbEventHandler != null)
+                {
+                    ClientConnection con = null;
+
+                    if (connection != IntPtr.Zero)
+                    {
+                        this.clientConnections.TryGetValue(connection, out con);
+                    }
+
+                    ReportControlBlock reportControlBlock = null;
+
+                    if (rcb != IntPtr.Zero)
+                    {
+                        IntPtr lnPtr = ReportControlBlock_getParent(rcb);
+
+                        if (lnPtr != IntPtr.Zero)
+                        {
+                            ModelNode lnModelNode = iedModel.GetModelNodeFromNodeRef(lnPtr);
+
+                            if (lnModelNode != null)
+                            {
+                                LogicalNode ln = lnModelNode as LogicalNode;
+
+                                if (ln.rcbs.TryGetValue(rcb, out reportControlBlock) == false)
+                                {
+                                    reportControlBlock = new ReportControlBlock(rcb, ln);
+                                }
+                            }
+                        }
+                    }
+
+                    rcbEventHandler.Invoke(rcbEventHandlerParameter, reportControlBlock, con, (RCBEventType)eventType, parameterName, (MmsDataAccessError)serviceError);
+                }
+            }
+
+            /// <summary>
+            /// Set a callback handler for RCB events
+            /// </summary>
+            /// <param name="handler">the callback handler</param>
+            /// <param name="parameter">user provided parameter that is passed to the callback handler</param>
+            public void SetRCBEventHandler(RCBEventHandler handler, object parameter)
+            {
+                rcbEventHandler = handler;
+                rcbEventHandlerParameter = parameter;
+
+                if (internalRCBEventHandler == null)
+                {
+                    internalRCBEventHandler = new InternalRCBEventHandler(InternalRCBEventHandlerImplementation);
+
+                    IedServer_setRCBEventHandler(self, internalRCBEventHandler, IntPtr.Zero);
                 }
             }
 

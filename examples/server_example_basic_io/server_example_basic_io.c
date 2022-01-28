@@ -79,6 +79,27 @@ connectionHandler (IedServer self, ClientConnection connection, bool connected, 
         printf("Connection closed\n");
 }
 
+static void
+rcbEventHandler(void* parameter, ReportControlBlock* rcb, ClientConnection connection, IedServer_RCBEventType event, const char* parameterName, MmsDataAccessError serviceError)
+{
+    printf("RCB: %s event: %i\n", ReportControlBlock_getName(rcb), event);
+
+    if ((event == RCB_EVENT_SET_PARAMETER) || (event == RCB_EVENT_GET_PARAMETER)) {
+        printf("  param:  %s\n", parameterName);
+        printf("  result: %i\n", serviceError);
+    }
+
+    if (event == RCB_EVENT_ENABLE) {
+        char* rptId = ReportControlBlock_getRptID(rcb);
+        printf("   rptID:  %s\n", rptId);
+        char* dataSet = ReportControlBlock_getDataSet(rcb);
+        printf("   datSet: %s\n", dataSet);
+
+        free(rptId);
+        free(dataSet);
+    }
+}
+
 int
 main(int argc, char** argv)
 {
@@ -135,6 +156,8 @@ main(int argc, char** argv)
             IEDMODEL_GenericIO_GGIO1_SPCSO4);
 
     IedServer_setConnectionIndicationHandler(iedServer, (IedConnectionIndicationHandler) connectionHandler, NULL);
+
+    IedServer_setRCBEventHandler(iedServer, rcbEventHandler, NULL);
 
     /* By default access to variables with FC=DC and FC=CF is not allowed.
      * This allow to write to simpleIOGenericIO/GGIO1.NamPlt.vendor variable used

@@ -1,7 +1,7 @@
 /*
  *  mms_mapping_internal.h
  *
- *  Copyright 2013-2020 Michael Zillgith
+ *  Copyright 2013-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -328,6 +328,9 @@ struct sMmsMapping {
 
     IedConnectionIndicationHandler connectionIndicationHandler;
     void* connectionIndicationHandlerParameter;
+
+    IedServer_RCBEventHandler rcbEventHandler;
+    void* rcbEventHandlerParameter;
 };
 
 #endif /* MMS_MAPPING_INTERNAL_H_ */

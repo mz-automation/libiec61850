@@ -370,6 +370,9 @@ Quality_isFlagSet(Quality* self, int flag);
 LIB61850_API Quality
 Quality_fromMmsValue(const MmsValue* mmsValue);
 
+LIB61850_API MmsValue*
+Quality_toMmsValue(Quality* self, MmsValue* mmsValue);
+
 /** @} */
 
 /**
@@ -514,6 +517,17 @@ Timestamp_setByMmsUtcTime(Timestamp* self, const MmsValue* mmsValue);
  */
 LIB61850_API MmsValue*
 Timestamp_toMmsValue(Timestamp* self, MmsValue* mmsValue);
+
+/**
+ * \brief Get the Timestamp value from an MmsValue instance of type MMS_UTC_TIME
+ *
+ * \param self the Timestamp instance or NULL to create a new instance
+ * \param mmsValue the mmsValue instance of type MMS_UTC_TIME
+ *
+ * \return the updated Timestamp value or NULL in case of an error
+ */
+LIB61850_API Timestamp*
+Timestamp_fromMmsValue(Timestamp* self, MmsValue* mmsValue);
 
 /**
  * \brief Get the version of the library as string

@@ -383,6 +383,24 @@ ReportControlBlock_setPreconfiguredClient(ReportControlBlock* self, uint8_t clie
     }
 }
 
+const char*
+ReportControlBlock_getName(ReportControlBlock* self)
+{
+    return self->name;
+}
+
+LogicalNode*
+ReportControlBlock_getParent(ReportControlBlock* self)
+{
+    return self->parent;
+}
+
+bool
+ReportControlBlock_isBuffered(ReportControlBlock* self)
+{
+    return self->buffered;
+}
+
 #if (CONFIG_IEC61850_SETTING_GROUPS == 1)
 static void
 LogicalNode_addSettingGroupControlBlock(LogicalNode* self, SettingGroupControlBlock* sgcb)
