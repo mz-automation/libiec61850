@@ -1681,8 +1681,8 @@ namespace IEC61850
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.I1)]
-            private delegate bool IedConnection_GetFileAsyncHandler(UInt32 invokeId,IntPtr parameter,int err,UInt32 originalInvokeId,
-                IntPtr buffer,UInt32 bytesRead,bool moreFollows);
+            private delegate bool IedConnection_GetFileAsyncHandler(UInt32 invokeId, IntPtr parameter, int err, UInt32 originalInvokeId,
+                IntPtr buffer, UInt32 bytesRead, [MarshalAs(UnmanagedType.I1)] bool moreFollows);
 
             /// <summary>
             /// Callback handler for the asynchronous get file service. Will be invoked for each chunk of received data
@@ -1693,7 +1693,8 @@ namespace IEC61850
             /// <param name="originalInvokeId">the invokeId of the first (file open) request</param>
             /// <param name="buffer">the file data received with the last response, or null if no file data available</param>
             /// <param name="moreFollows">indicates that more file data follows</param>
-            public delegate bool GetFileAsyncHandler(UInt32 invokeId,object parameter,IedClientError err,UInt32 originalInvokeId,byte[] buffer,bool moreFollows);
+            /// <returns>true, continue the file download when moreFollows is true, false, stop file download</returns>
+            public delegate bool GetFileAsyncHandler(UInt32 invokeId, object parameter, IedClientError err, UInt32 originalInvokeId, byte[] buffer, bool moreFollows);
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)] 
             static extern UInt32
@@ -1703,15 +1704,12 @@ namespace IEC61850
             private bool nativeGetFileAsyncHandler(UInt32 invokeId, IntPtr parameter, int err, UInt32 originalInvokeId,
                                                    IntPtr buffer, UInt32 bytesRead, bool moreFollows)
             {
-
                 GCHandle handle = GCHandle.FromIntPtr(parameter);
 
                 Tuple<GetFileAsyncHandler, object> callbackInfo = handle.Target as Tuple<GetFileAsyncHandler, object>;
 
                 GetFileAsyncHandler handler = callbackInfo.Item1;
                 object handlerParameter = callbackInfo.Item2;
-
-                handle.Free();
 
                 IedClientError clientError = (IedClientError)err;
 
@@ -1724,7 +1722,28 @@ namespace IEC61850
                     Marshal.Copy(buffer, bytes, 0, (int)bytesRead);
                 }               
                     
-                return handler(invokeId, handlerParameter, clientError, originalInvokeId, bytes, moreFollows);
+                bool retVal =  handler(invokeId, handlerParameter, clientError, originalInvokeId, bytes, moreFollows);
+
+                if (clientError != IedClientError.IED_ERROR_OK)
+                {
+                    handle.Free();
+                }
+                else
+                {
+                    if (moreFollows == false)
+                    {
+                        handle.Free();
+                    }
+                    else
+                    {
+                        if (retVal == false)
+                        {
+                            handle.Free();
+                        }
+                    }
+                }
+
+                return retVal;
             }
 
             /// <summary>

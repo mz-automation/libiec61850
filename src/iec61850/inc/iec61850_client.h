@@ -2969,6 +2969,8 @@ IedConnection_getFile(IedConnection self, IedClientError* error, const char* fil
  * \param buffer the buffer that contains the received file data
  * \param bytesRead the number of bytes read into the buffer
  * \param moreFollows indicates that more file data is following
+ *
+ * \return true, continue the file download when moreFollows is true, false, stop file download
  */
 typedef bool
 (*IedConnection_GetFileAsyncHandler) (uint32_t invokeId, void* parameter, IedClientError err, uint32_t originalInvokeId,
