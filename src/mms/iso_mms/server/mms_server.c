@@ -555,10 +555,8 @@ exit_function:
     return retValue;
 }
 
-static char*
-mmsServer_getDataRef(MmsDomain* domain, char* itemId) {
-    char dataRefBuf[130];
-
+static void
+mmsServer_getDataRef(MmsDomain* domain, char* itemId, char* dataRefBuf) {
     const char* separator = strchr(itemId, '$');
 
     if (separator != NULL) {
@@ -576,8 +574,6 @@ mmsServer_getDataRef(MmsDomain* domain, char* itemId) {
     dataRefBuf[129] = 0;
 
     StringUtils_replace(dataRefBuf, '$', '.');
-
-    return dataRefBuf;
 }
 
 MmsDataAccessError
@@ -586,7 +582,9 @@ mmsServer_setValue(MmsServer self, MmsDomain* domain, char* itemId, MmsValue* va
 {
     MmsDataAccessError indication;
 
-    char* dataRefBuf = mmsServer_getDataRef(domain, itemId);
+    char dataRefBuf[130];
+
+    mmsServer_getDataRef(domain, itemId, dataRefBuf);
 
     if (self->writeHandler != NULL) {
         indication = self->writeHandler(self->writeHandlerParameter, domain,
@@ -616,7 +614,9 @@ mmsServer_setValueWithAlternateAccess(MmsServer self, MmsDomain* domain, char* i
 {
     MmsDataAccessError indication;
 
-    char* dataRefBuf = mmsServer_getDataRef(domain, itemId);
+    char dataRefBuf[130];
+        
+    mmsServer_getDataRef(domain, itemId, dataRefBuf);
 
     MmsValue* cachedArray;
 
