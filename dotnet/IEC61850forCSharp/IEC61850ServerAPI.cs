@@ -2167,6 +2167,9 @@ namespace IEC61850
             static extern void IedServer_updateFloatAttributeValue(IntPtr self, IntPtr dataAttribute, float value);
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedServer_updateBitStringAttributeValue(IntPtr self, IntPtr dataAttribute, uint value);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern void IedServer_updateVisibleStringAttributeValue(IntPtr self, IntPtr dataAttribute, string value);
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
@@ -2809,6 +2812,11 @@ namespace IEC61850
             public void UpdateInt64AttributeValue(DataAttribute dataAttr, Int64 value)
             {
                 IedServer_updateInt64AttributeValue (self, dataAttr.self, value);
+            }
+
+            public void UpdateBitStringAttributeValue(DataAttribute dataAttr, uint value)
+            {
+                IedServer_updateBitStringAttributeValue(self, dataAttr.self, value);
             }
 
             public void UpdateVisibleStringAttributeValue(DataAttribute dataAttr, string value)
