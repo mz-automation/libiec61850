@@ -763,10 +763,12 @@ CotpConnection_readToTpktBuffer(CotpConnection* self)
 
 exit_closed:
     if (DEBUG_COTP) printf("TPKT: socket closed or socket error\n");
+    self->readBuffer->size = 0;
     return TPKT_ERROR;
 
 exit_error:
     if (DEBUG_COTP) printf("TPKT: Error parsing message\n");
+    self->readBuffer->size = 0;
     return TPKT_ERROR;
 
 exit_waiting:
