@@ -1473,6 +1473,8 @@ namespace IEC61850
                     throw new IedConnectionException("Deleting file " + fileName + " failed", error);
             }
 
+            private IedConnection_GenericServiceHandler internalGenericServiceHandler = null;
+
             private void nativeGenericServiceHandler(UInt32 invokeId, IntPtr parameter, int err)
             {
                 GCHandle handle = GCHandle.FromIntPtr(parameter);
@@ -1500,7 +1502,10 @@ namespace IEC61850
 
                 GCHandle handle = GCHandle.Alloc(callbackInfo);
 
-                UInt32 invokeId = IedConnection_deleteFileAsync(connection, out error, filename, nativeGenericServiceHandler, GCHandle.ToIntPtr(handle));
+                if (internalGenericServiceHandler == null)
+                    internalGenericServiceHandler = new IedConnection_GenericServiceHandler(nativeGenericServiceHandler);
+
+                UInt32 invokeId = IedConnection_deleteFileAsync(connection, out error, filename, internalGenericServiceHandler, GCHandle.ToIntPtr(handle));
 
                 if (error != 0)
                 {
@@ -1701,6 +1706,8 @@ namespace IEC61850
             IedConnection_getFileAsync(IntPtr self, out int error, string fileName, IedConnection_GetFileAsyncHandler handler,
                                        IntPtr parameter);
 
+            private IedConnection_GetFileAsyncHandler internalGetFileAsyncHandler = null;
+
             private bool nativeGetFileAsyncHandler(UInt32 invokeId, IntPtr parameter, int err, UInt32 originalInvokeId,
                                                    IntPtr buffer, UInt32 bytesRead, bool moreFollows)
             {
@@ -1768,7 +1775,10 @@ namespace IEC61850
 
                 GCHandle handle = GCHandle.Alloc(callbackInfo);
 
-                UInt32 invokeId = IedConnection_getFileAsync(connection, out error, fileName, nativeGetFileAsyncHandler, GCHandle.ToIntPtr(handle));
+                if (internalGetFileAsyncHandler == null)
+                    internalGetFileAsyncHandler = new IedConnection_GetFileAsyncHandler(nativeGetFileAsyncHandler);
+
+                UInt32 invokeId = IedConnection_getFileAsync(connection, out error, fileName, internalGetFileAsyncHandler, GCHandle.ToIntPtr(handle));
 
                 if (error != 0)
                 {
@@ -2066,7 +2076,10 @@ namespace IEC61850
 
                 GCHandle handle = GCHandle.Alloc(callbackInfo);
 
-                UInt32 invokeId = IedConnection_createDataSetAsync(connection, out error, dataSetReference, linkedList, nativeGenericServiceHandler, GCHandle.ToIntPtr(handle));
+                if (internalGenericServiceHandler == null)
+                    internalGenericServiceHandler = new IedConnection_GenericServiceHandler(nativeGenericServiceHandler);
+
+                UInt32 invokeId = IedConnection_createDataSetAsync(connection, out error, dataSetReference, linkedList, internalGenericServiceHandler, GCHandle.ToIntPtr(handle));
 
                 LinkedList_destroyDeep(linkedList, new LinkedListValueDeleteFunction(FreeHGlobaleDeleteFunction));
 
@@ -2117,7 +2130,10 @@ namespace IEC61850
 
                 GCHandle handle = GCHandle.Alloc(callbackInfo);
 
-                UInt32 invokeId = IedConnection_deleteDataSetAsync(connection, out error, dataSetReference, nativeGenericServiceHandler, GCHandle.ToIntPtr(handle));
+                if (internalGenericServiceHandler == null)
+                    internalGenericServiceHandler = new IedConnection_GenericServiceHandler(nativeGenericServiceHandler);
+
+                UInt32 invokeId = IedConnection_deleteDataSetAsync(connection, out error, dataSetReference, internalGenericServiceHandler, GCHandle.ToIntPtr(handle));
 
                 if (error != 0)
                 {
@@ -2187,6 +2203,8 @@ namespace IEC61850
             /// <param name="isDeletable">data set can be deleted by a client (dynamic data set)</param>
             public delegate void GetDataSetDirectoryHandler(UInt32 invokeId, object parameter, IedClientError err, List<string> dataSetDirectory, bool isDeletable);
 
+            private IedConnection_GetDataSetDirectoryHandler internalGetDataSetDirectoryHandler = null;
+
             private void nativeGetDataSetDirectoryHandler(UInt32 invokeId, IntPtr parameter, int err, IntPtr dataSetDirectory, bool isDeletable)
             {
                 GCHandle handle = GCHandle.FromIntPtr(parameter);
@@ -2233,7 +2251,10 @@ namespace IEC61850
 
                 GCHandle handle = GCHandle.Alloc(callbackInfo);
 
-                UInt32 invokeId = IedConnection_getDataSetDirectoryAsync(connection, out error, dataSetReference, nativeGetDataSetDirectoryHandler, GCHandle.ToIntPtr(handle));
+                if (internalGetDataSetDirectoryHandler == null)
+                    internalGetDataSetDirectoryHandler = new IedConnection_GetDataSetDirectoryHandler(nativeGetDataSetDirectoryHandler);
+
+                UInt32 invokeId = IedConnection_getDataSetDirectoryAsync(connection, out error, dataSetReference, internalGetDataSetDirectoryHandler, GCHandle.ToIntPtr(handle));
 
                 if (error != 0)
                 {
@@ -2252,6 +2273,8 @@ namespace IEC61850
             /// <param name="err">Error code of response or timeout error in case of a response timeout</param>
             /// <param name="value">The read result value or null in case of an error</param>
             public delegate void ReadValueHandler(UInt32 invokeId,object parameter,IedClientError err,MmsValue value);
+
+            private IedConnection_ReadObjectHandler internalReadObjectHandler = null;
 
             private void nativeReadObjectHandler(UInt32 invokeId, IntPtr parameter, int err, IntPtr value)
             {
@@ -2291,7 +2314,10 @@ namespace IEC61850
 
                 GCHandle handle = GCHandle.Alloc(callbackInfo);
 
-                UInt32 invokeId = IedConnection_readObjectAsync(connection, out error, objectReference, (int)fc, nativeReadObjectHandler, GCHandle.ToIntPtr(handle));
+                if (internalReadObjectHandler == null)
+                    internalReadObjectHandler = new IedConnection_ReadObjectHandler(nativeReadObjectHandler);
+
+                UInt32 invokeId = IedConnection_readObjectAsync(connection, out error, objectReference, (int)fc, internalReadObjectHandler, GCHandle.ToIntPtr(handle));
 
                 if (error != 0)
                 {
@@ -2301,6 +2327,8 @@ namespace IEC61850
 
                 return invokeId;
             }
+
+            private IedConnection_GetVariableSpecificationHandler internalGetVariableSpecificationHandler = null;
 
             private void nativeGetVariableSpecifcationHandler(UInt32 invokeId, IntPtr parameter, int err, IntPtr spec)
             {
@@ -2340,7 +2368,10 @@ namespace IEC61850
 
                 GCHandle handle = GCHandle.Alloc(callbackInfo);
 
-                UInt32 invokeId = IedConnection_getVariableSpecificationAsync(connection, out error, objectReference, (int)fc, nativeGetVariableSpecifcationHandler, GCHandle.ToIntPtr(handle)); 
+                if (internalGetVariableSpecificationHandler == null)
+                    internalGetVariableSpecificationHandler = new IedConnection_GetVariableSpecificationHandler(nativeGetVariableSpecifcationHandler);
+
+                UInt32 invokeId = IedConnection_getVariableSpecificationAsync(connection, out error, objectReference, (int)fc, internalGetVariableSpecificationHandler, GCHandle.ToIntPtr(handle)); 
 
                 if (error != 0)
                 {
@@ -2350,6 +2381,8 @@ namespace IEC61850
 
                 return invokeId;
             }
+
+            private IedConnection_ReadDataSetHandler internalReadDataSetHandler = null;
 
             private void nativeReadDataSetHandler(UInt32 invokeId, IntPtr parameter, int err, IntPtr nativeDataSet)
             {
@@ -2404,7 +2437,10 @@ namespace IEC61850
                 if (dataSet != null)
                     dataSetPtr = dataSet.getNativeInstance();
 
-                UInt32 invokeId = IedConnection_readDataSetValuesAsync(connection, out error, dataSetReference, dataSetPtr, nativeReadDataSetHandler, GCHandle.ToIntPtr(handle)); 
+                if (internalReadDataSetHandler == null)
+                    internalReadDataSetHandler = new IedConnection_ReadDataSetHandler(nativeReadDataSetHandler);
+
+                UInt32 invokeId = IedConnection_readDataSetValuesAsync(connection, out error, dataSetReference, dataSetPtr, internalReadDataSetHandler, GCHandle.ToIntPtr(handle)); 
 
                 if (error != 0)
                 {
@@ -2422,6 +2458,8 @@ namespace IEC61850
             /// <param name="parameter">user provided callback parameter</param>
             /// <param name="err">Error code of response or timeout error in case of a response timeout</param>
             public delegate void WriteValueHandler(UInt32 invokeId,object parameter,IedClientError err);
+
+            private IedConnection_WriteObjectHandler internalWriteObjectHandler = null;
 
             private void nativeWriteObjectHandler(UInt32 invokeId, IntPtr parameter, int err)
             {
@@ -2448,7 +2486,10 @@ namespace IEC61850
 
                 GCHandle handle = GCHandle.Alloc(callbackInfo);
 
-                UInt32 invokeId = IedConnection_writeObjectAsync(connection, out error, objectReference, (int)fc, value.valueReference, nativeWriteObjectHandler, GCHandle.ToIntPtr(handle));
+                if (internalWriteObjectHandler == null)
+                    internalWriteObjectHandler = new IedConnection_WriteObjectHandler(nativeWriteObjectHandler);
+
+                UInt32 invokeId = IedConnection_writeObjectAsync(connection, out error, objectReference, (int)fc, value.valueReference, internalWriteObjectHandler, GCHandle.ToIntPtr(handle));
 
                 if (error != 0)
                 {
@@ -2460,6 +2501,8 @@ namespace IEC61850
             }
 
             public delegate void GetNameListHandler(UInt32 invokeId,object parameter,IedClientError err,List<string> nameList,bool moreFollows);
+
+            private IedConnection_GetNameListHandler internalGetNameListHandler = null;
 
             private void nativeGetNameListHandler(UInt32 invokeId, IntPtr parameter, int err, IntPtr nameList, [MarshalAs(UnmanagedType.I1)] bool  moreFollows)
             {
@@ -2519,7 +2562,10 @@ namespace IEC61850
 
                 GCHandle handle = GCHandle.Alloc(callbackInfo);
 
-                UInt32 invokeId = IedConnection_getServerDirectoryAsync(connection, out error, continueAfter, IntPtr.Zero, nativeGetNameListHandler, GCHandle.ToIntPtr(handle));
+                if (internalGetNameListHandler == null)
+                    internalGetNameListHandler = new IedConnection_GetNameListHandler(nativeGetNameListHandler);
+
+                UInt32 invokeId = IedConnection_getServerDirectoryAsync(connection, out error, continueAfter, IntPtr.Zero, internalGetNameListHandler, GCHandle.ToIntPtr(handle));
 
                 if (error != 0)
                 {
@@ -2543,7 +2589,10 @@ namespace IEC61850
 
                 GCHandle handle = GCHandle.Alloc(callbackInfo);
 
-                UInt32 invokeId = IedConnection_getLogicalDeviceVariablesAsync(connection, out error, ldName, continueAfter, IntPtr.Zero, nativeGetNameListHandler, GCHandle.ToIntPtr(handle));
+                if (internalGetNameListHandler == null)
+                    internalGetNameListHandler = new IedConnection_GetNameListHandler(nativeGetNameListHandler);
+
+                UInt32 invokeId = IedConnection_getLogicalDeviceVariablesAsync(connection, out error, ldName, continueAfter, IntPtr.Zero, internalGetNameListHandler, GCHandle.ToIntPtr(handle));
 
                 if (error != 0)
                 {
@@ -2568,7 +2617,10 @@ namespace IEC61850
 
                 GCHandle handle = GCHandle.Alloc(callbackInfo);
 
-                UInt32 invokeId = IedConnection_getLogicalDeviceDataSetsAsync(connection, out error, ldName, continueAfter, IntPtr.Zero, nativeGetNameListHandler, GCHandle.ToIntPtr(handle));
+                if (internalGetNameListHandler == null)
+                    internalGetNameListHandler = new IedConnection_GetNameListHandler(nativeGetNameListHandler);
+
+                UInt32 invokeId = IedConnection_getLogicalDeviceDataSetsAsync(connection, out error, ldName, continueAfter, IntPtr.Zero, internalGetNameListHandler, GCHandle.ToIntPtr(handle));
 
                 if (error != 0)
                 {
@@ -2580,6 +2632,8 @@ namespace IEC61850
             }
 
             public delegate void QueryLogHandler(UInt32 invokeId,object parameter,IedClientError err,List<MmsJournalEntry> journalEntries,bool moreFollows);
+
+            private IedConnection_QueryLogHandler internalQueryLogHandler = null;
 
             private void nativeQueryLogHandler(UInt32 invokeId, IntPtr parameter, int err, IntPtr journalEntries, 
                                                 [MarshalAs(UnmanagedType.I1)] bool moreFollows)
@@ -2618,7 +2672,10 @@ namespace IEC61850
 
                 GCHandle handle = GCHandle.Alloc(callbackInfo);
 
-                UInt32 invokeId = IedConnection_queryLogByTimeAsync(connection, out error, logRef, startTime, stopTime, nativeQueryLogHandler, GCHandle.ToIntPtr(handle));
+                if (internalQueryLogHandler == null)
+                    internalQueryLogHandler = new IedConnection_QueryLogHandler(nativeQueryLogHandler);
+
+                UInt32 invokeId = IedConnection_queryLogByTimeAsync(connection, out error, logRef, startTime, stopTime, internalQueryLogHandler, GCHandle.ToIntPtr(handle));
 
                 if (error != 0)
                 {
@@ -2666,7 +2723,10 @@ namespace IEC61850
 
                 MmsValue entryIdValue = new MmsValue(entryID);
 
-                UInt32 invokeId = IedConnection_queryLogAfterAsync(connection, out error, logRef, entryIdValue.valueReference, timestamp, nativeQueryLogHandler, GCHandle.ToIntPtr(handle));
+                if (internalQueryLogHandler == null)
+                    internalQueryLogHandler = new IedConnection_QueryLogHandler(nativeQueryLogHandler);
+
+                UInt32 invokeId = IedConnection_queryLogAfterAsync(connection, out error, logRef, entryIdValue.valueReference, timestamp, internalQueryLogHandler, GCHandle.ToIntPtr(handle));
 
                 if (error != 0)
                 {
@@ -2717,6 +2777,7 @@ namespace IEC61850
                 }
             }
 
+            private IedConnection_GetRCBValuesHandler internalGetRCBValuesHandler = null;
 
             private void nativeGetRCBValuesHandler(UInt32 invokeId, IntPtr parameter, int err, IntPtr rcbPtr)
             {
@@ -2743,7 +2804,10 @@ namespace IEC61850
 
                 GCHandle handle = GCHandle.Alloc(callbackInfo);
 
-                UInt32 invokeId = IedConnection_getRCBValuesAsync(connection, out error, objectReference, updateRcb.self, nativeGetRCBValuesHandler, GCHandle.ToIntPtr(handle));
+                if (internalGetRCBValuesHandler == null)
+                    internalGetRCBValuesHandler = new IedConnection_GetRCBValuesHandler(nativeGetRCBValuesHandler);
+
+                UInt32 invokeId = IedConnection_getRCBValuesAsync(connection, out error, objectReference, updateRcb.self, internalGetRCBValuesHandler, GCHandle.ToIntPtr(handle));
 
                 if (error != 0)
                 {
@@ -2753,6 +2817,8 @@ namespace IEC61850
 
                 return invokeId;
             }
+
+            private IedConnection_GenericServiceHandler internalSetRcbValueHandler = null;
 
             private void nativeSetRcbValuesHandler(UInt32 invokeId, IntPtr parameter, int err)
             {
@@ -2779,7 +2845,10 @@ namespace IEC61850
 
                 GCHandle handle = GCHandle.Alloc(callbackInfo);
 
-                UInt32 invokeId = IedConnection_setRCBValuesAsync(connection, out error, rcb.self, parametersMask, singleRequest, nativeSetRcbValuesHandler, GCHandle.ToIntPtr(handle));
+                if (internalSetRcbValueHandler == null)
+                    internalSetRcbValueHandler = new IedConnection_GenericServiceHandler(nativeSetRcbValuesHandler);
+
+                UInt32 invokeId = IedConnection_setRCBValuesAsync(connection, out error, rcb.self, parametersMask, singleRequest, internalSetRcbValueHandler, GCHandle.ToIntPtr(handle));
 
                 if (error != 0)
                 {
