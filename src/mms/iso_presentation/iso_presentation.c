@@ -469,6 +469,10 @@ parseNormalModeParameters(IsoPresentation* self, uint8_t* buffer, int totalLengt
             if (DEBUG_PRES)
                 printf("PRES: pcd list\n");
             bufPos = parsePresentationContextDefinitionList(self, buffer, len, bufPos);
+
+            if (bufPos < 0)
+                return -1;
+
             break;
 
         case 0xa5: /* context-definition-result-list */
