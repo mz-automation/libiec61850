@@ -151,6 +151,12 @@ parseAllData(uint8_t* buffer, int allDataLength, MmsValue* dataSetValues)
 
         MmsValue* value = MmsValue_getElement(dataSetValues, elementIndex);
 
+        if (value == NULL) {
+            if (DEBUG_GOOSE_SUBSCRIBER)
+                printf("GOOSE_SUBSCRIBER: type mismatch (element %i not found)\n", elementIndex);
+            return GOOSE_PARSE_ERROR_TYPE_MISMATCH;
+        }
+
         bufPos = BerDecoder_decodeLength(buffer, &elementLength, bufPos, allDataLength);
         if (bufPos < 0) {
             pe = GOOSE_PARSE_ERROR_TAGDECODE;
