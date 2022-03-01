@@ -18,7 +18,7 @@ extern DataSetEntry iedModelds_GenericIO_LLN0_Events_fcda3;
 DataSetEntry iedModelds_GenericIO_LLN0_Events_fcda0 = {
   "GenericIO",
   false,
-  "GGIO1$ST$SPCSO1$stVal",
+  "GGIO1$ST$SPCSO1$stVal", 
   -1,
   NULL,
   NULL,
@@ -28,7 +28,7 @@ DataSetEntry iedModelds_GenericIO_LLN0_Events_fcda0 = {
 DataSetEntry iedModelds_GenericIO_LLN0_Events_fcda1 = {
   "GenericIO",
   false,
-  "GGIO1$ST$SPCSO2$stVal",
+  "GGIO1$ST$SPCSO2$stVal", 
   -1,
   NULL,
   NULL,
@@ -38,7 +38,7 @@ DataSetEntry iedModelds_GenericIO_LLN0_Events_fcda1 = {
 DataSetEntry iedModelds_GenericIO_LLN0_Events_fcda2 = {
   "GenericIO",
   false,
-  "GGIO1$ST$SPCSO3$stVal",
+  "GGIO1$ST$SPCSO3$stVal", 
   -1,
   NULL,
   NULL,
@@ -48,7 +48,7 @@ DataSetEntry iedModelds_GenericIO_LLN0_Events_fcda2 = {
 DataSetEntry iedModelds_GenericIO_LLN0_Events_fcda3 = {
   "GenericIO",
   false,
-  "GGIO1$ST$DPCSO1$stVal",
+  "GGIO1$ST$DPCSO1$stVal", 
   -1,
   NULL,
   NULL,
@@ -7570,11 +7570,11 @@ extern ReportControlBlock iedModel_GenericIO_LLN0_report2;
 extern ReportControlBlock iedModel_GenericIO_LLN0_report3;
 extern ReportControlBlock iedModel_GenericIO_LLN0_report4;
 
-ReportControlBlock iedModel_GenericIO_LLN0_report0 = {&iedModel_GenericIO_LLN0, "EventsRCB01", "Events1", false, "Events", 1, 24, 111, 50, 1000, &iedModel_GenericIO_LLN0_report1};
-ReportControlBlock iedModel_GenericIO_LLN0_report1 = {&iedModel_GenericIO_LLN0, "EventsRCB02", "Events1", false, "Events", 1, 24, 111, 50, 1000, &iedModel_GenericIO_LLN0_report2};
-ReportControlBlock iedModel_GenericIO_LLN0_report2 = {&iedModel_GenericIO_LLN0, "EventsRCB03", "Events1", false, "Events", 1, 24, 111, 50, 1000, &iedModel_GenericIO_LLN0_report3};
-ReportControlBlock iedModel_GenericIO_LLN0_report3 = {&iedModel_GenericIO_LLN0, "EventsRCB04", "Events1", false, "Events", 1, 24, 111, 50, 1000, &iedModel_GenericIO_LLN0_report4};
-ReportControlBlock iedModel_GenericIO_LLN0_report4 = {&iedModel_GenericIO_LLN0, "EventsRCB05", "Events1", false, "Events", 1, 24, 111, 50, 1000, NULL};
+ReportControlBlock iedModel_GenericIO_LLN0_report0 = {&iedModel_GenericIO_LLN0, "EventsRCB01", "Events1", false, "Events", 1, 88, 239, 50, 1000, {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, &iedModel_GenericIO_LLN0_report1};
+ReportControlBlock iedModel_GenericIO_LLN0_report1 = {&iedModel_GenericIO_LLN0, "EventsRCB02", "Events1", false, "Events", 1, 88, 239, 50, 1000, {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, &iedModel_GenericIO_LLN0_report2};
+ReportControlBlock iedModel_GenericIO_LLN0_report2 = {&iedModel_GenericIO_LLN0, "EventsRCB03", "Events1", false, "Events", 1, 88, 239, 50, 1000, {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, &iedModel_GenericIO_LLN0_report3};
+ReportControlBlock iedModel_GenericIO_LLN0_report3 = {&iedModel_GenericIO_LLN0, "EventsRCB04", "Events1", false, "Events", 1, 88, 239, 50, 1000, {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, &iedModel_GenericIO_LLN0_report4};
+ReportControlBlock iedModel_GenericIO_LLN0_report4 = {&iedModel_GenericIO_LLN0, "EventsRCB05", "Events1", false, "Events", 1, 88, 239, 50, 1000, {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, NULL};
 
 
 
