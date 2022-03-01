@@ -1,3 +1,59 @@
+Changes to version 1.5.1
+------------------------
+
+New features and improvements:
+
+- added server side ReportControlBlock events and value access functions
+- added functions Timestamp_fromMmsValue and Quality_toMmsValue
+- made server report reservation compatible with Ed. 2.1 (LIB61850-293)
+- new functions MmsValue_getOctetStringOctet and MmsValue_setOctetStringOctet
+- IedConnection: added function IedConnection_getDataSetDirectoryAsync
+- IedConnection: added function IedConnection_createDataSetAsync
+- IedConnection: added new function IedConnection_deleteDataSetAsync
+- IedServer instance can be restarted
+- new function IedConnection_setTimeQuality - Added support to set time quality for client generated time stamps (LIB61850-280)
+- .NET API: added wrapper for IedConnection_setFile and IedConnection_setFilestoreBasepath (LIB61850-258)
+- IED server: improved accuracy of integrity report intervals
+- .NET API: GooseSubscriber - added GetGoId, GetGoCbRef, GetFataSet methods
+- IED server: add support for SMV control blocks ("SMVC") in config file parser
+- .NET API: added support for server integrated GOOSE publisher
+
+Fixed bugs and vulnerabilities:
+
+- fixed vulnerability of GOOSE subscriber to malformed messages (LIB61850-304)
+- fixed - Bug in presentation layer parser can cause infinite loop (LIB61850-302)
+- .NET API: fix problem with garbage collected delegates for async client functions (LIB61850-301)
+- fixed compilation problem with option CONFIG_MMS_THREADLESS_STACK
+- fixed - TPKT error when connection is interrupted during message reception (LIB61850-299)
+- handle presentation layer data messages with transfer-syntax-name
+- fixed - UBRB: library can't work at the same time with URCB with preconfigured client and URCB without preconfigured client (LIB61850-292)(#355)
+- fix - server crashes when presentation message has no user data (LIB61850-291)(#368)
+- MMS server: query log service returns services error instead of reject message when log does not exist (LIB61850-290)
+- fixed - IED server: crash during invalid control access - FC=CO on invalid layer (LIB61850-282)
+- fixed - Server: ctlNum and origin(status) are not updated automatically by the server when APC command is received (LIB61850-277)
+- MMS server: fixed problem with continue-after in some get-name-list handling cases
+- fixed - IedConnection: outstanding call on IEC layer is not release under some circumstances (LIB61850-270, LIB61850-251)
+- fixed bug in IsoServer that caused memory violation when the server was restarted while a client was connected
+- IED client: send RptEna as first element when RCB is to be disabled
+- fixed problem with double free of TLS configuration structure (LIB61850-254)
+- .NET API: Fixed problem with AccessViolationException in GooseControlBlock.GetDstAddress
+- MMS server: fixed data race bug in transmitBuffer handling (#338)
+- IED server: fixed crash when IEDName+LDInst is too long
+- .NET API: fixed bug - server write access handler causes "CallbackOnCollectedDelegate" exception (LIB61850-236)
+- MMS server: fixed potential crash when client connection closed during file upload (LIB61850-2)
+- MMS client: fixed problem - doesn't close file when the setFile (obtainFile) service is interrupted e.g. due to connection loss (LIB61850-230)
+- Ethernet Socket (Windows): fixed bug and added workaround for problem on Windows (most GOOSE/SV messages are not received when waiting with WaitForMultipleObjects - observed with winpcap 4.1.3 and Windows 10
+- fixed problem in BER integer decoder (problem with GOOSE fixed length message decoding)
+- .NET API: Fixed memory release problem in method ModelNode.GetObjectReference
+- IED server: fixed bug in GoCBEventHandler
+- fixed problem in BSD ethernet layer (#328)
+- fixed bug in cmake file for BSD
+- fixed compilation problem when compiling without GOOSE support (#325)
+- IED server: control handling - fixed problem in test flag handling
+- IED server: For SBOes check test flag match when accepting operate (sSBOes8)
+- IED server: Reject Cancel/SBOw in WaitForChange state - fixed problem with test case sCtl26
+
+
 Changes to version 1.5.0
 ------------------------
 - added support for time with ns resolution
