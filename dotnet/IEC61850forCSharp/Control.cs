@@ -355,6 +355,8 @@ namespace IEC61850
 				return ControlObjectClient_operate(self, ctlVal.valueReference, operTime);
 			}
 
+            private ControlObjectClient_ControlActionHandler internalOperateHandler = null;
+
             private void nativeOperateHandler (UInt32 invokeId, IntPtr parameter, int err, int type, bool success)
             {
                 GCHandle handle = GCHandle.FromIntPtr(parameter);
@@ -487,7 +489,10 @@ namespace IEC61850
 
                 GCHandle handle = GCHandle.Alloc(callbackInfo);
 
-                UInt32 invokeId = ControlObjectClient_operateAsync(self, out error, ctlVal.valueReference, operTime, nativeOperateHandler, GCHandle.ToIntPtr(handle));
+                if (internalOperateHandler == null)
+                    internalOperateHandler = new ControlObjectClient_ControlActionHandler(nativeOperateHandler);
+
+                UInt32 invokeId = ControlObjectClient_operateAsync(self, out error, ctlVal.valueReference, operTime, internalOperateHandler, GCHandle.ToIntPtr(handle));
 
                 if (error != 0)
                 {
@@ -522,7 +527,10 @@ namespace IEC61850
 
                 GCHandle handle = GCHandle.Alloc(callbackInfo);
 
-                UInt32 invokeId = ControlObjectClient_selectAsync(self, out error, nativeOperateHandler, GCHandle.ToIntPtr(handle));
+                if (internalOperateHandler == null)
+                    internalOperateHandler = new ControlObjectClient_ControlActionHandler(nativeOperateHandler);
+
+                UInt32 invokeId = ControlObjectClient_selectAsync(self, out error, internalOperateHandler, GCHandle.ToIntPtr(handle));
 
                 if (error != 0)
                 {
@@ -634,7 +642,10 @@ namespace IEC61850
 
                 GCHandle handle = GCHandle.Alloc(callbackInfo);
 
-                UInt32 invokeId = ControlObjectClient_selectWithValueAsync(self, out error, ctlVal.valueReference, nativeOperateHandler, GCHandle.ToIntPtr(handle));
+                if (internalOperateHandler == null)
+                    internalOperateHandler = new ControlObjectClient_ControlActionHandler(nativeOperateHandler);
+
+                UInt32 invokeId = ControlObjectClient_selectWithValueAsync(self, out error, ctlVal.valueReference, internalOperateHandler, GCHandle.ToIntPtr(handle));
 
                 if (error != 0)
                 {
@@ -669,7 +680,10 @@ namespace IEC61850
 
                 GCHandle handle = GCHandle.Alloc(callbackInfo);
 
-                UInt32 invokeId = ControlObjectClient_cancelAsync(self, out error, nativeOperateHandler, GCHandle.ToIntPtr(handle));
+                if (internalOperateHandler == null)
+                    internalOperateHandler = new ControlObjectClient_ControlActionHandler(nativeOperateHandler);
+
+                UInt32 invokeId = ControlObjectClient_cancelAsync(self, out error, internalOperateHandler, GCHandle.ToIntPtr(handle));
 
                 if (error != 0)
                 {
