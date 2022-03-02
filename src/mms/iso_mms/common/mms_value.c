@@ -1464,7 +1464,7 @@ MmsValue_getOctetStringOctet(MmsValue* self, int octetPos)
 {
     uint8_t octet = 0x00; /* default value, for out of range request */
 
-    if (octetPos < self->value.octetString.size) {
+    if ((octetPos >= 0) && (octetPos < self->value.octetString.size)) {
         octet = self->value.octetString.buf[octetPos];
     }
 
