@@ -115,18 +115,28 @@ GoosePublisher_destroy(GoosePublisher self)
 void
 GoosePublisher_setGoID(GoosePublisher self, char* goID)
 {
+    if (self->goID != NULL)
+        GLOBAL_FREEMEM(self->goID);
+
     self->goID = StringUtils_copyString(goID);
 }
 
 void
 GoosePublisher_setGoCbRef(GoosePublisher self, char* goCbRef)
 {
+    if (self->goCBRef != NULL)
+        GLOBAL_FREEMEM(self->goCBRef);
+
     self->goCBRef = StringUtils_copyString(goCbRef);
 }
 
 void
 GoosePublisher_setDataSetRef(GoosePublisher self, char* dataSetRef)
 {
+
+    if (self->dataSetRef != NULL)
+        GLOBAL_FREEMEM(self->dataSetRef);
+
     self->dataSetRef = StringUtils_copyString(dataSetRef);
 }
 
