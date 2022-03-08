@@ -445,10 +445,24 @@ Socket_checkAsyncConnectState(Socket self)
         int so_error;
         int len = sizeof so_error;
 
-        if (getsockopt(self->fd, SOL_SOCKET, SO_ERROR, (char*) (&so_error), &len) >= 0) {
+        if (getsockopt(self->fd, SOL_SOCKET, SO_ERROR, (char*) (&so_error), &len) != SOCKET_ERROR) {
+            if (so_error == 0) {
 
-            if (so_error == 0)
+                int recvRes = recv(self->fd, NULL, 0, 0);
+
+                if (recvRes == SOCKET_ERROR) {
+                    int wsaError = WSAGetLastError();
+
+                    if (wsaError == WSAECONNRESET)
+                        return SOCKET_STATE_FAILED;
+
+                    if (wsaError == WSAECONNABORTED)
+                        return SOCKET_STATE_FAILED;
+                }
+
+
                 return SOCKET_STATE_CONNECTED;
+            }
         }
 
         return SOCKET_STATE_FAILED;
@@ -464,30 +478,35 @@ Socket_checkAsyncConnectState(Socket self)
 bool
 Socket_connect(Socket self, const char* address, int port)
 {
-    struct sockaddr_in serverAddress;
-
-    if (!prepareAddress(address, port, &serverAddress))
+    if (Socket_connectAsync(self, address, port) == false)
         return false;
-
-    setSocketNonBlocking(self);
-
-    fd_set fdSet;
-    FD_ZERO(&fdSet);
-    FD_SET(self->fd, &fdSet);
-
-    if (connect(self->fd, (struct sockaddr *) &serverAddress, sizeof(serverAddress)) == SOCKET_ERROR) {
-        if (WSAGetLastError() != WSAEWOULDBLOCK)
-            return false;
-    }
 
     struct timeval timeout;
     timeout.tv_sec = self->connectTimeout / 1000;
     timeout.tv_usec = (self->connectTimeout % 1000) * 1000;
 
-    if (select((int)self->fd + 1, NULL, &fdSet, NULL, &timeout) <= 0)
-        return false;
-    else
-        return true;
+    fd_set fdSet;
+    FD_ZERO(&fdSet);
+    FD_SET(self->fd, &fdSet);
+
+    if (select(self->fd + 1, NULL, &fdSet , NULL, &timeout) == 1) {
+
+        /* Check if connection is established */
+
+        int so_error;
+        socklen_t len = sizeof so_error;
+
+        if (getsockopt(self->fd, SOL_SOCKET, SO_ERROR, (char*)&so_error, &len) >= 0) {
+
+            if (so_error == 0)
+                return true;
+        }
+    }
+
+    closesocket (self->fd);
+    self->fd = INVALID_SOCKET;
+
+    return false;
 }
 
 static char*
