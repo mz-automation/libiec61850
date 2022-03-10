@@ -424,6 +424,12 @@ readFunction(void* ctx, unsigned char* buf, size_t len)
 }
 
 static int
+writeFunction(void* ctx, unsigned char* buf, size_t len)
+{
+    return Socket_write((Socket)ctx, buf, (int)len);
+}
+
+static int
 getMajorVersion(TLSConfigVersion version)
 {
     switch(version) {
@@ -512,7 +518,7 @@ TLSSocket_create(Socket socket, TLSConfiguration configuration, bool storeClient
         if (ret != 0)
             DEBUG_PRINT("TLS", "mbedtls_ssl_setup returned %d\n", ret);
 
-        mbedtls_ssl_set_bio(&(self->ssl), socket, (mbedtls_ssl_send_t*) Socket_write,
+        mbedtls_ssl_set_bio(&(self->ssl), socket, (mbedtls_ssl_send_t*) writeFunction,
                 (mbedtls_ssl_recv_t*) readFunction, NULL);
 
         while( (ret = mbedtls_ssl_handshake(&(self->ssl)) ) != 0 )
