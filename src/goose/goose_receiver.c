@@ -277,6 +277,22 @@ parseAllData(uint8_t* buffer, int allDataLength, MmsValue* dataSetValues)
                     value->value.octetString.size = elementLength;
                     memcpy(value->value.octetString.buf, buffer + bufPos, elementLength);
                 }
+                else {
+                    uint8_t* newBuf = (uint8_t*)GLOBAL_MALLOC(elementLength);
+
+                    if (newBuf) {
+                        memcpy(newBuf, buffer + bufPos, elementLength);
+
+                        uint8_t* oldBuf = value->value.octetString.buf;
+
+                        value->value.octetString.buf = newBuf;
+                        value->value.octetString.maxSize = elementLength;
+                        value->value.octetString.size = elementLength;
+
+                        GLOBAL_FREEMEM(oldBuf);
+                    }
+
+                }
             }
             else {
                 pe = GOOSE_PARSE_ERROR_TYPE_MISMATCH;
