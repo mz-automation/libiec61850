@@ -483,23 +483,25 @@ SVPublisher_publish(SVPublisher self)
 void
 SVPublisher_destroy(SVPublisher self)
 {
-    if (self->ethernetSocket)
-        Ethernet_destroySocket(self->ethernetSocket);
+    if (self) {
+        if (self->ethernetSocket)
+            Ethernet_destroySocket(self->ethernetSocket);
 
-    if (self->buffer)
-        GLOBAL_FREEMEM(self->buffer);
+        if (self->buffer)
+            GLOBAL_FREEMEM(self->buffer);
 
-    SVPublisher_ASDU asdu = self->asduList;
+        SVPublisher_ASDU asdu = self->asduList;
 
-    while (asdu) {
-        SVPublisher_ASDU nextAsdu = asdu->_next;
+        while (asdu) {
+            SVPublisher_ASDU nextAsdu = asdu->_next;
 
-        GLOBAL_FREEMEM(asdu);
+            GLOBAL_FREEMEM(asdu);
 
-        asdu = nextAsdu;
+            asdu = nextAsdu;
+        }
+
+        GLOBAL_FREEMEM(self);
     }
-
-    GLOBAL_FREEMEM(self);
 }
 
 

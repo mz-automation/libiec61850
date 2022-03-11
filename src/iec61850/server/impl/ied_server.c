@@ -1,7 +1,7 @@
 /*
  *  ied_server.c
  *
- *  Copyright 2013-2020 Michael Zillgith
+ *  Copyright 2013-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -594,51 +594,52 @@ IedServer_setRCBEventHandler(IedServer self, IedServer_RCBEventHandler handler, 
 void
 IedServer_destroy(IedServer self)
 {
-
+    if (self) {
     /* Stop server if running */
-    if (self->running) {
+        if (self->running) {
 #if (CONFIG_MMS_THREADLESS_STACK == 1)
-        IedServer_stopThreadless(self);
+            IedServer_stopThreadless(self);
 #else
-        IedServer_stop(self);
+            IedServer_stop(self);
 #endif
-    }
+        }
 
 #if ((CONFIG_MMS_SINGLE_THREADED == 1) && (CONFIG_MMS_THREADLESS_STACK == 0))
 
-    if (self->serverThread)
-        Thread_destroy(self->serverThread);
+        if (self->serverThread)
+            Thread_destroy(self->serverThread);
 
 #endif
 
-    MmsServer_destroy(self->mmsServer);
+        MmsServer_destroy(self->mmsServer);
 
-    if (self->localIpAddress != NULL)
-        GLOBAL_FREEMEM(self->localIpAddress);
+        if (self->localIpAddress != NULL)
+            GLOBAL_FREEMEM(self->localIpAddress);
 
-    if (self->mmsMapping)
-        MmsMapping_destroy(self->mmsMapping);
+        if (self->mmsMapping)
+            MmsMapping_destroy(self->mmsMapping);
 
-    LinkedList_destroyDeep(self->clientConnections, (LinkedListValueDeleteFunction) private_ClientConnection_destroy);
+        LinkedList_destroyDeep(self->clientConnections, (LinkedListValueDeleteFunction) private_ClientConnection_destroy);
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
-    Semaphore_destroy(self->dataModelLock);
-    Semaphore_destroy(self->clientConnectionsLock);
+        Semaphore_destroy(self->dataModelLock);
+        Semaphore_destroy(self->clientConnectionsLock);
 #endif
 
 #if (CONFIG_IEC61850_SUPPORT_SERVER_IDENTITY == 1)
 
-    if (self->vendorName)
-        GLOBAL_FREEMEM(self->vendorName);
+        if (self->vendorName)
+            GLOBAL_FREEMEM(self->vendorName);
 
-    if (self->modelName)
-        GLOBAL_FREEMEM(self->modelName);
+        if (self->modelName)
+            GLOBAL_FREEMEM(self->modelName);
 
-    if (self->revision)
-        GLOBAL_FREEMEM(self->revision);
+        if (self->revision)
+            GLOBAL_FREEMEM(self->revision);
 #endif /* (CONFIG_IEC61850_SUPPORT_SERVER_IDENTITY == 1) */
 
-    GLOBAL_FREEMEM(self);
+        GLOBAL_FREEMEM(self);
+    }
 }
 
 void

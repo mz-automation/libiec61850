@@ -1,7 +1,7 @@
 /*
  *  logging.c
  *
- *  Copyright 2016 Michael Zillgith
+ *  Copyright 2016-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -48,15 +48,17 @@ LogInstance_create(LogicalNode* parentLN, const char* name)
 {
     LogInstance* self = (LogInstance*) GLOBAL_MALLOC(sizeof(LogInstance));
 
-    self->name = StringUtils_copyString(name);
-    self->parentLN = parentLN;
-    self->logStorage = NULL;
-    self->locked = false;
+    if (self) {
+        self->name = StringUtils_copyString(name);
+        self->parentLN = parentLN;
+        self->logStorage = NULL;
+        self->locked = false;
 
-    self->oldEntryId = 0;
-    self->oldEntryTime = 0;
-    self->newEntryId = 0;
-    self->newEntryTime = 0;
+        self->oldEntryId = 0;
+        self->oldEntryTime = 0;
+        self->newEntryId = 0;
+        self->newEntryTime = 0;
+    }
 
     return self;
 }
@@ -64,8 +66,10 @@ LogInstance_create(LogicalNode* parentLN, const char* name)
 void
 LogInstance_destroy(LogInstance* self)
 {
-    GLOBAL_FREEMEM(self->name);
-    GLOBAL_FREEMEM(self);
+    if (self) {
+        GLOBAL_FREEMEM(self->name);
+        GLOBAL_FREEMEM(self);
+    }
 }
 
 void
@@ -185,17 +189,19 @@ LogControl_create(LogicalNode* parentLN, MmsMapping* mmsMapping)
 {
     LogControl* self = (LogControl*) GLOBAL_MALLOC(sizeof(LogControl));
 
-    self->enabled = false;
-    self->dataSet = NULL;
-    self->isDynamicDataSet = false;
-    self->triggerOps = 0;
-    self->logicalNode = parentLN;
-    self->mmsMapping = mmsMapping;
-    self->dataSetRef = NULL;
-    self->logInstance = NULL;
-    self->intgPd = 0;
-    self->nextIntegrityScan = 0;
-    self->logRef = NULL;
+    if (self) {
+        self->enabled = false;
+        self->dataSet = NULL;
+        self->isDynamicDataSet = false;
+        self->triggerOps = 0;
+        self->logicalNode = parentLN;
+        self->mmsMapping = mmsMapping;
+        self->dataSetRef = NULL;
+        self->logInstance = NULL;
+        self->intgPd = 0;
+        self->nextIntegrityScan = 0;
+        self->logRef = NULL;
+    }
 
     return self;
 }

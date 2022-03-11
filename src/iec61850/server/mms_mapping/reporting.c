@@ -84,63 +84,68 @@ ReportBuffer_create(int bufferSize)
 static void
 ReportBuffer_destroy(ReportBuffer* self)
 {
-    GLOBAL_FREEMEM(self->memoryBlock);
+    if (self) {
+        GLOBAL_FREEMEM(self->memoryBlock);
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
-    Semaphore_destroy(self->lock);
+        Semaphore_destroy(self->lock);
 #endif
 
-    GLOBAL_FREEMEM(self);
+        GLOBAL_FREEMEM(self);
+    }
 }
 
 ReportControl*
 ReportControl_create(bool buffered, LogicalNode* parentLN, int reportBufferSize, IedServer iedServer)
 {
     ReportControl* self = (ReportControl*) GLOBAL_MALLOC(sizeof(ReportControl));
-    self->name = NULL;
-    self->domain = NULL;
-    self->parentLN = parentLN;
-    self->rcbValues = NULL;
+
+    if (self) {
+        self->name = NULL;
+        self->domain = NULL;
+        self->parentLN = parentLN;
+        self->rcbValues = NULL;
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
-    self->rcbValuesLock = Semaphore_create(1);
+        self->rcbValuesLock = Semaphore_create(1);
 #endif
 
-    self->subSeqVal = MmsValue_newUnsigned(16);
-    self->segmented = false;
-    self->startIndexForNextSegment = 0;
-    self->enabled = false;
-    self->reserved = false;
-    self->buffered = buffered;
-    self->isBuffering = false;
-    self->isResync = false;
-    self->gi = false;
-    self->inclusionField = NULL;
-    self->dataSet = NULL;
-    self->isDynamicDataSet = false;
-    self->clientConnection = NULL;
-    self->intgPd = 0;
-    self->sqNum = 0;
-    self->nextIntgReportTime = 0;
-    self->inclusionFlags = NULL;
-    self->triggered = false;
-    self->timeOfEntry = NULL;
-    self->reservationTimeout = 0;
-    self->triggerOps = 0;
-    self->hasOwner = false;
+        self->subSeqVal = MmsValue_newUnsigned(16);
+        self->segmented = false;
+        self->startIndexForNextSegment = 0;
+        self->enabled = false;
+        self->reserved = false;
+        self->buffered = buffered;
+        self->isBuffering = false;
+        self->isResync = false;
+        self->gi = false;
+        self->inclusionField = NULL;
+        self->dataSet = NULL;
+        self->isDynamicDataSet = false;
+        self->clientConnection = NULL;
+        self->intgPd = 0;
+        self->sqNum = 0;
+        self->nextIntgReportTime = 0;
+        self->inclusionFlags = NULL;
+        self->triggered = false;
+        self->timeOfEntry = NULL;
+        self->reservationTimeout = 0;
+        self->triggerOps = 0;
+        self->hasOwner = false;
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
-    self->createNotificationsMutex = Semaphore_create(1);
+        self->createNotificationsMutex = Semaphore_create(1);
 #endif
 
-    self->bufferedDataSetValues = NULL;
-    self->valueReferences = NULL;
-    self->lastEntryId = 0;
-    self->resvTms = 0;
+        self->bufferedDataSetValues = NULL;
+        self->valueReferences = NULL;
+        self->lastEntryId = 0;
+        self->resvTms = 0;
 
-    self->server = iedServer;
+        self->server = iedServer;
 
-    self->reportBuffer = ReportBuffer_create(reportBufferSize);
+        self->reportBuffer = ReportBuffer_create(reportBufferSize);
+    }
 
     return self;
 }
@@ -206,44 +211,46 @@ deleteDataSetValuesShadowBuffer(ReportControl* self)
 void
 ReportControl_destroy(ReportControl* self)
 {
-    if (self->rcbValues != NULL )
-        MmsValue_delete(self->rcbValues);
+    if (self) {
+        if (self->rcbValues != NULL )
+            MmsValue_delete(self->rcbValues);
 
-    if (self->inclusionFlags != NULL)
-        GLOBAL_FREEMEM(self->inclusionFlags);
+        if (self->inclusionFlags != NULL)
+            GLOBAL_FREEMEM(self->inclusionFlags);
 
-    if (self->inclusionField != NULL)
-        MmsValue_delete(self->inclusionField);
+        if (self->inclusionField != NULL)
+            MmsValue_delete(self->inclusionField);
 
-    if (self->buffered == false)
-        MmsValue_delete(self->timeOfEntry);
+        if (self->buffered == false)
+            MmsValue_delete(self->timeOfEntry);
 
-    MmsValue_delete(self->subSeqVal);
+        MmsValue_delete(self->subSeqVal);
 
-    deleteDataSetValuesShadowBuffer(self);
+        deleteDataSetValuesShadowBuffer(self);
 
-    if (self->isDynamicDataSet) {
-        if (self->dataSet != NULL) {
-            MmsMapping_freeDynamicallyCreatedDataSet(self->dataSet);
-            self->isDynamicDataSet = false;
-            self->dataSet = NULL;
+        if (self->isDynamicDataSet) {
+            if (self->dataSet != NULL) {
+                MmsMapping_freeDynamicallyCreatedDataSet(self->dataSet);
+                self->isDynamicDataSet = false;
+                self->dataSet = NULL;
+            }
         }
-    }
 
-    /* restore original sibling of ReportControlBlock */
-    self->rcb->sibling = self->sibling;
-    self->rcb->trgOps &= ~(64); /* clear runtime mode flag */
+        /* restore original sibling of ReportControlBlock */
+        self->rcb->sibling = self->sibling;
+        self->rcb->trgOps &= ~(64); /* clear runtime mode flag */
 
-    ReportBuffer_destroy(self->reportBuffer);
+        ReportBuffer_destroy(self->reportBuffer);
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
-    Semaphore_destroy(self->createNotificationsMutex);
-    Semaphore_destroy(self->rcbValuesLock);
+        Semaphore_destroy(self->createNotificationsMutex);
+        Semaphore_destroy(self->rcbValuesLock);
 #endif
 
-    GLOBAL_FREEMEM(self->name);
+        GLOBAL_FREEMEM(self->name);
 
-    GLOBAL_FREEMEM(self);
+        GLOBAL_FREEMEM(self);
+    }
 }
 
 MmsValue*

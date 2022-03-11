@@ -1,7 +1,7 @@
 /*
  *  goose_receiver.c
  *
- *  Copyright 2014-2017 Michael Zillgith
+ *  Copyright 2014-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -1014,19 +1014,21 @@ GooseReceiver_stop(GooseReceiver self)
 void
 GooseReceiver_destroy(GooseReceiver self)
 {
+    if (self) {
 #if (CONFIG_MMS_THREADLESS_STACK == 0)
-    if ((self->thread != NULL) && (GooseReceiver_isRunning(self)))
-        GooseReceiver_stop(self);
+        if ((self->thread != NULL) && (GooseReceiver_isRunning(self)))
+            GooseReceiver_stop(self);
 #endif
 
-    if (self->interfaceId != NULL)
-        GLOBAL_FREEMEM(self->interfaceId);
+        if (self->interfaceId != NULL)
+            GLOBAL_FREEMEM(self->interfaceId);
 
-    LinkedList_destroyDeep(self->subscriberList,
-            (LinkedListValueDeleteFunction) GooseSubscriber_destroy);
+        LinkedList_destroyDeep(self->subscriberList,
+                (LinkedListValueDeleteFunction) GooseSubscriber_destroy);
 
-    GLOBAL_FREEMEM(self->buffer);
-    GLOBAL_FREEMEM(self);
+        GLOBAL_FREEMEM(self->buffer);
+        GLOBAL_FREEMEM(self);
+    }
 }
 
 /***************************************

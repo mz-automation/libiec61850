@@ -1,7 +1,7 @@
 /*
  *  ied_server_config.c
  *
- *  Copyright 2018-2020 Michael Zillgith
+ *  Copyright 2018-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -65,8 +65,10 @@ IedServerConfig_create()
 void
 IedServerConfig_destroy(IedServerConfig self)
 {
-    GLOBAL_FREEMEM(self->fileServiceBasepath);
-    GLOBAL_FREEMEM(self);
+    if (self) {
+        GLOBAL_FREEMEM(self->fileServiceBasepath);
+        GLOBAL_FREEMEM(self);
+    }
 }
 
 void

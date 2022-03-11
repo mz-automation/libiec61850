@@ -1,7 +1,7 @@
 /*
  *  control.c
  *
- *  Copyright 2013-2021 Michael Zillgith
+ *  Copyright 2013-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -1254,36 +1254,38 @@ ControlObject_handlePendingEvents(ControlObject* self)
 void
 ControlObject_destroy(ControlObject* self)
 {
-    if (self->mmsValue)
-        MmsValue_delete(self->mmsValue);
+    if (self) {
+        if (self->mmsValue)
+            MmsValue_delete(self->mmsValue);
 
-    if (self->error)
-        MmsValue_delete(self->error);
+        if (self->error)
+            MmsValue_delete(self->error);
 
-    if (self->addCause)
-        MmsValue_delete(self->addCause);
+        if (self->addCause)
+            MmsValue_delete(self->addCause);
 
-    if (self->ctlVal)
-        MmsValue_delete(self->ctlVal);
+        if (self->ctlVal)
+            MmsValue_delete(self->ctlVal);
 
-    if (self->ctlNum)
-        MmsValue_delete(self->ctlNum);
+        if (self->ctlNum)
+            MmsValue_delete(self->ctlNum);
 
-    if (self->origin)
-        MmsValue_delete(self->origin);
+        if (self->origin)
+            MmsValue_delete(self->origin);
 
-    if (self->name)
-        GLOBAL_FREEMEM(self->name);
+        if (self->name)
+            GLOBAL_FREEMEM(self->name);
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
-    if (self->stateLock)
-        Semaphore_destroy(self->stateLock);
+        if (self->stateLock)
+            Semaphore_destroy(self->stateLock);
 
-    if (self->pendingEventsLock)
-        Semaphore_destroy(self->pendingEventsLock);
+        if (self->pendingEventsLock)
+            Semaphore_destroy(self->pendingEventsLock);
 #endif
 
-    GLOBAL_FREEMEM(self);
+        GLOBAL_FREEMEM(self);
+    }
 }
 
 char*
