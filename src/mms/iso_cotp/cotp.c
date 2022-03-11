@@ -174,7 +174,6 @@ writeToSocket(CotpConnection* self, uint8_t* buf, int size)
 #endif
 }
 
-
 static bool
 sendBuffer(CotpConnection* self)
 {
@@ -276,7 +275,6 @@ CotpConnection_sendDataMessage(CotpConnection* self, BufferChain payload)
 
             goto exit_function;
         }
-
 
         fragments--;
     }
