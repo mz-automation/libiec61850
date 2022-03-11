@@ -3,19 +3,45 @@
  * \section intro_sec Introduction
  *
  * This is the reference manual of libIEC61850.  
- * libIEC61850 is an open-source (GPLv3) implementation of an IEC 61850 client and server library. It is implemented 
- * in C to provide maximum portability. It can be used to implement IEC 61850 
- * compatible client and server applications on embedded systems and PCs running Linux and Windows. Included 
- * is a set of simple example applications that can be used as a starting point to implement your own IEC 61850 
- * compatible devices or to communicate with IEC 61850 devices.
- * There is also an open-source implementation of IEC 61850 in Java (see http://openmuc.org).
+ * 
+ * libiec61850 is an open-source (GPLv3) implementation of an IEC 61850 client and server library implementing 
+ * the protocols MMS, GOOSE and SV. It is implemented in C (according to the C99 standard) 
+ * to be portable to a large number of platforms. It can be used to implement IEC 61850 compliant client and server applications on embedded systems and PCs running Linux, Windows, and MacOS. 
+ * Included is a set of simple example applications that can be used as a starting point to implement own IEC 61850 compliant devices or to communicate with IEC 61850 devices.
+ * The library has been successfully used in many commercial software products and devices. Various of these devices have been successfully certified for standard compliance.
  *
  * The library implements the most important parts of IEC 61850 on top of the MMS mapping. It provides the MMS protocol stack 
- * on top of TCP/IP as well as GOOSE for real-time data transfer inside of substations.
+ * on top of TCP/IP as well as GOOSE and sampled measured values (SMV) for real-time data transfer inside of substations.
  *
- * The API of libIEC61850 can be divided into a client and a server part. Both parts also
- * share common elements. For both client and server there exist two different APIs. There is a
- * "low-level" MMS API and the more high-level IEC 61850 API. 
+ * \section features Library features
+ * 
+ * The library support the following IEC 61850 protocol features:
+ *
+ * - MMS client/server, GOOSE publisher/subscriber(IEC 61850-8-1)
+ * - Sampled Values publisher/subscriber (SV - IEC 61850-9-2)
+ * - Support for buffered and unbuffered reports
+ * - Online report control block configuration
+ * - Data access service (get data, set data)
+ * - online data model discovery and browsing
+ * - all data set services (get values, set values, browse)
+ * - dynamic data set services (create and delete)
+ * - log service
+ *  - flexible API to connect custom data bases
+ *  - comes with ready-to-use sqlite implementation
+ * - MMS file services (browse, get file, set file, delete/rename file)
+ *  - required to download COMTRADE files
+ * - Setting group handling
+ * - Support for service tracking
+ * - GOOSE and SV control block handling
+ * - TLS support
+ * - C and C#/.NET API
+ *
+ * \section api API for application programming
+ *
+ * The API of libIEC61850 can be divided into a client, server, publisher, and subscriber parts. 
+ * These parts also share common elements. For client and server there exist two different APIs. There is a
+ * "low-level" MMS API and the more high-level IEC 61850 API. It is always recommended to use the IEC 61850 API
+ * to be compliant with the standard. In some cases in can also be beneficial to use the lower-level MMS API.
  *
  * \section iec_client_api IEC 61850 client API
  *
@@ -49,13 +75,31 @@
  * \section hal Hardware/OS abstraction layer
  *
  * libIEC61850 provides a hardware/OS abstraction layer (HAL) to hide the dependencies to the
- * underlying platform. Currently this layer consists of thread, socket and time abstractions. If 
+ * underlying platform. Currently this layer consists of thread, socket, filesystem, Ethernet and time abstractions. If 
  * you want to port the library to a new platform you need to implement the functions defined
- * by this API. At the moment implementations for POSIX(Linux, Mac OS X ...) and Win32 exists. This API
- * consists of the three files <code>hal/hal.h</code>, <code>hal/socket/socket.h</code> and
- * <code>hal/thread/thread.h</code>.
+ * by this API. At the moment implementations for Linux, BSD, Windows and MacOS exists. This API
+ * consists of header files starting with <code>hal_</code> in the <code>hal/inc</code> folder. 
  *
- * \section examples Building the library and the examples
+ * \section tls TLS support
+ *
+ * The library can also be compiled with TLS support. The library is using an abstraction layer for 
+ * TLS libraries. Currently the only supported implementation of this abstraction layer is for mbedtls.
+ *
+ * \section building Building the library and examples with cmake
+ *
+ * With the help of the cmake build script it is possible to create platform independent project descriptions and let cmake create specific project or build files for other tools like Make or Visual Studio.
+ * 
+ * If you have cmake installed fire up a command line (cmd.exe) and create a new subdirectory in the libiec61850 folder. Change to this subdirectory. Then you can invoke cmake. As an command line argument you have to supply a "generator" that is used by cmake to create the project file for the actual build tool (in our case Visual Studio 2015).
+ * 
+ * For Visual Studio 2017:
+ *
+ *   <code>cmake -G "Visual Studio 15 2017 Win64" ..</code>
+ * 
+ * For Visual Studio 2019 (new way to specify the x64 platform):
+ * 
+ *   <code>cmake -G "Visual Studio 16 2019" .. -A x64</code>
+ *
+ * \section examples Building the library and examples with gcc/make
  *
  * To build the library you can simply execute <code>make</code> in the main folder of the
  * source distribution. It is assumed that a GCC toolchain and the Make tool is installed.

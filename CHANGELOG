@@ -17,6 +17,7 @@ New features and improvements:
 - .NET API: GooseSubscriber - added GetGoId, GetGoCbRef, GetFataSet methods
 - IED server: add support for SMV control blocks ("SMVC") in config file parser
 - .NET API: added support for server integrated GOOSE publisher
+- MacOS thread layer: replaced semaphore by mutex
 
 Fixed bugs and vulnerabilities:
 

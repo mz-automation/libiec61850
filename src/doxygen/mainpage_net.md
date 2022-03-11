@@ -1,6 +1,6 @@
 # API Documentation
 
-Copyright 2018 Michael Zillgith
+Copyright 2022 Michael Zillgith
 
 This is the documentation for IEC61850.NET a .NET wrapper for the libiec61850 IEC 61850 protocol library.
 
