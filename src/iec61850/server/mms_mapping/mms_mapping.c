@@ -1,7 +1,7 @@
 /*
  *  mms_mapping.c
  *
- *  Copyright 2013-2021 Michael Zillgith
+ *  Copyright 2013-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -72,6 +72,9 @@ typedef struct
 MmsValue*
 Control_readAccessControlObject(MmsMapping* self, MmsDomain* domain, char* variableIdOrig,
         MmsServerConnection connection, bool isDirectAccess);
+
+bool
+ControlObject_unselect(ControlObject* self, MmsServerConnection connection, MmsMapping* mmsMapping);
 #endif
 
 void /* Create PHYCOMADDR ACSI type instance */
@@ -2019,6 +2022,7 @@ MmsMapping_create(IedModel* model, IedServer iedServer)
 
 #if (CONFIG_IEC61850_CONTROL_SERVICE == 1)
     self->controlObjects = LinkedList_create();
+    self->nextControlTimeout = 0xffffffffffffffffLLU;
 #endif
 
 #if (CONFIG_IEC61850_SETTING_GROUPS == 1)
@@ -3148,7 +3152,7 @@ unselectControlsForConnection(MmsMapping* self, MmsServerConnection connection)
     while (controlObjectElement != NULL) {
         ControlObject* controlObject = (ControlObject*) controlObjectElement->data;
 
-        ControlObject_unselect(controlObject, connection);
+        ControlObject_unselect(controlObject, connection, self);
 
         controlObjectElement = LinkedList_getNext(controlObjectElement);
     }
@@ -3165,11 +3169,6 @@ mmsConnectionHandler(void* parameter, MmsServerConnection connection, MmsServerE
     }
     else if (event == MMS_SERVER_CONNECTION_CLOSED) {
         ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer, connection);
-
-        if (clientConnection == NULL) {
-            printf("clientConnection == NULL -> exit\n");
-            exit(-1);
-        }
 
         /* call user provided handler function */
         if (self->connectionIndicationHandler != NULL)

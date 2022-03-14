@@ -173,9 +173,6 @@ ControlObject_getDomain(ControlObject* self);
 LIB61850_INTERNAL bool
 ControlObject_select(ControlObject* self, MmsServerConnection connection);
 
-LIB61850_INTERNAL bool
-ControlObject_unselect(ControlObject* self, MmsServerConnection connection);
-
 LIB61850_INTERNAL void
 ControlObject_installListener(ControlObject* self, ControlHandler listener, void* parameter);
 

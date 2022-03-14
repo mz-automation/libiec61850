@@ -68,6 +68,9 @@ ControlObject_sendCommandTerminationPositive(ControlObject* self);
 void
 ControlObject_sendCommandTerminationNegative(ControlObject* self);
 
+bool
+ControlObject_unselect(ControlObject* self, MmsServerConnection connection, MmsMapping* mmsMapping);
+
 static MmsValue*
 getOperParameterCtlNum(MmsValue* operParameters)
 {
@@ -413,7 +416,14 @@ updateGenericTrackingObjectValues(MmsMapping* self, ControlObject* controlObject
 #endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
 
 static void
-unselectObject(ControlObject* self, SelectStateChangedReason reason);
+unselectObject(ControlObject* self, SelectStateChangedReason reason, MmsMapping* mmsMapping);
+
+static void
+updateNextControlTimeout(MmsMapping* self, uint64_t timeout)
+{
+    if (timeout < self->nextControlTimeout)
+        self->nextControlTimeout = timeout;
+}
 
 static void
 setState(ControlObject* self, int newState)
@@ -482,7 +492,7 @@ updateSboTimeoutValue(ControlObject* self)
 }
 
 static void
-selectObject(ControlObject* self, uint64_t selectTime, MmsServerConnection connection)
+selectObject(ControlObject* self, uint64_t selectTime, MmsServerConnection connection, MmsMapping* mmsMapping)
 {
     if (DEBUG_IED_SERVER)
         printf("IED_SERVER: control %s/%s.%s selected\n", MmsDomain_getName(self->mmsDomain), self->lnName, self->name);
@@ -494,6 +504,8 @@ selectObject(ControlObject* self, uint64_t selectTime, MmsServerConnection conne
     setStSeld(self, true);
     setState(self, STATE_READY);
 
+    updateNextControlTimeout(mmsMapping, selectTime);
+
     if (self->selectStateChangedHandler) {
         self->selectStateChangedHandler((ControlAction) self,
                 self->selectStateChangedHandlerParameter,
@@ -503,12 +515,15 @@ selectObject(ControlObject* self, uint64_t selectTime, MmsServerConnection conne
 }
 
 static void
-unselectObject(ControlObject* self, SelectStateChangedReason reason)
+unselectObject(ControlObject* self, SelectStateChangedReason reason, MmsMapping* mmsMapping)
 {
     if (getState(self) != STATE_UNSELECTED) {
         setState(self, STATE_UNSELECTED);
 
         setStSeld(self, false);
+
+        /* trigger timeout check in next cycle to update the next timeout value */
+        mmsMapping->nextControlTimeout = 0;
 
         if (self->selectStateChangedHandler) {
             self->selectStateChangedHandler((ControlAction) self,
@@ -523,7 +538,7 @@ unselectObject(ControlObject* self, SelectStateChangedReason reason)
 }
 
 static void
-checkSelectTimeout(ControlObject* self, uint64_t currentTime)
+checkSelectTimeout(ControlObject* self, uint64_t currentTime, MmsMapping* mmsMapping)
 {
     if ((self->ctlModel == 2) || (self->ctlModel == 4)) {
 
@@ -534,7 +549,10 @@ checkSelectTimeout(ControlObject* self, uint64_t currentTime)
                         printf("IED_SERVER: select-timeout (timeout-val = %i) for control %s/%s.%s\n",
                                 self->selectTimeout, MmsDomain_getName(self->mmsDomain), self->lnName, self->name);
 
-                    unselectObject(self, SELECT_STATE_REASON_TIMEOUT);
+                    unselectObject(self, SELECT_STATE_REASON_TIMEOUT, mmsMapping);
+                }
+                else {
+                    updateNextControlTimeout(mmsMapping, self->selectTime + self->selectTimeout);
                 }
             }
         }
@@ -641,16 +659,16 @@ exitControlTask(ControlObject* self)
 }
 
 static void
-abortControlOperation(ControlObject* self, bool unconditional, SelectStateChangedReason reason)
+abortControlOperation(ControlObject* self, bool unconditional, SelectStateChangedReason reason, MmsMapping* mmsMapping)
 {
     if ((self->ctlModel == 2) || (self->ctlModel == 4)) {
 
         if (unconditional) {
-            unselectObject(self, reason);
+            unselectObject(self, reason, mmsMapping);
         }
         else {
             if (isSboClassOperateOnce(self))
-                unselectObject(self, reason);
+                unselectObject(self, reason, mmsMapping);
             else
                 setState(self, STATE_READY);
         }
@@ -716,7 +734,7 @@ executeStateMachine:
                 if (checkHandlerResult == CONTROL_ACCEPTED) {
                     LinkedList_add(values, controlObject->sbo);
 
-                    selectObject(controlObject, Hal_getTimeInMs(), controlObject->mmsConnection);
+                    selectObject(controlObject, Hal_getTimeInMs(), controlObject->mmsConnection, self);
 
 #if (CONFIG_IEC61850_SERVICE_TRACKING == 1)
                     updateGenericTrackingObjectValues(self, controlObject, IEC61850_SERVICE_TYPE_SELECT, IEC61850_SERVICE_ERROR_NO_ERROR);
@@ -740,7 +758,7 @@ executeStateMachine:
             else if (controlObject->ctlModel == 4) {
                 if (checkHandlerResult == CONTROL_ACCEPTED) {
 
-                    selectObject(controlObject, Hal_getTimeInMs(), controlObject->mmsConnection);
+                    selectObject(controlObject, Hal_getTimeInMs(), controlObject->mmsConnection, self);
 
                     if (controlObject->ctlNumSt)
                         MmsValue_update(controlObject->ctlNumSt, controlObject->ctlNum);
@@ -828,7 +846,7 @@ executeStateMachine:
 
             resetAddCause(controlObject);
 
-            abortControlOperation(controlObject, false, SELECT_STATE_REASON_OPERATE_FAILED);
+            abortControlOperation(controlObject, false, SELECT_STATE_REASON_OPERATE_FAILED, self);
             exitControlTask(controlObject);
         }
         else if (dynamicCheckResult == CONTROL_RESULT_OK) {
@@ -879,7 +897,7 @@ executeStateMachine:
 #endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
                 }
 
-                abortControlOperation(controlObject, false, SELECT_STATE_REASON_OPERATED);
+                abortControlOperation(controlObject, false, SELECT_STATE_REASON_OPERATED, self);
             }
             else {
 
@@ -894,7 +912,7 @@ executeStateMachine:
                 updateGenericTrackingObjectValues(self, controlObject, IEC61850_SERVICE_TYPE_COMMAND_TERMINATION, IEC61850_SERVICE_ERROR_FAILED_DUE_TO_SERVER_CONSTRAINT);
 #endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
 
-                abortControlOperation(controlObject, false, SELECT_STATE_REASON_OPERATE_FAILED);
+                abortControlOperation(controlObject, false, SELECT_STATE_REASON_OPERATE_FAILED, self);
             }
 
             exitControlTask(controlObject);
@@ -902,6 +920,9 @@ executeStateMachine:
             setOpOk(controlObject, false, currentTimeInMs);
 
             resetAddCause(controlObject);
+        }
+        else {
+            updateNextControlTimeout(self, currentTimeInMs + 10);
         }
     }
     break;
@@ -1080,7 +1101,6 @@ ControlObject_initialize(ControlObject* self)
     if (da) {
         mxValType = da->type;
     }
-
 
     if (stValType == IEC61850_BOOLEAN && ctlValType == IEC61850_BOOLEAN)
     {
@@ -1331,10 +1351,10 @@ ControlObject_getMmsValue(ControlObject* self)
 }
 
 bool
-ControlObject_unselect(ControlObject* self, MmsServerConnection connection)
+ControlObject_unselect(ControlObject* self, MmsServerConnection connection, MmsMapping* mmsMapping)
 {
     if (self->mmsConnection == connection) {
-        abortControlOperation(self, true, SELECT_STATE_REASON_DISCONNECTED);
+        abortControlOperation(self, true, SELECT_STATE_REASON_DISCONNECTED, mmsMapping);
         return true;
     }
     else
@@ -1391,76 +1411,95 @@ ControlObject_updateControlModel(ControlObject* self, ControlModel value, DataOb
 void
 Control_processControlActions(MmsMapping* self, uint64_t currentTimeInMs)
 {
-    LinkedList element = LinkedList_getNext(self->controlObjects);
+    if (currentTimeInMs >= self->nextControlTimeout) {
 
-    while (element != NULL) {
-        ControlObject* controlObject = (ControlObject*) element->data;
+        /* invalidate nextControlTimeout */
+        self->nextControlTimeout = (uint64_t) 0xFFFFFFFFFFFFFFFFLLU;
 
-        if (controlObject->state == STATE_WAIT_FOR_ACTIVATION_TIME) {
+        LinkedList element = LinkedList_getNext(self->controlObjects);
 
-            if (controlObject->operateTime <= currentTimeInMs) {
+        while (element != NULL) {
+            ControlObject* controlObject = (ControlObject*) element->data;
 
-                /* enter state Perform Test */
-                setOpRcvd(controlObject, true);
+            if (controlObject->state != STATE_UNSELECTED) {
 
-                if (DEBUG_IED_SERVER)
-                    printf("IED_SERVER: time activated operate: perform test\n");
-
-                controlObject->timeActivatedOperate = false;
-
-                CheckHandlerResult checkResult = CONTROL_ACCEPTED;
-
-                if (controlObject->checkHandler != NULL) { /* perform operative tests */
-
-                    controlObject->errorValue = CONTROL_ERROR_NO_ERROR;
-                    controlObject->addCauseValue = ADD_CAUSE_BLOCKED_BY_INTERLOCKING;
-
-                    checkResult = controlObject->checkHandler((ControlAction) controlObject,
-                            controlObject->checkHandlerParameter, controlObject->ctlVal, controlObject->testMode,
-                            controlObject->interlockCheck);
+                if ((controlObject->ctlModel == 1) || (controlObject->ctlModel == 3)) {
+                    if (controlObject->state == STATE_READY) {
+                        element = LinkedList_getNext(element);
+                        continue;
+                    }
                 }
 
-                if (checkResult == CONTROL_ACCEPTED) {
+                if (controlObject->state == STATE_WAIT_FOR_ACTIVATION_TIME) {
 
-                    if (DEBUG_IED_SERVER)
-                        printf("IED_SERVER: time activated operate: command accepted\n");
+                    if (controlObject->operateTime <= currentTimeInMs) {
 
-                    /* leave state Perform Test */
-                    setOpRcvd(controlObject, false);
+                        /* enter state Perform Test */
+                        setOpRcvd(controlObject, true);
 
-                    executeControlTask(self, controlObject, currentTimeInMs);
-                }
-                else {
+                        if (DEBUG_IED_SERVER)
+                            printf("IED_SERVER: time activated operate: perform test\n");
 
-                    ControlObject_sendLastApplError(controlObject, controlObject->mmsConnection, "Oper",
-                            controlObject->errorValue, controlObject->addCauseValue,
-                                controlObject->ctlNum, controlObject->origin, false);
+                        controlObject->timeActivatedOperate = false;
+
+                        CheckHandlerResult checkResult = CONTROL_ACCEPTED;
+
+                        if (controlObject->checkHandler != NULL) { /* perform operative tests */
+
+                            controlObject->errorValue = CONTROL_ERROR_NO_ERROR;
+                            controlObject->addCauseValue = ADD_CAUSE_BLOCKED_BY_INTERLOCKING;
+
+                            checkResult = controlObject->checkHandler((ControlAction) controlObject,
+                                    controlObject->checkHandlerParameter, controlObject->ctlVal, controlObject->testMode,
+                                    controlObject->interlockCheck);
+                        }
+
+                        if (checkResult == CONTROL_ACCEPTED) {
+
+                            if (DEBUG_IED_SERVER)
+                                printf("IED_SERVER: time activated operate: command accepted\n");
+
+                            /* leave state Perform Test */
+                            setOpRcvd(controlObject, false);
+
+                            executeControlTask(self, controlObject, currentTimeInMs);
+                        }
+                        else {
+
+                            ControlObject_sendLastApplError(controlObject, controlObject->mmsConnection, "Oper",
+                                    controlObject->errorValue, controlObject->addCauseValue,
+                                        controlObject->ctlNum, controlObject->origin, false);
 
 #if (CONFIG_IEC61850_SERVICE_TRACKING == 1)
-                    updateGenericTrackingObjectValues(self, controlObject, IEC61850_SERVICE_TYPE_TIME_ACTIVATED_OPERATE,
-                            convertCheckHandlerResultToServiceError(checkResult));
+                            updateGenericTrackingObjectValues(self, controlObject, IEC61850_SERVICE_TYPE_TIME_ACTIVATED_OPERATE,
+                                    convertCheckHandlerResultToServiceError(checkResult));
 #endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
 
-                    /* leave state Perform Test */
-                    setOpRcvd(controlObject, false);
+                            /* leave state Perform Test */
+                            setOpRcvd(controlObject, false);
 
-                    abortControlOperation(controlObject, false, SELECT_STATE_REASON_OPERATE_FAILED);
+                            abortControlOperation(controlObject, false, SELECT_STATE_REASON_OPERATE_FAILED, self);
 
-                    resetAddCause(controlObject);
+                            resetAddCause(controlObject);
+                        }
+                    }
+                    else {
+                        updateNextControlTimeout(self, controlObject->operateTime);
+                    }
+
+                } /* if (controlObject->state == STATE_WAIT_FOR_ACTICATION_TIME) */
+                else if (!((controlObject->state == STATE_UNSELECTED) || (controlObject->state == STATE_READY))) {
+                    executeControlTask(self, controlObject, currentTimeInMs);
                 }
-            }
+                else if (controlObject->state == STATE_READY) {
+                    checkSelectTimeout(controlObject, currentTimeInMs, self);
+                }
+                }
 
-        } /* if (controlObject->state == STATE_WAIT_FOR_ACTICATION_TIME) */
-        else if (!((controlObject->state == STATE_UNSELECTED) || (controlObject->state == STATE_READY))) {
-            executeControlTask(self, controlObject, currentTimeInMs);
+            ControlObject_handlePendingEvents(controlObject);
+
+            element = LinkedList_getNext(element);
         }
-        else if (controlObject->state == STATE_READY) {
-            checkSelectTimeout(controlObject, currentTimeInMs);
-        }
-
-        ControlObject_handlePendingEvents(controlObject);
-
-        element = LinkedList_getNext(element);
     }
 }
 
@@ -1784,7 +1823,7 @@ Control_readAccessControlObject(MmsMapping* self, MmsDomain* domain, char* varia
                     value = &emptyString;
 
                     if (isDirectAccess == true) {
-                        checkSelectTimeout(controlObject, currentTime);
+                        checkSelectTimeout(controlObject, currentTime, self);
 
                         if (getState(controlObject) == STATE_UNSELECTED) {
                             CheckHandlerResult checkResult = CONTROL_ACCEPTED;
@@ -1805,7 +1844,7 @@ Control_readAccessControlObject(MmsMapping* self, MmsDomain* domain, char* varia
                             }
 
                             if (checkResult == CONTROL_ACCEPTED) {
-                                selectObject(controlObject, currentTime, connection);
+                                selectObject(controlObject, currentTime, connection, self);
                                 value = controlObject->sbo;
 
 #if (CONFIG_IEC61850_SERVICE_TRACKING == 1)
@@ -2008,7 +2047,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
 
                 uint64_t currentTime = Hal_getTimeInMs();
 
-                checkSelectTimeout(controlObject, currentTime);
+                checkSelectTimeout(controlObject, currentTime, self);
 
                 if (state != STATE_UNSELECTED) {
 
@@ -2065,7 +2104,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                     }
 
                     if (checkResult == CONTROL_ACCEPTED) {
-                        selectObject(controlObject, currentTime, connection);
+                        selectObject(controlObject, currentTime, connection, self);
 
                         indication = DATA_ACCESS_ERROR_SUCCESS;
 
@@ -2131,7 +2170,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                         ctlNum, origin, true);
 
             if ((controlObject->ctlModel == 2) || (controlObject->ctlModel == 4)) {
-                unselectObject(controlObject, SELECT_STATE_REASON_OPERATE_FAILED);
+                unselectObject(controlObject, SELECT_STATE_REASON_OPERATE_FAILED, self);
             }
 
             goto free_and_return;
@@ -2139,7 +2178,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
 
         uint64_t currentTime = Hal_getTimeInMs();
 
-        checkSelectTimeout(controlObject, currentTime);
+        checkSelectTimeout(controlObject, currentTime, self);
 
         int state = getState(controlObject);
 
@@ -2186,7 +2225,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                                 CONTROL_ERROR_NO_ERROR, ADD_CAUSE_INCONSISTENT_PARAMETERS,
                                     ctlNum, origin, true);
 
-                        unselectObject(controlObject, SELECT_STATE_REASON_OPERATE_FAILED);
+                        unselectObject(controlObject, SELECT_STATE_REASON_OPERATE_FAILED, self);
 
                         goto free_and_return;
                     }
@@ -2220,6 +2259,8 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                         initiateControlTask(controlObject);
 
                         setState(controlObject, STATE_WAIT_FOR_ACTIVATION_TIME);
+
+                        updateNextControlTimeout(self, controlObject->operateTime);
 
                         if (DEBUG_IED_SERVER)
                             printf("IED_SERVER: Oper - activate time activated control\n");
@@ -2267,6 +2308,8 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                     setOpRcvd(controlObject, false);
 
                     initiateControlTask(controlObject);
+
+                    updateNextControlTimeout(self, currentTime);
                 }
                 else {
                     indication = (MmsDataAccessError) checkResult;
@@ -2274,7 +2317,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                     /* leave state Perform Test */
                     setOpRcvd(controlObject, false);
 
-                    abortControlOperation(controlObject, false, SELECT_STATE_REASON_OPERATE_FAILED);
+                    abortControlOperation(controlObject, false, SELECT_STATE_REASON_OPERATE_FAILED, self);
 
                     if ((controlObject->ctlModel == 3) || (controlObject->ctlModel == 4)) {
                         ControlObject_sendLastApplError(controlObject, connection, "Oper",
@@ -2344,7 +2387,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
             if (state != STATE_UNSELECTED) {
                 if (controlObject->mmsConnection == connection) {
                     indication = DATA_ACCESS_ERROR_SUCCESS;
-                    unselectObject(controlObject, SELECT_STATE_REASON_CANCELED);
+                    unselectObject(controlObject, SELECT_STATE_REASON_CANCELED, self);
                     goto free_and_return;
                 }
                 else {
@@ -2361,7 +2404,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
 
         if (controlObject->timeActivatedOperate) {
             controlObject->timeActivatedOperate = false;
-            abortControlOperation(controlObject, false, SELECT_STATE_REASON_CANCELED);
+            abortControlOperation(controlObject, false, SELECT_STATE_REASON_CANCELED, self);
 
             indication = DATA_ACCESS_ERROR_SUCCESS;
 
