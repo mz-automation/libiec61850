@@ -330,6 +330,8 @@ ServerSocket_accept(ServerSocket self)
         if (conSocket) {
             conSocket->fd = fd;
 
+            setSocketNonBlocking(conSocket);
+
             activateTcpNoDelay(conSocket);
         }
         else {

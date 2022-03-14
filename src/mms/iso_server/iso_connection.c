@@ -122,6 +122,8 @@ finalizeIsoConnection(IsoConnection self)
     if (self->cotpConnection) {
         if (self->cotpConnection->handleSet)
             Handleset_destroy(self->cotpConnection->handleSet);
+
+        GLOBAL_FREEMEM(self->cotpConnection->socketExtensionBuffer);
     }
 
     GLOBAL_FREEMEM(self->cotpConnection);
@@ -531,7 +533,10 @@ IsoConnection_create(Socket socket, IsoServer isoServer, bool isSingleThread)
         ByteBuffer_wrap(&(self->cotpWriteBuffer), self->cotpWriteBuf, 0, CONFIG_COTP_MAX_TPDU_SIZE + TPKT_RFC1006_HEADER_SIZE);
 
         self->cotpConnection = (CotpConnection*) GLOBAL_CALLOC(1, sizeof(CotpConnection));
-        CotpConnection_init(self->cotpConnection, self->socket, &(self->rcvBuffer), &(self->cotpReadBuffer), &(self->cotpWriteBuffer));
+        int socketExtensionBufferSize = CONFIG_MMS_MAXIMUM_PDU_SIZE + 1000;
+        uint8_t* socketExtensionBuffer = GLOBAL_MALLOC(socketExtensionBufferSize);
+        CotpConnection_init(self->cotpConnection, self->socket, &(self->rcvBuffer), &(self->cotpReadBuffer), &(self->cotpWriteBuffer),
+                socketExtensionBuffer, socketExtensionBufferSize);
 
 #if (CONFIG_MMS_SUPPORT_TLS == 1)
         if (self->tlsSocket)
@@ -606,6 +611,8 @@ IsoConnection_destroy(IsoConnection self)
     if (self->cotpConnection) {
         if (self->cotpConnection->handleSet)
             Handleset_destroy(self->cotpConnection->handleSet);
+
+        GLOBAL_FREEMEM(self->cotpConnection->socketExtensionBuffer);
     }
 
     GLOBAL_FREEMEM(self);
@@ -639,9 +646,11 @@ IsoConnection_unlock(IsoConnection self)
 #endif
 }
 
-void
+bool
 IsoConnection_sendMessage(IsoConnection self, ByteBuffer* message)
 {
+    bool success = false;
+
     if (self->state == ISO_CON_STATE_STOPPED) {
         if (DEBUG_ISO_SERVER)
             printf("DEBUG_ISO_SERVER: sendMessage: connection already stopped!\n");
@@ -681,8 +690,11 @@ IsoConnection_sendMessage(IsoConnection self, ByteBuffer* message)
             printf("ISO_SERVER: IsoConnection_sendMessage success!\n");
     }
 
+    if (indication == COTP_OK)
+        success = true;
+
 exit_error:
-    return;
+    return success;
 }
 
 void

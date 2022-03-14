@@ -3075,19 +3075,24 @@ exit_function:
     return;
 } /* enqueuReport() */
 
+#define SENT_REPORT_ENTRY_FAILED 0
+#define SENT_REPORT_ENTRY_FINISHED 1
+#define SENT_REPORT_ENTRY_MORE_FOLLOWS 2
+
 static bool
 sendNextReportEntrySegment(ReportControl* self)
 {
     if (self->clientConnection == NULL)
-        return false;
+        return SENT_REPORT_ENTRY_FAILED;
+
+    if (self->reportBuffer->nextToTransmit == NULL)
+        return SENT_REPORT_ENTRY_FINISHED;
+
+    bool sentSuccess = true;
 
     bool isBuffered = self->buffered;
 
     int maxMmsPduSize = MmsServerConnection_getMaxMmsPduSize(self->clientConnection);
-
-    if (self->reportBuffer->nextToTransmit == NULL) {
-        return false;
-    }
 
     int estimatedSegmentSize = 19; /* maximum size of header information (header can have 13-19 byte) */
     estimatedSegmentSize += 8; /* reserve space for more-segments-follow (3 byte) and sub-seq-num (3-5 byte) */
@@ -3530,7 +3535,7 @@ sendNextReportEntrySegment(ReportControl* self)
                 if (DEBUG_IED_SERVER)
                     printf("IED_SERVER: internal error in report buffer\n");
 
-                return false;
+                return SENT_REPORT_ENTRY_FAILED;
             }
 
             int dataElementSize =  1 + lenSize + length;
@@ -3602,11 +3607,16 @@ sendNextReportEntrySegment(ReportControl* self)
 
     reportBuffer->size = bufPos;
 
-    MmsServerConnection_sendMessage(self->clientConnection, reportBuffer);
+    sentSuccess = MmsServerConnection_sendMessage(self->clientConnection, reportBuffer);
 
     MmsServer_releaseTransmitBuffer(self->server->mmsServer);
 
     IsoConnection_unlock(self->clientConnection->isoConnection);
+
+    if (sentSuccess == false) {
+        moreFollows = false;
+        goto exit_function;
+    }
 
     if (moreFollows == false) {
         /* reset sub sequence number */
@@ -3655,7 +3665,14 @@ exit_function:
 #endif
 
     self->segmented = segmented;
-    return moreFollows;
+
+    if (sentSuccess == false)
+        return SENT_REPORT_ENTRY_FAILED;
+
+    if (moreFollows)
+        return SENT_REPORT_ENTRY_MORE_FOLLOWS;
+    else
+        return SENT_REPORT_ENTRY_FINISHED;
 }
 
 static void
@@ -3669,8 +3686,24 @@ sendNextReportEntry(ReportControl* self)
 
     while (self->reportBuffer->nextToTransmit) {
         messageCount++;
-        while (sendNextReportEntrySegment(self)) {
-            messageCount++;
+
+        bool sendNextEntrySegment = true;
+
+        int sendResult = SENT_REPORT_ENTRY_FAILED;
+
+        while (sendNextEntrySegment) {
+            sendResult = sendNextReportEntrySegment(self);
+
+            if (sendResult != SENT_REPORT_ENTRY_FAILED) {
+                messageCount++;
+            }
+
+            if (sendResult != SENT_REPORT_ENTRY_MORE_FOLLOWS)
+                sendNextEntrySegment = false;
+        }
+
+        if (sendResult == SENT_REPORT_ENTRY_FAILED) {
+            break;
         }
 
         if (messageCount > 100)

@@ -200,8 +200,12 @@ sendConnectionRequestMessage(IsoClientConnection self)
         self->cotpConnection->handleSet = NULL;
     }
 
+    int socketExtensionBufferSize = CONFIG_MMS_MAXIMUM_PDU_SIZE + 1000;
+    uint8_t* socketExtensionBuffer = GLOBAL_MALLOC(socketExtensionBufferSize);
+
     /* COTP (ISO transport) handshake */
-    CotpConnection_init(self->cotpConnection, self->socket, self->receiveBuffer, self->cotpReadBuffer, self->cotpWriteBuffer);
+    CotpConnection_init(self->cotpConnection, self->socket, self->receiveBuffer, self->cotpReadBuffer, self->cotpWriteBuffer,
+            socketExtensionBuffer, socketExtensionBufferSize);
 
 #if (CONFIG_MMS_SUPPORT_TLS == 1)
     if (self->parameters->tlsConfiguration) {
@@ -774,9 +778,13 @@ IsoClientConnection_destroy(IsoClientConnection self)
         GLOBAL_FREEMEM(self->receiveBuf);
     if (self->receiveBuffer != NULL)
         GLOBAL_FREEMEM(self->receiveBuffer);
+
     if (self->cotpConnection != NULL) {
         if (self->cotpConnection->handleSet != NULL)
             Handleset_destroy(self->cotpConnection->handleSet);
+
+        GLOBAL_FREEMEM(self->cotpConnection->socketExtensionBuffer);
+
         GLOBAL_FREEMEM(self->cotpConnection);
     }
 
