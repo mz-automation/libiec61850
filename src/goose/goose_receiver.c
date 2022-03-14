@@ -1060,6 +1060,26 @@ GooseReceiver_startThreadless(GooseReceiver self)
 
     if (self->ethSocket != NULL) {
         Ethernet_setProtocolFilter(self->ethSocket, ETH_P_GOOSE);
+
+        /* set multicast addresses for subscribers */
+        Ethernet_setMode(self->ethSocket, ETHERNET_SOCKET_MODE_MULTICAST);
+
+        LinkedList element = LinkedList_getNext(self->subscriberList);
+
+        while (element != NULL) {
+            GooseSubscriber subscriber = (GooseSubscriber) LinkedList_getData(element);
+
+            if (subscriber->dstMacSet == false) {
+                /* no destination MAC address defined -> we have to switch to all multicast mode */
+                Ethernet_setMode(self->ethSocket, ETHERNET_SOCKET_MODE_ALL_MULTICAST);
+            }
+            else {
+                Ethernet_addMulticastAddress(self->ethSocket, subscriber->dstMac);
+            }
+
+            element = LinkedList_getNext(element);
+        }
+
         self->running = true;
     }
     else

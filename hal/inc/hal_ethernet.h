@@ -36,6 +36,13 @@ typedef struct sEthernetSocket* EthernetSocket;
 /** Opaque reference for a set of Ethernet socket handles */
 typedef struct sEthernetHandleSet* EthernetHandleSet;
 
+typedef enum {
+    ETHERNET_SOCKET_MODE_PROMISC, /**<< receive all Ethernet messages */
+    ETHERNET_SOCKET_MODE_ALL_MULTICAST, /**<< receive all multicast messages */
+    ETHERNET_SOCKET_MODE_MULTICAST, /**<< receive only specific multicast messages */
+    ETHERNET_SOCKET_MODE_HOST_ONLY /**<< receive only messages for the host */
+} EthernetSocketMode;
+
 /**
  * \brief Create a new connection handle set (EthernetHandleSet)
  *
@@ -116,6 +123,29 @@ Ethernet_destroySocket(EthernetSocket ethSocket);
 
 PAL_API void
 Ethernet_sendPacket(EthernetSocket ethSocket, uint8_t* buffer, int packetSize);
+
+/*
+ * \brief set the receive mode of the Ethernet socket
+ *
+ * NOTE: When not implemented the the implementation has to be able to receive
+ * all messages required by GOOSE and/or SV (usually multicast addresses).
+ *
+ * \param ethSocket the ethernet socket handle
+ * \param mode the mode of the socket
+ */
+PAL_API void
+Ethernet_setMode(EthernetSocket ethSocket, EthernetSocketMode mode);
+
+/**
+ * \brief Add a multicast address to be received by the Ethernet socket
+ *
+ * Used when mode is ETHERNET_SOCKET_MODE_MULTICAST
+ *
+ * \param ethSocket the ethernet socket handle
+ * \param multicastAddress the multicast Ethernet address (this has to be a byte buffer of at least 6 byte)
+ */
+PAL_API void
+Ethernet_addMulticastAddress(EthernetSocket ethSocket, uint8_t* multicastAddress);
 
 /*
  * \brief set a protocol filter for the specified etherType

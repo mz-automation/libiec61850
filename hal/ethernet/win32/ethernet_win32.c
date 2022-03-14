@@ -379,6 +379,18 @@ Ethernet_sendPacket(EthernetSocket ethSocket, uint8_t* buffer, int packetSize)
 }
 
 void
+Ethernet_setMode(EthernetSocket ethSocket, EthernetSocketMode mode)
+{
+    /* not implemented */
+}
+
+void
+Ethernet_addMulticastAddress(EthernetSocket ethSocket, uint8_t* multicastAddress)
+{
+    /* not implemented */
+}
+
+void
 Ethernet_setProtocolFilter(EthernetSocket ethSocket, uint16_t etherType)
 {
     char filterString[100];
@@ -475,6 +487,16 @@ Ethernet_destroySocket(EthernetSocket ethSocket)
 
 void
 Ethernet_sendPacket(EthernetSocket ethSocket, uint8_t* buffer, int packetSize)
+{
+}
+
+void
+Ethernet_setMode(EthernetSocket ethSocket, EthernetSocketMode mode)
+{
+}
+
+void
+Ethernet_addMulticastAddress(EthernetSocket ethSocket, uint8_t* multicastAddress)
 {
 }
 

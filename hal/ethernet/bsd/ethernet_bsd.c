@@ -358,6 +358,18 @@ Ethernet_createSocket(const char* interfaceId, uint8_t* destAddress)
 }
 
 void
+Ethernet_setMode(EthernetSocket ethSocket, EthernetSocketMode mode)
+{
+    /* not implemented */
+}
+
+void
+Ethernet_addMulticastAddress(EthernetSocket ethSocket, uint8_t* multicastAddress)
+{
+    /* not implemented */
+}
+
+void
 Ethernet_setProtocolFilter(EthernetSocket self, uint16_t etherType)
 {
     if (!self || !self->bpfProgram.bf_insns || setBpfEthertypeFilter(self, etherType))
