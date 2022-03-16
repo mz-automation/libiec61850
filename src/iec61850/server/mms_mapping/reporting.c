@@ -2832,7 +2832,7 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
 #if (DEBUG_IED_SERVER == 1)
                     printf("IED_SERVER: REMOVE report with ID ");
                     printReportId(buffer->oldestReport);
-                    printf(" (index: %li, size: %i)\n", (int)((uint8_t*)(buffer->oldestReport) - (uint8_t*)(buffer->memoryBlock)), buffer->oldestReport->entryLength);
+                    printf(" (index: %i, size: %i)\n", (int)((uint8_t*)(buffer->oldestReport) - (uint8_t*)(buffer->memoryBlock)), buffer->oldestReport->entryLength);
 #endif
                     buffer->oldestReport = buffer->oldestReport->next;
 

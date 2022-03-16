@@ -801,10 +801,12 @@ executeStateMachine:
             }
 
         }
+        else {
+            updateNextControlTimeout(self, Hal_getTimeInMs() + 100);
+        }
 
     }
     break;
-
 
     case STATE_WAIT_FOR_ACTIVATION_TIME:
     case STATE_WAIT_FOR_EXECUTION:
@@ -875,6 +877,9 @@ executeStateMachine:
             setOpOk(controlObject, true, currentTimeInMs);
 
             goto executeStateMachine;
+        }
+        else {
+            updateNextControlTimeout(self, Hal_getTimeInMs() + 10);
         }
     }
     break;
@@ -2120,6 +2125,8 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                         MmsValue_update(controlObject->origin, origin);
 
                         setState(controlObject, STATE_WAIT_FOR_SELECT);
+
+                        updateNextControlTimeout(self, Hal_getTimeInMs() + 100);
 
                         indication = DATA_ACCESS_ERROR_NO_RESPONSE;
                     }
