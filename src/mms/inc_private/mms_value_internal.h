@@ -45,7 +45,7 @@ struct ATTRIBUTE_PACKED sMmsValue {
         } floatingPoint;
         struct {
             uint16_t size;
-            uint16_t maxSize;
+            int maxSize;
             uint8_t* buf;
         } octetString;
         struct {

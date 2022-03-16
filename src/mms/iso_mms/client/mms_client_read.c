@@ -331,7 +331,7 @@ mmsClient_parseListOfAccessResults(AccessResult_t** accessResultList, int listSi
             if (size >= 0) {
                 value = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
                 value->type = MMS_OCTET_STRING;
-                value->value.octetString.maxSize = size;
+                value->value.octetString.maxSize = -size;
                 value->value.octetString.size = size;
                 value->value.octetString.buf = (uint8_t*) GLOBAL_MALLOC(size);
                 memcpy(value->value.octetString.buf, accessResultList[i]->choice.octetstring.buf, size);
