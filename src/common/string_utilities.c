@@ -230,7 +230,7 @@ StringUtils_createBufferFromHexString(char* hexString, uint8_t* buffer)
 }
 
 bool
-StringUtils_startsWith(char* string, char* prefix)
+StringUtils_startsWith(const char* string, const char* prefix)
 {
     int index = 0;
 

@@ -79,7 +79,7 @@ StringUtils_createBufferFromHexString(char* hexString, uint8_t* buffer);
  * \brief test if string starts with prefix
  */
 LIB61850_INTERNAL bool
-StringUtils_startsWith(char* string, char* prefix);
+StringUtils_startsWith(const char* string, const char* prefix);
 
 LIB61850_INTERNAL bool
 StringUtils_endsWith(const char* str, const char* suffix);
