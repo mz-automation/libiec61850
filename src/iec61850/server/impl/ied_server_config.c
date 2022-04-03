@@ -55,6 +55,7 @@ IedServerConfig_create()
         self->edition = IEC_61850_EDITION_2;
         self->maxMmsConnections = 5;
         self->enableEditSG = true;
+        self->enableResvTmsForSGCB = true;
         self->enableResvTmsForBRCB = true;
         self->enableOwnerForRCB = false;
     }
