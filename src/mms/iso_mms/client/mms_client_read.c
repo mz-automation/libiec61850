@@ -1,7 +1,7 @@
 /*
  *  mms_client_read.c
  *
- *  Copyright 2013-2019 Michael Zillgith
+ *  Copyright 2013-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -97,7 +97,6 @@ mmsClient_parseListOfAccessResults(AccessResult_t** accessResultList, int listSi
                         }
                     }
                 }
-
             }
             else {
                 if (DEBUG_MMS_CLIENT)
@@ -425,16 +424,16 @@ mmsClient_createReadNamedVariableListRequest(uint32_t invokeId, const char* doma
         objectName->present = ObjectName_PR_domainspecific;
 
         objectName->choice.domainspecific.domainId.buf = (uint8_t*) StringUtils_copyString(domainId);
-        objectName->choice.domainspecific.domainId.size = strlen(domainId);
+        objectName->choice.domainspecific.domainId.size = (int)strlen(domainId);
 
         objectName->choice.domainspecific.itemId.buf = (uint8_t*) StringUtils_copyString(itemId);
-        objectName->choice.domainspecific.itemId.size = strlen(itemId);
+        objectName->choice.domainspecific.itemId.size = (int)strlen(itemId);
     }
     else {
         objectName->present = ObjectName_PR_vmdspecific;
 
         objectName->choice.vmdspecific.buf = (uint8_t*) StringUtils_copyString(itemId);
-        objectName->choice.vmdspecific.size = strlen(itemId);
+        objectName->choice.vmdspecific.size = (int)strlen(itemId);
     }
 
     asn_enc_rval_t rval;
@@ -444,7 +443,7 @@ mmsClient_createReadNamedVariableListRequest(uint32_t invokeId, const char* doma
 
     asn_DEF_MmsPdu.free_struct(&asn_DEF_MmsPdu, mmsPdu, 0);
 
-    return rval.encoded;
+    return (int)rval.encoded;
 }
 
 int
@@ -472,7 +471,7 @@ mmsClient_createReadAssociationSpecificNamedVariableListRequest(
     objectName->present = ObjectName_PR_aaspecific;
 
     objectName->choice.aaspecific.buf = (uint8_t*) StringUtils_copyString(itemId);
-    objectName->choice.aaspecific.size = strlen(itemId);
+    objectName->choice.aaspecific.size = (int)strlen(itemId);
 
     asn_enc_rval_t rval;
 
@@ -481,7 +480,7 @@ mmsClient_createReadAssociationSpecificNamedVariableListRequest(
 
     asn_DEF_MmsPdu.free_struct(&asn_DEF_MmsPdu, mmsPdu, 0);
 
-    return rval.encoded;
+    return (int)rval.encoded;
 }
 
 /**
@@ -512,14 +511,14 @@ mmsClient_createReadRequest(uint32_t invokeId, const char* domainId, const char*
     if (domainId != NULL) {
         listOfVars->variableSpecification.choice.name.present = ObjectName_PR_domainspecific;
         listOfVars->variableSpecification.choice.name.choice.domainspecific.domainId.buf = (uint8_t*) domainId;
-        listOfVars->variableSpecification.choice.name.choice.domainspecific.domainId.size = strlen(domainId);
+        listOfVars->variableSpecification.choice.name.choice.domainspecific.domainId.size = (int)strlen(domainId);
         listOfVars->variableSpecification.choice.name.choice.domainspecific.itemId.buf = (uint8_t*) itemId;
-        listOfVars->variableSpecification.choice.name.choice.domainspecific.itemId.size = strlen(itemId);
+        listOfVars->variableSpecification.choice.name.choice.domainspecific.itemId.size = (int)strlen(itemId);
     }
     else {
         listOfVars->variableSpecification.choice.name.present = ObjectName_PR_vmdspecific;
         listOfVars->variableSpecification.choice.name.choice.vmdspecific.buf = (uint8_t*) itemId;
-        listOfVars->variableSpecification.choice.name.choice.vmdspecific.size = strlen(itemId);
+        listOfVars->variableSpecification.choice.name.choice.vmdspecific.size = (int)strlen(itemId);
     }
 
     asn_enc_rval_t rval;
@@ -534,7 +533,7 @@ mmsClient_createReadRequest(uint32_t invokeId, const char* domainId, const char*
     readRequest->variableAccessSpecification.choice.listOfVariable.list.count = 0;
     asn_DEF_MmsPdu.free_struct(&asn_DEF_MmsPdu, mmsPdu, 0);
 
-    return rval.encoded;
+    return (int)rval.encoded;
 }
 
 static AlternateAccess_t*
@@ -551,7 +550,7 @@ createAlternateAccessComponent(const char* componentName)
     const char* separator = strchr(componentName, '$');
 
     if (separator) {
-        int size = separator - componentName;
+        int size = (int)(separator - componentName);
 
         alternateAccess->list.array[0]->choice.unnamed->present = AlternateAccessSelection_PR_selectAlternateAccess;
         alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.accessSelection.present =
@@ -564,7 +563,7 @@ createAlternateAccessComponent(const char* componentName)
         alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess = createAlternateAccessComponent(separator + 1);
     }
     else {
-        int size = strlen(componentName);
+        int size = (int)strlen(componentName);
 
         alternateAccess->list.array[0]->choice.unnamed->present = AlternateAccessSelection_PR_selectAccess;
 
@@ -606,19 +605,19 @@ createNewVariableSpecification(const char* domainId, const char* itemId, const c
     if (domainId) {
         varSpec->variableSpecification.choice.name.present = ObjectName_PR_domainspecific;
         varSpec->variableSpecification.choice.name.choice.domainspecific.domainId.buf = (uint8_t*) domainId;
-        varSpec->variableSpecification.choice.name.choice.domainspecific.domainId.size = strlen(domainId);
+        varSpec->variableSpecification.choice.name.choice.domainspecific.domainId.size = (int)strlen(domainId);
         varSpec->variableSpecification.choice.name.choice.domainspecific.itemId.buf = (uint8_t*) itemId;
-        varSpec->variableSpecification.choice.name.choice.domainspecific.itemId.size = strlen(itemId);
+        varSpec->variableSpecification.choice.name.choice.domainspecific.itemId.size = (int)strlen(itemId);
     }
     else if (associationSpecific) {
         varSpec->variableSpecification.choice.name.present = ObjectName_PR_aaspecific;
         varSpec->variableSpecification.choice.name.choice.aaspecific.buf = (uint8_t*) itemId;
-        varSpec->variableSpecification.choice.name.choice.aaspecific.size = strlen(itemId);
+        varSpec->variableSpecification.choice.name.choice.aaspecific.size = (int)strlen(itemId);
     }
     else {
         varSpec->variableSpecification.choice.name.present = ObjectName_PR_vmdspecific;
         varSpec->variableSpecification.choice.name.choice.vmdspecific.buf = (uint8_t*) itemId;
-        varSpec->variableSpecification.choice.name.choice.vmdspecific.size = strlen(itemId);
+        varSpec->variableSpecification.choice.name.choice.vmdspecific.size = (int)strlen(itemId);
     }
 
     if (componentName)
@@ -660,7 +659,7 @@ mmsClient_createReadRequestComponent(uint32_t invokeId, const char* domainId, co
     readRequest->variableAccessSpecification.choice.listOfVariable.list.count = 0;
     asn_DEF_MmsPdu.free_struct(&asn_DEF_MmsPdu, mmsPdu, 0);
 
-    return rval.encoded;
+    return (int)rval.encoded;
 }
 
 static ListOfVariableSeq_t*
@@ -671,9 +670,9 @@ createVariableIdentifier(const char* domainId, const char* itemId)
     variableIdentifier->variableSpecification.present = VariableSpecification_PR_name;
     variableIdentifier->variableSpecification.choice.name.present = ObjectName_PR_domainspecific;
     variableIdentifier->variableSpecification.choice.name.choice.domainspecific.domainId.buf = (uint8_t*) domainId;
-    variableIdentifier->variableSpecification.choice.name.choice.domainspecific.domainId.size = strlen(domainId);
+    variableIdentifier->variableSpecification.choice.name.choice.domainspecific.domainId.size = (int)strlen(domainId);
     variableIdentifier->variableSpecification.choice.name.choice.domainspecific.itemId.buf = (uint8_t*) itemId;
-    variableIdentifier->variableSpecification.choice.name.choice.domainspecific.itemId.size = strlen(itemId);
+    variableIdentifier->variableSpecification.choice.name.choice.domainspecific.itemId.size = (int)strlen(itemId);
 
     return variableIdentifier;
 }
@@ -710,7 +709,7 @@ mmsClient_createReadRequestAlternateAccessIndex(uint32_t invokeId, const char* d
 
     asn_DEF_MmsPdu.free_struct(&asn_DEF_MmsPdu, mmsPdu, 0);
 
-    return rval.encoded;
+    return (int)rval.encoded;
 }
 
 int
@@ -745,7 +744,7 @@ mmsClient_createReadRequestAlternateAccessSingleIndexComponent(uint32_t invokeId
 
     asn_DEF_MmsPdu.free_struct(&asn_DEF_MmsPdu, mmsPdu, 0);
 
-    return rval.encoded;
+    return (int)rval.encoded;
 }
 
 static ListOfVariableSeq_t**
@@ -803,6 +802,6 @@ mmsClient_createReadRequestMultipleValues(uint32_t invokeId, const char* domainI
 
     asn_DEF_MmsPdu.free_struct(&asn_DEF_MmsPdu, mmsPdu, 0);
 
-    return rval.encoded;
+    return (int)rval.encoded;
 }
 
