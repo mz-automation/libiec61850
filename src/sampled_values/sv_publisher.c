@@ -320,11 +320,14 @@ SVPublisher_ASDU_getEncodedSize(SVPublisher_ASDU self)
     int encodedSize = 0;
 
     /* svID */
-    encodedSize += ( 2 + strlen(self->svID) );
+    int svIdLen = strlen(self->svID);
+    encodedSize += (1 + BerEncoder_determineLengthSize(svIdLen) + svIdLen);
 
     /* datset */
-    if (self->datset != NULL)
-        encodedSize += ( 2 + strlen(self->datset) );
+    if (self->datset != NULL) {
+        int datSetLen = strlen(self->datset);
+        encodedSize += (1 + BerEncoder_determineLengthSize(datSetLen) + datSetLen);
+    }
 
     /* smpCnt */
     encodedSize += 4;
