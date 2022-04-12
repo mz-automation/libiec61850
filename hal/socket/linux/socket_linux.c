@@ -311,7 +311,10 @@ TcpServerSocket_create(const char* address, int port)
 void
 ServerSocket_listen(ServerSocket self)
 {
-    listen(self->fd, self->backLog);
+    if (listen(self->fd, self->backLog) == -1) {
+        if (DEBUG_SOCKET)
+            printf("SOCKET: listen failed (errno: %i)\n", errno);
+    }
 }
 
 /* CHANGED TO MAKE NON-BLOCKING --> RETURNS NULL IF NO CONNECTION IS PENDING */
@@ -341,6 +344,10 @@ ServerSocket_accept(ServerSocket self)
             if (DEBUG_SOCKET)
                 printf("SOCKET: out of memory\n");
         }
+    }
+    else {
+        if (DEBUG_SOCKET)
+            printf("SOCKET: accept failed (errno=%i)\n", errno);
     }
 
     return conSocket;
