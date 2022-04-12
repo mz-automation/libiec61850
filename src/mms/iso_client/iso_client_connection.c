@@ -3,7 +3,7 @@
  *
  *  Client side representation of the ISO stack (COTP, session, presentation, ACSE)
  *
- *  Copyright 2013-2018 Michael Zillgith
+ *  Copyright 2013-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -201,7 +201,7 @@ sendConnectionRequestMessage(IsoClientConnection self)
     }
 
     int socketExtensionBufferSize = CONFIG_MMS_MAXIMUM_PDU_SIZE + 1000;
-    uint8_t* socketExtensionBuffer = GLOBAL_MALLOC(socketExtensionBufferSize);
+    uint8_t* socketExtensionBuffer = (uint8_t*)GLOBAL_MALLOC(socketExtensionBufferSize);
 
     /* COTP (ISO transport) handshake */
     CotpConnection_init(self->cotpConnection, self->socket, self->receiveBuffer, self->cotpReadBuffer, self->cotpWriteBuffer,

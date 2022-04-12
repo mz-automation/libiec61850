@@ -1,2 +1,6 @@
 For GOOSE support add winpcap source and headers here. Rerun cmake to configure the build system for GOOSE support.
 
+You can get the winpcap headers and libraries here: https://www.winpcap.org/install/bin/WpdPack_4_1_2.zip
+
+From this package copy the "Lib" and "Include" folders in this directory. On 64 bit systems you have to replace the lib files from the "Lib" folder by the files in "Lib\x64".
+
