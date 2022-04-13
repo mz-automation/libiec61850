@@ -243,27 +243,96 @@ ReportControlBlock_isBuffered(ReportControlBlock* self);
 LIB61850_API LogicalNode*
 ReportControlBlock_getParent(ReportControlBlock* self);
 
+/**
+ * \brief Get the name of the currently set report ID
+ *
+ * \param self the RCB instance
+ *
+ * \return a null terminated string containing the current data set name (the string has to be released by the caller!)
+ */
 LIB61850_API char*
 ReportControlBlock_getRptID(ReportControlBlock* self);
 
-LIB61850_API int
+/**
+ * \brief Check if RCB instance is enabled
+ *
+ * \param self the RCB instance
+ *
+ * \return true when the RCB instance is enabled, false otherwise
+ */
+LIB61850_API bool
 ReportControlBlock_getRptEna(ReportControlBlock* self);
 
+/**
+ * \brief Get the name of the currenlty set data set
+ *
+ * \param self the RCB instance
+ *
+ * \return a null terminated string containing the current data set name (the string has to be released by the caller!)
+ */
 LIB61850_API char*
 ReportControlBlock_getDataSet(ReportControlBlock* self);
 
+/**
+ * \brief Get the confRev value
+ *
+ * \param self the RCB instance
+ *
+ * \return confRev value
+ */
 LIB61850_API uint32_t
 ReportControlBlock_getConfRev(ReportControlBlock* self);
 
+/**
+ * \brief Get the currently set OptFlds value
+ *
+ * The OptField (option field) value is a bit field with the following fields:
+ * - RPT_OPT_SEQ_NUM
+ * - RPT_OPT_TIME_STAMP
+ * - RPT_OPT_REASON_FOR_INCLUSION
+ * - RPT_OPT_DATA_SET
+ * - RPT_OPT_DATA_REFERENCE
+ * - RPT_OPT_BUFFER_OVERFLOW
+ * - RPT_OPT_ENTRY_ID
+ * - RPT_OPT_CONF_REV
+ *
+ * \param self the RCB instance
+ *
+ * \return OptFlds options value
+ */
 LIB61850_API uint32_t
 ReportControlBlock_getOptFlds(ReportControlBlock* self);
 
+/**
+ * \brief Get the BufTm value (buffer time)
+ *
+ * The buffer time is the maximum value between an event and
+ * the actual report generation.
+ *
+ * \param self the RCB instance
+ *
+ * \return bufTm value
+ */
 LIB61850_API uint32_t
 ReportControlBlock_getBufTm(ReportControlBlock* self);
 
 LIB61850_API uint16_t
 ReportControlBlock_getSqNum(ReportControlBlock* self);
 
+/**
+ * \brief Get the currently set trigger options
+ *
+ * The trigger option value is a bit field with the following fields:
+ * - TRG_OPT_DATA_CHANGED
+ * - TRG_OPT_QUALITY_CHANGED
+ * - TRG_OPT_DATA_UPDATE
+ * - TRG_OPT_INTEGRITY
+ * - TRG_OPT_GI
+ *
+ * \param self the RCB instance
+ *
+ * \return trigger options value
+ */
 LIB61850_API uint32_t
 ReportControlBlock_getTrgOps(ReportControlBlock* self);
 

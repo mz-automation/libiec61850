@@ -3942,7 +3942,7 @@ ReportControl_valueUpdated(ReportControl* self, int dataSetEntryIndex, int flag,
     ReportControl_unlockNotify(self);
 }
 
-int
+bool
 ReportControlBlock_getRptEna(ReportControlBlock* self)
 {
     if (self->trgOps & 64) {
@@ -3976,7 +3976,7 @@ ReportControlBlock_getRptID(ReportControlBlock* self)
         return rptIdStr;
     }
     else {
-        return self->rptId;
+        return strdup(self->rptId);
     }
 }
 
@@ -4001,7 +4001,7 @@ ReportControlBlock_getDataSet(ReportControlBlock* self)
         return dataSetStr;
     }
     else {
-        return self->dataSetName;
+        return strdup(self->dataSetName);
     }
 }
 

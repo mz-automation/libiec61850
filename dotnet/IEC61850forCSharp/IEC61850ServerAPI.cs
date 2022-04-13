@@ -1309,7 +1309,7 @@ namespace IEC61850
             static extern void ReportControlBlock_setPreconfiguredClient(IntPtr self, byte type, [Out] byte[] buf);
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-            static extern string ReportControlBlock_getName(IntPtr self);
+            static extern IntPtr ReportControlBlock_getName(IntPtr self);
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.I1)]
@@ -1396,7 +1396,7 @@ namespace IEC61850
                 {
                     if (name == null)
                     {
-                        name = ReportControlBlock_getName(self);
+                        name = Marshal.PtrToStringAnsi(ReportControlBlock_getName(self));
                     }
 
                     return name;
@@ -2864,7 +2864,6 @@ namespace IEC61850
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern IntPtr ReportControlBlock_getParent(IntPtr self);
-
 
             private RCBEventHandler rcbEventHandler = null;
             private object rcbEventHandlerParameter = null;
