@@ -71,10 +71,19 @@ namespace server1
             {
                 Console.WriteLine("RCB: " + rcb.Parent.GetObjectReference() + "." + rcb.Name + " event: " + eventType.ToString());
 
+                if (con != null)
+                {
+                    Console.WriteLine("  caused by client " + con.GetPeerAddress());
+                }
+                else
+                {
+                    Console.WriteLine("  client = null");
+                }
+
                 if (eventType == RCBEventType.ENABLED)
                 {
-                    //Console.WriteLine("   RptID: " + rcb.RptID);
-                    //Console.WriteLine("   DatSet: " + rcb.DataSet);
+                    Console.WriteLine("   RptID: " + rcb.RptID);
+                    Console.WriteLine("   DatSet: " + rcb.DataSet);
                     Console.WriteLine("   TrgOps: " + rcb.TrgOps.ToString());
                 }
 

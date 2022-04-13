@@ -444,12 +444,14 @@ MmsGooseControlBlock_enable(MmsGooseControlBlock self, MmsMapping* mmsMapping)
 
             /*  Calculate maximum GOOSE message size */
             int maxGooseMessageSize =  26 + 51 + 6;
-            maxGooseMessageSize += strlen(self->goCBRef);
+            maxGooseMessageSize += (int)strlen(self->goCBRef);
+
             if (self->goId)
-                maxGooseMessageSize += strlen(self->goId);
+                maxGooseMessageSize += (int)strlen(self->goId);
             else
-                maxGooseMessageSize += strlen(self->goCBRef);
-            maxGooseMessageSize += strlen(self->dataSetRef);
+                maxGooseMessageSize += (int)strlen(self->goCBRef);
+
+            maxGooseMessageSize += (int)strlen(self->dataSetRef);
 
             maxGooseMessageSize += dataSetSize;
 
@@ -465,7 +467,6 @@ MmsGooseControlBlock_enable(MmsGooseControlBlock self, MmsMapping* mmsMapping)
                 MmsValue* goEna = MmsValue_getElement(self->mmsValue, 0);
 
                 MmsValue_setBoolean(goEna, true);
-
 
                 MmsValue* dstAddress = MmsValue_getElement(self->mmsValue, 5);
 
@@ -515,7 +516,6 @@ MmsGooseControlBlock_enable(MmsGooseControlBlock self, MmsMapping* mmsMapping)
                             LinkedList_add(self->dataSetValues, dataSetEntry->value);
                             dataSetEntry = dataSetEntry->sibling;
                         }
-
                     }
                     else {
                         if (DEBUG_IED_SERVER)
