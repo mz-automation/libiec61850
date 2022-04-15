@@ -250,7 +250,7 @@ parseNamedVariableAttributes(GetNamedVariableListAttributesResponse_t* response,
                 if (alternateAccess->list.array[0]->choice.unnamed->present == AlternateAccessSelection_PR_selectAlternateAccess) {
 
                     if (alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.accessSelection.present
-                            == alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.accessSelection.present)
+                            == AlternateAccessSelection__selectAlternateAccess__accessSelection_PR_index)
                     {
                         INTEGER_t* asnIndex =
                                         &(alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.choice.index);
