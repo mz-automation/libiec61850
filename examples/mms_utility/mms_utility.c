@@ -24,6 +24,7 @@ print_help()
     printf("-x <filename> delete file\n");
     printf("-j <domainName/journalName> read journal\n");
     printf("-v <variable list_name> read domain variable list\n");
+    printf("-z <variable list_name> get domain variable list directory\n");
     printf("-y <index> array index for read access\n");
     printf("-m print raw MMS messages\n");
 }
@@ -123,10 +124,11 @@ int main(int argc, char** argv)
     int printRawMmsMessages = 0;
     int deleteFile = 0;
     int readVariableList = 0;
+    int readDataSetDirectory = 0;
 
     int c;
 
-    while ((c = getopt(argc, argv, "mifdh:p:l:t:a:r:g:j:x:v:c:y:")) != -1)
+    while ((c = getopt(argc, argv, "mifdh:p:l:t:a:r:g:j:x:v:c:y:z:")) != -1) {
         switch (c) {
         case 'm':
             printRawMmsMessages = 1;
@@ -167,6 +169,11 @@ int main(int argc, char** argv)
             readVariableList = 1;
             variableName = StringUtils_copyString(optarg);
             break;
+        case 'z':
+            readDataSetDirectory = 1;
+            variableName = StringUtils_copyString(optarg);
+            break;
+
         case 'f':
             showFileList = 1;
             break;
@@ -192,12 +199,13 @@ int main(int argc, char** argv)
             print_help();
             return 0;
         }
+    }
 
     MmsConnection con = MmsConnection_create();
 
     MmsError error;
 
-    /* Set maximum MMS PDU size (local detail) to 2000 byte */
+    /* Set maximum MMS PDU size (local detail) */
     MmsConnection_setLocalDetail(con, maxPduSize);
 
     if (printRawMmsMessages)
@@ -397,6 +405,41 @@ int main(int argc, char** argv)
                 printf("Reading variable failed: (ERROR %i)\n", error);
             }
             else {
+                printf("Read SUCCESS\n");
+            }
+        }
+        else
+            printf("Reading VMD scope variable list not yet supported!\n");
+    }
+
+    if (readDataSetDirectory) {
+        if (readWriteHasDomain) {
+
+            bool deletable = false;
+
+            LinkedList varListDir = MmsConnection_readNamedVariableListDirectory(con, &error, domainName, variableName, &deletable);
+
+            if (error != MMS_ERROR_NONE) {
+                printf("Reading variable list directory failed: (ERROR %i)\n", error);
+            }
+            else {
+                LinkedList varListElem = LinkedList_getNext(varListDir);
+
+                int listIdx = 0;
+
+                while (varListElem) {
+                    MmsVariableAccessSpecification* varAccessSpec = (MmsVariableAccessSpecification*)LinkedList_getData(varListElem);
+
+                    if (varAccessSpec->arrayIndex)
+                        printf("[%i] %s/%s(%i)%s\n", listIdx, varAccessSpec->domainId, varAccessSpec->itemId, varAccessSpec->arrayIndex, varAccessSpec->componentName == NULL ? "" : varAccessSpec->componentName);
+                    else
+                        printf("[%i] %s/%s\n", listIdx, varAccessSpec->domainId, varAccessSpec->itemId);
+
+                    listIdx++;
+
+                    varListElem = LinkedList_getNext(varListElem);
+                }
+
                 printf("Read SUCCESS\n");
             }
         }
