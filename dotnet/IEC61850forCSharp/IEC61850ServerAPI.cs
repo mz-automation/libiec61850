@@ -2136,6 +2136,9 @@ namespace IEC61850
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern IntPtr IedServer_getAttributeValue(IntPtr self, IntPtr dataAttribute);
 
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr IedServer_getFunctionalConstrainedData(IntPtr self, IntPtr dataObject, int fc);
+
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             private delegate int InternalControlPerformCheckHandler (IntPtr action, IntPtr parameter, IntPtr ctlVal, [MarshalAs(UnmanagedType.I1)] bool test, [MarshalAs(UnmanagedType.I1)] bool interlockCheck);
 
@@ -2753,6 +2756,22 @@ namespace IEC61850
 
                 if (mmsValuePtr != IntPtr.Zero)
                     return new MmsValue (mmsValuePtr);
+                else
+                    return null;
+            }
+
+            /// <summary>
+            /// Get the MmsValue object related to a functional constrained data object (FCD)
+            /// </summary>
+            /// <param name="dataObject">the data object to specify the FCD</param>
+            /// <param name="fc">the FC to specify the FCD</param>
+            /// <returns>FCDO corresponding MmsValue object cached by the server</returns>
+            public MmsValue GetFunctionalConstrainedData(DataObject dataObject, FunctionalConstraint fc)
+            {
+                IntPtr mmsValuePtr = IedServer_getFunctionalConstrainedData(self, dataObject.self, (int)fc);
+
+                if (mmsValuePtr != IntPtr.Zero)
+                    return new MmsValue(mmsValuePtr);
                 else
                     return null;
             }

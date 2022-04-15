@@ -911,9 +911,8 @@ IedServer_getBitStringAttributeValue(IedServer self, const DataAttribute* dataAt
 LIB61850_API const char*
 IedServer_getStringAttributeValue(IedServer self, const DataAttribute* dataAttribute);
 
-
 /**
- * \brief Get the MmsValue object related to a FunctionalConstrainedData object
+ * \brief Get the MmsValue object related to a functional constrained data object (FCD)
  *
  * Get the MmsValue from the server cache that is associated with the Functional Constrained Data (FCD)
  * object that is specified by the DataObject and the given Function Constraint (FC).
