@@ -296,75 +296,6 @@ checkIfVariableExists(MmsDevice* device, MmsAccessSpecifier* accessSpecifier)
     return true;
 }
 
-static char*
-getComponentNameFromAlternateAccess(AlternateAccess_t* alternateAccess, char* componentNameBuf, int nameBufPos)
-{
-    if (alternateAccess->list.count == 1) {
-
-        if (alternateAccess->list.array[0]->present == AlternateAccess__Member_PR_unnamed) {
-
-            if (alternateAccess->list.array[0]->choice.unnamed->present == AlternateAccessSelection_PR_selectAlternateAccess) {
-
-                if (alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.accessSelection.present ==
-                                AlternateAccessSelection__selectAlternateAccess__accessSelection_PR_component)
-                {
-                    Identifier_t componentIdentifier = alternateAccess->list.array[0]->choice.unnamed->
-                            choice.selectAlternateAccess.accessSelection.choice.component;
-
-                    AlternateAccess_t* nextAlternateAccess = alternateAccess->list.array[0]->choice.unnamed->
-                            choice.selectAlternateAccess.alternateAccess;
-
-                    if (nextAlternateAccess) {
-                        if (nameBufPos + componentIdentifier.size + 1 < 65) {
-                            memcpy(componentNameBuf + nameBufPos, componentIdentifier.buf, componentIdentifier.size);
-                            nameBufPos += componentIdentifier.size;
-                            componentNameBuf[nameBufPos++] = '$';
-                            return getComponentNameFromAlternateAccess(nextAlternateAccess, componentNameBuf, nameBufPos);
-                        }
-                        else {
-                            if (DEBUG_MMS_SERVER)
-                                printf("MMS_SERVER: component identifier name too long!\n");
-                        }
-                    }
-                    else {
-                        if (DEBUG_MMS_SERVER)
-                            printf("MMS_SERVER: next alternate access specification is missing!\n");
-                    }
-                }
-            }
-            else if (alternateAccess->list.array[0]->choice.unnamed->present == AlternateAccessSelection_PR_selectAccess) {
-
-                /* final component part */
-
-                if (alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.present ==
-                        AlternateAccessSelection__selectAccess_PR_component)
-                {
-                    Identifier_t componentIdentifier = alternateAccess->list.array[0]->choice.unnamed->
-                            choice.selectAccess.choice.component;
-
-                    if (nameBufPos + componentIdentifier.size + 1 < 65) {
-                        memcpy(componentNameBuf + nameBufPos, componentIdentifier.buf, componentIdentifier.size);
-                        nameBufPos += componentIdentifier.size;
-                        componentNameBuf[nameBufPos++] = 0;
-                        return componentNameBuf;
-                    }
-                    else {
-                        if (DEBUG_MMS_SERVER)
-                            printf("MMS_SERVER: component identifier name too long!\n");
-                    }
-                }
-            }
-
-        }
-
-    }
-
-    if (DEBUG_MMS_SERVER)
-        printf("MMS_SERVER: invalid component access specification\n");
-
-    return NULL;
-}
-
 static MmsNamedVariableList
 createNamedVariableList(MmsServer server, MmsDomain* domain, MmsDevice* device,
 		DefineNamedVariableListRequest_t* request,
@@ -426,7 +357,7 @@ createNamedVariableList(MmsServer server, MmsDomain* domain, MmsDevice* device,
 					if (alternateAccess->choice.unnamed->choice.selectAlternateAccess.alternateAccess) {
 					    componentNameBuf[0] = 0;
 
-					    componentName = getComponentNameFromAlternateAccess(
+					    componentName = mmsMsg_getComponentNameFromAlternateAccess(
 					            alternateAccess->choice.unnamed->choice.selectAlternateAccess.alternateAccess,
 					            componentNameBuf, 0);
 					}

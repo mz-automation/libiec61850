@@ -284,12 +284,15 @@ parseInitRequestDetail(MmsServerConnection self, uint8_t* buffer, int bufPos, in
             {
                 uint32_t protocolVersion = BerDecoder_decodeUint32(buffer, length, bufPos);
 
-                if (protocolVersion != 1) {
+                if (protocolVersion < 1) {
                     if (DEBUG_MMS_SERVER)
                         printf("MMS_SERVER: invalid protocol version %u\n", protocolVersion);
 
                     return false;
                 }
+
+                if (DEBUG_MMS_SERVER)
+                    printf("MMS_SERVER: proposed version number %u\n", protocolVersion);
             }
 
             break;

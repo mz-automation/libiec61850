@@ -49,6 +49,9 @@ int main(int argc, char** argv) {
     DataAttribute* temperatureValue = (DataAttribute*) ModelNode_getChild((ModelNode*) ttmp1_tmpsv, "instMag.f");
     DataAttribute* temperatureTimestamp = (DataAttribute*) ModelNode_getChild((ModelNode*) ttmp1_tmpsv, "t");
 
+    LogicalNode* ggio1 = LogicalNode_create("GGIO1", lDevice1);
+    DataObject* ggio1_anIn1 = CDC_APC_create("AnOut1", (ModelNode*)ggio1, 0, CDC_CTL_MODEL_HAS_CANCEL | CDC_CTL_MODEL_SBO_ENHANCED, false);
+
     DataSet* dataSet = DataSet_create("events", lln0);
     DataSetEntry_create(dataSet, "TTMP1$MX$TmpSv$instMag$f", -1, NULL);
 

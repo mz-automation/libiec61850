@@ -190,8 +190,6 @@ CDA_Cancel(ModelNode* parent, DataAttributeType type, bool isTImeActivated)
     return oper;
 }
 
-
-
 /************************************************
  * Common Data Classes - helper functions
  ***********************************************/
@@ -674,7 +672,7 @@ addAnalogControls(DataObject* parent, uint32_t controlOptions, bool isIntegerNot
         addCommonOperateElements(oper, isTimeActivated, true);
 
         if (controlOptions & CDC_CTL_MODEL_HAS_CANCEL) {
-            DataAttribute* cancel =  DataAttribute_create("SBOw", (ModelNode*) parent, IEC61850_CONSTRUCTED, IEC61850_FC_CO, 0, 0, 0);
+            DataAttribute* cancel =  DataAttribute_create("Cancel", (ModelNode*) parent, IEC61850_CONSTRUCTED, IEC61850_FC_CO, 0, 0, 0);
 
             CAC_AnalogueValue_create("ctlVal", (ModelNode*) cancel, IEC61850_FC_CO, 0, isIntegerNotFloat);
 

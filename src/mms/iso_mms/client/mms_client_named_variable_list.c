@@ -222,8 +222,11 @@ parseNamedVariableAttributes(GetNamedVariableListAttributesResponse_t* response,
 
     for (i = 0; i < attributesCount; i++) {
 
-        char* domainId;
-        char* itemId;
+        char* domainId = NULL;
+        char* itemId = NULL;
+        int arrayIdx = -1;
+        char componentNameBuffer[129];
+        char* componentName = NULL;
 
         if (response->listOfVariable.list.array[i]->variableSpecification.choice.name.present == ObjectName_PR_vmdspecific) {
 
@@ -240,7 +243,52 @@ parseNamedVariableAttributes(GetNamedVariableListAttributesResponse_t* response,
                     variableSpecification.choice.name.choice.domainspecific.itemId);
         }
 
-        MmsVariableAccessSpecification* listEntry = MmsVariableAccessSpecification_create(domainId, itemId);
+        if (response->listOfVariable.list.array[i]->alternateAccess) {
+            AlternateAccess_t* alternateAccess = response->listOfVariable.list.array[i]->alternateAccess;
+
+            if (alternateAccess->list.count > 0) {
+                if (alternateAccess->list.array[0]->choice.unnamed->present == AlternateAccessSelection_PR_selectAlternateAccess) {
+
+                    if (alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.accessSelection.present
+                            == AlternateAccessSelection__selectAlternateAccess__accessSelection_PR_index)
+                    {
+                        INTEGER_t* asnIndex =
+                                        &(alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.choice.index);
+
+                        if (asnIndex) {
+                            long indexValue;
+
+                            if (asn_INTEGER2long(asnIndex, &indexValue) != -1) {
+                                arrayIdx = (int)indexValue;
+                            }
+                        }
+
+                        AlternateAccess_t* nestedAltAccess = alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess;
+
+                        if (nestedAltAccess) {
+                            componentName = mmsMsg_getComponentNameFromAlternateAccess(nestedAltAccess, componentNameBuffer, 0);
+                        }
+                    }
+                }
+                else if (alternateAccess->list.array[0]->choice.unnamed->present == AlternateAccessSelection_PR_selectAccess) {
+                    INTEGER_t* asnIndex =
+                                    &(alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.choice.index);
+
+                    if (asnIndex) {
+                        long indexValue;
+
+                        if (asn_INTEGER2long(asnIndex, &indexValue) != -1) {
+                            arrayIdx = (int)indexValue;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (componentName)
+            componentName = StringUtils_copyString(componentName);
+
+        MmsVariableAccessSpecification* listEntry = MmsVariableAccessSpecification_createAlternateAccess(domainId, itemId, arrayIdx, componentName);
 
         LinkedList_add(attributes, listEntry);
     }

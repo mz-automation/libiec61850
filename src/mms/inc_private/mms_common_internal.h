@@ -118,6 +118,9 @@ mmsMsg_createStringFromAsnIdentifier(Identifier_t identifier);
 LIB61850_INTERNAL void
 mmsMsg_copyAsn1IdentifierToStringBuffer(Identifier_t identifier, char* buffer, int bufSize);
 
+LIB61850_INTERNAL char*
+mmsMsg_getComponentNameFromAlternateAccess(AlternateAccess_t* alternateAccess, char* componentNameBuf, int nameBufPos);
+
 LIB61850_INTERNAL void
 mmsMsg_deleteAccessResultList(AccessResult_t** accessResult, int variableCount);
 
