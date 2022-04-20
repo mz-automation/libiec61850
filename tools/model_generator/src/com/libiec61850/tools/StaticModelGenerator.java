@@ -740,7 +740,13 @@ public class StaticModelGenerator {
 
     private void printDataAttributeDefinitions(String doName, List<DataAttribute> dataAttributes, boolean isTransient, int arrayIdx) {
         for (int i = 0; i < dataAttributes.size(); i++) {
+            boolean isArray = false;
+            
             DataAttribute dataAttribute = dataAttributes.get(i);
+            
+            if (dataAttribute.getCount() > 0) {
+                isArray = true;
+            }
 
             String daName = doName + "_" + dataAttribute.getName();
             
@@ -771,71 +777,196 @@ public class StaticModelGenerator {
             }
             else
                 cOut.println("    NULL,");
-            if ((dataAttribute.getSubDataAttributes() != null) && (dataAttribute.getSubDataAttributes().size() > 0))
-                cOut.println("    (ModelNode*) &" + daName + "_" + dataAttribute.getSubDataAttributes().get(0).getName() + ",");
-            else
-                cOut.println("    NULL,");
-
-            cOut.println("    " + dataAttribute.getCount() + ",");
-            cOut.println("    -1,");
-            cOut.println("    IEC61850_FC_" + dataAttribute.getFc().toString() + ",");
-            cOut.println("    IEC61850_" + dataAttribute.getType() + ",");
-
-            /* print trigger options */
-            cOut.print("    0");
-
-            TriggerOptions trgOps = dataAttribute.getTriggerOptions();
-
-            if (trgOps.isDchg())
-                cOut.print(" + TRG_OPT_DATA_CHANGED");
-
-            if (trgOps.isDupd())
-                cOut.print(" + TRG_OPT_DATA_UPDATE");
-
-            if (trgOps.isQchg())
-                cOut.print(" + TRG_OPT_QUALITY_CHANGED");
             
-            if (isTransient)
-                cOut.print(" + TRG_OPT_TRANSIENT");
+            if (isArray) {
+                
+                /* first child is array element 0 */
+                cOut.println("    (ModelNode*) &" + daName + "_0,");
 
-            cOut.println(",");
+                cOut.println("    " + dataAttribute.getCount() + ",");
+                cOut.println("    -1,");
+                
+                cOut.println("    IEC61850_FC_" + dataAttribute.getFc().toString() + ",");
+                cOut.println("    IEC61850_" + dataAttribute.getType() + ",");
 
-            cOut.println("    NULL,");
-            
-            Long sAddr = null;
-            
-            try {
-                if (dataAttribute.getShortAddress() != null)
-                    sAddr = new Long(dataAttribute.getShortAddress());
-            } catch (NumberFormatException e) {
-                System.out.println("WARNING: short address \"" + dataAttribute.getShortAddress() + "\" is not valid for libIEC61850!\n");
-            }
-            
-            if (sAddr != null)
-                cOut.print("    " + sAddr.longValue());
-            else
+                /* print trigger options */
                 cOut.print("    0");
-            
-            cOut.println("};\n");
 
-            if (dataAttribute.getSubDataAttributes() != null) 	
-                printDataAttributeDefinitions(daName, dataAttribute.getSubDataAttributes(), isTransient, -1);
-            //TODO handle array case
-            
-            DataModelValue value = dataAttribute.getValue();
-                     
-            /* if no value is given use default value for type if present */
-            if (value == null) { 
-         	   value = dataAttribute.getDefinition().getValue();
-         	   
-         	   if (value != null)
- 	        	   if (value.getValue() == null)
- 	        		   value.updateEnumOrdValue(ied.getTypeDeclarations());        	   
+                TriggerOptions trgOps = dataAttribute.getTriggerOptions();
+
+                if (trgOps.isDchg())
+                    cOut.print(" + TRG_OPT_DATA_CHANGED");
+
+                if (trgOps.isDupd())
+                    cOut.print(" + TRG_OPT_DATA_UPDATE");
+
+                if (trgOps.isQchg())
+                    cOut.print(" + TRG_OPT_QUALITY_CHANGED");
+                
+                if (isTransient)
+                    cOut.print(" + TRG_OPT_TRANSIENT");
+
+                cOut.println(",");
+
+                cOut.println("    NULL,");
+                
+                //TODO REMOVE sAddr code >>>>>
+                Long sAddr = null;
+                
+                try {
+                    if (dataAttribute.getShortAddress() != null)
+                        sAddr = new Long(dataAttribute.getShortAddress());
+                } catch (NumberFormatException e) {
+                    System.out.println("WARNING: short address \"" + dataAttribute.getShortAddress() + "\" is not valid for libIEC61850!\n");
+                }
+
+                if (sAddr != null)
+                    cOut.print("    " + sAddr.longValue());
+                else
+                    cOut.print("    0");
+                
+                // <<<<<<<<<<<<<<<<<<<<<<<<
+                
+                cOut.println("};\n");
+
+                //if (dataAttribute.getSubDataAttributes() != null)   
+                //    printDataAttributeDefinitions(daName, dataAttribute.getSubDataAttributes(), isTransient, -1);
+                
+                //TODO implement ARRAY case!
+                
+                /* Print array elements */
+                
+                for (int idx = 0; idx < dataAttribute.getCount(); idx++) {
+                    
+                    String arrayElementdaName = daName + "_" + idx;
+                    
+                    variablesList.add(arrayElementdaName);
+                    
+                    cOut.println("DataAttribute " + arrayElementdaName + " = {");
+                    cOut.println("    DataAttributeModelType,");
+                    cOut.println("    \"" + dataAttribute.getName() + "\",");
+                    cOut.println("    (ModelNode*) &" + daName + ",");
+                    
+                    if (idx != dataAttribute.getCount() - 1) {
+                        String nextArrayElementdaName = daName + "_" + (idx + 1);
+                        
+                        cOut.println("    (ModelNode*) &" + nextArrayElementdaName + ",");
+                    }
+                    else
+                        cOut.println("    NULL,");
+                    
+                    if ((dataAttribute.getSubDataAttributes() != null) && (dataAttribute.getSubDataAttributes().size() > 0))
+                        cOut.println("    (ModelNode*) &" + arrayElementdaName + "_" + dataAttribute.getSubDataAttributes().get(0).getName() + ",");
+                    else
+                        cOut.println("    NULL,");
+                    
+                    cOut.println("    0,"); /* number of array elements = 0 */
+                    cOut.println("    " + idx + ",");
+                    
+                    cOut.println("    IEC61850_FC_" + dataAttribute.getFc().toString() + ",");
+                    cOut.println("    IEC61850_" + dataAttribute.getType() + ",");
+
+                    /* print trigger options */
+                    cOut.print("    0");
+
+                    trgOps = dataAttribute.getTriggerOptions();
+
+                    if (trgOps.isDchg())
+                        cOut.print(" + TRG_OPT_DATA_CHANGED");
+
+                    if (trgOps.isDupd())
+                        cOut.print(" + TRG_OPT_DATA_UPDATE");
+
+                    if (trgOps.isQchg())
+                        cOut.print(" + TRG_OPT_QUALITY_CHANGED");
+                    
+                    if (isTransient)
+                        cOut.print(" + TRG_OPT_TRANSIENT");
+
+                    cOut.println(",");
+
+                    cOut.println("    NULL,");
+                    
+                    cOut.print("    0");  /* sAddr --> REMOVE */
+                    
+                    cOut.println("};\n");
+                    
+                    if (dataAttribute.getSubDataAttributes() != null)   
+                        printDataAttributeDefinitions(arrayElementdaName, dataAttribute.getSubDataAttributes(), isTransient, -1);
+                }
             }
-            
-            if (value != null) {
-                printValue(daName, dataAttribute, value);
+            else {
+                if ((dataAttribute.getSubDataAttributes() != null) && (dataAttribute.getSubDataAttributes().size() > 0))
+                    cOut.println("    (ModelNode*) &" + daName + "_" + dataAttribute.getSubDataAttributes().get(0).getName() + ",");
+                else
+                    cOut.println("    NULL,");
+
+                cOut.println("    " + dataAttribute.getCount() + ",");
+                cOut.println("    -1,");
+                
+                cOut.println("    IEC61850_FC_" + dataAttribute.getFc().toString() + ",");
+                cOut.println("    IEC61850_" + dataAttribute.getType() + ",");
+
+                /* print trigger options */
+                cOut.print("    0");
+
+                TriggerOptions trgOps = dataAttribute.getTriggerOptions();
+
+                if (trgOps.isDchg())
+                    cOut.print(" + TRG_OPT_DATA_CHANGED");
+
+                if (trgOps.isDupd())
+                    cOut.print(" + TRG_OPT_DATA_UPDATE");
+
+                if (trgOps.isQchg())
+                    cOut.print(" + TRG_OPT_QUALITY_CHANGED");
+                
+                if (isTransient)
+                    cOut.print(" + TRG_OPT_TRANSIENT");
+
+                cOut.println(",");
+
+                cOut.println("    NULL,");
+                
+                //TODO REMOVE sAddr code >>>>>
+                Long sAddr = null;
+                
+                try {
+                    if (dataAttribute.getShortAddress() != null)
+                        sAddr = new Long(dataAttribute.getShortAddress());
+                } catch (NumberFormatException e) {
+                    System.out.println("WARNING: short address \"" + dataAttribute.getShortAddress() + "\" is not valid for libIEC61850!\n");
+                }
+                
+                if (sAddr != null)
+                    cOut.print("    " + sAddr.longValue());
+                else
+                    cOut.print("    0");
+                
+                // <<<<<<<<<<<<<<<<<<<<<<<<
+                
+                cOut.println("};\n");
+
+                if (dataAttribute.getSubDataAttributes() != null)   
+                    printDataAttributeDefinitions(daName, dataAttribute.getSubDataAttributes(), isTransient, -1);
+                //TODO handle array case
+                
+                DataModelValue value = dataAttribute.getValue();
+                         
+                /* if no value is given use default value for type if present */
+                if (value == null) { 
+                   value = dataAttribute.getDefinition().getValue();
+                   
+                   if (value != null)
+                       if (value.getValue() == null)
+                           value.updateEnumOrdValue(ied.getTypeDeclarations());            
+                }
+                
+                if (value != null) {
+                    printValue(daName, dataAttribute, value);
+                }
             }
+           
             
         }
 
@@ -1006,9 +1137,22 @@ public class StaticModelGenerator {
             }
             	
             hOut.println("extern DataAttribute " + daName + ";");
+            
+            if (dataAttribute.getCount() > 0) {
+                for (int idx = 0; idx < dataAttribute.getCount(); idx++) {
+                    String arrayElemDaName = daName + "_" + idx;
+                    
+                    hOut.println("extern DataAttribute " + arrayElemDaName + ";");
+                    
+                    if (dataAttribute.getSubDataAttributes() != null)
+                        printDataAttributeForwardDeclarations(arrayElemDaName, dataAttribute.getSubDataAttributes());
+                }
+            }
+            else {
+                if (dataAttribute.getSubDataAttributes() != null)
+                    printDataAttributeForwardDeclarations(daName, dataAttribute.getSubDataAttributes());
+            }
 
-            if (dataAttribute.getSubDataAttributes() != null)
-                printDataAttributeForwardDeclarations(daName, dataAttribute.getSubDataAttributes());
         }
     }
 

@@ -158,24 +158,52 @@ public class LogicalNode implements DataModelNode {
 
         for (Node doiNode : doiNodes) {
             String doiName = ParserUtils.parseAttribute(doiNode, "name");
-
+            
+            int idx = -1;
+            
+            String ixAttr = ParserUtils.parseAttribute(doiNode, "ix");
+            
+            if (ixAttr != null) {
+                try {
+                    idx = Integer.decode(ixAttr);
+                }
+                catch (NumberFormatException ex)
+                {
+                    throw new SclParserException(doiNode, "Invalid ix attribute in \"" + doiName + "\"");
+                }
+            }
+            
             DataObject dataObject = (DataObject) getChildByName(doiName);
 
             if (dataObject == null)
                 throw new SclParserException(doiNode, "Missing data object with name \"" + doiName + "\"");
 
-            parseDataAttributeNodes(doiNode, dataObject);
+            parseDataAttributeNodes(doiNode, dataObject, idx);
 
             parseSubDataInstances(doiNode, dataObject);
         }
     }
 
-	private void parseDataAttributeNodes(Node doiNode, DataModelNode dataObject)
+	private void parseDataAttributeNodes(Node doiNode, DataModelNode dataObject, int parendIdx)
 			throws SclParserException {
 		List<Node> daiNodes = ParserUtils.getChildNodesWithTag(doiNode, "DAI");
 
 		for (Node daiNode : daiNodes) {
 		    String daiName = ParserUtils.parseAttribute(daiNode, "name");
+		    
+		    int idx = parendIdx;
+		    
+            String ixAttr = ParserUtils.parseAttribute(doiNode, "ix");
+            
+            if (ixAttr != null) {
+                try {
+                    idx = Integer.decode(ixAttr);
+                }
+                catch (NumberFormatException ex)
+                {
+                    throw new SclParserException(doiNode, "Invalid ix attribute in \"" + daiName + "\"");
+                }
+            }
 
 		    DataAttribute dataAttribute = (DataAttribute) dataObject.getChildByName(daiName);
 
