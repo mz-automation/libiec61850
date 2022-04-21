@@ -1993,7 +1993,15 @@ namespace IEC61850
             /// <summary>
             /// Purge buffer procedure executed
             /// </summary>
-            PURGEBUF = 7
+            PURGEBUF = 7,
+            /// <summary>
+            /// Report buffer overflow
+            /// </summary>
+            OVERFLOW = 8,
+            /// <summary>
+            /// A new report was created and inserted into the buffer
+            /// </summary>
+            REPORT_CREATED = 9
         }
 
         public delegate void RCBEventHandler(object parameter, ReportControlBlock rcb, ClientConnection con, RCBEventType eventType, string parameterName, MmsDataAccessError serviceError);

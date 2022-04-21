@@ -1547,7 +1547,9 @@ typedef enum {
     RCB_EVENT_ENABLE,        /* << RCB enabled */
     RCB_EVENT_DISABLE,       /* << RCB disabled */
     RCB_EVENT_GI,            /* << GI report triggered */
-    RCB_EVENT_PURGEBUF       /* << Purge buffer procedure executed */
+    RCB_EVENT_PURGEBUF,      /* << Purge buffer procedure executed */
+    RCB_EVENT_OVERFLOW,      /* << Report buffer overflow */
+    RCB_EVENT_REPORT_CREATED /* << a new report was created and inserted into the buffer */
 } IedServer_RCBEventType;
 
 /**

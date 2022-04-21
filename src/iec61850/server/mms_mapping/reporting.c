@@ -166,7 +166,6 @@ ReportControl_unlockNotify(ReportControl* self)
 #endif
 }
 
-
 static void
 purgeBuf(ReportControl* rc)
 {
@@ -182,7 +181,6 @@ purgeBuf(ReportControl* rc)
     reportBuffer->nextToTransmit = NULL;
     reportBuffer->reportsCount = 0;
 }
-
 
 static void
 deleteDataSetValuesShadowBuffer(ReportControl* self)
@@ -3071,6 +3069,18 @@ exit_function:
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_post(buffer->lock);
 #endif
+
+    if (reportControl->server) {
+        MmsMapping* mmsMapping = reportControl->server->mmsMapping;
+
+        if (mmsMapping->rcbEventHandler) {
+            if (overflow) {
+                mmsMapping->rcbEventHandler(mmsMapping->rcbEventHandlerParameter, reportControl->rcb, NULL, RCB_EVENT_OVERFLOW, NULL, DATA_ACCESS_ERROR_SUCCESS);
+            }
+
+            mmsMapping->rcbEventHandler(mmsMapping->rcbEventHandlerParameter, reportControl->rcb, NULL, RCB_EVENT_REPORT_CREATED, NULL, DATA_ACCESS_ERROR_SUCCESS);
+        }
+    }
 
     return;
 } /* enqueuReport() */
