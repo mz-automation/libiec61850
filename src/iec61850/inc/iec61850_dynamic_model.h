@@ -354,6 +354,9 @@ ReportControlBlock_getTimeofEntry(ReportControlBlock* self);
 LIB61850_API int16_t
 ReportControlBlock_getResvTms(ReportControlBlock* self);
 
+LIB61850_API bool
+ReportControlBlock_getResv(ReportControlBlock* self);
+
 LIB61850_API MmsValue*
 ReportControlBlock_getOwner(ReportControlBlock* self);
 

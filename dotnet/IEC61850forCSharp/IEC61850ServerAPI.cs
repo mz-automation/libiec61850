@@ -1357,6 +1357,10 @@ namespace IEC61850
             static extern UInt16 ReportControlBlock_getResvTms(IntPtr self);
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
+            static extern bool ReportControlBlock_getResv(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern IntPtr ReportControlBlock_getOwner(IntPtr self);
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
@@ -1545,6 +1549,14 @@ namespace IEC61850
                 get
                 {
                     return ReportControlBlock_getResvTms(self);
+                }
+            }
+
+            public bool Resv
+            {
+                get
+                {
+                    return ReportControlBlock_getResv(self);
                 }
             }
 

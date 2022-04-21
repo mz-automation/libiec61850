@@ -4256,6 +4256,31 @@ ReportControlBlock_getResvTms(ReportControlBlock* self)
     }
 }
 
+bool
+ReportControlBlock_getResv(ReportControlBlock* self)
+{
+    if (self->trgOps & 64) {
+        ReportControl* rc = (ReportControl*)(self->sibling);
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_wait(rc->rcbValuesLock);
+#endif
+
+        MmsValue* resvValue = ReportControl_getRCBValue(rc, "Resv");
+
+        bool resv = MmsValue_getBoolean(resvValue);
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_post(rc->rcbValuesLock);
+#endif
+
+        return resv;
+    }
+    else {
+        return false;
+    }
+}
+
 MmsValue*
 ReportControlBlock_getOwner(ReportControlBlock* self)
 {
