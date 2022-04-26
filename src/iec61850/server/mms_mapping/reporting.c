@@ -3062,10 +3062,6 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
 
 exit_function:
 
-    if (overflow) {
-        /* TODO call user callback handler */
-    }
-
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_post(buffer->lock);
 #endif
@@ -3819,6 +3815,8 @@ processEventsForReport(ReportControl* rc, uint64_t currentTimeInMs)
 void
 Reporting_processReportEvents(MmsMapping* self, uint64_t currentTimeInMs)
 {
+    Semaphore_wait(self->isModelLockedMutex);
+
     if (self->isModelLocked == false) {
 
         LinkedList element = self->reportControls;
@@ -3833,6 +3831,8 @@ Reporting_processReportEvents(MmsMapping* self, uint64_t currentTimeInMs)
             ReportControl_unlockNotify(rc);
         }
     }
+
+    Semaphore_post(self->isModelLockedMutex);
 }
 
 /*

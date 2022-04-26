@@ -2029,6 +2029,12 @@ MmsMapping_create(IedModel* model, IedServer iedServer)
     self->settingGroups = LinkedList_create();
 #endif
 
+    self->isModelLocked = false;
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    self->isModelLockedMutex = Semaphore_create(1);
+#endif
+
     self->attributeAccessHandlers = LinkedList_create();
 
     /* create data model specification */
@@ -2117,6 +2123,10 @@ MmsMapping_destroy(MmsMapping* self)
     if (self->sgcbTrk) GLOBAL_FREEMEM(self->sgcbTrk);
     if (self->genTrk) GLOBAL_FREEMEM(self->genTrk);
     if (self->locbTrk) GLOBAL_FREEMEM(self->locbTrk);
+#endif
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_destroy(self->isModelLockedMutex);
 #endif
 
     LinkedList_destroy(self->attributeAccessHandlers);
@@ -3654,6 +3664,8 @@ MmsMapping_triggerReportObservers(MmsMapping* self, MmsValue* value, int flag)
 {
     LinkedList element = self->reportControls;
 
+    Semaphore_wait(self->isModelLockedMutex);
+
     bool modelLocked = self->isModelLocked;
 
     while ((element = LinkedList_getNext(element)) != NULL) {
@@ -3689,6 +3701,8 @@ MmsMapping_triggerReportObservers(MmsMapping* self, MmsValue* value, int flag)
     if (modelLocked == false) {
         Reporting_processReportEventsAfterUnlock(self);
     }
+
+    Semaphore_post(self->isModelLockedMutex);
 }
 
 #endif /* (CONFIG_IEC61850_REPORT_SERVICE == 1) */
@@ -3700,8 +3714,6 @@ MmsMapping_triggerGooseObservers(MmsMapping* self, MmsValue* value)
 {
     LinkedList element = self->gseControls;
 
-    bool modelLocked = self->isModelLocked;
-
     while ((element = LinkedList_getNext(element)) != NULL) {
         MmsGooseControlBlock gcb = (MmsGooseControlBlock) element->data;
 
@@ -3711,9 +3723,13 @@ MmsMapping_triggerGooseObservers(MmsMapping* self, MmsValue* value)
             if (DataSet_isMemberValue(dataSet, value, NULL)) {
                 MmsGooseControlBlock_setStateChangePending(gcb);
 
-                if (modelLocked == false) {
+                Semaphore_wait(self->isModelLockedMutex);
+
+                if (self->isModelLocked == false) {
                     MmsGooseControlBlock_publishNewState(gcb);
                 }
+
+                Semaphore_post(self->isModelLockedMutex);
             }
         }
     }

@@ -323,7 +323,9 @@ struct sMmsMapping {
 #endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
 
     /* flag indicates if data model is locked --> prevents reports to be sent */
+
     bool isModelLocked;
+    Semaphore isModelLockedMutex;
 
     IedServer iedServer;
 
