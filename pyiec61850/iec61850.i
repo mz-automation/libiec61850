@@ -26,6 +26,8 @@ DataAttribute* toDataAttribute(DataObject * DO)
 { return (DataAttribute*)DO;}
 DataAttribute* toDataAttribute(ModelNode * MN)
 { return (DataAttribute*)MN;}
+DataObject* toDataObject(ModelNode * MN)
+{ return (DataObject*)MN;}
 %}
 %apply int *OUTPUT {IedClientError* error};
 
@@ -55,6 +57,7 @@ ModelNode* toModelNode(LogicalNode *);
 ModelNode* toModelNode(DataObject *);
 DataAttribute* toDataAttribute(DataObject *);
 DataAttribute* toDataAttribute(ModelNode *);
+DataObject* toDataObject(ModelNode *);
 char* toCharP(void *);
 
 /* Goose Subscriber section */
@@ -99,17 +102,23 @@ void GooseSubscriber_setDstMac(GooseSubscriber subscriber,
 %feature("director") RCBHandler;
 %feature("director") GooseHandler;
 %feature("director") CommandTermHandler;
+%feature("director") CheckHandlerForPython;
+%feature("director") WaitForExecutionHandlerForPython;
+%feature("director") ControlHandlerForPython;
 %{
 #include "eventHandlers/eventHandler.hpp"
 #include "eventHandlers/reportControlBlockHandler.hpp"
 #include "eventHandlers/gooseHandler.hpp"
 #include "eventHandlers/commandTermHandler.hpp"
+#include "eventHandlers/controlActionHandler.hpp"
 std::map< std::string, EventSubscriber*> EventSubscriber::m_subscriber_map = {};
 %}
+
 %include "eventHandlers/eventHandler.hpp"
 %include "eventHandlers/reportControlBlockHandler.hpp"
 %include "eventHandlers/gooseHandler.hpp"
 %include "eventHandlers/commandTermHandler.hpp"
+%include "eventHandlers/controlActionHandler.hpp"
 
 /* Goose Publisher section */
 %{
