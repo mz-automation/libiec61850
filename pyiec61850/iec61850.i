@@ -154,3 +154,9 @@ void CommParameters_setDstAddress(CommParameters *gooseCommParameters,
                                   uint8_t dst_mac_4,
                                   uint8_t dst_mac_5);
 
+
+/* Wrapper for synchronous functions */
+%{
+#include "servicePythonWrapper.hpp"
+%}
+%include "servicePythonWrapper.hpp"
