@@ -6,7 +6,6 @@
 #include <string>
 #include <Python.h>
 
-
 class PyThreadStateLock
 {
 public:
@@ -23,7 +22,6 @@ public:
 private:
     PyGILState_STATE state;
 };
-
 
 
 class EventHandler {
@@ -118,7 +116,7 @@ class EventSubscriber {
                 m_subscriber_map.erase(l_it);
             }
             else {
-                fprintf(stderr, "EventSubscriber::unregisterSubscriber() failed: '%s' is not registered\n");
+                fprintf(stderr, "EventSubscriber::unregisterSubscriber() failed: '%s' is not registered\n", i_subscriber_id.c_str());
             }
         }
 
