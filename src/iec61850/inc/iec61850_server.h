@@ -96,6 +96,9 @@ struct sIedServerConfig
 
     /** RCB has owner attribute (default: true) */
     bool enableOwnerForRCB;
+
+    /** integrity report start times will by synchronized with straight numbers (default: false) */
+    bool syncIntegrityReportTimes;
 };
 
 /**
@@ -178,6 +181,30 @@ IedServerConfig_setMaxMmsConnections(IedServerConfig self, int maxConnections);
  */
 LIB61850_API int
 IedServerConfig_getMaxMmsConnections(IedServerConfig self);
+
+/**
+ * \brief Enable synchronized integrity report times
+ *
+ * NOTE: When this flag is enabled the integrity report generation times are
+ * aligned with the UTC epoch. Then the unix time stamps are straight multiples of the
+ * integrity interval.
+ *
+ * \param enable when true synchronized integrity report times are enabled
+ */
+void
+IedServerConfig_setSyncIntegrityReportTimes(IedServerConfig self, bool enable);
+
+/**
+ * \brief Check if synchronized integrity report times are enabled
+ *
+ * NOTE: When this flag is enabled the integrity report generation times are
+ * aligned with the UTC epoch. Then the unix time stamps are straight multiples of the
+ * integrity interval.
+ *
+ * \return true, when enabled, false otherwise
+ */
+bool
+IedServerConfig_getSyncIntegrityReportTimes(IedServerConfig self);
 
 /**
  * \brief Set the basepath of the file services
