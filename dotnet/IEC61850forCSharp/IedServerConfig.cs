@@ -124,6 +124,13 @@ namespace IEC61850.Server
         [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
         static extern void IedServerConfig_useIntegratedGoosePublisher(IntPtr self, [MarshalAs(UnmanagedType.I1)] bool enable);
 
+        [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.I1)]
+        static extern bool IedServerConfig_getSyncIntegrityReportTimes(IntPtr self);
+
+        [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+        static extern void IedServerConfig_setSyncIntegrityReportTimes(IntPtr self, [MarshalAs(UnmanagedType.I1)] bool enable);
+
         internal IntPtr self;
 
         public IedServerConfig()
@@ -348,6 +355,27 @@ namespace IEC61850.Server
             set
             {
                 IedServerConfig_useIntegratedGoosePublisher(self, value);
+            }
+        }
+
+        /// <summary>
+        /// Enable/Disable synchoronized integrity report times (disabled by default)
+        /// </summary>
+        /// <remarks>
+        /// When this flag is enabled the integrity report generation times are
+        /// aligned with the UTC epoch. Then the unix time stamps are straight multiples of the
+        /// integrity interval.
+        /// </remarks>
+        /// <value><c>true</c> if sync integrity report times; otherwise, <c>false</c>.</value>
+        public bool SyncIntegrityReportTimes
+        {
+            get
+            {
+                return IedServerConfig_getSyncIntegrityReportTimes(self);
+            }
+            set
+            {
+                IedServerConfig_setSyncIntegrityReportTimes(self, value);
             }
         }
 
