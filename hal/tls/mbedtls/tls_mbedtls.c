@@ -164,7 +164,7 @@ static bool
 TLSConfiguration_setupComplete(TLSConfiguration self)
 {
     if (self->setupComplete == false) {
-        mbedtls_ssl_conf_ca_chain( &(self->conf), &(self->cacerts), NULL );
+        mbedtls_ssl_conf_ca_chain( &(self->conf), &(self->cacerts), &(self->crl) );
 
         int ret = mbedtls_ssl_conf_own_cert( &(self->conf), &(self->ownCertificate), &(self->ownKey));
 
@@ -488,7 +488,7 @@ TLSSocket_create(Socket socket, TLSConfiguration configuration, bool storeClient
 
         int ret;
 
-        mbedtls_ssl_conf_ca_chain( &(self->conf), &(configuration->cacerts), NULL );
+        mbedtls_ssl_conf_ca_chain( &(self->conf), &(configuration->cacerts), &(configuration->crl) );
 
         if (configuration->minVersion != TLS_VERSION_NOT_SELECTED) {
             /* set minimum TLS version */
