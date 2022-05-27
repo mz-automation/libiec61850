@@ -32,7 +32,6 @@
 
 static uint8_t lineBuffer[READ_BUFFER_MAX_SIZE];
 
-
 static int
 readLine(FileHandle fileHandle, uint8_t* buffer, int maxSize)
 {
@@ -78,7 +77,6 @@ readLine(FileHandle fileHandle, uint8_t* buffer, int maxSize)
             }
         }
     }
-
 
     return bytesRead;
 }
@@ -473,6 +471,7 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
                         if (start) {
                             start++;
                             strncpy(nameString, start, 129);
+                            nameString[129] = 0;
                             terminateString(nameString, ')');
 
                             int indexVal = -1;

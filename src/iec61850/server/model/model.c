@@ -73,8 +73,6 @@ IedModel_setAttributeValuesToNull(IedModel* iedModel)
     }
 }
 
-
-
 int
 IedModel_getLogicalDeviceCount(IedModel* self)
 {
@@ -109,6 +107,9 @@ IedModel_lookupDataSet(IedModel* self, const char* dataSetReference  /* e.g. ied
 
 	int modelNameLen = strlen(self->name);
 
+	if (modelNameLen > 64)
+	    return NULL;
+
 	memcpy(domainName, self->name, modelNameLen);
 
 	while (dataSet != NULL) {
@@ -134,11 +135,12 @@ IedModel_getDevice(IedModel* self, const char* deviceName)
 {
     LogicalDevice* device = self->firstChild;
 
-    while (device != NULL) {
-
+    while (device)
+    {
         char domainName[65];
 
         strncpy(domainName, self->name, 64);
+        domainName[64] = 0;
         strncat(domainName, device->name, 64);
 
         if (strcmp(domainName, deviceName) == 0)
@@ -155,8 +157,8 @@ IedModel_getDeviceByInst(IedModel* self, const char* ldInst)
 {
     LogicalDevice* device = self->firstChild;
 
-    while (device != NULL) {
-
+    while (device)
+    {
       if (strcmp(device->name, ldInst) == 0)
           return device;
 
@@ -355,8 +357,9 @@ IedModel_getModelNodeByShortObjectReference(IedModel* model, const char* objectR
         *separator = 0;
 
     char ldName[65];
-    strcpy(ldName, model->name);
-    strcat(ldName, objRef);
+    strncpy(ldName, model->name, 64);
+    ldName[64] = 0;
+    strncat(ldName, objRef, 64);
 
     LogicalDevice* ld = IedModel_getDevice(model, ldName);
 
@@ -536,11 +539,13 @@ createObjectReference(ModelNode* node, char* objectReference, bool withoutIedNam
         if (withoutIedName) {
             nameLength = strlen(lDevice->name);
             strncpy(objectReference, lDevice->name, 64);
+            objectReference[64] = 0;
         }
         else {
             nameLength = strlen (iedModel->name) + strlen(lDevice->name);
 
             strncpy(objectReference, iedModel->name, 64);
+            objectReference[64] = 0;
             strncat(objectReference, lDevice->name, 64);
         }
 

@@ -41,28 +41,31 @@ IedModel_setIedNameForDynamicModel(IedModel* self, const char* name)
 }
 
 IedModel*
-IedModel_create(const char* name/*, MemoryAllocator allocator*/)
+IedModel_create(const char* name)
 {
     IedModel* self = (IedModel*) GLOBAL_CALLOC(1, sizeof(IedModel));
 
-    if (name)
-        self->name = StringUtils_copyString(name);
-    else
-        self->name = NULL;
+    if (self)
+    {
+        if (name)
+            self->name = StringUtils_copyString(name);
+        else
+            self->name = NULL;
 
-    self->rcbs = NULL;
+        self->rcbs = NULL;
 
-    self->dataSets = NULL;
+        self->dataSets = NULL;
 
-    self->gseCBs = NULL;
+        self->gseCBs = NULL;
 
-    self->sgcbs = NULL;
+        self->sgcbs = NULL;
 
-    self->lcbs = NULL;
+        self->lcbs = NULL;
 
-    self->logs = NULL;
+        self->logs = NULL;
 
-    self->initializer = iedModel_emptyVariableInitializer;
+        self->initializer = iedModel_emptyVariableInitializer;
+    }
 
     return self;
 }
@@ -726,6 +729,7 @@ DataSetEntry_create(DataSet* dataSet, const char* variable, int index, const cha
     char variableName[130];
 
     strncpy(variableName, variable, 129);
+    variableName[129] = 0;
 
     char* separator = strchr(variableName, '/');
 

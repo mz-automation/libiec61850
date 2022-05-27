@@ -321,6 +321,7 @@ getLogInstanceByLogRef(MmsMapping* self, const char* logRef)
     char* logName;
 
     strncpy(refStr, logRef, 129);
+    refStr[129] = 0;
 
     domainName = refStr;
 
@@ -483,6 +484,7 @@ LIBIEC61850_LOG_SVC_writeAccessLogControlBlock(MmsMapping* self, MmsDomain* doma
     char variableId[130];
 
     strncpy(variableId, variableIdOrig, 129);
+    variableId[129] = 0;
 
     char* separator = strchr(variableId, '$');
 
@@ -694,6 +696,7 @@ LIBIEC61850_LOG_SVC_readAccessControlBlock(MmsMapping* self, MmsDomain* domain, 
     char variableId[130];
 
     strncpy(variableId, variableIdOrig, 129);
+    variableId[129] = 0;
 
     char* separator = strchr(variableId, '$');
 

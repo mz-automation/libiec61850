@@ -1804,8 +1804,8 @@ createMmsDomainFromIedDevice(MmsMapping* self, LogicalDevice* logicalDevice)
     }
 
     strncpy(domainName, self->model->name, 64);
-    strncat(domainName, logicalDevice->name, 64 - modelNameLength);
     domainName[64] = 0;
+    strncat(domainName, logicalDevice->name, 64 - modelNameLength);
 
     domain = MmsDomain_create(domainName);
 
@@ -1919,6 +1919,7 @@ createDataSets(MmsDevice* mmsDevice, IedModel* iedModel)
 
     while (dataset != NULL) {
         strncpy(domainName, iedModel->name, 64);
+        domainName[64] = 0;
         strncat(domainName, dataset->logicalDeviceName, 64 - iedModelNameLength);
 
         MmsDomain* dataSetDomain = MmsDevice_getDomain(mmsDevice, domainName);
@@ -1940,6 +1941,7 @@ createDataSets(MmsDevice* mmsDevice, IedModel* iedModel)
             MmsAccessSpecifier accessSpecifier;
 
             strncpy(domainName, iedModel->name, 64);
+            domainName[64] = 0;
             strncat(domainName, dataSetEntry->logicalDeviceName, 64 - iedModelNameLength);
 
             accessSpecifier.domain = MmsDevice_getDomain(mmsDevice, domainName);
@@ -2289,6 +2291,7 @@ writeAccessGooseControlBlock(MmsMapping* self, MmsDomain* domain, char* variable
     char variableId[130];
 
     strncpy(variableId, variableIdOrig, 129);
+    variableId[129] = 0;
 
     char* separator = strchr(variableId, '$');
 
@@ -2967,6 +2970,7 @@ readAccessGooseControlBlock(MmsMapping* self, MmsDomain* domain, char* variableI
     char variableId[130];
 
     strncpy(variableId, variableIdOrig, 129);
+    variableId[129] = 0;
 
     char* separator = strchr(variableId, '$');
 

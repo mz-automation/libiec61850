@@ -374,6 +374,7 @@ updateDataSetsWithCachedValues(IedServer self)
                 char domainName[65];
 
                 strncpy(domainName, self->model->name, 64);
+                domainName[64] = 0;
                 strncat(domainName, dataSetEntry->logicalDeviceName, 64 - iedNameLength);
 
                 MmsDomain* domain = MmsDevice_getDomain(self->mmsDevice, domainName);
@@ -1622,6 +1623,7 @@ IedServer_getFunctionalConstrainedData(IedServer self, DataObject* dataObject, F
     }
 
     strncpy(domainName, self->model->name, 64);
+    domainName[64] = 0;
     strncat(domainName, ld->name, 64);
 
     MmsDomain* domain = MmsDevice_getDomain(self->mmsDevice, domainName);

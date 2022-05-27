@@ -3,7 +3,7 @@
  *
  *  Client implementation for IEC 61850 reporting.
  *
- *  Copyright 2013-2019 Michael Zillgith
+ *  Copyright 2013-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -388,6 +388,7 @@ iedConnection_handleReport(IedConnection self, MmsValue* value)
 
         if ((rptId == NULL)  || (rptId && (strlen(rptId) == 0))) {
             strncpy(defaultRptId, report->rcbReference, 129);
+            defaultRptId[129] = 0;
             StringUtils_replace(defaultRptId, '.', '$');
             rptId = defaultRptId;
         }

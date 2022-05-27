@@ -567,7 +567,7 @@ mmsMsg_createExtendedFilename(const char* basepath, char* extendedFileName, char
     strncpy(extendedFileName, basepath, 511);
     extendedFileName[511] = 0;
     strncat(extendedFileName, fileName, 511);
-    extendedFileName[511] = 0;
+
 #else
     strcpy(extendedFileName, CONFIG_VIRTUAL_FILESTORE_BASEPATH);
     strncat(extendedFileName, fileName, sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 255);

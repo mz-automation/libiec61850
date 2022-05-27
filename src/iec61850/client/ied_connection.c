@@ -1,7 +1,7 @@
 /*
  *  ied_connection.c
  *
- *  Copyright 2013-2019 Michael Zillgith
+ *  Copyright 2013-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -3964,6 +3964,7 @@ IedConnection_queryLogByTime(IedConnection self, IedClientError* error, const ch
     char logRef[130];
 
     strncpy(logRef, logReference, 129);
+    logRef[129] = 0;
 
     char* logDomain = logRef;
     char* logName = strchr(logRef, '/');
@@ -4027,6 +4028,7 @@ IedConnection_queryLogByTimeAsync(IedConnection self, IedClientError* error, con
     char logRef[130];
 
     strncpy(logRef, logReference, 129);
+    logRef[129] = 0;
 
     char* logDomain = logRef;
     char* logName = strchr(logRef, '/');
@@ -4083,6 +4085,7 @@ IedConnection_queryLogAfterAsync(IedConnection self, IedClientError* error, cons
     char logRef[130];
 
     strncpy(logRef, logReference, 129);
+    logRef[129] = 0;
 
     char* logDomain = logRef;
     char* logName = strchr(logRef, '/');
@@ -4136,6 +4139,7 @@ IedConnection_queryLogAfter(IedConnection self, IedClientError* error, const cha
     char logRef[130];
 
     strncpy(logRef, logReference, 129);
+    logRef[129] = 0;
 
     char* logDomain = logRef;
     char* logName = strchr(logRef, '/');
@@ -4165,8 +4169,6 @@ IedConnection_queryLogAfter(IedConnection self, IedClientError* error, const cha
         return NULL;
     }
 }
-
-
 
 MmsConnection
 IedConnection_getMmsConnection(IedConnection self)

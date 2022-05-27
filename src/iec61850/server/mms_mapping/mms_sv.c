@@ -133,6 +133,7 @@ LIBIEC61850_SV_writeAccessSVControlBlock(MmsMapping* self, MmsDomain* domain, ch
     char variableId[130];
 
     strncpy(variableId, variableIdOrig, 129);
+    variableId[129] = 0;
 
     char* separator = strchr(variableId, '$');
 
@@ -216,6 +217,7 @@ LIBIEC61850_SV_readAccessSampledValueControlBlock(MmsMapping* self, MmsDomain* d
     char variableId[130];
 
     strncpy(variableId, variableIdOrig, 129);
+    variableId[129] = 0;
 
     char* separator = strchr(variableId, '$');
 
