@@ -530,7 +530,11 @@ getComponentOfArrayElement(AlternateAccess_t* alternateAccess, MmsVariableSpecif
                 if (strncmp(structSpec->typeSpec.structure.elements[i]->name,
                     (char*)component.buf, component.size) == 0) {
 
-                    snprintf(dataRefBuf, 129, "%s.%s", dataRefBuf, (char*)component.buf);
+                    char buf[129];
+                    strcpy(buf, dataRefBuf);
+                    strcat(buf, ".");
+                    strcat(buf, (char*)component.buf);
+                    snprintf(dataRefBuf, 129, "%s", buf);
 
                     MmsValue* value = MmsValue_getElement(structuredValue, i);
 
@@ -630,7 +634,13 @@ mmsServer_setValueWithAlternateAccess(MmsServer self, MmsDomain* domain, char* i
         int index = mmsServer_getLowIndex(alternateAccess);
         int numberOfElements = mmsServer_getNumberOfElements(alternateAccess);
 
-        snprintf(dataRefBuf, 129, "%s(%d)", dataRefBuf, index);
+        char buf[129];
+        strcpy(buf, dataRefBuf);
+        char str[13];
+        snprintf(str, 12, "(%d)", index);
+        str[12] = 0;
+        strcat(buf, str);
+        snprintf(dataRefBuf, 129, "%s", buf);
 
         if (numberOfElements == 0) { /* select single array element with index */
 
