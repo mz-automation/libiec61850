@@ -1,13 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>iec61850dotnet</AssemblyName>
     <RootNamespace>iec61850dotnet</RootNamespace>
     <Title>IEC61850 API for C#</Title>
     <Company>MZ Automation GmbH</Company>
     <Copyright>Michael Zillgith</Copyright>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>2.0.0</Version>
   </PropertyGroup>
 
 </Project>
