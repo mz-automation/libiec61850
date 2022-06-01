@@ -52,7 +52,10 @@ LogInstance_create(LogicalNode* parentLN, const char* name)
         self->name = StringUtils_copyString(name);
         self->parentLN = parentLN;
         self->logStorage = NULL;
-        self->locked = false;
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        self->lock = Semaphore_create(1);
+#endif
 
         self->oldEntryId = 0;
         self->oldEntryTime = 0;
@@ -67,6 +70,10 @@ void
 LogInstance_destroy(LogInstance* self)
 {
     if (self) {
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_destroy(self->lock);
+#endif
+
         GLOBAL_FREEMEM(self->name);
         GLOBAL_FREEMEM(self);
     }
@@ -79,10 +86,9 @@ LogInstance_logSingleData(LogInstance* self, const char* dataRef, MmsValue* valu
 
     if (logStorage != NULL) {
 
-        while (self->locked)
-            Thread_sleep(1);
-
-        self->locked = true;
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_wait(self->lock);
+#endif
 
         if (DEBUG_IED_SERVER)
             printf("IED_SERVER: Log value - dataRef: %s flag: %i\n", dataRef, flag);
@@ -95,16 +101,20 @@ LogInstance_logSingleData(LogInstance* self, const char* dataRef, MmsValue* valu
 
         uint8_t* data = (uint8_t*) GLOBAL_MALLOC(dataSize);
 
-        MmsValue_encodeMmsData(value, data, 0, true);
+        if (data) {
+            MmsValue_encodeMmsData(value, data, 0, true);
 
-        LogStorage_addEntryData(logStorage, entryID, dataRef, data, dataSize, flag);
+            LogStorage_addEntryData(logStorage, entryID, dataRef, data, dataSize, flag);
 
-        self->locked = false;
-
-        GLOBAL_FREEMEM(data);
+            GLOBAL_FREEMEM(data);
+        }
 
         self->newEntryId = entryID;
         self->newEntryTime = timestamp;
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_post(self->lock);
+#endif
 
     }
     else
@@ -119,10 +129,9 @@ LogInstance_logEntryStart(LogInstance* self)
 
     if (logStorage != NULL) {
 
-        while (self->locked)
-            Thread_sleep(1);
-
-        self->locked = true;
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_wait(self->lock);
+#endif
 
         uint64_t timestamp = Hal_getTimeInMs();
 
@@ -143,19 +152,19 @@ LogInstance_logEntryData(LogInstance* self, uint64_t entryID, const char* dataRe
 {
     LogStorage logStorage = self->logStorage;
 
-    if (logStorage != NULL) {
+    if (logStorage) {
 
         int dataSize = MmsValue_encodeMmsData(value, NULL, 0, false);
 
         uint8_t* data = (uint8_t*) GLOBAL_MALLOC(dataSize);
 
-        MmsValue_encodeMmsData(value, data, 0, true);
+        if (data) {
+            MmsValue_encodeMmsData(value, data, 0, true);
 
-        LogStorage_addEntryData(logStorage, entryID, dataRef, data, dataSize, flag);
+            LogStorage_addEntryData(logStorage, entryID, dataRef, data, dataSize, flag);
 
-        self->locked = false;
-
-        GLOBAL_FREEMEM(data);
+            GLOBAL_FREEMEM(data);
+        }
     }
 }
 
@@ -164,7 +173,9 @@ LogInstance_logEntryFinished(LogInstance* self, uint64_t entryID)
 {
     (void)entryID;
 
-    self->locked = false;
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_post(self->lock);
+#endif
 }
 
 void
@@ -989,18 +1000,21 @@ LogControl_logAllDatasetEntries(LogControl* self, const char* iedName)
 
         uint64_t entryID = LogInstance_logEntryStart(log);
 
-        DataSetEntry* dataSetEntry = self->dataSet->fcdas;
+        if (entryID != 0) {
 
-        while (dataSetEntry != NULL) {
+            DataSetEntry* dataSetEntry = self->dataSet->fcdas;
 
-            sprintf(dataRef, "%s%s/%s", iedName, dataSetEntry->logicalDeviceName, dataSetEntry->variableName);
+            while (dataSetEntry != NULL) {
 
-            LogInstance_logEntryData(log, entryID, dataRef, dataSetEntry->value, TRG_OPT_INTEGRITY * 2);
+                sprintf(dataRef, "%s%s/%s", iedName, dataSetEntry->logicalDeviceName, dataSetEntry->variableName);
 
-            dataSetEntry = dataSetEntry->sibling;
+                LogInstance_logEntryData(log, entryID, dataRef, dataSetEntry->value, TRG_OPT_INTEGRITY * 2);
+
+                dataSetEntry = dataSetEntry->sibling;
+            }
+
+            LogInstance_logEntryFinished(log, entryID);
         }
-
-        LogInstance_logEntryFinished(log, entryID);
 
     }
 }

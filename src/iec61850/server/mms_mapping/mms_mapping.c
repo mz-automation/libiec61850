@@ -1344,21 +1344,23 @@ checkForServiceTrackingVariables(MmsMapping* self, LogicalNode* logicalNode)
             else if (!strcmp(modelNode->name, "BacTrk"))
                 actInstance = &self->bacTrk;
 
-            if (*actInstance != NULL) {
-                if (DEBUG_IED_SERVER)
-                    printf("IED_SERVER: ERROR: multiple %s instances found in server\n", modelNode->name);
-            }
-            else {
-                *actInstance = (ControlTrkInstance) GLOBAL_CALLOC(1, sizeof(struct sControlTrkInstance));
-
+            if (actInstance)
+            {
                 if (*actInstance != NULL) {
-                    (*actInstance)->dobj = actTrk;
+                    if (DEBUG_IED_SERVER)
+                        printf("IED_SERVER: ERROR: multiple %s instances found in server\n", modelNode->name);
+                }
+                else {
+                    *actInstance = (ControlTrkInstance) GLOBAL_CALLOC(1, sizeof(struct sControlTrkInstance));
 
-                    getCommonTrackingAttributes((ServiceTrkInstance) *actInstance, actTrk);
-                    getControlTrackingAttributes(*actInstance, actTrk);
+                    if (*actInstance != NULL) {
+                        (*actInstance)->dobj = actTrk;
+
+                        getCommonTrackingAttributes((ServiceTrkInstance) *actInstance, actTrk);
+                        getControlTrackingAttributes(*actInstance, actTrk);
+                    }
                 }
             }
-
         }
         else if (!strcmp(modelNode->name, "BrcbTrk")) {
             if (DEBUG_IED_SERVER)

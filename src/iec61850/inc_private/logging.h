@@ -1,7 +1,7 @@
 /*
  *  logging.h
  *
- *  Copyright 2016 Michael Zillgith
+ *  Copyright 2016-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -29,7 +29,9 @@ typedef struct {
     char* name;
     LogicalNode* parentLN;
 
-    bool locked;
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore lock;
+#endif
 
     LogStorage logStorage;
 
