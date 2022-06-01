@@ -40,16 +40,6 @@ struct sJournalVariable {
    JournalVariable next;
 };
 
-typedef struct {
-    uint8_t* entryID;
-    int entryIDSize;
-
-    uint64_t timestamp;
-
-    JournalVariable listOfVariables;
-} JournalEntry;
-
-
 typedef struct sJournalEncoder* JournalEncoder;
 
 struct sJournalEncoder {

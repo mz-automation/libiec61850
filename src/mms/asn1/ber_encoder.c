@@ -181,15 +181,13 @@ void
 BerEncoder_revertByteOrder(uint8_t* octets, const int size)
 {
     int i;
-    uint8_t temp;
 
     for (i = 0; i < size / 2; i++) {
-        temp = octets[i];
+        uint8_t temp = octets[i];
         octets[i] = octets[(size - 1) - i];
         octets[(size - 1) - i] = temp;
     }
 }
-
 
 int
 BerEncoder_compressInteger(uint8_t* integer, int originalSize)
@@ -431,13 +429,13 @@ BerEncoder_encodeOIDToBuffer(const char* oidString, uint8_t* buffer, int maxBufL
 
         val = atoi(separator + 1);
 
-        int requiredBytes = 0;
-
         if (val == 0) {
             buffer[encodedBytes++] = 0;
         }
         else {
+            int requiredBytes = 0;
             int val2 = val;
+
             while (val2 > 0) {
                 requiredBytes++;
                 val2 = val2 >> 7;

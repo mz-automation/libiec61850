@@ -570,7 +570,7 @@ internalOperateHandler(uint32_t invokeId, void* parameter, MmsError err, MmsData
     }
     else {
         if (DEBUG_IED_CLIENT)
-            printf("IED_CLIENT: internal error - no matching outstanding call (ID: %d)!\n", invokeId);
+            printf("IED_CLIENT: internal error - no matching outstanding call (ID: %u)!\n", invokeId);
     }
 }
 

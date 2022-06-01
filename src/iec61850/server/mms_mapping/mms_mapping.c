@@ -2677,11 +2677,16 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
                     }
                     else
                         retVal = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
-                }
+
 #if (CONFIG_IEC61850_SERVICE_TRACKING == 1)
-                copySGCBValuesToTrackingObject(self, sg->sgcb);
-                updateGenericTrackingObjectValues(self, sg->sgcb, IEC61850_SERVICE_TYPE_SELECT_ACTIVE_SG, retVal);
+                    copySGCBValuesToTrackingObject(self, sg->sgcb);
+                    updateGenericTrackingObjectValues(self, sg->sgcb, IEC61850_SERVICE_TYPE_SELECT_ACTIVE_SG, retVal);
 #endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
+                }
+                else {
+                    retVal = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+                }
+
                 return retVal;
             }
             else if (strcmp(nameId, "EditSG") == 0) {

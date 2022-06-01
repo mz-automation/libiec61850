@@ -1,7 +1,7 @@
 /*
  *  mms_value.c
  *
- *  Copyright 2013-2020 Michael Zillgith
+ *  Copyright 2013-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -270,7 +270,7 @@ MmsValue_update(MmsValue* self, const MmsValue* update)
             case MMS_BIT_STRING:
                 if (self->value.bitString.size == update->value.bitString.size)
                     memcpy(self->value.bitString.buf, update->value.bitString.buf, bitStringByteSize(self));
-                else if (update->value.bitString.size != self->value.bitString.size) {
+                else {
                     int i;
 
                     for (i = 0; i < update->value.bitString.size; i++) {
@@ -280,8 +280,7 @@ MmsValue_update(MmsValue* self, const MmsValue* update)
                             break;
                     }
                 }
-                else
-                    return false;
+
                 break;
 
             case MMS_OCTET_STRING:

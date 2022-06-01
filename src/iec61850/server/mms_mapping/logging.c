@@ -502,8 +502,10 @@ LIBIEC61850_LOG_SVC_writeAccessLogControlBlock(MmsMapping* self, MmsDomain* doma
 
     char* varName = MmsMapping_getNextNameElement(objectName);
 
-    if (varName != NULL)
-        *(varName - 1) = 0;
+    if (varName == NULL)
+        return DATA_ACCESS_ERROR_INVALID_ADDRESS;
+
+    *(varName - 1) = 0;
 
     LogControl* logControl = lookupLogControl(self, domain, lnName, objectName);
 

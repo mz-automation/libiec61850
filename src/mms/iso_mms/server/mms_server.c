@@ -662,10 +662,11 @@ MmsServer_startListeningThreadless(MmsServer self, int tcpPort)
 int
 MmsServer_waitReady(MmsServer self, unsigned int timeoutMs)
 {
-    bool isFirst = true;
     int result = 0;
 
     if (self->isoServerList) {
+        bool isFirst = true;
+
         LinkedList elem = LinkedList_getNext(self->isoServerList);
 
         while (elem) {

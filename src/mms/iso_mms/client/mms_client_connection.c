@@ -1,7 +1,7 @@
 /*
  *  mms_client_connection.c
  *
- *  Copyright 2013-2019 Michael Zillgith
+ *  Copyright 2013-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -1280,7 +1280,7 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
                     BerDecoder_decodeUint32(buf, invokeIdLength, bufPos);
 
             if (DEBUG_MMS_CLIENT)
-                printf("MMS_CLIENT: mms_client_connection: rcvd confirmed resp - invokeId: %i length: %i bufLen: %i\n",
+                printf("MMS_CLIENT: mms_client_connection: rcvd confirmed resp - invokeId: %u length: %i bufLen: %i\n",
                         invokeId, length, payload->size);
 
             bufPos += invokeIdLength;
@@ -1407,7 +1407,7 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
                 case 0x02: /* invoke Id */
                     invokeId = BerDecoder_decodeUint32(buf, length, bufPos);
                     if (DEBUG_MMS_CLIENT)
-                        printf("MMS_CLIENT: received request with invokeId: %i\n", invokeId);
+                        printf("MMS_CLIENT: received request with invokeId: %u\n", invokeId);
 
                     hasInvokeId = true;
 
@@ -1479,8 +1479,6 @@ MmsConnection_createInternal(TLSConfiguration tlsConfig, bool createThread)
         self->parameters.dataStructureNestingLevel = -1;
         self->parameters.maxServOutstandingCalled = -1;
         self->parameters.maxServOutstandingCalling = -1;
-        self->parameters.maxPduSize = -1;
-
         self->parameters.maxPduSize = CONFIG_MMS_MAXIMUM_PDU_SIZE;
 
         self->requestTimeout = CONFIG_MMS_CONNECTION_DEFAULT_TIMEOUT;

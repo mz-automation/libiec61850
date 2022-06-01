@@ -1,7 +1,7 @@
 /*
  *  mms_server_connection.c
  *
- *  Copyright 2013-2018 Michael Zillgith
+ *  Copyright 2013-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -306,7 +306,7 @@ handleConfirmedRequestPdu(
             case 0x02: /* invoke Id */
                 invokeId = BerDecoder_decodeUint32(buffer, length, bufPos);
                 if (DEBUG_MMS_SERVER)
-                    printf("MMS_SERVER: received request with invokeId: %i\n", invokeId);
+                    printf("MMS_SERVER: received request with invokeId: %u\n", invokeId);
                 self->lastInvokeId = invokeId;
                 break;
 
@@ -476,7 +476,7 @@ mmsFileReadHandler(uint32_t invokeId, void* parameter, MmsError mmsError, int32_
 
     if (mmsError == MMS_ERROR_NONE) {
         if (DEBUG_MMS_SERVER)
-            printf("MMS_SERVER:  file %i received %i bytes\n", task->frmsId, bytesReceived);
+            printf("MMS_SERVER:  file %i received %u bytes\n", task->frmsId, bytesReceived);
 
         if(task->fileHandle){
             FileSystem_writeFile(task->fileHandle, buffer, bytesReceived);
@@ -634,7 +634,7 @@ handleConfirmedResponsePdu(
             case 0x02: /* invoke Id */
                 invokeId = BerDecoder_decodeUint32(buffer, length, bufPos);
                 if (DEBUG_MMS_SERVER)
-                    printf("MMS_SERVER: received request with invokeId: %i\n", invokeId);
+                    printf("MMS_SERVER: received request with invokeId: %u\n", invokeId);
                 self->lastInvokeId = invokeId;
                 break;
 

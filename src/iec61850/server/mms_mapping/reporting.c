@@ -801,7 +801,7 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
 
 #endif /* (MMS_DYNAMIC_DATA_SETS == 1) */
 
-        if ((dataSet == NULL) || (dataSetChanged == true)) {
+        if (dataSetChanged == true) {
 
             /* delete pending event and create buffer for new data set */
             deleteDataSetValuesShadowBuffer(rc);
@@ -3089,7 +3089,7 @@ exit_function:
 #define SENT_REPORT_ENTRY_FINISHED 1
 #define SENT_REPORT_ENTRY_MORE_FOLLOWS 2
 
-static bool
+static int
 sendNextReportEntrySegment(ReportControl* self)
 {
     if (self->clientConnection == NULL)
@@ -3297,9 +3297,9 @@ sendNextReportEntrySegment(ReportControl* self)
 
         if ((report->flags > 0) || MmsValue_getBitStringBit(inclusionField, i)) {
 
-            int elementSize = 0;
-
             if (i >= startElementIndex) {
+
+                int elementSize = 0;
 
                 if (withDataReference) {
 

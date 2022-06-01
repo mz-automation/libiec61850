@@ -579,7 +579,6 @@ AcseConnection_createAssociateRequestMessage(AcseConnection* self,
     assert(payload != NULL);
 
     int payloadLength = payload->length;
-    int authValueLength;
     int authValueStringLength = 0;
 
     int passwordLength = 0;
@@ -637,7 +636,7 @@ AcseConnection_createAssociateRequestMessage(AcseConnection* self,
 
             contentLength += passwordLength + authValueStringLength;
 
-            authValueLength = BerEncoder_determineLengthSize(
+            int authValueLength = BerEncoder_determineLengthSize(
                     passwordLength + authValueStringLength + 1);
 
             contentLength += authValueLength;

@@ -52,7 +52,7 @@ MmsServerConnection_sendInformationReportSingleVariableVMDSpecific(MmsServerConn
 
     if (completeMessageSize > self->maxPduSize) {
         if (DEBUG_MMS_SERVER)
-            printf("MMS_SERVER: report message too large %i (max = %i) -> skip message!\n", completeMessageSize, self->maxPduSize);
+            printf("MMS_SERVER: report message too large %u (max = %u) -> skip message!\n", completeMessageSize, self->maxPduSize);
 
         goto exit_function;
     }
@@ -157,7 +157,7 @@ MmsServerConnection_sendInformationReportListOfVariables(
 
     if (completeMessageSize > self->maxPduSize) {
         if (DEBUG_MMS_SERVER)
-            printf("MMS_SERVER: report message too large %i (max = %i) -> skip message!\n", completeMessageSize, self->maxPduSize);
+            printf("MMS_SERVER: report message too large %u (max = %u) -> skip message!\n", completeMessageSize, self->maxPduSize);
 
         goto exit_function;
     }
@@ -281,7 +281,7 @@ MmsServerConnection_sendInformationReportVMDSpecific(MmsServerConnection self, c
 
     if (completeMessageSize > self->maxPduSize) {
         if (DEBUG_MMS_SERVER)
-            printf("MMS_SERVER: report message too large %i (max = %i) -> skip message!\n", completeMessageSize, self->maxPduSize);
+            printf("MMS_SERVER: report message too large %u (max = %u) -> skip message!\n", completeMessageSize, self->maxPduSize);
 
         goto exit_function;
     }

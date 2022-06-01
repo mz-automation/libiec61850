@@ -1163,8 +1163,8 @@ IedServer_updateAttributeValue(IedServer self, DataAttribute* dataAttribute, Mms
 void
 IedServer_updateFloatAttributeValue(IedServer self, DataAttribute* dataAttribute, float value)
 {
-    assert(MmsValue_getType(dataAttribute->mmsValue) == MMS_FLOAT);
     assert(dataAttribute != NULL);
+    assert(MmsValue_getType(dataAttribute->mmsValue) == MMS_FLOAT);
     assert(self != NULL);
 
     float currentValue = MmsValue_toFloat(dataAttribute->mmsValue);
@@ -1187,8 +1187,8 @@ IedServer_updateFloatAttributeValue(IedServer self, DataAttribute* dataAttribute
 void
 IedServer_updateInt32AttributeValue(IedServer self, DataAttribute* dataAttribute, int32_t value)
 {
-    assert(MmsValue_getType(dataAttribute->mmsValue) == MMS_INTEGER);
     assert(dataAttribute != NULL);
+    assert(MmsValue_getType(dataAttribute->mmsValue) == MMS_INTEGER);
     assert(self != NULL);
 
     int32_t currentValue = MmsValue_toInt32(dataAttribute->mmsValue);
@@ -1233,8 +1233,8 @@ IedServer_updateDbposValue(IedServer self, DataAttribute* dataAttribute, Dbpos v
 void
 IedServer_updateInt64AttributeValue(IedServer self, DataAttribute* dataAttribute, int64_t value)
 {
-    assert(MmsValue_getType(dataAttribute->mmsValue) == MMS_INTEGER);
     assert(dataAttribute != NULL);
+    assert(MmsValue_getType(dataAttribute->mmsValue) == MMS_INTEGER);
     assert(self != NULL);
 
     int64_t currentValue = MmsValue_toInt64(dataAttribute->mmsValue);
@@ -1258,8 +1258,8 @@ IedServer_updateInt64AttributeValue(IedServer self, DataAttribute* dataAttribute
 void
 IedServer_updateUnsignedAttributeValue(IedServer self, DataAttribute* dataAttribute, uint32_t value)
 {
-    assert(MmsValue_getType(dataAttribute->mmsValue) == MMS_UNSIGNED);
     assert(dataAttribute != NULL);
+    assert(MmsValue_getType(dataAttribute->mmsValue) == MMS_UNSIGNED);
     assert(self != NULL);
 
     uint32_t currentValue = MmsValue_toUint32(dataAttribute->mmsValue);
@@ -1283,8 +1283,8 @@ IedServer_updateUnsignedAttributeValue(IedServer self, DataAttribute* dataAttrib
 void
 IedServer_updateBitStringAttributeValue(IedServer self, DataAttribute* dataAttribute, uint32_t value)
 {
-    assert(MmsValue_getType(dataAttribute->mmsValue) == MMS_BIT_STRING);
     assert(dataAttribute != NULL);
+    assert(MmsValue_getType(dataAttribute->mmsValue) == MMS_BIT_STRING);
     assert(self != NULL);
 
     uint32_t currentValue = MmsValue_getBitStringAsInteger(dataAttribute->mmsValue);
@@ -1340,8 +1340,8 @@ IedServer_updateBooleanAttributeValue(IedServer self, DataAttribute* dataAttribu
 void
 IedServer_updateVisibleStringAttributeValue(IedServer self, DataAttribute* dataAttribute, char *value)
 {
-    assert(MmsValue_getType(dataAttribute->mmsValue) == MMS_VISIBLE_STRING);
     assert(dataAttribute != NULL);
+    assert(MmsValue_getType(dataAttribute->mmsValue) == MMS_VISIBLE_STRING);
     assert(self != NULL);
 
     const char* currentValue = MmsValue_toString(dataAttribute->mmsValue);
@@ -1364,8 +1364,8 @@ IedServer_updateVisibleStringAttributeValue(IedServer self, DataAttribute* dataA
 void
 IedServer_updateUTCTimeAttributeValue(IedServer self, DataAttribute* dataAttribute, uint64_t value)
 {
-    assert(MmsValue_getType(dataAttribute->mmsValue) == MMS_UTC_TIME);
     assert(dataAttribute != NULL);
+    assert(MmsValue_getType(dataAttribute->mmsValue) == MMS_UTC_TIME);
     assert(self != NULL);
 
     uint64_t currentValue = MmsValue_getUtcTimeInMs(dataAttribute->mmsValue);
@@ -1389,8 +1389,8 @@ IedServer_updateUTCTimeAttributeValue(IedServer self, DataAttribute* dataAttribu
 void
 IedServer_updateTimestampAttributeValue(IedServer self, DataAttribute* dataAttribute, Timestamp* timestamp)
 {
-    assert(MmsValue_getType(dataAttribute->mmsValue) == MMS_UTC_TIME);
     assert(dataAttribute != NULL);
+    assert(MmsValue_getType(dataAttribute->mmsValue) == MMS_UTC_TIME);
     assert(self != NULL);
 
     if (memcmp(dataAttribute->mmsValue->value.utcTime, timestamp->val, 8)) {

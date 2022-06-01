@@ -1676,7 +1676,6 @@ IedConnection_writeOctetString(IedConnection self, IedClientError* error, const 
     mmsValue.type = MMS_OCTET_STRING;
     mmsValue.value.octetString.buf = value;
     mmsValue.value.octetString.size = valueLength;
-    mmsValue.value.octetString.size = valueLength;
 
     IedConnection_writeObject(self, error, objectReference, fc, &mmsValue);
 }

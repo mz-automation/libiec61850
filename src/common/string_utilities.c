@@ -111,7 +111,6 @@ StringUtils_createString(int count, ...)
 {
 	va_list ap;
 	char* newStr;
-	char* currentPos;
 	int newStringLength = 0;
 	int i;
 
@@ -127,7 +126,7 @@ StringUtils_createString(int count, ...)
 	newStr = (char*) GLOBAL_MALLOC(newStringLength + 1);
 
 	if (newStr) {
-	    currentPos = newStr;
+	    char* currentPos = newStr;
 
 	    va_start(ap, count);
 	    for (i = 0; i < count; i++) {
@@ -136,8 +135,6 @@ StringUtils_createString(int count, ...)
 	        currentPos += strlen(str);
 	    }
 	    va_end(ap);
-
-	    *currentPos = 0;
 	}
 
 	return newStr;
@@ -271,11 +268,11 @@ getCharWeight(int c)
 {
 	static bool initialized = false;
 	static char lookupTable[LT_MAX_CHARS + 1];
-	static const char* charOrder = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz$_0123456789";
 
 	if (!initialized) {
 		int ltIndex;
 		int weight = 1;
+	    const char* charOrder = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz$_0123456789";
 
 		for (ltIndex = 1;  ltIndex < LT_MAX_CHARS; ltIndex++) {
 			if (strchr(charOrder, ltIndex)) continue;

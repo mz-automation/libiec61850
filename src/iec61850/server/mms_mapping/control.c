@@ -546,7 +546,7 @@ checkSelectTimeout(ControlObject* self, uint64_t currentTime, MmsMapping* mmsMap
             if (self->selectTimeout > 0) {
                 if (currentTime > (self->selectTime + self->selectTimeout)) {
                     if (DEBUG_IED_SERVER)
-                        printf("IED_SERVER: select-timeout (timeout-val = %i) for control %s/%s.%s\n",
+                        printf("IED_SERVER: select-timeout (timeout-val = %u) for control %s/%s.%s\n",
                                 self->selectTimeout, MmsDomain_getName(self->mmsDomain), self->lnName, self->name);
 
                     unselectObject(self, SELECT_STATE_REASON_TIMEOUT, mmsMapping);
@@ -1874,7 +1874,7 @@ Control_readAccessControlObject(MmsMapping* self, MmsDomain* domain, char* varia
                 }
                 else {
                     if (DEBUG_IED_SERVER)
-                        printf("IED_SERVER: select not applicable for control model %i\n", controlObject->ctlModel);
+                        printf("IED_SERVER: select not applicable for control model %u\n", controlObject->ctlModel);
 
                     value = controlObject->sbo;
                 }

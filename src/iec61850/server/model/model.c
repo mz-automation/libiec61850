@@ -470,17 +470,15 @@ LogicalDevice_getLogicalNodeCount(LogicalDevice* logicalDevice)
 ModelNode*
 LogicalDevice_getChildByMmsVariableName(LogicalDevice* logicalDevice, const char* mmsVariableName)
 {
-
-
-	char fcString[3];
-	char nameRef[65];
-
 	const char* separator = strchr(mmsVariableName,'$');
 
 	if (separator == NULL)
 		return NULL;
 
 	if (strlen(separator) > 4) {
+	    char fcString[3];
+	    char nameRef[65];
+
 		fcString[0] = separator[1];
 		fcString[1] = separator[2];
 		fcString[2] = 0;
