@@ -383,7 +383,7 @@ iedConnection_handleReport(IedConnection self, MmsValue* value)
 
     while (element != NULL) {
         ClientReport report = (ClientReport) element->data;
-        char defaultRptId[129];
+        char defaultRptId[130];
         char* rptId = report->rptId;
 
         if ((rptId == NULL)  || (rptId && (strlen(rptId) == 0))) {
