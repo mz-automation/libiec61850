@@ -511,18 +511,18 @@ IsoClientConnection_handleConnection(IsoClientConnection self)
                                }
                                else {
 
+                                   ByteBuffer_wrap(self->receivePayloadBuffer, self->acseConnection.userDataBuffer,
+                                           self->acseConnection.userDataBufferSize, self->acseConnection.userDataBufferSize);
+
+                                   setState(self, STATE_CONNECTED);
+                                   nextState = INT_STATE_WAIT_FOR_DATA_MSG;
+
+                                   if (self->callback(ISO_IND_ASSOCIATION_SUCCESS, self->callbackParameter, self->receivePayloadBuffer) == false) {
+                                       nextState = INT_STATE_CLOSE_ON_ERROR;
+                                   }
+
                                }
 
-                           }
-
-                           ByteBuffer_wrap(self->receivePayloadBuffer, self->acseConnection.userDataBuffer,
-                                   self->acseConnection.userDataBufferSize, self->acseConnection.userDataBufferSize);
-
-                           setState(self, STATE_CONNECTED);
-                           nextState = INT_STATE_WAIT_FOR_DATA_MSG;
-
-                           if (self->callback(ISO_IND_ASSOCIATION_SUCCESS, self->callbackParameter, self->receivePayloadBuffer) == false) {
-                               nextState = INT_STATE_CLOSE_ON_ERROR;
                            }
 
                            CotpConnection_resetPayload(self->cotpConnection);
