@@ -929,6 +929,21 @@ refreshTriggerOptions(ReportControl* rc)
 #endif
 }
 
+static uint64_t
+getNextRoundedStartTime(uint64_t currentTime, uint64_t intgPd)
+{
+    uint64_t modTime = currentTime % intgPd;
+    uint64_t delta = 0;
+
+    if (modTime != 0) {
+        delta = intgPd - modTime;
+    }
+
+    uint64_t nextTime = currentTime + delta;
+
+    return nextTime;
+}
+
 static void
 refreshIntegrityPeriod(ReportControl* rc)
 {
@@ -943,8 +958,14 @@ refreshIntegrityPeriod(ReportControl* rc)
     Semaphore_post(rc->rcbValuesLock);
 #endif
 
-    if (rc->buffered == false)
-        rc->nextIntgReportTime = Hal_getTimeInMs() + rc->intgPd;
+    if (rc->buffered == false) {
+        if (rc->server->syncIntegrityReportTimes) {
+            rc->nextIntgReportTime = getNextRoundedStartTime(Hal_getTimeInMs(), rc->intgPd);
+        }
+        else {
+            rc->nextIntgReportTime = Hal_getTimeInMs() + rc->intgPd;
+        }
+    }
 }
 
 static void
@@ -2128,7 +2149,14 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
                 refreshIntegrityPeriod(rc);
 
                 if (rc->buffered) {
-                    rc->nextIntgReportTime = 0;
+
+                    if (rc->server->syncIntegrityReportTimes) {
+                        rc->nextIntgReportTime = getNextRoundedStartTime(Hal_getTimeInMs(), rc->intgPd);
+                    }
+                    else {
+                        rc->nextIntgReportTime = 0;
+                    }
+
                     purgeBuf(rc);
 
                     if (self->rcbEventHandler) {
@@ -3062,10 +3090,6 @@ enqueueReport(ReportControl* reportControl, bool isIntegrity, bool isGI, uint64_
 
 exit_function:
 
-    if (overflow) {
-        /* TODO call user callback handler */
-    }
-
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_post(buffer->lock);
 #endif
@@ -3788,7 +3812,13 @@ processEventsForReport(ReportControl* rc, uint64_t currentTimeInMs)
 
                     /* check for system time change effects */
                     if ((rc->nextIntgReportTime < currentTimeInMs) || (rc->nextIntgReportTime > currentTimeInMs + rc->intgPd)) {
-                        rc->nextIntgReportTime = currentTimeInMs + rc->intgPd;
+
+                        if (rc->server->syncIntegrityReportTimes) {
+                            rc->nextIntgReportTime = getNextRoundedStartTime(currentTimeInMs, rc->intgPd);
+                        }
+                        else {
+                            rc->nextIntgReportTime = currentTimeInMs + rc->intgPd;
+                        }
                     }
 
                     enqueueReport(rc, true, false, currentTimeInMs);
@@ -3798,7 +3828,12 @@ processEventsForReport(ReportControl* rc, uint64_t currentTimeInMs)
                 else {
                     /* check for system time change effects */
                     if ((rc->nextIntgReportTime < currentTimeInMs) || (rc->nextIntgReportTime > currentTimeInMs + rc->intgPd)) {
-                        rc->nextIntgReportTime = currentTimeInMs + rc->intgPd;
+                        if (rc->server->syncIntegrityReportTimes) {
+                            rc->nextIntgReportTime = getNextRoundedStartTime(currentTimeInMs, rc->intgPd);
+                        }
+                        else {
+                            rc->nextIntgReportTime = currentTimeInMs + rc->intgPd;
+                        }
                     }
 
                 }
@@ -3819,6 +3854,8 @@ processEventsForReport(ReportControl* rc, uint64_t currentTimeInMs)
 void
 Reporting_processReportEvents(MmsMapping* self, uint64_t currentTimeInMs)
 {
+    Semaphore_wait(self->isModelLockedMutex);
+
     if (self->isModelLocked == false) {
 
         LinkedList element = self->reportControls;
@@ -3833,6 +3870,8 @@ Reporting_processReportEvents(MmsMapping* self, uint64_t currentTimeInMs)
             ReportControl_unlockNotify(rc);
         }
     }
+
+    Semaphore_post(self->isModelLockedMutex);
 }
 
 /*
@@ -4169,6 +4208,8 @@ ReportControlBlock_getGI(ReportControlBlock* self)
 bool
 ReportControlBlock_getPurgeBuf(ReportControlBlock* self)
 {
+    bool purgeBuf = false;
+
     if (self->trgOps & 64) {
         ReportControl* rc = (ReportControl*)(self->sibling);
 
@@ -4178,22 +4219,23 @@ ReportControlBlock_getPurgeBuf(ReportControlBlock* self)
 
         MmsValue* purgeBufValue = ReportControl_getRCBValue(rc, "PurgeBuf");
 
-        bool purgeBuf = MmsValue_getBoolean(purgeBufValue);
+        if (purgeBufValue) {
+            purgeBuf = MmsValue_getBoolean(purgeBufValue);
+        }
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
         Semaphore_post(rc->rcbValuesLock);
 #endif
+    }
 
-        return purgeBuf;
-    }
-    else {
-        return false;
-    }
+    return purgeBuf;
 }
 
 MmsValue*
 ReportControlBlock_getEntryId(ReportControlBlock* self)
 {
+    MmsValue* entryId = NULL;
+
     if (self->trgOps & 64) {
         ReportControl* rc = (ReportControl*)(self->sibling);
 
@@ -4203,22 +4245,21 @@ ReportControlBlock_getEntryId(ReportControlBlock* self)
 
         MmsValue* entryIdValue = ReportControl_getRCBValue(rc, "EntryID");
 
-        MmsValue* entryId = MmsValue_clone(entryIdValue);
+        entryId = MmsValue_clone(entryIdValue);
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
         Semaphore_post(rc->rcbValuesLock);
 #endif
+    }
 
-        return entryId;
-    }
-    else {
-        return NULL;
-    }
+    return entryId;
 }
 
 uint64_t
 ReportControlBlock_getTimeofEntry(ReportControlBlock* self)
 {
+    uint64_t timeofEntry = 0;
+
     if (self->trgOps & 64) {
         ReportControl* rc = (ReportControl*)(self->sibling);
 
@@ -4228,22 +4269,23 @@ ReportControlBlock_getTimeofEntry(ReportControlBlock* self)
 
         MmsValue* timeofEntryValue = ReportControl_getRCBValue(rc, "TimeofEntry");
 
-        uint64_t timeofEntry = MmsValue_getBinaryTimeAsUtcMs(timeofEntryValue);
+        if (timeofEntryValue) {
+            timeofEntry = MmsValue_getBinaryTimeAsUtcMs(timeofEntryValue);
+        }
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
         Semaphore_post(rc->rcbValuesLock);
 #endif
+    }
 
-        return timeofEntry;
-    }
-    else {
-        return 0;
-    }
+    return timeofEntry;
 }
 
 int16_t
 ReportControlBlock_getResvTms(ReportControlBlock* self)
 {
+    int16_t resvTms = 0;
+
     if (self->trgOps & 64) {
         ReportControl* rc = (ReportControl*)(self->sibling);
 
@@ -4253,22 +4295,23 @@ ReportControlBlock_getResvTms(ReportControlBlock* self)
 
         MmsValue* resvTmsValue = ReportControl_getRCBValue(rc, "ResvTms");
 
-        int16_t resvTms = (int16_t)MmsValue_toInt32(resvTmsValue);
+        if (resvTmsValue) {
+            resvTms = (int16_t)MmsValue_toInt32(resvTmsValue);
+        }
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
         Semaphore_post(rc->rcbValuesLock);
 #endif
+    }
 
-        return resvTms;
-    }
-    else {
-        return 0;
-    }
+    return resvTms;
 }
 
 bool
 ReportControlBlock_getResv(ReportControlBlock* self)
 {
+    bool resv = false;
+
     if (self->trgOps & 64) {
         ReportControl* rc = (ReportControl*)(self->sibling);
 
@@ -4278,17 +4321,16 @@ ReportControlBlock_getResv(ReportControlBlock* self)
 
         MmsValue* resvValue = ReportControl_getRCBValue(rc, "Resv");
 
-        bool resv = MmsValue_getBoolean(resvValue);
+        if (resvValue) {
+            resv = MmsValue_getBoolean(resvValue);
+        }
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
         Semaphore_post(rc->rcbValuesLock);
 #endif
+    }
 
-        return resv;
-    }
-    else {
-        return false;
-    }
+    return resv;
 }
 
 MmsValue*

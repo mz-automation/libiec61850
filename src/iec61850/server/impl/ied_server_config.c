@@ -58,6 +58,7 @@ IedServerConfig_create()
         self->enableResvTmsForSGCB = true;
         self->enableResvTmsForBRCB = true;
         self->enableOwnerForRCB = false;
+        self->syncIntegrityReportTimes = false;
     }
 
     return self;
@@ -250,4 +251,16 @@ int
 IedServerConfig_getMaxMmsConnections(IedServerConfig self)
 {
     return self->maxMmsConnections;
+}
+
+void
+IedServerConfig_setSyncIntegrityReportTimes(IedServerConfig self, bool enable)
+{
+    self->syncIntegrityReportTimes = enable;
+}
+
+bool
+IedServerConfig_getSyncIntegrityReportTimes(IedServerConfig self)
+{
+    return self->syncIntegrityReportTimes;
 }

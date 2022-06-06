@@ -73,6 +73,18 @@ public class DynamicCodeGenerator {
         
         createDynamicCode(sclParser);
     }
+    
+    private static String replaceInvalidCharacters(String originalStr)
+    {
+        String newString = originalStr;
+        
+        newString = newString.replace('/', '_');
+        newString = newString.replace('\\', '_');
+        newString = newString.replace('-', '_');
+        newString = newString.replace('+', '_');
+        
+        return newString;
+    }
 
     private static void createDynamicCode(SclParser sclParser) {
         TypeDeclarations declarations = sclParser.getTypeDeclarations();
@@ -101,21 +113,21 @@ public class DynamicCodeGenerator {
         /* Create function prototypes */
         
         for (LogicalNodeType lnType : lnTypeDefs) {
-            String functionPrototype = "LogicalNode*\nLN_" + lnType.getId() 
+            String functionPrototype = "LogicalNode*\nLN_" + replaceInvalidCharacters(lnType.getId()) 
                     + "_createInstance(char* lnName, LogicalDevice* parent);";
             
             functionPrototypes.add(functionPrototype);
         }
         
         for (DataObjectType doType : doTypeDefs) {
-            String functionPrototype = "DataObject*\nDO_" + doType.getId()
+            String functionPrototype = "DataObject*\nDO_" + replaceInvalidCharacters(doType.getId())
                     + "_createInstance(char* doName, ModelNode* parent, int arrayCount);";
             
             functionPrototypes.add(functionPrototype);
         }
         
         for (DataAttributeType daType : daTypeDefs) {
-            String functionPrototype = "DataAttribute*\nDA_" + daType.getId()
+            String functionPrototype = "DataAttribute*\nDA_" + replaceInvalidCharacters(daType.getId())
                     + "_createInstance(char* daName, ModelNode* parent, FunctionalConstraint fc, uint8_t triggerOptions);";
             
             functionPrototypes.add(functionPrototype);
@@ -135,19 +147,19 @@ public class DynamicCodeGenerator {
         for (LogicalNodeType lnType : lnTypeDefs) {
             
             out.println("/**");
-            out.printf(" * LN: %s ", lnType.getId());
+            out.printf(" * LN: %s ", replaceInvalidCharacters(lnType.getId()));
             if (lnType.getDesc() != null)
                 out.printf("(%s)", lnType.getDesc());
             out.println();
             out.println(" */");
             out.println("LogicalNode*");
-            out.printf("LN_%s_createInstance(char* lnName, LogicalDevice* parent)\n", lnType.getId());
+            out.printf("LN_%s_createInstance(char* lnName, LogicalDevice* parent)\n", replaceInvalidCharacters(lnType.getId()));
             out.println("{");
             out.println("    LogicalNode* newLn = LogicalNode_create(lnName, parent);\n");
             List<DataObjectDefinition> doDefs = lnType.getDataObjectDefinitions();
             
             for (DataObjectDefinition objDef : doDefs) {             
-                out.printf("    DO_%s_createInstance(\"%s\", (ModelNode*) newLn, %d);\n", objDef.getType(), objDef.getName(), objDef.getCount());
+                out.printf("    DO_%s_createInstance(\"%s\", (ModelNode*) newLn, %d);\n", replaceInvalidCharacters(objDef.getType()), objDef.getName(), objDef.getCount());
             }
             
             out.println("\n    return newLn;");           
@@ -156,13 +168,13 @@ public class DynamicCodeGenerator {
         
         for (DataObjectType doType : doTypeDefs) {
             out.println("/**");
-            out.printf(" * DO: %s ", doType.getId());
+            out.printf(" * DO: %s ", replaceInvalidCharacters(doType.getId()));
             if (doType.getDesc() != null)
                 out.printf("(%s)", doType.getDesc());
             out.println();
             out.println(" */");
             out.println("DataObject*");
-            out.printf("DO_%s_createInstance(char* doName, ModelNode* parent, int arrayCount)\n", doType.getId());
+            out.printf("DO_%s_createInstance(char* doName, ModelNode* parent, int arrayCount)\n", replaceInvalidCharacters(doType.getId()));
             out.println("{");
           
             out.println("    DataObject* newDo = DataObject_create(doName, parent, arrayCount);\n");
@@ -170,7 +182,7 @@ public class DynamicCodeGenerator {
             for (DataAttributeDefinition dad : doType.getDataAttributes()) {
                 
                 if (dad.getAttributeType() == AttributeType.CONSTRUCTED) {    
-                    out.print("    DA_" + dad.getType() + "_createInstance(\"" + dad.getName() + "\", ");
+                    out.print("    DA_" + replaceInvalidCharacters(dad.getType()) + "_createInstance(\"" + dad.getName() + "\", ");
                     out.print("(ModelNode*) newDo, IEC61850_FC_" + dad.getFc().toString());
                     out.print(", " + dad.getTriggerOptions().getIntValue());
                     out.println(");");
@@ -189,7 +201,7 @@ public class DynamicCodeGenerator {
             
             
             for (DataObjectDefinition dod : doType.getSubDataObjects()) {
-                out.print("    DO_" + dod.getType() + "_createInstance(\"" + dod.getName() + "\", ");
+                out.print("    DO_" + replaceInvalidCharacters(dod.getType()) + "_createInstance(\"" + dod.getName() + "\", ");
                 out.println("(ModelNode*) newDo, " + dod.getCount() + ");");
             }
             
@@ -199,19 +211,19 @@ public class DynamicCodeGenerator {
         
         for (DataAttributeType daType : daTypeDefs) {  
             out.println("/**");
-            out.printf(" * DA: %s ", daType.getId());
+            out.printf(" * DA: %s ", replaceInvalidCharacters(daType.getId()));
             if (daType.getDesc() != null)
                 out.printf("(%s)", daType.getDesc());
             out.println();
             out.println(" */");
             out.println("DataAttribute*");
-            out.printf("DA_%s_createInstance(char* daName, ModelNode* parent, FunctionalConstraint fc, uint8_t triggerOptions)\n", daType.getId());
+            out.printf("DA_%s_createInstance(char* daName, ModelNode* parent, FunctionalConstraint fc, uint8_t triggerOptions)\n", replaceInvalidCharacters(daType.getId()));
             out.println("{");   
             out.println("    DataAttribute* newDa = DataAttribute_create(daName, parent, IEC61850_CONSTRUCTED, fc, triggerOptions, 0, 0);\n");
             
             for (DataAttributeDefinition dad : daType.getSubDataAttributes()) {
                 if (dad.getAttributeType() == AttributeType.CONSTRUCTED) {    
-                    out.print("    DA_" + dad.getType() + "_createInstance(\"" + dad.getName() + "\", ");
+                    out.print("    DA_" + replaceInvalidCharacters(dad.getType()) + "_createInstance(\"" + dad.getName() + "\", ");
                     out.println("(ModelNode*) newDa, fc, triggerOptions);");
                 }
                 else {

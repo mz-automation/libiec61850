@@ -1529,6 +1529,8 @@ namespace IEC61850
 
                         entryId = octetStringVal.getOctetString();
 
+                        octetStringVal.Dispose();
+
                         return entryId;
                     }
                     else

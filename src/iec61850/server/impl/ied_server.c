@@ -485,11 +485,13 @@ IedServer_createWithConfig(IedModel* dataModel, TLSConfiguration tlsConfiguratio
             self->reportBufferSizeURCBs = serverConfiguration->reportBufferSizeURCBs;
             self->enableBRCBResvTms = serverConfiguration->enableResvTmsForBRCB;
             self->enableOwnerForRCB = serverConfiguration->enableOwnerForRCB;
+            self->syncIntegrityReportTimes = serverConfiguration->syncIntegrityReportTimes;
         }
         else {
             self->reportBufferSizeBRCBs = CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE;
             self->reportBufferSizeURCBs = CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE;
             self->enableOwnerForRCB = false;
+            self->syncIntegrityReportTimes = false;
 #if (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1)
             self->enableBRCBResvTms = true;
 #else
@@ -812,9 +814,13 @@ IedServer_stopThreadless(IedServer self)
 void
 IedServer_lockDataModel(IedServer self)
 {
+    Semaphore_wait(self->mmsMapping->isModelLockedMutex);
+
     MmsServer_lockModel(self->mmsServer);
 
     self->mmsMapping->isModelLocked = true;
+
+    Semaphore_post(self->mmsMapping->isModelLockedMutex);
 }
 
 void
@@ -828,9 +834,13 @@ IedServer_unlockDataModel(IedServer self)
     /* check if reports have to be sent! */
     Reporting_processReportEventsAfterUnlock(self->mmsMapping);
 
+    Semaphore_wait(self->mmsMapping->isModelLockedMutex);
+
     self->mmsMapping->isModelLocked = false;
 
     MmsServer_unlockModel(self->mmsServer);
+
+    Semaphore_post(self->mmsMapping->isModelLockedMutex);
 }
 
 #if (CONFIG_IEC61850_CONTROL_SERVICE == 1)
