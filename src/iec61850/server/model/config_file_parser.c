@@ -208,7 +208,7 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
                     else if (StringUtils_startsWith((char*) lineBuffer, "DS")) {
                         indendation = 4;
 
-                        sscanf((char*) lineBuffer, "DS(%s)", nameString);
+                        sscanf((char*) lineBuffer, "DS(%129s)", nameString);
                         terminateString(nameString, ')');
 
                         currentDataSet = DataSet_create(nameString, currentLN);
