@@ -1,7 +1,7 @@
 /*
  *  dynamic_model.c
  *
- *  Copyright 2014-2016 Michael Zillgith
+ *  Copyright 2014-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -41,28 +41,31 @@ IedModel_setIedNameForDynamicModel(IedModel* self, const char* name)
 }
 
 IedModel*
-IedModel_create(const char* name/*, MemoryAllocator allocator*/)
+IedModel_create(const char* name)
 {
     IedModel* self = (IedModel*) GLOBAL_CALLOC(1, sizeof(IedModel));
 
-    if (name)
-        self->name = StringUtils_copyString(name);
-    else
-        self->name = NULL;
+    if (self)
+    {
+        if (name)
+            self->name = StringUtils_copyString(name);
+        else
+            self->name = NULL;
 
-    self->rcbs = NULL;
+        self->rcbs = NULL;
 
-    self->dataSets = NULL;
+        self->dataSets = NULL;
 
-    self->gseCBs = NULL;
+        self->gseCBs = NULL;
 
-    self->sgcbs = NULL;
+        self->sgcbs = NULL;
 
-    self->lcbs = NULL;
+        self->lcbs = NULL;
 
-    self->logs = NULL;
+        self->logs = NULL;
 
-    self->initializer = iedModel_emptyVariableInitializer;
+        self->initializer = iedModel_emptyVariableInitializer;
+    }
 
     return self;
 }
@@ -309,7 +312,7 @@ LogicalNode_addLogControlBlock(LogicalNode* self, LogControlBlock* lcb)
 }
 
 LogControlBlock*
-LogControlBlock_create(const char* name, LogicalNode* parent, char* dataSetName, char* logRef, uint8_t trgOps,
+LogControlBlock_create(const char* name, LogicalNode* parent, const char* dataSetName, const char* logRef, uint8_t trgOps,
         uint32_t intPeriod, bool logEna, bool reasonCode)
 {
     LogControlBlock* self = (LogControlBlock*) GLOBAL_MALLOC(sizeof(LogControlBlock));
@@ -347,7 +350,7 @@ LogicalNode_addReportControlBlock(LogicalNode* self, ReportControlBlock* rcb)
 }
 
 ReportControlBlock*
-ReportControlBlock_create(const char* name, LogicalNode* parent, char* rptId, bool isBuffered, char*
+ReportControlBlock_create(const char* name, LogicalNode* parent, const char* rptId, bool isBuffered, const char*
         dataSetName, uint32_t confRef, uint8_t trgOps, uint8_t options, uint32_t bufTm, uint32_t intgPd)
 {
     ReportControlBlock* self = (ReportControlBlock*) GLOBAL_MALLOC(sizeof(ReportControlBlock));
@@ -381,7 +384,7 @@ ReportControlBlock_create(const char* name, LogicalNode* parent, char* rptId, bo
 }
 
 void
-ReportControlBlock_setPreconfiguredClient(ReportControlBlock* self, uint8_t clientType, uint8_t* clientAddress)
+ReportControlBlock_setPreconfiguredClient(ReportControlBlock* self, uint8_t clientType, const uint8_t* clientAddress)
 {
     if (clientType == 4) { /* IPv4 address */
         self->clientReservation[0] = 4;
@@ -394,6 +397,24 @@ ReportControlBlock_setPreconfiguredClient(ReportControlBlock* self, uint8_t clie
     else { /* no reservation or unknown type */
         self->clientReservation[0] = 0;
     }
+}
+
+const char*
+ReportControlBlock_getName(ReportControlBlock* self)
+{
+    return self->name;
+}
+
+LogicalNode*
+ReportControlBlock_getParent(ReportControlBlock* self)
+{
+    return self->parent;
+}
+
+bool
+ReportControlBlock_isBuffered(ReportControlBlock* self)
+{
+    return self->buffered;
 }
 
 #if (CONFIG_IEC61850_SETTING_GROUPS == 1)
@@ -434,7 +455,7 @@ LogicalNode_addGSEControlBlock(LogicalNode* self, GSEControlBlock* gcb)
 }
 
 GSEControlBlock*
-GSEControlBlock_create(const char* name, LogicalNode* parent, char* appId, char* dataSet, uint32_t confRef, bool fixedOffs,
+GSEControlBlock_create(const char* name, LogicalNode* parent, const char* appId, const char* dataSet, uint32_t confRef, bool fixedOffs,
         int minTime, int maxTime)
 {
     GSEControlBlock* self = (GSEControlBlock*) GLOBAL_MALLOC(sizeof(GSEControlBlock));
@@ -468,7 +489,7 @@ GSEControlBlock_create(const char* name, LogicalNode* parent, char* appId, char*
 }
 
 SVControlBlock*
-SVControlBlock_create(const char* name, LogicalNode* parent, char* svID, char* dataSet, uint32_t confRev, uint8_t smpMod,
+SVControlBlock_create(const char* name, LogicalNode* parent, const char* svID, const char* dataSet, uint32_t confRev, uint8_t smpMod,
         uint16_t smpRate, uint8_t optFlds, bool isUnicast)
 {
     SVControlBlock* self = (SVControlBlock*) GLOBAL_MALLOC(sizeof(SVControlBlock));
@@ -742,6 +763,7 @@ DataSetEntry_create(DataSet* dataSet, const char* variable, int index, const cha
     char variableName[130];
 
     strncpy(variableName, variable, 129);
+    variableName[129] = 0;
 
     char* separator = strchr(variableName, '/');
 
@@ -777,199 +799,202 @@ DataSetEntry_create(DataSet* dataSet, const char* variable, int index, const cha
 static void
 ModelNode_destroy(ModelNode* modelNode)
 {
-    GLOBAL_FREEMEM(modelNode->name);
+    if (modelNode) {
 
-    ModelNode* currentChild = modelNode->firstChild;
+        if (modelNode->name)
+            GLOBAL_FREEMEM(modelNode->name);
 
-    while (currentChild != NULL) {
-        ModelNode* nextChild = currentChild->sibling;
+        ModelNode* currentChild = modelNode->firstChild;
 
-        ModelNode_destroy(currentChild);
+        while (currentChild != NULL) {
+            ModelNode* nextChild = currentChild->sibling;
 
-        currentChild = nextChild;
-    }
+            ModelNode_destroy(currentChild);
 
-    if (modelNode->modelType == DataAttributeModelType) {
-        DataAttribute* dataAttribute = (DataAttribute*) modelNode;
-
-        if (dataAttribute->mmsValue != NULL) {
-            MmsValue_delete(dataAttribute->mmsValue);
-            dataAttribute->mmsValue = NULL;
+            currentChild = nextChild;
         }
-    }
 
-    GLOBAL_FREEMEM(modelNode);
+        if (modelNode->modelType == DataAttributeModelType) {
+            DataAttribute* dataAttribute = (DataAttribute*) modelNode;
+
+            if (dataAttribute->mmsValue != NULL) {
+                MmsValue_delete(dataAttribute->mmsValue);
+                dataAttribute->mmsValue = NULL;
+            }
+        }
+
+        GLOBAL_FREEMEM(modelNode);
+    }
 }
 
 void
 IedModel_destroy(IedModel* model)
 {
-    /* delete all model nodes and dynamically created strings */
+    if (model) {
+        /* delete all model nodes and dynamically created strings */
 
-    /* delete all logical devices */
+        /* delete all logical devices */
 
-    LogicalDevice* ld = model->firstChild;
+        LogicalDevice* ld = model->firstChild;
 
-    while (ld != NULL) {
-        GLOBAL_FREEMEM (ld->name);
+        while (ld != NULL) {
 
-        if (ld->ldName)
-            GLOBAL_FREEMEM (ld->ldName);
+            if (ld->ldName)
+                GLOBAL_FREEMEM (ld->name);
 
-        LogicalNode* ln = (LogicalNode*) ld->firstChild;
+            LogicalNode* ln = (LogicalNode*) ld->firstChild;
 
-        while (ln != NULL) {
-            GLOBAL_FREEMEM(ln->name);
+            while (ln != NULL) {
+                GLOBAL_FREEMEM(ln->name);
 
-            /* delete all data objects */
+                /* delete all data objects */
 
-            DataObject* currentDataObject = (DataObject*) ln->firstChild;
+                DataObject* currentDataObject = (DataObject*) ln->firstChild;
 
-            while (currentDataObject != NULL) {
-                DataObject* nextDataObject = (DataObject*) currentDataObject->sibling;
+                while (currentDataObject != NULL) {
+                    DataObject* nextDataObject = (DataObject*) currentDataObject->sibling;
 
-                ModelNode_destroy((ModelNode*) currentDataObject);
+                    ModelNode_destroy((ModelNode*) currentDataObject);
 
-                currentDataObject = nextDataObject;
+                    currentDataObject = nextDataObject;
+                }
+
+                LogicalNode* currentLn = ln;
+                ln = (LogicalNode*) ln->sibling;
+
+                GLOBAL_FREEMEM(currentLn);
             }
 
-            LogicalNode* currentLn = ln;
-            ln = (LogicalNode*) ln->sibling;
 
-            GLOBAL_FREEMEM(currentLn);
+            LogicalDevice* currentLd = ld;
+            ld = (LogicalDevice*) ld->sibling;
+
+            GLOBAL_FREEMEM(currentLd);
         }
 
+        /*  delete all data sets */
 
-        LogicalDevice* currentLd = ld;
-        ld = (LogicalDevice*) ld->sibling;
+        DataSet* dataSet = model->dataSets;
 
-        GLOBAL_FREEMEM(currentLd);
-    }
+        while (dataSet != NULL) {
+            DataSet* nextDataSet = dataSet->sibling;
 
-    /*  delete all data sets */
+            GLOBAL_FREEMEM(dataSet->name);
 
-    DataSet* dataSet = model->dataSets;
+            DataSetEntry* dse = dataSet->fcdas;
 
-    while (dataSet != NULL) {
-        DataSet* nextDataSet = dataSet->sibling;
+            while (dse != NULL) {
+                DataSetEntry* nextDse = dse->sibling;
 
-        GLOBAL_FREEMEM(dataSet->name);
+                if (dse->componentName != NULL)
+                    GLOBAL_FREEMEM(dse->componentName);
 
-        DataSetEntry* dse = dataSet->fcdas;
+                GLOBAL_FREEMEM(dse->variableName);
 
-        while (dse != NULL) {
-            DataSetEntry* nextDse = dse->sibling;
+                if (dse->isLDNameDynamicallyAllocated)
+                    GLOBAL_FREEMEM(dse->logicalDeviceName);
 
-            if (dse->componentName != NULL)
-                GLOBAL_FREEMEM(dse->componentName);
+                GLOBAL_FREEMEM(dse);
 
-            GLOBAL_FREEMEM(dse->variableName);
+                dse = nextDse;
+            }
 
-            if (dse->isLDNameDynamicallyAllocated)
-                GLOBAL_FREEMEM(dse->logicalDeviceName);
+            GLOBAL_FREEMEM(dataSet);
 
-            GLOBAL_FREEMEM(dse);
-
-            dse = nextDse;
+            dataSet = nextDataSet;
         }
 
-        GLOBAL_FREEMEM(dataSet);
+        /* delete all RCBs */
 
-        dataSet = nextDataSet;
+        ReportControlBlock* rcb = model->rcbs;
+
+        while (rcb != NULL) {
+            ReportControlBlock* nextRcb = rcb->sibling;
+
+            GLOBAL_FREEMEM(rcb->name);
+
+            if (rcb->rptId)
+                GLOBAL_FREEMEM(rcb->rptId);
+
+            if (rcb->dataSetName)
+                GLOBAL_FREEMEM(rcb->dataSetName);
+
+            GLOBAL_FREEMEM(rcb);
+
+            rcb = nextRcb;
+        }
+
+        /* delete all GoCBs */
+
+        GSEControlBlock* gcb = model->gseCBs;
+
+        while (gcb != NULL) {
+            GSEControlBlock* nextGcb = gcb->sibling;
+
+            GLOBAL_FREEMEM(gcb->name);
+            GLOBAL_FREEMEM(gcb->appId);
+            GLOBAL_FREEMEM(gcb->dataSetName);
+
+            if (gcb->address)
+                GLOBAL_FREEMEM(gcb->address);
+
+            GLOBAL_FREEMEM(gcb);
+
+            gcb = nextGcb;
+        }
+
+        /* delete setting controls */
+
+        SettingGroupControlBlock* sgcb = model->sgcbs;
+
+        while (sgcb != NULL) {
+            SettingGroupControlBlock* nextSgcb = sgcb->sibling;
+
+            GLOBAL_FREEMEM(sgcb);
+
+            sgcb = nextSgcb;
+        }
+
+        /* delete all LCBs */
+        LogControlBlock* lcb = model->lcbs;
+
+        while (lcb != NULL) {
+            LogControlBlock* nextLcb = lcb->sibling;
+
+            if (lcb->name)
+                GLOBAL_FREEMEM(lcb->name);
+
+            if (lcb->dataSetName)
+                GLOBAL_FREEMEM(lcb->dataSetName);
+
+            if (lcb->logRef)
+                GLOBAL_FREEMEM(lcb->logRef);
+
+            GLOBAL_FREEMEM(lcb);
+
+            lcb = nextLcb;
+        }
+
+        /* delete all LOGs */
+        Log* log = model->logs;
+
+        while (log != NULL) {
+            Log* nextLog = log->sibling;
+
+            if (log->name)
+                GLOBAL_FREEMEM(log->name);
+
+            GLOBAL_FREEMEM(log);
+
+            log = nextLog;
+        }
+
+        /* delete generic model parts */
+
+        if (model->name)
+            GLOBAL_FREEMEM(model->name);
+
+        GLOBAL_FREEMEM(model);
     }
-
-    /* delete all RCBs */
-
-    ReportControlBlock* rcb = model->rcbs;
-
-    while (rcb != NULL) {
-        ReportControlBlock* nextRcb = rcb->sibling;
-
-        GLOBAL_FREEMEM(rcb->name);
-
-        if (rcb->rptId)
-            GLOBAL_FREEMEM(rcb->rptId);
-
-        if (rcb->dataSetName)
-            GLOBAL_FREEMEM(rcb->dataSetName);
-
-        GLOBAL_FREEMEM(rcb);
-
-        rcb = nextRcb;
-    }
-
-    /* delete all GoCBs */
-
-    GSEControlBlock* gcb = model->gseCBs;
-
-    while (gcb != NULL) {
-        GSEControlBlock* nextGcb = gcb->sibling;
-
-        GLOBAL_FREEMEM(gcb->name);
-        GLOBAL_FREEMEM(gcb->appId);
-        GLOBAL_FREEMEM(gcb->dataSetName);
-
-        if (gcb->address)
-            GLOBAL_FREEMEM(gcb->address);
-
-        GLOBAL_FREEMEM(gcb);
-
-        gcb = nextGcb;
-    }
-
-    /* delete setting controls */
-
-    SettingGroupControlBlock* sgcb = model->sgcbs;
-
-    while (sgcb != NULL) {
-        SettingGroupControlBlock* nextSgcb = sgcb->sibling;
-
-        GLOBAL_FREEMEM(sgcb);
-
-        sgcb = nextSgcb;
-    }
-
-    /* delete all LCBs */
-    LogControlBlock* lcb = model->lcbs;
-
-    while (lcb != NULL) {
-        LogControlBlock* nextLcb = lcb->sibling;
-
-        if (lcb->name)
-            GLOBAL_FREEMEM(lcb->name);
-
-        if (lcb->dataSetName)
-            GLOBAL_FREEMEM(lcb->dataSetName);
-
-        if (lcb->logRef)
-            GLOBAL_FREEMEM(lcb->logRef);
-
-        GLOBAL_FREEMEM(lcb);
-
-        lcb = nextLcb;
-    }
-
-    /* delete all LOGs */
-    Log* log = model->logs;
-
-    while (log != NULL) {
-        Log* nextLog = log->sibling;
-
-        if (log->name)
-            GLOBAL_FREEMEM(log->name);
-
-        GLOBAL_FREEMEM(log);
-
-        log = nextLog;
-    }
-
-
-    /* delete generic model parts */
-
-    if (model->name)
-        GLOBAL_FREEMEM(model->name);
-
-    GLOBAL_FREEMEM(model);
-
 }
 

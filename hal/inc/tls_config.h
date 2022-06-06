@@ -3,7 +3,7 @@
  *
  * TLS Configuration API for protocol stacks using TCP/IP
  *
- * Copyright 2017-2018 MZ Automation GmbH
+ * Copyright 2017-2021 Michael Zillgith
  *
  * Abstraction layer for configuration of different TLS implementations
  *
@@ -38,6 +38,8 @@ typedef struct sTLSConfiguration* TLSConfiguration;
 
 /**
  * \brief Create a new \ref TLSConfiguration object to represent TLS configuration and certificates
+ *
+ * WARNING: Configuration cannot be changed after using for the first time.
  *
  * \return the new TLS configuration
  */
@@ -88,21 +90,64 @@ TLSConfiguration_setOwnCertificate(TLSConfiguration self, uint8_t* certificate, 
 PAL_API bool
 TLSConfiguration_setOwnCertificateFromFile(TLSConfiguration self, const char* filename);
 
+/**
+ * \brief Set the own private key from a byte buffer
+ *
+ * \param key the private key to use
+ * \param keyLen the length of the key
+ * \param password the password of the key or null if the key is not password protected
+ *
+ * \return true, when the key was set, false otherwise (e.g. unknown key format)
+ */
 PAL_API bool
 TLSConfiguration_setOwnKey(TLSConfiguration self, uint8_t* key, int keyLen, const char* keyPassword);
 
+/**
+ * \brief Set the own private key from a key file
+ *
+ * \param filename filename/path of the key file
+ * \param password the password of the key or null if the key is not password protected
+ *
+ * \return true, when the key was set, false otherwise (e.g. unknown key format)
+ */
 PAL_API bool
 TLSConfiguration_setOwnKeyFromFile(TLSConfiguration self, const char* filename, const char* keyPassword);
 
+/**
+ * Add a certificate to the list of allowed peer certificates from a byte buffer
+ *
+ * \param certificate the certificate buffer
+ * \param certLen the length of the certificate buffer
+ * \return true, when the certificate was set, false otherwise (e.g. unknown certificate format)
+ */
 PAL_API bool
-TLSConfiguration_addAllowedCertificate(TLSConfiguration self, uint8_t* certifcate, int certLen);
+TLSConfiguration_addAllowedCertificate(TLSConfiguration self, uint8_t* certificate, int certLen);
 
+/**
+ * \brief Add a certificate to the list of allowed peer certificates
+ *
+ * \param filename filename of the certificate file
+ * \return true, when the certificate was set, false otherwise (e.g. unknown certificate format)
+ */
 PAL_API bool
 TLSConfiguration_addAllowedCertificateFromFile(TLSConfiguration self, const char* filename);
 
+/**
+ * \brief Add a CA certificate used to validate peer certificates from a byte buffer
+ *
+ * \param certificate the certificate buffer
+ * \param certLen the length of the certificate buffer
+ * \return true, when the certificate was set, false otherwise (e.g. unknown certificate format)
+ */
 PAL_API bool
-TLSConfiguration_addCACertificate(TLSConfiguration self, uint8_t* certifcate, int certLen);
+TLSConfiguration_addCACertificate(TLSConfiguration self, uint8_t* certificate, int certLen);
 
+/**
+ * \brief Add a CA certificate used to validate peer certificates from a file
+ *
+ * \param filename filename of the certificate file
+ * \return true, when the certificate was set, false otherwise (e.g. unknown certificate format)
+ */
 PAL_API bool
 TLSConfiguration_addCACertificateFromFile(TLSConfiguration self, const char* filename);
 
@@ -116,6 +161,51 @@ TLSConfiguration_addCACertificateFromFile(TLSConfiguration self, const char* fil
 PAL_API void
 TLSConfiguration_setRenegotiationTime(TLSConfiguration self, int timeInMs);
 
+typedef enum {
+   TLS_VERSION_NOT_SELECTED = 0,
+   TLS_VERSION_SSL_3_0 = 3,
+   TLS_VERSION_TLS_1_0 = 4,
+   TLS_VERSION_TLS_1_1 = 5,
+   TLS_VERSION_TLS_1_2 = 6,
+   TLS_VERSION_TLS_1_3 = 7
+} TLSConfigVersion;
+
+/**
+ * \brief Set minimal allowed TLS version to use
+ */
+PAL_API void
+TLSConfiguration_setMinTlsVersion(TLSConfiguration self, TLSConfigVersion version);
+
+/**
+ * \brief Set maximal allowed TLS version to use
+ */
+PAL_API void
+TLSConfiguration_setMaxTlsVersion(TLSConfiguration self, TLSConfigVersion version);
+
+/**
+ * \brief Add a CRL (certificate revocation list) from buffer
+ *
+ * \param crl the buffer containing the CRL
+ * \param crlLen the length of the CRL buffer
+ * \return true, when the CRL was imported, false otherwise (e.g. unknown format)
+ */
+PAL_API bool
+TLSConfiguration_addCRL(TLSConfiguration self, uint8_t* crl, int crlLen);
+
+/**
+ * \brief Add a CRL (certificate revocation list) from a file
+ *
+ * \param filename filename of the CRL file
+ * \return true, when the CRL was imported, false otherwise (e.g. unknown format)
+ */
+PAL_API bool
+TLSConfiguration_addCRLFromFile(TLSConfiguration self, const char* filename);
+
+/**
+ * Release all resource allocated by the TLSConfiguration instance
+ *
+ * NOTE: Do not use the object after calling this function!
+ */
 PAL_API void
 TLSConfiguration_destroy(TLSConfiguration self);
 

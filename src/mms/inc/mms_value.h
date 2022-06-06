@@ -80,7 +80,7 @@ typedef struct sMmsValue MmsValue;
  * \return a newly created array instance
  */
 LIB61850_API MmsValue*
-MmsValue_createArray(MmsVariableSpecification* elementType, int size);
+MmsValue_createArray(const MmsVariableSpecification* elementType, int size);
 
 /**
  * \brief Get the size of an array.
@@ -552,7 +552,22 @@ MmsValue_getBinaryTimeAsUtcMs(const MmsValue* self);
  * \param size the size of the buffer that contains the new value
  */
 LIB61850_API void
-MmsValue_setOctetString(MmsValue* self, uint8_t* buf, int size);
+MmsValue_setOctetString(MmsValue* self, const uint8_t* buf, int size);
+
+/**
+ * \brief Set a single octet of an MmsValue object of type MMS_OCTET_STRING.
+ *
+ * This method will copy the provided octet to the internal buffer of the
+ * MmsValue instance, at the 'octetPos' position. This will only happen
+ * if the internal buffer size is large enough. Otherwise the object value is not changed.
+ *
+ * \param self MmsValue instance to operate on. Has to be of a type MMS_OCTET_STRING.
+ * \param octetPos the position of the octet in the octet string. Starting with 0.
+ *        The octet with position 0 is the first octet if the MmsValue instance is serialized.
+ * \param value the new value of the octet (0 to 255, or 0x00 to 0xFF)
+ */
+LIB61850_API void
+MmsValue_setOctetStringOctet(MmsValue* self, int octetPos, uint8_t value);
 
 /**
  * \brief Returns the size in bytes of an MmsValue object of type MMS_OCTET_STRING.
@@ -591,6 +606,20 @@ MmsValue_getOctetStringMaxSize(MmsValue* self);
  */
 LIB61850_API uint8_t*
 MmsValue_getOctetStringBuffer(MmsValue* self);
+
+/**
+ * \brief Get the value of a single octet of an MmsType object of type MMS_OCTET_STRING
+ *
+ * NOTE: The octet quantity of the octet string can be requested with
+ * the \ref MmsValue_getOctetStringSize function.
+ *
+ * \param self MmsValue instance to operate on. Has to be of a type MMS_OCTET_STRING.
+ * \param octetPos the position of the octet in the octet string. Starting with 0. The octet
+ *        with position 0 is the first octet if the MmsValue instance is serialized.
+ * \return the value of the octet (0 to 255, or 0x00 to 0xFF)
+ */
+LIB61850_API uint8_t
+MmsValue_getOctetStringOctet(MmsValue* self, int octetPos);
 
 /**
  * \brief Update the value of an MmsValue instance by the value of another MmsValue instance.
@@ -839,7 +868,7 @@ MmsValue_newBinaryTime(bool timeOfDay);
  * \return new MmsValue instance of type MMS_VISIBLE_STRING
  */
 LIB61850_API MmsValue*
-MmsValue_newVisibleStringFromByteArray(uint8_t* byteArray, int size);
+MmsValue_newVisibleStringFromByteArray(const uint8_t* byteArray, int size);
 
 /**
  * \brief Create a new MmsValue instance of type MMS_STRING from the specified byte array
@@ -850,7 +879,7 @@ MmsValue_newVisibleStringFromByteArray(uint8_t* byteArray, int size);
  * \return new MmsValue instance of type MMS_STRING
  */
 LIB61850_API MmsValue*
-MmsValue_newMmsStringFromByteArray(uint8_t* byteArray, int size);
+MmsValue_newMmsStringFromByteArray(const uint8_t* byteArray, int size);
 
 /**
  * \brief Create a new MmsValue instance of type MMS_STRING.
@@ -860,7 +889,7 @@ MmsValue_newMmsStringFromByteArray(uint8_t* byteArray, int size);
  * \return new MmsValue instance of type MMS_STRING
  */
 LIB61850_API MmsValue*
-MmsValue_newMmsString(char* string);
+MmsValue_newMmsString(const char* string);
 
 /**
  * \brief Set the value of MmsValue instance of type MMS_STRING

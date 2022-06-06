@@ -1,24 +1,10 @@
 /*
  *  ethernet_hal.h
  *
- *  Copyright 2013, 2014 Michael Zillgith
+ *  Copyright 2013-2021 Michael Zillgith
  *
- *  This file is part of libIEC61850.
- *
- *  libIEC61850 is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  libIEC61850 is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with libIEC61850.  If not, see <http://www.gnu.org/licenses/>.
- *
- *  See COPYING file for the complete license text.
+ *  This file is part of Platform Abstraction Layer (libpal)
+ *  for libiec61850, libmms, and lib60870.
  */
 
 #ifndef ETHERNET_HAL_H_
@@ -36,7 +22,7 @@ extern "C" {
    */
 
 /**
- * @defgroup HAL_ETHERNET Direct access to the ethernet layer (optional - required by GOOSE and Sampled Values)
+ * @defgroup HAL_ETHERNET Direct access to the Ethernet layer (optional - required by GOOSE and Sampled Values)
  *
  * @{
  */
@@ -47,8 +33,15 @@ extern "C" {
  */
 typedef struct sEthernetSocket* EthernetSocket;
 
-/** Opaque reference for a set of ethernet socket handles */
+/** Opaque reference for a set of Ethernet socket handles */
 typedef struct sEthernetHandleSet* EthernetHandleSet;
+
+typedef enum {
+    ETHERNET_SOCKET_MODE_PROMISC, /**<< receive all Ethernet messages */
+    ETHERNET_SOCKET_MODE_ALL_MULTICAST, /**<< receive all multicast messages */
+    ETHERNET_SOCKET_MODE_MULTICAST, /**<< receive only specific multicast messages */
+    ETHERNET_SOCKET_MODE_HOST_ONLY /**<< receive only messages for the host */
+} EthernetSocketMode;
 
 /**
  * \brief Create a new connection handle set (EthernetHandleSet)
@@ -115,7 +108,7 @@ Ethernet_getInterfaceMACAddress(const char* interfaceId, uint8_t* addr);
  * destination MAC address.
  *
  * \param interfaceId the ID of the Ethernet interface
- * \param destAddress byte array that contains the Ethernet MAC address
+ * \param destAddress byte array that contains the Ethernet destination MAC address for sending
  */
 PAL_API EthernetSocket
 Ethernet_createSocket(const char* interfaceId, uint8_t* destAddress);
@@ -132,7 +125,33 @@ PAL_API void
 Ethernet_sendPacket(EthernetSocket ethSocket, uint8_t* buffer, int packetSize);
 
 /*
+ * \brief set the receive mode of the Ethernet socket
+ *
+ * NOTE: When not implemented the the implementation has to be able to receive
+ * all messages required by GOOSE and/or SV (usually multicast addresses).
+ *
+ * \param ethSocket the ethernet socket handle
+ * \param mode the mode of the socket
+ */
+PAL_API void
+Ethernet_setMode(EthernetSocket ethSocket, EthernetSocketMode mode);
+
+/**
+ * \brief Add a multicast address to be received by the Ethernet socket
+ *
+ * Used when mode is ETHERNET_SOCKET_MODE_MULTICAST
+ *
+ * \param ethSocket the ethernet socket handle
+ * \param multicastAddress the multicast Ethernet address (this has to be a byte buffer of at least 6 byte)
+ */
+PAL_API void
+Ethernet_addMulticastAddress(EthernetSocket ethSocket, uint8_t* multicastAddress);
+
+/*
  * \brief set a protocol filter for the specified etherType
+ *
+ * NOTE: Implementation is not required but can improve the performance when the ethertype
+ * filtering can be done on OS/network stack layer.
  *
  * \param ethSocket the ethernet socket handle
  * \param etherType the ether type of messages to accept

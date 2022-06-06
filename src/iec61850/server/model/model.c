@@ -1,7 +1,7 @@
 /*
  *  model.c
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -107,6 +107,9 @@ IedModel_lookupDataSet(IedModel* self, const char* dataSetReference  /* e.g. ied
 
 	int modelNameLen = strlen(self->name);
 
+	if (modelNameLen > 64)
+	    return NULL;
+
 	memcpy(domainName, self->name, modelNameLen);
 
 	while (dataSet != NULL) {
@@ -147,7 +150,7 @@ IedModel_getDevice(IedModel* self, const char* deviceName)
 {
     LogicalDevice* device = self->firstChild;
 
-    while (device != NULL) {
+    while (device) {
 
         if (device->ldName) {
             /* functional naming */
@@ -158,8 +161,8 @@ IedModel_getDevice(IedModel* self, const char* deviceName)
             char domainName[65];
 
             strncpy(domainName, self->name, 64);
-            strncat(domainName, device->name, 64);
             domainName[64] = 0;
+            strncat(domainName, device->name, 64);
 
             if (strcmp(domainName, deviceName) == 0)
                 return device;
@@ -176,8 +179,8 @@ IedModel_getDeviceByInst(IedModel* self, const char* ldInst)
 {
     LogicalDevice* device = self->firstChild;
 
-    while (device != NULL) {
-
+    while (device)
+    {
       if (strcmp(device->name, ldInst) == 0)
           return device;
 
@@ -389,7 +392,6 @@ IedModel_getModelNodeByShortObjectReference(IedModel* model, const char* objectR
     return ModelNode_getChild((ModelNode*) ld, separator + 1);
 }
 
-
 bool
 DataObject_hasFCData(DataObject* dataObject, FunctionalConstraint fc)
 {
@@ -488,17 +490,15 @@ LogicalDevice_getLogicalNodeCount(LogicalDevice* logicalDevice)
 ModelNode*
 LogicalDevice_getChildByMmsVariableName(LogicalDevice* logicalDevice, const char* mmsVariableName)
 {
-
-
-	char fcString[3];
-	char nameRef[65];
-
 	const char* separator = strchr(mmsVariableName,'$');
 
 	if (separator == NULL)
 		return NULL;
 
 	if (strlen(separator) > 4) {
+	    char fcString[3];
+	    char nameRef[65];
+
 		fcString[0] = separator[1];
 		fcString[1] = separator[2];
 		fcString[2] = 0;
@@ -569,9 +569,8 @@ createObjectReference(ModelNode* node, char* objectReference, bool withoutIedNam
                 nameLength = strlen (iedModel->name) + strlen(lDevice->name);
 
                 strncpy(objectReference, iedModel->name, 64);
-                strncat(objectReference, lDevice->name, 64);
-
                 objectReference[64] = 0;
+                strncat(objectReference, lDevice->name, 64);
             }
         }
 

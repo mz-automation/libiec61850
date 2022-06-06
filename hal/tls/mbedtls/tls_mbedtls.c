@@ -3,7 +3,7 @@
  *
  * TLS API for TCP/IP protocol stacks
  *
- * Copyright 2017 MZ Automation GmbH
+ * Copyright 2017-2021 Michael Zillgith, MZ Automation GmbH
  *
  * Implementation of the TLS abstraction layer for mbedtls
  *
@@ -14,6 +14,7 @@
 #include "tls_socket.h"
 #include "hal_thread.h"
 #include "lib_memory.h"
+#include "hal_time.h"
 #include "linked_list.h"
 
 #include "mbedtls/platform.h"
@@ -27,9 +28,7 @@
 #include "mbedtls/debug.h"
 
 #if (CONFIG_DEBUG_TLS == 1)
-#define DEBUG_PRINT(appId, fmt, ...) fprintf(stderr, "%s: " fmt, \
-    appId, \
-    __VA_ARGS__)
+#define DEBUG_PRINT(appId, fmt, ...) fprintf(stderr, "%s: " fmt, appId, ## __VA_ARGS__);
 #else
 #define DEBUG_PRINT(fmt, ...) {do {} while(0);}
 #endif
@@ -44,14 +43,24 @@ struct sTLSConfiguration {
 
     mbedtls_x509_crt cacerts;
 
+    mbedtls_x509_crl crl;
+
     mbedtls_ssl_config conf;
     LinkedList /* <mbedtls_x509_crt*> */ allowedCertificates;
 
     bool chainValidation;
     bool allowOnlyKnownCertificates;
 
-    /* TLS session renegotioation time in milliseconds */
+    /* TLS session renegotiation interval in milliseconds */
     int renegotiationTimeInMs;
+
+    /* TLS minimum version allowed (default: TLS_VERSION_TLS_1_0) */
+    TLSConfigVersion minVersion;
+    
+    /* TLS minimum version allowed (default: TLS_VERSION_TLS_1_2) */
+    TLSConfigVersion maxVersion;
+
+    bool setupComplete;
 };
 
 struct sTLSSocket {
@@ -62,6 +71,9 @@ struct sTLSSocket {
     bool storePeerCert;
     uint8_t* peerCert;
     int peerCertLength;
+
+    /* time of last session renegotiation (used to calculate next renegotiation time) */
+    uint64_t lastRenegotiationTime;
 };
 
 static bool
@@ -145,7 +157,27 @@ verifyCertificate (void* parameter, mbedtls_x509_crt *crt, int certificate_depth
     return 0;
 }
 
+/*
+ * Finish configuration when used the first time.
+ */
+static bool
+TLSConfiguration_setupComplete(TLSConfiguration self)
+{
+    if (self->setupComplete == false) {
+        mbedtls_ssl_conf_ca_chain( &(self->conf), &(self->cacerts), &(self->crl) );
 
+        int ret = mbedtls_ssl_conf_own_cert( &(self->conf), &(self->ownCertificate), &(self->ownKey));
+
+        if (ret != 0) {
+            DEBUG_PRINT("TLS", "mbedtls_ssl_conf_own_cert returned %d\n", ret);
+            return false;
+        }
+
+        self->setupComplete = true;
+    }
+
+    return true;
+}
 
 TLSConfiguration
 TLSConfiguration_create()
@@ -155,7 +187,8 @@ TLSConfiguration_create()
     if (self != NULL) {
         mbedtls_ssl_config_init( &(self->conf) );
         mbedtls_x509_crt_init( &(self->ownCertificate) );
-        mbedtls_x509_crt_init( &(self->cacerts));
+        mbedtls_x509_crt_init( &(self->cacerts) );
+        mbedtls_x509_crl_init( &(self->crl) );
         mbedtls_pk_init( &(self->ownKey) );
         mbedtls_entropy_init( &(self->entropy) );
         mbedtls_ctr_drbg_init( &(self->ctr_drbg) );
@@ -171,16 +204,22 @@ TLSConfiguration_create()
 
         mbedtls_ssl_conf_authmode(&(self->conf), MBEDTLS_SSL_VERIFY_REQUIRED);
 
-        mbedtls_ssl_conf_renegotiation(&(self->conf), MBEDTLS_SSL_RENEGOTIATION_DISABLED);
+        mbedtls_ssl_conf_renegotiation(&(self->conf), MBEDTLS_SSL_RENEGOTIATION_ENABLED);
 
         /* static int hashes[] = {3,4,5,6,7,8,0}; */
         /* mbedtls_ssl_conf_sig_hashes(&(self->conf), hashes); */
+
+        self->minVersion = TLS_VERSION_TLS_1_0;
+        self->maxVersion = TLS_VERSION_NOT_SELECTED;
+
+        self->renegotiationTimeInMs = -1; /* no automatic renegotiation */
 
         self->allowedCertificates = LinkedList_create();
 
         /* default behavior is to allow all certificates that are signed by the CA */
         self->chainValidation = true;
         self->allowOnlyKnownCertificates = false;
+        self->setupComplete = false;
     }
 
     return self;
@@ -190,6 +229,18 @@ void
 TLSConfiguration_setClientMode(TLSConfiguration self)
 {
     self->conf.endpoint = MBEDTLS_SSL_IS_CLIENT;
+}
+
+void
+TLSConfiguration_setMinTlsVersion(TLSConfiguration self, TLSConfigVersion version)
+{
+    self->minVersion = version;
+}
+
+void
+TLSConfiguration_setMaxTlsVersion(TLSConfiguration self, TLSConfigVersion version)
+{
+    self->maxVersion = version;
 }
 
 void
@@ -210,7 +261,7 @@ TLSConfiguration_setOwnCertificate(TLSConfiguration self, uint8_t* certificate, 
     int ret = mbedtls_x509_crt_parse(&(self->ownCertificate), certificate, certLen);
 
     if (ret != 0)
-        DEBUG_PRINT("mbedtls_x509_crt_parse returned %d\n", ret);
+        DEBUG_PRINT("TLS", "mbedtls_x509_crt_parse returned %d\n", ret);
 
     return (ret == 0);
 }
@@ -306,6 +357,29 @@ TLSConfiguration_addCACertificateFromFile(TLSConfiguration self, const char* fil
     return (ret == 0);
 }
 
+bool
+TLSConfiguration_addCRL(TLSConfiguration self, uint8_t* crl, int crlLen)
+{
+    int ret = mbedtls_x509_crl_parse(&(self->crl), crl, crlLen);
+
+    if (ret != 0) {
+        DEBUG_PRINT("TLS", "mbedtls_x509_crl_parse returned %d\n", ret);
+    }
+
+    return (ret == 0);
+}
+
+bool
+TLSConfiguration_addCRLFromFile(TLSConfiguration self, const char* filename)
+{
+    int ret =  mbedtls_x509_crl_parse_file(&(self->crl), filename);
+
+    if (ret != 0)
+        DEBUG_PRINT("TLS", "mbedtls_x509_crl_parse_file returned %d\n", ret);
+
+    return (ret == 0);
+}
+
 void
 TLSConfiguration_setRenegotiationTime(TLSConfiguration self, int timeInMs)
 {
@@ -317,6 +391,7 @@ TLSConfiguration_destroy(TLSConfiguration self)
 {
     mbedtls_x509_crt_free(&(self->ownCertificate));
     mbedtls_x509_crt_free(&(self->cacerts));
+    mbedtls_x509_crl_free(&(self->crl));
     mbedtls_pk_free(&(self->ownKey));
     mbedtls_ssl_config_free(&(self->conf));
 
@@ -348,6 +423,50 @@ readFunction(void* ctx, unsigned char* buf, size_t len)
     return ret;
 }
 
+static int
+writeFunction(void* ctx, unsigned char* buf, size_t len)
+{
+    return Socket_write((Socket)ctx, buf, (int)len);
+}
+
+static int
+getMajorVersion(TLSConfigVersion version)
+{
+    switch(version) {
+    case TLS_VERSION_NOT_SELECTED:
+        return 0;
+    case TLS_VERSION_SSL_3_0:
+    case TLS_VERSION_TLS_1_0:
+    case TLS_VERSION_TLS_1_1:
+    case TLS_VERSION_TLS_1_2:
+    case TLS_VERSION_TLS_1_3:
+        return 3;
+    default:
+        return 0;
+    }
+}
+
+static int
+getMinorVersion(TLSConfigVersion version)
+{
+    switch(version) {
+    case TLS_VERSION_NOT_SELECTED:
+        return 0;
+    case TLS_VERSION_SSL_3_0:
+        return 0;
+    case TLS_VERSION_TLS_1_0:
+        return 1;
+    case TLS_VERSION_TLS_1_1:
+        return 2;
+    case TLS_VERSION_TLS_1_2:
+        return 3;
+    case TLS_VERSION_TLS_1_3:
+        return 4;
+    default:
+        return 0;
+    }
+}
+
 TLSSocket
 TLSSocket_create(Socket socket, TLSConfiguration configuration, bool storeClientCert)
 {
@@ -361,13 +480,33 @@ TLSSocket_create(Socket socket, TLSConfiguration configuration, bool storeClient
         self->peerCert = NULL;
         self->peerCertLength = 0;
 
+        TLSConfiguration_setupComplete(configuration);
+
         memcpy(&(self->conf), &(configuration->conf), sizeof(mbedtls_ssl_config));
 
         mbedtls_ssl_conf_verify(&(self->conf), verifyCertificate, (void*) self);
 
         int ret;
 
-        mbedtls_ssl_conf_ca_chain( &(self->conf), &(configuration->cacerts), NULL );
+        mbedtls_ssl_conf_ca_chain( &(self->conf), &(configuration->cacerts), &(configuration->crl) );
+
+        if (configuration->minVersion != TLS_VERSION_NOT_SELECTED) {
+            /* set minimum TLS version */
+
+            int majorVer = getMajorVersion(configuration->minVersion);
+            int minorVer = getMinorVersion(configuration->minVersion);
+
+            mbedtls_ssl_conf_min_version( &(self->conf), majorVer, minorVer);
+        }
+
+        if (configuration->maxVersion != TLS_VERSION_NOT_SELECTED) {
+            /* set maximum TLS version */
+
+            int majorVer = getMajorVersion(configuration->maxVersion);
+            int minorVer = getMinorVersion(configuration->maxVersion);
+
+            mbedtls_ssl_conf_max_version( &(self->conf), majorVer, minorVer);
+        }
 
         ret = mbedtls_ssl_conf_own_cert( &(self->conf), &(configuration->ownCertificate), &(configuration->ownKey));
 
@@ -379,23 +518,31 @@ TLSSocket_create(Socket socket, TLSConfiguration configuration, bool storeClient
         if (ret != 0)
             DEBUG_PRINT("TLS", "mbedtls_ssl_setup returned %d\n", ret);
 
-        mbedtls_ssl_set_bio(&(self->ssl), socket, (mbedtls_ssl_send_t*) Socket_write,
+        mbedtls_ssl_set_bio(&(self->ssl), socket, (mbedtls_ssl_send_t*) writeFunction,
                 (mbedtls_ssl_recv_t*) readFunction, NULL);
 
         while( (ret = mbedtls_ssl_handshake(&(self->ssl)) ) != 0 )
         {
             if( ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE )
             {
-                DEBUG_PRINT("TLS", "mbedtls_ssl_handshake returned %d\n\n", ret );
+                DEBUG_PRINT("TLS", "handshake failed - mbedtls_ssl_handshake --> %d\n\n", ret );
 
-                mbedtls_ssl_config_free(&(self->conf));
                 mbedtls_ssl_free(&(self->ssl));
+
+                if (self->peerCert) {
+                    GLOBAL_FREEMEM(self->peerCert);
+                }
 
                 GLOBAL_FREEMEM(self);
 
                 return NULL;
             }
         }
+
+        self->lastRenegotiationTime = Hal_getTimeInMs();
+
+        /* TODO check for TLS version warning or alarm condition */
+        /* printf("TLS %i.%i\n", self->ssl.major_ver, self->ssl.minor_ver); */
     }
 
     return self;
@@ -422,6 +569,19 @@ TLSSocket_performHandshake(TLSSocket self)
 int
 TLSSocket_read(TLSSocket self, uint8_t* buf, int size)
 {
+    if (self->tlsConfig->renegotiationTimeInMs > 0) {
+        if (Hal_getTimeInMs() > self->lastRenegotiationTime + self->tlsConfig->renegotiationTimeInMs) {
+            if (TLSSocket_performHandshake(self) == false) {
+                DEBUG_PRINT("TLS", " renegotiation failed\n");
+                return -1;
+            }
+            else {
+                DEBUG_PRINT("TLS", " started renegotiation\n");
+                self->lastRenegotiationTime = Hal_getTimeInMs();
+            }
+        }
+    }
+
     int ret = mbedtls_ssl_read(&(self->ssl), buf, size);
 
     if ((ret == MBEDTLS_ERR_SSL_WANT_READ) || (ret == MBEDTLS_ERR_SSL_WANT_WRITE))
@@ -492,7 +652,6 @@ TLSSocket_close(TLSSocket self)
 
     Thread_sleep(10);
 
-    mbedtls_ssl_config_free(&(self->conf));
     mbedtls_ssl_free(&(self->ssl));
 
     if (self->peerCert)

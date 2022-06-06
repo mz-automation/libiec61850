@@ -3,7 +3,7 @@
  *
  * TLS socket API for protocol libraries using TCP/IP
  *
- * Copyright 2017-2020 Michael Zillgith, MZ Automation GmbH
+ * Copyright 2017-2021 Michael Zillgith, MZ Automation GmbH
  *
  * Abstraction layer for different TLS implementations
  *

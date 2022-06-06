@@ -1,7 +1,7 @@
 /*
  *  goose_receiver.c
  *
- *  Copyright 2014-2017 Michael Zillgith
+ *  Copyright 2014-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -151,6 +151,12 @@ parseAllData(uint8_t* buffer, int allDataLength, MmsValue* dataSetValues)
 
         MmsValue* value = MmsValue_getElement(dataSetValues, elementIndex);
 
+        if (value == NULL) {
+            if (DEBUG_GOOSE_SUBSCRIBER)
+                printf("GOOSE_SUBSCRIBER: type mismatch (element %i not found)\n", elementIndex);
+            return GOOSE_PARSE_ERROR_TYPE_MISMATCH;
+        }
+
         bufPos = BerDecoder_decodeLength(buffer, &elementLength, bufPos, allDataLength);
         if (bufPos < 0) {
             pe = GOOSE_PARSE_ERROR_TAGDECODE;
@@ -267,9 +273,25 @@ parseAllData(uint8_t* buffer, int allDataLength, MmsValue* dataSetValues)
 
         case 0x89: /* octet string */
             if (MmsValue_getType(value) == MMS_OCTET_STRING) {
-                if (elementLength <= value->value.octetString.maxSize) {
+                if (elementLength <= abs(value->value.octetString.maxSize)) {
                     value->value.octetString.size = elementLength;
                     memcpy(value->value.octetString.buf, buffer + bufPos, elementLength);
+                }
+                else {
+                    uint8_t* newBuf = (uint8_t*)GLOBAL_MALLOC(elementLength);
+
+                    if (newBuf) {
+                        memcpy(newBuf, buffer + bufPos, elementLength);
+
+                        uint8_t* oldBuf = value->value.octetString.buf;
+
+                        value->value.octetString.buf = newBuf;
+                        value->value.octetString.maxSize = -elementLength;
+                        value->value.octetString.size = elementLength;
+
+                        GLOBAL_FREEMEM(oldBuf);
+                    }
+
                 }
             }
             else {
@@ -1008,19 +1030,21 @@ GooseReceiver_stop(GooseReceiver self)
 void
 GooseReceiver_destroy(GooseReceiver self)
 {
+    if (self) {
 #if (CONFIG_MMS_THREADLESS_STACK == 0)
-    if ((self->thread != NULL) && (GooseReceiver_isRunning(self)))
-        GooseReceiver_stop(self);
+        if ((self->thread != NULL) && (GooseReceiver_isRunning(self)))
+            GooseReceiver_stop(self);
 #endif
 
-    if (self->interfaceId != NULL)
-        GLOBAL_FREEMEM(self->interfaceId);
+        if (self->interfaceId != NULL)
+            GLOBAL_FREEMEM(self->interfaceId);
 
-    LinkedList_destroyDeep(self->subscriberList,
-            (LinkedListValueDeleteFunction) GooseSubscriber_destroy);
+        LinkedList_destroyDeep(self->subscriberList,
+                (LinkedListValueDeleteFunction) GooseSubscriber_destroy);
 
-    GLOBAL_FREEMEM(self->buffer);
-    GLOBAL_FREEMEM(self);
+        GLOBAL_FREEMEM(self->buffer);
+        GLOBAL_FREEMEM(self);
+    }
 }
 
 /***************************************
@@ -1036,6 +1060,26 @@ GooseReceiver_startThreadless(GooseReceiver self)
 
     if (self->ethSocket != NULL) {
         Ethernet_setProtocolFilter(self->ethSocket, ETH_P_GOOSE);
+
+        /* set multicast addresses for subscribers */
+        Ethernet_setMode(self->ethSocket, ETHERNET_SOCKET_MODE_MULTICAST);
+
+        LinkedList element = LinkedList_getNext(self->subscriberList);
+
+        while (element != NULL) {
+            GooseSubscriber subscriber = (GooseSubscriber) LinkedList_getData(element);
+
+            if (subscriber->dstMacSet == false) {
+                /* no destination MAC address defined -> we have to switch to all multicast mode */
+                Ethernet_setMode(self->ethSocket, ETHERNET_SOCKET_MODE_ALL_MULTICAST);
+            }
+            else {
+                Ethernet_addMulticastAddress(self->ethSocket, subscriber->dstMac);
+            }
+
+            element = LinkedList_getNext(element);
+        }
+
         self->running = true;
     }
     else

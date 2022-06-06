@@ -1,7 +1,7 @@
 /*
  *  goose_subscriber.c
  *
- *  Copyright 2013, 2014 Michael Zillgith
+ *  Copyright 2013-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -40,24 +40,26 @@ GooseSubscriber_create(char* goCbRef, MmsValue* dataSetValues)
 {
     GooseSubscriber self = (GooseSubscriber) GLOBAL_CALLOC(1, sizeof(struct sGooseSubscriber));
 
-    strncpy(self->goCBRef, goCbRef, 129);
-    self->goCBRef[129] = 0;
+    if (self) {
+        strncpy(self->goCBRef, goCbRef, 129);
+        self->goCBRef[129] = 0;
 
-    self->goCBRefLen = strlen(goCbRef);
-    self->timestamp = MmsValue_newUtcTime(0);
-    self->dataSetValues = dataSetValues;
+        self->goCBRefLen = strlen(goCbRef);
+        self->timestamp = MmsValue_newUtcTime(0);
+        self->dataSetValues = dataSetValues;
 
-    if (dataSetValues)
-        self->dataSetValuesSelfAllocated = false;
-    else
-        self->dataSetValuesSelfAllocated = true;
+        if (dataSetValues)
+            self->dataSetValuesSelfAllocated = false;
+        else
+            self->dataSetValuesSelfAllocated = true;
 
-    memset(self->dstMac, 0xFF, 6);
-    self->dstMacSet = false;
-    self->appId = -1;
-    self->isObserver = false;
-    self->vlanSet = false;
-    self->parseError = GOOSE_PARSE_ERROR_NO_ERROR;
+        memset(self->dstMac, 0xFF, 6);
+        self->dstMacSet = false;
+        self->appId = -1;
+        self->isObserver = false;
+        self->vlanSet = false;
+        self->parseError = GOOSE_PARSE_ERROR_NO_ERROR;
+    }
 
     return self;
 }
@@ -96,12 +98,14 @@ GooseSubscriber_setAppId(GooseSubscriber self, uint16_t appId)
 void
 GooseSubscriber_destroy(GooseSubscriber self)
 {
-    MmsValue_delete(self->timestamp);
+    if (self) {
+        MmsValue_delete(self->timestamp);
 
-    if (self->dataSetValuesSelfAllocated)
-        MmsValue_delete(self->dataSetValues);
+        if (self->dataSetValuesSelfAllocated)
+            MmsValue_delete(self->dataSetValues);
 
-    GLOBAL_FREEMEM(self);
+        GLOBAL_FREEMEM(self);
+    }
 }
 
 void

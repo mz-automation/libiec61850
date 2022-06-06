@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.5.1)
 
 # automagically detect if we should cross-compile
 if(DEFINED ENV{TOOLCHAIN})
@@ -12,7 +12,7 @@ ENABLE_TESTING()
 
 set(LIB_VERSION_MAJOR "1")
 set(LIB_VERSION_MINOR "5")
-set(LIB_VERSION_PATCH "0")
+set(LIB_VERSION_PATCH "1")
 set(LIB_VERSION "${LIB_VERSION_MAJOR}.${LIB_VERSION_MINOR}.${LIB_VERSION_PATCH}")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/third_party/cmake/modules/")
@@ -48,6 +48,7 @@ option(CONFIG_IEC61850_LOG_SERVICE "Build with support for IEC 61850 logging ser
 option(CONFIG_IEC61850_SERVICE_TRACKING "Build with support for IEC 61850 service tracking" ON)
 option(CONFIG_IEC61850_SETTING_GROUPS "Build with support for IEC 61850 setting group services" ON)
 option(CONFIG_IEC61850_SUPPORT_USER_READ_ACCESS_CONTROL "Allow user provided callback to control read access" ON)
+option(CONFIG_IEC61850_RCB_ALLOW_ONLY_PRECONFIGURED_CLIENT "allow only configured clients (when pre-configured by ClientLN)" OFF)
 
 set(CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE "65536" CACHE STRING "Default buffer size for buffered reports in byte" )
 

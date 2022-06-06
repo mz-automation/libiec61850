@@ -204,14 +204,8 @@ LinkedList_printStringList(LinkedList list)
 {
     LinkedList element = list;
 
-    int elementCount = 0;
-
     while ((element = LinkedList_getNext(element)) != NULL) {
         char* str = (char*) (element->data);
         printf("%s\n", str);
-        elementCount++;
     }
 }
-
-
-

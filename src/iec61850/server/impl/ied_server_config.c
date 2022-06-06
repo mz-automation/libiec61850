@@ -1,7 +1,7 @@
 /*
  *  ied_server_config.c
  *
- *  Copyright 2018-2020 Michael Zillgith
+ *  Copyright 2018-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -55,8 +55,10 @@ IedServerConfig_create()
         self->edition = IEC_61850_EDITION_2;
         self->maxMmsConnections = 5;
         self->enableEditSG = true;
+        self->enableResvTmsForSGCB = true;
         self->enableResvTmsForBRCB = true;
         self->enableOwnerForRCB = false;
+        self->syncIntegrityReportTimes = false;
     }
 
     return self;
@@ -65,8 +67,10 @@ IedServerConfig_create()
 void
 IedServerConfig_destroy(IedServerConfig self)
 {
-    GLOBAL_FREEMEM(self->fileServiceBasepath);
-    GLOBAL_FREEMEM(self);
+    if (self) {
+        GLOBAL_FREEMEM(self->fileServiceBasepath);
+        GLOBAL_FREEMEM(self);
+    }
 }
 
 void
@@ -247,4 +251,16 @@ int
 IedServerConfig_getMaxMmsConnections(IedServerConfig self)
 {
     return self->maxMmsConnections;
+}
+
+void
+IedServerConfig_setSyncIntegrityReportTimes(IedServerConfig self, bool enable)
+{
+    self->syncIntegrityReportTimes = enable;
+}
+
+bool
+IedServerConfig_getSyncIntegrityReportTimes(IedServerConfig self)
+{
+    return self->syncIntegrityReportTimes;
 }

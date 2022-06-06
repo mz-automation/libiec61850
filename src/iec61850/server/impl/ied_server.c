@@ -1,7 +1,7 @@
 /*
  *  ied_server.c
  *
- *  Copyright 2013-2020 Michael Zillgith
+ *  Copyright 2013-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -438,6 +438,7 @@ updateDataSetsWithCachedValues(IedServer self)
                         char domainName[65];
 
                         strncpy(domainName, self->model->name, 64);
+                        domainName[64] = 0;
                         strncat(domainName, dataSetEntry->logicalDeviceName, 64 - iedNameLength);
 
                         domain = MmsDevice_getDomain(self->mmsDevice, domainName);
@@ -555,11 +556,13 @@ IedServer_createWithConfig(IedModel* dataModel, TLSConfiguration tlsConfiguratio
             self->reportBufferSizeURCBs = serverConfiguration->reportBufferSizeURCBs;
             self->enableBRCBResvTms = serverConfiguration->enableResvTmsForBRCB;
             self->enableOwnerForRCB = serverConfiguration->enableOwnerForRCB;
+            self->syncIntegrityReportTimes = serverConfiguration->syncIntegrityReportTimes;
         }
         else {
             self->reportBufferSizeBRCBs = CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE;
             self->reportBufferSizeURCBs = CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE;
             self->enableOwnerForRCB = false;
+            self->syncIntegrityReportTimes = false;
 #if (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1)
             self->enableBRCBResvTms = true;
 #else
@@ -656,53 +659,61 @@ IedServer_createWithTlsSupport(IedModel* dataModel, TLSConfiguration tlsConfigur
 }
 
 void
+IedServer_setRCBEventHandler(IedServer self, IedServer_RCBEventHandler handler, void* parameter)
+{
+    self->mmsMapping->rcbEventHandler = handler;
+    self->mmsMapping->rcbEventHandlerParameter = parameter;
+}
+
+void
 IedServer_destroy(IedServer self)
 {
-
+    if (self) {
     /* Stop server if running */
-    if (self->running) {
+        if (self->running) {
 #if (CONFIG_MMS_THREADLESS_STACK == 1)
-        IedServer_stopThreadless(self);
+            IedServer_stopThreadless(self);
 #else
-        IedServer_stop(self);
+            IedServer_stop(self);
 #endif
-    }
+        }
 
 #if ((CONFIG_MMS_SINGLE_THREADED == 1) && (CONFIG_MMS_THREADLESS_STACK == 0))
 
-    if (self->serverThread)
-        Thread_destroy(self->serverThread);
+        if (self->serverThread)
+            Thread_destroy(self->serverThread);
 
 #endif
 
-    MmsServer_destroy(self->mmsServer);
+        MmsServer_destroy(self->mmsServer);
 
-    if (self->localIpAddress != NULL)
-        GLOBAL_FREEMEM(self->localIpAddress);
+        if (self->localIpAddress != NULL)
+            GLOBAL_FREEMEM(self->localIpAddress);
 
-    if (self->mmsMapping)
-        MmsMapping_destroy(self->mmsMapping);
+        if (self->mmsMapping)
+            MmsMapping_destroy(self->mmsMapping);
 
-    LinkedList_destroyDeep(self->clientConnections, (LinkedListValueDeleteFunction) private_ClientConnection_destroy);
+        LinkedList_destroyDeep(self->clientConnections, (LinkedListValueDeleteFunction) private_ClientConnection_destroy);
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
-    Semaphore_destroy(self->dataModelLock);
-    Semaphore_destroy(self->clientConnectionsLock);
+        Semaphore_destroy(self->dataModelLock);
+        Semaphore_destroy(self->clientConnectionsLock);
 #endif
 
 #if (CONFIG_IEC61850_SUPPORT_SERVER_IDENTITY == 1)
 
-    if (self->vendorName)
-        GLOBAL_FREEMEM(self->vendorName);
+        if (self->vendorName)
+            GLOBAL_FREEMEM(self->vendorName);
 
-    if (self->modelName)
-        GLOBAL_FREEMEM(self->modelName);
+        if (self->modelName)
+            GLOBAL_FREEMEM(self->modelName);
 
-    if (self->revision)
-        GLOBAL_FREEMEM(self->revision);
+        if (self->revision)
+            GLOBAL_FREEMEM(self->revision);
 #endif /* (CONFIG_IEC61850_SUPPORT_SERVER_IDENTITY == 1) */
 
-    GLOBAL_FREEMEM(self);
+        GLOBAL_FREEMEM(self);
+    }
 }
 
 void
@@ -790,6 +801,8 @@ IedServer_stop(IedServer self)
 
         MmsMapping_stopEventWorkerThread(self->mmsMapping);
 
+        Reporting_deactivateAllReports(self->mmsMapping);
+
 #if (CONFIG_MMS_SINGLE_THREADED == 1)
         Thread_destroy(self->serverThread);
         self->serverThread = NULL;
@@ -872,9 +885,13 @@ IedServer_stopThreadless(IedServer self)
 void
 IedServer_lockDataModel(IedServer self)
 {
+    Semaphore_wait(self->mmsMapping->isModelLockedMutex);
+
     MmsServer_lockModel(self->mmsServer);
 
     self->mmsMapping->isModelLocked = true;
+
+    Semaphore_post(self->mmsMapping->isModelLockedMutex);
 }
 
 void
@@ -888,9 +905,13 @@ IedServer_unlockDataModel(IedServer self)
     /* check if reports have to be sent! */
     Reporting_processReportEventsAfterUnlock(self->mmsMapping);
 
+    Semaphore_wait(self->mmsMapping->isModelLockedMutex);
+
     self->mmsMapping->isModelLocked = false;
 
     MmsServer_unlockModel(self->mmsServer);
+
+    Semaphore_post(self->mmsMapping->isModelLockedMutex);
 }
 
 #if (CONFIG_IEC61850_CONTROL_SERVICE == 1)
@@ -1223,8 +1244,8 @@ IedServer_updateAttributeValue(IedServer self, DataAttribute* dataAttribute, Mms
 void
 IedServer_updateFloatAttributeValue(IedServer self, DataAttribute* dataAttribute, float value)
 {
-    assert(MmsValue_getType(dataAttribute->mmsValue) == MMS_FLOAT);
     assert(dataAttribute != NULL);
+    assert(MmsValue_getType(dataAttribute->mmsValue) == MMS_FLOAT);
     assert(self != NULL);
 
     float currentValue = MmsValue_toFloat(dataAttribute->mmsValue);
@@ -1247,8 +1268,8 @@ IedServer_updateFloatAttributeValue(IedServer self, DataAttribute* dataAttribute
 void
 IedServer_updateInt32AttributeValue(IedServer self, DataAttribute* dataAttribute, int32_t value)
 {
-    assert(MmsValue_getType(dataAttribute->mmsValue) == MMS_INTEGER);
     assert(dataAttribute != NULL);
+    assert(MmsValue_getType(dataAttribute->mmsValue) == MMS_INTEGER);
     assert(self != NULL);
 
     int32_t currentValue = MmsValue_toInt32(dataAttribute->mmsValue);
@@ -1293,8 +1314,8 @@ IedServer_updateDbposValue(IedServer self, DataAttribute* dataAttribute, Dbpos v
 void
 IedServer_updateInt64AttributeValue(IedServer self, DataAttribute* dataAttribute, int64_t value)
 {
-    assert(MmsValue_getType(dataAttribute->mmsValue) == MMS_INTEGER);
     assert(dataAttribute != NULL);
+    assert(MmsValue_getType(dataAttribute->mmsValue) == MMS_INTEGER);
     assert(self != NULL);
 
     int64_t currentValue = MmsValue_toInt64(dataAttribute->mmsValue);
@@ -1318,8 +1339,8 @@ IedServer_updateInt64AttributeValue(IedServer self, DataAttribute* dataAttribute
 void
 IedServer_updateUnsignedAttributeValue(IedServer self, DataAttribute* dataAttribute, uint32_t value)
 {
-    assert(MmsValue_getType(dataAttribute->mmsValue) == MMS_UNSIGNED);
     assert(dataAttribute != NULL);
+    assert(MmsValue_getType(dataAttribute->mmsValue) == MMS_UNSIGNED);
     assert(self != NULL);
 
     uint32_t currentValue = MmsValue_toUint32(dataAttribute->mmsValue);
@@ -1343,8 +1364,8 @@ IedServer_updateUnsignedAttributeValue(IedServer self, DataAttribute* dataAttrib
 void
 IedServer_updateBitStringAttributeValue(IedServer self, DataAttribute* dataAttribute, uint32_t value)
 {
-    assert(MmsValue_getType(dataAttribute->mmsValue) == MMS_BIT_STRING);
     assert(dataAttribute != NULL);
+    assert(MmsValue_getType(dataAttribute->mmsValue) == MMS_BIT_STRING);
     assert(self != NULL);
 
     uint32_t currentValue = MmsValue_getBitStringAsInteger(dataAttribute->mmsValue);
@@ -1400,8 +1421,8 @@ IedServer_updateBooleanAttributeValue(IedServer self, DataAttribute* dataAttribu
 void
 IedServer_updateVisibleStringAttributeValue(IedServer self, DataAttribute* dataAttribute, char *value)
 {
-    assert(MmsValue_getType(dataAttribute->mmsValue) == MMS_VISIBLE_STRING);
     assert(dataAttribute != NULL);
+    assert(MmsValue_getType(dataAttribute->mmsValue) == MMS_VISIBLE_STRING);
     assert(self != NULL);
 
     const char* currentValue = MmsValue_toString(dataAttribute->mmsValue);
@@ -1424,8 +1445,8 @@ IedServer_updateVisibleStringAttributeValue(IedServer self, DataAttribute* dataA
 void
 IedServer_updateUTCTimeAttributeValue(IedServer self, DataAttribute* dataAttribute, uint64_t value)
 {
-    assert(MmsValue_getType(dataAttribute->mmsValue) == MMS_UTC_TIME);
     assert(dataAttribute != NULL);
+    assert(MmsValue_getType(dataAttribute->mmsValue) == MMS_UTC_TIME);
     assert(self != NULL);
 
     uint64_t currentValue = MmsValue_getUtcTimeInMs(dataAttribute->mmsValue);
@@ -1449,8 +1470,8 @@ IedServer_updateUTCTimeAttributeValue(IedServer self, DataAttribute* dataAttribu
 void
 IedServer_updateTimestampAttributeValue(IedServer self, DataAttribute* dataAttribute, Timestamp* timestamp)
 {
-    assert(MmsValue_getType(dataAttribute->mmsValue) == MMS_UTC_TIME);
     assert(dataAttribute != NULL);
+    assert(MmsValue_getType(dataAttribute->mmsValue) == MMS_UTC_TIME);
     assert(self != NULL);
 
     if (memcmp(dataAttribute->mmsValue->value.utcTime, timestamp->val, 8)) {
@@ -1683,6 +1704,7 @@ IedServer_getFunctionalConstrainedData(IedServer self, DataObject* dataObject, F
     }
 
     strncpy(domainName, self->model->name, 64);
+    domainName[64] = 0;
     strncat(domainName, ld->name, 64);
 
     MmsDomain* domain = MmsDevice_getDomain(self->mmsDevice, domainName);

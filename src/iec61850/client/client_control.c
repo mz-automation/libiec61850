@@ -1,7 +1,7 @@
 /*
  *  client_control.c
  *
- *  Copyright 2013-2018 Michael Zillgith
+ *  Copyright 2013-2021 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -441,8 +441,12 @@ prepareOperParameters(ControlObjectClient self, MmsValue* ctlVal, uint64_t operT
 
     MmsValue* ctlTime;
 
-    if (self->edition == 2)
+    if (self->edition == 2) {
         ctlTime = MmsValue_newUtcTimeByMsTime(timestamp);
+
+        if (self->connection)
+            MmsValue_setUtcTimeQuality(ctlTime, self->connection->timeQuality);
+    }
     else {
         ctlTime = MmsValue_newBinaryTime(false);
         MmsValue_setBinaryTime(ctlTime, timestamp);
@@ -566,7 +570,7 @@ internalOperateHandler(uint32_t invokeId, void* parameter, MmsError err, MmsData
     }
     else {
         if (DEBUG_IED_CLIENT)
-            printf("IED_CLIENT: internal error - no matching outstanding call (ID: %d)!\n", invokeId);
+            printf("IED_CLIENT: internal error - no matching outstanding call (ID: %u)!\n", invokeId);
     }
 }
 
@@ -610,7 +614,7 @@ ControlObjectClient_operateAsync(ControlObjectClient self, IedClientError* err, 
 
     MmsError mmsError;
 
-    call->invokeId = MmsConnection_writeVariableAsync(self->connection->connection, &mmsError, domainId, itemId, operParameters, internalOperateHandler, self);
+    MmsConnection_writeVariableAsync(self->connection->connection, &(call->invokeId), &mmsError, domainId, itemId, operParameters, internalOperateHandler, self);
 
     invokeId = call->invokeId;
 
@@ -682,8 +686,12 @@ prepareSBOwParameters(ControlObjectClient self, MmsValue* ctlVal)
     if (self->useConstantT)
         self->constantT = timestamp;
 
-    if (self->edition == 2)
+    if (self->edition == 2) {
         ctlTime = MmsValue_newUtcTimeByMsTime(timestamp);
+
+        if (self->connection)
+            MmsValue_setUtcTimeQuality(ctlTime, self->connection->timeQuality);
+    }
     else {
         ctlTime = MmsValue_newBinaryTime(false);
         MmsValue_setBinaryTime(ctlTime, timestamp);
@@ -855,7 +863,7 @@ ControlObjectClient_selectWithValueAsync(ControlObjectClient self, IedClientErro
     if (DEBUG_IED_CLIENT)
         printf("IED_CLIENT: select with value: %s/%s\n", domainId, itemId);
 
-    call->invokeId = MmsConnection_writeVariableAsync(self->connection->connection, &mmsError, domainId, itemId, selValParameters, internalSelWithValHandler, self);
+    MmsConnection_writeVariableAsync(self->connection->connection, &(call->invokeId), &mmsError, domainId, itemId, selValParameters, internalSelWithValHandler, self);
 
     invokeId = call->invokeId;
 
@@ -1011,6 +1019,9 @@ internalSelectHandler(uint32_t invokeId, void* parameter, MmsError err, MmsValue
 uint32_t
 ControlObjectClient_selectAsync(ControlObjectClient self, IedClientError* err, ControlObjectClient_ControlActionHandler handler, void* parameter)
 {
+    *err = IED_ERROR_OK;
+    uint32_t invokeId = 0;
+
     resetLastApplError(self);
 
     char domainId[65];
@@ -1037,14 +1048,18 @@ ControlObjectClient_selectAsync(ControlObjectClient self, IedClientError* err, C
     if (DEBUG_IED_CLIENT)
         printf("IED_CLIENT: select: %s/%s\n", domainId, itemId);
 
-    call->invokeId = MmsConnection_readVariableAsync(IedConnection_getMmsConnection(self->connection),
-            &mmsError, domainId, itemId, internalSelectHandler, self);
+    MmsConnection_readVariableAsync(IedConnection_getMmsConnection(self->connection),
+            &(call->invokeId), &mmsError, domainId, itemId, internalSelectHandler, self);
+
+    invokeId = call->invokeId;
+
+    *err = iedConnection_mapMmsErrorToIedError(mmsError);
 
     if (mmsError != MMS_ERROR_NONE) {
         iedConnection_releaseOutstandingCall(self->connection, call);
     }
 
-    return call->invokeId;
+    return invokeId;
 }
 
 static MmsValue*
@@ -1082,8 +1097,12 @@ createCancelParameters(ControlObjectClient self)
 
     MmsValue* ctlTime;
 
-    if (self->edition == 2)
+    if (self->edition == 2) {
         ctlTime = MmsValue_newUtcTimeByMsTime(timestamp);
+
+        if (self->connection)
+            MmsValue_setUtcTimeQuality(ctlTime, self->connection->timeQuality);
+    }
     else {
         ctlTime = MmsValue_newBinaryTime(false);
         MmsValue_setBinaryTime(ctlTime, timestamp);
@@ -1220,7 +1239,7 @@ ControlObjectClient_cancelAsync(ControlObjectClient self, IedClientError* err, C
     if (DEBUG_IED_CLIENT)
         printf("IED_CLIENT: select with value: %s/%s\n", domainId, itemId);
 
-    call->invokeId = MmsConnection_writeVariableAsync(self->connection->connection, &mmsError, domainId, itemId, cancelParameters, internalCancelHandler, self);
+    MmsConnection_writeVariableAsync(self->connection->connection, &(call->invokeId), &mmsError, domainId, itemId, cancelParameters, internalCancelHandler, self);
 
     invokeId = call->invokeId;
 

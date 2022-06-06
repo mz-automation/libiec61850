@@ -3,7 +3,7 @@
  *
  *  Client side representation of the ISO stack (COTP, session, presentation, ACSE)
  *
- *  Copyright 2013-2018 Michael Zillgith
+ *  Copyright 2013-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -193,44 +193,63 @@ IsoClientConnection_create(IsoConnectionParameters parameters, IsoIndicationCall
 static bool
 sendConnectionRequestMessage(IsoClientConnection self)
 {
+    int socketExtensionBufferSize = CONFIG_MMS_MAXIMUM_PDU_SIZE + 1000;
+    uint8_t* socketExtensionBuffer = NULL;
+
     if (self->cotpConnection) {
         /* Destroy existing handle set when connection is reused */
         if (self->cotpConnection->handleSet)
             Handleset_destroy(self->cotpConnection->handleSet);
         self->cotpConnection->handleSet = NULL;
+
+        socketExtensionBuffer = self->cotpConnection->socketExtensionBuffer;
     }
 
-    /* COTP (ISO transport) handshake */
-    CotpConnection_init(self->cotpConnection, self->socket, self->receiveBuffer, self->cotpReadBuffer, self->cotpWriteBuffer);
+    if (socketExtensionBuffer == NULL) {
+        socketExtensionBuffer = (uint8_t*)GLOBAL_MALLOC(socketExtensionBufferSize);
+    }
+
+    if (socketExtensionBuffer) {
+
+        /* COTP (ISO transport) handshake */
+        CotpConnection_init(self->cotpConnection, self->socket, self->receiveBuffer, self->cotpReadBuffer, self->cotpWriteBuffer,
+                socketExtensionBuffer, socketExtensionBufferSize);
 
 #if (CONFIG_MMS_SUPPORT_TLS == 1)
-    if (self->parameters->tlsConfiguration) {
+        if (self->parameters->tlsConfiguration) {
 
-        TLSConfiguration_setClientMode(self->parameters->tlsConfiguration);
+            TLSConfiguration_setClientMode(self->parameters->tlsConfiguration);
 
-        /* create TLSSocket and start TLS authentication */
-        TLSSocket tlsSocket = TLSSocket_create(self->socket, self->parameters->tlsConfiguration, false);
+            /* create TLSSocket and start TLS authentication */
+            TLSSocket tlsSocket = TLSSocket_create(self->socket, self->parameters->tlsConfiguration, false);
 
-        if (tlsSocket)
-            self->cotpConnection->tlsSocket = tlsSocket;
-        else {
+            if (tlsSocket)
+                self->cotpConnection->tlsSocket = tlsSocket;
+            else {
 
-            if (DEBUG_ISO_CLIENT)
-                printf("ISO_CLIENT: TLS handshake failed!\n");
+                if (DEBUG_ISO_CLIENT)
+                    printf("ISO_CLIENT: TLS handshake failed!\n");
 
-            return false;
+                return false;
+            }
         }
-    }
 #endif /* (CONFIG_MMS_SUPPORT_TLS == 1) */
 
-    /* COTP (ISO transport) handshake */
-    CotpIndication cotpIndication =
-            CotpConnection_sendConnectionRequestMessage(self->cotpConnection, self->parameters);
+        /* COTP (ISO transport) handshake */
+        CotpIndication cotpIndication =
+                CotpConnection_sendConnectionRequestMessage(self->cotpConnection, self->parameters);
 
-    if (cotpIndication != COTP_OK)
+        if (cotpIndication != COTP_OK)
+            return false;
+        else
+            return true;
+    }
+    else {
+        if (DEBUG_ISO_CLIENT)
+            printf("ISO_CLIENT: Failed to allocate socket extension buffer\n");
+
         return false;
-    else
-        return true;
+    }
 }
 
 static void
@@ -492,18 +511,18 @@ IsoClientConnection_handleConnection(IsoClientConnection self)
                                }
                                else {
 
+                                   ByteBuffer_wrap(self->receivePayloadBuffer, self->acseConnection.userDataBuffer,
+                                           self->acseConnection.userDataBufferSize, self->acseConnection.userDataBufferSize);
+
+                                   setState(self, STATE_CONNECTED);
+                                   nextState = INT_STATE_WAIT_FOR_DATA_MSG;
+
+                                   if (self->callback(ISO_IND_ASSOCIATION_SUCCESS, self->callbackParameter, self->receivePayloadBuffer) == false) {
+                                       nextState = INT_STATE_CLOSE_ON_ERROR;
+                                   }
+
                                }
 
-                           }
-
-                           ByteBuffer_wrap(self->receivePayloadBuffer, self->acseConnection.userDataBuffer,
-                                   self->acseConnection.userDataBufferSize, self->acseConnection.userDataBufferSize);
-
-                           setState(self, STATE_CONNECTED);
-                           nextState = INT_STATE_WAIT_FOR_DATA_MSG;
-
-                           if (self->callback(ISO_IND_ASSOCIATION_SUCCESS, self->callbackParameter, self->receivePayloadBuffer) == false) {
-                               nextState = INT_STATE_CLOSE_ON_ERROR;
                            }
 
                            CotpConnection_resetPayload(self->cotpConnection);
@@ -751,7 +770,6 @@ IsoClientConnection_close(IsoClientConnection self)
     }
 }
 
-
 void
 IsoClientConnection_destroy(IsoClientConnection self)
 {
@@ -774,9 +792,13 @@ IsoClientConnection_destroy(IsoClientConnection self)
         GLOBAL_FREEMEM(self->receiveBuf);
     if (self->receiveBuffer != NULL)
         GLOBAL_FREEMEM(self->receiveBuffer);
+
     if (self->cotpConnection != NULL) {
         if (self->cotpConnection->handleSet != NULL)
             Handleset_destroy(self->cotpConnection->handleSet);
+
+        GLOBAL_FREEMEM(self->cotpConnection->socketExtensionBuffer);
+
         GLOBAL_FREEMEM(self->cotpConnection);
     }
 

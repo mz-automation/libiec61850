@@ -114,7 +114,7 @@ FileSystem_openDirectory(char* directoryName)
     DirectoryHandle handle = NULL;
 
     if (dirHandle != NULL) {
-        handle = GLOBAL_MALLOC(sizeof(struct sDirectoryHandle));
+        handle = (DirectoryHandle) GLOBAL_MALLOC(sizeof(struct sDirectoryHandle));
         handle->handle = dirHandle;
     }
 

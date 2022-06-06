@@ -1,25 +1,10 @@
 /*
  *  socket_bsd.c
  *
- *  Copyright 2013-2020 Michael Zillgith
- *  contributions by Michael Clausen (School of engineering Valais).
+ *  Copyright 2013-2021 Michael Zillgith
  *
- *  This file is part of libIEC61850.
- *
- *  libIEC61850 is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  libIEC61850 is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with libIEC61850.  If not, see <http://www.gnu.org/licenses/>.
- *
- *  See COPYING file for the complete license text.
+ *  This file is part of Platform Abstraction Layer (libpal)
+ *  for libiec61850, libmms, and lib60870.
  */
 
 #include "hal_socket.h"
@@ -199,7 +184,7 @@ Socket_activateTcpKeepAlive(Socket self, int idleTime, int interval, int count)
 }
 
 static bool
-prepareServerAddress(const char* address, int port, struct sockaddr_in* sockaddr)
+prepareAddress(const char* address, int port, struct sockaddr_in* sockaddr)
 {
 
 	memset((char *) sockaddr , 0, sizeof(struct sockaddr_in));
@@ -246,7 +231,7 @@ TcpServerSocket_create(const char* address, int port)
     if ((fd = socket(AF_INET, SOCK_STREAM, 0)) >= 0) {
         struct sockaddr_in serverAddress;
 
-        if (!prepareServerAddress(address, port, &serverAddress)) {
+        if (!prepareAddress(address, port, &serverAddress)) {
             close(fd);
             return NULL;
         }
@@ -257,7 +242,7 @@ TcpServerSocket_create(const char* address, int port)
         if (bind(fd, (struct sockaddr *) &serverAddress, sizeof(serverAddress)) >= 0) {
             serverSocket = (ServerSocket) GLOBAL_MALLOC(sizeof(struct sServerSocket));
             serverSocket->fd = fd;
-            serverSocket->backLog = 0;
+            serverSocket->backLog = 2;
 
             setSocketNonBlocking((Socket) serverSocket);
         }
@@ -292,6 +277,8 @@ ServerSocket_accept(ServerSocket self)
 
         if (conSocket) {
             conSocket->fd = fd;
+
+            setSocketNonBlocking(conSocket);
 
             activateTcpNoDelay(conSocket);
         }
@@ -345,7 +332,7 @@ ServerSocket_destroy(ServerSocket self)
 Socket
 TcpSocket_create()
 {
-    Socket self = NULL;
+    Socket self = (Socket)NULL;
 
     int sock = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -368,7 +355,6 @@ TcpSocket_create()
             if (DEBUG_SOCKET)
                 printf("SOCKET: out of memory\n");
         }
-
     }
     else {
         if (DEBUG_SOCKET)
@@ -385,15 +371,24 @@ Socket_setConnectTimeout(Socket self, uint32_t timeoutInMs)
 }
 
 bool
-Socket_setLocalAddress(Socket self, const char* address, int port)
+Socket_bind(Socket self, const char* srcAddress, int srcPort)
 {
-    struct sockaddr_in clientAddress;
+    struct sockaddr_in localAddress;
 
-    if (!prepareServerAddress(address, port, &clientAddress))
+    if (!prepareAddress(srcAddress, srcPort, &localAddress))
         return false;
 
-    if (bind(self->fd, (struct sockaddr *) &clientAddress, sizeof(clientAddress)) != 0)
+    int result = bind(self->fd, (struct sockaddr*)&localAddress, sizeof(localAddress));
+
+    if (result == -1) {
+        if (DEBUG_SOCKET)
+            printf("SOCKET: failed to bind TCP socket (errno=%i)\n", errno);
+
+        close(self->fd);
+        self->fd = -1;
+
         return false;
+    }    
 
     return true;
 }
@@ -406,7 +401,7 @@ Socket_connectAsync(Socket self, const char* address, int port)
     if (DEBUG_SOCKET)
         printf("SOCKET: connect: %s:%i\n", address, port);
 
-    if (!prepareServerAddress(address, port, &serverAddress))
+    if (!prepareAddress(address, port, &serverAddress))
         return false;
 
     fd_set fdSet;

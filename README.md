@@ -25,11 +25,8 @@ Content:
 * [Experimental Python bindings](#experimental-python-bindings)
 * [Licensing](#commercial-licenses-and-support)
 * [Contributing](#contributing)
-* [Third-party contributions](#third-party-contributions)
-
 
 ## Overview
-
 
 libiec61850 is an open-source (GPLv3) implementation of an IEC 61850 client and server library implementing the protocols MMS, GOOSE and SV. It is implemented in C (according to the C99 standard) to provide maximum portability. It can be used to implement IEC 61850 compliant client and server applications on embedded systems and PCs running Linux, Windows, and MacOS. Included is a set of simple example applications that can be used as a starting point to implement own IEC 61850 compliant devices or to communicate with IEC 61850 devices. The library has been successfully used in many commercial software products and devices.
 
@@ -54,6 +51,7 @@ The library support the following IEC 61850 protocol features:
 * MMS file services (browse, get file, set file, delete/rename file)
 ** required to download COMTRADE files
 * Setting group handling
+* Support for service tracking
 * GOOSE and SV control block handling
 * TLS support
 * C and C#/.NET API
@@ -189,10 +187,3 @@ Support and commercial license options are provided by MZ Automation GmbH. Pleas
 If you want to contribute to the improvement and development of the library please send me comments, feature requests, bug reports, or patches. For more than trivial contributions I require you to sign a Contributor License Agreement. Please contact info@libiec61850.com.
 
 Please don't send pull requests before signing the Contributor License Agreement! Such pull requests may be silently ignored.
-
-## Third-party contributions
-
-- The Mac OS X socket and ethernet layer has been kindly contributed by Michael Clausen, HES-SO Valais-Wallis, http://www.hevs.ch 
-
-
-

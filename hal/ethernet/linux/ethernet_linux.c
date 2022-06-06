@@ -1,7 +1,7 @@
 /*
  *  ethernet_linux.c
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -136,22 +136,6 @@ getInterfaceIndex(int sock, const char* deviceName)
 
     int interfaceIndex = ifr.ifr_ifindex;
 
-    if (ioctl (sock, SIOCGIFFLAGS, &ifr) == -1)
-    {
-        if (DEBUG_SOCKET)
-            printf("ETHERNET_LINUX: Problem getting device flags");
-        return -1;
-    }
-
-    /* replace IFF_ALLMULTI by IFF_PROMISC to also receive unicast messages for other nodes */
-    ifr.ifr_flags |= IFF_ALLMULTI;
-    if (ioctl (sock, SIOCSIFFLAGS, &ifr) == -1)
-    {
-        if (DEBUG_SOCKET)
-            printf("ETHERNET_LINUX: Setting device to promiscuous mode failed");
-        return -1;
-    }
-
     return interfaceIndex;
 }
 
@@ -178,7 +162,6 @@ Ethernet_getInterfaceMACAddress(const char* interfaceId, uint8_t* addr)
         addr[i] = (unsigned char)buffer.ifr_hwaddr.sa_data[i];
     }
 }
-
 
 EthernetSocket
 Ethernet_createSocket(const char* interfaceId, uint8_t* destAddress)
@@ -208,7 +191,7 @@ Ethernet_createSocket(const char* interfaceId, uint8_t* destAddress)
         ethernetSocket->socketAddress.sll_ifindex = ifcIdx;
 
         ethernetSocket->socketAddress.sll_hatype =  ARPHRD_ETHER;
-        ethernetSocket->socketAddress.sll_pkttype = PACKET_OTHERHOST;
+        ethernetSocket->socketAddress.sll_pkttype = PACKET_HOST | PACKET_MULTICAST;
 
         ethernetSocket->socketAddress.sll_halen = ETH_ALEN;
 
@@ -221,6 +204,82 @@ Ethernet_createSocket(const char* interfaceId, uint8_t* destAddress)
     }
 
     return ethernetSocket;
+}
+
+void
+Ethernet_setMode(EthernetSocket ethSocket, EthernetSocketMode mode)
+{
+    if (ethSocket) {
+
+        if (mode == ETHERNET_SOCKET_MODE_PROMISC) {
+
+            struct ifreq ifr;
+
+            if (ioctl (ethSocket->rawSocket, SIOCGIFFLAGS, &ifr) == -1)
+            {
+                if (DEBUG_SOCKET)
+                    printf("ETHERNET_LINUX: Problem getting device flags");
+                return;
+            }
+
+
+            ifr.ifr_flags |= IFF_PROMISC;
+            if (ioctl (ethSocket->rawSocket, SIOCSIFFLAGS, &ifr) == -1)
+            {
+                if (DEBUG_SOCKET)
+                    printf("ETHERNET_LINUX: Setting device to promiscuous mode failed");
+                return;
+            }
+        }
+        else if (mode == ETHERNET_SOCKET_MODE_ALL_MULTICAST) {
+            struct ifreq ifr;
+
+            if (ioctl (ethSocket->rawSocket, SIOCGIFFLAGS, &ifr) == -1)
+            {
+                if (DEBUG_SOCKET)
+                    printf("ETHERNET_LINUX: Problem getting device flags");
+                return;
+            }
+
+
+            ifr.ifr_flags |= IFF_ALLMULTI;
+            if (ioctl (ethSocket->rawSocket, SIOCSIFFLAGS, &ifr) == -1)
+            {
+                if (DEBUG_SOCKET)
+                    printf("ETHERNET_LINUX: Setting device to promiscuous mode failed");
+                return;
+            }
+        }
+        else if (mode == ETHERNET_SOCKET_MODE_HOST_ONLY) {
+            ethSocket->socketAddress.sll_pkttype = PACKET_HOST;
+        }
+        else if (mode == ETHERNET_SOCKET_MODE_MULTICAST) {
+            ethSocket->socketAddress.sll_pkttype = PACKET_HOST | PACKET_MULTICAST;
+        }
+    }
+}
+
+void
+Ethernet_addMulticastAddress(EthernetSocket ethSocket, uint8_t* multicastAddress)
+{
+    struct packet_mreq mreq;
+    mreq.mr_ifindex = ethSocket->socketAddress.sll_ifindex;
+    mreq.mr_alen = ETH_ALEN;
+    mreq.mr_type = PACKET_MR_MULTICAST;
+    mreq.mr_address[0] = multicastAddress[0];
+    mreq.mr_address[1] = multicastAddress[1];
+    mreq.mr_address[2] = multicastAddress[2];
+    mreq.mr_address[3] = multicastAddress[3];
+    mreq.mr_address[4] = multicastAddress[4];
+    mreq.mr_address[5] = multicastAddress[5];
+
+    int res = setsockopt(ethSocket->rawSocket, SOL_PACKET, PACKET_ADD_MEMBERSHIP, &mreq, sizeof(mreq));
+
+
+    if (res != 0) {
+        if (DEBUG_SOCKET)
+            printf("ETHERNET_LINUX: Setting multicast address failed");
+    }
 }
 
 void

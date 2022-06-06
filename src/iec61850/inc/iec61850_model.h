@@ -272,7 +272,9 @@ struct sReportControlBlock {
        type can be one of (0 - no reservation, 4 - IPv4 client, 6 - IPv6 client) */
     uint8_t clientReservation[17];
 
-    ReportControlBlock* sibling; /* next control block in list or NULL if this is the last entry */
+    ReportControlBlock* sibling; /* next control block in list or NULL if this is the last entry
+                                  * at runtime reuse as pointer to ReportControl instance!
+                                  **/
 };
 
 struct sLogControlBlock {

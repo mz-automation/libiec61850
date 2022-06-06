@@ -629,12 +629,16 @@ mmsServerConnection_stopFileUploadTasks(MmsServerConnection self)
 
             if (server->fileUploadTasks[i].connection == self) {
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
                 Semaphore_wait(server->fileUploadTasks[i].taskLock);
+#endif
 
                 /* stop file upload task */
                 server->fileUploadTasks[i].state = MMS_FILE_UPLOAD_STATE_INTERRUPTED;
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
                 Semaphore_post(server->fileUploadTasks[i].taskLock);
+#endif
             }
 
         }

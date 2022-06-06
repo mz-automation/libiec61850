@@ -1,7 +1,7 @@
 /*
  *  mms_journal_service.c
  *
- *  Copyright 2016 Michael Zillgith
+ *  Copyright 2016-2021 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -39,16 +39,6 @@ struct sJournalVariable {
 
    JournalVariable next;
 };
-
-typedef struct {
-    uint8_t* entryID;
-    int entryIDSize;
-
-    uint64_t timestamp;
-
-    JournalVariable listOfVariables;
-} JournalEntry;
-
 
 typedef struct sJournalEncoder* JournalEncoder;
 
@@ -453,7 +443,8 @@ mmsServer_handleReadJournalRequest(
         if (DEBUG_MMS_SERVER)
             printf("MMS_SERVER: readJournal domain %s not found\n", domainId);
 
-        mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
+        mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
+
         return;
     }
 
@@ -463,7 +454,8 @@ mmsServer_handleReadJournalRequest(
         if (DEBUG_MMS_SERVER)
             printf("MMS_SERVER: readJournal journal %s not found\n", logName);
 
-        mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
+        mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
+
         return;
     }
 
@@ -494,6 +486,7 @@ mmsServer_handleReadJournalRequest(
                 printf("MMS_SERVER: readJournal missing valid argument combination\n");
 
             mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
+
             return;
         }
 

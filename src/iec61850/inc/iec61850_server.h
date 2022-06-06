@@ -3,7 +3,7 @@
  *
  *  IEC 61850 server API for libiec61850.
  *
- *  Copyright 2013-2020 Michael Zillgith
+ *  Copyright 2013-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -96,6 +96,9 @@ struct sIedServerConfig
 
     /** RCB has owner attribute (default: true) */
     bool enableOwnerForRCB;
+
+    /** integrity report start times will by synchronized with straight numbers (default: false) */
+    bool syncIntegrityReportTimes;
 };
 
 /**
@@ -178,6 +181,30 @@ IedServerConfig_setMaxMmsConnections(IedServerConfig self, int maxConnections);
  */
 LIB61850_API int
 IedServerConfig_getMaxMmsConnections(IedServerConfig self);
+
+/**
+ * \brief Enable synchronized integrity report times
+ *
+ * NOTE: When this flag is enabled the integrity report generation times are
+ * aligned with the UTC epoch. Then the unix time stamps are straight multiples of the
+ * integrity interval.
+ *
+ * \param enable when true synchronized integrity report times are enabled
+ */
+void
+IedServerConfig_setSyncIntegrityReportTimes(IedServerConfig self, bool enable);
+
+/**
+ * \brief Check if synchronized integrity report times are enabled
+ *
+ * NOTE: When this flag is enabled the integrity report generation times are
+ * aligned with the UTC epoch. Then the unix time stamps are straight multiples of the
+ * integrity interval.
+ *
+ * \return true, when enabled, false otherwise
+ */
+bool
+IedServerConfig_getSyncIntegrityReportTimes(IedServerConfig self);
 
 /**
  * \brief Set the basepath of the file services
@@ -911,9 +938,8 @@ IedServer_getBitStringAttributeValue(IedServer self, const DataAttribute* dataAt
 LIB61850_API const char*
 IedServer_getStringAttributeValue(IedServer self, const DataAttribute* dataAttribute);
 
-
 /**
- * \brief Get the MmsValue object related to a FunctionalConstrainedData object
+ * \brief Get the MmsValue object related to a functional constrained data object (FCD)
  *
  * Get the MmsValue from the server cache that is associated with the Functional Constrained Data (FCD)
  * object that is specified by the DataObject and the given Function Constraint (FC).
@@ -1531,6 +1557,49 @@ IedServer_setSelectStateChangedHandler(IedServer self, DataObject* node, Control
  */
 LIB61850_API void
 IedServer_updateCtlModel(IedServer self, DataObject* ctlObject, ControlModel value);
+
+/**@}*/
+
+/**
+ * @defgroup IEC61850_SERVER_RCB Server side report control block (RCB) handling
+ *
+ * @{
+ */
+
+typedef enum {
+    RCB_EVENT_GET_PARAMETER, /* << parameter read by client (not implemented) */
+    RCB_EVENT_SET_PARAMETER, /* << parameter set by client */
+    RCB_EVENT_UNRESERVED,    /* << RCB reservation canceled */
+    RCB_EVENT_RESERVED,      /* << RCB reserved */
+    RCB_EVENT_ENABLE,        /* << RCB enabled */
+    RCB_EVENT_DISABLE,       /* << RCB disabled */
+    RCB_EVENT_GI,            /* << GI report triggered */
+    RCB_EVENT_PURGEBUF,      /* << Purge buffer procedure executed */
+    RCB_EVENT_OVERFLOW,      /* << Report buffer overflow */
+    RCB_EVENT_REPORT_CREATED /* << A new report was created and inserted into the buffer */
+} IedServer_RCBEventType;
+
+/**
+ * \brief Callback that is called in case of RCB event
+ *
+ * \param parameter user provided parameter
+ * \param rcb affected report control block
+ * \param connection client connection that is involved
+ * \param event event type
+ * \param parameterName name of the parameter in case of RCB_EVENT_SET_PARAMETER
+ * \param serviceError service error in case of RCB_EVENT_SET_PARAMETER
+ */
+typedef void (*IedServer_RCBEventHandler) (void* parameter, ReportControlBlock* rcb, ClientConnection connection, IedServer_RCBEventType event, const char* parameterName, MmsDataAccessError serviceError);
+
+/**
+ * \brief Set a handler for report control block (RCB) events
+ *
+ * \param self the instance of IedServer to operate on.
+ * \param handler the event handler to be used
+ * \param parameter a user provided parameter that is passed to the handler.
+ */
+LIB61850_API void
+IedServer_setRCBEventHandler(IedServer self, IedServer_RCBEventHandler handler, void* parameter);
 
 /**@}*/
 

@@ -320,11 +320,14 @@ SVPublisher_ASDU_getEncodedSize(SVPublisher_ASDU self)
     int encodedSize = 0;
 
     /* svID */
-    encodedSize += ( 2 + strlen(self->svID) );
+    int svIdLen = strlen(self->svID);
+    encodedSize += (1 + BerEncoder_determineLengthSize(svIdLen) + svIdLen);
 
     /* datset */
-    if (self->datset != NULL)
-        encodedSize += ( 2 + strlen(self->datset) );
+    if (self->datset != NULL) {
+        int datSetLen = strlen(self->datset);
+        encodedSize += (1 + BerEncoder_determineLengthSize(datSetLen) + datSetLen);
+    }
 
     /* smpCnt */
     encodedSize += 4;
@@ -483,23 +486,25 @@ SVPublisher_publish(SVPublisher self)
 void
 SVPublisher_destroy(SVPublisher self)
 {
-    if (self->ethernetSocket)
-        Ethernet_destroySocket(self->ethernetSocket);
+    if (self) {
+        if (self->ethernetSocket)
+            Ethernet_destroySocket(self->ethernetSocket);
 
-    if (self->buffer)
-        GLOBAL_FREEMEM(self->buffer);
+        if (self->buffer)
+            GLOBAL_FREEMEM(self->buffer);
 
-    SVPublisher_ASDU asdu = self->asduList;
+        SVPublisher_ASDU asdu = self->asduList;
 
-    while (asdu) {
-        SVPublisher_ASDU nextAsdu = asdu->_next;
+        while (asdu) {
+            SVPublisher_ASDU nextAsdu = asdu->_next;
 
-        GLOBAL_FREEMEM(asdu);
+            GLOBAL_FREEMEM(asdu);
 
-        asdu = nextAsdu;
+            asdu = nextAsdu;
+        }
+
+        GLOBAL_FREEMEM(self);
     }
-
-    GLOBAL_FREEMEM(self);
 }
 
 

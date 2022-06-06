@@ -1,7 +1,7 @@
 /**
  * thread_macos.c
  *
- * Copyright 2013-2019 MZ Automation GmbH
+ * Copyright 2013-2021 Michael Zillgith
  *
  * This file is part of Platform Abstraction Layer (libpal)
  * for libiec61850, libmms, and lib60870.
@@ -9,10 +9,10 @@
 
 /*
  * NOTE: MacOS needs own thread layer because it doesn't support unnamed semaphores!
+ * NOTE: named semaphores were replaced by POSIX mutex
  */
 
 #include <pthread.h>
-#include <semaphore.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
@@ -32,56 +32,52 @@ typedef struct sSemaphore* mSemaphore;
 
 struct sSemaphore
 {
-    sem_t* sem;
+    pthread_mutex_t mutex;
 };
 
+/*
+ * NOTE: initialValue is ignored because semaphore was replaced by mutex
+ */
 Semaphore
 Semaphore_create(int initialValue)
 {
     mSemaphore self = NULL;
 
-    char tmpname[] = {"/tmp/libiec61850.XXXXXX"};
-    char* res = mktemp(tmpname);
+    self = (mSemaphore) GLOBAL_CALLOC(1, sizeof(struct sSemaphore));
 
-    if (res) {
-        self = (mSemaphore) GLOBAL_CALLOC(1, sizeof(struct sSemaphore));
-
-        if (self) {
-            self->sem = sem_open(tmpname, O_CREAT, 0666, initialValue);
-
-            if (self->sem == SEM_FAILED) {
-                printf("ERROR: Failed to create semaphore (errno = %i)\n", errno);
-
-                GLOBAL_FREEMEM(self);
-                self = NULL;
-            }
-            else {
-                int ret = sem_unlink(tmpname);
-
-                if (ret == -1)
-                    printf("ERROR: Failed to unlink semaphore %s\n", tmpname);
-            }
-        }
+    if (self) {
+        pthread_mutex_init(&(self->mutex), NULL);
     }
 
     return (Semaphore)self;
 }
 
-/* Wait until semaphore value is more than zero. Then decrease the semaphore value. */
+/* lock mutex */
 void
 Semaphore_wait(Semaphore self)
 {
     mSemaphore mSelf = (mSemaphore) self;
 
-    sem_wait(mSelf->sem);
+    int retVal = pthread_mutex_lock(&(mSelf->mutex));
+
+    if (retVal) {
+       printf("FATAL ERROR: pthread_mutex_lock failed (err=%i)\n", retVal);
+       exit(-1);
+    }
 }
 
+/* unlock mutex */
 void
 Semaphore_post(Semaphore self)
 {
     mSemaphore mSelf = (mSemaphore) self;
 
-    sem_post(mSelf->sem);
+    int retVal = pthread_mutex_unlock(&(mSelf->mutex));
+
+    if (retVal) {
+        printf("FATAL ERROR: pthread_mutex_unlock failed (err=%i)\n", retVal);
+        exit(-1);
+    }
 }
 
 void
@@ -90,10 +86,7 @@ Semaphore_destroy(Semaphore self)
     if (self) {
         mSemaphore mSelf = (mSemaphore) self;
 
-        int ret = sem_close(mSelf->sem);
-
-        if (ret == -1)
-            printf("ERROR: Failed to close semaphore (errno = %i)\n", errno);
+        pthread_mutex_destroy(&(mSelf->mutex));
 
         GLOBAL_FREEMEM(mSelf);
     }    

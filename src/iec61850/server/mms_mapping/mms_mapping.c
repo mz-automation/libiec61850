@@ -1,7 +1,7 @@
 /*
  *  mms_mapping.c
  *
- *  Copyright 2013-2021 Michael Zillgith
+ *  Copyright 2013-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -72,6 +72,9 @@ typedef struct
 MmsValue*
 Control_readAccessControlObject(MmsMapping* self, MmsDomain* domain, char* variableIdOrig,
         MmsServerConnection connection, bool isDirectAccess);
+
+bool
+ControlObject_unselect(ControlObject* self, MmsServerConnection connection, MmsMapping* mmsMapping);
 #endif
 
 void /* Create PHYCOMADDR ACSI type instance */
@@ -1344,21 +1347,23 @@ checkForServiceTrackingVariables(MmsMapping* self, LogicalNode* logicalNode)
             else if (!strcmp(modelNode->name, "BacTrk"))
                 actInstance = &self->bacTrk;
 
-            if (*actInstance != NULL) {
-                if (DEBUG_IED_SERVER)
-                    printf("IED_SERVER: ERROR: multiple %s instances found in server\n", modelNode->name);
-            }
-            else {
-                *actInstance = (ControlTrkInstance) GLOBAL_CALLOC(1, sizeof(struct sControlTrkInstance));
-
+            if (actInstance)
+            {
                 if (*actInstance != NULL) {
-                    (*actInstance)->dobj = actTrk;
+                    if (DEBUG_IED_SERVER)
+                        printf("IED_SERVER: ERROR: multiple %s instances found in server\n", modelNode->name);
+                }
+                else {
+                    *actInstance = (ControlTrkInstance) GLOBAL_CALLOC(1, sizeof(struct sControlTrkInstance));
 
-                    getCommonTrackingAttributes((ServiceTrkInstance) *actInstance, actTrk);
-                    getControlTrackingAttributes(*actInstance, actTrk);
+                    if (*actInstance != NULL) {
+                        (*actInstance)->dobj = actTrk;
+
+                        getCommonTrackingAttributes((ServiceTrkInstance) *actInstance, actTrk);
+                        getControlTrackingAttributes(*actInstance, actTrk);
+                    }
                 }
             }
-
         }
         else if (!strcmp(modelNode->name, "BrcbTrk")) {
             if (DEBUG_IED_SERVER)
@@ -1805,8 +1810,8 @@ createMmsDomainFromIedDevice(MmsMapping* self, LogicalDevice* logicalDevice)
         }
 
         strncpy(domainName, self->model->name, 64);
-        strncat(domainName, logicalDevice->name, 64 - modelNameLength);
         domainName[64] = 0;
+        strncat(domainName, logicalDevice->name, 64 - modelNameLength);
     }
     else {
         if (strlen(logicalDevice->ldName) > 64)
@@ -1926,8 +1931,8 @@ createDataSets(MmsDevice* mmsDevice, IedModel* iedModel)
         goto exit_function;
     }
 
-    while (dataset != NULL) {
-
+    while (dataset)
+    {
         LogicalDevice* ld = IedModel_getDeviceByInst(iedModel, dataset->logicalDeviceName);
 
         if (ld) {
@@ -1938,8 +1943,8 @@ createDataSets(MmsDevice* mmsDevice, IedModel* iedModel)
             }
             else {
                 strncpy(domainName, iedModel->name, 64);
-                strncat(domainName, dataset->logicalDeviceName, 64 - iedModelNameLength);
                 domainName[64] = 0;
+                strncat(domainName, dataset->logicalDeviceName, 64 - iedModelNameLength);
             }
 
             MmsDomain* dataSetDomain = MmsDevice_getDomain(mmsDevice, domainName);
@@ -1974,7 +1979,6 @@ createDataSets(MmsDevice* mmsDevice, IedModel* iedModel)
                 }
 
                 accessSpecifier.domain = MmsDevice_getDomain(mmsDevice, domainName);
-
                 accessSpecifier.variableName = dataSetEntry->variableName;
                 accessSpecifier.arrayIndex = dataSetEntry->index;
                 accessSpecifier.componentName = dataSetEntry->componentName;
@@ -2058,10 +2062,17 @@ MmsMapping_create(IedModel* model, IedServer iedServer)
 
 #if (CONFIG_IEC61850_CONTROL_SERVICE == 1)
     self->controlObjects = LinkedList_create();
+    self->nextControlTimeout = 0xffffffffffffffffLLU;
 #endif
 
 #if (CONFIG_IEC61850_SETTING_GROUPS == 1)
     self->settingGroups = LinkedList_create();
+#endif
+
+    self->isModelLocked = false;
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    self->isModelLockedMutex = Semaphore_create(1);
 #endif
 
     self->attributeAccessHandlers = LinkedList_create();
@@ -2072,6 +2083,24 @@ MmsMapping_create(IedModel* model, IedServer iedServer)
     if (self->mmsDevice == false) {
     	MmsMapping_destroy(self);
     	self = NULL;
+    }
+    else {
+        LinkedList rcElem = LinkedList_getNext(self->reportControls);
+
+        while (rcElem) {
+            ReportControl* rc = (ReportControl*)LinkedList_getData(rcElem);
+
+            /* backup original sibling of ReportControlBlock */;
+            rc->sibling = rc->rcb->sibling;
+
+            /* reuse ReportControlBlock.sibling as reference to runtime information (ReportControl) */
+            rc->rcb->sibling = (ReportControlBlock*)rc;
+
+            /* set runtime mode flag (indicate that sibling field contains now runtime information reference!) */
+            rc->rcb->trgOps |= 64;
+
+            rcElem = LinkedList_getNext(rcElem);
+        }
     }
 
     return self;
@@ -2134,6 +2163,10 @@ MmsMapping_destroy(MmsMapping* self)
     if (self->sgcbTrk) GLOBAL_FREEMEM(self->sgcbTrk);
     if (self->genTrk) GLOBAL_FREEMEM(self->genTrk);
     if (self->locbTrk) GLOBAL_FREEMEM(self->locbTrk);
+#endif
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_destroy(self->isModelLockedMutex);
 #endif
 
     LinkedList_destroy(self->attributeAccessHandlers);
@@ -2306,6 +2339,7 @@ writeAccessGooseControlBlock(MmsMapping* self, MmsDomain* domain, char* variable
     char variableId[130];
 
     strncpy(variableId, variableIdOrig, 129);
+    variableId[129] = 0;
 
     char* separator = strchr(variableId, '$');
 
@@ -2691,11 +2725,16 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
                     }
                     else
                         retVal = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
-                }
+
 #if (CONFIG_IEC61850_SERVICE_TRACKING == 1)
-                copySGCBValuesToTrackingObject(self, sg->sgcb);
-                updateGenericTrackingObjectValues(self, sg->sgcb, IEC61850_SERVICE_TYPE_SELECT_ACTIVE_SG, retVal);
+                    copySGCBValuesToTrackingObject(self, sg->sgcb);
+                    updateGenericTrackingObjectValues(self, sg->sgcb, IEC61850_SERVICE_TYPE_SELECT_ACTIVE_SG, retVal);
 #endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
+                }
+                else {
+                    retVal = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+                }
+
                 return retVal;
             }
             else if (strcmp(nameId, "EditSG") == 0) {
@@ -2984,6 +3023,7 @@ readAccessGooseControlBlock(MmsMapping* self, MmsDomain* domain, char* variableI
     char variableId[130];
 
     strncpy(variableId, variableIdOrig, 129);
+    variableId[129] = 0;
 
     char* separator = strchr(variableId, '$');
 
@@ -3114,14 +3154,27 @@ mmsReadHandler(void* parameter, MmsDomain* domain, char* variableId, MmsServerCo
 
                         char* elementName = MmsMapping_getNextNameElement(reportName);
 
-                        ReportControl_readAccess(rc, self, elementName);
+                        ReportControl_readAccess(rc, self, connection, elementName);
 
                         MmsValue* value = NULL;
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+                        Semaphore_wait(rc->rcbValuesLock);
+#endif
 
                         if (elementName != NULL)
                             value = ReportControl_getRCBValue(rc, elementName);
                         else
                             value = rc->rcbValues;
+
+                        if (value) {
+                            value = MmsValue_clone(value);
+                            MmsValue_setDeletableRecursive(value);
+                        }
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+                        Semaphore_post(rc->rcbValuesLock);
+#endif
 
                         retValue = value;
 
@@ -3156,7 +3209,7 @@ unselectControlsForConnection(MmsMapping* self, MmsServerConnection connection)
     while (controlObjectElement != NULL) {
         ControlObject* controlObject = (ControlObject*) controlObjectElement->data;
 
-        ControlObject_unselect(controlObject, connection);
+        ControlObject_unselect(controlObject, connection, self);
 
         controlObjectElement = LinkedList_getNext(controlObjectElement);
     }
@@ -3658,6 +3711,8 @@ MmsMapping_triggerReportObservers(MmsMapping* self, MmsValue* value, int flag)
 {
     LinkedList element = self->reportControls;
 
+    Semaphore_wait(self->isModelLockedMutex);
+
     bool modelLocked = self->isModelLocked;
 
     while ((element = LinkedList_getNext(element)) != NULL) {
@@ -3693,6 +3748,8 @@ MmsMapping_triggerReportObservers(MmsMapping* self, MmsValue* value, int flag)
     if (modelLocked == false) {
         Reporting_processReportEventsAfterUnlock(self);
     }
+
+    Semaphore_post(self->isModelLockedMutex);
 }
 
 #endif /* (CONFIG_IEC61850_REPORT_SERVICE == 1) */
@@ -3704,8 +3761,6 @@ MmsMapping_triggerGooseObservers(MmsMapping* self, MmsValue* value)
 {
     LinkedList element = self->gseControls;
 
-    bool modelLocked = self->isModelLocked;
-
     while ((element = LinkedList_getNext(element)) != NULL) {
         MmsGooseControlBlock gcb = (MmsGooseControlBlock) element->data;
 
@@ -3715,9 +3770,13 @@ MmsMapping_triggerGooseObservers(MmsMapping* self, MmsValue* value)
             if (DataSet_isMemberValue(dataSet, value, NULL)) {
                 MmsGooseControlBlock_setStateChangePending(gcb);
 
-                if (modelLocked == false) {
+                Semaphore_wait(self->isModelLockedMutex);
+
+                if (self->isModelLocked == false) {
                     MmsGooseControlBlock_publishNewState(gcb);
                 }
+
+                Semaphore_post(self->isModelLockedMutex);
             }
         }
     }

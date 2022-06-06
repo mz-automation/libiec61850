@@ -291,7 +291,7 @@ mmsClient_createDeleteNamedVariableListRequest(long invokeId, ByteBuffer* writeB
         const char* domainId, const char* listNameId);
 
 LIB61850_INTERNAL bool
-mmsClient_parseDeleteNamedVariableListResponse(ByteBuffer* message, uint32_t* invokeId);
+mmsClient_parseDeleteNamedVariableListResponse(ByteBuffer* message, uint32_t* invokeId, long* numberDeleted, long* numberMatched);
 
 LIB61850_INTERNAL void
 mmsClient_createDeleteAssociationSpecificNamedVariableListRequest(

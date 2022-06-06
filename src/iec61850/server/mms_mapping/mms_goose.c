@@ -274,39 +274,42 @@ MmsGooseControlBlock_create()
 void
 MmsGooseControlBlock_destroy(MmsGooseControlBlock self)
 {
+    if (self) {
+
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
-    Semaphore_destroy(self->publisherMutex);
+        Semaphore_destroy(self->publisherMutex);
 #endif
 
     if (self->publisher != NULL)
-        GoosePublisher_destroy(self->publisher);
+            GoosePublisher_destroy(self->publisher);
 
-    if (self->dataSetValues != NULL)
-        LinkedList_destroyStatic(self->dataSetValues);
+        if (self->dataSetValues != NULL)
+            LinkedList_destroyStatic(self->dataSetValues);
 
-    if (self->goCBRef != NULL)
-        GLOBAL_FREEMEM(self->goCBRef);
+        if (self->goCBRef != NULL)
+            GLOBAL_FREEMEM(self->goCBRef);
 
-    if (self->goId != NULL)
-        GLOBAL_FREEMEM(self->goId);
+        if (self->goId != NULL)
+            GLOBAL_FREEMEM(self->goId);
 
-    if (self->dataSetRef != NULL)
-        GLOBAL_FREEMEM(self->dataSetRef);
+        if (self->dataSetRef != NULL)
+            GLOBAL_FREEMEM(self->dataSetRef);
 
-    if (self->dataSet != NULL) {
-        if (self->isDynamicDataSet) {
-            MmsMapping_freeDynamicallyCreatedDataSet(self->dataSet);
-            self->isDynamicDataSet = false;
-            self->dataSet = NULL;
+        if (self->dataSet != NULL) {
+            if (self->isDynamicDataSet) {
+                MmsMapping_freeDynamicallyCreatedDataSet(self->dataSet);
+                self->isDynamicDataSet = false;
+                self->dataSet = NULL;
+            }
         }
+
+        if (self->gooseInterfaceId != NULL)
+            GLOBAL_FREEMEM(self->gooseInterfaceId);
+
+        MmsValue_delete(self->mmsValue);
+
+        GLOBAL_FREEMEM(self);
     }
-
-    if (self->gooseInterfaceId != NULL)
-        GLOBAL_FREEMEM(self->gooseInterfaceId);
-
-    MmsValue_delete(self->mmsValue);
-
-    GLOBAL_FREEMEM(self);
 }
 
 void
@@ -441,12 +444,14 @@ MmsGooseControlBlock_enable(MmsGooseControlBlock self, MmsMapping* mmsMapping)
 
             /*  Calculate maximum GOOSE message size */
             int maxGooseMessageSize =  26 + 51 + 6;
-            maxGooseMessageSize += strlen(self->goCBRef);
+            maxGooseMessageSize += (int)strlen(self->goCBRef);
+
             if (self->goId)
-                maxGooseMessageSize += strlen(self->goId);
+                maxGooseMessageSize += (int)strlen(self->goId);
             else
-                maxGooseMessageSize += strlen(self->goCBRef);
-            maxGooseMessageSize += strlen(self->dataSetRef);
+                maxGooseMessageSize += (int)strlen(self->goCBRef);
+
+            maxGooseMessageSize += (int)strlen(self->dataSetRef);
 
             maxGooseMessageSize += dataSetSize;
 
@@ -462,7 +467,6 @@ MmsGooseControlBlock_enable(MmsGooseControlBlock self, MmsMapping* mmsMapping)
                 MmsValue* goEna = MmsValue_getElement(self->mmsValue, 0);
 
                 MmsValue_setBoolean(goEna, true);
-
 
                 MmsValue* dstAddress = MmsValue_getElement(self->mmsValue, 5);
 
@@ -512,7 +516,6 @@ MmsGooseControlBlock_enable(MmsGooseControlBlock self, MmsMapping* mmsMapping)
                             LinkedList_add(self->dataSetValues, dataSetEntry->value);
                             dataSetEntry = dataSetEntry->sibling;
                         }
-
                     }
                     else {
                         if (DEBUG_IED_SERVER)

@@ -174,7 +174,13 @@ namespace IEC61850
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern UInt16 MmsValue_getOctetStringMaxSize(IntPtr self);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern byte MmsValue_getOctetStringOctet(IntPtr self, int pos);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void MmsValue_setOctetStringOctet(IntPtr self, int pos, byte value);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern IntPtr MmsValue_getOctetStringBuffer(IntPtr self);
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
@@ -518,6 +524,11 @@ namespace IEC61850
 					throw new MmsValueException ("Operation not supported for this type");
 			}
 
+            /// <summary>
+            /// Sets the value of an octet string by a byte array
+            /// </summary>
+            /// <param name="octetString">Byte array containing the bytes of the octet string.</param>
+            /// <exception cref="MmsValueException">This exception is thrown if the value has the wrong type or the byte array is too large.</exception>
 			public void setOctetString (byte[] octetString)
 			{
 				if (GetType () == MmsType.MMS_OCTET_STRING) {
@@ -530,6 +541,26 @@ namespace IEC61850
 				else
 					throw new MmsValueException ("Operation not supported for this type");
 			}
+
+            /// <summary>
+            /// Gets the octet string octet.
+            /// </summary>
+            /// <returns>The octet string octet.</returns>
+            /// <param name="pos">Position of the octet in the octet string.</param>
+            public byte GetOctetStringOctet(int pos)
+            {
+                return MmsValue_getOctetStringOctet(valueReference, pos);
+            }
+
+            /// <summary>
+            /// Sets the octet string octet.
+            /// </summary>
+            /// <param name="pos">Position of the octet in the octet string.</param>
+            /// <param name="value">The octet string octet.</param>
+            public void SetOctetStringOctet(int pos, byte value)
+            {
+                MmsValue_setOctetStringOctet(valueReference, pos, value);
+            }
 
             /// <summary>
             /// Get an element of an array or structure

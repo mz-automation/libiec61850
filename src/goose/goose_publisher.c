@@ -1,7 +1,7 @@
 /*
  *  goose_publisher.c
  *
- *  Copyright 2013-2018 Michael Zillgith
+ *  Copyright 2013-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -91,25 +91,27 @@ GoosePublisher_create(CommParameters* parameters, const char* interfaceID)
 void
 GoosePublisher_destroy(GoosePublisher self)
 {
-    if (self->ethernetSocket) {
-        Ethernet_destroySocket(self->ethernetSocket);
+    if (self) {
+        if (self->ethernetSocket) {
+            Ethernet_destroySocket(self->ethernetSocket);
+        }
+
+        MmsValue_delete(self->timestamp);
+
+        if (self->goID != NULL)
+            GLOBAL_FREEMEM(self->goID);
+
+        if (self->goCBRef != NULL)
+            GLOBAL_FREEMEM(self->goCBRef);
+
+        if (self->dataSetRef != NULL)
+            GLOBAL_FREEMEM(self->dataSetRef);
+
+        if (self->buffer)
+            GLOBAL_FREEMEM(self->buffer);
+
+        GLOBAL_FREEMEM(self);
     }
-
-    MmsValue_delete(self->timestamp);
-
-    if (self->goID != NULL)
-        GLOBAL_FREEMEM(self->goID);
-
-    if (self->goCBRef != NULL)
-        GLOBAL_FREEMEM(self->goCBRef);
-
-    if (self->dataSetRef != NULL)
-        GLOBAL_FREEMEM(self->dataSetRef);
-
-    if (self->buffer)
-        GLOBAL_FREEMEM(self->buffer);
-
-    GLOBAL_FREEMEM(self);
 }
 
 void

@@ -1,7 +1,7 @@
 /*
  *  logging.c
  *
- *  Copyright 2016 Michael Zillgith
+ *  Copyright 2016-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -48,15 +48,20 @@ LogInstance_create(LogicalNode* parentLN, const char* name)
 {
     LogInstance* self = (LogInstance*) GLOBAL_MALLOC(sizeof(LogInstance));
 
-    self->name = StringUtils_copyString(name);
-    self->parentLN = parentLN;
-    self->logStorage = NULL;
-    self->locked = false;
+    if (self) {
+        self->name = StringUtils_copyString(name);
+        self->parentLN = parentLN;
+        self->logStorage = NULL;
 
-    self->oldEntryId = 0;
-    self->oldEntryTime = 0;
-    self->newEntryId = 0;
-    self->newEntryTime = 0;
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        self->lock = Semaphore_create(1);
+#endif
+
+        self->oldEntryId = 0;
+        self->oldEntryTime = 0;
+        self->newEntryId = 0;
+        self->newEntryTime = 0;
+    }
 
     return self;
 }
@@ -64,8 +69,14 @@ LogInstance_create(LogicalNode* parentLN, const char* name)
 void
 LogInstance_destroy(LogInstance* self)
 {
-    GLOBAL_FREEMEM(self->name);
-    GLOBAL_FREEMEM(self);
+    if (self) {
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_destroy(self->lock);
+#endif
+
+        GLOBAL_FREEMEM(self->name);
+        GLOBAL_FREEMEM(self);
+    }
 }
 
 void
@@ -75,10 +86,9 @@ LogInstance_logSingleData(LogInstance* self, const char* dataRef, MmsValue* valu
 
     if (logStorage != NULL) {
 
-        while (self->locked)
-            Thread_sleep(1);
-
-        self->locked = true;
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_wait(self->lock);
+#endif
 
         if (DEBUG_IED_SERVER)
             printf("IED_SERVER: Log value - dataRef: %s flag: %i\n", dataRef, flag);
@@ -91,16 +101,20 @@ LogInstance_logSingleData(LogInstance* self, const char* dataRef, MmsValue* valu
 
         uint8_t* data = (uint8_t*) GLOBAL_MALLOC(dataSize);
 
-        MmsValue_encodeMmsData(value, data, 0, true);
+        if (data) {
+            MmsValue_encodeMmsData(value, data, 0, true);
 
-        LogStorage_addEntryData(logStorage, entryID, dataRef, data, dataSize, flag);
+            LogStorage_addEntryData(logStorage, entryID, dataRef, data, dataSize, flag);
 
-        self->locked = false;
-
-        GLOBAL_FREEMEM(data);
+            GLOBAL_FREEMEM(data);
+        }
 
         self->newEntryId = entryID;
         self->newEntryTime = timestamp;
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_post(self->lock);
+#endif
 
     }
     else
@@ -115,10 +129,9 @@ LogInstance_logEntryStart(LogInstance* self)
 
     if (logStorage != NULL) {
 
-        while (self->locked)
-            Thread_sleep(1);
-
-        self->locked = true;
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_wait(self->lock);
+#endif
 
         uint64_t timestamp = Hal_getTimeInMs();
 
@@ -139,19 +152,19 @@ LogInstance_logEntryData(LogInstance* self, uint64_t entryID, const char* dataRe
 {
     LogStorage logStorage = self->logStorage;
 
-    if (logStorage != NULL) {
+    if (logStorage) {
 
         int dataSize = MmsValue_encodeMmsData(value, NULL, 0, false);
 
         uint8_t* data = (uint8_t*) GLOBAL_MALLOC(dataSize);
 
-        MmsValue_encodeMmsData(value, data, 0, true);
+        if (data) {
+            MmsValue_encodeMmsData(value, data, 0, true);
 
-        LogStorage_addEntryData(logStorage, entryID, dataRef, data, dataSize, flag);
+            LogStorage_addEntryData(logStorage, entryID, dataRef, data, dataSize, flag);
 
-        self->locked = false;
-
-        GLOBAL_FREEMEM(data);
+            GLOBAL_FREEMEM(data);
+        }
     }
 }
 
@@ -160,7 +173,9 @@ LogInstance_logEntryFinished(LogInstance* self, uint64_t entryID)
 {
     (void)entryID;
 
-    self->locked = false;
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_post(self->lock);
+#endif
 }
 
 void
@@ -185,17 +200,19 @@ LogControl_create(LogicalNode* parentLN, MmsMapping* mmsMapping)
 {
     LogControl* self = (LogControl*) GLOBAL_MALLOC(sizeof(LogControl));
 
-    self->enabled = false;
-    self->dataSet = NULL;
-    self->isDynamicDataSet = false;
-    self->triggerOps = 0;
-    self->logicalNode = parentLN;
-    self->mmsMapping = mmsMapping;
-    self->dataSetRef = NULL;
-    self->logInstance = NULL;
-    self->intgPd = 0;
-    self->nextIntegrityScan = 0;
-    self->logRef = NULL;
+    if (self) {
+        self->enabled = false;
+        self->dataSet = NULL;
+        self->isDynamicDataSet = false;
+        self->triggerOps = 0;
+        self->logicalNode = parentLN;
+        self->mmsMapping = mmsMapping;
+        self->dataSetRef = NULL;
+        self->logInstance = NULL;
+        self->intgPd = 0;
+        self->nextIntegrityScan = 0;
+        self->logRef = NULL;
+    }
 
     return self;
 }
@@ -315,6 +332,7 @@ getLogInstanceByLogRef(MmsMapping* self, const char* logRef)
     char* logName;
 
     strncpy(refStr, logRef, 129);
+    refStr[129] = 0;
 
     domainName = refStr;
 
@@ -477,6 +495,7 @@ LIBIEC61850_LOG_SVC_writeAccessLogControlBlock(MmsMapping* self, MmsDomain* doma
     char variableId[130];
 
     strncpy(variableId, variableIdOrig, 129);
+    variableId[129] = 0;
 
     char* separator = strchr(variableId, '$');
 
@@ -494,8 +513,10 @@ LIBIEC61850_LOG_SVC_writeAccessLogControlBlock(MmsMapping* self, MmsDomain* doma
 
     char* varName = MmsMapping_getNextNameElement(objectName);
 
-    if (varName != NULL)
-        *(varName - 1) = 0;
+    if (varName == NULL)
+        return DATA_ACCESS_ERROR_INVALID_ADDRESS;
+
+    *(varName - 1) = 0;
 
     LogControl* logControl = lookupLogControl(self, domain, lnName, objectName);
 
@@ -688,6 +709,7 @@ LIBIEC61850_LOG_SVC_readAccessControlBlock(MmsMapping* self, MmsDomain* domain, 
     char variableId[130];
 
     strncpy(variableId, variableIdOrig, 129);
+    variableId[129] = 0;
 
     char* separator = strchr(variableId, '$');
 
@@ -978,18 +1000,21 @@ LogControl_logAllDatasetEntries(LogControl* self, const char* iedName)
 
         uint64_t entryID = LogInstance_logEntryStart(log);
 
-        DataSetEntry* dataSetEntry = self->dataSet->fcdas;
+        if (entryID != 0) {
 
-        while (dataSetEntry != NULL) {
+            DataSetEntry* dataSetEntry = self->dataSet->fcdas;
 
-            sprintf(dataRef, "%s%s/%s", iedName, dataSetEntry->logicalDeviceName, dataSetEntry->variableName);
+            while (dataSetEntry != NULL) {
 
-            LogInstance_logEntryData(log, entryID, dataRef, dataSetEntry->value, TRG_OPT_INTEGRITY * 2);
+                sprintf(dataRef, "%s%s/%s", iedName, dataSetEntry->logicalDeviceName, dataSetEntry->variableName);
 
-            dataSetEntry = dataSetEntry->sibling;
+                LogInstance_logEntryData(log, entryID, dataRef, dataSetEntry->value, TRG_OPT_INTEGRITY * 2);
+
+                dataSetEntry = dataSetEntry->sibling;
+            }
+
+            LogInstance_logEntryFinished(log, entryID);
         }
-
-        LogInstance_logEntryFinished(log, entryID);
 
     }
 }

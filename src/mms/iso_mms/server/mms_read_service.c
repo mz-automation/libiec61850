@@ -1,7 +1,7 @@
 /*
  *  mms_read_service.c
  *
- *  Copyright 2013-2018 Michael Zillgith
+ *  Copyright 2013-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -98,10 +98,9 @@ addComplexValueToResultList(MmsVariableSpecification* namedVariable,
                                 LinkedList typedValues, MmsServerConnection connection,
                                 MmsDomain* domain, char* nameIdStr)
 {
-
     MmsValue* value = addNamedVariableValue(namedVariable, connection, domain, nameIdStr);
 
-    if (value != NULL)
+    if (value)
         LinkedList_add(typedValues, value);
 }
 
@@ -109,9 +108,8 @@ addComplexValueToResultList(MmsVariableSpecification* namedVariable,
 static void
 appendValueToResultList(MmsValue* value, LinkedList values)
 {
-
-	if (value != NULL )
-		LinkedList_add(values, value);
+    if (value)
+        LinkedList_add(values, value);
 }
 
 static void
@@ -126,15 +124,15 @@ deleteValueList(LinkedList values)
 {
     LinkedList value = LinkedList_getNext(values);
 
-	while (value != NULL ) {
-	    MmsValue* typedValue = (MmsValue*) (value->data);
+    while (value) {
+        MmsValue* typedValue = (MmsValue*) (value->data);
 
-		MmsValue_deleteConditional(typedValue);
+        MmsValue_deleteConditional(typedValue);
 
-		value = LinkedList_getNext(value);
-	}
+        value = LinkedList_getNext(value);
+    }
 
-	LinkedList_destroyStatic(values);
+    LinkedList_destroyStatic(values);
 }
 
 static bool
@@ -333,25 +331,23 @@ static void
 addNamedVariableToResultList(MmsVariableSpecification* namedVariable, MmsDomain* domain, char* nameIdStr,
 		LinkedList /*<MmsValue>*/ values, MmsServerConnection connection, AlternateAccess_t* alternateAccess, bool isAccessToSingleVariable)
 {
-    if (namedVariable != NULL) {
+    if (namedVariable) {
 
         if (DEBUG_MMS_SERVER)
             printf("MMS read: found named variable %s with search string %s\n",
                     namedVariable->name, nameIdStr);
 
-        if (namedVariable->type == MMS_STRUCTURE) {
-
-            MmsValue* value = mmsServer_getValue(connection->server, domain, nameIdStr, connection, isAccessToSingleVariable);
-
-            if (alternateAccess != NULL) {
-
+        if (namedVariable->type == MMS_STRUCTURE)
+        {
+            if (alternateAccess)
+            {
                 char variableName[200];
                 variableName[0] = 0;
                 strcat(variableName, nameIdStr);
 
-                value = getComponent(connection, domain, alternateAccess, namedVariable, variableName);
+                MmsValue* value = getComponent(connection, domain, alternateAccess, namedVariable, variableName);
 
-                if (value != NULL) {
+                if (value) {
                     appendValueToResultList(value, values);
                 }
                 else {
@@ -359,7 +355,9 @@ addNamedVariableToResultList(MmsVariableSpecification* namedVariable, MmsDomain*
                 }
             }
             else {
-                if (value != NULL) {
+                MmsValue* value = mmsServer_getValue(connection->server, domain, nameIdStr, connection, isAccessToSingleVariable);
+
+                if (value) {
                     appendValueToResultList(value, values);
                 }
                 else {
@@ -370,7 +368,7 @@ addNamedVariableToResultList(MmsVariableSpecification* namedVariable, MmsDomain*
         }
         else if (namedVariable->type == MMS_ARRAY) {
 
-            if (alternateAccess != NULL) {
+            if (alternateAccess) {
                 alternateArrayAccess(connection, alternateAccess, domain,
                         nameIdStr, values, namedVariable);
             }
@@ -381,7 +379,7 @@ addNamedVariableToResultList(MmsVariableSpecification* namedVariable, MmsDomain*
         }
         else {
 
-            if (alternateAccess != NULL) {
+            if (alternateAccess) {
                 appendErrorToResultList(values, DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT);
             }
             else {
@@ -763,7 +761,6 @@ static void
 createNamedVariableListResponse(MmsServerConnection connection, MmsNamedVariableList namedList,
 		int invokeId, ByteBuffer* response, bool isSpecWithResult, VarAccessSpec* accessSpec)
 {
-
 	LinkedList /*<MmsValue>*/ values = LinkedList_create();
 	LinkedList variables = MmsNamedVariableList_getVariableList(namedList);
 

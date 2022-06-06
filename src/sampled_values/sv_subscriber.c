@@ -1,7 +1,7 @@
 /*
  *  sv_receiver.c
  *
- *  Copyright 2015-2018 Michael Zillgith
+ *  Copyright 2015-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -352,8 +352,8 @@ parseASDU(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, int length)
         printf("SV_SUBSCRIBER:   SV ASDU: ----------------\n");
         printf("SV_SUBSCRIBER:     DataLength: %d\n", asdu.dataBufferLength);
         printf("SV_SUBSCRIBER:     SvId: %s\n", asdu.svId);
-        printf("SV_SUBSCRIBER:     SmpCnt: %d\n", SVSubscriber_ASDU_getSmpCnt(&asdu));
-        printf("SV_SUBSCRIBER:     ConfRev: %d\n", SVSubscriber_ASDU_getConfRev(&asdu));
+        printf("SV_SUBSCRIBER:     SmpCnt: %u\n", SVSubscriber_ASDU_getSmpCnt(&asdu));
+        printf("SV_SUBSCRIBER:     ConfRev: %u\n", SVSubscriber_ASDU_getConfRev(&asdu));
         
         if (SVSubscriber_ASDU_hasDatSet(&asdu))
             printf("SV_SUBSCRIBER:     DatSet: %s\n", asdu.datSet);
@@ -601,6 +601,13 @@ SVSubscriber_setListener(SVSubscriber self,  SVUpdateListener listener, void* pa
     self->listener = listener;
     self->listenerParameter = parameter;
 }
+
+uint8_t
+SVSubscriber_ASDU_getSmpSynch(SVSubscriber_ASDU self)
+{
+    return self->smpSynch[0];
+}
+
 
 uint16_t
 SVSubscriber_ASDU_getSmpCnt(SVSubscriber_ASDU self)

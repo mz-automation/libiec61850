@@ -1,7 +1,7 @@
 /*
  *  mms_mapping_internal.h
  *
- *  Copyright 2013-2020 Michael Zillgith
+ *  Copyright 2013-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -285,6 +285,7 @@ struct sMmsMapping {
 #endif
 
     LinkedList controlObjects;
+    uint64_t nextControlTimeout; /* next timeout in one of the control state machines */
 
     LinkedList attributeAccessHandlers;
 
@@ -322,12 +323,17 @@ struct sMmsMapping {
 #endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
 
     /* flag indicates if data model is locked --> prevents reports to be sent */
+
     bool isModelLocked;
+    Semaphore isModelLockedMutex;
 
     IedServer iedServer;
 
     IedConnectionIndicationHandler connectionIndicationHandler;
     void* connectionIndicationHandlerParameter;
+
+    IedServer_RCBEventHandler rcbEventHandler;
+    void* rcbEventHandlerParameter;
 };
 
 #endif /* MMS_MAPPING_INTERNAL_H_ */

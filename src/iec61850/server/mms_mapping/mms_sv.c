@@ -1,7 +1,7 @@
 /*
  *  mms_sv.c
  *
- *  Copyright 2015 Michael Zillgith
+ *  Copyright 2015-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -67,9 +67,11 @@ MmsSampledValueControlBlock_create()
 void
 MmsSampledValueControlBlock_destroy(MmsSampledValueControlBlock self)
 {
-    MmsValue_delete(self->mmsValue);
+    if (self) {
+        MmsValue_delete(self->mmsValue);
 
-    GLOBAL_FREEMEM(self);
+        GLOBAL_FREEMEM(self);
+    }
 }
 
 static MmsSampledValueControlBlock
@@ -131,6 +133,7 @@ LIBIEC61850_SV_writeAccessSVControlBlock(MmsMapping* self, MmsDomain* domain, ch
     char variableId[130];
 
     strncpy(variableId, variableIdOrig, 129);
+    variableId[129] = 0;
 
     char* separator = strchr(variableId, '$');
 
@@ -214,6 +217,7 @@ LIBIEC61850_SV_readAccessSampledValueControlBlock(MmsMapping* self, MmsDomain* d
     char variableId[130];
 
     strncpy(variableId, variableIdOrig, 129);
+    variableId[129] = 0;
 
     char* separator = strchr(variableId, '$');
 
