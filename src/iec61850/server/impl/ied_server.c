@@ -302,12 +302,27 @@ installDefaultValuesForDataAttribute(IedServer self, LogicalDevice* ld, DataAttr
     int childPosition = strlen(objectReference);
     int childCompIdPos = strlen(componentId);
 
-    DataAttribute* subDataAttribute = (DataAttribute*) dataAttribute->firstChild;
+    if (dataAttribute->elementCount > 0) {
+        int subIdx = 0;
 
-    while (subDataAttribute != NULL) {
-        installDefaultValuesForDataAttribute(self, ld, subDataAttribute, objectReference, childPosition, idx, componentId, childCompIdPos);
+        DataAttribute* subDataAttribute = (DataAttribute*) dataAttribute->firstChild;
 
-        subDataAttribute = (DataAttribute*) subDataAttribute->sibling;
+        while (subDataAttribute != NULL) {
+            installDefaultValuesForDataAttribute(self, ld, subDataAttribute, objectReference, childPosition, subIdx, componentId, childCompIdPos);
+
+            subIdx++;
+
+            subDataAttribute = (DataAttribute*) subDataAttribute->sibling;
+        }
+    }
+    else {
+        DataAttribute* subDataAttribute = (DataAttribute*) dataAttribute->firstChild;
+
+        while (subDataAttribute != NULL) {
+            installDefaultValuesForDataAttribute(self, ld, subDataAttribute, objectReference, childPosition, idx, componentId, childCompIdPos);
+
+            subDataAttribute = (DataAttribute*) subDataAttribute->sibling;
+        }
     }
 }
 

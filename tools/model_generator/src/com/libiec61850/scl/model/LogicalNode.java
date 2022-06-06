@@ -245,7 +245,7 @@ public class LogicalNode implements DataModelNode {
 		    if (subDataAttribute == null)
 		        System.out.println("subelement with name " + sdiName + " not found!");
 		    
-		    parseDataAttributeNodes(sdiNode, subDataAttribute);
+		    parseDataAttributeNodes(sdiNode, subDataAttribute, -1);
 		    
 		    parseSubDataInstances(sdiNode,  subDataAttribute);
 		}
