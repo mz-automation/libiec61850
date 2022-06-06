@@ -67,7 +67,7 @@ BerEncoder_encodeBoolean(uint8_t tag, bool value, uint8_t* buffer, int bufPos)
     buffer[bufPos++] = 1;
 
     if (value)
-        buffer[bufPos++] = 0xff;
+        buffer[bufPos++] = 0x01;
     else
         buffer[bufPos++] = 0x00;
 
