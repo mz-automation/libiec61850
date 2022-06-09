@@ -333,17 +333,15 @@ void
 IedConnection_triggerGIReport(IedConnection self, IedClientError* error, const char* rcbReference)
 {
     char domainId[65];
-    char itemId[129];
+    char itemId[65];
 
     MmsMapping_getMmsDomainFromObjectReference(rcbReference, domainId);
 
-    strcpy(itemId, rcbReference + strlen(domainId) + 1);
+    StringUtils_concatString(itemId, 65, rcbReference + strlen(domainId) + 1, "");
 
     StringUtils_replace(itemId, '.', '$');
 
-    int itemIdLen = strlen(itemId);
-
-    strcpy(itemId + itemIdLen, "$GI");
+    StringUtils_appendString(itemId, 65, "$GI");
 
     MmsConnection mmsCon = IedConnection_getMmsConnection(self);
 
@@ -387,10 +385,9 @@ iedConnection_handleReport(IedConnection self, MmsValue* value)
         char* rptId = report->rptId;
 
         if ((rptId == NULL) || (strlen(rptId) == 0)) {
-        //if ((rptId == NULL)  || (rptId && (strlen(rptId) == 0))) {
-            strncpy(defaultRptId, report->rcbReference, 129);
-            defaultRptId[129] = 0;
+            StringUtils_concatString(defaultRptId, 130, report->rcbReference, "");
             StringUtils_replace(defaultRptId, '.', '$');
+
             rptId = defaultRptId;
         }
 
@@ -480,22 +477,53 @@ iedConnection_handleReport(IedConnection self, MmsValue* value)
             goto exit_function;
         }
 
-        const char* dataSetNameStr = MmsValue_toString(dataSetName);
+        int dataSetNameSize = MmsValue_getStringSize(dataSetName);
 
-        if (matchingReport->dataSetName == NULL) {
-        	matchingReport->dataSetName = (char*) GLOBAL_MALLOC(MmsValue_getStringSize(dataSetName) + 1);
-        	matchingReport->dataSetNameSize = MmsValue_getStringSize(dataSetName) + 1;
+        /* limit to prevent large memory allocation */
+        if (dataSetNameSize < 130) {
+            const char* dataSetNameStr = MmsValue_toString(dataSetName);
+
+            if (matchingReport->dataSetName == NULL) {
+                matchingReport->dataSetName = (char*) GLOBAL_MALLOC(dataSetNameSize + 1);
+
+                if (matchingReport->dataSetName == NULL) {
+                    matchingReport->dataSetNameSize =  0;
+
+                    if (DEBUG_IED_CLIENT)
+                        printf("IED_CLIENT: failed to allocate memory\n");
+
+                    goto exit_function;
+                }
+
+                matchingReport->dataSetNameSize = dataSetNameSize + 1;
+            }
+            else {
+                if (matchingReport->dataSetNameSize < MmsValue_getStringSize(dataSetName) + 1) {
+                    GLOBAL_FREEMEM((void*) matchingReport->dataSetName);
+
+                    matchingReport->dataSetName = (char*) GLOBAL_MALLOC(dataSetNameSize + 1);
+
+                    if (matchingReport->dataSetName == NULL) {
+                        matchingReport->dataSetNameSize =  0;
+
+                        if (DEBUG_IED_CLIENT)
+                            printf("IED_CLIENT: failed to allocate memory\n");
+
+                        goto exit_function;
+                    }
+
+                    matchingReport->dataSetNameSize = dataSetNameSize + 1;
+                }
+            }
+
+            StringUtils_copyStringMax(matchingReport->dataSetName, dataSetNameSize + 1, dataSetNameStr);
         }
         else {
-        	if (matchingReport->dataSetNameSize < MmsValue_getStringSize(dataSetName) + 1) {
-        		GLOBAL_FREEMEM((void*) matchingReport->dataSetName);
+            if (DEBUG_IED_CLIENT)
+                printf("IED_CLIENT: report DatSet name too large (%i)\n", dataSetNameSize);
 
-        		matchingReport->dataSetName = (char*) GLOBAL_MALLOC(MmsValue_getStringSize(dataSetName) + 1);
-				matchingReport->dataSetNameSize = MmsValue_getStringSize(dataSetName) + 1;
-        	}
+            goto exit_function;
         }
-
-    	strcpy(matchingReport->dataSetName, dataSetNameStr);
 
         inclusionIndex++;
     }

@@ -1758,8 +1758,7 @@ Control_readAccessControlObject(MmsMapping* self, MmsDomain* domain, char* varia
 
     char variableId[129];
 
-    strncpy(variableId, variableIdOrig, 128);
-    variableId[128] = 0;
+    StringUtils_copyStringMax(variableId, 129, variableIdOrig);
 
     char* separator = strchr(variableId, '$');
 
@@ -1944,8 +1943,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
 
     char variableId[65];
 
-    strncpy(variableId, variableIdOrig, 64);
-    variableId[64] = 0;
+    StringUtils_copyStringMax(variableId, 65, variableIdOrig);
 
     char* separator = strchr(variableId, '$');
 

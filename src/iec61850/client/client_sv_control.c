@@ -1,7 +1,7 @@
 /*
  *  client_sv_control.c
  *
- *  Copyright 2015 Michael Zillgith
+ *  Copyright 2015-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -100,9 +100,8 @@ setBooleanVariable(ClientSVControlBlock self, const char* varName, bool value)
 {
     char refBuf[130];
 
-    strcpy(refBuf, self->reference);
-    strcat(refBuf, ".");
-    strcat(refBuf, varName);
+    StringUtils_concatString(refBuf, 130, self->reference, ".");
+    StringUtils_appendString(refBuf, 130, varName);
 
     self->lastError = IED_ERROR_OK;
 
@@ -138,9 +137,8 @@ readBooleanVariable(ClientSVControlBlock self, const char* varName)
 {
     char refBuf[130];
 
-    strcpy(refBuf, self->reference);
-    strcat(refBuf, ".");
-    strcat(refBuf, varName);
+    StringUtils_concatString(refBuf, 130, self->reference, ".");
+    StringUtils_appendString(refBuf, 130, varName);
 
     self->lastError = IED_ERROR_OK;
 
@@ -171,9 +169,8 @@ readStringVariable(ClientSVControlBlock self, const char* varName)
 {
     char refBuf[130];
 
-    strcpy(refBuf, self->reference);
-    strcat(refBuf, ".");
-    strcat(refBuf, varName);
+    StringUtils_concatString(refBuf, 130, self->reference, ".");
+    StringUtils_appendString(refBuf, 130, varName);
 
     self->lastError = IED_ERROR_OK;
 
@@ -204,9 +201,8 @@ readUIntVariable(ClientSVControlBlock self, const char* varName)
 {
     char refBuf[130];
 
-    strcpy(refBuf, self->reference);
-    strcat(refBuf, ".");
-    strcat(refBuf, varName);
+    StringUtils_concatString(refBuf, 130, self->reference, ".");
+    StringUtils_appendString(refBuf, 130, varName);
 
     self->lastError = IED_ERROR_OK;
 
@@ -237,9 +233,7 @@ ClientSVControlBlock_getOptFlds(ClientSVControlBlock self)
 {
     char refBuf[130];
 
-    strcpy(refBuf, self->reference);
-    strcat(refBuf, ".");
-    strcat(refBuf, "OptFlds");
+    StringUtils_concatString(refBuf, 130, self->reference, ".OptFlds");
 
     self->lastError = IED_ERROR_OK;
 
@@ -280,9 +274,7 @@ ClientSVControlBlock_getDstAddress(ClientSVControlBlock self)
 {
     char refBuf[130];
 
-    strcpy(refBuf, self->reference);
-    strcat(refBuf, ".");
-    strcat(refBuf, "DstAddress");
+    StringUtils_concatString(refBuf, 130, self->reference, ".DstAddress");
 
     self->lastError = IED_ERROR_OK;
 
@@ -358,5 +350,4 @@ exit_cleanup:
 exit_error:
     return retVal;
 }
-
 

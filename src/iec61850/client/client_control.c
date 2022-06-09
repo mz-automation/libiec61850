@@ -215,8 +215,7 @@ ControlObjectClient_create(const char* objectReference, IedConnection connection
     char reference[129];
 
     if (strlen(objectReference) < 120) {
-        strcpy(reference, objectReference);
-        strcat(reference, ".ctlModel");
+        StringUtils_concatString(reference, 129, objectReference, ".ctlModel");
     }
     else
         goto exit_function;
@@ -469,9 +468,7 @@ prepareOperParameters(ControlObjectClient self, MmsValue* ctlVal, uint64_t operT
 
     convertToMmsAndInsertFC(itemId, self->objectReference + strlen(domainId) + 1, "CO");
 
-    int controlObjectItemIdLen = strlen(itemId);
-
-    strncat(itemId, "$Oper", 64 - controlObjectItemIdLen);
+    StringUtils_appendString(itemId, 65, "$Oper");
 
     if (DEBUG_IED_CLIENT)
         printf("IED_CLIENT: operate: %s/%s\n", domainId, itemId);
@@ -500,9 +497,7 @@ ControlObjectClient_operate(ControlObjectClient self, MmsValue* ctlVal, uint64_t
 
     convertToMmsAndInsertFC(itemId, self->objectReference + strlen(domainId) + 1, "CO");
 
-    int controlObjectItemIdLen = strlen(itemId);
-
-    strncat(itemId, "$Oper", 64 - controlObjectItemIdLen);
+    StringUtils_appendString(itemId, 65, "$Oper");
 
     if (DEBUG_IED_CLIENT)
         printf("IED_CLIENT: operate: %s/%s\n", domainId, itemId);
@@ -605,9 +600,7 @@ ControlObjectClient_operateAsync(ControlObjectClient self, IedClientError* err, 
 
     convertToMmsAndInsertFC(itemId, self->objectReference + strlen(domainId) + 1, "CO");
 
-    int controlObjectItemIdLen = strlen(itemId);
-
-    strncat(itemId, "$Oper", 64 - controlObjectItemIdLen);
+    StringUtils_appendString(itemId, 65, "$Oper");
 
     if (DEBUG_IED_CLIENT)
         printf("IED_CLIENT: operate: %s/%s\n", domainId, itemId);
@@ -724,7 +717,7 @@ ControlObjectClient_selectWithValue(ControlObjectClient self, MmsValue* ctlVal)
 
     convertToMmsAndInsertFC(itemId, self->objectReference + strlen(domainId) + 1, "CO");
 
-    strncat(itemId, "$SBOw", 64);
+    StringUtils_appendString(itemId, 65, "$SBOw");
 
     if (DEBUG_IED_CLIENT)
         printf("IED_CLIENT: select with value: %s/%s\n", domainId, itemId);
@@ -853,7 +846,7 @@ ControlObjectClient_selectWithValueAsync(ControlObjectClient self, IedClientErro
 
     convertToMmsAndInsertFC(itemId, self->objectReference + strlen(domainId) + 1, "CO");
 
-    strncat(itemId, "$SBOw", 64);
+    StringUtils_appendString(itemId, 65, "$SBOw");
 
     call->callback = handler;
     call->callbackParameter = parameter;
@@ -899,7 +892,7 @@ ControlObjectClient_select(ControlObjectClient self)
 
     convertToMmsAndInsertFC(itemId, self->objectReference + strlen(domainId) + 1, "CO");
 
-    strncat(itemId, "$SBO", 64);
+    StringUtils_appendString(itemId, 65, "$SBO");
 
     if (DEBUG_IED_CLIENT)
         printf("IED_CLIENT: select: %s/%s\n", domainId, itemId);
@@ -986,7 +979,7 @@ internalSelectHandler(uint32_t invokeId, void* parameter, MmsError err, MmsValue
 
                 convertToMmsAndInsertFC(itemId, self->objectReference + strlen(domainId) + 1, "CO");
 
-                strncat(itemId, "$SBO", 64);
+                StringUtils_appendString(itemId, 65, "$SBO");
 
                 if (strcmp(MmsValue_toString(value), "") == 0) {
                     if (DEBUG_IED_CLIENT)
@@ -1031,7 +1024,7 @@ ControlObjectClient_selectAsync(ControlObjectClient self, IedClientError* err, C
 
     convertToMmsAndInsertFC(itemId, self->objectReference + strlen(domainId) + 1, "CO");
 
-    strncat(itemId, "$SBO", 64);
+    StringUtils_appendString(itemId, 65, "$SBO");
 
     IedConnectionOutstandingCall call = iedConnection_allocateOutstandingCall(self->connection);
 
@@ -1129,7 +1122,7 @@ ControlObjectClient_cancel(ControlObjectClient self)
 
     convertToMmsAndInsertFC(itemId, self->objectReference + strlen(domainId) + 1, "CO");
 
-    strncat(itemId, "$Cancel", 64);
+    StringUtils_appendString(itemId, 65, "$Cancel");
 
     if (DEBUG_IED_CLIENT)
         printf("IED_CLIENT: cancel: %s/%s\n", domainId, itemId);
@@ -1229,7 +1222,7 @@ ControlObjectClient_cancelAsync(ControlObjectClient self, IedClientError* err, C
 
     convertToMmsAndInsertFC(itemId, self->objectReference + strlen(domainId) + 1, "CO");
 
-    strncat(itemId, "$Cancel", 64);
+    StringUtils_appendString(itemId, 65, "$Cancel");
 
     call->callback = handler;
     call->callbackParameter = parameter;

@@ -728,8 +728,7 @@ DataSetEntry_create(DataSet* dataSet, const char* variable, int index, const cha
 
     char variableName[130];
 
-    strncpy(variableName, variable, 129);
-    variableName[129] = 0;
+    StringUtils_copyStringMax(variableName, 130, variable);
 
     char* separator = strchr(variableName, '/');
 

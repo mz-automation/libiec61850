@@ -140,6 +140,141 @@ StringUtils_createString(int count, ...)
 	return newStr;
 }
 
+char*
+StringUtils_concatString(char* dest, int maxBufferSize, const char* str1, const char* str2)
+{
+    char* res = dest;
+
+    if (dest == NULL)
+        res = (char*)GLOBAL_MALLOC(maxBufferSize);
+
+    if (res)
+    {
+        int maxStringSize = maxBufferSize -1;
+
+        int destPos = 0;
+
+        int i = 0;
+        while (str1[i] != 0) {
+
+            if (destPos < maxStringSize) {
+                res[destPos] = str1[i];
+                destPos++;
+            }
+            else {
+                res[destPos] = 0;
+                return res;
+            }
+
+            i++;
+        }
+
+        i = 0;
+        while (str2[i] != 0) {
+
+            if (destPos < maxStringSize) {
+                res[destPos] = str2[i];
+                destPos++;
+            }
+            else {
+                res[destPos] = 0;
+                return res;
+            }
+
+            i++;
+        }
+
+        res[destPos] = 0;
+    }
+
+    return res;
+}
+
+char*
+StringUtils_copyStringMax(char* dest, int maxBufferSize, const char* str1)
+{
+    char* res = dest;
+
+    if (dest == NULL)
+        res = (char*)GLOBAL_MALLOC(maxBufferSize);
+
+    if (res)
+    {
+        int maxStringSize = maxBufferSize -1;
+
+        int destPos = 0;
+
+        int i = 0;
+        while (str1[i] != 0) {
+
+            if (destPos < maxStringSize) {
+                res[destPos] = str1[i];
+                destPos++;
+            }
+            else {
+                res[destPos] = 0;
+                return res;
+            }
+
+            i++;
+        }
+
+        res[destPos] = 0;
+    }
+
+    return res;
+}
+
+char*
+StringUtils_appendString(char* dest, int maxBufferSize, const char* str)
+{
+    /* find end of existing string */
+    int i = 0;
+
+    while (i < maxBufferSize) {
+        if (dest[i] == 0) {
+            break;
+        }
+
+        i++;
+    }
+
+    if (i == maxBufferSize) {
+        /* append string terminator and return */
+        if (maxBufferSize > 0) {
+            dest[maxBufferSize - 1] = 0;
+        }
+
+        return dest;
+    }
+
+    int srcPos = 0;
+
+    while (i < maxBufferSize) {
+
+        if (str[srcPos] == 0) {
+            break;
+        }
+
+        dest[i] = str[srcPos];
+
+        i++;
+        srcPos++;
+    }
+
+    if (i == maxBufferSize) {
+        /* append string terminator and return */
+        if (maxBufferSize > 0) {
+            dest[maxBufferSize - 1] = 0;
+        }
+    }
+    else {
+        dest[i] = 0;
+    }
+
+    return dest;
+}
+
 void
 StringUtils_replace(char* string, char oldChar, char newChar)
 {

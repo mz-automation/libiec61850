@@ -41,8 +41,7 @@ GooseSubscriber_create(char* goCbRef, MmsValue* dataSetValues)
     GooseSubscriber self = (GooseSubscriber) GLOBAL_CALLOC(1, sizeof(struct sGooseSubscriber));
 
     if (self) {
-        strncpy(self->goCBRef, goCbRef, 129);
-        self->goCBRef[129] = 0;
+        StringUtils_copyStringMax(self->goCBRef, 130, goCbRef);
 
         self->goCBRefLen = strlen(goCbRef);
         self->timestamp = MmsValue_newUtcTime(0);

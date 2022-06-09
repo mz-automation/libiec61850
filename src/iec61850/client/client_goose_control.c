@@ -396,11 +396,16 @@ IedConnection_getGoCBValues(IedConnection self, IedClientError* error, const cha
     ClientGooseControlBlock returnGoCB = updateGoCB;
 
     char domainId[65];
-    char itemId[129];
+    char itemId[130];
 
-    MmsMapping_getMmsDomainFromObjectReference(goCBReference, domainId);
+    if (MmsMapping_getMmsDomainFromObjectReference(goCBReference, domainId) == NULL) {
+        *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
+        return NULL;
+    }
 
-    const char* itemIdStart = goCBReference + strlen(domainId) + 1;
+    int domainIdSize = strlen(domainId);
+
+    const char* itemIdStart = goCBReference + domainIdSize + 1;
 
     const char* separator = strchr(itemIdStart, '.');
 
@@ -417,8 +422,9 @@ IedConnection_getGoCBValues(IedConnection self, IedClientError* error, const cha
     itemId[separatorOffset + 1] = 'G';
     itemId[separatorOffset + 2] = 'O';
     itemId[separatorOffset + 3] = '$';
+    itemId[separatorOffset + 4] = 0;
 
-    strcpy(itemId + separatorOffset + 4, separator + 1);
+    StringUtils_appendString(itemId, 130, separator + 1);
 
     if (DEBUG_IED_CLIENT)
         printf("DEBUG_IED_CLIENT: getGoCBValues for %s\n", goCBReference);
@@ -468,9 +474,12 @@ IedConnection_setGoCBValues(IedConnection self, IedClientError* error, ClientGoo
     MmsError mmsError = MMS_ERROR_NONE;
 
     char domainId[65];
-    char itemId[129];
+    char itemId[130];
 
-    MmsMapping_getMmsDomainFromObjectReference(goCB->objectReference, domainId);
+    if (MmsMapping_getMmsDomainFromObjectReference(goCB->objectReference, domainId) == NULL) {
+        *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
+        return;
+    }
 
     char* itemIdStart = goCB->objectReference + strlen(domainId) + 1;
 
@@ -489,8 +498,9 @@ IedConnection_setGoCBValues(IedConnection self, IedClientError* error, ClientGoo
     itemId[separatorOffset + 1] = 'G';
     itemId[separatorOffset + 2] = 'O';
     itemId[separatorOffset + 3] = '$';
+    itemId[separatorOffset + 4] = 0;
 
-    strcpy(itemId + separatorOffset + 4, separator + 1);
+    StringUtils_appendString(itemId, 130, separator + 1);
 
     if (DEBUG_IED_CLIENT)
         printf("DEBUG_IED_CLIENT: setGoCBValues for %s\n", goCB->objectReference);
@@ -503,67 +513,84 @@ IedConnection_setGoCBValues(IedConnection self, IedClientError* error, ClientGoo
 
     /* add rGoEna as last element */
     if (parametersMask & GOCB_ELEMENT_GO_ID) {
-        strcpy(itemId + itemIdLen, "$GoID");
+        StringUtils_appendString(itemId, 130, "$GoID");
 
         LinkedList_add(itemIds, StringUtils_copyString(itemId));
         LinkedList_add(values, goCB->goID);
+
+        itemId[itemIdLen] = 0;
     }
 
     if (parametersMask & GOCB_ELEMENT_DATSET) {
-        strcpy(itemId + itemIdLen, "$DatSet");
+        StringUtils_appendString(itemId, 130, "$DatSet");
 
         LinkedList_add(itemIds, StringUtils_copyString(itemId));
         LinkedList_add(values, goCB->datSet);
+
+        itemId[itemIdLen] = 0;
     }
 
     if (parametersMask & GOCB_ELEMENT_CONF_REV) {
-        strcpy(itemId + itemIdLen, "$ConfRev");
+        StringUtils_appendString(itemId, 130, "$ConfRev");
 
         LinkedList_add(itemIds, StringUtils_copyString(itemId));
         LinkedList_add(values, goCB->confRev);
+
+        itemId[itemIdLen] = 0;
     }
 
     if (parametersMask & GOCB_ELEMENT_NDS_COMM) {
-        strcpy(itemId + itemIdLen, "$NdsCom");
+        StringUtils_appendString(itemId, 130, "$NdsCom");
 
         LinkedList_add(itemIds, StringUtils_copyString(itemId));
         LinkedList_add(values, goCB->ndsCom);
+
+        itemId[itemIdLen] = 0;
     }
 
     if (parametersMask & GOCB_ELEMENT_DST_ADDRESS) {
-        strcpy(itemId + itemIdLen, "$DstAddress");
+        StringUtils_appendString(itemId, 130, "$DstAddress");
 
         LinkedList_add(itemIds, StringUtils_copyString(itemId));
         LinkedList_add(values, goCB->dstAddress);
+
+        itemId[itemIdLen] = 0;
     }
 
     if (parametersMask & GOCB_ELEMENT_MIN_TIME) {
-        strcpy(itemId + itemIdLen, "$MinTime");
+        StringUtils_appendString(itemId, 130, "$MinTime");
 
         LinkedList_add(itemIds, StringUtils_copyString(itemId));
         LinkedList_add(values, goCB->minTime);
+
+        itemId[itemIdLen] = 0;
     }
 
     if (parametersMask & GOCB_ELEMENT_MAX_TIME) {
-        strcpy(itemId + itemIdLen, "$MaxTime");
+        StringUtils_appendString(itemId, 130, "$MaxTime");
 
         LinkedList_add(itemIds, StringUtils_copyString(itemId));
         LinkedList_add(values, goCB->maxTime);
+
+        itemId[itemIdLen] = 0;
     }
 
     if (parametersMask & GOCB_ELEMENT_FIXED_OFFS) {
-        strcpy(itemId + itemIdLen, "$FixedOffs");
+        StringUtils_appendString(itemId, 130, "$FixedOffs");
 
         LinkedList_add(itemIds, StringUtils_copyString(itemId));
         LinkedList_add(values, goCB->fixedOffs);
+
+        itemId[itemIdLen] = 0;
     }
 
-
     if (parametersMask & GOCB_ELEMENT_GO_ENA) {
-        strcpy(itemId + itemIdLen, "$GoEna");
+        StringUtils_appendString(itemId, 130, "$GoEna");
 
         LinkedList_add(itemIds, StringUtils_copyString(itemId));
         LinkedList_add(values, goCB->goEna);
+
+        itemId[itemIdLen] = 0;
     }
 
     if (singleRequest) {

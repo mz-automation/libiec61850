@@ -470,8 +470,9 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
 
                         if (start) {
                             start++;
-                            strncpy(nameString, start, 129);
-                            nameString[129] = 0;
+
+                            StringUtils_copyStringMax(nameString, 130, start);
+
                             terminateString(nameString, ')');
 
                             int indexVal = -1;

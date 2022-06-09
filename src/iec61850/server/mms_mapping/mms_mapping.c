@@ -1805,9 +1805,7 @@ createMmsDomainFromIedDevice(MmsMapping* self, LogicalDevice* logicalDevice)
         goto exit_function;
     }
 
-    strncpy(domainName, self->model->name, 64);
-    domainName[64] = 0;
-    strncat(domainName, logicalDevice->name, 64 - modelNameLength);
+    StringUtils_concatString(domainName, 65, self->model->name, logicalDevice->name);
 
     domain = MmsDomain_create(domainName);
 
@@ -1835,9 +1833,8 @@ createMmsDomainFromIedDevice(MmsMapping* self, LogicalDevice* logicalDevice)
                         printf("IED_SERVER: Log name %s invalid! Resulting journal name too long! Skip log\n", log->name);
                 }
                 else {
-                    strcpy(journalName, log->parent->name);
-                    strcat(journalName, "$");
-                    strcat(journalName, log->name);
+                    StringUtils_concatString(journalName, 65, log->parent->name, "$");
+                    StringUtils_appendString(journalName, 65, log->name);
 
                     MmsDomain_addJournal(domain, journalName);
 
@@ -1919,10 +1916,9 @@ createDataSets(MmsDevice* mmsDevice, IedModel* iedModel)
         goto exit_function;
     }
 
-    while (dataset != NULL) {
-        strncpy(domainName, iedModel->name, 64);
-        domainName[64] = 0;
-        strncat(domainName, dataset->logicalDeviceName, 64 - iedModelNameLength);
+    while (dataset != NULL)
+    {
+        StringUtils_concatString(domainName, 65, iedModel->name, dataset->logicalDeviceName);
 
         MmsDomain* dataSetDomain = MmsDevice_getDomain(mmsDevice, domainName);
 
@@ -1942,9 +1938,7 @@ createDataSets(MmsDevice* mmsDevice, IedModel* iedModel)
 
             MmsAccessSpecifier accessSpecifier;
 
-            strncpy(domainName, iedModel->name, 64);
-            domainName[64] = 0;
-            strncat(domainName, dataSetEntry->logicalDeviceName, 64 - iedModelNameLength);
+            StringUtils_concatString(domainName, 65, iedModel->name, dataSetEntry->logicalDeviceName);
 
             accessSpecifier.domain = MmsDevice_getDomain(mmsDevice, domainName);
 
@@ -2302,8 +2296,7 @@ writeAccessGooseControlBlock(MmsMapping* self, MmsDomain* domain, char* variable
 {
     char variableId[130];
 
-    strncpy(variableId, variableIdOrig, 129);
-    variableId[129] = 0;
+    StringUtils_copyStringMax(variableId, 130, variableIdOrig);
 
     char* separator = strchr(variableId, '$');
 
@@ -2986,8 +2979,7 @@ readAccessGooseControlBlock(MmsMapping* self, MmsDomain* domain, char* variableI
 
     char variableId[130];
 
-    strncpy(variableId, variableIdOrig, 129);
-    variableId[129] = 0;
+    StringUtils_copyStringMax(variableId, 130, variableIdOrig);
 
     char* separator = strchr(variableId, '$');
 
@@ -4022,10 +4014,9 @@ MmsMapping_createDataSetByNamedVariableList(MmsMapping* self, MmsNamedVariableLi
 MmsNamedVariableList
 MmsMapping_getDomainSpecificVariableList(MmsMapping* self, const char* variableListReference)
 {
-    char variableListReferenceCopy[193];
+    char variableListReferenceCopy[130];
 
-    strncpy(variableListReferenceCopy, variableListReference, 192);
-	variableListReferenceCopy[192] = 0;
+    StringUtils_copyStringMax(variableListReferenceCopy, 130, variableListReference);
 
     char* separator = strchr(variableListReferenceCopy, '/');
 

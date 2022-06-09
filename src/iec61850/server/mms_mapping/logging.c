@@ -331,8 +331,7 @@ getLogInstanceByLogRef(MmsMapping* self, const char* logRef)
     char* lnName;
     char* logName;
 
-    strncpy(refStr, logRef, 129);
-    refStr[129] = 0;
+    StringUtils_copyStringMax(refStr, 130, logRef);
 
     domainName = refStr;
 
@@ -457,8 +456,7 @@ copyLCBValuesToTrackingObject(MmsMapping* self, LogControl* logControl)
             char datSet[130];
 
             if (logControl->dataSetRef) {
-                strncpy(datSet, logControl->dataSetRef, 129);
-                datSet[129] = 0;
+                StringUtils_copyStringMax(datSet, 130, logControl->dataSetRef);
 
                 StringUtils_replace(datSet, '$', '.');
             }
@@ -494,8 +492,7 @@ LIBIEC61850_LOG_SVC_writeAccessLogControlBlock(MmsMapping* self, MmsDomain* doma
 
     char variableId[130];
 
-    strncpy(variableId, variableIdOrig, 129);
-    variableId[129] = 0;
+    StringUtils_copyStringMax(variableId, 130, variableIdOrig);
 
     char* separator = strchr(variableId, '$');
 
@@ -708,8 +705,7 @@ LIBIEC61850_LOG_SVC_readAccessControlBlock(MmsMapping* self, MmsDomain* domain, 
 
     char variableId[130];
 
-    strncpy(variableId, variableIdOrig, 129);
-    variableId[129] = 0;
+    StringUtils_copyStringMax(variableId, 140, variableIdOrig);
 
     char* separator = strchr(variableId, '$');
 
@@ -827,10 +823,7 @@ createLogControlBlock(MmsMapping* self, LogControlBlock* logControlBlock,
     if (logControlBlock->logRef != NULL) {
         char logRef[130];
 
-        int maxLogRefLength = 129 - strlen(self->model->name);
-
-        strcpy(logRef, self->model->name);
-        strncat(logRef, logControlBlock->logRef, maxLogRefLength);
+        StringUtils_concatString(logRef, 130, self->model->name, logControlBlock->logRef);
 
         mmsValue->value.structure.components[1] = MmsValue_newVisibleString(logRef);
 
@@ -1062,8 +1055,7 @@ MmsMapping_setLogStorage(MmsMapping* self, const char* logRef, LogStorage logSto
 
         char domainNameWithIEDName[65];
 
-        strcpy(domainNameWithIEDName, self->model->name);
-        strcat(domainNameWithIEDName, domainName);
+        StringUtils_concatString(domainNameWithIEDName, 65, self->model->name, domainName);
 
         MmsDomain* mmsDomain = MmsDevice_getDomain(self->mmsDevice, domainNameWithIEDName);
 

@@ -600,12 +600,11 @@ MmsMapping_createMmsVariableNameFromObjectReference(const char* objectReference,
         char* mmsVariableName;
 
         if (buffer == NULL)
-            mmsVariableName = (char*) GLOBAL_MALLOC(len + 1);
+            mmsVariableName = (char*) GLOBAL_MALLOC(65);
         else
             mmsVariableName = buffer;
 
-        strncpy(mmsVariableName, objectReference + i, len);
-		mmsVariableName[len] = 0;
+        StringUtils_copyStringMax(mmsVariableName, 65, objectReference + i);
 
         return mmsVariableName;
     }

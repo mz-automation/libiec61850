@@ -71,7 +71,6 @@ getFreeFrsm(MmsServerConnection connection)
     return freeFrsm;
 }
 
-
 static MmsFileReadStateMachine*
 getFrsm(MmsServerConnection connection, int32_t frsmId)
 {
@@ -127,11 +126,11 @@ getFileInfo(const char* basepath, char* filename, uint32_t* fileSize, uint64_t* 
 {
 #if (CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME == 1)
     char extendedFileName[512];
+    mmsMsg_createExtendedFilename(basepath, 512, extendedFileName, filename);
 #else
     char extendedFileName[sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 256];
+    mmsMsg_createExtendedFilename(basepath, sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 256, extendedFileName, filename);
 #endif
-
-    mmsMsg_createExtendedFilename(basepath, extendedFileName, filename);
 
     return FileSystem_getFileInfo(extendedFileName, fileSize, lastModificationTimestamp);
 }
@@ -141,11 +140,11 @@ openFile(const char* basepath, char* fileName, bool readWrite)
 {
 #if (CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME == 1)
     char extendedFileName[512];
+    mmsMsg_createExtendedFilename(basepath, 512, extendedFileName, fileName);
 #else
     char extendedFileName[sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 256];
+    mmsMsg_createExtendedFilename(basepath, sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 256, extendedFileName, fileName);
 #endif
-
-    mmsMsg_createExtendedFilename(basepath, extendedFileName, fileName);
 
     return FileSystem_openFile(extendedFileName, readWrite);
 }
@@ -155,11 +154,11 @@ openDirectory(const char* basepath, char* directoryName)
 {
 #if (CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME == 1)
     char extendedFileName[512];
+    mmsMsg_createExtendedFilename(basepath, 512, extendedFileName, directoryName);
 #else
     char extendedFileName[sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 256];
+    mmsMsg_createExtendedFilename(basepath, sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 256, extendedFileName, directoryName);
 #endif
-
-    mmsMsg_createExtendedFilename(basepath, extendedFileName, directoryName);
 
     return FileSystem_openDirectory(extendedFileName);
 }
@@ -170,13 +169,14 @@ renameFile(const char* basepath, char* oldFilename, char* newFilename) {
 #if (CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME == 1)
     char extendedOldFileName[512];
     char extendedNewFileName[512];
+    mmsMsg_createExtendedFilename(basepath, 512, extendedOldFileName, oldFilename);
+    mmsMsg_createExtendedFilename(basepath, 512, extendedNewFileName, newFilename);
 #else
     char extendedOldFileName[sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 256];
     char extendedNewFileName[sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 256];
+    mmsMsg_createExtendedFilename(basepath, sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 256, extendedOldFileName, oldFilename);
+    mmsMsg_createExtendedFilename(basepath, sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 256, extendedNewFileName, newFilename);
 #endif
-
-    mmsMsg_createExtendedFilename(basepath, extendedOldFileName, oldFilename);
-    mmsMsg_createExtendedFilename(basepath, extendedNewFileName, newFilename);
 
     return FileSystem_renameFile(extendedOldFileName, extendedNewFileName);
 }
@@ -185,11 +185,11 @@ static bool
 deleteFile(const char* basepath, char* fileName) {
 #if (CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME == 1)
     char extendedFileName[512];
+    mmsMsg_createExtendedFilename(basepath, 512, extendedFileName, fileName);
 #else
     char extendedFileName[sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 256];
+    mmsMsg_createExtendedFilename(basepath, sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 256, extendedFileName, fileName);
 #endif
-
-    mmsMsg_createExtendedFilename(basepath, extendedFileName, fileName);
 
     return FileSystem_deleteFile(extendedFileName);
 }
@@ -718,11 +718,16 @@ mmsServer_handleObtainFileRequest(
 
 #if (CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME == 1)
         char extendedFileName[512];
+        mmsMsg_createExtendedFilename(MmsServerConnection_getFilesystemBasepath(connection), 512,
+                extendedFileName, destinationFilename);
+
 #else
         char extendedFileName[sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 256];
-#endif
+
         mmsMsg_createExtendedFilename(MmsServerConnection_getFilesystemBasepath(connection),
+                sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 256,
                 extendedFileName, destinationFilename);
+#endif
 
         if (FileSystem_getFileInfo(extendedFileName, NULL, NULL)) {
             if (DEBUG_MMS_SERVER)
@@ -751,7 +756,7 @@ mmsServer_handleObtainFileRequest(
                 task->lastRequestInvokeId = MmsServerConnection_getNextRequestInvokeId(connection);
                 task->fileHandle = fileHandle;
 
-                strcpy(task->destinationFilename, destinationFilename);
+                StringUtils_copyStringMax(task->destinationFilename, 256, destinationFilename);
 
                 ByteBuffer* request = MmsServer_reserveTransmitBuffer(connection->server);
 
@@ -941,10 +946,10 @@ addFileEntriesToResponse(const char* basepath, uint8_t* buffer, int bufPos, int 
 
         	if (directoryNameLength > 0) {
         		if (directoryName[directoryNameLength - 1] != '/')
-        			strcat(directoryName, "/");
+        		    StringUtils_appendString(directoryName, 256, "/");
         	}
 
-        	strcat(directoryName, fileName);
+        	StringUtils_appendString(directoryName, 256, fileName);
 
             bufPos = addFileEntriesToResponse(basepath, buffer, bufPos, maxBufSize, directoryName, continueAfterFileName, moreFollows);
 

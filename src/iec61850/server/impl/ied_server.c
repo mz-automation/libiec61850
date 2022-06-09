@@ -57,8 +57,7 @@ createControlObjects(IedServer self, MmsDomain* domain, char* lnName, MmsVariabl
             objectName[0] = 0;
 
             if (namePrefix != NULL) {
-                strcat(objectName, namePrefix);
-                strcat(objectName, "$");
+                StringUtils_concatString(objectName, 65, namePrefix, "$");
             }
 
             bool hasCancel = false;
@@ -105,9 +104,9 @@ createControlObjects(IedServer self, MmsDomain* domain, char* lnName, MmsVariabl
                     }
                 }
 
-                if (operSpec) {
+                StringUtils_appendString(objectName, 65, coSpec->name);
 
-                    strcat(objectName, coSpec->name);
+                if (operSpec) {
 
                     if (DEBUG_IED_SERVER)
                         printf("IED_SERVER: create control object LN:%s DO:%s\n", lnName, objectName);
@@ -142,8 +141,6 @@ createControlObjects(IedServer self, MmsDomain* domain, char* lnName, MmsVariabl
                     MmsMapping_addControlObject(mapping, controlObject);
                 }
                 else {
-                    strcat(objectName, coSpec->name);
-
                     if (createControlObjects(self, domain, lnName, coSpec, objectName) == false)
                         goto exit_function;
                 }
@@ -249,8 +246,7 @@ installDefaultValuesForDataAttribute(IedServer self, DataAttribute* dataAttribut
 
     char domainName[65];
 
-    strncpy(domainName, self->model->name, 64);
-    domainName[64] = 0;
+    StringUtils_copyStringMax(domainName, 65, self->model->name);
 
     MmsMapping_getMmsDomainFromObjectReference(objectReference, domainName + strlen(domainName));
 
@@ -373,16 +369,14 @@ updateDataSetsWithCachedValues(IedServer self)
 
                 char domainName[65];
 
-                strncpy(domainName, self->model->name, 64);
-                domainName[64] = 0;
-                strncat(domainName, dataSetEntry->logicalDeviceName, 64 - iedNameLength);
+                StringUtils_concatString(domainName, 65, self->model->name, dataSetEntry->logicalDeviceName);
 
                 MmsDomain* domain = MmsDevice_getDomain(self->mmsDevice, domainName);
 
                 char variableName[66];
+                variableName[0] = 0;
 
-                strncpy(variableName, dataSetEntry->variableName, 65);
-                variableName[65] = 0;
+                StringUtils_appendString(variableName, 66, dataSetEntry->variableName);
 
                 MmsVariableSpecification* typeSpec = NULL;
 
@@ -1632,9 +1626,7 @@ IedServer_getFunctionalConstrainedData(IedServer self, DataObject* dataObject, F
         goto exit_function;
     }
 
-    strncpy(domainName, self->model->name, 64);
-    domainName[64] = 0;
-    strncat(domainName, ld->name, 64);
+    StringUtils_concatString(domainName, 65, self->model->name, ld->name);
 
     MmsDomain* domain = MmsDevice_getDomain(self->mmsDevice, domainName);
 
