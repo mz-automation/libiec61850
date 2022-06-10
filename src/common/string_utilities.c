@@ -85,23 +85,22 @@ StringUtils_createStringFromBufferInBuffer(char* newString, const uint8_t* buf, 
     return newString;
 }
 
-
 char*
-StringUtils_createStringInBuffer(char* newStr, int count, ...)
+StringUtils_createStringInBuffer(char* newStr, int bufSize, int count, ...)
 {
     va_list ap;
-    char* currentPos = newStr;
-    int i;
 
-    va_start(ap, count);
-    for (i = 0; i < count; i++) {
-        char* str = va_arg(ap, char*);
-        strcpy(currentPos, str);
-        currentPos += strlen(str);
+    if (bufSize > 0) {
+        newStr[0] = 0;
+        int i;
+
+        va_start(ap, count);
+        for (i = 0; i < count; i++) {
+            char* str = va_arg(ap, char*);
+            StringUtils_appendString(newStr, bufSize, str);
+        }
+        va_end(ap);
     }
-    va_end(ap);
-
-    *currentPos = 0;
 
     return newStr;
 }

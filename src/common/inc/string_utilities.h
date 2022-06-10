@@ -55,7 +55,7 @@ StringUtils_createString(int count, ...);
  * to concatenate.
  */
 LIB61850_INTERNAL char*
-StringUtils_createStringInBuffer(char* buffer, int count, ...);
+StringUtils_createStringInBuffer(char* newStr, int bufSize, int count, ...);
 
 LIB61850_INTERNAL char*
 StringUtils_createStringFromBuffer(const uint8_t* buf, int size);

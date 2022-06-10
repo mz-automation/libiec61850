@@ -1006,9 +1006,9 @@ ControlObject_initialize(ControlObject* self)
         emptyString.value.visibleString.buf = NULL;
     }
 
-    char strBuf[129];
+    char strBuf[130];
 
-    char* ctlModelName = StringUtils_createStringInBuffer(strBuf, 4, self->lnName, "$CF$", self->name, "$ctlModel");
+    char* ctlModelName = StringUtils_createStringInBuffer(strBuf, 130, 4, self->lnName, "$CF$", self->name, "$ctlModel");
 
     if (DEBUG_IED_SERVER)
         printf("IED_SERVER: initialize control for %s\n", ctlModelName);
@@ -1021,33 +1021,33 @@ ControlObject_initialize(ControlObject* self)
             printf("IED_SERVER: No control model found for variable %s\n", ctlModelName);
     }
 
-    char* sboClassName = StringUtils_createStringInBuffer(strBuf, 4, self->lnName, "$CF$", self->name, "$sboClass");
+    char* sboClassName = StringUtils_createStringInBuffer(strBuf, 130, 4, self->lnName, "$CF$", self->name, "$sboClass");
 
     self->sboClass = MmsServer_getValueFromCache(mmsServer, self->mmsDomain, sboClassName);
 
-    char* ctlNumName = StringUtils_createStringInBuffer(strBuf, 4, self->lnName, "$ST$", self->name, "$ctlNum");
+    char* ctlNumName = StringUtils_createStringInBuffer(strBuf, 130, 4, self->lnName, "$ST$", self->name, "$ctlNum");
 
     self->ctlNumSt = MmsServer_getValueFromCache(mmsServer, self->mmsDomain, ctlNumName);
 
     if (self->ctlNumSt == NULL) {
         /* for APC */
-        ctlNumName = StringUtils_createStringInBuffer(strBuf, 4, self->lnName, "$MX$", self->name, "$ctlNum");
+        ctlNumName = StringUtils_createStringInBuffer(strBuf, 130, 4, self->lnName, "$MX$", self->name, "$ctlNum");
 
         self->ctlNumSt = MmsServer_getValueFromCache(mmsServer, self->mmsDomain, ctlNumName);
     }
 
-    char* originName = StringUtils_createStringInBuffer(strBuf, 4, self->lnName, "$ST$", self->name, "$origin");
+    char* originName = StringUtils_createStringInBuffer(strBuf, 130, 4, self->lnName, "$ST$", self->name, "$origin");
 
     self->originSt = MmsServer_getValueFromCache(mmsServer, self->mmsDomain, originName);
 
     if (self->originSt == NULL) {
         /* for APC */
-        originName = StringUtils_createStringInBuffer(strBuf, 4, self->lnName, "$MX$", self->name, "$origin");
+        originName = StringUtils_createStringInBuffer(strBuf, 130, 4, self->lnName, "$MX$", self->name, "$origin");
 
         self->originSt = MmsServer_getValueFromCache(mmsServer, self->mmsDomain, originName);
     }
 
-    char* sboTimeoutName = StringUtils_createStringInBuffer(strBuf, 4, self->lnName, "$CF$", self->name, "$sboTimeout");
+    char* sboTimeoutName = StringUtils_createStringInBuffer(strBuf, 130, 4, self->lnName, "$CF$", self->name, "$sboTimeout");
 
     self->sboTimeout = MmsServer_getValueFromCache(mmsServer,
          self->mmsDomain, sboTimeoutName);
@@ -1055,7 +1055,7 @@ ControlObject_initialize(ControlObject* self)
     updateSboTimeoutValue(self);
 
     if (self->sbo) {
-        char* controlObjectReference = StringUtils_createStringInBuffer(strBuf, 5, self->mmsDomain->domainName,
+        char* controlObjectReference = StringUtils_createStringInBuffer(strBuf, 130, 5, self->mmsDomain->domainName,
                 "/", self->lnName, "$CO$", self->name);
 
         MmsValue_setVisibleString(self->sbo, controlObjectReference);
@@ -1072,35 +1072,35 @@ ControlObject_initialize(ControlObject* self)
     DataAttributeType stValType = IEC61850_UNKNOWN_TYPE;
     DataAttributeType mxValType = IEC61850_UNKNOWN_TYPE;
 
-    daName = StringUtils_createStringInBuffer(strBuf, 6, self->mmsDomain->domainName, "/", self->lnName, ".", self->name, ".Oper.ctlVal");
+    daName = StringUtils_createStringInBuffer(strBuf, 130, 6, self->mmsDomain->domainName, "/", self->lnName, ".", self->name, ".Oper.ctlVal");
     da = (DataAttribute*) IedModel_getModelNodeByObjectReference(self->iedServer->model, daName);
 
     if (da) {
         ctlValType = da->type;
     }
 
-    daName = StringUtils_createStringInBuffer(strBuf, 6, self->mmsDomain->domainName, "/", self->lnName, ".", self->name, ".stVal");
+    daName = StringUtils_createStringInBuffer(strBuf, 130, 6, self->mmsDomain->domainName, "/", self->lnName, ".", self->name, ".stVal");
     da = (DataAttribute*) IedModel_getModelNodeByObjectReference(self->iedServer->model, daName);
 
     if (da) {
         stValType = da->type;
     }
 
-    daName = StringUtils_createStringInBuffer(strBuf, 6, self->mmsDomain->domainName, "/", self->lnName, ".", self->name, ".mxVal.f");
+    daName = StringUtils_createStringInBuffer(strBuf, 130, 6, self->mmsDomain->domainName, "/", self->lnName, ".", self->name, ".mxVal.f");
     da = (DataAttribute*) IedModel_getModelNodeByObjectReference(self->iedServer->model, daName);
 
     if (da) {
         mxValType = da->type;
     }
 
-    daName = StringUtils_createStringInBuffer(strBuf, 6, self->mmsDomain->domainName, "/", self->lnName, ".", self->name, ".mxVal.i");
+    daName = StringUtils_createStringInBuffer(strBuf, 130, 6, self->mmsDomain->domainName, "/", self->lnName, ".", self->name, ".mxVal.i");
     da = (DataAttribute*) IedModel_getModelNodeByObjectReference(self->iedServer->model, daName);
 
     if (da) {
         mxValType = da->type;
     }
 
-    daName = StringUtils_createStringInBuffer(strBuf, 6, self->mmsDomain->domainName, "/", self->lnName, ".", self->name, ".valWTr");
+    daName = StringUtils_createStringInBuffer(strBuf, 130, 6, self->mmsDomain->domainName, "/", self->lnName, ".", self->name, ".valWTr");
     da = (DataAttribute*) IedModel_getModelNodeByObjectReference(self->iedServer->model, daName);
 
     if (da) {
@@ -1151,7 +1151,7 @@ ControlObject_initialize(ControlObject* self)
     }
 #endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
 
-    char* stSeldName = StringUtils_createStringInBuffer(strBuf, 6, self->mmsDomain->domainName, "/", self->lnName, ".", self->name, ".stSeld");
+    char* stSeldName = StringUtils_createStringInBuffer(strBuf, 130, 6, self->mmsDomain->domainName, "/", self->lnName, ".", self->name, ".stSeld");
 
     self->stSeld = (DataAttribute*) IedModel_getModelNodeByObjectReference(self->iedServer->model, stSeldName);
 
@@ -1162,7 +1162,7 @@ ControlObject_initialize(ControlObject* self)
             printf("IED_SERVER:  ERROR - stSeld of wrong type!\n");
     }
 
-    char* opRcvdName = StringUtils_createStringInBuffer(strBuf, 6, self->mmsDomain->domainName, "/", self->lnName, ".", self->name, ".opRcvd");
+    char* opRcvdName = StringUtils_createStringInBuffer(strBuf, 130, 6, self->mmsDomain->domainName, "/", self->lnName, ".", self->name, ".opRcvd");
 
     self->opRcvd = (DataAttribute*) IedModel_getModelNodeByObjectReference(self->iedServer->model, opRcvdName);
 
@@ -1173,7 +1173,7 @@ ControlObject_initialize(ControlObject* self)
             printf("IED_SERVER:  ERROR - opRcvd of wrong type!\n");
     }
 
-    char* opOkName = StringUtils_createStringInBuffer(strBuf, 6, self->mmsDomain->domainName, "/", self->lnName, ".", self->name, ".opOk");
+    char* opOkName = StringUtils_createStringInBuffer(strBuf, 130, 6, self->mmsDomain->domainName, "/", self->lnName, ".", self->name, ".opOk");
 
     self->opOk = (DataAttribute*) IedModel_getModelNodeByObjectReference(self->iedServer->model, opOkName);
 
@@ -1184,7 +1184,7 @@ ControlObject_initialize(ControlObject* self)
             printf("IED_SERVER:  ERROR - opOk of wrong type!\n");
     }
 
-    char* tOpOkName = StringUtils_createStringInBuffer(strBuf, 6, self->mmsDomain->domainName, "/", self->lnName, ".", self->name, ".tOpOk");
+    char* tOpOkName = StringUtils_createStringInBuffer(strBuf, 130, 6, self->mmsDomain->domainName, "/", self->lnName, ".", self->name, ".tOpOk");
 
     self->tOpOk = (DataAttribute*) IedModel_getModelNodeByObjectReference(self->iedServer->model, tOpOkName);
 
@@ -1547,7 +1547,7 @@ ControlObject_sendCommandTerminationPositive(ControlObject* self)
 {
     char itemId[68]; /* 64 characters + space for FC + separator + string terminator */
 
-    StringUtils_createStringInBuffer(itemId, 4, self->lnName, "$CO$", self->name, "$Oper");
+    StringUtils_createStringInBuffer(itemId, 68, 4, self->lnName, "$CO$", self->name, "$Oper");
 
     if (DEBUG_IED_SERVER)
         printf("IED_SERVER: send CommandTermination+: %s\n", itemId);
@@ -1608,7 +1608,7 @@ ControlObject_sendCommandTerminationNegative(ControlObject* self)
 
     char ctlObj[130];
 
-    StringUtils_createStringInBuffer(ctlObj, 6, MmsDomain_getName(self->mmsDomain), "/",
+    StringUtils_createStringInBuffer(ctlObj, 130, 6, MmsDomain_getName(self->mmsDomain), "/",
             self->lnName, "$CO$", self->name, "$Oper");
 
     MmsValue ctlObjValueMemory;
@@ -1637,7 +1637,7 @@ ControlObject_sendCommandTerminationNegative(ControlObject* self)
 
     char itemId[130];
 
-    StringUtils_createStringInBuffer(itemId, 4, self->lnName, "$CO$", self->name, "$Oper");
+    StringUtils_createStringInBuffer(itemId, 130, 4, self->lnName, "$CO$", self->name, "$Oper");
 
     char* domainId = MmsDomain_getName(self->mmsDomain);
 
@@ -1678,7 +1678,7 @@ ControlObject_sendLastApplError(ControlObject* self, MmsServerConnection connect
 
     char ctlObj[130];
 
-    StringUtils_createStringInBuffer(ctlObj, 7, MmsDomain_getName(self->mmsDomain), "/",
+    StringUtils_createStringInBuffer(ctlObj, 130, 7, MmsDomain_getName(self->mmsDomain), "/",
             self->lnName, "$CO$", self->name, "$", ctlVariable);
 
     if (DEBUG_IED_SERVER) {

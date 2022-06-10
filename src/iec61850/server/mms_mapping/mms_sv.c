@@ -373,7 +373,7 @@ createSVControlBlockMmsStructure(char* gcbName, bool isUnicast)
 static void
 createDataSetReference(char* buffer, char* domainName, char* lnName, char* dataSetName)
 {
-    StringUtils_createStringInBuffer(buffer, 5, domainName, "/", lnName, "$", dataSetName);
+    StringUtils_createStringInBuffer(buffer, 130, 5, domainName, "/", lnName, "$", dataSetName);
 }
 
 void

@@ -68,7 +68,7 @@ addNamedVariableValue(MmsVariableSpecification* namedVariable, MmsServerConnecti
             for (i = 0; i < componentCount; i++) {
                 char newNameIdStr[65];
 
-                StringUtils_createStringInBuffer(newNameIdStr, 3, itemId, "$",
+                StringUtils_createStringInBuffer(newNameIdStr, 65, 3, itemId, "$",
                         namedVariable->typeSpec.structure.elements[i]->name);
 
                 MmsValue* element =

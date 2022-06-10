@@ -28,6 +28,8 @@
 #define DEBUG_IED_CLIENT 0
 #endif
 
+#include "iec61850_common_internal.h"
+
 #include "hal_thread.h"
 
 typedef struct sIedConnectionOutstandingCall* IedConnectionOutstandingCall;
@@ -144,9 +146,6 @@ LIB61850_INTERNAL void
 ControlObjectClient_setLastApplError(ControlObjectClient self, LastApplError lastAppIError);
 
 /* some declarations that are shared with server side ! */
-
-LIB61850_INTERNAL char*
-MmsMapping_getMmsDomainFromObjectReference(const char* objectReference, char* buffer);
 
 LIB61850_INTERNAL char*
 MmsMapping_createMmsVariableNameFromObjectReference(const char* objectReference, FunctionalConstraint fc, char* buffer);

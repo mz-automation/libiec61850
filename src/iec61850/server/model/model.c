@@ -435,7 +435,7 @@ LogicalNode_getDataSet(LogicalNode* self, const char* dataSetName)
 		goto exit_error;
 	}
 
-	StringUtils_createStringInBuffer(dsName, 3, self->name, "$", dataSetName);
+	StringUtils_createStringInBuffer(dsName, 66, 3, self->name, "$", dataSetName);
 
 	IedModel* iedModel = (IedModel*) ld->parent;
 

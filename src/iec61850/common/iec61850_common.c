@@ -592,10 +592,7 @@ MmsMapping_createMmsVariableNameFromObjectReference(const char* objectReference,
     else
         i++;
 
-
     if (fc == IEC61850_FC_NONE) {
-
-        int len = objRefLength - i;
 
         char* mmsVariableName;
 

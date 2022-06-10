@@ -210,7 +210,7 @@ createMmsServerCache(IedServer self)
                 {
                     char variableName[65];
 
-                    StringUtils_createStringInBuffer(variableName, 3, lnName, "$", fcName);
+                    StringUtils_createStringInBuffer(variableName, 65, 3, lnName, "$", fcName);
 
                     MmsValue* defaultValue = MmsValue_newDefaultValue(fcSpec);
 
@@ -245,10 +245,13 @@ installDefaultValuesForDataAttribute(IedServer self, DataAttribute* dataAttribut
     MmsMapping_createMmsVariableNameFromObjectReference(objectReference, dataAttribute->fc, mmsVariableName);
 
     char domainName[65];
+    char ldName[65];
 
     StringUtils_copyStringMax(domainName, 65, self->model->name);
 
-    MmsMapping_getMmsDomainFromObjectReference(objectReference, domainName + strlen(domainName));
+    MmsMapping_getMmsDomainFromObjectReference(objectReference, ldName);
+
+    StringUtils_appendString(domainName, 65, ldName);
 
     MmsDomain* domain = MmsDevice_getDomain(self->mmsDevice, domainName);
 
