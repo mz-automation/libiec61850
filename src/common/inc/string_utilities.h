@@ -35,6 +35,9 @@ LIB61850_INTERNAL char*
 StringUtils_copyString(const char* string);
 
 LIB61850_INTERNAL char*
+StringUtils_copyStringMax(char* dest, int maxBufferSize, const char* str1);
+
+LIB61850_INTERNAL char*
 StringUtils_copyStringToBuffer(const char* string, char* buffer);
 
 LIB61850_INTERNAL char*
@@ -52,7 +55,7 @@ StringUtils_createString(int count, ...);
  * to concatenate.
  */
 LIB61850_INTERNAL char*
-StringUtils_createStringInBuffer(char* buffer, int count, ...);
+StringUtils_createStringInBuffer(char* newStr, int bufSize, int count, ...);
 
 LIB61850_INTERNAL char*
 StringUtils_createStringFromBuffer(const uint8_t* buf, int size);
@@ -62,6 +65,12 @@ StringUtils_createStringFromBufferInBuffer(char* newString, const uint8_t* buf, 
 
 LIB61850_INTERNAL void
 StringUtils_replace(char* string, char oldChar, char newChar);
+
+LIB61850_INTERNAL char*
+StringUtils_concatString(char* dest, int maxBufferSize, const char* str1, const char* str2);
+
+LIB61850_INTERNAL char*
+StringUtils_appendString(char* dest, int maxBufferSize, const char* str);
 
 LIB61850_INTERNAL bool
 StringUtils_isDigit(char character);

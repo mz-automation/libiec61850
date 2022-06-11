@@ -77,7 +77,7 @@ LIB61850_INTERNAL bool
 mmsMsg_parseFileName(char* filename, uint8_t* buffer, int* bufPos, int maxBufPos , uint32_t invokeId, ByteBuffer* response);
 
 LIB61850_INTERNAL void
-mmsMsg_createExtendedFilename(const char* basepath, char* extendedFileName, char* fileName);
+mmsMsg_createExtendedFilename(const char* basepath, int bufSize, char* extendedFileName, char* fileName);
 
 LIB61850_INTERNAL FileHandle
 mmsMsg_openFile(const char* basepath, char* fileName, bool readWrite);

@@ -354,8 +354,7 @@ copyRCBValuesToTrackingObject(MmsMapping* self, ReportControl* rc)
                 const char* datSetStr = MmsValue_toString(ReportControl_getRCBValue(rc, "DatSet"));
 
                 if (datSetStr) {
-                    strncpy(datSet, datSetStr, 129);
-                    datSet[129] = 0;
+                    StringUtils_copyStringMax(datSet, 130, datSetStr);
 
                     StringUtils_replace(datSet, '$', '.');
 
@@ -424,8 +423,7 @@ copyRCBValuesToTrackingObject(MmsMapping* self, ReportControl* rc)
                 const char* datSetStr = MmsValue_toString(ReportControl_getRCBValue(rc, "DatSet"));
 
                 if (datSetStr) {
-                    strncpy(datSet, datSetStr, 129);
-                    datSet[129] = 0;
+                    StringUtils_copyStringMax(datSet, 130, datSetStr);
 
                     StringUtils_replace(datSet, '$', '.');
 
@@ -480,8 +478,7 @@ updateSingleTrackingValue(MmsMapping* self, ReportControl* rc, char* name, MmsVa
                 const char* datSetStr = MmsValue_toString(newValue);
 
                 if (datSetStr) {
-                    strncpy(datSet, datSetStr, 129);
-                    datSet[129] = 0;
+                    StringUtils_copyStringMax(datSet, 130, datSetStr);
 
                     StringUtils_replace(datSet, '$', '.');
 
@@ -533,8 +530,7 @@ updateSingleTrackingValue(MmsMapping* self, ReportControl* rc, char* name, MmsVa
                 const char* datSetStr = MmsValue_toString(newValue);
 
                 if (datSetStr) {
-                    strncpy(datSet, datSetStr, 129);
-                    datSet[129] = 0;
+                    StringUtils_copyStringMax(datSet, 130, datSetStr);
 
                     StringUtils_replace(datSet, '$', '.');
 
@@ -725,10 +721,9 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
                 char externalVisibleName[256];
 
                 /* Construct external visible name */
-                strcpy(externalVisibleName, mapping->model->name);
-                strcat(externalVisibleName, dataSetLdName);
-                strcat(externalVisibleName, "/");
-                strcat(externalVisibleName, dataSetName);
+                StringUtils_concatString(externalVisibleName, 256, mapping->model->name, dataSetLdName);
+                StringUtils_appendString(externalVisibleName, 256, "/");
+                StringUtils_appendString(externalVisibleName, 256, dataSetName);
 
                 if (!(strcmp(externalVisibleName, newDataSetName))) {
                     dataSetChanged = false;

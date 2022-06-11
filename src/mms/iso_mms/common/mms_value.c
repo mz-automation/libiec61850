@@ -1133,7 +1133,7 @@ MmsValue_cloneToBuffer(const MmsValue* self, uint8_t* destinationAddress)
     case MMS_VISIBLE_STRING:
         newValue->value.visibleString.buf = (char*) destinationAddress;
         newValue->value.visibleString.size = self->value.visibleString.size;
-        strcpy((char*) destinationAddress, self->value.visibleString.buf);
+        StringUtils_copyStringMax((char*)destinationAddress, self->value.visibleString.size + 1, self->value.visibleString.buf);
         destinationAddress += MemoryAllocator_getAlignedSize(strlen(self->value.visibleString.buf) + 1);
         break;
 
@@ -1267,7 +1267,8 @@ MmsValue_clone(const MmsValue* self)
 
         if (newValue->value.visibleString.buf) {
             newValue->value.visibleString.size = size;
-            strcpy(newValue->value.visibleString.buf, self->value.visibleString.buf);
+
+            StringUtils_copyStringMax(newValue->value.visibleString.buf, size + 1, self->value.visibleString.buf);
         }
         else {
             GLOBAL_FREEMEM(newValue);
@@ -1679,8 +1680,7 @@ setVisibleStringValue(MmsValue* self, const char* string)
                 self->value.visibleString.size = newStringSize;
             }
 
-            strncpy(self->value.visibleString.buf, string, self->value.visibleString.size + 1);
-            self->value.visibleString.buf[self->value.visibleString.size] = 0;
+            StringUtils_copyStringMax(self->value.visibleString.buf, self->value.visibleString.size + 1, string);
         }
         else
             self->value.visibleString.buf[0] = 0;
@@ -2166,11 +2166,7 @@ const char*
 MmsValue_printToBuffer(const MmsValue* self, char* buffer, int bufferSize)
 {
     if (self == NULL) {
-        strncpy(buffer, "(null)", bufferSize);
-
-        /* Ensure buffer is always 0 terminated */
-        if (bufferSize > 0)
-            buffer[bufferSize - 1] = 0;
+        StringUtils_copyStringMax(buffer, bufferSize, "(null)");
 
         return buffer;
     }
@@ -2229,7 +2225,7 @@ MmsValue_printToBuffer(const MmsValue* self, char* buffer, int bufferSize)
 
             int size = MmsValue_getBitStringSize(self);
 
-            /* Behave like strncpy and fill buffer with zeros */
+            /* fill buffer with zeros */
             if (size > bufferSize) {
                 memset(buffer, 0, bufferSize);
                 break;
@@ -2248,13 +2244,9 @@ MmsValue_printToBuffer(const MmsValue* self, char* buffer, int bufferSize)
 
     case MMS_BOOLEAN:
         if (MmsValue_getBoolean(self))
-            strncpy(buffer, "true", bufferSize);
+            StringUtils_copyStringMax(buffer, bufferSize, "true");
         else
-            strncpy(buffer, "false", bufferSize);
-
-        /* Ensure buffer is always 0 terminated */
-        if (bufferSize > 0)
-            buffer[bufferSize - 1] = 0;
+            StringUtils_copyStringMax(buffer, bufferSize, "false");
 
         break;
 
@@ -2267,11 +2259,7 @@ MmsValue_printToBuffer(const MmsValue* self, char* buffer, int bufferSize)
         break;
 
     case MMS_GENERALIZED_TIME: /* type not supported */
-        strncpy(buffer, "generalized time", bufferSize);
-
-        /* Ensure buffer is always 0 terminated */
-        if (bufferSize > 0)
-            buffer[bufferSize - 1] = 0;
+        StringUtils_copyStringMax(buffer, bufferSize, "generalized time");
 
         break;
 
@@ -2308,20 +2296,12 @@ MmsValue_printToBuffer(const MmsValue* self, char* buffer, int bufferSize)
 
     case MMS_STRING:
     case MMS_VISIBLE_STRING:
-        strncpy(buffer, MmsValue_toString((MmsValue*) self), bufferSize);
-
-        /* Ensure buffer is always 0 terminated */
-        if (bufferSize > 0)
-            buffer[bufferSize - 1] = 0;
+        StringUtils_copyStringMax(buffer, bufferSize, MmsValue_toString((MmsValue*) self));
 
         break;
 
     default:
-        strncpy(buffer, "unknown type", bufferSize);
-
-        /* Ensure buffer is always 0 terminated */
-        if (bufferSize > 0)
-            buffer[bufferSize - 1] = 0;
+        StringUtils_copyStringMax(buffer, bufferSize, "unknown type");
 
         break;
     }

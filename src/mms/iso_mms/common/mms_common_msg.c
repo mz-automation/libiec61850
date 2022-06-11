@@ -561,20 +561,14 @@ mmsMsg_getComponentNameFromAlternateAccess(AlternateAccess_t* alternateAccess, c
 #if (MMS_FILE_SERVICE == 1)
 
 void
-mmsMsg_createExtendedFilename(const char* basepath, char* extendedFileName, char* fileName)
+mmsMsg_createExtendedFilename(const char* basepath, int bufSize, char* extendedFileName, char* fileName)
 {
 #if (CONFIG_SET_FILESTORE_BASEPATH_AT_RUNTIME == 1)
-    strncpy(extendedFileName, basepath, 511);
-    extendedFileName[511] = 0;
-    strncat(extendedFileName, fileName, 511);
-
+    StringUtils_concatString(extendedFileName, bufSize, basepath, fileName);
 #else
-    strcpy(extendedFileName, CONFIG_VIRTUAL_FILESTORE_BASEPATH);
-    strncat(extendedFileName, fileName, sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 255);
-    extendedFileName[sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 255] = 0;
+    StringUtils_concatString(extendedFileName, bufSize, CONFIG_VIRTUAL_FILESTORE_BASEPATH, fileName);
 #endif
 }
-
 
 FileHandle
 mmsMsg_openFile(const char* basepath, char* fileName, bool readWrite)
@@ -585,11 +579,10 @@ mmsMsg_openFile(const char* basepath, char* fileName, bool readWrite)
     char extendedFileName[sizeof(CONFIG_VIRTUAL_FILESTORE_BASEPATH) + 256];
 #endif
 
-    mmsMsg_createExtendedFilename(basepath, extendedFileName, fileName);
+    mmsMsg_createExtendedFilename(basepath, 512, extendedFileName, fileName);
 
     return FileSystem_openFile(extendedFileName, readWrite);
 }
-
 
 bool
 mmsMsg_parseFileName(char* filename, uint8_t* buffer, int* bufPos, int maxBufPos , uint32_t invokeId, ByteBuffer* response)

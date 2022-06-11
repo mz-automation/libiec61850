@@ -68,7 +68,7 @@ addNamedVariableValue(MmsVariableSpecification* namedVariable, MmsServerConnecti
             for (i = 0; i < componentCount; i++) {
                 char newNameIdStr[65];
 
-                StringUtils_createStringInBuffer(newNameIdStr, 3, itemId, "$",
+                StringUtils_createStringInBuffer(newNameIdStr, 65, 3, itemId, "$",
                         namedVariable->typeSpec.structure.elements[i]->name);
 
                 MmsValue* element =
@@ -178,8 +178,10 @@ getComponent(MmsServerConnection connection, MmsDomain* domain, AlternateAccess_
                     {
                         if (strlen(variableName) + component.size < 199) {
 
-                            strcat(variableName, "$");
-                            strncat(variableName, (const char*) component.buf, component.size);
+                            StringUtils_appendString(variableName, 200, "$");
+
+                            /* here we need strncat because component.buf is not null terminated! */
+                            strncat(variableName, (const char*)component.buf, (size_t)component.size);
 
                             if (alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess
                                     != NULL) {
@@ -342,8 +344,8 @@ addNamedVariableToResultList(MmsVariableSpecification* namedVariable, MmsDomain*
             if (alternateAccess)
             {
                 char variableName[200];
-                variableName[0] = 0;
-                strcat(variableName, nameIdStr);
+
+                StringUtils_copyStringMax(variableName, 200, nameIdStr);
 
                 MmsValue* value = getComponent(connection, domain, alternateAccess, namedVariable, variableName);
 

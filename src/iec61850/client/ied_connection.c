@@ -879,7 +879,7 @@ IedConnection_getVariableSpecification(IedConnection self, IedClientError* error
         FunctionalConstraint fc)
 {
     char domainIdBuffer[65];
-    char itemIdBuffer[129];
+    char itemIdBuffer[65];
 
     char* domainId;
     char* itemId;
@@ -936,7 +936,7 @@ IedConnection_getVariableSpecificationAsync(IedConnection self, IedClientError* 
     uint32_t invokeId = 0;
 
     char domainIdBuffer[65];
-    char itemIdBuffer[129];
+    char itemIdBuffer[65];
 
     char* domainId;
     char* itemId;
@@ -2466,8 +2466,7 @@ IedConnection_getLogicalNodeDirectory(IedConnection self, IedClientError* error,
 
     char lnRefCopy[130];
 
-    strncpy(lnRefCopy, logicalNodeReference, 129);
-	lnRefCopy[129] = 0;
+    StringUtils_copyStringMax(lnRefCopy, 130, logicalNodeReference);
 
     char* ldSep = strchr(lnRefCopy, '/');
 
@@ -2624,8 +2623,7 @@ IedConnection_getLogicalNodeVariables(IedConnection self, IedClientError* error,
 
     char lnRefCopy[130];
 
-    strncpy(lnRefCopy, logicalNodeReference, 129);
-	lnRefCopy[129] = 0;
+    StringUtils_copyStringMax(lnRefCopy, 130, logicalNodeReference);
 
     char* ldSep = strchr(lnRefCopy, '/');
 
@@ -2708,8 +2706,7 @@ getDataDirectory(IedConnection self, IedClientError* error,
 
     char dataRefCopy[130];
 
-    strncpy(dataRefCopy, dataReference, 129);
-	dataRefCopy[129] = 0;
+    StringUtils_copyStringMax(dataRefCopy, 130, dataReference);
 
     char* ldSep = strchr(dataRefCopy, '/');
 
@@ -2875,8 +2872,7 @@ getDataDirectoryByFc(IedConnection self, IedClientError* error,
 
     char dataRefCopy[130];
 
-    strncpy(dataRefCopy, dataReference, 129);
-    dataRefCopy[129] = 0;
+    StringUtils_copyStringMax(dataRefCopy, 130, dataReference);
 
     char* ldSep = strchr(dataRefCopy, '/');
 
@@ -3104,9 +3100,9 @@ IedConnection_deleteDataSet(IedConnection self, IedClientError* error, const cha
             domainId = NULL;
 
             if (dataSetReference[0] == '/')
-                strcpy(itemId, dataSetReference + 1);
+                StringUtils_copyStringMax(itemId, DATA_SET_MAX_NAME_LENGTH + 1, dataSetReference + 1);
             else
-                strcpy(itemId, dataSetReference);
+                StringUtils_copyStringMax(itemId, DATA_SET_MAX_NAME_LENGTH + 1, dataSetReference);
         }
         else {
 
@@ -3133,7 +3129,7 @@ IedConnection_deleteDataSet(IedConnection self, IedClientError* error, const cha
             goto exit_function;
         }
 
-        strcpy(itemId, dataSetReference + 1);
+        StringUtils_copyStringMax(itemId, DATA_SET_MAX_NAME_LENGTH + 1, dataSetReference + 1);
 
         isAssociationSpecific = true;
     }
@@ -3198,9 +3194,9 @@ IedConnection_deleteDataSetAsync(IedConnection self, IedClientError* error, cons
             domainId = NULL;
 
             if (dataSetReference[0] == '/')
-                strcpy(itemId, dataSetReference + 1);
+                StringUtils_copyStringMax(itemId, DATA_SET_MAX_NAME_LENGTH + 1, dataSetReference + 1);
             else
-                strcpy(itemId, dataSetReference);
+                StringUtils_copyStringMax(itemId, DATA_SET_MAX_NAME_LENGTH + 1, dataSetReference);
         }
         else {
 
@@ -3228,7 +3224,7 @@ IedConnection_deleteDataSetAsync(IedConnection self, IedClientError* error, cons
             return 0;
         }
 
-        strcpy(itemId, dataSetReference + 1);
+        StringUtils_copyStringMax(itemId, DATA_SET_MAX_NAME_LENGTH + 1, dataSetReference + 1);
 
         isAssociationSpecific = true;
     }
@@ -3962,8 +3958,7 @@ IedConnection_queryLogByTime(IedConnection self, IedClientError* error, const ch
 
     char logRef[130];
 
-    strncpy(logRef, logReference, 129);
-    logRef[129] = 0;
+    StringUtils_copyStringMax(logRef, 130, logReference);
 
     char* logDomain = logRef;
     char* logName = strchr(logRef, '/');
@@ -4026,8 +4021,7 @@ IedConnection_queryLogByTimeAsync(IedConnection self, IedClientError* error, con
 {
     char logRef[130];
 
-    strncpy(logRef, logReference, 129);
-    logRef[129] = 0;
+    StringUtils_copyStringMax(logRef, 130, logReference);
 
     char* logDomain = logRef;
     char* logName = strchr(logRef, '/');
@@ -4083,8 +4077,7 @@ IedConnection_queryLogAfterAsync(IedConnection self, IedClientError* error, cons
 {
     char logRef[130];
 
-    strncpy(logRef, logReference, 129);
-    logRef[129] = 0;
+    StringUtils_copyStringMax(logRef, 130, logReference);
 
     char* logDomain = logRef;
     char* logName = strchr(logRef, '/');
@@ -4137,8 +4130,7 @@ IedConnection_queryLogAfter(IedConnection self, IedClientError* error, const cha
 
     char logRef[130];
 
-    strncpy(logRef, logReference, 129);
-    logRef[129] = 0;
+    StringUtils_copyStringMax(logRef, 130, logReference);
 
     char* logDomain = logRef;
     char* logName = strchr(logRef, '/');
