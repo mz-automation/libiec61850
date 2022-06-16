@@ -844,7 +844,7 @@ public class StaticModelGenerator {
                     
                     cOut.println("DataAttribute " + arrayElementdaName + " = {");
                     cOut.println("    DataAttributeModelType,");
-                    cOut.println("    \"" + dataAttribute.getName() + "\",");
+                    cOut.println("    NULL,");
                     cOut.println("    (ModelNode*) &" + daName + ",");
                     
                     if (idx != dataAttribute.getCount() - 1) {
