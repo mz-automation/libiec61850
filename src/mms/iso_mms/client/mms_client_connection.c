@@ -680,7 +680,6 @@ exit_error:
 static void
 handleAsyncResponse(MmsConnection self, ByteBuffer* response, uint32_t bufPos, MmsOutstandingCall outstandingCall, MmsError err)
 {
-
     if (outstandingCall->type == MMS_CALL_TYPE_READ_VARIABLE) {
 
         MmsConnection_ReadVariableHandler handler =

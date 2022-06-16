@@ -173,19 +173,18 @@ searchCacheForValueEx(MmsValueCache self, const char* itemId, char* parentId, in
         const char* childId = getChildSubString(itemId, parentId);
 
         if (childId) {
-
             MmsVariableSpecification* typeSpec = MmsDomain_getNamedVariable(self->domain, parentId);
 
             value = MmsVariableSpecification_getChildValue(typeSpec, cacheEntry->value, childId);
 
             if (value) {
+
                 if (idx != -1) {
                     if (MmsValue_getType(value) == MMS_ARRAY) {
                         MmsValue* elementValue = MmsValue_getElement(value, idx);
 
-
                         if (elementValue) {
-                            if (componentId) {
+                            if ((componentId != NULL) && (componentId[0] != 0)) {
                                 MmsVariableSpecification* childSpec = MmsVariableSpecification_getNamedVariableRecursive(typeSpec, childId);
 
                                 if (childSpec) {

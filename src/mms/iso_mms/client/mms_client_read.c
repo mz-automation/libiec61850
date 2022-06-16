@@ -111,28 +111,30 @@ mmsClient_parseListOfAccessResults(AccessResult_t** accessResultList, int listSi
 
             if (componentCount > 0) {
                 value = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
-                value->type = MMS_STRUCTURE;
-                value->value.structure.size = componentCount;
-                value->value.structure.components = (MmsValue**) GLOBAL_CALLOC(componentCount, sizeof(MmsValue*));
 
-                if (value->value.structure.components) {
-                    int j;
-                    for (j = 0; j < componentCount; j++) {
-                        value->value.structure.components[j] = mmsMsg_parseDataElement(
-                                accessResultList[i]->choice.structure.list.array[j]);
+                if (value) {
+                    value->type = MMS_STRUCTURE;
+                    value->value.structure.size = componentCount;
+                    value->value.structure.components = (MmsValue**) GLOBAL_CALLOC(componentCount, sizeof(MmsValue*));
 
-                        if (value->value.structure.components[j] == NULL) {
+                    if (value->value.structure.components) {
+                        int j;
+                        for (j = 0; j < componentCount; j++) {
+                            value->value.structure.components[j] = mmsMsg_parseDataElement(
+                                    accessResultList[i]->choice.structure.list.array[j]);
 
-                            if (DEBUG_MMS_CLIENT)
-                                printf("MMS CLIENT: failed to parse struct element %i\n", j);
+                            if (value->value.structure.components[j] == NULL) {
 
-                            MmsValue_delete(value);
-                            value = NULL;
-                            break;
+                                if (DEBUG_MMS_CLIENT)
+                                    printf("MMS CLIENT: failed to parse struct element %i\n", j);
+
+                                MmsValue_delete(value);
+                                value = NULL;
+                                break;
+                            }
                         }
                     }
                 }
-
             }
             else {
                 if (DEBUG_MMS_CLIENT)

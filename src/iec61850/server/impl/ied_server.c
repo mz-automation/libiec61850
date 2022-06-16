@@ -236,14 +236,16 @@ static void
 installDefaultValuesForDataAttribute(IedServer self, LogicalDevice* ld, DataAttribute* dataAttribute,
         char* objectReference, int position, int idx, char* componentId, int compIdPos)
 {
-    if (idx == -1) {
-        sprintf(objectReference + position, ".%s", dataAttribute->name);
-    }
-    else {
-        if (compIdPos == 0)
-            sprintf(componentId, "%s", dataAttribute->name);
-        else
-            sprintf(componentId + compIdPos, "$%s", dataAttribute->name);
+    if (dataAttribute->name) {
+        if (idx == -1) {
+            sprintf(objectReference + position, ".%s", dataAttribute->name);
+        }
+        else {
+            if (compIdPos == 0)
+                sprintf(componentId, "%s", dataAttribute->name);
+            else
+                sprintf(componentId + compIdPos, "$%s", dataAttribute->name);
+        }
     }
 
     char mmsVariableName[65]; /* maximum size is 64 according to 61850-8-1 */
@@ -384,9 +386,11 @@ installDefaultValuesInCache(IedServer self)
 {
     IedModel* model = self->model;
 
-    char objectReference[130];
     char componentId[130];
     componentId[0] = 0;
+
+    char objectReference[130];
+
 
     LogicalDevice* logicalDevice = model->firstChild;
 
@@ -409,6 +413,7 @@ installDefaultValuesInCache(IedServer self)
             int refPosition = strlen(objectReference);
 
             while (dataObject != NULL) {
+                componentId[0] = 0;
                 installDefaultValuesForDataObject(self, logicalDevice, dataObject, objectReference, refPosition, -1, componentId, 0);
 
                 dataObject = (DataObject*) dataObject->sibling;

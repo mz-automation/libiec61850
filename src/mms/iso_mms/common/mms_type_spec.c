@@ -29,6 +29,9 @@
 void
 MmsVariableSpecification_destroy(MmsVariableSpecification* typeSpec)
 {
+    if (typeSpec == NULL)
+        return;
+
     if (typeSpec->name != NULL)
         GLOBAL_FREEMEM(typeSpec->name);
 

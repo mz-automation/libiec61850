@@ -117,19 +117,30 @@ createNamedVariableFromDataAttribute(DataAttribute* attribute)
 {
     MmsVariableSpecification* origNamedVariable = (MmsVariableSpecification*) GLOBAL_CALLOC(1,
             sizeof(MmsVariableSpecification));
-    origNamedVariable->name = StringUtils_copyString(attribute->name);
+
+    if (attribute->name)
+        origNamedVariable->name = StringUtils_copyString(attribute->name);
+    else
+        origNamedVariable->name = NULL;
 
     MmsVariableSpecification* namedVariable = origNamedVariable;
 
-    if (attribute->elementCount > 0) {
+    bool isBasicArray = false;
+
+    if (attribute->elementCount > 0)
+    {
         namedVariable->type = MMS_ARRAY;
         namedVariable->typeSpec.array.elementCount = attribute->elementCount;
         namedVariable->typeSpec.array.elementTypeSpec = (MmsVariableSpecification*) GLOBAL_CALLOC(1,
                 sizeof(MmsVariableSpecification));
         namedVariable = namedVariable->typeSpec.array.elementTypeSpec;
+
+        if (attribute->firstChild && ((DataAttribute*)(attribute->firstChild))->type != IEC61850_CONSTRUCTED) {
+            isBasicArray = true;
+        }
     }
 
-    if (attribute->firstChild != NULL) {
+    if ((attribute->firstChild != NULL) && (isBasicArray == false)) {
         namedVariable->type = MMS_STRUCTURE;
 
         int componentCount = ModelNode_getChildCount((ModelNode*) attribute);
