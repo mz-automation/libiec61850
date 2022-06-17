@@ -26,30 +26,33 @@
 char*
 StringUtils_copySubString(char* startPos, char* endPos)
 {
-	int newStringLength = endPos - startPos;
+    int newStringLength = endPos - startPos;
 
-	char* newString = (char*) GLOBAL_MALLOC(newStringLength + 1);
+    char* newString = (char*) GLOBAL_MALLOC(newStringLength + 1);
 
-	if (newString) {
-	    memcpy(newString, startPos, newStringLength);
+    if (newString) {
+        memcpy(newString, startPos, newStringLength);
 
-	    newString[newStringLength] = 0;
-	}
+        newString[newStringLength] = 0;
+    }
 
-	return newString;
+    return newString;
 }
 
 char*
-StringUtils_copyString(const char* string)
+StringUtils_copyString(const char* str)
 {
-	int newStringLength = strlen(string) + 1;
+    if (str == NULL)
+        return NULL;
 
-	char* newString = (char*) GLOBAL_MALLOC(newStringLength);
+    int newStringLength = strlen(str) + 1;
 
-	if (newString)
-	    memcpy(newString, string, newStringLength);
+    char* newString = (char*) GLOBAL_MALLOC(newStringLength);
 
-	return newString;
+    if (newString)
+        memcpy(newString, str, newStringLength);
+
+    return newString;
 }
 
 char*

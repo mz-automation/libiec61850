@@ -126,9 +126,12 @@ createNamedVariableFromDataAttribute(DataAttribute* attribute)
     MmsVariableSpecification* namedVariable = origNamedVariable;
 
     bool isBasicArray = false;
+    bool isArray = false;
 
     if (attribute->elementCount > 0)
     {
+        isArray = true;
+
         namedVariable->type = MMS_ARRAY;
         namedVariable->typeSpec.array.elementCount = attribute->elementCount;
         namedVariable->typeSpec.array.elementTypeSpec = (MmsVariableSpecification*) GLOBAL_CALLOC(1,
@@ -141,6 +144,11 @@ createNamedVariableFromDataAttribute(DataAttribute* attribute)
     }
 
     if ((attribute->firstChild != NULL) && (isBasicArray == false)) {
+
+        if (isArray) {
+            attribute = (DataAttribute*)attribute->firstChild;
+        }
+
         namedVariable->type = MMS_STRUCTURE;
 
         int componentCount = ModelNode_getChildCount((ModelNode*) attribute);

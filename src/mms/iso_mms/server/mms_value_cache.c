@@ -185,6 +185,7 @@ searchCacheForValueEx(MmsValueCache self, const char* itemId, char* parentId, in
 
                         if (elementValue) {
                             if ((componentId != NULL) && (componentId[0] != 0)) {
+
                                 MmsVariableSpecification* childSpec = MmsVariableSpecification_getNamedVariableRecursive(typeSpec, childId);
 
                                 if (childSpec) {
@@ -234,13 +235,12 @@ MmsValueCache_lookupValueEx(MmsValueCache self, const char* itemId, int idx, con
         char itemIdCopy[65];
         char componentIdCopyBuf[65];
 
-        StringUtils_copyStringToBuffer(itemId, itemIdCopy);
+        StringUtils_copyStringMax(itemIdCopy, 65, itemId);
 
         char* componentIdCopy = NULL;
 
         if (componentId) {
-            componentIdCopy = StringUtils_copyStringToBuffer(componentId, componentIdCopyBuf);
-
+            componentIdCopy = StringUtils_copyStringMax(componentIdCopyBuf, 65, componentId);
         }
 
         char* parentItemId = getParentSubString(itemIdCopy);

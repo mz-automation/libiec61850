@@ -247,6 +247,10 @@ installDefaultValuesForDataAttribute(IedServer self, LogicalDevice* ld, DataAttr
                 sprintf(componentId + compIdPos, "$%s", dataAttribute->name);
         }
     }
+    else {
+        if (compIdPos == 0)
+            componentId[0] = 0;
+    }
 
     char mmsVariableName[65]; /* maximum size is 64 according to 61850-8-1 */
 
@@ -306,8 +310,10 @@ installDefaultValuesForDataAttribute(IedServer self, LogicalDevice* ld, DataAttr
 
         DataAttribute* subDataAttribute = (DataAttribute*) dataAttribute->firstChild;
 
+        int childIdPos = childCompIdPos;
+
         while (subDataAttribute != NULL) {
-            installDefaultValuesForDataAttribute(self, ld, subDataAttribute, objectReference, childPosition, subIdx, componentId, childCompIdPos);
+            installDefaultValuesForDataAttribute(self, ld, subDataAttribute, objectReference, childPosition, subIdx, componentId, childIdPos);
 
             subIdx++;
 
@@ -317,8 +323,10 @@ installDefaultValuesForDataAttribute(IedServer self, LogicalDevice* ld, DataAttr
     else {
         DataAttribute* subDataAttribute = (DataAttribute*) dataAttribute->firstChild;
 
+        int childIdPos = childCompIdPos;
+
         while (subDataAttribute != NULL) {
-            installDefaultValuesForDataAttribute(self, ld, subDataAttribute, objectReference, childPosition, idx, componentId, childCompIdPos);
+            installDefaultValuesForDataAttribute(self, ld, subDataAttribute, objectReference, childPosition, idx, componentId, childIdPos);
 
             subDataAttribute = (DataAttribute*) subDataAttribute->sibling;
         }
