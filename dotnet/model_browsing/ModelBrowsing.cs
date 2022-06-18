@@ -12,6 +12,27 @@ namespace model_browsing
 {
     class ModelBrowsing
     {
+        private static void PrintChildSpec(MmsVariableSpecification spec, int indent)
+        {
+            string indentStr = "";
+
+            for (int i = 0; i < indent; i++)
+                indentStr += " ";
+
+            if (spec.GetType() == MmsType.MMS_STRUCTURE)
+            {
+                foreach (MmsVariableSpecification elementSpec in spec)
+                {
+                    Console.WriteLine(indentStr + "DA: " +  elementSpec.GetName() + " : " + elementSpec.GetType());
+
+                    if (elementSpec.GetType() == MmsType.MMS_STRUCTURE || elementSpec.GetType() == MmsType.MMS_ARRAY)
+                    {
+                        PrintChildSpec(elementSpec, indent + 2);
+                    }
+                }
+            }
+        }
+
         public static void Main (string[] args)
         {
             IedConnection con = new IedConnection ();
@@ -73,11 +94,22 @@ namespace model_browsing
 								                   ObjectReference.getElementName(dataDirectoryElement) + " : " + specification.GetType()
 								                   + "(" + specification.Size() + ")");
 
-								if (specification.GetType() == MmsType.MMS_STRUCTURE) {
-									foreach (MmsVariableSpecification elementSpec in specification) {
-										Console.WriteLine("           " + elementSpec.GetName() + " : " + elementSpec.GetType());
-									}
-								}
+                                if (specification.GetType() == MmsType.MMS_STRUCTURE)
+                                {
+                                    foreach (MmsVariableSpecification elementSpec in specification)
+                                    {
+                                        PrintChildSpec(elementSpec, 8);
+                                        //Console.WriteLine("           " + elementSpec.GetName() + " : " + elementSpec.GetType());
+                                    }
+                                }
+                                else if (specification.GetType() == MmsType.MMS_ARRAY)
+                                {
+                                    MmsVariableSpecification arrayElementspec = specification.getArrayElementType();
+                                    PrintChildSpec(arrayElementspec, 8);
+
+
+                                    //Console.WriteLine("           elements: " + arrayElementspec.GetType());
+                                }
 							}
 
 						}

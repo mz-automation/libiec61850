@@ -299,40 +299,70 @@ namespace IEC61850
 
         }
 
+        /// <summary>
+        /// Logical device. Representation of a logical device (LD) in a data model.
+        /// </summary>
         public class LogicalDevice : ModelNode
         {
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern IntPtr LogicalDevice_create(string name, IntPtr parent);
 
-            private IedModel iedModel = null;
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr LogicalDevice_createEx(string name, IntPtr parent, string ldName);
 
-            public IedModel IedModel { get => iedModel; }
+            public IedModel IedModel { get; }
 
             public LogicalDevice (IntPtr self, IedModel iedModel) : base (self)
             {
-                this.iedModel = iedModel;
+                this.IedModel = iedModel;
             }
 
-            public LogicalDevice(string name, IedModel parent)
+            /// <summary>
+            /// Create a new logical device in a data model
+            /// </summary>
+            /// <param name="inst">LD instance</param>
+            /// <param name="parent">Model containing this logical device</param>
+            public LogicalDevice(string inst, IedModel parent)
             {
-                this.iedModel = parent;
+                this.IedModel = parent;
 
-                self = LogicalDevice_create(name, parent.self);
+                self = LogicalDevice_create(inst, parent.self);
+            }
+
+            /// <summary>
+            /// Create a new logical device in a data model (support for functional naming)
+            /// </summary>
+            /// <param name="inst">LD instance</param>
+            /// <param name="parent">Model containing this logical device</param>
+            /// <param name="ldName">LD name (for functional naming). When set, the exernally visible domain name for this LD</param>
+            public LogicalDevice(string inst, IedModel parent, string ldName)
+            {
+                this.IedModel = parent;
+
+                self = LogicalDevice_createEx(inst, parent.self, ldName);
             }
         }
 
+        /// <summary>
+        /// Logical node. Representation of a logical node (LN) in a data model.
+        /// </summary>
         public class LogicalNode : ModelNode
         {
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern IntPtr LogicalNode_create(string name, IntPtr parent);
+
+            internal Dictionary<IntPtr, ReportControlBlock> rcbs = new Dictionary<IntPtr, ReportControlBlock>();
 
             public LogicalNode (IntPtr self, ModelNode parent) : base(self)
             {
                 this.parent = parent;
             }
 
-            internal Dictionary<IntPtr, ReportControlBlock> rcbs = new Dictionary<IntPtr, ReportControlBlock>();
-
+            /// <summary>
+            /// Initializes a new instance of the <see cref="T:IEC61850.Server.LogicalNode"/> class.
+            /// </summary>
+            /// <param name="name">LN name</param>
+            /// <param name="parent">Logical device containing this logical node.</param>
             public LogicalNode(string name, LogicalDevice parent)
             {
                 this.parent = parent;
