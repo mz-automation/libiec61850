@@ -387,6 +387,13 @@ mmsServer_isIndexAccess(AlternateAccess_t* alternateAccess);
 LIB61850_INTERNAL bool
 mmsServer_isComponentAccess(AlternateAccess_t* alternateAccess);
 
+LIB61850_INTERNAL bool
+mmsServer_isAccessToArrayComponent(AlternateAccess_t* alternateAccess);
+
+LIB61850_INTERNAL MmsValue*
+mmsServer_getComponentOfArrayElement(AlternateAccess_t* alternateAccess, MmsVariableSpecification* namedVariable,
+        MmsValue* structuredValue);
+
 LIB61850_INTERNAL int
 mmsServer_getLowIndex(AlternateAccess_t* alternateAccess);
 

@@ -479,7 +479,6 @@ handleWriteNamedVariableListRequest(
 
 }
 
-
 void
 mmsServer_handleWriteRequest(
 		MmsServerConnection connection,
@@ -501,7 +500,7 @@ mmsServer_handleWriteRequest(
 	    goto exit_function;
 	}
 
-        MmsServer_lockModel(connection->server);
+    MmsServer_lockModel(connection->server);
 
 	WriteRequest_t* writeRequest = &(mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.choice.write);
 
@@ -637,6 +636,19 @@ mmsServer_handleWriteRequest(
                     if (elementValue == NULL) {
                         accessResults[i] = DATA_ACCESS_ERROR_OBJECT_ATTRIBUTE_INCONSISTENT;
                         goto end_of_main_loop;
+                    }
+
+                    if (mmsServer_isAccessToArrayComponent(alternateAccess)) {
+                        MmsVariableSpecification* namedVariable = MmsDomain_getNamedVariable(domain, nameIdStr);
+
+                        if (namedVariable) {
+                            elementValue = mmsServer_getComponentOfArrayElement(alternateAccess, namedVariable, elementValue);
+                        }
+
+                        if ((namedVariable == NULL) || (elementValue == NULL)) {
+                            accessResults[i] = DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT;
+                            goto end_of_main_loop;
+                        }
                     }
 
                     if (MmsValue_update(elementValue, value) == false) {

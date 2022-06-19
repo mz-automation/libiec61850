@@ -135,24 +135,6 @@ deleteValueList(LinkedList values)
     LinkedList_destroyStatic(values);
 }
 
-static bool
-isAccessToArrayComponent(AlternateAccess_t* alternateAccess)
-{
-    if (alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess != NULL)
-    {
-        if (alternateAccess->list.array[0]->choice.unnamed->
-                choice.selectAlternateAccess.alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.accessSelection.present ==
-                        AlternateAccessSelection__selectAlternateAccess__accessSelection_PR_component)
-        {
-            return true;
-        }
-        else
-            return false;
-    }
-    else
-        return false;
-}
-
 static MmsValue*
 getComponent(MmsServerConnection connection, MmsDomain* domain, AlternateAccess_t* alternateAccess, MmsVariableSpecification* namedVariable, char* variableName)
 {
@@ -205,59 +187,6 @@ exit_function:
     return retValue;
 }
 
-static MmsValue*
-getComponentOfArrayElement(AlternateAccess_t* alternateAccess, MmsVariableSpecification* namedVariable,
-        MmsValue* structuredValue)
-{
-    MmsValue* retValue = NULL;
-
-    if (isAccessToArrayComponent(alternateAccess))
-    {
-        Identifier_t component = alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess
-                ->list.array[0]->choice.unnamed->choice.selectAccess.choice.component;
-
-        if (component.size > 129)
-            goto exit_function;
-
-        MmsVariableSpecification* structSpec;
-
-        if (namedVariable->type == MMS_ARRAY)
-            structSpec = namedVariable->typeSpec.array.elementTypeSpec;
-        else if (namedVariable->type == MMS_STRUCTURE)
-            structSpec = namedVariable;
-        else
-            goto exit_function;
-
-        int i;
-        for (i = 0; i < structSpec->typeSpec.structure.elementCount; i++) {
-
-            if ((int) strlen(structSpec->typeSpec.structure.elements[i]->name)
-                    == component.size) {
-                if (strncmp(structSpec->typeSpec.structure.elements[i]->name,
-                        (char*) component.buf, component.size) == 0) {
-                    MmsValue* value = MmsValue_getElement(structuredValue, i);
-
-                    if (isAccessToArrayComponent(
-                            alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess)) {
-                        retValue =
-                                getComponentOfArrayElement(
-                                        alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess,
-                                        structSpec->typeSpec.structure.elements[i],
-                                        value);
-                    }
-                    else
-                        retValue = value;
-
-                    goto exit_function;
-                }
-            }
-        }
-    }
-
-exit_function:
-    return retValue;
-}
-
 static void
 alternateArrayAccess(MmsServerConnection connection,
 		AlternateAccess_t* alternateAccess, MmsDomain* domain,
@@ -278,12 +207,12 @@ alternateArrayAccess(MmsServerConnection connection,
 	        MmsValue* value = NULL;
 
 			if (numberOfElements == 0)
-			    if (isAccessToArrayComponent(alternateAccess)) {
+			    if (mmsServer_isAccessToArrayComponent(alternateAccess)) {
 			        if (namedVariable->typeSpec.array.elementTypeSpec->type == MMS_STRUCTURE) {
 			            MmsValue* structValue = MmsValue_getElement(arrayValue, index);
 
 			            if (structValue != NULL)
-			                value = getComponentOfArrayElement(alternateAccess,
+			                value = mmsServer_getComponentOfArrayElement(alternateAccess,
 			                        namedVariable, structValue);
 			        }
 			    }
