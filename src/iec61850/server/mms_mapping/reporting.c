@@ -721,7 +721,21 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
                 char externalVisibleName[256];
 
                 /* Construct external visible name */
-                StringUtils_concatString(externalVisibleName, 256, mapping->model->name, dataSetLdName);
+
+                LogicalDevice* ld = IedModel_getDeviceByInst(mapping->model, dataSetLdName);
+
+                if (ld == NULL) {
+                    success = false;
+                    goto exit_function;
+                }
+
+                if (ld->ldName) {
+                    StringUtils_copyStringMax(externalVisibleName, 256, ld->ldName);
+                }
+                else {
+                    StringUtils_concatString(externalVisibleName, 256, mapping->model->name, dataSetLdName);
+                }
+
                 StringUtils_appendString(externalVisibleName, 256, "/");
                 StringUtils_appendString(externalVisibleName, 256, dataSetName);
 

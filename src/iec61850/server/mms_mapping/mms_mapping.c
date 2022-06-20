@@ -3978,85 +3978,109 @@ MmsMapping_stopEventWorkerThread(MmsMapping* self)
 DataSet*
 MmsMapping_createDataSetByNamedVariableList(MmsMapping* self, MmsNamedVariableList variableList)
 {
-    DataSet* dataSet = (DataSet*) GLOBAL_MALLOC(sizeof(DataSet));
+    DataSet* dataSet = (DataSet*) GLOBAL_CALLOC(1, sizeof(DataSet));
 
-    if (variableList->domain != NULL)
-        dataSet->logicalDeviceName = MmsDomain_getName(variableList->domain) + strlen(self->model->name);
-    else
-        dataSet->logicalDeviceName = NULL; /* name is not relevant for association specific data sets */
+    if (dataSet) {
 
-    dataSet->name = variableList->name;
-    dataSet->elementCount = LinkedList_size(variableList->listOfVariables);
+        if (variableList->domain != NULL) {
+            LogicalDevice* ld = IedModel_getDevice(self->model, MmsDomain_getName(variableList->domain));
 
-    LinkedList element = LinkedList_getNext(variableList->listOfVariables);
-
-    DataSetEntry* lastDataSetEntry = NULL;
-
-    while (element != NULL) {
-        MmsAccessSpecifier* listEntry = (MmsAccessSpecifier*) element->data;
-
-        DataSetEntry* dataSetEntry = (DataSetEntry*) GLOBAL_MALLOC(sizeof(DataSetEntry));
-
-        /* use variable name part of domain name as logicalDeviceName */
-        dataSetEntry->logicalDeviceName = MmsDomain_getName(listEntry->domain) + strlen(self->model->name);
-        dataSetEntry->variableName = listEntry->variableName;
-        dataSetEntry->index = listEntry->arrayIndex;
-        dataSetEntry->componentName = listEntry->componentName;
-        dataSetEntry->sibling = NULL;
-        dataSetEntry->value = NULL;
-
-        if (lastDataSetEntry == NULL)
-            dataSet->fcdas =dataSetEntry;
+            if (ld) {
+                dataSet->logicalDeviceName = ld->name;
+            }
+            else {
+                if (DEBUG_IED_SERVER)
+                    printf("IED_SERVER: LD lookup error!");
+            }
+        }
         else
-            lastDataSetEntry->sibling = dataSetEntry;
+            dataSet->logicalDeviceName = NULL; /* name is not relevant for association specific data sets */
 
-        MmsVariableSpecification* dataSetEntryVarSpec = NULL;
+        dataSet->name = variableList->name;
+        dataSet->elementCount = LinkedList_size(variableList->listOfVariables);
 
-        MmsValue* dataSetEntryValue = MmsServer_getValueFromCacheEx(self->mmsServer, listEntry->domain, listEntry->variableName, &dataSetEntryVarSpec);
+        LinkedList element = LinkedList_getNext(variableList->listOfVariables);
 
-        if (dataSetEntryValue) {
-            if (dataSetEntry->index != -1) {
-                if (dataSetEntryVarSpec->type == MMS_ARRAY) {
-                    MmsValue* elementValue = MmsValue_getElement(dataSetEntryValue, dataSetEntry->index);
+        DataSetEntry* lastDataSetEntry = NULL;
 
-                    if (elementValue) {
+        while (element != NULL) {
+            MmsAccessSpecifier* listEntry = (MmsAccessSpecifier*) element->data;
 
-                        if (dataSetEntry->componentName) {
-                            MmsVariableSpecification* elementType = dataSetEntryVarSpec->typeSpec.array.elementTypeSpec;
+            LogicalDevice* entryLd = IedModel_getDevice(self->model, MmsDomain_getName(listEntry->domain));
 
-                            MmsValue* subElementValue = MmsVariableSpecification_getChildValue(elementType, elementValue, dataSetEntry->componentName);
+            if (entryLd) {
 
-                            if (subElementValue) {
-                                dataSetEntry->value = subElementValue;
+                DataSetEntry* dataSetEntry = (DataSetEntry*) GLOBAL_MALLOC(sizeof(DataSetEntry));
+
+                if (dataSetEntry) {
+
+                    /* use variable name part of domain name as logicalDeviceName */
+                    dataSetEntry->logicalDeviceName = entryLd->name;
+                    dataSetEntry->variableName = listEntry->variableName;
+                    dataSetEntry->index = listEntry->arrayIndex;
+                    dataSetEntry->componentName = listEntry->componentName;
+                    dataSetEntry->sibling = NULL;
+                    dataSetEntry->value = NULL;
+
+                    if (lastDataSetEntry == NULL)
+                        dataSet->fcdas =dataSetEntry;
+                    else
+                        lastDataSetEntry->sibling = dataSetEntry;
+
+                    MmsVariableSpecification* dataSetEntryVarSpec = NULL;
+
+                    MmsValue* dataSetEntryValue = MmsServer_getValueFromCacheEx(self->mmsServer, listEntry->domain, listEntry->variableName, &dataSetEntryVarSpec);
+
+                    if (dataSetEntryValue) {
+                        if (dataSetEntry->index != -1) {
+                            if (dataSetEntryVarSpec->type == MMS_ARRAY) {
+                                MmsValue* elementValue = MmsValue_getElement(dataSetEntryValue, dataSetEntry->index);
+
+                                if (elementValue) {
+
+                                    if (dataSetEntry->componentName) {
+                                        MmsVariableSpecification* elementType = dataSetEntryVarSpec->typeSpec.array.elementTypeSpec;
+
+                                        MmsValue* subElementValue = MmsVariableSpecification_getChildValue(elementType, elementValue, dataSetEntry->componentName);
+
+                                        if (subElementValue) {
+                                            dataSetEntry->value = subElementValue;
+                                        }
+                                        else {
+                                            if (DEBUG_IED_SERVER)
+                                                printf("IED_SERVER: ERROR - component %s of array element not found\n", dataSetEntry->componentName);
+                                        }
+
+                                    }
+                                    else {
+                                        dataSetEntry->value = elementValue;
+                                    }
+                                }
+                                else {
+                                    if (DEBUG_IED_SERVER)
+                                        printf("IED_SERVER: ERROR - array element %i not found\n", dataSetEntry->index);
+                                }
                             }
                             else {
                                 if (DEBUG_IED_SERVER)
-                                    printf("IED_SERVER: ERROR - component %s of array element not found\n", dataSetEntry->componentName);
+                                    printf("IED_SERVER: ERROR - variable %s/%s is not an array\n", dataSetEntry->logicalDeviceName, dataSetEntry->variableName);
                             }
-
                         }
                         else {
-                            dataSetEntry->value = elementValue;
+                            dataSetEntry->value = dataSetEntryValue;
                         }
                     }
-                    else {
-                        if (DEBUG_IED_SERVER)
-                            printf("IED_SERVER: ERROR - array element %i not found\n", dataSetEntry->index);
-                    }
-                }
-                else {
-                    if (DEBUG_IED_SERVER)
-                        printf("IED_SERVER: ERROR - variable %s/%s is not an array\n", dataSetEntry->logicalDeviceName, dataSetEntry->variableName);
+
+                    lastDataSetEntry = dataSetEntry;
                 }
             }
             else {
-                dataSetEntry->value = dataSetEntryValue;
+                if (DEBUG_IED_SERVER)
+                    printf("IED_SERVER: LD lookup error!\n");
             }
+
+            element = LinkedList_getNext(element);
         }
-
-        lastDataSetEntry = dataSetEntry;
-
-        element = LinkedList_getNext(element);
     }
 
     return dataSet;
