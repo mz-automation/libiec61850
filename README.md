@@ -126,6 +126,27 @@ To build the library and run libiec61850 applications with GOOSE support on Wind
 
 ## Building with the cmake build script
 
+### Build on Linux
+
+You have to install the build tools and cmake (e.g. the packages "build-essental" and "cmake" on Ubuntu 20.04)
+
+Execute the following commands:
+
+`mkdir build`
+
+`cd build`
+
+`cmake ..`
+
+`make`
+
+Optionally execute the following stop to install the library and header files in system directories:
+
+`sudo make install`
+
+
+### Build on Windows with Visual Studio
+
 With the help of the cmake build script it is possible to create platform independent project descriptions and let cmake create specific project or build files for other tools like Make or Visual Studio.
 
 If you have cmake installed fire up a command line (cmd.exe) and create a new subdirectory in the libiec61850 folder. Change to this subdirectory. Then you can invoke cmake. As an command line argument you have to supply a "generator" that is used by cmake to create the project file for the actual build tool (in our case Visual Studio 2015).
