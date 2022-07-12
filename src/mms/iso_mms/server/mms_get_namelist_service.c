@@ -515,12 +515,21 @@ mmsServer_handleGetNameListRequest(
     char* continueAfterId = NULL;
 
     if (continueAfter != NULL) {
-        continueAfterId = continueAfterIdMemory;
-        memcpy(continueAfterId, continueAfter, continueAfterLength);
-        continueAfterId[continueAfterLength] = 0;
+        if (continueAfterLength < 130) {
+            continueAfterId = continueAfterIdMemory;
+            memcpy(continueAfterId, continueAfter, continueAfterLength);
+            continueAfterId[continueAfterLength] = 0;
 
-        if (DEBUG_MMS_SERVER)
-            printf("MMS_SERVER: getNameListRequest - continue after: (%s)\n", continueAfterId);
+            if (DEBUG_MMS_SERVER)
+                printf("MMS_SERVER: getNameListRequest - continue after: (%s)\n", continueAfterId);
+        }
+        else {
+            if (DEBUG_MMS_SERVER)
+                printf("MMS_SERVER: getNameListRequest - continuer after variable name too long\n");
+
+            mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
+            return;
+        }
     }
 
     if (objectScope == OBJECT_SCOPE_DOMAIN) {
