@@ -696,7 +696,7 @@ DataAttribute_create(const char* name, ModelNode* parent, DataAttributeType type
                     arrayElement->triggerOptions = triggerOptions;
                     arrayElement->sAddr = sAddr;
 
-                    DataAttribute_addChild(self, arrayElement);
+                    DataAttribute_addChild(self, (ModelNode*)arrayElement);
                 }
             }
         }
