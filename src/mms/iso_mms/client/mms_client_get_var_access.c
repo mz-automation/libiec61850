@@ -1,7 +1,7 @@
 /*
  *  mms_client_get_var_access.c
  *
- *  Copyright 2013-2018 Michael Zillgith
+ *  Copyright 2013-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -132,7 +132,7 @@ createTypeSpecification(TypeSpecification_t* asnTypeSpec)
 MmsVariableSpecification*
 mmsClient_parseGetVariableAccessAttributesResponse(ByteBuffer* message, uint32_t* invokeId)
 {
-    MmsPdu_t* mmsPdu = 0; /* allow asn1c to allocate structure */
+    MmsPdu_t* mmsPdu = NULL; /* allow asn1c to allocate structure */
     MmsVariableSpecification* typeSpec = NULL;
 
     asn_dec_rval_t rval = ber_decode(NULL, &asn_DEF_MmsPdu,

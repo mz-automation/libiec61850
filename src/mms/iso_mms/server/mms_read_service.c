@@ -840,43 +840,50 @@ mmsServer_handleReadRequest(
 		ByteBuffer* response)
 {
     (void)bufPos;
-    (void)maxBufPos;
 
-	ReadRequest_t* request = 0; /* allow asn1c to allocate structure */
+    ReadRequest_t* request = NULL; /* allow asn1c to allocate structure */
+    MmsPdu_t* mmsPdu = NULL;
 
-	MmsPdu_t* mmsPdu = 0;
+    asn_dec_rval_t rval = ber_decode(NULL, &asn_DEF_MmsPdu, (void**) &mmsPdu, buffer, maxBufPos);
 
-	asn_dec_rval_t rval = ber_decode(NULL, &asn_DEF_MmsPdu, (void**) &mmsPdu, buffer, CONFIG_MMS_MAXIMUM_PDU_SIZE);
+    if (rval.code != RC_OK) {
+        mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
+        goto exit_function;
+    }
 
-	if (rval.code != RC_OK) {
-	    mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
+    if ((mmsPdu->present == MmsPdu_PR_confirmedRequestPdu) && 
+        (mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.present 
+            == ConfirmedServiceRequest_PR_read))
+    {
+        request = &(mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.choice.read);
+    }
+    else {
+        mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
 	    goto exit_function;
-	}
+    }
 
-	request = &(mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.choice.read);
+    if (request->variableAccessSpecification.present == VariableAccessSpecification_PR_listOfVariable) {
+        MmsServer_lockModel(connection->server);
 
-	if (request->variableAccessSpecification.present == VariableAccessSpecification_PR_listOfVariable) {
-		MmsServer_lockModel(connection->server);
+        handleReadListOfVariablesRequest(connection, request, invokeId, response);
 
-		handleReadListOfVariablesRequest(connection, request, invokeId, response);
-
-		MmsServer_unlockModel(connection->server);
-	}
+        MmsServer_unlockModel(connection->server);
+    }
 #if (MMS_DATA_SET_SERVICE == 1)
-	else if (request->variableAccessSpecification.present == VariableAccessSpecification_PR_variableListName) {
-		MmsServer_lockModel(connection->server);
+    else if (request->variableAccessSpecification.present == VariableAccessSpecification_PR_variableListName) {
+        MmsServer_lockModel(connection->server);
 
-		handleReadNamedVariableListRequest(connection, request, invokeId, response);
+        handleReadNamedVariableListRequest(connection, request, invokeId, response);
 
-		MmsServer_unlockModel(connection->server);
-	}
+        MmsServer_unlockModel(connection->server);
+    }
 #endif
-	else {
-		mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_ACCESS_UNSUPPORTED);
-	}
+    else {
+        mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_ACCESS_UNSUPPORTED);   
+    }
 
 exit_function:	
-	asn_DEF_MmsPdu.free_struct(&asn_DEF_MmsPdu, mmsPdu, 0);
+    asn_DEF_MmsPdu.free_struct(&asn_DEF_MmsPdu, mmsPdu, 0);
 }
 
 void
