@@ -4617,6 +4617,28 @@ exit_function:
 }
 
 void
+MmsConnection_sendRawData(MmsConnection self, MmsError* mmsError, uint8_t* buffer, int bufSize)
+{
+    if (getConnectionState(self) != MMS_CONNECTION_STATE_CONNECTED) {
+        if (mmsError)
+            *mmsError = MMS_ERROR_CONNECTION_LOST;
+        goto exit_function;
+    }
+
+    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
+
+    ByteBuffer_append(payload, buffer, bufSize);
+
+    sendMessage(self, payload);
+
+    if (mmsError)
+        *mmsError = MMS_ERROR_NONE;
+
+exit_function:
+    return;
+}
+
+void
 MmsServerIdentity_destroy(MmsServerIdentity* self)
 {
     if (self->modelName != NULL)
