@@ -3231,7 +3231,7 @@ IedConnection_deleteDataSetAsync(IedConnection self, IedClientError* error, cons
 
     MmsError mmsError;
 
-    if ((domainId == NULL) || (itemId == NULL)) {
+    if ((domainId == NULL) || (itemId[0] == 0)) {
         *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
         return 0;
     }
