@@ -488,22 +488,31 @@ mmsServer_handleWriteRequest(
 		ByteBuffer* response)
 {
     (void)bufPos;
-    (void)maxBufPos;
 
-	MmsPdu_t* mmsPdu = 0;
+	MmsPdu_t* mmsPdu = NULL;
+    WriteRequest_t* writeRequest = NULL;
 
 	asn_dec_rval_t rval; /* Decoder return value  */
 
-	rval = ber_decode(NULL, &asn_DEF_MmsPdu, (void**) &mmsPdu, buffer, CONFIG_MMS_MAXIMUM_PDU_SIZE);
+	rval = ber_decode(NULL, &asn_DEF_MmsPdu, (void**) &mmsPdu, buffer, maxBufPos);
 
 	if (rval.code != RC_OK) {
 	    mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
 	    goto exit_function;
 	}
 
-        MmsServer_lockModel(connection->server);
+    if ((mmsPdu->present == MmsPdu_PR_confirmedRequestPdu) && 
+        (mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.present 
+            == ConfirmedServiceRequest_PR_write))
+    {
+         writeRequest = &(mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.choice.write);
+    }
+    else {
+        mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
+	    goto exit_function;
+    }
 
-	WriteRequest_t* writeRequest = &(mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.choice.write);
+    MmsServer_lockModel(connection->server);
 
 	if (writeRequest->variableAccessSpecification.present == VariableAccessSpecification_PR_variableListName) {
 	    handleWriteNamedVariableListRequest(connection, writeRequest, invokeId, response);

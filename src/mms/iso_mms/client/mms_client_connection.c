@@ -66,7 +66,7 @@ static void
 handleUnconfirmedMmsPdu(MmsConnection self, ByteBuffer* message)
 {
     if (self->reportHandler != NULL) {
-        MmsPdu_t* mmsPdu = 0; /* allow asn1c to allocate structure */
+        MmsPdu_t* mmsPdu = NULL; /* allow asn1c to allocate structure */
 
         if (DEBUG_MMS_CLIENT)
             printf("MMS_CLIENT: report handler rcvd size:%i\n", ByteBuffer_getSize(message));

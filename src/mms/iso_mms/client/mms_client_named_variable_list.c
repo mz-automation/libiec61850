@@ -119,7 +119,7 @@ mmsClient_createDeleteAssociationSpecificNamedVariableListRequest(
 bool
 mmsClient_parseDeleteNamedVariableListResponse(ByteBuffer* message, uint32_t* invokeId, long* numberDeleted, long* numberMatched)
 {
-    MmsPdu_t* mmsPdu = 0;
+    MmsPdu_t* mmsPdu = NULL;
 
     bool retVal = false;
 
@@ -299,7 +299,7 @@ parseNamedVariableAttributes(GetNamedVariableListAttributesResponse_t* response,
 LinkedList /* <MmsVariableAccessSpecification*> */
 mmsClient_parseGetNamedVariableListAttributesResponse(ByteBuffer* message, bool* /*OUT*/deletable)
 {
-    MmsPdu_t* mmsPdu = 0;
+    MmsPdu_t* mmsPdu = NULL;
 
     LinkedList attributes = NULL;
 
@@ -311,7 +311,7 @@ mmsClient_parseGetNamedVariableListAttributesResponse(ByteBuffer* message, bool*
 
             if (mmsPdu->choice.confirmedResponsePdu.confirmedServiceResponse.present ==
                     ConfirmedServiceResponse_PR_getNamedVariableListAttributes)
-                    {
+            {
                 attributes = parseNamedVariableAttributes(
                         &(mmsPdu->choice.confirmedResponsePdu.confirmedServiceResponse.choice.getNamedVariableListAttributes),
                         deletable);
@@ -430,7 +430,7 @@ mmsClient_createDefineNamedVariableListRequest(
 bool
 mmsClient_parseDefineNamedVariableResponse(ByteBuffer* message, uint32_t* invokeId)
 {
-    MmsPdu_t* mmsPdu = 0;
+    MmsPdu_t* mmsPdu = NULL;
     bool retVal = false;
 
     asn_dec_rval_t rval;

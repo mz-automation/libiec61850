@@ -1,7 +1,7 @@
 /*
  *  mms_client_files.c
  *
- *  Copyright 2013 - 2016 Michael Zillgith
+ *  Copyright 2013 - 2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *

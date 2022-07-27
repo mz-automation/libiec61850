@@ -363,7 +363,7 @@ mmsClient_parseListOfAccessResults(AccessResult_t** accessResultList, int listSi
 MmsValue*
 mmsClient_parseReadResponse(ByteBuffer* message, uint32_t* invokeId, bool createArray)
 {
-    MmsPdu_t* mmsPdu = 0; /* allow asn1c to allocate structure */
+    MmsPdu_t* mmsPdu = NULL; /* allow asn1c to allocate structure */
 
     MmsValue* valueList = NULL;
 
