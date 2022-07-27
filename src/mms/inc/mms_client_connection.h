@@ -285,6 +285,10 @@ MmsConnection_connectAsync(MmsConnection self, MmsError* mmsError, const char* s
 LIB61850_API bool
 MmsConnection_tick(MmsConnection self);
 
+/* NOTE: This function is for test purposes! */
+LIB61850_API void
+MmsConnection_sendRawData(MmsConnection self, MmsError* mmsError, uint8_t* buffer, int bufSize);
+
 /**
  * \brief Close the connection - not recommended
  *
