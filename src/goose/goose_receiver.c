@@ -506,24 +506,58 @@ parseAllDataUnknownValue(GooseSubscriber self, uint8_t* buffer, int allDataLengt
 
         case 0x84: /* BIT STRING */
             {
-                int padding = buffer[bufPos];
-                int bitStringLength = (8 * (elementLength - 1)) - padding;
-                value = MmsValue_newBitString(bitStringLength);
-                memcpy(value->value.bitString.buf, buffer + bufPos + 1, elementLength - 1);
+                if (elementLength > 1) {
+                    int padding = buffer[bufPos];
+                    int rawBitLength = (elementLength - 1) * 8;
 
+                    if (padding > 7) {
+                        if (DEBUG_GOOSE_SUBSCRIBER)
+                            printf("GOOSE_SUBSCRIBER:      invalid bit-string (padding not plausible)\n");
+
+                        goto exit_with_error;
+                    }
+                    else {
+                        value = MmsValue_newBitString(rawBitLength - padding);
+                        memcpy(value->value.bitString.buf, buffer + bufPos + 1, elementLength - 1);
+                    }
+                }
+                else {
+                    if (DEBUG_GOOSE_SUBSCRIBER)
+                        printf("GOOSE_SUBSCRIBER:      invalid bit-string\n");
+
+                    goto exit_with_error;
+                }
             }
             break;
 
         case 0x85: /* integer */
-            value = MmsValue_newInteger(elementLength * 8);
-            memcpy(value->value.integer->octets, buffer + bufPos, elementLength);
-            value->value.integer->size = elementLength;
+            if (elementLength > 8) {
+                    if (DEBUG_GOOSE_SUBSCRIBER)
+                        printf("GOOSE_SUBSCRIBER:      unsupported integer size(%i)\n", elementLength);
+
+                    goto exit_with_error;
+            }
+            else {
+                value = MmsValue_newInteger(elementLength * 8);
+                memcpy(value->value.integer->octets, buffer + bufPos, elementLength);
+                value->value.integer->size = elementLength;
+            }
+
             break;
 
         case 0x86: /* unsigned integer */
-            value = MmsValue_newUnsigned(elementLength * 8);
-            memcpy(value->value.integer->octets, buffer + bufPos, elementLength);
-            value->value.integer->size = elementLength;
+            if (elementLength > 8) {
+                if (DEBUG_GOOSE_SUBSCRIBER)
+                    printf("GOOSE_SUBSCRIBER:      unsupported unsigned size(%i)\n", elementLength);
+
+                goto exit_with_error;
+            }
+            else {
+                value = MmsValue_newUnsigned(elementLength * 8);
+                memcpy(value->value.integer->octets, buffer + bufPos, elementLength);
+                value->value.integer->size = elementLength;
+            }
+
             break;
 
         case 0x87: /* Float */
@@ -581,7 +615,7 @@ parseAllDataUnknownValue(GooseSubscriber self, uint8_t* buffer, int allDataLengt
 
     return dataSetValues;
 
-    exit_with_error:
+exit_with_error:
 
     if (dataSetValues != NULL)
         MmsValue_delete(dataSetValues);
