@@ -1,7 +1,7 @@
 /*
  *  mms_get_namelist_service.c
  *
- *  Copyright 2013, 2014, 2015 Michael Zillgith
+ *  Copyright 2013-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -109,18 +109,21 @@ appendMmsSubVariable(char* name, char* child)
 
     char* newName = (char*) GLOBAL_MALLOC(newSize);
 
-    int bufPos = 0;
-    int i;
-    for (i = 0; i < nameLen; i++) {
-        newName[bufPos++] = name[i];
-    }
-    newName[bufPos++] = '$';
+    if (newName)
+    {
+        int bufPos = 0;
+        int i;
+        for (i = 0; i < nameLen; i++) {
+            newName[bufPos++] = name[i];
+        }
+        newName[bufPos++] = '$';
 
-    for (i = 0; i < childLen; i++) {
-        newName[bufPos++] = child[i];
-    }
+        for (i = 0; i < childLen; i++) {
+            newName[bufPos++] = child[i];
+        }
 
-    newName[bufPos] = 0;
+        newName[bufPos] = 0;
+    }
 
     return newName;
 }
@@ -139,30 +142,37 @@ addSubNamedVaribleNamesToList(LinkedList nameList, char* prefix, MmsVariableSpec
 #if (CONFIG_MMS_SORT_NAME_LIST == 1)
         int* index = (int*) GLOBAL_MALLOC(sizeof(int) * variable->typeSpec.structure.elementCount);
 
-        for (i = 0; i < variable->typeSpec.structure.elementCount; i++)
-            index[i] = i;
+        if (index)
+        {
+            for (i = 0; i < variable->typeSpec.structure.elementCount; i++)
+                index[i] = i;
 
-        sortIndex(index, variable->typeSpec.structure.elementCount, variables);
+            sortIndex(index, variable->typeSpec.structure.elementCount, variables);
 #endif /* (CONFIG_MMS_SORT_NAME_LIST == 1) */
 
-        for (i = 0; i < variable->typeSpec.structure.elementCount; i++) {
+            for (i = 0; i < variable->typeSpec.structure.elementCount; i++) {
 #if (CONFIG_MMS_SORT_NAME_LIST == 1)
-            char* variableName = appendMmsSubVariable(prefix, variables[index[i]]->name);
+                char* variableName = appendMmsSubVariable(prefix, variables[index[i]]->name);
 #else
-            char* variableName = appendMmsSubVariable(prefix, variables[i]->name);
+                char* variableName = appendMmsSubVariable(prefix, variables[i]->name);
 #endif /* (CONFIG_MMS_SORT_NAME_LIST == 1) */
 
-            listElement = LinkedList_insertAfter(listElement, variableName);
+                if (variableName)
+                {
+                    listElement = LinkedList_insertAfter(listElement, variableName);
 
 #if (CONFIG_MMS_SORT_NAME_LIST == 1)
-            listElement = addSubNamedVaribleNamesToList(listElement, variableName, variables[index[i]]);
+                    listElement = addSubNamedVaribleNamesToList(listElement, variableName, variables[index[i]]);
 #else
-            listElement = addSubNamedVaribleNamesToList(listElement, variableName, variables[i]);
+                    listElement = addSubNamedVaribleNamesToList(listElement, variableName, variables[i]);
 #endif /* (CONFIG_MMS_SORT_NAME_LIST == 1) */
+                }
+            }
+
+#if (CONFIG_MMS_SORT_NAME_LIST == 1)
+            GLOBAL_FREEMEM(index);
+
         }
-
-#if (CONFIG_MMS_SORT_NAME_LIST == 1)
-        GLOBAL_FREEMEM(index);
 #endif
     }
 

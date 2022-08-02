@@ -1,7 +1,7 @@
 /*
  *  mms_file_service.c
  *
- *  Copyright 2013-2018 Michael Zillgith
+ *  Copyright 2013-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -370,7 +370,6 @@ mmsServer_handleFileOpenRequest(
             else
                 mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_FILE_NON_EXISTENT);
 
-
         }
         else
             mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_RESOURCE_OTHER);
@@ -390,7 +389,6 @@ exit_reject_invalid_pdu:
 
 #if (MMS_OBTAIN_FILE_SERVICE == 1)
 
-
 static void /* Confirmed service error (ServiceError) */
 createServiceErrorObtainFileError(uint32_t invokeId, ByteBuffer* response,
         MmsError errorType, uint32_t value)
@@ -402,7 +400,6 @@ createServiceErrorObtainFileError(uint32_t invokeId, ByteBuffer* response,
     mmsServer_createServiceErrorPduWithServiceSpecificInfo(invokeId, response, errorType,
             buffer, size);
 }
-
 
 static void
 createObtainFileResponse(uint32_t invokeId, ByteBuffer* response)
@@ -1176,7 +1173,8 @@ mmsServer_handleFileDirectoryRequest(
 
     char* continueAfter = NULL;
 
-    while (bufPos < maxBufPos) {
+    while (bufPos < maxBufPos)
+    {
         uint8_t tag = buffer[bufPos++];
         int length;
 
@@ -1215,8 +1213,6 @@ mmsServer_handleFileDirectoryRequest(
             mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
             return;
         }
-
-
     }
 
     int maxPduSize = connection->maxPduSize;

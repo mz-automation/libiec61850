@@ -156,14 +156,14 @@ LinkedList_remove(LinkedList list, void* data)
 LinkedList
 LinkedList_insertAfter(LinkedList list, void* data)
 {
-    LinkedList originalNextElement = LinkedList_getNext(list);
-
     LinkedList newElement = LinkedList_create();
 
-    newElement->data = data;
-    newElement->next = originalNextElement;
+    if (newElement) {
+        newElement->data = data;
+        newElement->next = LinkedList_getNext(list);
 
-    list->next = newElement;
+        list->next = newElement;
+    }
 
     return newElement;
 }
