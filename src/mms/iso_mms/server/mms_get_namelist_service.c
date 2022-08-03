@@ -525,7 +525,7 @@ mmsServer_handleGetNameListRequest(
         }
         else {
             if (DEBUG_MMS_SERVER)
-                printf("MMS_SERVER: getNameListRequest - continuer after variable name too long\n");
+                printf("MMS_SERVER: getNameListRequest - continuer after variable name too long (%i > 129)\n", continueAfterLength);
 
             mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
             return;
@@ -533,7 +533,15 @@ mmsServer_handleGetNameListRequest(
     }
 
     if (objectScope == OBJECT_SCOPE_DOMAIN) {
-        char domainSpecificName[130];
+        char domainSpecificName[65];
+
+        if (domainIdLength > 64) {
+            if (DEBUG_MMS_SERVER)
+                printf("MMS_SERVER: getNameListRequest - domain name too long (%i > 64)\n", domainIdLength);
+
+            mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
+            return;
+        }
 
         memcpy(domainSpecificName, domainId, domainIdLength);
         domainSpecificName[domainIdLength] = 0;
