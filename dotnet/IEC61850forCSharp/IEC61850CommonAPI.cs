@@ -426,12 +426,21 @@ namespace IEC61850
 			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
 			static extern void Timestamp_setByMmsUtcTime (IntPtr self, IntPtr mmsValue);
 
-			internal IntPtr timestampRef = IntPtr.Zero;
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern UInt32 Timestamp_getFractionOfSecondPart(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void Timestamp_setFractionOfSecondPart(IntPtr self, UInt32 fractionOfSecond);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern float Timestamp_getFractionOfSecond(IntPtr self);
+
+            internal IntPtr self = IntPtr.Zero;
 			private bool responsibleForDeletion;
 
 			internal Timestamp(IntPtr timestampRef, bool selfAllocated)
 			{
-				this.timestampRef = timestampRef;
+				this.self = timestampRef;
 				this.responsibleForDeletion = selfAllocated;
 			}
 
@@ -447,26 +456,26 @@ namespace IEC61850
 
 			public Timestamp()
 			{
-				timestampRef = Timestamp_create ();
+				self = Timestamp_create ();
 				LeapSecondKnown = true;
 				responsibleForDeletion = true;
 			}
 
 			public Timestamp(byte[] value)
 			{
-				timestampRef = Timestamp_createFromByteArray (value);
+				self = Timestamp_createFromByteArray (value);
 				responsibleForDeletion = true;
 			}
 
 			~Timestamp ()
 			{
 				if (responsibleForDeletion)
-					Timestamp_destroy (timestampRef);
+					Timestamp_destroy (self);
 			}
 
 			public void ClearFlags()
 			{
-				Timestamp_clearFlags (timestampRef);
+				Timestamp_clearFlags (self);
 			}
 
 			public void SetDateTime(DateTime timestamp)
@@ -487,12 +496,12 @@ namespace IEC61850
 
 			public bool IsLeapSecondKnown()
 			{
-				return Timestamp_isLeapSecondKnown (timestampRef);
+				return Timestamp_isLeapSecondKnown (self);
 			}
 
 			public void SetLeapSecondKnow(bool value)
 			{
-				Timestamp_setLeapSecondKnown (timestampRef, value);
+				Timestamp_setLeapSecondKnown (self, value);
 			}
 
 			public bool ClockFailure {
@@ -502,12 +511,12 @@ namespace IEC61850
 
 			public bool HasClockFailure()
 			{
-				return Timestamp_hasClockFailure (timestampRef);
+				return Timestamp_hasClockFailure (self);
 			}
 
 			public void SetClockFailure(bool value)
 			{
-				Timestamp_setClockFailure (timestampRef, value);
+				Timestamp_setClockFailure (self, value);
 			}
 
 			public bool ClockNotSynchronized {
@@ -516,11 +525,11 @@ namespace IEC61850
 			}
 
 			public bool IsClockNotSynchronized() {
-				return Timestamp_isClockNotSynchronized(timestampRef);
+				return Timestamp_isClockNotSynchronized(self);
 			}
 
 			public void SetClockNotSynchronized(bool value) {
-				Timestamp_setClockNotSynchronized (timestampRef, value);
+				Timestamp_setClockNotSynchronized (self, value);
 			}
 
 			public int SubsecondPrecision {
@@ -529,11 +538,11 @@ namespace IEC61850
 			}
 
 			public int GetSubsecondPrecision() {
-				return Timestamp_getSubsecondPrecision (timestampRef);
+				return Timestamp_getSubsecondPrecision (self);
 			}
 
 			public void SetSubsecondPrecision(int subsecondPrecision) {
-				Timestamp_setSubsecondPrecision (timestampRef, subsecondPrecision);
+				Timestamp_setSubsecondPrecision (self, subsecondPrecision);
 			}
 
 			public UInt32 TimeInSeconds {
@@ -543,12 +552,12 @@ namespace IEC61850
 
 			public UInt32 GetTimeInSeconds()
 			{
-				return Timestamp_getTimeInSeconds (timestampRef);
+				return Timestamp_getTimeInSeconds (self);
 			}
 
 			public void SetTimeInSeconds(UInt32 secondsSinceEpoch)
 			{
-				Timestamp_setTimeInSeconds (timestampRef, secondsSinceEpoch);
+				Timestamp_setTimeInSeconds (self, secondsSinceEpoch);
 			}
 
 			public UInt64 TimeInMilliseconds {
@@ -558,16 +567,16 @@ namespace IEC61850
 
 			public UInt64 GetTimeInMilliseconds()
 			{
-				return Timestamp_getTimeInMs (timestampRef);
+				return Timestamp_getTimeInMs (self);
 			}
 
 			public void SetTimeInMilliseconds(UInt64 millisSinceEpoch) {
-				Timestamp_setTimeInMilliseconds (timestampRef, millisSinceEpoch);
+				Timestamp_setTimeInMilliseconds (self, millisSinceEpoch);
 			}
 
 			public void SetByMmsUtcTime(MmsValue mmsValue)
 			{
-				Timestamp_setByMmsUtcTime (timestampRef, mmsValue.valueReference);
+				Timestamp_setByMmsUtcTime (self, mmsValue.valueReference);
 			}
 
 			public DateTime AsDateTime()
@@ -579,9 +588,24 @@ namespace IEC61850
 				return retVal;
 			}
 
+			public UInt32 GetFractionOfSecondPart()
+			{
+				return Timestamp_getFractionOfSecondPart(self);
+			}
+
+			public void SetFractionOfSecondPart(UInt32 fractionOfSecond)
+			{
+				Timestamp_setFractionOfSecondPart(self, fractionOfSecond);
+			}
+
+			public float GetFractionOfSecond()
+			{
+				return Timestamp_getFractionOfSecond(self);
+			}
+
 		}
 
-		public enum ACSIClass
+        public enum ACSIClass
 		{
 			/** data objects */
 			ACSI_CLASS_DATA_OBJECT,

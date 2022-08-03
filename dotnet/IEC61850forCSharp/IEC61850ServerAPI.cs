@@ -2794,7 +2794,7 @@ namespace IEC61850
 
             public void UpdateTimestampAttributeValue(DataAttribute dataAttr, Timestamp timestamp)
             {
-                IedServer_updateTimestampAttributeValue (self, dataAttr.self, timestamp.timestampRef);
+                IedServer_updateTimestampAttributeValue (self, dataAttr.self, timestamp.self);
             }
 
             public void UpdateQuality(DataAttribute dataAttr, ushort value)

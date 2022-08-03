@@ -464,6 +464,15 @@ Timestamp_setClockNotSynchronized(Timestamp* self, bool value);
 LIB61850_API int
 Timestamp_getSubsecondPrecision(Timestamp* self);
 
+LIB61850_API void
+Timestamp_setFractionOfSecondPart(Timestamp* self, uint32_t fractionOfSecond);
+
+LIB61850_API uint32_t
+Timestamp_getFractionOfSecondPart(Timestamp* self);
+
+LIB61850_API float
+Timestamp_getFractionOfSecond(Timestamp* self);
+
 /**
  * \brief Set the subsecond precision value of the time stamp
  *

@@ -419,6 +419,35 @@ Timestamp_setTimeInNanoseconds(Timestamp* self, nsSinceEpoch nsTime)
     /* don't touch time quality */
 }
 
+void
+Timestamp_setFractionOfSecondPart(Timestamp* self, uint32_t fractionOfSecond)
+{
+    uint8_t* valueArray = self->val;
+
+    valueArray[4] = ((fractionOfSecond >> 16) & 0xff);
+    valueArray[5] = ((fractionOfSecond >> 8) & 0xff);
+    valueArray[6] = (fractionOfSecond & 0xff);
+}
+
+uint32_t
+Timestamp_getFractionOfSecondPart(Timestamp* self)
+{
+    uint32_t fractionOfSecond = 0;
+    uint8_t* valueArray = self->val;
+
+    fractionOfSecond = (valueArray[4] << 16);
+    fractionOfSecond += (valueArray[5] << 8);
+    fractionOfSecond += (valueArray[6]);
+
+    return fractionOfSecond;
+}
+
+float
+Timestamp_getFractionOfSecond(Timestamp* self)
+{
+    return (float)((float)Timestamp_getFractionOfSecondPart(self) / (float)(1 << 24));
+}
+
 uint32_t
 Timestamp_getTimeInSeconds(Timestamp* self)
 {
