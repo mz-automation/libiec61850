@@ -273,7 +273,9 @@ TcpServerSocket_create(const char* address, int port)
         serverSocket->backLog = 10;
 
         setSocketNonBlocking((Socket)serverSocket);
-        //setSocketBufferSize((Socket)serverSocket, 512*1024, 512*1024);
+
+        if(CONFIG_SET_SOCKET_BUFSIZE == 1)
+            setSocketBufferSize((Socket)serverSocket, CONFIG_SOCKET_RCVBUFSIZE*1024, CONFIG_SOCKET_SNDBUFSIZE*1024);
 
         socketCount++;
     }
@@ -305,7 +307,9 @@ ServerSocket_accept(ServerSocket self)
         socketCount++;
 
         setSocketNonBlocking(conSocket);
-        //setSocketBufferSize(conSocket, 512*1024, 512*1024);
+
+        if(CONFIG_SET_SOCKET_BUFSIZE == 1)
+            setSocketBufferSize(conSocket, CONFIG_SOCKET_RCVBUFSIZE*1024, CONFIG_SOCKET_SNDBUFSIZE*1024);
 
         if (DEBUG_SOCKET)
             printf("WIN32_SOCKET: connection accepted\n");
@@ -423,7 +427,9 @@ Socket_connectAsync(Socket self, const char* address, int port)
         return false;
 
     setSocketNonBlocking(self);
-    //setSocketBufferSize(self, 512*1024, 512*1024);
+
+    if(CONFIG_SET_SOCKET_BUFSIZE == 1)
+        setSocketBufferSize(self, CONFIG_SOCKET_RCVBUFSIZE*1024, CONFIG_SOCKET_SNDBUFSIZE*1024);
 
     if (connect(self->fd, (struct sockaddr *) &serverAddress, sizeof(serverAddress)) == SOCKET_ERROR) {
         if (WSAGetLastError() != WSAEWOULDBLOCK) {
