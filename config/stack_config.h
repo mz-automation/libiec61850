@@ -51,7 +51,7 @@
 #define CONFIG_MMS_THREADLESS_STACK 0
 
 /* number of concurrent MMS client connections the server accepts, -1 for no limit */
-#define CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS 100
+#define CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS -1
 
 /* set socket buffer size. 1 -> enable */
 #define CONFIG_SET_SOCKET_BUFSIZE 0
@@ -66,10 +66,10 @@
 #define CONFIG_ACTIVATE_TCP_KEEPALIVE 1
 
 /* time (in s) between last message and first keepalive message */
-#define CONFIG_TCP_KEEPALIVE_IDLE 5
+#define CONFIG_TCP_KEEPALIVE_IDLE 20
 
 /* time between subsequent keepalive messages if no ack received */
-#define CONFIG_TCP_KEEPALIVE_INTERVAL 2
+#define CONFIG_TCP_KEEPALIVE_INTERVAL 5
 
 /* number of not missing keepalive responses until socket is considered dead */
 #define CONFIG_TCP_KEEPALIVE_CNT 2
