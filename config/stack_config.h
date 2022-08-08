@@ -54,13 +54,13 @@
 #define CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS -1
 
 /* set socket buffer size. 1 -> enable */
-#define CONFIG_SET_SOCKET_BUFSIZE 0
+#define CONFIG_SET_SOCKET_BUFSIZE 1
 
 /* size (in KB) SOCKET RCVBUF */
-#define CONFIG_SOCKET_RCVBUFSIZE 512
+#define CONFIG_SOCKET_RCVBUFSIZE 128
 
 /* size (in KB) SOCKET SNDBUF */
-#define CONFIG_SOCKET_SNDBUFSIZE 512
+#define CONFIG_SOCKET_SNDBUFSIZE 128
 
 /* activate TCP keep alive mechanism. 1 -> activate */
 #define CONFIG_ACTIVATE_TCP_KEEPALIVE 1
