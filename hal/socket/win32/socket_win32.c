@@ -160,6 +160,14 @@ setSocketNonBlocking(Socket self)
     setsockopt(self->fd, IPPROTO_TCP, TCP_NODELAY, (const char*)&tcpNoDelay, sizeof(int));
 }
 
+static void
+setSocketBufferSize(Socket self, int rcvBufSize, int sndBufSize)
+{
+    setsockopt(self->fd, SOL_SOCKET, SO_RCVBUF, (const char*)&rcvBufSize, sizeof(int));
+    setsockopt(self->fd, SOL_SOCKET, SO_SNDBUF, (const char*)&sndBufSize, sizeof(int));
+}
+
+
 static bool
 prepareAddress(const char *address, int port, struct sockaddr_in *sockaddr)
 {
@@ -265,6 +273,7 @@ TcpServerSocket_create(const char* address, int port)
         serverSocket->backLog = 10;
 
         setSocketNonBlocking((Socket)serverSocket);
+        //setSocketBufferSize((Socket)serverSocket, 512*1024, 512*1024);
 
         socketCount++;
     }
@@ -296,6 +305,7 @@ ServerSocket_accept(ServerSocket self)
         socketCount++;
 
         setSocketNonBlocking(conSocket);
+        //setSocketBufferSize(conSocket, 512*1024, 512*1024);
 
         if (DEBUG_SOCKET)
             printf("WIN32_SOCKET: connection accepted\n");
@@ -413,6 +423,7 @@ Socket_connectAsync(Socket self, const char* address, int port)
         return false;
 
     setSocketNonBlocking(self);
+    //setSocketBufferSize(self, 512*1024, 512*1024);
 
     if (connect(self->fd, (struct sockaddr *) &serverAddress, sizeof(serverAddress)) == SOCKET_ERROR) {
         if (WSAGetLastError() != WSAEWOULDBLOCK) {
