@@ -105,6 +105,14 @@ clientAuthenticator(void* parameter, AcseAuthenticationParameter authParameter, 
     return true;
 }
 
+static void
+securityEventHandler(void* parameter, TLSConfiguration_EventLevel eventLevel, int eventCode, const char* msg)
+{
+    (void)parameter;
+
+    printf("[SECURITY EVENT] %s (t: %i, c: %i)\n", msg, eventLevel, eventCode);
+}
+
 int
 main(int argc, char** argv)
 {
@@ -115,17 +123,19 @@ main(int argc, char** argv)
     TLSConfiguration_setChainValidation(tlsConfig, false);
     TLSConfiguration_setAllowOnlyKnownCertificates(tlsConfig, true);
 
-    if (!TLSConfiguration_setOwnKeyFromFile(tlsConfig, "server-key.pem", NULL)) {
+    TLSConfiguration_setEventHandler(tlsConfig, securityEventHandler, NULL);
+
+    if (!TLSConfiguration_setOwnKeyFromFile(tlsConfig, "server_CA1_1.key", NULL)) {
         printf("Failed to load private key!\n");
         return 0;
     }
 
-    if (!TLSConfiguration_setOwnCertificateFromFile(tlsConfig, "server.cer")) {
+    if (!TLSConfiguration_setOwnCertificateFromFile(tlsConfig, "server_CA1_1.pem")) {
         printf("ERROR: Failed to load own certificate!\n");
         return 0;
     }
 
-    if (!TLSConfiguration_addCACertificateFromFile(tlsConfig, "root.cer")) {
+    if (!TLSConfiguration_addCACertificateFromFile(tlsConfig, "root_CA1.pem")) {
         printf("ERROR: Failed to load root certificate\n");
         return 0;
     }
@@ -134,12 +144,12 @@ main(int argc, char** argv)
      * Configure two allowed clients
      */
 
-    if (!TLSConfiguration_addAllowedCertificateFromFile(tlsConfig, "client1.cer")) {
+    if (!TLSConfiguration_addAllowedCertificateFromFile(tlsConfig, "client_CA1_1.pem")) {
         printf("ERROR: Failed to load allowed client certificate\n");
         return 0;
     }
 
-    if (!TLSConfiguration_addAllowedCertificateFromFile(tlsConfig, "client2.cer")) {
+    if (!TLSConfiguration_addAllowedCertificateFromFile(tlsConfig, "client_CA1_2.pem")) {
         printf("ERROR: Failed to load allowed client certificate\n");
         return 0;
     }
