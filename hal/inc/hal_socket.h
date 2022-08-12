@@ -306,7 +306,7 @@ Socket_getLocalAddress(Socket self);
 /**
  * \brief Get the address of the peer application (IP address and port number)
  *
- * The peer address has to be returned as
+ * The peer address has to be returned as null terminated string
  *
  * Implementation of this function is MANDATORY (libiec61850)
  *
@@ -320,7 +320,7 @@ Socket_getPeerAddress(Socket self);
 /**
  * \brief Get the address of the peer application (IP address and port number)
  *
- * The peer address has to be returned as
+ * The peer address has to be returned as null terminated string
  *
  * Implementation of this function is MANDATORY (lib60870)
  *
