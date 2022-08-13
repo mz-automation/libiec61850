@@ -110,6 +110,20 @@ MmsServer_create(MmsDevice* device, TLSConfiguration tlsConfiguration)
         self->maxAssociationSpecificDataSets = CONFIG_MMS_MAX_NUMBER_OF_ASSOCIATION_SPECIFIC_DATA_SETS;
         self->maxDomainSpecificDataSets = CONFIG_MMS_MAX_NUMBER_OF_DOMAIN_SPECIFIC_DATA_SETS;
 #endif /* (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1) */
+
+#if (MMS_OBTAIN_FILE_SERVICE == 1)
+        {
+            int i;
+
+            for (i = 0; i < CONFIG_MMS_SERVER_MAX_GET_FILE_TASKS; i++) {
+                self->fileUploadTasks[i].state = 0;
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+                self->fileUploadTasks[i].taskLock = Semaphore_create(1);
+#endif /* (CONFIG_MMS_THREADLESS_STACK != 1) */
+            }   
+        }
+#endif /* (MMS_OBTAIN_FILE_SERVICE == 1) */
     }
 
     return self;
@@ -295,16 +309,23 @@ MmsServer_getObtainFileTask(MmsServer self)
 
     for (i = 0; i < CONFIG_MMS_SERVER_MAX_GET_FILE_TASKS; i++) {
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_wait(self->fileUploadTasks[i].taskLock);
+#endif
+
         if (self->fileUploadTasks[i].state == 0) {
             self->fileUploadTasks[i].state = 1;
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
-            if (self->fileUploadTasks[i].taskLock == NULL)
-                self->fileUploadTasks[i].taskLock = Semaphore_create(1);
+            Semaphore_post(self->fileUploadTasks[i].taskLock);
 #endif
 
             return &(self->fileUploadTasks[i]);
         }
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_post(self->fileUploadTasks[i].taskLock);
+#endif
 
     }
 
@@ -728,19 +749,19 @@ MmsServer_handleBackgroundTasks(MmsServer self)
     int i;
     for (i = 0; i < CONFIG_MMS_SERVER_MAX_GET_FILE_TASKS; i++)
     {
-        if (self->fileUploadTasks[i].state != 0) {
-
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
-            Semaphore_wait(self->fileUploadTasks[i].taskLock);
+        Semaphore_wait(self->fileUploadTasks[i].taskLock);
 #endif
+
+        if (self->fileUploadTasks[i].state != 0) {
 
             if (self->fileUploadTasks[i].state != 0)
                 mmsServer_fileUploadTask(self, &(self->fileUploadTasks[i]));
+        }
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
-            Semaphore_post(self->fileUploadTasks[i].taskLock);
+        Semaphore_post(self->fileUploadTasks[i].taskLock);
 #endif
-        }
     }
 
 #endif /* (MMS_OBTAIN_FILE_SERVICE == 1) */

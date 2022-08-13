@@ -434,15 +434,27 @@ handleConfirmedErrorPdu(
             int i;
             for (i = 0; i < CONFIG_MMS_SERVER_MAX_GET_FILE_TASKS; i++) {
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+                Semaphore_wait(self->server->fileUploadTasks[i].taskLock);
+#endif
+
                 if (self->server->fileUploadTasks[i].state != MMS_FILE_UPLOAD_STATE_NOT_USED) {
 
                     if (self->server->fileUploadTasks[i].lastRequestInvokeId == invokeId) {
 
                         self->server->fileUploadTasks[i].state = MMS_FILE_UPLOAD_STATE_SEND_OBTAIN_FILE_ERROR_SOURCE;
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+                        Semaphore_post(self->server->fileUploadTasks[i].taskLock);
+#endif
                         return;
                     }
 
                 }
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+                Semaphore_post(self->server->fileUploadTasks[i].taskLock);
+#endif
             }
         }
 
@@ -458,7 +470,7 @@ getUploadTaskByInvokeId(MmsServer mmsServer, uint32_t invokeId)
 {
     int i;
     for (i = 0; i < CONFIG_MMS_SERVER_MAX_GET_FILE_TASKS; i++) {
-        if (mmsServer->fileUploadTasks[i].lastRequestInvokeId == invokeId)
+        if ((mmsServer->fileUploadTasks[i].state != 0) && (mmsServer->fileUploadTasks[i].lastRequestInvokeId == invokeId))
             return &(mmsServer->fileUploadTasks[i]);
     }
 
