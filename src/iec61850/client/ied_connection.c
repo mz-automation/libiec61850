@@ -258,10 +258,10 @@ ClientDataSet_create(const char* dataSetReference)
 void
 ClientDataSet_destroy(ClientDataSet self)
 {
-    if (self->dataSetValues != NULL)
-        MmsValue_delete(self->dataSetValues);
+	if (self == NULL)
+		return;
 
-    GLOBAL_FREEMEM(self->dataSetReference);
+	MmsValue_delete(self->dataSetValues);
 
     GLOBAL_FREEMEM(self);
 }
