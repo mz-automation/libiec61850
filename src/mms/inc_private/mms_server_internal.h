@@ -219,7 +219,7 @@ LIB61850_INTERNAL MmsObtainFileTask
 MmsServer_getObtainFileTask(MmsServer self);
 
 LIB61850_INTERNAL void
-mmsServer_fileUploadTask(MmsServer self, MmsObtainFileTask task);
+mmsServer_fileUploadTask(MmsServer self, MmsObtainFileTask task, int taskState);
 #endif
 
 LIB61850_INTERNAL ByteBuffer*

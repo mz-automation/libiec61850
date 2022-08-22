@@ -316,10 +316,6 @@ MmsServer_getObtainFileTask(MmsServer self)
         if (self->fileUploadTasks[i].state == 0) {
             self->fileUploadTasks[i].state = 1;
 
-#if (CONFIG_MMS_THREADLESS_STACK != 1)
-            Semaphore_post(self->fileUploadTasks[i].taskLock);
-#endif
-
             return &(self->fileUploadTasks[i]);
         }
 
@@ -742,15 +738,15 @@ MmsServer_handleBackgroundTasks(MmsServer self)
         Semaphore_wait(self->fileUploadTasks[i].taskLock);
 #endif
 
-        if (self->fileUploadTasks[i].state != 0) {
-
-            if (self->fileUploadTasks[i].state != 0)
-                mmsServer_fileUploadTask(self, &(self->fileUploadTasks[i]));
-        }
+        int taskState = self->fileUploadTasks[i].state;
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
         Semaphore_post(self->fileUploadTasks[i].taskLock);
 #endif
+
+        if (taskState != 0) {
+            mmsServer_fileUploadTask(self, &(self->fileUploadTasks[i]), taskState);
+        }
     }
 
 #endif /* (MMS_OBTAIN_FILE_SERVICE == 1) */
