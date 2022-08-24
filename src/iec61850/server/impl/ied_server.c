@@ -908,9 +908,9 @@ IedServer_stopThreadless(IedServer self)
 void
 IedServer_lockDataModel(IedServer self)
 {
-    Semaphore_wait(self->mmsMapping->isModelLockedMutex);
-
     MmsServer_lockModel(self->mmsServer);
+
+    Semaphore_wait(self->mmsMapping->isModelLockedMutex);
 
     self->mmsMapping->isModelLocked = true;
 
@@ -930,9 +930,9 @@ IedServer_unlockDataModel(IedServer self)
 
     Semaphore_wait(self->mmsMapping->isModelLockedMutex);
 
-    self->mmsMapping->isModelLocked = false;
-
     MmsServer_unlockModel(self->mmsServer);
+
+    self->mmsMapping->isModelLocked = false;
 
     Semaphore_post(self->mmsMapping->isModelLockedMutex);
 }
