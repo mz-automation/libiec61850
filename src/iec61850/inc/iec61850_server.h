@@ -191,7 +191,7 @@ IedServerConfig_getMaxMmsConnections(IedServerConfig self);
  *
  * \param enable when true synchronized integrity report times are enabled
  */
-void
+LIB61850_API void
 IedServerConfig_setSyncIntegrityReportTimes(IedServerConfig self, bool enable);
 
 /**
@@ -203,7 +203,7 @@ IedServerConfig_setSyncIntegrityReportTimes(IedServerConfig self, bool enable);
  *
  * \return true, when enabled, false otherwise
  */
-bool
+LIB61850_API bool
 IedServerConfig_getSyncIntegrityReportTimes(IedServerConfig self);
 
 /**
