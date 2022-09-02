@@ -1344,7 +1344,7 @@ IedConnection_readUnsigned32Value(IedConnection self, IedClientError* error, con
 {
     MmsValue* value = IedConnection_readObject(self, error, objectReference, fc);
 
-    uint32_t retVal = 0.f;
+    uint32_t retVal = 0;
 
     if (value != NULL) {
         if ((MmsValue_getType(value) == MMS_INTEGER) || (MmsValue_getType(value) == MMS_UNSIGNED))
@@ -2348,7 +2348,7 @@ addVariablesWithFc(char* fc, char* lnName, LinkedList variables, LinkedList lnDi
             if (memcmp(fcPos + 1, fc, 2) != 0)
                 goto next_element;
 
-            int lnNameLen = fcPos - variableName;
+            int lnNameLen = (int)(fcPos - variableName);
 
             if (strncmp(variableName, lnName, lnNameLen) == 0) {
                 char* fcEndPos = strchr(fcPos + 1, '$');
@@ -2538,7 +2538,7 @@ IedConnection_getLogicalNodeDirectory(IedConnection self, IedClientError* error,
                     if (memcmp(fcPos + 1, "GO", 2) == 0)
                         goto next_element;
 
-                    int lnNameLen = fcPos - variableName;
+                    int lnNameLen = (int)(fcPos - variableName);
 
                     if (strncmp(variableName, logicalNodeName, lnNameLen) == 0) {
                         char* fcEndPos = strchr(fcPos + 1, '$');
@@ -2673,7 +2673,7 @@ IedConnection_getLogicalNodeVariables(IedConnection self, IedClientError* error,
         char* fcPos = strchr(variableName, '$');
 
         if (fcPos != NULL) {
-            int lnNameLen = fcPos - variableName;
+            int lnNameLen = (int)(fcPos - variableName);
 
             if (strncmp(variableName, logicalNodeName, lnNameLen) == 0) {
                 LinkedList_add(lnDirectory, StringUtils_copyString(fcPos + 1));
@@ -2723,11 +2723,11 @@ getDataDirectory(IedConnection self, IedClientError* error,
         return NULL;
     }
 
-    int logicalNodeNameLen = logicalNodeNameEnd - logicalNodeName;
+    int logicalNodeNameLen = (int)(logicalNodeNameEnd - logicalNodeName);
 
     char* dataNamePart = logicalNodeNameEnd + 1;
 
-    int dataNamePartLen = strlen(dataNamePart);
+    int dataNamePartLen = (int)strlen(dataNamePart);
 
     if (dataNamePartLen < 1) {
         *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
@@ -2768,7 +2768,7 @@ getDataDirectory(IedConnection self, IedClientError* error,
         char* fcPos = strchr(variableName, '$');
 
         if (fcPos != NULL) {
-            int lnNameLen = fcPos - variableName;
+            int lnNameLen = (int)(fcPos - variableName);
 
             if (logicalNodeNameLen == lnNameLen) {
 
@@ -2784,7 +2784,7 @@ getDataDirectory(IedConnection self, IedClientError* error,
 
                     char* remainingPart = fcEnd + 1;
 
-                    int remainingLen = strlen(remainingPart);
+                    int remainingLen = (int)strlen(remainingPart);
 
                     if (remainingLen <= dataNamePartLen)
                         goto next_variable;
@@ -2803,7 +2803,7 @@ getDataDirectory(IedConnection self, IedClientError* error,
                             char* elementName;
 
                             if (withFc) {
-                                int elementNameLen = strlen(subElementName);
+                                int elementNameLen = (int)strlen(subElementName);
 
                                 elementName = (char*) GLOBAL_MALLOC(elementNameLen + 5);
                                 memcpy(elementName, subElementName, elementNameLen);
@@ -2889,11 +2889,11 @@ getDataDirectoryByFc(IedConnection self, IedClientError* error,
         return NULL;
     }
 
-    int logicalNodeNameLen = logicalNodeNameEnd - logicalNodeName;
+    int logicalNodeNameLen = (int)(logicalNodeNameEnd - logicalNodeName);
 
     char* dataNamePart = logicalNodeNameEnd + 1;
 
-    int dataNamePartLen = strlen(dataNamePart);
+    int dataNamePartLen = (int)strlen(dataNamePart);
 
     if (dataNamePartLen < 1) {
         *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
@@ -2934,7 +2934,7 @@ getDataDirectoryByFc(IedConnection self, IedClientError* error,
         char* fcPos = strchr(variableName, '$');
 
         if (fcPos != NULL) {
-            int lnNameLen = fcPos - variableName;
+            int lnNameLen = (int)(fcPos - variableName);
 
             if (logicalNodeNameLen == lnNameLen) {
 
@@ -2953,7 +2953,7 @@ getDataDirectoryByFc(IedConnection self, IedClientError* error,
 
                     char* remainingPart = fcEnd + 1;
 
-                    int remainingLen = strlen(remainingPart);
+                    int remainingLen = (int)strlen(remainingPart);
 
                     if (remainingLen <= dataNamePartLen)
                         goto next_variable;
@@ -2969,7 +2969,7 @@ getDataDirectoryByFc(IedConnection self, IedClientError* error,
                             if (subElementNameSep != NULL)
                                 goto next_variable;
 
-                            int elementNameLen = strlen(subElementName);
+                            int elementNameLen = (int)strlen(subElementName);
 
                             char* elementName = (char*) GLOBAL_MALLOC(elementNameLen + 1);
                             memcpy(elementName, subElementName, elementNameLen);
@@ -3029,7 +3029,7 @@ IedConnection_createDataSet(IedConnection self, IedClientError* error, const cha
                 goto exit_function;
             }
 
-            int domainIdLength = strlen(domainId);
+            int domainIdLength = (int)strlen(domainId);
 
             if ((strlen(dataSetReference) - domainIdLength - 1) > 32) {
                 *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
@@ -3093,7 +3093,7 @@ IedConnection_deleteDataSet(IedConnection self, IedClientError* error, const cha
     bool isAssociationSpecific = false;
     bool isDeleted = false;
 
-    int dataSetReferenceLength = strlen(dataSetReference);
+    int dataSetReferenceLength = (int)strlen(dataSetReference);
 
     if (dataSetReference[0] != '@') {
         if ((dataSetReference[0] == '/') || (strchr(dataSetReference, '/') == NULL)) {
@@ -3186,7 +3186,7 @@ IedConnection_deleteDataSetAsync(IedConnection self, IedClientError* error, cons
     char itemId[DATA_SET_MAX_NAME_LENGTH + 1];
     bool isAssociationSpecific = false;
 
-    int dataSetReferenceLength = strlen(dataSetReference);
+    int dataSetReferenceLength = (int)strlen(dataSetReference);
 
     if (dataSetReference[0] != '@') {
         if ((dataSetReference[0] == '/')
@@ -3321,7 +3321,7 @@ IedConnection_createDataSetAsync(IedConnection self, IedClientError* error, cons
                 goto exit_function;
             }
 
-            int domainIdLength = strlen(domainId);
+            int domainIdLength = (int)strlen(domainId);
 
             if ((strlen(dataSetReference) - domainIdLength - 1) > 32) {
                 *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
