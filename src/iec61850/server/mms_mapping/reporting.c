@@ -968,11 +968,18 @@ refreshIntegrityPeriod(ReportControl* rc)
 #endif
 
     if (rc->buffered == false) {
-        if (rc->server->syncIntegrityReportTimes) {
-            rc->nextIntgReportTime = getNextRoundedStartTime(Hal_getTimeInMs(), rc->intgPd);
-        }
-        else {
-            rc->nextIntgReportTime = Hal_getTimeInMs() + rc->intgPd;
+
+        if (rc->triggerOps & TRG_OPT_INTEGRITY) {
+
+            if (rc->intgPd > 0) {
+
+                if (rc->server->syncIntegrityReportTimes) {
+                    rc->nextIntgReportTime = getNextRoundedStartTime(Hal_getTimeInMs(), rc->intgPd);
+                }
+                else {
+                    rc->nextIntgReportTime = Hal_getTimeInMs() + rc->intgPd;
+                }
+            }
         }
     }
 }
@@ -2159,11 +2166,17 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 
                 if (rc->buffered) {
 
-                    if (rc->server->syncIntegrityReportTimes) {
-                        rc->nextIntgReportTime = getNextRoundedStartTime(Hal_getTimeInMs(), rc->intgPd);
-                    }
-                    else {
-                        rc->nextIntgReportTime = 0;
+                    if (rc->triggerOps & TRG_OPT_INTEGRITY) {
+
+                        if (rc->intgPd > 0) {
+
+                            if (rc->server->syncIntegrityReportTimes) {
+                                rc->nextIntgReportTime = getNextRoundedStartTime(Hal_getTimeInMs(), rc->intgPd);
+                            }
+                            else {
+                                rc->nextIntgReportTime = 0;
+                            }
+                        }
                     }
 
                     purgeBuf(rc);
