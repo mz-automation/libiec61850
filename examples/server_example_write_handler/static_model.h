@@ -1,7 +1,7 @@
 /*
  * static_model.h
  *
- * automatically generated from complexModel.icd
+ * automatically generated from complexModel.cid
  */
 
 #ifndef STATIC_MODEL_H_

@@ -1,7 +1,7 @@
 /*
  * static_model.c
  *
- * automatically generated from simpleIO_direct_control.icd
+ * automatically generated from simpleIO_direct_control.cid
  */
 #include "static_model.h"
 
@@ -18,7 +18,7 @@ extern DataSetEntry iedModelds_GenericIO_LLN0_Events_fcda3;
 DataSetEntry iedModelds_GenericIO_LLN0_Events_fcda0 = {
   "GenericIO",
   false,
-  "GGIO1$ST$SPCSO1$stVal",
+  "GGIO1$ST$SPCSO1$stVal", 
   -1,
   NULL,
   NULL,
@@ -28,7 +28,7 @@ DataSetEntry iedModelds_GenericIO_LLN0_Events_fcda0 = {
 DataSetEntry iedModelds_GenericIO_LLN0_Events_fcda1 = {
   "GenericIO",
   false,
-  "GGIO1$ST$SPCSO2$stVal",
+  "GGIO1$ST$SPCSO2$stVal", 
   -1,
   NULL,
   NULL,
@@ -38,7 +38,7 @@ DataSetEntry iedModelds_GenericIO_LLN0_Events_fcda1 = {
 DataSetEntry iedModelds_GenericIO_LLN0_Events_fcda2 = {
   "GenericIO",
   false,
-  "GGIO1$ST$SPCSO3$stVal",
+  "GGIO1$ST$SPCSO3$stVal", 
   -1,
   NULL,
   NULL,
@@ -48,7 +48,7 @@ DataSetEntry iedModelds_GenericIO_LLN0_Events_fcda2 = {
 DataSetEntry iedModelds_GenericIO_LLN0_Events_fcda3 = {
   "GenericIO",
   false,
-  "GGIO1$ST$SPCSO4$stVal",
+  "GGIO1$ST$SPCSO4$stVal", 
   -1,
   NULL,
   NULL,
@@ -68,7 +68,8 @@ LogicalDevice iedModel_GenericIO = {
     "GenericIO",
     (ModelNode*) &iedModel,
     NULL,
-    (ModelNode*) &iedModel_GenericIO_LLN0
+    (ModelNode*) &iedModel_GenericIO_LLN0,
+    NULL
 };
 
 LogicalNode iedModel_GenericIO_LLN0 = {
@@ -85,7 +86,8 @@ DataObject iedModel_GenericIO_LLN0_Mod = {
     (ModelNode*) &iedModel_GenericIO_LLN0,
     (ModelNode*) &iedModel_GenericIO_LLN0_Beh,
     (ModelNode*) &iedModel_GenericIO_LLN0_Mod_q,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_GenericIO_LLN0_Mod_q = {
@@ -95,6 +97,7 @@ DataAttribute iedModel_GenericIO_LLN0_Mod_q = {
     (ModelNode*) &iedModel_GenericIO_LLN0_Mod_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -108,6 +111,7 @@ DataAttribute iedModel_GenericIO_LLN0_Mod_t = {
     (ModelNode*) &iedModel_GenericIO_LLN0_Mod_ctlModel,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -121,6 +125,7 @@ DataAttribute iedModel_GenericIO_LLN0_Mod_ctlModel = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_ENUMERATED,
     0,
@@ -133,7 +138,8 @@ DataObject iedModel_GenericIO_LLN0_Beh = {
     (ModelNode*) &iedModel_GenericIO_LLN0,
     (ModelNode*) &iedModel_GenericIO_LLN0_Health,
     (ModelNode*) &iedModel_GenericIO_LLN0_Beh_stVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_GenericIO_LLN0_Beh_stVal = {
@@ -143,6 +149,7 @@ DataAttribute iedModel_GenericIO_LLN0_Beh_stVal = {
     (ModelNode*) &iedModel_GenericIO_LLN0_Beh_q,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_INT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -156,6 +163,7 @@ DataAttribute iedModel_GenericIO_LLN0_Beh_q = {
     (ModelNode*) &iedModel_GenericIO_LLN0_Beh_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -169,6 +177,7 @@ DataAttribute iedModel_GenericIO_LLN0_Beh_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -181,7 +190,8 @@ DataObject iedModel_GenericIO_LLN0_Health = {
     (ModelNode*) &iedModel_GenericIO_LLN0,
     (ModelNode*) &iedModel_GenericIO_LLN0_NamPlt,
     (ModelNode*) &iedModel_GenericIO_LLN0_Health_stVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_GenericIO_LLN0_Health_stVal = {
@@ -191,6 +201,7 @@ DataAttribute iedModel_GenericIO_LLN0_Health_stVal = {
     (ModelNode*) &iedModel_GenericIO_LLN0_Health_q,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_INT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -204,6 +215,7 @@ DataAttribute iedModel_GenericIO_LLN0_Health_q = {
     (ModelNode*) &iedModel_GenericIO_LLN0_Health_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -217,6 +229,7 @@ DataAttribute iedModel_GenericIO_LLN0_Health_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -229,7 +242,8 @@ DataObject iedModel_GenericIO_LLN0_NamPlt = {
     (ModelNode*) &iedModel_GenericIO_LLN0,
     (ModelNode*) &iedModel_GenericIO_LLN0_ModAuto,
     (ModelNode*) &iedModel_GenericIO_LLN0_NamPlt_vendor,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_GenericIO_LLN0_NamPlt_vendor = {
@@ -239,6 +253,7 @@ DataAttribute iedModel_GenericIO_LLN0_NamPlt_vendor = {
     (ModelNode*) &iedModel_GenericIO_LLN0_NamPlt_swRev,
     NULL,
     0,
+    -1,
     IEC61850_FC_DC,
     IEC61850_VISIBLE_STRING_255,
     0,
@@ -252,6 +267,7 @@ DataAttribute iedModel_GenericIO_LLN0_NamPlt_swRev = {
     (ModelNode*) &iedModel_GenericIO_LLN0_NamPlt_d,
     NULL,
     0,
+    -1,
     IEC61850_FC_DC,
     IEC61850_VISIBLE_STRING_255,
     0,
@@ -265,6 +281,7 @@ DataAttribute iedModel_GenericIO_LLN0_NamPlt_d = {
     (ModelNode*) &iedModel_GenericIO_LLN0_NamPlt_configRev,
     NULL,
     0,
+    -1,
     IEC61850_FC_DC,
     IEC61850_VISIBLE_STRING_255,
     0,
@@ -278,6 +295,7 @@ DataAttribute iedModel_GenericIO_LLN0_NamPlt_configRev = {
     (ModelNode*) &iedModel_GenericIO_LLN0_NamPlt_ldNs,
     NULL,
     0,
+    -1,
     IEC61850_FC_DC,
     IEC61850_VISIBLE_STRING_255,
     0,
@@ -291,6 +309,7 @@ DataAttribute iedModel_GenericIO_LLN0_NamPlt_ldNs = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_EX,
     IEC61850_VISIBLE_STRING_255,
     0,
@@ -303,7 +322,8 @@ DataObject iedModel_GenericIO_LLN0_ModAuto = {
     (ModelNode*) &iedModel_GenericIO_LLN0,
     NULL,
     (ModelNode*) &iedModel_GenericIO_LLN0_ModAuto_setVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_GenericIO_LLN0_ModAuto_setVal = {
@@ -313,6 +333,7 @@ DataAttribute iedModel_GenericIO_LLN0_ModAuto_setVal = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_SP,
     IEC61850_BOOLEAN,
     0 + TRG_OPT_DATA_CHANGED,
@@ -333,7 +354,8 @@ DataObject iedModel_GenericIO_LPHD1_PhyNam = {
     (ModelNode*) &iedModel_GenericIO_LPHD1,
     (ModelNode*) &iedModel_GenericIO_LPHD1_PhyHealth,
     (ModelNode*) &iedModel_GenericIO_LPHD1_PhyNam_vendor,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_GenericIO_LPHD1_PhyNam_vendor = {
@@ -343,6 +365,7 @@ DataAttribute iedModel_GenericIO_LPHD1_PhyNam_vendor = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_DC,
     IEC61850_VISIBLE_STRING_255,
     0,
@@ -355,7 +378,8 @@ DataObject iedModel_GenericIO_LPHD1_PhyHealth = {
     (ModelNode*) &iedModel_GenericIO_LPHD1,
     (ModelNode*) &iedModel_GenericIO_LPHD1_Proxy,
     (ModelNode*) &iedModel_GenericIO_LPHD1_PhyHealth_stVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_GenericIO_LPHD1_PhyHealth_stVal = {
@@ -365,6 +389,7 @@ DataAttribute iedModel_GenericIO_LPHD1_PhyHealth_stVal = {
     (ModelNode*) &iedModel_GenericIO_LPHD1_PhyHealth_q,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_INT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -378,6 +403,7 @@ DataAttribute iedModel_GenericIO_LPHD1_PhyHealth_q = {
     (ModelNode*) &iedModel_GenericIO_LPHD1_PhyHealth_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -391,6 +417,7 @@ DataAttribute iedModel_GenericIO_LPHD1_PhyHealth_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -403,7 +430,8 @@ DataObject iedModel_GenericIO_LPHD1_Proxy = {
     (ModelNode*) &iedModel_GenericIO_LPHD1,
     NULL,
     (ModelNode*) &iedModel_GenericIO_LPHD1_Proxy_stVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_GenericIO_LPHD1_Proxy_stVal = {
@@ -413,6 +441,7 @@ DataAttribute iedModel_GenericIO_LPHD1_Proxy_stVal = {
     (ModelNode*) &iedModel_GenericIO_LPHD1_Proxy_q,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_BOOLEAN,
     0 + TRG_OPT_DATA_CHANGED,
@@ -426,6 +455,7 @@ DataAttribute iedModel_GenericIO_LPHD1_Proxy_q = {
     (ModelNode*) &iedModel_GenericIO_LPHD1_Proxy_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -439,6 +469,7 @@ DataAttribute iedModel_GenericIO_LPHD1_Proxy_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -459,7 +490,8 @@ DataObject iedModel_GenericIO_GGIO1_Mod = {
     (ModelNode*) &iedModel_GenericIO_GGIO1,
     (ModelNode*) &iedModel_GenericIO_GGIO1_Beh,
     (ModelNode*) &iedModel_GenericIO_GGIO1_Mod_q,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_GenericIO_GGIO1_Mod_q = {
@@ -469,6 +501,7 @@ DataAttribute iedModel_GenericIO_GGIO1_Mod_q = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_Mod_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -482,6 +515,7 @@ DataAttribute iedModel_GenericIO_GGIO1_Mod_t = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_Mod_ctlModel,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -495,6 +529,7 @@ DataAttribute iedModel_GenericIO_GGIO1_Mod_ctlModel = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_ENUMERATED,
     0,
@@ -507,7 +542,8 @@ DataObject iedModel_GenericIO_GGIO1_Beh = {
     (ModelNode*) &iedModel_GenericIO_GGIO1,
     (ModelNode*) &iedModel_GenericIO_GGIO1_Health,
     (ModelNode*) &iedModel_GenericIO_GGIO1_Beh_stVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_GenericIO_GGIO1_Beh_stVal = {
@@ -517,6 +553,7 @@ DataAttribute iedModel_GenericIO_GGIO1_Beh_stVal = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_Beh_q,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_INT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -530,6 +567,7 @@ DataAttribute iedModel_GenericIO_GGIO1_Beh_q = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_Beh_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -543,6 +581,7 @@ DataAttribute iedModel_GenericIO_GGIO1_Beh_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -555,7 +594,8 @@ DataObject iedModel_GenericIO_GGIO1_Health = {
     (ModelNode*) &iedModel_GenericIO_GGIO1,
     (ModelNode*) &iedModel_GenericIO_GGIO1_NamPlt,
     (ModelNode*) &iedModel_GenericIO_GGIO1_Health_stVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_GenericIO_GGIO1_Health_stVal = {
@@ -565,6 +605,7 @@ DataAttribute iedModel_GenericIO_GGIO1_Health_stVal = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_Health_q,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_INT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -578,6 +619,7 @@ DataAttribute iedModel_GenericIO_GGIO1_Health_q = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_Health_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -591,6 +633,7 @@ DataAttribute iedModel_GenericIO_GGIO1_Health_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -603,7 +646,8 @@ DataObject iedModel_GenericIO_GGIO1_NamPlt = {
     (ModelNode*) &iedModel_GenericIO_GGIO1,
     (ModelNode*) &iedModel_GenericIO_GGIO1_AnIn1,
     (ModelNode*) &iedModel_GenericIO_GGIO1_NamPlt_vendor,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_GenericIO_GGIO1_NamPlt_vendor = {
@@ -613,6 +657,7 @@ DataAttribute iedModel_GenericIO_GGIO1_NamPlt_vendor = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_NamPlt_swRev,
     NULL,
     0,
+    -1,
     IEC61850_FC_DC,
     IEC61850_VISIBLE_STRING_255,
     0,
@@ -626,6 +671,7 @@ DataAttribute iedModel_GenericIO_GGIO1_NamPlt_swRev = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_NamPlt_d,
     NULL,
     0,
+    -1,
     IEC61850_FC_DC,
     IEC61850_VISIBLE_STRING_255,
     0,
@@ -639,6 +685,7 @@ DataAttribute iedModel_GenericIO_GGIO1_NamPlt_d = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_DC,
     IEC61850_VISIBLE_STRING_255,
     0,
@@ -651,7 +698,8 @@ DataObject iedModel_GenericIO_GGIO1_AnIn1 = {
     (ModelNode*) &iedModel_GenericIO_GGIO1,
     (ModelNode*) &iedModel_GenericIO_GGIO1_AnIn2,
     (ModelNode*) &iedModel_GenericIO_GGIO1_AnIn1_mag,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_GenericIO_GGIO1_AnIn1_mag = {
@@ -661,6 +709,7 @@ DataAttribute iedModel_GenericIO_GGIO1_AnIn1_mag = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_AnIn1_q,
     (ModelNode*) &iedModel_GenericIO_GGIO1_AnIn1_mag_f,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0 + TRG_OPT_DATA_CHANGED,
@@ -674,6 +723,7 @@ DataAttribute iedModel_GenericIO_GGIO1_AnIn1_mag_f = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_FLOAT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -687,6 +737,7 @@ DataAttribute iedModel_GenericIO_GGIO1_AnIn1_q = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_AnIn1_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -700,6 +751,7 @@ DataAttribute iedModel_GenericIO_GGIO1_AnIn1_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_TIMESTAMP,
     0,
@@ -712,7 +764,8 @@ DataObject iedModel_GenericIO_GGIO1_AnIn2 = {
     (ModelNode*) &iedModel_GenericIO_GGIO1,
     (ModelNode*) &iedModel_GenericIO_GGIO1_AnIn3,
     (ModelNode*) &iedModel_GenericIO_GGIO1_AnIn2_mag,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_GenericIO_GGIO1_AnIn2_mag = {
@@ -722,6 +775,7 @@ DataAttribute iedModel_GenericIO_GGIO1_AnIn2_mag = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_AnIn2_q,
     (ModelNode*) &iedModel_GenericIO_GGIO1_AnIn2_mag_f,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0 + TRG_OPT_DATA_CHANGED,
@@ -735,6 +789,7 @@ DataAttribute iedModel_GenericIO_GGIO1_AnIn2_mag_f = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_FLOAT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -748,6 +803,7 @@ DataAttribute iedModel_GenericIO_GGIO1_AnIn2_q = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_AnIn2_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -761,6 +817,7 @@ DataAttribute iedModel_GenericIO_GGIO1_AnIn2_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_TIMESTAMP,
     0,
@@ -773,7 +830,8 @@ DataObject iedModel_GenericIO_GGIO1_AnIn3 = {
     (ModelNode*) &iedModel_GenericIO_GGIO1,
     (ModelNode*) &iedModel_GenericIO_GGIO1_AnIn4,
     (ModelNode*) &iedModel_GenericIO_GGIO1_AnIn3_mag,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_GenericIO_GGIO1_AnIn3_mag = {
@@ -783,6 +841,7 @@ DataAttribute iedModel_GenericIO_GGIO1_AnIn3_mag = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_AnIn3_q,
     (ModelNode*) &iedModel_GenericIO_GGIO1_AnIn3_mag_f,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0 + TRG_OPT_DATA_CHANGED,
@@ -796,6 +855,7 @@ DataAttribute iedModel_GenericIO_GGIO1_AnIn3_mag_f = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_FLOAT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -809,6 +869,7 @@ DataAttribute iedModel_GenericIO_GGIO1_AnIn3_q = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_AnIn3_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -822,6 +883,7 @@ DataAttribute iedModel_GenericIO_GGIO1_AnIn3_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_TIMESTAMP,
     0,
@@ -834,7 +896,8 @@ DataObject iedModel_GenericIO_GGIO1_AnIn4 = {
     (ModelNode*) &iedModel_GenericIO_GGIO1,
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO1,
     (ModelNode*) &iedModel_GenericIO_GGIO1_AnIn4_mag,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_GenericIO_GGIO1_AnIn4_mag = {
@@ -844,6 +907,7 @@ DataAttribute iedModel_GenericIO_GGIO1_AnIn4_mag = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_AnIn4_q,
     (ModelNode*) &iedModel_GenericIO_GGIO1_AnIn4_mag_f,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0 + TRG_OPT_DATA_CHANGED,
@@ -857,6 +921,7 @@ DataAttribute iedModel_GenericIO_GGIO1_AnIn4_mag_f = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_FLOAT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -870,6 +935,7 @@ DataAttribute iedModel_GenericIO_GGIO1_AnIn4_q = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_AnIn4_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -883,6 +949,7 @@ DataAttribute iedModel_GenericIO_GGIO1_AnIn4_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_TIMESTAMP,
     0,
@@ -895,7 +962,8 @@ DataObject iedModel_GenericIO_GGIO1_SPCSO1 = {
     (ModelNode*) &iedModel_GenericIO_GGIO1,
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO2,
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO1_stVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_GenericIO_GGIO1_SPCSO1_stVal = {
@@ -905,6 +973,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO1_stVal = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO1_q,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_BOOLEAN,
     0 + TRG_OPT_DATA_CHANGED,
@@ -918,6 +987,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO1_q = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO1_Oper,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -931,6 +1001,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO1_Oper = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO1_ctlModel,
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO1_Oper_ctlVal,
     0,
+    -1,
     IEC61850_FC_CO,
     IEC61850_CONSTRUCTED,
     0,
@@ -944,6 +1015,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO1_Oper_ctlVal = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO1_Oper_origin,
     NULL,
     0,
+    -1,
     IEC61850_FC_CO,
     IEC61850_BOOLEAN,
     0,
@@ -957,6 +1029,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO1_Oper_origin = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO1_Oper_ctlNum,
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO1_Oper_origin_orCat,
     0,
+    -1,
     IEC61850_FC_CO,
     IEC61850_CONSTRUCTED,
     0,
@@ -970,6 +1043,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO1_Oper_origin_orCat = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO1_Oper_origin_orIdent,
     NULL,
     0,
+    -1,
     IEC61850_FC_CO,
     IEC61850_ENUMERATED,
     0,
@@ -983,6 +1057,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO1_Oper_origin_orIdent = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_CO,
     IEC61850_OCTET_STRING_64,
     0,
@@ -996,6 +1071,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO1_Oper_ctlNum = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO1_Oper_T,
     NULL,
     0,
+    -1,
     IEC61850_FC_CO,
     IEC61850_INT8U,
     0,
@@ -1009,6 +1085,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO1_Oper_T = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO1_Oper_Test,
     NULL,
     0,
+    -1,
     IEC61850_FC_CO,
     IEC61850_TIMESTAMP,
     0,
@@ -1022,6 +1099,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO1_Oper_Test = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO1_Oper_Check,
     NULL,
     0,
+    -1,
     IEC61850_FC_CO,
     IEC61850_BOOLEAN,
     0,
@@ -1035,6 +1113,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO1_Oper_Check = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_CO,
     IEC61850_CHECK,
     0,
@@ -1048,6 +1127,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO1_ctlModel = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO1_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_ENUMERATED,
     0,
@@ -1061,6 +1141,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO1_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -1073,7 +1154,8 @@ DataObject iedModel_GenericIO_GGIO1_SPCSO2 = {
     (ModelNode*) &iedModel_GenericIO_GGIO1,
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO3,
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO2_stVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_GenericIO_GGIO1_SPCSO2_stVal = {
@@ -1083,6 +1165,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO2_stVal = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO2_q,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_BOOLEAN,
     0 + TRG_OPT_DATA_CHANGED,
@@ -1096,6 +1179,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO2_q = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO2_Oper,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -1109,6 +1193,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO2_Oper = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO2_ctlModel,
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO2_Oper_ctlVal,
     0,
+    -1,
     IEC61850_FC_CO,
     IEC61850_CONSTRUCTED,
     0,
@@ -1122,6 +1207,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO2_Oper_ctlVal = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO2_Oper_origin,
     NULL,
     0,
+    -1,
     IEC61850_FC_CO,
     IEC61850_BOOLEAN,
     0,
@@ -1135,6 +1221,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO2_Oper_origin = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO2_Oper_ctlNum,
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO2_Oper_origin_orCat,
     0,
+    -1,
     IEC61850_FC_CO,
     IEC61850_CONSTRUCTED,
     0,
@@ -1148,6 +1235,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO2_Oper_origin_orCat = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO2_Oper_origin_orIdent,
     NULL,
     0,
+    -1,
     IEC61850_FC_CO,
     IEC61850_ENUMERATED,
     0,
@@ -1161,6 +1249,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO2_Oper_origin_orIdent = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_CO,
     IEC61850_OCTET_STRING_64,
     0,
@@ -1174,6 +1263,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO2_Oper_ctlNum = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO2_Oper_T,
     NULL,
     0,
+    -1,
     IEC61850_FC_CO,
     IEC61850_INT8U,
     0,
@@ -1187,6 +1277,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO2_Oper_T = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO2_Oper_Test,
     NULL,
     0,
+    -1,
     IEC61850_FC_CO,
     IEC61850_TIMESTAMP,
     0,
@@ -1200,6 +1291,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO2_Oper_Test = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO2_Oper_Check,
     NULL,
     0,
+    -1,
     IEC61850_FC_CO,
     IEC61850_BOOLEAN,
     0,
@@ -1213,6 +1305,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO2_Oper_Check = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_CO,
     IEC61850_CHECK,
     0,
@@ -1226,6 +1319,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO2_ctlModel = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO2_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_ENUMERATED,
     0,
@@ -1239,6 +1333,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO2_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -1251,7 +1346,8 @@ DataObject iedModel_GenericIO_GGIO1_SPCSO3 = {
     (ModelNode*) &iedModel_GenericIO_GGIO1,
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO4,
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO3_stVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_GenericIO_GGIO1_SPCSO3_stVal = {
@@ -1261,6 +1357,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO3_stVal = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO3_q,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_BOOLEAN,
     0 + TRG_OPT_DATA_CHANGED,
@@ -1274,6 +1371,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO3_q = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO3_Oper,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -1287,6 +1385,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO3_Oper = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO3_ctlModel,
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO3_Oper_ctlVal,
     0,
+    -1,
     IEC61850_FC_CO,
     IEC61850_CONSTRUCTED,
     0,
@@ -1300,6 +1399,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO3_Oper_ctlVal = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO3_Oper_origin,
     NULL,
     0,
+    -1,
     IEC61850_FC_CO,
     IEC61850_BOOLEAN,
     0,
@@ -1313,6 +1413,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO3_Oper_origin = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO3_Oper_ctlNum,
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO3_Oper_origin_orCat,
     0,
+    -1,
     IEC61850_FC_CO,
     IEC61850_CONSTRUCTED,
     0,
@@ -1326,6 +1427,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO3_Oper_origin_orCat = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO3_Oper_origin_orIdent,
     NULL,
     0,
+    -1,
     IEC61850_FC_CO,
     IEC61850_ENUMERATED,
     0,
@@ -1339,6 +1441,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO3_Oper_origin_orIdent = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_CO,
     IEC61850_OCTET_STRING_64,
     0,
@@ -1352,6 +1455,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO3_Oper_ctlNum = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO3_Oper_T,
     NULL,
     0,
+    -1,
     IEC61850_FC_CO,
     IEC61850_INT8U,
     0,
@@ -1365,6 +1469,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO3_Oper_T = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO3_Oper_Test,
     NULL,
     0,
+    -1,
     IEC61850_FC_CO,
     IEC61850_TIMESTAMP,
     0,
@@ -1378,6 +1483,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO3_Oper_Test = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO3_Oper_Check,
     NULL,
     0,
+    -1,
     IEC61850_FC_CO,
     IEC61850_BOOLEAN,
     0,
@@ -1391,6 +1497,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO3_Oper_Check = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_CO,
     IEC61850_CHECK,
     0,
@@ -1404,6 +1511,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO3_ctlModel = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO3_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_ENUMERATED,
     0,
@@ -1417,6 +1525,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO3_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -1429,7 +1538,8 @@ DataObject iedModel_GenericIO_GGIO1_SPCSO4 = {
     (ModelNode*) &iedModel_GenericIO_GGIO1,
     (ModelNode*) &iedModel_GenericIO_GGIO1_Ind1,
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO4_stVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_GenericIO_GGIO1_SPCSO4_stVal = {
@@ -1439,6 +1549,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO4_stVal = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO4_q,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_BOOLEAN,
     0 + TRG_OPT_DATA_CHANGED,
@@ -1452,6 +1563,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO4_q = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO4_Oper,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -1465,6 +1577,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO4_Oper = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO4_ctlModel,
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO4_Oper_ctlVal,
     0,
+    -1,
     IEC61850_FC_CO,
     IEC61850_CONSTRUCTED,
     0,
@@ -1478,6 +1591,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO4_Oper_ctlVal = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO4_Oper_origin,
     NULL,
     0,
+    -1,
     IEC61850_FC_CO,
     IEC61850_BOOLEAN,
     0,
@@ -1491,6 +1605,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO4_Oper_origin = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO4_Oper_ctlNum,
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO4_Oper_origin_orCat,
     0,
+    -1,
     IEC61850_FC_CO,
     IEC61850_CONSTRUCTED,
     0,
@@ -1504,6 +1619,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO4_Oper_origin_orCat = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO4_Oper_origin_orIdent,
     NULL,
     0,
+    -1,
     IEC61850_FC_CO,
     IEC61850_ENUMERATED,
     0,
@@ -1517,6 +1633,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO4_Oper_origin_orIdent = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_CO,
     IEC61850_OCTET_STRING_64,
     0,
@@ -1530,6 +1647,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO4_Oper_ctlNum = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO4_Oper_T,
     NULL,
     0,
+    -1,
     IEC61850_FC_CO,
     IEC61850_INT8U,
     0,
@@ -1543,6 +1661,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO4_Oper_T = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO4_Oper_Test,
     NULL,
     0,
+    -1,
     IEC61850_FC_CO,
     IEC61850_TIMESTAMP,
     0,
@@ -1556,6 +1675,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO4_Oper_Test = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO4_Oper_Check,
     NULL,
     0,
+    -1,
     IEC61850_FC_CO,
     IEC61850_BOOLEAN,
     0,
@@ -1569,6 +1689,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO4_Oper_Check = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_CO,
     IEC61850_CHECK,
     0,
@@ -1582,6 +1703,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO4_ctlModel = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_SPCSO4_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_ENUMERATED,
     0,
@@ -1595,6 +1717,7 @@ DataAttribute iedModel_GenericIO_GGIO1_SPCSO4_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -1607,7 +1730,8 @@ DataObject iedModel_GenericIO_GGIO1_Ind1 = {
     (ModelNode*) &iedModel_GenericIO_GGIO1,
     (ModelNode*) &iedModel_GenericIO_GGIO1_Ind2,
     (ModelNode*) &iedModel_GenericIO_GGIO1_Ind1_stVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_GenericIO_GGIO1_Ind1_stVal = {
@@ -1617,6 +1741,7 @@ DataAttribute iedModel_GenericIO_GGIO1_Ind1_stVal = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_Ind1_q,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_BOOLEAN,
     0 + TRG_OPT_DATA_CHANGED,
@@ -1630,6 +1755,7 @@ DataAttribute iedModel_GenericIO_GGIO1_Ind1_q = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_Ind1_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -1643,6 +1769,7 @@ DataAttribute iedModel_GenericIO_GGIO1_Ind1_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -1655,7 +1782,8 @@ DataObject iedModel_GenericIO_GGIO1_Ind2 = {
     (ModelNode*) &iedModel_GenericIO_GGIO1,
     (ModelNode*) &iedModel_GenericIO_GGIO1_Ind3,
     (ModelNode*) &iedModel_GenericIO_GGIO1_Ind2_stVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_GenericIO_GGIO1_Ind2_stVal = {
@@ -1665,6 +1793,7 @@ DataAttribute iedModel_GenericIO_GGIO1_Ind2_stVal = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_Ind2_q,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_BOOLEAN,
     0 + TRG_OPT_DATA_CHANGED,
@@ -1678,6 +1807,7 @@ DataAttribute iedModel_GenericIO_GGIO1_Ind2_q = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_Ind2_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -1691,6 +1821,7 @@ DataAttribute iedModel_GenericIO_GGIO1_Ind2_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -1703,7 +1834,8 @@ DataObject iedModel_GenericIO_GGIO1_Ind3 = {
     (ModelNode*) &iedModel_GenericIO_GGIO1,
     (ModelNode*) &iedModel_GenericIO_GGIO1_Ind4,
     (ModelNode*) &iedModel_GenericIO_GGIO1_Ind3_stVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_GenericIO_GGIO1_Ind3_stVal = {
@@ -1713,6 +1845,7 @@ DataAttribute iedModel_GenericIO_GGIO1_Ind3_stVal = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_Ind3_q,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_BOOLEAN,
     0 + TRG_OPT_DATA_CHANGED,
@@ -1726,6 +1859,7 @@ DataAttribute iedModel_GenericIO_GGIO1_Ind3_q = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_Ind3_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -1739,6 +1873,7 @@ DataAttribute iedModel_GenericIO_GGIO1_Ind3_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -1751,7 +1886,8 @@ DataObject iedModel_GenericIO_GGIO1_Ind4 = {
     (ModelNode*) &iedModel_GenericIO_GGIO1,
     NULL,
     (ModelNode*) &iedModel_GenericIO_GGIO1_Ind4_stVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_GenericIO_GGIO1_Ind4_stVal = {
@@ -1761,6 +1897,7 @@ DataAttribute iedModel_GenericIO_GGIO1_Ind4_stVal = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_Ind4_q,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_BOOLEAN,
     0 + TRG_OPT_DATA_CHANGED,
@@ -1774,6 +1911,7 @@ DataAttribute iedModel_GenericIO_GGIO1_Ind4_q = {
     (ModelNode*) &iedModel_GenericIO_GGIO1_Ind4_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -1787,6 +1925,7 @@ DataAttribute iedModel_GenericIO_GGIO1_Ind4_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,

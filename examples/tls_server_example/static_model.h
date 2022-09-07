@@ -1,7 +1,7 @@
 /*
  * static_model.h
  *
- * automatically generated from simpleIO_direct_control.cid
+ * automatically generated from ../server_example_basic_io/simpleIO_direct_control.cid
  */
 
 #ifndef STATIC_MODEL_H_

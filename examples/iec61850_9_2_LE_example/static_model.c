@@ -22,7 +22,7 @@ extern DataSetEntry iedModelds_MUnn_LLN0_PhsMeas1_fcda7;
 DataSetEntry iedModelds_MUnn_LLN0_PhsMeas1_fcda0 = {
   "MUnn",
   false,
-  "TCTR1$MX$Amp",
+  "TCTR1$MX$Amp", 
   -1,
   NULL,
   NULL,
@@ -32,7 +32,7 @@ DataSetEntry iedModelds_MUnn_LLN0_PhsMeas1_fcda0 = {
 DataSetEntry iedModelds_MUnn_LLN0_PhsMeas1_fcda1 = {
   "MUnn",
   false,
-  "TCTR2$MX$Amp",
+  "TCTR2$MX$Amp", 
   -1,
   NULL,
   NULL,
@@ -42,7 +42,7 @@ DataSetEntry iedModelds_MUnn_LLN0_PhsMeas1_fcda1 = {
 DataSetEntry iedModelds_MUnn_LLN0_PhsMeas1_fcda2 = {
   "MUnn",
   false,
-  "TCTR3$MX$Amp",
+  "TCTR3$MX$Amp", 
   -1,
   NULL,
   NULL,
@@ -52,7 +52,7 @@ DataSetEntry iedModelds_MUnn_LLN0_PhsMeas1_fcda2 = {
 DataSetEntry iedModelds_MUnn_LLN0_PhsMeas1_fcda3 = {
   "MUnn",
   false,
-  "TCTR4$MX$Amp",
+  "TCTR4$MX$Amp", 
   -1,
   NULL,
   NULL,
@@ -62,7 +62,7 @@ DataSetEntry iedModelds_MUnn_LLN0_PhsMeas1_fcda3 = {
 DataSetEntry iedModelds_MUnn_LLN0_PhsMeas1_fcda4 = {
   "MUnn",
   false,
-  "TVTR1$MX$Vol",
+  "TVTR1$MX$Vol", 
   -1,
   NULL,
   NULL,
@@ -72,7 +72,7 @@ DataSetEntry iedModelds_MUnn_LLN0_PhsMeas1_fcda4 = {
 DataSetEntry iedModelds_MUnn_LLN0_PhsMeas1_fcda5 = {
   "MUnn",
   false,
-  "TVTR2$MX$Vol",
+  "TVTR2$MX$Vol", 
   -1,
   NULL,
   NULL,
@@ -82,7 +82,7 @@ DataSetEntry iedModelds_MUnn_LLN0_PhsMeas1_fcda5 = {
 DataSetEntry iedModelds_MUnn_LLN0_PhsMeas1_fcda6 = {
   "MUnn",
   false,
-  "TVTR3$MX$Vol",
+  "TVTR3$MX$Vol", 
   -1,
   NULL,
   NULL,
@@ -92,7 +92,7 @@ DataSetEntry iedModelds_MUnn_LLN0_PhsMeas1_fcda6 = {
 DataSetEntry iedModelds_MUnn_LLN0_PhsMeas1_fcda7 = {
   "MUnn",
   false,
-  "TVTR4$MX$Vol",
+  "TVTR4$MX$Vol", 
   -1,
   NULL,
   NULL,
@@ -112,7 +112,8 @@ LogicalDevice iedModel_MUnn = {
     "MUnn",
     (ModelNode*) &iedModel,
     NULL,
-    (ModelNode*) &iedModel_MUnn_LLN0
+    (ModelNode*) &iedModel_MUnn_LLN0,
+    NULL
 };
 
 LogicalNode iedModel_MUnn_LLN0 = {
@@ -129,7 +130,8 @@ DataObject iedModel_MUnn_LLN0_Mod = {
     (ModelNode*) &iedModel_MUnn_LLN0,
     NULL,
     (ModelNode*) &iedModel_MUnn_LLN0_Mod_stVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_MUnn_LLN0_Mod_stVal = {
@@ -139,6 +141,7 @@ DataAttribute iedModel_MUnn_LLN0_Mod_stVal = {
     (ModelNode*) &iedModel_MUnn_LLN0_Mod_q,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_INT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -152,6 +155,7 @@ DataAttribute iedModel_MUnn_LLN0_Mod_q = {
     (ModelNode*) &iedModel_MUnn_LLN0_Mod_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_DATA_CHANGED,
@@ -165,6 +169,7 @@ DataAttribute iedModel_MUnn_LLN0_Mod_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0 + TRG_OPT_DATA_CHANGED,
@@ -185,7 +190,8 @@ DataObject iedModel_MUnn_TCTR1_Amp = {
     (ModelNode*) &iedModel_MUnn_TCTR1,
     NULL,
     (ModelNode*) &iedModel_MUnn_TCTR1_Amp_instMag,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_MUnn_TCTR1_Amp_instMag = {
@@ -195,6 +201,7 @@ DataAttribute iedModel_MUnn_TCTR1_Amp_instMag = {
     (ModelNode*) &iedModel_MUnn_TCTR1_Amp_q,
     (ModelNode*) &iedModel_MUnn_TCTR1_Amp_instMag_i,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0,
@@ -208,6 +215,7 @@ DataAttribute iedModel_MUnn_TCTR1_Amp_instMag_i = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_INT32,
     0,
@@ -221,6 +229,7 @@ DataAttribute iedModel_MUnn_TCTR1_Amp_q = {
     (ModelNode*) &iedModel_MUnn_TCTR1_Amp_sVC,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_QUALITY,
     0,
@@ -234,6 +243,7 @@ DataAttribute iedModel_MUnn_TCTR1_Amp_sVC = {
     NULL,
     (ModelNode*) &iedModel_MUnn_TCTR1_Amp_sVC_scaleFactor,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_CONSTRUCTED,
     0,
@@ -247,6 +257,7 @@ DataAttribute iedModel_MUnn_TCTR1_Amp_sVC_scaleFactor = {
     (ModelNode*) &iedModel_MUnn_TCTR1_Amp_sVC_offset,
     NULL,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_FLOAT32,
     0,
@@ -260,6 +271,7 @@ DataAttribute iedModel_MUnn_TCTR1_Amp_sVC_offset = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_FLOAT32,
     0,
@@ -280,7 +292,8 @@ DataObject iedModel_MUnn_TCTR2_Amp = {
     (ModelNode*) &iedModel_MUnn_TCTR2,
     NULL,
     (ModelNode*) &iedModel_MUnn_TCTR2_Amp_instMag,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_MUnn_TCTR2_Amp_instMag = {
@@ -290,6 +303,7 @@ DataAttribute iedModel_MUnn_TCTR2_Amp_instMag = {
     (ModelNode*) &iedModel_MUnn_TCTR2_Amp_q,
     (ModelNode*) &iedModel_MUnn_TCTR2_Amp_instMag_i,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0,
@@ -303,6 +317,7 @@ DataAttribute iedModel_MUnn_TCTR2_Amp_instMag_i = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_INT32,
     0,
@@ -316,6 +331,7 @@ DataAttribute iedModel_MUnn_TCTR2_Amp_q = {
     (ModelNode*) &iedModel_MUnn_TCTR2_Amp_sVC,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_QUALITY,
     0,
@@ -329,6 +345,7 @@ DataAttribute iedModel_MUnn_TCTR2_Amp_sVC = {
     NULL,
     (ModelNode*) &iedModel_MUnn_TCTR2_Amp_sVC_scaleFactor,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_CONSTRUCTED,
     0,
@@ -342,6 +359,7 @@ DataAttribute iedModel_MUnn_TCTR2_Amp_sVC_scaleFactor = {
     (ModelNode*) &iedModel_MUnn_TCTR2_Amp_sVC_offset,
     NULL,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_FLOAT32,
     0,
@@ -355,6 +373,7 @@ DataAttribute iedModel_MUnn_TCTR2_Amp_sVC_offset = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_FLOAT32,
     0,
@@ -375,7 +394,8 @@ DataObject iedModel_MUnn_TCTR3_Amp = {
     (ModelNode*) &iedModel_MUnn_TCTR3,
     NULL,
     (ModelNode*) &iedModel_MUnn_TCTR3_Amp_instMag,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_MUnn_TCTR3_Amp_instMag = {
@@ -385,6 +405,7 @@ DataAttribute iedModel_MUnn_TCTR3_Amp_instMag = {
     (ModelNode*) &iedModel_MUnn_TCTR3_Amp_q,
     (ModelNode*) &iedModel_MUnn_TCTR3_Amp_instMag_i,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0,
@@ -398,6 +419,7 @@ DataAttribute iedModel_MUnn_TCTR3_Amp_instMag_i = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_INT32,
     0,
@@ -411,6 +433,7 @@ DataAttribute iedModel_MUnn_TCTR3_Amp_q = {
     (ModelNode*) &iedModel_MUnn_TCTR3_Amp_sVC,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_QUALITY,
     0,
@@ -424,6 +447,7 @@ DataAttribute iedModel_MUnn_TCTR3_Amp_sVC = {
     NULL,
     (ModelNode*) &iedModel_MUnn_TCTR3_Amp_sVC_scaleFactor,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_CONSTRUCTED,
     0,
@@ -437,6 +461,7 @@ DataAttribute iedModel_MUnn_TCTR3_Amp_sVC_scaleFactor = {
     (ModelNode*) &iedModel_MUnn_TCTR3_Amp_sVC_offset,
     NULL,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_FLOAT32,
     0,
@@ -450,6 +475,7 @@ DataAttribute iedModel_MUnn_TCTR3_Amp_sVC_offset = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_FLOAT32,
     0,
@@ -470,7 +496,8 @@ DataObject iedModel_MUnn_TCTR4_Amp = {
     (ModelNode*) &iedModel_MUnn_TCTR4,
     NULL,
     (ModelNode*) &iedModel_MUnn_TCTR4_Amp_instMag,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_MUnn_TCTR4_Amp_instMag = {
@@ -480,6 +507,7 @@ DataAttribute iedModel_MUnn_TCTR4_Amp_instMag = {
     (ModelNode*) &iedModel_MUnn_TCTR4_Amp_q,
     (ModelNode*) &iedModel_MUnn_TCTR4_Amp_instMag_i,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0,
@@ -493,6 +521,7 @@ DataAttribute iedModel_MUnn_TCTR4_Amp_instMag_i = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_INT32,
     0,
@@ -506,6 +535,7 @@ DataAttribute iedModel_MUnn_TCTR4_Amp_q = {
     (ModelNode*) &iedModel_MUnn_TCTR4_Amp_sVC,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_QUALITY,
     0,
@@ -519,6 +549,7 @@ DataAttribute iedModel_MUnn_TCTR4_Amp_sVC = {
     NULL,
     (ModelNode*) &iedModel_MUnn_TCTR4_Amp_sVC_scaleFactor,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_CONSTRUCTED,
     0,
@@ -532,6 +563,7 @@ DataAttribute iedModel_MUnn_TCTR4_Amp_sVC_scaleFactor = {
     (ModelNode*) &iedModel_MUnn_TCTR4_Amp_sVC_offset,
     NULL,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_FLOAT32,
     0,
@@ -545,6 +577,7 @@ DataAttribute iedModel_MUnn_TCTR4_Amp_sVC_offset = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_FLOAT32,
     0,
@@ -565,7 +598,8 @@ DataObject iedModel_MUnn_TVTR1_Vol = {
     (ModelNode*) &iedModel_MUnn_TVTR1,
     NULL,
     (ModelNode*) &iedModel_MUnn_TVTR1_Vol_instMag,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_MUnn_TVTR1_Vol_instMag = {
@@ -575,6 +609,7 @@ DataAttribute iedModel_MUnn_TVTR1_Vol_instMag = {
     (ModelNode*) &iedModel_MUnn_TVTR1_Vol_q,
     (ModelNode*) &iedModel_MUnn_TVTR1_Vol_instMag_i,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0,
@@ -588,6 +623,7 @@ DataAttribute iedModel_MUnn_TVTR1_Vol_instMag_i = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_INT32,
     0,
@@ -601,6 +637,7 @@ DataAttribute iedModel_MUnn_TVTR1_Vol_q = {
     (ModelNode*) &iedModel_MUnn_TVTR1_Vol_sVC,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_QUALITY,
     0,
@@ -614,6 +651,7 @@ DataAttribute iedModel_MUnn_TVTR1_Vol_sVC = {
     NULL,
     (ModelNode*) &iedModel_MUnn_TVTR1_Vol_sVC_scaleFactor,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_CONSTRUCTED,
     0,
@@ -627,6 +665,7 @@ DataAttribute iedModel_MUnn_TVTR1_Vol_sVC_scaleFactor = {
     (ModelNode*) &iedModel_MUnn_TVTR1_Vol_sVC_offset,
     NULL,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_FLOAT32,
     0,
@@ -640,6 +679,7 @@ DataAttribute iedModel_MUnn_TVTR1_Vol_sVC_offset = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_FLOAT32,
     0,
@@ -660,7 +700,8 @@ DataObject iedModel_MUnn_TVTR2_Vol = {
     (ModelNode*) &iedModel_MUnn_TVTR2,
     NULL,
     (ModelNode*) &iedModel_MUnn_TVTR2_Vol_instMag,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_MUnn_TVTR2_Vol_instMag = {
@@ -670,6 +711,7 @@ DataAttribute iedModel_MUnn_TVTR2_Vol_instMag = {
     (ModelNode*) &iedModel_MUnn_TVTR2_Vol_q,
     (ModelNode*) &iedModel_MUnn_TVTR2_Vol_instMag_i,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0,
@@ -683,6 +725,7 @@ DataAttribute iedModel_MUnn_TVTR2_Vol_instMag_i = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_INT32,
     0,
@@ -696,6 +739,7 @@ DataAttribute iedModel_MUnn_TVTR2_Vol_q = {
     (ModelNode*) &iedModel_MUnn_TVTR2_Vol_sVC,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_QUALITY,
     0,
@@ -709,6 +753,7 @@ DataAttribute iedModel_MUnn_TVTR2_Vol_sVC = {
     NULL,
     (ModelNode*) &iedModel_MUnn_TVTR2_Vol_sVC_scaleFactor,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_CONSTRUCTED,
     0,
@@ -722,6 +767,7 @@ DataAttribute iedModel_MUnn_TVTR2_Vol_sVC_scaleFactor = {
     (ModelNode*) &iedModel_MUnn_TVTR2_Vol_sVC_offset,
     NULL,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_FLOAT32,
     0,
@@ -735,6 +781,7 @@ DataAttribute iedModel_MUnn_TVTR2_Vol_sVC_offset = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_FLOAT32,
     0,
@@ -755,7 +802,8 @@ DataObject iedModel_MUnn_TVTR3_Vol = {
     (ModelNode*) &iedModel_MUnn_TVTR3,
     NULL,
     (ModelNode*) &iedModel_MUnn_TVTR3_Vol_instMag,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_MUnn_TVTR3_Vol_instMag = {
@@ -765,6 +813,7 @@ DataAttribute iedModel_MUnn_TVTR3_Vol_instMag = {
     (ModelNode*) &iedModel_MUnn_TVTR3_Vol_q,
     (ModelNode*) &iedModel_MUnn_TVTR3_Vol_instMag_i,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0,
@@ -778,6 +827,7 @@ DataAttribute iedModel_MUnn_TVTR3_Vol_instMag_i = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_INT32,
     0,
@@ -791,6 +841,7 @@ DataAttribute iedModel_MUnn_TVTR3_Vol_q = {
     (ModelNode*) &iedModel_MUnn_TVTR3_Vol_sVC,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_QUALITY,
     0,
@@ -804,6 +855,7 @@ DataAttribute iedModel_MUnn_TVTR3_Vol_sVC = {
     NULL,
     (ModelNode*) &iedModel_MUnn_TVTR3_Vol_sVC_scaleFactor,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_CONSTRUCTED,
     0,
@@ -817,6 +869,7 @@ DataAttribute iedModel_MUnn_TVTR3_Vol_sVC_scaleFactor = {
     (ModelNode*) &iedModel_MUnn_TVTR3_Vol_sVC_offset,
     NULL,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_FLOAT32,
     0,
@@ -830,6 +883,7 @@ DataAttribute iedModel_MUnn_TVTR3_Vol_sVC_offset = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_FLOAT32,
     0,
@@ -850,7 +904,8 @@ DataObject iedModel_MUnn_TVTR4_Vol = {
     (ModelNode*) &iedModel_MUnn_TVTR4,
     NULL,
     (ModelNode*) &iedModel_MUnn_TVTR4_Vol_instMag,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_MUnn_TVTR4_Vol_instMag = {
@@ -860,6 +915,7 @@ DataAttribute iedModel_MUnn_TVTR4_Vol_instMag = {
     (ModelNode*) &iedModel_MUnn_TVTR4_Vol_q,
     (ModelNode*) &iedModel_MUnn_TVTR4_Vol_instMag_i,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0,
@@ -873,6 +929,7 @@ DataAttribute iedModel_MUnn_TVTR4_Vol_instMag_i = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_INT32,
     0,
@@ -886,6 +943,7 @@ DataAttribute iedModel_MUnn_TVTR4_Vol_q = {
     (ModelNode*) &iedModel_MUnn_TVTR4_Vol_sVC,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_QUALITY,
     0,
@@ -899,6 +957,7 @@ DataAttribute iedModel_MUnn_TVTR4_Vol_sVC = {
     NULL,
     (ModelNode*) &iedModel_MUnn_TVTR4_Vol_sVC_scaleFactor,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_CONSTRUCTED,
     0,
@@ -912,6 +971,7 @@ DataAttribute iedModel_MUnn_TVTR4_Vol_sVC_scaleFactor = {
     (ModelNode*) &iedModel_MUnn_TVTR4_Vol_sVC_offset,
     NULL,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_FLOAT32,
     0,
@@ -925,6 +985,7 @@ DataAttribute iedModel_MUnn_TVTR4_Vol_sVC_offset = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_FLOAT32,
     0,

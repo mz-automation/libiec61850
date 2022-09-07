@@ -1,7 +1,7 @@
 /*
  * static_model.c
  *
- * automatically generated from complexModel.icd
+ * automatically generated from complexModel.cid
  */
 #include "static_model.h"
 
@@ -19,7 +19,7 @@ extern DataSetEntry iedModelds_Inverter_LLN0_dataset1_fcda4;
 DataSetEntry iedModelds_Inverter_LLN0_dataset1_fcda0 = {
   "Inverter",
   false,
-  "LLN0$ST$Mod$q",
+  "LLN0$ST$Mod$q", 
   -1,
   NULL,
   NULL,
@@ -29,7 +29,7 @@ DataSetEntry iedModelds_Inverter_LLN0_dataset1_fcda0 = {
 DataSetEntry iedModelds_Inverter_LLN0_dataset1_fcda1 = {
   "Battery",
   false,
-  "LLN0$ST$Mod$q",
+  "LLN0$ST$Mod$q", 
   -1,
   NULL,
   NULL,
@@ -39,7 +39,7 @@ DataSetEntry iedModelds_Inverter_LLN0_dataset1_fcda1 = {
 DataSetEntry iedModelds_Inverter_LLN0_dataset1_fcda2 = {
   "Inverter",
   false,
-  "MMXU1$ST$Mod$q",
+  "MMXU1$ST$Mod$q", 
   -1,
   NULL,
   NULL,
@@ -49,7 +49,7 @@ DataSetEntry iedModelds_Inverter_LLN0_dataset1_fcda2 = {
 DataSetEntry iedModelds_Inverter_LLN0_dataset1_fcda3 = {
   "Inverter",
   false,
-  "MMXU1$CF$Mod$ctlModel",
+  "MMXU1$CF$Mod$ctlModel", 
   -1,
   NULL,
   NULL,
@@ -59,7 +59,7 @@ DataSetEntry iedModelds_Inverter_LLN0_dataset1_fcda3 = {
 DataSetEntry iedModelds_Inverter_LLN0_dataset1_fcda4 = {
   "Inverter",
   false,
-  "MMXU1$MX$TotW$mag",
+  "MMXU1$MX$TotW$mag", 
   -1,
   NULL,
   NULL,
@@ -79,7 +79,8 @@ LogicalDevice iedModel_Inverter = {
     "Inverter",
     (ModelNode*) &iedModel,
     (ModelNode*) &iedModel_Battery,
-    (ModelNode*) &iedModel_Inverter_LLN0
+    (ModelNode*) &iedModel_Inverter_LLN0,
+    NULL
 };
 
 LogicalNode iedModel_Inverter_LLN0 = {
@@ -96,7 +97,8 @@ DataObject iedModel_Inverter_LLN0_Mod = {
     (ModelNode*) &iedModel_Inverter_LLN0,
     (ModelNode*) &iedModel_Inverter_LLN0_Beh,
     (ModelNode*) &iedModel_Inverter_LLN0_Mod_q,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Inverter_LLN0_Mod_q = {
@@ -106,6 +108,7 @@ DataAttribute iedModel_Inverter_LLN0_Mod_q = {
     (ModelNode*) &iedModel_Inverter_LLN0_Mod_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -119,6 +122,7 @@ DataAttribute iedModel_Inverter_LLN0_Mod_t = {
     (ModelNode*) &iedModel_Inverter_LLN0_Mod_ctlModel,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -132,6 +136,7 @@ DataAttribute iedModel_Inverter_LLN0_Mod_ctlModel = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_ENUMERATED,
     0,
@@ -144,7 +149,8 @@ DataObject iedModel_Inverter_LLN0_Beh = {
     (ModelNode*) &iedModel_Inverter_LLN0,
     (ModelNode*) &iedModel_Inverter_LLN0_Health,
     (ModelNode*) &iedModel_Inverter_LLN0_Beh_stVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Inverter_LLN0_Beh_stVal = {
@@ -154,6 +160,7 @@ DataAttribute iedModel_Inverter_LLN0_Beh_stVal = {
     (ModelNode*) &iedModel_Inverter_LLN0_Beh_q,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_INT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -167,6 +174,7 @@ DataAttribute iedModel_Inverter_LLN0_Beh_q = {
     (ModelNode*) &iedModel_Inverter_LLN0_Beh_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -180,6 +188,7 @@ DataAttribute iedModel_Inverter_LLN0_Beh_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -192,7 +201,8 @@ DataObject iedModel_Inverter_LLN0_Health = {
     (ModelNode*) &iedModel_Inverter_LLN0,
     (ModelNode*) &iedModel_Inverter_LLN0_NamPlt,
     (ModelNode*) &iedModel_Inverter_LLN0_Health_stVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Inverter_LLN0_Health_stVal = {
@@ -202,6 +212,7 @@ DataAttribute iedModel_Inverter_LLN0_Health_stVal = {
     (ModelNode*) &iedModel_Inverter_LLN0_Health_q,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_INT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -215,6 +226,7 @@ DataAttribute iedModel_Inverter_LLN0_Health_q = {
     (ModelNode*) &iedModel_Inverter_LLN0_Health_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -228,6 +240,7 @@ DataAttribute iedModel_Inverter_LLN0_Health_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -240,7 +253,8 @@ DataObject iedModel_Inverter_LLN0_NamPlt = {
     (ModelNode*) &iedModel_Inverter_LLN0,
     NULL,
     (ModelNode*) &iedModel_Inverter_LLN0_NamPlt_vendor,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Inverter_LLN0_NamPlt_vendor = {
@@ -250,6 +264,7 @@ DataAttribute iedModel_Inverter_LLN0_NamPlt_vendor = {
     (ModelNode*) &iedModel_Inverter_LLN0_NamPlt_swRev,
     NULL,
     0,
+    -1,
     IEC61850_FC_DC,
     IEC61850_VISIBLE_STRING_255,
     0,
@@ -263,6 +278,7 @@ DataAttribute iedModel_Inverter_LLN0_NamPlt_swRev = {
     (ModelNode*) &iedModel_Inverter_LLN0_NamPlt_d,
     NULL,
     0,
+    -1,
     IEC61850_FC_DC,
     IEC61850_VISIBLE_STRING_255,
     0,
@@ -276,6 +292,7 @@ DataAttribute iedModel_Inverter_LLN0_NamPlt_d = {
     (ModelNode*) &iedModel_Inverter_LLN0_NamPlt_configRev,
     NULL,
     0,
+    -1,
     IEC61850_FC_DC,
     IEC61850_VISIBLE_STRING_255,
     0,
@@ -289,6 +306,7 @@ DataAttribute iedModel_Inverter_LLN0_NamPlt_configRev = {
     (ModelNode*) &iedModel_Inverter_LLN0_NamPlt_ldNs,
     NULL,
     0,
+    -1,
     IEC61850_FC_DC,
     IEC61850_VISIBLE_STRING_255,
     0,
@@ -302,6 +320,7 @@ DataAttribute iedModel_Inverter_LLN0_NamPlt_ldNs = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_EX,
     IEC61850_VISIBLE_STRING_255,
     0,
@@ -322,7 +341,8 @@ DataObject iedModel_Inverter_LPHD1_PhyNam = {
     (ModelNode*) &iedModel_Inverter_LPHD1,
     (ModelNode*) &iedModel_Inverter_LPHD1_PhyHealth,
     (ModelNode*) &iedModel_Inverter_LPHD1_PhyNam_vendor,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Inverter_LPHD1_PhyNam_vendor = {
@@ -332,6 +352,7 @@ DataAttribute iedModel_Inverter_LPHD1_PhyNam_vendor = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_DC,
     IEC61850_VISIBLE_STRING_255,
     0,
@@ -344,7 +365,8 @@ DataObject iedModel_Inverter_LPHD1_PhyHealth = {
     (ModelNode*) &iedModel_Inverter_LPHD1,
     (ModelNode*) &iedModel_Inverter_LPHD1_Proxy,
     (ModelNode*) &iedModel_Inverter_LPHD1_PhyHealth_stVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Inverter_LPHD1_PhyHealth_stVal = {
@@ -354,6 +376,7 @@ DataAttribute iedModel_Inverter_LPHD1_PhyHealth_stVal = {
     (ModelNode*) &iedModel_Inverter_LPHD1_PhyHealth_q,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_INT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -367,6 +390,7 @@ DataAttribute iedModel_Inverter_LPHD1_PhyHealth_q = {
     (ModelNode*) &iedModel_Inverter_LPHD1_PhyHealth_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -380,6 +404,7 @@ DataAttribute iedModel_Inverter_LPHD1_PhyHealth_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -392,7 +417,8 @@ DataObject iedModel_Inverter_LPHD1_Proxy = {
     (ModelNode*) &iedModel_Inverter_LPHD1,
     NULL,
     (ModelNode*) &iedModel_Inverter_LPHD1_Proxy_stVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Inverter_LPHD1_Proxy_stVal = {
@@ -402,6 +428,7 @@ DataAttribute iedModel_Inverter_LPHD1_Proxy_stVal = {
     (ModelNode*) &iedModel_Inverter_LPHD1_Proxy_q,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_BOOLEAN,
     0 + TRG_OPT_DATA_CHANGED,
@@ -415,6 +442,7 @@ DataAttribute iedModel_Inverter_LPHD1_Proxy_q = {
     (ModelNode*) &iedModel_Inverter_LPHD1_Proxy_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -428,6 +456,7 @@ DataAttribute iedModel_Inverter_LPHD1_Proxy_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -448,7 +477,8 @@ DataObject iedModel_Inverter_ZINV1_Mod = {
     (ModelNode*) &iedModel_Inverter_ZINV1,
     (ModelNode*) &iedModel_Inverter_ZINV1_Beh,
     (ModelNode*) &iedModel_Inverter_ZINV1_Mod_q,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Inverter_ZINV1_Mod_q = {
@@ -458,6 +488,7 @@ DataAttribute iedModel_Inverter_ZINV1_Mod_q = {
     (ModelNode*) &iedModel_Inverter_ZINV1_Mod_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -471,6 +502,7 @@ DataAttribute iedModel_Inverter_ZINV1_Mod_t = {
     (ModelNode*) &iedModel_Inverter_ZINV1_Mod_ctlModel,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -484,6 +516,7 @@ DataAttribute iedModel_Inverter_ZINV1_Mod_ctlModel = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_ENUMERATED,
     0,
@@ -496,7 +529,8 @@ DataObject iedModel_Inverter_ZINV1_Beh = {
     (ModelNode*) &iedModel_Inverter_ZINV1,
     (ModelNode*) &iedModel_Inverter_ZINV1_Health,
     (ModelNode*) &iedModel_Inverter_ZINV1_Beh_stVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Inverter_ZINV1_Beh_stVal = {
@@ -506,6 +540,7 @@ DataAttribute iedModel_Inverter_ZINV1_Beh_stVal = {
     (ModelNode*) &iedModel_Inverter_ZINV1_Beh_q,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_INT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -519,6 +554,7 @@ DataAttribute iedModel_Inverter_ZINV1_Beh_q = {
     (ModelNode*) &iedModel_Inverter_ZINV1_Beh_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -532,6 +568,7 @@ DataAttribute iedModel_Inverter_ZINV1_Beh_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -544,7 +581,8 @@ DataObject iedModel_Inverter_ZINV1_Health = {
     (ModelNode*) &iedModel_Inverter_ZINV1,
     (ModelNode*) &iedModel_Inverter_ZINV1_NamPlt,
     (ModelNode*) &iedModel_Inverter_ZINV1_Health_stVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Inverter_ZINV1_Health_stVal = {
@@ -554,6 +592,7 @@ DataAttribute iedModel_Inverter_ZINV1_Health_stVal = {
     (ModelNode*) &iedModel_Inverter_ZINV1_Health_q,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_INT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -567,6 +606,7 @@ DataAttribute iedModel_Inverter_ZINV1_Health_q = {
     (ModelNode*) &iedModel_Inverter_ZINV1_Health_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -580,6 +620,7 @@ DataAttribute iedModel_Inverter_ZINV1_Health_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -592,7 +633,8 @@ DataObject iedModel_Inverter_ZINV1_NamPlt = {
     (ModelNode*) &iedModel_Inverter_ZINV1,
     (ModelNode*) &iedModel_Inverter_ZINV1_WRtg,
     (ModelNode*) &iedModel_Inverter_ZINV1_NamPlt_vendor,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Inverter_ZINV1_NamPlt_vendor = {
@@ -602,6 +644,7 @@ DataAttribute iedModel_Inverter_ZINV1_NamPlt_vendor = {
     (ModelNode*) &iedModel_Inverter_ZINV1_NamPlt_swRev,
     NULL,
     0,
+    -1,
     IEC61850_FC_DC,
     IEC61850_VISIBLE_STRING_255,
     0,
@@ -615,6 +658,7 @@ DataAttribute iedModel_Inverter_ZINV1_NamPlt_swRev = {
     (ModelNode*) &iedModel_Inverter_ZINV1_NamPlt_d,
     NULL,
     0,
+    -1,
     IEC61850_FC_DC,
     IEC61850_VISIBLE_STRING_255,
     0,
@@ -628,6 +672,7 @@ DataAttribute iedModel_Inverter_ZINV1_NamPlt_d = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_DC,
     IEC61850_VISIBLE_STRING_255,
     0,
@@ -640,7 +685,8 @@ DataObject iedModel_Inverter_ZINV1_WRtg = {
     (ModelNode*) &iedModel_Inverter_ZINV1,
     (ModelNode*) &iedModel_Inverter_ZINV1_VarRtg,
     (ModelNode*) &iedModel_Inverter_ZINV1_WRtg_setMag,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Inverter_ZINV1_WRtg_setMag = {
@@ -650,6 +696,7 @@ DataAttribute iedModel_Inverter_ZINV1_WRtg_setMag = {
     (ModelNode*) &iedModel_Inverter_ZINV1_WRtg_units,
     (ModelNode*) &iedModel_Inverter_ZINV1_WRtg_setMag_f,
     0,
+    -1,
     IEC61850_FC_SP,
     IEC61850_CONSTRUCTED,
     0,
@@ -663,6 +710,7 @@ DataAttribute iedModel_Inverter_ZINV1_WRtg_setMag_f = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_SP,
     IEC61850_FLOAT32,
     0,
@@ -676,6 +724,7 @@ DataAttribute iedModel_Inverter_ZINV1_WRtg_units = {
     NULL,
     (ModelNode*) &iedModel_Inverter_ZINV1_WRtg_units_SIUnit,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_CONSTRUCTED,
     0,
@@ -689,6 +738,7 @@ DataAttribute iedModel_Inverter_ZINV1_WRtg_units_SIUnit = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_ENUMERATED,
     0,
@@ -701,7 +751,8 @@ DataObject iedModel_Inverter_ZINV1_VarRtg = {
     (ModelNode*) &iedModel_Inverter_ZINV1,
     (ModelNode*) &iedModel_Inverter_ZINV1_ACTyp,
     (ModelNode*) &iedModel_Inverter_ZINV1_VarRtg_setMag,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Inverter_ZINV1_VarRtg_setMag = {
@@ -711,6 +762,7 @@ DataAttribute iedModel_Inverter_ZINV1_VarRtg_setMag = {
     (ModelNode*) &iedModel_Inverter_ZINV1_VarRtg_units,
     (ModelNode*) &iedModel_Inverter_ZINV1_VarRtg_setMag_f,
     0,
+    -1,
     IEC61850_FC_SP,
     IEC61850_CONSTRUCTED,
     0,
@@ -724,6 +776,7 @@ DataAttribute iedModel_Inverter_ZINV1_VarRtg_setMag_f = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_SP,
     IEC61850_FLOAT32,
     0,
@@ -737,6 +790,7 @@ DataAttribute iedModel_Inverter_ZINV1_VarRtg_units = {
     NULL,
     (ModelNode*) &iedModel_Inverter_ZINV1_VarRtg_units_SIUnit,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_CONSTRUCTED,
     0,
@@ -750,6 +804,7 @@ DataAttribute iedModel_Inverter_ZINV1_VarRtg_units_SIUnit = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_ENUMERATED,
     0,
@@ -762,7 +817,8 @@ DataObject iedModel_Inverter_ZINV1_ACTyp = {
     (ModelNode*) &iedModel_Inverter_ZINV1,
     (ModelNode*) &iedModel_Inverter_ZINV1_OutWSet,
     (ModelNode*) &iedModel_Inverter_ZINV1_ACTyp_setVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Inverter_ZINV1_ACTyp_setVal = {
@@ -772,6 +828,7 @@ DataAttribute iedModel_Inverter_ZINV1_ACTyp_setVal = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_SP,
     IEC61850_INT32,
     0,
@@ -784,7 +841,8 @@ DataObject iedModel_Inverter_ZINV1_OutWSet = {
     (ModelNode*) &iedModel_Inverter_ZINV1,
     (ModelNode*) &iedModel_Inverter_ZINV1_OutVarSet,
     (ModelNode*) &iedModel_Inverter_ZINV1_OutWSet_setMag,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Inverter_ZINV1_OutWSet_setMag = {
@@ -794,6 +852,7 @@ DataAttribute iedModel_Inverter_ZINV1_OutWSet_setMag = {
     (ModelNode*) &iedModel_Inverter_ZINV1_OutWSet_units,
     (ModelNode*) &iedModel_Inverter_ZINV1_OutWSet_setMag_f,
     0,
+    -1,
     IEC61850_FC_SP,
     IEC61850_CONSTRUCTED,
     0,
@@ -807,6 +866,7 @@ DataAttribute iedModel_Inverter_ZINV1_OutWSet_setMag_f = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_SP,
     IEC61850_FLOAT32,
     0,
@@ -820,6 +880,7 @@ DataAttribute iedModel_Inverter_ZINV1_OutWSet_units = {
     NULL,
     (ModelNode*) &iedModel_Inverter_ZINV1_OutWSet_units_SIUnit,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_CONSTRUCTED,
     0,
@@ -833,6 +894,7 @@ DataAttribute iedModel_Inverter_ZINV1_OutWSet_units_SIUnit = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_ENUMERATED,
     0,
@@ -845,7 +907,8 @@ DataObject iedModel_Inverter_ZINV1_OutVarSet = {
     (ModelNode*) &iedModel_Inverter_ZINV1,
     NULL,
     (ModelNode*) &iedModel_Inverter_ZINV1_OutVarSet_setMag,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Inverter_ZINV1_OutVarSet_setMag = {
@@ -855,6 +918,7 @@ DataAttribute iedModel_Inverter_ZINV1_OutVarSet_setMag = {
     (ModelNode*) &iedModel_Inverter_ZINV1_OutVarSet_units,
     (ModelNode*) &iedModel_Inverter_ZINV1_OutVarSet_setMag_f,
     0,
+    -1,
     IEC61850_FC_SP,
     IEC61850_CONSTRUCTED,
     0,
@@ -868,6 +932,7 @@ DataAttribute iedModel_Inverter_ZINV1_OutVarSet_setMag_f = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_SP,
     IEC61850_FLOAT32,
     0,
@@ -881,6 +946,7 @@ DataAttribute iedModel_Inverter_ZINV1_OutVarSet_units = {
     NULL,
     (ModelNode*) &iedModel_Inverter_ZINV1_OutVarSet_units_SIUnit,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_CONSTRUCTED,
     0,
@@ -894,6 +960,7 @@ DataAttribute iedModel_Inverter_ZINV1_OutVarSet_units_SIUnit = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_ENUMERATED,
     0,
@@ -914,7 +981,8 @@ DataObject iedModel_Inverter_MMXU1_Mod = {
     (ModelNode*) &iedModel_Inverter_MMXU1,
     (ModelNode*) &iedModel_Inverter_MMXU1_Beh,
     (ModelNode*) &iedModel_Inverter_MMXU1_Mod_q,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Inverter_MMXU1_Mod_q = {
@@ -924,6 +992,7 @@ DataAttribute iedModel_Inverter_MMXU1_Mod_q = {
     (ModelNode*) &iedModel_Inverter_MMXU1_Mod_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -937,6 +1006,7 @@ DataAttribute iedModel_Inverter_MMXU1_Mod_t = {
     (ModelNode*) &iedModel_Inverter_MMXU1_Mod_ctlModel,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -950,6 +1020,7 @@ DataAttribute iedModel_Inverter_MMXU1_Mod_ctlModel = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_ENUMERATED,
     0,
@@ -962,7 +1033,8 @@ DataObject iedModel_Inverter_MMXU1_Beh = {
     (ModelNode*) &iedModel_Inverter_MMXU1,
     (ModelNode*) &iedModel_Inverter_MMXU1_Health,
     (ModelNode*) &iedModel_Inverter_MMXU1_Beh_stVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Inverter_MMXU1_Beh_stVal = {
@@ -972,6 +1044,7 @@ DataAttribute iedModel_Inverter_MMXU1_Beh_stVal = {
     (ModelNode*) &iedModel_Inverter_MMXU1_Beh_q,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_INT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -985,6 +1058,7 @@ DataAttribute iedModel_Inverter_MMXU1_Beh_q = {
     (ModelNode*) &iedModel_Inverter_MMXU1_Beh_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -998,6 +1072,7 @@ DataAttribute iedModel_Inverter_MMXU1_Beh_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -1010,7 +1085,8 @@ DataObject iedModel_Inverter_MMXU1_Health = {
     (ModelNode*) &iedModel_Inverter_MMXU1,
     (ModelNode*) &iedModel_Inverter_MMXU1_NamPlt,
     (ModelNode*) &iedModel_Inverter_MMXU1_Health_stVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Inverter_MMXU1_Health_stVal = {
@@ -1020,6 +1096,7 @@ DataAttribute iedModel_Inverter_MMXU1_Health_stVal = {
     (ModelNode*) &iedModel_Inverter_MMXU1_Health_q,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_INT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -1033,6 +1110,7 @@ DataAttribute iedModel_Inverter_MMXU1_Health_q = {
     (ModelNode*) &iedModel_Inverter_MMXU1_Health_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -1046,6 +1124,7 @@ DataAttribute iedModel_Inverter_MMXU1_Health_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -1058,7 +1137,8 @@ DataObject iedModel_Inverter_MMXU1_NamPlt = {
     (ModelNode*) &iedModel_Inverter_MMXU1,
     (ModelNode*) &iedModel_Inverter_MMXU1_TotW,
     (ModelNode*) &iedModel_Inverter_MMXU1_NamPlt_vendor,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Inverter_MMXU1_NamPlt_vendor = {
@@ -1068,6 +1148,7 @@ DataAttribute iedModel_Inverter_MMXU1_NamPlt_vendor = {
     (ModelNode*) &iedModel_Inverter_MMXU1_NamPlt_swRev,
     NULL,
     0,
+    -1,
     IEC61850_FC_DC,
     IEC61850_VISIBLE_STRING_255,
     0,
@@ -1081,6 +1162,7 @@ DataAttribute iedModel_Inverter_MMXU1_NamPlt_swRev = {
     (ModelNode*) &iedModel_Inverter_MMXU1_NamPlt_d,
     NULL,
     0,
+    -1,
     IEC61850_FC_DC,
     IEC61850_VISIBLE_STRING_255,
     0,
@@ -1094,6 +1176,7 @@ DataAttribute iedModel_Inverter_MMXU1_NamPlt_d = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_DC,
     IEC61850_VISIBLE_STRING_255,
     0,
@@ -1106,7 +1189,8 @@ DataObject iedModel_Inverter_MMXU1_TotW = {
     (ModelNode*) &iedModel_Inverter_MMXU1,
     (ModelNode*) &iedModel_Inverter_MMXU1_TotVAr,
     (ModelNode*) &iedModel_Inverter_MMXU1_TotW_mag,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Inverter_MMXU1_TotW_mag = {
@@ -1116,6 +1200,7 @@ DataAttribute iedModel_Inverter_MMXU1_TotW_mag = {
     (ModelNode*) &iedModel_Inverter_MMXU1_TotW_q,
     (ModelNode*) &iedModel_Inverter_MMXU1_TotW_mag_f,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0 + TRG_OPT_DATA_CHANGED,
@@ -1129,6 +1214,7 @@ DataAttribute iedModel_Inverter_MMXU1_TotW_mag_f = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_FLOAT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -1142,6 +1228,7 @@ DataAttribute iedModel_Inverter_MMXU1_TotW_q = {
     (ModelNode*) &iedModel_Inverter_MMXU1_TotW_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -1155,6 +1242,7 @@ DataAttribute iedModel_Inverter_MMXU1_TotW_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_TIMESTAMP,
     0,
@@ -1167,7 +1255,8 @@ DataObject iedModel_Inverter_MMXU1_TotVAr = {
     (ModelNode*) &iedModel_Inverter_MMXU1,
     (ModelNode*) &iedModel_Inverter_MMXU1_TotVA,
     (ModelNode*) &iedModel_Inverter_MMXU1_TotVAr_mag,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Inverter_MMXU1_TotVAr_mag = {
@@ -1177,6 +1266,7 @@ DataAttribute iedModel_Inverter_MMXU1_TotVAr_mag = {
     (ModelNode*) &iedModel_Inverter_MMXU1_TotVAr_q,
     (ModelNode*) &iedModel_Inverter_MMXU1_TotVAr_mag_f,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0 + TRG_OPT_DATA_CHANGED,
@@ -1190,6 +1280,7 @@ DataAttribute iedModel_Inverter_MMXU1_TotVAr_mag_f = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_FLOAT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -1203,6 +1294,7 @@ DataAttribute iedModel_Inverter_MMXU1_TotVAr_q = {
     (ModelNode*) &iedModel_Inverter_MMXU1_TotVAr_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -1216,6 +1308,7 @@ DataAttribute iedModel_Inverter_MMXU1_TotVAr_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_TIMESTAMP,
     0,
@@ -1228,7 +1321,8 @@ DataObject iedModel_Inverter_MMXU1_TotVA = {
     (ModelNode*) &iedModel_Inverter_MMXU1,
     (ModelNode*) &iedModel_Inverter_MMXU1_Hz,
     (ModelNode*) &iedModel_Inverter_MMXU1_TotVA_mag,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Inverter_MMXU1_TotVA_mag = {
@@ -1238,6 +1332,7 @@ DataAttribute iedModel_Inverter_MMXU1_TotVA_mag = {
     (ModelNode*) &iedModel_Inverter_MMXU1_TotVA_q,
     (ModelNode*) &iedModel_Inverter_MMXU1_TotVA_mag_f,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0 + TRG_OPT_DATA_CHANGED,
@@ -1251,6 +1346,7 @@ DataAttribute iedModel_Inverter_MMXU1_TotVA_mag_f = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_FLOAT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -1264,6 +1360,7 @@ DataAttribute iedModel_Inverter_MMXU1_TotVA_q = {
     (ModelNode*) &iedModel_Inverter_MMXU1_TotVA_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -1277,6 +1374,7 @@ DataAttribute iedModel_Inverter_MMXU1_TotVA_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_TIMESTAMP,
     0,
@@ -1289,7 +1387,8 @@ DataObject iedModel_Inverter_MMXU1_Hz = {
     (ModelNode*) &iedModel_Inverter_MMXU1,
     (ModelNode*) &iedModel_Inverter_MMXU1_PhV,
     (ModelNode*) &iedModel_Inverter_MMXU1_Hz_mag,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Inverter_MMXU1_Hz_mag = {
@@ -1299,6 +1398,7 @@ DataAttribute iedModel_Inverter_MMXU1_Hz_mag = {
     (ModelNode*) &iedModel_Inverter_MMXU1_Hz_q,
     (ModelNode*) &iedModel_Inverter_MMXU1_Hz_mag_f,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0 + TRG_OPT_DATA_CHANGED,
@@ -1312,6 +1412,7 @@ DataAttribute iedModel_Inverter_MMXU1_Hz_mag_f = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_FLOAT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -1325,6 +1426,7 @@ DataAttribute iedModel_Inverter_MMXU1_Hz_q = {
     (ModelNode*) &iedModel_Inverter_MMXU1_Hz_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -1338,6 +1440,7 @@ DataAttribute iedModel_Inverter_MMXU1_Hz_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_TIMESTAMP,
     0,
@@ -1350,7 +1453,8 @@ DataObject iedModel_Inverter_MMXU1_PhV = {
     (ModelNode*) &iedModel_Inverter_MMXU1,
     (ModelNode*) &iedModel_Inverter_MMXU1_A,
     (ModelNode*) &iedModel_Inverter_MMXU1_PhV_phsA,
-    0
+    0,
+    -1
 };
 
 DataObject iedModel_Inverter_MMXU1_PhV_phsA = {
@@ -1359,7 +1463,8 @@ DataObject iedModel_Inverter_MMXU1_PhV_phsA = {
     (ModelNode*) &iedModel_Inverter_MMXU1_PhV,
     (ModelNode*) &iedModel_Inverter_MMXU1_PhV_phsB,
     (ModelNode*) &iedModel_Inverter_MMXU1_PhV_phsA_cVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Inverter_MMXU1_PhV_phsA_cVal = {
@@ -1369,6 +1474,7 @@ DataAttribute iedModel_Inverter_MMXU1_PhV_phsA_cVal = {
     (ModelNode*) &iedModel_Inverter_MMXU1_PhV_phsA_q,
     (ModelNode*) &iedModel_Inverter_MMXU1_PhV_phsA_cVal_mag,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0 + TRG_OPT_DATA_CHANGED,
@@ -1382,6 +1488,7 @@ DataAttribute iedModel_Inverter_MMXU1_PhV_phsA_cVal_mag = {
     NULL,
     (ModelNode*) &iedModel_Inverter_MMXU1_PhV_phsA_cVal_mag_f,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0 + TRG_OPT_DATA_CHANGED,
@@ -1395,6 +1502,7 @@ DataAttribute iedModel_Inverter_MMXU1_PhV_phsA_cVal_mag_f = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_FLOAT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -1408,6 +1516,7 @@ DataAttribute iedModel_Inverter_MMXU1_PhV_phsA_q = {
     (ModelNode*) &iedModel_Inverter_MMXU1_PhV_phsA_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -1421,6 +1530,7 @@ DataAttribute iedModel_Inverter_MMXU1_PhV_phsA_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_TIMESTAMP,
     0,
@@ -1433,7 +1543,8 @@ DataObject iedModel_Inverter_MMXU1_PhV_phsB = {
     (ModelNode*) &iedModel_Inverter_MMXU1_PhV,
     (ModelNode*) &iedModel_Inverter_MMXU1_PhV_phsC,
     (ModelNode*) &iedModel_Inverter_MMXU1_PhV_phsB_cVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Inverter_MMXU1_PhV_phsB_cVal = {
@@ -1443,6 +1554,7 @@ DataAttribute iedModel_Inverter_MMXU1_PhV_phsB_cVal = {
     (ModelNode*) &iedModel_Inverter_MMXU1_PhV_phsB_q,
     (ModelNode*) &iedModel_Inverter_MMXU1_PhV_phsB_cVal_mag,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0 + TRG_OPT_DATA_CHANGED,
@@ -1456,6 +1568,7 @@ DataAttribute iedModel_Inverter_MMXU1_PhV_phsB_cVal_mag = {
     NULL,
     (ModelNode*) &iedModel_Inverter_MMXU1_PhV_phsB_cVal_mag_f,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0 + TRG_OPT_DATA_CHANGED,
@@ -1469,6 +1582,7 @@ DataAttribute iedModel_Inverter_MMXU1_PhV_phsB_cVal_mag_f = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_FLOAT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -1482,6 +1596,7 @@ DataAttribute iedModel_Inverter_MMXU1_PhV_phsB_q = {
     (ModelNode*) &iedModel_Inverter_MMXU1_PhV_phsB_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -1495,6 +1610,7 @@ DataAttribute iedModel_Inverter_MMXU1_PhV_phsB_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_TIMESTAMP,
     0,
@@ -1507,7 +1623,8 @@ DataObject iedModel_Inverter_MMXU1_PhV_phsC = {
     (ModelNode*) &iedModel_Inverter_MMXU1_PhV,
     (ModelNode*) &iedModel_Inverter_MMXU1_PhV_neut,
     (ModelNode*) &iedModel_Inverter_MMXU1_PhV_phsC_cVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Inverter_MMXU1_PhV_phsC_cVal = {
@@ -1517,6 +1634,7 @@ DataAttribute iedModel_Inverter_MMXU1_PhV_phsC_cVal = {
     (ModelNode*) &iedModel_Inverter_MMXU1_PhV_phsC_q,
     (ModelNode*) &iedModel_Inverter_MMXU1_PhV_phsC_cVal_mag,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0 + TRG_OPT_DATA_CHANGED,
@@ -1530,6 +1648,7 @@ DataAttribute iedModel_Inverter_MMXU1_PhV_phsC_cVal_mag = {
     NULL,
     (ModelNode*) &iedModel_Inverter_MMXU1_PhV_phsC_cVal_mag_f,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0 + TRG_OPT_DATA_CHANGED,
@@ -1543,6 +1662,7 @@ DataAttribute iedModel_Inverter_MMXU1_PhV_phsC_cVal_mag_f = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_FLOAT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -1556,6 +1676,7 @@ DataAttribute iedModel_Inverter_MMXU1_PhV_phsC_q = {
     (ModelNode*) &iedModel_Inverter_MMXU1_PhV_phsC_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -1569,6 +1690,7 @@ DataAttribute iedModel_Inverter_MMXU1_PhV_phsC_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_TIMESTAMP,
     0,
@@ -1581,7 +1703,8 @@ DataObject iedModel_Inverter_MMXU1_PhV_neut = {
     (ModelNode*) &iedModel_Inverter_MMXU1_PhV,
     NULL,
     (ModelNode*) &iedModel_Inverter_MMXU1_PhV_neut_cVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Inverter_MMXU1_PhV_neut_cVal = {
@@ -1591,6 +1714,7 @@ DataAttribute iedModel_Inverter_MMXU1_PhV_neut_cVal = {
     (ModelNode*) &iedModel_Inverter_MMXU1_PhV_neut_q,
     (ModelNode*) &iedModel_Inverter_MMXU1_PhV_neut_cVal_mag,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0 + TRG_OPT_DATA_CHANGED,
@@ -1604,6 +1728,7 @@ DataAttribute iedModel_Inverter_MMXU1_PhV_neut_cVal_mag = {
     NULL,
     (ModelNode*) &iedModel_Inverter_MMXU1_PhV_neut_cVal_mag_f,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0 + TRG_OPT_DATA_CHANGED,
@@ -1617,6 +1742,7 @@ DataAttribute iedModel_Inverter_MMXU1_PhV_neut_cVal_mag_f = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_FLOAT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -1630,6 +1756,7 @@ DataAttribute iedModel_Inverter_MMXU1_PhV_neut_q = {
     (ModelNode*) &iedModel_Inverter_MMXU1_PhV_neut_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -1643,6 +1770,7 @@ DataAttribute iedModel_Inverter_MMXU1_PhV_neut_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_TIMESTAMP,
     0,
@@ -1655,7 +1783,8 @@ DataObject iedModel_Inverter_MMXU1_A = {
     (ModelNode*) &iedModel_Inverter_MMXU1,
     (ModelNode*) &iedModel_Inverter_MMXU1_W,
     (ModelNode*) &iedModel_Inverter_MMXU1_A_phsA,
-    0
+    0,
+    -1
 };
 
 DataObject iedModel_Inverter_MMXU1_A_phsA = {
@@ -1664,7 +1793,8 @@ DataObject iedModel_Inverter_MMXU1_A_phsA = {
     (ModelNode*) &iedModel_Inverter_MMXU1_A,
     (ModelNode*) &iedModel_Inverter_MMXU1_A_phsB,
     (ModelNode*) &iedModel_Inverter_MMXU1_A_phsA_cVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Inverter_MMXU1_A_phsA_cVal = {
@@ -1674,6 +1804,7 @@ DataAttribute iedModel_Inverter_MMXU1_A_phsA_cVal = {
     (ModelNode*) &iedModel_Inverter_MMXU1_A_phsA_q,
     (ModelNode*) &iedModel_Inverter_MMXU1_A_phsA_cVal_mag,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0 + TRG_OPT_DATA_CHANGED,
@@ -1687,6 +1818,7 @@ DataAttribute iedModel_Inverter_MMXU1_A_phsA_cVal_mag = {
     NULL,
     (ModelNode*) &iedModel_Inverter_MMXU1_A_phsA_cVal_mag_f,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0 + TRG_OPT_DATA_CHANGED,
@@ -1700,6 +1832,7 @@ DataAttribute iedModel_Inverter_MMXU1_A_phsA_cVal_mag_f = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_FLOAT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -1713,6 +1846,7 @@ DataAttribute iedModel_Inverter_MMXU1_A_phsA_q = {
     (ModelNode*) &iedModel_Inverter_MMXU1_A_phsA_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -1726,6 +1860,7 @@ DataAttribute iedModel_Inverter_MMXU1_A_phsA_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_TIMESTAMP,
     0,
@@ -1738,7 +1873,8 @@ DataObject iedModel_Inverter_MMXU1_A_phsB = {
     (ModelNode*) &iedModel_Inverter_MMXU1_A,
     (ModelNode*) &iedModel_Inverter_MMXU1_A_phsC,
     (ModelNode*) &iedModel_Inverter_MMXU1_A_phsB_cVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Inverter_MMXU1_A_phsB_cVal = {
@@ -1748,6 +1884,7 @@ DataAttribute iedModel_Inverter_MMXU1_A_phsB_cVal = {
     (ModelNode*) &iedModel_Inverter_MMXU1_A_phsB_q,
     (ModelNode*) &iedModel_Inverter_MMXU1_A_phsB_cVal_mag,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0 + TRG_OPT_DATA_CHANGED,
@@ -1761,6 +1898,7 @@ DataAttribute iedModel_Inverter_MMXU1_A_phsB_cVal_mag = {
     NULL,
     (ModelNode*) &iedModel_Inverter_MMXU1_A_phsB_cVal_mag_f,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0 + TRG_OPT_DATA_CHANGED,
@@ -1774,6 +1912,7 @@ DataAttribute iedModel_Inverter_MMXU1_A_phsB_cVal_mag_f = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_FLOAT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -1787,6 +1926,7 @@ DataAttribute iedModel_Inverter_MMXU1_A_phsB_q = {
     (ModelNode*) &iedModel_Inverter_MMXU1_A_phsB_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -1800,6 +1940,7 @@ DataAttribute iedModel_Inverter_MMXU1_A_phsB_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_TIMESTAMP,
     0,
@@ -1812,7 +1953,8 @@ DataObject iedModel_Inverter_MMXU1_A_phsC = {
     (ModelNode*) &iedModel_Inverter_MMXU1_A,
     (ModelNode*) &iedModel_Inverter_MMXU1_A_neut,
     (ModelNode*) &iedModel_Inverter_MMXU1_A_phsC_cVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Inverter_MMXU1_A_phsC_cVal = {
@@ -1822,6 +1964,7 @@ DataAttribute iedModel_Inverter_MMXU1_A_phsC_cVal = {
     (ModelNode*) &iedModel_Inverter_MMXU1_A_phsC_q,
     (ModelNode*) &iedModel_Inverter_MMXU1_A_phsC_cVal_mag,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0 + TRG_OPT_DATA_CHANGED,
@@ -1835,6 +1978,7 @@ DataAttribute iedModel_Inverter_MMXU1_A_phsC_cVal_mag = {
     NULL,
     (ModelNode*) &iedModel_Inverter_MMXU1_A_phsC_cVal_mag_f,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0 + TRG_OPT_DATA_CHANGED,
@@ -1848,6 +1992,7 @@ DataAttribute iedModel_Inverter_MMXU1_A_phsC_cVal_mag_f = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_FLOAT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -1861,6 +2006,7 @@ DataAttribute iedModel_Inverter_MMXU1_A_phsC_q = {
     (ModelNode*) &iedModel_Inverter_MMXU1_A_phsC_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -1874,6 +2020,7 @@ DataAttribute iedModel_Inverter_MMXU1_A_phsC_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_TIMESTAMP,
     0,
@@ -1886,7 +2033,8 @@ DataObject iedModel_Inverter_MMXU1_A_neut = {
     (ModelNode*) &iedModel_Inverter_MMXU1_A,
     NULL,
     (ModelNode*) &iedModel_Inverter_MMXU1_A_neut_cVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Inverter_MMXU1_A_neut_cVal = {
@@ -1896,6 +2044,7 @@ DataAttribute iedModel_Inverter_MMXU1_A_neut_cVal = {
     (ModelNode*) &iedModel_Inverter_MMXU1_A_neut_q,
     (ModelNode*) &iedModel_Inverter_MMXU1_A_neut_cVal_mag,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0 + TRG_OPT_DATA_CHANGED,
@@ -1909,6 +2058,7 @@ DataAttribute iedModel_Inverter_MMXU1_A_neut_cVal_mag = {
     NULL,
     (ModelNode*) &iedModel_Inverter_MMXU1_A_neut_cVal_mag_f,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0 + TRG_OPT_DATA_CHANGED,
@@ -1922,6 +2072,7 @@ DataAttribute iedModel_Inverter_MMXU1_A_neut_cVal_mag_f = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_FLOAT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -1935,6 +2086,7 @@ DataAttribute iedModel_Inverter_MMXU1_A_neut_q = {
     (ModelNode*) &iedModel_Inverter_MMXU1_A_neut_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -1948,6 +2100,7 @@ DataAttribute iedModel_Inverter_MMXU1_A_neut_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_TIMESTAMP,
     0,
@@ -1960,7 +2113,8 @@ DataObject iedModel_Inverter_MMXU1_W = {
     (ModelNode*) &iedModel_Inverter_MMXU1,
     NULL,
     (ModelNode*) &iedModel_Inverter_MMXU1_W_phsA,
-    0
+    0,
+    -1
 };
 
 DataObject iedModel_Inverter_MMXU1_W_phsA = {
@@ -1969,7 +2123,8 @@ DataObject iedModel_Inverter_MMXU1_W_phsA = {
     (ModelNode*) &iedModel_Inverter_MMXU1_W,
     (ModelNode*) &iedModel_Inverter_MMXU1_W_phsB,
     (ModelNode*) &iedModel_Inverter_MMXU1_W_phsA_cVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Inverter_MMXU1_W_phsA_cVal = {
@@ -1979,6 +2134,7 @@ DataAttribute iedModel_Inverter_MMXU1_W_phsA_cVal = {
     (ModelNode*) &iedModel_Inverter_MMXU1_W_phsA_q,
     (ModelNode*) &iedModel_Inverter_MMXU1_W_phsA_cVal_mag,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0 + TRG_OPT_DATA_CHANGED,
@@ -1992,6 +2148,7 @@ DataAttribute iedModel_Inverter_MMXU1_W_phsA_cVal_mag = {
     NULL,
     (ModelNode*) &iedModel_Inverter_MMXU1_W_phsA_cVal_mag_f,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0 + TRG_OPT_DATA_CHANGED,
@@ -2005,6 +2162,7 @@ DataAttribute iedModel_Inverter_MMXU1_W_phsA_cVal_mag_f = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_FLOAT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -2018,6 +2176,7 @@ DataAttribute iedModel_Inverter_MMXU1_W_phsA_q = {
     (ModelNode*) &iedModel_Inverter_MMXU1_W_phsA_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -2031,6 +2190,7 @@ DataAttribute iedModel_Inverter_MMXU1_W_phsA_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_TIMESTAMP,
     0,
@@ -2043,7 +2203,8 @@ DataObject iedModel_Inverter_MMXU1_W_phsB = {
     (ModelNode*) &iedModel_Inverter_MMXU1_W,
     (ModelNode*) &iedModel_Inverter_MMXU1_W_phsC,
     (ModelNode*) &iedModel_Inverter_MMXU1_W_phsB_cVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Inverter_MMXU1_W_phsB_cVal = {
@@ -2053,6 +2214,7 @@ DataAttribute iedModel_Inverter_MMXU1_W_phsB_cVal = {
     (ModelNode*) &iedModel_Inverter_MMXU1_W_phsB_q,
     (ModelNode*) &iedModel_Inverter_MMXU1_W_phsB_cVal_mag,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0 + TRG_OPT_DATA_CHANGED,
@@ -2066,6 +2228,7 @@ DataAttribute iedModel_Inverter_MMXU1_W_phsB_cVal_mag = {
     NULL,
     (ModelNode*) &iedModel_Inverter_MMXU1_W_phsB_cVal_mag_f,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0 + TRG_OPT_DATA_CHANGED,
@@ -2079,6 +2242,7 @@ DataAttribute iedModel_Inverter_MMXU1_W_phsB_cVal_mag_f = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_FLOAT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -2092,6 +2256,7 @@ DataAttribute iedModel_Inverter_MMXU1_W_phsB_q = {
     (ModelNode*) &iedModel_Inverter_MMXU1_W_phsB_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -2105,6 +2270,7 @@ DataAttribute iedModel_Inverter_MMXU1_W_phsB_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_TIMESTAMP,
     0,
@@ -2117,7 +2283,8 @@ DataObject iedModel_Inverter_MMXU1_W_phsC = {
     (ModelNode*) &iedModel_Inverter_MMXU1_W,
     NULL,
     (ModelNode*) &iedModel_Inverter_MMXU1_W_phsC_cVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Inverter_MMXU1_W_phsC_cVal = {
@@ -2127,6 +2294,7 @@ DataAttribute iedModel_Inverter_MMXU1_W_phsC_cVal = {
     (ModelNode*) &iedModel_Inverter_MMXU1_W_phsC_q,
     (ModelNode*) &iedModel_Inverter_MMXU1_W_phsC_cVal_mag,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0 + TRG_OPT_DATA_CHANGED,
@@ -2140,6 +2308,7 @@ DataAttribute iedModel_Inverter_MMXU1_W_phsC_cVal_mag = {
     NULL,
     (ModelNode*) &iedModel_Inverter_MMXU1_W_phsC_cVal_mag_f,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0 + TRG_OPT_DATA_CHANGED,
@@ -2153,6 +2322,7 @@ DataAttribute iedModel_Inverter_MMXU1_W_phsC_cVal_mag_f = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_FLOAT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -2166,6 +2336,7 @@ DataAttribute iedModel_Inverter_MMXU1_W_phsC_q = {
     (ModelNode*) &iedModel_Inverter_MMXU1_W_phsC_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -2179,6 +2350,7 @@ DataAttribute iedModel_Inverter_MMXU1_W_phsC_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_TIMESTAMP,
     0,
@@ -2191,7 +2363,8 @@ LogicalDevice iedModel_Battery = {
     "Battery",
     (ModelNode*) &iedModel,
     (ModelNode*) &iedModel_Physical_Measurements,
-    (ModelNode*) &iedModel_Battery_LLN0
+    (ModelNode*) &iedModel_Battery_LLN0,
+    NULL
 };
 
 LogicalNode iedModel_Battery_LLN0 = {
@@ -2208,7 +2381,8 @@ DataObject iedModel_Battery_LLN0_Mod = {
     (ModelNode*) &iedModel_Battery_LLN0,
     (ModelNode*) &iedModel_Battery_LLN0_Beh,
     (ModelNode*) &iedModel_Battery_LLN0_Mod_q,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Battery_LLN0_Mod_q = {
@@ -2218,6 +2392,7 @@ DataAttribute iedModel_Battery_LLN0_Mod_q = {
     (ModelNode*) &iedModel_Battery_LLN0_Mod_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -2231,6 +2406,7 @@ DataAttribute iedModel_Battery_LLN0_Mod_t = {
     (ModelNode*) &iedModel_Battery_LLN0_Mod_ctlModel,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -2244,6 +2420,7 @@ DataAttribute iedModel_Battery_LLN0_Mod_ctlModel = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_ENUMERATED,
     0,
@@ -2256,7 +2433,8 @@ DataObject iedModel_Battery_LLN0_Beh = {
     (ModelNode*) &iedModel_Battery_LLN0,
     (ModelNode*) &iedModel_Battery_LLN0_Health,
     (ModelNode*) &iedModel_Battery_LLN0_Beh_stVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Battery_LLN0_Beh_stVal = {
@@ -2266,6 +2444,7 @@ DataAttribute iedModel_Battery_LLN0_Beh_stVal = {
     (ModelNode*) &iedModel_Battery_LLN0_Beh_q,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_INT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -2279,6 +2458,7 @@ DataAttribute iedModel_Battery_LLN0_Beh_q = {
     (ModelNode*) &iedModel_Battery_LLN0_Beh_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -2292,6 +2472,7 @@ DataAttribute iedModel_Battery_LLN0_Beh_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -2304,7 +2485,8 @@ DataObject iedModel_Battery_LLN0_Health = {
     (ModelNode*) &iedModel_Battery_LLN0,
     (ModelNode*) &iedModel_Battery_LLN0_NamPlt,
     (ModelNode*) &iedModel_Battery_LLN0_Health_stVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Battery_LLN0_Health_stVal = {
@@ -2314,6 +2496,7 @@ DataAttribute iedModel_Battery_LLN0_Health_stVal = {
     (ModelNode*) &iedModel_Battery_LLN0_Health_q,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_INT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -2327,6 +2510,7 @@ DataAttribute iedModel_Battery_LLN0_Health_q = {
     (ModelNode*) &iedModel_Battery_LLN0_Health_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -2340,6 +2524,7 @@ DataAttribute iedModel_Battery_LLN0_Health_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -2352,7 +2537,8 @@ DataObject iedModel_Battery_LLN0_NamPlt = {
     (ModelNode*) &iedModel_Battery_LLN0,
     NULL,
     (ModelNode*) &iedModel_Battery_LLN0_NamPlt_vendor,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Battery_LLN0_NamPlt_vendor = {
@@ -2362,6 +2548,7 @@ DataAttribute iedModel_Battery_LLN0_NamPlt_vendor = {
     (ModelNode*) &iedModel_Battery_LLN0_NamPlt_swRev,
     NULL,
     0,
+    -1,
     IEC61850_FC_DC,
     IEC61850_VISIBLE_STRING_255,
     0,
@@ -2375,6 +2562,7 @@ DataAttribute iedModel_Battery_LLN0_NamPlt_swRev = {
     (ModelNode*) &iedModel_Battery_LLN0_NamPlt_d,
     NULL,
     0,
+    -1,
     IEC61850_FC_DC,
     IEC61850_VISIBLE_STRING_255,
     0,
@@ -2388,6 +2576,7 @@ DataAttribute iedModel_Battery_LLN0_NamPlt_d = {
     (ModelNode*) &iedModel_Battery_LLN0_NamPlt_configRev,
     NULL,
     0,
+    -1,
     IEC61850_FC_DC,
     IEC61850_VISIBLE_STRING_255,
     0,
@@ -2401,6 +2590,7 @@ DataAttribute iedModel_Battery_LLN0_NamPlt_configRev = {
     (ModelNode*) &iedModel_Battery_LLN0_NamPlt_ldNs,
     NULL,
     0,
+    -1,
     IEC61850_FC_DC,
     IEC61850_VISIBLE_STRING_255,
     0,
@@ -2414,6 +2604,7 @@ DataAttribute iedModel_Battery_LLN0_NamPlt_ldNs = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_EX,
     IEC61850_VISIBLE_STRING_255,
     0,
@@ -2434,7 +2625,8 @@ DataObject iedModel_Battery_LPHD1_PhyNam = {
     (ModelNode*) &iedModel_Battery_LPHD1,
     (ModelNode*) &iedModel_Battery_LPHD1_PhyHealth,
     (ModelNode*) &iedModel_Battery_LPHD1_PhyNam_vendor,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Battery_LPHD1_PhyNam_vendor = {
@@ -2444,6 +2636,7 @@ DataAttribute iedModel_Battery_LPHD1_PhyNam_vendor = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_DC,
     IEC61850_VISIBLE_STRING_255,
     0,
@@ -2456,7 +2649,8 @@ DataObject iedModel_Battery_LPHD1_PhyHealth = {
     (ModelNode*) &iedModel_Battery_LPHD1,
     (ModelNode*) &iedModel_Battery_LPHD1_Proxy,
     (ModelNode*) &iedModel_Battery_LPHD1_PhyHealth_stVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Battery_LPHD1_PhyHealth_stVal = {
@@ -2466,6 +2660,7 @@ DataAttribute iedModel_Battery_LPHD1_PhyHealth_stVal = {
     (ModelNode*) &iedModel_Battery_LPHD1_PhyHealth_q,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_INT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -2479,6 +2674,7 @@ DataAttribute iedModel_Battery_LPHD1_PhyHealth_q = {
     (ModelNode*) &iedModel_Battery_LPHD1_PhyHealth_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -2492,6 +2688,7 @@ DataAttribute iedModel_Battery_LPHD1_PhyHealth_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -2504,7 +2701,8 @@ DataObject iedModel_Battery_LPHD1_Proxy = {
     (ModelNode*) &iedModel_Battery_LPHD1,
     NULL,
     (ModelNode*) &iedModel_Battery_LPHD1_Proxy_stVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Battery_LPHD1_Proxy_stVal = {
@@ -2514,6 +2712,7 @@ DataAttribute iedModel_Battery_LPHD1_Proxy_stVal = {
     (ModelNode*) &iedModel_Battery_LPHD1_Proxy_q,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_BOOLEAN,
     0 + TRG_OPT_DATA_CHANGED,
@@ -2527,6 +2726,7 @@ DataAttribute iedModel_Battery_LPHD1_Proxy_q = {
     (ModelNode*) &iedModel_Battery_LPHD1_Proxy_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -2540,6 +2740,7 @@ DataAttribute iedModel_Battery_LPHD1_Proxy_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -2560,7 +2761,8 @@ DataObject iedModel_Battery_ZBAT1_Mod = {
     (ModelNode*) &iedModel_Battery_ZBAT1,
     (ModelNode*) &iedModel_Battery_ZBAT1_Beh,
     (ModelNode*) &iedModel_Battery_ZBAT1_Mod_q,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Battery_ZBAT1_Mod_q = {
@@ -2570,6 +2772,7 @@ DataAttribute iedModel_Battery_ZBAT1_Mod_q = {
     (ModelNode*) &iedModel_Battery_ZBAT1_Mod_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -2583,6 +2786,7 @@ DataAttribute iedModel_Battery_ZBAT1_Mod_t = {
     (ModelNode*) &iedModel_Battery_ZBAT1_Mod_ctlModel,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -2596,6 +2800,7 @@ DataAttribute iedModel_Battery_ZBAT1_Mod_ctlModel = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_ENUMERATED,
     0,
@@ -2608,7 +2813,8 @@ DataObject iedModel_Battery_ZBAT1_Beh = {
     (ModelNode*) &iedModel_Battery_ZBAT1,
     (ModelNode*) &iedModel_Battery_ZBAT1_Health,
     (ModelNode*) &iedModel_Battery_ZBAT1_Beh_stVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Battery_ZBAT1_Beh_stVal = {
@@ -2618,6 +2824,7 @@ DataAttribute iedModel_Battery_ZBAT1_Beh_stVal = {
     (ModelNode*) &iedModel_Battery_ZBAT1_Beh_q,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_INT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -2631,6 +2838,7 @@ DataAttribute iedModel_Battery_ZBAT1_Beh_q = {
     (ModelNode*) &iedModel_Battery_ZBAT1_Beh_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -2644,6 +2852,7 @@ DataAttribute iedModel_Battery_ZBAT1_Beh_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -2656,7 +2865,8 @@ DataObject iedModel_Battery_ZBAT1_Health = {
     (ModelNode*) &iedModel_Battery_ZBAT1,
     (ModelNode*) &iedModel_Battery_ZBAT1_NamPlt,
     (ModelNode*) &iedModel_Battery_ZBAT1_Health_stVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Battery_ZBAT1_Health_stVal = {
@@ -2666,6 +2876,7 @@ DataAttribute iedModel_Battery_ZBAT1_Health_stVal = {
     (ModelNode*) &iedModel_Battery_ZBAT1_Health_q,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_INT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -2679,6 +2890,7 @@ DataAttribute iedModel_Battery_ZBAT1_Health_q = {
     (ModelNode*) &iedModel_Battery_ZBAT1_Health_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -2692,6 +2904,7 @@ DataAttribute iedModel_Battery_ZBAT1_Health_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -2704,7 +2917,8 @@ DataObject iedModel_Battery_ZBAT1_NamPlt = {
     (ModelNode*) &iedModel_Battery_ZBAT1,
     (ModelNode*) &iedModel_Battery_ZBAT1_Vol,
     (ModelNode*) &iedModel_Battery_ZBAT1_NamPlt_vendor,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Battery_ZBAT1_NamPlt_vendor = {
@@ -2714,6 +2928,7 @@ DataAttribute iedModel_Battery_ZBAT1_NamPlt_vendor = {
     (ModelNode*) &iedModel_Battery_ZBAT1_NamPlt_swRev,
     NULL,
     0,
+    -1,
     IEC61850_FC_DC,
     IEC61850_VISIBLE_STRING_255,
     0,
@@ -2727,6 +2942,7 @@ DataAttribute iedModel_Battery_ZBAT1_NamPlt_swRev = {
     (ModelNode*) &iedModel_Battery_ZBAT1_NamPlt_d,
     NULL,
     0,
+    -1,
     IEC61850_FC_DC,
     IEC61850_VISIBLE_STRING_255,
     0,
@@ -2740,6 +2956,7 @@ DataAttribute iedModel_Battery_ZBAT1_NamPlt_d = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_DC,
     IEC61850_VISIBLE_STRING_255,
     0,
@@ -2752,7 +2969,8 @@ DataObject iedModel_Battery_ZBAT1_Vol = {
     (ModelNode*) &iedModel_Battery_ZBAT1,
     (ModelNode*) &iedModel_Battery_ZBAT1_Amp,
     (ModelNode*) &iedModel_Battery_ZBAT1_Vol_mag,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Battery_ZBAT1_Vol_mag = {
@@ -2762,6 +2980,7 @@ DataAttribute iedModel_Battery_ZBAT1_Vol_mag = {
     (ModelNode*) &iedModel_Battery_ZBAT1_Vol_q,
     (ModelNode*) &iedModel_Battery_ZBAT1_Vol_mag_f,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0 + TRG_OPT_DATA_CHANGED,
@@ -2775,6 +2994,7 @@ DataAttribute iedModel_Battery_ZBAT1_Vol_mag_f = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_FLOAT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -2788,6 +3008,7 @@ DataAttribute iedModel_Battery_ZBAT1_Vol_q = {
     (ModelNode*) &iedModel_Battery_ZBAT1_Vol_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -2801,6 +3022,7 @@ DataAttribute iedModel_Battery_ZBAT1_Vol_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_TIMESTAMP,
     0,
@@ -2813,7 +3035,8 @@ DataObject iedModel_Battery_ZBAT1_Amp = {
     (ModelNode*) &iedModel_Battery_ZBAT1,
     NULL,
     (ModelNode*) &iedModel_Battery_ZBAT1_Amp_mag,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Battery_ZBAT1_Amp_mag = {
@@ -2823,6 +3046,7 @@ DataAttribute iedModel_Battery_ZBAT1_Amp_mag = {
     (ModelNode*) &iedModel_Battery_ZBAT1_Amp_q,
     (ModelNode*) &iedModel_Battery_ZBAT1_Amp_mag_f,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0 + TRG_OPT_DATA_CHANGED,
@@ -2836,6 +3060,7 @@ DataAttribute iedModel_Battery_ZBAT1_Amp_mag_f = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_FLOAT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -2849,6 +3074,7 @@ DataAttribute iedModel_Battery_ZBAT1_Amp_q = {
     (ModelNode*) &iedModel_Battery_ZBAT1_Amp_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -2862,6 +3088,7 @@ DataAttribute iedModel_Battery_ZBAT1_Amp_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_TIMESTAMP,
     0,
@@ -2882,7 +3109,8 @@ DataObject iedModel_Battery_ZBTC1_Mod = {
     (ModelNode*) &iedModel_Battery_ZBTC1,
     (ModelNode*) &iedModel_Battery_ZBTC1_Beh,
     (ModelNode*) &iedModel_Battery_ZBTC1_Mod_q,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Battery_ZBTC1_Mod_q = {
@@ -2892,6 +3120,7 @@ DataAttribute iedModel_Battery_ZBTC1_Mod_q = {
     (ModelNode*) &iedModel_Battery_ZBTC1_Mod_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -2905,6 +3134,7 @@ DataAttribute iedModel_Battery_ZBTC1_Mod_t = {
     (ModelNode*) &iedModel_Battery_ZBTC1_Mod_ctlModel,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -2918,6 +3148,7 @@ DataAttribute iedModel_Battery_ZBTC1_Mod_ctlModel = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_ENUMERATED,
     0,
@@ -2930,7 +3161,8 @@ DataObject iedModel_Battery_ZBTC1_Beh = {
     (ModelNode*) &iedModel_Battery_ZBTC1,
     (ModelNode*) &iedModel_Battery_ZBTC1_Health,
     (ModelNode*) &iedModel_Battery_ZBTC1_Beh_stVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Battery_ZBTC1_Beh_stVal = {
@@ -2940,6 +3172,7 @@ DataAttribute iedModel_Battery_ZBTC1_Beh_stVal = {
     (ModelNode*) &iedModel_Battery_ZBTC1_Beh_q,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_INT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -2953,6 +3186,7 @@ DataAttribute iedModel_Battery_ZBTC1_Beh_q = {
     (ModelNode*) &iedModel_Battery_ZBTC1_Beh_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -2966,6 +3200,7 @@ DataAttribute iedModel_Battery_ZBTC1_Beh_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -2978,7 +3213,8 @@ DataObject iedModel_Battery_ZBTC1_Health = {
     (ModelNode*) &iedModel_Battery_ZBTC1,
     (ModelNode*) &iedModel_Battery_ZBTC1_NamPlt,
     (ModelNode*) &iedModel_Battery_ZBTC1_Health_stVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Battery_ZBTC1_Health_stVal = {
@@ -2988,6 +3224,7 @@ DataAttribute iedModel_Battery_ZBTC1_Health_stVal = {
     (ModelNode*) &iedModel_Battery_ZBTC1_Health_q,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_INT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -3001,6 +3238,7 @@ DataAttribute iedModel_Battery_ZBTC1_Health_q = {
     (ModelNode*) &iedModel_Battery_ZBTC1_Health_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -3014,6 +3252,7 @@ DataAttribute iedModel_Battery_ZBTC1_Health_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -3026,7 +3265,8 @@ DataObject iedModel_Battery_ZBTC1_NamPlt = {
     (ModelNode*) &iedModel_Battery_ZBTC1,
     (ModelNode*) &iedModel_Battery_ZBTC1_BatChaSt,
     (ModelNode*) &iedModel_Battery_ZBTC1_NamPlt_vendor,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Battery_ZBTC1_NamPlt_vendor = {
@@ -3036,6 +3276,7 @@ DataAttribute iedModel_Battery_ZBTC1_NamPlt_vendor = {
     (ModelNode*) &iedModel_Battery_ZBTC1_NamPlt_swRev,
     NULL,
     0,
+    -1,
     IEC61850_FC_DC,
     IEC61850_VISIBLE_STRING_255,
     0,
@@ -3049,6 +3290,7 @@ DataAttribute iedModel_Battery_ZBTC1_NamPlt_swRev = {
     (ModelNode*) &iedModel_Battery_ZBTC1_NamPlt_d,
     NULL,
     0,
+    -1,
     IEC61850_FC_DC,
     IEC61850_VISIBLE_STRING_255,
     0,
@@ -3062,6 +3304,7 @@ DataAttribute iedModel_Battery_ZBTC1_NamPlt_d = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_DC,
     IEC61850_VISIBLE_STRING_255,
     0,
@@ -3074,7 +3317,8 @@ DataObject iedModel_Battery_ZBTC1_BatChaSt = {
     (ModelNode*) &iedModel_Battery_ZBTC1,
     (ModelNode*) &iedModel_Battery_ZBTC1_BatChaPwr,
     NULL,
-    0
+    0,
+    -1
 };
 
 DataObject iedModel_Battery_ZBTC1_BatChaPwr = {
@@ -3083,7 +3327,8 @@ DataObject iedModel_Battery_ZBTC1_BatChaPwr = {
     (ModelNode*) &iedModel_Battery_ZBTC1,
     (ModelNode*) &iedModel_Battery_ZBTC1_BatChaMod,
     NULL,
-    0
+    0,
+    -1
 };
 
 DataObject iedModel_Battery_ZBTC1_BatChaMod = {
@@ -3092,7 +3337,8 @@ DataObject iedModel_Battery_ZBTC1_BatChaMod = {
     (ModelNode*) &iedModel_Battery_ZBTC1,
     (ModelNode*) &iedModel_Battery_ZBTC1_ChaV,
     NULL,
-    0
+    0,
+    -1
 };
 
 DataObject iedModel_Battery_ZBTC1_ChaV = {
@@ -3101,7 +3347,8 @@ DataObject iedModel_Battery_ZBTC1_ChaV = {
     (ModelNode*) &iedModel_Battery_ZBTC1,
     (ModelNode*) &iedModel_Battery_ZBTC1_ChaA,
     (ModelNode*) &iedModel_Battery_ZBTC1_ChaV_mag,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Battery_ZBTC1_ChaV_mag = {
@@ -3111,6 +3358,7 @@ DataAttribute iedModel_Battery_ZBTC1_ChaV_mag = {
     (ModelNode*) &iedModel_Battery_ZBTC1_ChaV_q,
     (ModelNode*) &iedModel_Battery_ZBTC1_ChaV_mag_f,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0 + TRG_OPT_DATA_CHANGED,
@@ -3124,6 +3372,7 @@ DataAttribute iedModel_Battery_ZBTC1_ChaV_mag_f = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_FLOAT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -3137,6 +3386,7 @@ DataAttribute iedModel_Battery_ZBTC1_ChaV_q = {
     (ModelNode*) &iedModel_Battery_ZBTC1_ChaV_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -3150,6 +3400,7 @@ DataAttribute iedModel_Battery_ZBTC1_ChaV_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_TIMESTAMP,
     0,
@@ -3162,7 +3413,8 @@ DataObject iedModel_Battery_ZBTC1_ChaA = {
     (ModelNode*) &iedModel_Battery_ZBTC1,
     NULL,
     (ModelNode*) &iedModel_Battery_ZBTC1_ChaA_mag,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Battery_ZBTC1_ChaA_mag = {
@@ -3172,6 +3424,7 @@ DataAttribute iedModel_Battery_ZBTC1_ChaA_mag = {
     (ModelNode*) &iedModel_Battery_ZBTC1_ChaA_q,
     (ModelNode*) &iedModel_Battery_ZBTC1_ChaA_mag_f,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0 + TRG_OPT_DATA_CHANGED,
@@ -3185,6 +3438,7 @@ DataAttribute iedModel_Battery_ZBTC1_ChaA_mag_f = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_FLOAT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -3198,6 +3452,7 @@ DataAttribute iedModel_Battery_ZBTC1_ChaA_q = {
     (ModelNode*) &iedModel_Battery_ZBTC1_ChaA_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -3211,6 +3466,7 @@ DataAttribute iedModel_Battery_ZBTC1_ChaA_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_TIMESTAMP,
     0,
@@ -3223,7 +3479,8 @@ LogicalDevice iedModel_Physical_Measurements = {
     "Physical_Measurements",
     (ModelNode*) &iedModel,
     NULL,
-    (ModelNode*) &iedModel_Physical_Measurements_LLN0
+    (ModelNode*) &iedModel_Physical_Measurements_LLN0,
+    NULL
 };
 
 LogicalNode iedModel_Physical_Measurements_LLN0 = {
@@ -3240,7 +3497,8 @@ DataObject iedModel_Physical_Measurements_LLN0_Mod = {
     (ModelNode*) &iedModel_Physical_Measurements_LLN0,
     (ModelNode*) &iedModel_Physical_Measurements_LLN0_Beh,
     (ModelNode*) &iedModel_Physical_Measurements_LLN0_Mod_q,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Physical_Measurements_LLN0_Mod_q = {
@@ -3250,6 +3508,7 @@ DataAttribute iedModel_Physical_Measurements_LLN0_Mod_q = {
     (ModelNode*) &iedModel_Physical_Measurements_LLN0_Mod_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -3263,6 +3522,7 @@ DataAttribute iedModel_Physical_Measurements_LLN0_Mod_t = {
     (ModelNode*) &iedModel_Physical_Measurements_LLN0_Mod_ctlModel,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -3276,6 +3536,7 @@ DataAttribute iedModel_Physical_Measurements_LLN0_Mod_ctlModel = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_CF,
     IEC61850_ENUMERATED,
     0,
@@ -3288,7 +3549,8 @@ DataObject iedModel_Physical_Measurements_LLN0_Beh = {
     (ModelNode*) &iedModel_Physical_Measurements_LLN0,
     (ModelNode*) &iedModel_Physical_Measurements_LLN0_Health,
     (ModelNode*) &iedModel_Physical_Measurements_LLN0_Beh_stVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Physical_Measurements_LLN0_Beh_stVal = {
@@ -3298,6 +3560,7 @@ DataAttribute iedModel_Physical_Measurements_LLN0_Beh_stVal = {
     (ModelNode*) &iedModel_Physical_Measurements_LLN0_Beh_q,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_INT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -3311,6 +3574,7 @@ DataAttribute iedModel_Physical_Measurements_LLN0_Beh_q = {
     (ModelNode*) &iedModel_Physical_Measurements_LLN0_Beh_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -3324,6 +3588,7 @@ DataAttribute iedModel_Physical_Measurements_LLN0_Beh_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -3336,7 +3601,8 @@ DataObject iedModel_Physical_Measurements_LLN0_Health = {
     (ModelNode*) &iedModel_Physical_Measurements_LLN0,
     (ModelNode*) &iedModel_Physical_Measurements_LLN0_NamPlt,
     (ModelNode*) &iedModel_Physical_Measurements_LLN0_Health_stVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Physical_Measurements_LLN0_Health_stVal = {
@@ -3346,6 +3612,7 @@ DataAttribute iedModel_Physical_Measurements_LLN0_Health_stVal = {
     (ModelNode*) &iedModel_Physical_Measurements_LLN0_Health_q,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_INT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -3359,6 +3626,7 @@ DataAttribute iedModel_Physical_Measurements_LLN0_Health_q = {
     (ModelNode*) &iedModel_Physical_Measurements_LLN0_Health_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -3372,6 +3640,7 @@ DataAttribute iedModel_Physical_Measurements_LLN0_Health_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -3384,7 +3653,8 @@ DataObject iedModel_Physical_Measurements_LLN0_NamPlt = {
     (ModelNode*) &iedModel_Physical_Measurements_LLN0,
     NULL,
     (ModelNode*) &iedModel_Physical_Measurements_LLN0_NamPlt_vendor,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Physical_Measurements_LLN0_NamPlt_vendor = {
@@ -3394,6 +3664,7 @@ DataAttribute iedModel_Physical_Measurements_LLN0_NamPlt_vendor = {
     (ModelNode*) &iedModel_Physical_Measurements_LLN0_NamPlt_swRev,
     NULL,
     0,
+    -1,
     IEC61850_FC_DC,
     IEC61850_VISIBLE_STRING_255,
     0,
@@ -3407,6 +3678,7 @@ DataAttribute iedModel_Physical_Measurements_LLN0_NamPlt_swRev = {
     (ModelNode*) &iedModel_Physical_Measurements_LLN0_NamPlt_d,
     NULL,
     0,
+    -1,
     IEC61850_FC_DC,
     IEC61850_VISIBLE_STRING_255,
     0,
@@ -3420,6 +3692,7 @@ DataAttribute iedModel_Physical_Measurements_LLN0_NamPlt_d = {
     (ModelNode*) &iedModel_Physical_Measurements_LLN0_NamPlt_configRev,
     NULL,
     0,
+    -1,
     IEC61850_FC_DC,
     IEC61850_VISIBLE_STRING_255,
     0,
@@ -3433,6 +3706,7 @@ DataAttribute iedModel_Physical_Measurements_LLN0_NamPlt_configRev = {
     (ModelNode*) &iedModel_Physical_Measurements_LLN0_NamPlt_ldNs,
     NULL,
     0,
+    -1,
     IEC61850_FC_DC,
     IEC61850_VISIBLE_STRING_255,
     0,
@@ -3446,6 +3720,7 @@ DataAttribute iedModel_Physical_Measurements_LLN0_NamPlt_ldNs = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_EX,
     IEC61850_VISIBLE_STRING_255,
     0,
@@ -3466,7 +3741,8 @@ DataObject iedModel_Physical_Measurements_LPHD1_PhyNam = {
     (ModelNode*) &iedModel_Physical_Measurements_LPHD1,
     (ModelNode*) &iedModel_Physical_Measurements_LPHD1_PhyHealth,
     (ModelNode*) &iedModel_Physical_Measurements_LPHD1_PhyNam_vendor,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Physical_Measurements_LPHD1_PhyNam_vendor = {
@@ -3476,6 +3752,7 @@ DataAttribute iedModel_Physical_Measurements_LPHD1_PhyNam_vendor = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_DC,
     IEC61850_VISIBLE_STRING_255,
     0,
@@ -3488,7 +3765,8 @@ DataObject iedModel_Physical_Measurements_LPHD1_PhyHealth = {
     (ModelNode*) &iedModel_Physical_Measurements_LPHD1,
     (ModelNode*) &iedModel_Physical_Measurements_LPHD1_Proxy,
     (ModelNode*) &iedModel_Physical_Measurements_LPHD1_PhyHealth_stVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Physical_Measurements_LPHD1_PhyHealth_stVal = {
@@ -3498,6 +3776,7 @@ DataAttribute iedModel_Physical_Measurements_LPHD1_PhyHealth_stVal = {
     (ModelNode*) &iedModel_Physical_Measurements_LPHD1_PhyHealth_q,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_INT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -3511,6 +3790,7 @@ DataAttribute iedModel_Physical_Measurements_LPHD1_PhyHealth_q = {
     (ModelNode*) &iedModel_Physical_Measurements_LPHD1_PhyHealth_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -3524,6 +3804,7 @@ DataAttribute iedModel_Physical_Measurements_LPHD1_PhyHealth_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -3536,7 +3817,8 @@ DataObject iedModel_Physical_Measurements_LPHD1_Proxy = {
     (ModelNode*) &iedModel_Physical_Measurements_LPHD1,
     NULL,
     (ModelNode*) &iedModel_Physical_Measurements_LPHD1_Proxy_stVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_Physical_Measurements_LPHD1_Proxy_stVal = {
@@ -3546,6 +3828,7 @@ DataAttribute iedModel_Physical_Measurements_LPHD1_Proxy_stVal = {
     (ModelNode*) &iedModel_Physical_Measurements_LPHD1_Proxy_q,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_BOOLEAN,
     0 + TRG_OPT_DATA_CHANGED,
@@ -3559,6 +3842,7 @@ DataAttribute iedModel_Physical_Measurements_LPHD1_Proxy_q = {
     (ModelNode*) &iedModel_Physical_Measurements_LPHD1_Proxy_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -3572,6 +3856,7 @@ DataAttribute iedModel_Physical_Measurements_LPHD1_Proxy_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,

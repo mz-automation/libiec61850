@@ -14,7 +14,8 @@ LogicalDevice iedModel_LD1 = {
     "LD1",
     (ModelNode*) &iedModel,
     NULL,
-    (ModelNode*) &iedModel_LD1_LLN0
+    (ModelNode*) &iedModel_LD1_LLN0,
+    NULL
 };
 
 LogicalNode iedModel_LD1_LLN0 = {
@@ -31,7 +32,8 @@ DataObject iedModel_LD1_LLN0_Beh = {
     (ModelNode*) &iedModel_LD1_LLN0,
     NULL,
     (ModelNode*) &iedModel_LD1_LLN0_Beh_stVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_LD1_LLN0_Beh_stVal = {
@@ -41,6 +43,7 @@ DataAttribute iedModel_LD1_LLN0_Beh_stVal = {
     (ModelNode*) &iedModel_LD1_LLN0_Beh_q,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_ENUMERATED,
     0,
@@ -54,6 +57,7 @@ DataAttribute iedModel_LD1_LLN0_Beh_q = {
     (ModelNode*) &iedModel_LD1_LLN0_Beh_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0,
@@ -67,6 +71,7 @@ DataAttribute iedModel_LD1_LLN0_Beh_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -87,7 +92,8 @@ DataObject iedModel_LD1_LPHD1_PhyNam = {
     (ModelNode*) &iedModel_LD1_LPHD1,
     (ModelNode*) &iedModel_LD1_LPHD1_PhyHealth,
     (ModelNode*) &iedModel_LD1_LPHD1_PhyNam_vendor,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_LD1_LPHD1_PhyNam_vendor = {
@@ -97,6 +103,7 @@ DataAttribute iedModel_LD1_LPHD1_PhyNam_vendor = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_DC,
     IEC61850_VISIBLE_STRING_255,
     0,
@@ -109,7 +116,8 @@ DataObject iedModel_LD1_LPHD1_PhyHealth = {
     (ModelNode*) &iedModel_LD1_LPHD1,
     (ModelNode*) &iedModel_LD1_LPHD1_Proxy,
     (ModelNode*) &iedModel_LD1_LPHD1_PhyHealth_stVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_LD1_LPHD1_PhyHealth_stVal = {
@@ -119,6 +127,7 @@ DataAttribute iedModel_LD1_LPHD1_PhyHealth_stVal = {
     (ModelNode*) &iedModel_LD1_LPHD1_PhyHealth_q,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_ENUMERATED,
     0,
@@ -132,6 +141,7 @@ DataAttribute iedModel_LD1_LPHD1_PhyHealth_q = {
     (ModelNode*) &iedModel_LD1_LPHD1_PhyHealth_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0,
@@ -145,6 +155,7 @@ DataAttribute iedModel_LD1_LPHD1_PhyHealth_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -157,7 +168,8 @@ DataObject iedModel_LD1_LPHD1_Proxy = {
     (ModelNode*) &iedModel_LD1_LPHD1,
     NULL,
     (ModelNode*) &iedModel_LD1_LPHD1_Proxy_stVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_LD1_LPHD1_Proxy_stVal = {
@@ -167,6 +179,7 @@ DataAttribute iedModel_LD1_LPHD1_Proxy_stVal = {
     (ModelNode*) &iedModel_LD1_LPHD1_Proxy_q,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_BOOLEAN,
     0 + TRG_OPT_DATA_CHANGED,
@@ -180,6 +193,7 @@ DataAttribute iedModel_LD1_LPHD1_Proxy_q = {
     (ModelNode*) &iedModel_LD1_LPHD1_Proxy_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -193,6 +207,7 @@ DataAttribute iedModel_LD1_LPHD1_Proxy_t = {
     (ModelNode*) &iedModel_LD1_LPHD1_Proxy_subEna,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -206,6 +221,7 @@ DataAttribute iedModel_LD1_LPHD1_Proxy_subEna = {
     (ModelNode*) &iedModel_LD1_LPHD1_Proxy_subVal,
     NULL,
     0,
+    -1,
     IEC61850_FC_SV,
     IEC61850_BOOLEAN,
     0,
@@ -219,6 +235,7 @@ DataAttribute iedModel_LD1_LPHD1_Proxy_subVal = {
     (ModelNode*) &iedModel_LD1_LPHD1_Proxy_subQ,
     NULL,
     0,
+    -1,
     IEC61850_FC_SV,
     IEC61850_BOOLEAN,
     0,
@@ -232,6 +249,7 @@ DataAttribute iedModel_LD1_LPHD1_Proxy_subQ = {
     (ModelNode*) &iedModel_LD1_LPHD1_Proxy_subID,
     NULL,
     0,
+    -1,
     IEC61850_FC_SV,
     IEC61850_QUALITY,
     0,
@@ -245,6 +263,7 @@ DataAttribute iedModel_LD1_LPHD1_Proxy_subID = {
     (ModelNode*) &iedModel_LD1_LPHD1_Proxy_blkEna,
     NULL,
     0,
+    -1,
     IEC61850_FC_SV,
     IEC61850_VISIBLE_STRING_64,
     0,
@@ -258,6 +277,7 @@ DataAttribute iedModel_LD1_LPHD1_Proxy_blkEna = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_BL,
     IEC61850_BOOLEAN,
     0,
@@ -278,7 +298,8 @@ DataObject iedModel_LD1_MMDC1_Beh = {
     (ModelNode*) &iedModel_LD1_MMDC1,
     (ModelNode*) &iedModel_LD1_MMDC1_Watt,
     (ModelNode*) &iedModel_LD1_MMDC1_Beh_stVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_LD1_MMDC1_Beh_stVal = {
@@ -288,6 +309,7 @@ DataAttribute iedModel_LD1_MMDC1_Beh_stVal = {
     (ModelNode*) &iedModel_LD1_MMDC1_Beh_q,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_ENUMERATED,
     0,
@@ -301,6 +323,7 @@ DataAttribute iedModel_LD1_MMDC1_Beh_q = {
     (ModelNode*) &iedModel_LD1_MMDC1_Beh_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0,
@@ -314,6 +337,7 @@ DataAttribute iedModel_LD1_MMDC1_Beh_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -326,7 +350,8 @@ DataObject iedModel_LD1_MMDC1_Watt = {
     (ModelNode*) &iedModel_LD1_MMDC1,
     (ModelNode*) &iedModel_LD1_MMDC1_Amp,
     (ModelNode*) &iedModel_LD1_MMDC1_Watt_mag,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_LD1_MMDC1_Watt_mag = {
@@ -336,6 +361,7 @@ DataAttribute iedModel_LD1_MMDC1_Watt_mag = {
     (ModelNode*) &iedModel_LD1_MMDC1_Watt_q,
     (ModelNode*) &iedModel_LD1_MMDC1_Watt_mag_f,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0 + TRG_OPT_DATA_CHANGED,
@@ -349,6 +375,7 @@ DataAttribute iedModel_LD1_MMDC1_Watt_mag_f = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_FLOAT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -362,6 +389,7 @@ DataAttribute iedModel_LD1_MMDC1_Watt_q = {
     (ModelNode*) &iedModel_LD1_MMDC1_Watt_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -375,6 +403,7 @@ DataAttribute iedModel_LD1_MMDC1_Watt_t = {
     (ModelNode*) &iedModel_LD1_MMDC1_Watt_subEna,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_TIMESTAMP,
     0,
@@ -388,6 +417,7 @@ DataAttribute iedModel_LD1_MMDC1_Watt_subEna = {
     (ModelNode*) &iedModel_LD1_MMDC1_Watt_subMag,
     NULL,
     0,
+    -1,
     IEC61850_FC_SV,
     IEC61850_BOOLEAN,
     0,
@@ -401,6 +431,7 @@ DataAttribute iedModel_LD1_MMDC1_Watt_subMag = {
     (ModelNode*) &iedModel_LD1_MMDC1_Watt_subQ,
     (ModelNode*) &iedModel_LD1_MMDC1_Watt_subMag_f,
     0,
+    -1,
     IEC61850_FC_SV,
     IEC61850_CONSTRUCTED,
     0,
@@ -414,6 +445,7 @@ DataAttribute iedModel_LD1_MMDC1_Watt_subMag_f = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_SV,
     IEC61850_FLOAT32,
     0,
@@ -427,6 +459,7 @@ DataAttribute iedModel_LD1_MMDC1_Watt_subQ = {
     (ModelNode*) &iedModel_LD1_MMDC1_Watt_subID,
     NULL,
     0,
+    -1,
     IEC61850_FC_SV,
     IEC61850_QUALITY,
     0,
@@ -440,6 +473,7 @@ DataAttribute iedModel_LD1_MMDC1_Watt_subID = {
     (ModelNode*) &iedModel_LD1_MMDC1_Watt_blkEna,
     NULL,
     0,
+    -1,
     IEC61850_FC_SV,
     IEC61850_VISIBLE_STRING_64,
     0,
@@ -453,6 +487,7 @@ DataAttribute iedModel_LD1_MMDC1_Watt_blkEna = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_BL,
     IEC61850_BOOLEAN,
     0,
@@ -465,7 +500,8 @@ DataObject iedModel_LD1_MMDC1_Amp = {
     (ModelNode*) &iedModel_LD1_MMDC1,
     (ModelNode*) &iedModel_LD1_MMDC1_Vol,
     (ModelNode*) &iedModel_LD1_MMDC1_Amp_mag,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_LD1_MMDC1_Amp_mag = {
@@ -475,6 +511,7 @@ DataAttribute iedModel_LD1_MMDC1_Amp_mag = {
     (ModelNode*) &iedModel_LD1_MMDC1_Amp_q,
     (ModelNode*) &iedModel_LD1_MMDC1_Amp_mag_f,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0 + TRG_OPT_DATA_CHANGED,
@@ -488,6 +525,7 @@ DataAttribute iedModel_LD1_MMDC1_Amp_mag_f = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_FLOAT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -501,6 +539,7 @@ DataAttribute iedModel_LD1_MMDC1_Amp_q = {
     (ModelNode*) &iedModel_LD1_MMDC1_Amp_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -514,6 +553,7 @@ DataAttribute iedModel_LD1_MMDC1_Amp_t = {
     (ModelNode*) &iedModel_LD1_MMDC1_Amp_subEna,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_TIMESTAMP,
     0,
@@ -527,6 +567,7 @@ DataAttribute iedModel_LD1_MMDC1_Amp_subEna = {
     (ModelNode*) &iedModel_LD1_MMDC1_Amp_subMag,
     NULL,
     0,
+    -1,
     IEC61850_FC_SV,
     IEC61850_BOOLEAN,
     0,
@@ -540,6 +581,7 @@ DataAttribute iedModel_LD1_MMDC1_Amp_subMag = {
     (ModelNode*) &iedModel_LD1_MMDC1_Amp_subQ,
     (ModelNode*) &iedModel_LD1_MMDC1_Amp_subMag_f,
     0,
+    -1,
     IEC61850_FC_SV,
     IEC61850_CONSTRUCTED,
     0,
@@ -553,6 +595,7 @@ DataAttribute iedModel_LD1_MMDC1_Amp_subMag_f = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_SV,
     IEC61850_FLOAT32,
     0,
@@ -566,6 +609,7 @@ DataAttribute iedModel_LD1_MMDC1_Amp_subQ = {
     (ModelNode*) &iedModel_LD1_MMDC1_Amp_subID,
     NULL,
     0,
+    -1,
     IEC61850_FC_SV,
     IEC61850_QUALITY,
     0,
@@ -579,6 +623,7 @@ DataAttribute iedModel_LD1_MMDC1_Amp_subID = {
     (ModelNode*) &iedModel_LD1_MMDC1_Amp_blkEna,
     NULL,
     0,
+    -1,
     IEC61850_FC_SV,
     IEC61850_VISIBLE_STRING_64,
     0,
@@ -592,6 +637,7 @@ DataAttribute iedModel_LD1_MMDC1_Amp_blkEna = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_BL,
     IEC61850_BOOLEAN,
     0,
@@ -604,7 +650,8 @@ DataObject iedModel_LD1_MMDC1_Vol = {
     (ModelNode*) &iedModel_LD1_MMDC1,
     NULL,
     (ModelNode*) &iedModel_LD1_MMDC1_Vol_mag,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_LD1_MMDC1_Vol_mag = {
@@ -614,6 +661,7 @@ DataAttribute iedModel_LD1_MMDC1_Vol_mag = {
     (ModelNode*) &iedModel_LD1_MMDC1_Vol_q,
     (ModelNode*) &iedModel_LD1_MMDC1_Vol_mag_f,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0 + TRG_OPT_DATA_CHANGED,
@@ -627,6 +675,7 @@ DataAttribute iedModel_LD1_MMDC1_Vol_mag_f = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_FLOAT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -640,6 +689,7 @@ DataAttribute iedModel_LD1_MMDC1_Vol_q = {
     (ModelNode*) &iedModel_LD1_MMDC1_Vol_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -653,6 +703,7 @@ DataAttribute iedModel_LD1_MMDC1_Vol_t = {
     (ModelNode*) &iedModel_LD1_MMDC1_Vol_subEna,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_TIMESTAMP,
     0,
@@ -666,6 +717,7 @@ DataAttribute iedModel_LD1_MMDC1_Vol_subEna = {
     (ModelNode*) &iedModel_LD1_MMDC1_Vol_subMag,
     NULL,
     0,
+    -1,
     IEC61850_FC_SV,
     IEC61850_BOOLEAN,
     0,
@@ -679,6 +731,7 @@ DataAttribute iedModel_LD1_MMDC1_Vol_subMag = {
     (ModelNode*) &iedModel_LD1_MMDC1_Vol_subQ,
     (ModelNode*) &iedModel_LD1_MMDC1_Vol_subMag_f,
     0,
+    -1,
     IEC61850_FC_SV,
     IEC61850_CONSTRUCTED,
     0,
@@ -692,6 +745,7 @@ DataAttribute iedModel_LD1_MMDC1_Vol_subMag_f = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_SV,
     IEC61850_FLOAT32,
     0,
@@ -705,6 +759,7 @@ DataAttribute iedModel_LD1_MMDC1_Vol_subQ = {
     (ModelNode*) &iedModel_LD1_MMDC1_Vol_subID,
     NULL,
     0,
+    -1,
     IEC61850_FC_SV,
     IEC61850_QUALITY,
     0,
@@ -718,6 +773,7 @@ DataAttribute iedModel_LD1_MMDC1_Vol_subID = {
     (ModelNode*) &iedModel_LD1_MMDC1_Vol_blkEna,
     NULL,
     0,
+    -1,
     IEC61850_FC_SV,
     IEC61850_VISIBLE_STRING_64,
     0,
@@ -731,6 +787,7 @@ DataAttribute iedModel_LD1_MMDC1_Vol_blkEna = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_BL,
     IEC61850_BOOLEAN,
     0,
@@ -751,7 +808,8 @@ DataObject iedModel_LD1_GGIO1_Beh = {
     (ModelNode*) &iedModel_LD1_GGIO1,
     (ModelNode*) &iedModel_LD1_GGIO1_Ind1,
     (ModelNode*) &iedModel_LD1_GGIO1_Beh_stVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_LD1_GGIO1_Beh_stVal = {
@@ -761,6 +819,7 @@ DataAttribute iedModel_LD1_GGIO1_Beh_stVal = {
     (ModelNode*) &iedModel_LD1_GGIO1_Beh_q,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_ENUMERATED,
     0,
@@ -774,6 +833,7 @@ DataAttribute iedModel_LD1_GGIO1_Beh_q = {
     (ModelNode*) &iedModel_LD1_GGIO1_Beh_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0,
@@ -787,6 +847,7 @@ DataAttribute iedModel_LD1_GGIO1_Beh_t = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -799,7 +860,8 @@ DataObject iedModel_LD1_GGIO1_Ind1 = {
     (ModelNode*) &iedModel_LD1_GGIO1,
     (ModelNode*) &iedModel_LD1_GGIO1_AnIn1,
     (ModelNode*) &iedModel_LD1_GGIO1_Ind1_stVal,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_LD1_GGIO1_Ind1_stVal = {
@@ -809,6 +871,7 @@ DataAttribute iedModel_LD1_GGIO1_Ind1_stVal = {
     (ModelNode*) &iedModel_LD1_GGIO1_Ind1_q,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_BOOLEAN,
     0 + TRG_OPT_DATA_CHANGED,
@@ -822,6 +885,7 @@ DataAttribute iedModel_LD1_GGIO1_Ind1_q = {
     (ModelNode*) &iedModel_LD1_GGIO1_Ind1_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -835,6 +899,7 @@ DataAttribute iedModel_LD1_GGIO1_Ind1_t = {
     (ModelNode*) &iedModel_LD1_GGIO1_Ind1_subEna,
     NULL,
     0,
+    -1,
     IEC61850_FC_ST,
     IEC61850_TIMESTAMP,
     0,
@@ -848,6 +913,7 @@ DataAttribute iedModel_LD1_GGIO1_Ind1_subEna = {
     (ModelNode*) &iedModel_LD1_GGIO1_Ind1_subVal,
     NULL,
     0,
+    -1,
     IEC61850_FC_SV,
     IEC61850_BOOLEAN,
     0,
@@ -861,6 +927,7 @@ DataAttribute iedModel_LD1_GGIO1_Ind1_subVal = {
     (ModelNode*) &iedModel_LD1_GGIO1_Ind1_subQ,
     NULL,
     0,
+    -1,
     IEC61850_FC_SV,
     IEC61850_BOOLEAN,
     0,
@@ -874,6 +941,7 @@ DataAttribute iedModel_LD1_GGIO1_Ind1_subQ = {
     (ModelNode*) &iedModel_LD1_GGIO1_Ind1_subID,
     NULL,
     0,
+    -1,
     IEC61850_FC_SV,
     IEC61850_QUALITY,
     0,
@@ -887,6 +955,7 @@ DataAttribute iedModel_LD1_GGIO1_Ind1_subID = {
     (ModelNode*) &iedModel_LD1_GGIO1_Ind1_blkEna,
     NULL,
     0,
+    -1,
     IEC61850_FC_SV,
     IEC61850_VISIBLE_STRING_64,
     0,
@@ -900,6 +969,7 @@ DataAttribute iedModel_LD1_GGIO1_Ind1_blkEna = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_BL,
     IEC61850_BOOLEAN,
     0,
@@ -912,7 +982,8 @@ DataObject iedModel_LD1_GGIO1_AnIn1 = {
     (ModelNode*) &iedModel_LD1_GGIO1,
     NULL,
     (ModelNode*) &iedModel_LD1_GGIO1_AnIn1_mag,
-    0
+    0,
+    -1
 };
 
 DataAttribute iedModel_LD1_GGIO1_AnIn1_mag = {
@@ -922,6 +993,7 @@ DataAttribute iedModel_LD1_GGIO1_AnIn1_mag = {
     (ModelNode*) &iedModel_LD1_GGIO1_AnIn1_q,
     (ModelNode*) &iedModel_LD1_GGIO1_AnIn1_mag_f,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_CONSTRUCTED,
     0 + TRG_OPT_DATA_CHANGED,
@@ -935,6 +1007,7 @@ DataAttribute iedModel_LD1_GGIO1_AnIn1_mag_f = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_FLOAT32,
     0 + TRG_OPT_DATA_CHANGED,
@@ -948,6 +1021,7 @@ DataAttribute iedModel_LD1_GGIO1_AnIn1_q = {
     (ModelNode*) &iedModel_LD1_GGIO1_AnIn1_t,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_QUALITY,
     0 + TRG_OPT_QUALITY_CHANGED,
@@ -961,6 +1035,7 @@ DataAttribute iedModel_LD1_GGIO1_AnIn1_t = {
     (ModelNode*) &iedModel_LD1_GGIO1_AnIn1_subEna,
     NULL,
     0,
+    -1,
     IEC61850_FC_MX,
     IEC61850_TIMESTAMP,
     0,
@@ -974,6 +1049,7 @@ DataAttribute iedModel_LD1_GGIO1_AnIn1_subEna = {
     (ModelNode*) &iedModel_LD1_GGIO1_AnIn1_subMag,
     NULL,
     0,
+    -1,
     IEC61850_FC_SV,
     IEC61850_BOOLEAN,
     0,
@@ -987,6 +1063,7 @@ DataAttribute iedModel_LD1_GGIO1_AnIn1_subMag = {
     (ModelNode*) &iedModel_LD1_GGIO1_AnIn1_subQ,
     (ModelNode*) &iedModel_LD1_GGIO1_AnIn1_subMag_f,
     0,
+    -1,
     IEC61850_FC_SV,
     IEC61850_CONSTRUCTED,
     0,
@@ -1000,6 +1077,7 @@ DataAttribute iedModel_LD1_GGIO1_AnIn1_subMag_f = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_SV,
     IEC61850_FLOAT32,
     0,
@@ -1013,6 +1091,7 @@ DataAttribute iedModel_LD1_GGIO1_AnIn1_subQ = {
     (ModelNode*) &iedModel_LD1_GGIO1_AnIn1_subID,
     NULL,
     0,
+    -1,
     IEC61850_FC_SV,
     IEC61850_QUALITY,
     0,
@@ -1026,6 +1105,7 @@ DataAttribute iedModel_LD1_GGIO1_AnIn1_subID = {
     (ModelNode*) &iedModel_LD1_GGIO1_AnIn1_blkEna,
     NULL,
     0,
+    -1,
     IEC61850_FC_SV,
     IEC61850_VISIBLE_STRING_64,
     0,
@@ -1039,6 +1119,7 @@ DataAttribute iedModel_LD1_GGIO1_AnIn1_blkEna = {
     NULL,
     NULL,
     0,
+    -1,
     IEC61850_FC_BL,
     IEC61850_BOOLEAN,
     0,

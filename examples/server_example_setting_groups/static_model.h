@@ -1,7 +1,7 @@
 /*
  * static_model.h
  *
- * automatically generated from sg_demo.icd
+ * automatically generated from sg_demo.cid
  */
 
 #ifndef STATIC_MODEL_H_
