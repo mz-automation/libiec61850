@@ -3816,7 +3816,12 @@ processEventsForReport(ReportControl* rc, uint64_t currentTimeInMs)
                         rc->triggered = false;
                     }
 
-                    rc->nextIntgReportTime = rc->nextIntgReportTime + rc->intgPd;
+                    if (rc->server->syncIntegrityReportTimes) {
+                        rc->nextIntgReportTime = getNextRoundedStartTime(currentTimeInMs, rc->intgPd);
+                    }
+                    else {
+                        rc->nextIntgReportTime = rc->nextIntgReportTime + rc->intgPd;
+                    }
 
                     /* check for system time change effects */
                     if ((rc->nextIntgReportTime < currentTimeInMs) || (rc->nextIntgReportTime > currentTimeInMs + rc->intgPd)) {
