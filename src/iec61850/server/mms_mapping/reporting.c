@@ -928,7 +928,7 @@ static uint64_t
 getNextRoundedStartTime(uint64_t currentTime, uint64_t intgPd)
 {
     uint64_t modTime = currentTime % intgPd;
-    uint64_t delta = 0;
+    uint64_t delta = intgPd;
 
     if (modTime != 0) {
         delta = intgPd - modTime;
@@ -3848,7 +3848,6 @@ processEventsForReport(ReportControl* rc, uint64_t currentTimeInMs)
                             rc->nextIntgReportTime = currentTimeInMs + rc->intgPd;
                         }
                     }
-
                 }
             }
         }
