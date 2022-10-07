@@ -1048,7 +1048,9 @@ createFileDirectoryResponse(const char* basepath, uint32_t invokeId, ByteBuffer*
             continueAfterFileName = NULL;
     }
 
-    if ((mmsMsg_isFilenameSave(directoryName) == false) || (mmsMsg_isFilenameSave(continueAfterFileName) == false)) {
+    if ((directoryName && mmsMsg_isFilenameSave(directoryName) == false) || 
+        (continueAfterFileName && mmsMsg_isFilenameSave(continueAfterFileName) == false))
+    {
         if (DEBUG_MMS_SERVER)
             printf("MMS_SERVER: remote provided unsave filename -> rejected\n");
 

@@ -573,11 +573,8 @@ mmsMsg_createExtendedFilename(const char* basepath, int bufSize, char* extendedF
 bool
 mmsMsg_isFilenameSave(const char* filename)
 {
-    if (filename) {
-        if (filename[0] == '/' || filename[0] == '\\') {
-            return false;
-        }
-
+    if (filename)
+    {
         if (strstr(filename, ".."))
             return false;
 
@@ -641,7 +638,7 @@ mmsMsg_parseFileName(char* filename, uint8_t* buffer, int* bufPos, int maxBufPos
      * characters.
      */
     if (strstr(filename, "..") != NULL) {
-        mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_FILENAME_SYNTAX_ERROR);
+        mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_FILE_NON_EXISTENT);
         return false;
     }
 
