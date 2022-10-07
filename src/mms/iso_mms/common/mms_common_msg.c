@@ -570,6 +570,27 @@ mmsMsg_createExtendedFilename(const char* basepath, int bufSize, char* extendedF
 #endif
 }
 
+bool
+mmsMsg_isFilenameSave(const char* filename)
+{
+    if (filename) {
+        if (filename[0] == '/' || filename[0] == '\\') {
+            return false;
+        }
+
+        if (strstr(filename, ".."))
+            return false;
+
+        if (strstr(filename, "./"))
+            return false;
+
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
 FileHandle
 mmsMsg_openFile(const char* basepath, char* fileName, bool readWrite)
 {

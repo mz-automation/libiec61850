@@ -82,6 +82,9 @@ mmsMsg_createExtendedFilename(const char* basepath, int bufSize, char* extendedF
 LIB61850_INTERNAL FileHandle
 mmsMsg_openFile(const char* basepath, char* fileName, bool readWrite);
 
+LIB61850_INTERNAL bool
+mmsMsg_isFilenameSave(const char* filename);
+
 #endif /* (MMS_FILE_SERVICE == 1) */
 
 typedef struct sMmsServiceError

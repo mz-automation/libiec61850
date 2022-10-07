@@ -235,8 +235,6 @@ mmsMsg_createFileOpenResponse(const char* basepath, uint32_t invokeId, ByteBuffe
     response->size = bufPos;
 }
 
-
-
 void
 mmsServer_handleFileDeleteRequest(
     MmsServerConnection connection,
@@ -265,6 +263,16 @@ mmsServer_handleFileDeleteRequest(
 
     if (DEBUG_MMS_SERVER)
         printf("MMS_SERVER: mms_file_service.c: Delete file (%s)\n", filename);
+
+    if (mmsMsg_isFilenameSave(filename) == false)
+    {
+        if (DEBUG_MMS_SERVER)
+            printf("MMS_SERVER: remote provided unsave filename -> rejected\n");
+
+        mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_FILE_NON_EXISTENT);
+
+        return;
+    }
 
     if (connection->server->fileAccessHandler != NULL) {
         MmsError access = connection->server->fileAccessHandler(connection->server->fileAccessHandlerParameter,
@@ -343,6 +351,17 @@ mmsServer_handleFileOpenRequest(
     }
 
     if (hasFileName) {
+
+        if (mmsMsg_isFilenameSave(filename) == false) {
+            /* potential attack */
+
+            if (DEBUG_MMS_CLIENT)
+                printf("MMS_SERVER: remote provided unsave filename -> rejected\n");
+
+             mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_FILE_NON_EXISTENT);
+
+             return;
+        }
 
         if (connection->server->fileAccessHandler != NULL) {
             MmsError access = connection->server->fileAccessHandler(connection->server->fileAccessHandlerParameter,
@@ -687,6 +706,15 @@ mmsServer_handleObtainFileRequest(
 
     if (hasSourceFileName && hasDestinationFilename) {
 
+        if (mmsMsg_isFilenameSave(destinationFilename) == false) {
+            /* potential attack */
+
+            if (DEBUG_MMS_SERVER)
+                printf("MMS_SERVER: remote provided unsave filename -> rejected\n");
+
+            goto exit_invalid_parameter;
+        }
+
         /* Call user to check if access is allowed */
         if (connection->server->fileAccessHandler != NULL) {
             MmsError access = connection->server->fileAccessHandler(connection->server->fileAccessHandlerParameter,
@@ -1020,6 +1048,15 @@ createFileDirectoryResponse(const char* basepath, uint32_t invokeId, ByteBuffer*
             continueAfterFileName = NULL;
     }
 
+    if ((mmsMsg_isFilenameSave(directoryName) == false) || (mmsMsg_isFilenameSave(continueAfterFileName) == false)) {
+        if (DEBUG_MMS_SERVER)
+            printf("MMS_SERVER: remote provided unsave filename -> rejected\n");
+
+       mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_FILE_NON_EXISTENT);
+
+       return;
+    }
+
     tempCurPos = addFileEntriesToResponse(basepath, buffer, tempCurPos, maxSize, directoryName, &continueAfterFileName, &moreFollows);
 
 	if (tempCurPos < 0) {
@@ -1124,6 +1161,16 @@ mmsServer_handleFileRenameRequest(
     }
 
     if ((strlen(currentFileName) != 0) && (strlen(newFileName) != 0)) {
+
+        if ((mmsMsg_isFilenameSave(currentFileName) == false) || (mmsMsg_isFilenameSave(newFileName) == false))
+        {
+            if (DEBUG_MMS_SERVER)
+                printf("MMS_SERVER: remote provided unsave filename -> rejected\n");
+
+            mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_FILE_NON_EXISTENT);
+
+            return;
+        }
 
         /* Call user to check if access is allowed */
         if (connection->server->fileAccessHandler != NULL) {

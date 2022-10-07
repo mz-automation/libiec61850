@@ -37,7 +37,6 @@ struct sDirectoryHandle {
     DIR* handle;
 };
 
-
 FileHandle
 FileSystem_openFile(char* fileName, bool readWrite)
 {
