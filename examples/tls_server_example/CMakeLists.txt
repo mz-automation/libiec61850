@@ -12,11 +12,11 @@ set_source_files_properties(${example_SRCS}
                                        PROPERTIES LANGUAGE CXX)
 ENDIF(MSVC)
 
-configure_file(server-key.pem server-key.pem COPYONLY)
-configure_file(server.cer server.cer COPYONLY)
-configure_file(client1.cer client1.cer COPYONLY)
-configure_file(client2.cer client2.cer COPYONLY)
-configure_file(root.cer root.cer COPYONLY)
+configure_file(server_CA1_1.key server_CA1_1.key COPYONLY)
+configure_file(server_CA1_1.pem server_CA1_1.pem COPYONLY)
+configure_file(client_CA1_1.pem client_CA1_1.pem COPYONLY)
+configure_file(client_CA1_2.pem client_CA1_2.pem COPYONLY)
+configure_file(root_CA1.pem root_CA1.pem COPYONLY)
 
 add_executable(tls_server_example
   ${example_SRCS}

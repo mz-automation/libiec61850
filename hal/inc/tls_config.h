@@ -50,6 +50,54 @@ TLSConfiguration_create(void);
 PAL_API void
 TLSConfiguration_setClientMode(TLSConfiguration self);
 
+typedef enum {
+    TLS_SEC_EVT_INFO = 0,
+    TLS_SEC_EVT_WARNING = 1,
+    TLS_SEC_EVT_INCIDENT = 2
+} TLSConfiguration_EventLevel;
+
+#define TLS_EVENT_CODE_ALM_ALGO_NOT_SUPPORTED 1
+#define TLS_EVENT_CODE_ALM_UNSECURE_COMMUNICATION 2
+#define TLS_EVENT_CODE_ALM_CERT_UNAVAILABLE 3
+#define TLS_EVENT_CODE_ALM_BAD_CERT 4
+#define TLS_EVENT_CODE_ALM_CERT_SIZE_EXCEEDED 5
+#define TLS_EVENT_CODE_ALM_CERT_VALIDATION_FAILED 6
+#define TLS_EVENT_CODE_ALM_CERT_REQUIRED 7
+#define TLS_EVENT_CODE_ALM_HANDSHAKE_FAILED_UNKNOWN_REASON 8
+#define TLS_EVENT_CODE_WRN_INSECURE_TLS_VERSION 9
+#define TLS_EVENT_CODE_INF_SESSION_RENEGOTIATION 10
+#define TLS_EVENT_CODE_ALM_CERT_EXPIRED 11
+#define TLS_EVENT_CODE_ALM_CERT_REVOKED 12
+#define TLS_EVENT_CODE_ALM_CERT_NOT_CONFIGURED 13
+#define TLS_EVENT_CODE_ALM_CERT_NOT_TRUSTED 12
+
+typedef void (*TLSConfiguration_EventHandler)(void* parameter, TLSConfiguration_EventLevel eventLevel, int eventCode, const char* message);
+
+/**
+ * \brief Set the security event handler
+ */
+PAL_API void
+TLSConfiguration_setEventHandler(TLSConfiguration self, TLSConfiguration_EventHandler handler, void* parameter);
+
+/**
+ * \brief enable or disable TLS session resumption (default: enabled)
+ * 
+ * NOTE: Depending on the used TLS version this is implemented by
+ * session IDs or by session tickets.
+ * 
+ * \param enable true to enable session resumption, false otherwise
+ */
+PAL_API void
+TLSConfiguration_enableSessionResumption(TLSConfiguration self, bool enable);
+
+/**
+ * \brief Set the maximum life time of a cached TLS session for session resumption in seconds
+ *
+ * \param intervalInSeconds the maximum lifetime of a cached TLS session
+ */
+PAL_API void
+TLSConfiguration_setSessionResumptionInterval(TLSConfiguration self, int intervalInSeconds);
+
 /**
  * \brief Enables the validation of the certificate trust chain (enabled by default)
  *
