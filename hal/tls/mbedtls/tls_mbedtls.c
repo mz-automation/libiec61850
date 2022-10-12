@@ -190,7 +190,7 @@ verifyCertificate (void* parameter, mbedtls_x509_crt *crt, int certificate_depth
 
                 if (self->peerCert) {
                     memcpy(self->peerCert, crt->raw.p, self->peerCertLength);
-                    self->peerCertLength = crt->raw.len;
+                    self->peerCertLength = (int)crt->raw.len;
                 }
 
             }
@@ -578,7 +578,7 @@ createSecurityEvents(TLSConfiguration config, int ret, uint32_t flags)
 static int
 readFunction(void* ctx, unsigned char* buf, size_t len)
 {
-    int ret = Socket_read((Socket) ctx, buf, len);
+    int ret = Socket_read((Socket) ctx, buf, (int)len);
 
     if ((ret == 0) && (len > 0)) {
         return MBEDTLS_ERR_SSL_WANT_READ;
@@ -660,8 +660,8 @@ TLSSocket_create(Socket socket, TLSConfiguration configuration, bool storeClient
 {
     TLSSocket self = (TLSSocket) GLOBAL_CALLOC(1, sizeof(struct sTLSSocket));
 
-    if (self) {
-
+    if (self)
+    {
         self->socket = socket;
         self->tlsConfig = configuration;
         self->storePeerCert = storeClientCert;
@@ -767,7 +767,7 @@ TLSSocket_create(Socket socket, TLSConfiguration configuration, bool storeClient
             if (configuration->conf.endpoint == MBEDTLS_SSL_IS_CLIENT) {
 
                 if (configuration->savedSession == NULL) {
-                    configuration->savedSession = GLOBAL_CALLOC(1, sizeof(mbedtls_ssl_session));
+                    configuration->savedSession = (mbedtls_ssl_session*)GLOBAL_CALLOC(1, sizeof(mbedtls_ssl_session));
                 }
 
                 if (configuration->savedSession) {
