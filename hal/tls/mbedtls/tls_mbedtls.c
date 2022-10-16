@@ -465,8 +465,12 @@ TLSConfiguration_addCRLFromFile(TLSConfiguration self, const char* filename)
 {
     int ret =  mbedtls_x509_crl_parse_file(&(self->crl), filename);
 
-    if (ret != 0)
+    if (ret != 0) {
         DEBUG_PRINT("TLS", "mbedtls_x509_crl_parse_file returned %d\n", ret);
+    }
+    else {
+        self->crlUpdated = Hal_getTimeInMs();
+    }
 
     return (ret == 0);
 }
