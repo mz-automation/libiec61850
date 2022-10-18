@@ -189,8 +189,8 @@ verifyCertificate (void* parameter, mbedtls_x509_crt *crt, int certificate_depth
                 self->peerCert = (uint8_t*) GLOBAL_MALLOC(crt->raw.len);
 
                 if (self->peerCert) {
-                    memcpy(self->peerCert, crt->raw.p, self->peerCertLength);
                     self->peerCertLength = (int)crt->raw.len;
+                    memcpy(self->peerCert, crt->raw.p, self->peerCertLength);
                 }
 
             }
