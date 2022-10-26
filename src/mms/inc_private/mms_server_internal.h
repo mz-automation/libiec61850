@@ -1,7 +1,7 @@
 /*
  *  mms_server_internal.h
  *
- *  Copyright 2013-2018 Michael Zillgith
+ *  Copyright 2013-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -261,9 +261,6 @@ LIB61850_INTERNAL MmsPdu_t*
 mmsServer_createConfirmedResponse(uint32_t invokeId);
 
 LIB61850_INTERNAL void
-mmsMsg_createServiceErrorPdu(uint32_t invokeId, ByteBuffer* response, MmsError errorType);
-
-LIB61850_INTERNAL void
 mmsMsg_createInitiateErrorPdu(ByteBuffer* response, uint8_t initiateErrorCode);
 
 LIB61850_INTERNAL void
@@ -414,9 +411,6 @@ mmsServer_getValue(MmsServer self, MmsDomain* domain, char* itemId, MmsServerCon
 LIB61850_INTERNAL void
 mmsServer_createMmsWriteResponse(MmsServerConnection connection,
         uint32_t invokeId, ByteBuffer* response, int numberOfItems, MmsDataAccessError* accessResults);
-
-LIB61850_INTERNAL void
-mmsMsg_createMmsRejectPdu(uint32_t* invokeId, int reason, ByteBuffer* response);
 
 LIB61850_INTERNAL MmsError
 mmsServer_callVariableListChangedHandler(bool create, MmsVariableListType listType, MmsDomain* domain,
