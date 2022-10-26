@@ -447,9 +447,14 @@ parseNormalModeParameters(IsoPresentation* self, uint8_t* buffer, int totalLengt
             }
             else {
                 self->calledPresentationSelector.size = len;
+                const uint8_t PresentationSelectorConstValue[16] = {0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0};
                 int i;
                 for (i = 0; i < len; i++)
+                {
                     self->calledPresentationSelector.value[i] = buffer[bufPos + i];
+ 				   if(PresentationSelectorConstValue[i] != self->calledPresentationSelector.value[i])
+ 					   return -1;
+                }
             }
 
             bufPos += len;
