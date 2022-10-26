@@ -14,9 +14,6 @@
 
 #include <assert.h>
 
-/* import IEC 61850 device model created from ICD-File */
-extern IedModel iedModel;
-
 static int running = 0;
 
 static void

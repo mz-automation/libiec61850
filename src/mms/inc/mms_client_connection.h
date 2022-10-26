@@ -1036,6 +1036,11 @@ LIB61850_API void
 MmsConnection_identifyAsync(MmsConnection self, uint32_t* usedInvokeId, MmsError* mmsError,
         MmsConnection_IdentifyHandler handler, void* parameter);
 
+/**
+ * \brief Destroy (free) an MmsServerIdentity object
+ *
+ * \param self the object to destroy
+ */
 LIB61850_API void
 MmsServerIdentity_destroy(MmsServerIdentity* self);
 
@@ -1284,14 +1289,6 @@ MmsConnection_readJournalStartAfter(MmsConnection self, MmsError* mmsError, cons
 LIB61850_API void
 MmsConnection_readJournalStartAfterAsync(MmsConnection self, uint32_t* usedInvokeId, MmsError* mmsError, const char* domainId, const char* itemId,
         MmsValue* timeSpecification, MmsValue* entrySpecification, MmsConnection_ReadJournalHandler handler, void* parameter);
-
-/**
- * \brief Destroy (free) an MmsServerIdentity object
- *
- * \param self the object to destroy
- */
-LIB61850_API void
-MmsServerIdentity_destroy(MmsServerIdentity* self);
 
 /**@}*/
 

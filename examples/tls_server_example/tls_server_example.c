@@ -13,9 +13,6 @@
 
 #include "static_model.h"
 
-/* import IEC 61850 device model created from SCL-File */
-extern IedModel iedModel;
-
 static int running = 0;
 static IedServer iedServer = NULL;
 

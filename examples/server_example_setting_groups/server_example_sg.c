@@ -12,9 +12,6 @@
 /* Include the generated header with the model access handles */
 #include "static_model.h"
 
-/* import IEC 61850 device model created from SCL-File */
-extern IedModel iedModel;
-
 static IedServer iedServer;
 static int running = 0;
 
