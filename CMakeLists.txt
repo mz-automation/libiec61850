@@ -73,6 +73,7 @@ include_directories(
     ${CMAKE_CURRENT_LIST_DIR}/src/common/inc
     ${CMAKE_CURRENT_LIST_DIR}/src/goose
     ${CMAKE_CURRENT_LIST_DIR}/src/sampled_values
+    ${CMAKE_CURRENT_LIST_DIR}/src/r_session
     ${CMAKE_CURRENT_LIST_DIR}/src/hal/inc
     ${CMAKE_CURRENT_LIST_DIR}/src/iec61850/inc
     ${CMAKE_CURRENT_LIST_DIR}/src/iec61850/inc_private
@@ -111,6 +112,7 @@ set(API_HEADERS
     src/goose/goose_publisher.h
     src/sampled_values/sv_subscriber.h
     src/sampled_values/sv_publisher.h
+    src/r_session/r_session.h
     src/logging/logging_api.h
 )
 

@@ -29,10 +29,13 @@
 
 #include "hal_ethernet.h"
 #include "hal_thread.h"
+#include "hal_socket.h"
 #include "ber_decode.h"
 #include "ber_encoder.h"
 
 #include "sv_subscriber.h"
+
+#include "r_session_internal.h"
 
 #ifndef DEBUG_SV_SUBSCRIBER
 #define DEBUG_SV_SUBSCRIBER 1
@@ -53,6 +56,8 @@ struct sSVReceiver {
     uint8_t* buffer;
     EthernetSocket ethSocket;
 
+    RSession session;
+
     LinkedList subscriberList;
 
 #if (CONFIG_MMS_THREADLESS_STACK == 0)
@@ -62,7 +67,10 @@ struct sSVReceiver {
 };
 
 struct sSVSubscriber {
+    RSession session;
+
     uint8_t ethAddr[6];
+
     uint16_t appId;
 
     SVUpdateListener listener;
@@ -96,6 +104,27 @@ SVReceiver_create(void)
         self->buffer = (uint8_t*) GLOBAL_MALLOC(ETH_BUFFER_LENGTH);
 
         self->checkDestAddr = false;
+
+#if (CONFIG_MMS_THREADLESS_STACK == 0)
+        self->subscriberListLock = Semaphore_create(1);
+#endif
+    }
+
+    return self;
+}
+
+SVReceiver
+SVReceiver_createRemote(RSession session)
+{
+    SVReceiver self = (SVReceiver) GLOBAL_CALLOC(1, sizeof(struct sSVReceiver));
+
+    if (self != NULL) {
+        self->subscriberList = LinkedList_create();
+        self->buffer = NULL;
+
+        self->checkDestAddr = false;
+
+        self->session = session;
 
 #if (CONFIG_MMS_THREADLESS_STACK == 0)
         self->subscriberListLock = Semaphore_create(1);
@@ -158,12 +187,14 @@ static void*
 svReceiverLoop(void* threadParameter)
 {
     SVReceiver self = (SVReceiver) threadParameter;
-    EthernetHandleSet handleSet = EthernetHandleSet_new();
-    EthernetHandleSet_addSocket(handleSet, self->ethSocket);
 
-    self->stopped = false;
+    if (self->ethSocket) {
+        EthernetHandleSet handleSet = EthernetHandleSet_new();
+        EthernetHandleSet_addSocket(handleSet, self->ethSocket);
 
-    while (self->running) {
+        self->stopped = false;
+
+        while (self->running) {
             switch (EthernetHandleSet_waitReady(handleSet, 100))
             {
             case -1:
@@ -175,12 +206,35 @@ svReceiverLoop(void* threadParameter)
             default:
                 SVReceiver_tick(self);
             }
+        }
 
+        EthernetHandleSet_destroy(handleSet);
+    }
+    else  if (self->session) {
+        self->stopped = false;
+
+        HandleSet handleSet = Handleset_new();
+
+        Handleset_addSocket(handleSet, RSession_getSocket(self->session));
+
+        while (self->running) {
+            switch (Handleset_waitReady(handleSet, 100))
+            {
+            case -1:
+                if (DEBUG_SV_SUBSCRIBER)
+                    printf("SV_SUBSCRIBER: HandleSet_waitReady() failure\n");
+                break;
+            case 0:
+                break;
+            default:
+                SVReceiver_tick(self);
+            }
+        }
+
+        Handleset_destroy(handleSet);
     }
 
     self->stopped = true;
-
-    EthernetHandleSet_destroy(handleSet);
 
     return NULL;
 }
@@ -190,8 +244,14 @@ SVReceiver_start(SVReceiver self)
 {
     if (SVReceiver_startThreadless(self)) {
 
-        if (DEBUG_SV_SUBSCRIBER)
-            printf("SV_SUBSCRIBER: SV receiver started for interface %s\n", self->interfaceId);
+        if (self->interfaceId) {
+            if (DEBUG_SV_SUBSCRIBER)
+                printf("SV_SUBSCRIBER: SV receiver started for interface %s\n", self->interfaceId);
+        }
+        else {
+            if (DEBUG_SV_SUBSCRIBER)
+                printf("SV_SUBSCRIBER: R-SV receiver started\n");
+        }
 
         Thread thread = Thread_create((ThreadExecutionFunction) svReceiverLoop, (void*) self, true);
 
@@ -244,22 +304,37 @@ SVReceiver_destroy(SVReceiver self)
     GLOBAL_FREEMEM(self);
 }
 
-EthernetSocket
+bool
 SVReceiver_startThreadless(SVReceiver self)
 {
-    if (self->interfaceId == NULL)
-        self->ethSocket = Ethernet_createSocket(CONFIG_ETHERNET_INTERFACE_ID, NULL);
-    else
-        self->ethSocket = Ethernet_createSocket(self->interfaceId, NULL);
+    if (self->session) {
+        if (RSession_startListening(self->session) == R_SESSION_ERROR_OK) {
+            self->running = true;
 
-    if (self->ethSocket) {
-
-        Ethernet_setProtocolFilter(self->ethSocket, ETH_P_SV);
-
-        self->running = true;
+            return true;
+        }
+        else {
+            return false;
+        }
     }
-    
-    return self->ethSocket;
+    else {
+        if (self->interfaceId == NULL)
+            self->ethSocket = Ethernet_createSocket(CONFIG_ETHERNET_INTERFACE_ID, NULL);
+        else
+            self->ethSocket = Ethernet_createSocket(self->interfaceId, NULL);
+
+        if (self->ethSocket) {
+
+            Ethernet_setProtocolFilter(self->ethSocket, ETH_P_SV);
+
+            self->running = true;
+        }
+
+        if (self->ethSocket)
+            return true;
+        else
+            return false;
+    }
 }
 
 void
@@ -267,6 +342,10 @@ SVReceiver_stopThreadless(SVReceiver self)
 {
     if (self->ethSocket)
         Ethernet_destroySocket(self->ethSocket);
+
+    if (self->session) {
+        RSession_stopListening(self->session);
+    }
 
     self->running = false;
 }
@@ -459,6 +538,73 @@ exit_error:
 }
 
 static void
+handleSVApdu(SVReceiver self, uint16_t appId, uint8_t* apdu, int apduLength, uint8_t* dstAddr)
+{
+    if (DEBUG_SV_SUBSCRIBER) {
+        printf("SV_SUBSCRIBER: SV message: ----------------\n");
+        printf("SV_SUBSCRIBER:   APPID: %u\n", appId);
+        printf("SV_SUBSCRIBER:   APDU length: %i\n", apduLength);
+    }
+
+    /* check if there is a matching subscriber */
+
+#if (CONFIG_MMS_THREADLESS_STACK == 0)
+    Semaphore_wait(self->subscriberListLock);
+#endif
+
+    LinkedList element = LinkedList_getNext(self->subscriberList);
+
+    SVSubscriber subscriber;
+
+    bool subscriberFound = false;
+
+    while (element != NULL) {
+        subscriber = (SVSubscriber) LinkedList_getData(element);
+
+        if (subscriber->appId == appId) {
+
+
+            if (self->checkDestAddr) {
+
+                if (self->ethSocket) {
+                    if (memcmp(dstAddr, subscriber->ethAddr, 6) == 0) {
+                        subscriberFound = true;
+                        break;
+                    }
+                    else
+                        if (DEBUG_SV_SUBSCRIBER)
+                            printf("SV_SUBSCRIBER: Checking ethernet dest address failed!\n");
+                }
+                else {
+                    //TODO check destination IP address for R-SV
+
+                }
+
+            }
+            else {
+                subscriberFound = true;
+                break;
+            }
+
+
+        }
+
+        element = LinkedList_getNext(element);
+    }
+
+#if (CONFIG_MMS_THREADLESS_STACK == 0)
+    Semaphore_post(self->subscriberListLock);
+#endif
+
+    if (subscriberFound)
+        parseSVPayload(self, subscriber, apdu, apduLength);
+    else {
+        if (DEBUG_SV_SUBSCRIBER)
+            printf("SV_SUBSCRIBER: SV message ignored due to unknown APPID value or dest address mismatch\n");
+    }
+}
+
+static void
 parseSVMessage(SVReceiver self, int numbytes)
 {
     int bufPos;
@@ -506,70 +652,34 @@ parseSVMessage(SVReceiver self, int numbytes)
         return;
     }
 
-    if (DEBUG_SV_SUBSCRIBER) {
-        printf("SV_SUBSCRIBER: SV message: ----------------\n");
-        printf("SV_SUBSCRIBER:   APPID: %u\n", appId);
-        printf("SV_SUBSCRIBER:   LENGTH: %u\n", length);
-        printf("SV_SUBSCRIBER:   APDU length: %i\n", apduLength);
-    }
+    handleSVApdu(self, appId, buffer + bufPos, apduLength, dstAddr);
+}
 
-    /* check if there is a matching subscriber */
+static void
+handleSessionPayloadElement(void* parameter, uint16_t appId, uint8_t* payloadData, int payloadSize)
+{
+    SVReceiver self = (SVReceiver) parameter;
 
-#if (CONFIG_MMS_THREADLESS_STACK == 0)
-    Semaphore_wait(self->subscriberListLock);
-#endif
-
-    SVSubscriber subscriber = NULL;
-
-    LinkedList element = LinkedList_getNext(self->subscriberList);
-
-    while (element != NULL) {
-        SVSubscriber subscriberElem = (SVSubscriber) LinkedList_getData(element);
-
-        if (subscriberElem->appId == appId) {
-
-            if (self->checkDestAddr) {
-                if (memcmp(dstAddr, subscriberElem->ethAddr, 6) == 0) {
-                    subscriber = subscriberElem;
-                    break;
-                }
-                else
-                    if (DEBUG_SV_SUBSCRIBER)
-                        printf("SV_SUBSCRIBER: Checking ethernet dest address failed!\n");
-            }
-            else {
-                subscriber = subscriberElem;
-                break;
-            }
-
-        }
-
-        element = LinkedList_getNext(element);
-    }
-
-#if (CONFIG_MMS_THREADLESS_STACK == 0)
-    Semaphore_post(self->subscriberListLock);
-#endif
-
-    if (subscriber)
-        parseSVPayload(self, subscriber, buffer + bufPos, apduLength);
-    else {
-        if (DEBUG_SV_SUBSCRIBER)
-            printf("SV_SUBSCRIBER: SV message ignored due to unknown APPID value or dest address mismatch\n");
-    }
+    handleSVApdu(self, appId, payloadData, payloadSize, NULL);
 }
 
 bool
 SVReceiver_tick(SVReceiver self)
 {
-    int packetSize = Ethernet_receivePacket(self->ethSocket, self->buffer, ETH_BUFFER_LENGTH);
+    if (self->ethSocket) {
+        int packetSize = Ethernet_receivePacket(self->ethSocket, self->buffer, ETH_BUFFER_LENGTH);
 
-    if (packetSize > 0) {
-        parseSVMessage(self, packetSize);
-        return true;
+        if (packetSize > 0) {
+            parseSVMessage(self, packetSize);
+            return true;
+        }
     }
-    else
-        return false;
+    else if (self->session) {
+        if (RSession_receiveMessage(self->session, handleSessionPayloadElement, (void*) self) == R_SESSION_ERROR_OK)
+            return true;
+    }
+
+    return false;
 }
 
 SVSubscriber

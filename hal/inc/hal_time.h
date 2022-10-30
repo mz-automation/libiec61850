@@ -1,7 +1,7 @@
 /*
  *  time.c
  *
- *  Copyright 2013-2021 Michael Zillgith
+ *  Copyright 2013-2022 Michael Zillgith
  *
  *  This file is part of Platform Abstraction Layer (libpal)
  *  for libiec61850, libmms, and lib60870.

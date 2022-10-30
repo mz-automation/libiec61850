@@ -1,7 +1,7 @@
 /*
  *  socket_hal.h
  *
- *  Copyright 2013-2021 Michael Zillgith
+ *  Copyright 2013-2022 Michael Zillgith
  *
  *  This file is part of Platform Abstraction Layer (libpal)
  *  for libiec61850, libmms, and lib60870.
@@ -128,8 +128,43 @@ Handleset_destroy(HandleSet self);
 PAL_API ServerSocket
 TcpServerSocket_create(const char* address, int port);
 
+/**
+ * \brief Create an IPv4 UDP socket instance
+ *
+ * \return new UDP socket instance
+ */
 PAL_API UdpSocket
 UdpSocket_create(void);
+
+/**
+ * \brief Create an IPv6 UDP socket instance
+ *
+ * \return new UDP socket instance
+ */
+PAL_API UdpSocket
+UdpSocket_createIpV6(void);
+
+/**
+ * \brief Add the socket to an IPv4 or IPv6 multicast group
+ *
+ * \param self UDP socket instance
+ * \param multicastAddress IPv4 or IPv6 multicast address
+ *
+ * \return true on success, false otherwise
+ */
+PAL_API bool
+UdpSocket_addGroupMembership(UdpSocket self, const char* multicastAddress);
+
+/**
+ * \brief Sets the multicast TTL (number of hops) for this UDP socket
+ *
+ * \param self UDP socket instance
+ * \param ttl number of hops for multicast messages. Default is 1 (not routable!)
+ *
+ * \return true on success, false otherwise
+ */
+PAL_API bool
+UdpSocket_setMulticastTtl(UdpSocket self, int ttl);
 
 PAL_API bool
 UdpSocket_bind(UdpSocket self, const char* address, int port);

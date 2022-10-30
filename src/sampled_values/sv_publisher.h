@@ -1,7 +1,7 @@
 /*
  *  sv_publisher.h
  *
- *  Copyright 2016-2018 Michael Zillgith
+ *  Copyright 2016-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -26,6 +26,7 @@
 #define LIBIEC61850_SRC_SAMPLED_VALUES_SV_PUBLISHER_H_
 
 #include "iec61850_common.h"
+#include "r_session.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -89,6 +90,9 @@ SVPublisher_create(CommParameters* parameters, const char* interfaceId);
  */
 LIB61850_API SVPublisher
 SVPublisher_createEx(CommParameters* parameters, const char* interfaceId, bool useVlanTag);
+
+LIB61850_API SVPublisher
+SVPublisher_createRemote(RSession session, uint16_t appId);
 
 /**
  * \brief Create an Application Service Data Unit (ASDU) and add it to an existing Sampled Values publisher.

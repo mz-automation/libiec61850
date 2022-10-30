@@ -53,6 +53,8 @@ The library support the following IEC 61850 protocol features:
 * Setting group handling
 * Support for service tracking
 * GOOSE and SV control block handling
+* Support for R-session protocol/R-GOOSE/R-SMV
+* Simple SNTP client code
 * TLS support
 * C and C#/.NET API
 

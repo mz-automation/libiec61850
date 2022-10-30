@@ -29,6 +29,8 @@
 #include "mms_server_internal.h"
 #include "mms_value_internal.h"
 
+#include "r_session_internal.h"
+
 #ifndef DEBUG_GOOSE_PUBLISHER
 #define DEBUG_GOOSE_PUBLISHER 0
 #endif
@@ -41,7 +43,13 @@ prepareGooseBuffer(GoosePublisher self, CommParameters* parameters, const char* 
 struct sGoosePublisher {
     uint8_t* buffer;
 
+    /* only for R-GOOSE */
+    RSession remoteSession;
+    uint16_t appId;
+
+    /* only for Ethernet based GOOSE */
     EthernetSocket ethernetSocket;
+
     int lengthField;
     int payloadStart;
     int payloadLength;
@@ -59,6 +67,33 @@ struct sGoosePublisher {
 
     MmsValue* timestamp; /* time when stNum is increased */
 };
+
+GoosePublisher
+GoosePublisher_createRemote(RSession session, uint16_t appId)
+{
+    GoosePublisher self = (GoosePublisher) GLOBAL_CALLOC(1, sizeof(struct sGoosePublisher));
+
+    if (self) {
+        self->remoteSession = session;
+
+        self->buffer = (uint8_t*) GLOBAL_MALLOC(GOOSE_MAX_MESSAGE_SIZE);
+
+        /* parameters are destination IP and dataSetRef */
+
+        self->timestamp = MmsValue_newUtcTimeByMsTime(Hal_getTimeInMs());
+
+        GoosePublisher_reset(self);
+
+        self->payloadStart = 0;
+        self->remoteSession = session;
+        self->lengthField = 0;
+
+        self->simulation = false;
+        self->appId = appId;
+    }
+
+    return self;
+}
 
 GoosePublisher
 GoosePublisher_createEx(CommParameters* parameters, const char* interfaceID, bool useVlanTag)
@@ -423,17 +458,26 @@ GoosePublisher_publish(GoosePublisher self, LinkedList dataSet)
     if (self->sqNum == 0)
         self->sqNum = 1;
 
-    int lengthIndex = self->lengthField;
+    if (self->ethernetSocket) {
+        int lengthIndex = self->lengthField;
 
-    size_t gooseLength = self->payloadLength + 8;
+        size_t gooseLength = self->payloadLength + 8;
 
-    self->buffer[lengthIndex] = gooseLength / 256;
-    self->buffer[lengthIndex + 1] = gooseLength & 0xff;
+        self->buffer[lengthIndex] = gooseLength / 256;
+        self->buffer[lengthIndex + 1] = gooseLength & 0xff;
 
-    if (DEBUG_GOOSE_PUBLISHER)
-        printf("GOOSE_PUBLISHER: send GOOSE message\n");
+        Ethernet_sendPacket(self->ethernetSocket, self->buffer, self->payloadStart + self->payloadLength);
 
-    Ethernet_sendPacket(self->ethernetSocket, self->buffer, self->payloadStart + self->payloadLength);
+        if (DEBUG_GOOSE_PUBLISHER)
+            printf("GOOSE_PUBLISHER: send GOOSE message\n");
+    }
+    else if (self->remoteSession) {
+
+        RSession_sendMessage(self->remoteSession, RSESSION_SPDU_ID_GOOSE, self->simulation, self->appId, buffer, self->payloadLength);
+
+        if (DEBUG_GOOSE_PUBLISHER)
+            printf("GOOSE_PUBLISHER: send R-GOOSE message\n");
+    }
 
     return 0;
 }

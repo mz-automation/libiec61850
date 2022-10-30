@@ -26,6 +26,12 @@ add_subdirectory(iec61850_client_example_array)
 add_subdirectory(iec61850_client_example_files)
 add_subdirectory(iec61850_client_example_async)
 add_subdirectory(iec61850_client_file_async)
+add_subdirectory(sntp_example)
+
+add_subdirectory(rsv_publisher_example)
+add_subdirectory(rsv_subscriber_example)
+add_subdirectory(r_goose_publisher_example)
+add_subdirectory(r_goose_receiver_example)
 
 if (NOT WIN32)
     add_subdirectory(mms_utility)

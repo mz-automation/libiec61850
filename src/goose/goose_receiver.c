@@ -37,6 +37,8 @@
 #include "goose_receiver.h"
 #include "goose_receiver_internal.h"
 
+#include "r_session_internal.h"
+
 #ifndef DEBUG_GOOSE_SUBSCRIBER
 #define DEBUG_GOOSE_SUBSCRIBER 0
 #endif
@@ -51,7 +53,13 @@ struct sGooseReceiver
     bool stop;
     char* interfaceId;
     uint8_t* buffer;
+
+    /* for Ethernet GOOSE only */
     EthernetSocket ethSocket;
+
+    /* for R-GOOSE only */
+    RSession session;
+
     LinkedList subscriberList;
 #if (CONFIG_MMS_THREADLESS_STACK == 0)
     Thread thread;
@@ -85,6 +93,18 @@ GooseReceiver_create()
 
     if (self) {
         self->buffer = (uint8_t*) GLOBAL_MALLOC(ETH_BUFFER_LENGTH);
+    }
+
+    return self;
+}
+
+GooseReceiver
+GooseReceiver_createRemote(RSession session)
+{
+    GooseReceiver self = GooseReceiver_create();
+
+    if (self) {
+        self->session = session;
     }
 
     return self;
@@ -989,13 +1009,42 @@ static void*
 gooseReceiverLoop(void *threadParameter)
 {
     GooseReceiver self = (GooseReceiver) threadParameter;
-    EthernetHandleSet handleSet = EthernetHandleSet_new();
-    EthernetHandleSet_addSocket(handleSet, self->ethSocket);
 
-    if (self->running) {
+    if (self->ethSocket) {
+        EthernetHandleSet handleSet = EthernetHandleSet_new();
+        EthernetHandleSet_addSocket(handleSet, self->ethSocket);
+
+        if (self->running) {
+
+            while (self->running) {
+                switch (EthernetHandleSet_waitReady(handleSet, 100))
+                {
+                case -1:
+                    if (DEBUG_GOOSE_SUBSCRIBER)
+                        printf("GOOSE_SUBSCRIBER: EhtnernetHandleSet_waitReady() failure\n");
+                    break;
+                case 0:
+                    break;
+                default:
+                    GooseReceiver_tick(self);
+                }
+
+                if (self->stop)
+                    break;
+            }
+
+            GooseReceiver_stopThreadless(self);
+        }
+
+        EthernetHandleSet_destroy(handleSet);
+    }
+    else if (self->session) {
+        HandleSet handleSet = Handleset_new();
+
+        Handleset_addSocket(handleSet, RSession_getSocket(self->session));
 
         while (self->running) {
-            switch (EthernetHandleSet_waitReady(handleSet, 100))
+            switch (Handleset_waitReady(handleSet, 100))
             {
             case -1:
                 if (DEBUG_GOOSE_SUBSCRIBER)
@@ -1006,14 +1055,15 @@ gooseReceiverLoop(void *threadParameter)
             default:
                 GooseReceiver_tick(self);
             }
+
             if (self->stop)
                 break;
         }
 
         GooseReceiver_stopThreadless(self);
-    }
 
-    EthernetHandleSet_destroy(handleSet);
+        Handleset_destroy(handleSet);
+    }
 
     return NULL;
 }
@@ -1028,10 +1078,26 @@ GooseReceiver_start(GooseReceiver self)
         self->thread = Thread_create((ThreadExecutionFunction) gooseReceiverLoop, (void*) self, false);
 
         if (self->thread != NULL) {
-            if (DEBUG_GOOSE_SUBSCRIBER)
-                printf("GOOSE_SUBSCRIBER: GOOSE receiver started for interface %s\n", self->interfaceId);
 
-            Thread_start(self->thread);
+            if (self->ethSocket) {
+                if (DEBUG_GOOSE_SUBSCRIBER)
+                    printf("GOOSE_SUBSCRIBER: GOOSE receiver started for interface %s\n", self->interfaceId);
+
+                Thread_start(self->thread);
+            }
+            else if (self->session) {
+                if (DEBUG_GOOSE_SUBSCRIBER)
+                    printf("GOOSE_SUBSCRIBER: R-GOOSE receiver started\n");
+
+                Thread_start(self->thread);
+            }
+            else {
+                if (DEBUG_GOOSE_SUBSCRIBER)
+                    printf("GOOSE_SUBSCRIBER: ERROR - No link/transport layer specified -> cannot start!\n");
+
+                Thread_destroy(self->thread);
+                self->thread = NULL;
+            }
         }
         else {
             if (DEBUG_GOOSE_SUBSCRIBER)
@@ -1087,37 +1153,52 @@ GooseReceiver_destroy(GooseReceiver self)
 EthernetSocket
 GooseReceiver_startThreadless(GooseReceiver self)
 {
-    if (self->interfaceId == NULL)
-        self->ethSocket = Ethernet_createSocket(CONFIG_ETHERNET_INTERFACE_ID, NULL);
-    else
-        self->ethSocket = Ethernet_createSocket(self->interfaceId, NULL);
+    if (self->session) {
+        if (RSession_startListening(self->session) == R_SESSION_ERROR_OK) {
+            self->running = true;
 
-    if (self->ethSocket != NULL) {
-        Ethernet_setProtocolFilter(self->ethSocket, ETH_P_GOOSE);
-
-        /* set multicast addresses for subscribers */
-        Ethernet_setMode(self->ethSocket, ETHERNET_SOCKET_MODE_MULTICAST);
-
-        LinkedList element = LinkedList_getNext(self->subscriberList);
-
-        while (element != NULL) {
-            GooseSubscriber subscriber = (GooseSubscriber) LinkedList_getData(element);
-
-            if (subscriber->dstMacSet == false) {
-                /* no destination MAC address defined -> we have to switch to all multicast mode */
-                Ethernet_setMode(self->ethSocket, ETHERNET_SOCKET_MODE_ALL_MULTICAST);
-            }
-            else {
-                Ethernet_addMulticastAddress(self->ethSocket, subscriber->dstMac);
-            }
-
-            element = LinkedList_getNext(element);
+            return (EthernetSocket)1;
         }
+        else {
+            self->running = false;
 
-        self->running = true;
+            return (EthernetSocket)0;
+        }
     }
-    else
-        self->running = false;
+    else {
+        if (self->interfaceId == NULL)
+            self->ethSocket = Ethernet_createSocket(CONFIG_ETHERNET_INTERFACE_ID, NULL);
+        else
+            self->ethSocket = Ethernet_createSocket(self->interfaceId, NULL);
+
+        if (self->ethSocket != NULL) {
+            Ethernet_setProtocolFilter(self->ethSocket, ETH_P_GOOSE);
+
+            /* set multicast addresses for subscribers */
+            Ethernet_setMode(self->ethSocket, ETHERNET_SOCKET_MODE_MULTICAST);
+
+            LinkedList element = LinkedList_getNext(self->subscriberList);
+
+            while (element != NULL) {
+                GooseSubscriber subscriber = (GooseSubscriber) LinkedList_getData(element);
+
+                if (subscriber->dstMacSet == false) {
+                    /* no destination MAC address defined -> we have to switch to all multicast mode */
+                    Ethernet_setMode(self->ethSocket, ETHERNET_SOCKET_MODE_ALL_MULTICAST);
+                }
+                else {
+                    Ethernet_addMulticastAddress(self->ethSocket, subscriber->dstMac);
+                }
+
+                element = LinkedList_getNext(element);
+            }
+
+            self->running = true;
+        }
+        else {
+            self->running = false;
+        }
+    }
 
     return self->ethSocket;
 }
@@ -1131,18 +1212,35 @@ GooseReceiver_stopThreadless(GooseReceiver self)
     self->running = false;
 }
 
+static void
+handleSessionPayloadElement(void* parameter, uint16_t appId, uint8_t* payloadData, int payloadSize)
+{
+    GooseReceiver self = (GooseReceiver) parameter;
+
+    parseGoosePayload(self, payloadData, payloadSize);
+}
+
+
 /* call after reception of ethernet frame */
 bool
 GooseReceiver_tick(GooseReceiver self)
 {
-    int packetSize = Ethernet_receivePacket(self->ethSocket, self->buffer, ETH_BUFFER_LENGTH);
-
-    if (packetSize > 0) {
-        parseGooseMessage(self, self->buffer, packetSize);
-        return true;
+    if (self->session) {
+        if (RSession_receiveMessage(self->session, handleSessionPayloadElement, (void*) self) == R_SESSION_ERROR_OK)
+            return true;
+        else
+            return false;
     }
-    else
-        return false;
+    else {
+        int packetSize = Ethernet_receivePacket(self->ethSocket, self->buffer, ETH_BUFFER_LENGTH);
+
+        if (packetSize > 0) {
+            parseGooseMessage(self, self->buffer, packetSize);
+            return true;
+        }
+        else
+            return false;
+    }
 }
 
 void

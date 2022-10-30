@@ -1,7 +1,7 @@
 /*
  *  sv_publisher.c
  *
- *  Copyright 2016 Michael Zillgith
+ *  Copyright 2016-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -29,6 +29,8 @@
 
 #include "hal_ethernet.h"
 #include "ber_encoder.h"
+
+#include "r_session_internal.h"
 
 #ifndef DEBUG_SV_PUBLISHER
 #define DEBUG_SV_PUBLISHER 1
@@ -70,8 +72,15 @@ struct sSVPublisher_ASDU {
 
 struct sSVPublisher {
     uint8_t* buffer;
+
     uint16_t appId;
+    bool simulation;
+
+    /* only for Ethernet based SV */
     EthernetSocket ethernetSocket;
+
+    /* only for R-SV */
+    RSession remoteSession;
 
     int lengthField; /* can probably be removed since packets have fixed size! */
     int payloadStart;
@@ -265,12 +274,34 @@ encodeInt64FixedSize(int64_t value, uint8_t* buffer, int bufPos)
 }
 
 SVPublisher
+SVPublisher_createRemote(RSession session, uint16_t appId)
+{
+    SVPublisher self = (SVPublisher) GLOBAL_CALLOC(1, sizeof(struct sSVPublisher));
+
+    if (self) {
+        self->asduList = NULL;
+
+        self->buffer = (uint8_t*) GLOBAL_MALLOC(SV_MAX_MESSAGE_SIZE);
+
+        self->payloadStart = 0;
+        self->remoteSession = session;
+        self->lengthField = 0;
+
+        self->simulation = false;
+        self->appId = appId;
+    }
+
+    return self;
+}
+
+SVPublisher
 SVPublisher_createEx(CommParameters* parameters, const char* interfaceId, bool useVlanTag)
 {
     SVPublisher self = (SVPublisher) GLOBAL_CALLOC(1, sizeof(struct sSVPublisher));
 
     if (self) {
         self->asduList = NULL;
+        self->lengthField = 0;
 
         if (preparePacketBuffer(self, parameters, interfaceId, useVlanTag) == false) {
             SVPublisher_destroy(self);
@@ -465,13 +496,14 @@ SVPublisher_setupComplete(SVPublisher self)
 
     size_t msgLength = payloadLength + 8;
 
-    int lengthIndex = self->lengthField;
+    if (self->lengthField != 0) {
+        int lengthIndex = self->lengthField;
 
-    self->buffer[lengthIndex] = msgLength / 256;
-    self->buffer[lengthIndex + 1] = msgLength & 0xff;
+        self->buffer[lengthIndex] = msgLength / 256;
+        self->buffer[lengthIndex + 1] = msgLength & 0xff;
+    }
 
     self->payloadLength = payloadLength;
-
 }
 
 void
@@ -480,7 +512,16 @@ SVPublisher_publish(SVPublisher self)
     if (DEBUG_SV_PUBLISHER)
         printf("SV_PUBLISHER: send SV message\n");
 
-    Ethernet_sendPacket(self->ethernetSocket, self->buffer, self->payloadStart + self->payloadLength);
+    if (self->ethernetSocket) {
+        Ethernet_sendPacket(self->ethernetSocket, self->buffer, self->payloadStart + self->payloadLength);
+    }
+    else if (self->remoteSession) {
+        RSession_sendMessage(self->remoteSession, RSESSION_SPDU_ID_SV, self->simulation, self->appId, self->buffer, self->payloadLength);
+    }
+    else {
+        if (DEBUG_SV_PUBLISHER)
+            printf("SV_PUBLISHER: no network layer!\n");
+    }
 }
 
 void

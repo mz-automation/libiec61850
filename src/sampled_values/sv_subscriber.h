@@ -1,7 +1,7 @@
 /*
  *  sv_subscriber.h
  *
- *  Copyright 2015-2018 Michael Zillgith
+ *  Copyright 2015-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -26,6 +26,7 @@
 
 #include "libiec61850_common_api.h"
 #include "iec61850_common.h"
+#include "r_session.h"
 #include "hal_ethernet.h"
 
 #ifdef __cplusplus
@@ -133,6 +134,16 @@ LIB61850_API SVReceiver
 SVReceiver_create(void);
 
 /**
+ * \brief Create a new R-SV receiver instance.
+ *
+ * \param session the remote session protocol instance
+ *
+ * \return the newly created receiver instance
+ */
+LIB61850_API SVReceiver
+SVReceiver_createRemote(RSession session);
+
+/**
  * \brief Disable check for destination address of the received SV messages
  *
  * \param self the receiver instance reference
@@ -228,7 +239,7 @@ SVReceiver_destroy(SVReceiver self);
  * Functions for non-threaded operation
  ***************************************/
 
-LIB61850_API EthernetSocket
+LIB61850_API bool
 SVReceiver_startThreadless(SVReceiver self);
 
 LIB61850_API void

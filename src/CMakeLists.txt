@@ -1,3 +1,9 @@
+if(WITH_MBEDTLS)
+include_directories(
+	${CMAKE_CURRENT_LIST_DIR}/tls/mbedtls
+    ${CMAKE_CURRENT_LIST_DIR}/../third_party/mbedtls/mbedtls-2.16/include
+)
+endif(WITH_MBEDTLS)
 
 set (lib_common_SRCS
 ./common/string_map.c
@@ -77,6 +83,7 @@ set (lib_common_SRCS
 ./iec61850/server/mms_mapping/mms_sv.c
 ./iec61850/server/mms_mapping/logging.c
 ./logging/log_storage.c
+./sntp/sntp_client.c
 )
 
 set (lib_asn1c_SRCS
@@ -183,6 +190,11 @@ set (lib_sv_SRCS
 ./sampled_values/sv_publisher.c
 )
 
+set (lib_rsession_SRCS
+./r_session/r_session.c
+./r_session/r_session_crypto_mbedtls.c
+)
+
 set (lib_linux_SRCS
 )
 
@@ -228,6 +240,7 @@ set (library_SRCS
     ${lib_asn1c_SRCS}
     ${lib_goose_SRCS}
     ${lib_sv_SRCS}
+    ${lib_rsession_SRCS}
     ${lib_windows_SRCS}
 )
 
@@ -236,6 +249,7 @@ set (library_SRCS
     ${lib_common_SRCS}
     ${lib_asn1c_SRCS}
     ${lib_windows_SRCS}
+    ${lib_rsession_SRCS}
 )
 
 ENDIF(WITH_WPCAP)
@@ -247,6 +261,7 @@ set (library_SRCS
     ${lib_asn1c_SRCS}
     ${lib_goose_SRCS}
     ${lib_sv_SRCS}
+    ${lib_rsession_SRCS}
     ${lib_bsd_SRCS}
 )
 ELSEIF(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
@@ -255,6 +270,7 @@ set (library_SRCS
     ${lib_asn1c_SRCS}
     ${lib_goose_SRCS}
     ${lib_sv_SRCS}
+    ${lib_rsession_SRCS}
     ${lib_bsd_SRCS}
 )
 ELSE()
@@ -263,6 +279,7 @@ set (library_SRCS
     ${lib_asn1c_SRCS}
     ${lib_goose_SRCS}
     ${lib_sv_SRCS}
+    ${lib_rsession_SRCS}
     ${lib_linux_SRCS}	
 )
 ENDIF(APPLE)

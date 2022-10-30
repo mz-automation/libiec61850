@@ -1,7 +1,7 @@
 /*
  *  goose_receiver.h
  *
- *  Copyright 2014-2019 Michael Zillgith
+ *  Copyright 2014-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -32,6 +32,7 @@ extern "C" {
 
 #include "hal_ethernet.h"
 #include "goose_subscriber.h"
+#include "r_session.h"
 
 /**
  * \addtogroup goose_api_group
@@ -63,6 +64,16 @@ GooseReceiver_create(void);
  */
 LIB61850_API GooseReceiver
 GooseReceiver_createEx(uint8_t* buffer);
+
+/**
+ * \brief Create a new R-GOOSE receiver instance.
+ *
+ * \param session the remote session protocol instance
+ *
+ * \return the newly created receiver instance
+ */
+LIB61850_API GooseReceiver
+GooseReceiver_createRemote(RSession session);
 
 /**
  * \brief sets the interface for the GOOSE receiver
