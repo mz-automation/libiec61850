@@ -163,7 +163,7 @@ RSession_create()
     return NULL;
 }
 
-/* Required only for version 1 of the protocol! */
+/* only for version 1 of the protocol! */
 RSessionError
 RSession_setSecurity(RSession self, RSecurityAlgorithm secAlgo, RSignatureAlgorithm sigAlgo)
 {
@@ -1074,6 +1074,8 @@ getKeyById(RSession self, uint32_t keyId)
 RSessionError
 RSession_removeKey(RSession self, uint32_t keyId)
 {
+    RSessionError retVal = R_SESSION_ERROR_OK;
+
     Semaphore_wait(self->keyListLock);
 
     RSessionKeyMaterial keyMaterial = getKeyById(self, keyId);
@@ -1083,6 +1085,9 @@ RSession_removeKey(RSession self, uint32_t keyId)
 
         RSessionKeyMaterial_destroy(keyMaterial);
     }
+    else {
+        retVal = R_SESSION_ERROR_INVALID_KEY;
+    }
 
     Semaphore_post(self->keyListLock);
 
@@ -1091,7 +1096,21 @@ RSession_removeKey(RSession self, uint32_t keyId)
         self->currentKeyId = 0;
     }
 
-    return R_SESSION_ERROR_OK;
+    return retVal;
+}
+
+void
+RSession_removeAllKeys(RSession self)
+{
+    Semaphore_wait(self->keyListLock);
+
+    LinkedList_destroyDeep(self->keyList, (LinkedListValueDeleteFunction)RSessionKeyMaterial_destroy);
+
+    self->keyList = LinkedList_create();
+
+    self->currentKeyId = 0;
+
+    Semaphore_post(self->keyListLock);
 }
 
 /**

@@ -91,6 +91,14 @@ SVPublisher_create(CommParameters* parameters, const char* interfaceId);
 LIB61850_API SVPublisher
 SVPublisher_createEx(CommParameters* parameters, const char* interfaceId, bool useVlanTag);
 
+/**
+ * \brief Create a new SVPublisher instance for R-SMV
+ *
+ * \param session R-session protocol instance to use
+ * \param appId the appID value to use
+ * 
+ * \return the new SVPublisher instance
+ */
 LIB61850_API SVPublisher
 SVPublisher_createRemote(RSession session, uint16_t appId);
 
