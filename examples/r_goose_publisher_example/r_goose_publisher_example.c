@@ -96,6 +96,9 @@ main(int argc, char **argv)
 
         LinkedList_destroyDeep(dataSetValues, (LinkedListValueDeleteFunction) MmsValue_delete);
     }
+    else {
+        printf("Failed to create RSession instance\n");
+    }
 
     return 0;
 }

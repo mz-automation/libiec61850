@@ -21,6 +21,8 @@
 #include "hal_socket.h"
 #include "stack_config.h"
 
+#define DEBUG_SOCKET 1
+
 #ifndef __MINGW64_VERSION_MAJOR
 struct tcp_keepalive {
     u_long  onoff;
@@ -671,6 +673,9 @@ Socket_destroy(Socket self)
 static UdpSocket
 UdpSocket_createUsingNamespace(int ns)
 {
+    if (wsaStartUp() == false)
+        return NULL;
+
     UdpSocket self = NULL;
 
     SOCKET sock = socket(AF_INET, SOCK_DGRAM, 0);
