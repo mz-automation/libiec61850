@@ -39,8 +39,8 @@ main(int argc, char** argv)
             char* key1 = "0123456789ABCDEF";
             char* key2 = "FEDCBA9876543210";
 
-            RSession_addKey(rSession, 1, key1, 16, R_SESSION_SEC_ALGO_AES_128_GCM, R_SESSION_SIG_ALGO_NONE);
-            RSession_addKey(rSession, 2, key2, 16, R_SESSION_SEC_ALGO_AES_128_GCM, R_SESSION_SIG_ALGO_NONE);
+            RSession_addKey(rSession, 1, (uint8_t*)key1, 16, R_SESSION_SEC_ALGO_AES_128_GCM, R_SESSION_SIG_ALGO_NONE);
+            RSession_addKey(rSession, 2, (uint8_t*)key2, 16, R_SESSION_SEC_ALGO_AES_128_GCM, R_SESSION_SIG_ALGO_NONE);
 
             RSession_setActiveKey(rSession, activeKeyId);
 

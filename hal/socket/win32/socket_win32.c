@@ -668,8 +668,8 @@ Socket_destroy(Socket self)
     GLOBAL_FREEMEM(self);
 }
 
-UdpSocket
-UdpSocket_create()
+static UdpSocket
+UdpSocket_createUsingNamespace(int ns)
 {
     UdpSocket self = NULL;
 
@@ -782,7 +782,7 @@ UdpSocket_bind(UdpSocket self, const char* address, int port)
     struct sockaddr_in localAddress;
 
     if (!prepareAddress(address, port, &localAddress)) {
-		closesocket(self->fd);
+        closesocket(self->fd);
         self->fd = 0;
         return false;
     }
@@ -793,7 +793,7 @@ UdpSocket_bind(UdpSocket self, const char* address, int port)
         if (DEBUG_SOCKET)
             printf("SOCKET: failed to bind UDP socket (errno=%i)\n", errno);
 
-		closesocket(self->fd);
+        closesocket(self->fd);
         self->fd = 0;
 
         return false;
@@ -873,7 +873,7 @@ UdpSocket_receiveFrom(UdpSocket self, char* address, int maxAddrSize, uint8_t* m
             isIPv6 = true;
         }
         else
-            return result ;
+            return result;
 
         if (isIPv6)
             snprintf(address, maxAddrSize, "[%s]:%i", addrString, port);

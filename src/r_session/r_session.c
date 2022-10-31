@@ -506,7 +506,7 @@ parseSessionMessage(RSession self, uint8_t* buffer, int msgSize, RSessionPayload
         /* parse payload elements */
         uint32_t payloadEnd = bufPos + payloadLength;
 
-        if (payloadEnd > msgSize) {
+        if (payloadEnd > (uint32_t)msgSize) {
             DEBUG_PRINTF("ERROR - payload size field invalid");
             goto exit_error;
         }
@@ -549,7 +549,7 @@ parseSessionMessage(RSession self, uint8_t* buffer, int msgSize, RSessionPayload
             }
         }
 
-        while (bufPos < payloadEnd) {
+        while ((uint32_t)bufPos < payloadEnd) {
             int payloadElementType = buffer[bufPos++];
 
             bool simulation;
@@ -639,7 +639,7 @@ parseSessionMessage(RSession self, uint8_t* buffer, int msgSize, RSessionPayload
         /* parse payload elements */
         uint32_t payloadEnd = bufPos + payloadLength;
 
-        if (payloadEnd > msgSize) {
+        if (payloadEnd > (uint32_t)msgSize) {
             DEBUG_PRINTF("ERROR - payload size field invalid");
             goto exit_error;
         }
@@ -685,9 +685,9 @@ parseSessionMessage(RSession self, uint8_t* buffer, int msgSize, RSessionPayload
         /* Check signature and decrypt application layer */
         if (secAlgo != R_SESSION_SEC_ALGO_NONE) {
             /* Check for HMAC */
-            if (payloadEnd + 18 <= msgSize) {
+            if (payloadEnd + 18 <= (uint32_t)msgSize) {
                 if (self->payloadBuffer == NULL)
-                    self->payloadBuffer = GLOBAL_MALLOC(65000);
+                    self->payloadBuffer = (uint8_t*)GLOBAL_MALLOC(65000);
 
                 if (self->payloadBuffer) {
                     //TODO check MMAC tag
@@ -711,7 +711,7 @@ parseSessionMessage(RSession self, uint8_t* buffer, int msgSize, RSessionPayload
             }
         }
 
-        while (bufPos < payloadEnd) {
+        while ((uint32_t)bufPos < payloadEnd) {
             int payloadElementType = buffer[bufPos++];
 
             bool simulation;

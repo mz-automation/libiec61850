@@ -56,7 +56,7 @@ main(int argc, char** argv)
         RSession_setLocalAddress(sessionP, "0.0.0.0", 102);
         char* key = "0123456789ABCDEF";
 
-        RSession_addKey(sessionP, 1, key, 16, R_SESSION_SEC_ALGO_AES_128_GCM, R_SESSION_SIG_ALGO_NONE);
+        RSession_addKey(sessionP, 1, (uint8_t*)key, 16, R_SESSION_SEC_ALGO_AES_128_GCM, R_SESSION_SIG_ALGO_NONE);
 
         RSession_addMulticastGroup(sessionP, "230.0.10.11");
 

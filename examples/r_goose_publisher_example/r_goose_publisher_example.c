@@ -56,10 +56,9 @@ main(int argc, char **argv)
 
         GoosePublisher publisher = GoosePublisher_createRemote(rSession, 0x4001);
 
-        //char* key = "0123456789ABCDEF";
         char* key = "0123456789ABCDEF";
 
-        RSession_addKey(rSession, 1, key, 16, R_SESSION_SEC_ALGO_AES_128_GCM, R_SESSION_SIG_ALGO_NONE);
+        RSession_addKey(rSession, 1, (uint8_t*)key, 16, R_SESSION_SEC_ALGO_AES_128_GCM, R_SESSION_SIG_ALGO_NONE);
         RSession_setActiveKey(rSession, 1);
 
         if (publisher) {

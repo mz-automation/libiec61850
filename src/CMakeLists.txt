@@ -217,6 +217,8 @@ set_source_files_properties(${lib_asn1c_SRCS}
 IF(MSVC)
 set_source_files_properties(${lib_common_SRCS} ${lib_windows_SRCS}
                                        PROPERTIES LANGUAGE CXX)
+set_source_files_properties(${lib_rsession_SRCS}
+                                       PROPERTIES LANGUAGE CXX)
 ENDIF()
 
 IF(WITH_WPCAP)
@@ -224,7 +226,8 @@ IF(MSVC)
 set_source_files_properties(${lib_goose_SRCS}
                                        PROPERTIES LANGUAGE CXX)
 set_source_files_properties(${lib_sv_SRCS}
-                                       PROPERTIES LANGUAGE CXX)                                                                           
+                                       PROPERTIES LANGUAGE CXX)
+
 ENDIF()
 ELSE()
 add_definitions(-DEXCLUDE_ETHERNET_WINDOWS)
