@@ -935,32 +935,6 @@ UdpSocket_receiveFrom(UdpSocket self, char* address, int maxAddrSize, uint8_t* m
             isIPv6 = true;
         }
         else
-            return -1;
-
-        if (isIPv6)
-            snprintf(address, maxAddrSize, "[%s]:%i", addrString, port);
-        else
-            snprintf(address, maxAddrSize, "%s:%i", addrString, port);
-    }
-
-    if (address) {
-        bool isIPv6;
-        char addrString[INET6_ADDRSTRLEN + 7];
-        int port;
-
-        if (remoteAddress.ss_family == AF_INET) {
-            struct sockaddr_in* ipv4Addr = (struct sockaddr_in*) &remoteAddress;
-            port = ntohs(ipv4Addr->sin_port);
-            inet_ntop(AF_INET, &(ipv4Addr->sin_addr), addrString, INET_ADDRSTRLEN);
-            isIPv6 = false;
-        }
-        else if (remoteAddress.ss_family == AF_INET6) {
-            struct sockaddr_in6* ipv6Addr = (struct sockaddr_in6*) &remoteAddress;
-            port = ntohs(ipv6Addr->sin6_port);
-            inet_ntop(AF_INET6, &(ipv6Addr->sin6_addr), addrString, INET6_ADDRSTRLEN);
-            isIPv6 = true;
-        }
-        else
             return result;
 
         if (isIPv6)
