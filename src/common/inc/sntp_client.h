@@ -25,6 +25,10 @@
 #include "libiec61850_common_api.h"
 #include "hal_socket.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct sSNTPClient* SNTPClient;
 
 typedef void (*SNTPClient_UserCallback)(void* parameter, bool isSynced);
@@ -61,5 +65,9 @@ SNTPClient_stop(SNTPClient self);
 
 LIB61850_API void
 SNTPClient_destroy(SNTPClient self);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* LIBIEC61850_SRC_COMMON_INC_SNTP_CLIENT_H_ */

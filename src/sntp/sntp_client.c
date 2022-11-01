@@ -1,5 +1,5 @@
 /*
- *  Copyright 2013-2020 Michael Zillgith
+ *  Copyright 2013-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -94,7 +94,7 @@ ntpTimeToNsTime(uint32_t coarse, uint32_t fine)
 static void
 nsTimeToNtpTime(nsSinceEpoch nsTime, uint32_t* coarse, uint32_t* fine)
 {
-    uint32_t secondsPart = (nsTime / 1000000000UL) + UNIX_EPOCH_OFFSET;
+    uint32_t secondsPart = (uint32_t)((nsTime / 1000000000UL) + UNIX_EPOCH_OFFSET);
 
     *coarse = secondsPart;
 
@@ -108,7 +108,7 @@ nsTimeToNtpTime(nsSinceEpoch nsTime, uint32_t* coarse, uint32_t* fine)
 static uint32_t
 nsTimeToSeconds(nsSinceEpoch nsTime)
 {
-    uint32_t secondsSinceEpoch = nsTime / 1000000000UL;
+    uint32_t secondsSinceEpoch = (uint32_t)(nsTime / 1000000000UL);
 
     return secondsSinceEpoch;
 }
@@ -118,7 +118,7 @@ getUsPartFromNsTime(nsSinceEpoch nsTime)
 {
     uint64_t nsPart = nsTime % 1000000000UL;
 
-    uint32_t msPart = nsPart / 1000UL;
+    uint32_t msPart = (uint32_t)(nsPart / 1000UL);
 
     return msPart;
 }
