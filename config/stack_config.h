@@ -173,6 +173,15 @@
 /* Force memory alignment - required for some platforms (required more memory for buffered reporting) */
 #define CONFIG_IEC61850_FORCE_MEMORY_ALIGNMENT 1
 
+/* compile with support for R-GOOSE (mbedtls requried) */
+#define CONFIG_IEC61850_R_GOOSE 0
+
+/* compile with support for R-SMV (mbedtls required) */
+#define CONFIG_IEC61850_R_SMV 0
+
+/* compile SNTP client code */
+#define CONFIG_IEC61850_SNTP_CLIENT 0
+
 /* overwrite default results for MMS identify service */
 /* #define CONFIG_DEFAULT_MMS_VENDOR_NAME "libiec61850.com" */
 /* #define CONFIG_DEFAULT_MMS_MODEL_NAME "LIBIEC61850" */

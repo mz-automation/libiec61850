@@ -57,8 +57,10 @@ struct sGooseReceiver
     /* for Ethernet GOOSE only */
     EthernetSocket ethSocket;
 
+#if (CONFIG_IEC61850_R_GOOSE == 1)
     /* for R-GOOSE only */
     RSession session;
+#endif /* (CONFIG_IEC61850_R_GOOSE == 1) */
 
     LinkedList subscriberList;
 #if (CONFIG_MMS_THREADLESS_STACK == 0)
@@ -98,6 +100,7 @@ GooseReceiver_create()
     return self;
 }
 
+#if (CONFIG_IEC61850_R_GOOSE == 1)
 GooseReceiver
 GooseReceiver_createRemote(RSession session)
 {
@@ -109,6 +112,7 @@ GooseReceiver_createRemote(RSession session)
 
     return self;
 }
+#endif /* (CONFIG_IEC61850_R_GOOSE == 1) */
 
 void
 GooseReceiver_addSubscriber(GooseReceiver self, GooseSubscriber subscriber)
@@ -1038,6 +1042,7 @@ gooseReceiverLoop(void *threadParameter)
 
         EthernetHandleSet_destroy(handleSet);
     }
+#if (CONFIG_IEC61850_R_GOOSE == 1)
     else if (self->session) {
         HandleSet handleSet = Handleset_new();
 
@@ -1064,6 +1069,7 @@ gooseReceiverLoop(void *threadParameter)
 
         Handleset_destroy(handleSet);
     }
+#endif /* (CONFIG_IEC61850_R_GOOSE == 1) */
 
     return NULL;
 }
@@ -1085,12 +1091,14 @@ GooseReceiver_start(GooseReceiver self)
 
                 Thread_start(self->thread);
             }
+#if (CONFIG_IEC61850_R_GOOSE == 1)
             else if (self->session) {
                 if (DEBUG_GOOSE_SUBSCRIBER)
                     printf("GOOSE_SUBSCRIBER: R-GOOSE receiver started\n");
 
                 Thread_start(self->thread);
             }
+#endif /* (CONFIG_IEC61850_R_GOOSE == 1) */
             else {
                 if (DEBUG_GOOSE_SUBSCRIBER)
                     printf("GOOSE_SUBSCRIBER: ERROR - No link/transport layer specified -> cannot start!\n");
@@ -1153,6 +1161,7 @@ GooseReceiver_destroy(GooseReceiver self)
 EthernetSocket
 GooseReceiver_startThreadless(GooseReceiver self)
 {
+#if (CONFIG_IEC61850_R_GOOSE == 1)
     if (self->session) {
         if (RSession_startListening(self->session) == R_SESSION_ERROR_OK) {
             self->running = true;
@@ -1166,6 +1175,8 @@ GooseReceiver_startThreadless(GooseReceiver self)
         }
     }
     else {
+#endif /* (CONFIG_IEC61850_R_GOOSE == 1) */
+
         if (self->interfaceId == NULL)
             self->ethSocket = Ethernet_createSocket(CONFIG_ETHERNET_INTERFACE_ID, NULL);
         else
@@ -1198,7 +1209,10 @@ GooseReceiver_startThreadless(GooseReceiver self)
         else {
             self->running = false;
         }
+
+#if (CONFIG_IEC61850_R_GOOSE == 1)
     }
+#endif /* (CONFIG_IEC61850_R_GOOSE == 1) */
 
     return self->ethSocket;
 }
@@ -1225,6 +1239,7 @@ handleSessionPayloadElement(void* parameter, uint16_t appId, uint8_t* payloadDat
 bool
 GooseReceiver_tick(GooseReceiver self)
 {
+#if (CONFIG_IEC61850_R_GOOSE == 1)
     if (self->session) {
         if (RSession_receiveMessage(self->session, handleSessionPayloadElement, (void*) self) == R_SESSION_ERROR_OK)
             return true;
@@ -1232,6 +1247,8 @@ GooseReceiver_tick(GooseReceiver self)
             return false;
     }
     else {
+#endif /* (CONFIG_IEC61850_R_GOOSE == 1) */
+
         int packetSize = Ethernet_receivePacket(self->ethSocket, self->buffer, ETH_BUFFER_LENGTH);
 
         if (packetSize > 0) {
@@ -1240,7 +1257,10 @@ GooseReceiver_tick(GooseReceiver self)
         }
         else
             return false;
+
+#if (CONFIG_IEC61850_R_GOOSE == 1)
     }
+#endif /* (CONFIG_IEC61850_R_GOOSE == 1) */
 }
 
 void

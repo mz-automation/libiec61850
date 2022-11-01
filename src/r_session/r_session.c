@@ -30,9 +30,11 @@
 #include "r_session_crypto.h"
 #include "r_session_internal.h"
 
-#define DEBUG_RSESSION
+#ifndef DEBUG_RSESSION
+#define DEBUG_RSESSION 0
+#endif
 
-#ifdef DEBUG_RSESSION
+#if (DEBUG_RSESSION == 1)
 #include <stdio.h>
 #define DEBUG_PRINTF(...) printf("RSESSION:"__VA_ARGS__);printf("\n");
 #else
@@ -98,7 +100,7 @@ printBuffer(uint8_t* buffer, int bufSize)
             printf(" (%i)\n", i + 1);
     }
 }
-#endif
+#endif /* DEBUG_RSESSION */
 
 RSessionKeyMaterial
 RSessionKeyMaterial_create(uint32_t keyId, uint8_t* key, int keyLength, RSecurityAlgorithm secAlgo, RSignatureAlgorithm sigAlgo)
@@ -1020,7 +1022,7 @@ RSession_receiveMessage(RSession self, RSessionPayloadElementHandler handler, vo
         Semaphore_post(self->socketLock);
 
         if (msgSize < 1) {
-            printf("RESSSION: Failed to receive message\n");
+            DEBUG_PRINTF("RESSSION: Failed to receive message");
 
 
             return R_SESSION_ERROR_FAILED_TO_RECEIVE;

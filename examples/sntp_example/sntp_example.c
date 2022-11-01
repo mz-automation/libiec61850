@@ -29,7 +29,6 @@ main(int argc, char** argv)
 {
     SNTPClient client = SNTPClient_create();
 
-    //SNTPClient_addServer(client, "127.0.0.1", 1236);
     SNTPClient_addServer(client, "192.168.178.74", 123);
 
     SNTPClient_setUserCallback(client, sntpUserCallback, NULL);

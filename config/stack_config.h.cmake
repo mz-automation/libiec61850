@@ -74,6 +74,15 @@
 /* Set to 1 to include Sampled Values support in the build. Otherwise set to 0 */
 #define CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT 1
 
+/* compile with support for R-GOOSE (mbedtls requried) */
+#cmakedefine01 CONFIG_IEC61850_R_GOOSE
+
+/* compile with support for R-SMV (mbedtls required) */
+#cmakedefine01 CONFIG_IEC61850_R_SMV
+
+/* compile SNTP client code */
+#cmakedefine01 CONFIG_IEC61850_SNTP_CLIENT
+
 /* Set to 1 to compile for edition 1 server - default is 0 to compile for edition 2 */
 #define CONFIG_IEC61850_EDITION_1 0
 

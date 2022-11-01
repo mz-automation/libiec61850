@@ -79,8 +79,10 @@ struct sSVPublisher {
     /* only for Ethernet based SV */
     EthernetSocket ethernetSocket;
 
+#if (CONFIG_IEC61850_R_SMV == 1)
     /* only for R-SV */
     RSession remoteSession;
+#endif /* (CONFIG_IEC61850_R_SMV == 1) */
 
     int lengthField; /* can probably be removed since packets have fixed size! */
     int payloadStart;
@@ -273,6 +275,7 @@ encodeInt64FixedSize(int64_t value, uint8_t* buffer, int bufPos)
     return bufPos;
 }
 
+#if (CONFIG_IEC61850_R_SMV == 1)
 SVPublisher
 SVPublisher_createRemote(RSession session, uint16_t appId)
 {
@@ -293,6 +296,7 @@ SVPublisher_createRemote(RSession session, uint16_t appId)
 
     return self;
 }
+#endif /* (CONFIG_IEC61850_R_SMV == 1) */
 
 SVPublisher
 SVPublisher_createEx(CommParameters* parameters, const char* interfaceId, bool useVlanTag)
@@ -515,9 +519,11 @@ SVPublisher_publish(SVPublisher self)
     if (self->ethernetSocket) {
         Ethernet_sendPacket(self->ethernetSocket, self->buffer, self->payloadStart + self->payloadLength);
     }
+#if (CONFIG_IEC61850_R_SMV == 1)
     else if (self->remoteSession) {
         RSession_sendMessage(self->remoteSession, RSESSION_SPDU_ID_SV, self->simulation, self->appId, self->buffer, self->payloadLength);
     }
+#endif /* (CONFIG_IEC61850_R_SMV == 1) */
     else {
         if (DEBUG_SV_PUBLISHER)
             printf("SV_PUBLISHER: no network layer!\n");

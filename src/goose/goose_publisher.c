@@ -43,9 +43,11 @@ prepareGooseBuffer(GoosePublisher self, CommParameters* parameters, const char* 
 struct sGoosePublisher {
     uint8_t* buffer;
 
+#if (CONFIG_IEC61850_R_GOOSE == 1)
     /* only for R-GOOSE */
     RSession remoteSession;
     uint16_t appId;
+#endif /* (CONFIG_IEC61850_R_GOOSE == 1) */
 
     /* only for Ethernet based GOOSE */
     EthernetSocket ethernetSocket;
@@ -68,6 +70,7 @@ struct sGoosePublisher {
     MmsValue* timestamp; /* time when stNum is increased */
 };
 
+#if (CONFIG_IEC61850_R_GOOSE == 1)
 GoosePublisher
 GoosePublisher_createRemote(RSession session, uint16_t appId)
 {
@@ -94,6 +97,7 @@ GoosePublisher_createRemote(RSession session, uint16_t appId)
 
     return self;
 }
+#endif /* (CONFIG_IEC61850_R_GOOSE == 1) */
 
 GoosePublisher
 GoosePublisher_createEx(CommParameters* parameters, const char* interfaceID, bool useVlanTag)
@@ -471,6 +475,7 @@ GoosePublisher_publish(GoosePublisher self, LinkedList dataSet)
         if (DEBUG_GOOSE_PUBLISHER)
             printf("GOOSE_PUBLISHER: send GOOSE message\n");
     }
+#if (CONFIG_IEC61850_R_GOOSE == 1)
     else if (self->remoteSession) {
 
         RSession_sendMessage(self->remoteSession, RSESSION_SPDU_ID_GOOSE, self->simulation, self->appId, buffer, self->payloadLength);
@@ -478,6 +483,7 @@ GoosePublisher_publish(GoosePublisher self, LinkedList dataSet)
         if (DEBUG_GOOSE_PUBLISHER)
             printf("GOOSE_PUBLISHER: send R-GOOSE message\n");
     }
+#endif /* (CONFIG_IEC61850_R_GOOSE == 1) */
 
     return 0;
 }

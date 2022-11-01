@@ -56,7 +56,9 @@ struct sSVReceiver {
     uint8_t* buffer;
     EthernetSocket ethSocket;
 
+#if (CONFIG_IEC61850_R_SMV == 1)
     RSession session;
+#endif /* (CONFIG_IEC61850_R_SMV == 1) */
 
     LinkedList subscriberList;
 
@@ -67,8 +69,6 @@ struct sSVReceiver {
 };
 
 struct sSVSubscriber {
-    RSession session;
-
     uint8_t ethAddr[6];
 
     uint16_t appId;
@@ -93,7 +93,6 @@ struct sSVSubscriber_ASDU {
     uint8_t* dataBuffer;
 };
 
-
 SVReceiver
 SVReceiver_create(void)
 {
@@ -113,6 +112,7 @@ SVReceiver_create(void)
     return self;
 }
 
+#if (CONFIG_IEC61850_R_SMV == 1)
 SVReceiver
 SVReceiver_createRemote(RSession session)
 {
@@ -133,6 +133,7 @@ SVReceiver_createRemote(RSession session)
 
     return self;
 }
+#endif /* (CONFIG_IEC61850_R_SMV == 1) */
 
 void
 SVReceiver_setInterfaceId(SVReceiver self, const char* interfaceId)
@@ -210,6 +211,7 @@ svReceiverLoop(void* threadParameter)
 
         EthernetHandleSet_destroy(handleSet);
     }
+#if (CONFIG_IEC61850_R_SMV == 1)
     else  if (self->session) {
         self->stopped = false;
 
@@ -233,6 +235,7 @@ svReceiverLoop(void* threadParameter)
 
         Handleset_destroy(handleSet);
     }
+#endif /* (CONFIG_IEC61850_R_SMV == 1) */
 
     self->stopped = true;
 
@@ -307,6 +310,7 @@ SVReceiver_destroy(SVReceiver self)
 bool
 SVReceiver_startThreadless(SVReceiver self)
 {
+#if (CONFIG_IEC61850_R_SMV == 1)
     if (self->session) {
         if (RSession_startListening(self->session) == R_SESSION_ERROR_OK) {
             self->running = true;
@@ -318,6 +322,7 @@ SVReceiver_startThreadless(SVReceiver self)
         }
     }
     else {
+#endif /* (CONFIG_IEC61850_R_SMV == 1) */
         if (self->interfaceId == NULL)
             self->ethSocket = Ethernet_createSocket(CONFIG_ETHERNET_INTERFACE_ID, NULL);
         else
@@ -334,7 +339,9 @@ SVReceiver_startThreadless(SVReceiver self)
             return true;
         else
             return false;
+#if (CONFIG_IEC61850_R_SMV == 1)
     }
+#endif /* (CONFIG_IEC61850_R_SMV == 1) */
 }
 
 void
@@ -343,9 +350,11 @@ SVReceiver_stopThreadless(SVReceiver self)
     if (self->ethSocket)
         Ethernet_destroySocket(self->ethSocket);
 
+#if (CONFIG_IEC61850_R_SMV == 1)
     if (self->session) {
         RSession_stopListening(self->session);
     }
+#endif /* (CONFIG_IEC61850_R_SMV == 1) */
 
     self->running = false;
 }
@@ -674,10 +683,12 @@ SVReceiver_tick(SVReceiver self)
             return true;
         }
     }
+#if (CONFIG_IEC61850_R_SMV == 1)
     else if (self->session) {
         if (RSession_receiveMessage(self->session, handleSessionPayloadElement, (void*) self) == R_SESSION_ERROR_OK)
             return true;
     }
+#endif /* (CONFIG_IEC61850_R_SMV == 1) */
 
     return false;
 }

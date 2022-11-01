@@ -49,6 +49,9 @@ option(CONFIG_IEC61850_SERVICE_TRACKING "Build with support for IEC 61850 servic
 option(CONFIG_IEC61850_SETTING_GROUPS "Build with support for IEC 61850 setting group services" ON)
 option(CONFIG_IEC61850_SUPPORT_USER_READ_ACCESS_CONTROL "Allow user provided callback to control read access" ON)
 option(CONFIG_IEC61850_RCB_ALLOW_ONLY_PRECONFIGURED_CLIENT "allow only configured clients (when pre-configured by ClientLN)" OFF)
+option(CONFIG_IEC61850_R_GOOSE "Build with support for R-GOOSE (mbedtls required)" ON)
+option(CONFIG_IEC61850_R_SMV "Build with support for R-SMV (mbedtls required)" ON)
+option(CONFIG_IEC61850_SNTP_CLIENT "Build with SNTP client code" ON)
 
 set(CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE "65536" CACHE STRING "Default buffer size for buffered reports in byte" )
 
@@ -93,6 +96,7 @@ set(API_HEADERS
     hal/inc/tls_config.h
     src/common/inc/libiec61850_common_api.h
     src/common/inc/linked_list.h
+    src/common/inc/sntp_client.h
     src/iec61850/inc/iec61850_client.h
     src/iec61850/inc/iec61850_common.h
     src/iec61850/inc/iec61850_server.h
@@ -136,6 +140,18 @@ endif(EXISTS ${CMAKE_CURRENT_LIST_DIR}/third_party/mbedtls/mbedtls-2.16)
 if(WITH_MBEDTLS)
 
 add_definitions(-DCONFIG_MMS_SUPPORT_TLS=1)
+
+if (CONFIG_IEC61850_R_GOOSE)
+set(BUILD_R_GOOSE_EXAMPLES 1)
+endif (CONFIG_IEC61850_R_GOOSE)
+
+if (CONFIG_IEC61850_R_SMV)
+set(BUILD_R_SMV_EXAMPLES 1)
+endif (CONFIG_IEC61850_R_SMV)
+
+if (CONFIG_IEC61850_SNTP_CLIENT)
+set(BUILD_SNTP_CLIENT_EXAMPLES 1)
+endif (CONFIG_IEC61850_SNTP_CLIENT)
 
 endif(WITH_MBEDTLS)
 
