@@ -108,6 +108,12 @@ readAccessHandler(LogicalDevice* ld, LogicalNode* ln, DataObject* dataObject, Fu
 int 
 main(int argc, char** argv)
 {
+    int tcpPort = 102;
+
+    if (argc > 1) {
+        tcpPort = atoi(argv[1]);
+    }
+
     IedServerConfig config = IedServerConfig_create();
 
     //IedServerConfig_enableEditSG(config, false);
@@ -132,7 +138,7 @@ main(int argc, char** argv)
     IedServer_setReadAccessHandler(iedServer, readAccessHandler, NULL);
 
     /* MMS server will be instructed to start listening to client connections. */
-    IedServer_start(iedServer, 102);
+    IedServer_start(iedServer, tcpPort);
 
     if (!IedServer_isRunning(iedServer)) {
         printf("Starting server failed! Exit.\n");

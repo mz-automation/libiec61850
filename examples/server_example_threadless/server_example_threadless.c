@@ -65,6 +65,11 @@ controlHandlerForBinaryOutput(ControlAction action, void* parameter, MmsValue* v
 int
 main(int argc, char** argv)
 {
+    int tcpPort = 102;
+
+    if (argc > 1) {
+        tcpPort = atoi(argv[1]);
+    }
 
     iedServer = IedServer_create(&iedModel);
 
@@ -86,7 +91,7 @@ main(int argc, char** argv)
             IEDMODEL_GenericIO_GGIO1_SPCSO4);
 
     /* MMS server will be instructed to start listening to client connections. */
-    IedServer_startThreadless(iedServer, 102);
+    IedServer_startThreadless(iedServer, tcpPort);
 
     if (!IedServer_isRunning(iedServer)) {
         printf("Starting server failed! Exit.\n");
