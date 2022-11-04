@@ -2470,7 +2470,7 @@ ControlAction_getOrCat(ControlAction self)
     return 0;
 }
 
-uint8_t*
+const uint8_t*
 ControlAction_getOrIdent(ControlAction self, int* orIdentSize)
 {
     ControlObject* controlObject = (ControlObject*) self;

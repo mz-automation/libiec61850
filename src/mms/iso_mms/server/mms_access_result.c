@@ -335,7 +335,7 @@ exit_with_error:
 }
 
 static int
-MmsValue_getMaxStructSize(MmsValue* self)
+MmsValue_getMaxStructSize(const MmsValue* self)
 {
     int componentsSize = 0;
     int i;
@@ -354,7 +354,7 @@ MmsValue_getMaxStructSize(MmsValue* self)
 }
 
 int
-MmsValue_getMaxEncodedSize(MmsValue* self)
+MmsValue_getMaxEncodedSize(const MmsValue* self)
 {
     int size = 0;
     int elementSize = 0;

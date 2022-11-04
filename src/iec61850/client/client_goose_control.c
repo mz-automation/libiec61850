@@ -213,7 +213,7 @@ ClientGooseControlBlock_getDstAddress(ClientGooseControlBlock self)
         goto exit_error;
     }
 
-    uint8_t* addrBuf = MmsValue_getOctetStringBuffer(addr);
+    const uint8_t* addrBuf = MmsValue_getOctetStringBuffer(addr);
 
     memcpy(&(retVal.dstAddress), addrBuf, 6);
 

@@ -816,8 +816,8 @@ MmsValue_setUtcTimeByBuffer(MmsValue* self, const uint8_t* buffer)
     }
 }
 
-uint8_t*
-MmsValue_getUtcTimeBuffer(MmsValue* self)
+const uint8_t*
+MmsValue_getUtcTimeBuffer(const MmsValue* self)
 {
     return self->value.utcTime;
 }
@@ -1492,19 +1492,19 @@ MmsValue_getOctetStringSize(const MmsValue* self)
 }
 
 uint16_t
-MmsValue_getOctetStringMaxSize(MmsValue* self)
+MmsValue_getOctetStringMaxSize(const MmsValue* self)
 {
     return abs(self->value.octetString.maxSize);
 }
 
-uint8_t*
-MmsValue_getOctetStringBuffer(MmsValue* self)
+const uint8_t*
+MmsValue_getOctetStringBuffer(const MmsValue* self)
 {
     return self->value.octetString.buf;
 }
 
 uint8_t
-MmsValue_getOctetStringOctet(MmsValue* self, int octetPos)
+MmsValue_getOctetStringOctet(const MmsValue* self, int octetPos)
 {
     uint8_t octet = 0x00; /* default value, for out of range request */
 
@@ -1922,7 +1922,7 @@ MmsValue_setVisibleString(MmsValue* self, const char* string)
 }
 
 const char*
-MmsValue_toString(MmsValue* self)
+MmsValue_toString(const MmsValue* self)
 {
     if ((self->type == MMS_VISIBLE_STRING) || (self->type == MMS_STRING))
         return self->value.visibleString.buf;
@@ -1931,7 +1931,7 @@ MmsValue_toString(MmsValue* self)
 }
 
 int
-MmsValue_getStringSize(MmsValue* self)
+MmsValue_getStringSize(const MmsValue* self)
 {
     if ((self->type == MMS_VISIBLE_STRING) || (self->type == MMS_STRING))
         return self->value.visibleString.size;
@@ -2103,7 +2103,7 @@ MmsValue_setDeletableRecursive(MmsValue* self)
 }
 
 int
-MmsValue_isDeletable(MmsValue* self)
+MmsValue_isDeletable(const MmsValue* self)
 {
     return self->deleteValue;
 }
@@ -2120,8 +2120,8 @@ MmsValue_getSubElement(MmsValue* self, MmsVariableSpecification* varSpec, char* 
     return MmsVariableSpecification_getChildValue(varSpec, self, mmsPath);
 }
 
-char*
-MmsValue_getTypeString(MmsValue* self)
+const char*
+MmsValue_getTypeString(const MmsValue* self)
 {
     switch (MmsValue_getType(self))
     {
