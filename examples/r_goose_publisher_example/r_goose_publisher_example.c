@@ -12,6 +12,7 @@
 #include "mms_value.h"
 #include "goose_publisher.h"
 #include "hal_thread.h"
+#include "l2_security.h"
 
 static bool running = true;
 

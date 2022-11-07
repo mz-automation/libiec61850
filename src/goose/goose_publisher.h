@@ -26,6 +26,7 @@
 
 #include "iec61850_common.h"
 #include "r_session.h"
+#include "l2_security.h"
 #include "linked_list.h"
 #include "mms_value.h"
 
@@ -113,6 +114,15 @@ GoosePublisher_publish(GoosePublisher self, LinkedList dataSet);
  */
 LIB61850_API int
 GoosePublisher_publishAndDump(GoosePublisher self, LinkedList dataSet, char* msgBuf, int32_t* msgLen, int32_t bufSize);
+
+/**
+ * \brief Enable and configure L2 security (signatures)
+ * 
+ * \param self GoosePublisher instance
+ * \param l2Security L2 security instance to use with this GOOSE publisher
+*/
+LIB61850_API void
+GoosePublisher_setL2Security(GoosePublisher self, L2Security l2Security);
 
 /**
  * \brief Sets the GoID used by the GoosePublisher instance

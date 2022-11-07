@@ -57,6 +57,15 @@ main(int argc, char **argv)
         GoosePublisher_setDataSetRef(publisher, "simpleIOGenericIO/LLN0$AnalogValues");
         GoosePublisher_setTimeAllowedToLive(publisher, 500);
 
+        char* key = "0123456789ABCDEF";
+
+        L2Security l2Sec = L2Security_create();
+
+        L2Security_addKey(l2Sec, 0x12345678, (uint8_t*)key, 16, MC_SEC_SEC_ALGO_NONE, MC_SEC_SIG_ALGO_HMAC_SHA256_256);
+        L2Security_setActiveKey(l2Sec, 1);
+
+        GoosePublisher_setL2Security(publisher, l2Sec);
+
         int i = 0;
 
         for (i = 0; i < 4; i++) {

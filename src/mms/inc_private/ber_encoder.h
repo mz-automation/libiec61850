@@ -62,6 +62,9 @@ LIB61850_INTERNAL int
 BerEncoder_encodeUInt32WithTL(uint8_t tag, uint32_t value, uint8_t* buffer, int bufPos);
 
 LIB61850_INTERNAL int
+BerEncoder_encodeInt32WithTL(uint8_t tag, int32_t value, uint8_t* buffer, int bufPos);
+
+LIB61850_INTERNAL int
 BerEncoder_encodeBitString(uint8_t tag, int bitStringSize, uint8_t* bitString, uint8_t* buffer, int bufPos);
 
 LIB61850_INTERNAL int
@@ -74,6 +77,9 @@ BerEncoder_encodeFloat(uint8_t* floatValue, uint8_t formatWidth, uint8_t exponen
 
 LIB61850_INTERNAL int
 BerEncoder_UInt32determineEncodedSize(uint32_t value);
+
+LIB61850_INTERNAL int
+BerEncoder_Int32determineEncodedSize(int32_t value);
 
 LIB61850_INTERNAL int
 BerEncoder_determineLengthSize(uint32_t length);

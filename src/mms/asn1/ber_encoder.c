@@ -311,6 +311,12 @@ BerEncoder_encodeUInt32WithTL(uint8_t tag, uint32_t value, uint8_t* buffer, int 
 }
 
 int
+BerEncoder_encodeInt32WithTL(uint8_t tag, int32_t value, uint8_t* buffer, int bufPos)
+{
+    return BerEncoder_encodeUInt32WithTL(tag, (uint32_t) value, buffer, bufPos);
+}
+
+int
 BerEncoder_encodeFloat(uint8_t* floatValue, uint8_t formatWidth, uint8_t exponentWidth,
         uint8_t* buffer, int bufPos)
 {
@@ -336,6 +342,28 @@ BerEncoder_encodeFloat(uint8_t* floatValue, uint8_t formatWidth, uint8_t exponen
 
 int
 BerEncoder_UInt32determineEncodedSize(uint32_t value)
+{
+    uint8_t* valueArray = (uint8_t*) &value;
+    uint8_t valueBuffer[5];
+
+    valueBuffer[0] = 0;
+
+    int i;
+    for (i = 0; i < 4; i++) {
+       valueBuffer[i + 1] = valueArray[i];
+    }
+
+#if (ORDER_LITTLE_ENDIAN == 1)
+    BerEncoder_revertByteOrder(valueBuffer + 1, 4);
+#endif
+
+    int size = BerEncoder_compressInteger(valueBuffer, 5);
+
+    return size;
+}
+
+int
+BerEncoder_Int32determineEncodedSize(int32_t value)
 {
     uint8_t* valueArray = (uint8_t*) &value;
     uint8_t valueBuffer[5];

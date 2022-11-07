@@ -372,7 +372,7 @@ decodeInt16FixedSize(int16_t* outValue, uint8_t* buffer, int bufPos)
 }
 
 static bool
-lookupKey(RSession self, uint32_t keyId, uint8_t** key, int* keySize,  RSecurityAlgorithm* secAlgo, RSignatureAlgorithm* sigAlgo)
+lookupKey(RSession self, uint32_t keyId, uint8_t** key, int* keySize, RSecurityAlgorithm* secAlgo, RSignatureAlgorithm* sigAlgo)
 {
     if (keyId == 0) {
         DEBUG_PRINTF("Invalid key ID");

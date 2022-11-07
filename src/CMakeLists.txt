@@ -182,6 +182,7 @@ set (lib_goose_SRCS
 ./goose/goose_subscriber.c
 ./goose/goose_receiver.c
 ./goose/goose_publisher.c
+./goose/goose_sec.c
 )
 
 set (lib_sv_SRCS
