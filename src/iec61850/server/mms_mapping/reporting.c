@@ -3339,6 +3339,8 @@ sendNextReportEntrySegment(ReportControl* self)
 
     MmsValue* subSeqNum = self->subSeqVal;
 
+    int numberOfAddedElements = 0;
+
     for (i = 0; i < self->dataSet->elementCount; i++) {
 
         if ((report->flags > 0) || MmsValue_getBitStringBit(inclusionField, i)) {
@@ -3420,6 +3422,8 @@ sendNextReportEntrySegment(ReportControl* self)
 
                 MmsValue_setBitStringBit(self->inclusionField, i, true);
 
+                numberOfAddedElements++;
+
                 accessResultSize += elementSize;
                 estimatedSegmentSize += elementSize;
             }
@@ -3460,11 +3464,16 @@ sendNextReportEntrySegment(ReportControl* self)
     uint32_t informationReportSize = 1 + informationReportContentSize + BerEncoder_determineLengthSize(informationReportContentSize);
     uint32_t completeMessageSize = 1 + informationReportSize + BerEncoder_determineLengthSize(informationReportSize);
 
-    if ((int) completeMessageSize > maxMmsPduSize) {
+    if (((int) completeMessageSize > maxMmsPduSize) || (numberOfAddedElements == 0)) {
         if (DEBUG_IED_SERVER)
-            printf("IED_SERVER: report message too large %u (max = %i) -> skip message!\n", completeMessageSize, maxMmsPduSize);
+            printf("IED_SERVER: MMS PDU size too small to encode report data (max PDU size = %i) -> skip message!\n", maxMmsPduSize);
 
-        goto exit_function;
+        self->startIndexForNextSegment = 0;
+        segmented = false;
+        moreFollows = false;
+        sentSuccess = true;
+
+        goto exit_remove_report;
     }
 
     /* encode the report message */
@@ -3687,6 +3696,8 @@ sendNextReportEntrySegment(ReportControl* self)
 
         self->startIndexForNextSegment = maxIndex;
     }
+
+exit_remove_report:
 
     if (segmented == false) {
 
