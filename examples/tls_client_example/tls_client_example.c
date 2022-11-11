@@ -30,11 +30,15 @@ reportCallbackFunction(void* parameter, ClientReport report)
 }
 
 static void
-securityEventHandler(void* parameter, TLSConfiguration_EventLevel eventLevel, int eventCode, const char* msg)
+securityEventHandler(void* parameter, TLSConfiguration_EventLevel eventLevel, int eventCode, const char* msg, TLSConnection con)
 {
     (void)parameter;
 
-    printf("[SECURITY EVENT] %s (t: %i, c: %i)\n", msg, eventLevel, eventCode);
+    char* peerAddr = TLSConnection_getPeerAddress(con, NULL);
+
+    printf("[SECURITY EVENT] %s (%s)(t: %i, c: %i)\n", msg, peerAddr, eventLevel, eventCode);
+
+    free(peerAddr);
 }
 
 int main(int argc, char** argv) {

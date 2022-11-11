@@ -103,11 +103,17 @@ clientAuthenticator(void* parameter, AcseAuthenticationParameter authParameter, 
 }
 
 static void
-securityEventHandler(void* parameter, TLSConfiguration_EventLevel eventLevel, int eventCode, const char* msg)
+securityEventHandler(void* parameter, TLSConfiguration_EventLevel eventLevel, int eventCode, const char* msg, TLSConnection con)
 {
     (void)parameter;
 
-    printf("[SECURITY EVENT] %s (t: %i, c: %i)\n", msg, eventLevel, eventCode);
+    char* peerAddr = TLSConnection_getPeerAddress(con, NULL);
+
+    const char* tlsVersionStr = TLSConfigVersion_toString(TLSConnection_getTLSVersion(con));
+
+    printf("[SECURITY EVENT - %s] %s (%s)(t: %i, c: %i)\n", tlsVersionStr, msg, peerAddr, eventLevel, eventCode);
+
+    free(peerAddr);
 }
 
 int

@@ -322,7 +322,7 @@ Socket_getPeerAddress(Socket self);
  *
  * The peer address has to be returned as null terminated string
  *
- * Implementation of this function is MANDATORY (lib60870)
+ * Implementation of this function is MANDATORY (lib60870 and libiec61850)
  *
  * \param self the client, connection or server socket instance
  * \param peerAddressString a string to store the peer address (the string should have space

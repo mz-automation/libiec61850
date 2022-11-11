@@ -105,10 +105,10 @@ struct sTLSSocket {
 };
 
 static void
-raiseSecurityEvent(TLSConfiguration config, TLSConfiguration_EventLevel eventCategory, int eventCode, const char* message)
+raiseSecurityEvent(TLSConfiguration config, TLSConfiguration_EventLevel eventCategory, int eventCode, const char* message, TLSSocket socket)
 {
     if (config->eventHandler) {
-        config->eventHandler(config->eventHandlerParameter, eventCategory, eventCode, message);
+        config->eventHandler(config->eventHandlerParameter, eventCategory, eventCode, message, (TLSConnection)socket);
     }
 }
 
@@ -174,7 +174,7 @@ verifyCertificate (void* parameter, mbedtls_x509_crt *crt, int certificate_depth
             if (certMatches)
                 *flags = 0;
             else {
-                raiseSecurityEvent(self->tlsConfig, TLS_SEC_EVT_INCIDENT, TLS_EVENT_CODE_ALM_CERT_NOT_CONFIGURED, "Incident: Certificate not configured");
+                raiseSecurityEvent(self->tlsConfig, TLS_SEC_EVT_INCIDENT, TLS_EVENT_CODE_ALM_CERT_NOT_CONFIGURED, "Incident: Certificate not configured", self);
 
                 *flags |= MBEDTLS_X509_BADCERT_OTHER;
                 return 1;
@@ -518,7 +518,7 @@ TLSConfiguration_destroy(TLSConfiguration self)
 }
 
 static void
-createSecurityEvents(TLSConfiguration config, int ret, uint32_t flags)
+createSecurityEvents(TLSConfiguration config, int ret, uint32_t flags, TLSSocket socket)
 {
     if (config->eventHandler == NULL)
         return;
@@ -526,55 +526,55 @@ createSecurityEvents(TLSConfiguration config, int ret, uint32_t flags)
     switch (ret) {
 
     case MBEDTLS_ERR_SSL_NO_USABLE_CIPHERSUITE:
-        raiseSecurityEvent(config, TLS_SEC_EVT_INCIDENT, TLS_EVENT_CODE_ALM_ALGO_NOT_SUPPORTED, "Incident: Algorithm not supported");
+        raiseSecurityEvent(config, TLS_SEC_EVT_INCIDENT, TLS_EVENT_CODE_ALM_ALGO_NOT_SUPPORTED, "Incident: Algorithm not supported", socket);
         break;
 
     case MBEDTLS_ERR_SSL_BAD_HS_PROTOCOL_VERSION:
-        raiseSecurityEvent(config,TLS_SEC_EVT_INCIDENT, TLS_EVENT_CODE_ALM_UNSECURE_COMMUNICATION, "Incident: Unsecure communication");
+        raiseSecurityEvent(config,TLS_SEC_EVT_INCIDENT, TLS_EVENT_CODE_ALM_UNSECURE_COMMUNICATION, "Incident: Unsecure communication", socket);
         break;
 
     case MBEDTLS_ERR_SSL_NO_CLIENT_CERTIFICATE:
-        raiseSecurityEvent(config,TLS_SEC_EVT_INCIDENT, TLS_EVENT_CODE_ALM_CERT_UNAVAILABLE, "Incident: Certificate unavailable");
+        raiseSecurityEvent(config,TLS_SEC_EVT_INCIDENT, TLS_EVENT_CODE_ALM_CERT_UNAVAILABLE, "Incident: Certificate unavailable", socket);
         break;
 
     case MBEDTLS_ERR_SSL_BAD_HS_CERTIFICATE:
-        raiseSecurityEvent(config,TLS_SEC_EVT_INCIDENT, TLS_EVENT_CODE_ALM_BAD_CERT, "Incident: Bad certificate");
+        raiseSecurityEvent(config,TLS_SEC_EVT_INCIDENT, TLS_EVENT_CODE_ALM_BAD_CERT, "Incident: Bad certificate", socket);
         break;
 
     case MBEDTLS_ERR_SSL_CERTIFICATE_TOO_LARGE:
-        raiseSecurityEvent(config,TLS_SEC_EVT_INCIDENT, TLS_EVENT_CODE_ALM_CERT_SIZE_EXCEEDED, "Incident: TLS certificate size exceeded");
+        raiseSecurityEvent(config,TLS_SEC_EVT_INCIDENT, TLS_EVENT_CODE_ALM_CERT_SIZE_EXCEEDED, "Incident: TLS certificate size exceeded", socket);
         break;
 
     case MBEDTLS_ERR_SSL_PEER_VERIFY_FAILED:
-        raiseSecurityEvent(config,TLS_SEC_EVT_INCIDENT, TLS_EVENT_CODE_ALM_CERT_VALIDATION_FAILED, "Incident: certificate validation: certificate signature could not be validated");
+        raiseSecurityEvent(config,TLS_SEC_EVT_INCIDENT, TLS_EVENT_CODE_ALM_CERT_VALIDATION_FAILED, "Incident: certificate validation: certificate signature could not be validated", socket);
         break;
 
     case MBEDTLS_ERR_SSL_CERTIFICATE_REQUIRED:
-        raiseSecurityEvent(config,TLS_SEC_EVT_INCIDENT, TLS_EVENT_CODE_ALM_CERT_REQUIRED, "Incident: Certificate required");
+        raiseSecurityEvent(config,TLS_SEC_EVT_INCIDENT, TLS_EVENT_CODE_ALM_CERT_REQUIRED, "Incident: Certificate required", socket);
         break;
 
     case MBEDTLS_ERR_X509_CERT_VERIFY_FAILED:
         {
             if (flags & MBEDTLS_X509_BADCERT_EXPIRED) {
-                raiseSecurityEvent(config,TLS_SEC_EVT_INCIDENT, TLS_EVENT_CODE_ALM_CERT_EXPIRED, "Incident: Certificate expired");
+                raiseSecurityEvent(config,TLS_SEC_EVT_INCIDENT, TLS_EVENT_CODE_ALM_CERT_EXPIRED, "Incident: Certificate expired", socket);
             }
             else if (flags & MBEDTLS_X509_BADCERT_REVOKED) {
-                raiseSecurityEvent(config,TLS_SEC_EVT_INCIDENT, TLS_EVENT_CODE_ALM_CERT_REVOKED, "Incident: Certificate revoked");
+                raiseSecurityEvent(config,TLS_SEC_EVT_INCIDENT, TLS_EVENT_CODE_ALM_CERT_REVOKED, "Incident: Certificate revoked", socket);
             }
             else if (flags & MBEDTLS_X509_BADCERT_NOT_TRUSTED) {
-                raiseSecurityEvent(config,TLS_SEC_EVT_INCIDENT, TLS_EVENT_CODE_ALM_CERT_NOT_TRUSTED, "Incident: Certificate validation: CA certificate not available");
+                raiseSecurityEvent(config,TLS_SEC_EVT_INCIDENT, TLS_EVENT_CODE_ALM_CERT_NOT_TRUSTED, "Incident: Certificate validation: CA certificate not available", socket);
             }
             else if (flags & MBEDTLS_X509_BADCERT_OTHER) {
-                raiseSecurityEvent(config,TLS_SEC_EVT_INCIDENT, TLS_EVENT_CODE_ALM_CERT_NOT_CONFIGURED, "Incident: Certificate not configured");
+                raiseSecurityEvent(config,TLS_SEC_EVT_INCIDENT, TLS_EVENT_CODE_ALM_CERT_NOT_CONFIGURED, "Incident: Certificate not configured", socket);
             }
             else {
-                raiseSecurityEvent(config,TLS_SEC_EVT_INCIDENT, TLS_EVENT_CODE_ALM_CERT_VALIDATION_FAILED, "Incident: Certificate verification failed");
+                raiseSecurityEvent(config,TLS_SEC_EVT_INCIDENT, TLS_EVENT_CODE_ALM_CERT_VALIDATION_FAILED, "Incident: Certificate verification failed", socket);
             }
         }
         break;
 
     default:
-        raiseSecurityEvent(config,TLS_SEC_EVT_INCIDENT, TLS_EVENT_CODE_ALM_HANDSHAKE_FAILED_UNKNOWN_REASON, "Incident: handshake failed for unknown reason");
+        raiseSecurityEvent(config,TLS_SEC_EVT_INCIDENT, TLS_EVENT_CODE_ALM_HANDSHAKE_FAILED_UNKNOWN_REASON, "Incident: handshake failed for unknown reason", socket);
         break;
     }
 }
@@ -753,7 +753,7 @@ TLSSocket_create(Socket socket, TLSConfiguration configuration, bool storeClient
 
                 uint32_t flags = mbedtls_ssl_get_verify_result(&(self->ssl));
 
-                createSecurityEvents(configuration, ret, flags);
+                createSecurityEvents(configuration, ret, flags, self);
 
                 mbedtls_ssl_free(&(self->ssl));
 
@@ -793,7 +793,7 @@ TLSSocket_create(Socket socket, TLSConfiguration configuration, bool storeClient
         self->lastRenegotiationTime = Hal_getTimeInMs();
 
         if (getTLSVersion(self->ssl.major_ver, self->ssl.minor_ver) < TLS_VERSION_TLS_1_2) {
-            raiseSecurityEvent(configuration, TLS_SEC_EVT_WARNING, TLS_EVENT_CODE_WRN_INSECURE_TLS_VERSION,  "Warning: Insecure TLS version");
+            raiseSecurityEvent(configuration, TLS_SEC_EVT_WARNING, TLS_EVENT_CODE_WRN_INSECURE_TLS_VERSION,  "Warning: Insecure TLS version", self);
         }
 
     }
@@ -817,7 +817,7 @@ TLSSocket_performHandshake(TLSSocket self)
 
     if (ret == 0) {
         if (getTLSVersion(self->ssl.major_ver, self->ssl.minor_ver) < TLS_VERSION_TLS_1_2) {
-            raiseSecurityEvent(self->tlsConfig, TLS_SEC_EVT_WARNING, TLS_EVENT_CODE_WRN_INSECURE_TLS_VERSION, "Warning: Insecure TLS version");
+            raiseSecurityEvent(self->tlsConfig, TLS_SEC_EVT_WARNING, TLS_EVENT_CODE_WRN_INSECURE_TLS_VERSION, "Warning: Insecure TLS version", self);
         }
 
         return true;
@@ -828,7 +828,7 @@ TLSSocket_performHandshake(TLSSocket self)
         if (self->tlsConfig->eventHandler) {
             uint32_t flags = mbedtls_ssl_get_verify_result(&(self->ssl));
 
-            createSecurityEvents(self->tlsConfig, ret, flags);
+            createSecurityEvents(self->tlsConfig, ret, flags, self);
         }
 
         return false;
@@ -849,7 +849,7 @@ TLSSocket_read(TLSSocket self, uint8_t* buf, int size)
     if (self->tlsConfig->renegotiationTimeInMs > 0) {
         if (Hal_getTimeInMs() > self->lastRenegotiationTime + self->tlsConfig->renegotiationTimeInMs) {
 
-            raiseSecurityEvent(self->tlsConfig, TLS_SEC_EVT_INFO, TLS_EVENT_CODE_INF_SESSION_RENEGOTIATION, "Info: session renegotiation started");
+            raiseSecurityEvent(self->tlsConfig, TLS_SEC_EVT_INFO, TLS_EVENT_CODE_INF_SESSION_RENEGOTIATION, "Info: session renegotiation started", self);
 
             if (TLSSocket_performHandshake(self) == false) {
                 DEBUG_PRINT("TLS", " renegotiation failed\n");
@@ -885,7 +885,7 @@ TLSSocket_read(TLSSocket self, uint8_t* buf, int size)
             {
                 uint32_t flags = mbedtls_ssl_get_verify_result(&(self->ssl));
 
-                createSecurityEvents(self->tlsConfig, ret, flags);
+                createSecurityEvents(self->tlsConfig, ret, flags, self);
             }
 
             return -1;
@@ -912,7 +912,7 @@ TLSSocket_write(TLSSocket self, uint8_t* buf, int size)
     if (self->tlsConfig->renegotiationTimeInMs > 0) {
         if (Hal_getTimeInMs() > self->lastRenegotiationTime + self->tlsConfig->renegotiationTimeInMs) {
 
-            raiseSecurityEvent(self->tlsConfig, TLS_SEC_EVT_INFO, TLS_EVENT_CODE_INF_SESSION_RENEGOTIATION, "Info: session renegotiation started");
+            raiseSecurityEvent(self->tlsConfig, TLS_SEC_EVT_INFO, TLS_EVENT_CODE_INF_SESSION_RENEGOTIATION, "Info: session renegotiation started", self);
 
             if (TLSSocket_performHandshake(self) == false) {
                 DEBUG_PRINT("TLS", " renegotiation failed\n");
@@ -969,4 +969,55 @@ TLSSocket_close(TLSSocket self)
         GLOBAL_FREEMEM(self->peerCert);
 
     GLOBAL_FREEMEM(self);
+}
+
+char*
+TLSConnection_getPeerAddress(TLSConnection self, char* peerAddrBuf)
+{
+    TLSSocket socket = (TLSSocket)self;
+
+    if (peerAddrBuf == NULL) {
+        peerAddrBuf = (char*)GLOBAL_MALLOC(61);
+    }
+
+    if (peerAddrBuf)
+        return Socket_getPeerAddressStatic(socket->socket, peerAddrBuf);
+    else
+        return NULL; 
+}
+
+uint8_t*
+TLSConnection_getPeerCertificate(TLSConnection self, int* certSize)
+{
+    TLSSocket socket = (TLSSocket)self;
+
+    return TLSSocket_getPeerCertificate(socket, certSize);
+}
+
+TLSConfigVersion
+TLSConnection_getTLSVersion(TLSConnection self)
+{
+    TLSSocket socket = (TLSSocket)self;
+
+    return getTLSVersion(socket->ssl.major_ver, socket->ssl.minor_ver);
+}
+
+const char*
+TLSConfigVersion_toString(TLSConfigVersion version)
+{
+    switch (version)
+    {
+        case TLS_VERSION_SSL_3_0:
+            return "SSL 3.0";
+        case TLS_VERSION_TLS_1_0:
+            return "TLS 1.0";
+        case TLS_VERSION_TLS_1_1:
+            return "TLS 1.1";
+        case TLS_VERSION_TLS_1_2:
+            return "TLS 1.2";
+        case TLS_VERSION_TLS_1_3:
+            return "TLS 1.3";
+        default:
+            return "unknown TLS version";
+    }
 }

@@ -130,7 +130,6 @@ namespace IEC61850
 				}
 			}
 
-
 			public void SetClientMode()
 			{
 				TLSConfiguration_setClientMode (self);
