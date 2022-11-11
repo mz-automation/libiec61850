@@ -19,10 +19,7 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "../server_example_password_auth/static_model.h"
-
-/* import IEC 61850 device model created from SCL-File */
-extern IedModel iedModel;
+#include "static_model.h"
 
 static int running = 0;
 

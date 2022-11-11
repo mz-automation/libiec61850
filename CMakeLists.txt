@@ -137,6 +137,13 @@ add_definitions(-DCONFIG_MMS_SUPPORT_TLS=1)
 
 endif(WITH_MBEDTLS)
 
+include(CheckCCompilerFlag)
+
+check_c_compiler_flag("-Wredundant-decls" SUPPORT_REDUNDANT_DECLS)
+if (SUPPORT_REDUNDANT_DECLS)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wredundant-decls")
+endif(SUPPORT_REDUNDANT_DECLS)
+
 # write the detected stuff to this file
 configure_file(
     ${CMAKE_CURRENT_LIST_DIR}/config/stack_config.h.cmake

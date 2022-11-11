@@ -69,12 +69,10 @@ typedef struct
 } SettingGroup;
 
 #if (CONFIG_IEC61850_CONTROL_SERVICE == 1)
-MmsValue*
-Control_readAccessControlObject(MmsMapping* self, MmsDomain* domain, char* variableIdOrig,
-        MmsServerConnection connection, bool isDirectAccess);
 
 bool
 ControlObject_unselect(ControlObject* self, MmsServerConnection connection, MmsMapping* mmsMapping);
+
 #endif
 
 void /* Create PHYCOMADDR ACSI type instance */

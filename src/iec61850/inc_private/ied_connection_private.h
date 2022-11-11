@@ -1,7 +1,7 @@
 /*
  *  ied_connection_private.h
  *
- *  Copyright 2013-2018 Michael Zillgith
+ *  Copyright 2013-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -144,17 +144,5 @@ controlObjectClient_invokeCommandTerminationHandler(ControlObjectClient self);
 
 LIB61850_INTERNAL void
 ControlObjectClient_setLastApplError(ControlObjectClient self, LastApplError lastAppIError);
-
-/* some declarations that are shared with server side ! */
-
-LIB61850_INTERNAL char*
-MmsMapping_createMmsVariableNameFromObjectReference(const char* objectReference, FunctionalConstraint fc, char* buffer);
-
-
-LIB61850_INTERNAL char*
-MmsMapping_varAccessSpecToObjectReference(MmsVariableAccessSpecification* varAccessSpec);
-
-LIB61850_INTERNAL MmsVariableAccessSpecification*
-MmsMapping_ObjectReferenceToVariableAccessSpec(char* objectReference);
 
 #endif /* IED_CONNECTION_PRIVATE_H_ */
