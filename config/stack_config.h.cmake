@@ -215,9 +215,6 @@
 
 #define CONFIG_INCLUDE_PLATFORM_SPECIFIC_HEADERS 0
 
-/* use short FC defines as in old API */
-#define CONFIG_PROVIDE_OLD_FC_DEFINES 0
-
 /* Support user acccess to raw messages */
 #cmakedefine01 CONFIG_MMS_RAW_MESSAGE_LOGGING
 

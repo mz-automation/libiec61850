@@ -354,10 +354,6 @@ sendMessage(MmsConnection self, ByteBuffer* message)
     }
 #endif /* (CONFIG_MMS_RAW_MESSAGE_LOGGING == 1) */
 
-#if (CONFIG_MMS_COLLECT_STATISTICS == 1)
-    self->statAplMessagesSent++;
-#endif
-
     IsoClientConnection_sendMessage(self->isoClient, message);
 }
 
