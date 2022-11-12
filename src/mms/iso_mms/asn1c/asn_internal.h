@@ -11,6 +11,8 @@
 
 #include "asn_application.h"	/* Application-visible API */
 
+#define EMIT_ASN_DEBUG 0
+
 #include "lib_memory.h"
 
 #ifndef	__NO_ASSERT_H__		/* Include assert.h only for internal use. */

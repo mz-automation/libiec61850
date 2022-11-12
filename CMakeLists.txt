@@ -144,6 +144,11 @@ if (SUPPORT_REDUNDANT_DECLS)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wredundant-decls")
 endif(SUPPORT_REDUNDANT_DECLS)
 
+check_c_compiler_flag("-Wundef" SUPPORT_UNDEF)
+if (SUPPORT_UNDEF)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wundef")
+endif(SUPPORT_UNDEF)
+
 # write the detected stuff to this file
 configure_file(
     ${CMAKE_CURRENT_LIST_DIR}/config/stack_config.h.cmake
