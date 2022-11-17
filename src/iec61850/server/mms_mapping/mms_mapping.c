@@ -3317,17 +3317,15 @@ mmsReadAccessHandler (void* parameter, MmsDomain* domain, char* variableId, MmsS
                 {
                     return DATA_ACCESS_ERROR_SUCCESS;
                 }
-                else {
-
+                else 
+                {
                     StringUtils_createStringFromBufferInBuffer(str, (uint8_t*) variableId, separator - variableId);
 
                     LogicalNode* ln = LogicalDevice_getLogicalNode(ld, str);
 
-                    if (ln != NULL) {
-
-
+                    if (ln != NULL)
+                    {
                         char* doStart = strchr(separator + 1, '$');
-
 
                         if (doStart != NULL) {
 
@@ -3360,6 +3358,13 @@ mmsReadAccessHandler (void* parameter, MmsDomain* domain, char* variableId, MmsS
                                             self->readAccessHandlerParameter);
                                 }
                             }
+                        }
+                        else {
+                            ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer,
+                                                                                                                      connection);
+
+                            return self->readAccessHandler(ld, ln, NULL, fc, clientConnection,
+                                    self->readAccessHandlerParameter);
                         }
                     }
                 }
