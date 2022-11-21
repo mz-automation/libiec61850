@@ -97,7 +97,10 @@ readAccessHandler(LogicalDevice* ld, LogicalNode* ln, DataObject* dataObject, Fu
 {
     void* securityToken = ClientConnection_getSecurityToken(connection);
 
-    printf("Read access to %s/%s.%s\n", ld->name, ln->name, dataObject->name);
+    if (dataObject)
+        printf("Read access to %s/%s.%s[%s]\n", ld->name, ln->name, dataObject->name, FunctionalConstraint_toString(fc));
+    else
+        printf("Read access to %s/%s[%s]\n", ld->name, ln->name, FunctionalConstraint_toString(fc));
 
     return DATA_ACCESS_ERROR_SUCCESS;
 }
@@ -111,6 +114,8 @@ main(int argc, char** argv)
     IedServerConfig_enableResvTmsForSGCB(config, false);
 
     iedServer = IedServer_createWithConfig(&iedModel, NULL, config);
+
+    IedServer_setTimeQuality(iedServer, true, false, false, 10);
 
     IedServerConfig_destroy(config);
 

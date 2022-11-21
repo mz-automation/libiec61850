@@ -258,7 +258,7 @@ copyControlValuesToTrackingObject(MmsMapping* self, ControlObject* controlObject
                 MmsValue_update(trkInst->ctlNum->mmsValue, controlObject->ctlNum);
 
             if (trkInst->operTm)
-                MmsValue_setUtcTimeMs(trkInst->operTm->mmsValue, controlObject->operateTime);
+                MmsValue_setUtcTimeMsEx(trkInst->operTm->mmsValue, controlObject->operateTime, self->iedServer->timeQuality);
 
             if (trkInst->respAddCause)
                 MmsValue_update(trkInst->respAddCause->mmsValue, controlObject->addCause);
@@ -394,7 +394,7 @@ updateGenericTrackingObjectValues(MmsMapping* self, ControlObject* controlObject
             MmsValue_setInt32(trkInst->serviceType->mmsValue, (int) serviceType);
 
         if (trkInst->t)
-            MmsValue_setUtcTimeMs(trkInst->t->mmsValue, Hal_getTimeInMs());
+            MmsValue_setUtcTimeMsEx(trkInst->t->mmsValue, Hal_getTimeInMs(), self->iedServer->timeQuality);
 
         if (trkInst->errorCode)
             MmsValue_setInt32(trkInst->errorCode->mmsValue, errVal);
@@ -590,9 +590,7 @@ setOpOk(ControlObject* self, bool value, uint64_t currentTimeInMs)
             if (self->tOpOk) {
                 MmsValue* timestamp = self->tOpOk->mmsValue;
 
-                MmsValue_setUtcTimeMs(timestamp, currentTimeInMs);
-
-                /* TODO update time quality */
+                MmsValue_setUtcTimeMsEx(timestamp, currentTimeInMs, self->iedServer->timeQuality);
             }
 
             self->pendingEvents |= PENDING_EVENT_OP_OK_TRUE;
@@ -862,6 +860,7 @@ executeStateMachine:
                 MmsValue* operTm = getOperParameterOperTime(controlObject->oper);
 
                 MmsValue_setUtcTime(operTm, 0);
+                MmsValue_setUtcTimeQuality(operTm, self->iedServer->timeQuality);
             }
             else {
                 MmsServerConnection_sendWriteResponse(controlObject->mmsConnection, controlObject->operateInvokeId,

@@ -763,8 +763,8 @@ MmsValue_setUtcTime(MmsValue* self, uint32_t timeval)
     return self;
 }
 
-MmsValue*
-MmsValue_setUtcTimeMs(MmsValue* self, uint64_t timeval)
+static void
+setUtcTimeMs(MmsValue* self, uint64_t timeval, uint8_t timeQuality)
 {
     uint32_t timeval32 = (timeval / 1000LL);
 
@@ -786,7 +786,21 @@ MmsValue_setUtcTimeMs(MmsValue* self, uint64_t timeval)
     valueArray[6] = (fractionOfSecond & 0xff);
 
     /* encode time quality */
-    valueArray[7] = 0x0a; /* 10 bit sub-second time accuracy */
+    valueArray[7] = timeQuality;
+}
+
+MmsValue*
+MmsValue_setUtcTimeMs(MmsValue* self, uint64_t timeval)
+{
+    setUtcTimeMs(self, timeval, 0x0a); /*  set quality as 10 bit sub-second time accuracy */
+
+    return self;
+}
+
+MmsValue*
+MmsValue_setUtcTimeMsEx(MmsValue* self, uint64_t timeval, uint8_t timeQuality)
+{
+    setUtcTimeMs(self, timeval, timeQuality);
 
     return self;
 }
