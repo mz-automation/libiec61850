@@ -562,6 +562,7 @@ IedServer_createWithConfig(IedModel* dataModel, TLSConfiguration tlsConfiguratio
 		    }
 #endif
 
+            IedServer_setTimeQuality(self, true, false, false, 10);
         }
         else {
             IedServer_destroy(self);
@@ -1382,7 +1383,7 @@ IedServer_updateUTCTimeAttributeValue(IedServer self, DataAttribute* dataAttribu
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
         Semaphore_wait(self->dataModelLock);
 #endif
-        MmsValue_setUtcTimeMs(dataAttribute->mmsValue, value);
+        MmsValue_setUtcTimeMsEx(dataAttribute->mmsValue, value, self->timeQuality);
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
         Semaphore_post(self->dataModelLock);
 #endif
@@ -1785,11 +1786,29 @@ private_IedServer_removeClientConnection(IedServer self, ClientConnection client
 #endif
 }
 
-
 void
 IedServer_setGooseInterfaceId(IedServer self, const char* interfaceId)
 {
 #if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
     self->mmsMapping->gooseInterfaceId = StringUtils_copyString(interfaceId);
 #endif
+}
+
+void
+IedServer_setTimeQuality(IedServer self, bool leapSecondKnown, bool clockFailure, bool clockNotSynchronized, int subsecondPrecision)
+{
+    uint8_t timeQuality = 0;
+
+    if (clockNotSynchronized)
+        timeQuality += 0x20;
+
+    if (clockFailure)
+        timeQuality += 0x40;
+
+    if (leapSecondKnown)
+        timeQuality += 0x80;
+
+    timeQuality += (subsecondPrecision & 0x1f);
+
+    self->timeQuality = timeQuality;
 }

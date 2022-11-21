@@ -78,6 +78,8 @@ struct sIedServer
 
     uint8_t edition;
 
+    uint8_t timeQuality; /* user settable time quality for internally updated times */
+
     bool running;
 };
 

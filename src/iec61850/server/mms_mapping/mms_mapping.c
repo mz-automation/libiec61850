@@ -671,7 +671,7 @@ updateGenericTrackingObjectValues(MmsMapping* self, SettingGroupControlBlock* sg
             MmsValue_setInt32(trkInst->serviceType->mmsValue, (int) serviceType);
 
         if (trkInst->t)
-            MmsValue_setUtcTimeMs(trkInst->t->mmsValue, Hal_getTimeInMs());
+            MmsValue_setUtcTimeMsEx(trkInst->t->mmsValue, Hal_getTimeInMs(), self->iedServer->timeQuality);
 
         if (trkInst->errorCode)
             MmsValue_setInt32(trkInst->errorCode->mmsValue,
@@ -818,7 +818,7 @@ MmsMapping_changeActiveSettingGroup(MmsMapping* self, SettingGroupControlBlock* 
             MmsValue* lActTm = MmsValue_getElement(sg->sgcbMmsValues, 4);
 
             MmsValue_setUint8(actSg, sgcb->actSG);
-            MmsValue_setUtcTimeMs(lActTm, Hal_getTimeInMs());
+            MmsValue_setUtcTimeMsEx(lActTm, Hal_getTimeInMs(), self->iedServer->timeQuality);
 
 #if (CONFIG_IEC61850_SERVICE_TRACKING == 1)
             copySGCBValuesToTrackingObject(self, sgcb);
@@ -2669,7 +2669,7 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
                                     MmsValue* lActTm = MmsValue_getElement(sg->sgcbMmsValues, 4);
 
                                     MmsValue_setUint8(actSg, sg->sgcb->actSG);
-                                    MmsValue_setUtcTimeMs(lActTm, Hal_getTimeInMs());
+                                    MmsValue_setUtcTimeMsEx(lActTm, Hal_getTimeInMs(), self->iedServer->timeQuality);
                                 }
                                 else
                                     retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
