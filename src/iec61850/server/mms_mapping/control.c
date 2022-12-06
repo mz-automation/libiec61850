@@ -1659,8 +1659,6 @@ ControlObject_sendCommandTerminationNegative(ControlObject* self)
     MmsServerConnection_sendInformationReportListOfVariables(self->mmsConnection, &_varSpecList, &_values, false);
 } /* ControlObject_sendCommandTerminationNegative() */
 
-
-
 void
 ControlObject_sendLastApplError(ControlObject* self, MmsServerConnection connection, char* ctlVariable, int error,
         ControlAddCause addCause, MmsValue* ctlNum, MmsValue* origin, bool handlerMode)
@@ -2007,7 +2005,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
     }
 
     if (controlObject->ctlModel == CONTROL_MODEL_STATUS_ONLY) {
-        indication = DATA_ACCESS_ERROR_OBJECT_ACCESS_UNSUPPORTED;
+        indication = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
         goto free_and_return;
     }
 
@@ -2034,7 +2032,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                 MmsValue* test = getOperParameterTest(value);
 
                 if (checkValidityOfOriginParameter(origin) == false) {
-                    indication = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+                    indication = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
 
                     ControlObject_sendLastApplError(controlObject, connection, "SBOw", CONTROL_ERROR_NO_ERROR,
                             ADD_CAUSE_SELECT_FAILED, ctlNum, origin, true);
@@ -2141,7 +2139,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                 }
             }
             else {
-                indication = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+                indication = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
             }
         }
         else {
@@ -2162,12 +2160,12 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
 
         if ((ctlVal == NULL) || (test == NULL) || (ctlNum == NULL) || (origin == NULL) || (check == NULL)
                 || (timeParameter == NULL)) {
-            indication = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+            indication = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
             goto free_and_return;
         }
 
         if (checkValidityOfOriginParameter(origin) == false) {
-            indication = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+            indication = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
 
             ControlObject_sendLastApplError(controlObject, connection, "Oper",
                     CONTROL_ERROR_NO_ERROR, ADD_CAUSE_INCONSISTENT_PARAMETERS,
@@ -2223,7 +2221,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                          (controlObject->testMode == testCondition)
                          ) == false)
                     {
-                        indication = DATA_ACCESS_ERROR_TYPE_INCONSISTENT;
+                        indication = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
 
                         ControlObject_sendLastApplError(controlObject, connection, "Oper",
                                 CONTROL_ERROR_NO_ERROR, ADD_CAUSE_INCONSISTENT_PARAMETERS,
@@ -2371,7 +2369,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
         MmsValue* origin = getCancelParameterOrigin(value);
 
         if ((ctlNum == NULL) || (origin == NULL)) {
-            indication = DATA_ACCESS_ERROR_TYPE_INCONSISTENT;
+            indication = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
             if (DEBUG_IED_SERVER)
                 printf("IED_SERVER: Invalid cancel message!\n");
             goto free_and_return;
