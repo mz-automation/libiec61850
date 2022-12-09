@@ -33,6 +33,9 @@ option(BUILD_PYTHON_BINDINGS "Build Python bindings" OFF)
 
 option(CONFIG_MMS_SINGLE_THREADED "Compile for single threaded version" ON)
 option(CONFIG_MMS_THREADLESS_STACK "Optimize stack for threadless operation (warning: single- or multi-threaded server will not work!)" OFF)
+set(CONFIG_MMS_SERVER_MAX_GET_FILE_TASKS 5 CACHE STRING "Configure the maximum number of get file tasks")
+set(CONFIG_MMS_MAX_NUMBER_OF_DATA_SET_MEMBERS 100 CACHE STRING "Configure the maximum number of dataSet members")
+
 option(CONFIG_ACTIVATE_TCP_KEEPALIVE "Activate TCP keepalive" ON)
 option(CONFIG_INCLUDE_GOOSE_SUPPORT "Build with GOOSE support" ON)
 
@@ -49,6 +52,7 @@ option(CONFIG_IEC61850_SERVICE_TRACKING "Build with support for IEC 61850 servic
 option(CONFIG_IEC61850_SETTING_GROUPS "Build with support for IEC 61850 setting group services" ON)
 option(CONFIG_IEC61850_SUPPORT_USER_READ_ACCESS_CONTROL "Allow user provided callback to control read access" ON)
 option(CONFIG_IEC61850_RCB_ALLOW_ONLY_PRECONFIGURED_CLIENT "allow only configured clients (when pre-configured by ClientLN)" OFF)
+set(CONFIG_IEC61850_SG_RESVTMS 300 CACHE STRING "Configure the maximum number of SG RESVTMS")
 
 set(CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE "65536" CACHE STRING "Default buffer size for buffered reports in byte" )
 
