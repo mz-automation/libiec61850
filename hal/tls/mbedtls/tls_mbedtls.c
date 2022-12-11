@@ -476,6 +476,14 @@ TLSConfiguration_addCRLFromFile(TLSConfiguration self, const char* filename)
 }
 
 void
+TLSConfiguration_resetCRL(TLSConfiguration self)
+{
+    mbedtls_x509_crl_free(&(self->crl));
+    mbedtls_x509_crl_init(&(self->crl));
+    self->crlUpdated = Hal_getTimeInMs();
+}
+
+void
 TLSConfiguration_setRenegotiationTime(TLSConfiguration self, int timeInMs)
 {
     self->renegotiationTimeInMs = timeInMs;
