@@ -89,6 +89,7 @@ typedef enum {
 #define TLS_EVENT_CODE_ALM_CERT_REVOKED 12
 #define TLS_EVENT_CODE_ALM_CERT_NOT_CONFIGURED 13
 #define TLS_EVENT_CODE_ALM_CERT_NOT_TRUSTED 14
+#define TLS_EVENT_CODE_ALM_NO_CIPHER 15
 
 typedef struct sTLSConnection* TLSConnection;
 
