@@ -445,6 +445,26 @@ TLSConfiguration_addCACertificateFromFile(TLSConfiguration self, const char* fil
     return (ret == 0);
 }
 
+static void
+confCRLUpdated(TLSConfiguration self)
+{
+    self->crlUpdated = Hal_getTimeInMs();
+
+    /* We need to clean-up resumption cache (if enabled) to make sure we renegotiate as CRL may have changed data */
+    if (!self->useSessionResumption) { return; }
+
+    if (self->conf.endpoint == MBEDTLS_SSL_IS_CLIENT) {
+
+    } else {
+        mbedtls_ssl_cache_entry *cur = self->cache.chain;
+
+        while (cur) {
+            cur->timestamp = 0;
+            cur = cur->next;
+        }
+    }
+}
+
 bool
 TLSConfiguration_addCRL(TLSConfiguration self, uint8_t* crl, int crlLen)
 {
@@ -454,7 +474,7 @@ TLSConfiguration_addCRL(TLSConfiguration self, uint8_t* crl, int crlLen)
         DEBUG_PRINT("TLS", "mbedtls_x509_crl_parse returned -0x%x\n", -ret);
     }
     else {
-        self->crlUpdated = Hal_getTimeInMs();
+        confCRLUpdated(self);
     }
 
     return (ret == 0);
@@ -469,7 +489,7 @@ TLSConfiguration_addCRLFromFile(TLSConfiguration self, const char* filename)
         DEBUG_PRINT("TLS", "mbedtls_x509_crl_parse_file returned %d\n", ret);
     }
     else {
-        self->crlUpdated = Hal_getTimeInMs();
+        confCRLUpdated(self);
     }
 
     return (ret == 0);
@@ -852,31 +872,46 @@ TLSSocket_performHandshake(TLSSocket self)
     }
 }
 
+static void
+socketCheckCRLUpdated(TLSSocket self)
+{
+    if (self->crlUpdated == self->tlsConfig->crlUpdated) { return; }
+
+    DEBUG_PRINT("TLS", "CRL updated -> refresh CA chain\n");
+
+    mbedtls_ssl_conf_ca_chain( &(self->conf), &( self->tlsConfig->cacerts), &( self->tlsConfig->crl) );
+
+    self->crlUpdated = self->tlsConfig->crlUpdated;
+
+    /* IEC TS 62351-100-3 Conformance test 6.2.6 requires that upon CRL update a TLS renegotiation should occur */
+    self->lastRenegotiationTime = 0;
+}
+
+/* 0 = renegotiation is not needed or it is successfull, -1 = Failed */
+static int
+socketCheckRenegotiation(TLSSocket self)
+{
+    if (self->tlsConfig->renegotiationTimeInMs <= 0) { return 0; }
+    if (Hal_getTimeInMs() <= self->lastRenegotiationTime + self->tlsConfig->renegotiationTimeInMs) { return 0; }
+
+    raiseSecurityEvent(self->tlsConfig, TLS_SEC_EVT_INFO, TLS_EVENT_CODE_INF_SESSION_RENEGOTIATION, "Info: session renegotiation started", self);
+
+    if (TLSSocket_performHandshake(self) == false) {
+        DEBUG_PRINT("TLS", " renegotiation failed\n");
+        return -1;
+    }
+
+    DEBUG_PRINT("TLS", " started renegotiation\n");
+    self->lastRenegotiationTime = Hal_getTimeInMs();
+    return 0;
+}
+
 int
 TLSSocket_read(TLSSocket self, uint8_t* buf, int size)
 {
-    if (self->crlUpdated != self->tlsConfig->crlUpdated) {
-        DEBUG_PRINT("TLS", "CRL updated -> refresh CA chain\n");
-
-        mbedtls_ssl_conf_ca_chain( &(self->conf), &( self->tlsConfig->cacerts), &( self->tlsConfig->crl) );
-
-        self->crlUpdated = self->tlsConfig->crlUpdated;
-    }
-
-    if (self->tlsConfig->renegotiationTimeInMs > 0) {
-        if (Hal_getTimeInMs() > self->lastRenegotiationTime + self->tlsConfig->renegotiationTimeInMs) {
-
-            raiseSecurityEvent(self->tlsConfig, TLS_SEC_EVT_INFO, TLS_EVENT_CODE_INF_SESSION_RENEGOTIATION, "Info: session renegotiation started", self);
-
-            if (TLSSocket_performHandshake(self) == false) {
-                DEBUG_PRINT("TLS", " renegotiation failed\n");
-                return -1;
-            }
-            else {
-                DEBUG_PRINT("TLS", " started renegotiation\n");
-                self->lastRenegotiationTime = Hal_getTimeInMs();
-            }
-        }
+    socketCheckCRLUpdated(self);
+    if (socketCheckRenegotiation(self) != 0) {
+        return -1;
     }
 
     int ret = mbedtls_ssl_read(&(self->ssl), buf, size);
@@ -918,28 +953,9 @@ TLSSocket_write(TLSSocket self, uint8_t* buf, int size)
     int ret;
     int len = size;
 
-    if (self->crlUpdated != self->tlsConfig->crlUpdated) {
-        DEBUG_PRINT("TLS", "CRL updated -> refresh CA chain\n");
-
-        mbedtls_ssl_conf_ca_chain( &(self->conf), &( self->tlsConfig->cacerts), &( self->tlsConfig->crl) );
-
-        self->crlUpdated = self->tlsConfig->crlUpdated;
-    }
-
-    if (self->tlsConfig->renegotiationTimeInMs > 0) {
-        if (Hal_getTimeInMs() > self->lastRenegotiationTime + self->tlsConfig->renegotiationTimeInMs) {
-
-            raiseSecurityEvent(self->tlsConfig, TLS_SEC_EVT_INFO, TLS_EVENT_CODE_INF_SESSION_RENEGOTIATION, "Info: session renegotiation started", self);
-
-            if (TLSSocket_performHandshake(self) == false) {
-                DEBUG_PRINT("TLS", " renegotiation failed\n");
-                return -1;
-            }
-            else {
-                DEBUG_PRINT("TLS", " started renegotiation\n");
-                self->lastRenegotiationTime = Hal_getTimeInMs();
-            }
-        }
+    socketCheckCRLUpdated(self);
+    if (socketCheckRenegotiation(self) != 0) {
+        return -1;
     }
 
     while ((ret = mbedtls_ssl_write(&(self->ssl), buf, len)) <= 0)
