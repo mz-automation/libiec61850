@@ -446,16 +446,16 @@ TLSConfiguration_addCACertificateFromFile(TLSConfiguration self, const char* fil
 }
 
 static void
-confCRLUpdated(TLSConfiguration self)
+udpatedCRL(TLSConfiguration self)
 {
     self->crlUpdated = Hal_getTimeInMs();
 
     /* We need to clean-up resumption cache (if enabled) to make sure we renegotiate as CRL may have changed data */
-    if (!self->useSessionResumption) { return; }
+    if (self->useSessionResumption == false)
+        return;
 
-    if (self->conf.endpoint == MBEDTLS_SSL_IS_CLIENT) {
-
-    } else {
+    if (self->conf.endpoint == MBEDTLS_SSL_IS_SERVER)
+    {
         mbedtls_ssl_cache_entry *cur = self->cache.chain;
 
         while (cur) {
@@ -474,7 +474,7 @@ TLSConfiguration_addCRL(TLSConfiguration self, uint8_t* crl, int crlLen)
         DEBUG_PRINT("TLS", "mbedtls_x509_crl_parse returned -0x%x\n", -ret);
     }
     else {
-        confCRLUpdated(self);
+        udpatedCRL(self);
     }
 
     return (ret == 0);
@@ -489,7 +489,7 @@ TLSConfiguration_addCRLFromFile(TLSConfiguration self, const char* filename)
         DEBUG_PRINT("TLS", "mbedtls_x509_crl_parse_file returned %d\n", ret);
     }
     else {
-        confCRLUpdated(self);
+        udpatedCRL(self);
     }
 
     return (ret == 0);
@@ -873,9 +873,10 @@ TLSSocket_performHandshake(TLSSocket self)
 }
 
 static void
-socketCheckCRLUpdated(TLSSocket self)
+checkForCRLUpdate(TLSSocket self)
 {
-    if (self->crlUpdated == self->tlsConfig->crlUpdated) { return; }
+    if (self->crlUpdated == self->tlsConfig->crlUpdated)
+        return;
 
     DEBUG_PRINT("TLS", "CRL updated -> refresh CA chain\n");
 
@@ -887,30 +888,35 @@ socketCheckCRLUpdated(TLSSocket self)
     self->lastRenegotiationTime = 0;
 }
 
-/* 0 = renegotiation is not needed or it is successfull, -1 = Failed */
-static int
-socketCheckRenegotiation(TLSSocket self)
+/* true = renegotiation is not needed or it is successfull, false = Failed */
+static bool
+startRenegotiationIfRequired(TLSSocket self)
 {
-    if (self->tlsConfig->renegotiationTimeInMs <= 0) { return 0; }
-    if (Hal_getTimeInMs() <= self->lastRenegotiationTime + self->tlsConfig->renegotiationTimeInMs) { return 0; }
+    if (self->tlsConfig->renegotiationTimeInMs <= 0)
+        return true;
+
+    if (Hal_getTimeInMs() <= self->lastRenegotiationTime + self->tlsConfig->renegotiationTimeInMs)
+        return true;
 
     raiseSecurityEvent(self->tlsConfig, TLS_SEC_EVT_INFO, TLS_EVENT_CODE_INF_SESSION_RENEGOTIATION, "Info: session renegotiation started", self);
 
     if (TLSSocket_performHandshake(self) == false) {
         DEBUG_PRINT("TLS", " renegotiation failed\n");
-        return -1;
+        return false;
     }
 
     DEBUG_PRINT("TLS", " started renegotiation\n");
     self->lastRenegotiationTime = Hal_getTimeInMs();
-    return 0;
+
+    return true;
 }
 
 int
 TLSSocket_read(TLSSocket self, uint8_t* buf, int size)
 {
-    socketCheckCRLUpdated(self);
-    if (socketCheckRenegotiation(self) != 0) {
+    checkForCRLUpdate(self);
+
+    if (startRenegotiationIfRequired(self) == false) {
         return -1;
     }
 
@@ -953,8 +959,9 @@ TLSSocket_write(TLSSocket self, uint8_t* buf, int size)
     int ret;
     int len = size;
 
-    socketCheckCRLUpdated(self);
-    if (socketCheckRenegotiation(self) != 0) {
+    checkForCRLUpdate(self);
+
+    if (startRenegotiationIfRequired(self) == false) {
         return -1;
     }
 
