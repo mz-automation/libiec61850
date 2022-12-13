@@ -299,7 +299,6 @@ TLSConfiguration_addCRLFromFile(TLSConfiguration self, const char* filename);
 
 /**
  * \brief Removes any CRL (certificate revocation list) currently in use
- *
  */
 PAL_API void
 TLSConfiguration_resetCRL(TLSConfiguration self);
