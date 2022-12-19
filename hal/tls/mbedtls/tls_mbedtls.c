@@ -105,7 +105,7 @@ struct sTLSSocket {
 };
 
 static void
-raiseSecurityEvent(TLSConfiguration config, TLSConfiguration_EventLevel eventCategory, int eventCode, const char* message, TLSSocket socket)
+raiseSecurityEvent(TLSConfiguration config, TLSEventLevel eventCategory, int eventCode, const char* message, TLSSocket socket)
 {
     if (config->eventHandler) {
         config->eventHandler(config->eventHandlerParameter, eventCategory, eventCode, message, (TLSConnection)socket);

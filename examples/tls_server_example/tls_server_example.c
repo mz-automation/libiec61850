@@ -103,7 +103,7 @@ clientAuthenticator(void* parameter, AcseAuthenticationParameter authParameter, 
 }
 
 static void
-securityEventHandler(void* parameter, TLSConfiguration_EventLevel eventLevel, int eventCode, const char* msg, TLSConnection con)
+securityEventHandler(void* parameter, TLSEventLevel eventLevel, int eventCode, const char* msg, TLSConnection con)
 {
     (void)parameter;
 
