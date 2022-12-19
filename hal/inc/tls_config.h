@@ -73,7 +73,7 @@ typedef enum {
     TLS_SEC_EVT_INFO = 0,
     TLS_SEC_EVT_WARNING = 1,
     TLS_SEC_EVT_INCIDENT = 2
-} TLSConfiguration_EventLevel;
+} TLSEventLevel;
 
 #define TLS_EVENT_CODE_ALM_ALGO_NOT_SUPPORTED 1
 #define TLS_EVENT_CODE_ALM_UNSECURE_COMMUNICATION 2
@@ -125,7 +125,7 @@ TLSConnection_getPeerCertificate(TLSConnection self, int* certSize);
 PAL_API TLSConfigVersion
 TLSConnection_getTLSVersion(TLSConnection self);
 
-typedef void (*TLSConfiguration_EventHandler)(void* parameter, TLSConfiguration_EventLevel eventLevel, int eventCode, const char* message, TLSConnection con);
+typedef void (*TLSConfiguration_EventHandler)(void* parameter, TLSEventLevel eventLevel, int eventCode, const char* message, TLSConnection con);
 
 /**
  * \brief Set the security event handler
