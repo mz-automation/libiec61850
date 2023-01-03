@@ -3294,6 +3294,19 @@ uint32_t
 IedConnection_createDataSetAsync(IedConnection self, IedClientError* error, const char* dataSetReference, LinkedList /* char* */ dataSetElements,
         IedConnection_GenericServiceHandler handler, void* parameter)
 {
+    MmsError mmsError = MMS_ERROR_NONE;
+
+    IedConnectionOutstandingCall call = iedConnection_allocateOutstandingCall(self);
+
+    if (call == NULL) {
+        *error = IED_ERROR_OUTSTANDING_CALL_LIMIT_REACHED;
+       goto exit_function;
+    }
+
+    call->callback = handler;
+    call->callbackParameter = parameter;
+    call->invokeId = 0;
+
     char domainIdBuffer[65];
     char itemIdBuffer[DATA_SET_MAX_NAME_LENGTH + 1];
 
@@ -3336,19 +3349,6 @@ IedConnection_createDataSetAsync(IedConnection self, IedClientError* error, cons
         isAssociationSpecific = true;
     }
 
-    MmsError mmsError = MMS_ERROR_NONE;
-
-    IedConnectionOutstandingCall call = iedConnection_allocateOutstandingCall(self);
-
-    if (call == NULL) {
-        *error = IED_ERROR_OUTSTANDING_CALL_LIMIT_REACHED;
-       goto exit_function;
-    }
-
-    call->callback = handler;
-    call->callbackParameter = parameter;
-    call->invokeId = 0;
-
     LinkedList dataSetEntries = LinkedList_create();
 
     LinkedList dataSetElement = LinkedList_getNext(dataSetElements);
@@ -3385,7 +3385,7 @@ cleanup_list:
 
 exit_function:
 
-    if (mmsError != MMS_ERROR_NONE) {
+    if (*error != IED_ERROR_OK) {
         iedConnection_releaseOutstandingCall(self, call);
 
         return 0;
@@ -3529,6 +3529,8 @@ uint32_t
 IedConnection_getDataSetDirectoryAsync(IedConnection self, IedClientError* error, const char* dataSetReference,
         IedConnection_GetDataSetDirectoryHandler handler, void* parameter)
 {
+    MmsError mmsError = MMS_ERROR_NONE;
+
     IedConnectionOutstandingCall call = iedConnection_allocateOutstandingCall(self);
 
     if (call == NULL) {
@@ -3582,8 +3584,6 @@ IedConnection_getDataSetDirectoryAsync(IedConnection self, IedClientError* error
         isAssociationSpecific = true;
     }
 
-    MmsError mmsError = MMS_ERROR_NONE;
-
     if (isAssociationSpecific)
         MmsConnection_readNamedVariableListDirectoryAssociationSpecificAsync(self->connection, &(call->invokeId), &mmsError, itemId, getDataSetDirectoryAsyncHandler, self);
 
@@ -3594,7 +3594,7 @@ IedConnection_getDataSetDirectoryAsync(IedConnection self, IedClientError* error
 
 exit_function:
 
-    if (mmsError != MMS_ERROR_NONE) {
+    if (*error != IED_ERROR_OK) {
         iedConnection_releaseOutstandingCall(self, call);
 
         return 0;
