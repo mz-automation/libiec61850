@@ -1,7 +1,7 @@
 /*
  *  mms_server.h
  *
- *  Copyright 2013-2018 Michael Zillgith
+ *  Copyright 2013-2023 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -369,6 +369,9 @@ MmsServerConnection_getLocalAddress(MmsServerConnection self);
 
 LIB61850_INTERNAL void*
 MmsServerConnection_getSecurityToken(MmsServerConnection self);
+
+LIB61850_INTERNAL void
+MmsServer_ignoreClientRequests(MmsServer self, bool enable);;
 
 /**@}*/
 

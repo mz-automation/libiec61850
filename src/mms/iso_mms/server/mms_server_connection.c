@@ -665,6 +665,9 @@ handleConfirmedResponsePdu(
 static inline void
 MmsServerConnection_parseMessage(MmsServerConnection self, ByteBuffer* message, ByteBuffer* response)
 {
+    if (self->server->blockRequests)
+        return;
+
     uint8_t* buffer = message->buffer;
 
     if (message->size < 2)

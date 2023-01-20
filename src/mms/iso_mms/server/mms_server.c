@@ -1,7 +1,7 @@
 /*
  *  mms_server.c
  *
- *  Copyright 2013-2020 Michael Zillgith
+ *  Copyright 2013-2023 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -95,12 +95,12 @@ MmsServer_create(MmsDevice* device, TLSConfiguration tlsConfiguration)
         if (self->valueCaches == NULL)
             goto exit_error;
 
-        self->isLocked = false;
-
         self->transmitBuffer = ByteBuffer_create(NULL, CONFIG_MMS_MAXIMUM_PDU_SIZE);
 
         if (self->transmitBuffer == NULL)
             goto exit_error;
+
+        self->blockRequests = false;
 
 #if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
         self->fileServiceEnabled = true;
@@ -820,4 +820,8 @@ MmsServer_getFilesystemBasepath(MmsServer self)
 #endif
 }
 
-
+void
+MmsServer_ignoreClientRequests(MmsServer self, bool enable)
+{
+    self->blockRequests = enable;
+}

@@ -1,7 +1,7 @@
 /*
  *  ied_server.c
  *
- *  Copyright 2013-2022 Michael Zillgith
+ *  Copyright 2013-2023 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -1908,4 +1908,12 @@ IedServer_setTimeQuality(IedServer self, bool leapSecondKnown, bool clockFailure
     timeQuality += (subsecondPrecision & 0x1f);
 
     self->timeQuality = timeQuality;
+}
+
+void
+IedServer_ignoreClientRequests(IedServer self, bool enable)
+{
+    if (self->mmsServer) {
+        MmsServer_ignoreClientRequests(self->mmsServer, enable);
+    }
 }

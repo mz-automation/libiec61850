@@ -3,7 +3,7 @@
  *
  *  IEC 61850 server API for libiec61850.
  *
- *  Copyright 2013-2022 Michael Zillgith
+ *  Copyright 2013-2023 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -783,6 +783,14 @@ typedef void (*IedConnectionIndicationHandler) (IedServer self, ClientConnection
 LIB61850_API void
 IedServer_setConnectionIndicationHandler(IedServer self, IedConnectionIndicationHandler handler, void* parameter);
 
+/**
+ * \brief Ignore all requests from clients
+ * 
+ * \param self the instance of IedServer to configure.
+ * \param enable when true all requests from clients will be ignored
+ */
+void
+IedServer_ignoreClientRequests(IedServer self, bool enable);
 
 /**@}*/
 

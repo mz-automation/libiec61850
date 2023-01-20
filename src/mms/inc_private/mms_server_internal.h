@@ -135,7 +135,8 @@ struct sMmsServer {
 
     Map openConnections;
     Map valueCaches;
-    bool isLocked;
+
+    bool blockRequests;
 
     ByteBuffer* transmitBuffer; /* global buffer for encoding reports, delayed responses... */
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
