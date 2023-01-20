@@ -808,8 +808,9 @@ writeVariableHandler(uint32_t invokeId, void* parameter, MmsError mmsError, MmsD
             handler(param->originalInvokeId, call->callbackParameter, err);
 
             releaseWriteCall(self, call, param);
-        }
 
+            goto exit_function;
+        }
 
         param->currentItemId = LinkedList_getNext(param->currentItemId);
 
@@ -829,6 +830,7 @@ writeVariableHandler(uint32_t invokeId, void* parameter, MmsError mmsError, MmsD
             MmsConnection_writeVariableAsync(self->connection, &(call->invokeId), &writeError, param->domainId, itemId, value, writeVariableHandler, self);
 
             if (writeError != MMS_ERROR_NONE) {
+
                 handler(param->originalInvokeId, call->callbackParameter, iedConnection_mapMmsErrorToIedError(writeError));
 
                 releaseWriteCall(self, call, param);
@@ -839,6 +841,10 @@ writeVariableHandler(uint32_t invokeId, void* parameter, MmsError mmsError, MmsD
         if (DEBUG_IED_CLIENT)
             printf("IED_CLIENT: internal error - no matching outstanding call!\n");
     }
+
+exit_function:
+
+    return;
 }
 
 uint32_t
