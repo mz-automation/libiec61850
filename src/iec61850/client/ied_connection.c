@@ -105,6 +105,9 @@ iedConnection_mapMmsErrorToIedError(MmsError mmsError)
     case MMS_ERROR_DEFINITION_OBJECT_UNDEFINED:
         return IED_ERROR_OBJECT_UNDEFINED;
 
+    case MMS_ERROR_ACCESS_TEMPORARILY_UNAVAILABLE:
+        return IED_ERROR_TEMPORARILY_UNAVAILABLE;
+
     default:
         return IED_ERROR_UNKNOWN;
     }
