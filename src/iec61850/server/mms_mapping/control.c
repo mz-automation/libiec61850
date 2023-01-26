@@ -1872,7 +1872,7 @@ Control_readAccessControlObject(MmsMapping* self, MmsDomain* domain, char* varia
                     if (DEBUG_IED_SERVER)
                         printf("IED_SERVER: select not applicable for control model %u\n", controlObject->ctlModel);
 
-                    value = controlObject->sbo;
+                    value = MmsValue_newVisibleString("");
                 }
             }
 
