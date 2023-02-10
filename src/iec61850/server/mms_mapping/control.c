@@ -398,6 +398,8 @@ updateGenericTrackingObjectValues(MmsMapping* self, ControlObject* controlObject
 
         if (trkInst->errorCode)
             MmsValue_setInt32(trkInst->errorCode->mmsValue, errVal);
+            
+        
 
         char objRef[129];
 
@@ -417,6 +419,32 @@ updateGenericTrackingObjectValues(MmsMapping* self, ControlObject* controlObject
 
 static void
 unselectObject(ControlObject* self, SelectStateChangedReason reason, MmsMapping* mmsMapping);
+
+static bool
+convertIPv4AddressStringToByteArray(const char* clientAddressString, uint8_t ipV4Addr[])
+{
+    int addrElementCount = 0;
+
+    char* separator = (char*) clientAddressString;
+
+    while (separator != NULL && addrElementCount < 4) {
+        int intVal = atoi(separator);
+
+        ipV4Addr[addrElementCount] = intVal;
+
+        separator = strchr(separator, '.');
+
+        if (separator != NULL)
+            separator++; /* skip '.' character */
+
+        addrElementCount ++;
+    }
+
+    if (addrElementCount == 4)
+        return true;
+    else
+        return false;
+}
 
 static void
 updateNextControlTimeout(MmsMapping* self, uint64_t timeout)
