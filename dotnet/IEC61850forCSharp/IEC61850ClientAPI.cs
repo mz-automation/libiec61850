@@ -1993,7 +1993,6 @@ namespace IEC61850
 
                 if (accessResults != IntPtr.Zero)
                 {
-
                     IntPtr element = LinkedList_getNext(accessResults);
 
                     while (element != IntPtr.Zero)
@@ -2003,6 +2002,9 @@ namespace IEC61850
                         MmsValue accessResultValue = new MmsValue(elementData, true);
 
                         MmsDataAccessError dataAccessError = accessResultValue.GetDataAccessError();
+
+                        if (accessResultList == null)
+                            accessResultList = new List<MmsDataAccessError>();
 
                         accessResultList.Add(dataAccessError);
 
