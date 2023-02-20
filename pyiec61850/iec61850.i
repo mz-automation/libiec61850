@@ -161,7 +161,7 @@ void CommParameters_setDstAddress(CommParameters *gooseCommParameters,
 %}
 %include "servicePythonWrapper.hpp"
 
-    /* SV Subscriber section */
+/* SV Subscriber section */
 %{
 struct sSVSubscriber;
 typedef struct sSVSubscriber* SVSubscriber;
