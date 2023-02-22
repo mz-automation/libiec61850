@@ -5,7 +5,7 @@
  *
  *  Partial implementation of the ISO 8073 COTP (ISO TP0) protocol for MMS.
  *
- *  Copyright 2013-2018 Michael Zillgith
+ *  Copyright 2013-2023 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -175,6 +175,38 @@ writeToSocket(CotpConnection* self, uint8_t* buf, int size)
 }
 
 static bool
+flushBuffer(CotpConnection* self)
+{
+    if (self->socketExtensionBufferFill > 0) {
+
+        int sentBytes = writeToSocket(self, self->socketExtensionBuffer, self->socketExtensionBufferFill);
+
+        if (sentBytes > 0) {
+
+            if (sentBytes != self->socketExtensionBufferFill) {
+                int target = 0;
+                int i;
+                uint8_t* buf = self->socketExtensionBuffer;
+
+                for (i = sentBytes; i < self->socketExtensionBufferFill; i++) {
+                    buf[target++] = buf[i];
+                }
+
+                self->socketExtensionBufferFill = self->socketExtensionBufferFill - sentBytes;
+            }
+            else {
+                self->socketExtensionBufferFill = 0;
+            }
+        }
+        else if (sentBytes == -1) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+static bool
 sendBuffer(CotpConnection* self)
 {
     int remainingSize = ByteBuffer_getSize(self->writeBuffer);
@@ -182,7 +214,15 @@ sendBuffer(CotpConnection* self)
 
     bool retVal = false;
 
-    int sentBytes = writeToSocket(self, buffer, remainingSize);
+    if (flushBuffer(self) == false) {
+        goto exit_function;
+    }
+
+    int sentBytes = 0;
+
+    if (self->socketExtensionBufferFill == 0) {
+        sentBytes = writeToSocket(self, buffer, remainingSize);
+    }
 
     if (sentBytes == -1)
         goto exit_function;
@@ -215,33 +255,6 @@ exit_function:
     return retVal;
 }
 
-static void
-flushBuffer(CotpConnection* self)
-{
-    if (self->socketExtensionBufferFill > 0) {
-
-        int sentBytes = writeToSocket(self, self->socketExtensionBuffer, self->socketExtensionBufferFill);
-
-        if (sentBytes > 0) {
-
-            if (sentBytes != self->socketExtensionBufferFill) {
-                int target = 0;
-                int i;
-                uint8_t* buf = self->socketExtensionBuffer;
-
-                for (i = sentBytes; i < self->socketExtensionBufferFill; i++) {
-                    buf[target++] = buf[i];
-                }
-
-                self->socketExtensionBufferFill = self->socketExtensionBufferFill - sentBytes;
-            }
-            else {
-                self->socketExtensionBufferFill = 0;
-            }
-        }
-    }
-}
-
 CotpIndication
 CotpConnection_sendDataMessage(CotpConnection* self, BufferChain payload)
 {
@@ -262,7 +275,9 @@ CotpConnection_sendDataMessage(CotpConnection* self, BufferChain payload)
     int totalSize = (fragments * (COTP_DATA_HEADER_SIZE + 4)) + payload->length;
 
     /* try to flush extension buffer */
-    flushBuffer(self);
+    if (flushBuffer(self) == false) {
+        return COTP_ERROR;
+    }
 
     /* check if totalSize will fit in extension buffer */
     if (self->socketExtensionBuffer) {
@@ -281,7 +296,7 @@ CotpConnection_sendDataMessage(CotpConnection* self, BufferChain payload)
     int currentChainIndex = 0;
 
     if (DEBUG_COTP)
-        printf("\nCOTP: nextBufferPart: len:%i partLen:%i\n", currentChain->length, currentChain->partLength);
+        printf("COTP: nextBufferPart: len:%i partLen:%i\n", currentChain->length, currentChain->partLength);
 
     uint8_t* buffer = self->writeBuffer->buffer;
 
@@ -307,7 +322,7 @@ CotpConnection_sendDataMessage(CotpConnection* self, BufferChain payload)
             if (currentChainIndex >= currentChain->partLength) {
                 currentChain = currentChain->nextPart;
                 if (DEBUG_COTP)
-                    printf("\nCOTP: nextBufferPart: len:%i partLen:%i\n", currentChain->length, currentChain->partLength);
+                    printf("COTP: nextBufferPart: len:%i partLen:%i\n", currentChain->length, currentChain->partLength);
                 currentChainIndex = 0;
             }
 
@@ -756,6 +771,13 @@ readFromSocket(CotpConnection* self, uint8_t* buf, int size)
 #endif
 }
 
+void
+CotpConnection_flushBuffer(CotpConnection* self)
+{
+    if (self->socketExtensionBufferFill > 0)
+        flushBuffer(self);
+}
+
 TpktState
 CotpConnection_readToTpktBuffer(CotpConnection* self)
 {
@@ -764,6 +786,14 @@ CotpConnection_readToTpktBuffer(CotpConnection* self)
     int bufPos = self->readBuffer->size;
 
     assert (bufferSize > 4);
+
+    if (self->socketExtensionBufferFill > 0) {
+        if (flushBuffer(self) == false)
+            goto exit_error;
+
+        if (self->socketExtensionBufferFill > 0) 
+            goto exit_waiting;
+    }
 
     int readBytes;
 

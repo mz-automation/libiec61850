@@ -1,7 +1,7 @@
 /*
  *  iso_connection.c
  *
- *  Copyright 2013-2022 Michael Zillgith
+ *  Copyright 2013-2023 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -160,6 +160,8 @@ IsoConnection_removeFromHandleSet(const IsoConnection self, HandleSet handles)
 void
 IsoConnection_callTickHandler(IsoConnection self)
 {
+    CotpConnection_flushBuffer(self->cotpConnection);
+
     if (self->tickHandler) {
         self->tickHandler(self->handlerParameter);
     }
@@ -171,10 +173,7 @@ IsoConnection_handleTcpConnection(IsoConnection self, bool isSingleThread)
 #if (CONFIG_MMS_SINGLE_THREADED != 1)
     if (isSingleThread == false) {
 
-        /* call tick handler */
-        if (self->tickHandler) {
-            self->tickHandler(self->handlerParameter);
-        }
+        IsoConnection_callTickHandler(self);
 
         if (Handleset_waitReady(self->handleSet, 10) < 1)
             goto exit_function;
