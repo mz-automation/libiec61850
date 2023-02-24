@@ -1366,6 +1366,26 @@ LIB61850_API int
 ControlAction_getCtlNum(ControlAction self);
 
 /**
+ * \brief Gets the synchroCheck bit provided by the client
+ *
+ * \param self the control action instance
+ *
+ * \return the synchroCheck bit
+ */
+LIB61850_API bool
+ControlAction_getSynchroCheck(ControlAction self);
+
+/**
+ * \brief Gets the interlockCheck bit provided by the client
+ *
+ * \param self the control action instance
+ *
+ * \return the interlockCheck bit
+ */
+LIB61850_API bool
+ControlAction_getInterlockCheck(ControlAction self);
+
+/**
  * \brief Check if the control callback is called by a select or operate command
  *
  * \param self the control action instance
