@@ -1836,6 +1836,14 @@ namespace IEC61850
             [return: MarshalAs(UnmanagedType.I1)]
             static extern bool ControlAction_isSelect(IntPtr self);
 
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
+            static extern bool ControlAction_getSynchroCheck(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
+            static extern bool ControlAction_getInterlockCheck(IntPtr self);
+
             private IntPtr self;
             private IedServer.ControlHandlerInfo info;
             private IedServer iedServer;
@@ -1954,6 +1962,16 @@ namespace IEC61850
             public bool IsSelect()
             {
                 return ControlAction_isSelect(self);
+            }
+
+            public bool GetSynchroCheck()
+            {
+                return ControlAction_getSynchroCheck(self);
+            }
+
+            public bool GetInterlockCheck()
+            {
+                return ControlAction_getInterlockCheck(self);
             }
         }
 
