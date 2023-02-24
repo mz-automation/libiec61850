@@ -1841,6 +1841,21 @@ typedef MmsDataAccessError
 LIB61850_API void
 IedServer_setReadAccessHandler(IedServer self, ReadAccessHandler handler, void* parameter);
 
+
+typedef enum {
+    DATASET_CREATE,
+    DATASET_DELETE,
+    DATASET_READ,
+    DATASET_WRITE,
+    DATASET_GET_DIRECTORY
+} IedServer_DataSetOperation;
+
+typedef bool
+(*IedServer_DataSetAccessHandler) (void* parameter, ClientConnection connection, IedServer_DataSetOperation operation, const char* datasetRef);
+
+LIB61850_API void
+IedServer_setDataSetAccessHandler(IedServer self, IedServer_DataSetAccessHandler handler, void* parameter);
+
 /**@}*/
 
 /**@}*/

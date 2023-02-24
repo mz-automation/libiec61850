@@ -57,6 +57,29 @@ MmsServer_setLocalIpAddress(MmsServer self, const char* localIpAddress);
 LIB61850_INTERNAL bool
 MmsServer_isRunning(MmsServer self);
 
+typedef enum {
+    MMS_VARLIST_CREATE,
+    MMS_VARLIST_DELETE,
+    MMS_VARLIST_READ,
+    MMS_VARLIST_WRITE,
+    MMS_VARLIST_GET_DIRECTORY
+} MmsVariableListAccessType;
+
+/**
+ * \brief callback handler that is called for each named variable list access
+ *
+ * \param parameter a user provided parameter
+ * \param accessType the kind of access (create, delete, read, write, get directory)
+ * \param listType the type (scope) of the named variable list (either domain, association or VMD specific)
+ * \param domain the MMS domain the list is belonging to (is NULL for association or VMD specific lists!)
+ * \param listName the name
+ * \param connection client connection that is accessing the named variable list
+ *
+ * \return MMS_ERROR_NONE if the request is accepted, otherwise the MmsError value that has to be sent back to the client
+ */
+typedef MmsError (*MmsNamedVariableListAccessHandler)(void* parameter, MmsVariableListAccessType accessType, MmsVariableListType listType, MmsDomain* domain,
+        char* listName, MmsServerConnection connection);
+
 /**
  * \brief callback handler that is called whenever a named variable list changes
  *

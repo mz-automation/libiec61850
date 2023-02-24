@@ -123,7 +123,7 @@ struct sMmsServer {
     MmsConnectionHandler connectionHandler;
     void* connectionHandlerParameter;
 
-    MmsNamedVariableListChangedHandler variableListChangedHandler; /* TODO this is only required if dynamic data sets are supported! */
+    MmsNamedVariableListChangedHandler variableListChangedHandler;
     void* variableListChangedHandlerParameter;
 
     AcseAuthenticator authenticator;
