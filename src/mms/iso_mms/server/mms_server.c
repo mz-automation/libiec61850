@@ -359,10 +359,10 @@ MmsServer_installConnectionHandler(MmsServer self, MmsConnectionHandler connecti
 }
 
 void
-MmsServer_installVariableListChangedHandler(MmsServer self, MmsNamedVariableListChangedHandler handler, void* parameter)
+MmsServer_installVariableListAccessHandler(MmsServer self, MmsNamedVariableListAccessHandler handler, void* parameter)
 {
-    self->variableListChangedHandler = handler;
-    self->variableListChangedHandlerParameter = parameter;
+    self->variableListAccessHandler = handler;
+    self->variableListAccessHandlerParameter = parameter;
 }
 
 void

@@ -123,8 +123,8 @@ struct sMmsServer {
     MmsConnectionHandler connectionHandler;
     void* connectionHandlerParameter;
 
-    MmsNamedVariableListChangedHandler variableListChangedHandler;
-    void* variableListChangedHandlerParameter;
+    MmsNamedVariableListAccessHandler variableListAccessHandler;
+    void* variableListAccessHandlerParameter;
 
     AcseAuthenticator authenticator;
     void* authenticatorParameter;
@@ -421,7 +421,7 @@ mmsServer_createMmsWriteResponse(MmsServerConnection connection,
         uint32_t invokeId, ByteBuffer* response, int numberOfItems, MmsDataAccessError* accessResults);
 
 LIB61850_INTERNAL MmsError
-mmsServer_callVariableListChangedHandler(bool create, MmsVariableListType listType, MmsDomain* domain,
+mmsServer_callVariableListChangedHandler(MmsVariableListAccessType accessType, MmsVariableListType listType, MmsDomain* domain,
         char* listName, MmsServerConnection connection);
 
 #endif /* MMS_SERVER_INTERNAL_H_ */

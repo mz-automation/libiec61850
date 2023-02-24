@@ -1,7 +1,7 @@
 /*
  *  mms_named_variable_list_service.c
  *
- *  Copyright 2013-2020 Michael Zillgith
+ *  Copyright 2013-2023 Michael Zillgith
  *
  *	This file is part of libIEC61850.
  *
@@ -49,17 +49,17 @@
 #endif
 
 MmsError
-mmsServer_callVariableListChangedHandler(bool create, MmsVariableListType listType, MmsDomain* domain,
+mmsServer_callVariableListChangedHandler(MmsVariableListAccessType accessType, MmsVariableListType listType, MmsDomain* domain,
         char* listName, MmsServerConnection connection)
 {
     MmsServer self = connection->server;
 
-    if (self->variableListChangedHandler != NULL) {
+    if (self->variableListAccessHandler != NULL) {
         if (DEBUG_MMS_SERVER)
-            printf("MMS_SERVER: call MmsNamedVariableListChangedHandler for new list %s\n", listName);
+            printf("MMS_SERVER: call MmsNamedVariableListAccessHandler for new list %s\n", listName);
 
-        return self->variableListChangedHandler(self->variableListChangedHandlerParameter,
-                create, listType, domain, listName, connection);
+        return self->variableListAccessHandler(self->variableListAccessHandlerParameter,
+                accessType, listType, domain, listName, connection);
     }
     else
         return MMS_ERROR_NONE;
@@ -180,7 +180,7 @@ mmsServer_handleDeleteNamedVariableListRequest(MmsServerConnection connection,
 
                         if (MmsNamedVariableList_isDeletable(variableList)) {
 
-                            MmsError deleteError = mmsServer_callVariableListChangedHandler(false, MMS_DOMAIN_SPECIFIC, domain, listName, connection);
+                            MmsError deleteError = mmsServer_callVariableListChangedHandler(MMS_VARLIST_DELETE, MMS_DOMAIN_SPECIFIC, domain, listName, connection);
 
                             if (deleteError == MMS_ERROR_NONE) {
                                 MmsDomain_deleteNamedVariableList(domain, listName);
@@ -203,7 +203,7 @@ mmsServer_handleDeleteNamedVariableListRequest(MmsServerConnection connection,
 				if (variableList != NULL) {
 					numberMatched++;
 
-					MmsError deleteError = mmsServer_callVariableListChangedHandler(false, MMS_ASSOCIATION_SPECIFIC, NULL, listName, connection);
+					MmsError deleteError = mmsServer_callVariableListChangedHandler(MMS_VARLIST_DELETE, MMS_ASSOCIATION_SPECIFIC, NULL, listName, connection);
 
 					if (deleteError == MMS_ERROR_NONE) {
 					    numberDeleted++;
@@ -224,7 +224,7 @@ mmsServer_handleDeleteNamedVariableListRequest(MmsServerConnection connection,
                 if (variableList != NULL) {
                     numberMatched++;
 
-                    MmsError deleteError = mmsServer_callVariableListChangedHandler(false, MMS_VMD_SPECIFIC, NULL, listName, connection);
+                    MmsError deleteError = mmsServer_callVariableListChangedHandler(MMS_VARLIST_DELETE, MMS_VMD_SPECIFIC, NULL, listName, connection);
 
                     if (deleteError == MMS_ERROR_NONE) {
                         numberDeleted++;
@@ -526,7 +526,7 @@ mmsServer_handleDefineNamedVariableListRequest(
 
                 if (namedVariableList != NULL) {
 
-                    mmsError = mmsServer_callVariableListChangedHandler(true, MMS_DOMAIN_SPECIFIC, domain, variableListName, connection);
+                    mmsError = mmsServer_callVariableListChangedHandler(MMS_VARLIST_CREATE, MMS_DOMAIN_SPECIFIC, domain, variableListName, connection);
 
                     if (mmsError == MMS_ERROR_NONE) {
                         MmsDomain_addNamedVariableList(domain, namedVariableList);
@@ -576,7 +576,7 @@ mmsServer_handleDefineNamedVariableListRequest(
 
                 if (namedVariableList != NULL) {
 
-                    if (mmsServer_callVariableListChangedHandler(true, MMS_ASSOCIATION_SPECIFIC, NULL, variableListName, connection) == MMS_ERROR_NONE) {
+                    if (mmsServer_callVariableListChangedHandler(MMS_VARLIST_CREATE, MMS_ASSOCIATION_SPECIFIC, NULL, variableListName, connection) == MMS_ERROR_NONE) {
                         MmsServerConnection_addNamedVariableList(connection, namedVariableList);
                         createDefineNamedVariableListResponse(invokeId, response);
                     }
@@ -619,7 +619,7 @@ mmsServer_handleDefineNamedVariableListRequest(
                         request, variableListName, &mmsError);
 
                 if (namedVariableList != NULL) {
-                    if (mmsServer_callVariableListChangedHandler(true, MMS_VMD_SPECIFIC, NULL, variableListName, connection)
+                    if (mmsServer_callVariableListChangedHandler(MMS_VARLIST_CREATE, MMS_VMD_SPECIFIC, NULL, variableListName, connection)
                             == MMS_ERROR_NONE) {
                         LinkedList_add(vmdScopeNVLs, (void*) namedVariableList);
 

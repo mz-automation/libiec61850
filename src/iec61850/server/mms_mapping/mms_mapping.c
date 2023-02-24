@@ -1,7 +1,7 @@
 /*
  *  mms_mapping.c
  *
- *  Copyright 2013-2022 Michael Zillgith
+ *  Copyright 2013-2023 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -3379,7 +3379,7 @@ mmsReadAccessHandler (void* parameter, MmsDomain* domain, char* variableId, MmsS
 }
 
 static MmsError
-variableListChangedHandler (void* parameter, bool create, MmsVariableListType listType, MmsDomain* domain,
+variableListAccessHandler (void* parameter, MmsVariableListAccessType accessType, MmsVariableListType listType, MmsDomain* domain,
         char* listName, MmsServerConnection connection)
 {
     MmsError allow = MMS_ERROR_NONE;
@@ -3389,10 +3389,16 @@ variableListChangedHandler (void* parameter, bool create, MmsVariableListType li
     /* TODO add log message */
 
 #if (DEBUG_IED_SERVER == 1)
-    if (create)
+    if (accessType == MMS_VARLIST_CREATE)
         printf("IED_SERVER: create data set ");
-    else
+    else if (accessType == MMS_VARLIST_DELETE)
         printf("IED_SERVER: delete data set ");
+    else if (accessType == MMS_VARLIST_READ)
+        printf("IED_SERVER: read data set ");
+    else if (accessType == MMS_VARLIST_WRITE)
+        printf("IED_SERVER: write data set ");
+    else if (accessType == MMS_VARLIST_READ)
+        printf("IED_SERVER: get directory of data set ");
 
     switch (listType) {
     case MMS_VMD_SPECIFIC:
@@ -3411,7 +3417,10 @@ variableListChangedHandler (void* parameter, bool create, MmsVariableListType li
 
     MmsMapping* self = (MmsMapping*) parameter;
 
-    if (create) {
+    if (accessType == MMS_VARLIST_CREATE) {
+
+        //TODO call user callback hander (IedServer_DataSetAccessHandler)
+
         if (listType == MMS_DOMAIN_SPECIFIC) {
             /* check if LN exists - otherwise reject request (to fulfill test case sDsN1c) */
 
@@ -3441,7 +3450,10 @@ variableListChangedHandler (void* parameter, bool create, MmsVariableListType li
 
         }
     }
-    else {
+    else if (accessType == MMS_VARLIST_DELETE) {
+
+        //TODO call user callback hander (IedServer_DataSetAccessHandler)
+
         /* Check if data set is referenced in a report */
 
         LinkedList rcElement = self->reportControls;
@@ -3519,6 +3531,15 @@ variableListChangedHandler (void* parameter, bool create, MmsVariableListType li
 
 #endif /* (CONFIG_IEC61850_LOG_SERVICE == 1) */
     }
+    else if (accessType == MMS_VARLIST_READ) {
+        //TODO call user callback hander (IedServer_DataSetAccessHandler)
+    }
+    else if (accessType == MMS_VARLIST_WRITE) {
+        //TODO call user callback hander (IedServer_DataSetAccessHandler)
+    }
+    else if (accessType == MMS_VARLIST_GET_DIRECTORY) {
+        //TODO call user callback hander (IedServer_DataSetAccessHandler)
+    }
 
     return allow;
 }
@@ -3530,7 +3551,7 @@ MmsMapping_installHandlers(MmsMapping* self)
     MmsServer_installWriteHandler(self->mmsServer, mmsWriteHandler, (void*) self);
     MmsServer_installReadAccessHandler(self->mmsServer, mmsReadAccessHandler, (void*) self);
     MmsServer_installConnectionHandler(self->mmsServer, mmsConnectionHandler, (void*) self);
-    MmsServer_installVariableListChangedHandler(self->mmsServer, variableListChangedHandler, (void*) self);
+    MmsServer_installVariableListAccessHandler(self->mmsServer, variableListAccessHandler, (void*) self);
 }
 
 void

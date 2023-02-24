@@ -81,29 +81,14 @@ typedef MmsError (*MmsNamedVariableListAccessHandler)(void* parameter, MmsVariab
         char* listName, MmsServerConnection connection);
 
 /**
- * \brief callback handler that is called whenever a named variable list changes
- *
- * \param parameter a user provided parameter
- * \param create if true the the request if a request to create a new variable list, false is a delete request
- * \param listType the type (scope) of the named variable list (either domain, association or VMD specific)
- * \param domain the MMS domain the list is belonging to (is NULL for association or VMD specific lists!)
- * \param listName the name
- * \param connection client connection that requests the creation of deletion of the variable list
- *
- * \return MMS_ERROR_NONE if the request is accepted, otherwise the MmsError value that has to be sent back to the client
- */
-typedef MmsError (*MmsNamedVariableListChangedHandler)(void* parameter, bool create, MmsVariableListType listType, MmsDomain* domain,
-        char* listName, MmsServerConnection connection);
-
-/**
- * \brief Install callback handler that is called when a named variable list changes (is created or deleted)
+ * \brief Install callback handler that is called when a named variable list is accessed by a client
  *
  * \param self the MmsServer instance to operate on
  * \param handler the callback handler function
  * \param parameter user provided parameter that is passed to the callback handler
  */
 LIB61850_INTERNAL void
-MmsServer_installVariableListChangedHandler(MmsServer self, MmsNamedVariableListChangedHandler handler, void* parameter);
+MmsServer_installVariableListAccessHandler(MmsServer self, MmsNamedVariableListAccessHandler handler, void* parameter);
 
 /**
  * \brief ObtainFile service callback handler
