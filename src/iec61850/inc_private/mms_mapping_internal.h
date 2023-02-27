@@ -334,6 +334,9 @@ struct sMmsMapping {
 
     IedServer_RCBEventHandler rcbEventHandler;
     void* rcbEventHandlerParameter;
+
+    IedServer_DataSetAccessHandler dataSetAccessHandler;
+    void* dataSetAccessHandlerParameter;
 };
 
 #endif /* MMS_MAPPING_INTERNAL_H_ */

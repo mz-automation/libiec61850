@@ -1,7 +1,7 @@
 /*
  *  iso_connection_parameters.h
  *
- *  Copyright 2013-2018 Michael Zillgith
+ *  Copyright 2013-2023 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -23,6 +23,10 @@
 
 #ifndef ISO_CONNECTION_PARAMETERS_H_
 #define ISO_CONNECTION_PARAMETERS_H_
+
+#ifndef CONFIG_MMS_SUPPORT_TLS
+#define CONFIG_MMS_SUPPORT_TLS 0
+#endif
 
 #ifdef __cplusplus
 extern "C" {

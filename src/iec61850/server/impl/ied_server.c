@@ -1917,3 +1917,10 @@ IedServer_ignoreClientRequests(IedServer self, bool enable)
         MmsServer_ignoreClientRequests(self->mmsServer, enable);
     }
 }
+
+void
+IedServer_setDataSetAccessHandler(IedServer self, IedServer_DataSetAccessHandler handler, void* parameter)
+{
+    self->mmsMapping->dataSetAccessHandler = handler;
+    self->mmsMapping->dataSetAccessHandlerParameter = parameter;
+}
