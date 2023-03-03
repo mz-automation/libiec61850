@@ -2375,6 +2375,20 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
                 goto exit_function;
             }
         }
+	else if (strcmp(elementName, "OptFlds") == 0) {
+            if (!rc->buffered) {
+                //RPT_OPT_BUFFER_OVERFLOW
+                if (MmsValue_getBitStringBit(value, 6)){
+                    retVal = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+                    goto exit_function;
+                }
+                //RPT_OPT_ENTRY_ID
+                if (MmsValue_getBitStringBit(value, 7)) {
+                    retVal = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+                    goto exit_function;
+                }
+            }
+        }    
         else if (strcmp(elementName, "ConfRev") == 0) {
             retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
 
