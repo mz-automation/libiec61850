@@ -690,6 +690,13 @@ IedServer_setRCBEventHandler(IedServer self, IedServer_RCBEventHandler handler, 
 }
 
 void
+IedServer_setRCBAccessHandler(IedServer self, IedServer_RCBAccessHandler handler, void* parameter)
+{
+    self->mmsMapping->rcbAccessHandler = handler;
+    self->mmsMapping->rcbAccessHandlerParameter = parameter;
+}
+
+void
 IedServer_destroy(IedServer self)
 {
     if (self) {

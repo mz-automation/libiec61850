@@ -1697,21 +1697,35 @@ checkReservationTimeout(MmsMapping* self, ReportControl* rc)
     }
 }
 
-void
+bool
 ReportControl_readAccess(ReportControl* rc, MmsMapping* mmsMapping, MmsServerConnection connection, char* elementName)
 {
-    (void)elementName;
+    bool accessAllowed = true;
+    MmsDataAccessError accessError = DATA_ACCESS_ERROR_SUCCESS;
 
     /* check reservation timeout */
     if (rc->buffered) {
         checkReservationTimeout(mmsMapping, rc);
     }
 
-    if (mmsMapping->rcbEventHandler) {
-        ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(mmsMapping->iedServer, connection);
+    ClientConnection clientConnection = NULL;
 
-        mmsMapping->rcbEventHandler(mmsMapping->rcbEventHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_GET_PARAMETER, elementName, DATA_ACCESS_ERROR_SUCCESS);
+    if (mmsMapping->rcbAccessHandler || mmsMapping->rcbEventHandler) {
+        clientConnection = private_IedServer_getClientConnectionByHandle(mmsMapping->iedServer, connection);
     }
+
+    if (mmsMapping->rcbAccessHandler) {
+        if (mmsMapping->rcbAccessHandler(mmsMapping->rcbAccessHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_GET_PARAMETER) == false) {
+            accessError = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+            accessAllowed = false;
+        }
+    }
+
+    if (mmsMapping->rcbEventHandler) {
+        mmsMapping->rcbEventHandler(mmsMapping->rcbEventHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_GET_PARAMETER, elementName, accessError);
+    }
+
+    return accessAllowed;
 }
 
 static bool
@@ -1808,6 +1822,15 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
     bool dontUpdate = false;
 
     ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer, connection);
+
+    /* check if write access to RCB is allowed on this connection */
+    if (self->rcbAccessHandler) {
+        if (self->rcbAccessHandler(self->rcbAccessHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_SET_PARAMETER) == false) {
+            retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+
+            goto exit_function_only_tracking;
+        }
+    }
 
     /* check reservation timeout for buffered RCBs */
     if (rc->buffered) {
@@ -2490,6 +2513,8 @@ exit_function:
 #endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
 
     ReportControl_unlockNotify(rc);
+
+exit_function_only_tracking:
 
 #if (CONFIG_IEC61850_SERVICE_TRACKING == 1)
     if (rc->buffered)

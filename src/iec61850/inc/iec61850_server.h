@@ -1622,6 +1622,30 @@ typedef void (*IedServer_RCBEventHandler) (void* parameter, ReportControlBlock* 
 LIB61850_API void
 IedServer_setRCBEventHandler(IedServer self, IedServer_RCBEventHandler handler, void* parameter);
 
+
+/**
+ * \brief Callback that is called in case of RCB access to give the user the opportunity to block or allow the operation
+ * 
+ * \note This callback is called before the IedServer_RCBEventHandler and only in case of operations (RCB_EVENT_GET_PARAMETER, RCB_EVENT_SET_PARAMETER, RCB_EVENT_ENABLE
+ * 
+ * \param parameter user provided parameter
+ * \param rcb affected report control block
+ * \param connection client connection that is involved
+ * \param operation one of the following operation event types: RCB_EVENT_GET_PARAMETER, RCB_EVENT_SET_PARAMETER
+ */
+typedef bool
+(*IedServer_RCBAccessHandler) (void* parameter, ReportControlBlock* rcb, ClientConnection connection, IedServer_RCBEventType operation);
+
+/**
+ * \brief Set a handler to control read and write access to report control blocks (RCBs)
+ *
+ * \param self the instance of IedServer to operate on.
+ * \param handler the event handler to be used
+ * \param parameter a user provided parameter that is passed to the handler.
+ */
+LIB61850_API void
+IedServer_setRCBAccessHandler(IedServer self, IedServer_RCBAccessHandler handler, void* parameter);
+
 /**@}*/
 
 /**

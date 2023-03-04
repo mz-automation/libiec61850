@@ -75,6 +75,17 @@ connectionHandler (IedServer self, ClientConnection connection, bool connected, 
         printf("Connection closed\n");
 }
 
+/*
+ * This handler is called before the rcbEventHandler and can be use to allow or permit read or write access to the RCB
+ */
+bool
+rcbAccessHandler(void* parameter, ReportControlBlock* rcb, ClientConnection connection, IedServer_RCBEventType operation)
+{
+    printf("RCB: %s access: %s\n", ReportControlBlock_getName(rcb), operation == RCB_EVENT_GET_PARAMETER ? "READ" : "WRITE");
+
+    return false;
+}
+
 static void
 rcbEventHandler(void* parameter, ReportControlBlock* rcb, ClientConnection connection, IedServer_RCBEventType event, const char* parameterName, MmsDataAccessError serviceError)
 {
@@ -166,6 +177,8 @@ main(int argc, char** argv)
             IEDMODEL_GenericIO_GGIO1_SPCSO4);
 
     IedServer_setConnectionIndicationHandler(iedServer, (IedConnectionIndicationHandler) connectionHandler, NULL);
+
+    IedServer_setRCBAccessHandler(iedServer, rcbAccessHandler, NULL);
 
     IedServer_setRCBEventHandler(iedServer, rcbEventHandler, NULL);
 
