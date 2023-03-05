@@ -25,6 +25,7 @@
 #include "mms_mapping.h"
 #include "mms_mapping_internal.h"
 #include "mms_server_internal.h"
+#include "mms_value_internal.h"
 #include "stack_config.h"
 
 #include "mms_goose.h"
@@ -67,6 +68,8 @@ typedef struct
     MmsServerConnection editingClient;
     uint64_t reservationTimeout;
 } SettingGroup;
+
+static MmsValue objectAccessDenied = {MMS_DATA_ACCESS_ERROR, false, {DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED}};
 
 #if (CONFIG_IEC61850_CONTROL_SERVICE == 1)
 
@@ -3155,31 +3158,35 @@ mmsReadHandler(void* parameter, MmsDomain* domain, char* variableId, MmsServerCo
                     continue;
 
                 if (strlen(rc->name) == variableIdLen) {
-                    if (strncmp(variableId, rc->name, variableIdLen) == 0) {
-
+                    if (strncmp(variableId, rc->name, variableIdLen) == 0)
+                    {
                         char* elementName = MmsMapping_getNextNameElement(reportName);
-
-                        ReportControl_readAccess(rc, self, connection, elementName);
 
                         MmsValue* value = NULL;
 
+                        if (ReportControl_readAccess(rc, self, connection, elementName))
+                        {
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
-                        Semaphore_wait(rc->rcbValuesLock);
+                            Semaphore_wait(rc->rcbValuesLock);
 #endif
 
-                        if (elementName != NULL)
-                            value = ReportControl_getRCBValue(rc, elementName);
-                        else
-                            value = rc->rcbValues;
+                            if (elementName != NULL)
+                                value = ReportControl_getRCBValue(rc, elementName);
+                            else
+                                value = rc->rcbValues;
 
-                        if (value) {
-                            value = MmsValue_clone(value);
-                            MmsValue_setDeletableRecursive(value);
+                            if (value) {
+                                value = MmsValue_clone(value);
+                                MmsValue_setDeletableRecursive(value);
+                            }
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+                            Semaphore_post(rc->rcbValuesLock);
+#endif
                         }
-
-#if (CONFIG_MMS_THREADLESS_STACK != 1)
-                        Semaphore_post(rc->rcbValuesLock);
-#endif
+                        else {
+                            value = &objectAccessDenied;
+                        }
 
                         retValue = value;
 

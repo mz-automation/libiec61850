@@ -83,7 +83,12 @@ rcbAccessHandler(void* parameter, ReportControlBlock* rcb, ClientConnection conn
 {
     printf("RCB: %s access: %s\n", ReportControlBlock_getName(rcb), operation == RCB_EVENT_GET_PARAMETER ? "READ" : "WRITE");
 
-    return false;
+    if (operation == RCB_EVENT_GET_PARAMETER) {
+        return true;
+    }
+    else {
+        return false;
+    }
 }
 
 static void
