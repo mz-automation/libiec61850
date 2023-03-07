@@ -2190,6 +2190,19 @@ ControlObjectClient_selectWithValue(ControlObjectClient self, MmsValue* ctlVal);
 LIB61850_API bool
 ControlObjectClient_cancel(ControlObjectClient self);
 
+/**
+ * \brief Send a cancel command to the server
+ *
+ * The cancel command can be used to stop an ongoing operation (when the server and application
+ * support this) and to cancel a former select command.
+ *
+ * \param self the control object instance to use
+ * \param ctlVal the control value (for APC the value may be either AnalogueValue (MMS_STRUCT) or MMS_FLOAT/MMS_INTEGER
+ *
+ * \return true if operation has been successful, false otherwise.
+ */
+LIB61850_API bool
+ControlObjectClient_cancelWithValue(ControlObjectClient self, MmsValue* ctlVal);	
 
 /**
  * \brief Send an operate command to the server - async version
