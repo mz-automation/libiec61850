@@ -675,6 +675,16 @@ IedConnection_getRequestTimeout(IedConnection self)
         return 0;
 }
 
+uint32_t
+IedConnection_getInvokeId(IedConnection self)
+{
+    if (self->connection) {
+        return MmsConnection_getInvokeId(self->connection);
+    }
+    else
+        return 0;
+}
+
 void
 IedConnection_setTimeQuality(IedConnection self, bool leapSecondKnown, bool clockFailure, bool clockNotSynchronized, int subsecondPrecision)
 {

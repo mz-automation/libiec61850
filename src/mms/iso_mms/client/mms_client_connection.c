@@ -1658,6 +1658,12 @@ MmsConnection_getRequestTimeout(MmsConnection self)
     return self->requestTimeout;
 }
 
+uint32_t
+MmsConnection_getInvokeId(MmsConnection self)
+{
+    return self->nextInvokeId;
+}
+
 void
 MmsConnection_setConnectTimeout(MmsConnection self, uint32_t timeoutInMs)
 {
