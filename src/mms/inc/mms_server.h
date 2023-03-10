@@ -91,6 +91,26 @@ LIB61850_INTERNAL void
 MmsServer_installVariableListAccessHandler(MmsServer self, MmsNamedVariableListAccessHandler handler, void* parameter);
 
 /**
+ * \brief callback handler that is called for each received read journal request
+ * 
+ * \param parameter a user provided parameter
+ * \param domain the MMS domain the journal is belonging to
+ * \param logName the name of the journal
+ * \param connection client connection that is accessing the journal
+ */
+typedef bool (*MmsReadJournalHandler)(void* parameter, MmsDomain* domain, const char* logName, MmsServerConnection connection);
+
+/**
+ * \brief Install callback handler that is called when a journal is accessed by a client
+ *
+ * \param self the MmsServer instance to operate on
+ * \param handler the callback handler function
+ * \param parameter user provided parameter that is passed to the callback handler
+ */
+LIB61850_INTERNAL void
+MmsServer_installReadJournalHandler(MmsServer self, MmsReadJournalHandler handler, void* parameter);
+
+/**
  * \brief ObtainFile service callback handler
  *
  * This is invoked when the obtainFile service is requested by the client. It can be used to accept or deny the

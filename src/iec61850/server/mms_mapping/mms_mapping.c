@@ -3115,7 +3115,7 @@ mmsReadHandler(void* parameter, MmsDomain* domain, char* variableId, MmsServerCo
 #if (CONFIG_IEC61850_LOG_SERVICE == 1)
     /* LOG control block - LG */
     if (isLogControlBlock(separator)) {
-        retValue = LIBIEC61850_LOG_SVC_readAccessControlBlock(self, domain, variableId);
+        retValue = LIBIEC61850_LOG_SVC_readAccessControlBlock(self, domain, variableId, connection);
         goto exit_function;
     }
 #endif
@@ -3410,9 +3410,7 @@ checkDataSetAccess(MmsMapping* self, MmsServerConnection connection, MmsVariable
             StringUtils_appendString(dataSetRef, 129, listName);
         }
 
-        accessGranted = self->dataSetAccessHandler(self->dataSetAccessHandlerParameter,
-                                    private_IedServer_getClientConnectionByHandle(self->iedServer, connection),
-                                    operation, dataSetRef);
+        accessGranted = self->dataSetAccessHandler(self->dataSetAccessHandlerParameter, clientConnection, operation, dataSetRef);
     }
 
     return accessGranted;
@@ -3596,6 +3594,31 @@ variableListAccessHandler (void* parameter, MmsVariableListAccessType accessType
     return allow;
 }
 
+#if (CONFIG_IEC61850_LOG_SERVICE == 1)
+static bool
+mmsReadJournalHandler(void* parameter, MmsDomain* domain, const char* logName, MmsServerConnection connection)
+{
+    bool allowAccess = true;
+
+    MmsMapping* self = (MmsMapping*)parameter;
+
+    if (self->logAccessHandler) {
+        char logReference[130];
+        logReference[0] = 0;
+
+        StringUtils_appendString(logReference, 130, MmsDomain_getName(domain));
+        StringUtils_appendString(logReference, 130, "/");
+        StringUtils_appendString(logReference, 130, logName);
+
+        ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer, connection);
+
+        allowAccess = self->logAccessHandler(self->logAccessHandlerParameter, logReference, clientConnection);
+    }
+    
+    return allowAccess;
+}
+#endif /* (CONFIG_IEC61850_LOG_SERVICE == 1) */
+
 void
 MmsMapping_installHandlers(MmsMapping* self)
 {
@@ -3604,6 +3627,10 @@ MmsMapping_installHandlers(MmsMapping* self)
     MmsServer_installReadAccessHandler(self->mmsServer, mmsReadAccessHandler, (void*) self);
     MmsServer_installConnectionHandler(self->mmsServer, mmsConnectionHandler, (void*) self);
     MmsServer_installVariableListAccessHandler(self->mmsServer, variableListAccessHandler, (void*) self);
+
+#if (CONFIG_IEC61850_LOG_SERVICE == 1)
+    MmsServer_installReadJournalHandler(self->mmsServer, mmsReadJournalHandler, (void*) self);
+#endif /* (CONFIG_IEC61850_LOG_SERVICE == 1) */
 }
 
 void

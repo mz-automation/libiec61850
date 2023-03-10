@@ -78,12 +78,25 @@ connectionHandler (IedServer self, ClientConnection connection, bool connected, 
 /*
  * This handler is called before the rcbEventHandler and can be use to allow or permit read or write access to the RCB
  */
-bool
+static bool
 rcbAccessHandler(void* parameter, ReportControlBlock* rcb, ClientConnection connection, IedServer_RCBEventType operation)
 {
     printf("RCB: %s access: %s\n", ReportControlBlock_getName(rcb), operation == RCB_EVENT_GET_PARAMETER ? "READ" : "WRITE");
 
     if (operation == RCB_EVENT_GET_PARAMETER) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+static bool
+lcbAccessHandler(void* parameter, LogControlBlock* lcb, ClientConnection connection, IedServer_LCBEventType operation)
+{
+    printf("LCB: %s access: %s\n", LogControlBlock_getName(lcb), operation == LCB_EVENT_GET_PARAMETER ? "READ" : "WRITE");
+
+    if (operation == LCB_EVENT_GET_PARAMETER) {
         return true;
     }
     else {
@@ -184,6 +197,8 @@ main(int argc, char** argv)
     IedServer_setConnectionIndicationHandler(iedServer, (IedConnectionIndicationHandler) connectionHandler, NULL);
 
     IedServer_setRCBAccessHandler(iedServer, rcbAccessHandler, NULL);
+
+    IedServer_setLCBAccessHandler(iedServer, lcbAccessHandler, NULL);
 
     IedServer_setRCBEventHandler(iedServer, rcbEventHandler, NULL);
 

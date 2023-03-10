@@ -338,6 +338,12 @@ struct sMmsMapping {
     IedServer_RCBAccessHandler rcbAccessHandler;
     void* rcbAccessHandlerParameter;
 
+    IedServer_LCBAccessHandler lcbAccessHandler;
+    void* lcbAccessHandlerParameter;
+
+    IedServer_LogAccessHandler logAccessHandler;
+    void* logAccessHandlerParameter;
+
     IedServer_DataSetAccessHandler dataSetAccessHandler;
     void* dataSetAccessHandlerParameter;
 };
