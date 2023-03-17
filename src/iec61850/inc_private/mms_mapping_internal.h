@@ -346,6 +346,9 @@ struct sMmsMapping {
 
     IedServer_DataSetAccessHandler dataSetAccessHandler;
     void* dataSetAccessHandlerParameter;
+
+    IedServer_DirectoryAccessHandler directoryAccessHandler;
+    void* directoryAccessHandlerParameter;
 };
 
 #endif /* MMS_MAPPING_INTERNAL_H_ */

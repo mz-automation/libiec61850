@@ -3228,6 +3228,46 @@ unselectControlsForConnection(MmsMapping* self, MmsServerConnection connection)
 }
 #endif /* (CONFIG_IEC61850_CONTROL_SERVICE == 1) */
 
+static bool
+mmsGetNameListHandler(void* parameter, MmsGetNameListType nameListType, MmsDomain* domain, MmsServerConnection connection)
+{
+    MmsMapping* self = (MmsMapping*) parameter;
+
+    bool allowAccess = true;
+
+    if (self->directoryAccessHandler) {
+        
+        LogicalDevice* ld = NULL;
+
+        IedServer_DirectoryCategory category = DIRECTORY_CAT_DATA_LIST;
+
+        ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer, connection);
+
+        if (domain) {
+            ld = IedModel_getDevice(self->model, MmsDomain_getName(domain));
+
+            if (ld == NULL) {
+                if (DEBUG_IED_SERVER)
+                    printf("IED_SERVER: mmsGetNameListHandler -> LD not found!\n");
+            }
+        }
+
+        /* convert type to category */
+        if (nameListType == MMS_GETNAMELIST_DATA)
+            category = DIRECTORY_CAT_DATA_LIST;
+        else if (nameListType == MMS_GETNAMELIST_DATASETS)
+            category = DIRECTORY_CAT_DATASET_LIST;
+        else if (nameListType == MMS_GETNAMELIST_DOMAINS)
+            category = DIRECTORY_CAT_LD_LIST;
+        else if (nameListType == MMS_GETNAMELIST_JOURNALS)
+            category = DIRECTORY_CAT_LOG_LIST;
+
+        allowAccess = self->directoryAccessHandler(self->directoryAccessHandlerParameter, clientConnection, category, ld);
+    }
+
+    return allowAccess;
+}
+
 static void /* is called by MMS server layer and runs in the connection handling thread */
 mmsConnectionHandler(void* parameter, MmsServerConnection connection, MmsServerEvent event)
 {
@@ -3627,6 +3667,7 @@ MmsMapping_installHandlers(MmsMapping* self)
     MmsServer_installReadAccessHandler(self->mmsServer, mmsReadAccessHandler, (void*) self);
     MmsServer_installConnectionHandler(self->mmsServer, mmsConnectionHandler, (void*) self);
     MmsServer_installVariableListAccessHandler(self->mmsServer, variableListAccessHandler, (void*) self);
+    MmsServer_installGetNameListHandler(self->mmsServer, mmsGetNameListHandler, (void*) self);
 
 #if (CONFIG_IEC61850_LOG_SERVICE == 1)
     MmsServer_installReadJournalHandler(self->mmsServer, mmsReadJournalHandler, (void*) self);

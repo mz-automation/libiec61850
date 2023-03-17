@@ -110,6 +110,18 @@ typedef bool (*MmsReadJournalHandler)(void* parameter, MmsDomain* domain, const 
 LIB61850_INTERNAL void
 MmsServer_installReadJournalHandler(MmsServer self, MmsReadJournalHandler handler, void* parameter);
 
+typedef enum {
+    MMS_GETNAMELIST_DOMAINS,
+    MMS_GETNAMELIST_JOURNALS,
+    MMS_GETNAMELIST_DATASETS,
+    MMS_GETNAMELIST_DATA
+} MmsGetNameListType;
+
+typedef bool (*MmsGetNameListHandler)(void* parameter, MmsGetNameListType nameListType, MmsDomain* domain, MmsServerConnection connection);
+
+LIB61850_INTERNAL void
+MmsServer_installGetNameListHandler(MmsServer self, MmsGetNameListHandler handler, void* parameter);
+
 /**
  * \brief ObtainFile service callback handler
  *

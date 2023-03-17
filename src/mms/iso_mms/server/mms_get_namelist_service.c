@@ -1,7 +1,7 @@
 /*
  *  mms_get_namelist_service.c
  *
- *  Copyright 2013-2022 Michael Zillgith
+ *  Copyright 2013-2023 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -190,20 +190,29 @@ getJournalListDomainSpecific(MmsServerConnection connection, char* domainName)
 
     MmsDomain* domain = MmsDevice_getDomain(device, domainName);
 
-    if (domain != NULL) {
-        nameList = LinkedList_create();
+    if (domain) {
 
-        if (domain->journals != NULL) {
+        bool allowAccess = true;
 
-            LinkedList journalList = domain->journals;
+        if (connection->server->getNameListHandler) {
+            allowAccess = connection->server->getNameListHandler(connection->server->getNameListHandlerParameter, MMS_GETNAMELIST_JOURNALS, domain, connection);
+        }
 
-            while ((journalList = LinkedList_getNext(journalList)) != NULL) {
+        if (allowAccess) {
+            nameList = LinkedList_create();
 
-                MmsJournal journal = (MmsJournal) LinkedList_getData(journalList);
+            if (domain->journals != NULL) {
 
-                LinkedList_add(nameList, (void*) journal->name);
+                LinkedList journalList = domain->journals;
+
+                while ((journalList = LinkedList_getNext(journalList)) != NULL) {
+
+                    MmsJournal journal = (MmsJournal) LinkedList_getData(journalList);
+
+                    LinkedList_add(nameList, (void*) journal->name);
+                }
+
             }
-
         }
     }
 
@@ -219,46 +228,56 @@ getNameListDomainSpecific(MmsServerConnection connection, char* domainName)
 
     MmsDomain* domain = MmsDevice_getDomain(device, domainName);
 
-    if (domain != NULL) {
-        nameList = LinkedList_create();
-        MmsVariableSpecification** variables = domain->namedVariables;
+    if (domain) {
 
-        int i;
+        bool allowAccess = true;
 
-        LinkedList element = nameList;
+        if (connection->server->getNameListHandler) {
+            allowAccess = connection->server->getNameListHandler(connection->server->getNameListHandlerParameter, MMS_GETNAMELIST_DATASETS, domain, connection);
+        }
+
+        if (allowAccess) {
+            nameList = LinkedList_create();
+            MmsVariableSpecification** variables = domain->namedVariables;
+
+            int i;
+
+            LinkedList element = nameList;
 
 #if (CONFIG_MMS_SORT_NAME_LIST == 1)
-        int* index = (int*) GLOBAL_MALLOC(sizeof(int) * domain->namedVariablesCount);
+            int* index = (int*) GLOBAL_MALLOC(sizeof(int) * domain->namedVariablesCount);
 
-        for (i = 0; i < domain->namedVariablesCount; i++)
-            index[i] = i;
+            for (i = 0; i < domain->namedVariablesCount; i++)
+                index[i] = i;
 
-        sortIndex(index, domain->namedVariablesCount, domain->namedVariables);
+            sortIndex(index, domain->namedVariablesCount, domain->namedVariables);
 #endif /* (CONFIG_MMS_SORT_NAME_LIST == 1) */
 
-        for (i = 0; i < domain->namedVariablesCount; i++) {
+            for (i = 0; i < domain->namedVariablesCount; i++) {
 
 #if (CONFIG_MMS_SORT_NAME_LIST == 1)
-            element = LinkedList_insertAfter(element, StringUtils_copyString(variables[index[i]]->name));
+                element = LinkedList_insertAfter(element, StringUtils_copyString(variables[index[i]]->name));
 #else
-            element = LinkedList_insertAfter(element, StringUtils_copyString(variables[i]->name));
+                element = LinkedList_insertAfter(element, StringUtils_copyString(variables[i]->name));
 #endif
 
 #if (CONFIG_MMS_SUPPORT_FLATTED_NAME_SPACE == 1)
 #if (CONFIG_MMS_SORT_NAME_LIST == 1)
-            char* prefix = variables[index[i]]->name;
-            element = addSubNamedVaribleNamesToList(element, prefix, variables[index[i]]);
+                char* prefix = variables[index[i]]->name;
+                element = addSubNamedVaribleNamesToList(element, prefix, variables[index[i]]);
 #else
-            char* prefix = variables[i]->name;
-            element = addSubNamedVaribleNamesToList(element, prefix, variables[i]);
+                char* prefix = variables[i]->name;
+                element = addSubNamedVaribleNamesToList(element, prefix, variables[i]);
 #endif /* (CONFIG_MMS_SORT_NAME_LIST == 1) */
 #endif /* (CONFIG_MMS_SUPPORT_FLATTED_NAME_SPACE == 1) */
 
-        }
+            }
 
 #if (CONFIG_MMS_SORT_NAME_LIST == 1)
-        GLOBAL_FREEMEM(index);
+            GLOBAL_FREEMEM(index);
 #endif
+
+        }
     }
 
     return nameList;
@@ -293,10 +312,19 @@ getNamedVariableListsDomainSpecific(MmsServerConnection connection, char* domain
 
     MmsDomain* domain = MmsDevice_getDomain(device, domainName);
 
-    if (domain != NULL) {
-        LinkedList variableLists = MmsDomain_getNamedVariableLists(domain);
+    if (domain) {
 
-        nameList = createStringsFromNamedVariableList(variableLists);
+        bool allowAccess = true;
+
+        if (connection->server->getNameListHandler) {
+            allowAccess = connection->server->getNameListHandler(connection->server->getNameListHandlerParameter, MMS_GETNAMELIST_DATASETS, domain, connection);
+        }
+
+        if (allowAccess) {
+            LinkedList variableLists = MmsDomain_getNamedVariableLists(domain);
+
+            nameList = createStringsFromNamedVariableList(variableLists);
+        }
     }
 
     return nameList;
@@ -613,38 +641,79 @@ mmsServer_handleGetNameListRequest(
 
         if (objectClass == OBJECT_CLASS_DOMAIN) {
 
-            LinkedList nameList = getDomainNames(connection);
+            bool allowAccess = true;
+
+            if (connection->server->getNameListHandler) {
+                allowAccess = connection->server->getNameListHandler(connection->server->getNameListHandlerParameter, MMS_GETNAMELIST_DOMAINS, NULL, connection);
+            }
+
+            if (allowAccess) {
+                LinkedList nameList = getDomainNames(connection);
 
 #if (CONFIG_MMS_SORT_NAME_LIST == 1)
-            StringUtils_sortList(nameList);
+                StringUtils_sortList(nameList);
 #endif
 
-            createNameListResponse(connection, invokeId, nameList, response, continueAfterId);
+                createNameListResponse(connection, invokeId, nameList, response, continueAfterId);
 
-            LinkedList_destroyStatic(nameList);
+                LinkedList_destroyStatic(nameList);
+            }
+            else {
+                mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_ACCESS_DENIED);
+            }
         }
 
 #if (CONFIG_MMS_SUPPORT_VMD_SCOPE_NAMED_VARIABLES == 1)
         else if (objectClass == OBJECT_CLASS_NAMED_VARIABLE) {
-            LinkedList nameList = getNameListVMDSpecific(connection);
 
-            createNameListResponse(connection, invokeId, nameList, response, continueAfterId);
+            bool allowAccess = true;
 
-            LinkedList_destroyStatic(nameList);
+            if (connection->server->getNameListHandler) {
+                allowAccess = connection->server->getNameListHandler(connection->server->getNameListHandlerParameter, MMS_GETNAMELIST_DATA, NULL, connection);
+            }
+
+            if (allowAccess) {
+                LinkedList nameList = getNameListVMDSpecific(connection);
+
+#if (CONFIG_MMS_SORT_NAME_LIST == 1)
+                StringUtils_sortList(nameList);
+#endif
+
+                createNameListResponse(connection, invokeId, nameList, response, continueAfterId);
+
+                LinkedList_destroyStatic(nameList);
+            }
+            else {
+                mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_ACCESS_DENIED);
+            }
         }
 #endif /* (CONFIG_MMS_SUPPORT_VMD_SCOPE_NAMED_VARIABLES == 1) */
 
 #if (MMS_DATA_SET_SERVICE == 1)
         else if (objectClass == OBJECT_CLASS_NAMED_VARIABLE_LIST) {
-            LinkedList nameList = getNamedVariableListsVMDSpecific(connection);
+
+            bool allowAccess = true;
+
+            if (connection->server->getNameListHandler) {
+                allowAccess = connection->server->getNameListHandler(connection->server->getNameListHandlerParameter, MMS_GETNAMELIST_DATASETS, NULL, connection);
+            }
+
+            if (allowAccess) {
+
+                LinkedList nameList = getNamedVariableListsVMDSpecific(connection);
 
 #if (CONFIG_MMS_SORT_NAME_LIST == 1)
-            StringUtils_sortList(nameList);
+                StringUtils_sortList(nameList);
 #endif
 
-            createNameListResponse(connection, invokeId, nameList, response, continueAfterId);
+                createNameListResponse(connection, invokeId, nameList, response, continueAfterId);
 
-            LinkedList_destroy(nameList);
+                LinkedList_destroy(nameList);
+
+            }
+            else {
+                mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_ACCESS_DENIED);
+            }
         }
 #endif /* (MMS_DATA_SET_SERVICE == 1) */
 

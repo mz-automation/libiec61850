@@ -129,6 +129,9 @@ struct sMmsServer {
     MmsReadJournalHandler readJournalHandler;
     void* readJournalHandlerParameter;
 
+    MmsGetNameListHandler getNameListHandler;
+    void* getNameListHandlerParameter;
+
     AcseAuthenticator authenticator;
     void* authenticatorParameter;
 

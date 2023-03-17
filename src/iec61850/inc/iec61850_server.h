@@ -1943,6 +1943,19 @@ typedef bool
 LIB61850_API void
 IedServer_setDataSetAccessHandler(IedServer self, IedServer_DataSetAccessHandler handler, void* parameter);
 
+typedef enum {
+    DIRECTORY_CAT_LD_LIST,
+    DIRECTORY_CAT_DATA_LIST,
+    DIRECTORY_CAT_DATASET_LIST,
+    DIRECTORY_CAT_LOG_LIST
+} IedServer_DirectoryCategory;
+
+typedef bool
+(*IedServer_DirectoryAccessHandler) (void* parameter, ClientConnection connection, IedServer_DirectoryCategory category, LogicalDevice* logicalDevice);
+
+LIB61850_API void
+IedServer_setDirectoryAccessHandler(IedServer self, IedServer_DirectoryAccessHandler handler, void* parameter);
+
 /**@}*/
 
 /**@}*/

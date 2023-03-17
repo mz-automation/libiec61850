@@ -146,6 +146,28 @@ readAccessHandler(LogicalDevice* ld, LogicalNode* ln, DataObject* dataObject, Fu
     return DATA_ACCESS_ERROR_SUCCESS;
 }
 
+static bool
+directoryAccessHandler(void* parameter, ClientConnection connection, IedServer_DirectoryCategory category, LogicalDevice* logicalDevice)
+{
+    switch(category) {
+        case DIRECTORY_CAT_LD_LIST:
+            printf("Get list of logical devices from %s\n", ClientConnection_getPeerAddress(connection));
+            break;
+        case DIRECTORY_CAT_DATASET_LIST:
+            printf("Get list of datasets for LD %s from %s\n", ModelNode_getName((ModelNode*)logicalDevice), ClientConnection_getPeerAddress(connection));
+            break;
+        case DIRECTORY_CAT_DATA_LIST:
+            printf("Get list of data for LD %s from %s\n", ModelNode_getName((ModelNode*)logicalDevice), ClientConnection_getPeerAddress(connection));
+            break;
+        case DIRECTORY_CAT_LOG_LIST:
+            printf("Get list of logs for LD %s from %s -> reject\n", ModelNode_getName((ModelNode*)logicalDevice), ClientConnection_getPeerAddress(connection));
+            return false;
+            break;
+    }
+
+    return true;
+}
+
 int
 main(int argc, char** argv)
 {
@@ -233,6 +255,8 @@ main(int argc, char** argv)
      * containing the restricted data model element.
      */
     IedServer_setReadAccessHandler(iedServer, readAccessHandler, NULL);
+
+    IedServer_setDirectoryAccessHandler(iedServer, directoryAccessHandler, NULL);
 
     /* MMS server will be instructed to start listening for client connections. */
     IedServer_start(iedServer, tcpPort);

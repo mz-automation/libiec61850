@@ -1945,3 +1945,10 @@ IedServer_setDataSetAccessHandler(IedServer self, IedServer_DataSetAccessHandler
     self->mmsMapping->dataSetAccessHandler = handler;
     self->mmsMapping->dataSetAccessHandlerParameter = parameter;
 }
+
+void
+IedServer_setDirectoryAccessHandler(IedServer self, IedServer_DirectoryAccessHandler handler, void* parameter)
+{
+    self->mmsMapping->directoryAccessHandler = handler;
+    self->mmsMapping->directoryAccessHandlerParameter = parameter;
+}

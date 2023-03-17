@@ -373,6 +373,13 @@ MmsServer_installReadJournalHandler(MmsServer self, MmsReadJournalHandler handle
 }
 
 void
+MmsServer_installGetNameListHandler(MmsServer self, MmsGetNameListHandler handler, void* parameter)
+{
+    self->getNameListHandler = handler;
+    self->getNameListHandlerParameter = parameter;
+}
+
+void
 MmsServer_setClientAuthenticator(MmsServer self, AcseAuthenticator authenticator, void* authenticatorParameter)
 {
     self->authenticator = authenticator;
