@@ -1,7 +1,7 @@
 /*
  *  reporting.c
  *
- *  Copyright 2013-2022 Michael Zillgith
+ *  Copyright 2013-2023 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -674,6 +674,43 @@ createDataSetValuesShadowBuffer(ReportControl* rc)
 }
 
 static bool
+checkIfClientHasAccessToDataSetEntries(MmsMapping* mapping, MmsServerConnection connection, MmsNamedVariableList mmsVariableList)
+{
+    bool accessAllowed = true;
+
+    if (connection) {
+
+        LinkedList entryElem = LinkedList_getNext(mmsVariableList->listOfVariables);
+
+        while (entryElem) {
+            MmsNamedVariableListEntry entry = (MmsNamedVariableListEntry)LinkedList_getData(entryElem);
+
+            MmsValue* entryValue = mmsServer_getValue(mapping->mmsServer, entry->domain, entry->variableName, connection, true);
+
+            if (entryValue) {
+
+                if (MmsValue_getType(entryValue) == MMS_DATA_ACCESS_ERROR) {
+                    accessAllowed = false;
+                }
+
+                MmsValue_deleteConditional(entryValue);
+            }
+            else {
+                accessAllowed = false;
+            }
+
+            if (accessAllowed == false)
+                break;
+
+            entryElem = LinkedList_getNext(entryElem);
+        }
+
+    }
+
+    return accessAllowed;
+}
+
+static bool
 updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet, MmsServerConnection connection)
 {
     bool success = false;
@@ -760,10 +797,31 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
         }
     }
 
-    if (dataSetValue && dataSetChanged) {
+    if (dataSetValue) {
         const char* dataSetName = MmsValue_toString(dataSetValue);
 
         DataSet* dataSet = IedModel_lookupDataSet(mapping->model, dataSetName);
+
+        if (dataSet) {
+
+            char domainNameBuf[130];
+
+            MmsMapping_getMmsDomainFromObjectReference(dataSetName, domainNameBuf);
+
+            MmsDomain* dsDomain = MmsDevice_getDomain(mapping->mmsDevice, domainNameBuf);
+
+            if (dsDomain) {
+                MmsNamedVariableList namedVariableList = MmsDomain_getNamedVariableList(dsDomain, dataSet->name);
+
+                if (namedVariableList) {
+                    if (checkIfClientHasAccessToDataSetEntries(mapping, connection, namedVariableList) == false) {
+                        goto exit_function;
+                    }
+                }
+               
+            }
+
+        }
 
 #if (MMS_DYNAMIC_DATA_SETS == 1)
         if (dataSet == NULL) {
@@ -779,19 +837,28 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
                             MmsNamedVariableList mmsVariableList
                                 = MmsServerConnection_getNamedVariableList(connection, dataSetName + 1);
 
-                            if (mmsVariableList != NULL)
+                            if (mmsVariableList) {
+                                if (checkIfClientHasAccessToDataSetEntries(mapping, connection, mmsVariableList) == false) {
+                                    goto exit_function;
+                                }
+
                                 dataSet = MmsMapping_createDataSetByNamedVariableList(mapping, mmsVariableList);
+                            }
                         }
                     }
-
                 }
 
                 /* check for VMD specific data set */
                 else if (dataSetName[0] == '/') {
                     MmsNamedVariableList mmsVariableList = MmsDevice_getNamedVariableListWithName(mapping->mmsDevice, dataSetName + 1);
 
-                    if (mmsVariableList != NULL)
+                    if (mmsVariableList) {
+                        if (checkIfClientHasAccessToDataSetEntries(mapping, connection, mmsVariableList) == false) {
+                            goto exit_function;
+                        }
+
                         dataSet = MmsMapping_createDataSetByNamedVariableList(mapping, mmsVariableList);
+                    }
                 }
             }
 
@@ -810,7 +877,7 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
 
 #endif /* (MMS_DYNAMIC_DATA_SETS == 1) */
 
-        if (dataSetChanged == true) {
+        if (dataSetChanged) {
 
             /* delete pending event and create buffer for new data set */
             deleteDataSetValuesShadowBuffer(rc);
@@ -830,7 +897,6 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
                 GLOBAL_FREEMEM(rc->inclusionFlags);
 
             rc->inclusionFlags = (uint8_t*) GLOBAL_CALLOC(dataSet->elementCount, sizeof(uint8_t));
-
         }
 
         success = true;
@@ -861,7 +927,6 @@ createDataSetReferenceForDefaultDataSet(ReportControlBlock* rcb, ReportControl* 
 
     return dataSetReference;
 }
-
 
 static MmsValue*
 createOptFlds(ReportControlBlock* reportControlBlock)

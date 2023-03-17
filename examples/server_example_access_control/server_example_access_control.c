@@ -87,7 +87,8 @@ rcbAccessHandler(void* parameter, ReportControlBlock* rcb, ClientConnection conn
         return true;
     }
     else {
-        return false;
+        /* change to false to disallow write access to control block */
+        return true;
     }
 }
 
@@ -131,6 +132,18 @@ dataSetAccessHandler(void* parameter, ClientConnection connection, IedServer_Dat
     printf("Data set access: %s operation: %i\n", datasetRef, operation);
 
     return true;
+}
+
+static MmsDataAccessError
+readAccessHandler(LogicalDevice* ld, LogicalNode* ln, DataObject* dataObject, FunctionalConstraint fc, ClientConnection connection, void* parameter)
+{
+    printf("Read access to %s/%s.%s\n", ld->name, ln->name, dataObject->name);
+
+    if (!strcmp(ln->name, "GGIO1") && !strcmp(dataObject->name, "AnIn1")) {
+        return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+    }
+
+    return DATA_ACCESS_ERROR_SUCCESS;
 }
 
 int
@@ -196,10 +209,13 @@ main(int argc, char** argv)
 
     IedServer_setConnectionIndicationHandler(iedServer, (IedConnectionIndicationHandler) connectionHandler, NULL);
 
+    /* Install handler to perform access control on RCB */
     IedServer_setRCBAccessHandler(iedServer, rcbAccessHandler, NULL);
 
+    /* Install handler to perform access control on LCB */
     IedServer_setLCBAccessHandler(iedServer, lcbAccessHandler, NULL);
 
+    /* Install handler to log RCB events */
     IedServer_setRCBEventHandler(iedServer, rcbEventHandler, NULL);
 
     /* By default access to variables with FC=DC and FC=CF is not allowed.
@@ -208,7 +224,15 @@ main(int argc, char** argv)
      */
     IedServer_setWriteAccessPolicy(iedServer, IEC61850_FC_DC, ACCESS_POLICY_ALLOW);
 
+    /* Install handler to perform access control on datasets */
     IedServer_setDataSetAccessHandler(iedServer, dataSetAccessHandler, NULL);
+
+    /* Install handler to perform read access control on data model elements
+     * NOTE: when read access to a data model element is blocked this will also prevent the client
+     * to read the data model element  in a data set or enable a RCB instance that uses a dataset
+     * containing the restricted data model element.
+     */
+    IedServer_setReadAccessHandler(iedServer, readAccessHandler, NULL);
 
     /* MMS server will be instructed to start listening for client connections. */
     IedServer_start(iedServer, tcpPort);

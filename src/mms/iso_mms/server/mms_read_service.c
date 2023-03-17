@@ -1,7 +1,7 @@
 /*
  *  mms_read_service.c
  *
- *  Copyright 2013-2022 Michael Zillgith
+ *  Copyright 2013-2023 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -695,13 +695,9 @@ createNamedVariableListResponse(MmsServerConnection connection, MmsNamedVariable
 	LinkedList /*<MmsValue>*/ values = LinkedList_create();
 	LinkedList variables = MmsNamedVariableList_getVariableList(namedList);
 
-	int variableCount = LinkedList_size(variables);
-
-	int i;
-
 	LinkedList variable = LinkedList_getNext(variables);
 
-	for (i = 0; i < variableCount; i++) {
+	while (variable) {
 
 		MmsNamedVariableListEntry variableListEntry = (MmsNamedVariableListEntry) variable->data;
 

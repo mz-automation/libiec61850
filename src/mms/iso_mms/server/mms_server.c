@@ -572,7 +572,6 @@ exit_function:
     return value;
 }
 
-
 MmsDevice*
 MmsServer_getDevice(MmsServer self)
 {
