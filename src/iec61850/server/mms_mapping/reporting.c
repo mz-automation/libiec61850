@@ -3877,7 +3877,9 @@ processEventsForReport(ReportControl* rc, uint64_t currentTimeInMs)
 void
 Reporting_processReportEvents(MmsMapping* self, uint64_t currentTimeInMs)
 {
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_wait(self->isModelLockedMutex);
+#endif
 
     if (self->isModelLocked == false) {
 
@@ -3894,7 +3896,9 @@ Reporting_processReportEvents(MmsMapping* self, uint64_t currentTimeInMs)
         }
     }
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_post(self->isModelLockedMutex);
+#endif
 }
 
 /*
