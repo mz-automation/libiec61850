@@ -911,11 +911,15 @@ IedServer_lockDataModel(IedServer self)
 {
     MmsServer_lockModel(self->mmsServer);
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_wait(self->mmsMapping->isModelLockedMutex);
+#endif
 
     self->mmsMapping->isModelLocked = true;
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_post(self->mmsMapping->isModelLockedMutex);
+#endif
 }
 
 void
@@ -929,13 +933,17 @@ IedServer_unlockDataModel(IedServer self)
     /* check if reports have to be sent! */
     Reporting_processReportEventsAfterUnlock(self->mmsMapping);
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_wait(self->mmsMapping->isModelLockedMutex);
+#endif
 
     MmsServer_unlockModel(self->mmsServer);
 
     self->mmsMapping->isModelLocked = false;
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_post(self->mmsMapping->isModelLockedMutex);
+#endif
 }
 
 #if (CONFIG_IEC61850_CONTROL_SERVICE == 1)
