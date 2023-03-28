@@ -25,6 +25,12 @@ check_library_exists(rt clock_gettime "time.h" CONFIG_SYSTEM_HAS_CLOCK_GETTIME)
 include (TestBigEndian)
 test_big_endian(PLATFORM_IS_BIGENDIAN)
 
+option(CONFIG_HAL_PREFIX_ENABLED "Enable function prefixes for HAL" OFF)
+
+if (CONFIG_HAL_PREFIX_ENABLED)
+    ADD_DEFINITIONS("-DCONFIG_LIBGCOS_PREFIX=1")
+endif (CONFIG_HAL_PREFIX_ENABLED)
+
 set(CONFIG_MMS_MAXIMUM_PDU_SIZE "65000" CACHE STRING "Configure the maximum size of an MMS PDU (default 65000)"   )
 set(CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS 5 CACHE STRING "Configure the maximum number of clients allowed to connect to the server")
 

@@ -1,7 +1,7 @@
 /**
  * thread_bsd.c
  *
- * Copyright 2013-2021 Michael Zillgith
+ * Copyright 2013-2023 Michael Zillgith
  *
  * This file is part of Platform Abstraction Layer (libpal)
  * for libiec61850, libmms, and lib60870.
@@ -22,7 +22,7 @@ struct sThread {
 };
 
 Semaphore
-Semaphore_create(int initialValue)
+SEMAPHORE_CREATE(int initialValue)
 {
     Semaphore self = GLOBAL_MALLOC(sizeof(sem_t));
 
@@ -33,26 +33,26 @@ Semaphore_create(int initialValue)
 
 /* Wait until semaphore value is more than zero. Then decrease the semaphore value. */
 void
-Semaphore_wait(Semaphore self)
+SEMAPHORE_WAIT(Semaphore self)
 {
     sem_wait((sem_t*) self);
 }
 
 void
-Semaphore_post(Semaphore self)
+SEMAPHORE_POST(Semaphore self)
 {
     sem_post((sem_t*) self);
 }
 
 void
-Semaphore_destroy(Semaphore self)
+SEMAPHORE_DESTROY(Semaphore self)
 {
     sem_destroy((sem_t*) self);
     GLOBAL_FREEMEM(self);
 }
 
 Thread
-Thread_create(ThreadExecutionFunction function, void* parameter, bool autodestroy)
+THREAD_CREATE(ThreadExecutionFunction function, void* parameter, bool autodestroy)
 {
    Thread thread = (Thread) GLOBAL_MALLOC(sizeof(struct sThread));
 
@@ -79,7 +79,7 @@ destroyAutomaticThread(void* parameter)
 }
 
 void
-Thread_start(Thread thread)
+THREAD_START(Thread thread)
 {
     if (thread->autodestroy == true) {
         pthread_create(&thread->pthread, NULL, destroyAutomaticThread, thread);
@@ -92,7 +92,7 @@ Thread_start(Thread thread)
 }
 
 void
-Thread_destroy(Thread thread)
+THREAD_DESTROY(Thread thread)
 {
     if (thread->state == 1) {
         pthread_join(thread->pthread, NULL);
@@ -102,7 +102,7 @@ Thread_destroy(Thread thread)
 }
 
 void
-Thread_sleep(int millies)
+THREAD_SLEEP(int millies)
 {
     usleep(millies * 1000);
 }

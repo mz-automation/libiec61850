@@ -42,7 +42,7 @@ threadRunner(LPVOID parameter)
 }
 
 Thread
-Thread_create(ThreadExecutionFunction function, void* parameter, bool autodestroy)
+THREAD_CREATE(ThreadExecutionFunction function, void* parameter, bool autodestroy)
 {
 	DWORD threadId;
 	Thread thread = (Thread) GLOBAL_MALLOC(sizeof(struct sThread));
@@ -61,14 +61,14 @@ Thread_create(ThreadExecutionFunction function, void* parameter, bool autodestro
 }
 
 void
-Thread_start(Thread thread)
+THREAD_START(Thread thread)
 {
 	thread->state = 1;
 	ResumeThread(thread->handle);
 }
 
 void
-Thread_destroy(Thread thread)
+THREAD_DESTROY(Thread thread)
 {
 	if (thread->state == 1)
 		WaitForSingleObject(thread->handle, INFINITE);
@@ -79,7 +79,7 @@ Thread_destroy(Thread thread)
 }
 
 void
-Thread_sleep(int millies)
+THREAD_SLEEP(int millies)
 {
 	Sleep(millies);
 }

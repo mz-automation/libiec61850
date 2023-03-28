@@ -30,6 +30,16 @@
 /* Maximum MMS PDU SIZE - default is 65000 */
 #define CONFIG_MMS_MAXIMUM_PDU_SIZE 65000
 
+// /* Prefix hal/common library names with libgcos_ to avoid naming conflics with other libraries */
+// #ifndef CONFIG_LIBGCOS_PREFIX
+// #define CONFIG_LIBGCOS_PREFIX 0
+// #endif
+
+// /* Define legacy hal/common library names to avoid using the libgcos_ prefix in application code */
+// #ifndef CONFIG_LIBGCOS_LEGACY_NAMES
+// #define CONFIG_LIBGCOS_LEGACY_NAMES 1
+// #endif
+
 /*
  * Enable single threaded mode
  *

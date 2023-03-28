@@ -39,7 +39,7 @@ struct sSemaphore
  * NOTE: initialValue is ignored because semaphore was replaced by mutex
  */
 Semaphore
-Semaphore_create(int initialValue)
+SEMAPHORE_CREATE(int initialValue)
 {
     mSemaphore self = NULL;
 
@@ -54,7 +54,7 @@ Semaphore_create(int initialValue)
 
 /* lock mutex */
 void
-Semaphore_wait(Semaphore self)
+SEMAPHORE_WAIT(Semaphore self)
 {
     mSemaphore mSelf = (mSemaphore) self;
 
@@ -68,7 +68,7 @@ Semaphore_wait(Semaphore self)
 
 /* unlock mutex */
 void
-Semaphore_post(Semaphore self)
+SEMAPHORE_POST(Semaphore self)
 {
     mSemaphore mSelf = (mSemaphore) self;
 
@@ -81,7 +81,7 @@ Semaphore_post(Semaphore self)
 }
 
 void
-Semaphore_destroy(Semaphore self)
+SEMAPHORE_DESTROY(Semaphore self)
 {
     if (self) {
         mSemaphore mSelf = (mSemaphore) self;
@@ -93,7 +93,7 @@ Semaphore_destroy(Semaphore self)
 }
 
 Thread
-Thread_create(ThreadExecutionFunction function, void* parameter, bool autodestroy)
+THREAD_CREATE(ThreadExecutionFunction function, void* parameter, bool autodestroy)
 {
    Thread thread = (Thread) GLOBAL_MALLOC(sizeof(struct sThread));
 
@@ -120,7 +120,7 @@ destroyAutomaticThread(void* parameter)
 }
 
 void
-Thread_start(Thread thread)
+THREAD_START(Thread thread)
 {
    if (thread->autodestroy == true) {
        pthread_create(&thread->pthread, NULL, destroyAutomaticThread, thread);
@@ -133,7 +133,7 @@ Thread_start(Thread thread)
 }
 
 void
-Thread_destroy(Thread thread)
+THREAD_DESTROY(Thread thread)
 {
    if (thread->state == 1) {
        pthread_join(thread->pthread, NULL);
@@ -143,7 +143,7 @@ Thread_destroy(Thread thread)
 }
 
 void
-Thread_sleep(int millies)
+THREAD_SLEEP(int millies)
 {
    usleep(millies * 1000);
 }
