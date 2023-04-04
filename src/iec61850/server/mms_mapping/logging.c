@@ -1,7 +1,7 @@
 /*
  *  logging.c
  *
- *  Copyright 2016-2022 Michael Zillgith
+ *  Copyright 2016-2023 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -42,6 +42,8 @@
 #endif
 
 #if (CONFIG_IEC61850_LOG_SERVICE == 1)
+
+static MmsValue objectAccessDenied = {MMS_DATA_ACCESS_ERROR, false, {DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED}};
 
 LogInstance*
 LogInstance_create(LogicalNode* parentLN, const char* name)
@@ -520,6 +522,19 @@ LIBIEC61850_LOG_SVC_writeAccessLogControlBlock(MmsMapping* self, MmsDomain* doma
     if (logControl == NULL) {
         return DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT;
     }
+    else 
+    {
+        if (self->lcbAccessHandler)
+        {
+            ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer, connection);
+
+            if (self->lcbAccessHandler(self->lcbAccessHandlerParameter, logControl->logControlBlock, clientConnection, LCB_EVENT_SET_PARAMETER) == false) {
+                retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+
+                goto exit_function;
+            }
+        }
+    }
 
     if (strcmp(varName, "LogEna") == 0) {
         bool logEna = MmsValue_getBoolean(value);
@@ -699,7 +714,7 @@ exit_function:
 }
 
 MmsValue*
-LIBIEC61850_LOG_SVC_readAccessControlBlock(MmsMapping* self, MmsDomain* domain, char* variableIdOrig)
+LIBIEC61850_LOG_SVC_readAccessControlBlock(MmsMapping* self, MmsDomain* domain, char* variableIdOrig, MmsServerConnection connection)
 {
     MmsValue* value = NULL;
 
@@ -723,26 +738,40 @@ LIBIEC61850_LOG_SVC_readAccessControlBlock(MmsMapping* self, MmsDomain* domain, 
 
     char* varName = MmsMapping_getNextNameElement(objectName);
 
-    if (varName != NULL)
+    if (varName)
         *(varName - 1) = 0;
 
     LogControl* logControl = lookupLogControl(self, domain, lnName, objectName);
 
-    if (logControl != NULL) {
+    if (logControl) 
+    {
+        bool allowAccess = true;
 
-        updateLogStatusInLCB(logControl);
+        if (self->lcbAccessHandler)
+        {
+            ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer, connection);
 
-        if (varName != NULL) {
-            value = MmsValue_getSubElement(logControl->mmsValue, logControl->mmsType, varName);
+            if (self->lcbAccessHandler(self->lcbAccessHandlerParameter, logControl->logControlBlock, clientConnection, LCB_EVENT_GET_PARAMETER) == false) {
+                allowAccess = false;
+
+                value = &objectAccessDenied;
+            }
         }
-        else {
-            value = logControl->mmsValue;
+
+        if (allowAccess) {
+            updateLogStatusInLCB(logControl);
+
+            if (varName) {
+                value = MmsValue_getSubElement(logControl->mmsValue, logControl->mmsType, varName);
+            }
+            else {
+                value = logControl->mmsValue;
+            }
         }
     }
 
     return value;
 }
-
 
 static char*
 createDataSetReferenceForDefaultDataSet(LogControlBlock* lcb, LogControl* logControl)

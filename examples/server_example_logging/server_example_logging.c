@@ -115,6 +115,28 @@ entryDataCallback (void* parameter, const char* dataRef, const uint8_t* data, in
     return true;
 }
 
+static bool
+lcbAccessHandler(void* parameter, LogControlBlock* lcb, ClientConnection connection, IedServer_LCBEventType operation)
+{
+    printf("%s access to LCB %s from %s\n", operation == LCB_EVENT_GET_PARAMETER ? "read" : "write", LogControlBlock_getName(lcb), ClientConnection_getPeerAddress(connection));
+
+    /* only allow read access */
+    if (operation == LCB_EVENT_GET_PARAMETER) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+static bool
+logAccessHandler(void* parameter, const char* logName, ClientConnection connection)
+{
+    printf("Access to log %s from %s\n", logName, ClientConnection_getPeerAddress(connection));
+
+    return false;
+}
+
 int
 main(int argc, char** argv)
 {
@@ -146,6 +168,10 @@ main(int argc, char** argv)
             IEDMODEL_GenericIO_GGIO1_SPCSO4);
 
     IedServer_setConnectionIndicationHandler(iedServer, (IedConnectionIndicationHandler) connectionHandler, NULL);
+
+    IedServer_setLCBAccessHandler(iedServer, lcbAccessHandler, NULL);
+
+    IedServer_setLogAccessHandler(iedServer, logAccessHandler, NULL);
 
     LogStorage statusLog = SqliteLogStorage_createInstance("log_status.db");
 

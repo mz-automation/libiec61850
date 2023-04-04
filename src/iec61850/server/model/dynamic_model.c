@@ -347,6 +347,18 @@ LogControlBlock_create(const char* name, LogicalNode* parent, const char* dataSe
     return self;
 }
 
+const char*
+LogControlBlock_getName(LogControlBlock* self)
+{
+    return self->name;
+}
+
+LogicalNode*
+LogControlBlock_getParent(LogControlBlock* self)
+{
+    return self->parent;
+}
+
 static void
 LogicalNode_addReportControlBlock(LogicalNode* self, ReportControlBlock* rcb)
 {

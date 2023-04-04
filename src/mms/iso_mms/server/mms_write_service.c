@@ -1,7 +1,7 @@
 /*
  *  mms_write_service.c
  *
- *  Copyright 2013-2022 Michael Zillgith
+ *  Copyright 2013-2023 Michael Zillgith
  *
  *	This file is part of libIEC61850.
  *
@@ -430,8 +430,19 @@ handleWriteNamedVariableListRequest(
         else {
             MmsNamedVariableList namedList = MmsDomain_getNamedVariableList(domain, nameIdStr);
 
-            if (namedList != NULL) {
-                createWriteNamedVariableListResponse(connection, writeRequest, invokeId, namedList, response);
+            if (namedList) {
+
+                MmsError accessError = mmsServer_callVariableListChangedHandler(MMS_VARLIST_WRITE, MMS_DOMAIN_SPECIFIC, domain, namedList->name, connection);
+
+                if (accessError == MMS_ERROR_NONE) {
+                    createWriteNamedVariableListResponse(connection, writeRequest, invokeId, namedList, response);
+                }
+                else {
+                    if (DEBUG_MMS_SERVER) printf("MMS write: named variable list %s access error: %i\n", nameIdStr, accessError);
+
+                    mmsMsg_createServiceErrorPdu(invokeId, response, accessError);
+                }
+
             }
             else {
                 if (DEBUG_MMS_SERVER) printf("MMS write: named variable list %s not found!\n", nameIdStr);
@@ -448,8 +459,19 @@ handleWriteNamedVariableListRequest(
 
         MmsNamedVariableList namedList = mmsServer_getNamedVariableListWithName(connection->server->device->namedVariableLists, listName);
 
-        if (namedList != NULL) {
-            createWriteNamedVariableListResponse(connection, writeRequest, invokeId, namedList, response);
+        if (namedList) {
+
+            MmsError accessError = mmsServer_callVariableListChangedHandler(MMS_VARLIST_WRITE, MMS_VMD_SPECIFIC, NULL, namedList->name, connection);
+
+            if (accessError == MMS_ERROR_NONE) {
+                createWriteNamedVariableListResponse(connection, writeRequest, invokeId, namedList, response);
+            }
+            else {
+                if (DEBUG_MMS_SERVER) printf("MMS write: vmd specific named variable list %s access error: %i\n", namedList->name, accessError);
+
+                mmsMsg_createServiceErrorPdu(invokeId, response, accessError);
+            }
+
         }
         else {
             if (DEBUG_MMS_SERVER) printf("MMS write: vmd specific named variable list %s not found!\n", listName);
@@ -465,8 +487,19 @@ handleWriteNamedVariableListRequest(
 
         MmsNamedVariableList namedList = MmsServerConnection_getNamedVariableList(connection, listName);
 
-        if (namedList != NULL) {
-            createWriteNamedVariableListResponse(connection, writeRequest, invokeId, namedList, response);
+        if (namedList) {
+
+            MmsError accessError = mmsServer_callVariableListChangedHandler(MMS_VARLIST_WRITE, MMS_ASSOCIATION_SPECIFIC, NULL, namedList->name, connection);
+
+            if (accessError == MMS_ERROR_NONE) {
+                createWriteNamedVariableListResponse(connection, writeRequest, invokeId, namedList, response);
+            }
+            else {
+                if (DEBUG_MMS_SERVER) printf("MMS write: association specific named variable list %s access error: %i\n", namedList->name, accessError);
+
+                mmsMsg_createServiceErrorPdu(invokeId, response, accessError);
+            }
+
         }
         else {
             if (DEBUG_MMS_SERVER) printf("MMS write: association specific named variable list %s not found!\n", listName);

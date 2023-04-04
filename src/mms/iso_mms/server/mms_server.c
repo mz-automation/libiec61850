@@ -359,10 +359,24 @@ MmsServer_installConnectionHandler(MmsServer self, MmsConnectionHandler connecti
 }
 
 void
-MmsServer_installVariableListChangedHandler(MmsServer self, MmsNamedVariableListChangedHandler handler, void* parameter)
+MmsServer_installVariableListAccessHandler(MmsServer self, MmsNamedVariableListAccessHandler handler, void* parameter)
 {
-    self->variableListChangedHandler = handler;
-    self->variableListChangedHandlerParameter = parameter;
+    self->variableListAccessHandler = handler;
+    self->variableListAccessHandlerParameter = parameter;
+}
+
+void
+MmsServer_installReadJournalHandler(MmsServer self, MmsReadJournalHandler handler, void* parameter)
+{
+    self->readJournalHandler = handler;
+    self->readJournalHandlerParameter = parameter;
+}
+
+void
+MmsServer_installGetNameListHandler(MmsServer self, MmsGetNameListHandler handler, void* parameter)
+{
+    self->getNameListHandler = handler;
+    self->getNameListHandlerParameter = parameter;
 }
 
 void
@@ -564,7 +578,6 @@ mmsServer_getValue(MmsServer self, MmsDomain* domain, char* itemId, MmsServerCon
 exit_function:
     return value;
 }
-
 
 MmsDevice*
 MmsServer_getDevice(MmsServer self)

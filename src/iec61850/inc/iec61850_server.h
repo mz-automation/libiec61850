@@ -1861,6 +1861,121 @@ typedef MmsDataAccessError
 LIB61850_API void
 IedServer_setReadAccessHandler(IedServer self, ReadAccessHandler handler, void* parameter);
 
+/**
+ * \brief Callback that is called in case of RCB access to give the user the opportunity to block or allow the operation
+ * 
+ * \note This callback is called before the IedServer_RCBEventHandler and only in case of operations (RCB_EVENT_GET_PARAMETER, RCB_EVENT_SET_PARAMETER, RCB_EVENT_ENABLE
+ * 
+ * \param parameter user provided parameter
+ * \param rcb affected report control block
+ * \param connection client connection that is involved
+ * \param operation one of the following operation event types: RCB_EVENT_GET_PARAMETER, RCB_EVENT_SET_PARAMETER
+ */
+typedef bool
+(*IedServer_RCBAccessHandler) (void* parameter, ReportControlBlock* rcb, ClientConnection connection, IedServer_RCBEventType operation);
+
+/**
+ * \brief Set a handler to control read and write access to report control blocks (RCBs)
+ *
+ * \param self the instance of IedServer to operate on.
+ * \param handler the event handler to be used
+ * \param parameter a user provided parameter that is passed to the handler.
+ */
+LIB61850_API void
+IedServer_setRCBAccessHandler(IedServer self, IedServer_RCBAccessHandler handler, void* parameter);
+
+typedef enum {
+    LCB_EVENT_GET_PARAMETER,
+    LCB_EVENT_SET_PARAMETER
+} IedServer_LCBEventType;
+
+/**
+ * \brief Callback that is called in case of LCB access to give the user the opportunity to block or allow the operation
+ * 
+ * 
+ * \param parameter user provided parameter
+ * \param lcb affected log control block
+ * \param connection client connection that is involved
+ * \param operation one of the following operation event types: LCB_EVENT_GET_PARAMETER, LCB_EVENT_SET_PARAMETER
+ */
+typedef bool
+(*IedServer_LCBAccessHandler) (void* parameter, LogControlBlock* lcb, ClientConnection connection, IedServer_LCBEventType operation);
+
+/**
+ * \brief Set a handler to control read and write access to log control blocks (LCBs)
+ *
+ * \param self the instance of IedServer to operate on.
+ * \param handler the event handler to be used
+ * \param parameter a user provided parameter that is passed to the handler.
+ */
+LIB61850_API void
+IedServer_setLCBAccessHandler(IedServer self, IedServer_LCBAccessHandler handler, void* parameter);
+
+/**
+ * \brief Callback that is called when the client is trying to read log data
+ * 
+ * \param parameter user provided parameter
+ * \param logRef object reference of the log
+ * \param connection client connection that is involved
+ * 
+ * \return true to allow read log data, false to deny
+ */
+typedef bool
+(*IedServer_LogAccessHandler) (void* parameter, const char* logRef, ClientConnection connection);
+
+/**
+ * \brief Set a handler control access to a log (read log data)
+ * 
+ * \param handler the callback handler to be used
+ * \param parameter a user provided parameter that is passed to the handler.
+ */
+LIB61850_API void
+IedServer_setLogAccessHandler(IedServer self, IedServer_LogAccessHandler handler, void* parameter);
+
+typedef enum {
+    DATASET_CREATE,
+    DATASET_DELETE,
+    DATASET_READ,
+    DATASET_WRITE,
+    DATASET_GET_DIRECTORY
+} IedServer_DataSetOperation;
+
+/**
+ * \brief Callback that is called when the client is calling a dataset operation (create, delete, read, write, list directory)
+ * 
+ * \note This callback is called before the IedServer_RCBEventHandler and only in case of operations (RCB_EVENT_GET_PARAMETER, RCB_EVENT_SET_PARAMETER, RCB_EVENT_ENABLE
+ * 
+ * \param parameter user provided parameter
+ * \param connection client connection that is involved
+ * \param operation one of the following operation types: DATASET_CREATE, DATASET_DELETE, DATASET_READ, DATASET_WRITE, DATASET_GET_DIRECTORY
+ * 
+ * \return true to allow operation, false to deny operation
+ */
+typedef bool
+(*IedServer_DataSetAccessHandler) (void* parameter, ClientConnection connection, IedServer_DataSetOperation operation, const char* datasetRef);
+
+/**
+ * \brief Set a handler to control access to a dataset (create, delete, read, write, list directory)
+ * 
+ * \param handler the callback handler to be used
+ * \param parameter a user provided parameter that is passed to the handler.
+ */
+LIB61850_API void
+IedServer_setDataSetAccessHandler(IedServer self, IedServer_DataSetAccessHandler handler, void* parameter);
+
+typedef enum {
+    DIRECTORY_CAT_LD_LIST,
+    DIRECTORY_CAT_DATA_LIST,
+    DIRECTORY_CAT_DATASET_LIST,
+    DIRECTORY_CAT_LOG_LIST
+} IedServer_DirectoryCategory;
+
+typedef bool
+(*IedServer_DirectoryAccessHandler) (void* parameter, ClientConnection connection, IedServer_DirectoryCategory category, LogicalDevice* logicalDevice);
+
+LIB61850_API void
+IedServer_setDirectoryAccessHandler(IedServer self, IedServer_DirectoryAccessHandler handler, void* parameter);
+
 /**@}*/
 
 /**@}*/

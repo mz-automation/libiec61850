@@ -140,7 +140,7 @@ LIB61850_INTERNAL MmsDataAccessError
 Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* elementName, MmsValue* value,
         MmsServerConnection connection);
 
-LIB61850_INTERNAL void
+LIB61850_INTERNAL bool
 ReportControl_readAccess(ReportControl* rc, MmsMapping* mmsMapping, MmsServerConnection connection, char* elementName);
 
 LIB61850_INTERNAL void

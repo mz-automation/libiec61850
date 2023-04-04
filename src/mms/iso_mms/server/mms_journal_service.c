@@ -462,6 +462,20 @@ mmsServer_handleReadJournalRequest(
     if (DEBUG_MMS_SERVER)
         printf("MMS_SERVER: readJournal - read journal %s ...\n", mmsJournal->name);
 
+    MmsServer mmsServer = connection->server;
+
+    if (mmsServer->readJournalHandler)
+    {
+        if (mmsServer->readJournalHandler(mmsServer->readJournalHandlerParameter, mmsDomain, logName, connection) == false)
+        {
+            mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_ACCESS_DENIED);
+
+            /* TODO log access error */
+
+            return;
+        }
+    }
+
     struct sJournalEncoder encoder;
 
     encoder.buffer = response->buffer;

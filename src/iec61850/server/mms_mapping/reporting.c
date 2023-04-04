@@ -1,7 +1,7 @@
 /*
  *  reporting.c
  *
- *  Copyright 2013-2022 Michael Zillgith
+ *  Copyright 2013-2023 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -674,6 +674,43 @@ createDataSetValuesShadowBuffer(ReportControl* rc)
 }
 
 static bool
+checkIfClientHasAccessToDataSetEntries(MmsMapping* mapping, MmsServerConnection connection, MmsNamedVariableList mmsVariableList)
+{
+    bool accessAllowed = true;
+
+    if (connection) {
+
+        LinkedList entryElem = LinkedList_getNext(mmsVariableList->listOfVariables);
+
+        while (entryElem) {
+            MmsNamedVariableListEntry entry = (MmsNamedVariableListEntry)LinkedList_getData(entryElem);
+
+            MmsValue* entryValue = mmsServer_getValue(mapping->mmsServer, entry->domain, entry->variableName, connection, true);
+
+            if (entryValue) {
+
+                if (MmsValue_getType(entryValue) == MMS_DATA_ACCESS_ERROR) {
+                    accessAllowed = false;
+                }
+
+                MmsValue_deleteConditional(entryValue);
+            }
+            else {
+                accessAllowed = false;
+            }
+
+            if (accessAllowed == false)
+                break;
+
+            entryElem = LinkedList_getNext(entryElem);
+        }
+
+    }
+
+    return accessAllowed;
+}
+
+static bool
 updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet, MmsServerConnection connection)
 {
     bool success = false;
@@ -760,10 +797,31 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
         }
     }
 
-    if (dataSetValue && dataSetChanged) {
+    if (dataSetValue) {
         const char* dataSetName = MmsValue_toString(dataSetValue);
 
         DataSet* dataSet = IedModel_lookupDataSet(mapping->model, dataSetName);
+
+        if (dataSet) {
+
+            char domainNameBuf[130];
+
+            MmsMapping_getMmsDomainFromObjectReference(dataSetName, domainNameBuf);
+
+            MmsDomain* dsDomain = MmsDevice_getDomain(mapping->mmsDevice, domainNameBuf);
+
+            if (dsDomain) {
+                MmsNamedVariableList namedVariableList = MmsDomain_getNamedVariableList(dsDomain, dataSet->name);
+
+                if (namedVariableList) {
+                    if (checkIfClientHasAccessToDataSetEntries(mapping, connection, namedVariableList) == false) {
+                        goto exit_function;
+                    }
+                }
+               
+            }
+
+        }
 
 #if (MMS_DYNAMIC_DATA_SETS == 1)
         if (dataSet == NULL) {
@@ -779,19 +837,28 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
                             MmsNamedVariableList mmsVariableList
                                 = MmsServerConnection_getNamedVariableList(connection, dataSetName + 1);
 
-                            if (mmsVariableList != NULL)
+                            if (mmsVariableList) {
+                                if (checkIfClientHasAccessToDataSetEntries(mapping, connection, mmsVariableList) == false) {
+                                    goto exit_function;
+                                }
+
                                 dataSet = MmsMapping_createDataSetByNamedVariableList(mapping, mmsVariableList);
+                            }
                         }
                     }
-
                 }
 
                 /* check for VMD specific data set */
                 else if (dataSetName[0] == '/') {
                     MmsNamedVariableList mmsVariableList = MmsDevice_getNamedVariableListWithName(mapping->mmsDevice, dataSetName + 1);
 
-                    if (mmsVariableList != NULL)
+                    if (mmsVariableList) {
+                        if (checkIfClientHasAccessToDataSetEntries(mapping, connection, mmsVariableList) == false) {
+                            goto exit_function;
+                        }
+
                         dataSet = MmsMapping_createDataSetByNamedVariableList(mapping, mmsVariableList);
+                    }
                 }
             }
 
@@ -810,7 +877,7 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
 
 #endif /* (MMS_DYNAMIC_DATA_SETS == 1) */
 
-        if (dataSetChanged == true) {
+        if (dataSetChanged) {
 
             /* delete pending event and create buffer for new data set */
             deleteDataSetValuesShadowBuffer(rc);
@@ -830,7 +897,6 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
                 GLOBAL_FREEMEM(rc->inclusionFlags);
 
             rc->inclusionFlags = (uint8_t*) GLOBAL_CALLOC(dataSet->elementCount, sizeof(uint8_t));
-
         }
 
         success = true;
@@ -861,7 +927,6 @@ createDataSetReferenceForDefaultDataSet(ReportControlBlock* rcb, ReportControl* 
 
     return dataSetReference;
 }
-
 
 static MmsValue*
 createOptFlds(ReportControlBlock* reportControlBlock)
@@ -1697,21 +1762,35 @@ checkReservationTimeout(MmsMapping* self, ReportControl* rc)
     }
 }
 
-void
+bool
 ReportControl_readAccess(ReportControl* rc, MmsMapping* mmsMapping, MmsServerConnection connection, char* elementName)
 {
-    (void)elementName;
+    bool accessAllowed = true;
+    MmsDataAccessError accessError = DATA_ACCESS_ERROR_SUCCESS;
 
     /* check reservation timeout */
     if (rc->buffered) {
         checkReservationTimeout(mmsMapping, rc);
     }
 
-    if (mmsMapping->rcbEventHandler) {
-        ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(mmsMapping->iedServer, connection);
+    ClientConnection clientConnection = NULL;
 
-        mmsMapping->rcbEventHandler(mmsMapping->rcbEventHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_GET_PARAMETER, elementName, DATA_ACCESS_ERROR_SUCCESS);
+    if (mmsMapping->rcbAccessHandler || mmsMapping->rcbEventHandler) {
+        clientConnection = private_IedServer_getClientConnectionByHandle(mmsMapping->iedServer, connection);
     }
+
+    if (mmsMapping->rcbAccessHandler) {
+        if (mmsMapping->rcbAccessHandler(mmsMapping->rcbAccessHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_GET_PARAMETER) == false) {
+            accessError = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+            accessAllowed = false;
+        }
+    }
+
+    if (mmsMapping->rcbEventHandler) {
+        mmsMapping->rcbEventHandler(mmsMapping->rcbEventHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_GET_PARAMETER, elementName, accessError);
+    }
+
+    return accessAllowed;
 }
 
 static bool
@@ -1808,6 +1887,15 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
     bool dontUpdate = false;
 
     ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer, connection);
+
+    /* check if write access to RCB is allowed on this connection */
+    if (self->rcbAccessHandler) {
+        if (self->rcbAccessHandler(self->rcbAccessHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_SET_PARAMETER) == false) {
+            retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+
+            goto exit_function_only_tracking;
+        }
+    }
 
     /* check reservation timeout for buffered RCBs */
     if (rc->buffered) {
@@ -2490,6 +2578,8 @@ exit_function:
 #endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
 
     ReportControl_unlockNotify(rc);
+
+exit_function_only_tracking:
 
 #if (CONFIG_IEC61850_SERVICE_TRACKING == 1)
     if (rc->buffered)
