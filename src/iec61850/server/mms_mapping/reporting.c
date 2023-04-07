@@ -1909,6 +1909,9 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
             if (updateReportDataset(self, rc, NULL, connection)) {
 
                 if (rc->reserved == false) {
+
+                    rc->resvTms = RESV_TMS_IMPLICIT_VALUE;
+
                     reserveRcb(rc, connection);
 
                     if (self->rcbEventHandler) {
@@ -2444,7 +2447,6 @@ exit_function:
                         self->rcbEventHandler(self->rcbEventHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_RESERVED, NULL, DATA_ACCESS_ERROR_SUCCESS);
                     }
                 }
-
 
             }
             else if (rc->resvTms == -1) {
