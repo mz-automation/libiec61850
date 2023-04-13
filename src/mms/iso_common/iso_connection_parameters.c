@@ -105,6 +105,18 @@ IsoConnectionParameters_setTcpParameters(IsoConnectionParameters self, const cha
 }
 
 void
+IsoConnectionParameters_setLocalTcpParameters(IsoConnectionParameters self, const char* localIpAddress, int localTcpPort) 
+{
+    if (self) {
+        if (localIpAddress) {
+            self->localIpAddress = strdup(localIpAddress);
+            self->localTcpPort = localTcpPort;
+        }
+    }
+}
+
+
+void
 IsoConnectionParameters_setRemoteApTitle(IsoConnectionParameters self, const char* apTitle, int aeQualifier)
 {
     if (apTitle == NULL)

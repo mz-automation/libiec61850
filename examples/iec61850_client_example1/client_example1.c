@@ -33,6 +33,9 @@ int main(int argc, char** argv) {
 
     char* hostname;
     int tcpPort = 102;
+    const char* localIp = NULL;
+    int localTcpPort = -1;
+    
 
     if (argc > 1)
         hostname = argv[1];
@@ -42,19 +45,34 @@ int main(int argc, char** argv) {
     if (argc > 2)
         tcpPort = atoi(argv[2]);
 
+    if (argc > 3)
+        localIp = argv[3];
+
+    if (argc > 4)
+        localTcpPort = atoi(argv[4]);
+
     IedClientError error;
 
     IedConnection con = IedConnection_create();
 
-    IedConnection_connect(con, &error, hostname, tcpPort);
+    /* Optional bind to local IP address/interface */
+    if (localIp) {
+        IedConnection_setLocalAddress(con, localIp, localTcpPort);
+        printf("Bound to Local Address: %s:%i\n", localIp, localTcpPort);
+    }
 
-    if (error == IED_ERROR_OK) {
+    IedConnection_connect(con, &error, hostname, tcpPort);
+    printf("Connecting to %s:%i\n", hostname, tcpPort);
+
+    if (error == IED_ERROR_OK)
+    {
+        printf("Connected\n");
 
         /* read an analog measurement value from server */
         MmsValue* value = IedConnection_readObject(con, &error, "simpleIOGenericIO/GGIO1.AnIn1.mag.f", IEC61850_FC_MX);
 
-        if (value != NULL) {
-
+        if (value != NULL)
+        {
             if (MmsValue_getType(value) == MMS_FLOAT) {
                 float fval = MmsValue_toFloat(value);
                 printf("read float value: %f\n", fval);
@@ -137,7 +155,6 @@ close_connection:
     }
 
     IedConnection_destroy(con);
+
     return 0;
 }
-
-
