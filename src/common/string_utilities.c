@@ -197,6 +197,9 @@ StringUtils_copyStringMax(char* dest, int maxBufferSize, const char* str1)
 {
     char* res = dest;
 
+    if (maxBufferSize < 1)
+        return NULL;
+
     if (dest == NULL)
         res = (char*)GLOBAL_MALLOC(maxBufferSize);
 
