@@ -263,6 +263,8 @@ void
 Ethernet_addMulticastAddress(EthernetSocket ethSocket, uint8_t* multicastAddress)
 {
     struct packet_mreq mreq;
+    memset(&mreq, 0, sizeof(struct packet_mreq));
+
     mreq.mr_ifindex = ethSocket->socketAddress.sll_ifindex;
     mreq.mr_alen = ETH_ALEN;
     mreq.mr_type = PACKET_MR_MULTICAST;
