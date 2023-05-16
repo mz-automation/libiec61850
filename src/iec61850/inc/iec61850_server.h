@@ -3,7 +3,7 @@
  *
  *  IEC 61850 server API for libiec61850.
  *
- *  Copyright 2013-2022 Michael Zillgith
+ *  Copyright 2013-2023 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -41,6 +41,13 @@ extern "C" {
 #include "hal_filesystem.h"
 #include "iso_connection_parameters.h"
 #include "iec61850_config_file_parser.h"
+
+#define IEC61850_REPORTSETTINGS_RPT_ID 1
+#define IEC61850_REPORTSETTINGS_BUF_TIME 2
+#define IEC61850_REPORTSETTINGS_DATSET 4
+#define IEC61850_REPORTSETTINGS_TRG_OPS 8
+#define IEC61850_REPORTSETTINGS_OPT_FIELDS 16
+#define IEC61850_REPORTSETTINGS_INTG_PD 32
 
 /**
  * \brief Configuration object to configure IEC 61850 stack features
@@ -99,6 +106,9 @@ struct sIedServerConfig
 
     /** integrity report start times will by synchronized with straight numbers (default: false) */
     bool syncIntegrityReportTimes;
+
+    /** for each configurable ReportSetting there is a separate flag (default: Dyn = enable write for all) */
+    uint8_t reportSettingsWritable;
 };
 
 /**
@@ -387,6 +397,27 @@ IedServerConfig_useIntegratedGoosePublisher(IedServerConfig self, bool enable);
  */
 LIB61850_API bool
 IedServerConfig_isLogServiceEnabled(IedServerConfig self);
+
+/**
+ * \brief Make a configurable report setting writeable or read-only
+ *
+ * \note Can be used to implement some of Services\ReportSettings options
+ *
+ * \param[in] setting one IEC61850_REPORTSETTINGS_RPT_ID, _BUF_TIME, _DATSET, _TRG_OPS, _OPT_FIELDS, _INTG_PD
+ * \param[in] isDyn true, when setting is writable ("Dyn") or false, when read-only
+ */
+LIB61850_API void
+IedServerConfig_setReportSetting(IedServerConfig self, uint8_t setting, bool isDyn);
+
+/**
+ * \brief Check if a configurable report setting is writable or read-only
+ *
+ * \param[in] setting one IEC61850_REPORTSETTINGS_RPT_ID, _BUF_TIME, _DATSET, _TRG_OPS, _OPT_FIELDS, _INTG_PD
+ *
+ * \return  isDyn true, when setting is writable ("Dyn") or false, when read-only
+ */
+LIB61850_API bool
+IedServerConfig_getReportSetting(IedServerConfig self, uint8_t setting);
 
 /**
  * An opaque handle for an IED server instance
