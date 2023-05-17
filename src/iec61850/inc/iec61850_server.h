@@ -403,7 +403,7 @@ IedServerConfig_isLogServiceEnabled(IedServerConfig self);
  *
  * \note Can be used to implement some of Services\ReportSettings options
  *
- * \param[in] setting one IEC61850_REPORTSETTINGS_RPT_ID, _BUF_TIME, _DATSET, _TRG_OPS, _OPT_FIELDS, _INTG_PD
+ * \param[in] setting one of IEC61850_REPORTSETTINGS_RPT_ID, _BUF_TIME, _DATSET, _TRG_OPS, _OPT_FIELDS, _INTG_PD
  * \param[in] isDyn true, when setting is writable ("Dyn") or false, when read-only
  */
 LIB61850_API void
@@ -412,7 +412,7 @@ IedServerConfig_setReportSetting(IedServerConfig self, uint8_t setting, bool isD
 /**
  * \brief Check if a configurable report setting is writable or read-only
  *
- * \param[in] setting one IEC61850_REPORTSETTINGS_RPT_ID, _BUF_TIME, _DATSET, _TRG_OPS, _OPT_FIELDS, _INTG_PD
+ * \param[in] setting one of IEC61850_REPORTSETTINGS_RPT_ID, _BUF_TIME, _DATSET, _TRG_OPS, _OPT_FIELDS, _INTG_PD
  *
  * \return  isDyn true, when setting is writable ("Dyn") or false, when read-only
  */
