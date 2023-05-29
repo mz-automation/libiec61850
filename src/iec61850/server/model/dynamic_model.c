@@ -688,7 +688,7 @@ DataAttribute_create(const char* name, ModelNode* parent, DataAttributeType type
         self->triggerOptions = triggerOptions;
         self->sAddr = sAddr;
 
-        if ((arrayElements > 0) && (type != IEC61850_CONSTRUCTED)) {
+        if (arrayElements > 0) {
             int i;
 
             for (i = 0; i < arrayElements; i++) {
@@ -703,7 +703,7 @@ DataAttribute_create(const char* name, ModelNode* parent, DataAttributeType type
                     arrayElement->fc = fc;
                     arrayElement->firstChild = NULL;
                     arrayElement->mmsValue = NULL;
-                    arrayElement->parent = parent;
+                    arrayElement->parent = (ModelNode*)self;
                     arrayElement->sibling = NULL;
                     arrayElement->triggerOptions = triggerOptions;
                     arrayElement->sAddr = sAddr;
