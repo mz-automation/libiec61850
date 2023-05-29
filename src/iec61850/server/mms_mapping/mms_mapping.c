@@ -139,7 +139,7 @@ createNamedVariableFromDataAttribute(DataAttribute* attribute)
                 sizeof(MmsVariableSpecification));
         namedVariable = namedVariable->typeSpec.array.elementTypeSpec;
 
-        if (attribute->firstChild && ((DataAttribute*)(attribute->firstChild))->type != IEC61850_CONSTRUCTED) {
+        if (attribute->type != IEC61850_CONSTRUCTED) {
             isBasicArray = true;
         }
     }
@@ -160,7 +160,8 @@ createNamedVariableFromDataAttribute(DataAttribute* attribute)
         DataAttribute* subDataAttribute = (DataAttribute*) attribute->firstChild;
 
         int i = 0;
-        while (subDataAttribute != NULL) {
+        while (subDataAttribute)
+        {
             namedVariable->typeSpec.structure.elements[i] =
                     createNamedVariableFromDataAttribute(subDataAttribute);
 
