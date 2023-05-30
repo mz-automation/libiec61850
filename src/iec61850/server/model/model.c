@@ -649,106 +649,110 @@ ModelNode_getChildCount(ModelNode* modelNode) {
 ModelNode*
 ModelNode_getChild(ModelNode* self, const char* name)
 {
-   /* check for element separator */
-   const char* separator = strchr(name, '.');
+    /* check for element separator */
+    const char* separator = strchr(name, '.');
 
-   /* allow first character to be "." */
-   if (separator == name)
-       name++;
+    /* allow first character to be "." */
+    if (separator == name)
+        name++;
 
-   /* check for array separator */
-   const char* arraySeparator = strchr(name, '(');
+    /* check for array separator */
+    const char* arraySeparator = strchr(name, '(');
 
-   if (arraySeparator) {
+    if (arraySeparator) {
 
-       const char* arraySeparator2 = strchr(arraySeparator, ')');
+        const char* arraySeparator2 = strchr(arraySeparator, ')');
 
-       if (arraySeparator2) {
-           int idx = (int) strtol(arraySeparator + 1, NULL, 10);
+        if (arraySeparator2) {
+            int idx = (int) strtol(arraySeparator + 1, NULL, 10);
 
-           ModelNode* arrayNode = NULL;
+            ModelNode* arrayNode = NULL;
 
-           if (name == arraySeparator) {
-               arrayNode = ModelNode_getChildWithIdx(self, idx);
-           }
-           else {
-               char nameCopy[65];
+            if (name == arraySeparator) {
+                arrayNode = ModelNode_getChildWithIdx(self, idx);
+            }
+            else {
+                char nameCopy[65];
 
-               const char* pos = name;
+                const char* pos = name;
 
-               int cpyIdx = 0;
+                int cpyIdx = 0;
 
-               while (pos < arraySeparator) {
-                   nameCopy[cpyIdx] = *pos;
-                   cpyIdx++;
-                   pos++;
-               }
+                while (pos < arraySeparator) {
+                    nameCopy[cpyIdx] = *pos;
+                    cpyIdx++;
+                    pos++;
+                }
 
-               nameCopy[cpyIdx] = 0;
+                nameCopy[cpyIdx] = 0;
 
-               ModelNode* childNode = ModelNode_getChild(self, nameCopy);
+                ModelNode* childNode = ModelNode_getChild(self, nameCopy);
 
-               if (childNode) {
-                   arrayNode = ModelNode_getChildWithIdx(childNode, idx);
-               }
-               else
-                   return NULL;
-           }
+                if (childNode) {
+                    arrayNode = ModelNode_getChildWithIdx(childNode, idx);
+                }
+                else
+                    return NULL;
+            }
 
-           if (arrayNode) {
+            if (arrayNode) {
 
-               if (*(arraySeparator2 + 1) == 0) {
-                   return arrayNode;
-               }
-               else {
-                   if (*(arraySeparator2 + 1) == '.')
-                       return ModelNode_getChild(arrayNode, arraySeparator2 + 2);
-                   else
-                       return ModelNode_getChild(arrayNode, arraySeparator2 + 1);
-               }
+                if (*(arraySeparator2 + 1) == 0) {
+                    return arrayNode;
+                }
+                else {
+                    if (*(arraySeparator2 + 1) == '.')
+                        return ModelNode_getChild(arrayNode, arraySeparator2 + 2);
+                    else
+                        return ModelNode_getChild(arrayNode, arraySeparator2 + 1);
+                }
 
-           }
-           else
-               return NULL;
+            }
+            else
+                return NULL;
+        }
+        else {
+            /* invalid name */
+            return NULL;
+        }
 
-       }
-       else {
-           /* invalid name */
-           return NULL;
-       }
+    }
 
-   }
+    int nameElementLength = 0;
 
-   int nameElementLength = 0;
+    if (separator != NULL)
+        nameElementLength = (separator - name);
+    else
+        nameElementLength = strlen(name);
 
-   if (separator != NULL)
-       nameElementLength = (separator - name);
-   else
-       nameElementLength = strlen(name);
+    ModelNode* nextNode = self->firstChild;
 
-   ModelNode* nextNode = self->firstChild;
+    ModelNode* matchingNode = NULL;
 
-   ModelNode* matchingNode = NULL;
+    while (nextNode) {
 
-   while (nextNode) {
-       int nodeNameLen = strlen(nextNode->name);
+        if (nextNode->name == NULL) {
+            break; /* is an array element */        
+        }
 
-       if (nodeNameLen == nameElementLength) {
+        int nodeNameLen = strlen(nextNode->name);
 
-           if (memcmp(nextNode->name, name, nodeNameLen) == 0) {
-               matchingNode = nextNode;
-               break;
-           }
-       }
+        if (nodeNameLen == nameElementLength) {
 
-       nextNode = nextNode->sibling;
-   }
+            if (memcmp(nextNode->name, name, nodeNameLen) == 0) {
+                matchingNode = nextNode;
+                break;
+            }
+        }
 
-   if ((separator != NULL) && (matchingNode != NULL)) {
-       return ModelNode_getChild(matchingNode, separator + 1);
-   }
-   else
-       return matchingNode;
+        nextNode = nextNode->sibling;
+    }
+
+    if ((separator != NULL) && (matchingNode != NULL)) {
+        return ModelNode_getChild(matchingNode, separator + 1);
+    }
+    else
+        return matchingNode;
 }
 
 ModelNode*
