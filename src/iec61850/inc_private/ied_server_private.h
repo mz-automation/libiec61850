@@ -3,7 +3,7 @@
  *
  *  Library private function definitions for IedServer.
  *
- *  Copyright 2013-2018 Michael Zillgith
+ *  Copyright 2013-2023 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -50,6 +50,7 @@ struct sIedServer
     bool enableBRCBResvTms;
     bool enableOwnerForRCB;
     bool syncIntegrityReportTimes;
+    uint8_t rcbSettingsWritable;
 #endif
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
