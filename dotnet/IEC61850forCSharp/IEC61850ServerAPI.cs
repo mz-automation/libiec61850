@@ -2456,6 +2456,9 @@ namespace IEC61850
             /* store IedModel instance to prevent garbage collector */
             private IedModel iedModel = null;
 
+            /* store TLSConfiguration instance to prevent garbage collector */
+            private TLSConfiguration tlsConfiguration = null;
+
             public IedServer(IedModel iedModel, IedServerConfig config = null)
             {
                 this.iedModel = iedModel;
@@ -2471,6 +2474,7 @@ namespace IEC61850
             public IedServer(IedModel iedModel, TLSConfiguration tlsConfig, IedServerConfig config = null)
             {
                 this.iedModel = iedModel;
+                this.tlsConfiguration = tlsConfig;
 
                 IntPtr nativeConfig = IntPtr.Zero;
                 IntPtr nativeTLSConfig = IntPtr.Zero;
@@ -2560,6 +2564,7 @@ namespace IEC61850
                         self = IntPtr.Zero;
                         internalConnectionHandler = null;
                         this.iedModel = null;
+                        this.tlsConfiguration = null;
                     }
                 }
             }
