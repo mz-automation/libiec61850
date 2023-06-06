@@ -3688,8 +3688,7 @@ MmsMapping_triggerReportObservers(MmsMapping* self, MmsValue* value, int flag)
                     continue;
                 break;
             case REPORT_CONTROL_VALUE_CHANGED:
-                if (((rc->triggerOps & TRG_OPT_DATA_CHANGED) == 0) &&
-                        ((rc->triggerOps & TRG_OPT_DATA_UPDATE) == 0))
+                if ((rc->triggerOps & TRG_OPT_DATA_CHANGED) == 0)
                     continue;
                 break;
             case REPORT_CONTROL_QUALITY_CHANGED:
