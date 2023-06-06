@@ -63,5 +63,14 @@ Hal_setTimeInNs(nsSinceEpoch nsTime)
 }
 
 
+//Added BPH 06/2023
+long 
+Hal_timeDiff(struct timespec const* t1, struct timespec const* t2)
+{
+  long diff = t1->tv_nsec - t2->tv_nsec;
+  diff += 1000000000 * (t1->tv_sec - t2->tv_sec);
+  return diff;
+}
+
 #endif
 
