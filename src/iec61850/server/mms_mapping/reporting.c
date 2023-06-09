@@ -717,6 +717,8 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
 
     MmsValue* dataSetValue;
 
+    bool isUsedDataSetDynamic = rc->isDynamicDataSet;
+
     if (newDatSet != NULL) {
         if (strcmp(MmsValue_toString(newDatSet), "") == 0) {
             success = true;
@@ -785,15 +787,6 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
         if (rc->buffered) {
             if (dataSetChanged)
                 purgeBuf(rc);
-        }
-    }
-
-    if (rc->isDynamicDataSet) {
-        if (rc->dataSet && dataSetChanged) {
-            deleteDataSetValuesShadowBuffer(rc);
-            MmsMapping_freeDynamicallyCreatedDataSet(rc->dataSet);
-            rc->isDynamicDataSet = false;
-            rc->dataSet = NULL;
         }
     }
 
@@ -877,10 +870,19 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
 
 #endif /* (MMS_DYNAMIC_DATA_SETS == 1) */
 
+        if (rc->dataSet && rc->dataSet != dataSet)
+            dataSetChanged = true;
+
         if (dataSetChanged) {
 
             /* delete pending event and create buffer for new data set */
             deleteDataSetValuesShadowBuffer(rc);
+
+            if (isUsedDataSetDynamic) {
+                if (rc->dataSet) {
+                    MmsMapping_freeDynamicallyCreatedDataSet(rc->dataSet);
+                }
+            }
 
             rc->dataSet = dataSet;
 
