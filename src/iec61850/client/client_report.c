@@ -139,7 +139,7 @@ ClientReport_getRptId(ClientReport self)
 ReasonForInclusion
 ClientReport_getReasonForInclusion(ClientReport self, int elementIndex)
 {
-    if (self->reasonForInclusion != NULL)
+    if ((self->reasonForInclusion != NULL) && (elementIndex < self->dataSetSize) && (elementIndex >= 0))
         return self->reasonForInclusion[elementIndex];
     else
         return IEC61850_REASON_NOT_INCLUDED;
