@@ -4379,6 +4379,69 @@ exit_function:
     return;
 }
 
+MmsDataAccessError
+MmsConnection_writeVariableComponent(MmsConnection self, MmsError* mmsError,
+        const char* domainId, const char* itemId,
+        const char* componentId, MmsValue* value)
+{
+    struct writeVariableParameters parameter;
+
+    MmsError err = MMS_ERROR_NONE;
+
+    parameter.waitForResponse = Semaphore_create(1);
+    parameter.err = MMS_ERROR_NONE;
+    parameter.accessError = DATA_ACCESS_ERROR_SUCCESS;
+
+    Semaphore_wait(parameter.waitForResponse);
+
+    MmsConnection_writeVariableComponentAsync(self, NULL, &err, domainId, itemId, componentId, value, writeVariableHandler, &parameter);
+
+    if (err == MMS_ERROR_NONE) {
+        Semaphore_wait(parameter.waitForResponse);
+
+        err = parameter.err;
+    }
+
+    Semaphore_destroy(parameter.waitForResponse);
+
+    if (mmsError)
+        *mmsError = err;
+
+    return parameter.accessError;
+}
+
+void
+MmsConnection_writeVariableComponentAsync(MmsConnection self, uint32_t* usedInvokeId, MmsError* mmsError,
+        const char* domainId, const char* itemId, const char* componentId, MmsValue* value,
+        MmsConnection_WriteVariableHandler handler, void* parameter)
+{
+    if (getConnectionState(self) != MMS_CONNECTION_STATE_CONNECTED) {
+        if (mmsError)
+            *mmsError = MMS_ERROR_CONNECTION_LOST;
+        goto exit_function;
+    }
+
+    ByteBuffer* payload = IsoClientConnection_allocateTransmitBuffer(self->isoClient);
+
+    uint32_t invokeId = getNextInvokeId(self);
+
+    if (usedInvokeId)
+        *usedInvokeId = invokeId;
+
+    mmsClient_createWriteRequestComponent(invokeId, domainId, itemId, componentId, value, payload);
+
+    MmsClientInternalParameter intParam;
+    intParam.ptr = NULL;
+
+    MmsError err = sendAsyncRequest(self, invokeId, payload, MMS_CALL_TYPE_WRITE_VARIABLE, handler, parameter, intParam);
+
+    if (mmsError)
+        *mmsError = err;
+
+exit_function:
+    return;
+}
+
 struct writeMultipleVariablesParameter
 {
     Semaphore sem;
