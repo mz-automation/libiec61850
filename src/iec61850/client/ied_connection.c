@@ -1757,7 +1757,7 @@ IedConnection_getDeviceModelFromServer(IedConnection self, IedClientError* error
         LinkedList_destroy(logicalDeviceNames);
     }
     else
-        *error = iedConnection_mapMmsErrorToIedError(mmsError);
+        if (error) *error = iedConnection_mapMmsErrorToIedError(mmsError);
 }
 
 LinkedList /*<char*>*/
