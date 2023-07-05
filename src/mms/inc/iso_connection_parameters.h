@@ -1,7 +1,7 @@
 /*
  *  iso_connection_parameters.h
  *
- *  Copyright 2013-2018 Michael Zillgith
+ *  Copyright 2013-2023 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -23,6 +23,10 @@
 
 #ifndef ISO_CONNECTION_PARAMETERS_H_
 #define ISO_CONNECTION_PARAMETERS_H_
+
+#ifndef CONFIG_MMS_SUPPORT_TLS
+#define CONFIG_MMS_SUPPORT_TLS 0
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -145,6 +149,9 @@ struct sIsoConnectionParameters
     const char* hostname;
     int tcpPort;
 
+    const char* localIpAddress;
+    int localTcpPort;
+
     uint8_t remoteApTitle[10];
     int remoteApTitleLen;
     int remoteAEQualifier;
@@ -214,6 +221,20 @@ IsoConnectionParameters_setAcseAuthenticationParameter(IsoConnectionParameters s
  */
 LIB61850_API void
 IsoConnectionParameters_setTcpParameters(IsoConnectionParameters self, const char* hostname, int tcpPort);
+
+/**
+* \brief Set Local TCP parameters (FOR LIBRARY INTERNAL USE)
+*
+* NOTE: This function used internally by the MMS Client library. When using the MMS or IEC 61850 API
+* there should be no reason for the user to call this function
+*
+* \param self the IsoConnectionParameters instance
+* \param localIpAddress the hostname of local IP address of the server
+* \param localTcpPort the local TCP port number of the server
+*/
+LIB61850_API void
+IsoConnectionParameters_setLocalTcpParameters(IsoConnectionParameters self, const char* localIpAddress, int localTcpPort);
+
 
 /**
  * \brief set the remote AP-Title and AE-Qualifier

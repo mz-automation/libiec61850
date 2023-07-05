@@ -1,7 +1,7 @@
 if(WITH_MBEDTLS)
 include_directories(
 	${CMAKE_CURRENT_LIST_DIR}/tls/mbedtls
-    ${CMAKE_CURRENT_LIST_DIR}/../third_party/mbedtls/mbedtls-2.16/include
+    ${CMAKE_CURRENT_LIST_DIR}/../third_party/mbedtls/mbedtls-2.28/include
 )
 endif(WITH_MBEDTLS)
 

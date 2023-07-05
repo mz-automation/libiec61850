@@ -347,6 +347,18 @@ LogControlBlock_create(const char* name, LogicalNode* parent, const char* dataSe
     return self;
 }
 
+const char*
+LogControlBlock_getName(LogControlBlock* self)
+{
+    return self->name;
+}
+
+LogicalNode*
+LogControlBlock_getParent(LogControlBlock* self)
+{
+    return self->parent;
+}
+
 static void
 LogicalNode_addReportControlBlock(LogicalNode* self, ReportControlBlock* rcb)
 {
@@ -676,7 +688,7 @@ DataAttribute_create(const char* name, ModelNode* parent, DataAttributeType type
         self->triggerOptions = triggerOptions;
         self->sAddr = sAddr;
 
-        if ((arrayElements > 0) && (type != IEC61850_CONSTRUCTED)) {
+        if (arrayElements > 0) {
             int i;
 
             for (i = 0; i < arrayElements; i++) {
@@ -691,7 +703,7 @@ DataAttribute_create(const char* name, ModelNode* parent, DataAttributeType type
                     arrayElement->fc = fc;
                     arrayElement->firstChild = NULL;
                     arrayElement->mmsValue = NULL;
-                    arrayElement->parent = parent;
+                    arrayElement->parent = (ModelNode*)self;
                     arrayElement->sibling = NULL;
                     arrayElement->triggerOptions = triggerOptions;
                     arrayElement->sAddr = sAddr;

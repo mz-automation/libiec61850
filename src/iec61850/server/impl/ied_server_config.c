@@ -1,7 +1,7 @@
 /*
  *  ied_server_config.c
  *
- *  Copyright 2018-2022 Michael Zillgith
+ *  Copyright 2018-2023 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -59,6 +59,12 @@ IedServerConfig_create()
         self->enableResvTmsForBRCB = true;
         self->enableOwnerForRCB = false;
         self->syncIntegrityReportTimes = false;
+        self->reportSettingsWritable = IEC61850_REPORTSETTINGS_RPT_ID +
+                                       IEC61850_REPORTSETTINGS_BUF_TIME +
+                                       IEC61850_REPORTSETTINGS_DATSET +
+                                       IEC61850_REPORTSETTINGS_TRG_OPS +
+                                       IEC61850_REPORTSETTINGS_OPT_FIELDS +
+                                       IEC61850_REPORTSETTINGS_INTG_PD;
     }
 
     return self;
@@ -263,4 +269,35 @@ bool
 IedServerConfig_getSyncIntegrityReportTimes(IedServerConfig self)
 {
     return self->syncIntegrityReportTimes;
+}
+
+static void
+configureSetting(IedServerConfig self, uint8_t flags, uint8_t setting, bool value)
+{
+    if (flags & setting)
+    {
+        if (value) {
+            self->reportSettingsWritable |= setting;
+        }
+        else {
+            self->reportSettingsWritable &= ~setting;
+        }
+    }
+}
+
+void
+IedServerConfig_setReportSetting(IedServerConfig self, uint8_t setting, bool isDyn)
+{
+    configureSetting(self, setting, IEC61850_REPORTSETTINGS_RPT_ID, isDyn);
+    configureSetting(self, setting, IEC61850_REPORTSETTINGS_BUF_TIME, isDyn);
+    configureSetting(self, setting, IEC61850_REPORTSETTINGS_DATSET, isDyn);
+    configureSetting(self, setting, IEC61850_REPORTSETTINGS_TRG_OPS, isDyn);
+    configureSetting(self, setting, IEC61850_REPORTSETTINGS_OPT_FIELDS, isDyn);
+    configureSetting(self, setting, IEC61850_REPORTSETTINGS_INTG_PD, isDyn);
+}
+
+bool
+IedServerConfig_getReportSetting(IedServerConfig self, uint8_t setting)
+{
+    return (self->reportSettingsWritable & setting);
 }

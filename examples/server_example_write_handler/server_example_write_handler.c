@@ -41,10 +41,16 @@ writeAccessHandler (DataAttribute* dataAttribute, MmsValue* value, ClientConnect
 int
 main(int argc, char** argv)
 {
+    int tcpPort = 102;
+
+    if (argc > 1) {
+        tcpPort = atoi(argv[1]);
+    }
+
     iedServer = IedServer_create(&iedModel);
 
     /* MMS server will be instructed to start listening to client connections. */
-    IedServer_start(iedServer, 102);
+    IedServer_start(iedServer, tcpPort);
 
     /* Don't allow access to SP variables by default */
     IedServer_setWriteAccessPolicy(iedServer, IEC61850_FC_SP, ACCESS_POLICY_DENY);

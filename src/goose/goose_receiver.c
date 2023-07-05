@@ -234,13 +234,22 @@ parseAllData(uint8_t* buffer, int allDataLength, MmsValue* dataSetValues)
         case 0x84: /* BIT STRING */
             if (MmsValue_getType(value) == MMS_BIT_STRING) {
                 int padding = buffer[bufPos];
-                int bitStringLength = (8 * (elementLength - 1)) - padding;
-                if (bitStringLength == value->value.bitString.size) {
-                    memcpy(value->value.bitString.buf, buffer + bufPos + 1,
-                            elementLength - 1);
+
+                if (padding > 7) {
+                    if (DEBUG_GOOSE_SUBSCRIBER)
+                        printf("GOOSE_SUBSCRIBER:      invalid bit-string (padding not plausible)\n");
+
+                    pe = GOOSE_PARSE_ERROR_INVALID_PADDING;
                 }
                 else {
-                    pe = GOOSE_PARSE_ERROR_LENGTH_MISMATCH;
+                    int bitStringLength = (8 * (elementLength - 1)) - padding;
+                    if (bitStringLength == value->value.bitString.size) {
+                        memcpy(value->value.bitString.buf, buffer + bufPos + 1,
+                                elementLength - 1);
+                    }
+                    else {
+                        pe = GOOSE_PARSE_ERROR_LENGTH_MISMATCH;
+                    }
                 }
             }
             else {
@@ -376,7 +385,7 @@ parseAllData(uint8_t* buffer, int allDataLength, MmsValue* dataSetValues)
             break;
         }
 
-        if ( pe != GOOSE_PARSE_ERROR_NO_ERROR ) {
+        if (pe != GOOSE_PARSE_ERROR_NO_ERROR) {
             break; /* from while */
         }
 
@@ -386,14 +395,16 @@ parseAllData(uint8_t* buffer, int allDataLength, MmsValue* dataSetValues)
     }
 
     if (elementIndex <= maxIndex) {
-        pe = GOOSE_PARSE_ERROR_UNDERFLOW;
+        if (pe == GOOSE_PARSE_ERROR_NO_ERROR) {
+            pe = GOOSE_PARSE_ERROR_UNDERFLOW;
+        }
     }
 
     if (DEBUG_GOOSE_SUBSCRIBER) {
-        switch ( pe ) {
+        switch (pe) {
             case GOOSE_PARSE_ERROR_UNKNOWN_TAG:
                 printf("GOOSE_SUBSCRIBER: Found unkown tag %02x!\n", tag);
-            break;
+                break;
             case GOOSE_PARSE_ERROR_TAGDECODE:
                 printf("GOOSE_SUBSCRIBER: Malformed message: failed to decode BER length tag!\n");
                 break;
@@ -412,6 +423,8 @@ parseAllData(uint8_t* buffer, int allDataLength, MmsValue* dataSetValues)
             case GOOSE_PARSE_ERROR_LENGTH_MISMATCH:
                 printf("GOOSE_SUBSCRIBER: Message contains value of wrong length!\n");
                 break;
+            case GOOSE_PARSE_ERROR_INVALID_PADDING:
+                printf("GOOSE_SUBSCRIBER: Malformed message: invalid padding!\n");
             default:
                 break;
         }
@@ -524,7 +537,16 @@ parseAllDataUnknownValue(GooseSubscriber self, uint8_t* buffer, int allDataLengt
         case 0x83: /* boolean */
             if (DEBUG_GOOSE_SUBSCRIBER)
                 printf("GOOSE_SUBSCRIBER:    found boolean\n");
-            value = MmsValue_newBoolean(BerDecoder_decodeBoolean(buffer, bufPos));
+
+            if (elementLength > 0) {
+                value = MmsValue_newBoolean(BerDecoder_decodeBoolean(buffer, bufPos));
+            }
+            else {
+                if (DEBUG_GOOSE_SUBSCRIBER)
+                    printf("GOOSE_SUBSCRIBER: invalid length for boolean\n");
+
+                goto exit_with_error;
+            }
 
             break;
 

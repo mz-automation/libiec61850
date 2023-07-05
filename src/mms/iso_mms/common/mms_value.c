@@ -763,8 +763,8 @@ MmsValue_setUtcTime(MmsValue* self, uint32_t timeval)
     return self;
 }
 
-MmsValue*
-MmsValue_setUtcTimeMs(MmsValue* self, uint64_t timeval)
+static void
+setUtcTimeMs(MmsValue* self, uint64_t timeval, uint8_t timeQuality)
 {
     uint32_t timeval32 = (timeval / 1000LL);
 
@@ -786,7 +786,21 @@ MmsValue_setUtcTimeMs(MmsValue* self, uint64_t timeval)
     valueArray[6] = (fractionOfSecond & 0xff);
 
     /* encode time quality */
-    valueArray[7] = 0x0a; /* 10 bit sub-second time accuracy */
+    valueArray[7] = timeQuality;
+}
+
+MmsValue*
+MmsValue_setUtcTimeMs(MmsValue* self, uint64_t timeval)
+{
+    setUtcTimeMs(self, timeval, 0x0a); /*  set quality as 10 bit sub-second time accuracy */
+
+    return self;
+}
+
+MmsValue*
+MmsValue_setUtcTimeMsEx(MmsValue* self, uint64_t timeval, uint8_t timeQuality)
+{
+    setUtcTimeMs(self, timeval, timeQuality);
 
     return self;
 }
@@ -2191,7 +2205,7 @@ MmsValue_printToBuffer(const MmsValue* self, char* buffer, int bufferSize)
 
                 const char* currentStr = MmsValue_printToBuffer((const MmsValue*) MmsValue_getElement(self, i), buffer + bufPos, bufferSize - bufPos);
 
-                bufPos += strlen(currentStr);
+                bufPos += strnlen(currentStr, bufferSize - bufPos);
 
                 if (bufPos >= bufferSize)
                     break;
@@ -2226,9 +2240,13 @@ MmsValue_printToBuffer(const MmsValue* self, char* buffer, int bufferSize)
             int size = MmsValue_getBitStringSize(self);
 
             /* fill buffer with zeros */
-            if (size > bufferSize) {
+            if (size + 1 > bufferSize) {
                 memset(buffer, 0, bufferSize);
-                break;
+
+                size = bufferSize - 1;
+
+                if (size < 1)
+                    break;
             }
 
             int i;

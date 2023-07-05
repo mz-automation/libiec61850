@@ -123,8 +123,14 @@ struct sMmsServer {
     MmsConnectionHandler connectionHandler;
     void* connectionHandlerParameter;
 
-    MmsNamedVariableListChangedHandler variableListChangedHandler; /* TODO this is only required if dynamic data sets are supported! */
-    void* variableListChangedHandlerParameter;
+    MmsNamedVariableListAccessHandler variableListAccessHandler;
+    void* variableListAccessHandlerParameter;
+
+    MmsReadJournalHandler readJournalHandler;
+    void* readJournalHandlerParameter;
+
+    MmsGetNameListHandler getNameListHandler;
+    void* getNameListHandlerParameter;
 
     AcseAuthenticator authenticator;
     void* authenticatorParameter;
@@ -135,7 +141,8 @@ struct sMmsServer {
 
     Map openConnections;
     Map valueCaches;
-    bool isLocked;
+
+    bool blockRequests;
 
     ByteBuffer* transmitBuffer; /* global buffer for encoding reports, delayed responses... */
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
@@ -420,7 +427,7 @@ mmsServer_createMmsWriteResponse(MmsServerConnection connection,
         uint32_t invokeId, ByteBuffer* response, int numberOfItems, MmsDataAccessError* accessResults);
 
 LIB61850_INTERNAL MmsError
-mmsServer_callVariableListChangedHandler(bool create, MmsVariableListType listType, MmsDomain* domain,
+mmsServer_callVariableListChangedHandler(MmsVariableListAccessType accessType, MmsVariableListType listType, MmsDomain* domain,
         char* listName, MmsServerConnection connection);
 
 #endif /* MMS_SERVER_INTERNAL_H_ */

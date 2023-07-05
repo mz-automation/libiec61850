@@ -101,6 +101,7 @@ printRawMmsMessage(void* parameter, uint8_t* message, int messageLength, bool re
 
 int main(int argc, char** argv)
 {
+    int returnCode = 0;
 
     char* hostname = StringUtils_copyString("localhost");
     int tcpPort = 102;
@@ -213,6 +214,10 @@ int main(int argc, char** argv)
 
     if (!MmsConnection_connect(con, &error, hostname, tcpPort)) {
         printf("MMS connect failed!\n");
+
+        if (error != MMS_ERROR_NONE)
+            returnCode = error;
+
         goto exit;
     }
     else
@@ -221,6 +226,9 @@ int main(int argc, char** argv)
     if (identifyDevice) {
         MmsServerIdentity* identity =
                 MmsConnection_identify(con, &error);
+
+        if (error != MMS_ERROR_NONE)
+            returnCode = error;
 
         if (identity != NULL) {
             printf("\nServer identity:\n----------------\n");
@@ -235,13 +243,22 @@ int main(int argc, char** argv)
     if (readDeviceList) {
         printf("\nDomains present on server:\n--------------------------\n");
         LinkedList nameList = MmsConnection_getDomainNames(con, &error);
-        LinkedList_printStringList(nameList);
-        LinkedList_destroy(nameList);
+
+        if (error != MMS_ERROR_NONE)
+            returnCode = error;
+
+        if (nameList) {
+            LinkedList_printStringList(nameList);
+            LinkedList_destroy(nameList);
+        }
     }
 
     if (getDeviceDirectory) {
         LinkedList variableList = MmsConnection_getDomainVariableNames(con, &error,
                 domainName);
+
+        if (error != MMS_ERROR_NONE)
+            returnCode = error;
 
         if (variableList) {
             LinkedList element = LinkedList_getNext(variableList);
@@ -263,6 +280,9 @@ int main(int argc, char** argv)
         }
 
         variableList = MmsConnection_getDomainJournals(con, &error, domainName);
+
+        if (error != MMS_ERROR_NONE)
+            returnCode = error;
 
         if (variableList) {
 
@@ -308,6 +328,9 @@ int main(int argc, char** argv)
 
             LinkedList journalEntries = MmsConnection_readJournalTimeRange(con, &error, logDomain, logName, startTime, endTime,
                     &moreFollows);
+
+            if (error != MMS_ERROR_NONE)
+                returnCode = error;
 
             MmsValue_delete(startTime);
             MmsValue_delete(endTime);
@@ -375,6 +398,8 @@ int main(int argc, char** argv)
 
             if (error != MMS_ERROR_NONE) {
                 printf("Reading variable failed: (ERROR %i)\n", error);
+
+                returnCode = error;
             }
             else {
                 printf("Read SUCCESS\n");
@@ -403,6 +428,8 @@ int main(int argc, char** argv)
 
             if (error != MMS_ERROR_NONE) {
                 printf("Reading variable failed: (ERROR %i)\n", error);
+
+                returnCode = error;
             }
             else {
                 printf("Read SUCCESS\n");
@@ -421,6 +448,8 @@ int main(int argc, char** argv)
 
             if (error != MMS_ERROR_NONE) {
                 printf("Reading variable list directory failed: (ERROR %i)\n", error);
+
+                returnCode = error;
             }
             else {
                 LinkedList varListElem = LinkedList_getNext(varListDir);
@@ -454,12 +483,19 @@ int main(int argc, char** argv)
         char* continueAfter = NULL;
 
         while (MmsConnection_getFileDirectory(con, &error, "", continueAfter, mmsFileDirectoryHandler, lastName)) {
+
+            if (error != MMS_ERROR_NONE)
+                returnCode = error;
+
             continueAfter = lastName;
         }
     }
 
     if (getFileAttributes) {
         MmsConnection_getFileDirectory(con, &error, filename, NULL, mmsGetFileAttributeHandler, NULL);
+
+        if (error != MMS_ERROR_NONE)
+            returnCode = error;
     }
 
     if (deleteFile) {
@@ -467,13 +503,14 @@ int main(int argc, char** argv)
 
         if (error != MMS_ERROR_NONE) {
             printf("Delete file failed: (ERROR %i)\n", error);
+            returnCode = error;
         }
         else {
             printf("File deleted\n");
         }
     }
 
-    exit:
+exit:
     free(hostname);
     free(domainName);
     free(variableName);
@@ -482,6 +519,6 @@ int main(int argc, char** argv)
 
     MmsConnection_destroy(con);
 
-    return 0;
+    return returnCode;
 }
 

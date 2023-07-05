@@ -273,6 +273,11 @@ mmsClient_createWriteRequestArray(uint32_t invokeId, const char* domainId, const
         MmsValue* value, ByteBuffer* writeBuffer);
 
 LIB61850_INTERNAL int
+mmsClient_createWriteRequestComponent(uint32_t invokeId, const char* domainId, const char* itemId, const char* component,
+        MmsValue* value,
+        ByteBuffer* writeBuffer);
+
+LIB61850_INTERNAL int
 mmsClient_createWriteRequestAlternateAccessSingleIndexComponent(uint32_t invokeId, const char* domainId, const char* itemId,
         uint32_t arrayIndex, const char* component,
         MmsValue* value,

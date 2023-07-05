@@ -1,7 +1,7 @@
 /*
  *  mms_server.c
  *
- *  Copyright 2013-2020 Michael Zillgith
+ *  Copyright 2013-2023 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -95,12 +95,12 @@ MmsServer_create(MmsDevice* device, TLSConfiguration tlsConfiguration)
         if (self->valueCaches == NULL)
             goto exit_error;
 
-        self->isLocked = false;
-
         self->transmitBuffer = ByteBuffer_create(NULL, CONFIG_MMS_MAXIMUM_PDU_SIZE);
 
         if (self->transmitBuffer == NULL)
             goto exit_error;
+
+        self->blockRequests = false;
 
 #if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
         self->fileServiceEnabled = true;
@@ -359,10 +359,24 @@ MmsServer_installConnectionHandler(MmsServer self, MmsConnectionHandler connecti
 }
 
 void
-MmsServer_installVariableListChangedHandler(MmsServer self, MmsNamedVariableListChangedHandler handler, void* parameter)
+MmsServer_installVariableListAccessHandler(MmsServer self, MmsNamedVariableListAccessHandler handler, void* parameter)
 {
-    self->variableListChangedHandler = handler;
-    self->variableListChangedHandlerParameter = parameter;
+    self->variableListAccessHandler = handler;
+    self->variableListAccessHandlerParameter = parameter;
+}
+
+void
+MmsServer_installReadJournalHandler(MmsServer self, MmsReadJournalHandler handler, void* parameter)
+{
+    self->readJournalHandler = handler;
+    self->readJournalHandlerParameter = parameter;
+}
+
+void
+MmsServer_installGetNameListHandler(MmsServer self, MmsGetNameListHandler handler, void* parameter)
+{
+    self->getNameListHandler = handler;
+    self->getNameListHandlerParameter = parameter;
 }
 
 void
@@ -564,7 +578,6 @@ mmsServer_getValue(MmsServer self, MmsDomain* domain, char* itemId, MmsServerCon
 exit_function:
     return value;
 }
-
 
 MmsDevice*
 MmsServer_getDevice(MmsServer self)
@@ -820,4 +833,8 @@ MmsServer_getFilesystemBasepath(MmsServer self)
 #endif
 }
 
-
+void
+MmsServer_ignoreClientRequests(MmsServer self, bool enable)
+{
+    self->blockRequests = enable;
+}

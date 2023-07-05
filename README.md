@@ -88,9 +88,9 @@ You can test the server examples by using a generic client or the provided clien
 
 ## Building the library with TLS support
 
-Download, unpack, and copy mbedtls-2.16 into the third_party/mbedtls folder.
+Download, unpack, and copy mbedtls-2.28 into the third_party/mbedtls folder.
 
-NOTE: The current version support mbedtls version 2.16. When you download the source archive from https://tls.mbed.org/ you have to rename the extracted folder to "mbedtls-2.16".
+NOTE: The current version support mbedtls version 2.28. When you download the source archive from https://tls.mbed.org/ you have to rename the extracted folder to "mbedtls-2.28".
 
 In the main libiec61850 folder run
 
@@ -98,7 +98,7 @@ In the main libiec61850 folder run
 make WITH_MBEDTLS=1
 ```
 
-When using CMake the library is built automatically with TLS support when the folder third_party/mbedtls/mbedtls-2.16 is present.
+When using CMake the library is built automatically with TLS support when the folder third_party/mbedtls/mbedtls-2.28 is present.
 
 ## Installing the library and the API headers
 

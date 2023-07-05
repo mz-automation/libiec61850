@@ -241,25 +241,6 @@ typedef enum {
  * @{
  */
 
-#if (CONFIG_PROVIDE_OLD_FC_DEFINES == 1)
-#define ST IEC61850_FC_ST
-#define MX IEC61850_FC_MX
-#define SP IEC61850_FC_SP
-#define SV IEC61850_FC_SV
-#define CF IEC61850_FC_CF
-#define DC IEC61850_FC_DC
-#define SG IEC61850_FC_SG
-#define SE IEC61850_FC_SE
-#define SR IEC61850_FC_SR
-#define OR IEC61850_FC_OR
-#define BL IEC61850_FC_BL
-#define EX IEC61850_FC_EX
-#define CO IEC61850_FC_CO
-#define ALL IEC61850_FC_ALL
-#define NONE IEC61850_FC_NONE
-#endif /* (CONFIG_PROVIDE_OLD_FC_DEFINES == 1) */
-
-
 /** FCs (Functional constraints) according to IEC 61850-7-2 */
 typedef enum eFunctionalConstraint {
     /** Status information */

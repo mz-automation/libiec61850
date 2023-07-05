@@ -258,7 +258,7 @@ copyControlValuesToTrackingObject(MmsMapping* self, ControlObject* controlObject
                 MmsValue_update(trkInst->ctlNum->mmsValue, controlObject->ctlNum);
 
             if (trkInst->operTm)
-                MmsValue_setUtcTimeMs(trkInst->operTm->mmsValue, controlObject->operateTime);
+                MmsValue_setUtcTimeMsEx(trkInst->operTm->mmsValue, controlObject->operateTime, self->iedServer->timeQuality);
 
             if (trkInst->respAddCause)
                 MmsValue_update(trkInst->respAddCause->mmsValue, controlObject->addCause);
@@ -394,7 +394,7 @@ updateGenericTrackingObjectValues(MmsMapping* self, ControlObject* controlObject
             MmsValue_setInt32(trkInst->serviceType->mmsValue, (int) serviceType);
 
         if (trkInst->t)
-            MmsValue_setUtcTimeMs(trkInst->t->mmsValue, Hal_getTimeInMs());
+            MmsValue_setUtcTimeMsEx(trkInst->t->mmsValue, Hal_getTimeInMs(), self->iedServer->timeQuality);
 
         if (trkInst->errorCode)
             MmsValue_setInt32(trkInst->errorCode->mmsValue, errVal);
@@ -590,9 +590,7 @@ setOpOk(ControlObject* self, bool value, uint64_t currentTimeInMs)
             if (self->tOpOk) {
                 MmsValue* timestamp = self->tOpOk->mmsValue;
 
-                MmsValue_setUtcTimeMs(timestamp, currentTimeInMs);
-
-                /* TODO update time quality */
+                MmsValue_setUtcTimeMsEx(timestamp, currentTimeInMs, self->iedServer->timeQuality);
             }
 
             self->pendingEvents |= PENDING_EVENT_OP_OK_TRUE;
@@ -862,6 +860,7 @@ executeStateMachine:
                 MmsValue* operTm = getOperParameterOperTime(controlObject->oper);
 
                 MmsValue_setUtcTime(operTm, 0);
+                MmsValue_setUtcTimeQuality(operTm, self->iedServer->timeQuality);
             }
             else {
                 MmsServerConnection_sendWriteResponse(controlObject->mmsConnection, controlObject->operateInvokeId,
@@ -1660,8 +1659,6 @@ ControlObject_sendCommandTerminationNegative(ControlObject* self)
     MmsServerConnection_sendInformationReportListOfVariables(self->mmsConnection, &_varSpecList, &_values, false);
 } /* ControlObject_sendCommandTerminationNegative() */
 
-
-
 void
 ControlObject_sendLastApplError(ControlObject* self, MmsServerConnection connection, char* ctlVariable, int error,
         ControlAddCause addCause, MmsValue* ctlNum, MmsValue* origin, bool handlerMode)
@@ -1875,7 +1872,7 @@ Control_readAccessControlObject(MmsMapping* self, MmsDomain* domain, char* varia
                     if (DEBUG_IED_SERVER)
                         printf("IED_SERVER: select not applicable for control model %u\n", controlObject->ctlModel);
 
-                    value = controlObject->sbo;
+                    value = &emptyString;
                 }
             }
 
@@ -2008,7 +2005,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
     }
 
     if (controlObject->ctlModel == CONTROL_MODEL_STATUS_ONLY) {
-        indication = DATA_ACCESS_ERROR_OBJECT_ACCESS_UNSUPPORTED;
+        indication = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
         goto free_and_return;
     }
 
@@ -2035,7 +2032,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                 MmsValue* test = getOperParameterTest(value);
 
                 if (checkValidityOfOriginParameter(origin) == false) {
-                    indication = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+                    indication = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
 
                     ControlObject_sendLastApplError(controlObject, connection, "SBOw", CONTROL_ERROR_NO_ERROR,
                             ADD_CAUSE_SELECT_FAILED, ctlNum, origin, true);
@@ -2142,7 +2139,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                 }
             }
             else {
-                indication = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+                indication = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
             }
         }
         else {
@@ -2163,12 +2160,12 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
 
         if ((ctlVal == NULL) || (test == NULL) || (ctlNum == NULL) || (origin == NULL) || (check == NULL)
                 || (timeParameter == NULL)) {
-            indication = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+            indication = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
             goto free_and_return;
         }
 
         if (checkValidityOfOriginParameter(origin) == false) {
-            indication = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+            indication = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
 
             ControlObject_sendLastApplError(controlObject, connection, "Oper",
                     CONTROL_ERROR_NO_ERROR, ADD_CAUSE_INCONSISTENT_PARAMETERS,
@@ -2224,7 +2221,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
                          (controlObject->testMode == testCondition)
                          ) == false)
                     {
-                        indication = DATA_ACCESS_ERROR_TYPE_INCONSISTENT;
+                        indication = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
 
                         ControlObject_sendLastApplError(controlObject, connection, "Oper",
                                 CONTROL_ERROR_NO_ERROR, ADD_CAUSE_INCONSISTENT_PARAMETERS,
@@ -2372,7 +2369,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* vari
         MmsValue* origin = getCancelParameterOrigin(value);
 
         if ((ctlNum == NULL) || (origin == NULL)) {
-            indication = DATA_ACCESS_ERROR_TYPE_INCONSISTENT;
+            indication = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
             if (DEBUG_IED_SERVER)
                 printf("IED_SERVER: Invalid cancel message!\n");
             goto free_and_return;
@@ -2499,6 +2496,22 @@ ControlAction_getCtlNum(ControlAction self)
     }
 
     return -1;
+}
+
+bool
+ControlAction_getSynchroCheck(ControlAction self)
+{
+    ControlObject* controlObject = (ControlObject*) self;
+
+    return (bool)(controlObject->synchroCheck);
+}
+
+bool
+ControlAction_getInterlockCheck(ControlAction self)
+{
+    ControlObject* controlObject = (ControlObject*) self;
+
+    return (bool)(controlObject->interlockCheck);
 }
 
 bool

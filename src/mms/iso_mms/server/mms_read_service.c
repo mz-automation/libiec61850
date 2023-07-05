@@ -1,7 +1,7 @@
 /*
  *  mms_read_service.c
  *
- *  Copyright 2013-2022 Michael Zillgith
+ *  Copyright 2013-2023 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -695,13 +695,9 @@ createNamedVariableListResponse(MmsServerConnection connection, MmsNamedVariable
 	LinkedList /*<MmsValue>*/ values = LinkedList_create();
 	LinkedList variables = MmsNamedVariableList_getVariableList(namedList);
 
-	int variableCount = LinkedList_size(variables);
-
-	int i;
-
 	LinkedList variable = LinkedList_getNext(variables);
 
-	for (i = 0; i < variableCount; i++) {
+	while (variable) {
 
 		MmsNamedVariableListEntry variableListEntry = (MmsNamedVariableListEntry) variable->data;
 
@@ -768,9 +764,21 @@ handleReadNamedVariableListRequest(
 		else {
 			MmsNamedVariableList namedList = MmsDomain_getNamedVariableList(domain, nameIdStr);
 
-			if (namedList != NULL) {
-				createNamedVariableListResponse(connection, namedList, invokeId, response, isSpecWithResult(read),
-						&accessSpec);
+			if (namedList)
+            {
+
+                MmsError accessError = mmsServer_callVariableListChangedHandler(MMS_VARLIST_READ, MMS_DOMAIN_SPECIFIC, domain, namedList->name, connection);
+
+                if (accessError == MMS_ERROR_NONE) {
+                    createNamedVariableListResponse(connection, namedList, invokeId, response, isSpecWithResult(read),
+                            &accessSpec);
+                }
+                else {
+                    if (DEBUG_MMS_SERVER) printf("MMS read: named variable list %s access error: %i\n", nameIdStr, accessError);
+
+                    mmsMsg_createServiceErrorPdu(invokeId, response, accessError);
+                }
+
 			}
 			else {
 				if (DEBUG_MMS_SERVER) printf("MMS read: named variable list %s not found!\n", nameIdStr);
@@ -791,14 +799,24 @@ handleReadNamedVariableListRequest(
             mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
         else {
 
-            VarAccessSpec accessSpec;
+            MmsError accessError = mmsServer_callVariableListChangedHandler(MMS_VARLIST_READ, MMS_VMD_SPECIFIC, NULL, namedList->name, connection);
 
-            accessSpec.isNamedVariableList = true;
-            accessSpec.specific = 0;
-            accessSpec.domainId = NULL;
-            accessSpec.itemId = listName;
+            if (accessError == MMS_ERROR_NONE) {
+                VarAccessSpec accessSpec;
 
-            createNamedVariableListResponse(connection, namedList, invokeId, response, isSpecWithResult(read), &accessSpec);
+                accessSpec.isNamedVariableList = true;
+                accessSpec.specific = 0;
+                accessSpec.domainId = NULL;
+                accessSpec.itemId = listName;
+
+                createNamedVariableListResponse(connection, namedList, invokeId, response, isSpecWithResult(read), &accessSpec);
+            }
+            else {
+                if (DEBUG_MMS_SERVER) printf("MMS read: VMD specific named variable list %s access error: %i\n", listName, accessError);
+
+                mmsMsg_createServiceErrorPdu(invokeId, response, accessError);
+            }
+
         }
 	}
 #if (MMS_DYNAMIC_DATA_SETS == 1)
@@ -815,14 +833,25 @@ handleReadNamedVariableListRequest(
 		if (namedList == NULL)
 			mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
 		else {
-            VarAccessSpec accessSpec;
 
-            accessSpec.isNamedVariableList = true;
-            accessSpec.specific = 2;
-            accessSpec.domainId = NULL;
-            accessSpec.itemId = listName;
+            MmsError accessError = mmsServer_callVariableListChangedHandler(MMS_VARLIST_READ, MMS_ASSOCIATION_SPECIFIC, NULL, namedList->name, connection);
 
-			createNamedVariableListResponse(connection, namedList, invokeId, response, isSpecWithResult(read), &accessSpec);
+            if (accessError == MMS_ERROR_NONE) {
+
+                VarAccessSpec accessSpec;
+
+                accessSpec.isNamedVariableList = true;
+                accessSpec.specific = 2;
+                accessSpec.domainId = NULL;
+                accessSpec.itemId = listName;
+
+                createNamedVariableListResponse(connection, namedList, invokeId, response, isSpecWithResult(read), &accessSpec);
+            }
+            else {
+                if (DEBUG_MMS_SERVER) printf("MMS read: association specific named variable list %s access error: %i\n", listName, accessError);
+
+                mmsMsg_createServiceErrorPdu(invokeId, response, accessError);
+            }
 		}
 	}
 #endif /* (MMS_DYNAMIC_DATA_SETS == 1) */

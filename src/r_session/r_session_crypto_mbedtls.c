@@ -3,7 +3,7 @@
  *
  *  Implementation of RSessionCrypto interface using mbedtls
  *
- *  Copyright 2013-2021 Michael Zillgith
+ *  Copyright 2013-2023 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *

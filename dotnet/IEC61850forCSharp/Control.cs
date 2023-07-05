@@ -775,7 +775,10 @@ namespace IEC61850
 				Dispose (true);
 			}
 				
-
+			~ControlObject()
+			{
+				Dispose (false);
+			}
 		}
 
 	}

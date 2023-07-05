@@ -155,7 +155,7 @@
 #cmakedefine01 CONFIG_IEC61850_SETTING_GROUPS
 
 /* default reservation time of a setting group control block in s */
-#define CONFIG_IEC61850_SG_RESVTMS 100
+#cmakedefine CONFIG_IEC61850_SG_RESVTMS @CONFIG_IEC61850_SG_RESVTMS@
 
 /* include support for IEC 61850 log services */
 #cmakedefine01 CONFIG_IEC61850_LOG_SERVICE
@@ -196,7 +196,10 @@
 #define CONFIG_MMS_MAX_NUMBER_OF_VMD_SPECIFIC_DATA_SETS 10
 
 /* Maximum number of the members in a data set (named variable list) */
-#define CONFIG_MMS_MAX_NUMBER_OF_DATA_SET_MEMBERS 50
+#cmakedefine CONFIG_MMS_MAX_NUMBER_OF_DATA_SET_MEMBERS @CONFIG_MMS_MAX_NUMBER_OF_DATA_SET_MEMBERS@
+
+/* Maximum number of get file tasks */
+#cmakedefine CONFIG_MMS_SERVER_MAX_GET_FILE_TASKS @CONFIG_MMS_SERVER_MAX_GET_FILE_TASKS@
 
 /* Definition of supported services */
 #define MMS_DEFAULT_PROFILE 1
@@ -223,9 +226,6 @@
 #define CONFIG_MMS_SORT_NAME_LIST 1
 
 #define CONFIG_INCLUDE_PLATFORM_SPECIFIC_HEADERS 0
-
-/* use short FC defines as in old API */
-#define CONFIG_PROVIDE_OLD_FC_DEFINES 0
 
 /* Support user acccess to raw messages */
 #cmakedefine01 CONFIG_MMS_RAW_MESSAGE_LOGGING

@@ -97,7 +97,10 @@ readAccessHandler(LogicalDevice* ld, LogicalNode* ln, DataObject* dataObject, Fu
 {
     void* securityToken = ClientConnection_getSecurityToken(connection);
 
-    printf("Read access to %s/%s.%s\n", ld->name, ln->name, dataObject->name);
+    if (dataObject)
+        printf("Read access to %s/%s.%s[%s]\n", ld->name, ln->name, dataObject->name, FunctionalConstraint_toString(fc));
+    else
+        printf("Read access to %s/%s[%s]\n", ld->name, ln->name, FunctionalConstraint_toString(fc));
 
     return DATA_ACCESS_ERROR_SUCCESS;
 }
@@ -105,12 +108,20 @@ readAccessHandler(LogicalDevice* ld, LogicalNode* ln, DataObject* dataObject, Fu
 int 
 main(int argc, char** argv)
 {
+    int tcpPort = 102;
+
+    if (argc > 1) {
+        tcpPort = atoi(argv[1]);
+    }
+
     IedServerConfig config = IedServerConfig_create();
 
     //IedServerConfig_enableEditSG(config, false);
     IedServerConfig_enableResvTmsForSGCB(config, false);
 
     iedServer = IedServer_createWithConfig(&iedModel, NULL, config);
+
+    IedServer_setTimeQuality(iedServer, true, false, false, 10);
 
     IedServerConfig_destroy(config);
 
@@ -127,7 +138,7 @@ main(int argc, char** argv)
     IedServer_setReadAccessHandler(iedServer, readAccessHandler, NULL);
 
     /* MMS server will be instructed to start listening to client connections. */
-    IedServer_start(iedServer, 102);
+    IedServer_start(iedServer, tcpPort);
 
     if (!IedServer_isRunning(iedServer)) {
         printf("Starting server failed! Exit.\n");

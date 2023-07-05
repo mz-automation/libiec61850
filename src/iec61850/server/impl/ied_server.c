@@ -1,7 +1,7 @@
 /*
  *  ied_server.c
  *
- *  Copyright 2013-2022 Michael Zillgith
+ *  Copyright 2013-2023 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -580,12 +580,19 @@ IedServer_createWithConfig(IedModel* dataModel, TLSConfiguration tlsConfiguratio
             self->enableBRCBResvTms = serverConfiguration->enableResvTmsForBRCB;
             self->enableOwnerForRCB = serverConfiguration->enableOwnerForRCB;
             self->syncIntegrityReportTimes = serverConfiguration->syncIntegrityReportTimes;
+            self->rcbSettingsWritable = serverConfiguration->reportSettingsWritable;
         }
         else {
             self->reportBufferSizeBRCBs = CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE;
             self->reportBufferSizeURCBs = CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE;
             self->enableOwnerForRCB = false;
             self->syncIntegrityReportTimes = false;
+            self->rcbSettingsWritable = IEC61850_REPORTSETTINGS_RPT_ID +
+                                        IEC61850_REPORTSETTINGS_BUF_TIME +
+                                        IEC61850_REPORTSETTINGS_DATSET +
+                                        IEC61850_REPORTSETTINGS_TRG_OPS +
+                                        IEC61850_REPORTSETTINGS_OPT_FIELDS +
+                                        IEC61850_REPORTSETTINGS_INTG_PD;
 #if (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1)
             self->enableBRCBResvTms = true;
 #else
@@ -659,6 +666,7 @@ IedServer_createWithConfig(IedModel* dataModel, TLSConfiguration tlsConfiguratio
 		    }
 #endif
 
+            IedServer_setTimeQuality(self, true, false, false, 10);
         }
         else {
             IedServer_destroy(self);
@@ -686,6 +694,27 @@ IedServer_setRCBEventHandler(IedServer self, IedServer_RCBEventHandler handler, 
 {
     self->mmsMapping->rcbEventHandler = handler;
     self->mmsMapping->rcbEventHandlerParameter = parameter;
+}
+
+void
+IedServer_setRCBAccessHandler(IedServer self, IedServer_RCBAccessHandler handler, void* parameter)
+{
+    self->mmsMapping->rcbAccessHandler = handler;
+    self->mmsMapping->rcbAccessHandlerParameter = parameter;
+}
+
+void
+IedServer_setLCBAccessHandler(IedServer self, IedServer_LCBAccessHandler handler, void* parameter)
+{
+    self->mmsMapping->lcbAccessHandler = handler;
+    self->mmsMapping->lcbAccessHandlerParameter = parameter;
+}
+
+void
+IedServer_setLogAccessHandler(IedServer self, IedServer_LogAccessHandler handler, void* parameter)
+{
+    self->mmsMapping->logAccessHandler = handler;
+    self->mmsMapping->logAccessHandlerParameter = parameter;
 }
 
 void
@@ -910,11 +939,15 @@ IedServer_lockDataModel(IedServer self)
 {
     MmsServer_lockModel(self->mmsServer);
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_wait(self->mmsMapping->isModelLockedMutex);
+#endif
 
     self->mmsMapping->isModelLocked = true;
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_post(self->mmsMapping->isModelLockedMutex);
+#endif
 }
 
 void
@@ -928,13 +961,17 @@ IedServer_unlockDataModel(IedServer self)
     /* check if reports have to be sent! */
     Reporting_processReportEventsAfterUnlock(self->mmsMapping);
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_wait(self->mmsMapping->isModelLockedMutex);
+#endif
 
     MmsServer_unlockModel(self->mmsServer);
 
     self->mmsMapping->isModelLocked = false;
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_post(self->mmsMapping->isModelLockedMutex);
+#endif
 }
 
 #if (CONFIG_IEC61850_CONTROL_SERVICE == 1)
@@ -1479,7 +1516,7 @@ IedServer_updateUTCTimeAttributeValue(IedServer self, DataAttribute* dataAttribu
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
         Semaphore_wait(self->dataModelLock);
 #endif
-        MmsValue_setUtcTimeMs(dataAttribute->mmsValue, value);
+        MmsValue_setUtcTimeMsEx(dataAttribute->mmsValue, value, self->timeQuality);
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
         Semaphore_post(self->dataModelLock);
 #endif
@@ -1882,11 +1919,51 @@ private_IedServer_removeClientConnection(IedServer self, ClientConnection client
 #endif
 }
 
-
 void
 IedServer_setGooseInterfaceId(IedServer self, const char* interfaceId)
 {
 #if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
     self->mmsMapping->gooseInterfaceId = StringUtils_copyString(interfaceId);
 #endif
+}
+
+void
+IedServer_setTimeQuality(IedServer self, bool leapSecondKnown, bool clockFailure, bool clockNotSynchronized, int subsecondPrecision)
+{
+    uint8_t timeQuality = 0;
+
+    if (clockNotSynchronized)
+        timeQuality += 0x20;
+
+    if (clockFailure)
+        timeQuality += 0x40;
+
+    if (leapSecondKnown)
+        timeQuality += 0x80;
+
+    timeQuality += (subsecondPrecision & 0x1f);
+
+    self->timeQuality = timeQuality;
+}
+
+void
+IedServer_ignoreClientRequests(IedServer self, bool enable)
+{
+    if (self->mmsServer) {
+        MmsServer_ignoreClientRequests(self->mmsServer, enable);
+    }
+}
+
+void
+IedServer_setDataSetAccessHandler(IedServer self, IedServer_DataSetAccessHandler handler, void* parameter)
+{
+    self->mmsMapping->dataSetAccessHandler = handler;
+    self->mmsMapping->dataSetAccessHandlerParameter = parameter;
+}
+
+void
+IedServer_setDirectoryAccessHandler(IedServer self, IedServer_DirectoryAccessHandler handler, void* parameter)
+{
+    self->mmsMapping->directoryAccessHandler = handler;
+    self->mmsMapping->directoryAccessHandlerParameter = parameter;
 }

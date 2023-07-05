@@ -1,7 +1,7 @@
 /*
  *  ber_encoder.c
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013-2022 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -357,6 +357,28 @@ BerEncoder_UInt32determineEncodedSize(uint32_t value)
 }
 
 int
+BerEncoder_Int32determineEncodedSize(int32_t value)
+{
+    uint8_t* valueArray = (uint8_t*) &value;
+    uint8_t valueBuffer[5];
+
+    valueBuffer[0] = 0;
+
+    int i;
+    for (i = 0; i < 4; i++) {
+       valueBuffer[i + 1] = valueArray[i];
+    }
+
+#if (ORDER_LITTLE_ENDIAN == 1)
+    BerEncoder_revertByteOrder(valueBuffer + 1, 4);
+#endif
+
+    int size = BerEncoder_compressInteger(valueBuffer, 5);
+
+    return size;
+}
+
+int
 BerEncoder_determineLengthSize(uint32_t length)
 {
     if (length < 128)
@@ -457,7 +479,6 @@ BerEncoder_encodeOIDToBuffer(const char* oidString, uint8_t* buffer, int maxBufL
                 requiredBytes--;
             }
         }
-
     }
 
     return encodedBytes;

@@ -1,9 +1,8 @@
 /*
- *  server_example_basic_io.c
+ *  server_example_access_control.c
  *
- *  - How to use simple control models
- *  - How to serve analog measurement data
- *  - Using the IedServerConfig object to configure stack features
+ *  - How to use access control mechanisms
+ *  - How to implement RBAC features based on access control mechanisms
  */
 
 #include "iec61850_server.h"
@@ -76,6 +75,36 @@ connectionHandler (IedServer self, ClientConnection connection, bool connected, 
         printf("Connection closed\n");
 }
 
+/*
+ * This handler is called before the rcbEventHandler and can be use to allow or permit read or write access to the RCB
+ */
+static bool
+rcbAccessHandler(void* parameter, ReportControlBlock* rcb, ClientConnection connection, IedServer_RCBEventType operation)
+{
+    printf("RCB: %s access: %s\n", ReportControlBlock_getName(rcb), operation == RCB_EVENT_GET_PARAMETER ? "READ" : "WRITE");
+
+    if (operation == RCB_EVENT_GET_PARAMETER) {
+        return true;
+    }
+    else {
+        /* change to false to disallow write access to control block */
+        return true;
+    }
+}
+
+static bool
+lcbAccessHandler(void* parameter, LogControlBlock* lcb, ClientConnection connection, IedServer_LCBEventType operation)
+{
+    printf("LCB: %s access: %s\n", LogControlBlock_getName(lcb), operation == LCB_EVENT_GET_PARAMETER ? "READ" : "WRITE");
+
+    if (operation == LCB_EVENT_GET_PARAMETER) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
 static void
 rcbEventHandler(void* parameter, ReportControlBlock* rcb, ClientConnection connection, IedServer_RCBEventType event, const char* parameterName, MmsDataAccessError serviceError)
 {
@@ -95,6 +124,48 @@ rcbEventHandler(void* parameter, ReportControlBlock* rcb, ClientConnection conne
         free(rptId);
         free(dataSet);
     }
+}
+
+static bool
+dataSetAccessHandler(void* parameter, ClientConnection connection, IedServer_DataSetOperation operation, const char* datasetRef)
+{
+    printf("Data set access: %s operation: %i\n", datasetRef, operation);
+
+    return true;
+}
+
+static MmsDataAccessError
+readAccessHandler(LogicalDevice* ld, LogicalNode* ln, DataObject* dataObject, FunctionalConstraint fc, ClientConnection connection, void* parameter)
+{
+    printf("Read access to %s/%s.%s\n", ld->name, ln->name, dataObject->name);
+
+    if (!strcmp(ln->name, "GGIO1") && !strcmp(dataObject->name, "AnIn1")) {
+        return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+    }
+
+    return DATA_ACCESS_ERROR_SUCCESS;
+}
+
+static bool
+directoryAccessHandler(void* parameter, ClientConnection connection, IedServer_DirectoryCategory category, LogicalDevice* logicalDevice)
+{
+    switch(category) {
+        case DIRECTORY_CAT_LD_LIST:
+            printf("Get list of logical devices from %s\n", ClientConnection_getPeerAddress(connection));
+            break;
+        case DIRECTORY_CAT_DATASET_LIST:
+            printf("Get list of datasets for LD %s from %s\n", ModelNode_getName((ModelNode*)logicalDevice), ClientConnection_getPeerAddress(connection));
+            break;
+        case DIRECTORY_CAT_DATA_LIST:
+            printf("Get list of data for LD %s from %s\n", ModelNode_getName((ModelNode*)logicalDevice), ClientConnection_getPeerAddress(connection));
+            break;
+        case DIRECTORY_CAT_LOG_LIST:
+            printf("Get list of logs for LD %s from %s -> reject\n", ModelNode_getName((ModelNode*)logicalDevice), ClientConnection_getPeerAddress(connection));
+            return false;
+            break;
+    }
+
+    return true;
 }
 
 int
@@ -139,7 +210,7 @@ main(int argc, char** argv)
     IedServerConfig_destroy(config);
 
     /* set the identity values for MMS identify service */
-    IedServer_setServerIdentity(iedServer, "MZ", "basic io", "1.4.2");
+    IedServer_setServerIdentity(iedServer, "libiec61850.com", "access control example", "1.0.0");
 
     /* Install handler for operate command */
     IedServer_setControlHandler(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO1,
@@ -160,6 +231,13 @@ main(int argc, char** argv)
 
     IedServer_setConnectionIndicationHandler(iedServer, (IedConnectionIndicationHandler) connectionHandler, NULL);
 
+    /* Install handler to perform access control on RCB */
+    IedServer_setRCBAccessHandler(iedServer, rcbAccessHandler, NULL);
+
+    /* Install handler to perform access control on LCB */
+    IedServer_setLCBAccessHandler(iedServer, lcbAccessHandler, NULL);
+
+    /* Install handler to log RCB events */
     IedServer_setRCBEventHandler(iedServer, rcbEventHandler, NULL);
 
     /* By default access to variables with FC=DC and FC=CF is not allowed.
@@ -167,6 +245,18 @@ main(int argc, char** argv)
      * by iec61850_client_example1.
      */
     IedServer_setWriteAccessPolicy(iedServer, IEC61850_FC_DC, ACCESS_POLICY_ALLOW);
+
+    /* Install handler to perform access control on datasets */
+    IedServer_setDataSetAccessHandler(iedServer, dataSetAccessHandler, NULL);
+
+    /* Install handler to perform read access control on data model elements
+     * NOTE: when read access to a data model element is blocked this will also prevent the client
+     * to read the data model element  in a data set or enable a RCB instance that uses a dataset
+     * containing the restricted data model element.
+     */
+    IedServer_setReadAccessHandler(iedServer, readAccessHandler, NULL);
+
+    IedServer_setDirectoryAccessHandler(iedServer, directoryAccessHandler, NULL);
 
     /* MMS server will be instructed to start listening for client connections. */
     IedServer_start(iedServer, tcpPort);

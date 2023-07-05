@@ -391,7 +391,7 @@ mmsServer_getNamedVariableListWithName(LinkedList namedVariableLists, const char
 
     LinkedList element = LinkedList_getNext(namedVariableLists);
 
-    while (element != NULL) {
+    while (element) {
         MmsNamedVariableList varList = (MmsNamedVariableList) element->data;
 
         if (strcmp(MmsNamedVariableList_getName(varList), variableListName) == 0) {
@@ -405,14 +405,13 @@ mmsServer_getNamedVariableListWithName(LinkedList namedVariableLists, const char
     return variableList;
 }
 
-
 void
 mmsServer_deleteVariableList(LinkedList namedVariableLists, char* variableListName)
 {
 	LinkedList previousElement = namedVariableLists;
 	LinkedList element = LinkedList_getNext(namedVariableLists);
 
-	while (element != NULL ) {
+	while (element) {
 		MmsNamedVariableList varList = (MmsNamedVariableList) element->data;
 
 		if (strcmp(MmsNamedVariableList_getName(varList), variableListName)
@@ -428,5 +427,3 @@ mmsServer_deleteVariableList(LinkedList namedVariableLists, char* variableListNa
 		element = LinkedList_getNext(element);
 	}
 }
-
-

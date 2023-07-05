@@ -676,7 +676,7 @@ addAnalogControls(DataObject* parent, uint32_t controlOptions, bool isIntegerNot
 
             CAC_AnalogueValue_create("ctlVal", (ModelNode*) cancel, IEC61850_FC_CO, 0, isIntegerNotFloat);
 
-            addCommonOperateElements(cancel, isTimeActivated, true);
+            addCommonOperateElements(cancel, isTimeActivated, false);
         }
 
     }
