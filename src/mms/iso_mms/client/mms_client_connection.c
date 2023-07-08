@@ -228,7 +228,7 @@ handleUnconfirmedMmsPdu(MmsConnection self, ByteBuffer* message)
         }
         else {
             if (DEBUG_MMS_CLIENT)
-                printf("handleUnconfirmedMmsPdu: error parsing PDU at %u\n", (uint32_t) rval.consumed);
+                printf("handleUnconfirmedMmsPdu: error parsing PDU at %"PRIu32"\n", (uint32_t) rval.consumed);
         }
 
         asn_DEF_MmsPdu.free_struct(&asn_DEF_MmsPdu, mmsPdu, 0);
@@ -1230,7 +1230,7 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
         if (mmsMsg_parseRejectPDU(payload->buffer, 0, payload->size, &invokeId, &hasInvokeId, &rejectType, &rejectReason) >= 0) {
 
             if (DEBUG_MMS_CLIENT)
-                printf("MMS_CLIENT: reject PDU invokeID: %u type: %i reason: %i\n", invokeId, rejectType, rejectReason);
+                printf("MMS_CLIENT: reject PDU invokeID: %"PRIu32" type: %i reason: %i\n", invokeId, rejectType, rejectReason);
 
             if (hasInvokeId) {
                 MmsOutstandingCall call = checkForOutstandingCall(self, invokeId);
@@ -1280,7 +1280,7 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
                     BerDecoder_decodeUint32(buf, invokeIdLength, bufPos);
 
             if (DEBUG_MMS_CLIENT)
-                printf("MMS_CLIENT: mms_client_connection: rcvd confirmed resp - invokeId: %u length: %i bufLen: %i\n",
+                printf("MMS_CLIENT: mms_client_connection: rcvd confirmed resp - invokeId: %"PRIu32" length: %i bufLen: %i\n",
                         invokeId, length, payload->size);
 
             bufPos += invokeIdLength;
@@ -1407,7 +1407,7 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
                 case 0x02: /* invoke Id */
                     invokeId = BerDecoder_decodeUint32(buf, length, bufPos);
                     if (DEBUG_MMS_CLIENT)
-                        printf("MMS_CLIENT: received request with invokeId: %u\n", invokeId);
+                        printf("MMS_CLIENT: received request with invokeId: %"PRIu32"\n", invokeId);
 
                     hasInvokeId = true;
 

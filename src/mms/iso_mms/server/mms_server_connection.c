@@ -306,7 +306,7 @@ handleConfirmedRequestPdu(
             case 0x02: /* invoke Id */
                 invokeId = BerDecoder_decodeUint32(buffer, length, bufPos);
                 if (DEBUG_MMS_SERVER)
-                    printf("MMS_SERVER: received request with invokeId: %u\n", invokeId);
+                    printf("MMS_SERVER: received request with invokeId: %"PRIu32"\n", invokeId);
                 self->lastInvokeId = invokeId;
                 break;
 
@@ -427,7 +427,7 @@ handleConfirmedErrorPdu(
     if (mmsMsg_parseConfirmedErrorPDU(buffer, bufPos, maxBufPos, &invokeId, &hasInvokeId, &serviceError)) {
 
         if (DEBUG_MMS_SERVER)
-            printf("MMS_SERVER: Handle confirmed error PDU: invokeID: %u\n", invokeId);
+            printf("MMS_SERVER: Handle confirmed error PDU: invokeID: %"PRIu32"\n", invokeId);
 
         if (hasInvokeId) {
             /* check if message is related to an existing file upload task */
@@ -488,19 +488,19 @@ mmsFileReadHandler(uint32_t invokeId, void* parameter, MmsError mmsError, int32_
 
     if (mmsError == MMS_ERROR_NONE) {
         if (DEBUG_MMS_SERVER)
-            printf("MMS_SERVER:  file %i received %u bytes\n", task->frmsId, bytesReceived);
+            printf("MMS_SERVER:  file %"PRIi32" received %"PRIu32" bytes\n", task->frmsId, bytesReceived);
 
         if(task->fileHandle){
             FileSystem_writeFile(task->fileHandle, buffer, bytesReceived);
         }
         else{
             if (DEBUG_MMS_SERVER)
-                printf("MMS_SERVER: problem reading file %i file already closed\n", task->frmsId);
+                printf("MMS_SERVER: problem reading file %"PRIi32" file already closed\n", task->frmsId);
         }
     }
     else {
         if (DEBUG_MMS_SERVER)
-            printf("MMS_SERVER:  problem reading file %i (error code: %i)\n", task->frmsId, mmsError);
+            printf("MMS_SERVER:  problem reading file %"PRIi32" (error code: %i)\n", task->frmsId, mmsError);
     }
 }
 
@@ -646,7 +646,7 @@ handleConfirmedResponsePdu(
             case 0x02: /* invoke Id */
                 invokeId = BerDecoder_decodeUint32(buffer, length, bufPos);
                 if (DEBUG_MMS_SERVER)
-                    printf("MMS_SERVER: received request with invokeId: %u\n", invokeId);
+                    printf("MMS_SERVER: received request with invokeId: %"PRIu32"\n", invokeId);
                 self->lastInvokeId = invokeId;
                 break;
 

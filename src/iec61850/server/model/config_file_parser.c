@@ -221,7 +221,7 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
                         uint32_t bufTm;
                         uint32_t intgPd;
 
-                        int matchedItems = sscanf((char*) lineBuffer, "RC(%129s %129s %i %129s %u %i %i %u %u)",
+                        int matchedItems = sscanf((char*) lineBuffer, "RC(%129s %129s %i %129s %"SCNu32" %i %i %"SCNu32" %"SCNu32")",
                                 nameString, nameString2, &isBuffered, nameString3, &confRef,
                                 &trgOps, &options, &bufTm, &intgPd);
 
@@ -246,7 +246,7 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
                         int logEna;
                         int withReasonCode;
 
-                        int matchedItems = sscanf((char*) lineBuffer, "LC(%129s %129s %129s %u %u %i %i)",
+                        int matchedItems = sscanf((char*) lineBuffer, "LC(%129s %129s %129s %"SCNu32" %"SCNu32" %i %i)",
                                 nameString, nameString2, nameString3, &trgOps, &intgPd, &logEna, &withReasonCode);
 
                         if (matchedItems < 7) goto exit_error;
@@ -277,7 +277,7 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
                         int minTime = -1;
                         int maxTime = -1;
 
-                        int matchedItems = sscanf((char*) lineBuffer, "GC(%129s %129s %129s %u %i %i %i)",
+                        int matchedItems = sscanf((char*) lineBuffer, "GC(%129s %129s %129s %"SCNu32" %i %i %i)",
                                 nameString, nameString2, nameString3, &confRef, &fixedOffs, &minTime, &maxTime);
 
                         if (matchedItems < 5) goto exit_error;
@@ -295,7 +295,7 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
                         int optFlds;
                         int isUnicast;
 
-                        int matchedItems = sscanf((char*) lineBuffer, "SMVC(%129s %129s %129s %u %i %i %i %i)",
+                        int matchedItems = sscanf((char*) lineBuffer, "SMVC(%129s %129s %129s %"SCNu32" %i %i %i %i)",
                                 nameString, nameString2, nameString3, &confRev, &smpMod, &smpRate, &optFlds, &isUnicast);
 
                         if (matchedItems < 5) goto exit_error;
@@ -356,7 +356,7 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
                         int triggerOptions = 0;
                         uint32_t sAddr = 0;
 
-                        sscanf((char*) lineBuffer, "DA(%129s %i %i %i %i %u)", nameString, &arrayElements,  &attributeType, &functionalConstraint, &triggerOptions, &sAddr);
+                        sscanf((char*) lineBuffer, "DA(%129s %i %i %i %i %"SCNu32")", nameString, &arrayElements,  &attributeType, &functionalConstraint, &triggerOptions, &sAddr);
 
                         DataAttribute* dataAttribute = DataAttribute_create(nameString, currentModelNode,
                                 (DataAttributeType) attributeType, (FunctionalConstraint) functionalConstraint, triggerOptions, arrayElements, sAddr);
@@ -394,7 +394,7 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
                             case IEC61850_ENUMERATED:
                                 {
                                     int32_t intValue;
-                                    if (sscanf(valueIndicator + 1, "%i", &intValue) != 1) goto exit_error;
+                                    if (sscanf(valueIndicator + 1, "%"SCNi32, &intValue) != 1) goto exit_error;
                                     dataAttribute->mmsValue = MmsValue_newIntegerFromInt32(intValue);
                                 }
                                 break;
@@ -405,7 +405,7 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
                             case IEC61850_INT32U:
                                 {
                                     uint32_t uintValue;
-                                    if (sscanf(valueIndicator + 1, "%u", &uintValue) != 1) goto exit_error;
+                                    if (sscanf(valueIndicator + 1, "%"SCNu32, &uintValue) != 1) goto exit_error;
                                     dataAttribute->mmsValue = MmsValue_newUnsignedFromUint32(uintValue);
                                 }
                                 break;
@@ -504,7 +504,7 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
                         uint32_t vlanId;
                         uint32_t appId;
 
-                        int matchedItems = sscanf((char*) lineBuffer, "PA(%u %u %u %129s)", &vlanPrio, &vlanId, &appId, nameString);
+                        int matchedItems = sscanf((char*) lineBuffer, "PA(%"SCNu32" %"SCNu32" %"SCNu32" %129s)", &vlanPrio, &vlanId, &appId, nameString);
 
                         if ((matchedItems != 4) || ((currentGoCB == NULL) && (currentSMVCB == NULL))) goto exit_error;
 

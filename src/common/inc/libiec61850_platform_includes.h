@@ -5,11 +5,14 @@
 #ifndef LIBIEC61850_PLATFORM_INCLUDES_H_
 #define LIBIEC61850_PLATFORM_INCLUDES_H_
 
+#define __STDC_FORMAT_MACROS 1
+
 #include "stack_config.h"
 
 #include "libiec61850_common_api.h"
 
 #include "string_utilities.h"
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>

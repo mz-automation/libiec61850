@@ -569,7 +569,7 @@ encodeReadResponse(MmsServerConnection connection,
     response->size = bufPos;
 
     if (DEBUG_MMS_SERVER)
-        printf("MMS read: sent message for request with id %u (size = %i)\n", invokeId, bufPos);
+        printf("MMS read: sent message for request with id %"PRIu32" (size = %i)\n", invokeId, bufPos);
 
 exit_function:
     return;

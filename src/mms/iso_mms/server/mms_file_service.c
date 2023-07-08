@@ -891,7 +891,7 @@ mmsServer_handleFileReadRequest(
     int32_t frsmId = BerDecoder_decodeInt32(buffer, maxBufPos - bufPos, bufPos);
 
     if (DEBUG_MMS_SERVER)
-        printf("MMS_SERVER: mmsServer_handleFileReadRequest read request for frsmId: %i\n", frsmId);
+        printf("MMS_SERVER: mmsServer_handleFileReadRequest read request for frsmId: %"PRIi32"\n", frsmId);
 
     MmsFileReadStateMachine* frsm = getFrsm(connection, frsmId);
 
@@ -927,7 +927,7 @@ mmsServer_handleFileCloseRequest(
     }
     else {
         if (DEBUG_MMS_SERVER)
-            printf("MMS_SERVER: Unused file ID %i\n", frsmId);
+            printf("MMS_SERVER: Unused file ID %"PRIi32"\n", frsmId);
 
         mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_OTHER);
     }
