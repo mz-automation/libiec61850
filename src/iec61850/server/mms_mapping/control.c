@@ -2550,4 +2550,3 @@ ControlAction_getControlTime(ControlAction self)
 }
 
 #endif /* (CONFIG_IEC61850_CONTROL_SERVICE == 1) */
-

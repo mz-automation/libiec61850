@@ -652,11 +652,11 @@ IedConnection_tick(IedConnection self)
 }
 
 void
-IedConnection_setLocalAddress(IedConnection self, const char* localIpAddress, int localPort) 
+IedConnection_setLocalAddress(IedConnection self, const char* localIpAddress, int localPort)
 {
     MmsConnection connection = self->connection;
     IsoConnectionParameters isoP = MmsConnection_getIsoConnectionParameters(connection);
-      
+
     IsoConnectionParameters_setLocalTcpParameters(isoP, localIpAddress, localPort);
 }
 
@@ -4252,4 +4252,3 @@ FileDirectoryEntry_getLastModified(FileDirectoryEntry self)
 {
     return self->lastModified;
 }
-

@@ -891,6 +891,3 @@ MmsServerConnection_getFilesystemBasepath(MmsServerConnection self)
     return CONFIG_VIRTUAL_FILESTORE_BASEPATH;
 #endif
 }
-
-
-

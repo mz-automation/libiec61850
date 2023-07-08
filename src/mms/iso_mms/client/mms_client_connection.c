@@ -1867,7 +1867,7 @@ MmsConnection_abort(MmsConnection self, MmsError* mmsError)
         }
 
     }
-    
+
     if (success == false) {
         IsoClientConnection_close(self->isoClient);
         *mmsError = MMS_ERROR_SERVICE_TIMEOUT;

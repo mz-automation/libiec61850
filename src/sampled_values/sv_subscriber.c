@@ -254,7 +254,7 @@ SVReceiver_startThreadless(SVReceiver self)
 
         self->running = true;
     }
-    
+
     return self->ethSocket;
 }
 
@@ -343,7 +343,7 @@ parseASDU(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, int length)
         asdu.svId[svIdLength] = 0;
     if (asdu.datSet != NULL)
         asdu.datSet[datSetLength] = 0;
-    
+
     if (DEBUG_SV_SUBSCRIBER) {
         printf("SV_SUBSCRIBER:   SV ASDU: ----------------\n");
         printf("SV_SUBSCRIBER:     DataLength: %d\n", asdu.dataBufferLength);
@@ -1006,4 +1006,3 @@ SVClientASDU_getDataSize(SVSubscriber_ASDU self)
 {
     return SVSubscriber_ASDU_getDataSize(self);
 }
-

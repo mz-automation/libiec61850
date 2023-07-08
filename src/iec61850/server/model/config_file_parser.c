@@ -563,5 +563,3 @@ exit_error:
     IedModel_destroy(model);
     return NULL;
 }
-
-

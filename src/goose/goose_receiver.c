@@ -856,7 +856,7 @@ parseGoosePayload(GooseReceiver self, uint8_t* buffer, int apduLength)
 
                 MmsValue_setUtcTime(matchingSubscriber->timestamp, 0);
             }
-            
+
             if (matchingSubscriber->isObserver && matchingSubscriber->dataSetValues != NULL) {
                 MmsValue_delete(matchingSubscriber->dataSetValues);
                 matchingSubscriber->dataSetValues = NULL;
@@ -934,7 +934,7 @@ parseGooseMessage(GooseReceiver self, uint8_t* buffer, int numbytes)
         return;
     if (buffer[bufPos++] != 0xb8)
         return;
-    
+
     uint8_t srcMac[6];
     memcpy(srcMac,&buffer[6],6);
 
@@ -976,7 +976,7 @@ parseGooseMessage(GooseReceiver self, uint8_t* buffer, int numbytes)
 
     while (element != NULL) {
         GooseSubscriber subscriber = (GooseSubscriber) LinkedList_getData(element);
-        
+
         if (subscriber->isObserver)
         {
             subscriber->appId = appId;

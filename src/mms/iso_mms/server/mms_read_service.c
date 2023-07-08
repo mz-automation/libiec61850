@@ -922,8 +922,8 @@ mmsServer_handleReadRequest(
         goto exit_function;
     }
 
-    if ((mmsPdu->present == MmsPdu_PR_confirmedRequestPdu) && 
-        (mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.present 
+    if ((mmsPdu->present == MmsPdu_PR_confirmedRequestPdu) &&
+        (mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.present
             == ConfirmedServiceRequest_PR_read))
     {
         request = &(mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.choice.read);
@@ -950,10 +950,10 @@ mmsServer_handleReadRequest(
     }
 #endif
     else {
-        mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_ACCESS_UNSUPPORTED);   
+        mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_ACCESS_UNSUPPORTED);
     }
 
-exit_function:	
+exit_function:
     asn_DEF_MmsPdu.free_struct(&asn_DEF_MmsPdu, mmsPdu, 0);
 }
 
@@ -976,4 +976,3 @@ MmsServerConnection_sendReadResponse(MmsServerConnection self, uint32_t invokeId
     if (handlerMode == false)
         IsoConnection_unlock(self->isoConnection);
 }
-

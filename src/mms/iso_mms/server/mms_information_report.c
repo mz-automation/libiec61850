@@ -331,6 +331,3 @@ MmsServerConnection_sendInformationReportVMDSpecific(MmsServerConnection self, c
 exit_function:
     return;
 }
-
-
-
