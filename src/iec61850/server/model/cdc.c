@@ -3,7 +3,7 @@
  *
  *  Helper functions for the dynamic creation of Common Data Classes (CDCs)
  *
- *  Copyright 2014 Michael Zillgith
+ *  Copyright 2014-2023 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -35,7 +35,7 @@ DataAttribute*
 CAC_AnalogueValue_create(const char* name, ModelNode* parent, FunctionalConstraint fc, uint8_t triggerOptions,
         bool isIntegerNotFloat)
 {
-    DataAttribute* analogeValue = DataAttribute_create(name, parent, IEC61850_CONSTRUCTED, fc, triggerOptions, 0, 0);
+    DataAttribute* analogeValue = (name == NULL) ? (DataAttribute*)parent : DataAttribute_create(name, parent, IEC61850_CONSTRUCTED, fc, triggerOptions, 0, 0);
 
     if (isIntegerNotFloat)
         DataAttribute_create("i", (ModelNode*) analogeValue, IEC61850_INT32, fc, triggerOptions, 0, 0);
@@ -48,7 +48,7 @@ CAC_AnalogueValue_create(const char* name, ModelNode* parent, FunctionalConstrai
 DataAttribute*
 CAC_ValWithTrans_create(const char* name, ModelNode* parent, FunctionalConstraint fc, uint8_t triggerOptions, bool hasTransientIndicator)
 {
-    DataAttribute* valWithTrans = DataAttribute_create(name, parent, IEC61850_CONSTRUCTED, fc, triggerOptions, 0, 0);
+    DataAttribute* valWithTrans = (name == NULL) ? (DataAttribute*)parent : DataAttribute_create(name, parent, IEC61850_CONSTRUCTED, fc, triggerOptions, 0, 0);
 
     DataAttribute_create("posVal", (ModelNode*) valWithTrans, IEC61850_INT8, fc, triggerOptions, 0, 0);
 
@@ -64,7 +64,7 @@ CAC_ValWithTrans_create(const char* name, ModelNode* parent, FunctionalConstrain
 DataAttribute*
 CAC_Vector_create(const char* name, ModelNode* parent, uint32_t options, FunctionalConstraint fc, uint8_t triggerOptions)
 {
-    DataAttribute* vector = DataAttribute_create(name, parent, IEC61850_CONSTRUCTED, fc, triggerOptions, 0, 0);
+    DataAttribute* vector = (name == NULL) ? (DataAttribute*)parent : DataAttribute_create(name, parent, IEC61850_CONSTRUCTED, fc, triggerOptions, 0, 0);
 
     CAC_AnalogueValue_create("mag", (ModelNode*) vector, fc, triggerOptions, false);
 
@@ -77,7 +77,7 @@ CAC_Vector_create(const char* name, ModelNode* parent, uint32_t options, Functio
 DataAttribute*
 CAC_Point_create(const char* name, ModelNode* parent, FunctionalConstraint fc, uint8_t triggerOptions, bool hasZVal)
 {
-    DataAttribute* point = DataAttribute_create(name, parent, IEC61850_CONSTRUCTED, fc, triggerOptions, 0, 0);
+    DataAttribute* point = (name == NULL) ? (DataAttribute*)parent : DataAttribute_create(name, parent, IEC61850_CONSTRUCTED, fc, triggerOptions, 0, 0);
 
     DataAttribute_create("xVal", (ModelNode*) point, IEC61850_FLOAT32, fc, triggerOptions, 0, 0);
     DataAttribute_create("yVal", (ModelNode*) point, IEC61850_FLOAT32, fc, triggerOptions, 0, 0);
@@ -91,7 +91,7 @@ CAC_Point_create(const char* name, ModelNode* parent, FunctionalConstraint fc, u
 DataAttribute*
 CAC_ScaledValueConfig_create(const char* name, ModelNode* parent)
 {
-    DataAttribute* scaling = DataAttribute_create(name, parent, IEC61850_CONSTRUCTED, IEC61850_FC_CF, TRG_OPT_DATA_CHANGED, 0, 0);
+    DataAttribute* scaling = (name == NULL) ? (DataAttribute*)parent : DataAttribute_create(name, parent, IEC61850_CONSTRUCTED, IEC61850_FC_CF, TRG_OPT_DATA_CHANGED, 0, 0);
 
     DataAttribute_create("scaleFactor", (ModelNode*) scaling, IEC61850_FLOAT32, IEC61850_FC_CF, TRG_OPT_DATA_CHANGED, 0, 0);
     DataAttribute_create("offset", (ModelNode*) scaling, IEC61850_FLOAT32, IEC61850_FC_CF, TRG_OPT_DATA_CHANGED, 0, 0);
@@ -102,7 +102,7 @@ CAC_ScaledValueConfig_create(const char* name, ModelNode* parent)
 DataAttribute*
 CAC_Unit_create(const char* name, ModelNode* parent, bool hasMagnitude)
 {
-    DataAttribute* unit = DataAttribute_create(name, parent, IEC61850_CONSTRUCTED, IEC61850_FC_CF, TRG_OPT_DATA_CHANGED, 0, 0);
+    DataAttribute* unit = (name == NULL) ? (DataAttribute*)parent : DataAttribute_create(name, parent, IEC61850_CONSTRUCTED, IEC61850_FC_CF, TRG_OPT_DATA_CHANGED, 0, 0);
 
     DataAttribute_create("SIUnit", (ModelNode*) unit, IEC61850_ENUMERATED, IEC61850_FC_CF, TRG_OPT_DATA_CHANGED, 0, 0);
 
@@ -255,7 +255,7 @@ CDC_addStandardOptions(DataObject* dataObject, uint32_t options)
 DataObject*
 CDC_SPS_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
 {
-    DataObject* newSPS = DataObject_create(dataObjectName, parent, 0);
+    DataObject* newSPS = (dataObjectName == NULL) ? (DataObject*)parent : DataObject_create(dataObjectName, parent, 0);
 
     CDC_addStatusToDataObject(newSPS, IEC61850_BOOLEAN);
 
@@ -273,7 +273,7 @@ CDC_SPS_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
 DataObject*
 CDC_DPS_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
 {
-    DataObject* newDPS = DataObject_create(dataObjectName, parent, 0);
+    DataObject* newDPS = (dataObjectName == NULL) ? (DataObject*)parent : DataObject_create(dataObjectName, parent, 0);
 
     CDC_addStatusToDataObject(newDPS, IEC61850_CODEDENUM);
 
@@ -291,7 +291,7 @@ CDC_DPS_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
 DataObject*
 CDC_INS_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
 {
-    DataObject* newINS = DataObject_create(dataObjectName, parent, 0);
+    DataObject* newINS = (dataObjectName == NULL) ? (DataObject*)parent : DataObject_create(dataObjectName, parent, 0);
 
     CDC_addStatusToDataObject(newINS, IEC61850_INT32);
 
@@ -310,7 +310,7 @@ CDC_INS_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
 DataObject*
 CDC_ENS_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
 {
-    DataObject* newENS = DataObject_create(dataObjectName, parent, 0);
+    DataObject* newENS = (dataObjectName == NULL) ? (DataObject*)parent : DataObject_create(dataObjectName, parent, 0);
 
     CDC_addStatusToDataObject(newENS, IEC61850_ENUMERATED);
 
@@ -328,7 +328,7 @@ CDC_ENS_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
 DataObject*
 CDC_BCR_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
 {
-    DataObject* newBCR = DataObject_create(dataObjectName, parent, 0);
+    DataObject* newBCR = (dataObjectName == NULL) ? (DataObject*)parent : DataObject_create(dataObjectName, parent, 0);
 
     DataAttribute_create("actVal", (ModelNode*) newBCR, IEC61850_INT64, IEC61850_FC_ST, TRG_OPT_DATA_CHANGED, 0, 0);
 
@@ -359,7 +359,7 @@ CDC_BCR_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
 DataObject*
 CDC_SEC_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
 {
-    DataObject* newSEC = DataObject_create(dataObjectName, parent, 0);
+    DataObject* newSEC = (dataObjectName == NULL) ? (DataObject*)parent : DataObject_create(dataObjectName, parent, 0);
 
     DataAttribute_create("cnt", (ModelNode*) newSEC, IEC61850_INT32U, IEC61850_FC_ST, TRG_OPT_DATA_CHANGED, 0, 0);
     DataAttribute_create("sev", (ModelNode*) newSEC, IEC61850_ENUMERATED, IEC61850_FC_ST, 0, 0, 0);
@@ -380,7 +380,7 @@ CDC_SEC_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
 DataObject*
 CDC_VSS_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
 {
-    DataObject* newSPS = DataObject_create(dataObjectName, parent, 0);
+    DataObject* newSPS = (dataObjectName == NULL) ? (DataObject*)parent : DataObject_create(dataObjectName, parent, 0);
 
     CDC_addStatusToDataObject(newSPS, IEC61850_VISIBLE_STRING_255);
 
@@ -403,7 +403,7 @@ CDC_VSS_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
 DataObject*
 CDC_MV_create(const char* dataObjectName, ModelNode* parent, uint32_t options, bool isIntegerNotFloat)
 {
-    DataObject* newMV = DataObject_create(dataObjectName, parent, 0);
+    DataObject* newMV = (dataObjectName == NULL) ? (DataObject*)parent : DataObject_create(dataObjectName, parent, 0);
 
     if (options & CDC_OPTION_INST_MAG)
         CAC_AnalogueValue_create("instMag", (ModelNode*) newMV, IEC61850_FC_MX, 0, isIntegerNotFloat);
@@ -432,7 +432,7 @@ CDC_MV_create(const char* dataObjectName, ModelNode* parent, uint32_t options, b
 DataObject*
 CDC_CMV_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
 {
-    DataObject* newMV = DataObject_create(dataObjectName, parent, 0);
+    DataObject* newMV = (dataObjectName == NULL) ? (DataObject*)parent : DataObject_create(dataObjectName, parent, 0);
 
     if (options & CDC_OPTION_INST_MAG)
         CAC_Vector_create("instCVal", (ModelNode*) newMV, options, IEC61850_FC_MX, 0);
@@ -465,7 +465,7 @@ CDC_CMV_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
 DataObject*
 CDC_SAV_create(const char* dataObjectName, ModelNode* parent, uint32_t options, bool isIntegerNotFloat)
 {
-    DataObject* newSAV = DataObject_create(dataObjectName, parent, 0);
+    DataObject* newSAV = (dataObjectName == NULL) ? (DataObject*)parent : DataObject_create(dataObjectName, parent, 0);
 
     CAC_AnalogueValue_create("instMag", (ModelNode*) newSAV, IEC61850_FC_MX, 0, isIntegerNotFloat);
 
@@ -491,7 +491,7 @@ CDC_SAV_create(const char* dataObjectName, ModelNode* parent, uint32_t options, 
 DataObject*
 CDC_HST_create(const char* dataObjectName, ModelNode* parent, uint32_t options, uint16_t maxPts)
 {
-    DataObject* newHST = DataObject_create(dataObjectName, parent, 0);
+    DataObject* newHST = (dataObjectName == NULL) ? (DataObject*)parent : DataObject_create(dataObjectName, parent, 0);
 
     DataAttribute_create("hstVal", (ModelNode*) newHST, IEC61850_INT32, IEC61850_FC_ST, TRG_OPT_DATA_CHANGED | TRG_OPT_DATA_UPDATE, maxPts, 0);
 
@@ -577,7 +577,7 @@ addCommonControlAttributes(DataObject* dobj, uint32_t controlOptions)
 DataObject*
 CDC_SPC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, uint32_t controlOptions)
 {
-    DataObject* newSPC = DataObject_create(dataObjectName, parent, 0);
+    DataObject* newSPC = (dataObjectName == NULL) ? (DataObject*)parent : DataObject_create(dataObjectName, parent, 0);
 
     addOriginatorAndCtlNumOptions((ModelNode*) newSPC, controlOptions);
 
@@ -613,7 +613,7 @@ CDC_SPC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, 
 DataObject*
 CDC_DPC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, uint32_t controlOptions)
 {
-    DataObject* newDPC = DataObject_create(dataObjectName, parent, 0);
+    DataObject* newDPC = (dataObjectName == NULL) ? (DataObject*)parent : DataObject_create(dataObjectName, parent, 0);
 
     addOriginatorAndCtlNumOptions((ModelNode*) newDPC, controlOptions);
 
@@ -695,7 +695,7 @@ addControlStatusAttributesForAnalogControl(DataObject* dobj, uint32_t controlOpt
 DataObject*
 CDC_APC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, uint32_t controlOptions, bool isIntegerNotFloat)
 {
-    DataObject* newAPC = DataObject_create(dataObjectName, parent, 0);
+    DataObject* newAPC = (dataObjectName == NULL) ? (DataObject*)parent : DataObject_create(dataObjectName, parent, 0);
 
     addControlStatusAttributesForAnalogControl(newAPC, controlOptions);
 
@@ -728,7 +728,7 @@ CDC_APC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, 
 DataObject*
 CDC_INC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, uint32_t controlOptions)
 {
-    DataObject* newINC = DataObject_create(dataObjectName, parent, 0);
+    DataObject* newINC = (dataObjectName == NULL) ? (DataObject*)parent : DataObject_create(dataObjectName, parent, 0);
 
     addOriginatorAndCtlNumOptions((ModelNode*) newINC, controlOptions);
 
@@ -764,7 +764,7 @@ CDC_INC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, 
 DataObject*
 CDC_ENC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, uint32_t controlOptions)
 {
-    DataObject* newENC = DataObject_create(dataObjectName, parent, 0);
+    DataObject* newENC = (dataObjectName == NULL) ? (DataObject*)parent : DataObject_create(dataObjectName, parent, 0);
 
     addOriginatorAndCtlNumOptions((ModelNode*) newENC, controlOptions);
 
@@ -791,7 +791,7 @@ CDC_ENC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, 
 DataObject*
 CDC_BSC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, uint32_t controlOptions, bool hasTransientIndicator)
 {
-    DataObject* newBSC = DataObject_create(dataObjectName, parent, 0);
+    DataObject* newBSC = (dataObjectName == NULL) ? (DataObject*)parent : DataObject_create(dataObjectName, parent, 0);
 
     addOriginatorAndCtlNumOptions((ModelNode*) newBSC, controlOptions);
 
@@ -821,7 +821,7 @@ CDC_BSC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, 
 DataObject*
 CDC_ISC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, uint32_t controlOptions, bool hasTransientIndicator)
 {
-    DataObject* newISC = DataObject_create(dataObjectName, parent, 0);
+    DataObject* newISC = (dataObjectName == NULL) ? (DataObject*)parent : DataObject_create(dataObjectName, parent, 0);
 
     addOriginatorAndCtlNumOptions((ModelNode*) newISC, controlOptions);
 
@@ -855,7 +855,7 @@ CDC_ISC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, 
 DataObject*
 CDC_BAC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, uint32_t controlOptions, bool isIntegerNotFloat)
 {
-    DataObject* newBAC = DataObject_create(dataObjectName, parent, 0);
+    DataObject* newBAC = (dataObjectName == NULL) ? (DataObject*)parent : DataObject_create(dataObjectName, parent, 0);
 
     addControlStatusAttributesForAnalogControl(newBAC, controlOptions);
 
@@ -899,7 +899,7 @@ CDC_BAC_create(const char* dataObjectName, ModelNode* parent, uint32_t options, 
 DataObject*
 CDC_LPL_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
 {
-    DataObject* newLPL = DataObject_create(dataObjectName, parent, 0);
+    DataObject* newLPL = (dataObjectName == NULL) ? (DataObject*)parent : DataObject_create(dataObjectName, parent, 0);
 
     DataAttribute_create("vendor", (ModelNode*) newLPL, IEC61850_VISIBLE_STRING_255, IEC61850_FC_DC, 0, 0, 0);
     DataAttribute_create("swRev", (ModelNode*) newLPL, IEC61850_VISIBLE_STRING_255, IEC61850_FC_DC, 0, 0, 0);
@@ -921,7 +921,7 @@ CDC_LPL_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
 DataObject*
 CDC_DPL_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
 {
-    DataObject* newDPL = DataObject_create(dataObjectName, parent, 0);
+    DataObject* newDPL = (dataObjectName == NULL) ? (DataObject*)parent : DataObject_create(dataObjectName, parent, 0);
 
     DataAttribute_create("vendor", (ModelNode*) newDPL, IEC61850_VISIBLE_STRING_255, IEC61850_FC_DC, 0, 0, 0);
 
@@ -949,7 +949,7 @@ CDC_DPL_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
 DataObject*
 CDC_ACD_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
 {
-    DataObject* newACD = DataObject_create(dataObjectName, parent, 0);
+    DataObject* newACD = (dataObjectName == NULL) ? (DataObject*)parent : DataObject_create(dataObjectName, parent, 0);
 
     DataAttribute_create("general", (ModelNode*) newACD, IEC61850_BOOLEAN, IEC61850_FC_ST, TRG_OPT_DATA_CHANGED, 0, 0);
     DataAttribute_create("dirGeneral", (ModelNode*) newACD, IEC61850_ENUMERATED, IEC61850_FC_ST, TRG_OPT_DATA_CHANGED, 0, 0);
@@ -984,7 +984,7 @@ CDC_ACD_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
 DataObject*
 CDC_ACT_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
 {
-    DataObject* newACT = DataObject_create(dataObjectName, parent, 0);
+    DataObject* newACT = (dataObjectName == NULL) ? (DataObject*)parent : DataObject_create(dataObjectName, parent, 0);
 
     DataAttribute_create("general", (ModelNode*) newACT, IEC61850_BOOLEAN, IEC61850_FC_ST, TRG_OPT_DATA_CHANGED, 0, 0);
 
@@ -1010,7 +1010,7 @@ CDC_ACT_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
 DataObject*
 CDC_WYE_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
 {
-    DataObject* newWYE = DataObject_create(dataObjectName, parent, 0);
+    DataObject* newWYE = (dataObjectName == NULL) ? (DataObject*)parent : DataObject_create(dataObjectName, parent, 0);
 
     /* TODO check if some options should be masked */
     /* TODO take care for GC_1 */
@@ -1033,7 +1033,7 @@ CDC_WYE_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
 DataObject*
 CDC_DEL_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
 {
-    DataObject* newDEL = DataObject_create(dataObjectName, parent, 0);
+    DataObject* newDEL = (dataObjectName == NULL) ? (DataObject*)parent : DataObject_create(dataObjectName, parent, 0);
 
     /* TODO check if some options should be masked */
     CDC_CMV_create("phsAB", (ModelNode*) newDEL, options);
@@ -1052,7 +1052,7 @@ CDC_DEL_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
 DataObject*
 CDC_SPG_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
 {
-    DataObject* newSPG = DataObject_create(dataObjectName, parent, 0);
+    DataObject* newSPG = (dataObjectName == NULL) ? (DataObject*)parent : DataObject_create(dataObjectName, parent, 0);
 
     DataAttribute_create("setVal", (ModelNode*) newSPG, IEC61850_BOOLEAN, IEC61850_FC_SP, TRG_OPT_DATA_CHANGED, 0, 0);
 
@@ -1064,7 +1064,7 @@ CDC_SPG_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
 DataObject*
 CDC_VSG_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
 {
-    DataObject* newSPG = DataObject_create(dataObjectName, parent, 0);
+    DataObject* newSPG = (dataObjectName == NULL) ? (DataObject*)parent : DataObject_create(dataObjectName, parent, 0);
 
     DataAttribute_create("setVal", (ModelNode*) newSPG, IEC61850_VISIBLE_STRING_255, IEC61850_FC_SP, TRG_OPT_DATA_CHANGED, 0, 0);
 
@@ -1077,7 +1077,7 @@ CDC_VSG_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
 DataObject*
 CDC_ENG_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
 {
-    DataObject* newENG = DataObject_create(dataObjectName, parent, 0);
+    DataObject* newENG = (dataObjectName == NULL) ? (DataObject*)parent : DataObject_create(dataObjectName, parent, 0);
 
     DataAttribute_create("setVal", (ModelNode*) newENG, IEC61850_ENUMERATED, IEC61850_FC_SP, TRG_OPT_DATA_CHANGED, 0, 0);
 
@@ -1089,7 +1089,7 @@ CDC_ENG_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
 DataObject*
 CDC_ING_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
 {
-    DataObject* newING = DataObject_create(dataObjectName, parent, 0);
+    DataObject* newING = (dataObjectName == NULL) ? (DataObject*)parent : DataObject_create(dataObjectName, parent, 0);
 
     DataAttribute_create("setVal", (ModelNode*) newING, IEC61850_INT32, IEC61850_FC_SP, TRG_OPT_DATA_CHANGED, 0, 0);
 
@@ -1114,7 +1114,7 @@ CDC_ING_create(const char* dataObjectName, ModelNode* parent, uint32_t options)
 DataObject*
 CDC_ASG_create(const char* dataObjectName, ModelNode* parent, uint32_t options, bool isIntegerNotFloat)
 {
-    DataObject* newASG = DataObject_create(dataObjectName, parent, 0);
+    DataObject* newASG = (dataObjectName == NULL) ? (DataObject*)parent : DataObject_create(dataObjectName, parent, 0);
 
     CAC_AnalogueValue_create("setMag", (ModelNode*) newASG, IEC61850_FC_SP, TRG_OPT_DATA_CHANGED, isIntegerNotFloat);
 
@@ -1145,7 +1145,7 @@ CDC_ASG_create(const char* dataObjectName, ModelNode* parent, uint32_t options, 
 DataObject*
 CDC_SPV_create(const char* dataObjectName, ModelNode* parent, uint32_t options, uint32_t controlOptions, uint32_t wpOptions, bool hasChaManRs)
 {
-    DataObject* newSPV = DataObject_create(dataObjectName, parent, 0);
+    DataObject* newSPV = (dataObjectName == NULL) ? (DataObject*)parent : DataObject_create(dataObjectName, parent, 0);
 
     if (hasChaManRs)
         CDC_SPC_create("chaManRs", (ModelNode*) newSPV, 0, CDC_CTL_MODEL_DIRECT_NORMAL);
@@ -1196,7 +1196,7 @@ CDC_STV_create(const char* dataObjectName, ModelNode* parent,
     (void)controlOptions; /* TODO implement */
     (void)wpOptions; /* TODO implement */
 
-    DataObject* newSTV = DataObject_create(dataObjectName, parent, 0);
+    DataObject* newSTV = (dataObjectName == NULL) ? (DataObject*)parent : DataObject_create(dataObjectName, parent, 0);
 
     CDC_INS_create("actSt", (ModelNode*) newSTV, 0);
 
@@ -1218,7 +1218,7 @@ CDC_ALM_create(const char* dataObjectName, ModelNode* parent,
     (void)controlOptions; /* TODO implement */
     (void)wpOptions; /* TODO implement */
 
-    DataObject* newALM = DataObject_create(dataObjectName, parent, 0);
+    DataObject* newALM = (dataObjectName == NULL) ? (DataObject*)parent : DataObject_create(dataObjectName, parent, 0);
 
     CDC_SPC_create("almAck", (ModelNode*) newALM, 0, CDC_CTL_MODEL_DIRECT_NORMAL | CDC_CTL_OPTION_ORIGIN);
 
@@ -1244,7 +1244,7 @@ CDC_CMD_create(const char* dataObjectName, ModelNode* parent,
     (void)hasCmTm; /* TODO implement */
     (void)hasCmCt; /* TODO implement */
 
-    DataObject* newCMD = DataObject_create(dataObjectName, parent, 0);
+    DataObject* newCMD = (dataObjectName == NULL) ? (DataObject*)parent : DataObject_create(dataObjectName, parent, 0);
 
     CDC_INC_create("actSt", (ModelNode*) newCMD, 0, controlOptions);
 
@@ -1272,7 +1272,7 @@ CDC_CTE_create(const char* dataObjectName, ModelNode* parent,
 {
     (void)controlOptions; /* TODO implement */
 
-    DataObject* newCTE = DataObject_create(dataObjectName, parent, 0);
+    DataObject* newCTE = (dataObjectName == NULL) ? (DataObject*)parent : DataObject_create(dataObjectName, parent, 0);
 
     CDC_SPC_create("manRs", (ModelNode*) newCTE, 0, CDC_CTL_MODEL_DIRECT_NORMAL | CDC_CTL_OPTION_ORIGIN);
 
@@ -1313,7 +1313,7 @@ CDC_TMS_create(const char* dataObjectName, ModelNode* parent,
 {
     (void)controlOptions; /* TODO implement */
 
-    DataObject* newTMS = DataObject_create(dataObjectName, parent, 0);
+    DataObject* newTMS = (dataObjectName == NULL) ? (DataObject*)parent : DataObject_create(dataObjectName, parent, 0);
 
     CDC_SPC_create("manRs", (ModelNode*) newTMS, 0, CDC_CTL_MODEL_DIRECT_NORMAL | CDC_CTL_OPTION_ORIGIN);
 
@@ -1344,4 +1344,3 @@ CDC_TMS_create(const char* dataObjectName, ModelNode* parent,
 
     return newTMS;
 }
-
