@@ -10,6 +10,11 @@
 #include <iec61850_client.h>
 #include <iec61850_model.h>
 #include <iec61850_server.h>
+
+FileDirectoryEntry toFileDirectoryEntry(void* data)
+{
+    return (FileDirectoryEntry) data;
+}
 ModelNode* toModelNode(LogicalNode * ln)
 {
     return (ModelNode*) ln;
@@ -55,6 +60,7 @@ typedef uint64_t nsSinceEpoch;
 
 ModelNode* toModelNode(LogicalNode *);
 ModelNode* toModelNode(DataObject *);
+FileDirectoryEntry toFileDirectoryEntry(void*);
 DataAttribute* toDataAttribute(DataObject *);
 DataAttribute* toDataAttribute(ModelNode *);
 DataObject* toDataObject(ModelNode *);
