@@ -1,7 +1,7 @@
 /*
  *  mms_get_var_access_service.c
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013-2023 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -191,7 +191,8 @@ deleteVariableAccessAttributesResponse(
 		getVarAccessAttr->typeSpecification.choice.structure.components.list.array = NULL;
 		getVarAccessAttr->typeSpecification.choice.structure.components.list.count = 0;
 		getVarAccessAttr->typeSpecification.choice.structure.components.list.size =	0;
-	} else if (getVarAccessAttr->typeSpecification.present == TypeSpecification_PR_array) {
+	}
+	else if (getVarAccessAttr->typeSpecification.present == TypeSpecification_PR_array) {
 		GLOBAL_FREEMEM(getVarAccessAttr->typeSpecification.choice.array.numberOfElements.buf);
 		getVarAccessAttr->typeSpecification.choice.array.numberOfElements.buf = NULL;
 		getVarAccessAttr->typeSpecification.choice.array.numberOfElements.size = 0;
@@ -215,8 +216,10 @@ createVariableAccessAttributesResponse(
 
 	MmsVariableSpecification* namedVariable = NULL;
 
+	MmsDomain* domain = NULL;
+
 	if (domainId != NULL) {
-	    MmsDomain* domain = MmsDevice_getDomain(device, domainId);
+	    domain = MmsDevice_getDomain(device, domainId);
 
 	    if (domain == NULL) {
 	        if (DEBUG_MMS_SERVER) printf("MMS_SERVER: domain %s not known\n", domainId);
@@ -233,9 +236,20 @@ createVariableAccessAttributesResponse(
 	    namedVariable = MmsDevice_getNamedVariable(device, nameId);
 #endif /* (CONFIG_MMS_SUPPORT_VMD_SCOPE_NAMED_VARIABLES == 1) */
 
-
 	if (namedVariable == NULL) {
-		if (DEBUG_MMS_SERVER) printf("MMS_SERVER: named variable %s not known\n", nameId);
+		if (DEBUG_MMS_SERVER) printf("MMS_SERVER: named variable %s.%s not known\n", domainId, nameId);
+
+		mmsMsg_createServiceErrorPdu(invokeId, response,
+		                          MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
+
+		goto exit_function;
+	}
+
+	bool accessAllowed = mmsServer_checkListAccess(connection->server, domain, nameId, connection);
+
+	if (!accessAllowed) {
+		if (DEBUG_MMS_SERVER)
+			printf("MMS_SERVER: named variable %s/%s not visible due to access restrictions\n", domainId, nameId);
 
 		mmsMsg_createServiceErrorPdu(invokeId, response,
 		                          MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);

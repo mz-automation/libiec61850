@@ -172,6 +172,9 @@ addSubNamedVaribleNamesToList(MmsServerConnection connection, LinkedList nameLis
 #endif /* (CONFIG_MMS_SORT_NAME_LIST == 1) */
 
                     }
+                    else {
+                        GLOBAL_FREEMEM(variableName);
+                    }
                 }
             }
 
