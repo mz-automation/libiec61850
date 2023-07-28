@@ -129,7 +129,7 @@ appendMmsSubVariable(char* name, char* child)
 }
 
 static LinkedList
-addSubNamedVaribleNamesToList(LinkedList nameList, char* prefix, MmsVariableSpecification* variable)
+addSubNamedVaribleNamesToList(MmsServerConnection connection, LinkedList nameList, MmsDomain* domain, char* prefix, MmsVariableSpecification* variable)
 {
     LinkedList listElement = nameList;
 
@@ -158,14 +158,20 @@ addSubNamedVaribleNamesToList(LinkedList nameList, char* prefix, MmsVariableSpec
 #endif /* (CONFIG_MMS_SORT_NAME_LIST == 1) */
 
                 if (variableName)
-                {
-                    listElement = LinkedList_insertAfter(listElement, variableName);
+                {              
+                    bool accessAllowed = mmsServer_checkListAccess(connection->server, domain, variableName, connection);
+
+                    if (accessAllowed) {
+  
+                        listElement = LinkedList_insertAfter(listElement, variableName);
 
 #if (CONFIG_MMS_SORT_NAME_LIST == 1)
-                    listElement = addSubNamedVaribleNamesToList(listElement, variableName, variables[index[i]]);
+                        listElement = addSubNamedVaribleNamesToList(connection, listElement, domain, variableName, variables[index[i]]);
 #else
-                    listElement = addSubNamedVaribleNamesToList(listElement, variableName, variables[i]);
+                        listElement = addSubNamedVaribleNamesToList(connection, listElement, domain, variableName, variables[i]);
 #endif /* (CONFIG_MMS_SORT_NAME_LIST == 1) */
+
+                    }
                 }
             }
 
@@ -233,7 +239,7 @@ getNameListDomainSpecific(MmsServerConnection connection, char* domainName)
         bool allowAccess = true;
 
         if (connection->server->getNameListHandler) {
-            allowAccess = connection->server->getNameListHandler(connection->server->getNameListHandlerParameter, MMS_GETNAMELIST_DATASETS, domain, connection);
+            allowAccess = connection->server->getNameListHandler(connection->server->getNameListHandlerParameter, MMS_GETNAMELIST_DATA, domain, connection);
         }
 
         if (allowAccess) {
@@ -255,21 +261,27 @@ getNameListDomainSpecific(MmsServerConnection connection, char* domainName)
 
             for (i = 0; i < domain->namedVariablesCount; i++) {
 
+                bool accessAllowed = mmsServer_checkListAccess(connection->server, domain, variables[index[i]]->name, connection);
+
+                if (accessAllowed) {
+
 #if (CONFIG_MMS_SORT_NAME_LIST == 1)
-                element = LinkedList_insertAfter(element, StringUtils_copyString(variables[index[i]]->name));
+                    element = LinkedList_insertAfter(element, StringUtils_copyString(variables[index[i]]->name));
 #else
-                element = LinkedList_insertAfter(element, StringUtils_copyString(variables[i]->name));
+                    element = LinkedList_insertAfter(element, StringUtils_copyString(variables[i]->name));
 #endif
 
 #if (CONFIG_MMS_SUPPORT_FLATTED_NAME_SPACE == 1)
 #if (CONFIG_MMS_SORT_NAME_LIST == 1)
-                char* prefix = variables[index[i]]->name;
-                element = addSubNamedVaribleNamesToList(element, prefix, variables[index[i]]);
+                    char* prefix = variables[index[i]]->name;
+                    element = addSubNamedVaribleNamesToList(connection, element, domain, prefix, variables[index[i]]);
 #else
-                char* prefix = variables[i]->name;
-                element = addSubNamedVaribleNamesToList(element, prefix, variables[i]);
+                    char* prefix = variables[i]->name;
+                    element = addSubNamedVaribleNamesToList(connection, element, domain, prefix, variables[i]);
 #endif /* (CONFIG_MMS_SORT_NAME_LIST == 1) */
 #endif /* (CONFIG_MMS_SUPPORT_FLATTED_NAME_SPACE == 1) */
+
+                }
 
             }
 

@@ -37,6 +37,9 @@ typedef MmsDataAccessError (*MmsWriteVariableHandler)(void* parameter,
         MmsDomain* domain, char* variableId, MmsValue* value,
         MmsServerConnection connection);
 
+typedef bool (*MmsListAccessHandler) (void* parameter, MmsDomain* domain,
+        char* variableId, MmsServerConnection connection);
+
 typedef void (*MmsConnectionHandler)(void* parameter,
         MmsServerConnection connection, MmsServerEvent event);
 
@@ -62,6 +65,9 @@ MmsServer_installReadAccessHandler(MmsServer self, MmsReadAccessHandler, void* p
 LIB61850_INTERNAL void
 MmsServer_installWriteHandler(MmsServer self, MmsWriteVariableHandler,
         void* parameter);
+
+LIB61850_INTERNAL void
+MmsServer_installListAccessHandler(MmsServer self, MmsListAccessHandler listAccessHandler, void* parameter);
 
 /**
  * A connection handler will be invoked whenever a new client connection is opened or closed

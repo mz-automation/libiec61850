@@ -2007,6 +2007,26 @@ typedef bool
 LIB61850_API void
 IedServer_setDirectoryAccessHandler(IedServer self, IedServer_DirectoryAccessHandler handler, void* parameter);
 
+/**
+ * \brief Callback that is called when a client is invoking a list objects service
+ *
+ * \param parameter user provided parameter
+ * \param connection client connection that is involved
+ *
+ * \return true to include the object in the service response, otherwise false
+ */
+typedef bool
+(*IedServer_ListObjectsAccessHandler) (void* parameter, ClientConnection connection, LogicalDevice* ld, LogicalNode* ln, DataObject* dataObject, FunctionalConstraint fc);
+
+/**
+ * \brief Set a handler to control which objects are return by the list objects services
+ *
+ * \param handler the callback handler to be used
+ * \param parameter a user provided parameter that is passed to the handler.
+ */
+LIB61850_API void
+IedServer_setListObjectsAccessHandler(IedServer self, IedServer_ListObjectsAccessHandler handler, void* parameter);
+
 /**@}*/
 
 /**@}*/
