@@ -147,6 +147,20 @@ readAccessHandler(LogicalDevice* ld, LogicalNode* ln, DataObject* dataObject, Fu
 }
 
 static bool
+listObjectsAccessHandler(void* parameter, ClientConnection connection, LogicalDevice* ld, LogicalNode* ln, DataObject* dataObject, FunctionalConstraint fc)
+{
+    printf("list objects access to %s/%s.%s[%s]\n", ld->name, ln->name, dataObject ? dataObject->name : "-", FunctionalConstraint_toString(fc));
+
+    if (!strcmp(ln->name, "GGIO1")) {
+        if (dataObject && !strcmp(dataObject->name, "AnIn1")) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+static bool
 directoryAccessHandler(void* parameter, ClientConnection connection, IedServer_DirectoryCategory category, LogicalDevice* logicalDevice)
 {
     switch(category) {
@@ -257,6 +271,9 @@ main(int argc, char** argv)
     IedServer_setReadAccessHandler(iedServer, readAccessHandler, NULL);
 
     IedServer_setDirectoryAccessHandler(iedServer, directoryAccessHandler, NULL);
+
+    /* control visibility of data objects in directory (get-name-list) and variable description (get-variable-access-attributes) services */
+    IedServer_setListObjectsAccessHandler(iedServer, listObjectsAccessHandler, NULL);
 
     /* MMS server will be instructed to start listening for client connections. */
     IedServer_start(iedServer, tcpPort);
