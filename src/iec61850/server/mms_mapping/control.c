@@ -2499,6 +2499,22 @@ ControlAction_getCtlNum(ControlAction self)
 }
 
 bool
+ControlAction_getSynchroCheck(ControlAction self)
+{
+    ControlObject* controlObject = (ControlObject*) self;
+
+    return (bool)(controlObject->synchroCheck);
+}
+
+bool
+ControlAction_getInterlockCheck(ControlAction self)
+{
+    ControlObject* controlObject = (ControlObject*) self;
+
+    return (bool)(controlObject->interlockCheck);
+}
+
+bool
 ControlAction_isSelect(ControlAction self)
 {
     ControlObject* controlObject = (ControlObject*) self;

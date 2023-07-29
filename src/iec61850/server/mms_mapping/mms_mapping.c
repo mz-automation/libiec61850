@@ -3670,7 +3670,9 @@ MmsMapping_triggerReportObservers(MmsMapping* self, MmsValue* value, int flag)
 {
     LinkedList element = self->reportControls;
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_wait(self->isModelLockedMutex);
+#endif
 
     bool modelLocked = self->isModelLocked;
 
@@ -3686,8 +3688,7 @@ MmsMapping_triggerReportObservers(MmsMapping* self, MmsValue* value, int flag)
                     continue;
                 break;
             case REPORT_CONTROL_VALUE_CHANGED:
-                if (((rc->triggerOps & TRG_OPT_DATA_CHANGED) == 0) &&
-                        ((rc->triggerOps & TRG_OPT_DATA_UPDATE) == 0))
+                if ((rc->triggerOps & TRG_OPT_DATA_CHANGED) == 0)
                     continue;
                 break;
             case REPORT_CONTROL_QUALITY_CHANGED:
@@ -3708,7 +3709,9 @@ MmsMapping_triggerReportObservers(MmsMapping* self, MmsValue* value, int flag)
         Reporting_processReportEventsAfterUnlock(self);
     }
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_post(self->isModelLockedMutex);
+#endif
 }
 
 #endif /* (CONFIG_IEC61850_REPORT_SERVICE == 1) */
@@ -3729,13 +3732,17 @@ MmsMapping_triggerGooseObservers(MmsMapping* self, MmsValue* value)
             if (DataSet_isMemberValue(dataSet, value, NULL)) {
                 MmsGooseControlBlock_setStateChangePending(gcb);
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
                 Semaphore_wait(self->isModelLockedMutex);
+#endif
 
                 if (self->isModelLocked == false) {
                     MmsGooseControlBlock_publishNewState(gcb);
                 }
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
                 Semaphore_post(self->isModelLockedMutex);
+#endif
             }
         }
     }

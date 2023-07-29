@@ -325,7 +325,10 @@ struct sMmsMapping {
     /* flag indicates if data model is locked --> prevents reports to be sent */
 
     bool isModelLocked;
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore isModelLockedMutex;
+#endif /* (CONFIG_MMS_THREADLESS_STACK != 1) */
 
     IedServer iedServer;
 

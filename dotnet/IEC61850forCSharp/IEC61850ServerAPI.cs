@@ -1836,6 +1836,14 @@ namespace IEC61850
             [return: MarshalAs(UnmanagedType.I1)]
             static extern bool ControlAction_isSelect(IntPtr self);
 
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
+            static extern bool ControlAction_getSynchroCheck(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
+            static extern bool ControlAction_getInterlockCheck(IntPtr self);
+
             private IntPtr self;
             private IedServer.ControlHandlerInfo info;
             private IedServer iedServer;
@@ -1954,6 +1962,16 @@ namespace IEC61850
             public bool IsSelect()
             {
                 return ControlAction_isSelect(self);
+            }
+
+            public bool GetSynchroCheck()
+            {
+                return ControlAction_getSynchroCheck(self);
+            }
+
+            public bool GetInterlockCheck()
+            {
+                return ControlAction_getInterlockCheck(self);
             }
         }
 
@@ -2408,6 +2426,9 @@ namespace IEC61850
             /* store IedModel instance to prevent garbage collector */
             private IedModel iedModel = null;
 
+            /* store TLSConfiguration instance to prevent garbage collector */
+            private TLSConfiguration tlsConfiguration = null;
+
             public IedServer(IedModel iedModel, IedServerConfig config = null)
             {
                 this.iedModel = iedModel;
@@ -2423,6 +2444,7 @@ namespace IEC61850
             public IedServer(IedModel iedModel, TLSConfiguration tlsConfig, IedServerConfig config = null)
             {
                 this.iedModel = iedModel;
+                this.tlsConfiguration = tlsConfig;
 
                 IntPtr nativeConfig = IntPtr.Zero;
                 IntPtr nativeTLSConfig = IntPtr.Zero;
@@ -2512,6 +2534,7 @@ namespace IEC61850
                         self = IntPtr.Zero;
                         internalConnectionHandler = null;
                         this.iedModel = null;
+                        this.tlsConfiguration = null;
                     }
                 }
             }

@@ -692,8 +692,13 @@ IsoClientConnection_associateAsync(IsoClientConnection self, uint32_t connectTim
     /* set timeout for connect */
     self->nextReadTimeout = Hal_getTimeInMs() + connectTimeoutInMs;
 
+    /* Connect to Local Ip Address*/
+    if (self->parameters->localIpAddress) {
+        Socket_bind(self->socket, self->parameters->localIpAddress, self->parameters->localTcpPort);
+    }
+    
     if (Socket_connectAsync(self->socket, self->parameters->hostname, self->parameters->tcpPort) == false) {
-
+        
         Socket_destroy(self->socket);
         self->socket = NULL;
 
@@ -704,9 +709,9 @@ IsoClientConnection_associateAsync(IsoClientConnection self, uint32_t connectTim
 
         success = false;
     }
-
+    
     Semaphore_post(self->tickMutex);
-
+    
     return success;
 }
 

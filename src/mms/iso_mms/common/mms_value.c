@@ -2205,7 +2205,7 @@ MmsValue_printToBuffer(const MmsValue* self, char* buffer, int bufferSize)
 
                 const char* currentStr = MmsValue_printToBuffer((const MmsValue*) MmsValue_getElement(self, i), buffer + bufPos, bufferSize - bufPos);
 
-                bufPos += strlen(currentStr);
+                bufPos += strnlen(currentStr, bufferSize - bufPos);
 
                 if (bufPos >= bufferSize)
                     break;
@@ -2240,9 +2240,13 @@ MmsValue_printToBuffer(const MmsValue* self, char* buffer, int bufferSize)
             int size = MmsValue_getBitStringSize(self);
 
             /* fill buffer with zeros */
-            if (size > bufferSize) {
+            if (size + 1 > bufferSize) {
                 memset(buffer, 0, bufferSize);
-                break;
+
+                size = bufferSize - 1;
+
+                if (size < 1)
+                    break;
             }
 
             int i;

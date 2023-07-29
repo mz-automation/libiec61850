@@ -231,6 +231,17 @@ IedConnection_createWithTlsSupport(TLSConfiguration tlsConfig);
 LIB61850_API void
 IedConnection_destroy(IedConnection self);
 
+/**
+* \brief Set the local IP address and port to be used by the client
+*
+* NOTE: This function is optional. When not used the OS decides what IP address and TCP port to use.
+*
+* \param self IedConnection instance
+* \param localIpAddress the local IP address or hostname as C string
+* \param localPort the local TCP port to use. When < 1 the OS will chose the TCP port to use.
+*/
+LIB61850_API void
+IedConnection_setLocalAddress(IedConnection self, const char* localIpAddress, int localPort);
 
 /**
  * \brief set the connect timeout in ms

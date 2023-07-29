@@ -1909,6 +1909,9 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
             if (updateReportDataset(self, rc, NULL, connection)) {
 
                 if (rc->reserved == false) {
+
+                    rc->resvTms = RESV_TMS_IMPLICIT_VALUE;
+
                     reserveRcb(rc, connection);
 
                     if (self->rcbEventHandler) {
@@ -2088,6 +2091,12 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
         }
         else if (strcmp(elementName, "DatSet") == 0) {
 
+            if (!(self->iedServer->rcbSettingsWritable & IEC61850_REPORTSETTINGS_DATSET))
+            {
+                retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+                goto exit_function;
+            }
+
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
             Semaphore_wait(rc->rcbValuesLock);
 #endif
@@ -2135,6 +2144,12 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
         }
         else if (strcmp(elementName, "IntgPd") == 0) {
 
+            if (!(self->iedServer->rcbSettingsWritable & IEC61850_REPORTSETTINGS_INTG_PD))
+            {
+                retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+                goto exit_function;
+            }
+
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
             Semaphore_wait(rc->rcbValuesLock);
 #endif
@@ -2181,6 +2196,12 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
             goto exit_function;
         }
         else if (strcmp(elementName, "TrgOps") == 0) {
+
+            if (!(self->iedServer->rcbSettingsWritable & IEC61850_REPORTSETTINGS_TRG_OPS))
+            {
+                retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+                goto exit_function;
+            }
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
             Semaphore_wait(rc->rcbValuesLock);
@@ -2255,6 +2276,12 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 
         else if (strcmp(elementName, "BufTm") == 0) {
 
+            if (!(self->iedServer->rcbSettingsWritable & IEC61850_REPORTSETTINGS_BUF_TIME))
+            {
+                retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+                goto exit_function;
+            }
+
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
             Semaphore_wait(rc->rcbValuesLock);
 #endif
@@ -2287,6 +2314,12 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
             goto exit_function;
         }
         else if (strcmp(elementName, "RptID") == 0) {
+
+            if (!(self->iedServer->rcbSettingsWritable & IEC61850_REPORTSETTINGS_RPT_ID))
+            {
+                retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+                goto exit_function;
+            }
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
             Semaphore_wait(rc->rcbValuesLock);
@@ -2395,6 +2428,14 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 
             goto exit_function;
         }
+        else if (strcmp(elementName, "OptFlds") == 0) {
+
+            if (!(self->iedServer->rcbSettingsWritable & IEC61850_REPORTSETTINGS_OPT_FIELDS))
+            {
+                retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+                goto exit_function;
+            }
+        }
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
         Semaphore_wait(rc->rcbValuesLock);
@@ -2444,7 +2485,6 @@ exit_function:
                         self->rcbEventHandler(self->rcbEventHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_RESERVED, NULL, DATA_ACCESS_ERROR_SUCCESS);
                     }
                 }
-
 
             }
             else if (rc->resvTms == -1) {
@@ -3877,7 +3917,9 @@ processEventsForReport(ReportControl* rc, uint64_t currentTimeInMs)
 void
 Reporting_processReportEvents(MmsMapping* self, uint64_t currentTimeInMs)
 {
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_wait(self->isModelLockedMutex);
+#endif
 
     if (self->isModelLocked == false) {
 
@@ -3894,7 +3936,9 @@ Reporting_processReportEvents(MmsMapping* self, uint64_t currentTimeInMs)
         }
     }
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_post(self->isModelLockedMutex);
+#endif
 }
 
 /*

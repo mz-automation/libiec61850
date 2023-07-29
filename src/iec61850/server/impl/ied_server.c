@@ -483,12 +483,19 @@ IedServer_createWithConfig(IedModel* dataModel, TLSConfiguration tlsConfiguratio
             self->enableBRCBResvTms = serverConfiguration->enableResvTmsForBRCB;
             self->enableOwnerForRCB = serverConfiguration->enableOwnerForRCB;
             self->syncIntegrityReportTimes = serverConfiguration->syncIntegrityReportTimes;
+            self->rcbSettingsWritable = serverConfiguration->reportSettingsWritable;
         }
         else {
             self->reportBufferSizeBRCBs = CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE;
             self->reportBufferSizeURCBs = CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE;
             self->enableOwnerForRCB = false;
             self->syncIntegrityReportTimes = false;
+            self->rcbSettingsWritable = IEC61850_REPORTSETTINGS_RPT_ID +
+                                        IEC61850_REPORTSETTINGS_BUF_TIME +
+                                        IEC61850_REPORTSETTINGS_DATSET +
+                                        IEC61850_REPORTSETTINGS_TRG_OPS +
+                                        IEC61850_REPORTSETTINGS_OPT_FIELDS +
+                                        IEC61850_REPORTSETTINGS_INTG_PD;
 #if (CONFIG_IEC61850_BRCB_WITH_RESVTMS == 1)
             self->enableBRCBResvTms = true;
 #else
@@ -814,11 +821,15 @@ IedServer_lockDataModel(IedServer self)
 {
     MmsServer_lockModel(self->mmsServer);
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_wait(self->mmsMapping->isModelLockedMutex);
+#endif
 
     self->mmsMapping->isModelLocked = true;
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_post(self->mmsMapping->isModelLockedMutex);
+#endif
 }
 
 void
@@ -832,13 +843,17 @@ IedServer_unlockDataModel(IedServer self)
     /* check if reports have to be sent! */
     Reporting_processReportEventsAfterUnlock(self->mmsMapping);
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_wait(self->mmsMapping->isModelLockedMutex);
+#endif
 
     MmsServer_unlockModel(self->mmsServer);
 
     self->mmsMapping->isModelLocked = false;
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_post(self->mmsMapping->isModelLockedMutex);
+#endif
 }
 
 #if (CONFIG_IEC61850_CONTROL_SERVICE == 1)

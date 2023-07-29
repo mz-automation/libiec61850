@@ -1,7 +1,7 @@
 /*
  *  IEC61850ClientAPI.cs
  *
- *  Copyright 2014-2021 Michael Zillgith
+ *  Copyright 2014-2023 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -436,6 +436,9 @@ namespace IEC61850
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern void IedConnection_connect(IntPtr self, out int error, string hostname, int tcpPort);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedConnection_setLocalAddress(IntPtr self, string localIpAddress, int localPort);
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern void IedConnection_abort(IntPtr self, out int error);
@@ -892,6 +895,25 @@ namespace IEC61850
             public void Connect(string hostname)
             {
                 Connect(hostname, -1);
+            }
+
+            /// <summary>
+            /// Set the local IP address and port to be used by the client
+            /// </summary>
+            /// <param name="localIpAddress">the local IP address or hostname</param>
+            /// <param name="localPort">the local TCP port to use. When 0 the OS will chose the TCP port to use.</param>
+            public void SetLocalAddress(string localIpAddress, int localPort)
+            {
+                IedConnection_setLocalAddress(connection, localIpAddress, localPort);
+            }
+
+            /// <summary>
+            /// Set the local IP address to be used by the client
+            /// </summary>
+            /// <param name="localIpAddress">the local IP address or hostname</param>
+            public void SetLocalAddress(string localIpAddress)
+            {
+                IedConnection_setLocalAddress(connection, localIpAddress, 0);
             }
 
             /// <exception cref="IedConnectionException">This exception is thrown if there is a connection or service error</exception>
