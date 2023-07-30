@@ -93,7 +93,7 @@ SCL.xsd">
 						</DataSet>
 
 						<SampledValueControl name="MSVCB01" datSet="PhsMeas1"
-							smvID="xxxxMUnn01" smpRate="80" nofASDU="1" confRev="1">
+							smvID="xxxxMUnn01" smpRate="80" nofASDU="1" confRev="1" smpMod="SmpPerPeriod">
 
 							<SmvOpts refreshTime="false" sampleSynchronized="true"
 								security="false" dataRef="false" />
