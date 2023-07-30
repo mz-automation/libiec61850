@@ -166,7 +166,6 @@ IedModel_addSettingGroupControlBlock(IedModel* self, SettingGroupControlBlock* s
 }
 #endif /* (CONFIG_IEC61850_SETTING_GROUPS == 1) */
 
-
 static void
 IedModel_addGSEControlBlock(IedModel* self, GSEControlBlock* gcb)
 {
@@ -175,10 +174,26 @@ IedModel_addGSEControlBlock(IedModel* self, GSEControlBlock* gcb)
     else {
         GSEControlBlock* lastGcb = self->gseCBs;
 
-        while (lastGcb->sibling != NULL)
+        while (lastGcb->sibling)
             lastGcb = lastGcb->sibling;
 
         lastGcb->sibling = gcb;
+    }
+}
+
+static void
+IedModel_addSMVControlBlock(IedModel* self, SVControlBlock* smvcb)
+{
+    if (self->svCBs == NULL) {
+        self->svCBs = smvcb;
+    }
+    else {
+        SVControlBlock* lastSvCB = self->svCBs;
+
+        while (lastSvCB->sibling)
+            lastSvCB = lastSvCB->sibling;
+
+        lastSvCB->sibling = smvcb;
     }
 }
 
@@ -475,6 +490,14 @@ GSEControlBlock_create(const char* name, LogicalNode* parent, const char* appId,
     return self;
 }
 
+static void
+LogicalNode_addSMVControlBlock(LogicalNode* self, SVControlBlock* smvcb)
+{
+    IedModel* model = (IedModel*) self->parent->parent;
+
+    IedModel_addSMVControlBlock(model, smvcb);
+}
+
 SVControlBlock*
 SVControlBlock_create(const char* name, LogicalNode* parent, const char* svID, const char* dataSet, uint32_t confRev, uint8_t smpMod,
         uint16_t smpRate, uint8_t optFlds, bool isUnicast)
@@ -498,6 +521,12 @@ SVControlBlock_create(const char* name, LogicalNode* parent, const char* svID, c
 
     self->optFlds = optFlds;
     self->isUnicast = isUnicast;
+
+    self->dstAddress = NULL;
+    self->sibling = NULL;
+
+    if (parent)
+        LogicalNode_addSMVControlBlock(parent, self);
 
     return self;
 }
