@@ -189,7 +189,7 @@ public class DynamicModelGenerator {
             output.print(svcb.getSmvID() + " ");
             output.print(svcb.getDatSet() + " ");
             output.print(svcb.getConfRev() + " ");
-            output.print("0" + " ");
+            output.print(svcb.getSmpMod().getValue() + " ");
             output.print(svcb.getSmpRate() + " ");
             output.print(svcb.getSmvOpts().getIntValue() + " ");
             output.print(svcb.isMulticast() ? "0" : "1");
