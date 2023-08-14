@@ -245,7 +245,7 @@ createVariableAccessAttributesResponse(
         goto exit_function;
     }
 
-    bool accessAllowed = mmsServer_checkListAccess(connection->server, domain, nameId, connection);
+    bool accessAllowed = mmsServer_checkListAccess(connection->server, MMS_GETNAMELIST_DATA, domain, nameId, connection);
 
     if (!accessAllowed) {
         if (DEBUG_MMS_SERVER)

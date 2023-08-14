@@ -426,7 +426,7 @@ LIB61850_INTERNAL MmsValue*
 mmsServer_getValue(MmsServer self, MmsDomain* domain, char* itemId, MmsServerConnection connection, bool isDirectAccess);
 
 LIB61850_INTERNAL bool
-mmsServer_checkListAccess(MmsServer self, MmsDomain* domain, char* itemId, MmsServerConnection connection);
+mmsServer_checkListAccess(MmsServer self, MmsGetNameListType listType, MmsDomain* domain, char* itemId, MmsServerConnection connection);
 
 LIB61850_INTERNAL void
 mmsServer_createMmsWriteResponse(MmsServerConnection connection,

@@ -37,7 +37,7 @@ typedef MmsDataAccessError (*MmsWriteVariableHandler)(void* parameter,
         MmsDomain* domain, char* variableId, MmsValue* value,
         MmsServerConnection connection);
 
-typedef bool (*MmsListAccessHandler) (void* parameter, MmsDomain* domain,
+typedef bool (*MmsListAccessHandler) (void* parameter, MmsGetNameListType listType, MmsDomain* domain,
         char* variableId, MmsServerConnection connection);
 
 typedef void (*MmsConnectionHandler)(void* parameter,

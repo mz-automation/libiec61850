@@ -603,12 +603,12 @@ mmsServer_checkReadAccess(MmsServer self, MmsDomain* domain, char* itemId, MmsSe
 }
 
 bool
-mmsServer_checkListAccess(MmsServer self, MmsDomain* domain, char* itemId, MmsServerConnection connection)
+mmsServer_checkListAccess(MmsServer self, MmsGetNameListType listType, MmsDomain* domain, char* itemId, MmsServerConnection connection)
 {
     bool allowAccess = true;
 
     if (self->listAccessHandler) {
-        allowAccess = self->listAccessHandler(self->listAccessHandlerParameter, domain, itemId, connection);
+        allowAccess = self->listAccessHandler(self->listAccessHandlerParameter, listType, domain, itemId, connection);
     }
 
     return allowAccess;

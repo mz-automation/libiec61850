@@ -2010,13 +2010,21 @@ IedServer_setDirectoryAccessHandler(IedServer self, IedServer_DirectoryAccessHan
 /**
  * \brief Callback that is called when a client is invoking a list objects service
  *
+ * This callback can be used to control the list object access to specific objects and is called for each object that are subject to a client request.
+ *
  * \param parameter user provided parameter
  * \param connection client connection that is involved
+ * \param acsiClass the ACSI class of the object
+ * \param ld the logical device of the object
+ * \param ln the logical node of the object
+ * \param objectName the name of the object (e.g. data object name, data set name, log name, RCB name, ...)
+ * \param subObjectName the name of a sub element of an object or NULL
+ * \param fc the functional constraint of the object of IEC61850_FC_NONE when the object has no FC.
  *
  * \return true to include the object in the service response, otherwise false
  */
 typedef bool
-(*IedServer_ListObjectsAccessHandler) (void* parameter, ClientConnection connection, LogicalDevice* ld, LogicalNode* ln, DataObject* dataObject, FunctionalConstraint fc);
+(*IedServer_ListObjectsAccessHandler)(void* parameter, ClientConnection connection, ACSIClass acsiClass, LogicalDevice* ld, LogicalNode* ln, const char* objectName, const char* subObjectName, FunctionalConstraint fc);
 
 /**
  * \brief Set a handler to control which objects are return by the list objects services

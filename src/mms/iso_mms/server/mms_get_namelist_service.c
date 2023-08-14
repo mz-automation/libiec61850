@@ -159,7 +159,7 @@ addSubNamedVaribleNamesToList(MmsServerConnection connection, LinkedList nameLis
 
                 if (variableName)
                 {              
-                    bool accessAllowed = mmsServer_checkListAccess(connection->server, domain, variableName, connection);
+                    bool accessAllowed = mmsServer_checkListAccess(connection->server, MMS_GETNAMELIST_DATA, domain, variableName, connection);
 
                     if (accessAllowed) {
   
@@ -218,7 +218,11 @@ getJournalListDomainSpecific(MmsServerConnection connection, char* domainName)
 
                     MmsJournal journal = (MmsJournal) LinkedList_getData(journalList);
 
-                    LinkedList_add(nameList, (void*) journal->name);
+                    allowAccess = mmsServer_checkListAccess(connection->server, MMS_GETNAMELIST_JOURNALS, domain, journal->name, connection);
+
+                    if (allowAccess) {
+                        LinkedList_add(nameList, (void*) journal->name);
+                    }
                 }
 
             }
@@ -264,7 +268,7 @@ getNameListDomainSpecific(MmsServerConnection connection, char* domainName)
 
             for (i = 0; i < domain->namedVariablesCount; i++) {
 
-                bool accessAllowed = mmsServer_checkListAccess(connection->server, domain, variables[index[i]]->name, connection);
+                bool accessAllowed = mmsServer_checkListAccess(connection->server, MMS_GETNAMELIST_DATA, domain, variables[index[i]]->name, connection);
 
                 if (accessAllowed) {
 
@@ -301,7 +305,7 @@ getNameListDomainSpecific(MmsServerConnection connection, char* domainName)
 #if (MMS_DATA_SET_SERVICE == 1)
 
 static LinkedList
-createStringsFromNamedVariableList(LinkedList variableLists)
+createStringsFromNamedVariableList(LinkedList variableLists, MmsServerConnection connection, MmsDomain* domain)
 {
     LinkedList nameList = LinkedList_create();
     LinkedList variableListsElement = LinkedList_getNext(variableLists);
@@ -310,8 +314,14 @@ createStringsFromNamedVariableList(LinkedList variableLists)
         MmsNamedVariableList variableList =
                 (MmsNamedVariableList) variableListsElement->data;
 
-        LinkedList_add(nameList,
-                StringUtils_copyString(MmsNamedVariableList_getName(variableList)));
+        printf("createStringsFromNamedVariableList: %s\n", MmsNamedVariableList_getName(variableList));
+
+        bool accessAllowed = mmsServer_checkListAccess(connection->server, MMS_GETNAMELIST_DATASETS, domain, variableList->name, connection);
+
+        if (accessAllowed) {
+            LinkedList_add(nameList,
+                    StringUtils_copyString(MmsNamedVariableList_getName(variableList)));
+        }
 
         variableListsElement = LinkedList_getNext(variableListsElement);
     }
@@ -338,7 +348,7 @@ getNamedVariableListsDomainSpecific(MmsServerConnection connection, char* domain
         if (allowAccess) {
             LinkedList variableLists = MmsDomain_getNamedVariableLists(domain);
 
-            nameList = createStringsFromNamedVariableList(variableLists);
+            nameList = createStringsFromNamedVariableList(variableLists, connection, domain);
         }
     }
 
@@ -354,7 +364,7 @@ getNamedVariableListsVMDSpecific(MmsServerConnection connection)
 
     LinkedList variableLists = MmsDevice_getNamedVariableLists(device);
 
-    nameList = createStringsFromNamedVariableList(variableLists);
+    nameList = createStringsFromNamedVariableList(variableLists, connection, NULL);
 
     return nameList;
 }
@@ -367,7 +377,7 @@ getNamedVariableListAssociationSpecific(MmsServerConnection connection)
 
     LinkedList variableLists = MmsServerConnection_getNamedVariableLists(connection);
 
-    nameList = createStringsFromNamedVariableList(variableLists);
+    nameList = createStringsFromNamedVariableList(variableLists, connection, NULL);
 
     return nameList;
 }

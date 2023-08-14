@@ -23,6 +23,38 @@ sigint_handler(int signalId)
     running = 0;
 }
 
+static const char*
+ACSIClassToStr(ACSIClass acsiClass)
+{
+    switch (acsiClass)
+    {
+        case ACSI_CLASS_BRCB:
+            return "BRCB";
+        case ACSI_CLASS_URCB:
+            return "URCB";
+        case ACSI_CLASS_GoCB:
+            return "GoCB";
+        case ACSI_CLASS_SGCB:
+            return "SGCB";
+        case ACSI_CLASS_LCB:
+            return "LCB";
+        case ACSI_CLASS_GsCB:
+            return "GsCB";
+        case ACSI_CLASS_LOG:
+            return "log";
+        case ACSI_CLASS_DATA_SET:
+            return "dataset";
+        case ACSI_CLASS_DATA_OBJECT:
+            return "data-object";
+        case ACSI_CLASS_MSVCB:
+            return "MSVCB";
+        case ACSI_CLASS_USVCB:
+            return "USVCB";
+        default:
+            return "unknown";
+    }
+}
+
 static ControlHandlerResult
 controlHandlerForBinaryOutput(ControlAction action, void* parameter, MmsValue* value, bool test)
 {
@@ -64,7 +96,6 @@ controlHandlerForBinaryOutput(ControlAction action, void* parameter, MmsValue* v
 
     return CONTROL_RESULT_OK;
 }
-
 
 static void
 connectionHandler (IedServer self, ClientConnection connection, bool connected, void* parameter)
@@ -137,25 +168,35 @@ dataSetAccessHandler(void* parameter, ClientConnection connection, IedServer_Dat
 static MmsDataAccessError
 readAccessHandler(LogicalDevice* ld, LogicalNode* ln, DataObject* dataObject, FunctionalConstraint fc, ClientConnection connection, void* parameter)
 {
-    printf("Read access to %s/%s.%s\n", ld->name, ln->name, dataObject->name);
+    printf("Read access to %s/%s.%s\n", ld->name, ln->name, dataObject ? dataObject->name : "-");
 
-    if (!strcmp(ln->name, "GGIO1") && !strcmp(dataObject->name, "AnIn1")) {
-        return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+    if (dataObject == NULL) {
+        if (!strcmp(ln->name, "GGIO1")) {
+            return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+        }
+    }
+    else {
+        if (!strcmp(ln->name, "GGIO1") && !strcmp(dataObject->name, "AnIn1")) {
+            return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+        }
     }
 
     return DATA_ACCESS_ERROR_SUCCESS;
 }
 
 static bool
-listObjectsAccessHandler(void* parameter, ClientConnection connection, LogicalDevice* ld, LogicalNode* ln, DataObject* dataObject, FunctionalConstraint fc)
+listObjectsAccessHandler(void* parameter, ClientConnection connection, ACSIClass acsiClass, LogicalDevice* ld, LogicalNode* ln, const char* objectName, const char* subObjectName, FunctionalConstraint fc)
 {
-    printf("list objects access to %s/%s.%s[%s]\n", ld->name, ln->name, dataObject ? dataObject->name : "-", FunctionalConstraint_toString(fc));
+    if (subObjectName)
+        printf("list objects access[2] to %s/%s.%s.%s [acsi-class: %s(%i)] [FC=%s]\n", ld->name, ln ? ln->name : "-", objectName, subObjectName, ACSIClassToStr(acsiClass), acsiClass, FunctionalConstraint_toString(fc));
+    else
+        printf("list objects access[2] to %s/%s.%s [acsi-class: %s(%i)] [FC=%s]\n", ld->name, ln ? ln->name : "-", objectName, ACSIClassToStr(acsiClass), acsiClass, FunctionalConstraint_toString(fc));
 
-    if (!strcmp(ln->name, "GGIO1")) {
-        if (dataObject && !strcmp(dataObject->name, "AnIn1")) {
-            return false;
-        }
-    }
+    // if (acsiClass == ACSI_CLASS_BRCB) {
+    //     return true;
+    // }
+
+    // return false;
 
     return true;
 }
