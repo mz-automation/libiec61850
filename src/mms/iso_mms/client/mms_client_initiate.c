@@ -147,7 +147,7 @@ parseInitResponseDetail(MmsConnection self, uint8_t* buffer, int bufPos, int max
                 int i;
 
                 for (i = 0; i < 11; i++)
-                     self->parameters.servicesSupported[i] = buffer[bufPos + i];
+                     self->parameters.servicesSupported[i] = buffer[bufPos + i + 1]; /* add 1 to skip padding */
             }
             break;
 
