@@ -314,8 +314,6 @@ createStringsFromNamedVariableList(LinkedList variableLists, MmsServerConnection
         MmsNamedVariableList variableList =
                 (MmsNamedVariableList) variableListsElement->data;
 
-        printf("createStringsFromNamedVariableList: %s\n", MmsNamedVariableList_getName(variableList));
-
         bool accessAllowed = mmsServer_checkListAccess(connection->server, MMS_GETNAMELIST_DATASETS, domain, variableList->name, connection);
 
         if (accessAllowed) {
