@@ -37,6 +37,7 @@ import com.libiec61850.scl.SclParserException;
 import com.libiec61850.scl.communication.ConnectedAP;
 import com.libiec61850.scl.communication.GSE;
 import com.libiec61850.scl.communication.PhyComAddress;
+import com.libiec61850.scl.communication.SMV;
 import com.libiec61850.scl.model.AccessPoint;
 import com.libiec61850.scl.model.DataAttribute;
 import com.libiec61850.scl.model.DataModelValue;
@@ -51,6 +52,7 @@ import com.libiec61850.scl.model.LogicalDevice;
 import com.libiec61850.scl.model.LogicalNode;
 import com.libiec61850.scl.model.ReportControlBlock;
 import com.libiec61850.scl.model.ReportSettings;
+import com.libiec61850.scl.model.SampledValueControl;
 import com.libiec61850.scl.model.Services;
 import com.libiec61850.scl.model.SettingControl;
 
@@ -166,6 +168,52 @@ public class DynamicModelGenerator {
         
         for (Log log : logicalNode.getLogs())
             output.println("LOG(" + log.getName() + ");");
+
+        for (SampledValueControl svcb : logicalNode.getSampledValueControlBlocks()) {
+            LogicalDevice ld = logicalNode.getParentLogicalDevice();
+
+            SMV smv = null;
+            PhyComAddress smvAddress = null;
+
+            if (connectedAP != null) {
+                smv = connectedAP.lookupSMV(ld.getInst(), svcb.getName());
+
+                if (smv != null)
+                    smvAddress = smv.getAddress();
+            }
+            else
+                System.out.println("WARNING: IED \"" + ied.getName() + "\" has no connected access point!");
+
+            output.print("SMVC(");
+            output.print(svcb.getName() + " ");
+            output.print(svcb.getSmvID() + " ");
+            output.print(svcb.getDatSet() + " ");
+            output.print(svcb.getConfRev() + " ");
+            output.print(svcb.getSmpMod().getValue() + " ");
+            output.print(svcb.getSmpRate() + " ");
+            output.print(svcb.getSmvOpts().getIntValue() + " ");
+            output.print(svcb.isMulticast() ? "0" : "1");
+            output.print(")");
+
+            if (smvAddress != null) {
+                output.println("{");
+
+                output.print("PA(");
+                output.print(smvAddress.getVlanPriority() + " ");
+                output.print(smvAddress.getVlanId() + " ");
+                output.print(smvAddress.getAppId() + " ");
+
+                for (int i = 0; i < 6; i++)
+                    output.printf("%02x", smvAddress.getMacAddress()[i]);
+
+                output.println(");");
+
+                output.println("}");
+            }
+            else {
+                output.println(";");
+            }
+        }
         
         for (GSEControl gcb : logicalNode.getGSEControlBlocks()) {
             LogicalDevice ld = logicalNode.getParentLogicalDevice();

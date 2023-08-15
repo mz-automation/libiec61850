@@ -170,7 +170,7 @@ GoosePublisher_setStNum(GoosePublisher self, uint32_t stNum);
  * NOTE: Only for testing! The sequence number is increase manually whenever \ref GoosePublisher_publish is called.
  *
  * \param self GoosePublisher instance
- * \param stNum the state number of the next GOOSE message to send
+ * \param sqNum the sequence number of the next GOOSE message to send
  */
 LIB61850_API void
 GoosePublisher_setSqNum(GoosePublisher self, uint32_t sqNum);
