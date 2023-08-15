@@ -395,7 +395,6 @@ updateLogStatusInLCB(LogControl* self)
     }
 }
 
-
 static void
 freeDynamicDataSet(LogControl* self)
 {

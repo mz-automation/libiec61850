@@ -2345,7 +2345,7 @@ lookupGCB(MmsMapping* self, MmsDomain* domain, char* lnName, char* objectName)
 
 static MmsDataAccessError
 writeAccessGooseControlBlock(MmsMapping* self, MmsDomain* domain, char* variableIdOrig,
-        MmsValue* value)
+        MmsValue* value, MmsServerConnection connection)
 {
     char variableId[130];
 
@@ -2376,6 +2376,20 @@ writeAccessGooseControlBlock(MmsMapping* self, MmsDomain* domain, char* variable
 
     if (mmsGCB == NULL)
         return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+
+    /* check if write access to GoCB is allowed on this connection */
+    if (self->controlBlockAccessHandler)
+    {
+        LogicalNode* ln = MmsGooseControlBlock_getLogicalNode(mmsGCB);
+
+        LogicalDevice* ld = (LogicalDevice*)ln->parent;
+
+        ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer, connection);
+
+        if (self->controlBlockAccessHandler(self->controlBlockAccessHandlerParameter, clientConnection, ACSI_CLASS_GoCB, ld, ln, MmsGooseControlBlock_getName(mmsGCB), varName, IEC61850_CB_ACCESS_TYPE_WRITE) == false) {
+            return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+        }
+    }
 
     if (strcmp(varName, "GoEna") == 0) {
         if (MmsValue_getType(value) != MMS_BOOLEAN)
@@ -2619,7 +2633,7 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
 
     /* Goose control block - GO */
     if (isGooseControlBlock(separator))
-        return writeAccessGooseControlBlock(self, domain, variableId, value);
+        return writeAccessGooseControlBlock(self, domain, variableId, value, connection);
 
 #endif /* (CONFIG_INCLUDE_GOOSE_SUPPORT == 1) */
 
@@ -3063,7 +3077,7 @@ MmsMapping_installReadAccessHandler(MmsMapping* self, ReadAccessHandler handler,
 #if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
 
 static MmsValue*
-readAccessGooseControlBlock(MmsMapping* self, MmsDomain* domain, char* variableIdOrig)
+readAccessGooseControlBlock(MmsMapping* self, MmsDomain* domain, char* variableIdOrig, MmsServerConnection connection)
 {
     MmsValue* value = NULL;
 
@@ -3087,13 +3101,28 @@ readAccessGooseControlBlock(MmsMapping* self, MmsDomain* domain, char* variableI
 
     char* varName = MmsMapping_getNextNameElement(objectName);
 
-    if (varName != NULL)
+    if (varName)
         *(varName - 1) = 0;
 
     MmsGooseControlBlock mmsGCB = lookupGCB(self, domain, lnName, objectName);
 
-    if (mmsGCB != NULL) {
-        if (varName != NULL) {
+    if (mmsGCB) {
+
+        /* check if read access to GoCB is allowed on this connection */
+        if (self->controlBlockAccessHandler)
+        {
+            LogicalNode* ln = MmsGooseControlBlock_getLogicalNode(mmsGCB);
+
+            LogicalDevice* ld = (LogicalDevice*)ln->parent;
+
+            ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer, connection);
+
+            if (self->controlBlockAccessHandler(self->controlBlockAccessHandlerParameter, clientConnection, ACSI_CLASS_GoCB, ld, ln, MmsGooseControlBlock_getName(mmsGCB), varName, IEC61850_CB_ACCESS_TYPE_READ) == false) {
+                return &objectAccessDenied;
+            }
+        }
+
+        if (varName) {
             value = MmsValue_getSubElement(MmsGooseControlBlock_getMmsValues(mmsGCB),
                     MmsGooseControlBlock_getVariableSpecification(mmsGCB), varName);
         }
@@ -3106,7 +3135,6 @@ readAccessGooseControlBlock(MmsMapping* self, MmsDomain* domain, char* variableI
 }
 
 #endif /* (CONFIG_INCLUDE_GOOSE_SUPPORT == 1) */
-
 
 static MmsValue*
 mmsReadHandler(void* parameter, MmsDomain* domain, char* variableId, MmsServerConnection connection, bool isDirectAccess)
@@ -3137,7 +3165,7 @@ mmsReadHandler(void* parameter, MmsDomain* domain, char* variableId, MmsServerCo
 #if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
     /* GOOSE control blocks - GO */
     if (isGooseControlBlock(separator)) {
-        retValue = readAccessGooseControlBlock(self, domain, variableId);
+        retValue = readAccessGooseControlBlock(self, domain, variableId, connection);
         goto exit_function;
     }
 #endif
@@ -3145,7 +3173,7 @@ mmsReadHandler(void* parameter, MmsDomain* domain, char* variableId, MmsServerCo
 #if (CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT == 1)
     /* Sampled Value control blocks - MS/US */
     if (isSampledValueControlBlock(separator)) {
-        retValue = LIBIEC61850_SV_readAccessSampledValueControlBlock(self, domain, variableId);
+        retValue = LIBIEC61850_SV_readAccessSampledValueControlBlock(self, domain, variableId, connection);
         goto exit_function;
     }
 #endif
@@ -3683,9 +3711,9 @@ mmsReadAccessHandler (void* parameter, MmsDomain* domain, char* variableId, MmsS
                                         ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer,
                                                                                     connection);
 
-                                         if (self->controlBlockAccessHandler(self->controlBlockAccessHandlerParameter, clientConnection, ACSI_CLASS_SGCB, ld, ln, str, "", IEC61850_CB_ACCESS_TYPE_READ) == false) {
+                                        if (self->controlBlockAccessHandler(self->controlBlockAccessHandlerParameter, clientConnection, ACSI_CLASS_SGCB, ld, ln, str, "", IEC61850_CB_ACCESS_TYPE_READ) == false) {
                                             return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
-                                         }
+                                        }
                                     }
 
                                     return DATA_ACCESS_ERROR_SUCCESS;
