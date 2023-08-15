@@ -1781,6 +1781,26 @@ ReportControl_readAccess(ReportControl* rc, MmsMapping* mmsMapping, MmsServerCon
         clientConnection = private_IedServer_getClientConnectionByHandle(mmsMapping->iedServer, connection);
     }
 
+    if (mmsMapping->controlBlockAccessHandler)
+    {
+        ACSIClass acsiClass;
+
+        if (rc->rcb->buffered)
+            acsiClass = ACSI_CLASS_BRCB;
+        else
+            acsiClass = ACSI_CLASS_URCB;
+
+        LogicalNode* ln = rc->rcb->parent;
+
+        LogicalDevice* ld = (LogicalDevice*)ln->parent;
+
+        if (mmsMapping->controlBlockAccessHandler(mmsMapping->controlBlockAccessHandlerParameter, clientConnection, acsiClass, ld, ln, rc->name, elementName, IEC61850_CB_ACCESS_TYPE_READ) == false) {
+            accessError = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+            accessAllowed = false;
+        }
+    }
+
+    //TODO RBAC2 remove?
     if (mmsMapping->rcbAccessHandler) {
         if (mmsMapping->rcbAccessHandler(mmsMapping->rcbAccessHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_GET_PARAMETER) == false) {
             accessError = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
@@ -1890,9 +1910,30 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* eleme
 
     ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer, connection);
 
-    /* check if write access to RCB is allowed on this connection */
+    //TODO RBAC2 remove?
     if (self->rcbAccessHandler) {
         if (self->rcbAccessHandler(self->rcbAccessHandlerParameter, rc->rcb, clientConnection, RCB_EVENT_SET_PARAMETER) == false) {
+            retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+
+            goto exit_function_only_tracking;
+        }
+    }
+
+    /* check if write access to RCB is allowed on this connection */
+    if (self->controlBlockAccessHandler)
+    {
+        ACSIClass acsiClass;
+
+        if (rc->rcb->buffered)
+            acsiClass = ACSI_CLASS_BRCB;
+        else
+            acsiClass = ACSI_CLASS_URCB;
+
+        LogicalNode* ln = rc->rcb->parent;
+
+        LogicalDevice* ld = (LogicalDevice*)ln->parent;
+
+        if (self->controlBlockAccessHandler(self->controlBlockAccessHandlerParameter, clientConnection, acsiClass, ld, ln, rc->name, elementName, IEC61850_CB_ACCESS_TYPE_WRITE) == false) {
             retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
 
             goto exit_function_only_tracking;

@@ -1974,3 +1974,10 @@ IedServer_setListObjectsAccessHandler(IedServer self, IedServer_ListObjectsAcces
     self->mmsMapping->listObjectsAccessHandler = handler;
     self->mmsMapping->listObjectsAccessHandlerParameter = parameter;
 }
+
+void
+IedServer_setControlBlockAccessHandler(IedServer self, IedServer_ControlBlockAccessHandler handler, void* parameter)
+{
+    self->mmsMapping->controlBlockAccessHandler = handler;
+    self->mmsMapping->controlBlockAccessHandlerParameter = parameter;
+}

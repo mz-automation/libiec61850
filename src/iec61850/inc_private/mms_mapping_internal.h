@@ -355,6 +355,9 @@ struct sMmsMapping {
 
     IedServer_ListObjectsAccessHandler listObjectsAccessHandler;
     void* listObjectsAccessHandlerParameter;
+
+    IedServer_ControlBlockAccessHandler controlBlockAccessHandler;
+    void* controlBlockAccessHandlerParameter;
 };
 
 #endif /* MMS_MAPPING_INTERNAL_H_ */

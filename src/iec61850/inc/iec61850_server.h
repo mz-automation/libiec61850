@@ -2035,6 +2035,17 @@ typedef bool
 LIB61850_API void
 IedServer_setListObjectsAccessHandler(IedServer self, IedServer_ListObjectsAccessHandler handler, void* parameter);
 
+typedef enum {
+    IEC61850_CB_ACCESS_TYPE_READ,
+    IEC61850_CB_ACCESS_TYPE_WRITE
+} IedServer_ControlBlockAccessType;
+
+typedef bool
+(*IedServer_ControlBlockAccessHandler)(void* parameter, ClientConnection connection, ACSIClass acsiClass, LogicalDevice* ld, LogicalNode* ln, const char* objectName, const char* subObjectName, IedServer_ControlBlockAccessType accessType);
+
+LIB61850_API void
+IedServer_setControlBlockAccessHandler(IedServer self, IedServer_ControlBlockAccessHandler handler, void* parameter);
+
 /**@}*/
 
 /**@}*/

@@ -2701,6 +2701,42 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
 
             char* nameId = nextSep + 1;
 
+            /* check access permissions */
+            if (self->controlBlockAccessHandler)
+            {
+                MmsDataAccessError retVal = DATA_ACCESS_ERROR_SUCCESS;
+
+                ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer,
+                                                            connection);
+
+                LogicalDevice* ld = IedModel_getDevice(self->model, domain->domainName);
+
+                if (ld) {
+                    char lnName[65];
+                    strncpy(lnName, variableId, 64);
+                    lnName[64] = 0;
+                    lnName[lnNameLength] = 0;
+
+                    LogicalNode* ln = LogicalDevice_getLogicalNode(ld, lnName);
+
+                    if (ln) {
+                        if (self->controlBlockAccessHandler(self->controlBlockAccessHandlerParameter, clientConnection, ACSI_CLASS_SGCB, ld, ln, "SGCB", nameId, IEC61850_CB_ACCESS_TYPE_WRITE) == false) {
+                            retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+                        }
+                    }
+                    else {
+                        retVal = DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT;
+                    }
+                }
+                else {
+                    retVal = DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT;
+                }
+
+                if (retVal != DATA_ACCESS_ERROR_SUCCESS) {
+                    return retVal;
+                }
+            }
+
             if (strcmp(nameId, "ActSG") == 0) {
                 SettingGroup* sg = getSettingGroupByMmsDomain(self, domain);
                 MmsDataAccessError retVal = DATA_ACCESS_ERROR_SUCCESS;
@@ -2709,6 +2745,7 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
                     uint32_t val = MmsValue_toUint32(value);
 
                     if ((val > 0) && (val <= sg->sgcb->numOfSGs)) {
+
                         if (val != sg->sgcb->actSG) {
 
                             if (sg->actSgChangedHandler) {
@@ -3640,8 +3677,17 @@ mmsReadAccessHandler (void* parameter, MmsDomain* domain, char* variableId, MmsS
                             }
 
                             if (fc == IEC61850_FC_SP) {
-                                if (!strcmp(str, "SGCB")) {
-                                    //TODO RBAC2 add callback
+                                if (!strcmp(str, "SGCB"))
+                                {
+                                    if (self->controlBlockAccessHandler) {
+                                        ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer,
+                                                                                    connection);
+
+                                         if (self->controlBlockAccessHandler(self->controlBlockAccessHandlerParameter, clientConnection, ACSI_CLASS_SGCB, ld, ln, str, "", IEC61850_CB_ACCESS_TYPE_READ) == false) {
+                                            return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+                                         }
+                                    }
+
                                     return DATA_ACCESS_ERROR_SUCCESS;
                                 }
                             }
