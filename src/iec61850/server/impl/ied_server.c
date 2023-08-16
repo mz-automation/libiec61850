@@ -697,27 +697,6 @@ IedServer_setRCBEventHandler(IedServer self, IedServer_RCBEventHandler handler, 
 }
 
 void
-IedServer_setRCBAccessHandler(IedServer self, IedServer_RCBAccessHandler handler, void* parameter)
-{
-    self->mmsMapping->rcbAccessHandler = handler;
-    self->mmsMapping->rcbAccessHandlerParameter = parameter;
-}
-
-void
-IedServer_setLCBAccessHandler(IedServer self, IedServer_LCBAccessHandler handler, void* parameter)
-{
-    self->mmsMapping->lcbAccessHandler = handler;
-    self->mmsMapping->lcbAccessHandlerParameter = parameter;
-}
-
-void
-IedServer_setLogAccessHandler(IedServer self, IedServer_LogAccessHandler handler, void* parameter)
-{
-    self->mmsMapping->logAccessHandler = handler;
-    self->mmsMapping->logAccessHandlerParameter = parameter;
-}
-
-void
 IedServer_destroy(IedServer self)
 {
     if (self) {

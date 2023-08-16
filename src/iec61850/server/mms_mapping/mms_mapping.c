@@ -3980,17 +3980,29 @@ mmsReadJournalHandler(void* parameter, MmsDomain* domain, const char* logName, M
 
     MmsMapping* self = (MmsMapping*)parameter;
 
-    if (self->logAccessHandler) {
-        char logReference[130];
-        logReference[0] = 0;
-
-        StringUtils_appendString(logReference, 130, MmsDomain_getName(domain));
-        StringUtils_appendString(logReference, 130, "/");
-        StringUtils_appendString(logReference, 130, logName);
-
+    if (self->controlBlockAccessHandler) {
         ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer, connection);
 
-        allowAccess = self->logAccessHandler(self->logAccessHandlerParameter, logReference, clientConnection);
+        LogicalDevice* ld = IedModel_getDevice(self->model, domain->domainName);
+
+        LogicalNode* ln = NULL;
+
+        char str[65];
+
+        StringUtils_copyStringMax(str, 65, logName);
+
+        char* name = str;
+
+        char* separator = strchr(str, '$');
+
+        if (separator) {
+            name = separator + 1;
+            *separator = 0;
+
+            ln = LogicalDevice_getLogicalNode(ld, str);
+        }
+
+        allowAccess = self->controlBlockAccessHandler(self->controlBlockAccessHandlerParameter, clientConnection, ACSI_CLASS_LOG, ld, ln, name, NULL, IEC61850_CB_ACCESS_TYPE_READ);
     }
     
     return allowAccess;

@@ -523,18 +523,6 @@ LIBIEC61850_LOG_SVC_writeAccessLogControlBlock(MmsMapping* self, MmsDomain* doma
     }
     else 
     {
-        //TODO RBAC2 remove!?
-        if (self->lcbAccessHandler)
-        {
-            ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer, connection);
-
-            if (self->lcbAccessHandler(self->lcbAccessHandlerParameter, logControl->logControlBlock, clientConnection, LCB_EVENT_SET_PARAMETER) == false) {
-                retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
-
-                goto exit_function;
-            }
-        }
-
         if (self->controlBlockAccessHandler) {
             ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer, connection);
 
@@ -544,7 +532,7 @@ LIBIEC61850_LOG_SVC_writeAccessLogControlBlock(MmsMapping* self, MmsDomain* doma
                 LogicalNode* ln = LogicalDevice_getLogicalNode(ld, lnName);
 
                 if (ln) {
-                    if (self->controlBlockAccessHandler(self->controlBlockAccessHandlerParameter, clientConnection, ACSI_CLASS_LCB, ld, ln, logControl->name, varName, IEC61850_CB_ACCESS_TYPE_WRITE) == false) {
+                    if (self->controlBlockAccessHandler(self->controlBlockAccessHandlerParameter, clientConnection, ACSI_CLASS_LCB, ld, ln, logControl->logControlBlock->name, varName, IEC61850_CB_ACCESS_TYPE_WRITE) == false) {
                         retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
                     }
                 }
@@ -773,18 +761,6 @@ LIBIEC61850_LOG_SVC_readAccessControlBlock(MmsMapping* self, MmsDomain* domain, 
     {
         bool allowAccess = true;
 
-        //TODO RBAC2 remove?!
-        if (self->lcbAccessHandler)
-        {
-            ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer, connection);
-
-            if (self->lcbAccessHandler(self->lcbAccessHandlerParameter, logControl->logControlBlock, clientConnection, LCB_EVENT_GET_PARAMETER) == false) {
-                allowAccess = false;
-
-                value = &objectAccessDenied;
-            }
-        }
-
         if (self->controlBlockAccessHandler) {
             ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer, connection);
 
@@ -794,7 +770,7 @@ LIBIEC61850_LOG_SVC_readAccessControlBlock(MmsMapping* self, MmsDomain* domain, 
                 LogicalNode* ln = LogicalDevice_getLogicalNode(ld, lnName);
 
                 if (ln) {
-                    if (self->controlBlockAccessHandler(self->controlBlockAccessHandlerParameter, clientConnection, ACSI_CLASS_LCB, ld, ln, logControl->name, varName, IEC61850_CB_ACCESS_TYPE_READ) == false) {
+                    if (self->controlBlockAccessHandler(self->controlBlockAccessHandlerParameter, clientConnection, ACSI_CLASS_LCB, ld, ln, logControl->logControlBlock->name, varName, IEC61850_CB_ACCESS_TYPE_READ) == false) {
                         allowAccess = false;
 
                         value = &objectAccessDenied;

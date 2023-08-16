@@ -110,43 +110,41 @@ connectionHandler (IedServer self, ClientConnection connection, bool connected, 
  * This handler is called before the rcbEventHandler and can be use to allow or permit read or write access to the RCB
  */
 static bool
-rcbAccessHandler(void* parameter, ReportControlBlock* rcb, ClientConnection connection, IedServer_RCBEventType operation)
+controlBlockAccessHandler(void* parameter, ClientConnection connection, ACSIClass acsiClass, LogicalDevice* ld, LogicalNode* ln, const char* objectName, const char* subObjectName, IedServer_ControlBlockAccessType accessType)
 {
-    printf("RCB: %s access: %s\n", ReportControlBlock_getName(rcb), operation == RCB_EVENT_GET_PARAMETER ? "READ" : "WRITE");
+    printf("%s %s access %s/%s.%s.%s\n", ACSIClassToStr(acsiClass), accessType == IEC61850_CB_ACCESS_TYPE_WRITE ? "write" : "read", ld->name, ln->name, objectName, subObjectName);
 
-    if (operation == RCB_EVENT_GET_PARAMETER) {
-        return true;
+    /* allow only read access to LCBs */
+    if (acsiClass == ACSI_CLASS_LCB) {
+        if (accessType == IEC61850_CB_ACCESS_TYPE_READ)
+            return true;
+        else
+            return false;
     }
-    else {
-        /* change to false to disallow write access to control block */
-        return true;
+    
+    /* allow only read access to BRCBs */
+    if (acsiClass == ACSI_CLASS_BRCB) {
+        if (accessType == IEC61850_CB_ACCESS_TYPE_READ)
+            return true;
+        else
+            return false;
     }
-}
 
-static bool
-lcbAccessHandler(void* parameter, LogControlBlock* lcb, ClientConnection connection, IedServer_LCBEventType operation)
-{
-    printf("LCB: %s access: %s\n", LogControlBlock_getName(lcb), operation == LCB_EVENT_GET_PARAMETER ? "READ" : "WRITE");
-
-    if (operation == LCB_EVENT_GET_PARAMETER) {
-        return true;
-    }
-    else {
-        return false;
-    }
+    /* to all other control blocks allow read and write access */
+    return true;
 }
 
 static void
 rcbEventHandler(void* parameter, ReportControlBlock* rcb, ClientConnection connection, IedServer_RCBEventType event, const char* parameterName, MmsDataAccessError serviceError)
 {
-    printf("RCB: %s event: %i\n", ReportControlBlock_getName(rcb), event);
-
     if ((event == RCB_EVENT_SET_PARAMETER) || (event == RCB_EVENT_GET_PARAMETER)) {
+        printf("RCB: %s event: %i\n", ReportControlBlock_getName(rcb), event);
         printf("  param:  %s\n", parameterName);
         printf("  result: %i\n", serviceError);
     }
 
     if (event == RCB_EVENT_ENABLE) {
+        printf("RCB: %s event: %i\n", ReportControlBlock_getName(rcb), event);
         char* rptId = ReportControlBlock_getRptID(rcb);
         printf("   rptID:  %s\n", rptId);
         char* dataSet = ReportControlBlock_getDataSet(rcb);
@@ -286,14 +284,11 @@ main(int argc, char** argv)
 
     IedServer_setConnectionIndicationHandler(iedServer, (IedConnectionIndicationHandler) connectionHandler, NULL);
 
-    /* Install handler to perform access control on RCB */
-    IedServer_setRCBAccessHandler(iedServer, rcbAccessHandler, NULL);
-
-    /* Install handler to perform access control on LCB */
-    IedServer_setLCBAccessHandler(iedServer, lcbAccessHandler, NULL);
-
     /* Install handler to log RCB events */
     IedServer_setRCBEventHandler(iedServer, rcbEventHandler, NULL);
+
+    /* Install handler to control access to control blocks (RCBs, LCBs, GoCBs, SVCBs, SGCBs)*/
+    IedServer_setControlBlockAccessHandler(iedServer, controlBlockAccessHandler, NULL);
 
     /* By default access to variables with FC=DC and FC=CF is not allowed.
      * This allow to write to simpleIOGenericIO/GGIO1.NamPlt.vendor variable used
