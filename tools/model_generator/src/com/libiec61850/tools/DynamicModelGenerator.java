@@ -178,9 +178,6 @@ public class DynamicModelGenerator {
             if (connectedAP != null) {
                 smv = connectedAP.lookupSMV(ld.getInst(), svcb.getName());
 
-                if (smv == null)
-                    System.out.println("ConnectedAP not found for SMV");
-
                 if (smv == null) {
                     for (ConnectedAP ap : connectedAPs) {
                         smv = ap.lookupSMV(ld.getInst(), svcb.getName());
@@ -189,6 +186,9 @@ public class DynamicModelGenerator {
                             break;
                     }
                 }
+
+                if (smv == null)
+                    System.out.println("ConnectedAP not found for SMV");
 
                 if (smv != null)
                     smvAddress = smv.getAddress();
@@ -235,6 +235,18 @@ public class DynamicModelGenerator {
             
             if (connectedAP != null) {
                 gse = connectedAP.lookupGSE(ld.getInst(), gcb.getName());
+
+                if (gse == null) {
+                    for (ConnectedAP ap : connectedAPs) {
+                        gse = ap.lookupGSE(ld.getInst(), gcb.getName());
+
+                        if (gse != null)
+                            break;
+                    }
+                }
+
+                if (gse == null)
+                    System.out.println("ConnectedAP not found for GSE");
             	
                 if (gse != null)
                 	gseAddress = gse.getAddress();
