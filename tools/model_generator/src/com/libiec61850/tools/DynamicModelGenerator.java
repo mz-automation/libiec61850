@@ -61,6 +61,7 @@ public class DynamicModelGenerator {
     private ConnectedAP connectedAP;
     private IED ied = null;
     private boolean hasOwner = false;
+    private List<ConnectedAP> connectedAPs;
     
     public DynamicModelGenerator(InputStream stream, String icdFile, PrintStream output, String iedName, String accessPointName) 
     		throws SclParserException {
@@ -96,6 +97,8 @@ public class DynamicModelGenerator {
         	throw new SclParserException("No valid access point found!");
         
         this.connectedAP = sclParser.getConnectedAP(ied, accessPoint.getName());
+
+        this.connectedAPs = sclParser.getConnectedAPs();
         
         List<LogicalDevice> logicalDevices = accessPoint.getServer().getLogicalDevices();
 
@@ -174,6 +177,18 @@ public class DynamicModelGenerator {
 
             if (connectedAP != null) {
                 smv = connectedAP.lookupSMV(ld.getInst(), svcb.getName());
+
+                if (smv == null)
+                    System.out.println("ConnectedAP not found for SMV");
+
+                if (smv == null) {
+                    for (ConnectedAP ap : connectedAPs) {
+                        smv = ap.lookupSMV(ld.getInst(), svcb.getName());
+
+                        if (smv != null)
+                            break;
+                    }
+                }
 
                 if (smv != null)
                     smvAddress = smv.getAddress();
