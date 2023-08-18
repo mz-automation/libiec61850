@@ -150,24 +150,24 @@ LIB61850_API RSessionError
 RSession_setRemoteAddress(RSession self, const char* remoteAddress, int remotePort);
 
 /**
- * \brief Start listening on the local UDP port to receive remote messages (only for subscriber)
+ * \brief Start sending and receiving messages (bind to a local UDP port/interface)
  *
  * \param self the RSession instance
  *
  * \return R_SESSION_ERROR_OK on success, error code otherwise
  */
 LIB61850_API RSessionError
-RSession_startListening(RSession self);
+RSession_start(RSession self);
 
 /**
- * \brief Stop listening on the local UDP port (only for subscriber)
+ * \brief Stop sending and receiving messages.
  *
  * \param self the RSession instance
  *
  * \return R_SESSION_ERROR_OK on success, error code otherwise
  */
 LIB61850_API RSessionError
-RSession_stopListening(RSession self);
+RSession_stop(RSession self);
 
 /**
  * \brief Manually add a key to the RSession instance

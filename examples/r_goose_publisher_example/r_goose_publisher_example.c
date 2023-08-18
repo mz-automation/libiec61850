@@ -40,6 +40,8 @@ main(int argc, char **argv)
 
         signal(SIGINT, sigint_handler);
 
+        /* Call RSession_setLocalAddress to use a particular interface to send the R-GOOSE messages */
+        //RSession_setLocalAddress(rSession, "169.254.110.126", -1);
         RSession_setRemoteAddress(rSession, dstAddress, 102);
 
         LinkedList dataSetValues = LinkedList_create();
@@ -66,6 +68,8 @@ main(int argc, char **argv)
             GoosePublisher_setConfRev(publisher, 1);
             GoosePublisher_setDataSetRef(publisher, "simpleIOGenericIO/LLN0$AnalogValues");
             GoosePublisher_setTimeAllowedToLive(publisher, 500);
+
+            RSession_start(rSession);
 
             while (running) {
                 int i = 0;

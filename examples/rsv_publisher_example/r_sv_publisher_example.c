@@ -23,8 +23,8 @@ main(int argc, char** argv)
 
     if (rSession) {
 
-        //RSession_setRemoteAddress(sessionP, "192.168.56.101", 102);
-        //RSession_setRemoteAddress(rSession, "192.168.2.227", 102);
+        /* Call RSession_setLocalAddress to use a particular interface to send the R-GOOSE messages */
+        //RSession_setLocalAddress(rSession, "169.254.110.126", -1);
         RSession_setRemoteAddress(rSession, "230.0.10.10", 102);
 
         SVPublisher svPublisher = SVPublisher_createRemote(rSession, 0x4000);
@@ -60,6 +60,8 @@ main(int argc, char** argv)
 
             float fVal1 = 1234.5678f;
             float fVal2 = 0.12345f;
+
+            RSession_start(rSession);
 
             while (running) {
                 Timestamp ts;

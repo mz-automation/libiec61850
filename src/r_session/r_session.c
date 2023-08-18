@@ -232,7 +232,7 @@ RSession_setRemoteAddress(RSession self, const char* remoteAddress, int remotePo
 }
 
 RSessionError
-RSession_startListening(RSession self)
+RSession_start(RSession self)
 {
     if (self->socket) {
 
@@ -254,7 +254,7 @@ RSession_startListening(RSession self)
 }
 
 RSessionError
-RSession_stopListening(RSession self)
+RSession_stop(RSession self)
 {
     Semaphore_wait(self->socketLock);
 

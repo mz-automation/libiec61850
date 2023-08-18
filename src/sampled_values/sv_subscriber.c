@@ -312,7 +312,7 @@ SVReceiver_startThreadless(SVReceiver self)
 {
 #if (CONFIG_IEC61850_R_SMV == 1)
     if (self->session) {
-        if (RSession_startListening(self->session) == R_SESSION_ERROR_OK) {
+        if (RSession_start(self->session) == R_SESSION_ERROR_OK) {
             self->running = true;
 
             return true;
@@ -352,7 +352,7 @@ SVReceiver_stopThreadless(SVReceiver self)
 
 #if (CONFIG_IEC61850_R_SMV == 1)
     if (self->session) {
-        RSession_stopListening(self->session);
+        RSession_stop(self->session);
     }
 #endif /* (CONFIG_IEC61850_R_SMV == 1) */
 

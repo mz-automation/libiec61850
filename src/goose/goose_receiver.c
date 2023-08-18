@@ -1185,7 +1185,7 @@ GooseReceiver_startThreadless(GooseReceiver self)
 {
 #if (CONFIG_IEC61850_R_GOOSE == 1)
     if (self->session) {
-        if (RSession_startListening(self->session) == R_SESSION_ERROR_OK) {
+        if (RSession_start(self->session) == R_SESSION_ERROR_OK) {
             self->running = true;
 
             return (EthernetSocket)1;
