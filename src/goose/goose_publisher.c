@@ -104,8 +104,8 @@ GoosePublisher_createEx(CommParameters* parameters, const char* interfaceID, boo
 {
     GoosePublisher self = (GoosePublisher) GLOBAL_CALLOC(1, sizeof(struct sGoosePublisher));
 
-    if (self) {
-
+    if (self)
+    {
         if (prepareGooseBuffer(self, parameters, interfaceID, useVlanTag)) {
             self->timestamp = MmsValue_newUtcTimeByMsTime(Hal_getTimeInMs());
 
@@ -115,7 +115,6 @@ GoosePublisher_createEx(CommParameters* parameters, const char* interfaceID, boo
             GoosePublisher_destroy(self);
             self = NULL;
         }
-
     }
 
     return self;
@@ -130,20 +129,21 @@ GoosePublisher_create(CommParameters* parameters, const char* interfaceID)
 void
 GoosePublisher_destroy(GoosePublisher self)
 {
-    if (self) {
+    if (self)
+    {
         if (self->ethernetSocket) {
             Ethernet_destroySocket(self->ethernetSocket);
         }
 
         MmsValue_delete(self->timestamp);
 
-        if (self->goID != NULL)
+        if (self->goID)
             GLOBAL_FREEMEM(self->goID);
 
-        if (self->goCBRef != NULL)
+        if (self->goCBRef)
             GLOBAL_FREEMEM(self->goCBRef);
 
-        if (self->dataSetRef != NULL)
+        if (self->dataSetRef)
             GLOBAL_FREEMEM(self->dataSetRef);
 
         if (self->buffer)
@@ -156,18 +156,27 @@ GoosePublisher_destroy(GoosePublisher self)
 void
 GoosePublisher_setGoID(GoosePublisher self, char* goID)
 {
+    if (self->goID)
+        GLOBAL_FREEMEM(self->goID);
+
     self->goID = StringUtils_copyString(goID);
 }
 
 void
 GoosePublisher_setGoCbRef(GoosePublisher self, char* goCbRef)
 {
+    if (self->goCBRef)
+        GLOBAL_FREEMEM(self->goCBRef);
+
     self->goCBRef = StringUtils_copyString(goCbRef);
 }
 
 void
 GoosePublisher_setDataSetRef(GoosePublisher self, char* dataSetRef)
 {
+    if (self->dataSetRef)
+        GLOBAL_FREEMEM(self->dataSetRef);
+
     self->dataSetRef = StringUtils_copyString(dataSetRef);
 }
 
@@ -236,7 +245,7 @@ prepareGooseBuffer(GoosePublisher self, CommParameters* parameters, const char* 
 {
     uint8_t srcAddr[6];
 
-    if (interfaceID != NULL)
+    if (interfaceID)
         Ethernet_getInterfaceMACAddress(interfaceID, srcAddr);
     else
         Ethernet_getInterfaceMACAddress(CONFIG_ETHERNET_INTERFACE_ID, srcAddr);
@@ -248,7 +257,7 @@ prepareGooseBuffer(GoosePublisher self, CommParameters* parameters, const char* 
     uint16_t vlanId;
     uint16_t appId;
 
-    if (parameters == NULL) {
+    if (parameters) {
         dstAddr = defaultDstAddr;
         priority = CONFIG_GOOSE_DEFAULT_PRIORITY;
         vlanId = CONFIG_GOOSE_DEFAULT_VLAN_ID;
@@ -261,7 +270,7 @@ prepareGooseBuffer(GoosePublisher self, CommParameters* parameters, const char* 
         appId = parameters->appId;
     }
 
-    if (interfaceID != NULL)
+    if (interfaceID)
         self->ethernetSocket = Ethernet_createSocket(interfaceID, dstAddr);
     else
         self->ethernetSocket = Ethernet_createSocket(CONFIG_ETHERNET_INTERFACE_ID, dstAddr);
@@ -333,7 +342,7 @@ createGoosePayload(GoosePublisher self, LinkedList dataSetValues, uint8_t* buffe
 
     goosePduLength += BerEncoder_determineEncodedStringSize(self->dataSetRef);
 
-    if (self->goID != NULL)
+    if (self->goID)
         goosePduLength += BerEncoder_determineEncodedStringSize(self->goID);
     else
         goosePduLength += BerEncoder_determineEncodedStringSize(self->goCBRef);
@@ -356,7 +365,7 @@ createGoosePayload(GoosePublisher self, LinkedList dataSetValues, uint8_t* buffe
 
     LinkedList element = LinkedList_getNext(dataSetValues);
 
-    while (element != NULL) {
+    while (element) {
         MmsValue* dataSetEntry = (MmsValue*) element->data;
 
         if (dataSetEntry) {
@@ -397,7 +406,7 @@ createGoosePayload(GoosePublisher self, LinkedList dataSetValues, uint8_t* buffe
     bufPos = BerEncoder_encodeStringWithTag(0x82, self->dataSetRef, buffer, bufPos);
 
     /* Encode goID */
-    if (self->goID != NULL)
+    if (self->goID)
         bufPos = BerEncoder_encodeStringWithTag(0x83, self->goID, buffer, bufPos);
     else
         bufPos = BerEncoder_encodeStringWithTag(0x83, self->goCBRef, buffer, bufPos);
@@ -429,7 +438,7 @@ createGoosePayload(GoosePublisher self, LinkedList dataSetValues, uint8_t* buffe
     /* Encode data set entries */
     element = LinkedList_getNext(dataSetValues);
 
-    while (element != NULL) {
+    while (element) {
         MmsValue* dataSetEntry = (MmsValue*) element->data;
 
         if (dataSetEntry) {

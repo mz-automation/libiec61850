@@ -37,6 +37,7 @@ import com.libiec61850.scl.SclParserException;
 import com.libiec61850.scl.communication.ConnectedAP;
 import com.libiec61850.scl.communication.GSE;
 import com.libiec61850.scl.communication.PhyComAddress;
+import com.libiec61850.scl.communication.SMV;
 import com.libiec61850.scl.model.AccessPoint;
 import com.libiec61850.scl.model.DataAttribute;
 import com.libiec61850.scl.model.DataModelValue;
@@ -51,6 +52,7 @@ import com.libiec61850.scl.model.LogicalDevice;
 import com.libiec61850.scl.model.LogicalNode;
 import com.libiec61850.scl.model.ReportControlBlock;
 import com.libiec61850.scl.model.ReportSettings;
+import com.libiec61850.scl.model.SampledValueControl;
 import com.libiec61850.scl.model.Services;
 import com.libiec61850.scl.model.SettingControl;
 
@@ -59,6 +61,7 @@ public class DynamicModelGenerator {
     private ConnectedAP connectedAP;
     private IED ied = null;
     private boolean hasOwner = false;
+    private List<ConnectedAP> connectedAPs;
     
     public DynamicModelGenerator(InputStream stream, String icdFile, PrintStream output, String iedName, String accessPointName) 
     		throws SclParserException {
@@ -94,6 +97,8 @@ public class DynamicModelGenerator {
         	throw new SclParserException("No valid access point found!");
         
         this.connectedAP = sclParser.getConnectedAP(ied, accessPoint.getName());
+
+        this.connectedAPs = sclParser.getConnectedAPs();
         
         List<LogicalDevice> logicalDevices = accessPoint.getServer().getLogicalDevices();
 
@@ -166,6 +171,64 @@ public class DynamicModelGenerator {
         
         for (Log log : logicalNode.getLogs())
             output.println("LOG(" + log.getName() + ");");
+
+        for (SampledValueControl svcb : logicalNode.getSampledValueControlBlocks()) {
+            LogicalDevice ld = logicalNode.getParentLogicalDevice();
+
+            SMV smv = null;
+            PhyComAddress smvAddress = null;
+
+            if (connectedAP != null) {
+                smv = connectedAP.lookupSMV(ld.getInst(), svcb.getName());
+
+                if (smv == null) {
+                    for (ConnectedAP ap : connectedAPs) {
+                        smv = ap.lookupSMV(ld.getInst(), svcb.getName());
+
+                        if (smv != null)
+                            break;
+                    }
+                }
+
+                if (smv == null)
+                    System.out.println("ConnectedAP not found for SMV");
+
+                if (smv != null)
+                    smvAddress = smv.getAddress();
+            }
+            else
+                System.out.println("WARNING: IED \"" + ied.getName() + "\" has no connected access point!");
+
+            output.print("SMVC(");
+            output.print(svcb.getName() + " ");
+            output.print(svcb.getSmvID() + " ");
+            output.print(svcb.getDatSet() + " ");
+            output.print(svcb.getConfRev() + " ");
+            output.print(svcb.getSmpMod().getValue() + " ");
+            output.print(svcb.getSmpRate() + " ");
+            output.print(svcb.getSmvOpts().getIntValue() + " ");
+            output.print(svcb.isMulticast() ? "0" : "1");
+            output.print(")");
+
+            if (smvAddress != null) {
+                output.println("{");
+
+                output.print("PA(");
+                output.print(smvAddress.getVlanPriority() + " ");
+                output.print(smvAddress.getVlanId() + " ");
+                output.print(smvAddress.getAppId() + " ");
+
+                for (int i = 0; i < 6; i++)
+                    output.printf("%02x", smvAddress.getMacAddress()[i]);
+
+                output.println(");");
+
+                output.println("}");
+            }
+            else {
+                output.println(";");
+            }
+        }
         
         for (GSEControl gcb : logicalNode.getGSEControlBlocks()) {
             LogicalDevice ld = logicalNode.getParentLogicalDevice();
@@ -175,6 +238,18 @@ public class DynamicModelGenerator {
             
             if (connectedAP != null) {
                 gse = connectedAP.lookupGSE(ld.getInst(), gcb.getName());
+
+                if (gse == null) {
+                    for (ConnectedAP ap : connectedAPs) {
+                        gse = ap.lookupGSE(ld.getInst(), gcb.getName());
+
+                        if (gse != null)
+                            break;
+                    }
+                }
+
+                if (gse == null)
+                    System.out.println("ConnectedAP not found for GSE");
             	
                 if (gse != null)
                 	gseAddress = gse.getAddress();

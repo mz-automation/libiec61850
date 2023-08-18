@@ -1247,8 +1247,10 @@ public class StaticModelGenerator {
                 svString += "NULL, ";
             
             svString += svCB.getSmvOpts().getIntValue() + ", ";
+
+            svString += svCB.getSmpMod().getValue() + ", ";
             
-            svString += "0, " + svCB.getSmpRate() + ", ";
+            svString += svCB.getSmpRate() + ", ";
             
             svString += svCB.getConfRev() + ", ";
             
