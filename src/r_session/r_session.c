@@ -862,7 +862,7 @@ encodePacket(RSession self, uint8_t payloadType, uint8_t* buffer, int bufPos, RS
     while (element) {
 
         /* payload type ? (according to example in annex G) */
-        buffer[bufPos++] = 0x82;
+        buffer[bufPos++] = element->payloadType;
 
         /* simulation */
         buffer[bufPos++] = element->simulation;
@@ -964,6 +964,7 @@ RSession_sendMessage(RSession self, RSessionProtocol_SPDU_ID spduId, bool simula
         element.simulation = simulation;
         element.appId = appId;
         element.payload = payload;
+        element.payloadType = (spduId & 0x0f) + 0x80;
         element.payloadSize = payloadSize;
         element.nextElement = NULL;
 

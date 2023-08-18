@@ -69,6 +69,7 @@ struct sRSessionPayloadElement
 {
     bool simulation;
     uint16_t appId;
+    uint8_t payloadType;
     uint8_t* payload;
     int payloadSize;
     RSessionPayloadElement nextElement; /* NULL when no more elements follow */
