@@ -3497,7 +3497,7 @@ mmsListObjectsAccessHandler(void* parameter, MmsGetNameListType listType, MmsDom
 
                                 StringUtils_createStringFromBufferInBuffer(str, (uint8_t*) (doStart + 1), doEnd - doStart);
 
-                                subObjectName = StringUtils_copyStringToBuffer(doEnd + 2, subObjectBuf);
+                                subObjectName = StringUtils_copyStringToBufferAndReplace(doEnd + 2, subObjectBuf, '$', '.');
                             }
                         }
                     }
@@ -3564,7 +3564,7 @@ mmsListObjectsAccessHandler(void* parameter, MmsGetNameListType listType, MmsDom
 
                                 StringUtils_createStringFromBufferInBuffer(str, (uint8_t*) (doStart + 1), doEnd - doStart);
 
-                                subObjectName = StringUtils_copyStringToBuffer(doEnd + 2, subObjectBuf);
+                                subObjectName = StringUtils_copyStringToBufferAndReplace(doEnd + 2, subObjectBuf, '$', '.');
                             }
 
                             if (fc == IEC61850_FC_SP) {

@@ -1,7 +1,7 @@
 /*
  *  string_utilities.c
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013-2023 Michael Zillgith
  *
  *	This file is part of libIEC61850.
  *
@@ -61,6 +61,27 @@ StringUtils_copyStringToBuffer(const char* string, char* buffer)
     int newStringLength = strlen(string) + 1;
 
     memcpy(buffer, string, newStringLength);
+
+    return buffer;
+}
+
+char*
+StringUtils_copyStringToBufferAndReplace(const char* str, char* buffer, char oldChar, char newChar)
+{
+    int i = 0;
+
+    while (true)
+    {
+        if (str[i] == oldChar)
+            buffer[i] = newChar;
+        else
+            buffer[i] = str[i];
+
+        if (str[i] == 0)
+            break;
+
+        i++;
+    }
 
     return buffer;
 }
