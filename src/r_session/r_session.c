@@ -569,14 +569,15 @@ parseSessionMessage(RSession self, uint8_t* buffer, int msgSize, RSessionPayload
 
             DEBUG_PRINTF("ASDU %02x sim: %i APPID: %04x length: %i", payloadElementType, simulation, appId, asduLength);
 
-            if (payloadElementType == 0x82) {
+            if (payloadElementType == 0x81 ||
+                payloadElementType == 0x82) {
                 /* user payload */
 
                 //TODO copy ASDU payload to ???
                 handler(handlerParam, appId, buffer + bufPos, asduLength);
             }
             else {
-                DEBUG_PRINTF("unexpected payload type! (expect 82h)");
+                DEBUG_PRINTF("unexpected payload type! (expect 81h (GOOSE) or 82h (SV))");
             }
 
             bufPos += asduLength;
@@ -731,14 +732,15 @@ parseSessionMessage(RSession self, uint8_t* buffer, int msgSize, RSessionPayload
 
             DEBUG_PRINTF("ASDU %02x sim: %i APPID: %04x length: %i", payloadElementType, simulation, appId, asduLength);
 
-            if (payloadElementType == 0x82) {
+            if (payloadElementType == 0x81 ||
+                payloadElementType == 0x82) {
                 /* user payload */
 
                 //TODO copy ASDU payload to ???
                 handler(handlerParam, appId, buffer + bufPos, asduLength);
             }
             else {
-                DEBUG_PRINTF("unexpected payload type! (expect 82h)");
+                DEBUG_PRINTF("unexpected payload type! (expect 81h (GOOSE) or 82h (SV))");
             }
 
             bufPos += asduLength;
