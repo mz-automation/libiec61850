@@ -57,6 +57,7 @@ struct sSVReceiver {
 
 #if (CONFIG_MMS_THREADLESS_STACK == 0)
     Semaphore subscriberListLock;
+    Thread thread;
 #endif
 
 };
@@ -99,6 +100,7 @@ SVReceiver_create(void)
 
 #if (CONFIG_MMS_THREADLESS_STACK == 0)
         self->subscriberListLock = Semaphore_create(1);
+        self->thread = NULL;
 #endif
     }
 
@@ -193,15 +195,19 @@ SVReceiver_start(SVReceiver self)
         if (DEBUG_SV_SUBSCRIBER)
             printf("SV_SUBSCRIBER: SV receiver started for interface %s\n", self->interfaceId);
 
-        Thread thread = Thread_create((ThreadExecutionFunction) svReceiverLoop, (void*) self, true);
+#if (CONFIG_MMS_THREADLESS_STACK == 0)
 
-        if (thread) {
-            Thread_start(thread);
+        self->thread = Thread_create((ThreadExecutionFunction) svReceiverLoop, (void*) self, false);
+
+        if (self->thread) {
+            Thread_start(self->thread);
         }
         else {
             if (DEBUG_SV_SUBSCRIBER)
                 printf("SV_SUBSCRIBER: Failed to start thread\n");
         }
+
+#endif /* (CONFIG_MMS_THREADLESS_STACK == 0) */
     }
     else {
         if (DEBUG_SV_SUBSCRIBER)
@@ -220,16 +226,24 @@ void
 SVReceiver_stop(SVReceiver self)
 {
     if (self->running) {
-        SVReceiver_stopThreadless(self);
+        self->running = false;
 
-        while (self->stopped == false)
-            Thread_sleep(1);
+#if (CONFIG_MMS_THREADLESS_STACK == 0)
+        if (self->thread) {
+            Thread_destroy(self->thread);
+            self->thread = NULL;
+        }
+#endif /* (CONFIG_MMS_THREADLESS_STACK == 0) */
+
+        SVReceiver_stopThreadless(self);
     }
 }
 
 void
 SVReceiver_destroy(SVReceiver self)
 {
+    SVReceiver_stop(self);
+
     LinkedList_destroyDeep(self->subscriberList,
             (LinkedListValueDeleteFunction) SVSubscriber_destroy);
 
@@ -237,7 +251,12 @@ SVReceiver_destroy(SVReceiver self)
         GLOBAL_FREEMEM(self->interfaceId);
 
 #if (CONFIG_MMS_THREADLESS_STACK == 0)
-        Semaphore_destroy(self->subscriberListLock);
+    if (self->thread) {
+        Thread_destroy(self->thread);
+        self->thread = NULL;
+    }
+
+    Semaphore_destroy(self->subscriberListLock);
 #endif
 
     GLOBAL_FREEMEM(self->buffer);
