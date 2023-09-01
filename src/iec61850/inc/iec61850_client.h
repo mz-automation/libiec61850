@@ -2467,20 +2467,6 @@ IedConnection_getServerDirectory(IedConnection self, IedClientError* error, bool
 LIB61850_API LinkedList /*<char*>*/
 IedConnection_getLogicalDeviceDirectory(IedConnection self, IedClientError* error, const char* logicalDeviceName);
 
-typedef enum {
-    ACSI_CLASS_DATA_OBJECT,
-    ACSI_CLASS_DATA_SET,
-    ACSI_CLASS_BRCB,
-    ACSI_CLASS_URCB,
-    ACSI_CLASS_LCB,
-    ACSI_CLASS_LOG,
-    ACSI_CLASS_SGCB,
-    ACSI_CLASS_GoCB,
-    ACSI_CLASS_GsCB,
-    ACSI_CLASS_MSVCB,
-    ACSI_CLASS_USVCB
-} ACSIClass;
-
 /**
  * \brief returns a list of all MMS variables that are children of the given logical node
  *

@@ -40,6 +40,19 @@ StringUtils_copyStringMax(char* dest, int maxBufferSize, const char* str1);
 LIB61850_INTERNAL char*
 StringUtils_copyStringToBuffer(const char* string, char* buffer);
 
+/**
+ * \brief Copy string to buffer and replace characters
+ *
+ * NOTE: str should be a 0 terminated string. The terminating 0 is also copied.
+ *
+ * \param str the source string to copy
+ * \param buffer the destination buffer
+ * \param oldChar the character that has to be replaced while copying
+ * \param newChar the replacement character
+ */
+LIB61850_INTERNAL char*
+StringUtils_copyStringToBufferAndReplace(const char* str, char* buffer, char oldChar, char newChar);
+
 LIB61850_INTERNAL char*
 StringUtils_copySubString(char* startPos, char* endPos);
 
