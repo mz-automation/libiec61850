@@ -32,6 +32,11 @@
 extern "C" {
 #endif
 
+/**
+ * \defgroup goosepub_api_group IEC 61850 GOOSE publisher API
+ */
+/**@{*/
+
 #ifndef GOOSE_SV_COMM_PARAMETERS
 #define GOOSE_SV_COMM_PARAMETERS
 
@@ -209,5 +214,7 @@ GoosePublisher_reset(GoosePublisher self);
 #ifdef __cplusplus
 }
 #endif
+
+/**@}*/
 
 #endif /* GOOSE_PUBLISHER_H_ */

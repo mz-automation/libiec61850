@@ -792,6 +792,7 @@ INPUT                  = "iec61850/inc/iec61850_client.h" \
                          "iec61850/inc/iec61850_cdc.h" \
                          "goose/goose_subscriber.h" \
                          "goose/goose_receiver.h" \
+                         "goose/goose_publisher.h" \
                          "sampled_values/sv_subscriber.h" \
                          "sampled_values/sv_publisher.h" \
                          "mms/inc/mms_types.h" \
