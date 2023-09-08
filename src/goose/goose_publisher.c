@@ -219,16 +219,16 @@ prepareGooseBuffer(GoosePublisher self, CommParameters* parameters, const char* 
     uint16_t appId;
 
     if (parameters) {
-        dstAddr = defaultDstAddr;
-        priority = CONFIG_GOOSE_DEFAULT_PRIORITY;
-        vlanId = CONFIG_GOOSE_DEFAULT_VLAN_ID;
-        appId = CONFIG_GOOSE_DEFAULT_APPID;
-    }
-    else {
         dstAddr = parameters->dstAddress;
         priority = parameters->vlanPriority;
         vlanId = parameters->vlanId;
         appId = parameters->appId;
+    }
+    else {
+        dstAddr = defaultDstAddr;
+        priority = CONFIG_GOOSE_DEFAULT_PRIORITY;
+        vlanId = CONFIG_GOOSE_DEFAULT_VLAN_ID;
+        appId = CONFIG_GOOSE_DEFAULT_APPID;
     }
 
     if (interfaceID)
@@ -238,6 +238,12 @@ prepareGooseBuffer(GoosePublisher self, CommParameters* parameters, const char* 
 
     if (self->ethernetSocket) {
         self->buffer = (uint8_t*) GLOBAL_MALLOC(GOOSE_MAX_MESSAGE_SIZE);
+
+        if (self->buffer == NULL) {
+            Ethernet_destroySocket(self->ethernetSocket);
+            self->ethernetSocket = NULL;
+            return false;
+        }
 
         memcpy(self->buffer, dstAddr, 6);
         memcpy(self->buffer + 6, srcAddr, 6);
