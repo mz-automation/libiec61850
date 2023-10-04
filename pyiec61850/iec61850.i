@@ -111,7 +111,7 @@ void GooseSubscriber_setDstMac(GooseSubscriber subscriber,
 #include "eventHandlers/gooseHandler.hpp"
 #include "eventHandlers/commandTermHandler.hpp"
 #include "eventHandlers/controlActionHandler.hpp"
-std::map< std::string, EventSubscriber*> EventSubscriber::m_subscriber_map = {};
+std::map< std::string, EventSubscriber*> EventSubscriber::m_subscriber_map;
 %}
 
 %include "eventHandlers/eventHandler.hpp"

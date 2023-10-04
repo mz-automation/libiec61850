@@ -8,7 +8,7 @@ Then compile the library and install it. CMake and swig will automatically detec
 
 pyiec61850 library is to be imported calling 
 ```python
-import iec61850
+import pyiec61850 as iec61850
 ```
 # Client tutorial
 
