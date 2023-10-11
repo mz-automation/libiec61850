@@ -2,14 +2,27 @@
 Before building you should install swig and python.
 To build python bindings you have to turn on the BUILD\_PYTHON\_BINDINGS flag in CMake from cmake-gui or in command line:
 ```sh
-$ cmake -DBUILD_PYTHON_BINDINGS=ON .
+$ mkdir build && cd build
+$ cmake -DBUILD_PYTHON_BINDINGS=ON ..
 ```
-Then compile the library and install it. CMake and swig will automatically detect your python version and install the python library in python library directories.
+
+Then compile the library and install it:
+```sh
+$ make
+$ sudo make install
+```
+CMake and swig will automatically detect your python version and install the python library in python library directories.
+
+For running the integrated tests:
+```sh
+$ make test
+```
 
 pyiec61850 library is to be imported calling 
 ```python
-import iec61850
+import pyiec61850 as iec61850
 ```
+
 # Client tutorial
 
 The python bindings works similarly to the basic C library. However there are some differences:
