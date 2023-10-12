@@ -15,6 +15,28 @@ FileDirectoryEntry toFileDirectoryEntry(void* data)
 {
     return (FileDirectoryEntry) data;
 }
+FILE* openFile(char* name)
+{
+    return fopen(name,"w+");
+}
+
+static bool IedConnection_downloadHandler(void* parameter, uint8_t* buffer, uint32_t bytesRead)
+{
+    FILE* fp = (FILE*) parameter;
+
+    if (bytesRead > 0) {
+        if (fwrite(buffer, bytesRead, 1, fp) != 1) {
+            printf("Failed to write local file!\n");
+            return false;
+        }
+    }
+    fclose(fp);
+    return true;
+}
+
+IedClientGetFileHandler getIedconnectionDownloadHandler(){
+    return (IedClientGetFileHandler) &IedConnection_downloadHandler;
+}
 ModelNode* toModelNode(LogicalNode * ln)
 {
     return (ModelNode*) ln;
@@ -57,6 +79,10 @@ DataObject* toDataObject(ModelNode * MN)
 /* User-defined data types, also used: */
 typedef uint64_t msSinceEpoch;
 typedef uint64_t nsSinceEpoch;
+
+FILE* openFile(char*);
+static bool IedConnection_downloadHandler(void*, uint8_t*, uint32_t);
+IedClientGetFileHandler getIedconnectionDownloadHandler();
 
 ModelNode* toModelNode(LogicalNode *);
 ModelNode* toModelNode(DataObject *);
