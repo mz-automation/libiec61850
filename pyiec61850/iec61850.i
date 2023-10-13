@@ -24,9 +24,13 @@ static bool IedConnection_downloadHandler(void* parameter, uint8_t* buffer, uint
 {
     FILE* fp = (FILE*) parameter;
 
+    if(fp == NULL){
+        return false;
+    }
     if (bytesRead > 0) {
         if (fwrite(buffer, bytesRead, 1, fp) != 1) {
             printf("Failed to write local file!\n");
+            fclose(fp);
             return false;
         }
     }
