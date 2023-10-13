@@ -62,13 +62,13 @@ FileSystem_openFile(char* fileName, bool readWrite)
 int
 FileSystem_readFile(FileHandle handle, uint8_t* buffer, int maxSize)
 {
-    return fread(buffer, maxSize, 1, (FILE*) handle);
+    return fread(buffer, 1, maxSize, (FILE*) handle);
 }
 
 int
 FileSystem_writeFile(FileHandle handle, uint8_t* buffer, int size)
 {
-    return fwrite(buffer, size, 1, (FILE*) handle);
+    return fwrite(buffer, 1, size, (FILE*) handle);
 }
 
 void
