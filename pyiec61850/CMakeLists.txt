@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.12)
 
-set(CMAKE_POLICY_DEFAULT_CMP0078 NEW)
+cmake_policy(SET CMP0078 NEW)
+
+if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.14.0")
+    cmake_policy(SET CMP0086 NEW)
+endif()
 
 find_package(SWIG REQUIRED)
 include(${SWIG_USE_FILE})
@@ -12,6 +16,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 set(CMAKE_SWIG_FLAGS "")
 set_property(SOURCE iec61850.i PROPERTY CPLUSPLUS ON)
+set_property(SOURCE iec61850.i PROPERTY SWIG_MODULE_NAME pyiec61850)
 
 if(WIN32)
     set(LIBS iec61850 ws2_32)
@@ -29,7 +34,7 @@ swig_link_libraries(pyiec61850 ${LIBS})
 # Finding python modules install path
 execute_process(
 	COMMAND ${Python_EXECUTABLE} -c
-	"from distutils.sysconfig import get_python_lib; import sys; sys.stdout.write(get_python_lib())"
+	"from sysconfig import get_path; import sys; sys.stdout.write(get_path('platlib'))"
 	OUTPUT_VARIABLE PYTHON_SITE_DIR
 )
 
