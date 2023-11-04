@@ -724,9 +724,23 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
             success = true;
             dataSetValue = NULL;
 
-            if (rc->buffered) {
-                rc->isBuffering = false;
-                purgeBuf(rc);
+            if (rc->dataSet) {
+                if (rc->buffered) {
+                    rc->isBuffering = false;
+                    purgeBuf(rc);
+                }
+
+                /* delete pending events */
+                deleteDataSetValuesShadowBuffer(rc);
+
+                if (isUsedDataSetDynamic) {
+                    if (rc->dataSet) {
+                        MmsMapping_freeDynamicallyCreatedDataSet(rc->dataSet);
+                    }
+                }
+
+                /* release used data set */
+                rc->dataSet = NULL;
             }
         }
         else
@@ -739,7 +753,6 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
 
     /* check if old and new data sets are the same */
     if (rc->dataSet && dataSetValue) {
-
         const char* dataSetLdName = rc->dataSet->logicalDeviceName;
         const char* dataSetName = rc->dataSet->name;
         const char* newDataSetName = MmsValue_toString(dataSetValue);
@@ -790,7 +803,8 @@ updateReportDataset(MmsMapping* mapping, ReportControl* rc, MmsValue* newDatSet,
         }
     }
 
-    if (dataSetValue) {
+    if (dataSetValue)
+    {
         const char* dataSetName = MmsValue_toString(dataSetValue);
 
         DataSet* dataSet = IedModel_lookupDataSet(mapping->model, dataSetName);
