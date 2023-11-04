@@ -162,6 +162,9 @@ typedef enum {
     /** Received an invalid response message from the server */
     IED_ERROR_MALFORMED_MESSAGE = 34,
 
+    /** Service was not executed because required resource is still in use */
+    IED_ERROR_OBJECT_CONSTRAINT_CONFLICT = 35,
+
     /** Service not implemented */
     IED_ERROR_SERVICE_NOT_IMPLEMENTED = 98,
 

@@ -436,7 +436,17 @@ convertServiceErrorToMmsError(MmsServiceError serviceError)
         break;
 
     case 4: /* class: service */
-        mmsError = MMS_ERROR_SERVICE_OTHER;
+
+        switch (serviceError.errorCode)
+        {
+        case 5:
+            mmsError = MMS_ERROR_SERVICE_OBJECT_CONSTRAINT_CONFLICT;
+            break;
+
+        default:
+            mmsError = MMS_ERROR_SERVICE_OTHER;
+            break;
+        }
         break;
 
     case 5: /* class: service-preempt */

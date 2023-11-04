@@ -768,7 +768,6 @@ MmsMapping_ObjectReferenceToVariableAccessSpec(char* objectReference)
     return accessSpec;
 }
 
-
 static int
 getNumberOfDigits(int value)
 {
