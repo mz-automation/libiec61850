@@ -27,6 +27,7 @@
 
 #include "libiec61850_platform_includes.h"
 #include "stack_config.h"
+#include <inttypes.h>
 
 #define READ_BUFFER_MAX_SIZE 1024
 
@@ -449,6 +450,15 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
                                     if (sscanf(valueIndicator + 1, "%i", &value) != 1) goto exit_error;
                                     dataAttribute->mmsValue = MmsValue_newBitString(-6);
                                     MmsValue_setBitStringFromIntegerBigEndian(dataAttribute->mmsValue, value);
+                                }
+                                break;
+
+                            case IEC61850_TIMESTAMP:
+                            case IEC61850_ENTRY_TIME:
+                                {
+                                    uint64_t value;
+                                    if (sscanf(valueIndicator + 1, "%" SCNu64, &value) != 1) goto exit_error;
+                                    dataAttribute->mmsValue = MmsValue_newUtcTimeByMsTime(value);
                                 }
                                 break;
 
