@@ -23,6 +23,38 @@ sigint_handler(int signalId)
     running = 0;
 }
 
+static const char*
+ACSIClassToStr(ACSIClass acsiClass)
+{
+    switch (acsiClass)
+    {
+        case ACSI_CLASS_BRCB:
+            return "BRCB";
+        case ACSI_CLASS_URCB:
+            return "URCB";
+        case ACSI_CLASS_GoCB:
+            return "GoCB";
+        case ACSI_CLASS_SGCB:
+            return "SGCB";
+        case ACSI_CLASS_LCB:
+            return "LCB";
+        case ACSI_CLASS_GsCB:
+            return "GsCB";
+        case ACSI_CLASS_LOG:
+            return "log";
+        case ACSI_CLASS_DATA_SET:
+            return "dataset";
+        case ACSI_CLASS_DATA_OBJECT:
+            return "data-object";
+        case ACSI_CLASS_MSVCB:
+            return "MSVCB";
+        case ACSI_CLASS_USVCB:
+            return "USVCB";
+        default:
+            return "unknown";
+    }
+}
+
 static ControlHandlerResult
 controlHandlerForBinaryOutput(ControlAction action, void* parameter, MmsValue* value, bool test)
 {
@@ -65,7 +97,6 @@ controlHandlerForBinaryOutput(ControlAction action, void* parameter, MmsValue* v
     return CONTROL_RESULT_OK;
 }
 
-
 static void
 connectionHandler (IedServer self, ClientConnection connection, bool connected, void* parameter)
 {
@@ -79,43 +110,41 @@ connectionHandler (IedServer self, ClientConnection connection, bool connected, 
  * This handler is called before the rcbEventHandler and can be use to allow or permit read or write access to the RCB
  */
 static bool
-rcbAccessHandler(void* parameter, ReportControlBlock* rcb, ClientConnection connection, IedServer_RCBEventType operation)
+controlBlockAccessHandler(void* parameter, ClientConnection connection, ACSIClass acsiClass, LogicalDevice* ld, LogicalNode* ln, const char* objectName, const char* subObjectName, IedServer_ControlBlockAccessType accessType)
 {
-    printf("RCB: %s access: %s\n", ReportControlBlock_getName(rcb), operation == RCB_EVENT_GET_PARAMETER ? "READ" : "WRITE");
+    printf("%s %s access %s/%s.%s.%s\n", ACSIClassToStr(acsiClass), accessType == IEC61850_CB_ACCESS_TYPE_WRITE ? "write" : "read", ld->name, ln->name, objectName, subObjectName);
 
-    if (operation == RCB_EVENT_GET_PARAMETER) {
-        return true;
+    /* allow only read access to LCBs */
+    if (acsiClass == ACSI_CLASS_LCB) {
+        if (accessType == IEC61850_CB_ACCESS_TYPE_READ)
+            return true;
+        else
+            return false;
     }
-    else {
-        /* change to false to disallow write access to control block */
-        return true;
+    
+    /* allow only read access to BRCBs */
+    if (acsiClass == ACSI_CLASS_BRCB) {
+        if (accessType == IEC61850_CB_ACCESS_TYPE_READ)
+            return true;
+        else
+            return false;
     }
-}
 
-static bool
-lcbAccessHandler(void* parameter, LogControlBlock* lcb, ClientConnection connection, IedServer_LCBEventType operation)
-{
-    printf("LCB: %s access: %s\n", LogControlBlock_getName(lcb), operation == LCB_EVENT_GET_PARAMETER ? "READ" : "WRITE");
-
-    if (operation == LCB_EVENT_GET_PARAMETER) {
-        return true;
-    }
-    else {
-        return false;
-    }
+    /* to all other control blocks allow read and write access */
+    return true;
 }
 
 static void
 rcbEventHandler(void* parameter, ReportControlBlock* rcb, ClientConnection connection, IedServer_RCBEventType event, const char* parameterName, MmsDataAccessError serviceError)
 {
-    printf("RCB: %s event: %i\n", ReportControlBlock_getName(rcb), event);
-
     if ((event == RCB_EVENT_SET_PARAMETER) || (event == RCB_EVENT_GET_PARAMETER)) {
+        printf("RCB: %s event: %i\n", ReportControlBlock_getName(rcb), event);
         printf("  param:  %s\n", parameterName);
         printf("  result: %i\n", serviceError);
     }
 
     if (event == RCB_EVENT_ENABLE) {
+        printf("RCB: %s event: %i\n", ReportControlBlock_getName(rcb), event);
         char* rptId = ReportControlBlock_getRptID(rcb);
         printf("   rptID:  %s\n", rptId);
         char* dataSet = ReportControlBlock_getDataSet(rcb);
@@ -137,13 +166,37 @@ dataSetAccessHandler(void* parameter, ClientConnection connection, IedServer_Dat
 static MmsDataAccessError
 readAccessHandler(LogicalDevice* ld, LogicalNode* ln, DataObject* dataObject, FunctionalConstraint fc, ClientConnection connection, void* parameter)
 {
-    printf("Read access to %s/%s.%s\n", ld->name, ln->name, dataObject->name);
+    printf("Read access to %s/%s.%s\n", ld->name, ln->name, dataObject ? dataObject->name : "-");
 
-    if (!strcmp(ln->name, "GGIO1") && !strcmp(dataObject->name, "AnIn1")) {
-        return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+    if (dataObject == NULL) {
+        if (!strcmp(ln->name, "GGIO1")) {
+            return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+        }
+    }
+    else {
+        if (!strcmp(ln->name, "GGIO1") && !strcmp(dataObject->name, "AnIn1")) {
+            return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+        }
     }
 
     return DATA_ACCESS_ERROR_SUCCESS;
+}
+
+static bool
+listObjectsAccessHandler(void* parameter, ClientConnection connection, ACSIClass acsiClass, LogicalDevice* ld, LogicalNode* ln, const char* objectName, const char* subObjectName, FunctionalConstraint fc)
+{
+    if (subObjectName)
+        printf("list objects access[2] to %s/%s.%s.%s [acsi-class: %s(%i)] [FC=%s]\n", ld->name, ln ? ln->name : "-", objectName, subObjectName, ACSIClassToStr(acsiClass), acsiClass, FunctionalConstraint_toString(fc));
+    else
+        printf("list objects access[2] to %s/%s.%s [acsi-class: %s(%i)] [FC=%s]\n", ld->name, ln ? ln->name : "-", objectName, ACSIClassToStr(acsiClass), acsiClass, FunctionalConstraint_toString(fc));
+
+    // if (acsiClass == ACSI_CLASS_BRCB) {
+    //     return true;
+    // }
+
+    // return false;
+
+    return true;
 }
 
 static bool
@@ -231,14 +284,11 @@ main(int argc, char** argv)
 
     IedServer_setConnectionIndicationHandler(iedServer, (IedConnectionIndicationHandler) connectionHandler, NULL);
 
-    /* Install handler to perform access control on RCB */
-    IedServer_setRCBAccessHandler(iedServer, rcbAccessHandler, NULL);
-
-    /* Install handler to perform access control on LCB */
-    IedServer_setLCBAccessHandler(iedServer, lcbAccessHandler, NULL);
-
     /* Install handler to log RCB events */
     IedServer_setRCBEventHandler(iedServer, rcbEventHandler, NULL);
+
+    /* Install handler to control access to control blocks (RCBs, LCBs, GoCBs, SVCBs, SGCBs)*/
+    IedServer_setControlBlockAccessHandler(iedServer, controlBlockAccessHandler, NULL);
 
     /* By default access to variables with FC=DC and FC=CF is not allowed.
      * This allow to write to simpleIOGenericIO/GGIO1.NamPlt.vendor variable used
@@ -257,6 +307,9 @@ main(int argc, char** argv)
     IedServer_setReadAccessHandler(iedServer, readAccessHandler, NULL);
 
     IedServer_setDirectoryAccessHandler(iedServer, directoryAccessHandler, NULL);
+
+    /* control visibility of data objects in directory (get-name-list) and variable description (get-variable-access-attributes) services */
+    IedServer_setListObjectsAccessHandler(iedServer, listObjectsAccessHandler, NULL);
 
     /* MMS server will be instructed to start listening for client connections. */
     IedServer_start(iedServer, tcpPort);

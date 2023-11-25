@@ -352,6 +352,13 @@ MmsServer_installWriteHandler(MmsServer self, MmsWriteVariableHandler writeHandl
 }
 
 void
+MmsServer_installListAccessHandler(MmsServer self, MmsListAccessHandler listAccessHandler, void* parameter)
+{
+    self->listAccessHandler = listAccessHandler;
+    self->listAccessHandlerParameter = parameter;
+}
+
+void
 MmsServer_installConnectionHandler(MmsServer self, MmsConnectionHandler connectionHandler, void* parameter)
 {
     self->connectionHandler = connectionHandler;
@@ -577,6 +584,34 @@ mmsServer_getValue(MmsServer self, MmsDomain* domain, char* itemId, MmsServerCon
 
 exit_function:
     return value;
+}
+
+MmsDataAccessError
+mmsServer_checkReadAccess(MmsServer self, MmsDomain* domain, char* itemId, MmsServerConnection connection, bool isDirectAccess)
+{
+    MmsDataAccessError accessError = DATA_ACCESS_ERROR_SUCCESS;
+
+    printf("mmsServer_checkReadAccess(%s/%s)\n", domain->domainName, itemId);
+
+    if (self->readAccessHandler) {
+        accessError =
+                self->readAccessHandler(self->readAccessHandlerParameter, (domain == (MmsDomain*) self->device) ? NULL : domain,
+                        itemId, connection, isDirectAccess);
+    }
+
+    return accessError;
+}
+
+bool
+mmsServer_checkListAccess(MmsServer self, MmsGetNameListType listType, MmsDomain* domain, char* itemId, MmsServerConnection connection)
+{
+    bool allowAccess = true;
+
+    if (self->listAccessHandler) {
+        allowAccess = self->listAccessHandler(self->listAccessHandlerParameter, listType, domain, itemId, connection);
+    }
+
+    return allowAccess;
 }
 
 MmsDevice*

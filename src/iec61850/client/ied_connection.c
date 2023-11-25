@@ -1,7 +1,7 @@
 /*
  *  ied_connection.c
  *
- *  Copyright 2013-2022 Michael Zillgith
+ *  Copyright 2013-2023 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -107,6 +107,9 @@ iedConnection_mapMmsErrorToIedError(MmsError mmsError)
 
     case MMS_ERROR_ACCESS_TEMPORARILY_UNAVAILABLE:
         return IED_ERROR_TEMPORARILY_UNAVAILABLE;
+
+    case MMS_ERROR_SERVICE_OBJECT_CONSTRAINT_CONFLICT:
+        return IED_ERROR_OBJECT_CONSTRAINT_CONFLICT;
 
     default:
         return IED_ERROR_UNKNOWN;

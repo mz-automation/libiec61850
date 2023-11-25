@@ -697,27 +697,6 @@ IedServer_setRCBEventHandler(IedServer self, IedServer_RCBEventHandler handler, 
 }
 
 void
-IedServer_setRCBAccessHandler(IedServer self, IedServer_RCBAccessHandler handler, void* parameter)
-{
-    self->mmsMapping->rcbAccessHandler = handler;
-    self->mmsMapping->rcbAccessHandlerParameter = parameter;
-}
-
-void
-IedServer_setLCBAccessHandler(IedServer self, IedServer_LCBAccessHandler handler, void* parameter)
-{
-    self->mmsMapping->lcbAccessHandler = handler;
-    self->mmsMapping->lcbAccessHandlerParameter = parameter;
-}
-
-void
-IedServer_setLogAccessHandler(IedServer self, IedServer_LogAccessHandler handler, void* parameter)
-{
-    self->mmsMapping->logAccessHandler = handler;
-    self->mmsMapping->logAccessHandlerParameter = parameter;
-}
-
-void
 IedServer_destroy(IedServer self)
 {
     if (self) {
@@ -1966,4 +1945,18 @@ IedServer_setDirectoryAccessHandler(IedServer self, IedServer_DirectoryAccessHan
 {
     self->mmsMapping->directoryAccessHandler = handler;
     self->mmsMapping->directoryAccessHandlerParameter = parameter;
+}
+
+void
+IedServer_setListObjectsAccessHandler(IedServer self, IedServer_ListObjectsAccessHandler handler, void* parameter)
+{
+    self->mmsMapping->listObjectsAccessHandler = handler;
+    self->mmsMapping->listObjectsAccessHandlerParameter = parameter;
+}
+
+void
+IedServer_setControlBlockAccessHandler(IedServer self, IedServer_ControlBlockAccessHandler handler, void* parameter)
+{
+    self->mmsMapping->controlBlockAccessHandler = handler;
+    self->mmsMapping->controlBlockAccessHandlerParameter = parameter;
 }

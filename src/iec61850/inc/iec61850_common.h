@@ -55,6 +55,21 @@ typedef struct {
     uint8_t dstAddress[6];
 } PhyComAddress;
 
+/** IEC 61850 ACSI classes */
+typedef enum {
+    ACSI_CLASS_DATA_OBJECT,
+    ACSI_CLASS_DATA_SET,
+    ACSI_CLASS_BRCB,
+    ACSI_CLASS_URCB,
+    ACSI_CLASS_LCB,
+    ACSI_CLASS_LOG,
+    ACSI_CLASS_SGCB,
+    ACSI_CLASS_GoCB,
+    ACSI_CLASS_GsCB,
+    ACSI_CLASS_MSVCB,
+    ACSI_CLASS_USVCB
+} ACSIClass;
+
 /**
  * \brief Control model (represented by "ctlModel" attribute)
  */
