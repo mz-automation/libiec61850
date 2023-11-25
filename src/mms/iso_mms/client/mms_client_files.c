@@ -180,7 +180,6 @@ exit_reject_invalid_pdu:
     mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
 }
 
-
 void
 mmsClient_handleFileReadRequest(
     MmsConnection connection,
@@ -191,7 +190,7 @@ mmsClient_handleFileReadRequest(
     int32_t frsmId = BerDecoder_decodeInt32(buffer, maxBufPos - bufPos, bufPos);
 
     if (DEBUG_MMS_CLIENT)
-        printf("MMS_CLIENT: mmsClient_handleFileReadRequest read request for frsmId: %i\n", frsmId);
+        printf("MMS_CLIENT: mmsClient_handleFileReadRequest read request for frsmId: %i\n", (int)frsmId);
 
     MmsFileReadStateMachine* frsm = getFrsm(connection, frsmId);
 
@@ -401,7 +400,6 @@ mmsClient_createFileDirectoryRequest(uint32_t invokeId, ByteBuffer* request, con
     request->size = bufPos;
 }
 
-
 void
 mmsClient_createFileRenameRequest(uint32_t invokeId, ByteBuffer* request, const char* currentFileName, const char* newFileName)
 {
@@ -465,7 +463,6 @@ mmsClient_createObtainFileRequest(uint32_t invokeId, ByteBuffer* request, const 
 
     request->size = bufPos;
 }
-
 
 static bool
 parseFileAttributes(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t* fileSize, uint64_t* lastModified)
@@ -610,7 +607,6 @@ parseListOfDirectoryEntries(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t
     return true;
 }
 
-
 bool
 mmsClient_parseFileDirectoryResponse(ByteBuffer* response, int bufPos, uint32_t invokeId, MmsConnection_FileDirectoryHandler handler, void* parameter)
 {
@@ -731,15 +727,13 @@ mmsMsg_parseFileOpenResponse(uint8_t* buffer, int bufPos, int maxBufPos, int32_t
 }
 
 bool
-mmsMsg_parseFileReadResponse(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t invokeId, int frsmId, bool* moreFollows, MmsConnection_FileReadHandler handler, void* handlerParameter)
+mmsMsg_parseFileReadResponse(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t invokeId, int32_t frsmId, bool* moreFollows, MmsConnection_FileReadHandler handler, void* handlerParameter)
 {
     int length;
     uint8_t* data = NULL;
     int dataLen = 0;
 
-
     uint8_t tag = buffer[bufPos++];
-
 
     if (tag != 0xbf) {
         if (DEBUG_MMS_CLIENT)
