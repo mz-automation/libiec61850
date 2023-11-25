@@ -1,18 +1,22 @@
-# The SWIG functions/macros used in this module, swig_add_module and swig_add_library
-# are not available in CMake versions earlier than 3.8
-# cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.12)
+
+cmake_policy(SET CMP0078 NEW)
+
+if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.14.0")
+    cmake_policy(SET CMP0086 NEW)
+endif()
 
 find_package(SWIG REQUIRED)
 include(${SWIG_USE_FILE})
 
-find_package(PythonInterp ${BUILD_PYTHON_VERSION} REQUIRED)
-find_package(PythonLibs ${PYTHON_VERSION_STRING} EXACT REQUIRED)
+find_package(Python COMPONENTS Interpreter Development REQUIRED)
 
-include_directories(${PYTHON_INCLUDE_PATH})
+include_directories(${Python_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 set(CMAKE_SWIG_FLAGS "")
 set_property(SOURCE iec61850.i PROPERTY CPLUSPLUS ON)
+set_property(SOURCE iec61850.i PROPERTY SWIG_MODULE_NAME pyiec61850)
 
 if(WIN32)
     set(LIBS iec61850 ws2_32)
@@ -20,25 +24,21 @@ else()
     set(LIBS iec61850-shared)
 endif()
 
-if(${CMAKE_VERSION} VERSION_LESS 3.8)
-    swig_add_module(iec61850 python iec61850.i)
-else()
-    swig_add_library(iec61850
-        LANGUAGE python
-        SOURCES iec61850.i
-    )
-endif()
+swig_add_library(pyiec61850
+    LANGUAGE python
+    SOURCES iec61850.i
+)
 
-swig_link_libraries(iec61850 ${PYTHON_LIBRARIES} ${LIBS})
+swig_link_libraries(pyiec61850 ${LIBS})
 
 # Finding python modules install path
 execute_process(
-	COMMAND ${PYTHON_EXECUTABLE} -c
-	"from distutils.sysconfig import get_python_lib; import sys; sys.stdout.write(get_python_lib())"
+	COMMAND ${Python_EXECUTABLE} -c
+	"from sysconfig import get_path; import sys; sys.stdout.write(get_path('platlib'))"
 	OUTPUT_VARIABLE PYTHON_SITE_DIR
 )
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/iec61850.py DESTINATION ${PYTHON_SITE_DIR})
-install(TARGETS _iec61850 LIBRARY DESTINATION ${PYTHON_SITE_DIR})
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pyiec61850.py DESTINATION ${PYTHON_SITE_DIR})
+install(TARGETS pyiec61850 LIBRARY DESTINATION ${PYTHON_SITE_DIR})
 
-add_test(test_pyiec61850 ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/test_pyiec61850.py)
+add_test(test_pyiec61850 ${Python_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/test_pyiec61850.py)
