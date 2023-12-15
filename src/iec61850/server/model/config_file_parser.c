@@ -30,8 +30,6 @@
 
 #define READ_BUFFER_MAX_SIZE 1024
 
-static uint8_t lineBuffer[READ_BUFFER_MAX_SIZE];
-
 static int
 readLine(FileHandle fileHandle, uint8_t* buffer, int maxSize)
 {
@@ -117,6 +115,11 @@ ConfigFileParser_createModelFromConfigFileEx(const char* filename)
 IedModel*
 ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
 {
+    uint8_t* lineBuffer = (uint8_t*)GLOBAL_MALLOC(READ_BUFFER_MAX_SIZE);
+
+    if (lineBuffer == NULL)
+        goto exit_error;
+
     int bytesRead = 1;
 
     bool stateInModel = false;
@@ -541,8 +544,6 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
                     else
                         goto exit_error;
                 }
-
-
             }
             else {
                 if (StringUtils_startsWith((char*) lineBuffer, "MODEL{")) {
@@ -564,14 +565,18 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
         }
     }
 
+    GLOBAL_FREEMEM(lineBuffer);
+
     return model;
 
 exit_error:
+
+    GLOBAL_FREEMEM(lineBuffer);
+
     if (DEBUG_IED_SERVER)
         printf("IED_SERVER: error parsing line %i (indentation level = %i)\n", currentLine, indendation);
 
     IedModel_destroy(model);
+
     return NULL;
 }
-
-
