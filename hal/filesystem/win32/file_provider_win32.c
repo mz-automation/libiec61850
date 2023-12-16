@@ -21,6 +21,8 @@
  *  See COPYING file for the complete license text.
  */
 
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -62,13 +64,13 @@ FileSystem_openFile(char* fileName, bool readWrite)
 int
 FileSystem_readFile(FileHandle handle, uint8_t* buffer, int maxSize)
 {
-    return fread(buffer, 1, maxSize, (FILE*) handle);
+    return (int)fread(buffer, 1, maxSize, (FILE*) handle);
 }
 
 int
 FileSystem_writeFile(FileHandle handle, uint8_t* buffer, int size)
 {
-    return fwrite(buffer, 1, size, (FILE*) handle);
+    return (int)fwrite(buffer, 1, size, (FILE*) handle);
 }
 
 void
