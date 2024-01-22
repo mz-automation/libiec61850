@@ -543,6 +543,11 @@ public class DynamicModelGenerator {
                case FLOAT64:
                    output.print("=" + value.getValue());
                    break;
+               case TIMESTAMP:
+               case ENTRY_TIME:
+                   output.print("=" + value.getLongValue());
+                   break;
+               
                default:
                    System.out.println("Unknown default value for " + dataAttribute.getName() + " type: " + dataAttribute.getType());
                    break;
