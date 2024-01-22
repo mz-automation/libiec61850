@@ -7,6 +7,8 @@
  *  for libiec61850, libmms, and lib60870.
  */
 
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <windows.h>
 #include "lib_memory.h"
 #include "hal_thread.h"
@@ -38,7 +40,9 @@ threadRunner(LPVOID parameter)
 {
 	Thread thread = (Thread) parameter;
 
-	return (UINT) thread->function(thread->parameter);
+	thread->function(thread->parameter);
+
+	return (DWORD)0;
 }
 
 Thread

@@ -105,7 +105,7 @@ Handleset_waitReady(HandleSet self, unsigned int timeoutMs)
 
         memcpy((void*)&handles, &(self->handles), sizeof(fd_set));
 
-        result = select(self->maxHandle + 1, &handles, NULL, NULL, &timeout);
+        result = select(0, &handles, NULL, NULL, &timeout);
     } else {
         result = -1;
     }
@@ -436,7 +436,7 @@ Socket_checkAsyncConnectState(Socket self)
     FD_ZERO(&fdSet);
     FD_SET(self->fd, &fdSet);
 
-    int selectVal = select(self->fd + 1, NULL, &fdSet , NULL, &timeout);
+    int selectVal = select(0, NULL, &fdSet , NULL, &timeout);
 
     if (selectVal == 1) {
 
@@ -489,7 +489,7 @@ Socket_connect(Socket self, const char* address, int port)
     FD_ZERO(&fdSet);
     FD_SET(self->fd, &fdSet);
 
-    if (select(self->fd + 1, NULL, &fdSet , NULL, &timeout) == 1) {
+    if (select(0, NULL, &fdSet , NULL, &timeout) == 1) {
 
         /* Check if connection is established */
 

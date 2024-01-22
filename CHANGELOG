@@ -1,5 +1,96 @@
-Changes to version 1.5.1
+Changes to version 1.5.3
 ------------------------
+
+New features and improvements:
+
+- config file parser dynamically allocates linebuffer to allow multithreaded applications (#484)
+- parse time values in model configuration file (LIB61850-426)
+- config file generator: added missing code for GSEControl (LIB61850-418)
+- Config file generator: support multiple access points for GOOSE and SMV control blocks (LIB61850-418)
+- config file generator: added code to add SMVCBs to config files (LIB61850-67)
+- IED server: added code to create SMVCBs with the dynamic model API (LIB61850-67)
+- MMS server: added support for write access with component alternate access (LIB61850-414)
+- MMS client: added function MmsConnection_writeVariableComponent to write to variables with alternate component access (LIB61850-414)
+- make write access to RCB elements configurable according to ReportSettings (LIB61850-404)
+- Added function IedConnection_setLocalAddress to define local IP address and optionally local port of a client connection (LIB61850-378)
+- IED server: added ControlAction_getSynchroCheck and ControlAction_getInterlockCheck functions
+
+
+Fixed bugs and vulnerabilities:
+
+- fixed - IEC 61580 server: dataset is not released when RCB.Datset is set to empty string by client (LIB61850-425)
+- PAL: fixed wrong order of function arguments for fread and fwrite functions
+- MMS client: parsing of servicecsSupported in MMS init response is off by one (LIB61850-419)(#469)
+- fixed - potential memory leaks in goose publisher code (#464)
+- fixed - server sends dchg report when only dupd is enabled in RCB (LIB61850-411)
+- GOOSE subscriber: fixed - possible heap corruption in parseAllData due to missing validity check in bit-string handling (LIB61850-402)
+- IED server: fixed problem with implicit ResvTms setting when reserved with RptEna (LIB61850-400)
+- IED server: fixed - segmentation fault when compiled with CONFIG_MMS_THREADLESS_STACK (LIB61850-398)
+- fixed - MMS server: messages can be corrupted when TCP buffer is full (LIB61850-385)
+- fixed - .NET: IedConenction.WriteDataSetValues throws a NullReferenceException (LIB61850-384)
+- fixed - server send invalid response- when client uses wrong ctlModel (LIB61850-383) (#435)
+- fixed - IedConnection_setRCBValuesAsync crashes when RCB is already reserved by other client (LIB61850-382)
+- fixed - outstanding call not released in IedConnection_getDataSetDirectoryAsync (LIB61850-379)
+
+
+Changes to version 1.5.2 (Dec 19, 2022)
+---------------------------------------
+
+New features and improvements:
+
+- renamed TLSConfiguration_EventLevel to TLSEventLevel
+- updated required mbedtls version to 2.28.x
+- Added check for changed CRL on socket read/write. Added reset of renegotiation ssl cache on CRL add
+- Fixing Security events messages to match IEC62351-100-3
+- .NET API: Added support for TLS event handler (LIB61850-373)
+- IED Server: added function to set time quality for internally updated times (LIB61850-372)
+- added TLSConnection object to provide more context in TLS event callback (LIB61850-366)
+- TLS: added TLS alert callbacks; support for session resumption with session IDs (LIB61850-339)
+- MMS client: added function MmsConnection_sendRawData for test purposes
+- changed StringUtils_createStringInBuffer function to consider max buffer size (LIB61850-333)
+- replaced most str(n)cpy/str(n)cat calls (LIB61850-333)
+- encode boolean true value as 0x01 instead of 0xff to avoid interoperability problems
+- added IedServerConfig_setSyncIntegrityReportTimes/IedServerConfig_setSyncIntegrityReportTimes wrapper to .NET API (LIB61850-323)
+- added feature: synchronization of integrity report times (LIB61850-323)
+- server: added RCBEventHandler event types REPORT_CREATED and OVERFLOW
+- added function ReportControlBlock_getResv
+- mms_utility: added option to read data set directory
+- .NET API: added IedServer.GetFunctionalConstrainedData method (LIB61850-317)
+- RCBEventHandler: replaced GI event by purgeBuf event when client disables RCB instance (LIB61850-316)
+- enabled TLS 1.2 support in mbedtls configuration
+- improved MmsValue handling; fixed MmsValue(OCTET-STRIG) maximum size problem (LIB61850-150)
+- IED server: improved control state machine performance (LIB61850-312)
+
+Fixed bugs and vulnerabilities:
+
+- fixed - dynamic model helper functions: Check added to Cancel object for CDC APC
+- fixed wrong number in TLS event code define (LIB61850_366)
+- fixed - servers sends object-access-unsupported on GetAllData when ReadAccessHandler is installed (LIB61850-370)
+- fixed - endless loop sending reports when MMS PDU size is too small (LIB61850-365)
+- fixed path traversal vulnerability in MMS file services (LIB61850-357)
+- IED server: added missing call to getNextRoundedStartTime (LIB61850-323)
+- fixed - server crashs when SyncIntegrityReportTimes is active and IntgPd=0 (LIB61850-355)
+- fixed - missing API export declarations for functions IedServerConfig_setSyncIntegrityReportTimes and IedServerConfig_getSyncIntegrityReportTimes (LIB61850-353)
+- IED server: fixed - possible deadlock when IedServer_lockDataModel is used from multiple threads (LIB61850-352)
+- MMS server: fixed - possible deadlock in obtainFile-service/file upload task (LIB61850-351)
+- MMS server: fixed potential null pointer dereference when confirmeServiceResponse for fileOpen is received with invoke-id 0 (LIB61850-348)
+- MMS_SERVER: fixed bug in getNameList request handling when domain ID is too long (LIB61850-346)
+- GOOSE subscriber: fixed vulnerabilities related to malformed bit-string, integer, and unsigned values (LIB61850-342)
+- MMS server: fixed bug in handling of continueAfter parameter of getNameList request (LIB61850-341)
+- fixed sscanf format string in config_file_parser.c
+- fixed locking mechanism in logging.c (LIB61850-327)
+- fixed problem: negative presentation layer and ACSE results are ignored by client
+- fixed wrong buffer size in client side report handling
+- fixed memory leak in server read request handling (LIB61850-325)
+- fixed memory leak in reuse of client connection (related to socket extension buffer)
+- fixed - TLS: CRL is ignored
+- fixed wrong MMS protocol version check (#379)
+- fixed - SV publisher encoding problem when svID or datset length > 127 bytes (LIB61850-315)(#382)
+- IedServerConfig: added missing variable initialization
+- fixed - server doesn't respond SBOw when waiting for select callback (LIB61850-313)
+
+Changes to version 1.5.1 (Mar 11, 2022)
+---------------------------------------
 
 New features and improvements:
 
