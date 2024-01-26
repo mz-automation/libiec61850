@@ -1766,9 +1766,6 @@ Control_readAccessControlObject(MmsMapping* self, MmsDomain* domain, char* varia
 
     char* lnName = variableId;
 
-    if (lnName == NULL)
-        return NULL;
-
     char* objectName = MmsMapping_getNextNameElement(separator + 1);
 
     if (objectName == NULL)
@@ -1795,10 +1792,10 @@ Control_readAccessControlObject(MmsMapping* self, MmsDomain* domain, char* varia
 
             nextVarName  = MmsMapping_getNextNameElement(varName);
 
-            if (nextVarName != NULL)
+            if (nextVarName)
                 varName = nextVarName;
 
-        } while (nextVarName != NULL);
+        } while (nextVarName);
 
         if (foundVar == false)
             varName = NULL;
