@@ -1884,11 +1884,15 @@ IedConnection_getLogicalDeviceList(IedConnection self, IedClientError* error)
             logicalDevice = LinkedList_getNext(logicalDevice);
         }
 
-        *error = IED_ERROR_OK;
+        if (error)
+            *error = IED_ERROR_OK;
+
         return logicalDeviceList;
     }
     else {
-        *error = IED_ERROR_UNKNOWN;
+        if (error)
+            *error = IED_ERROR_UNKNOWN;
+
         return NULL;
     }
 }
@@ -3378,8 +3382,8 @@ createDataSetAsyncHandler(uint32_t invokeId, void* parameter, MmsError mmsError,
 
     IedConnectionOutstandingCall call = iedConnection_lookupOutstandingCall(self, invokeId);
 
-    if (call) {
-
+    if (call)
+    {
         IedConnection_GenericServiceHandler handler = (IedConnection_GenericServiceHandler)call->callback;
 
         IedClientError err = iedConnection_mapMmsErrorToIedError(mmsError);
@@ -3409,7 +3413,7 @@ IedConnection_createDataSetAsync(IedConnection self, IedClientError* error, cons
 
     if (call == NULL) {
         *error = IED_ERROR_OUTSTANDING_CALL_LIMIT_REACHED;
-       goto exit_function;
+        goto exit_function;
     }
 
     call->callback = handler;
@@ -3494,8 +3498,10 @@ cleanup_list:
 
 exit_function:
 
-    if (*error != IED_ERROR_OK) {
-        iedConnection_releaseOutstandingCall(self, call);
+    if (*error != IED_ERROR_OK)
+    {
+        if (call)
+            iedConnection_releaseOutstandingCall(self, call);
 
         return 0;
     }
