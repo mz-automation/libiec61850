@@ -172,6 +172,14 @@ typedef enum {
     IED_ERROR_UNKNOWN = 99
 } IedClientError;
 
+/**
+ * \brief Convert error value to string
+ *
+ * \return string constant representing the error
+ */
+LIB61850_API const char*
+IedClientError_toString(IedClientError err);
+
 /**************************************************
  * Connection creation and destruction
  **************************************************/

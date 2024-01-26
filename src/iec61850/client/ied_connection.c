@@ -53,6 +53,100 @@ struct sFileDirectoryEntry {
     uint64_t lastModified;
 };
 
+const char*
+IedClientError_toString(IedClientError err)
+{
+    switch (err)
+    {
+    case IED_ERROR_OK:
+        return "ok";
+
+    case IED_ERROR_NOT_CONNECTED:
+        return "not-connected";
+
+    case IED_ERROR_ALREADY_CONNECTED:
+        return "already-connected";
+
+    case IED_ERROR_CONNECTION_LOST:
+        return "connection-lost";
+
+    case IED_ERROR_SERVICE_NOT_SUPPORTED:
+        return "service-not-supported";
+
+    case IED_ERROR_CONNECTION_REJECTED:
+        return "connection-rejected";
+
+    case IED_ERROR_OUTSTANDING_CALL_LIMIT_REACHED:
+        return "outstanding-call-limit-reached";
+
+    case IED_ERROR_USER_PROVIDED_INVALID_ARGUMENT:
+        return "invalid-argument";
+
+    case IED_ERROR_ENABLE_REPORT_FAILED_DATASET_MISMATCH:
+        return "enable-report-failed-due-to-dataset-mismatch";
+
+    case IED_ERROR_OBJECT_REFERENCE_INVALID:
+        return "object-reference-invalid";
+
+    case IED_ERROR_UNEXPECTED_VALUE_RECEIVED:
+        return "unexpected-value-received";
+
+    case IED_ERROR_TIMEOUT:
+        return "timeout";
+
+    case IED_ERROR_ACCESS_DENIED:
+        return "access-denied";
+
+    case IED_ERROR_OBJECT_DOES_NOT_EXIST:
+        return "object-does-not-exist";
+
+    case IED_ERROR_OBJECT_EXISTS:
+        return "object-exists";
+
+    case IED_ERROR_OBJECT_ACCESS_UNSUPPORTED:
+        return "object-access-unsupported";
+
+    case IED_ERROR_TYPE_INCONSISTENT:
+        return "type-inconsistent";
+
+    case IED_ERROR_TEMPORARILY_UNAVAILABLE:
+        return "temporary-unavailable";
+
+    case IED_ERROR_OBJECT_UNDEFINED:
+        return "object-undefined";
+
+    case IED_ERROR_INVALID_ADDRESS:
+        return "invalid-address";
+
+    case IED_ERROR_HARDWARE_FAULT:
+        return "hardware-fault";
+
+    case IED_ERROR_TYPE_UNSUPPORTED:
+        return "type-unsupported";
+
+    case IED_ERROR_OBJECT_ATTRIBUTE_INCONSISTENT:
+        return "object-attribute-inconsistent";
+
+    case IED_ERROR_OBJECT_VALUE_INVALID:
+        return "object-value-invalid";
+
+    case IED_ERROR_OBJECT_INVALIDATED:
+        return "object-invalidated";
+
+    case IED_ERROR_MALFORMED_MESSAGE:
+        return "malformed-message";
+
+    case IED_ERROR_OBJECT_CONSTRAINT_CONFLICT:
+        return "object-constraint-conflict";
+
+    case IED_ERROR_SERVICE_NOT_IMPLEMENTED:
+        return "service-not-implemented";
+
+    default:
+        return "unknown-error";
+    }
+}
+
 IedClientError
 iedConnection_mapMmsErrorToIedError(MmsError mmsError)
 {
