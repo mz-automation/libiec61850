@@ -130,16 +130,22 @@ mmsServer_handleDeleteNamedVariableListRequest(MmsServerConnection connection,
 		goto exit_function;
 	}
 
-	if ((mmsPdu->present == MmsPdu_PR_confirmedRequestPdu) &&
-		(mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.present
-		== ConfirmedServiceRequest_PR_deleteNamedVariableList))
-	{
-		request = &(mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.choice.deleteNamedVariableList);
-	}
-	else {
-		mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
-		goto exit_function;
-	}
+    if ((mmsPdu->present == MmsPdu_PR_confirmedRequestPdu) &&
+        (mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.present
+        == ConfirmedServiceRequest_PR_deleteNamedVariableList))
+    {
+        request = &(mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.choice.deleteNamedVariableList);
+    }
+    else {
+        mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
+        goto exit_function;
+    }
+
+    if (request->listOfVariableListName == NULL)
+    {
+        mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
+        goto exit_function;
+    }
  
 	long scopeOfDelete = DeleteNamedVariableListRequest__scopeOfDelete_specific;
 
