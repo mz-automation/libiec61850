@@ -266,7 +266,7 @@ TLSConfiguration_create()
 
         mbedtls_ssl_conf_authmode(&(self->conf), MBEDTLS_SSL_VERIFY_REQUIRED);
 
-        mbedtls_ssl_conf_renegotiation(&(self->conf), MBEDTLS_SSL_LEGACY_NO_RENEGOTIATION);
+        mbedtls_ssl_conf_renegotiation(&(self->conf), MBEDTLS_SSL_RENEGOTIATION_ENABLED);
 
         /* static int hashes[] = {3,4,5,6,7,8,0}; */
         /* mbedtls_ssl_conf_sig_hashes(&(self->conf), hashes); */
@@ -855,7 +855,8 @@ TLSSocket_performHandshake(TLSSocket self)
     Semaphore_wait(self->renegotiationLock);
     int ret = mbedtls_ssl_renegotiate(&(self->ssl));
 
-    if (ret == 0) {
+    if (ret == 0 || ret == MBEDTLS_ERR_SSL_WANT_READ || ret == MBEDTLS_ERR_SSL_WANT_WRITE ||
+        ret == MBEDTLS_ERR_SSL_ASYNC_IN_PROGRESS || ret == MBEDTLS_ERR_SSL_CRYPTO_IN_PROGRESS) {
         if (getTLSVersion(self->ssl.major_ver, self->ssl.minor_ver) < TLS_VERSION_TLS_1_2) {
             raiseSecurityEvent(self->tlsConfig, TLS_SEC_EVT_WARNING, TLS_EVENT_CODE_WRN_INSECURE_TLS_VERSION, "Warning: Insecure TLS version", self);
         }
@@ -868,10 +869,12 @@ TLSSocket_performHandshake(TLSSocket self)
     else {
         DEBUG_PRINT("TLS", "TLSSocket_performHandshake failed -> ret=%i\n", ret);
 
-        if (self->tlsConfig->eventHandler) {
-            uint32_t flags = mbedtls_ssl_get_verify_result(&(self->ssl));
+        raiseSecurityEvent(self->tlsConfig, TLS_SEC_EVT_INFO, TLS_EVENT_CODE_INF_SESSION_RENEGOTIATION, "Alarm: Renegotiation failed", self);
 
-            createSecurityEvents(self->tlsConfig, ret, flags, self);
+        /* mbedtls_ssl_renegotiate mandates to reset the ssl session in case of errors */
+        ret = mbedtls_ssl_session_reset(&(self->ssl));
+        if (ret != 0) {
+            DEBUG_PRINT("TLS", "mbedtls_ssl_session_reset failed -> ret: -0x%X\n", -ret);
         }
 
         Semaphore_post(self->renegotiationLock);
@@ -927,22 +930,33 @@ TLSSocket_read(TLSSocket self, uint8_t* buf, int size)
         return -1;
     }
 
-    int ret = mbedtls_ssl_read(&(self->ssl), buf, size);
+    int len = 0;
+    while (len < size) {
+        int ret = mbedtls_ssl_read(&(self->ssl), (buf + len), (size - len));
+        if (ret == 0) {
+            break;
+        } else if (ret > 0) {
+            len += ret;
+            continue;
+        }
 
-    if ((ret == MBEDTLS_ERR_SSL_WANT_READ) || (ret == MBEDTLS_ERR_SSL_WANT_WRITE))
-        return 0;
-
-    if (ret < 0) {
-
+        // Negative values means errors
         switch (ret)
         {
+        case MBEDTLS_ERR_SSL_WANT_READ: // Falling through
+        case MBEDTLS_ERR_SSL_WANT_WRITE:
+        case MBEDTLS_ERR_SSL_ASYNC_IN_PROGRESS:
+        case MBEDTLS_ERR_SSL_CRYPTO_IN_PROGRESS:
+            continue;
+            break;
+
         case MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY:
             DEBUG_PRINT("TLS", " connection was closed gracefully\n");
-            return -1;
+            break;
 
         case MBEDTLS_ERR_NET_CONN_RESET:
             DEBUG_PRINT("TLS", " connection was reset by peer\n");
-            return -1;
+            break;
 
         default:
             DEBUG_PRINT("TLS", " mbedtls_ssl_read returned -0x%x\n", -ret);
@@ -952,19 +966,18 @@ TLSSocket_read(TLSSocket self, uint8_t* buf, int size)
 
                 createSecurityEvents(self->tlsConfig, ret, flags, self);
             }
-
-            return -1;
         }
-    }
 
-    return ret;
+        mbedtls_ssl_session_reset(&(self->ssl));
+        return ret;
+    }
+    return len;
 }
 
 int
 TLSSocket_write(TLSSocket self, uint8_t* buf, int size)
 {
-    int ret;
-    int len = size;
+    int len = 0;
 
     checkForCRLUpdate(self);
 
@@ -972,22 +985,22 @@ TLSSocket_write(TLSSocket self, uint8_t* buf, int size)
         return -1;
     }
 
-    while ((ret = mbedtls_ssl_write(&(self->ssl), buf, len)) <= 0)
+    while (len < size)
     {
-        if (ret == MBEDTLS_ERR_NET_CONN_RESET)
-        {
-            DEBUG_PRINT("TLS", "peer closed the connection\n");
+        int ret = mbedtls_ssl_write(&(self->ssl), (buf + len), (size -len));
+        if ((ret == MBEDTLS_ERR_SSL_WANT_READ) || (ret == MBEDTLS_ERR_SSL_WANT_WRITE) ||
+            (ret == MBEDTLS_ERR_SSL_ASYNC_IN_PROGRESS) || (ret == MBEDTLS_ERR_SSL_CRYPTO_IN_PROGRESS)) {
+            continue;
+        }
+
+        if (ret < 0) {
+            mbedtls_ssl_session_reset(&(self->ssl));
+            DEBUG_PRINT("TLS", "mbedtls_ssl_write returned -0x%X\n", -ret);
             return -1;
         }
 
-        if ((ret != MBEDTLS_ERR_SSL_WANT_READ) && (ret != MBEDTLS_ERR_SSL_WANT_WRITE))
-        {
-            DEBUG_PRINT("TLS", "mbedtls_ssl_write returned %d\n", ret);
-            return -1;
-        }
+        len += ret;
     }
-
-    len = ret;
 
     return len;
 }
