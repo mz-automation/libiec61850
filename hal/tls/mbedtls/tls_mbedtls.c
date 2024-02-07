@@ -923,22 +923,19 @@ TLSSocket_read(TLSSocket self, uint8_t* buf, int size)
     int len = 0;
     while (len < size) {
         int ret = mbedtls_ssl_read(&(self->ssl), (buf + len), (size - len));
-        if (ret == 0) {
-            break;
-        } else if (ret > 0) {
+        if (ret > 0) {
             len += ret;
             continue;
         }
 
-        // Negative values means errors
-        switch (ret)
-        {
-        case MBEDTLS_ERR_SSL_WANT_READ: // Falling through
+        switch (ret) {
+        case 0: // falling through
+        case MBEDTLS_ERR_SSL_WANT_READ:
         case MBEDTLS_ERR_SSL_WANT_WRITE:
         case MBEDTLS_ERR_SSL_ASYNC_IN_PROGRESS:
         case MBEDTLS_ERR_SSL_CRYPTO_IN_PROGRESS:
-            continue;
-            break;
+            // Known "good" cases indicating the read is done
+            return len;
 
         case MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY:
             DEBUG_PRINT("TLS", " connection was closed gracefully\n");
