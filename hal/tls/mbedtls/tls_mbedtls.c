@@ -860,12 +860,13 @@ TLSSocket_performHandshake(TLSSocket self)
 
 
         DEBUG_PRINT("TLS", "TLSSocket_performHandshake Success -> ret=%i\n", ret);
+        raiseSecurityEvent(self->tlsConfig, TLS_SEC_EVT_INFO, TLS_EVENT_CODE_INF_SESSION_RENEGOTIATION, "TLS session renegotiation completed", self);
         return true;
     }
     else {
         DEBUG_PRINT("TLS", "TLSSocket_performHandshake failed -> ret=%i\n", ret);
 
-        raiseSecurityEvent(self->tlsConfig, TLS_SEC_EVT_INFO, TLS_EVENT_CODE_INF_SESSION_RENEGOTIATION, "Alarm: Renegotiation failed", self);
+        raiseSecurityEvent(self->tlsConfig, TLS_SEC_EVT_WARNING, TLS_EVENT_CODE_INF_SESSION_RENEGOTIATION, "Alarm: TLS session renegotiation failed", self);
 
         /* mbedtls_ssl_renegotiate mandates to reset the ssl session in case of errors */
         ret = mbedtls_ssl_session_reset(&(self->ssl));
@@ -903,16 +904,10 @@ startRenegotiationIfRequired(TLSSocket self)
     if (Hal_getTimeInMs() <= self->lastRenegotiationTime + self->tlsConfig->renegotiationTimeInMs)
         return true;
 
-    raiseSecurityEvent(self->tlsConfig, TLS_SEC_EVT_INFO, TLS_EVENT_CODE_INF_SESSION_RENEGOTIATION, "Info: session renegotiation started", self);
-
-    if (TLSSocket_performHandshake(self) == false) {
-        DEBUG_PRINT("TLS", " renegotiation failed\n");
+    if (TLSSocket_performHandshake(self) == false)
         return false;
-    }
 
-    DEBUG_PRINT("TLS", " started renegotiation\n");
     self->lastRenegotiationTime = Hal_getTimeInMs();
-
     return true;
 }
 
@@ -963,9 +958,14 @@ TLSSocket_read(TLSSocket self, uint8_t* buf, int size)
             }
         }
 
-        mbedtls_ssl_session_reset(&(self->ssl));
+        int reset_err = mbedtls_ssl_session_reset(&(self->ssl));
+        if (0 != reset_err) {
+            DEBUG_PRINT("TLS", "mbedtls_ssl_session_reset failed -0x%X\n", -reset_err);
+        }
+
         return ret;
     }
+
     return len;
 }
 
@@ -989,8 +989,12 @@ TLSSocket_write(TLSSocket self, uint8_t* buf, int size)
         }
 
         if (ret < 0) {
-            mbedtls_ssl_session_reset(&(self->ssl));
             DEBUG_PRINT("TLS", "mbedtls_ssl_write returned -0x%X\n", -ret);
+
+            if (0 != (ret = mbedtls_ssl_session_reset(&(self->ssl)))) {
+                DEBUG_PRINT("TLS", "mbedtls_ssl_session_reset failed -0x%X\n", -ret);
+            }
+
             return -1;
         }
 
