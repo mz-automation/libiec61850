@@ -39,7 +39,7 @@
 #if (CONFIG_DEBUG_TLS == 1)
 #define DEBUG_PRINT(appId, fmt, ...) fprintf(stderr, "%s: " fmt, appId, ## __VA_ARGS__)
 #else
-#define DEBUG_PRINT(fmt, ...) {do {} while(0);}
+#define DEBUG_PRINT(fmt, ...) do {} while(0)
 #endif
 
 
