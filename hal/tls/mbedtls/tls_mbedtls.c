@@ -297,7 +297,7 @@ TLSConfiguration_create()
 void
 TLSConfiguration_setClientMode(TLSConfiguration self)
 {
-    self->conf.endpoint = MBEDTLS_SSL_IS_CLIENT;
+    mbedtls_ssl_conf_endpoint(&(self->conf), MBEDTLS_SSL_IS_CLIENT);
 }
 
 void
