@@ -99,7 +99,6 @@ struct sTLSSocket {
 
     /* time of last session renegotiation (used to calculate next renegotiation time) */
     uint64_t lastRenegotiationTime;
-    Semaphore renegotiationLock;
 
     /* time of the last CRL update */
     uint64_t crlUpdated;
@@ -709,7 +708,6 @@ TLSSocket_create(Socket socket, TLSConfiguration configuration, bool storeClient
         self->storePeerCert = storeClientCert;
         self->peerCert = NULL;
         self->peerCertLength = 0;
-        self->renegotiationLock = Semaphore_create(1);
 
         TLSConfiguration_setupComplete(configuration);
 
@@ -852,7 +850,6 @@ TLSSocket_getPeerCertificate(TLSSocket self, int* certSize)
 bool
 TLSSocket_performHandshake(TLSSocket self)
 {
-    Semaphore_wait(self->renegotiationLock);
     int ret = mbedtls_ssl_renegotiate(&(self->ssl));
 
     if (ret == 0 || ret == MBEDTLS_ERR_SSL_WANT_READ || ret == MBEDTLS_ERR_SSL_WANT_WRITE ||
@@ -861,7 +858,6 @@ TLSSocket_performHandshake(TLSSocket self)
             raiseSecurityEvent(self->tlsConfig, TLS_SEC_EVT_WARNING, TLS_EVENT_CODE_WRN_INSECURE_TLS_VERSION, "Warning: Insecure TLS version", self);
         }
 
-        Semaphore_post(self->renegotiationLock);
 
         DEBUG_PRINT("TLS", "TLSSocket_performHandshake Success -> ret=%i\n", ret);
         return true;
@@ -877,7 +873,6 @@ TLSSocket_performHandshake(TLSSocket self)
             DEBUG_PRINT("TLS", "mbedtls_ssl_session_reset failed -> ret: -0x%X\n", -ret);
         }
 
-        Semaphore_post(self->renegotiationLock);
         return false;
     }
 }
@@ -1028,7 +1023,6 @@ TLSSocket_close(TLSSocket self)
     if (self->peerCert)
         GLOBAL_FREEMEM(self->peerCert);
 
-    Semaphore_destroy(self->renegotiationLock);
 
     GLOBAL_FREEMEM(self);
 }
