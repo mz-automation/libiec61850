@@ -1,7 +1,7 @@
 /*
  *  iec61850_client.h
  *
- *  Copyright 2013-2021 Michael Zillgith
+ *  Copyright 2013-2023 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -1267,8 +1267,10 @@ typedef void (*ReportCallbackFunction) (void* parameter, ClientReport report);
  * Otherwise the internal data structures storing the received data set values will not be updated
  * correctly.
  *
- * When replacing a report handler you only have to call this function. There is no separate call to
+ * \note Replacing a report handler you only have to call this function. There is no separate call to
  * IedConnection_uninstallReportHandler() required.
+ *
+ * \note Do not call this function inside of the ReportCallbackFunction. Doing so will cause a deadlock.
  *
  * \param self the connection object
  * \param rcbReference object reference of the report control block
@@ -1283,6 +1285,8 @@ IedConnection_installReportHandler(IedConnection self, const char* rcbReference,
 
 /**
  * \brief uninstall a report handler function for the specified report control block (RCB)
+ *
+ * \note Do not call this function inside of the ReportCallbackFunction. Doing so will cause a deadlock.
  *
  * \param self the connection object
  * \param rcbReference object reference of the report control block
