@@ -949,7 +949,7 @@ IedConnection_destroy(IedConnection self)
 
     GLOBAL_FREEMEM(self->outstandingCalls);
 
-    LinkedList_destroyStatic(self->clientControls);
+    LinkedList_destroyDeep(self->clientControls, (LinkedListValueDeleteFunction)ControlObjectClient_destroy);
 
     Semaphore_destroy(self->clientControlsLock);
     Semaphore_destroy(self->outstandingCallsLock);
