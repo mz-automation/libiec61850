@@ -1,7 +1,7 @@
 /*
  *  mms_mapping.c
  *
- *  Copyright 2013-2023 Michael Zillgith
+ *  Copyright 2013-2024 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -1335,8 +1335,8 @@ checkForServiceTrackingVariables(MmsMapping* self, LogicalNode* logicalNode)
 {
     ModelNode* modelNode = logicalNode->firstChild;
 
-    while (modelNode) {
-
+    while (modelNode)
+    {
         if (!strcmp(modelNode->name, "SpcTrk") || !strcmp(modelNode->name, "DpcTrk") || 
                 !strcmp(modelNode->name, "IncTrk") || !strcmp(modelNode->name, "EncTrk1") || 
                 !strcmp(modelNode->name, "ApcFTrk") || !strcmp(modelNode->name, "ApcIntTrk") ||
@@ -2712,6 +2712,10 @@ mmsWriteHandler(void* parameter, MmsDomain* domain,
 
         if (nextSep != NULL) {
             nextSep = strchr(nextSep + 1, '$');
+
+            if (nextSep == NULL) {
+                return DATA_ACCESS_ERROR_OBJECT_ACCESS_UNSUPPORTED;
+            }
 
             char* nameId = nextSep + 1;
 
