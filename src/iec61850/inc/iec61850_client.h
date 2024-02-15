@@ -1162,15 +1162,6 @@ typedef int ReasonForInclusion;
 /** the reason for inclusion is unknown (e.g. report is not configured to include reason-for-inclusion) */
 #define IEC61850_REASON_UNKNOWN 32
 
-#define REASON_NOT_INCLUDED IEC61850_REASON_NOT_INCLUDED
-#define REASON_DATA_CHANGE IEC61850_REASON_DATA_CHANGE
-#define REASON_QUALITY_CHANGE IEC61850_REASON_QUALITY_CHANGE
-#define REASON_DATA_UPDATE IEC61850_REASON_DATA_UPDATE
-#define REASON_INTEGRITY IEC61850_REASON_INTEGRITY
-#define REASON_GI IEC61850_REASON_GI
-#define REASON_UNKNOWN IEC61850_REASON_UNKNOWN
-
-
 /* Element encoding mask values for ClientReportControlBlock */
 
 /** include the report ID into the setRCB request */
