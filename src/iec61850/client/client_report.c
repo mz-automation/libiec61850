@@ -3,7 +3,7 @@
  *
  *  Client implementation for IEC 61850 reporting.
  *
- *  Copyright 2013-2022 Michael Zillgith
+ *  Copyright 2013-2024 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -283,14 +283,27 @@ lookupReportHandler(IedConnection self, const char* rcbReference)
     return NULL;
 }
 
-void
-IedConnection_installReportHandler(IedConnection self, const char* rcbReference, const char* rptId, ReportCallbackFunction handler,
-        void* handlerParameter)
+static void
+uninstallReportHandler(IedConnection self, const char* rcbReference)
 {
     ClientReport report = lookupReportHandler(self, rcbReference);
 
     if (report != NULL) {
-        IedConnection_uninstallReportHandler(self, rcbReference);
+        LinkedList_remove(self->enabledReports, report);
+        ClientReport_destroy(report);
+    }
+}
+
+void
+IedConnection_installReportHandler(IedConnection self, const char* rcbReference, const char* rptId, ReportCallbackFunction handler,
+        void* handlerParameter)
+{
+    Semaphore_wait(self->reportHandlerMutex);
+
+    ClientReport report = lookupReportHandler(self, rcbReference);
+
+    if (report != NULL) {
+        uninstallReportHandler(self, rcbReference);
 
         if (DEBUG_IED_CLIENT)
             printf("DEBUG_IED_CLIENT: Removed existing report callback handler for %s\n", rcbReference);
@@ -306,8 +319,8 @@ IedConnection_installReportHandler(IedConnection self, const char* rcbReference,
     else
         report->rptId = NULL;
 
-    Semaphore_wait(self->reportHandlerMutex);
     LinkedList_add(self->enabledReports, report);
+
     Semaphore_post(self->reportHandlerMutex);
 
     if (DEBUG_IED_CLIENT)
@@ -319,12 +332,7 @@ IedConnection_uninstallReportHandler(IedConnection self, const char* rcbReferenc
 {
 	Semaphore_wait(self->reportHandlerMutex);
 
-    ClientReport report = lookupReportHandler(self, rcbReference);
-
-    if (report != NULL) {
-        LinkedList_remove(self->enabledReports, report);
-        ClientReport_destroy(report);
-    }
+    uninstallReportHandler(self, rcbReference);
 
     Semaphore_post(self->reportHandlerMutex);
 }
@@ -367,6 +375,8 @@ IedConnection_triggerGIReport(IedConnection self, IedClientError* error, const c
 void
 iedConnection_handleReport(IedConnection self, MmsValue* value)
 {
+    Semaphore_wait(self->reportHandlerMutex);
+
     MmsValue* rptIdValue = MmsValue_getElement(value, 0);
 
     if ((rptIdValue == NULL) || (MmsValue_getType(rptIdValue) != MMS_VISIBLE_STRING)) {
@@ -769,15 +779,14 @@ iedConnection_handleReport(IedConnection self, MmsValue* value)
             matchingReport->reasonForInclusion[i] = IEC61850_REASON_NOT_INCLUDED;
         }
     }
-
-    Semaphore_wait(self->reportHandlerMutex);
     
     if (matchingReport->callback != NULL)
         matchingReport->callback(matchingReport->callbackParameter, matchingReport);
 
+exit_function:
+
     Semaphore_post(self->reportHandlerMutex);
 
-exit_function:
     return;
 }
 
