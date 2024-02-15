@@ -3806,25 +3806,28 @@ getDataSetHandlerInternal(uint32_t invokeId, void* parameter, MmsError err, MmsV
 
     IedConnectionOutstandingCall call = iedConnection_lookupOutstandingCall(self, invokeId);
 
-    if (call) {
-
+    if (call)
+    {
         IedConnection_ReadDataSetHandler handler =  (IedConnection_ReadDataSetHandler) call->callback;
 
         ClientDataSet dataSet = (ClientDataSet) call->specificParameter;
         char* dataSetReference = (char*) call->specificParameter2.pointer;
 
-        if (value != NULL) {
-
+        if (value)
+        {
             if (dataSet == NULL) {
                 dataSet = ClientDataSet_create(dataSetReference);
                 ClientDataSet_setDataSetValues(dataSet, value);
-                GLOBAL_FREEMEM(dataSetReference);
             }
             else {
                 MmsValue* dataSetValues = ClientDataSet_getValues(dataSet);
                 MmsValue_update(dataSetValues, value);
-                MmsValue_delete(value);
             }
+
+            if (dataSetReference)
+                GLOBAL_FREEMEM(dataSetReference);
+
+            MmsValue_delete(value);
         }
 
         handler(invokeId, call->callbackParameter, iedConnection_mapMmsErrorToIedError(err), dataSet);
