@@ -1014,9 +1014,12 @@ gooseReceiverLoop(void *threadParameter)
     EthernetHandleSet handleSet = EthernetHandleSet_new();
     EthernetHandleSet_addSocket(handleSet, self->ethSocket);
 
-    if (self->running) {
+    bool running = true;
 
-        while (self->running) {
+    if (running)
+    {
+        while (running)
+        {
             switch (EthernetHandleSet_waitReady(handleSet, 100))
             {
             case -1:
@@ -1030,6 +1033,8 @@ gooseReceiverLoop(void *threadParameter)
             }
             if (self->stop)
                 break;
+
+            running = self->running;
         }
 
         GooseReceiver_stopThreadless(self);
@@ -1046,7 +1051,8 @@ void
 GooseReceiver_start(GooseReceiver self)
 {
 #if (CONFIG_MMS_THREADLESS_STACK == 0)
-    if (GooseReceiver_startThreadless(self)) {
+    if (GooseReceiver_startThreadless(self))
+    {
         self->thread = Thread_create((ThreadExecutionFunction) gooseReceiverLoop, (void*) self, false);
 
         if (self->thread != NULL) {
