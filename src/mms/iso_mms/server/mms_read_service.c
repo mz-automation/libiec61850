@@ -528,7 +528,7 @@ encodeReadResponse(MmsServerConnection connection,
             printf("MMS read: message to large! send error PDU!\n");
 
         mmsMsg_createServiceErrorPdu(invokeId, response,
-                MMS_ERROR_SERVICE_OTHER);
+                MMS_ERROR_RESOURCE_OTHER);
 
         goto exit_function;
     }
@@ -933,7 +933,8 @@ mmsServer_handleReadRequest(
 	    goto exit_function;
     }
 
-    if (request->variableAccessSpecification.present == VariableAccessSpecification_PR_listOfVariable) {
+    if (request->variableAccessSpecification.present == VariableAccessSpecification_PR_listOfVariable)
+    {
         MmsServer_lockModel(connection->server);
 
         handleReadListOfVariablesRequest(connection, request, invokeId, response);
@@ -941,7 +942,8 @@ mmsServer_handleReadRequest(
         MmsServer_unlockModel(connection->server);
     }
 #if (MMS_DATA_SET_SERVICE == 1)
-    else if (request->variableAccessSpecification.present == VariableAccessSpecification_PR_variableListName) {
+    else if (request->variableAccessSpecification.present == VariableAccessSpecification_PR_variableListName)
+    {
         MmsServer_lockModel(connection->server);
 
         handleReadNamedVariableListRequest(connection, request, invokeId, response);
@@ -951,6 +953,13 @@ mmsServer_handleReadRequest(
 #endif
     else {
         mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_ACCESS_UNSUPPORTED);   
+    }
+
+    if (ByteBuffer_getSize(response) > connection->maxPduSize)
+    {
+        ByteBuffer_setSize(response, 0);
+
+        mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_RESOURCE_OTHER);
     }
 
 exit_function:	
