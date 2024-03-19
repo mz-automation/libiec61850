@@ -1175,6 +1175,9 @@ namespace IEC61850
 
             private static List<MmsJournalEntry> WrapNativeLogQueryResult(IntPtr linkedList)
             {
+                if (linkedList == IntPtr.Zero)
+                    return null;
+
                 List<MmsJournalEntry> journalEntries = new List<MmsJournalEntry>();
 
                 IntPtr element = LinkedList_getNext(linkedList);
@@ -2238,22 +2241,27 @@ namespace IEC61850
                 GetDataSetDirectoryHandler handler = callbackInfo.Item1;
                 object handlerParameter = callbackInfo.Item2;
 
-                IntPtr element = LinkedList_getNext(dataSetDirectory);
-
                 handle.Free();
 
-                List<string> newList = new List<string>();
+                List<string> newList = null;
 
-                while (element != IntPtr.Zero)
+                if (dataSetDirectory != IntPtr.Zero)
                 {
-                    string dataObject = Marshal.PtrToStringAnsi(LinkedList_getData(element));
+                    newList = new List<string>();
 
-                    newList.Add(dataObject);
+                    IntPtr element = LinkedList_getNext(dataSetDirectory);
 
-                    element = LinkedList_getNext(element);
+                    while (element != IntPtr.Zero)
+                    {
+                        string dataObject = Marshal.PtrToStringAnsi(LinkedList_getData(element));
+
+                        newList.Add(dataObject);
+
+                        element = LinkedList_getNext(element);
+                    }
+
+                    LinkedList_destroy(dataSetDirectory);
                 }
-
-                LinkedList_destroy(dataSetDirectory);
 
                 handler.Invoke(invokeId, handlerParameter, (IedClientError)err, newList, isDeletable);
             }
@@ -2428,10 +2436,8 @@ namespace IEC61850
                         dataSet = new DataSet(nativeDataSet);
                 }
                 
-
                 handler(invokeId, handlerParameter, clientError, dataSet);
             }
-
 
             public delegate void ReadDataSetHandler(UInt32 invokeId,object parameter,IedClientError err,DataSet dataSet);
 
@@ -2566,7 +2572,6 @@ namespace IEC61850
                 {
                     handler(invokeId, handlerParameter, clientError, null, moreFollows);
                 }
-
             }
 
             /// <summary>
@@ -2631,7 +2636,6 @@ namespace IEC61850
             {
                 return GetLogicalDeviceDataSetsAsync(null, ldName, continueAfter, handler, parameter);
             }
-
 
             public UInt32 GetLogicalDeviceDataSetsAsync(List<string> result, string ldName, string continueAfter, GetNameListHandler handler, object parameter)
             {
