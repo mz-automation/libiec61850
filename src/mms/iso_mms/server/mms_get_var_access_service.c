@@ -1,7 +1,7 @@
 /*
  *  mms_get_var_access_service.c
  *
- *  Copyright 2013-2023 Michael Zillgith
+ *  Copyright 2013-2024 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -310,9 +310,12 @@ mmsServer_handleGetVariableAccessAttributesRequest(
     rval = ber_decode(NULL, &asn_DEF_GetVariableAccessAttributesRequest,
                 (void**) &request, buffer + bufPos, maxBufPos - bufPos);
 
-    if (rval.code == RC_OK) {
-        if (request->present == GetVariableAccessAttributesRequest_PR_name) {
-            if (request->choice.name.present == ObjectName_PR_domainspecific) {
+    if (rval.code == RC_OK)
+    {
+        if (request->present == GetVariableAccessAttributesRequest_PR_name)
+        {
+            if (request->choice.name.present == ObjectName_PR_domainspecific)
+            {
                 Identifier_t domainId = request->choice.name.choice.domainspecific.domainId;
                 Identifier_t nameId = request->choice.name.choice.domainspecific.itemId;
 
@@ -328,7 +331,8 @@ mmsServer_handleGetVariableAccessAttributesRequest(
                 GLOBAL_FREEMEM(nameIdStr);
             }
 #if (CONFIG_MMS_SUPPORT_VMD_SCOPE_NAMED_VARIABLES == 1)
-            else if (request->choice.name.present == ObjectName_PR_vmdspecific) {
+            else if (request->choice.name.present == ObjectName_PR_vmdspecific)
+            {
                 Identifier_t nameId = request->choice.name.choice.vmdspecific;
 
                 char* nameIdStr = StringUtils_createStringFromBuffer(nameId.buf, nameId.size);
@@ -356,6 +360,12 @@ mmsServer_handleGetVariableAccessAttributesRequest(
     }
 
     asn_DEF_GetVariableAccessAttributesRequest.free_struct(&asn_DEF_GetVariableAccessAttributesRequest, request, 0);
+
+    if (ByteBuffer_getSize(response) > connection->maxPduSize)
+    {
+        ByteBuffer_setSize(response, 0);
+        mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_RESOURCE_OTHER);
+    }
 
     return retVal;
 }
