@@ -160,3 +160,47 @@ void CommParameters_setDstAddress(CommParameters *gooseCommParameters,
 #include "servicePythonWrapper.hpp"
 %}
 %include "servicePythonWrapper.hpp"
+
+/* SV Subscriber section */
+%{
+struct sSVSubscriber;
+typedef struct sSVSubscriber* SVSubscriber;
+struct sSVSubscriber_ASDU {
+
+    char* svId;
+    char* datSet;
+
+    uint8_t* smpCnt;
+    uint8_t* confRev;
+    uint8_t* refrTm;
+    uint8_t* smpSynch;
+    uint8_t* smpMod;
+    uint8_t* smpRate;
+
+    int dataBufferLength;
+    uint8_t* dataBuffer;
+};
+typedef struct sSVSubscriber_ASDU* SVSubscriber_ASDU;
+#include "sv_subscriber.h"
+#include "sv_publisher.h"
+%}
+%include "sv_publisher.h"
+%include "sv_subscriber.h"
+struct sSVSubscriber_ASDU {
+
+    char* svId;
+    char* datSet;
+
+    uint8_t* smpCnt;
+    uint8_t* confRev;
+    uint8_t* refrTm;
+    uint8_t* smpSynch;
+    uint8_t* smpMod;
+    uint8_t* smpRate;
+
+    int dataBufferLength;
+    uint8_t* dataBuffer;
+};
+typedef struct sSVSubscriber_ASDU* SVSubscriber_ASDU;
+
+
