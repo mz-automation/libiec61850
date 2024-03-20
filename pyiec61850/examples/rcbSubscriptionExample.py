@@ -27,7 +27,7 @@ The user needs to:
 
 import time
 import sys
-import iec61850
+import pyiec61850 as iec61850
 
 
 def open_connection(ip_address, mms_port):

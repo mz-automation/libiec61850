@@ -2,13 +2,11 @@
 # are not available in CMake versions earlier than 3.8
 # cmake_minimum_required(VERSION 3.8)
 
+# We use explicitly passed PYTHON_INCLUDE_DIRS/PYTHON_EXECUTABLE because find_package finds the wrong python dist
 find_package(SWIG REQUIRED)
 include(${SWIG_USE_FILE})
 
-find_package(PythonInterp ${BUILD_PYTHON_VERSION} REQUIRED)
-find_package(PythonLibs ${PYTHON_VERSION_STRING} EXACT REQUIRED)
-
-include_directories(${PYTHON_INCLUDE_PATH})
+include_directories(${PYTHON_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 set(CMAKE_SWIG_FLAGS "")
@@ -29,16 +27,5 @@ else()
     )
 endif()
 
-swig_link_libraries(iec61850 ${PYTHON_LIBRARIES} ${LIBS})
-
-# Finding python modules install path
-execute_process(
-	COMMAND ${PYTHON_EXECUTABLE} -c
-	"from distutils.sysconfig import get_python_lib; import sys; sys.stdout.write(get_python_lib())"
-	OUTPUT_VARIABLE PYTHON_SITE_DIR
-)
-
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/iec61850.py DESTINATION ${PYTHON_SITE_DIR})
-install(TARGETS _iec61850 LIBRARY DESTINATION ${PYTHON_SITE_DIR})
-
+swig_link_libraries(iec61850 ${LIBS})  # Note: not linking against python https://github.com/pypa/cibuildwheel/issues/727#issuecomment-866278052
 add_test(test_pyiec61850 ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/test_pyiec61850.py)
