@@ -160,6 +160,33 @@ setSocketNonBlocking(Socket self)
     setsockopt(self->fd, IPPROTO_TCP, TCP_NODELAY, (const char*)&tcpNoDelay, sizeof(int));
 }
 
+static void
+setSocketBufferSize(Socket self, int rcvBufSize, int sndBufSize)
+{
+    setsockopt(self->fd, SOL_SOCKET, SO_RCVBUF, (const char*)&rcvBufSize, sizeof(int));
+    setsockopt(self->fd, SOL_SOCKET, SO_SNDBUF, (const char*)&sndBufSize, sizeof(int));
+}
+
+
+#ifdef __i386__
+const char*
+inet_ntop(int af, const void* src, char* dst, int cnt){
+
+    struct sockaddr_in srcaddr;
+
+    memset(&srcaddr, 0, sizeof(struct sockaddr_in));
+    memcpy(&(srcaddr.sin_addr), src, sizeof(srcaddr.sin_addr));
+
+    srcaddr.sin_family = af;
+    if (WSAAddressToString((struct sockaddr*) &srcaddr, sizeof(struct sockaddr_in), 0, dst, (LPDWORD) &cnt) != 0) {
+        DWORD rv = WSAGetLastError();
+        printf("WSAAddressToString() : %d\n",rv);
+        return NULL;
+    }
+    return dst;
+}
+#endif
+
 static bool
 prepareAddress(const char *address, int port, struct sockaddr_in *sockaddr)
 {
@@ -266,6 +293,9 @@ TcpServerSocket_create(const char* address, int port)
 
         setSocketNonBlocking((Socket)serverSocket);
 
+        if(CONFIG_SET_SOCKET_BUFSIZE == 1)
+            setSocketBufferSize((Socket)serverSocket, CONFIG_SOCKET_RCVBUFSIZE*1024, CONFIG_SOCKET_SNDBUFSIZE*1024);
+
         socketCount++;
     }
     else {
@@ -296,6 +326,9 @@ ServerSocket_accept(ServerSocket self)
         socketCount++;
 
         setSocketNonBlocking(conSocket);
+
+        if(CONFIG_SET_SOCKET_BUFSIZE == 1)
+            setSocketBufferSize(conSocket, CONFIG_SOCKET_RCVBUFSIZE*1024, CONFIG_SOCKET_SNDBUFSIZE*1024);
 
         if (DEBUG_SOCKET)
             printf("WIN32_SOCKET: connection accepted\n");
@@ -413,6 +446,9 @@ Socket_connectAsync(Socket self, const char* address, int port)
         return false;
 
     setSocketNonBlocking(self);
+
+    if(CONFIG_SET_SOCKET_BUFSIZE == 1)
+        setSocketBufferSize(self, CONFIG_SOCKET_RCVBUFSIZE*1024, CONFIG_SOCKET_SNDBUFSIZE*1024);
 
     if (connect(self->fd, (struct sockaddr *) &serverAddress, sizeof(serverAddress)) == SOCKET_ERROR) {
         if (WSAGetLastError() != WSAEWOULDBLOCK) {

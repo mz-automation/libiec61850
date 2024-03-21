@@ -48,14 +48,23 @@
 /* number of concurrent MMS client connections the server accepts, -1 for no limit */
 #cmakedefine CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS @CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS@
 
+/* set socket buffer size. 1 -> enable */
+#define CONFIG_SET_SOCKET_BUFSIZE 1
+
+/* size (in KB) SOCKET RCVBUF */
+#define CONFIG_SOCKET_RCVBUFSIZE 128
+
+/* size (in KB) SOCKET SNDBUF */
+#define CONFIG_SOCKET_SNDBUFSIZE 128
+
 /* activate TCP keep alive mechanism. 1 -> activate */
 #cmakedefine01 CONFIG_ACTIVATE_TCP_KEEPALIVE
 
 /* time (in s) between last message and first keepalive message */
-#define CONFIG_TCP_KEEPALIVE_IDLE 5
+#define CONFIG_TCP_KEEPALIVE_IDLE 20
 
 /* time between subsequent keepalive messages if no ack received */
-#define CONFIG_TCP_KEEPALIVE_INTERVAL 2
+#define CONFIG_TCP_KEEPALIVE_INTERVAL 5
 
 /* number of not missing keepalive responses until socket is considered dead */
 #define CONFIG_TCP_KEEPALIVE_CNT 2
