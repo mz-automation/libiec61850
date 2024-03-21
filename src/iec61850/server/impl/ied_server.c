@@ -542,7 +542,7 @@ IedServer_createWithConfig(IedModel* dataModel, TLSConfiguration tlsConfiguratio
 
             createMmsServerCache(self);
 
-            dataModel->initializer();
+            if (dataModel->initializer) dataModel->initializer();
 
             installDefaultValuesInCache(self); /* This will also connect cached MmsValues to DataAttributes */
 
