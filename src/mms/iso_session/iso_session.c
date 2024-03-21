@@ -187,9 +187,14 @@ parseSessionHeaderParameters(IsoSession* session, ByteBuffer* message, int param
             {
                session->calledSessionSelector.size = parameterLength;
 
+               const uint8_t SessionSelectorConstValue[16] = {0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
                int i;
                for (i = 0; i < session->calledSessionSelector.size; i++)
+               {
                    session->calledSessionSelector.value[i] = message->buffer[offset++];
+				   if(SessionSelectorConstValue[i] != session->calledSessionSelector.value[i])
+					   return SESSION_ERROR;
+               }
             }
 
             break;

@@ -481,9 +481,14 @@ parseOptions(CotpConnection* self, uint8_t* buffer, int bufLen)
             if (optionLen < 5) {
                 self->options.tSelDst.size = optionLen;
 
+                const uint8_t TransportSelectorConstValue[4] = {0,1,0,0};
                 int i;
                 for (i = 0; i < optionLen; i++)
+                {
                     self->options.tSelDst.value[i] = buffer[bufPos++];
+ 				   if(TransportSelectorConstValue[i] != self->options.tSelDst.value[i])
+ 					   return false;
+                }
             }
             else
                 goto cpo_error;
