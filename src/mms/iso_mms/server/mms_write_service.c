@@ -598,12 +598,13 @@ mmsServer_handleWriteRequest(
 
     MmsServer_lockModel(connection->server);
 
-    if (writeRequest->variableAccessSpecification.present == VariableAccessSpecification_PR_variableListName) {
+    if (writeRequest->variableAccessSpecification.present == VariableAccessSpecification_PR_variableListName)
+    {
         handleWriteNamedVariableListRequest(connection, writeRequest, invokeId, response);
         goto exit_function;
     }
-    else if (writeRequest->variableAccessSpecification.present == VariableAccessSpecification_PR_listOfVariable) {
-
+    else if (writeRequest->variableAccessSpecification.present == VariableAccessSpecification_PR_listOfVariable)
+    {
         int numberOfWriteItems = writeRequest->variableAccessSpecification.choice.listOfVariable.list.count;
 
         if (numberOfWriteItems < 1) {
@@ -627,7 +628,8 @@ mmsServer_handleWriteRequest(
 
         int i;
 
-        for (i = 0; i < numberOfWriteItems; i++) {
+        for (i = 0; i < numberOfWriteItems; i++)
+        {
             ListOfVariableSeq_t* varSpec =
                     writeRequest->variableAccessSpecification.choice.listOfVariable.list.array[i];
 
@@ -644,7 +646,8 @@ mmsServer_handleWriteRequest(
 
             char nameIdStr[65];
 
-            if (varSpec->variableSpecification.choice.name.present == ObjectName_PR_domainspecific) {
+            if (varSpec->variableSpecification.choice.name.present == ObjectName_PR_domainspecific)
+            {
                 Identifier_t domainId = varSpec->variableSpecification.choice.name.choice.domainspecific.domainId;
 
                 char domainIdStr[65];
@@ -687,8 +690,8 @@ mmsServer_handleWriteRequest(
 
             AlternateAccess_t* alternateAccess = varSpec->alternateAccess;
 
-            if (alternateAccess != NULL) {
-
+            if (alternateAccess != NULL)
+            {
                 if ((variable->type == MMS_STRUCTURE) && (mmsServer_isComponentAccess(alternateAccess) == false)) {
                     accessResults[i] = DATA_ACCESS_ERROR_OBJECT_ATTRIBUTE_INCONSISTENT;
                     continue;
@@ -714,12 +717,13 @@ mmsServer_handleWriteRequest(
                 continue;
             }
 
-            if (alternateAccess != NULL) {
-
+            if (alternateAccess != NULL)
+            {
                 if (domain == NULL)
                     domain = (MmsDomain*) device;
 
-                if (mmsServer_isIndexAccess(alternateAccess)) {
+                if (mmsServer_isIndexAccess(alternateAccess))
+                {
                     MmsValue* cachedArray = MmsServer_getValueFromCache(connection->server, domain, nameIdStr);
 
                     if (cachedArray == NULL) {
@@ -730,8 +734,8 @@ mmsServer_handleWriteRequest(
                     int index = mmsServer_getLowIndex(alternateAccess);
                     int numberOfElements = mmsServer_getNumberOfElements(alternateAccess);
 
-                    if (numberOfElements == 0) { /* select single array element with index */
-
+                    if (numberOfElements == 0) /* select single array element with index */
+                    {
                         MmsValue* elementValue = MmsValue_getElement(cachedArray, index);
 
                         if (elementValue == NULL) {
@@ -739,7 +743,8 @@ mmsServer_handleWriteRequest(
                             goto end_of_main_loop;
                         }
 
-                        if (mmsServer_isAccessToArrayComponent(alternateAccess)) {
+                        if (mmsServer_isAccessToArrayComponent(alternateAccess))
+                        {
                             MmsVariableSpecification* namedVariable = MmsDomain_getNamedVariable(domain, nameIdStr);
 
                             if (namedVariable) {
@@ -757,16 +762,18 @@ mmsServer_handleWriteRequest(
                             goto end_of_main_loop;
                         }
                     }
-                    else { /* select sub-array with start-index and number-of-elements */
-
-                        if (MmsValue_getType(value) != MMS_ARRAY) {
+                    else /* select sub-array with start-index and number-of-elements */
+                    {
+                        if (MmsValue_getType(value) != MMS_ARRAY)
+                        {
                             accessResults[i] = DATA_ACCESS_ERROR_TYPE_INCONSISTENT;
                             goto end_of_main_loop;
                         }
 
                         int elementNo;
 
-                        for (elementNo = 0; elementNo < numberOfElements; elementNo++) {
+                        for (elementNo = 0; elementNo < numberOfElements; elementNo++)
+                        {
                             MmsValue* newElement = MmsValue_getElement(value, elementNo);
                             MmsValue* elementValue = MmsValue_getElement(cachedArray, index++);
 
@@ -785,22 +792,26 @@ mmsServer_handleWriteRequest(
                     accessResults[i] = DATA_ACCESS_ERROR_SUCCESS;
                     goto end_of_main_loop;
                 }
-                else if (mmsServer_isComponentAccess(alternateAccess)) {
+                else if (mmsServer_isComponentAccess(alternateAccess))
+                {
                     variable = getComponent(connection, domain, alternateAccess, variable, nameIdStr);
 
-                    if (variable == NULL) {
+                    if (variable == NULL)
+                    {
                         accessResults[i] = DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT;
                         goto end_of_main_loop;
                     }
                 }
-                else {
+                else
+                {
                     accessResults[i] = DATA_ACCESS_ERROR_SUCCESS;
                     goto end_of_main_loop;
                 }
             }
 
             /* Check for correct type */
-            if (MmsVariableSpecification_isValueOfType(variable, value) == false) {
+            if (MmsVariableSpecification_isValueOfType(variable, value) == false)
+            {
                 accessResults[i] = DATA_ACCESS_ERROR_TYPE_INCONSISTENT;
                 goto end_of_main_loop;
             }
