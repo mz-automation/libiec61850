@@ -3870,7 +3870,7 @@ struct fileReadParameters
 };
 
 static void
-fileReadHandler(uint32_t invokeId, void* parameter, MmsError mmsError, int frsmId, uint8_t* buffer, uint32_t byteReceived,
+fileReadHandler(uint32_t invokeId, void* parameter, MmsError mmsError, int32_t frsmId, uint8_t* buffer, uint32_t byteReceived,
         bool moreFollows)
 {
     (void)invokeId;
