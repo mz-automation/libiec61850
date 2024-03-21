@@ -1,3 +1,7 @@
+if(CONFIG_USE_EXTERNAL_MBEDTLS_DYNLIB)
+link_directories(${CONFIG_EXTERNAL_MBEDTLS_DYNLIB_PATH})
+endif()
+
 add_subdirectory(server_example_simple)
 add_subdirectory(server_example_basic_io)
 add_subdirectory(server_example_password_auth)
