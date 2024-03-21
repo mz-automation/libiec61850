@@ -75,10 +75,7 @@ static MmsValue*
 getOperParameterCtlNum(MmsValue* operParameters)
 {
     if (MmsValue_getType(operParameters) == MMS_STRUCTURE) {
-        if (MmsValue_getArraySize(operParameters) == 7)
-            return MmsValue_getElement(operParameters, 3);
-        else if (MmsValue_getArraySize(operParameters) == 6)
-            return MmsValue_getElement(operParameters, 2);
+        return MmsValue_getElement(operParameters, MmsValue_getArraySize(operParameters) - 4);
     }
 
     return NULL;
@@ -88,10 +85,7 @@ static MmsValue*
 getCancelParameterCtlNum(MmsValue* operParameters)
 {
     if (MmsValue_getType(operParameters) == MMS_STRUCTURE) {
-        if (MmsValue_getArraySize(operParameters) == 6)
-            return MmsValue_getElement(operParameters, 3);
-        else if (MmsValue_getArraySize(operParameters) == 5)
-            return MmsValue_getElement(operParameters, 2);
+        return MmsValue_getElement(operParameters, MmsValue_getArraySize(operParameters) - 3);
     }
 
     return NULL;
@@ -101,10 +95,7 @@ static MmsValue*
 getCancelParameterOrigin(MmsValue* operParameters)
 {
     if (MmsValue_getType(operParameters) == MMS_STRUCTURE) {
-        if (MmsValue_getArraySize(operParameters) == 6)
-            return MmsValue_getElement(operParameters, 2);
-        else if (MmsValue_getArraySize(operParameters) == 5)
-            return MmsValue_getElement(operParameters, 1);
+        return MmsValue_getElement(operParameters, MmsValue_getArraySize(operParameters) - 4);
     }
 
     return NULL;
@@ -115,10 +106,7 @@ getOperParameterTest(MmsValue* operParameters)
 {
     if (MmsValue_getType(operParameters) == MMS_STRUCTURE)
     {
-        if (MmsValue_getArraySize(operParameters) == 7)
-            return MmsValue_getElement(operParameters, 5);
-        else if (MmsValue_getArraySize(operParameters) == 6)
-            return MmsValue_getElement(operParameters, 4);
+        return MmsValue_getElement(operParameters, MmsValue_getArraySize(operParameters) - 2);
     }
 
     return NULL;
@@ -129,10 +117,7 @@ getOperParameterCheck(MmsValue* operParameters)
 {
     if (MmsValue_getType(operParameters) == MMS_STRUCTURE)
     {
-        if (MmsValue_getArraySize(operParameters) == 7)
-            return MmsValue_getElement(operParameters, 6);
-        else if (MmsValue_getArraySize(operParameters) == 6)
-            return MmsValue_getElement(operParameters, 5);
+        return MmsValue_getElement(operParameters, MmsValue_getArraySize(operParameters) - 1);
     }
 
     return NULL;
@@ -143,10 +128,7 @@ getOperParameterOrigin(MmsValue* operParameters)
 {
     if (MmsValue_getType(operParameters) == MMS_STRUCTURE)
     {
-        if (MmsValue_getArraySize(operParameters) == 7)
-            return MmsValue_getElement(operParameters, 2);
-        else if (MmsValue_getArraySize(operParameters) == 6)
-            return MmsValue_getElement(operParameters, 1);
+        return MmsValue_getElement(operParameters, MmsValue_getArraySize(operParameters) - 5);
     }
 
     return NULL;
@@ -157,10 +139,7 @@ getCancelParameterTest(MmsValue* operParameters)
 {
     if (MmsValue_getType(operParameters) == MMS_STRUCTURE)
     {
-        if (MmsValue_getArraySize(operParameters) == 6)
-            return MmsValue_getElement(operParameters, 5);
-        else if (MmsValue_getArraySize(operParameters) == 5)
-            return MmsValue_getElement(operParameters, 4);
+        return MmsValue_getElement(operParameters, MmsValue_getArraySize(operParameters) - 1);
     }
 
     return NULL;
@@ -173,10 +152,7 @@ getOperParameterTime(MmsValue* operParameters)
 
     if (MmsValue_getType(operParameters) == MMS_STRUCTURE)
     {
-        if (MmsValue_getArraySize(operParameters) == 7)
-            timeParameter = MmsValue_getElement(operParameters, 4);
-        else if (MmsValue_getArraySize(operParameters) == 6)
-            timeParameter = MmsValue_getElement(operParameters, 3);
+        timeParameter = MmsValue_getElement(operParameters, MmsValue_getArraySize(operParameters) - 3);
     }
 
     if (timeParameter != NULL)
@@ -193,10 +169,7 @@ getCancelParameterTime(MmsValue* operParameters)
 
     if (MmsValue_getType(operParameters) == MMS_STRUCTURE)
     {
-        if (MmsValue_getArraySize(operParameters) == 6)
-            timeParameter = MmsValue_getElement(operParameters, 4);
-        else if (MmsValue_getArraySize(operParameters) == 5)
-            timeParameter = MmsValue_getElement(operParameters, 3);
+        timeParameter = MmsValue_getElement(operParameters, MmsValue_getArraySize(operParameters) - 2);
     }
 
     if (timeParameter != NULL)
