@@ -126,7 +126,7 @@ main(int argc, char** argv)
             goto exit_error;
         }
 
-        /* prepare the parameters of the RCP */
+        /* prepare the parameters of the RCB */
         ClientReportControlBlock_setResv(rcb, true);
         ClientReportControlBlock_setTrgOps(rcb, TRG_OPT_DATA_CHANGED | TRG_OPT_QUALITY_CHANGED | TRG_OPT_GI);
         ClientReportControlBlock_setDataSetReference(rcb, "simpleIOGenericIO/LLN0$Events"); /* NOTE the "$" instead of "." ! */
