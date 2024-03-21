@@ -1108,6 +1108,59 @@ createCancelParameters(ControlObjectClient self)
     return cancelParameters;
 }
 
+static MmsValue*
+createCancelwParameters(ControlObjectClient self, MmsValue* ctlVal)
+{
+    MmsValue* cancelParameters;
+
+    if (self->hasTimeActivatedMode)
+        cancelParameters = MmsValue_createEmptyStructure(6);
+    else
+        cancelParameters = MmsValue_createEmptyStructure(5);
+
+    MmsValue_setElement(cancelParameters, 0, ctlVal);
+
+    int index = 1;
+
+    if (self->hasTimeActivatedMode) {
+        MmsValue* operTm = MmsValue_newUtcTimeByMsTime(self->opertime);
+        MmsValue_setElement(cancelParameters, index++, operTm);
+    }
+
+    MmsValue* origin = createOriginValue(self);
+
+    MmsValue_setElement(cancelParameters, index++, origin);
+
+    MmsValue* ctlNum = MmsValue_newUnsignedFromUint32(self->ctlNum);
+    MmsValue_setElement(cancelParameters, index++, ctlNum);
+
+    uint64_t timestamp;
+
+    if (self->useConstantT)
+        timestamp = self->constantT;
+    else
+        timestamp = Hal_getTimeInMs();
+
+    MmsValue* ctlTime;
+
+    if (self->edition == 2) {
+        ctlTime = MmsValue_newUtcTimeByMsTime(timestamp);
+
+        if (self->connection)
+            MmsValue_setUtcTimeQuality(ctlTime, self->connection->timeQuality);
+    }
+    else {
+        ctlTime = MmsValue_newBinaryTime(false);
+        MmsValue_setBinaryTime(ctlTime, timestamp);
+    }
+    MmsValue_setElement(cancelParameters, index++, ctlTime);
+
+    MmsValue* ctlTest = MmsValue_newBoolean(self->test);
+    MmsValue_setElement(cancelParameters, index++, ctlTest);
+
+    return cancelParameters;
+}
+
 bool
 ControlObjectClient_cancel(ControlObjectClient self)
 {
@@ -1123,6 +1176,52 @@ ControlObjectClient_cancel(ControlObjectClient self)
     convertToMmsAndInsertFC(itemId, self->objectReference + strlen(domainId) + 1, "CO");
 
     StringUtils_appendString(itemId, 65, "$Cancel");
+
+    if (DEBUG_IED_CLIENT)
+        printf("IED_CLIENT: cancel: %s/%s\n", domainId, itemId);
+
+    MmsError mmsError;
+
+    MmsDataAccessError writeResult = MmsConnection_writeVariable(IedConnection_getMmsConnection(self->connection),
+            &mmsError, domainId, itemId, cancelParameters);
+
+    self->lastMmsError = mmsError;
+    self->lastAccessError = writeResult;
+
+    MmsValue_setElement(cancelParameters, 0, NULL);
+    MmsValue_delete(cancelParameters);
+
+    if (mmsError != MMS_ERROR_NONE) {
+        if (DEBUG_IED_CLIENT)
+            printf("IED_CLIENT: cancel failed!\n");
+        return false;
+    }
+    else {
+        if (writeResult != DATA_ACCESS_ERROR_SUCCESS) {
+            if (DEBUG_IED_CLIENT)
+                printf("IED_CLIENT: cancel failed!\n");
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool
+ControlObjectClient_cancelWithValue(ControlObjectClient self, MmsValue* ctlVal)
+{
+    resetLastApplError(self);
+
+    MmsValue* cancelParameters = createCancelwParameters(self, ctlVal);
+
+    char domainId[65];
+    char itemId[65];
+
+    MmsMapping_getMmsDomainFromObjectReference(self->objectReference, domainId);
+
+    convertToMmsAndInsertFC(itemId, self->objectReference + strlen(domainId) + 1, "CO");
+
+    strncat(itemId, "$Cancel", 64);
 
     if (DEBUG_IED_CLIENT)
         printf("IED_CLIENT: cancel: %s/%s\n", domainId, itemId);
