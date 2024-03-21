@@ -171,6 +171,16 @@ LIB61850_API uint32_t
 MmsConnection_getRequestTimeout(MmsConnection self);
 
 /**
+ * \brief Get current invokeId
+ *
+ * \param self MmsConnection instance to operate on
+ *
+ * \return current invokeId
+ */
+LIB61850_API uint32_t
+MmsConnection_getInvokeId(MmsConnection self);
+
+/**
  * \brief Set the connect timeout in ms for this connection instance
  *
  * \param self MmsConnection instance to operate on
