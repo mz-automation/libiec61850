@@ -756,7 +756,7 @@ writeMultipleVariablesHandler(uint32_t invokeId, void* parameter, MmsError mmsEr
     }
     else {
         if (DEBUG_IED_CLIENT)
-            printf("IED_CLIENT: internal error - no matching outstanding call with invoke ID: %u!\n", invokeId);
+            printf("IED_CLIENT: internal error - no matching outstanding call with invoke ID: %"PRIu32"!\n", invokeId);
     }
 }
 

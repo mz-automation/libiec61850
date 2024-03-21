@@ -2301,7 +2301,7 @@ MmsValue_printToBuffer(const MmsValue* self, char* buffer, int bufferSize)
         break;
 
     case MMS_UNSIGNED:
-        snprintf(buffer, bufferSize, "%u", MmsValue_toUint32(self));
+        snprintf(buffer, bufferSize, "%"PRIu32, MmsValue_toUint32(self));
         break;
 
     case MMS_UTC_TIME:

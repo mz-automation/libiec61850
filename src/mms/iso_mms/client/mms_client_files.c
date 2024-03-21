@@ -191,7 +191,7 @@ mmsClient_handleFileReadRequest(
     int32_t frsmId = BerDecoder_decodeInt32(buffer, maxBufPos - bufPos, bufPos);
 
     if (DEBUG_MMS_CLIENT)
-        printf("MMS_CLIENT: mmsClient_handleFileReadRequest read request for frsmId: %i\n", frsmId);
+        printf("MMS_CLIENT: mmsClient_handleFileReadRequest read request for frsmId: %"PRIi32"\n", frsmId);
 
     MmsFileReadStateMachine* frsm = getFrsm(connection, frsmId);
 

@@ -465,13 +465,13 @@ handleLastApplErrorMessage(IedConnection self, MmsValue* lastApplError)
         printf("IED_CLIENT:  CntrlObj: %s\n", MmsValue_toString(cntrlObj));
 
     if (DEBUG_IED_CLIENT)
-        printf("IED_CLIENT:  ctlNum: %u\n", MmsValue_toUint32(ctlNum));
+        printf("IED_CLIENT:  ctlNum: %"PRIu32"\n", MmsValue_toUint32(ctlNum));
 
     if (DEBUG_IED_CLIENT)
-        printf("IED_CLIENT:  addCause: %i\n", MmsValue_toInt32(addCause));
+        printf("IED_CLIENT:  addCause: %"PRIi32"\n", MmsValue_toInt32(addCause));
 
     if (DEBUG_IED_CLIENT)
-        printf("IED_CLIENT:  error: %i\n", MmsValue_toInt32(error));
+        printf("IED_CLIENT:  error: %"PRIi32"\n", MmsValue_toInt32(error));
 
     self->lastApplError.ctlNum = MmsValue_toUint32(ctlNum);
     self->lastApplError.addCause = (ControlAddCause) MmsValue_toInt32(addCause);
@@ -652,11 +652,11 @@ IedConnection_tick(IedConnection self)
 }
 
 void
-IedConnection_setLocalAddress(IedConnection self, const char* localIpAddress, int localPort) 
+IedConnection_setLocalAddress(IedConnection self, const char* localIpAddress, int localPort)
 {
     MmsConnection connection = self->connection;
     IsoConnectionParameters isoP = MmsConnection_getIsoConnectionParameters(connection);
-      
+
     IsoConnectionParameters_setLocalTcpParameters(isoP, localIpAddress, localPort);
 }
 
@@ -4255,4 +4255,3 @@ FileDirectoryEntry_getLastModified(FileDirectoryEntry self)
 {
     return self->lastModified;
 }
-

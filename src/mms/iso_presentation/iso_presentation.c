@@ -802,7 +802,7 @@ IsoPresentation_parseConnect(IsoPresentation* self, ByteBuffer* byteBuffer)
                 uint32_t modeSelector = BerDecoder_decodeUint32(buffer, len, bufPos);
 
                 if (DEBUG_PRES)
-                    printf("PRES: modesel %ui\n", modeSelector);
+                    printf("PRES: modesel %"PRIu32"\n", modeSelector);
 
                 bufPos += len;
             }

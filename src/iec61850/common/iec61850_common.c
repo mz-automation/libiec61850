@@ -820,7 +820,7 @@ MmsMapping_varAccessSpecToObjectReference(MmsVariableAccessSpecification* varAcc
 
     /* Add array index part */
     if (varAccessSpec->arrayIndex > -1) {
-        sprintf(targetPos, "(%i)", varAccessSpec->arrayIndex);
+        sprintf(targetPos, "(%"PRIi32")", varAccessSpec->arrayIndex);
         targetPos += arrayIndexLen;
     }
 

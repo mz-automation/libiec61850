@@ -286,13 +286,13 @@ parseInitRequestDetail(MmsServerConnection self, uint8_t* buffer, int bufPos, in
 
                 if (protocolVersion < 1) {
                     if (DEBUG_MMS_SERVER)
-                        printf("MMS_SERVER: invalid protocol version %u\n", protocolVersion);
+                        printf("MMS_SERVER: invalid protocol version %"PRIu32"\n", protocolVersion);
 
                     return false;
                 }
 
                 if (DEBUG_MMS_SERVER)
-                    printf("MMS_SERVER: proposed version number %u\n", protocolVersion);
+                    printf("MMS_SERVER: proposed version number %"PRIu32"\n", protocolVersion);
             }
 
             break;

@@ -436,11 +436,11 @@ mmsServer_fileUploadTask(MmsServer self, MmsObtainFileTask task, int taskState)
 
     ByteBuffer* message = NULL;
 
-    if (taskState == MMS_FILE_UPLOAD_STATE_SEND_FILE_READ || 
+    if (taskState == MMS_FILE_UPLOAD_STATE_SEND_FILE_READ ||
         taskState == MMS_FILE_UPLOAD_STATE_SEND_FILE_CLOSE ||
         taskState == MMS_FILE_UPLOAD_STATE_SEND_OBTAIN_FILE_ERROR_SOURCE ||
         taskState == MMS_FILE_UPLOAD_STATE_SEND_OBTAIN_FILE_ERROR_DESTINATION ||
-        taskState == MMS_FILE_UPLOAD_STATE_SEND_OBTAIN_FILE_RESPONSE) 
+        taskState == MMS_FILE_UPLOAD_STATE_SEND_OBTAIN_FILE_RESPONSE)
     {
         IsoConnection_lock(task->connection->isoConnection);
 
@@ -551,7 +551,7 @@ mmsServer_fileUploadTask(MmsServer self, MmsObtainFileTask task, int taskState)
                         FileSystem_closeFile(task->fileHandle);
                         task->fileHandle = NULL;
                     }
-                    
+
                     deleteFile(MmsServer_getFilesystemBasepath(self), task->destinationFilename);
 
                     if (DEBUG_MMS_SERVER)
@@ -891,7 +891,7 @@ mmsServer_handleFileReadRequest(
     int32_t frsmId = BerDecoder_decodeInt32(buffer, maxBufPos - bufPos, bufPos);
 
     if (DEBUG_MMS_SERVER)
-        printf("MMS_SERVER: mmsServer_handleFileReadRequest read request for frsmId: %i\n", frsmId);
+        printf("MMS_SERVER: mmsServer_handleFileReadRequest read request for frsmId: %"PRIi32"\n", frsmId);
 
     MmsFileReadStateMachine* frsm = getFrsm(connection, frsmId);
 
@@ -927,7 +927,7 @@ mmsServer_handleFileCloseRequest(
     }
     else {
         if (DEBUG_MMS_SERVER)
-            printf("MMS_SERVER: Unused file ID %i\n", frsmId);
+            printf("MMS_SERVER: Unused file ID %"PRIi32"\n", frsmId);
 
         mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_OTHER);
     }
@@ -1051,7 +1051,7 @@ createFileDirectoryResponse(const char* basepath, uint32_t invokeId, ByteBuffer*
             continueAfterFileName = NULL;
     }
 
-    if ((directoryName && mmsMsg_isFilenameSave(directoryName) == false) || 
+    if ((directoryName && mmsMsg_isFilenameSave(directoryName) == false) ||
         (continueAfterFileName && mmsMsg_isFilenameSave(continueAfterFileName) == false))
     {
         if (DEBUG_MMS_SERVER)
@@ -1282,4 +1282,3 @@ mmsServer_handleFileDirectoryRequest(
 }
 
 #endif /* MMS_FILE_SERVICE == 1 */
-

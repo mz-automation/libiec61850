@@ -736,7 +736,7 @@ parseGoosePayload(GooseReceiver self, uint8_t* buffer, int apduLength)
                 timeAllowedToLive = BerDecoder_decodeUint32(buffer, elementLength, bufPos);
 
                 if (DEBUG_GOOSE_SUBSCRIBER)
-                    printf("GOOSE_SUBSCRIBER:   Found timeAllowedToLive %u\n", timeAllowedToLive);
+                    printf("GOOSE_SUBSCRIBER:   Found timeAllowedToLive %"PRIu32"\n", timeAllowedToLive);
 
                 break;
 
@@ -783,13 +783,13 @@ parseGoosePayload(GooseReceiver self, uint8_t* buffer, int apduLength)
             case 0x85:
                 stNum = BerDecoder_decodeUint32(buffer, elementLength, bufPos);
                 if (DEBUG_GOOSE_SUBSCRIBER)
-                    printf("GOOSE_SUBSCRIBER:   Found stNum: %u\n", stNum);
+                    printf("GOOSE_SUBSCRIBER:   Found stNum: %"PRIu32"\n", stNum);
                 break;
 
             case 0x86:
                 sqNum = BerDecoder_decodeUint32(buffer, elementLength, bufPos);
                 if (DEBUG_GOOSE_SUBSCRIBER)
-                    printf("GOOSE_SUBSCRIBER:   Found sqNum: %u\n", sqNum);
+                    printf("GOOSE_SUBSCRIBER:   Found sqNum: %"PRIu32"\n", sqNum);
                 break;
 
             case 0x87:
@@ -801,7 +801,7 @@ parseGoosePayload(GooseReceiver self, uint8_t* buffer, int apduLength)
             case 0x88:
                 confRev = BerDecoder_decodeUint32(buffer, elementLength, bufPos);
                 if (DEBUG_GOOSE_SUBSCRIBER)
-                    printf("GOOSE_SUBSCRIBER:   Found confRev: %u\n", confRev);
+                    printf("GOOSE_SUBSCRIBER:   Found confRev: %"PRIu32"\n", confRev);
                 break;
 
             case 0x89:
@@ -813,7 +813,7 @@ parseGoosePayload(GooseReceiver self, uint8_t* buffer, int apduLength)
             case 0x8a:
                 numberOfDatSetEntries = BerDecoder_decodeUint32(buffer, elementLength, bufPos);
                 if (DEBUG_GOOSE_SUBSCRIBER)
-                    printf("GOOSE_SUBSCRIBER:   Found number of entries: %u\n", numberOfDatSetEntries);
+                    printf("GOOSE_SUBSCRIBER:   Found number of entries: %"PRIu32"\n", numberOfDatSetEntries);
                 break;
 
             case 0xab:
@@ -856,7 +856,7 @@ parseGoosePayload(GooseReceiver self, uint8_t* buffer, int apduLength)
 
                 MmsValue_setUtcTime(matchingSubscriber->timestamp, 0);
             }
-            
+
             if (matchingSubscriber->isObserver && matchingSubscriber->dataSetValues != NULL) {
                 MmsValue_delete(matchingSubscriber->dataSetValues);
                 matchingSubscriber->dataSetValues = NULL;
@@ -934,7 +934,7 @@ parseGooseMessage(GooseReceiver self, uint8_t* buffer, int numbytes)
         return;
     if (buffer[bufPos++] != 0xb8)
         return;
-    
+
     uint8_t srcMac[6];
     memcpy(srcMac,&buffer[6],6);
 
@@ -976,7 +976,7 @@ parseGooseMessage(GooseReceiver self, uint8_t* buffer, int numbytes)
 
     while (element != NULL) {
         GooseSubscriber subscriber = (GooseSubscriber) LinkedList_getData(element);
-        
+
         if (subscriber->isObserver)
         {
             subscriber->appId = appId;

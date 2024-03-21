@@ -483,7 +483,7 @@ updateSboTimeoutValue(ControlObject* self)
         uint32_t sboTimeoutVal = MmsValue_toInt32(self->sboTimeout);
 
         if (DEBUG_IED_SERVER)
-            printf("IED_SERVER: set timeout for %s/%s.%s to %u\n", MmsDomain_getName(self->mmsDomain), self->lnName, self->name, sboTimeoutVal);
+            printf("IED_SERVER: set timeout for %s/%s.%s to %"PRIu32"\n", MmsDomain_getName(self->mmsDomain), self->lnName, self->name, sboTimeoutVal);
 
         self->selectTimeout = sboTimeoutVal;
     }
@@ -546,7 +546,7 @@ checkSelectTimeout(ControlObject* self, uint64_t currentTime, MmsMapping* mmsMap
             if (self->selectTimeout > 0) {
                 if (currentTime > (self->selectTime + self->selectTimeout)) {
                     if (DEBUG_IED_SERVER)
-                        printf("IED_SERVER: select-timeout (timeout-val = %u) for control %s/%s.%s\n",
+                        printf("IED_SERVER: select-timeout (timeout-val = %"PRIu32") for control %s/%s.%s\n",
                                 self->selectTimeout, MmsDomain_getName(self->mmsDomain), self->lnName, self->name);
 
                     unselectObject(self, SELECT_STATE_REASON_TIMEOUT, mmsMapping);
@@ -1681,7 +1681,7 @@ ControlObject_sendLastApplError(ControlObject* self, MmsServerConnection connect
     if (DEBUG_IED_SERVER) {
         printf("IED_SERVER: sendLastApplError:\n");
         printf("IED_SERVER:    control object: %s\n", ctlObj);
-        printf("IED_SERVER:    ctlNum: %u\n", MmsValue_toUint32(ctlNum));
+        printf("IED_SERVER:    ctlNum: %"PRIu32"\n", MmsValue_toUint32(ctlNum));
     }
 
     MmsValue ctlObjValueMemory;
@@ -2550,4 +2550,3 @@ ControlAction_getControlTime(ControlAction self)
 }
 
 #endif /* (CONFIG_IEC61850_CONTROL_SERVICE == 1) */
-
