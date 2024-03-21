@@ -300,7 +300,7 @@ MmsValue_getBoolean(const MmsValue* value);
  * \returns the string value as 0 terminated C string
  */
 LIB61850_API const char*
-MmsValue_toString(MmsValue* self);
+MmsValue_toString(const MmsValue* self);
 
 /**
  * \brief Returns the (maximum) length of the string
@@ -310,7 +310,7 @@ MmsValue_toString(MmsValue* self);
  * \param self MmsValue instance to operate on. Has to be of a type MMS_VISIBLE_STRING or MMS_STRING.
  */
 LIB61850_API int
-MmsValue_getStringSize(MmsValue* self);
+MmsValue_getStringSize(const MmsValue* self);
 
 LIB61850_API void
 MmsValue_setVisibleString(MmsValue* self, const char* string);
@@ -463,8 +463,8 @@ MmsValue_setUtcTimeByBuffer(MmsValue* self, const uint8_t* buffer);
  *
  * \return the buffer containing the raw data
  */
-LIB61850_API uint8_t*
-MmsValue_getUtcTimeBuffer(MmsValue* self);
+LIB61850_API const uint8_t*
+MmsValue_getUtcTimeBuffer(const MmsValue* self);
 
 /**
  * \brief Get a millisecond time value from an MmsValue object of MMS_UTCTIME type.
@@ -611,7 +611,7 @@ MmsValue_getOctetStringSize(const MmsValue* self);
  * \return maximum size in bytes
  */
 LIB61850_API uint16_t
-MmsValue_getOctetStringMaxSize(MmsValue* self);
+MmsValue_getOctetStringMaxSize(const MmsValue* self);
 
 /**
  * \brief Returns the reference to the internally hold buffer of an MmsValue object of type MMS_OCTET_STRING.
@@ -622,8 +622,8 @@ MmsValue_getOctetStringMaxSize(MmsValue* self);
  *
  * \return reference to the buffer
  */
-LIB61850_API uint8_t*
-MmsValue_getOctetStringBuffer(MmsValue* self);
+LIB61850_API const uint8_t*
+MmsValue_getOctetStringBuffer(const MmsValue* self);
 
 /**
  * \brief Get the value of a single octet of an MmsType object of type MMS_OCTET_STRING
@@ -637,7 +637,7 @@ MmsValue_getOctetStringBuffer(MmsValue* self);
  * \return the value of the octet (0 to 255, or 0x00 to 0xFF)
  */
 LIB61850_API uint8_t
-MmsValue_getOctetStringOctet(MmsValue* self, int octetPos);
+MmsValue_getOctetStringOctet(const MmsValue* self, int octetPos);
 
 /**
  * \brief Update the value of an MmsValue instance by the value of another MmsValue instance.
@@ -956,7 +956,7 @@ MmsValue_setDeletableRecursive(MmsValue* value);
  * \return 1 if deletable flag is set, otherwise 0
  */
 LIB61850_API int
-MmsValue_isDeletable(MmsValue* self);
+MmsValue_isDeletable(const MmsValue* self);
 
 /**
  * \brief Get the MmsType of an MmsValue instance
@@ -985,8 +985,8 @@ MmsValue_getSubElement(MmsValue* self, MmsVariableSpecification* varSpec, char* 
  *
  * \return the value type as a human readable string
  */
-LIB61850_API char*
-MmsValue_getTypeString(MmsValue* self);
+LIB61850_API const char*
+MmsValue_getTypeString(const MmsValue* self);
 
 /**
  * \brief create a string representation of the MmsValue object in the provided buffer
@@ -1040,7 +1040,7 @@ MmsValue_encodeMmsData(MmsValue* self, uint8_t* buffer, int bufPos, bool encode)
  * \return the maximum encoded size in bytes of the MMS data element
  */
 LIB61850_API int
-MmsValue_getMaxEncodedSize(MmsValue* self);
+MmsValue_getMaxEncodedSize(const MmsValue* self);
 
 /**
  * \brief Calculate the maximum encoded size of a variable of this type

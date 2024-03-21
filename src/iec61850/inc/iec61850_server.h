@@ -1375,7 +1375,7 @@ ControlAction_getOrCat(ControlAction self);
  *
  * \return the originator identifier
  */
-LIB61850_API uint8_t*
+LIB61850_API const uint8_t*
 ControlAction_getOrIdent(ControlAction self, int* orIdentSize);
 
 /**

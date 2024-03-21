@@ -312,7 +312,7 @@ ClientSVControlBlock_getDstAddress(ClientSVControlBlock self)
         goto exit_cleanup;
     }
 
-    uint8_t* addrBuf = MmsValue_getOctetStringBuffer(addr);
+    const uint8_t* addrBuf = MmsValue_getOctetStringBuffer(addr);
 
     memcpy(&(retVal.dstAddress), addrBuf, 6);
 

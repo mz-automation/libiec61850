@@ -1587,7 +1587,7 @@ updateOwner(ReportControl* rc, MmsServerConnection connection)
 static bool
 checkForZeroEntryID(MmsValue* value)
 {
-    uint8_t* buffer = MmsValue_getOctetStringBuffer(value);
+    const uint8_t* buffer = MmsValue_getOctetStringBuffer(value);
 
     int i = 0;
 
