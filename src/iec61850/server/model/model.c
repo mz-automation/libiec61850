@@ -538,19 +538,34 @@ static int
 createObjectReference(ModelNode* node, char* objectReference, int bufSize, bool withoutIedName)
 {
     int bufPos;
+    int arrayIndex = -1;
 
-    if (node->modelType != LogicalNodeModelType) {
+    if (node->modelType != LogicalNodeModelType)
+    {
         bufPos = createObjectReference(node->parent, objectReference, bufSize, withoutIedName);
+
+        if (node->modelType == DataAttributeModelType)
+        {
+            arrayIndex = ((DataAttribute*)(node))->arrayIndex;
+        }
+        else if (node->modelType == DataObjectModelType)
+        {
+            arrayIndex = ((DataObject*)(node))->arrayIndex;
+        }
 
         if (bufPos == -1)
             return -1;
 
-        if (bufPos < bufSize)
-            objectReference[bufPos++] = '.';
-        else
-            return -1;
+        if (arrayIndex < 0)
+        {
+            if (bufPos < bufSize)
+                objectReference[bufPos++] = '.';
+            else
+                return -1;
+        }
     }
-    else {
+    else
+    {
         LogicalNode* lNode = (LogicalNode*) node;
 
         LogicalDevice* lDevice = (LogicalDevice*) lNode->parent;
@@ -559,12 +574,13 @@ createObjectReference(ModelNode* node, char* objectReference, int bufSize, bool 
 
         bufPos = 0;
 
-        if (withoutIedName) {
+        if (withoutIedName)
+        {
             objectReference[0] = 0;
             StringUtils_appendString(objectReference, bufSize, lDevice->name);
         }
-        else {
-
+        else
+        {
             if (lDevice->ldName) {
                 StringUtils_copyStringMax(objectReference, bufSize, lDevice->ldName);
             }
@@ -581,20 +597,49 @@ createObjectReference(ModelNode* node, char* objectReference, int bufSize, bool 
             return -1;
     }
 
-    /* append own name */
-    int nameLength = strlen(node->name);
+    if (node->name)
+    {
+        /* append own name */
+        int nameLength = strlen(node->name);
 
-    if (bufPos + nameLength < bufSize) {
-        int i;
-        for (i = 0; i < nameLength; i++) {
-            objectReference[bufPos++] = node->name[i];
+        if (bufPos + nameLength < bufSize)
+        {
+            int i;
+            for (i = 0; i < nameLength; i++) {
+                objectReference[bufPos++] = node->name[i];
+            }
+
+            return bufPos;
         }
+        else {
+            return -1;
+        }
+    }
 
-        return bufPos;
+    if (arrayIndex > -1)
+    {
+        char arrayIndexStr[11];
+
+        snprintf(arrayIndexStr, 11, "%d", arrayIndex);
+
+        int arrayIndexStrLength = strlen(arrayIndexStr);
+
+        if (bufPos + arrayIndexStrLength + 2 < bufSize)
+        {
+            int i;
+
+            objectReference[bufPos++] = '(';
+
+            for (i = 0; i < arrayIndexStrLength; i++) {
+                objectReference[bufPos++] = arrayIndexStr[i];
+            }
+            objectReference[bufPos++] = ')';
+        }
+        else
+            return -1;
     }
-    else {
-        return -1;
-    }
+
+    return bufPos;
 }
 
 char*
@@ -608,15 +653,18 @@ ModelNode_getObjectReferenceEx(ModelNode* node, char* objectReference, bool with
 {
     bool allocated = false;
 
-    if (objectReference == NULL) {
+    if (objectReference == NULL)
+    {
         objectReference = (char*) GLOBAL_MALLOC(130);
         allocated = true;
     }
 
-    if (objectReference) {
+    if (objectReference)
+    {
         int bufPos = createObjectReference(node, objectReference, 130, withoutIedName);
 
-        if (bufPos == -1) {
+        if (bufPos == -1)
+        {
             if (allocated)
                 GLOBAL_FREEMEM(objectReference);
 
@@ -729,16 +777,16 @@ ModelNode_getChild(ModelNode* self, const char* name)
 
     ModelNode* matchingNode = NULL;
 
-    while (nextNode) {
-
+    while (nextNode)
+    {
         if (nextNode->name == NULL) {
             break; /* is an array element */        
         }
 
         int nodeNameLen = strlen(nextNode->name);
 
-        if (nodeNameLen == nameElementLength) {
-
+        if (nodeNameLen == nameElementLength)
+        {
             if (memcmp(nextNode->name, name, nodeNameLen) == 0) {
                 matchingNode = nextNode;
                 break;

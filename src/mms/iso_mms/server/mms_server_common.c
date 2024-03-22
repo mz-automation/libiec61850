@@ -309,12 +309,14 @@ mmsServer_getComponentOfArrayElement(AlternateAccess_t* alternateAccess, MmsVari
             goto exit_function;
 
         int i;
-        for (i = 0; i < structSpec->typeSpec.structure.elementCount; i++) {
-
+        for (i = 0; i < structSpec->typeSpec.structure.elementCount; i++)
+        {
             if ((int) strlen(structSpec->typeSpec.structure.elements[i]->name)
-                    == component.size) {
+                    == component.size)
+            {
                 if (strncmp(structSpec->typeSpec.structure.elements[i]->name,
-                        (char*) component.buf, component.size) == 0) {
+                        (char*) component.buf, component.size) == 0)
+                {
                     MmsValue* value = MmsValue_getElement(structuredValue, i);
 
                     if (mmsServer_isAccessToArrayComponent(
