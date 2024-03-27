@@ -399,7 +399,7 @@ mmsServer_isAccessToArrayComponent(AlternateAccess_t* alternateAccess);
 
 LIB61850_INTERNAL MmsValue*
 mmsServer_getComponentOfArrayElement(AlternateAccess_t* alternateAccess, MmsVariableSpecification* namedVariable,
-        MmsValue* structuredValue);
+        MmsValue* structuredValue, char* componentId);
 
 LIB61850_INTERNAL int
 mmsServer_getLowIndex(AlternateAccess_t* alternateAccess);
@@ -416,6 +416,10 @@ mmsServer_deleteVariableList(LinkedList namedVariableLists, char* variableListNa
 LIB61850_INTERNAL MmsDataAccessError
 mmsServer_setValue(MmsServer self, MmsDomain* domain, char* itemId, MmsValue* value,
         MmsServerConnection connection);
+
+LIB61850_INTERNAL MmsDataAccessError
+mmsServer_setValueEx(MmsServer self, MmsDomain* domain, char* itemId, MmsValue* value,
+        MmsServerConnection connection, int arrayIdx, const char* componentId);
 
 /**
  * \brief Get the current value of a variable in the server data model

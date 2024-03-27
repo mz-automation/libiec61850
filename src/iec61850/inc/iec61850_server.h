@@ -3,7 +3,7 @@
  *
  *  IEC 61850 server API for libiec61850.
  *
- *  Copyright 2013-2023 Michael Zillgith
+ *  Copyright 2013-2024 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -1844,6 +1844,19 @@ IedServer_handleWriteAccess(IedServer self, DataAttribute* dataAttribute,
 LIB61850_API void
 IedServer_handleWriteAccessForComplexAttribute(IedServer self, DataAttribute* dataAttribute,
         WriteAccessHandler handler, void* parameter);
+
+/**
+ * \brief Install a WriteAccessHandler for all data attributes of a data object with a specific FC
+ *
+ * \param self the instance of IedServer to operate on.
+ * \param dataObject the data object to monitor
+ * \param fc the functional constraint to monitor
+ * \param handler the callback function that is invoked if a client tries to write to
+ *       the monitored data attribute.
+ * \param parameter a user provided parameter that is passed to the WriteAccessHandler when called.
+*/
+LIB61850_API void
+IedServer_handleWriteAccessForDataObject(IedServer self, DataObject* dataObject, FunctionalConstraint fc, WriteAccessHandler handler, void* parameter);
 
 typedef enum {
     ACCESS_POLICY_ALLOW,

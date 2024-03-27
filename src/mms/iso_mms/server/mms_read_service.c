@@ -202,30 +202,35 @@ alternateArrayAccess(MmsServerConnection connection,
 
 		MmsValue* arrayValue = mmsServer_getValue(connection->server, domain, itemId, connection, false);
 
-		if (arrayValue != NULL) {
-
+		if (arrayValue != NULL)
+        {
 	        MmsValue* value = NULL;
 
 			if (numberOfElements == 0)
-			    if (mmsServer_isAccessToArrayComponent(alternateAccess)) {
+            {
+			    if (mmsServer_isAccessToArrayComponent(alternateAccess))
+                {
 			        if (namedVariable->typeSpec.array.elementTypeSpec->type == MMS_STRUCTURE) {
 			            MmsValue* structValue = MmsValue_getElement(arrayValue, index);
 
 			            if (structValue != NULL)
 			                value = mmsServer_getComponentOfArrayElement(alternateAccess,
-			                        namedVariable, structValue);
+			                        namedVariable, structValue, NULL);
 			        }
 			    }
 			    else {
 			        value = MmsValue_getElement(arrayValue, index);
 			    }
-			else {
+            }
+			else
+            {
 				value = MmsValue_createEmptyArray(numberOfElements);
 
 				MmsValue_setDeletable(value);
 
 				int resultIndex = 0;
-				while (index < lowIndex + numberOfElements) {
+				while (index < lowIndex + numberOfElements)
+                {
 					MmsValue* elementValue = NULL;
 
 					elementValue = MmsValue_getElement(arrayValue, index);

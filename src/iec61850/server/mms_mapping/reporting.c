@@ -252,7 +252,7 @@ ReportControl_destroy(ReportControl* self)
 }
 
 MmsValue*
-ReportControl_getRCBValue(ReportControl* rc, char* elementName)
+ReportControl_getRCBValue(ReportControl* rc, const char* elementName)
 {
     if (rc->buffered) {
         if (strcmp(elementName, "RptID") == 0)
@@ -460,7 +460,7 @@ copyRCBValuesToTrackingObject(MmsMapping* self, ReportControl* rc)
 }
 
 static void
-updateSingleTrackingValue(MmsMapping* self, ReportControl* rc, char* name, MmsValue* newValue)
+updateSingleTrackingValue(MmsMapping* self, ReportControl* rc, const char* name, MmsValue* newValue)
 {
     if (rc->buffered) {
         if (self->brcbTrk) {
@@ -1906,7 +1906,7 @@ reserveRcb(ReportControl* rc,  MmsServerConnection connection)
 }
 
 MmsDataAccessError
-Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* elementName, MmsValue* value,
+Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, const char* elementName, MmsValue* value,
         MmsServerConnection connection)
 {
     MmsDataAccessError retVal = DATA_ACCESS_ERROR_SUCCESS;

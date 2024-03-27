@@ -482,7 +482,7 @@ copyLCBValuesToTrackingObject(MmsMapping* self, LogControl* logControl)
 #endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
 
 MmsDataAccessError
-LIBIEC61850_LOG_SVC_writeAccessLogControlBlock(MmsMapping* self, MmsDomain* domain, char* variableIdOrig,
+LIBIEC61850_LOG_SVC_writeAccessLogControlBlock(MmsMapping* self, MmsDomain* domain, const char* variableIdOrig,
         MmsValue* value, MmsServerConnection connection)
 {
     (void)connection;

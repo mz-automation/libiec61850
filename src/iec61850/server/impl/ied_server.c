@@ -1680,6 +1680,38 @@ IedServer_handleWriteAccessForComplexAttribute(IedServer self, DataAttribute* da
 }
 
 void
+IedServer_handleWriteAccessForDataObject(IedServer self, DataObject* dataObject, FunctionalConstraint fc, WriteAccessHandler handler, void* parameter)
+{
+    if (dataObject == NULL) {
+        if (DEBUG_IED_SERVER)
+            printf("IED_SERVER: IedServer_handlerWriteAccessForDataObject - dataObject == NULL!\n");
+    }
+    else
+    {
+        ModelNode* childElement = dataObject->firstChild;
+
+        while (childElement)
+        {
+            if (childElement->modelType == DataAttributeModelType)
+            {
+                DataAttribute* dataAttribute = (DataAttribute*) childElement;
+
+                if (dataAttribute->fc == fc)
+                {
+                    IedServer_handleWriteAccessForComplexAttribute(self, dataAttribute, handler, parameter);
+                }
+            }
+            else if (childElement->modelType == DataObjectModelType)
+            {
+                IedServer_handleWriteAccessForDataObject(self, (DataObject*) childElement, fc, handler, parameter);
+            }
+
+            childElement = childElement->sibling;
+        }
+    }
+}
+
+void
 IedServer_setReadAccessHandler(IedServer self, ReadAccessHandler handler, void* parameter)
 {
     MmsMapping_installReadAccessHandler(self->mmsMapping, handler, parameter);

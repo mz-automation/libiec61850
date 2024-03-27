@@ -34,7 +34,7 @@ typedef MmsDataAccessError (*MmsReadAccessHandler) (void* parameter, MmsDomain* 
         char* variableId, MmsServerConnection connection, bool isDirectAccess);
 
 typedef MmsDataAccessError (*MmsWriteVariableHandler)(void* parameter,
-        MmsDomain* domain, char* variableId, MmsValue* value,
+        MmsDomain* domain, const char* variableId, int arrayIdx, const char* componentId, MmsValue* value,
         MmsServerConnection connection);
 
 typedef bool (*MmsListAccessHandler) (void* parameter, MmsGetNameListType listType, MmsDomain* domain,

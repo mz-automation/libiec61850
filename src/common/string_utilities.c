@@ -90,14 +90,14 @@ StringUtils_copyStringToBufferAndReplace(const char* str, char* buffer, char old
 char*
 StringUtils_createStringFromBuffer(const uint8_t* buf, int size)
 {
-	char* newStr = (char*) GLOBAL_MALLOC(size + 1);
+    char* newStr = (char*) GLOBAL_MALLOC(size + 1);
 
-	if (newStr) {
-	    memcpy(newStr, buf, size);
-	    newStr[size] = 0;
-	}
+    if (newStr) {
+        memcpy(newStr, buf, size);
+        newStr[size] = 0;
+    }
 
-	return newStr;
+    return newStr;
 }
 
 char*
@@ -429,11 +429,11 @@ getCharWeight(int c)
 {
 	static bool initialized = false;
 	static char lookupTable[LT_MAX_CHARS + 1];
+	static const char* charOrder = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz$_0123456789";
 
 	if (!initialized) {
 		int ltIndex;
 		int weight = 1;
-	    const char* charOrder = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz$_0123456789";
 
 		for (ltIndex = 1;  ltIndex < LT_MAX_CHARS; ltIndex++) {
 			if (strchr(charOrder, ltIndex)) continue;

@@ -149,7 +149,7 @@ LIB61850_INTERNAL void
 MmsMapping_installReadAccessHandler(MmsMapping* self, ReadAccessHandler handler, void* paramter);
 
 LIB61850_INTERNAL MmsDataAccessError
-Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* variableIdOrig,
+Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, const char* variableIdOrig,
                          MmsValue* value, MmsServerConnection connection);
 
 LIB61850_INTERNAL MmsValue*

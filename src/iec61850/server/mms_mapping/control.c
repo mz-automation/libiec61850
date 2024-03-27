@@ -1923,7 +1923,7 @@ checkValidityOfOriginParameter(MmsValue* origin)
 }
 
 MmsDataAccessError
-Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, char* variableIdOrig,
+Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, const char* variableIdOrig,
         MmsValue* value, MmsServerConnection connection)
 {
     MmsDataAccessError indication = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;

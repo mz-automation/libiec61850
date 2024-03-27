@@ -287,7 +287,7 @@ mmsServer_isAccessToArrayComponent(AlternateAccess_t* alternateAccess)
 
 MmsValue*
 mmsServer_getComponentOfArrayElement(AlternateAccess_t* alternateAccess, MmsVariableSpecification* namedVariable,
-        MmsValue* structuredValue)
+        MmsValue* structuredValue, char* componentId)
 {
     MmsValue* retValue = NULL;
 
@@ -319,16 +319,33 @@ mmsServer_getComponentOfArrayElement(AlternateAccess_t* alternateAccess, MmsVari
                 {
                     MmsValue* value = MmsValue_getElement(structuredValue, i);
 
-                    if (mmsServer_isAccessToArrayComponent(
-                            alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess)) {
-                        retValue =
-                                mmsServer_getComponentOfArrayElement(
-                                        alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess,
-                                        structSpec->typeSpec.structure.elements[i],
-                                        value);
+                    if (value)
+                    {
+                        if (mmsServer_isAccessToArrayComponent(
+                                alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess))
+                        {
+                            if (componentId)
+                            {
+                                strcat(componentId, structSpec->typeSpec.structure.elements[i]->name);
+                                strcat(componentId, "$");
+                            }
+
+                            retValue =
+                                    mmsServer_getComponentOfArrayElement(
+                                            alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess,
+                                            structSpec->typeSpec.structure.elements[i],
+                                            value, componentId);
+                        }
+                        else
+                        {
+                            if (componentId)
+                            {
+                                strcat(componentId, structSpec->typeSpec.structure.elements[i]->name);
+                            }
+
+                            retValue = value;
+                        }
                     }
-                    else
-                        retValue = value;
 
                     goto exit_function;
                 }

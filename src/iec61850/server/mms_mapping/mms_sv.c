@@ -131,7 +131,7 @@ MmsSampledValueControlBlock_isEnabled(MmsSampledValueControlBlock self)
 }
 
 MmsDataAccessError
-LIBIEC61850_SV_writeAccessSVControlBlock(MmsMapping* self, MmsDomain* domain, char* variableIdOrig,
+LIBIEC61850_SV_writeAccessSVControlBlock(MmsMapping* self, MmsDomain* domain, const char* variableIdOrig,
         MmsValue* value, MmsServerConnection connection)
 {
     char variableId[130];
