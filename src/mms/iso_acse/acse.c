@@ -420,6 +420,14 @@ AcseConnection_parseMessage(AcseConnection* self, ByteBuffer* message)
 {
     AcseIndication indication = ACSE_ERROR;
 
+    if (message == NULL || message->size < 1)
+    {
+        if (DEBUG_ACSE)
+            printf("ACSE: invalid message - no payload\n");
+
+        return ACSE_ERROR;
+    }
+
     uint8_t* buffer = message->buffer;
 
     int messageSize = message->size;
