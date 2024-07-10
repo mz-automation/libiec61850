@@ -497,6 +497,9 @@ GoosePublisher_publish(GoosePublisher self, LinkedList dataSet)
 
         int secExtLength = 0;
 
+        self->buffer[lengthIndex] = gooseLength / 256;
+        self->buffer[lengthIndex + 1] = gooseLength & 0xff;
+
         if (self->l2Security) {
             /* calculate crc */
             uint16_t crc = L2Security_calculateCRC16(self->buffer + self->gooseStart, 8);
@@ -515,9 +518,6 @@ GoosePublisher_publish(GoosePublisher self, LinkedList dataSet)
 
             printf("reserved1: %02x %02x\n", self->buffer[self->gooseStart + 6], self->buffer[self->gooseStart + 7]);
         }
-
-        self->buffer[lengthIndex] = gooseLength / 256;
-        self->buffer[lengthIndex + 1] = gooseLength & 0xff;
 
         gooseLength += secExtLength;
 
