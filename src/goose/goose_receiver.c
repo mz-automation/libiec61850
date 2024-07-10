@@ -1022,6 +1022,13 @@ parseGooseMessage(GooseReceiver self, uint8_t* buffer, int numbytes)
         {
             printf("CRC check - FAILED (expected: %04x actual: %04x)\n", secExtCrc, crc);
         }
+
+        /* verify correct lenght of message including security extension */
+        if (numbytes < length + headerLength + secExtLength) {
+            //if (DEBUG_GOOSE_SUBSCRIBER)
+                printf("GOOSE_SUBSCRIBER: Invalid PDU size (security extension is missing)\n");
+            return;
+        }
     }
 
     /* check if there is an interested subscriber */
