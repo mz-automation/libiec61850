@@ -43,6 +43,12 @@
 #define DEBUG_GOOSE_SUBSCRIBER 0
 #endif
 
+#define CONFIG_GOOSE_L2_SECURITY 1
+
+#if (CONFIG_GOOSE_L2_SECURITY == 1)
+#include "l2_security.h"
+#endif /* (CONFIG_GOOSE_L2_SECURITY == 1) */
+
 #define ETH_BUFFER_LENGTH 1518
 
 #define ETH_P_GOOSE 0x88b8
@@ -932,6 +938,8 @@ parseGooseMessage(GooseReceiver self, uint8_t* buffer, int numbytes)
         headerLength += 4;
     }
 
+    int gooseStart = bufPos;
+
     /* check for GOOSE Ethertype */
     if (buffer[bufPos++] != 0x88)
         return;
@@ -989,6 +997,24 @@ parseGooseMessage(GooseReceiver self, uint8_t* buffer, int numbytes)
         printf("GOOSE_SUBSCRIBER:   APPID: %u\n", appId);
         printf("GOOSE_SUBSCRIBER:   LENGTH: %u\n", length);
         printf("GOOSE_SUBSCRIBER:   APDU length: %i\n", apduLength);
+
+        if (secExtLength > 0)
+            printf("GOOSE_SUBSCRIBER:   Security extension length: %u\n", secExtLength);
+    }
+
+    if (secExtLength > 0)
+    {
+        /* calculate crc */
+        uint16_t crc = L2Security_calculateCRC16(self->buffer + gooseStart, 8);
+
+        if (secExtCrc == crc)
+        {
+            printf("CRC check - OK\n");
+        }
+        else
+        {
+            printf("CRC check - FAILED\n");
+        }
     }
 
     /* check if there is an interested subscriber */
