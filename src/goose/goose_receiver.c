@@ -1003,8 +1003,10 @@ parseGooseMessage(GooseReceiver self, uint8_t* buffer, int numbytes)
         printf("GOOSE_SUBSCRIBER:   LENGTH: %u\n", length);
         printf("GOOSE_SUBSCRIBER:   APDU length: %i\n", apduLength);
 
-        if (secExtLength > 0)
+        if (secExtLength > 0) {
             printf("GOOSE_SUBSCRIBER:   Security extension length: %u\n", secExtLength);
+            printf("GOOSE_SUBSCRIBER:   Security extension CRC: %04x\n", secExtCrc);
+        }
     }
 
     if (secExtLength > 0)
@@ -1018,7 +1020,7 @@ parseGooseMessage(GooseReceiver self, uint8_t* buffer, int numbytes)
         }
         else
         {
-            printf("CRC check - FAILED\n");
+            printf("CRC check - FAILED (expected: %04x actual: %04x)\n", secExtCrc, crc);
         }
     }
 
