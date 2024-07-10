@@ -49,6 +49,11 @@
 #include "l2_security.h"
 #endif /* (CONFIG_GOOSE_L2_SECURITY == 1) */
 
+#ifdef DEBUG_GOOSE_SUBSCRIBER
+#undef DEBUG_GOOSE_SUBSCRIBER
+#define DEBUG_GOOSE_SUBSCRIBER 1
+#endif
+
 #define ETH_BUFFER_LENGTH 1518
 
 #define ETH_P_GOOSE 0x88b8
