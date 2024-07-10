@@ -500,12 +500,13 @@ GoosePublisher_publish(GoosePublisher self, LinkedList dataSet)
         self->buffer[lengthIndex] = gooseLength / 256;
         self->buffer[lengthIndex + 1] = gooseLength & 0xff;
 
-        if (self->l2Security) {
+        if (self->l2Security)
+        {
             /* calculate crc */
             uint16_t crc = L2Security_calculateCRC16(self->buffer + self->gooseStart, 8);
 
-            self->buffer[self->gooseStart + 8] = (uint8_t)(crc & 0x00ff);
-            self->buffer[self->gooseStart + 9] = (uint8_t)((crc >> 8) & 0x00ff);
+            self->buffer[self->gooseStart + 8] = (uint8_t)(crc / 0x100);
+            self->buffer[self->gooseStart + 9] = (uint8_t)(crc % 0x100);
 
             /* add security extension */
             secExtLength = L2Security_addSecurityExtension(self->l2Security, self->buffer,
