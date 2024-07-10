@@ -1012,7 +1012,7 @@ parseGooseMessage(GooseReceiver self, uint8_t* buffer, int numbytes)
     if (secExtLength > 0)
     {
         /* calculate crc */
-        uint16_t crc = L2Security_calculateCRC16(self->buffer + gooseStart, 8);
+        uint16_t crc = L2Security_calculateCRC16(buffer + gooseStart, 8);
 
         if (secExtCrc == crc)
         {
