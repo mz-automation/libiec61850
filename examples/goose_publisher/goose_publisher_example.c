@@ -51,7 +51,8 @@ main(int argc, char **argv)
      */
     GoosePublisher publisher = GoosePublisher_create(&gooseCommParameters, interface);
 
-    if (publisher) {
+    if (publisher)
+    {
         GoosePublisher_setGoCbRef(publisher, "simpleIOGenericIO/LLN0$GO$gcbAnalogValues");
         GoosePublisher_setConfRev(publisher, 1);
         GoosePublisher_setDataSetRef(publisher, "simpleIOGenericIO/LLN0$AnalogValues");

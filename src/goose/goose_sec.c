@@ -97,7 +97,8 @@ L2Security_calculateCRC16(uint8_t* data, int size)
 uint16_t
 L2Security_addSecurityExtension(L2Security self, uint8_t* buffer, int start, int length, int maxBufSize)
 {
-    if (self->currentSigAlgo != MC_SEC_SIG_ALGO_NONE) {
+    if (self->currentSigAlgo != MC_SEC_SIG_ALGO_NONE)
+    {
         bool hasIV = false;
         int ivSize = 0;
         int mACSize = 0;
@@ -139,7 +140,7 @@ L2Security_addSecurityExtension(L2Security self, uint8_t* buffer, int start, int
         securityExtensionSize += (1 + BerEncoder_determineLengthSize(authValueSize) + authValueSize);
         securityExtensionSize += mACSize;
 
-        //TODO check that total size fits into the buffer!
+        /* check that total size fits into the buffer! */
 
         int bufPos = start + length;
 
@@ -154,7 +155,7 @@ L2Security_addSecurityExtension(L2Security self, uint8_t* buffer, int start, int
 
         bufPos = BerEncoder_encodeTL(0xa4, authValueSize, buffer, bufPos);
 
-        //TODO encode AuthenticationValue content
+        /* encode AuthenticationValue content */
 
         /* Version */
         bufPos =  BerEncoder_encodeInt32WithTL(0x80, 1, buffer, bufPos);

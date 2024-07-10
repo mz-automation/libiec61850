@@ -881,7 +881,6 @@ encodePacket(RSession self, uint8_t payloadType, uint8_t* buffer, int bufPos, RS
     }
 
     if (self->sigAlgo != R_SESSION_SIG_ALGO_NONE) {
-
         int signatureCoveredLength = bufPos - startPos;
 
         DEBUG_PRINTF("Signature: %i", signatureCoveredLength);

@@ -911,6 +911,7 @@ parseGooseMessage(GooseReceiver self, uint8_t* buffer, int numbytes)
 {
     int bufPos;
     bool subscriberFound = false;
+    bool simFlagSet = false;
 
     if (numbytes < 22)
         return;
@@ -953,10 +954,27 @@ parseGooseMessage(GooseReceiver self, uint8_t* buffer, int numbytes)
     length = buffer[bufPos++] * 0x100;
     length += buffer[bufPos++];
 
-    /* skip reserved fields */
-    bufPos += 4;
+    /* check if security extension is used */
+    uint16_t secExtLength;
+
+    secExtLength = buffer[bufPos++] * 0x100;
+    secExtLength += buffer[bufPos++];
+
+    if (secExtLength & 0x8000)
+    {
+        simFlagSet = true;
+    }
+
+    secExtLength &= 0x0FFF;
+
+    uint16_t secExtCrc;
+
+    secExtCrc = buffer[bufPos++] * 0x100;
+    secExtCrc += buffer[bufPos++];
 
     int apduLength = length - 8;
+
+    printf("length: %i apduLength: %i numBytes: %i secExtLength: %i\n", length, apduLength, numbytes, secExtLength);
 
     if (numbytes < length + headerLength) {
         if (DEBUG_GOOSE_SUBSCRIBER)

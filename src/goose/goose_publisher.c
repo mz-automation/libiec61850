@@ -508,8 +508,12 @@ GoosePublisher_publish(GoosePublisher self, LinkedList dataSet)
             secExtLength = L2Security_addSecurityExtension(self->l2Security, self->buffer,
                 self->gooseStart, self->payloadStart + self->payloadLength - self->gooseStart, GOOSE_MAX_MESSAGE_SIZE);
         
-            self->buffer[self->gooseStart + 6] = (uint8_t)((secExtLength >> 8) & 0x00ff);
-            self->buffer[self->gooseStart + 7] = (uint8_t)(secExtLength & 0x00ff);
+            printf("secExtLength: %i\n", secExtLength);
+
+            self->buffer[self->gooseStart + 6] = (uint8_t)((secExtLength >> 8) & 0x0f);
+            self->buffer[self->gooseStart + 7] = (uint8_t)(secExtLength & 0xff);
+
+            printf("reserved1: %02x %02x\n", self->buffer[self->gooseStart + 6], self->buffer[self->gooseStart + 7]);
         }
 
         gooseLength += secExtLength;
