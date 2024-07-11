@@ -77,6 +77,10 @@ struct sGooseReceiver
 #if (CONFIG_MMS_THREADLESS_STACK == 0)
     Thread thread;
 #endif
+
+#if (CONFIG_GOOSE_L2_SECURITY == 1)
+    L2Security l2Security;
+#endif /* (CONFIG_GOOSE_L2_SECURITY == 1) */
 };
 
 GooseReceiver
@@ -94,6 +98,10 @@ GooseReceiver_createEx(uint8_t* buffer)
 #if (CONFIG_MMS_THREADLESS_STACK == 0)
         self->thread = NULL;
 #endif
+
+#if (CONFIG_GOOSE_L2_SECURITY == 1)
+        self->l2Security = NULL;
+#endif /* (CONFIG_GOOSE_L2_SECURITY == 1) */
     }
 
     return self;
@@ -154,6 +162,14 @@ GooseReceiver_getInterfaceId(GooseReceiver self)
     else
         return CONFIG_ETHERNET_INTERFACE_ID;
 }
+
+#if (CONFIG_GOOSE_L2_SECURITY == 1)
+void
+GooseReceiver_setL2Security(GooseReceiver self, L2Security l2Security)
+{
+    self->l2Security = l2Security;
+}
+#endif /* (CONFIG_GOOSE_L2_SECURITY == 1) */
 
 static void
 createNewStringFromBufferElement(MmsValue* value, uint8_t* bufferSrc, int elementLength)
@@ -941,6 +957,7 @@ parseGooseMessage(GooseReceiver self, uint8_t* buffer, int numbytes)
         vlanSet = true;
         bufPos += 4; /* skip VLAN tag */
         headerLength += 4;
+        printf("has VLAN tag\n");
     }
 
     int gooseStart = bufPos;
@@ -1023,11 +1040,30 @@ parseGooseMessage(GooseReceiver self, uint8_t* buffer, int numbytes)
             printf("CRC check - FAILED (expected: %04x actual: %04x)\n", secExtCrc, crc);
         }
 
-        /* verify correct lenght of message including security extension */
+        /* verify correct length of message including security extension */
         if (numbytes < length + headerLength + secExtLength) {
             //if (DEBUG_GOOSE_SUBSCRIBER)
                 printf("GOOSE_SUBSCRIBER: Invalid PDU size (security extension is missing)\n");
             return;
+        }
+
+        /* check security extension */
+        bool secCheckPassed = false;
+
+        if (self->l2Security)
+        {
+            secCheckPassed = L2Security_checkSecurityExtension(self->l2Security, buffer, gooseStart + 2, length, secExtLength);
+            //secCheckPassed = L2Security_checkSecurityExtension(self->l2Security, buffer, 16, 182, secExtLength);
+
+
+            printf("Security check - %s\n", secCheckPassed ? "OK" : "FAILED");
+        }
+        else
+        {
+            //if (DEBUG_GOOSE_SUBSCRIBER)
+            printf("GOOSE_SUBSCRIBER: ERROR - No security layer specified -> cannot check security extension!\n");
+
+            secCheckPassed = false;
         }
     }
 

@@ -1,7 +1,7 @@
 /*
  *  goose_receiver.h
  *
- *  Copyright 2014-2022 Michael Zillgith
+ *  Copyright 2014-2024 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -33,6 +33,7 @@ extern "C" {
 #include "hal_ethernet.h"
 #include "goose_subscriber.h"
 #include "r_session.h"
+#include "l2_security.h"
 
 /**
  * \addtogroup goose_api_group
@@ -93,6 +94,15 @@ GooseReceiver_setInterfaceId(GooseReceiver self, const char* interfaceId);
  */
 LIB61850_API const char*
 GooseReceiver_getInterfaceId(GooseReceiver self);
+
+/**
+ * \brief Enable and configure L2 security (signatures)
+ * 
+ * \param self GooseReceiver instance
+ * \param l2Security L2 security instance to use with this GOOSE receiver
+*/
+void
+GooseReceiver_setL2Security(GooseReceiver self, L2Security l2Security);
 
 /**
  * \brief Add a subscriber to this receiver instance

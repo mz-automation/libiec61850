@@ -47,6 +47,11 @@ RSessionCrypto_createHMAC(uint8_t* buffer, int bufSize, uint8_t* key, int keySiz
 
     mbedtls_md_setup(&md_ctx, md_info, 1);
 
+    for (int i = 0; i < bufSize; i++) {
+        printf("%02x", buffer[i]);
+    }
+    printf("\n");
+
     if (mbedtls_md_hmac_starts(&md_ctx, key, keySize)) {
         printf("Error in initializing HMAC\n");
         return false;

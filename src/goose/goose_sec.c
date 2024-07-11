@@ -3,6 +3,7 @@
 
 #include "l2_security.h"
 #include "ber_encoder.h"
+#include "ber_decode.h"
 #include "r_session_crypto.h"
 
 struct sL2Security {
@@ -66,19 +67,6 @@ calculateCRC(uint8_t* data, int size)
     return (uint16_t)(~crc);
 }
 
-#if 0
-int
-main(int argc, char** argv)
-{
-    uint8_t data[] = { 0x02, 0x07, 0x01, 0x03, 0x01, 0x02, 0x00, 0x34, 0x07, 0x07, 0x1C, 0x59, 0x34, 0x6F, 0xE1, 0x83, 0x00, 0x00, 0x41, 0x06, 0x06, 0x7B, 0x3C, 0xFF, 0xCF, 0x3C, 0xC0 };
-
-    uint16_t crc = calculateCRC(data, sizeof(data));
-
-    printf("CRC = %04x\n", crc);
-    printf("CRC = %04x\n", (uint16_t)(~crc));
-}
-#endif
-
 uint16_t
 L2Security_calculateCRC16(uint8_t* data, int size)
 {
@@ -95,8 +83,9 @@ L2Security_calculateCRC16(uint8_t* data, int size)
  * \return length of the security extension
  */
 uint16_t
-L2Security_addSecurityExtension(L2Security self, uint8_t* buffer, int start, int length, int maxBufSize)
+L2Security_addSecurityExtension(L2Security self, uint8_t* buffer, int start, int length, int maxBufSize, bool encode)
 {
+    printf("L2Security_addSecurityExtension: start=%i, length=%i, maxBufSize=%i\n", start, length, maxBufSize);
     if (self->currentSigAlgo != MC_SEC_SIG_ALGO_NONE)
     {
         bool hasIV = false;
@@ -150,49 +139,265 @@ L2Security_addSecurityExtension(L2Security self, uint8_t* buffer, int start, int
         }
 
         /* start encoding ... */
+        if (encode)
+        {
+            bufPos = BerEncoder_encodeTL(0xa0, securityExtensionSize, buffer, bufPos);
 
-        bufPos = BerEncoder_encodeTL(0xa0, securityExtensionSize, buffer, bufPos);
+            bufPos = BerEncoder_encodeTL(0xa4, authValueSize, buffer, bufPos);
 
-        bufPos = BerEncoder_encodeTL(0xa4, authValueSize, buffer, bufPos);
+            /* encode AuthenticationValue content */
 
-        /* encode AuthenticationValue content */
+            /* Version */
+            bufPos =  BerEncoder_encodeInt32WithTL(0x80, 1, buffer, bufPos);
 
-        /* Version */
-        bufPos =  BerEncoder_encodeInt32WithTL(0x80, 1, buffer, bufPos);
+            /* TimeofCurrentKey */
+            bufPos = BerEncoder_encodeInt32WithTL(0x81, self->timeOfCurrentKey, buffer, bufPos);
 
-        /* TimeofCurrentKey */
-        bufPos = BerEncoder_encodeInt32WithTL(0x81, self->timeOfCurrentKey, buffer, bufPos);
+            /* TimeofNextKey */
+            bufPos = BerEncoder_encodeInt32WithTL(0x82, self->timeToNextKey, buffer, bufPos);
 
-        /* TimeofNextKey */
-        bufPos = BerEncoder_encodeInt32WithTL(0x82, self->timeToNextKey, buffer, bufPos);
+            /* IV */
+            if (hasIV) {
+                //TODO encode IV
+            }
 
-        /* IV */
-        if (hasIV) {
-            //TODO encode IV
+            /* KeyID */
+            bufPos = BerEncoder_encodeInt32WithTL(0x84, self->currentKeyId, buffer, bufPos);
+
+
+            int macEnd = bufPos;
+
+            /* encode mAC */
+            bufPos = BerEncoder_encodeTL(0x85, mACSize - 2, buffer, bufPos);
+
+            if (self->currentSigAlgo == MC_SEC_SIG_ALGO_HMAC_SHA256_128) {
+                RSessionCrypto_createHMAC(buffer + start, macEnd, self->currentKey, self->currentKeySize, buffer + bufPos, 16);
+                bufPos += 16;
+            }
+            else if (self->currentSigAlgo == MC_SEC_SIG_ALGO_HMAC_SHA256_256) {
+                RSessionCrypto_createHMAC(buffer + start, macEnd - start, self->currentKey, self->currentKeySize, buffer + bufPos, 32);
+                bufPos += 32;
+            }
         }
 
-        /* KeyID */
-        bufPos = BerEncoder_encodeInt32WithTL(0x84, self->currentKeyId, buffer, bufPos);
-
-
-        int macEnd = bufPos;
-
-        /* encode mAC */
-        bufPos = BerEncoder_encodeTL(0x85, mACSize - 2, buffer, bufPos);
-
-        if (self->currentSigAlgo == MC_SEC_SIG_ALGO_HMAC_SHA256_128) {
-            RSessionCrypto_createHMAC(buffer, macEnd, self->currentKey, self->currentKeySize, buffer + bufPos, 16);
-            bufPos += 16;
-        }
-        else if (self->currentSigAlgo == MC_SEC_SIG_ALGO_HMAC_SHA256_256) {
-            RSessionCrypto_createHMAC(buffer, macEnd, self->currentKey, self->currentKeySize, buffer + bufPos, 32);
-            bufPos += 32;
-        }
-
-        return securityExtensionSize;
+        return securityExtensionSize + 2;
     }
     else {
         return 0;
+    }
+}
+
+static bool
+checkSecurityExtension(L2Security self, uint8_t* buffer, int secExtLen, uint8_t* macStart)
+{
+    bool hasIV = false;
+    int ivSize = 0;
+    uint8_t* ivBuffer = NULL;
+    int mACSize = 0;
+    uint8_t* mACBuffer = NULL;
+    int bufPos = 0;
+
+    /* determine length of the mAC */
+    if (self->currentSigAlgo == MC_SEC_SIG_ALGO_HMAC_SHA256_128) {
+        mACSize = 2 + 16;
+    }
+    else if (self->currentSigAlgo == MC_SEC_SIG_ALGO_HMAC_SHA256_256) {
+        mACSize = 2 + 32;
+    }
+    else {
+        /* signature algorithm not supported */
+        printf("L2_SECURITY: signature algorithm not supported\n");
+        return false;
+    }
+
+    while (bufPos < secExtLen)
+    {
+        int macEnd = (buffer - macStart) + bufPos;
+
+        uint8_t tag = buffer[bufPos++];
+
+        int len = 0;
+
+        bufPos = BerDecoder_decodeLength(buffer, &len, bufPos, secExtLen);
+
+        if (bufPos == -1)
+        {
+            printf("L2_SECURITY: invalid len for tag %02x\n", tag);
+            return false;
+        }
+
+        if (tag == 0xa4)
+        {
+            /* AuthenticationValue */
+            uint8_t* authValueBuf = buffer + bufPos;
+            int authValuePos = 0;
+            int authValueLen = len;
+
+            while (authValuePos < authValueLen)
+            {
+                uint8_t authTag = authValueBuf[authValuePos++];
+
+                int authLen = 0;
+
+                authValuePos = BerDecoder_decodeLength(authValueBuf, &authLen, authValuePos, authValueLen);
+
+                if (authValuePos == -1)
+                {
+                    printf("L2_SECURITY: invalid len for tag %02x in AuthenticationValue\n", authTag);
+                    return false;
+                }
+
+                if (authTag == 0x80)
+                {
+                    /* Version */
+                    int32_t version = BerDecoder_decodeInt32(authValueBuf, authLen, authValuePos);
+
+                    if (version != 1)
+                    {
+                        printf("L2_SECURITY: invalid version (%i) in AuthenticationValue\n", version);
+                        return false;
+                    }
+                }
+                else if (authTag == 0x81)
+                {
+                    /* TimeofCurrentKey */
+                    self->timeOfCurrentKey = BerDecoder_decodeUint32(authValueBuf, authLen, authValuePos);
+                }
+                else if (authTag == 0x82)
+                {
+                    /* TimeToNextKey */
+                    self->timeToNextKey = BerDecoder_decodeInt32(authValueBuf, authLen, authValuePos);
+                }
+                else if (authTag == 0x83)
+                {
+                    /* IV */
+                    hasIV = true;
+                    ivBuffer = authValueBuf + authValuePos;
+                    ivSize = authLen;
+                }
+                else if (authTag == 0x84)
+                {
+                    /* KeyID */
+                    uint32_t keyId = BerDecoder_decodeUint32(authValueBuf, authLen, authValuePos);
+
+                    if (keyId != self->currentKeyId)
+                    {
+                        printf("L2_SECURITY: invalid key ID in AuthenticationValue\n");
+                        return false;
+                    }
+                }
+                else
+                {
+                    printf("L2_SECURITY: invalid tag in AuthenticationValue\n");
+                    return false;
+                }
+
+                authValuePos += authLen;
+            }
+        }
+        else if (tag == 0x85)
+        {
+            /* mAC */
+
+            mACBuffer = buffer + bufPos;
+            mACSize = len;
+
+            printf("L2_SECURITY: found MAC with size: %i\n", mACSize);
+
+            if (self->currentSigAlgo == MC_SEC_SIG_ALGO_HMAC_SHA256_128)
+            {
+                printf("Algo: HMAC_SHA256_128\n");
+
+                uint8_t calculatedMac[16];
+
+                RSessionCrypto_createHMAC(macStart, macEnd, self->currentKey, self->currentKeySize, calculatedMac, sizeof(calculatedMac));
+
+                if (memcmp(calculatedMac, mACBuffer, 16) != 0)
+                {
+                    printf("L2_SECURITY: MAC mismatch\n");
+                    return false;
+                }
+            }
+            else if (self->currentSigAlgo == MC_SEC_SIG_ALGO_HMAC_SHA256_256)
+            {
+                 printf("Algo: HMAC_SHA256_256\n");
+
+                uint8_t calculatedMac[32];
+
+                RSessionCrypto_createHMAC(macStart, macEnd, self->currentKey, self->currentKeySize, calculatedMac, sizeof(calculatedMac));
+
+                if (memcmp(calculatedMac, mACBuffer, 32) != 0)
+                {
+                    printf("L2_SECURITY: MAC mismatch\n");
+                    return false;
+                }
+            }
+            else
+            {
+                printf("L2_SECURITY: signature algorithm not supported\n");
+                return false;
+            }
+        }
+        else {
+            printf("L2_SECURITY: invalid tag %02x in security extension\n", tag);
+
+            return false;
+        }
+
+        bufPos += len;
+    }
+
+
+    return true;
+}
+
+bool
+L2Security_checkSecurityExtension(L2Security self, uint8_t* buffer, int start, int length, int secExtSize)
+{
+    if (self->currentSigAlgo == MC_SEC_SIG_ALGO_NONE)
+    {
+        if (secExtSize > 0)
+        {
+            printf("L2_SECURITY: security extension found but no security association\n");
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
+    else 
+    {
+        uint8_t* secExtBuf = buffer + start + length;
+
+        int bufPos = 0;
+
+        while (bufPos < secExtSize)
+        {
+            uint8_t tag = secExtBuf[bufPos++];
+            int len = 0;
+
+            bufPos = BerDecoder_decodeLength(secExtBuf, &len, bufPos, secExtSize);
+
+            if (bufPos == -1)
+            {
+                printf("L2_SECURITY: [2] invalid len for tag %02x\n", tag);
+                return false;
+            }
+
+            if (tag == 0xa0)
+            {
+                /* SecurityExtension */
+                printf("L2_SECURITY: found security extension\n");
+                return checkSecurityExtension(self, secExtBuf + bufPos, len, buffer + start - 2);
+            }
+            else {
+                printf("L2_SECURITY: invalid tag %02x in security extension\n", tag);
+                return false;
+            }
+        }
+
+        return false;
     }
 }
 

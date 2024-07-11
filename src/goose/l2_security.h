@@ -105,12 +105,26 @@ L2Security_calculateCRC16(uint8_t* data, int size);
  * 
  * \param buffer buffer with the encoded GOOSE message (security extension will be added)
  * \param start start of the message payload used to calculate the MAC
- * \param length length of the message payload 
+ * \param length length of the message payload
+ * \param encode true if the security extension should be encoded, false only length calculation without modifying the buffer
  * 
  * \return length of the security extension
  */
 uint16_t
-L2Security_addSecurityExtension(L2Security self, uint8_t* buffer, int start, int length, int maxBufSize);
+L2Security_addSecurityExtension(L2Security self, uint8_t* buffer, int start, int length, int maxBufSize, bool encode);
+
+/**
+ * \brief Check the security extension
+ * 
+ * \param buffer buffer with the encoded GOOSE message
+ * \param start start of the message payload used to calculate the MAC
+ * \param length length of the message payload
+ * \param secExtSize size of the security extension
+ * 
+ * \return true if the security extension is valid
+ */
+bool
+L2Security_checkSecurityExtension(L2Security self, uint8_t* buffer, int start, int length, int secExtSize);
 
 LIB61850_API void
 L2Security_destroy(L2Security self);

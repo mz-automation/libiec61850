@@ -65,6 +65,16 @@ main(int argc, char** argv)
     GooseSubscriber_setDstMac(subscriber, dstMac);
     GooseSubscriber_setAppId(subscriber, 1000);
 
+    //char* key = "0123456789ABCDEF";
+    char* key = "0123456789ABCDEG";
+
+    L2Security l2Sec = L2Security_create();
+
+    L2Security_addKey(l2Sec, 0x12345678, (uint8_t*)key, 16, MC_SEC_SEC_ALGO_NONE, MC_SEC_SIG_ALGO_HMAC_SHA256_256);
+    L2Security_setActiveKey(l2Sec, 1);
+
+    GooseReceiver_setL2Security(receiver, l2Sec);
+
     GooseSubscriber_setListener(subscriber, gooseListener, NULL);
 
     GooseReceiver_addSubscriber(receiver, subscriber);
