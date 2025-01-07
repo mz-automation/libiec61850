@@ -594,7 +594,7 @@ IsoPresentation_createUserData(IsoPresentation* self, BufferChain writeBuffer, B
     int payloadLength = payload->length;
 
     int userDataLengthFieldSize = BerEncoder_determineLengthSize(payloadLength);
-    ;
+
     int pdvListLength = payloadLength + (userDataLengthFieldSize + 4);
 
     int pdvListLengthFieldSize = BerEncoder_determineLengthSize(pdvListLength);
