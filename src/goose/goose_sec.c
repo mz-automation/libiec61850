@@ -1,3 +1,26 @@
+/*
+ *  goose_sec.c
+ *
+ *  Copyright 2013-2025 Michael Zillgith
+ *
+ *  This file is part of libIEC61850.
+ *
+ *  libIEC61850 is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  libIEC61850 is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with libIEC61850.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *  See COPYING file for the complete license text.
+ */
+
 #include <stdint.h>
 #include <stdio.h>
 
@@ -6,7 +29,8 @@
 #include "ber_decode.h"
 #include "r_session_crypto.h"
 
-struct sL2Security {
+struct sL2Security
+{
     RSignatureAlgorithm currentSigAlgo;
 
     uint32_t timeOfCurrentKey;
@@ -73,6 +97,16 @@ L2Security_calculateCRC16(uint8_t* data, int size)
     return calculateCRC(data, size);
 }
 
+static void
+printBuffer(uint8_t* buffer, int size)
+{
+    for (int i = 0; i < size; i++)
+    {
+        printf("%02x", buffer[i]);
+    }
+    printf("\n");
+}
+
 /**
  * \brief Create the security extension
  * 
@@ -88,9 +122,9 @@ L2Security_addSecurityExtension(L2Security self, uint8_t* buffer, int start, int
     printf("L2Security_addSecurityExtension: start=%i, length=%i, maxBufSize=%i\n", start, length, maxBufSize);
     if (self->currentSigAlgo != MC_SEC_SIG_ALGO_NONE)
     {
-        bool hasIV = false;
         int ivSize = 0;
         int mACSize = 0;
+        uint8_t* ivBuf = NULL;
 
         /* determine length of the mAC */
         if (self->currentSigAlgo == MC_SEC_SIG_ALGO_HMAC_SHA256_128) {
@@ -99,11 +133,13 @@ L2Security_addSecurityExtension(L2Security self, uint8_t* buffer, int start, int
         else if (self->currentSigAlgo == MC_SEC_SIG_ALGO_HMAC_SHA256_256) {
             mACSize = 2 + 32;
         }
-        else if (self->currentSigAlgo == MC_SEC_SIG_ALGO_AES_GMAC_64) {
-            mACSize = 2 + 8;
-        }
         else if (self->currentSigAlgo == MC_SEC_SIG_ALGO_AES_GMAC_128) {
             mACSize = 2 + 16;
+            ivSize = 12;
+        }
+        else if (self->currentSigAlgo == MC_SEC_SIG_ALGO_AES_GMAC_256) {
+            mACSize = 2 + 32;
+            ivSize = 12;
         }
         else {
             /* signature algorithm not supported */
@@ -126,7 +162,8 @@ L2Security_addSecurityExtension(L2Security self, uint8_t* buffer, int start, int
         authValueSize += (2 + BerEncoder_Int32determineEncodedSize(self->timeToNextKey));
 
         /* IV */
-        if (hasIV) {
+        if (ivSize > 0)
+        {
             authValueSize += (2 + ivSize);
         }
 
@@ -164,13 +201,15 @@ L2Security_addSecurityExtension(L2Security self, uint8_t* buffer, int start, int
             bufPos = BerEncoder_encodeInt32WithTL(0x82, self->timeToNextKey, buffer, bufPos);
 
             /* IV */
-            if (hasIV) {
-                //TODO encode IV
+            if (ivSize > 0)
+            {
+                bufPos = BerEncoder_encodeTL(0x83, ivSize, buffer, bufPos);
+                ivBuf = buffer + bufPos;
+                bufPos += ivSize;
             }
 
             /* KeyID */
             bufPos = BerEncoder_encodeInt32WithTL(0x84, self->currentKeyId, buffer, bufPos);
-
 
             int macEnd = bufPos;
 
@@ -185,39 +224,33 @@ L2Security_addSecurityExtension(L2Security self, uint8_t* buffer, int start, int
                 RSessionCrypto_createHMAC(buffer + start, macEnd - start, self->currentKey, self->currentKeySize, buffer + bufPos, 32);
                 bufPos += 32;
             }
-            else if (self->currentSigAlgo == MC_SEC_SIG_ALGO_AES_GMAC_64)
-            {
-                /* create IV */
-                uint8_t iv[12];
-                int ivSize = 12;
-
-                if (RSessionCrypto_createRandomData(iv, ivSize) == false) {
-                    printf("ERROR - Failed to create random IV\n");
-                }
-
-                if (RSessionCrypto_createAES_GMAC(self->currentKey, self->currentKeySize, iv, ivSize, buffer + start, macEnd - start, buffer + bufPos, 8) == false)
-                {
-                    printf("ERROR - Failed to create GMAC\n");
-                }
-
-                bufPos += 8;
-            }
             else if (self->currentSigAlgo == MC_SEC_SIG_ALGO_AES_GMAC_128)
             {
                 /* create IV */
-                uint8_t iv[12];
-                int ivSize = 12;
-
-                if (RSessionCrypto_createRandomData(iv, ivSize) == false) {
+                if (RSessionCrypto_createRandomData(ivBuf, ivSize) == false) {
                     printf("ERROR - Failed to create random IV\n");
                 }
 
-                if (RSessionCrypto_createAES_GMAC(self->currentKey, self->currentKeySize, iv, ivSize, buffer + start, macEnd - start, buffer + bufPos, 16) == false)
+                if (RSessionCrypto_createAES_GMAC(self->currentKey, self->currentKeySize, ivBuf, ivSize, buffer + start, macEnd - start, buffer + bufPos, 16) == false)
                 {
                     printf("ERROR - Failed to create GMAC\n");
                 }
 
                 bufPos += 16;
+            }
+            else if (self->currentSigAlgo == MC_SEC_SIG_ALGO_AES_GMAC_256)
+            {
+                /* create IV */
+                if (RSessionCrypto_createRandomData(ivBuf, ivSize) == false) {
+                    printf("ERROR - Failed to create random IV\n");
+                }
+
+                if (RSessionCrypto_createAES_GMAC(self->currentKey, self->currentKeySize, ivBuf, ivSize, buffer + start, macEnd - start, buffer + bufPos, 32) == false)
+                {
+                    printf("ERROR - Failed to create GMAC\n");
+                }
+
+                bufPos += 32;
             }
             else {
                 /* signature algorithm not supported */
@@ -250,6 +283,12 @@ checkSecurityExtension(L2Security self, uint8_t* buffer, int secExtLen, uint8_t*
         mACSize = 2 + 16;
     }
     else if (self->currentSigAlgo == MC_SEC_SIG_ALGO_HMAC_SHA256_256) {
+        mACSize = 2 + 32;
+    }
+    else if (self->currentSigAlgo == MC_SEC_SIG_ALGO_AES_GMAC_128) {
+        mACSize = 2 + 16;
+    }
+    else if (self->currentSigAlgo == MC_SEC_SIG_ALGO_AES_GMAC_256) {
         mACSize = 2 + 32;
     }
     else {
@@ -368,7 +407,7 @@ checkSecurityExtension(L2Security self, uint8_t* buffer, int secExtLen, uint8_t*
             }
             else if (self->currentSigAlgo == MC_SEC_SIG_ALGO_HMAC_SHA256_256)
             {
-                 printf("Algo: HMAC_SHA256_256\n");
+                printf("Algo: HMAC_SHA256_256\n");
 
                 uint8_t calculatedMac[32];
 
@@ -377,6 +416,54 @@ checkSecurityExtension(L2Security self, uint8_t* buffer, int secExtLen, uint8_t*
                 if (memcmp(calculatedMac, mACBuffer, 32) != 0)
                 {
                     printf("L2_SECURITY: MAC mismatch\n");
+                    return false;
+                }
+            }
+            else if (self->currentSigAlgo == MC_SEC_SIG_ALGO_AES_GMAC_128)
+            {
+                printf("Algo: AES_GMAC_128\n");
+
+                uint8_t calculatedMac[16];
+
+                printf("IV: ");
+                printBuffer(ivBuffer, ivSize);
+
+                printf("MAC: ");
+                printBuffer(mACBuffer, mACSize);
+
+                if (RSessionCrypto_createAES_GMAC(self->currentKey, self->currentKeySize, ivBuffer, ivSize, macStart, macEnd, calculatedMac, 16) == false)
+                {
+                    printf("L2_SECURITY: GMAC calculation failed\n");
+                    return false;
+                }
+
+                if (memcmp(calculatedMac, mACBuffer, 16) != 0)
+                {
+                    printf("L2_SECURITY: GMAC mismatch\n");
+                    return false;
+                }
+            }
+            else if (self->currentSigAlgo == MC_SEC_SIG_ALGO_AES_GMAC_256)
+            {
+                printf("Algo: AES_GMAC_256\n");
+
+                printf("IV: ");
+                printBuffer(ivBuffer, ivSize);
+
+                printf("MAC: ");
+                printBuffer(mACBuffer, mACSize);
+
+                uint8_t calculatedMac[8];
+
+                if (RSessionCrypto_createAES_GMAC(self->currentKey, self->currentKeySize, ivBuffer, ivSize, macStart, macEnd, calculatedMac, 32) == false)
+                {
+                    printf("L2_SECURITY: GMAC calculation failed\n");
+                    return false;
+                }
+
+                if (memcmp(calculatedMac, mACBuffer, 8) != 0)
+                {
+                    printf("L2_SECURITY: GMAC mismatch\n");
                     return false;
                 }
             }
