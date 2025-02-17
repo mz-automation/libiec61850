@@ -73,6 +73,39 @@ RSessionCrypto_createHMAC(uint8_t* buffer, int bufSize, uint8_t* key, int keySiz
 }
 
 bool
+RSessionCrypto_createAES_GMAC(uint8_t* key, int keySize, uint8_t* iv, int ivSize, uint8_t* addData, int addDataSize, uint8_t* tag, int tagSize)
+{
+    mbedtls_gcm_context gcmCtx;
+
+    mbedtls_gcm_init(&gcmCtx);
+
+    if (mbedtls_gcm_setkey(&gcmCtx, MBEDTLS_CIPHER_ID_AES , (const unsigned char*) key, keySize * 8))
+    {
+        printf("AES-GCM: Failed to set key\n");
+        mbedtls_gcm_free(&gcmCtx);
+        return false;
+    }
+
+    if (mbedtls_gcm_starts(&gcmCtx, MBEDTLS_GCM_ENCRYPT, iv, ivSize, addData, addDataSize))
+    {
+        printf("AES-GCM: Failed to start tag calculation\n");
+        mbedtls_gcm_free(&gcmCtx);
+        return false;
+    }
+
+    if (mbedtls_gcm_finish(&gcmCtx, tag, tagSize))
+    {
+        printf("AES-GCM: Failed to finish tag calculation\n");
+        mbedtls_gcm_free(&gcmCtx);
+        return false;
+    }
+
+    mbedtls_gcm_free(&gcmCtx);
+
+    return true;
+}
+
+bool
 RSessionCrypto_gcmEncryptAndTag(uint8_t* key, int keySize, uint8_t* iv, int ivSize, uint8_t* addData, int addDataSize, uint8_t* encryptData, int encryptDataSize, uint8_t* tag, int tagSize)
 {
     mbedtls_gcm_context gcmCtx;

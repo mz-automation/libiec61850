@@ -33,6 +33,9 @@ LIB61850_INTERNAL bool
 RSessionCrypto_createHMAC(uint8_t* buffer, int bufSize, uint8_t* key, int keySize, uint8_t* hmac, int hmacMaxSize);
 
 LIB61850_INTERNAL bool
+RSessionCrypto_createAES_GMAC(uint8_t* key, int keySize, uint8_t* iv, int ivSize, uint8_t* addData, int addDataSize, uint8_t* tag, int tagSize);
+
+LIB61850_INTERNAL bool
 RSessionCrypto_gcmEncryptAndTag(uint8_t* key, int keySize, uint8_t* iv, int ivSize, uint8_t* addData, int addDataSize, uint8_t* encryptData, int encryptDataSize, uint8_t* tag, int tagSize);
 
 LIB61850_INTERNAL bool

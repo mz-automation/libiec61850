@@ -99,8 +99,15 @@ L2Security_addSecurityExtension(L2Security self, uint8_t* buffer, int start, int
         else if (self->currentSigAlgo == MC_SEC_SIG_ALGO_HMAC_SHA256_256) {
             mACSize = 2 + 32;
         }
+        else if (self->currentSigAlgo == MC_SEC_SIG_ALGO_AES_GMAC_64) {
+            mACSize = 2 + 8;
+        }
+        else if (self->currentSigAlgo == MC_SEC_SIG_ALGO_AES_GMAC_128) {
+            mACSize = 2 + 16;
+        }
         else {
             /* signature algorithm not supported */
+            printf("Signature algorithm not supported\n");
             return 0;
         }
 
@@ -178,11 +185,52 @@ L2Security_addSecurityExtension(L2Security self, uint8_t* buffer, int start, int
                 RSessionCrypto_createHMAC(buffer + start, macEnd - start, self->currentKey, self->currentKeySize, buffer + bufPos, 32);
                 bufPos += 32;
             }
+            else if (self->currentSigAlgo == MC_SEC_SIG_ALGO_AES_GMAC_64)
+            {
+                /* create IV */
+                uint8_t iv[12];
+                int ivSize = 12;
+
+                if (RSessionCrypto_createRandomData(iv, ivSize) == false) {
+                    printf("ERROR - Failed to create random IV\n");
+                }
+
+                if (RSessionCrypto_createAES_GMAC(self->currentKey, self->currentKeySize, iv, ivSize, buffer + start, macEnd - start, buffer + bufPos, 8) == false)
+                {
+                    printf("ERROR - Failed to create GMAC\n");
+                }
+
+                bufPos += 8;
+            }
+            else if (self->currentSigAlgo == MC_SEC_SIG_ALGO_AES_GMAC_128)
+            {
+                /* create IV */
+                uint8_t iv[12];
+                int ivSize = 12;
+
+                if (RSessionCrypto_createRandomData(iv, ivSize) == false) {
+                    printf("ERROR - Failed to create random IV\n");
+                }
+
+                if (RSessionCrypto_createAES_GMAC(self->currentKey, self->currentKeySize, iv, ivSize, buffer + start, macEnd - start, buffer + bufPos, 16) == false)
+                {
+                    printf("ERROR - Failed to create GMAC\n");
+                }
+
+                bufPos += 16;
+            }
+            else {
+                /* signature algorithm not supported */
+                printf("Signature algorithm not supported\n");
+                return 0;
+            }
         }
 
         return securityExtensionSize + 2;
     }
-    else {
+    else
+    {
+        printf("L2_SECURITY: no signature algorithm set\n");
         return 0;
     }
 }
