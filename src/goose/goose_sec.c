@@ -1,5 +1,5 @@
 /*
- *  goose_sec.c
+ *  l2_security.c
  *
  *  Copyright 2013-2025 Michael Zillgith
  *
@@ -135,11 +135,11 @@ L2Security_addSecurityExtension(L2Security self, uint8_t* buffer, int start, int
         }
         else if (self->currentSigAlgo == MC_SEC_SIG_ALGO_AES_GMAC_128) {
             mACSize = 2 + 16;
-            ivSize = 12;
+            ivSize = 12; /* IV size for AES GMAC (recommendation from NIST: https://web.cs.ucdavis.edu/~rogaway/ocb/gcm.pdf) */
         }
         else if (self->currentSigAlgo == MC_SEC_SIG_ALGO_AES_GMAC_256) {
             mACSize = 2 + 32;
-            ivSize = 12;
+            ivSize = 12;  /* IV size for AES GMAC (recommendation from NIST: https://web.cs.ucdavis.edu/~rogaway/ocb/gcm.pdf) */
         }
         else {
             /* signature algorithm not supported */
