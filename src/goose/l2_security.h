@@ -1,7 +1,7 @@
 /*
  *  l2_security.h
  *
- *  Copyright 2022 Michael Zillgith
+ *  Copyright 2022-2025 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -53,8 +53,8 @@ typedef enum {
     MC_SEC_SIG_ALGO_HMAC_SHA256_80 = 1,
     MC_SEC_SIG_ALGO_HMAC_SHA256_128 = 2,
     MC_SEC_SIG_ALGO_HMAC_SHA256_256 = 3,
-    MC_SEC_SIG_ALGO_AES_GMAC_64 = 4,
-    MC_SEC_SIG_ALGO_AES_GMAC_128 = 5,
+    MC_SEC_SIG_ALGO_AES_GMAC_128 = 4,
+    MC_SEC_SIG_ALGO_AES_GMAC_256 = 5,
     MC_SEC_SIG_ALGO_HMAC_SHA3_80 = 6,
     MC_SEC_SIG_ALGO_HMAC_SHA3_128 = 7,
     MC_SEC_SIG_ALGO_HMAC_SHA3_256 = 8
