@@ -833,7 +833,7 @@ encodePacket(RSession self, uint8_t payloadType, uint8_t* buffer, int bufPos, RS
 
         /* IV */
         if (self->secAlgo != R_SESSION_SEC_ALGO_NONE) {
-            /* TODO get and encode IV (initialization vector) */
+            /* get and encode IV (initialization vector) */
 
             buffer[bufPos++] = 12;
 
