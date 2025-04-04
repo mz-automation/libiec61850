@@ -16,9 +16,8 @@ public class SampledValueControl {
     private int nofASDU;
     private boolean multicast = false;
     private SmvOpts smvOpts;
-    
-    
-    
+    private SmpMod smpMod = SmpMod.SMP_PER_PERIOD;
+
     public SampledValueControl(Node smvControlNode) throws SclParserException {
         this.name = ParserUtils.parseAttribute(smvControlNode, "name");
         this.desc = ParserUtils.parseAttribute(smvControlNode, "desc");
@@ -49,10 +48,25 @@ public class SampledValueControl {
         Node smvOptsNode = ParserUtils.getChildNodeWithTag(smvControlNode, "SmvOpts");
         
         this.smvOpts = new SmvOpts(smvOptsNode);
+
+        String smpModString = ParserUtils.parseAttribute(smvControlNode, "smpMod");
+
+        if (smpModString != null) {
+            if (smpModString.equals("SmpPerPeriod")) {
+                smpMod = SmpMod.SMP_PER_PERIOD;
+            }
+            else if (smpModString.equals("SmpPerSec")) {
+                smpMod = SmpMod.SMP_PER_SECOND;
+            }
+            else if (smpModString.equals("SecPerSmp")) {
+                smpMod = SmpMod.SEC_PER_SMP;
+            }
+            else {
+                throw new SclParserException(smvControlNode, "Invalid smpMod value " + smpModString);
+            }
+        }
     }
-    
-    
-    
+
     public String getName() {
         return name;
     }
@@ -88,5 +102,8 @@ public class SampledValueControl {
     public SmvOpts getSmvOpts() {
         return smvOpts;
     }
-   
+
+    public SmpMod getSmpMod() {
+        return smpMod;
+    }
 }

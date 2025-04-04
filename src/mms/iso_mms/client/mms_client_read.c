@@ -1,7 +1,7 @@
 /*
  *  mms_client_read.c
  *
- *  Copyright 2013-2022 Michael Zillgith
+ *  Copyright 2013-2024 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -45,17 +45,19 @@ mmsClient_parseListOfAccessResults(AccessResult_t** accessResultList, int listSi
 
     int i = 0;
 
-    for (i = 0; i < elementCount; i++) {
-
+    for (i = 0; i < elementCount; i++)
+    {
         value = NULL;
 
         AccessResult_PR presentType = accessResultList[i]->present;
 
-        if (presentType == AccessResult_PR_failure) {
+        if (presentType == AccessResult_PR_failure)
+        {
             if (DEBUG_MMS_CLIENT)
                 printf("MMS CLIENT: received access error!\n");
 
-            if (accessResultList[i]->choice.failure.size > 0) {
+            if (accessResultList[i]->choice.failure.size > 0)
+            {
                 int errorCode = (int) accessResultList[i]->choice.failure.buf[0];
 
                 MmsDataAccessError dataAccessError = DATA_ACCESS_ERROR_UNKNOWN;
@@ -68,26 +70,29 @@ mmsClient_parseListOfAccessResults(AccessResult_t** accessResultList, int listSi
             else
                 value = MmsValue_newDataAccessError(DATA_ACCESS_ERROR_UNKNOWN);
         }
-        else if (presentType == AccessResult_PR_array) {
-
+        else if (presentType == AccessResult_PR_array)
+        {
             int arrayElementCount =
                     accessResultList[i]->choice.array.list.count;
 
-            if (arrayElementCount > 0) {
+            if (arrayElementCount > 0)
+            {
                 value = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
                 value->type = MMS_ARRAY;
                 value->value.structure.size = arrayElementCount;
                 value->value.structure.components = (MmsValue**) GLOBAL_CALLOC(arrayElementCount, sizeof(MmsValue*));
 
-                if (value->value.structure.components) {
+                if (value->value.structure.components)
+                {
                     int j;
 
-                    for (j = 0; j < arrayElementCount; j++) {
+                    for (j = 0; j < arrayElementCount; j++)
+                    {
                         value->value.structure.components[j] = mmsMsg_parseDataElement(
                                 accessResultList[i]->choice.array.list.array[j]);
 
-                        if (value->value.structure.components[j] == NULL) {
-
+                        if (value->value.structure.components[j] == NULL)
+                        {
                             if (DEBUG_MMS_CLIENT)
                                 printf("MMS CLIENT: failed to parse array element %i\n", j);
 
@@ -98,33 +103,37 @@ mmsClient_parseListOfAccessResults(AccessResult_t** accessResultList, int listSi
                     }
                 }
             }
-            else {
+            else
+            {
                 if (DEBUG_MMS_CLIENT)
                     printf("MMS CLIENT: error parsing access result (invalid array size)!\n");
             }
-
         }
-        else if (presentType == AccessResult_PR_structure) {
-
+        else if (presentType == AccessResult_PR_structure)
+        {
             int componentCount =
                     accessResultList[i]->choice.structure.list.count;
 
-            if (componentCount > 0) {
+            if (componentCount > 0)
+            {
                 value = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
 
-                if (value) {
+                if (value)
+                {
                     value->type = MMS_STRUCTURE;
                     value->value.structure.size = componentCount;
                     value->value.structure.components = (MmsValue**) GLOBAL_CALLOC(componentCount, sizeof(MmsValue*));
 
-                    if (value->value.structure.components) {
+                    if (value->value.structure.components)
+                    {
                         int j;
-                        for (j = 0; j < componentCount; j++) {
+                        for (j = 0; j < componentCount; j++)
+                        {
                             value->value.structure.components[j] = mmsMsg_parseDataElement(
                                     accessResultList[i]->choice.structure.list.array[j]);
 
-                            if (value->value.structure.components[j] == NULL) {
-
+                            if (value->value.structure.components[j] == NULL)
+                            {
                                 if (DEBUG_MMS_CLIENT)
                                     printf("MMS CLIENT: failed to parse struct element %i\n", j);
 
@@ -136,213 +145,257 @@ mmsClient_parseListOfAccessResults(AccessResult_t** accessResultList, int listSi
                     }
                 }
             }
-            else {
+            else
+            {
                 if (DEBUG_MMS_CLIENT)
                     printf("MMS CLIENT: error parsing access result (invalid structure size)!\n");
             }
-
         }
-        else if (presentType == AccessResult_PR_bitstring) {
-
+        else if (presentType == AccessResult_PR_bitstring)
+        {
             int size = accessResultList[i]->choice.bitstring.size;
 
-            if (size > 0) {
-
+            if (size > 0)
+            {
                 int maxSize = (size * 8);
                 int bitSize = maxSize - accessResultList[i]->choice.bitstring.bits_unused;
 
-                if ((bitSize > 0) && (maxSize >= bitSize)) {
-
+                if ((bitSize > 0) && (maxSize >= bitSize))
+                {
                     value = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
-                    value->type = MMS_BIT_STRING;
 
+                    if (value)
+                    {
+                        value->type = MMS_BIT_STRING;
 
-                    value->value.bitString.size = (size * 8)
-                            - accessResultList[i]->choice.bitstring.bits_unused;
+                        value->value.bitString.size = (size * 8)
+                                - accessResultList[i]->choice.bitstring.bits_unused;
 
-                    value->value.bitString.buf = (uint8_t*) GLOBAL_MALLOC(size);
-                    memcpy(value->value.bitString.buf,
-                            accessResultList[i]->choice.bitstring.buf, size);
+                        value->value.bitString.buf = (uint8_t*) GLOBAL_MALLOC(size);
+                        memcpy(value->value.bitString.buf,
+                                accessResultList[i]->choice.bitstring.buf, size);
+                    }
                 }
-                else {
+                else
+                {
                     if (DEBUG_MMS_CLIENT)
                         printf("MMS CLIENT: error parsing access result (bit string padding problem)!\n");
                 }
             }
-            else {
+            else
+            {
                 if (DEBUG_MMS_CLIENT)
                     printf("MMS CLIENT: error parsing access result (bit string size 0 or negative)!\n");
             }
-
         }
-        else if (presentType == AccessResult_PR_integer) {
-
+        else if (presentType == AccessResult_PR_integer)
+        {
             int size = accessResultList[i]->choice.integer.size;
 
-            if (size > 0) {
+            if (size > 0)
+            {
                 Asn1PrimitiveValue* berInteger =
                         BerInteger_createFromBuffer(accessResultList[i]->choice.integer.buf, size);
 
                 value = MmsValue_newIntegerFromBerInteger(berInteger);
             }
-            else {
+            else
+            {
                 if (DEBUG_MMS_CLIENT)
                     printf("MMS CLIENT: error parsing access result (invalid integer size)!\n");
             }
         }
-        else if (presentType == AccessResult_PR_unsigned) {
-
+        else if (presentType == AccessResult_PR_unsigned)
+        {
             int size = accessResultList[i]->choice.Unsigned.size;
 
-            if (size > 0) {
+            if (size > 0)
+            {
                 Asn1PrimitiveValue* berInteger =
                         BerInteger_createFromBuffer(accessResultList[i]->choice.Unsigned.buf,
                                 accessResultList[i]->choice.Unsigned.size);
 
                 value = MmsValue_newUnsignedFromBerInteger(berInteger);
             }
-            else {
+            else
+            {
                 if (DEBUG_MMS_CLIENT)
                     printf("MMS CLIENT: error parsing access result (invalid unsigned size)!\n");
             }
-
         }
-        else if (presentType == AccessResult_PR_floatingpoint) {
-
+        else if (presentType == AccessResult_PR_floatingpoint)
+        {
             int size = accessResultList[i]->choice.floatingpoint.size;
 
-            if (size == 5) { /* FLOAT32 */
-
+            if (size == 5) /* FLOAT32 */
+            { 
                 value = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
-                value->type = MMS_FLOAT;
 
-                value->value.floatingPoint.formatWidth = 32;
-                value->value.floatingPoint.exponentWidth = accessResultList[i]->choice.floatingpoint.buf[0];
+                if (value)
+                {
+                    value->type = MMS_FLOAT;
 
-                uint8_t* floatBuf = (accessResultList[i]->choice.floatingpoint.buf + 1);
+                    value->value.floatingPoint.formatWidth = 32;
+                    value->value.floatingPoint.exponentWidth = accessResultList[i]->choice.floatingpoint.buf[0];
+
+                    uint8_t* floatBuf = (accessResultList[i]->choice.floatingpoint.buf + 1);
 
 #if (ORDER_LITTLE_ENDIAN == 1)
-                memcpyReverseByteOrder(value->value.floatingPoint.buf, floatBuf, 4);
+                    memcpyReverseByteOrder(value->value.floatingPoint.buf, floatBuf, 4);
 #else
-                memcpy(value->value.floatingPoint.buf, floatBuf, 4);
+                    memcpy(value->value.floatingPoint.buf, floatBuf, 4);
 #endif
-
+                }
             }
-            else if (size == 9) { /* FLOAT64 */
-
+            else if (size == 9) /* FLOAT64 */
+            {
                 value = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
-                value->type = MMS_FLOAT;
 
-                value->value.floatingPoint.formatWidth = 64;
-                value->value.floatingPoint.exponentWidth = accessResultList[i]->choice.floatingpoint.buf[0];
+                if (value)
+                {
+                    value->type = MMS_FLOAT;
 
-                uint8_t* floatBuf = (accessResultList[i]->choice.floatingpoint.buf + 1);
+                    value->value.floatingPoint.formatWidth = 64;
+                    value->value.floatingPoint.exponentWidth = accessResultList[i]->choice.floatingpoint.buf[0];
+
+                    uint8_t* floatBuf = (accessResultList[i]->choice.floatingpoint.buf + 1);
 
 #if (ORDER_LITTLE_ENDIAN == 1)
-                memcpyReverseByteOrder(value->value.floatingPoint.buf, floatBuf, 8);
+                    memcpyReverseByteOrder(value->value.floatingPoint.buf, floatBuf, 8);
 #else
-                memcpy(value->value.floatingPoint.buf, floatBuf, 8);
+                    memcpy(value->value.floatingPoint.buf, floatBuf, 8);
 #endif
+                }
             }
-            else {
+            else
+            {
                 if (DEBUG_MMS_CLIENT)
                     printf("MMS CLIENT: error parsing float (size must be 5 or 9, is %i)\n", size);
             }
-
         }
-        else if (presentType == AccessResult_PR_visiblestring) {
-
+        else if (presentType == AccessResult_PR_visiblestring)
+        {
             int strSize = accessResultList[i]->choice.visiblestring.size;
 
-            if (strSize >= 0) {
+            if (strSize >= 0)
+            {
                 value = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
 
-                value->type = MMS_VISIBLE_STRING;
-                value->value.visibleString.buf = (char*) GLOBAL_MALLOC(strSize + 1);
-                value->value.visibleString.size = strSize;
+                if (value)
+                {
+                    value->type = MMS_VISIBLE_STRING;
+                    value->value.visibleString.buf = (char*) GLOBAL_MALLOC(strSize + 1);
+                    value->value.visibleString.size = strSize;
 
-                memcpy(value->value.visibleString.buf,
-                        accessResultList[i]->choice.visiblestring.buf,
-                        strSize);
+                    memcpy(value->value.visibleString.buf,
+                            accessResultList[i]->choice.visiblestring.buf,
+                            strSize);
 
-                value->value.visibleString.buf[strSize] = 0;
+                    value->value.visibleString.buf[strSize] = 0;
+                }
             }
-            else {
+            else
+            {
                 if (DEBUG_MMS_CLIENT)
                     printf("MMS CLIENT: error parsing access result (invalid visible-string size)\n");
             }
-
         }
-        else if (presentType == AccessResult_PR_mMSString) {
-
+        else if (presentType == AccessResult_PR_mMSString)
+        {
             int strSize = accessResultList[i]->choice.mMSString.size;
 
-            if (strSize >= 0) {
+            if (strSize >= 0)
+            {
                 value = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
 
-                value->type = MMS_STRING;
-                value->value.visibleString.buf = (char*) GLOBAL_MALLOC(strSize + 1);
-                value->value.visibleString.size = strSize;
+                if (value)
+                {
+                    value->type = MMS_STRING;
+                    value->value.visibleString.buf = (char*) GLOBAL_MALLOC(strSize + 1);
+                    value->value.visibleString.size = strSize;
 
-                memcpy(value->value.visibleString.buf,
-                        accessResultList[i]->choice.mMSString.buf, strSize);
+                    memcpy(value->value.visibleString.buf,
+                            accessResultList[i]->choice.mMSString.buf, strSize);
 
-                value->value.visibleString.buf[strSize] = 0;
+                    value->value.visibleString.buf[strSize] = 0;
+                }
             }
-            else {
+            else
+            {
                 if (DEBUG_MMS_CLIENT)
                     printf("MMS CLIENT: error parsing access result (invalid mms-string size)\n");
             }
         }
-        else if (presentType == AccessResult_PR_utctime) {
-
+        else if (presentType == AccessResult_PR_utctime)
+        {
             int size = accessResultList[i]->choice.utctime.size;
 
-            if (size == 8) {
+            if (size == 8)
+            {
                 value = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
 
-                value->type = MMS_UTC_TIME;
-                memcpy(value->value.utcTime, accessResultList[i]->choice.utctime.buf, 8);
+                if (value)
+                {
+                    value->type = MMS_UTC_TIME;
+                    memcpy(value->value.utcTime, accessResultList[i]->choice.utctime.buf, 8);
+                }
             }
-            else {
+            else
+            {
                 if (DEBUG_MMS_CLIENT)
                     printf("MMS CLIENT: error parsing UTC time (size is %i instead of 8\n", size);
             }
         }
-        else if (presentType == AccessResult_PR_boolean) {
+        else if (presentType == AccessResult_PR_boolean)
+        {
             value = MmsValue_newBoolean(accessResultList[i]->choice.boolean);
         }
-        else if (presentType == AccessResult_PR_binarytime) {
+        else if (presentType == AccessResult_PR_binarytime)
+        {
             int size = accessResultList[i]->choice.binarytime.size;
 
-            if ((size == 4) || (size == 6)) {
+            if ((size == 4) || (size == 6))
+            {
                 value = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
-                value->type = MMS_BINARY_TIME;
-                value->value.binaryTime.size = size;
-                memcpy(value->value.binaryTime.buf, accessResultList[i]->choice.binarytime.buf, size);
+
+                if (value)
+                {
+                    value->type = MMS_BINARY_TIME;
+                    value->value.binaryTime.size = size;
+                    memcpy(value->value.binaryTime.buf, accessResultList[i]->choice.binarytime.buf, size);
+                }
             }
-            else {
+            else
+            {
                 if (DEBUG_MMS_CLIENT)
                     printf("MMS CLIENT: error parsing binary time (size must be 4 or 6, is %i\n", size);
             }
         }
-        else if (presentType == AccessResult_PR_octetstring) {
+        else if (presentType == AccessResult_PR_octetstring)
+        {
             int size = accessResultList[i]->choice.octetstring.size;
 
-            if (size >= 0) {
+            if (size >= 0)
+            {
                 value = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
-                value->type = MMS_OCTET_STRING;
-                value->value.octetString.maxSize = -size;
-                value->value.octetString.size = size;
-                value->value.octetString.buf = (uint8_t*) GLOBAL_MALLOC(size);
-                memcpy(value->value.octetString.buf, accessResultList[i]->choice.octetstring.buf, size);
+
+                if (value)
+                {
+                    value->type = MMS_OCTET_STRING;
+                    value->value.octetString.maxSize = -size;
+                    value->value.octetString.size = size;
+                    value->value.octetString.buf = (uint8_t*) GLOBAL_MALLOC(size);
+                    memcpy(value->value.octetString.buf, accessResultList[i]->choice.octetstring.buf, size);
+                }
             }
-            else {
+            else
+            {
                 if (DEBUG_MMS_CLIENT)
                     printf("MMS CLIENT: error parsing access result (invalid octet-string size)\n");
             }
         }
-        else {
+        else
+        {
             if (DEBUG_MMS_CLIENT)
                 printf("MMS CLIENT: unknown type %i in access result\n", presentType);
             value = MmsValue_newDataAccessError(DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID);

@@ -1,2 +1,5 @@
 build/
 /Debug/
+third_party/mbedtls
+third_party/winpcap
+third_party/sqlite

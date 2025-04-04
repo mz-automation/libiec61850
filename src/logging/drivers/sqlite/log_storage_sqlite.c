@@ -99,7 +99,6 @@ copyStringInternal(const char* string)
 LogStorage
 SqliteLogStorage_createInstance(const char* filename)
 {
-
     sqlite3* db = NULL;
     sqlite3_stmt* insertEntryStmt = NULL;
     sqlite3_stmt* insertEntryDataStmt = NULL;

@@ -1,33 +1,33 @@
 /*
  *  socket_bsd.c
  *
- *  Copyright 2013-2021 Michael Zillgith
+ *  Copyright 2013-2024 Michael Zillgith
  *
  *  This file is part of Platform Abstraction Layer (libpal)
  *  for libiec61850, libmms, and lib60870.
  */
 
 #include "hal_socket.h"
+#include <arpa/inet.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <stdio.h>
+#include <string.h>
+#include <sys/select.h>
 #include <sys/socket.h>
 #include <sys/types.h>
-#include <sys/select.h>
-#include <arpa/inet.h>
 #include <unistd.h>
-#include <string.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <errno.h>
-#include <stdio.h>
-#include <fcntl.h>
 
 #include <netinet/tcp.h> // required for TCP keepalive
 
-#include <signal.h>
 #include <poll.h>
+#include <signal.h>
 
-#include "linked_list.h"
 #include "hal_thread.h"
 #include "lib_memory.h"
+#include "linked_list.h"
 
 #ifndef DEBUG_SOCKET
 #define DEBUG_SOCKET 0
@@ -41,22 +41,26 @@
 #define MSG_NOSIGNAL 0
 #endif
 
-struct sSocket {
+struct sSocket
+{
     int fd;
     uint32_t connectTimeout;
 };
 
-struct sServerSocket {
+struct sServerSocket
+{
     int fd;
     int backLog;
 };
 
-struct sUdpSocket {
+struct sUdpSocket
+{
     int fd;
     int namespace; /* IPv4: AF_INET; IPv6: AF_INET6 */
 };
 
-struct sHandleSet {
+struct sHandleSet
+{
     LinkedList sockets;
     bool pollfdIsUpdated;
     struct pollfd* fds;
@@ -66,9 +70,10 @@ struct sHandleSet {
 HandleSet
 Handleset_new(void)
 {
-    HandleSet self = (HandleSet) GLOBAL_MALLOC(sizeof(struct sHandleSet));
+    HandleSet self = (HandleSet)GLOBAL_MALLOC(sizeof(struct sHandleSet));
 
-    if (self) {
+    if (self)
+    {
         self->sockets = LinkedList_create();
         self->pollfdIsUpdated = false;
         self->fds = NULL;
@@ -81,8 +86,10 @@ Handleset_new(void)
 void
 Handleset_reset(HandleSet self)
 {
-    if (self) {
-        if (self->sockets) {
+    if (self)
+    {
+        if (self->sockets)
+        {
             LinkedList_destroyStatic(self->sockets);
             self->sockets = LinkedList_create();
             self->pollfdIsUpdated = false;
@@ -93,7 +100,8 @@ Handleset_reset(HandleSet self)
 void
 Handleset_addSocket(HandleSet self, const Socket sock)
 {
-    if (self != NULL && sock != NULL && sock->fd != -1) {
+    if (self != NULL && sock != NULL && sock->fd != -1)
+    {
         LinkedList_add(self->sockets, sock);
         self->pollfdIsUpdated = false;
     }
@@ -102,7 +110,8 @@ Handleset_addSocket(HandleSet self, const Socket sock)
 void
 Handleset_removeSocket(HandleSet self, const Socket sock)
 {
-    if (self && self->sockets && sock) {
+    if (self && self->sockets && sock)
+    {
         LinkedList_remove(self->sockets, sock);
         self->pollfdIsUpdated = false;
     }
@@ -112,8 +121,10 @@ int
 Handleset_waitReady(HandleSet self, unsigned int timeoutMs)
 {
     /* check if pollfd array is updated */
-    if (self->pollfdIsUpdated == false) {
-        if (self->fds) {
+    if (self->pollfdIsUpdated == false)
+    {
+        if (self->fds)
+        {
             GLOBAL_FREEMEM(self->fds);
             self->fds = NULL;
         }
@@ -124,13 +135,16 @@ Handleset_waitReady(HandleSet self, unsigned int timeoutMs)
 
         int i;
 
-        for (i = 0; i < self->nfds; i++) {
+        for (i = 0; i < self->nfds; i++)
+        {
             LinkedList sockElem = LinkedList_get(self->sockets, i);
 
-            if (sockElem) {
-                Socket sock = (Socket) LinkedList_getData(sockElem);
+            if (sockElem)
+            {
+                Socket sock = (Socket)LinkedList_getData(sockElem);
 
-                if (sock) {
+                if (sock)
+                {
                     self->fds[i].fd = sock->fd;
                     self->fds[i].events = POLL_IN;
                 }
@@ -140,17 +154,20 @@ Handleset_waitReady(HandleSet self, unsigned int timeoutMs)
         self->pollfdIsUpdated = true;
     }
 
-    if (self->fds && self->nfds > 0) {
+    if (self->fds && self->nfds > 0)
+    {
         int result = poll(self->fds, self->nfds, timeoutMs);
 
-        if (result == -1) {
+        if (result == -1)
+        {
             if (DEBUG_SOCKET)
                 printf("SOCKET: poll error (errno: %i)\n", errno);
         }
 
         return result;
     }
-    else {
+    else
+    {
         /* there is no socket to wait for */
         return 0;
     }
@@ -159,7 +176,8 @@ Handleset_waitReady(HandleSet self, unsigned int timeoutMs)
 void
 Handleset_destroy(HandleSet self)
 {
-    if (self) {
+    if (self)
+    {
         if (self->sockets)
             LinkedList_destroyStatic(self->sockets);
 
@@ -197,18 +215,20 @@ static bool
 prepareAddress(const char* address, int port, struct sockaddr_in* sockaddr)
 {
 
-	memset((char *) sockaddr , 0, sizeof(struct sockaddr_in));
+    memset((char*)sockaddr, 0, sizeof(struct sockaddr_in));
 
-	if (address != NULL) {
-		struct hostent *server;
-		server = gethostbyname(address);
+    if (address != NULL)
+    {
+        struct hostent* server;
+        server = gethostbyname(address);
 
-		if (server == NULL) return false;
+        if (server == NULL)
+            return false;
 
-		memcpy((char *) &sockaddr->sin_addr.s_addr, (char *) server->h_addr, server->h_length);
-	}
-	else
-		sockaddr->sin_addr.s_addr = htonl(INADDR_ANY);
+        memcpy((char*)&sockaddr->sin_addr.s_addr, (char*)server->h_addr, server->h_length);
+    }
+    else
+        sockaddr->sin_addr.s_addr = htonl(INADDR_ANY);
 
     sockaddr->sin_family = AF_INET;
     sockaddr->sin_port = htons(port);
@@ -228,7 +248,7 @@ activateTcpNoDelay(Socket self)
 {
     /* activate TCP_NODELAY option - packets will be sent immediately */
     int flag = 1;
-    setsockopt(self->fd, IPPROTO_TCP, TCP_NODELAY, (char *) &flag, sizeof(int));
+    setsockopt(self->fd, IPPROTO_TCP, TCP_NODELAY, (char*)&flag, sizeof(int));
 }
 
 ServerSocket
@@ -238,27 +258,31 @@ TcpServerSocket_create(const char* address, int port)
 
     int fd;
 
-    if ((fd = socket(AF_INET, SOCK_STREAM, 0)) >= 0) {
+    if ((fd = socket(AF_INET, SOCK_STREAM, 0)) >= 0)
+    {
         struct sockaddr_in serverAddress;
 
-        if (!prepareAddress(address, port, &serverAddress)) {
+        if (!prepareAddress(address, port, &serverAddress))
+        {
             close(fd);
             return NULL;
         }
 
         int optionReuseAddr = 1;
-        setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (char *) &optionReuseAddr, sizeof(int));
+        setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (char*)&optionReuseAddr, sizeof(int));
 
-        if (bind(fd, (struct sockaddr *) &serverAddress, sizeof(serverAddress)) >= 0) {
-            serverSocket = (ServerSocket) GLOBAL_MALLOC(sizeof(struct sServerSocket));
+        if (bind(fd, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) >= 0)
+        {
+            serverSocket = (ServerSocket)GLOBAL_MALLOC(sizeof(struct sServerSocket));
             serverSocket->fd = fd;
             serverSocket->backLog = 2;
 
-            setSocketNonBlocking((Socket) serverSocket);
+            setSocketNonBlocking((Socket)serverSocket);
         }
-        else {
+        else
+        {
             close(fd);
-            return NULL ;
+            return NULL;
         }
     }
 
@@ -271,7 +295,6 @@ ServerSocket_listen(ServerSocket self)
     listen(self->fd, self->backLog);
 }
 
-
 /* CHANGED TO MAKE NON-BLOCKING --> RETURNS NULL IF NO CONNECTION IS PENDING */
 Socket
 ServerSocket_accept(ServerSocket self)
@@ -280,19 +303,22 @@ ServerSocket_accept(ServerSocket self)
 
     Socket conSocket = NULL;
 
-    fd = accept(self->fd, NULL, NULL );
+    fd = accept(self->fd, NULL, NULL);
 
-    if (fd >= 0) {
-        conSocket = (Socket) GLOBAL_CALLOC(1, sizeof(struct sSocket));
+    if (fd >= 0)
+    {
+        conSocket = (Socket)GLOBAL_CALLOC(1, sizeof(struct sSocket));
 
-        if (conSocket) {
+        if (conSocket)
+        {
             conSocket->fd = fd;
 
             setSocketNonBlocking(conSocket);
 
             activateTcpNoDelay(conSocket);
         }
-        else {
+        else
+        {
             /* out of memory */
             close(fd);
 
@@ -313,7 +339,8 @@ ServerSocket_setBacklog(ServerSocket self, int backlog)
 static void
 closeAndShutdownSocket(int socketFd)
 {
-    if (socketFd != -1) {
+    if (socketFd != -1)
+    {
 
         if (DEBUG_SOCKET)
             printf("socket_linux.c: call shutdown for %i!\n", socketFd);
@@ -346,10 +373,12 @@ TcpSocket_create()
 
     int sock = socket(AF_INET, SOCK_STREAM, 0);
 
-    if (sock != -1) {
-        self = (Socket) GLOBAL_MALLOC(sizeof(struct sSocket));
+    if (sock != -1)
+    {
+        self = (Socket)GLOBAL_MALLOC(sizeof(struct sSocket));
 
-        if (self) {
+        if (self)
+        {
             self->fd = sock;
             self->connectTimeout = 5000;
 
@@ -358,7 +387,8 @@ TcpSocket_create()
             int result = setsockopt(sock, SOL_TCP,  TCP_USER_TIMEOUT, &tcpUserTimeout, sizeof(tcpUserTimeout));
 #endif
         }
-        else {
+        else
+        {
             /* out of memory */
             close(sock);
 
@@ -366,7 +396,8 @@ TcpSocket_create()
                 printf("SOCKET: out of memory\n");
         }
     }
-    else {
+    else
+    {
         if (DEBUG_SOCKET)
             printf("SOCKET: failed to create socket (errno=%i)\n", errno);
     }
@@ -390,7 +421,8 @@ Socket_bind(Socket self, const char* srcAddress, int srcPort)
 
     int result = bind(self->fd, (struct sockaddr*)&localAddress, sizeof(localAddress));
 
-    if (result == -1) {
+    if (result == -1)
+    {
         if (DEBUG_SOCKET)
             printf("SOCKET: failed to bind TCP socket (errno=%i)\n", errno);
 
@@ -398,7 +430,7 @@ Socket_bind(Socket self, const char* srcAddress, int srcPort)
         self->fd = -1;
 
         return false;
-    }    
+    }
 
     return true;
 }
@@ -422,9 +454,11 @@ Socket_connectAsync(Socket self, const char* address, int port)
 
     fcntl(self->fd, F_SETFL, O_NONBLOCK);
 
-    if (connect(self->fd, (struct sockaddr *) &serverAddress, sizeof(serverAddress)) < 0) {
+    if (connect(self->fd, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) < 0)
+    {
 
-        if (errno != EINPROGRESS) {
+        if (errno != EINPROGRESS)
+        {
             self->fd = -1;
             return false;
         }
@@ -444,16 +478,18 @@ Socket_checkAsyncConnectState(Socket self)
     FD_ZERO(&fdSet);
     FD_SET(self->fd, &fdSet);
 
-    int selectVal = select(self->fd + 1, NULL, &fdSet , NULL, &timeout);
+    int selectVal = select(self->fd + 1, NULL, &fdSet, NULL, &timeout);
 
-    if (selectVal == 1) {
+    if (selectVal == 1)
+    {
 
         /* Check if connection is established */
 
         int so_error;
         socklen_t len = sizeof so_error;
 
-        if (getsockopt(self->fd, SOL_SOCKET, SO_ERROR, &so_error, &len) >= 0) {
+        if (getsockopt(self->fd, SOL_SOCKET, SO_ERROR, &so_error, &len) >= 0)
+        {
 
             if (so_error == 0)
                 return SOCKET_STATE_CONNECTED;
@@ -461,10 +497,12 @@ Socket_checkAsyncConnectState(Socket self)
 
         return SOCKET_STATE_FAILED;
     }
-    else if (selectVal == 0) {
+    else if (selectVal == 0)
+    {
         return SOCKET_STATE_CONNECTING;
     }
-    else {
+    else
+    {
         return SOCKET_STATE_FAILED;
     }
 }
@@ -483,21 +521,23 @@ Socket_connect(Socket self, const char* address, int port)
     FD_ZERO(&fdSet);
     FD_SET(self->fd, &fdSet);
 
-    if (select(self->fd + 1, NULL, &fdSet , NULL, &timeout) == 1) {
+    if (select(self->fd + 1, NULL, &fdSet, NULL, &timeout) == 1)
+    {
 
         /* Check if connection is established */
 
         int so_error;
         socklen_t len = sizeof so_error;
 
-        if (getsockopt(self->fd, SOL_SOCKET, SO_ERROR, &so_error, &len) >= 0) {
+        if (getsockopt(self->fd, SOL_SOCKET, SO_ERROR, &so_error, &len) >= 0)
+        {
 
             if (so_error == 0)
                 return true;
         }
     }
 
-    close (self->fd);
+    close(self->fd);
     self->fd = -1;
 
     return false;
@@ -511,22 +551,24 @@ convertAddressToStr(struct sockaddr_storage* addr)
 
     bool isIPv6;
 
-    if (addr->ss_family == AF_INET) {
-        struct sockaddr_in* ipv4Addr = (struct sockaddr_in*) addr;
+    if (addr->ss_family == AF_INET)
+    {
+        struct sockaddr_in* ipv4Addr = (struct sockaddr_in*)addr;
         port = ntohs(ipv4Addr->sin_port);
         inet_ntop(AF_INET, &(ipv4Addr->sin_addr), addrString, INET_ADDRSTRLEN);
         isIPv6 = false;
     }
-    else if (addr->ss_family == AF_INET6) {
-        struct sockaddr_in6* ipv6Addr = (struct sockaddr_in6*) addr;
+    else if (addr->ss_family == AF_INET6)
+    {
+        struct sockaddr_in6* ipv6Addr = (struct sockaddr_in6*)addr;
         port = ntohs(ipv6Addr->sin6_port);
         inet_ntop(AF_INET6, &(ipv6Addr->sin6_addr), addrString, INET6_ADDRSTRLEN);
         isIPv6 = true;
     }
     else
-        return NULL ;
+        return NULL;
 
-    char* clientConnection = (char*) GLOBAL_MALLOC(strlen(addrString) + 9);
+    char* clientConnection = (char*)GLOBAL_MALLOC(strlen(addrString) + 9);
 
     if (isIPv6)
         sprintf(clientConnection, "[%s]:%i", addrString, port);
@@ -542,7 +584,8 @@ Socket_getPeerAddress(Socket self)
     struct sockaddr_storage addr;
     socklen_t addrLen = sizeof(addr);
 
-    if (getpeername(self->fd, (struct sockaddr*) &addr, &addrLen) == 0) {
+    if (getpeername(self->fd, (struct sockaddr*)&addr, &addrLen) == 0)
+    {
         return convertAddressToStr(&addr);
     }
     else
@@ -555,7 +598,8 @@ Socket_getLocalAddress(Socket self)
     struct sockaddr_storage addr;
     socklen_t addrLen = sizeof(addr);
 
-    if (getsockname(self->fd, (struct sockaddr*) &addr, &addrLen) == 0) {
+    if (getsockname(self->fd, (struct sockaddr*)&addr, &addrLen) == 0)
+    {
         return convertAddressToStr(&addr);
     }
     else
@@ -568,27 +612,29 @@ Socket_getPeerAddressStatic(Socket self, char* peerAddressString)
     struct sockaddr_storage addr;
     socklen_t addrLen = sizeof(addr);
 
-    getpeername(self->fd, (struct sockaddr*) &addr, &addrLen);
+    getpeername(self->fd, (struct sockaddr*)&addr, &addrLen);
 
     char addrString[INET6_ADDRSTRLEN + 7];
     int port;
 
     bool isIPv6;
 
-    if (addr.ss_family == AF_INET) {
-        struct sockaddr_in* ipv4Addr = (struct sockaddr_in*) &addr;
+    if (addr.ss_family == AF_INET)
+    {
+        struct sockaddr_in* ipv4Addr = (struct sockaddr_in*)&addr;
         port = ntohs(ipv4Addr->sin_port);
         inet_ntop(AF_INET, &(ipv4Addr->sin_addr), addrString, INET_ADDRSTRLEN);
         isIPv6 = false;
     }
-    else if (addr.ss_family == AF_INET6) {
-        struct sockaddr_in6* ipv6Addr = (struct sockaddr_in6*) &addr;
+    else if (addr.ss_family == AF_INET6)
+    {
+        struct sockaddr_in6* ipv6Addr = (struct sockaddr_in6*)&addr;
         port = ntohs(ipv6Addr->sin6_port);
         inet_ntop(AF_INET6, &(ipv6Addr->sin6_addr), addrString, INET6_ADDRSTRLEN);
         isIPv6 = true;
     }
     else
-        return NULL ;
+        return NULL;
 
     if (isIPv6)
         sprintf(peerAddressString, "[%s]:%i", addrString, port);
@@ -609,18 +655,20 @@ Socket_read(Socket self, uint8_t* buf, int size)
     if (read_bytes == 0)
         return -1;
 
-    if (read_bytes == -1) {
+    if (read_bytes == -1)
+    {
         int error = errno;
 
-        switch (error) {
+        switch (error)
+        {
 
-            case EAGAIN:
-                return 0;
-            case EBADF:
-                return -1;
+        case EAGAIN:
+            return 0;
+        case EBADF:
+            return -1;
 
-            default:
-                return -1;
+        default:
+            return -1;
         }
     }
 
@@ -663,21 +711,25 @@ UdpSocket_createUsingNamespace(int namespace)
 
     int sock = socket(namespace, SOCK_DGRAM, IPPROTO_UDP);
 
-    if (sock != -1) {
-        self = (UdpSocket) GLOBAL_MALLOC(sizeof(struct sSocket));
+    if (sock != -1)
+    {
+        self = (UdpSocket)GLOBAL_MALLOC(sizeof(struct sSocket));
 
-        if (self) {
+        if (self)
+        {
             self->fd = sock;
             self->namespace = namespace;
         }
-        else {
+        else
+        {
             if (DEBUG_SOCKET)
                 printf("SOCKET: failed to allocate memory\n");
 
             close(sock);
         }
     }
-    else {
+    else
+    {
         if (DEBUG_SOCKET)
             printf("SOCKET: failed to create UDP socket (errno=%i)\n", errno);
     }
@@ -700,36 +752,42 @@ UdpSocket_createIpV6()
 bool
 UdpSocket_addGroupMembership(UdpSocket self, const char* multicastAddress)
 {
-    if (self->namespace == AF_INET) {
+    if (self->namespace == AF_INET)
+    {
         struct ip_mreq mreq;
 
-        if (!inet_aton(multicastAddress, &(mreq.imr_multiaddr))) {
+        if (!inet_aton(multicastAddress, &(mreq.imr_multiaddr)))
+        {
             printf("SOCKET: Invalid IPv4 multicast address\n");
             return false;
         }
-        else {
+        else
+        {
             mreq.imr_interface.s_addr = htonl(INADDR_ANY);
 
-            if (setsockopt(self->fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) == -1) {
+            if (setsockopt(self->fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) == -1)
+            {
                 printf("SOCKET: failed to set IPv4 multicast group (errno: %i)\n", errno);
                 return false;
             }
-
         }
 
         return true;
     }
-    else if (self->namespace == AF_INET6) {
+    else if (self->namespace == AF_INET6)
+    {
         struct ipv6_mreq mreq;
 
-        if (inet_pton(AF_INET6, multicastAddress, &(mreq.ipv6mr_multiaddr)) < 1) {
+        if (inet_pton(AF_INET6, multicastAddress, &(mreq.ipv6mr_multiaddr)) < 1)
+        {
             printf("SOCKET: failed to set IPv6 multicast group (errno: %i)\n", errno);
             return false;
         }
 
         mreq.ipv6mr_interface = 0;
 
-        if (setsockopt(self->fd, IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) == -1) {
+        if (setsockopt(self->fd, IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) == -1)
+        {
             printf("SOCKET: failed to set IPv6 multicast group (errno: %i)\n", errno);
             return false;
         }
@@ -743,16 +801,20 @@ UdpSocket_addGroupMembership(UdpSocket self, const char* multicastAddress)
 bool
 UdpSocket_setMulticastTtl(UdpSocket self, int ttl)
 {
-    if (self->namespace == AF_INET) {
-        if (setsockopt(self->fd, IPPROTO_IP, IP_MULTICAST_TTL, &ttl, sizeof(ttl)) == -1) {
+    if (self->namespace == AF_INET)
+    {
+        if (setsockopt(self->fd, IPPROTO_IP, IP_MULTICAST_TTL, &ttl, sizeof(ttl)) == -1)
+        {
             printf("SOCKET: failed to set IPv4 multicast TTL (errno: %i)\n", errno);
             return false;
         }
 
         return true;
     }
-    else if (self->namespace == AF_INET6) {
-        if (setsockopt(self->fd, IPPROTO_IPV6, IPV6_MULTICAST_HOPS, &ttl, sizeof(ttl)) == -1) {
+    else if (self->namespace == AF_INET6)
+    {
+        if (setsockopt(self->fd, IPPROTO_IPV6, IPV6_MULTICAST_HOPS, &ttl, sizeof(ttl)) == -1)
+        {
             printf("SOCKET: failed to set IPv6 multicast TTL(hops) (errno: %i)\n", errno);
             return false;
         }
@@ -766,10 +828,11 @@ UdpSocket_setMulticastTtl(UdpSocket self, int ttl)
 bool
 UdpSocket_bind(UdpSocket self, const char* address, int port)
 {
-    //TODO add support for IPv6
+    // TODO add support for IPv6
     struct sockaddr_in localAddress;
 
-    if (!prepareAddress(address, port, &localAddress)) {
+    if (!prepareAddress(address, port, &localAddress))
+    {
         close(self->fd);
         self->fd = 0;
         return false;
@@ -777,7 +840,8 @@ UdpSocket_bind(UdpSocket self, const char* address, int port)
 
     int result = bind(self->fd, (struct sockaddr*)&localAddress, sizeof(localAddress));
 
-    if (result == -1) {
+    if (result == -1)
+    {
         if (DEBUG_SOCKET)
             printf("SOCKET: failed to bind UDP socket (errno=%i)\n", errno);
 
@@ -793,10 +857,11 @@ UdpSocket_bind(UdpSocket self, const char* address, int port)
 bool
 UdpSocket_sendTo(UdpSocket self, const char* address, int port, uint8_t* msg, int msgSize)
 {
-    //TODO add support for IPv6
+    // TODO add support for IPv6
     struct sockaddr_in remoteAddress;
 
-    if (!prepareAddress(address, port, &remoteAddress)) {
+    if (!prepareAddress(address, port, &remoteAddress))
+    {
 
         if (DEBUG_SOCKET)
             printf("SOCKET: failed to lookup remote address %s\n", address);
@@ -806,14 +871,17 @@ UdpSocket_sendTo(UdpSocket self, const char* address, int port, uint8_t* msg, in
 
     int result = sendto(self->fd, msg, msgSize, 0, (struct sockaddr*)&remoteAddress, sizeof(remoteAddress));
 
-    if (result == msgSize) {
+    if (result == msgSize)
+    {
         return true;
     }
-    else if (result == -1) {
+    else if (result == -1)
+    {
         if (DEBUG_SOCKET)
             printf("SOCKET: failed to send UDP message (errno=%i)\n", errno);
     }
-    else {
+    else
+    {
         if (DEBUG_SOCKET)
             printf("SOCKET: failed to send UDP message (insufficient data sent)\n");
     }
@@ -824,31 +892,35 @@ UdpSocket_sendTo(UdpSocket self, const char* address, int port, uint8_t* msg, in
 int
 UdpSocket_receiveFrom(UdpSocket self, char* address, int maxAddrSize, uint8_t* msg, int msgSize)
 {
-    //TODO add support for IPv6
+    // TODO add support for IPv6
     struct sockaddr_storage remoteAddress;
 
     socklen_t structSize = sizeof(struct sockaddr_storage);
 
     int result = recvfrom(self->fd, msg, msgSize, MSG_DONTWAIT, (struct sockaddr*)&remoteAddress, &structSize);
 
-    if (result == -1) {
+    if (result == -1)
+    {
         if (DEBUG_SOCKET)
             printf("SOCKET: failed to receive UDP message (errno=%i)\n", errno);
     }
 
-    if (address) {
+    if (address)
+    {
         bool isIPv6;
         char addrString[INET6_ADDRSTRLEN + 7];
         int port;
 
-        if (remoteAddress.ss_family == AF_INET) {
-            struct sockaddr_in* ipv4Addr = (struct sockaddr_in*) &remoteAddress;
+        if (remoteAddress.ss_family == AF_INET)
+        {
+            struct sockaddr_in* ipv4Addr = (struct sockaddr_in*)&remoteAddress;
             port = ntohs(ipv4Addr->sin_port);
             inet_ntop(AF_INET, &(ipv4Addr->sin_addr), addrString, INET_ADDRSTRLEN);
             isIPv6 = false;
         }
-        else if (remoteAddress.ss_family == AF_INET6) {
-            struct sockaddr_in6* ipv6Addr = (struct sockaddr_in6*) &remoteAddress;
+        else if (remoteAddress.ss_family == AF_INET6)
+        {
+            struct sockaddr_in6* ipv6Addr = (struct sockaddr_in6*)&remoteAddress;
             port = ntohs(ipv6Addr->sin6_port);
             inet_ntop(AF_INET6, &(ipv6Addr->sin6_addr), addrString, INET6_ADDRSTRLEN);
             isIPv6 = true;
@@ -862,19 +934,22 @@ UdpSocket_receiveFrom(UdpSocket self, char* address, int maxAddrSize, uint8_t* m
             snprintf(address, maxAddrSize, "%s:%i", addrString, port);
     }
 
-    if (address) {
+    if (address)
+    {
         bool isIPv6;
         char addrString[INET6_ADDRSTRLEN + 7];
         int port;
 
-        if (remoteAddress.ss_family == AF_INET) {
-            struct sockaddr_in* ipv4Addr = (struct sockaddr_in*) &remoteAddress;
+        if (remoteAddress.ss_family == AF_INET)
+        {
+            struct sockaddr_in* ipv4Addr = (struct sockaddr_in*)&remoteAddress;
             port = ntohs(ipv4Addr->sin_port);
             inet_ntop(AF_INET, &(ipv4Addr->sin_addr), addrString, INET_ADDRSTRLEN);
             isIPv6 = false;
         }
-        else if (remoteAddress.ss_family == AF_INET6) {
-            struct sockaddr_in6* ipv6Addr = (struct sockaddr_in6*) &remoteAddress;
+        else if (remoteAddress.ss_family == AF_INET6)
+        {
+            struct sockaddr_in6* ipv6Addr = (struct sockaddr_in6*)&remoteAddress;
             port = ntohs(ipv6Addr->sin6_port);
             inet_ntop(AF_INET6, &(ipv6Addr->sin6_addr), addrString, INET6_ADDRSTRLEN);
             isIPv6 = true;

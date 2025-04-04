@@ -17,9 +17,6 @@
 
 #include "logging_api.h"
 
-LogStorage
-SqliteLogStorage_createInstance(const char* filename);
-
 static int running = 0;
 static IedServer iedServer = NULL;
 
@@ -115,9 +112,73 @@ entryDataCallback (void* parameter, const char* dataRef, const uint8_t* data, in
     return true;
 }
 
+static const char*
+ACSIClassToStr(ACSIClass acsiClass)
+{
+    switch (acsiClass)
+    {
+        case ACSI_CLASS_BRCB:
+            return "BRCB";
+        case ACSI_CLASS_URCB:
+            return "URCB";
+        case ACSI_CLASS_GoCB:
+            return "GoCB";
+        case ACSI_CLASS_SGCB:
+            return "SGCB";
+        case ACSI_CLASS_LCB:
+            return "LCB";
+        case ACSI_CLASS_GsCB:
+            return "GsCB";
+        case ACSI_CLASS_LOG:
+            return "log";
+        case ACSI_CLASS_DATA_SET:
+            return "dataset";
+        case ACSI_CLASS_DATA_OBJECT:
+            return "data-object";
+        case ACSI_CLASS_MSVCB:
+            return "MSVCB";
+        case ACSI_CLASS_USVCB:
+            return "USVCB";
+        default:
+            return "unknown";
+    }
+}
+
+bool
+controlBlockAccessHandler(void* parameter, ClientConnection connection, ACSIClass acsiClass, LogicalDevice* ld, LogicalNode* ln, const char* objectName, const char* subObjectName, IedServer_ControlBlockAccessType accessType)
+{
+    printf("Access to %s %s/%s.%s\n", ACSIClassToStr(acsiClass), ld->name, ln ? ln->name : "-", objectName);
+
+    if (acsiClass == ACSI_CLASS_LCB) {
+        if (accessType == IEC61850_CB_ACCESS_TYPE_READ)
+            return true;
+        else
+            return false;
+    }
+
+    return true;
+}
+
+static bool
+listObjectsAccessHandler(void* parameter, ClientConnection connection, ACSIClass acsiClass, LogicalDevice* ld, LogicalNode* ln, const char* objectName, const char* subObjectName, FunctionalConstraint fc)
+{
+    if (subObjectName)
+        printf("list objects access[2] to %s/%s.%s.%s [acsi-class: %s(%i)] [FC=%s]\n", ld->name, ln ? ln->name : "-", objectName, subObjectName, ACSIClassToStr(acsiClass), acsiClass, FunctionalConstraint_toString(fc));
+    else
+        printf("list objects access[2] to %s/%s.%s [acsi-class: %s(%i)] [FC=%s]\n", ld->name, ln ? ln->name : "-", objectName, ACSIClassToStr(acsiClass), acsiClass, FunctionalConstraint_toString(fc));
+
+    return true;
+}
+
 int
 main(int argc, char** argv)
 {
+    int tcpPort = 102;
+
+    if (argc > 1) {
+        tcpPort = atoi(argv[1]);
+    }
+
     printf("Using libIEC61850 version %s\n", LibIEC61850_getVersionString());
 
     iedServer = IedServer_create(&iedModel);
@@ -140,6 +201,8 @@ main(int argc, char** argv)
             IEDMODEL_GenericIO_GGIO1_SPCSO4);
 
     IedServer_setConnectionIndicationHandler(iedServer, (IedConnectionIndicationHandler) connectionHandler, NULL);
+
+    IedServer_setControlBlockAccessHandler(iedServer, controlBlockAccessHandler, NULL);
 
     LogStorage statusLog = SqliteLogStorage_createInstance("log_status.db");
 
@@ -172,9 +235,10 @@ main(int argc, char** argv)
     LogStorage_getEntries(statusLog, 0, Hal_getTimeInMs(), entryCallback, (LogEntryDataCallback) entryDataCallback, NULL);
 #endif
 
+    IedServer_setListObjectsAccessHandler(iedServer, listObjectsAccessHandler, NULL);
 
     /* MMS server will be instructed to start listening to client connections. */
-    IedServer_start(iedServer, 102);
+    IedServer_start(iedServer, tcpPort);
 
     if (!IedServer_isRunning(iedServer)) {
         printf("Starting server failed! Exit.\n");

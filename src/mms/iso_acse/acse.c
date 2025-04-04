@@ -1,7 +1,7 @@
 /*
  *  acse.c
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013-2024 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -43,9 +43,10 @@ checkAuthMechanismName(uint8_t* authMechanism, int authMechLen)
 {
     AcseAuthenticationMechanism authenticationMechanism = ACSE_AUTH_NONE;
 
-    if (authMechanism != NULL) {
-
-        if (authMechLen == 3) {
+    if (authMechanism != NULL)
+    {
+        if (authMechLen == 3)
+        {
             if (memcmp(auth_mech_password_oid, authMechanism, 3) == 0) {
                 authenticationMechanism = ACSE_AUTH_PASSWORD;
             }
@@ -64,11 +65,13 @@ authenticateClient(AcseConnection* self, AcseAuthenticationMechanism mechanism, 
 
     authParameter->mechanism = mechanism;
 
-    if (mechanism == ACSE_AUTH_PASSWORD) {
+    if (mechanism == ACSE_AUTH_PASSWORD)
+    {
         authParameter->value.password.octetString = authValue;
         authParameter->value.password.passwordLength = authValueLen;
     }
-    else if (mechanism == ACSE_AUTH_TLS) {
+    else if (mechanism == ACSE_AUTH_TLS)
+    {
         authParameter->value.certificate.buf = authValue;
         authParameter->value.certificate.length = authValueLen;
     }
@@ -81,15 +84,15 @@ checkAuthentication(AcseConnection* self, uint8_t* authMechanism, int authMechLe
 {
     self->securityToken = NULL;
 
-    if (self->authenticator != NULL) {
-
+    if (self->authenticator != NULL)
+    {
         AcseAuthenticationMechanism mechanism = checkAuthMechanismName(authMechanism, authMechLen);
 
-        if (mechanism == ACSE_AUTH_NONE) {
-
+        if (mechanism == ACSE_AUTH_NONE)
+        {
 #if (CONFIG_MMS_SUPPORT_TLS == 1)
-            if (self->tlsSocket) {
-
+            if (self->tlsSocket)
+            {
                 int certLen;
 
                 uint8_t* certBuf = TLSSocket_getPeerCertificate(self->tlsSocket, &certLen);
@@ -120,13 +123,18 @@ parseUserInformation(AcseConnection* self, uint8_t* buffer, int bufPos, int maxB
     bool hasindirectReference = false;
     bool isDataValid = false;
 
-    while (bufPos < maxBufPos) {
+    while (bufPos < maxBufPos)
+    {
         uint8_t tag = buffer[bufPos++];
         int len;
 
         bufPos = BerDecoder_decodeLength(buffer, &len, bufPos, maxBufPos);
 
-        if (bufPos < 0) {
+        if (len == 0)
+            continue;
+
+        if ((bufPos < 0) || (bufPos + len > maxBufPos))
+        {
             *userInfoValid = false;
             return -1;
         }
@@ -155,7 +163,8 @@ parseUserInformation(AcseConnection* self, uint8_t* buffer, int bufPos, int maxB
         }
     }
 
-    if (DEBUG_ACSE) {
+    if (DEBUG_ACSE)
+    {
         if (!hasindirectReference)
             printf("ACSE: User data has no indirect reference!\n");
 
@@ -181,13 +190,29 @@ parseAarePdu(AcseConnection* self, uint8_t* buffer, int bufPos, int maxBufPos)
 
     uint32_t result = 99;
 
-    while (bufPos < maxBufPos) {
+    while (bufPos < maxBufPos)
+    {
         uint8_t tag = buffer[bufPos++];
         int len;
 
         bufPos = BerDecoder_decodeLength(buffer, &len, bufPos, maxBufPos);
+
         if (bufPos < 0)
+        {
+            if (DEBUG_ACSE)
+                printf("ACSE: Invalid PDU!\n");
             return ACSE_ERROR;
+        }
+
+        if (len == 0)
+            continue;
+
+        if (bufPos + len > maxBufPos)
+        {
+            if (DEBUG_ACSE)
+                printf("ACSE: Invalid PDU!\n");
+            return ACSE_ERROR;
+        }
 
         switch (tag)
         {
@@ -212,12 +237,14 @@ parseAarePdu(AcseConnection* self, uint8_t* buffer, int bufPos, int maxBufPos)
             break;
 
         case 0xbe: /* user information */
-            if (buffer[bufPos] != 0x28) {
+            if (buffer[bufPos] != 0x28)
+            {
                 if (DEBUG_ACSE)
                     printf("ACSE: invalid user info\n");
                 bufPos += len;
             }
-            else {
+            else
+            {
                 bufPos++;
 
                 bufPos = BerDecoder_decodeLength(buffer, &len, bufPos, maxBufPos);
@@ -263,13 +290,25 @@ parseAarqPdu(AcseConnection* self, uint8_t* buffer, int bufPos, int maxBufPos)
     int authMechLen = 0;
     bool userInfoValid = false;
 
-    while (bufPos < maxBufPos) {
+    while (bufPos < maxBufPos)
+    {
         uint8_t tag = buffer[bufPos++];
         int len;
 
         bufPos = BerDecoder_decodeLength(buffer, &len, bufPos, maxBufPos);
 
-        if (bufPos < 0) {
+        if (bufPos < 0)
+        {
+            if (DEBUG_ACSE)
+                printf("ACSE: Invalid PDU!\n");
+            return ACSE_ASSOCIATE_FAILED;
+        }
+
+        if (len == 0)
+            continue;
+
+        if (bufPos + len > maxBufPos)
+        {
             if (DEBUG_ACSE)
                 printf("ACSE: Invalid PDU!\n");
             return ACSE_ASSOCIATE_FAILED;
@@ -290,7 +329,9 @@ parseAarqPdu(AcseConnection* self, uint8_t* buffer, int bufPos, int maxBufPos)
 
         case 0xa6: /* calling AP title */
             {
-                if (buffer[bufPos] == 0x06) { /* ap-title-form2 */
+                if (buffer[bufPos] == 0x06)
+                {
+                    /* ap-title-form2 */
 
                     int innerLength = buffer[bufPos + 1];
 
@@ -303,7 +344,9 @@ parseAarqPdu(AcseConnection* self, uint8_t* buffer, int bufPos, int maxBufPos)
 
         case 0xa7: /* calling AE qualifier */
             {
-                if (buffer[bufPos] == 0x02) { /* ae-qualifier-form2 */
+                if (buffer[bufPos] == 0x02)
+                {
+                    /* ae-qualifier-form2 */
 
                     int innerLength = buffer[bufPos + 1];
 
@@ -328,7 +371,8 @@ parseAarqPdu(AcseConnection* self, uint8_t* buffer, int bufPos, int maxBufPos)
             bufPos++;
 
             bufPos = BerDecoder_decodeLength(buffer, &len, bufPos, maxBufPos);
-            if (bufPos < 0) {
+            if (bufPos < 0)
+            {
                 if (DEBUG_ACSE)
                     printf("ACSE: Invalid PDU!\n");
                 return ACSE_ASSOCIATE_FAILED;
@@ -340,17 +384,20 @@ parseAarqPdu(AcseConnection* self, uint8_t* buffer, int bufPos, int maxBufPos)
             break;
 
         case 0xbe: /* user information */
-            if (buffer[bufPos] != 0x28) {
+            if (buffer[bufPos] != 0x28)
+            {
                 if (DEBUG_ACSE)
                     printf("ACSE: invalid user info\n");
                 bufPos += len;
             }
-            else {
+            else
+            {
                 bufPos++;
 
                 bufPos = BerDecoder_decodeLength(buffer, &len, bufPos, maxBufPos);
 
-                if (bufPos < 0) {
+                if (bufPos < 0)
+                {
                     if (DEBUG_ACSE)
                         printf("ACSE: Invalid PDU!\n");
                     return ACSE_ASSOCIATE_FAILED;
@@ -358,7 +405,8 @@ parseAarqPdu(AcseConnection* self, uint8_t* buffer, int bufPos, int maxBufPos)
 
                 bufPos = parseUserInformation(self, buffer, bufPos, bufPos + len, &userInfoValid);
 
-                if (bufPos < 0) {
+                if (bufPos < 0)
+                {
                     if (DEBUG_ACSE)
                         printf("ACSE: Invalid PDU!\n");
                     return ACSE_ASSOCIATE_FAILED;
@@ -378,14 +426,16 @@ parseAarqPdu(AcseConnection* self, uint8_t* buffer, int bufPos, int maxBufPos)
         }
     }
 
-    if (checkAuthentication(self, authMechanism, authMechLen, authValue, authValueLen) == false) {
+    if (checkAuthentication(self, authMechanism, authMechLen, authValue, authValueLen) == false)
+    {
         if (DEBUG_ACSE)
             printf("ACSE: parseAarqPdu: check authentication failed!\n");
 
         return ACSE_ASSOCIATE_FAILED;
     }
 
-    if (userInfoValid == false) {
+    if (userInfoValid == false)
+    {
         if (DEBUG_ACSE)
             printf("ACSE: parseAarqPdu: user info invalid!\n");
 
@@ -419,6 +469,14 @@ AcseIndication
 AcseConnection_parseMessage(AcseConnection* self, ByteBuffer* message)
 {
     AcseIndication indication = ACSE_ERROR;
+
+    if (message == NULL || message->size < 1)
+    {
+        if (DEBUG_ACSE)
+            printf("ACSE: invalid message - no payload\n");
+
+        return ACSE_ERROR;
+    }
 
     uint8_t* buffer = message->buffer;
 
@@ -826,4 +884,3 @@ AcseConnection_createReleaseResponseMessage(AcseConnection* self, BufferChain wr
     writeBuffer->length = 2;
     writeBuffer->nextPart = NULL;
 }
-

@@ -1,7 +1,7 @@
 /*
  *  iso_session.c
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013-2024 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -21,10 +21,10 @@
  *  See COPYING file for the complete license text.
  */
 
-#include "libiec61850_platform_includes.h"
-#include "stack_config.h"
 #include "iso_session.h"
 #include "buffer_chain.h"
+#include "libiec61850_platform_includes.h"
+#include "stack_config.h"
 
 #if ((DEBUG_ISO_SERVER == 1) || (DEBUG_ISO_CLIENT == 1))
 #define DEBUG_SESSION 1
@@ -43,11 +43,13 @@ parseAcceptParameters(IsoSession* session, ByteBuffer* message, int startOffset,
     int offset = startOffset;
     int maxOffset = offset + parameterLength;
 
-    while (offset < maxOffset) {
+    while (offset < maxOffset)
+    {
         pi = message->buffer[offset++];
         param_len = message->buffer[offset++];
 
-        switch (pi) {
+        switch (pi)
+        {
         case 19: /* Protocol options */
             if (param_len != 1)
                 return -1;
@@ -64,9 +66,16 @@ parseAcceptParameters(IsoSession* session, ByteBuffer* message, int startOffset,
         case 22: /* Version Number */
             param_val = message->buffer[offset++];
             if (DEBUG_SESSION)
-                printf("SESSION: Param - Version number\n");
+                printf("SESSION: Param - Version number %i\n", param_val);
+
             if (param_val != 2)
+            {
+                if (DEBUG_SESSION)
+                    printf("SESSION: invalid version number\n");
+
                 return -1;
+            }
+
             hasProtocolVersion = 1;
             break;
         case 23: /* Initial Serial Number */
@@ -119,17 +128,20 @@ parseSessionHeaderParameters(IsoSession* session, ByteBuffer* message, int param
     uint8_t pgi;
     uint8_t parameterLength;
 
-    while (offset < (parametersOctets + 2)) {
+    while (offset < (parametersOctets + 2))
+    {
         pgi = message->buffer[offset++];
         parameterLength = message->buffer[offset++];
 
-        switch (pgi) {
+        switch (pgi)
+        {
         case 1: /* Connection Identifier */
             if (DEBUG_SESSION)
                 printf("SESSION: PGI - connection identifier\n");
 
             offset += parameterLength;
             break;
+
         case 5: /* Connection/Accept Item */
             if (DEBUG_SESSION)
                 printf("SESSION: PGI - Connection/Accept Item\n");
@@ -143,9 +155,11 @@ parseSessionHeaderParameters(IsoSession* session, ByteBuffer* message, int param
 
             offset += connectAcceptLen;
             break;
+
         case 17: /* Transport disconnect */
             offset += parameterLength;
             break;
+
         case 20: /* Session User Requirements */
             if (DEBUG_SESSION)
                 printf("SESSION: Parameter - Session User Req\n");
@@ -155,12 +169,15 @@ parseSessionHeaderParameters(IsoSession* session, ByteBuffer* message, int param
             session->sessionRequirement = message->buffer[offset++] * 0x100;
             session->sessionRequirement += message->buffer[offset++];
             break;
+
         case 25: /* Enclosure item */
             offset += parameterLength;
             break;
+
         case 49:
             offset += parameterLength;
             break;
+
         case 51: /* Calling Session Selector */
             if (DEBUG_SESSION)
                 printf("SESSION: Parameter - Calling Session Selector\n");
@@ -177,6 +194,7 @@ parseSessionHeaderParameters(IsoSession* session, ByteBuffer* message, int param
             }
 
             break;
+
         case 52: /* Called Session Selector */
             if (DEBUG_SESSION)
                 printf("SESSION: Parameter - Called Session Selector\n");
@@ -185,26 +203,28 @@ parseSessionHeaderParameters(IsoSession* session, ByteBuffer* message, int param
                 return SESSION_ERROR;
 
             {
-               session->calledSessionSelector.size = parameterLength;
+                session->calledSessionSelector.size = parameterLength;
 
-               int i;
-               for (i = 0; i < session->calledSessionSelector.size; i++)
-                   session->calledSessionSelector.value[i] = message->buffer[offset++];
+                int i;
+                for (i = 0; i < session->calledSessionSelector.size; i++)
+                    session->calledSessionSelector.value[i] = message->buffer[offset++];
             }
 
             break;
+
         case 60: /* Data Overflow */
             if (DEBUG_SESSION)
                 printf("SESSION: Parameter - Data Overflow\n");
             offset += parameterLength;
             break;
+
         case 193: /* User Data */
             if (DEBUG_SESSION)
                 printf("SESSION: PGI - user data\n");
 
             /* here we should return - the remaining data is for upper layers ! */
-            ByteBuffer_wrap(&session->userData, message->buffer + offset,
-                    message->size - offset, message->maxSize - offset);
+            ByteBuffer_wrap(&session->userData, message->buffer + offset, message->size - offset,
+                            message->maxSize - offset);
 
             return SESSION_OK;
 
@@ -212,6 +232,7 @@ parseSessionHeaderParameters(IsoSession* session, ByteBuffer* message, int param
             if (DEBUG_SESSION)
                 printf("SESSION: PGI - extended user data\n");
             break;
+
         default:
             if (DEBUG_SESSION)
                 printf("SESSION: invalid parameter/PGI\n");
@@ -222,14 +243,14 @@ parseSessionHeaderParameters(IsoSession* session, ByteBuffer* message, int param
     return SESSION_ERROR;
 }
 
-static const uint8_t dataSpdu[] = { 0x01, 0x00, 0x01, 0x00 };
+static const uint8_t dataSpdu[] = {0x01, 0x00, 0x01, 0x00};
 
 void
 IsoSession_createDataSpdu(IsoSession* self, BufferChain buffer, BufferChain payload)
 {
     (void)self;
 
-    buffer->buffer = (uint8_t*) dataSpdu;
+    buffer->buffer = (uint8_t*)dataSpdu;
     buffer->partLength = 4;
     buffer->length = 4 + payload->length;
     buffer->nextPart = payload;
@@ -251,12 +272,27 @@ encodeConnectAcceptItem(uint8_t* buf, int offset, uint8_t options)
 }
 
 static int
+encodeConnectionIdentifier(uint8_t* buf, int offset, uint8_t reasonCode)
+{
+    buf[offset++] = 1;  /* Connection Identifier */
+    buf[offset++] = 2;  /* LEN */
+    buf[offset++] = 17; /* Transport Disconnect */
+    buf[offset++] = 1;  /* L=1 */
+    buf[offset++] = 1;  /* VALUE = release transport connection */
+    buf[offset++] = 50; /* Reason code */
+    buf[offset++] = 1;  /* L=1 */
+    buf[offset++] = reasonCode;
+
+    return offset;
+}
+
+static int
 encodeSessionRequirement(IsoSession* self, uint8_t* buf, int offset)
 {
     buf[offset++] = 0x14;
     buf[offset++] = 2;
-    buf[offset++] = (uint8_t) (self->sessionRequirement / 0x100);
-    buf[offset++] = (uint8_t) (self->sessionRequirement & 0x00ff);
+    buf[offset++] = (uint8_t)(self->sessionRequirement / 0x100);
+    buf[offset++] = (uint8_t)(self->sessionRequirement & 0x00ff);
 
     return offset;
 }
@@ -297,7 +333,8 @@ encodeSessionUserData(uint8_t* buf, int offset, uint8_t payloadLength)
 }
 
 void
-IsoSession_createConnectSpdu(IsoSession* self, IsoConnectionParameters isoParameters, BufferChain buffer, BufferChain payload)
+IsoSession_createConnectSpdu(IsoSession* self, IsoConnectionParameters isoParameters, BufferChain buffer,
+                             BufferChain payload)
 {
     int offset = 0;
     uint8_t* buf = buffer->buffer;
@@ -337,13 +374,13 @@ IsoSession_createAbortSpdu(IsoSession* self, BufferChain buffer, BufferChain pay
     int offset = 0;
     uint8_t* buf = buffer->buffer;
 
-    buf[offset++] = 25; /* ABORT-SPDU code */
+    buf[offset++] = 25;                  /* ABORT-SPDU code */
     buf[offset++] = 5 + payload->length; /* LI */
-    buf[offset++] = 17; /* PI-Code transport-disconnect */
-    buf[offset++] = 1; /* LI = 1 */
-    buf[offset++] = 11; /* transport-connection-released | user-abort | no-reason */
-    buf[offset++] = 193; /* PGI-Code user data */
-    buf[offset++] = payload->length; /* LI of user data */
+    buf[offset++] = 17;                  /* PI-Code transport-disconnect */
+    buf[offset++] = 1;                   /* LI = 1 */
+    buf[offset++] = 11;                  /* transport-connection-released | user-abort | no-reason */
+    buf[offset++] = 193;                 /* PGI-Code user data */
+    buf[offset++] = payload->length;     /* LI of user data */
 
     buffer->partLength = offset;
     buffer->length = payload->length + offset;
@@ -361,8 +398,8 @@ IsoSession_createFinishSpdu(IsoSession* self, BufferChain buffer, BufferChain pa
     buf[offset++] = 9; /* FINISH-SPDU code */
 
     buf[offset++] = 2 + payload->length; /* LI */
-    buf[offset++] = 193; /* PGI-Code user data */
-    buf[offset++] = payload->length; /* LI of user data */
+    buf[offset++] = 193;                 /* PGI-Code user data */
+    buf[offset++] = payload->length;     /* LI of user data */
 
     buffer->partLength = offset;
     buffer->length = payload->length + offset;
@@ -380,8 +417,8 @@ IsoSession_createDisconnectSpdu(IsoSession* self, BufferChain buffer, BufferChai
     buf[offset++] = 10; /* DISCONNECT-SPDU code */
 
     buf[offset++] = 2 + payload->length; /* LI */
-    buf[offset++] = 193; /* PGI-Code user data */
-    buf[offset++] = payload->length; /* LI of user data */
+    buf[offset++] = 193;                 /* PGI-Code user data */
+    buf[offset++] = payload->length;     /* LI of user data */
 
     buffer->partLength = offset;
     buffer->length = payload->length + offset;
@@ -419,6 +456,20 @@ IsoSession_createAcceptSpdu(IsoSession* self, BufferChain buffer, BufferChain pa
 }
 
 void
+IsoSession_createRefuseSpdu(IsoSession* self, BufferChain buffer, BufferChain payload, uint8_t reasonCode)
+{
+    int offset = 0;
+    uint8_t* buf = buffer->buffer;
+    int lengthOffset;
+
+    buf[offset++] = 12; /* REFUSE SPDU */
+    lengthOffset = offset;
+    offset++;
+
+    offset = encodeConnectionIdentifier(buf, offset, reasonCode);
+}
+
+void
 IsoSession_init(IsoSession* session)
 {
     memset(session, 0, sizeof(IsoSession));
@@ -446,20 +497,23 @@ IsoSession_parseMessage(IsoSession* self, ByteBuffer* message)
     uint8_t id;
     uint8_t length;
 
-    if (message->size > 1) {
+    if (message->size > 1)
+    {
         id = buffer[0];
         length = buffer[1];
     }
     else
         return SESSION_ERROR;
 
-    switch (id) {
+    switch (id)
+    {
     case 13: /* CONNECT(CN) SPDU */
         if (length != (message->size - 2))
             return SESSION_ERROR;
         if (parseSessionHeaderParameters(self, message, length) == SESSION_OK)
             return SESSION_CONNECT;
-        else {
+        else
+        {
             if (DEBUG_SESSION)
                 printf("SESSION: error parsing connect spdu\n");
             return SESSION_ERROR;
@@ -470,7 +524,8 @@ IsoSession_parseMessage(IsoSession* self, ByteBuffer* message)
             return SESSION_ERROR;
         if (parseSessionHeaderParameters(self, message, length) == SESSION_OK)
             return SESSION_CONNECT;
-        else {
+        else
+        {
             if (DEBUG_SESSION)
                 printf("SESSION: error parsing accept spdu\n");
             return SESSION_ERROR;
@@ -481,7 +536,8 @@ IsoSession_parseMessage(IsoSession* self, ByteBuffer* message)
         if (message->size < 4)
             return SESSION_ERROR;
 
-        if ((length == 0) && (buffer[2] == 1) && (buffer[3] == 0)) {
+        if ((length == 0) && (buffer[2] == 1) && (buffer[3] == 0))
+        {
             ByteBuffer_wrap(&self->userData, message->buffer + 4, message->size - 4, message->maxSize - 4);
 
             return SESSION_DATA;
@@ -528,4 +584,3 @@ IsoSession_parseMessage(IsoSession* self, ByteBuffer* message)
 
     return SESSION_ERROR;
 }
-

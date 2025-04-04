@@ -1,7 +1,7 @@
 /*
  *  mms_type_spec.c
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013-2024 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -35,16 +35,19 @@ MmsVariableSpecification_destroy(MmsVariableSpecification* typeSpec)
     if (typeSpec->name != NULL)
         GLOBAL_FREEMEM(typeSpec->name);
 
-    if (typeSpec->type == MMS_STRUCTURE) {
+    if (typeSpec->type == MMS_STRUCTURE)
+    {
         int elementCount = typeSpec->typeSpec.structure.elementCount;
         int i;
-        for (i = 0; i < elementCount; i++) {
+        for (i = 0; i < elementCount; i++)
+        {
             MmsVariableSpecification_destroy(typeSpec->typeSpec.structure.elements[i]);
         }
 
         GLOBAL_FREEMEM(typeSpec->typeSpec.structure.elements);
     }
-    else if (typeSpec->type == MMS_ARRAY) {
+    else if (typeSpec->type == MMS_ARRAY)
+    {
         MmsVariableSpecification_destroy(typeSpec->typeSpec.array.elementTypeSpec);
     }
 
@@ -56,7 +59,9 @@ directChildStrLen(const char* childId)
 {
     size_t i = 0;
     size_t childIdLen = strlen(childId);
-    while (i < childIdLen) {
+
+    while (i < childIdLen)
+    {
         if (*(childId + i) == '$')
             break;
         if (*(childId + i) == '.')
@@ -71,22 +76,26 @@ directChildStrLen(const char* childId)
 MmsValue*
 MmsVariableSpecification_getChildValue(MmsVariableSpecification* typeSpec, MmsValue* value, const char* childId)
 {
-    if ((typeSpec->type == MMS_STRUCTURE) && (value->type == MMS_STRUCTURE)) {
+    if ((typeSpec->type == MMS_STRUCTURE) && (value->type == MMS_STRUCTURE))
+    {
         size_t childLen = directChildStrLen(childId);
         int i;
 
         if (typeSpec->typeSpec.structure.elementCount != value->value.structure.size)
             return NULL;
 
-        for (i = 0; i < typeSpec->typeSpec.structure.elementCount; i++) {
-
-            if (strlen(typeSpec->typeSpec.structure.elements[i]->name) == childLen) {
-
-                if (strncmp(typeSpec->typeSpec.structure.elements[i]->name, childId, childLen) == 0) {
-                    if (childLen == strlen(childId)) {
+        for (i = 0; i < typeSpec->typeSpec.structure.elementCount; i++)
+        {
+            if (strlen(typeSpec->typeSpec.structure.elements[i]->name) == childLen)
+            {
+                if (strncmp(typeSpec->typeSpec.structure.elements[i]->name, childId, childLen) == 0)
+                {
+                    if (childLen == strlen(childId))
+                    {
                         return value->value.structure.components[i];
                     }
-                    else {
+                    else
+                    {
                         return MmsVariableSpecification_getChildValue(typeSpec->typeSpec.structure.elements[i],
                                 value->value.structure.components[i], childId + childLen + 1);
                     }
@@ -108,54 +117,59 @@ MmsVariableSpecification_getType(MmsVariableSpecification* self)
 bool
 MmsVariableSpecification_isValueOfType(MmsVariableSpecification* self, const MmsValue* value)
 {
-    if ((self->type) == (value->type)) {
-
-        if ((self->type == MMS_STRUCTURE) || (self->type == MMS_ARRAY)) {
-
+    if ((self->type) == (value->type))
+    {
+        if ((self->type == MMS_STRUCTURE) || (self->type == MMS_ARRAY))
+        {
             int componentCount = self->typeSpec.structure.elementCount;
 
             if (componentCount != (int) MmsValue_getArraySize(value))
                     return false;
 
-            if (self->type == MMS_STRUCTURE) {
-
+            if (self->type == MMS_STRUCTURE)
+            {
                 int i;
-                for (i = 0; i < componentCount; i++) {
-
+                for (i = 0; i < componentCount; i++)
+                {
                     if (MmsVariableSpecification_isValueOfType(self->typeSpec.structure.elements[i], MmsValue_getElement(value, i)) == false)
                         return false;
                 }
 
                 return true;
             }
-            else {
+            else
+            {
                 int i;
-                for (i = 0; i < componentCount; i++) {
-
+                for (i = 0; i < componentCount; i++)
+                {
                     if (MmsVariableSpecification_isValueOfType(self->typeSpec.array.elementTypeSpec, MmsValue_getElement(value, i)) == false)
                         return false;
                 }
+
+                return true;
             }
         }
-        else if (self->type == MMS_BIT_STRING) {
+        else if (self->type == MMS_BIT_STRING)
+        {
             if (self->typeSpec.bitString == value->value.bitString.size)
                 return true;
 
             if (self->typeSpec.bitString < 0)
                 return true;
         }
-        else if (self->type == MMS_FLOAT) {
+        else if (self->type == MMS_FLOAT)
+        {
             if ((self->typeSpec.floatingpoint.exponentWidth == value->value.floatingPoint.exponentWidth) &&
                     (self->typeSpec.floatingpoint.formatWidth == value->value.floatingPoint.formatWidth))
                 return true;
         }
-        else if (self->type == MMS_BINARY_TIME) {
+        else if (self->type == MMS_BINARY_TIME)
+        {
             if (self->typeSpec.binaryTime == value->value.binaryTime.size)
                 return true;
         }
         else
             return true;
-
     }
 
     return false;
@@ -176,7 +190,8 @@ MmsVariableSpecification_getStructureElements(MmsVariableSpecification* self)
     LinkedList elementNames = LinkedList_create();
 
     int i;
-    for (i = 0; i < self->typeSpec.structure.elementCount; i++) {
+    for (i = 0; i < self->typeSpec.structure.elementCount; i++)
+    {
         MmsVariableSpecification* typeSpec = self->typeSpec.structure.elements[i];
 
         LinkedList_add(elementNames, StringUtils_copyString(typeSpec->name));
@@ -193,15 +208,16 @@ MmsVariableSpecification_getNamedVariableRecursive(MmsVariableSpecification* var
     }
 
     const char* separator = strchr(nameId, '$');
-
     int i;
 
-    if (separator == NULL) {
-
+    if (separator == NULL)
+    {
         i = 0;
 
-        if (variable->type == MMS_STRUCTURE) {
-            for (i = 0; i < variable->typeSpec.structure.elementCount; i++) {
+        if (variable->type == MMS_STRUCTURE)
+        {
+            for (i = 0; i < variable->typeSpec.structure.elementCount; i++)
+            {
                 if (strcmp(variable->typeSpec.structure.elements[i]->name, nameId) == 0) {
                     return variable->typeSpec.structure.elements[i];
                 }
@@ -210,27 +226,31 @@ MmsVariableSpecification_getNamedVariableRecursive(MmsVariableSpecification* var
 
         return NULL;
     }
-    else {
+    else
+    {
         MmsVariableSpecification* namedVariable = NULL;
         i = 0;
 
-        for (i = 0; i < variable->typeSpec.structure.elementCount; i++) {
-
-            if (strlen(variable->typeSpec.structure.elements[i]->name) == (unsigned) (separator - nameId)) {
-
-                if (strncmp(variable->typeSpec.structure.elements[i]->name, nameId, separator - nameId) == 0) {
+        for (i = 0; i < variable->typeSpec.structure.elementCount; i++)
+        {
+            if (strlen(variable->typeSpec.structure.elements[i]->name) == (unsigned) (separator - nameId))
+            {
+                if (strncmp(variable->typeSpec.structure.elements[i]->name, nameId, separator - nameId) == 0)
+                {
                     namedVariable = variable->typeSpec.structure.elements[i];
                     break;
                 }
-
             }
         }
 
-        if (namedVariable != NULL) {
-            if (namedVariable->type == MMS_STRUCTURE) {
+        if (namedVariable != NULL)
+        {
+            if (namedVariable->type == MMS_STRUCTURE)
+            {
                 namedVariable = MmsVariableSpecification_getNamedVariableRecursive(namedVariable, separator + 1);
             }
-            else if (namedVariable->type == MMS_ARRAY) {
+            else if (namedVariable->type == MMS_ARRAY)
+            {
                 namedVariable = namedVariable->typeSpec.array.elementTypeSpec;
 
                 namedVariable = MmsVariableSpecification_getNamedVariableRecursive(namedVariable, separator + 1);
@@ -246,7 +266,8 @@ MmsVariableSpecification_getNamedVariableRecursive(MmsVariableSpecification* var
 int
 MmsVariableSpecification_getSize(MmsVariableSpecification* self)
 {
-    switch (self->type) {
+    switch (self->type)
+    {
     case MMS_STRUCTURE:
         return self->typeSpec.structure.elementCount;
     case MMS_ARRAY:
@@ -270,7 +291,6 @@ MmsVariableSpecification_getSize(MmsVariableSpecification* self)
     default:
         return -1;
     }
-
 }
 
 MmsVariableSpecification*
@@ -296,9 +316,10 @@ MmsVariableSpecification_getChildSpecificationByName(MmsVariableSpecification* s
 
     int i;
 
-    for (i = 0; i < self->typeSpec.structure.elementCount; i++) {
-        if (!strcmp(self->typeSpec.structure.elements[i]->name, name)) {
-
+    for (i = 0; i < self->typeSpec.structure.elementCount; i++)
+    {
+        if (!strcmp(self->typeSpec.structure.elements[i]->name, name))
+        {
             if (index != NULL)
                 *index = i;
 

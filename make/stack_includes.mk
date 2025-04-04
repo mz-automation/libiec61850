@@ -10,3 +10,4 @@ INCLUDES += -I$(LIBIEC_HOME)/src/goose
 INCLUDES += -I$(LIBIEC_HOME)/src/sampled_values
 INCLUDES += -I$(LIBIEC_HOME)/src/logging
 INCLUDES += -I$(LIBIEC_HOME)/src/tls
+INCLUDES += -I$(LIBIEC_HOME)/src/r_session

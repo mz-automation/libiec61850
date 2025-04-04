@@ -114,4 +114,7 @@ CotpConnection_getRemoteRef(CotpConnection* self);
 LIB61850_INTERNAL int
 CotpConnection_getLocalRef(CotpConnection* self);
 
+LIB61850_INTERNAL void
+CotpConnection_flushBuffer(CotpConnection* self);
+
 #endif /* COTP_H_ */

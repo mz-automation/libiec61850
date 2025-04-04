@@ -1,7 +1,7 @@
 /*
  *  sv_publisher.h
  *
- *  Copyright 2016-2022 Michael Zillgith
+ *  Copyright 2016-2025 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -21,7 +21,6 @@
  *  See COPYING file for the complete license text.
  */
 
-
 #ifndef LIBIEC61850_SRC_SAMPLED_VALUES_SV_PUBLISHER_H_
 #define LIBIEC61850_SRC_SAMPLED_VALUES_SV_PUBLISHER_H_
 
@@ -29,13 +28,15 @@
 #include "r_session.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 #ifndef GOOSE_SV_COMM_PARAMETERS
 #define GOOSE_SV_COMM_PARAMETERS
 
-typedef struct sCommParameters {
+typedef struct sCommParameters
+{
     uint8_t vlanPriority;
     uint16_t vlanId;
     uint16_t appId;
@@ -75,6 +76,7 @@ typedef struct sSVPublisher_ASDU* SVPublisher_ASDU;
  *
  * \param[in] interfaceId the name of the interface over which the SV publisher should send SV packets.
  * \param[in] parameters optional parameters for setting VLAN options and destination MAC address. Use NULL for default values.
+ *
  * \return the new SV publisher instance.
  */
 LIB61850_API SVPublisher
@@ -84,8 +86,10 @@ SVPublisher_create(CommParameters* parameters, const char* interfaceId);
  * \brief Create a new IEC61850-9-2 Sampled Values publisher.
  *
  * \param[in] interfaceId the name of the interface over which the SV publisher should send SV packets.
- * \param[in] parameters optional parameters for setting VLAN options and destination MAC address. Use NULL for default values.
+ * \param[in] parameters optional parameters for setting VLAN options and destination MAC address. Use NULL for default
+ * values.
  * \param[in] useVlanTags enable(true)/disable(false) VLAN tagging
+ *
  * \return the new SV publisher instance.
  */
 LIB61850_API SVPublisher
@@ -96,7 +100,7 @@ SVPublisher_createEx(CommParameters* parameters, const char* interfaceId, bool u
  *
  * \param session R-session protocol instance to use
  * \param appId the appID value to use
- * 
+ *
  * \return the new SVPublisher instance
  */
 LIB61850_API SVPublisher
@@ -107,7 +111,8 @@ SVPublisher_createRemote(RSession session, uint16_t appId);
  *
  * \param[in] svID
  * \param[in] datset
- * \param[in] confRev Configuration revision number. Should be incremented each time that the configuration of the logical device changes.
+ * \param[in] confRev Configuration revision number. Should be incremented each time that the configuration of the
+ *    logical device changes.
  * \return the new ASDU instance.
  */
 LIB61850_API SVPublisher_ASDU
@@ -159,6 +164,7 @@ SVPublisher_ASDU_resetBuffer(SVPublisher_ASDU self);
  * \brief Reserve memory for a signed 8-bit integer in the ASDU.
  *
  * \param[in] self the Sampled Values ASDU instance.
+ *
  * \return the offset in bytes within the ASDU data block.
  */
 LIB61850_API int
@@ -178,6 +184,7 @@ SVPublisher_ASDU_setINT8(SVPublisher_ASDU self, int index, int8_t value);
  * \brief Reserve memory for a signed 32-bit integer in the ASDU.
  *
  * \param[in] self the Sampled Values ASDU instance.
+ *
  * \return the offset in bytes within the ASDU data block.
  */
 LIB61850_API int
@@ -197,6 +204,7 @@ SVPublisher_ASDU_setINT32(SVPublisher_ASDU self, int index, int32_t value);
  * \brief Reserve memory for a signed 64-bit integer in the ASDU.
  *
  * \param[in] self the Sampled Values ASDU instance.
+ *
  * \return the offset in bytes of the new element within the ASDU data block.
  */
 LIB61850_API int
@@ -216,6 +224,7 @@ SVPublisher_ASDU_setINT64(SVPublisher_ASDU self, int index, int64_t value);
  * \brief Reserve memory for a single precision floating point number in the ASDU.
  *
  * \param[in] self the Sampled Values ASDU instance.
+ *
  * \return the offset in bytes of the new element within the ASDU data block.
  */
 LIB61850_API int
@@ -235,6 +244,7 @@ SVPublisher_ASDU_setFLOAT(SVPublisher_ASDU self, int index, float value);
  * \brief Reserve memory for a double precision floating point number in the ASDU.
  *
  * \param[in] self the Sampled Values ASDU instance.
+ *
  * \return the offset in bytes of the new element within the ASDU data block.
  */
 LIB61850_API int
@@ -254,6 +264,7 @@ SVPublisher_ASDU_setFLOAT64(SVPublisher_ASDU self, int index, double value);
  * \brief Reserve memory for a 64 bit time stamp in the ASDU
  *
  * \param[in] self the Sampled Values ASDU instance.
+ *
  * \return the offset in bytes of the new element within the ASDU data block.
  */
 LIB61850_API int
@@ -275,6 +286,7 @@ SVPublisher_ASDU_setTimestamp(SVPublisher_ASDU self, int index, Timestamp value)
  * NOTE: Quality is encoded as BITSTRING (4 byte)
  *
  * \param[in] self the Sampled Values ASDU instance.
+ *
  * \return the offset in bytes of the new element within the ASDU data block.
  */
 LIB61850_API int
@@ -310,9 +322,9 @@ SVPublisher_ASDU_getSmpCnt(SVPublisher_ASDU self);
 /**
  * \brief Increment the sample count attribute of the ASDU.
  *
- * The parameter SmpCnt shall contain the values of a counter, which is incremented each time a new sample of the analogue value is taken.
- * The sample values shall be kept in the right order.
- * If the counter is used to indicate time consistency of various sampled values, the counter shall be reset by an external synchronization event.
+ * The parameter SmpCnt shall contain the values of a counter, which is incremented each time a new sample of the
+ * analogue value is taken. The sample values shall be kept in the right order. If the counter is used to indicate time
+ * consistency of various sampled values, the counter shall be reset by an external synchronization event.
  *
  * \param[in] self the Sampled Values ASDU instance.
  */
@@ -372,13 +384,14 @@ SVPublisher_ASDU_setRefrTmByTimestamp(SVPublisher_ASDU self, Timestamp* refrTm);
 /**
  * \brief Set the sample mode attribute of the ASDU.
  *
- * The attribute SmpMod shall specify if the sample rate is defined in units of samples per nominal period, samples per second or seconds per sample.
- * If it is missing, the default value is samples per period.
+ * The attribute SmpMod shall specify if the sample rate is defined in units of samples per nominal period, samples per
+ * second or seconds per sample. If it is missing, the default value is samples per period.
  *
  * NOTE: Function has to be called before calling \ref SVPublisher_setupComplete
  *
  * \param[in] self the Sampled Values ASDU instance.
- * \param[in] smpMod one of IEC61850_SV_SMPMOD_PER_NOMINAL_PERIOD, IEC61850_SV_SMPMOD_SAMPLES_PER_SECOND or IEC61850_SV_SMPMOD_SECONDS_PER_SAMPLE
+ * \param[in] smpMod one of IEC61850_SV_SMPMOD_PER_NOMINAL_PERIOD, IEC61850_SV_SMPMOD_SAMPLES_PER_SECOND or
+ * IEC61850_SV_SMPMOD_SECONDS_PER_SAMPLE
  */
 LIB61850_API void
 SVPublisher_ASDU_setSmpMod(SVPublisher_ASDU self, uint8_t smpMod);
@@ -414,13 +427,22 @@ SVPublisher_ASDU_setSmpRate(SVPublisher_ASDU self, uint16_t smpRate);
 LIB61850_API void
 SVPublisher_ASDU_setSmpSynch(SVPublisher_ASDU self, uint16_t smpSynch);
 
+/**
+ * \brief Set the gmIdentity value
+ *
+ * \param[in] self the Sampled Values ASDU instance.
+ * \param[in] gmIdentity the gmIdentity value (octet string/byte array of size 8 bytes)
+ */
+LIB61850_API void
+SVPublisher_ASDU_setGmIdentity(SVPublisher_ASDU self, uint8_t* gmIdentity);
+
 /**@} @}*/
 
 #ifndef DEPRECATED
 #if defined(__GNUC__) || defined(__clang__)
-  #define DEPRECATED __attribute__((deprecated))
+#define DEPRECATED __attribute__((deprecated))
 #else
-  #define DEPRECATED
+#define DEPRECATED
 #endif
 #endif
 

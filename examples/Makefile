@@ -29,6 +29,9 @@ EXAMPLE_DIRS += iec61850_9_2_LE_example
 EXAMPLE_DIRS += iec61850_sv_client_example
 EXAMPLE_DIRS += sv_publisher
 EXAMPLE_DIRS += sv_subscriber
+EXAMPLE_DIRS += iec61850_client_example_rcbAsync
+EXAMPLE_DIRS += iec61850_client_example_ClientGooseControl
+EXAMPLE_DIRS += iec61850_client_example_ClientGooseControlAsync
 
 MODEL_DIRS += server_example_simple
 MODEL_DIRS += server_example_basic_io

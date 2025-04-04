@@ -121,10 +121,10 @@ LIB61850_INTERNAL void
 Logging_processIntegrityLogs(MmsMapping* self, uint64_t currentTimeInMs);
 
 LIB61850_INTERNAL MmsValue*
-LIBIEC61850_LOG_SVC_readAccessControlBlock(MmsMapping* self, MmsDomain* domain, char* variableIdOrig);
+LIBIEC61850_LOG_SVC_readAccessControlBlock(MmsMapping* self, MmsDomain* domain, char* variableIdOrig, MmsServerConnection connection);
 
 LIB61850_INTERNAL MmsDataAccessError
-LIBIEC61850_LOG_SVC_writeAccessLogControlBlock(MmsMapping* self, MmsDomain* domain, char* variableIdOrig,
+LIBIEC61850_LOG_SVC_writeAccessLogControlBlock(MmsMapping* self, MmsDomain* domain, const char* variableIdOrig,
         MmsValue* value, MmsServerConnection connection);
 
 #endif /* LIBIEC61850_SRC_IEC61850_INC_PRIVATE_LOGGING_H_ */

@@ -1,7 +1,7 @@
 ﻿/*
  *  IEC61850CommonAPI.cs
  *
- *  Copyright 2014-2017 Michael Zillgith
+ *  Copyright 2014-2024 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -454,11 +454,27 @@ namespace IEC61850
 				SetByMmsUtcTime (mmsUtcTime);
 			}
 
+			/// <summary>
+			/// Initializes a new instance of the <see cref="IEC61850CommonAPI.Timestamp"/> class.
+			/// </summary>
 			public Timestamp()
 			{
 				self = Timestamp_create ();
 				LeapSecondKnown = true;
 				responsibleForDeletion = true;
+			}
+
+			/// <summary>
+			/// Initializes a new instance of the <see cref="IEC61850CommonAPI.Timestamp"/> class.
+			/// </summary>
+			public Timestamp(Timestamp other) : this()
+			{
+				SetTimeInSeconds (other.GetTimeInSeconds ());
+				SetSubsecondPrecision (other.GetSubsecondPrecision ());
+				SetFractionOfSecondPart (other.GetFractionOfSecondPart ());
+				SetLeapSecondKnow(other.IsLeapSecondKnown());
+				SetClockFailure(other.HasClockFailure());
+				SetClockNotSynchronized(other.IsClockNotSynchronized());
 			}
 
 			public Timestamp(byte[] value)

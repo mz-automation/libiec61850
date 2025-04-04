@@ -1,7 +1,7 @@
 /*
  *  control.h
  *
- *  Copyright 2013-2019 Michael Zillgith
+ *  Copyright 2013-2024 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -89,6 +89,8 @@ struct sControlObject
     MmsValue* ctlNum;
     MmsValue* origin;
     MmsValue* timestamp;
+
+    Timestamp T;
 
     MmsValue* ctlNumSt;
     MmsValue* originSt;

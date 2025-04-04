@@ -1,6 +1,6 @@
 #!/usr/bin/python
 import os,sys
-import iec61850
+import pyiec61850 as iec61850
 if __name__=="__main__":
 	hostname = "localhost";
 	tcpPort = 102

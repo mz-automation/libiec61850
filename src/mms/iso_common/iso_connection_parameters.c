@@ -3,7 +3,7 @@
  *
  *  IsoConnectionParameters abstract data type to represent the configurable parameters of the ISO protocol stack.
  *
- *  Copyright 2013, 2014 Michael Zillgith
+ *  Copyright 2013-2024 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -63,7 +63,6 @@ AcseAuthenticationParameter_setAuthMechanism(AcseAuthenticationParameter self, A
     self->mechanism = mechanism;
 }
 
-
 IsoConnectionParameters
 IsoConnectionParameters_create()
 {
@@ -75,7 +74,13 @@ IsoConnectionParameters_create()
 void
 IsoConnectionParameters_destroy(IsoConnectionParameters self)
 {
-    GLOBAL_FREEMEM(self);
+    if (self)
+    {
+        if (self->localIpAddress)
+            GLOBAL_FREEMEM((void*)(self->localIpAddress));
+
+        GLOBAL_FREEMEM(self);
+    }
 }
 
 void
@@ -88,7 +93,6 @@ IsoConnectionParameters_setTlsConfiguration(IsoConnectionParameters self, TLSCon
     (void)tlsConfig;
 #endif
 }
-
 
 void
 IsoConnectionParameters_setAcseAuthenticationParameter(IsoConnectionParameters self,
@@ -105,11 +109,25 @@ IsoConnectionParameters_setTcpParameters(IsoConnectionParameters self, const cha
 }
 
 void
+IsoConnectionParameters_setLocalTcpParameters(IsoConnectionParameters self, const char* localIpAddress, int localTcpPort) 
+{
+    if (self)
+    {
+        if (localIpAddress)
+        {
+            self->localIpAddress = strdup(localIpAddress);
+            self->localTcpPort = localTcpPort;
+        }
+    }
+}
+
+void
 IsoConnectionParameters_setRemoteApTitle(IsoConnectionParameters self, const char* apTitle, int aeQualifier)
 {
     if (apTitle == NULL)
         self->remoteApTitleLen = 0;
-    else {
+    else
+    {
         self->remoteApTitleLen = BerEncoder_encodeOIDToBuffer(apTitle, self->remoteApTitle, 10);
         self->remoteAEQualifier = aeQualifier;
     }
@@ -123,13 +141,13 @@ IsoConnectionParameters_setRemoteAddresses(IsoConnectionParameters self, PSelect
     self->remoteTSelector = tSelector;
 }
 
-
 void
 IsoConnectionParameters_setLocalApTitle(IsoConnectionParameters self, const char* apTitle, int aeQualifier)
 {
     if (apTitle == NULL)
         self->localApTitleLen = 0;
-    else {
+    else
+    {
         self->localApTitleLen = BerEncoder_encodeOIDToBuffer(apTitle, self->localApTitle, 10);
         self->localAEQualifier = aeQualifier;
     }

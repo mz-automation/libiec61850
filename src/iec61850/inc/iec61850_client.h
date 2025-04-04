@@ -1,7 +1,7 @@
 /*
  *  iec61850_client.h
  *
- *  Copyright 2013-2021 Michael Zillgith
+ *  Copyright 2013-2023 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -162,12 +162,23 @@ typedef enum {
     /** Received an invalid response message from the server */
     IED_ERROR_MALFORMED_MESSAGE = 34,
 
+    /** Service was not executed because required resource is still in use */
+    IED_ERROR_OBJECT_CONSTRAINT_CONFLICT = 35,
+
     /** Service not implemented */
     IED_ERROR_SERVICE_NOT_IMPLEMENTED = 98,
 
     /** unknown error */
     IED_ERROR_UNKNOWN = 99
 } IedClientError;
+
+/**
+ * \brief Convert error value to string
+ *
+ * \return string constant representing the error
+ */
+LIB61850_API const char*
+IedClientError_toString(IedClientError err);
 
 /**************************************************
  * Connection creation and destruction
@@ -231,6 +242,17 @@ IedConnection_createWithTlsSupport(TLSConfiguration tlsConfig);
 LIB61850_API void
 IedConnection_destroy(IedConnection self);
 
+/**
+* \brief Set the local IP address and port to be used by the client
+*
+* NOTE: This function is optional. When not used the OS decides what IP address and TCP port to use.
+*
+* \param self IedConnection instance
+* \param localIpAddress the local IP address or hostname as C string
+* \param localPort the local TCP port to use. When < 1 the OS will chose the TCP port to use.
+*/
+LIB61850_API void
+IedConnection_setLocalAddress(IedConnection self, const char* localIpAddress, int localPort);
 
 /**
  * \brief set the connect timeout in ms
@@ -243,6 +265,16 @@ IedConnection_destroy(IedConnection self);
  */
 LIB61850_API void
 IedConnection_setConnectTimeout(IedConnection self, uint32_t timeoutInMs);
+
+/**
+ * \brief Set the maximum number outstanding calls allowed for this connection
+ *
+ * \param self the connection object
+ * \param calling the maximum outstanding calls allowed by the caller (client)
+ * \param called the maximum outstanding calls allowed by the called endpoint (server)
+ */
+LIB61850_API void
+IedConnection_setMaxOutstandingCalls(IedConnection self, int calling, int called);
 
 /**
  * \brief set the request timeout in ms
@@ -763,8 +795,9 @@ ClientGooseControlBlock_setDstAddress_appid(ClientGooseControlBlock self, uint16
  ********************************************************/
 
 /**
- * \brief Read access to attributes of a GOOSE control block (GoCB) at the connected server. A GoCB contains
- * the configuration values for a single GOOSE publisher.
+ * \brief Read access to attributes of a GOOSE control block (GoCB) at the connected server.
+ *
+ * A GoCB contains the configuration values for a single GOOSE publisher.
  *
  * The requested GoCB has to be specified by its object IEC 61850 ACSI object reference. E.g.
  *
@@ -792,6 +825,42 @@ ClientGooseControlBlock_setDstAddress_appid(ClientGooseControlBlock self, uint16
 LIB61850_API ClientGooseControlBlock
 IedConnection_getGoCBValues(IedConnection self, IedClientError* error, const char* goCBReference, ClientGooseControlBlock updateGoCB);
 
+typedef void
+(*IedConnection_GetGoCBValuesHandler) (uint32_t invokeId, void* parameter, IedClientError err, ClientGooseControlBlock goCB);
+
+/**
+ * \brief Read access to attributes of a GOOSE control block (GoCB) at the connected server (async version)
+ *
+ * A GoCB contains the configuration values for a single GOOSE publisher.
+ *
+ * The requested GoCB has to be specified by its object IEC 61850 ACSI object reference. E.g.
+ *
+ * "simpleIOGernericIO/LLN0.gcbEvents"
+ *
+ * This function is used to perform the actual read service for the GoCB values.
+ * To access the received values the functions of ClientGooseControlBlock have to be used.
+ *
+ * If called with a NULL argument for the updateGoCB parameter a new ClientGooseControlBlock instance is created
+ * and populated with the values received by the server. It is up to the user to release this object by
+ * calling the ClientGooseControlBlock_destroy function when the object is no longer needed. If called with a reference
+ * to an existing ClientGooseControlBlock instance the values of the attributes will be updated and no new instance
+ * will be created.
+ *
+ * Note: This function maps to a single MMS read request to retrieve the complete GoCB at once.
+ *
+ * \param connection the connection object
+ * \param error the error code if an error occurs
+ * \param goCBReference IEC 61850-7-2 ACSI object reference of the GOOSE control block
+ * \param updateRcb a reference to an existing ClientGooseControlBlock instance or NULL
+ * \param handler the user callback that is called when the service is completed or timed out
+ * \param parameter user provided parameter that is passed to the callback handler
+ *
+ * \return the invoke ID of the request
+ */
+LIB61850_API uint32_t
+IedConnection_getGoCBValuesAsync(IedConnection self, IedClientError* error, const char* goCBReference, ClientGooseControlBlock updateGoCB,
+    IedConnection_GetGoCBValuesHandler handler, void* parameter);
+
 /**
  * \brief Write access to attributes of a GOOSE control block (GoCB) at the connected server
  *
@@ -816,6 +885,35 @@ IedConnection_getGoCBValues(IedConnection self, IedClientError* error, const cha
 LIB61850_API void
 IedConnection_setGoCBValues(IedConnection self, IedClientError* error, ClientGooseControlBlock goCB,
         uint32_t parametersMask, bool singleRequest);
+
+/**
+ * \brief Write access to attributes of a GOOSE control block (GoCB) at the connected server (async version)
+ *
+ * The GoCB and the values to be written are specified with the goCB parameter.
+ *
+ * The parametersMask parameter specifies which attributes of the remote GoCB have to be set by this request.
+ * You can specify multiple attributes by ORing the defined bit values. If all attributes have to be written
+ * GOCB_ELEMENT_ALL can be used.
+ *
+ * The singleRequest parameter specifies the mapping to the corresponding MMS write request. Standard compliant
+ * servers should accept both variants. But some server accept only one variant. Then the value of this parameter
+ * will be of relevance.
+ *
+ * \param connection the connection object
+ * \param error the error code if an error occurs
+ * \param goCB ClientGooseControlBlock instance that actually holds the parameter
+ *            values to be written.
+ * \param parametersMask specifies the parameters contained in the setGoCBValues request.
+ * \param singleRequest specifies if the seGoCBValues services is mapped to a single MMS write request containing
+ *        multiple variables or to multiple MMS write requests.
+ * \param handler the user callback that is called when the service is completed or timed out
+ * \param parameter user provided parameter that is passed to the callback handler
+ *
+ * \return the invoke ID of the request
+ */
+LIB61850_API uint32_t
+IedConnection_setGoCBValuesAsync(IedConnection self, IedClientError* error, ClientGooseControlBlock goCB,
+    uint32_t parametersMask, bool singleRequest, IedConnection_GenericServiceHandler handler, void* parameter);
 
 /** @} */
 
@@ -1140,15 +1238,6 @@ typedef int ReasonForInclusion;
 /** the reason for inclusion is unknown (e.g. report is not configured to include reason-for-inclusion) */
 #define IEC61850_REASON_UNKNOWN 32
 
-#define REASON_NOT_INCLUDED IEC61850_REASON_NOT_INCLUDED
-#define REASON_DATA_CHANGE IEC61850_REASON_DATA_CHANGE
-#define REASON_QUALITY_CHANGE IEC61850_REASON_QUALITY_CHANGE
-#define REASON_DATA_UPDATE IEC61850_REASON_DATA_UPDATE
-#define REASON_INTEGRITY IEC61850_REASON_INTEGRITY
-#define REASON_GI IEC61850_REASON_GI
-#define REASON_UNKNOWN IEC61850_REASON_UNKNOWN
-
-
 /* Element encoding mask values for ClientReportControlBlock */
 
 /** include the report ID into the setRCB request */
@@ -1245,8 +1334,10 @@ typedef void (*ReportCallbackFunction) (void* parameter, ClientReport report);
  * Otherwise the internal data structures storing the received data set values will not be updated
  * correctly.
  *
- * When replacing a report handler you only have to call this function. There is no separate call to
+ * \note Replacing a report handler you only have to call this function. There is no separate call to
  * IedConnection_uninstallReportHandler() required.
+ *
+ * \note Do not call this function inside of the ReportCallbackFunction. Doing so will cause a deadlock.
  *
  * \param self the connection object
  * \param rcbReference object reference of the report control block
@@ -1261,6 +1352,8 @@ IedConnection_installReportHandler(IedConnection self, const char* rcbReference,
 
 /**
  * \brief uninstall a report handler function for the specified report control block (RCB)
+ *
+ * \note Do not call this function inside of the ReportCallbackFunction. Doing so will cause a deadlock.
  *
  * \param self the connection object
  * \param rcbReference object reference of the report control block
@@ -2455,20 +2548,6 @@ IedConnection_getServerDirectory(IedConnection self, IedClientError* error, bool
  */
 LIB61850_API LinkedList /*<char*>*/
 IedConnection_getLogicalDeviceDirectory(IedConnection self, IedClientError* error, const char* logicalDeviceName);
-
-typedef enum {
-    ACSI_CLASS_DATA_OBJECT,
-    ACSI_CLASS_DATA_SET,
-    ACSI_CLASS_BRCB,
-    ACSI_CLASS_URCB,
-    ACSI_CLASS_LCB,
-    ACSI_CLASS_LOG,
-    ACSI_CLASS_SGCB,
-    ACSI_CLASS_GoCB,
-    ACSI_CLASS_GsCB,
-    ACSI_CLASS_MSVCB,
-    ACSI_CLASS_USVCB
-} ACSIClass;
 
 /**
  * \brief returns a list of all MMS variables that are children of the given logical node

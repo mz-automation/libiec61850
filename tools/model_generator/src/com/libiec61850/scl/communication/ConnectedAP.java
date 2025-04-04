@@ -85,13 +85,25 @@ public class ConnectedAP {
     public List<SMV> getSmvs() {
     	return smvs;
     }
-    
+
     public GSE lookupGSE(String logicalDeviceName, String name) {
 
         for (GSE gse : this.getGses()) {
             if (gse.getLdInst().equals(logicalDeviceName)) {
                 if (gse.getCbName().equals(name))
                     return gse;
+            }
+        }
+
+        return null;
+    }
+
+    public SMV lookupSMV(String logicalDeviceName, String name) {
+
+        for (SMV smv : this.getSmvs()) {
+            if (smv.getLdInst().equals(logicalDeviceName)) {
+                if (smv.getCbName().equals(name))
+                    return smv;
             }
         }
 

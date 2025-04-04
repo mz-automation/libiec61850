@@ -200,6 +200,12 @@ writeAccessHandler (DataAttribute* dataAttribute, MmsValue* value, ClientConnect
 int
 main(int argc, char** argv)
 {
+    int tcpPort = 102;
+
+    if (argc > 1) {
+        tcpPort = atoi(argv[1]);
+    }
+
     printf("Using libIEC61850 version %s\n", LibIEC61850_getVersionString());
 
     /* Create a new IEC 61850 server instance */
@@ -220,7 +226,7 @@ main(int argc, char** argv)
     IedServer_handleWriteAccess(iedServer, IEDMODEL_LD1_GGIO1_Ind1_blkEna, writeAccessHandler, NULL);
 
     /* MMS server will be instructed to start listening for client connections. */
-    IedServer_start(iedServer, 102);
+    IedServer_start(iedServer, tcpPort);
 
     if (!IedServer_isRunning(iedServer)) {
         printf("Starting server failed! Exit.\n");

@@ -1,5 +1,5 @@
 /* File : iec61850.i */
-%module(directors="1") iec61850
+%module(directors="1") pyiec61850
 %ignore ControlObjectClient_setTestMode(ControlObjectClient self);
 %ignore CDA_OperBoolean(ModelNode* parent, bool isTImeActivated);
 %ignore LogicalNode_hasBufferedReports(LogicalNode* node);

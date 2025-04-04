@@ -39,6 +39,8 @@ extern "C" {
 /**
  * @defgroup DYNAMIC_MODEL General dynamic model creation functions
  *
+ * \brief Functions to dynamically create IEC 61850 data models without using SCL or configuration files
+ *
  * @{
  */
 
@@ -394,6 +396,12 @@ ReportControlBlock_getOwner(ReportControlBlock* self);
 LIB61850_API LogControlBlock*
 LogControlBlock_create(const char* name, LogicalNode* parent, const char* dataSetName, const char* logRef, uint8_t trgOps,
         uint32_t intgPd, bool logEna, bool reasonCode);
+
+LIB61850_API const char*
+LogControlBlock_getName(LogControlBlock* self);
+
+LIB61850_API LogicalNode*
+LogControlBlock_getParent(LogControlBlock* self);
 
 /**
  * \brief create a log (used by the IEC 61850 log service)

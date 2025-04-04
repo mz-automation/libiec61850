@@ -68,10 +68,10 @@
 /* #define CONFIG_ETHERNET_INTERFACE_ID "vboxnet0" */
 /* #define CONFIG_ETHERNET_INTERFACE_ID "en0"  // OS X uses enX in place of ethX as ethernet NIC names. */
 
-/* Set to 1 to include GOOSE support in the build. Otherwise set to 0 */
+/* Set to 1 to include generic GOOSE support in the build. Otherwise set to 0 */
 #cmakedefine01 CONFIG_INCLUDE_GOOSE_SUPPORT
 
-/* Set to 1 to include Sampled Values support in the build. Otherwise set to 0 */
+/* Set to 1 to include generic Sampled Values support in the build. Otherwise set to 0 */
 #define CONFIG_IEC61850_SAMPLED_VALUES_SUPPORT 1
 
 /* compile with support for R-GOOSE (mbedtls requried) */
@@ -79,6 +79,12 @@
 
 /* compile with support for R-SMV (mbedtls required) */
 #cmakedefine01 CONFIG_IEC61850_R_SMV
+
+/* compile with support for L2 GOOSE */
+#cmakedefine01 CONFIG_IEC61850_L2_GOOSE
+
+/* compile with support for L2 SMV */
+#cmakedefine01 CONFIG_IEC61850_L2_SMV
 
 /* compile SNTP client code */
 #cmakedefine01 CONFIG_IEC61850_SNTP_CLIENT
@@ -88,12 +94,16 @@
 
 #ifdef _WIN32
 
-/* GOOSE will be disabled for Windows if ethernet support (winpcap) is not available */
+/* L2 GOOSE/SMV will be disabled for Windows if ethernet support (winpcap) is not available */
 #ifdef EXCLUDE_ETHERNET_WINDOWS
-#ifdef CONFIG_INCLUDE_GOOSE_SUPPORT
-#undef CONFIG_INCLUDE_GOOSE_SUPPORT
+#ifdef CONFIG_IEC61850_L2_GOOSE
+#undef CONFIG_IEC61850_L2_GOOSE
 #endif
-#define CONFIG_INCLUDE_GOOSE_SUPPORT 0
+#ifdef CONFIG_IEC61850_L2_SMV
+#undef CONFIG_IEC61850_L2_SMV
+#endif
+#define CONFIG_IEC61850_L2_GOOSE 0
+#define CONFIG_IEC61850_L2_SMV 0
 #define CONFIG_INCUDE_ETHERNET_WINDOWS 0
 #else
 #define CONFIG_INCLUDE_ETHERNET_WINDOWS 1
@@ -155,7 +165,7 @@
 #cmakedefine01 CONFIG_IEC61850_SETTING_GROUPS
 
 /* default reservation time of a setting group control block in s */
-#define CONFIG_IEC61850_SG_RESVTMS 100
+#cmakedefine CONFIG_IEC61850_SG_RESVTMS @CONFIG_IEC61850_SG_RESVTMS@
 
 /* include support for IEC 61850 log services */
 #cmakedefine01 CONFIG_IEC61850_LOG_SERVICE
@@ -169,7 +179,7 @@
 /* allow application to set server identity (for MMS identity service) at runtime */
 #define CONFIG_IEC61850_SUPPORT_SERVER_IDENTITY 1
 
-/* Force memory alignment - required for some platforms (required more memory for buffered reporting) */
+/* Force memory alignment - required for some platforms (requires more memory for buffered reporting) */
 #define CONFIG_IEC61850_FORCE_MEMORY_ALIGNMENT 1
 
 /* default results for MMS identify service */
@@ -196,7 +206,10 @@
 #define CONFIG_MMS_MAX_NUMBER_OF_VMD_SPECIFIC_DATA_SETS 10
 
 /* Maximum number of the members in a data set (named variable list) */
-#define CONFIG_MMS_MAX_NUMBER_OF_DATA_SET_MEMBERS 50
+#cmakedefine CONFIG_MMS_MAX_NUMBER_OF_DATA_SET_MEMBERS @CONFIG_MMS_MAX_NUMBER_OF_DATA_SET_MEMBERS@
+
+/* Maximum number of get file tasks */
+#cmakedefine CONFIG_MMS_SERVER_MAX_GET_FILE_TASKS @CONFIG_MMS_SERVER_MAX_GET_FILE_TASKS@
 
 /* Definition of supported services */
 #define MMS_DEFAULT_PROFILE 1
@@ -224,9 +237,6 @@
 
 #define CONFIG_INCLUDE_PLATFORM_SPECIFIC_HEADERS 0
 
-/* use short FC defines as in old API */
-#define CONFIG_PROVIDE_OLD_FC_DEFINES 0
-
 /* Support user acccess to raw messages */
 #cmakedefine01 CONFIG_MMS_RAW_MESSAGE_LOGGING
 
@@ -238,9 +248,23 @@
 /* enable to configure MmsServer at runtime */
 #define CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME 1
 
+/* Define the default number of the maximum outstanding calls allowed by the caller (client) */
+#define CONFIG_DEFAULT_MAX_SERV_OUTSTANDING_CALLING 5
+
+/* Define the default number of the maximum outstanding calls allowed by the calling endpoint (server) */
+#define CONFIG_DEFAULT_MAX_SERV_OUTSTANDING_CALLED 5
+
 /************************************************************************************
  * Check configuration for consistency - DO NOT MODIFY THIS PART!
  ************************************************************************************/
+
+#if (CONFIG_DEFAULT_MAX_SERV_OUTSTANDING_CALLING < 1)
+#error "Invalid configuration: CONFIG_DEFAULT_MAX_SERV_OUTSTANDING_CALLING must be greater than 0!"
+#endif
+
+#if (CONFIG_DEFAULT_MAX_SERV_OUTSTANDING_CALLED < 1)
+#error "Invalid configuration: CONFIG_DEFAULT_MAX_SERV_OUTSTANDING_CALLED must be greater than 0!"
+#endif
 
 #if (MMS_JOURNAL_SERVICE != 1)
 

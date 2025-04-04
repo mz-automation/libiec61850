@@ -1,7 +1,7 @@
 /*
  *  time.c
  *
- *  Copyright 2013-2022 Michael Zillgith
+ *  Copyright 2013-2024 Michael Zillgith
  *
  *  This file is part of Platform Abstraction Layer (libpal)
  *  for libiec61850, libmms, and lib60870.
@@ -67,6 +67,22 @@ Hal_getTimeInNs(void);
 */
 PAL_API bool
 Hal_setTimeInNs(nsSinceEpoch nsTime);
+
+/**
+ * Get the monotonic time or system tick time in ms
+ *
+ * \return the system time with millisecond resolution.
+ */
+PAL_API msSinceEpoch
+Hal_getMonotonicTimeInMs(void);
+
+/**
+ * Get the monotonic time or system tick in nanoseconds.
+ *
+ * \return the system time with nanosecond resolution.
+ */
+PAL_API nsSinceEpoch
+Hal_getMonotonicTimeInNs(void);
 
 /*! @} */
 

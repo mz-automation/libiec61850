@@ -455,7 +455,6 @@ exit_function:
     return success;
 }
 
-
 /** used by single and multi-threaded versions
  *
  * \param isSingleThread when true server is running in single thread or non-thread mode

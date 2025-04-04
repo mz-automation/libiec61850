@@ -1,7 +1,7 @@
 /*
  *  logging.c
  *
- *  Copyright 2016-2022 Michael Zillgith
+ *  Copyright 2016-2023 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -42,6 +42,8 @@
 #endif
 
 #if (CONFIG_IEC61850_LOG_SERVICE == 1)
+
+static MmsValue objectAccessDenied = {MMS_DATA_ACCESS_ERROR, false, {DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED}};
 
 LogInstance*
 LogInstance_create(LogicalNode* parentLN, const char* name)
@@ -393,7 +395,6 @@ updateLogStatusInLCB(LogControl* self)
     }
 }
 
-
 static void
 freeDynamicDataSet(LogControl* self)
 {
@@ -418,7 +419,7 @@ updateGenericTrackingObjectValues(MmsMapping* self, LogControl* logControl, IEC6
             MmsValue_setInt32(trkInst->serviceType->mmsValue, (int) serviceType);
 
         if (trkInst->t)
-            MmsValue_setUtcTimeMs(trkInst->t->mmsValue, Hal_getTimeInMs());
+            MmsValue_setUtcTimeMsEx(trkInst->t->mmsValue, Hal_getTimeInMs(), self->iedServer->timeQuality);
 
         if (trkInst->errorCode)
             MmsValue_setInt32(trkInst->errorCode->mmsValue,
@@ -481,7 +482,7 @@ copyLCBValuesToTrackingObject(MmsMapping* self, LogControl* logControl)
 #endif /* (CONFIG_IEC61850_SERVICE_TRACKING == 1) */
 
 MmsDataAccessError
-LIBIEC61850_LOG_SVC_writeAccessLogControlBlock(MmsMapping* self, MmsDomain* domain, char* variableIdOrig,
+LIBIEC61850_LOG_SVC_writeAccessLogControlBlock(MmsMapping* self, MmsDomain* domain, const char* variableIdOrig,
         MmsValue* value, MmsServerConnection connection)
 {
     (void)connection;
@@ -519,6 +520,34 @@ LIBIEC61850_LOG_SVC_writeAccessLogControlBlock(MmsMapping* self, MmsDomain* doma
 
     if (logControl == NULL) {
         return DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT;
+    }
+    else 
+    {
+        if (self->controlBlockAccessHandler) {
+            ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer, connection);
+
+            LogicalDevice* ld = IedModel_getDevice(self->model, domain->domainName);
+
+            if (ld) {
+                LogicalNode* ln = LogicalDevice_getLogicalNode(ld, lnName);
+
+                if (ln) {
+                    if (self->controlBlockAccessHandler(self->controlBlockAccessHandlerParameter, clientConnection, ACSI_CLASS_LCB, ld, ln, logControl->logControlBlock->name, varName, IEC61850_CB_ACCESS_TYPE_WRITE) == false) {
+                        retVal = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+                    }
+                }
+                else {
+                    retVal = DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT;
+                }
+            }
+            else {
+                retVal = DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT;
+            }
+
+            if (retVal != DATA_ACCESS_ERROR_SUCCESS) {
+                goto exit_function;
+            }
+        }
     }
 
     if (strcmp(varName, "LogEna") == 0) {
@@ -699,7 +728,7 @@ exit_function:
 }
 
 MmsValue*
-LIBIEC61850_LOG_SVC_readAccessControlBlock(MmsMapping* self, MmsDomain* domain, char* variableIdOrig)
+LIBIEC61850_LOG_SVC_readAccessControlBlock(MmsMapping* self, MmsDomain* domain, char* variableIdOrig, MmsServerConnection connection)
 {
     MmsValue* value = NULL;
 
@@ -723,26 +752,47 @@ LIBIEC61850_LOG_SVC_readAccessControlBlock(MmsMapping* self, MmsDomain* domain, 
 
     char* varName = MmsMapping_getNextNameElement(objectName);
 
-    if (varName != NULL)
+    if (varName)
         *(varName - 1) = 0;
 
     LogControl* logControl = lookupLogControl(self, domain, lnName, objectName);
 
-    if (logControl != NULL) {
+    if (logControl) 
+    {
+        bool allowAccess = true;
 
-        updateLogStatusInLCB(logControl);
+        if (self->controlBlockAccessHandler) {
+            ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer, connection);
 
-        if (varName != NULL) {
-            value = MmsValue_getSubElement(logControl->mmsValue, logControl->mmsType, varName);
+            LogicalDevice* ld = IedModel_getDevice(self->model, domain->domainName);
+
+            if (ld) {
+                LogicalNode* ln = LogicalDevice_getLogicalNode(ld, lnName);
+
+                if (ln) {
+                    if (self->controlBlockAccessHandler(self->controlBlockAccessHandlerParameter, clientConnection, ACSI_CLASS_LCB, ld, ln, logControl->logControlBlock->name, varName, IEC61850_CB_ACCESS_TYPE_READ) == false) {
+                        allowAccess = false;
+
+                        value = &objectAccessDenied;
+                    }
+                }
+            }
         }
-        else {
-            value = logControl->mmsValue;
+
+        if (allowAccess) {
+            updateLogStatusInLCB(logControl);
+
+            if (varName) {
+                value = MmsValue_getSubElement(logControl->mmsValue, logControl->mmsType, varName);
+            }
+            else {
+                value = logControl->mmsValue;
+            }
         }
     }
 
     return value;
 }
-
 
 static char*
 createDataSetReferenceForDefaultDataSet(LogControlBlock* lcb, LogControl* logControl)

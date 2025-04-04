@@ -37,8 +37,8 @@ typedef struct sSNTPClient* SNTPClient;
 
 /* new time types */
 
-
-typedef struct {
+typedef struct
+{
     uint32_t coarse;
     uint32_t fine;
 } NtpTime;
@@ -164,11 +164,14 @@ parseResponseMessage(SNTPClient self, uint8_t* buffer, int bufSize)
     int li = (header & 0xc0)>> 6;
 
     /* check for "clock-not-synchronized" */
-    if (li == 3) {
+    if (li == 3)
+    {
         /* ignore time message */
         if (SNTP_DEBUG)
             printf("WARNING: received clock-not-synchronized from server\n");
-        //TODO call user callback?
+
+        /* TODO call user callback? */
+
         return;
     }
 
@@ -223,7 +226,8 @@ parseResponseMessage(SNTPClient self, uint8_t* buffer, int bufSize)
     uint64_t trnsTime = ntpTimeToNsTime(coarse, fine);
 
     /* set system time */
-    if (Hal_setTimeInNs(trnsTime) == false) {
+    if (Hal_setTimeInNs(trnsTime) == false)
+    {
         if (SNTP_DEBUG)
             printf("SNTP: failed to set system clock!\n");
     }
@@ -231,11 +235,13 @@ parseResponseMessage(SNTPClient self, uint8_t* buffer, int bufSize)
     self->clockSynced = true;
     self->outStandingRequest = false;
 
-    if (self->userCallback) {
+    if (self->userCallback)
+    {
         self->userCallback(self->userCallbackParameter, true);
     }
 
-    if (SNTP_DEBUG) {
+    if (SNTP_DEBUG)
+    {
         printf("SNTP:   reference time: %u.%.6u\n", nsTimeToSeconds(refTime), getUsPartFromNsTime(refTime));
         printf("SNTP:   original time: %u.%.9u\n", nsTimeToSeconds(origTime), getUsPartFromNsTime(origTime));
         printf("SNTP:   receive time: %u.%.6u\n", nsTimeToSeconds(recvTime), getUsPartFromNsTime(recvTime));
@@ -300,9 +306,6 @@ sendRequestMessage(SNTPClient self, const char* serverAddr, int serverPort)
 
     self->lastRequestTimestamp = nsTime;
     self->outStandingRequest = true;
-
-    //if (self->lastReceivedMessage == 0)
-    //    self->lastReceivedMessage = nsTime;
 }
 
 SNTPClient
@@ -310,14 +313,17 @@ SNTPClient_create()
 {
     SNTPClient self = (SNTPClient) GLOBAL_CALLOC(1, sizeof(struct sSNTPClient));
 
-    if (self) {
+    if (self)
+    {
         self->socket = UdpSocket_create();
 
-        if (self->socket == NULL) {
+        if (self->socket == NULL)
+        {
             GLOBAL_FREEMEM(self);
             self = NULL;
         }
-        else {
+        else
+        {
             self->handleSet = Handleset_new();
             Handleset_addSocket(self->handleSet, (Socket) self->socket);
             self->pollInterval = 30000000000UL; /* 30 s */
@@ -351,7 +357,8 @@ SNTPClient_isSynchronized(SNTPClient self)
 void
 SNTPClient_setUserCallback(SNTPClient self, SNTPClient_UserCallback callback, void* parameter)
 {
-    if (self) {
+    if (self)
+    {
         self->userCallback = callback;
         self->userCallbackParameter = parameter;
     }
@@ -375,23 +382,28 @@ SNTPClient_tick(SNTPClient self)
     if (self->lastRequestTimestamp > now)
         self->lastRequestTimestamp = now;
 
-    if (self->lastRequestTimestamp > 0) {
+    if (self->lastRequestTimestamp > 0)
+    {
         /* check for timeout */
-        if ((now - self->lastReceivedMessage) > 300000000000UL) {
-
-            if (self->clockSynced) {
+        if ((now - self->lastReceivedMessage) > 300000000000UL)
+        {
+            if (self->clockSynced)
+            {
                 self->clockSynced = false;
                 printf("SNTP: request timeout\n");
-            //TODO when to call user handler?
-                if (self->userCallback) {
+
+                if (self->userCallback)
+                {
                     self->userCallback(self->userCallbackParameter, false);
                 }
             }
         }
     }
 
-    if (self->serverAddr) {
-        if ((now - self->lastRequestTimestamp) > self->pollInterval) {
+    if (self->serverAddr)
+    {
+        if ((now - self->lastRequestTimestamp) > self->pollInterval)
+        {
             sendRequestMessage(self, self->serverAddr, self->serverPort);
         }
     }
@@ -405,17 +417,19 @@ SNTPClient_handleIncomingMessage(SNTPClient self)
     uint8_t buffer[200];
     int rcvdBytes = UdpSocket_receiveFrom(self->socket, ipAddress, 200, buffer, sizeof(buffer));
 
-    if (rcvdBytes > 0) {
-
+    if (rcvdBytes > 0)
+    {
         if (SNTP_DEBUG)
             printf("SNTP: received response from %s\n", ipAddress);
 
         parseResponseMessage(self, buffer, rcvdBytes);
     }
-    else if (rcvdBytes == -1) {
+    else if (rcvdBytes == -1)
+    {
         printf("UDP socket error\n");
     }
-    else {
+    else
+    {
         printf("No data!\n");
     }
 }
@@ -442,10 +456,12 @@ handleThread(void* parameter)
 void
 SNTPClient_start(SNTPClient self)
 {
-    if (self) {
+    if (self)
+    {
         int sntpPoirt = SNTP_DEFAULT_PORT;
 
-        if (UdpSocket_bind(self->socket, "0.0.0.0", SNTP_DEFAULT_PORT)) {
+        if (UdpSocket_bind(self->socket, "0.0.0.0", SNTP_DEFAULT_PORT))
+        {
             printf("Start NTP thread\n");
 
             self->thread = Thread_create(handleThread, self, false);
@@ -453,7 +469,8 @@ SNTPClient_start(SNTPClient self)
             if (self->thread)
                 Thread_start(self->thread);
         }
-        else {
+        else
+        {
             if (SNTP_DEBUG)
                 printf("SNTP: Failed to bind to port %i\n", sntpPoirt);
         }
@@ -463,7 +480,8 @@ SNTPClient_start(SNTPClient self)
 void
 SNTPClient_stop(SNTPClient self)
 {
-    if (self->thread) {
+    if (self->thread)
+    {
         self->running = false;
         Thread_destroy(self->thread);
         self->thread = NULL;
@@ -473,16 +491,15 @@ SNTPClient_stop(SNTPClient self)
 void
 SNTPClient_destroy(SNTPClient self)
 {
-    if (self) {
-
+    if (self)
+    {
         SNTPClient_stop(self);
 
         if (self->serverAddr)
             GLOBAL_FREEMEM(self->serverAddr);
 
-        if (self->socket) {
+        if (self->socket)
             Socket_destroy((Socket) self->socket);
-        }
 
         GLOBAL_FREEMEM(self);
     }

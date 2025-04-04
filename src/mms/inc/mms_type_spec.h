@@ -116,6 +116,16 @@ MmsVariableSpecification_isValueOfType(MmsVariableSpecification* self, const Mms
 LIB61850_API const char*
 MmsVariableSpecification_getName(MmsVariableSpecification* self);
 
+/**
+ * \brief Returns a list of the structure element names in case the instance is of type MMS_STRUCTURE
+ *
+ * \note the caller is the owner of the returned list and its elements. They can be released with \ref LinkedList_destroy
+ *
+ * \param self the MmsVariableSpecification instance
+ *
+ * \returns a LinkedList of strings that represent the structure element names. Elements are null terminated string.
+ *          If the MmsVariableSpecification instance is not of type MMS_STRUCTURE the function returns NULL.
+ */
 LIB61850_API LinkedList /* <char*> */
 MmsVariableSpecification_getStructureElements(MmsVariableSpecification* self);
 

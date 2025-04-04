@@ -41,10 +41,10 @@
 #define DEBUG_PRINTF(...)
 #endif
 
-
 typedef struct sRSessionKeyMaterial* RSessionKeyMaterial;
 
-struct sRSessionKeyMaterial {
+struct sRSessionKeyMaterial
+{
     uint32_t keyId;
     RSecurityAlgorithm secAlgo;
     RSignatureAlgorithm sigAlgo;
@@ -52,7 +52,8 @@ struct sRSessionKeyMaterial {
     int keyLength;
 };
 
-struct sRSession {
+struct sRSession
+{
     uint32_t spduNumber;
 
     int protocolVersion; /* default is 2 */
@@ -94,7 +95,8 @@ printBuffer(uint8_t* buffer, int bufSize)
 {
     int i;
 
-    for (i = 0; i < bufSize; i++) {
+    for (i = 0; i < bufSize; i++)
+    {
         printf("%02x ", buffer[i]);
         if ((((i + 1) % 16) == 0) || (i + 1 == bufSize))
             printf(" (%i)\n", i + 1);
@@ -107,7 +109,8 @@ RSessionKeyMaterial_create(uint32_t keyId, uint8_t* key, int keyLength, RSecurit
 {
     RSessionKeyMaterial self = (RSessionKeyMaterial) GLOBAL_CALLOC(1, sizeof(struct sRSessionKeyMaterial));
 
-    if (self) {
+    if (self)
+    {
         self->keyId = keyId;
         self->keyLength = keyLength;
         self->secAlgo = secAlgo;
@@ -115,10 +118,12 @@ RSessionKeyMaterial_create(uint32_t keyId, uint8_t* key, int keyLength, RSecurit
 
         self->key = (uint8_t*) GLOBAL_MALLOC(keyLength);
 
-        if (self->key) {
+        if (self->key)
+        {
             memcpy(self->key, key, keyLength);
         }
-        else {
+        else
+        {
             GLOBAL_FREEMEM(self);
             self = NULL;
         }
@@ -130,7 +135,8 @@ RSessionKeyMaterial_create(uint32_t keyId, uint8_t* key, int keyLength, RSecurit
 void
 RSessionKeyMaterial_destroy(RSessionKeyMaterial self)
 {
-    if (self) {
+    if (self)
+    {
         GLOBAL_FREEMEM(self->key);
         GLOBAL_FREEMEM(self);
     }
@@ -141,11 +147,12 @@ RSession_create()
 {
     UdpSocket udpSocket = UdpSocket_create();
 
-    if (udpSocket) {
-
+    if (udpSocket)
+    {
         RSession self = (RSession) GLOBAL_CALLOC(1, sizeof(struct sRSession));
 
-        if (self) {
+        if (self)
+        {
             self->socket = udpSocket;
             self->socketLock = Semaphore_create(1);
 
@@ -178,7 +185,8 @@ RSession_setSecurity(RSession self, RSecurityAlgorithm secAlgo, RSignatureAlgori
 RSessionError
 RSession_setLocalAddress(RSession self, const char* localAddress, int localPort)
 {
-    if (self->localAddress) {
+    if (self->localAddress)
+    {
         GLOBAL_FREEMEM(self->localAddress);
         self->localAddress = NULL;
     }
@@ -205,8 +213,10 @@ RSession_setMulticastTtl(RSession self, int ttl)
 {
     RSessionError err = R_SESSION_ERROR_OK;
 
-    if (self->socket) {
-        if (!UdpSocket_setMulticastTtl(self->socket, ttl)) {
+    if (self->socket)
+    {
+        if (!UdpSocket_setMulticastTtl(self->socket, ttl))
+        {
             err = R_SESSION_ERROR_SET_FAILED;
         }
     }
@@ -220,7 +230,8 @@ RSession_setMulticastTtl(RSession self, int ttl)
 RSessionError
 RSession_setRemoteAddress(RSession self, const char* remoteAddress, int remotePort)
 {
-    if (self->remoteAddress) {
+    if (self->remoteAddress)
+    {
         GLOBAL_FREEMEM(self->remoteAddress);
         self->remoteAddress = NULL;
     }
@@ -232,10 +243,10 @@ RSession_setRemoteAddress(RSession self, const char* remoteAddress, int remotePo
 }
 
 RSessionError
-RSession_startListening(RSession self)
+RSession_start(RSession self)
 {
-    if (self->socket) {
-
+    if (self->socket)
+    {
         bool success = false;
 
         if (self->localAddress)
@@ -248,17 +259,19 @@ RSession_startListening(RSession self)
         else
             return R_SESSION_ERROR_SET_FAILED;
     }
-    else {
+    else
+    {
         return R_SESSION_ERROR_NO_SOCKET;
     }
 }
 
 RSessionError
-RSession_stopListening(RSession self)
+RSession_stop(RSession self)
 {
     Semaphore_wait(self->socketLock);
 
-    if (self->socket) {
+    if (self->socket)
+    {
         Socket_destroy((Socket)self->socket);
         self->socket = NULL;
 
@@ -266,7 +279,8 @@ RSession_stopListening(RSession self)
 
         return R_SESSION_ERROR_OK;
     }
-    else {
+    else
+    {
         Semaphore_post(self->socketLock);
 
         return R_SESSION_ERROR_NO_SOCKET;
@@ -374,19 +388,20 @@ decodeInt16FixedSize(int16_t* outValue, uint8_t* buffer, int bufPos)
 static bool
 lookupKey(RSession self, uint32_t keyId, uint8_t** key, int* keySize, RSecurityAlgorithm* secAlgo, RSignatureAlgorithm* sigAlgo)
 {
-    if (keyId == 0) {
+    if (keyId == 0)
+    {
         DEBUG_PRINTF("Invalid key ID");
         return false;
     }
 
-    if (self->currentKeyId != keyId) {
-
-        if (RSession_setActiveKey(self, keyId) != R_SESSION_ERROR_OK) {
+    if (self->currentKeyId != keyId)
+    {
+        if (RSession_setActiveKey(self, keyId) != R_SESSION_ERROR_OK)
+        {
             DEBUG_PRINTF("unknown key-ID %u", keyId);
             /* TODO audit-log? */
             return false;
         }
-
     }
 
     *key = self->currentKey;
@@ -414,29 +429,34 @@ parseSessionMessage(RSession self, uint8_t* buffer, int msgSize, RSessionPayload
     /* SI */
     uint8_t payloadType = buffer[bufPos++];
 
-    if ((payloadType == 0xa2) || (payloadType == 0xa1) || (payloadType == 0xa0)) {
-
+    if ((payloadType == 0xa2) || (payloadType == 0xa1) || (payloadType == 0xa0))
+    {
+        /* known payload */
     }
-    else {
+    else
+    {
         DEBUG_PRINTF("unknown payload type %i", payloadType);
         goto exit_error;
     }
 
     int sessionHeaderLength = buffer[bufPos++];
 
-    if ((msgSize < (sessionHeaderLength + 4))  || (sessionHeaderLength < 10)) {
+    if ((msgSize < (sessionHeaderLength + 4))  || (sessionHeaderLength < 10))
+    {
         DEBUG_PRINTF("message too small");
         goto exit_error;
     }
 
-    if (buffer[bufPos++] != 0x80) {
+    if (buffer[bufPos++] != 0x80)
+    {
         DEBUG_PRINTF("protocol error");
         goto exit_error;
     }
 
     int commonSessionHeaderLength = buffer[bufPos++];
 
-    if (commonSessionHeaderLength < 10) {
+    if (commonSessionHeaderLength < 10)
+    {
         DEBUG_PRINTF("common session header too small");
         goto exit_error;
     }
@@ -453,7 +473,8 @@ parseSessionMessage(RSession self, uint8_t* buffer, int msgSize, RSessionPayload
     int16_t protocolVersion = 0;
     bufPos = decodeInt16FixedSize(&protocolVersion, buffer, bufPos);
 
-    if (protocolVersion == 1) {
+    if (protocolVersion == 1)
+    {
         /* parse version 1 common header parts */
 
         /* TimeOfCurrentKey */
@@ -469,12 +490,14 @@ parseSessionMessage(RSession self, uint8_t* buffer, int msgSize, RSessionPayload
         RSignatureAlgorithm sigAlgo = (RSignatureAlgorithm) buffer[bufPos++];
 
         /* Check if algorithms match the configured algorithms */
-        if (secAlgo != self->secAlgo) {
+        if (secAlgo != self->secAlgo)
+        {
             DEBUG_PRINTF("encryption algorithm doesn't match with configuration");
             goto exit_error;
         }
 
-        if (sigAlgo != self->sigAlgo) {
+        if (sigAlgo != self->sigAlgo)
+        {
             DEBUG_PRINTF("signature algorithm(%i) doesn't match with configuration(%i)", sigAlgo, self->sigAlgo);
             goto exit_error;
         }
@@ -488,14 +511,18 @@ parseSessionMessage(RSession self, uint8_t* buffer, int msgSize, RSessionPayload
         uint8_t* key = NULL;
         int keySize = 0;
 
-        if (sigAlgo != R_SESSION_SIG_ALGO_NONE) {
-            if (lookupKey(self, keyId, &key, &keySize, &secAlgo, &sigAlgo) == false) {
+        if (sigAlgo != R_SESSION_SIG_ALGO_NONE)
+        {
+            if (lookupKey(self, keyId, &key, &keySize, &secAlgo, &sigAlgo) == false)
+            {
                 DEBUG_PRINTF("ERROR - key not found");
                 goto exit_error;
             }
         }
-        else if (secAlgo != R_SESSION_SEC_ALGO_NONE) {
-            if (lookupKey(self, keyId, &key, &keySize, &secAlgo, &sigAlgo) == false) {
+        else if (secAlgo != R_SESSION_SEC_ALGO_NONE)
+        {
+            if (lookupKey(self, keyId, &key, &keySize, &secAlgo, &sigAlgo) == false)
+            {
                 DEBUG_PRINTF("ERROR - key not found");
                 goto exit_error;
             }
@@ -508,7 +535,8 @@ parseSessionMessage(RSession self, uint8_t* buffer, int msgSize, RSessionPayload
         /* parse payload elements */
         uint32_t payloadEnd = bufPos + payloadLength;
 
-        if (payloadEnd > (uint32_t)msgSize) {
+        if (payloadEnd > (uint32_t)msgSize)
+        {
             DEBUG_PRINTF("ERROR - payload size field invalid");
             goto exit_error;
         }
@@ -516,42 +544,54 @@ parseSessionMessage(RSession self, uint8_t* buffer, int msgSize, RSessionPayload
         uint8_t signatureBuffer[128];
 
         /* Check signature */
-        if (sigAlgo != R_SESSION_SIG_ALGO_NONE) {
-            if (key) {
-                if (RSessionCrypto_createHMAC(buffer, payloadEnd, key, keySize, signatureBuffer, 32)) {
-                    if (buffer[payloadEnd] != 0x85) {
+        if (sigAlgo != R_SESSION_SIG_ALGO_NONE)
+        {
+            if (key)
+            {
+                if (RSessionCrypto_createHMAC(buffer, payloadEnd, key, keySize, signatureBuffer, 32))
+                {
+                    if (buffer[payloadEnd] != 0x85)
+                    {
                         DEBUG_PRINTF("ERROR - no signature found");
                         goto exit_error;
                     }
-                    else {
-                        if (sigAlgo == R_SESSION_SIG_ALGO_HMAC_SHA256_128) {
+                    else
+                    {
+                        if (sigAlgo == R_SESSION_SIG_ALGO_HMAC_SHA256_128)
+                        {
                             /* TODO is payloadEnd +2 correct? */
-                            if (memcmp(signatureBuffer, buffer + payloadEnd + 1, 16)) {
+                            if (memcmp(signatureBuffer, buffer + payloadEnd + 1, 16))
+                            {
                                 DEBUG_PRINTF("ERROR - signature not matching!");
                                 goto exit_error;
                             }
                         }
-                        else if (sigAlgo == R_SESSION_SIG_ALGO_HMAC_SHA256_256) {
+                        else if (sigAlgo == R_SESSION_SIG_ALGO_HMAC_SHA256_256)
+                        {
                             /* TODO is payloadEnd +2 correct? */
-                            if (memcmp(signatureBuffer, buffer + payloadEnd + 1, 32)) {
+                            if (memcmp(signatureBuffer, buffer + payloadEnd + 1, 32))
+                            {
                                 DEBUG_PRINTF("ERROR - signature not matching!");
                                 goto exit_error;
                             }
                         }
                     }
                 }
-                else {
+                else
+                {
                     DEBUG_PRINTF("ERROR - failed to calculate HMAC!");
                     goto exit_error;
                 }
             }
-            else {
+            else
+            {
                 DEBUG_PRINTF("ERROR - key not found!");
                 goto exit_error;
             }
         }
 
-        while ((uint32_t)bufPos < payloadEnd) {
+        while ((uint32_t)bufPos < payloadEnd)
+        {
             int payloadElementType = buffer[bufPos++];
 
             bool simulation;
@@ -569,21 +609,23 @@ parseSessionMessage(RSession self, uint8_t* buffer, int msgSize, RSessionPayload
 
             DEBUG_PRINTF("ASDU %02x sim: %i APPID: %04x length: %i", payloadElementType, simulation, appId, asduLength);
 
-            if (payloadElementType == 0x82) {
+            if (payloadElementType == 0x81 ||
+                payloadElementType == 0x82)
+            {
                 /* user payload */
 
-                //TODO copy ASDU payload to ???
+                /* TODO copy ASDU payload to ??? */
                 handler(handlerParam, appId, buffer + bufPos, asduLength);
             }
             else {
-                DEBUG_PRINTF("unexpected payload type! (expect 82h)");
+                DEBUG_PRINTF("unexpected payload type! (expect 81h (GOOSE) or 82h (SV))");
             }
 
             bufPos += asduLength;
         }
-
     }
-    else if (protocolVersion == 2) {
+    else if (protocolVersion == 2)
+    {
         /* parse version 2 common header parts */
 
         /* TimeOfCurrentKey */
@@ -604,15 +646,18 @@ parseSessionMessage(RSession self, uint8_t* buffer, int msgSize, RSessionPayload
         uint32_t keyId;
         bufPos = decodeUInt32FixedSize(&keyId, buffer, bufPos);
 
-        if (keyId != 0) {
+        if (keyId != 0)
+        {
             /* get key material associated with the key ID */
 
-            if (lookupKey(self, keyId, &key, &keySize, &secAlgo, &sigAlgo) == false) {
+            if (lookupKey(self, keyId, &key, &keySize, &secAlgo, &sigAlgo) == false)
+            {
                 DEBUG_PRINTF("ERROR - key not found");
                 goto exit_error;
             }
         }
-        else {
+        else
+        {
             DEBUG_PRINTF("ERROR - invalid key ID");
             goto exit_error;
         }
@@ -626,7 +671,8 @@ parseSessionMessage(RSession self, uint8_t* buffer, int msgSize, RSessionPayload
 
         DEBUG_PRINTF("IV: size = %i\n", ivLen);
 
-        if (ivLen > 0) {
+        if (ivLen > 0)
+        {
             iv = buffer + bufPos;
             bufPos += ivLen;
         }
@@ -641,7 +687,8 @@ parseSessionMessage(RSession self, uint8_t* buffer, int msgSize, RSessionPayload
         /* parse payload elements */
         uint32_t payloadEnd = bufPos + payloadLength;
 
-        if (payloadEnd > (uint32_t)msgSize) {
+        if (payloadEnd > (uint32_t)msgSize)
+        {
             DEBUG_PRINTF("ERROR - payload size field invalid");
             goto exit_error;
         }
@@ -649,71 +696,88 @@ parseSessionMessage(RSession self, uint8_t* buffer, int msgSize, RSessionPayload
         uint8_t signatureBuffer[128];
 
         /* Check signature */
-        if (sigAlgo != R_SESSION_SIG_ALGO_NONE) {
-            if (key) {
-                if (RSessionCrypto_createHMAC(buffer, payloadEnd, key, keySize, signatureBuffer, 32)) {
-                    if (buffer[payloadEnd] != 0x85) {
+        if (sigAlgo != R_SESSION_SIG_ALGO_NONE)
+        {
+            if (key)
+            {
+                if (RSessionCrypto_createHMAC(buffer, payloadEnd, key, keySize, signatureBuffer, 32))
+                {
+                    if (buffer[payloadEnd] != 0x85)
+                    {
                         DEBUG_PRINTF("ERROR - no signature found");
                         goto exit_error;
                     }
-                    else {
-                        if (sigAlgo == R_SESSION_SIG_ALGO_HMAC_SHA256_128) {
+                    else
+                    {
+                        if (sigAlgo == R_SESSION_SIG_ALGO_HMAC_SHA256_128)
+                        {
                             /* TODO is payloadEnd +2 correct? */
-                            if (memcmp(signatureBuffer, buffer + payloadEnd + 1, 16)) {
+                            if (memcmp(signatureBuffer, buffer + payloadEnd + 1, 16))
+                            {
                                 DEBUG_PRINTF("ERROR - signature not matching!");
                                 goto exit_error;
                             }
                         }
-                        else if (sigAlgo == R_SESSION_SIG_ALGO_HMAC_SHA256_256) {
+                        else if (sigAlgo == R_SESSION_SIG_ALGO_HMAC_SHA256_256)
+                        {
                             /* TODO is payloadEnd +2 correct? */
-                            if (memcmp(signatureBuffer, buffer + payloadEnd + 1, 32)) {
+                            if (memcmp(signatureBuffer, buffer + payloadEnd + 1, 32))
+                            {
                                 DEBUG_PRINTF("ERROR - signature not matching!");
                                 goto exit_error;
                             }
                         }
                     }
                 }
-                else {
+                else
+                {
                     DEBUG_PRINTF("ERROR - failed to calculate HMAC!");
                     goto exit_error;
                 }
             }
-            else {
+            else
+            {
                 DEBUG_PRINTF("ERROR - key not found!");
                 goto exit_error;
             }
         }
 
         /* Check signature and decrypt application layer */
-        if (secAlgo != R_SESSION_SEC_ALGO_NONE) {
+        if (secAlgo != R_SESSION_SEC_ALGO_NONE)
+        {
             /* Check for HMAC */
-            if (payloadEnd + 18 <= (uint32_t)msgSize) {
+            if (payloadEnd + 18 <= (uint32_t)msgSize)
+            {
                 if (self->payloadBuffer == NULL)
                     self->payloadBuffer = (uint8_t*)GLOBAL_MALLOC(65000);
 
-                if (self->payloadBuffer) {
-                    //TODO check MMAC tag
+                if (self->payloadBuffer)
+                {
                     uint8_t* mac = buffer + payloadEnd + 2;
                     int macSize = buffer[payloadEnd + 1];
 
                     int payloadSize = payloadEnd - payloadStartPos;
 
-                    if (RSessionCrypto_gcmAuthAndDecrypt(key, keySize, iv, ivLen, buffer, payloadStartPos, payloadStart, payloadSize, self->payloadBuffer, mac, macSize)) {
+                    if (RSessionCrypto_gcmAuthAndDecrypt(key, keySize, iv, ivLen, buffer, payloadStartPos, payloadStart, payloadSize, self->payloadBuffer, mac, macSize))
+                    {
                         memcpy(buffer + bufPos, self->payloadBuffer, payloadSize);
                     }
-                    else {
+                    else
+                    {
                         DEBUG_PRINTF("ERROR - auth and decrypt failed!");
                         goto exit_error;
                     }
                 }
             }
-            else {
+            else
+            {
                 DEBUG_PRINTF("ERROR - sec algo - message too small!");
                 goto exit_error;
             }
         }
 
-        while ((uint32_t)bufPos < payloadEnd) {
+        while ((uint32_t)bufPos < payloadEnd)
+        {
             int payloadElementType = buffer[bufPos++];
 
             bool simulation;
@@ -731,20 +795,24 @@ parseSessionMessage(RSession self, uint8_t* buffer, int msgSize, RSessionPayload
 
             DEBUG_PRINTF("ASDU %02x sim: %i APPID: %04x length: %i", payloadElementType, simulation, appId, asduLength);
 
-            if (payloadElementType == 0x82) {
+            if (payloadElementType == 0x81 ||
+                payloadElementType == 0x82)
+            {
                 /* user payload */
 
                 //TODO copy ASDU payload to ???
                 handler(handlerParam, appId, buffer + bufPos, asduLength);
             }
-            else {
-                DEBUG_PRINTF("unexpected payload type! (expect 82h)");
+            else
+            {
+                DEBUG_PRINTF("unexpected payload type! (expect 81h (GOOSE) or 82h (SV))");
             }
 
             bufPos += asduLength;
         }
     }
-    else {
+    else
+    {
         DEBUG_PRINTF("only protocol version 1 and 2 supported (received version %i)", protocolVersion);
         goto exit_error;
     }
@@ -773,7 +841,8 @@ encodePacket(RSession self, uint8_t payloadType, uint8_t* buffer, int bufPos, RS
 
     RSessionPayloadElement element = elements;
 
-    while (element) {
+    while (element)
+    {
         payloadLength += 6; /* payload type, simulation, APPID, length */
         payloadLength += element->payloadSize;
 
@@ -813,7 +882,8 @@ encodePacket(RSession self, uint8_t payloadType, uint8_t* buffer, int bufPos, RS
     /* TimeToNextKey */
     bufPos = encodeInt16FixedSize((int16_t)self->timeToNextKey, buffer, bufPos);
 
-    if (self->protocolVersion == 1) {
+    if (self->protocolVersion == 1)
+    {
         /* encryption algorithm */
         buffer[bufPos++] = (uint8_t) self->secAlgo; /* 0 = none */
 
@@ -823,7 +893,10 @@ encodePacket(RSession self, uint8_t payloadType, uint8_t* buffer, int bufPos, RS
         /* Key ID */
         bufPos = encodeUInt32FixedSize(self->currentKeyId, buffer, bufPos);
     }
-    else { /* protocol version 2 */
+    else
+    {
+        /* protocol version 2 */
+
         /* Key ID */
         bufPos = encodeUInt32FixedSize(self->currentKeyId, buffer, bufPos);
         self->secAlgo = self->currentSecAlgo;
@@ -832,21 +905,24 @@ encodePacket(RSession self, uint8_t payloadType, uint8_t* buffer, int bufPos, RS
         DEBUG_PRINTF("PV: 2 sec-algo: %i sig-algo: %i\n", self->secAlgo, self->sigAlgo);
 
         /* IV */
-        if (self->secAlgo != R_SESSION_SEC_ALGO_NONE) {
-            /* get and encode IV (initialization vector) */
+        if (self->secAlgo != R_SESSION_SEC_ALGO_NONE)
+        {
+            /* create and encode IV (initialization vector) */
 
             buffer[bufPos++] = 12;
 
             iv = buffer + bufPos;
             ivSize = 12;
 
-            if (RSessionCrypto_createRandomData(iv, ivSize) == false) {
+            if (RSessionCrypto_createRandomData(iv, ivSize) == false)
+            {
                 DEBUG_PRINTF("ERROR - Failed to create random IV");
             }
 
             bufPos += ivSize;
         }
-        else {
+        else
+        {
             buffer[bufPos++] = 0; /* empty initialization vector */
         }
     }
@@ -859,10 +935,10 @@ encodePacket(RSession self, uint8_t payloadType, uint8_t* buffer, int bufPos, RS
     /* encode user payload elements */
     element = elements;
 
-    while (element) {
-
+    while (element)
+    {
         /* payload type ? (according to example in annex G) */
-        buffer[bufPos++] = 0x82;
+        buffer[bufPos++] = element->payloadType;
 
         /* simulation */
         buffer[bufPos++] = element->simulation;
@@ -880,14 +956,15 @@ encodePacket(RSession self, uint8_t payloadType, uint8_t* buffer, int bufPos, RS
         element = element->nextElement;
     }
 
-    if (self->sigAlgo != R_SESSION_SIG_ALGO_NONE) {
+    if (self->sigAlgo != R_SESSION_SIG_ALGO_NONE)
+    {
         int signatureCoveredLength = bufPos - startPos;
 
         DEBUG_PRINTF("Signature: %i", signatureCoveredLength);
 
         /* add signature */
-        if (self->sigAlgo == R_SESSION_SIG_ALGO_HMAC_SHA256_256) {
-
+        if (self->sigAlgo == R_SESSION_SIG_ALGO_HMAC_SHA256_256)
+        {
             buffer[bufPos++] = 0x85;
             buffer[bufPos++] = 16;
 
@@ -895,7 +972,8 @@ encodePacket(RSession self, uint8_t payloadType, uint8_t* buffer, int bufPos, RS
 
             bufPos += 32;
         }
-        else if (self->sigAlgo == R_SESSION_SIG_ALGO_HMAC_SHA256_128) {
+        else if (self->sigAlgo == R_SESSION_SIG_ALGO_HMAC_SHA256_128)
+        {
             buffer[bufPos++] = 0x85;
             buffer[bufPos++] = 16;
             //buffer[bufPos++] = 0x20; /* 32 octets */
@@ -904,14 +982,16 @@ encodePacket(RSession self, uint8_t payloadType, uint8_t* buffer, int bufPos, RS
 
             bufPos += 16;
         }
-        else {
+        else
+        {
             DEBUG_PRINTF("ERROR - unsupported signature type");
         }
     }
 
     int payloadEndPos = bufPos;
 
-    if (self->secAlgo != R_SESSION_SEC_ALGO_NONE) {
+    if (self->secAlgo != R_SESSION_SEC_ALGO_NONE)
+    {
         /* create signature and encrypt payload */
 
         buffer[bufPos++] = 0x85;
@@ -926,10 +1006,12 @@ encodePacket(RSession self, uint8_t payloadType, uint8_t* buffer, int bufPos, RS
 
         DEBUG_PRINTF("===> encrypt ====");
 
-        if (RSessionCrypto_gcmEncryptAndTag(self->currentKey, self->currentKeySize, iv, ivSize, buffer + startPos, addPartSize, buffer + encryptedPartStartPos, encryptedPartSize, buffer + bufPos, 16) == false) {
+        if (RSessionCrypto_gcmEncryptAndTag(self->currentKey, self->currentKeySize, iv, ivSize, buffer + startPos, addPartSize, buffer + encryptedPartStartPos, encryptedPartSize, buffer + bufPos, 16) == false)
+        {
             DEBUG_PRINTF("ERROR - encryption failed");
         }
-        else {
+        else
+        {
             bufPos += 16;
         }
     }
@@ -945,24 +1027,27 @@ encodePacket(RSession self, uint8_t payloadType, uint8_t* buffer, int bufPos, RS
 RSessionError
 RSession_sendMessage(RSession self, RSessionProtocol_SPDU_ID spduId, bool simulation, uint16_t appId, uint8_t* payload, int payloadSize)
 {
-    if (self->socket == NULL) {
+    if (self->socket == NULL)
+    {
         self->socket = UdpSocket_create();
     }
 
-    if (self->sendBuffer == NULL) {
+    if (self->sendBuffer == NULL)
+    {
         self->sendBuffer = (uint8_t*) GLOBAL_MALLOC(self->bufferSize);
 
         if (self->sendBuffer == NULL)
             return R_SESSION_ERROR_OUT_OF_MEMORY;
     }
 
-    if (self->socket) {
-
+    if (self->socket)
+    {
         struct sRSessionPayloadElement element;
 
         element.simulation = simulation;
         element.appId = appId;
         element.payload = payload;
+        element.payloadType = (spduId & 0x0f) + 0x80;
         element.payloadSize = payloadSize;
         element.nextElement = NULL;
 
@@ -972,15 +1057,17 @@ RSession_sendMessage(RSession self, RSessionProtocol_SPDU_ID spduId, bool simula
         printBuffer(self->sendBuffer, msgSize);
 #endif
 
-        if (UdpSocket_sendTo(self->socket, self->remoteAddress, self->remotePort, self->sendBuffer, msgSize)) {
+        if (UdpSocket_sendTo(self->socket, self->remoteAddress, self->remotePort, self->sendBuffer, msgSize))
+        {
             return R_SESSION_ERROR_OK;
         }
-        else {
+        else
+        {
             return R_SESSION_ERROR_FAILED_TO_SEND;
         }
-
     }
-    else {
+    else
+    {
         return R_SESSION_ERROR_NO_SOCKET;
     }
 }
@@ -988,10 +1075,12 @@ RSession_sendMessage(RSession self, RSessionProtocol_SPDU_ID spduId, bool simula
 void
 RSession_setBufferSize(RSession self, uint16_t bufferSize)
 {
-    if (bufferSize > 127) {
+    if (bufferSize > 127)
+    {
         self->bufferSize = bufferSize;
     }
-    else {
+    else
+    {
         self->bufferSize = 128;
     }
 }
@@ -1001,13 +1090,16 @@ RSession_receiveMessage(RSession self, RSessionPayloadElementHandler handler, vo
 {
     Semaphore_wait(self->socketLock);
 
-    if (self->socket) {
+    if (self->socket)
+    {
         char ipAddrBuf[128];
 
-        if (self->sendBuffer == NULL) {
+        if (self->sendBuffer == NULL)
+        {
             self->sendBuffer = (uint8_t*) GLOBAL_MALLOC(self->bufferSize);
 
-            if (self->sendBuffer == NULL) {
+            if (self->sendBuffer == NULL)
+            {
                 Semaphore_post(self->socketLock);
 
                 return R_SESSION_ERROR_OUT_OF_MEMORY;
@@ -1020,17 +1112,19 @@ RSession_receiveMessage(RSession self, RSessionPayloadElementHandler handler, vo
 
         Semaphore_post(self->socketLock);
 
-        if (msgSize < 1) {
+        if (msgSize < 1)
+        {
             DEBUG_PRINTF("RESSSION: Failed to receive message");
-
 
             return R_SESSION_ERROR_FAILED_TO_RECEIVE;
         }
-        else {
+        else
+        {
             return parseSessionMessage(self, self->sendBuffer, msgSize, handler, parameter);
         }
     }
-    else {
+    else
+    {
         Semaphore_post(self->socketLock);
 
         return R_SESSION_ERROR_NO_SOCKET;
@@ -1042,14 +1136,16 @@ RSession_addKey(RSession self, uint32_t keyId, uint8_t* key, int keyLength, RSec
 {
     RSessionKeyMaterial keyMaterial = RSessionKeyMaterial_create(keyId, key, keyLength, secAlgo, sigAlgo);
 
-    if (keyMaterial) {
+    if (keyMaterial)
+    {
         Semaphore_wait(self->keyListLock);
         LinkedList_add(self->keyList, keyMaterial);
         Semaphore_post(self->keyListLock);
 
         return R_SESSION_ERROR_OK;
     }
-    else {
+    else
+    {
         return R_SESSION_ERROR_OUT_OF_MEMORY;
     }
 }
@@ -1059,10 +1155,12 @@ getKeyById(RSession self, uint32_t keyId)
 {
     LinkedList keyElem = LinkedList_getNext(self->keyList);
 
-    while (keyElem) {
+    while (keyElem)
+    {
         RSessionKeyMaterial keyMaterial = (RSessionKeyMaterial) LinkedList_getData(keyElem);
 
-        if (keyMaterial->keyId == keyId) {
+        if (keyMaterial->keyId == keyId)
+        {
             return keyMaterial;
         }
 
@@ -1081,18 +1179,21 @@ RSession_removeKey(RSession self, uint32_t keyId)
 
     RSessionKeyMaterial keyMaterial = getKeyById(self, keyId);
 
-    if (keyMaterial) {
+    if (keyMaterial)
+    {
         LinkedList_remove(self->keyList, keyMaterial);
 
         RSessionKeyMaterial_destroy(keyMaterial);
     }
-    else {
+    else
+    {
         retVal = R_SESSION_ERROR_INVALID_KEY;
     }
 
     Semaphore_post(self->keyListLock);
 
-    if (self->currentKeyId == keyId) {
+    if (self->currentKeyId == keyId)
+    {
         /* active key removed! */
         self->currentKeyId = 0;
     }
@@ -1126,14 +1227,16 @@ RSession_setActiveKey(RSession self, uint32_t keyId)
 
     RSessionKeyMaterial keyMaterial = getKeyById(self, keyId);
 
-    if (keyMaterial) {
+    if (keyMaterial)
+    {
         self->currentKeySize = keyMaterial->keyLength;
         self->currentKey = keyMaterial->key;
         self->currentKeyId = keyMaterial->keyId;
         self->currentSecAlgo = keyMaterial->secAlgo;
         self->currentSigAlgo = keyMaterial->sigAlgo;
     }
-    else {
+    else
+    {
         retVal = R_SESSION_ERROR_INVALID_KEY;
     }
 
@@ -1145,7 +1248,8 @@ RSession_setActiveKey(RSession self, uint32_t keyId)
 void
 RSession_destroy(RSession self)
 {
-    if (self) {
+    if (self)
+    {
         if (self->socket)
             Socket_destroy((Socket)self->socket);
 
@@ -1179,4 +1283,3 @@ RSession_getSocket(RSession self)
 {
     return (Socket)self->socket;
 }
-

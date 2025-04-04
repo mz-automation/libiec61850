@@ -1,7 +1,7 @@
 /*
  *  goose_subscriber.c
  *
- *  Copyright 2013-2022 Michael Zillgith
+ *  Copyright 2013-2024 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -40,7 +40,8 @@ GooseSubscriber_create(char* goCbRef, MmsValue* dataSetValues)
 {
     GooseSubscriber self = (GooseSubscriber) GLOBAL_CALLOC(1, sizeof(struct sGooseSubscriber));
 
-    if (self) {
+    if (self)
+    {
         StringUtils_copyStringMax(self->goCBRef, 130, goCbRef);
 
         self->goCBRefLen = strlen(goCbRef);
@@ -97,7 +98,8 @@ GooseSubscriber_setAppId(GooseSubscriber self, uint16_t appId)
 void
 GooseSubscriber_destroy(GooseSubscriber self)
 {
-    if (self) {
+    if (self)
+    {
         MmsValue_delete(self->timestamp);
 
         if (self->dataSetValuesSelfAllocated)
@@ -120,19 +122,19 @@ GooseSubscriber_getAppId(GooseSubscriber self)
     return self->appId;
 }
 
-char *
+char*
 GooseSubscriber_getGoId(GooseSubscriber self)
 {
     return self->goId;
 }
 
-char *
+char*
 GooseSubscriber_getGoCbRef(GooseSubscriber self)
 {
     return self->goCBRef;
 }
 
-char *
+char*
 GooseSubscriber_getDataSet(GooseSubscriber self)
 {
     return self->datSet;

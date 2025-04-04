@@ -38,10 +38,10 @@ LIBIEC61850_SV_createSVControlBlocks(MmsMapping* self, MmsDomain* domain,
         LogicalNode* logicalNode, int svCount, bool unicast);
 
 LIB61850_INTERNAL MmsValue*
-LIBIEC61850_SV_readAccessSampledValueControlBlock(MmsMapping* self, MmsDomain* domain, char* variableIdOrig);
+LIBIEC61850_SV_readAccessSampledValueControlBlock(MmsMapping* self, MmsDomain* domain, char* variableIdOrig , MmsServerConnection connection);
 
 LIB61850_INTERNAL MmsDataAccessError
-LIBIEC61850_SV_writeAccessSVControlBlock(MmsMapping* self, MmsDomain* domain, char* variableIdOrig,
+LIBIEC61850_SV_writeAccessSVControlBlock(MmsMapping* self, MmsDomain* domain, const char* variableIdOrig,
         MmsValue* value, MmsServerConnection connection);
 
 LIB61850_INTERNAL void

@@ -47,6 +47,7 @@ typedef enum
     GOOSE_PARSE_ERROR_UNDERFLOW,
     GOOSE_PARSE_ERROR_TYPE_MISMATCH,
     GOOSE_PARSE_ERROR_LENGTH_MISMATCH,
+    GOOSE_PARSE_ERROR_INVALID_PADDING
 } GooseParseError;
 
 typedef struct sGooseSubscriber* GooseSubscriber;

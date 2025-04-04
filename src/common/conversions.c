@@ -306,7 +306,3 @@ memcpyReverseByteOrder(uint8_t* dst, const uint8_t* src, int size)
         dst[i] = src[size - i - 1];
     }
 }
-
-
-
-

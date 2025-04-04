@@ -57,8 +57,8 @@ entryCallback(void* parameter, uint64_t timestamp, uint64_t entryID, bool moreFo
 {
     JournalEncoder encoder = (JournalEncoder) parameter;
 
-    if (moreFollow) {
-
+    if (moreFollow)
+    {
         if (encoder->moreFollows)
             return false;
 
@@ -84,7 +84,8 @@ entryDataCallback (void* parameter, const char* dataRef, uint8_t* data, int data
 
     /* TODO check if entry is too long for buffer! */
 
-    if (moreFollow) {
+    if (moreFollow)
+    {
         int bufPos = encoder->bufPos;
 
         uint32_t dataRefStrLen = strlen(dataRef);
@@ -112,7 +113,8 @@ entryDataCallback (void* parameter, const char* dataRef, uint8_t* data, int data
 
         uint32_t totalLen = firstVariableLen + secondVariableLen;
 
-        if ((int) (bufPos + totalLen) > encoder->maxSize) {
+        if ((int) (bufPos + totalLen) > encoder->maxSize)
+        {
             encoder->moreFollows = true;
             encoder->bufPos = encoder->currentEntryBufPos; /* remove last entry */
             return false;
@@ -137,7 +139,8 @@ entryDataCallback (void* parameter, const char* dataRef, uint8_t* data, int data
 
         encoder->bufPos = bufPos;
     }
-    else {
+    else
+    {
         int dataContentLen = encoder->bufPos - (encoder->currentEntryBufPos + 48);
 
         int journalVariablesLen = 1  + BerEncoder_determineLengthSize(dataContentLen) + dataContentLen;
@@ -191,19 +194,22 @@ parseStringWithMaxLength(char* filename, int maxLength, uint8_t* buffer, int* bu
     uint8_t tag = buffer[(*bufPos)++];
     int length;
 
-    if (tag != 0x1a) {
+    if (tag != 0x1a)
+    {
         mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
         return false;
     }
 
     *bufPos = BerDecoder_decodeLength(buffer, &length, *bufPos, maxBufPos);
 
-    if (*bufPos < 0) {
+    if (*bufPos < 0)
+    {
         mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
         return false;
     }
 
-    if (length > maxLength) {
+    if (length > maxLength)
+    {
         mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
         return false;
     }
@@ -243,30 +249,34 @@ mmsServer_handleReadJournalRequest(
     bool hasTimeSpec = false;
     bool hasEntrySpec = false;
 
-    while (bufPos < maxBufPos) {
+    while (bufPos < maxBufPos)
+    {
         uint8_t tag = requestBuffer[bufPos++];
         int length;
 
         bufPos = BerDecoder_decodeLength(requestBuffer, &length, bufPos, maxBufPos);
 
-        if (bufPos < 0)  {
+        if (bufPos < 0)
+        {
             mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
             return;
         }
 
-        switch (tag) {
-
+        switch (tag)
+        {
         case 0xa0: /* journalName */
             {
                 uint8_t objectIdTag = requestBuffer[bufPos++];
                 bufPos = BerDecoder_decodeLength(requestBuffer, &length, bufPos, maxBufPos);
 
-                if (bufPos < 0)  {
+                if (bufPos < 0)
+                {
                     mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
                     return;
                 }
 
-                switch (objectIdTag) {
+                switch (objectIdTag)
+                {
                 case 0xa1: /* domain-specific */
 
                     if (!parseStringWithMaxLength(domainId, 64, requestBuffer, &bufPos, bufPos + length, invokeId, response)) {
@@ -294,20 +304,22 @@ mmsServer_handleReadJournalRequest(
             {
                 uint8_t subTag = requestBuffer[bufPos++];
 
-                if (subTag != 0x80) {
+                if (subTag != 0x80)
+                {
                     mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_MODIFIER, response);
                     return;
                 }
 
                 bufPos = BerDecoder_decodeLength(requestBuffer, &length, bufPos, maxBufPos);
 
-                if (bufPos < 0)  {
+                if (bufPos < 0) 
+                {
                     mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
                     return;
                 }
 
-                if ((length == 4) || (length == 6)) {
-
+                if ((length == 4) || (length == 6))
+                {
                     rangeStart.type = MMS_BINARY_TIME;
                     rangeStart.value.binaryTime.size = length;
 
@@ -315,7 +327,8 @@ mmsServer_handleReadJournalRequest(
 
                     hasRangeStartSpec = true;
                 }
-                else {
+                else
+                {
                     mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
                     return;    /* forward request to implementation class */
                 }
@@ -329,19 +342,22 @@ mmsServer_handleReadJournalRequest(
             {
                 uint8_t subTag = requestBuffer[bufPos++];
 
-                if (subTag != 0x80) {
+                if (subTag != 0x80)
+                {
                     mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_MODIFIER, response);
                     return;
                 }
 
                 bufPos = BerDecoder_decodeLength(requestBuffer, &length, bufPos, maxBufPos);
 
-                if (bufPos < 0)  {
+                if (bufPos < 0)
+                {
                     mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
                     return;
                 }
 
-                if ((length == 4) || (length == 6)) {
+                if ((length == 4) || (length == 6))
+                {
                     rangeStop.type = MMS_BINARY_TIME;
                     rangeStop.value.binaryTime.size = length;
 
@@ -349,9 +365,10 @@ mmsServer_handleReadJournalRequest(
 
                     hasRangeStopSpec = true;
                 }
-                else {
+                else
+                {
                     mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
-                    return;    /* forward request to implementation class */
+                    return;
                 }
 
                 bufPos += length;
@@ -363,20 +380,24 @@ mmsServer_handleReadJournalRequest(
             {
                 int maxSubBufPos = bufPos + length;
 
-                while (bufPos < maxSubBufPos) {
+                while (bufPos < maxSubBufPos)
+                {
                     uint8_t subTag = requestBuffer[bufPos++];
 
                     bufPos = BerDecoder_decodeLength(requestBuffer, &length, bufPos, maxBufPos);
 
-                    if (bufPos < 0)  {
+                    if (bufPos < 0) 
+                    {
                         mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
                         return;
                     }
 
-                    switch (subTag) {
+                    switch (subTag)
+                    {
                     case 0x80: /* timeSpecification */
 
-                        if ((length == 4) || (length == 6)) {
+                        if ((length == 4) || (length == 6))
+                        {
                             rangeStart.type = MMS_BINARY_TIME;
                             rangeStart.value.binaryTime.size = length;
 
@@ -384,7 +405,8 @@ mmsServer_handleReadJournalRequest(
 
                             hasTimeSpec = true;
                         }
-                        else {
+                        else
+                        {
                             mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
                             return;
                         }
@@ -393,13 +415,15 @@ mmsServer_handleReadJournalRequest(
 
                     case 0x81: /* entrySpecification */
 
-                        if (length <= entrySpec.value.octetString.maxSize) {
+                        if (length <= entrySpec.value.octetString.maxSize)
+                        {
                             memcpy(entrySpec.value.octetString.buf, requestBuffer + bufPos, length);
                             entrySpec.value.octetString.size = length;
 
                             hasEntrySpec = true;
                         }
-                        else {
+                        else
+                        {
                             mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
                             return;
                         }
@@ -424,7 +448,8 @@ mmsServer_handleReadJournalRequest(
     }
 
     /* check if required fields are present */
-    if (hasNames == false) {
+    if (hasNames == false)
+    {
         if (DEBUG_MMS_SERVER)
             printf("MMS_SERVER: readJournal missing journal name\n");
 
@@ -439,7 +464,8 @@ mmsServer_handleReadJournalRequest(
 
     MmsDomain* mmsDomain = MmsDevice_getDomain(mmsDevice, domainId);
 
-    if (mmsDomain == NULL) {
+    if (mmsDomain == NULL)
+    {
         if (DEBUG_MMS_SERVER)
             printf("MMS_SERVER: readJournal domain %s not found\n", domainId);
 
@@ -450,7 +476,8 @@ mmsServer_handleReadJournalRequest(
 
     MmsJournal mmsJournal = MmsDomain_getJournal(mmsDomain, logName);
 
-    if (mmsJournal == NULL) {
+    if (mmsJournal == NULL)
+    {
         if (DEBUG_MMS_SERVER)
             printf("MMS_SERVER: readJournal journal %s not found\n", logName);
 
@@ -462,6 +489,20 @@ mmsServer_handleReadJournalRequest(
     if (DEBUG_MMS_SERVER)
         printf("MMS_SERVER: readJournal - read journal %s ...\n", mmsJournal->name);
 
+    MmsServer mmsServer = connection->server;
+
+    if (mmsServer->readJournalHandler)
+    {
+        if (mmsServer->readJournalHandler(mmsServer->readJournalHandlerParameter, mmsDomain, logName, connection) == false)
+        {
+            mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_ACCESS_DENIED);
+
+            /* TODO log access error */
+
+            return;
+        }
+    }
+
     struct sJournalEncoder encoder;
 
     encoder.buffer = response->buffer;
@@ -471,17 +512,20 @@ mmsServer_handleReadJournalRequest(
 
     LogStorage logStorage = mmsJournal->logStorage;
 
-    if (logStorage != NULL) {
-
-        if (hasRangeStartSpec && hasRangeStopSpec) {
+    if (logStorage)
+    {
+        if (hasRangeStartSpec && hasRangeStopSpec)
+        {
             LogStorage_getEntries(logStorage, MmsValue_getBinaryTimeAsUtcMs(&rangeStart), MmsValue_getBinaryTimeAsUtcMs(&rangeStop),
                     entryCallback, entryDataCallback, &encoder);
         }
-        else if (hasEntrySpec && hasTimeSpec) {
+        else if (hasEntrySpec && hasTimeSpec)
+        {
             LogStorage_getEntriesAfter(logStorage, MmsValue_getBinaryTimeAsUtcMs(&rangeStart), *((uint64_t*) entryIdBuf),
                     entryCallback, entryDataCallback, &encoder);
         }
-        else {
+        else
+        {
             if (DEBUG_MMS_SERVER)
                 printf("MMS_SERVER: readJournal missing valid argument combination\n");
 
@@ -489,7 +533,6 @@ mmsServer_handleReadJournalRequest(
 
             return;
         }
-
     }
     /* actual encoding will happen in callback handler. When getEntries returns the data is
      * already encoded in the buffer.

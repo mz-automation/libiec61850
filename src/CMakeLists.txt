@@ -1,9 +1,16 @@
+if(WITH_MBEDTLS3)
+include_directories(
+    ${CMAKE_CURRENT_LIST_DIR}/tls/mbedtls3
+    ${MBEDTLS_INCLUDE_DIR}
+)
+else()
 if(WITH_MBEDTLS)
 include_directories(
-	${CMAKE_CURRENT_LIST_DIR}/tls/mbedtls
-    ${CMAKE_CURRENT_LIST_DIR}/../third_party/mbedtls/mbedtls-2.16/include
+    ${CMAKE_CURRENT_LIST_DIR}/tls/mbedtls
+    ${MBEDTLS_INCLUDE_DIR}
 )
 endif(WITH_MBEDTLS)
+endif(WITH_MBEDTLS3)
 
 set (lib_common_SRCS
 ./common/string_map.c
@@ -85,6 +92,15 @@ set (lib_common_SRCS
 ./r_session/r_session_crypto_mbedtls.c
 ./logging/log_storage.c
 )
+
+if(FOUND_SQLITE3_SOURCE)
+message("sqlite3 source -> adding to lib source")
+set (lib_common_SRCS
+    ${lib_common_SRCS}
+    ./logging/drivers/sqlite/log_storage_sqlite.c
+    ./../third_party/sqlite/sqlite3.c
+)
+endif(FOUND_SQLITE3_SOURCE)
 
 set (lib_asn1c_SRCS
 ./mms/iso_mms/asn1c/DataAccessError.c
@@ -191,7 +207,7 @@ set (lib_sv_SRCS
 ./sampled_values/sv_publisher.c
 )
 
-if(WITH_MBEDTLS AND (CONFIG_IEC61850_R_GOOSE OR CONFIG_IEC61850_R_SMV))
+if((WITH_MBEDTLS OR WITH_MBEDTLS3) AND (CONFIG_IEC61850_R_GOOSE OR CONFIG_IEC61850_R_SMV))
 set (lib_rsession_SRCS
 ./r_session/r_session.c
 ./r_session/r_session_crypto_mbedtls.c
@@ -222,28 +238,14 @@ set (lib_bsd_SRCS
 IF(WIN32)
 
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../third_party/winpcap/Lib/wpcap.lib")
-message("Found winpcap -> can compile with GOOSE support")
+message("Found winpcap -> can compile with L2 GOOSE/SMV support")
 set(WITH_WPCAP 1)
 endif()
 
 set_source_files_properties(${lib_asn1c_SRCS}
                                        PROPERTIES LANGUAGE C)
 
-IF(MSVC)
-set_source_files_properties(${lib_common_SRCS} ${lib_windows_SRCS}
-                                       PROPERTIES LANGUAGE CXX)
-set_source_files_properties(${lib_rsession_SRCS}
-                                       PROPERTIES LANGUAGE CXX)
-ENDIF()
-
 IF(WITH_WPCAP)
-IF(MSVC)
-set_source_files_properties(${lib_goose_SRCS}
-                                       PROPERTIES LANGUAGE CXX)
-set_source_files_properties(${lib_sv_SRCS}
-                                       PROPERTIES LANGUAGE CXX)
-
-ENDIF()
 ELSE()
 add_definitions(-DEXCLUDE_ETHERNET_WINDOWS)
 ENDIF()
@@ -252,7 +254,11 @@ include_directories(
   ../third_party/winpcap/include
 )
 
-IF(WITH_WPCAP)
+include_directories(
+  ../third_party/sqlite
+)
+
+IF(WITH_WPCAP OR CONFIG_IEC61850_R_GOOSE OR CONFIG_IEC61850_R_SMV)
 set (library_SRCS
     ${lib_common_SRCS}
     ${lib_asn1c_SRCS}
@@ -268,11 +274,10 @@ set (library_SRCS
     ${lib_common_SRCS}
     ${lib_asn1c_SRCS}
     ${lib_windows_SRCS}
-    ${lib_rsession_SRCS}
     ${lib_sntp_SRCS}
 )
 
-ENDIF(WITH_WPCAP)
+ENDIF(WITH_WPCAP OR CONFIG_IEC61850_R_GOOSE OR CONFIG_IEC61850_R_SMV)
 
 ELSEIF(UNIX)
 IF(APPLE)
@@ -370,7 +375,7 @@ IF(UNIX)
   ENDIF (CONFIG_SYSTEM_HAS_CLOCK_GETTIME)
 ENDIF(UNIX)
 IF(MINGW)
-  target_link_libraries(iec61850-shared ws2_32 iphlpapi)
+  target_link_libraries(iec61850-shared ws2_32 iphlpapi bcrypt)
   target_link_libraries(iec61850 ws2_32 iphlpapi)
 ENDIF(MINGW)
 

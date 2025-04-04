@@ -36,7 +36,7 @@ namespace example2
             }
             catch (IedConnectionException e)
             {
-                Console.WriteLine("IED connection excepion: " + e.Message);
+                Console.WriteLine("IED connection exception: " + e.Message + " err: " + e.GetIedClientError().ToString());
             }
 
 			// release all resources - do NOT use the object after this call!!

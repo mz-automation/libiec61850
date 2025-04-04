@@ -1,7 +1,7 @@
 /*
  *  ber_encoder.c
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013-2024 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -485,7 +485,6 @@ BerEncoder_encodeOIDToBuffer(const char* oidString, uint8_t* buffer, int maxBufL
                 requiredBytes--;
             }
         }
-
     }
 
     return encodedBytes;

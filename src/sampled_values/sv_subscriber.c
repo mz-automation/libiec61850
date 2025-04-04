@@ -1,7 +1,7 @@
 /*
  *  sv_receiver.c
  *
- *  Copyright 2015-2022 Michael Zillgith
+ *  Copyright 2015-2024 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -45,7 +45,8 @@
 
 #define ETH_P_SV 0x88ba
 
-struct sSVReceiver {
+struct sSVReceiver
+{
     bool running;
     bool stopped;
 
@@ -64,11 +65,12 @@ struct sSVReceiver {
 
 #if (CONFIG_MMS_THREADLESS_STACK == 0)
     Semaphore subscriberListLock;
+    Thread thread;
 #endif
-
 };
 
-struct sSVSubscriber {
+struct sSVSubscriber
+{
     uint8_t ethAddr[6];
 
     uint16_t appId;
@@ -77,8 +79,8 @@ struct sSVSubscriber {
     void* listenerParameter;
 };
 
-struct sSVSubscriber_ASDU {
-
+struct sSVSubscriber_ASDU
+{
     char* svId;
     char* datSet;
 
@@ -98,7 +100,8 @@ SVReceiver_create(void)
 {
     SVReceiver self = (SVReceiver) GLOBAL_CALLOC(1, sizeof(struct sSVReceiver));
 
-    if (self != NULL) {
+    if (self)
+    {
         self->subscriberList = LinkedList_create();
         self->buffer = (uint8_t*) GLOBAL_MALLOC(ETH_BUFFER_LENGTH);
 
@@ -106,6 +109,7 @@ SVReceiver_create(void)
 
 #if (CONFIG_MMS_THREADLESS_STACK == 0)
         self->subscriberListLock = Semaphore_create(1);
+        self->thread = NULL;
 #endif
     }
 
@@ -118,7 +122,8 @@ SVReceiver_createRemote(RSession session)
 {
     SVReceiver self = (SVReceiver) GLOBAL_CALLOC(1, sizeof(struct sSVReceiver));
 
-    if (self != NULL) {
+    if (self != NULL)
+    {
         self->subscriberList = LinkedList_create();
         self->buffer = NULL;
 
@@ -189,13 +194,16 @@ svReceiverLoop(void* threadParameter)
 {
     SVReceiver self = (SVReceiver) threadParameter;
 
-    if (self->ethSocket) {
+#if (CONFIG_IEC61850_L2_SMV == 1)
+    if (self->ethSocket)
+    {
         EthernetHandleSet handleSet = EthernetHandleSet_new();
         EthernetHandleSet_addSocket(handleSet, self->ethSocket);
 
         self->stopped = false;
 
-        while (self->running) {
+        while (self->running)
+        {
             switch (EthernetHandleSet_waitReady(handleSet, 100))
             {
             case -1:
@@ -211,15 +219,19 @@ svReceiverLoop(void* threadParameter)
 
         EthernetHandleSet_destroy(handleSet);
     }
+#endif /* (CONFIG_IEC61850_L2_SMV == 1) */
+
 #if (CONFIG_IEC61850_R_SMV == 1)
-    else  if (self->session) {
+    if (self->session)
+    {
         self->stopped = false;
 
         HandleSet handleSet = Handleset_new();
 
         Handleset_addSocket(handleSet, RSession_getSocket(self->session));
 
-        while (self->running) {
+        while (self->running)
+        {
             switch (Handleset_waitReady(handleSet, 100))
             {
             case -1:
@@ -245,9 +257,10 @@ svReceiverLoop(void* threadParameter)
 void
 SVReceiver_start(SVReceiver self)
 {
-    if (SVReceiver_startThreadless(self)) {
-
-        if (self->interfaceId) {
+    if (SVReceiver_startThreadless(self))
+    {
+        if (self->interfaceId)
+        {
             if (DEBUG_SV_SUBSCRIBER)
                 printf("SV_SUBSCRIBER: SV receiver started for interface %s\n", self->interfaceId);
         }
@@ -256,17 +269,24 @@ SVReceiver_start(SVReceiver self)
                 printf("SV_SUBSCRIBER: R-SV receiver started\n");
         }
 
-        Thread thread = Thread_create((ThreadExecutionFunction) svReceiverLoop, (void*) self, true);
+#if (CONFIG_MMS_THREADLESS_STACK == 0)
 
-        if (thread) {
-            Thread_start(thread);
+        self->thread = Thread_create((ThreadExecutionFunction) svReceiverLoop, (void*) self, false);
+
+        if (self->thread)
+        {
+            Thread_start(self->thread);
         }
-        else {
+        else
+        {
             if (DEBUG_SV_SUBSCRIBER)
                 printf("SV_SUBSCRIBER: Failed to start thread\n");
         }
+
+#endif /* (CONFIG_MMS_THREADLESS_STACK == 0) */
     }
-    else {
+    else
+    {
         if (DEBUG_SV_SUBSCRIBER)
             printf("SV_SUBSCRIBER: Starting SV receiver failed for interface %s\n", self->interfaceId);
     }
@@ -278,29 +298,43 @@ SVReceiver_isRunning(SVReceiver self)
     return self->running;
 }
 
-
 void
 SVReceiver_stop(SVReceiver self)
 {
-    if (self->running) {
-        SVReceiver_stopThreadless(self);
+    if (self->running)
+    {
+        self->running = false;
 
-        while (self->stopped == false)
-            Thread_sleep(1);
+#if (CONFIG_MMS_THREADLESS_STACK == 0)
+        if (self->thread)
+        {
+            Thread_destroy(self->thread);
+            self->thread = NULL;
+        }
+#endif /* (CONFIG_MMS_THREADLESS_STACK == 0) */
+
+        SVReceiver_stopThreadless(self);
     }
 }
 
 void
 SVReceiver_destroy(SVReceiver self)
 {
+    SVReceiver_stop(self);
+
     LinkedList_destroyDeep(self->subscriberList,
             (LinkedListValueDeleteFunction) SVSubscriber_destroy);
 
-    if (self->interfaceId != NULL)
+    if (self->interfaceId)
         GLOBAL_FREEMEM(self->interfaceId);
 
 #if (CONFIG_MMS_THREADLESS_STACK == 0)
-        Semaphore_destroy(self->subscriberListLock);
+    if (self->thread) {
+        Thread_destroy(self->thread);
+        self->thread = NULL;
+    }
+
+    Semaphore_destroy(self->subscriberListLock);
 #endif
 
     GLOBAL_FREEMEM(self->buffer);
@@ -311,48 +345,53 @@ bool
 SVReceiver_startThreadless(SVReceiver self)
 {
 #if (CONFIG_IEC61850_R_SMV == 1)
-    if (self->session) {
-        if (RSession_startListening(self->session) == R_SESSION_ERROR_OK) {
+    if (self->session)
+    {
+        if (RSession_start(self->session) == R_SESSION_ERROR_OK)
+        {
             self->running = true;
 
             return true;
         }
-        else {
-            return false;
-        }
     }
-    else {
+    else
+    {
 #endif /* (CONFIG_IEC61850_R_SMV == 1) */
+
+#if (CONFIG_IEC61850_L2_SMV == 1)
         if (self->interfaceId == NULL)
             self->ethSocket = Ethernet_createSocket(CONFIG_ETHERNET_INTERFACE_ID, NULL);
         else
             self->ethSocket = Ethernet_createSocket(self->interfaceId, NULL);
 
-        if (self->ethSocket) {
-
+        if (self->ethSocket)
+        {
             Ethernet_setProtocolFilter(self->ethSocket, ETH_P_SV);
 
             self->running = true;
-        }
 
-        if (self->ethSocket)
             return true;
-        else
-            return false;
+        }
+#endif /* (CONFIG_IEC61850_L2_SMV == 1) */
+
 #if (CONFIG_IEC61850_R_SMV == 1)
     }
 #endif /* (CONFIG_IEC61850_R_SMV == 1) */
+
+    return false;
 }
 
 void
 SVReceiver_stopThreadless(SVReceiver self)
 {
+#if (CONFIG_IEC61850_L2_SMV == 1)
     if (self->ethSocket)
         Ethernet_destroySocket(self->ethSocket);
+#endif /* (CONFIG_IEC61850_L2_SMV == 1) */
 
 #if (CONFIG_IEC61850_R_SMV == 1)
     if (self->session) {
-        RSession_stopListening(self->session);
+        RSession_stop(self->session);
     }
 #endif /* (CONFIG_IEC61850_R_SMV == 1) */
 
@@ -371,19 +410,21 @@ parseASDU(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, int length)
     struct sSVSubscriber_ASDU asdu;
     memset(&asdu, 0, sizeof(struct sSVSubscriber_ASDU));
 
-    while (bufPos < length) {
+    while (bufPos < length)
+    {
         int elementLength;
 
         uint8_t tag = buffer[bufPos++];
 
         bufPos = BerDecoder_decodeLength(buffer, &elementLength, bufPos, length);
-        if (bufPos < 0) {
+        if (bufPos < 0)
+        {
             if (DEBUG_SV_SUBSCRIBER) printf("SV_SUBSCRIBER: Malformed message: failed to decode BER length tag!\n");
             return;
         }
 
-        switch (tag) {
-
+        switch (tag)
+        {
         case 0x80:
             asdu.svId = (char*) (buffer + bufPos);
             svIdLength = elementLength;
@@ -436,7 +477,8 @@ parseASDU(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, int length)
     if (asdu.datSet != NULL)
         asdu.datSet[datSetLength] = 0;
     
-    if (DEBUG_SV_SUBSCRIBER) {
+    if (DEBUG_SV_SUBSCRIBER)
+    {
         printf("SV_SUBSCRIBER:   SV ASDU: ----------------\n");
         printf("SV_SUBSCRIBER:     DataLength: %d\n", asdu.dataBufferLength);
         printf("SV_SUBSCRIBER:     SvId: %s\n", asdu.svId);
@@ -459,7 +501,8 @@ parseASDU(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, int length)
     }
 
     /* Call callback handler */
-    if (subscriber) {
+    if (subscriber)
+    {
         if (subscriber->listener != NULL)
             subscriber->listener(subscriber, subscriber->listenerParameter, &asdu);
     }
@@ -470,18 +513,21 @@ parseSequenceOfASDU(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, i
 {
     int bufPos = 0;
 
-    while (bufPos < length) {
+    while (bufPos < length)
+    {
         int elementLength;
 
         uint8_t tag = buffer[bufPos++];
 
         bufPos = BerDecoder_decodeLength(buffer, &elementLength, bufPos, length);
-        if (bufPos < 0) {
+        if (bufPos < 0)
+        {
             if (DEBUG_SV_SUBSCRIBER) printf("SV_SUBSCRIBER: Malformed message: failed to decode BER length tag!\n");
             return;
         }
 
-        switch (tag) {
+        switch (tag)
+        {
         case 0x30:
             parseASDU(self, subscriber, buffer + bufPos, elementLength);
             break;
@@ -500,25 +546,29 @@ parseSVPayload(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, int ap
 {
     int bufPos = 0;
 
-    if (buffer[bufPos++] == 0x60) {
+    if (buffer[bufPos++] == 0x60)
+    {
         int elementLength;
 
         bufPos = BerDecoder_decodeLength(buffer, &elementLength, bufPos, apduLength);
-        if (bufPos < 0) {
+        if (bufPos < 0)
+        {
             if (DEBUG_SV_SUBSCRIBER) printf("SV_SUBSCRIBER: Malformed message: failed to decode BER length tag!\n");
             return;
         }
 
         int svEnd = bufPos + elementLength;
 
-        while (bufPos < svEnd) {
+        while (bufPos < svEnd)
+        {
             uint8_t tag = buffer[bufPos++];
 
             bufPos = BerDecoder_decodeLength(buffer, &elementLength, bufPos, svEnd);
             if (bufPos < 0)
                 goto exit_error;
 
-            switch(tag) {
+            switch(tag)
+            {
             case 0x80: /* noASDU (INTEGER) */
                 /* ignore */
                 break;
@@ -531,7 +581,6 @@ parseSVPayload(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, int ap
                 if (DEBUG_SV_SUBSCRIBER) printf("SV_SUBSCRIBER: found unknown tag %02x\n", tag);
                 break;
             }
-
 
             bufPos += elementLength;
         }
@@ -567,35 +616,37 @@ handleSVApdu(SVReceiver self, uint16_t appId, uint8_t* apdu, int apduLength, uin
 
     bool subscriberFound = false;
 
-    while (element != NULL) {
+    while (element)
+    {
         subscriber = (SVSubscriber) LinkedList_getData(element);
 
-        if (subscriber->appId == appId) {
-
-
-            if (self->checkDestAddr) {
-
-                if (self->ethSocket) {
-                    if (memcmp(dstAddr, subscriber->ethAddr, 6) == 0) {
+        if (subscriber->appId == appId)
+        {
+            if (self->checkDestAddr)
+            {
+                if (self->ethSocket)
+                {
+                    if (memcmp(dstAddr, subscriber->ethAddr, 6) == 0)
+                    {
                         subscriberFound = true;
                         break;
                     }
                     else
+                    {
                         if (DEBUG_SV_SUBSCRIBER)
                             printf("SV_SUBSCRIBER: Checking ethernet dest address failed!\n");
+                    }
                 }
-                else {
+                else
+                {
                     //TODO check destination IP address for R-SV
-
                 }
-
             }
-            else {
+            else
+            {
                 subscriberFound = true;
                 break;
             }
-
-
         }
 
         element = LinkedList_getNext(element);
@@ -606,8 +657,11 @@ handleSVApdu(SVReceiver self, uint16_t appId, uint8_t* apdu, int apduLength, uin
 #endif
 
     if (subscriberFound)
+    {
         parseSVPayload(self, subscriber, apdu, apduLength);
-    else {
+    }
+    else
+    {
         if (DEBUG_SV_SUBSCRIBER)
             printf("SV_SUBSCRIBER: SV message ignored due to unknown APPID value or dest address mismatch\n");
     }
@@ -629,7 +683,8 @@ parseSVMessage(SVReceiver self, int numbytes)
     int headerLength = 14;
 
     /* check for VLAN tag */
-    if ((buffer[bufPos] == 0x81) && (buffer[bufPos + 1] == 0x00)) {
+    if ((buffer[bufPos] == 0x81) && (buffer[bufPos + 1] == 0x00))
+    {
         bufPos += 4; /* skip VLAN tag */
         headerLength += 4;
     }
@@ -655,7 +710,8 @@ parseSVMessage(SVReceiver self, int numbytes)
 
     int apduLength = length - 8;
 
-    if (numbytes < length + headerLength) {
+    if (numbytes < length + headerLength)
+    {
         if (DEBUG_SV_SUBSCRIBER)
             printf("SV_SUBSCRIBER: Invalid PDU size\n");
         return;
@@ -664,27 +720,36 @@ parseSVMessage(SVReceiver self, int numbytes)
     handleSVApdu(self, appId, buffer + bufPos, apduLength, dstAddr);
 }
 
+#if (CONFIG_IEC61850_R_SMV == 1)
 static void
 handleSessionPayloadElement(void* parameter, uint16_t appId, uint8_t* payloadData, int payloadSize)
 {
+    (void)appId;
     SVReceiver self = (SVReceiver) parameter;
 
     handleSVApdu(self, appId, payloadData, payloadSize, NULL);
 }
+#endif /* (CONFIG_IEC61850_R_SMV == 1) */
 
 bool
 SVReceiver_tick(SVReceiver self)
 {
-    if (self->ethSocket) {
+#if (CONFIG_IEC61850_L2_SMV == 1)
+    if (self->ethSocket)
+    {
         int packetSize = Ethernet_receivePacket(self->ethSocket, self->buffer, ETH_BUFFER_LENGTH);
 
-        if (packetSize > 0) {
+        if (packetSize > 0)
+        {
             parseSVMessage(self, packetSize);
             return true;
         }
     }
+#endif /* (CONFIG_IEC61850_L2_SMV == 1) */
+
 #if (CONFIG_IEC61850_R_SMV == 1)
-    else if (self->session) {
+    if (self->session)
+    {
         if (RSession_receiveMessage(self->session, handleSessionPayloadElement, (void*) self) == R_SESSION_ERROR_OK)
             return true;
     }
@@ -698,10 +763,11 @@ SVSubscriber_create(const uint8_t* ethAddr, uint16_t appID)
 {
     SVSubscriber self = (SVSubscriber) GLOBAL_CALLOC(1, sizeof(struct sSVSubscriber));
 
-    if (self != NULL) {
+    if (self)
+    {
         self->appId = appID;
 
-        if (ethAddr != NULL)
+        if (ethAddr)
             memcpy(self->ethAddr, ethAddr, 6);
     }
 
@@ -711,10 +777,9 @@ SVSubscriber_create(const uint8_t* ethAddr, uint16_t appID)
 void
 SVSubscriber_destroy(SVSubscriber self)
 {
-    if (self != NULL)
+    if (self)
         GLOBAL_FREEMEM(self);
 }
-
 
 void
 SVSubscriber_setListener(SVSubscriber self,  SVUpdateListener listener, void* parameter)
@@ -728,7 +793,6 @@ SVSubscriber_ASDU_getSmpSynch(SVSubscriber_ASDU self)
 {
     return self->smpSynch[0];
 }
-
 
 uint16_t
 SVSubscriber_ASDU_getSmpCnt(SVSubscriber_ASDU self)
@@ -768,7 +832,7 @@ decodeUtcTimeToNsTime(uint8_t* buffer, uint8_t* timeQuality)
     nsVal = nsVal * 1000000000UL;
     nsVal = nsVal >> 24;
 
-    if (timeQuality != NULL)
+    if (timeQuality)
         *timeQuality = buffer[7];
 
     uint64_t timeval64 = (uint64_t) timeval32 * 1000000000ULL + nsVal;
@@ -781,7 +845,7 @@ SVSubscriber_ASDU_getRefrTmAsMs(SVSubscriber_ASDU self)
 {
     msSinceEpoch msTime = 0;
 
-    if (self->refrTm != NULL)
+    if (self->refrTm)
         msTime = decodeUtcTimeToNsTime(self->refrTm, NULL);
 
     return (msTime / 1000000ULL);
@@ -792,7 +856,7 @@ SVSubscriber_ASDU_getRefrTmAsNs(SVSubscriber_ASDU self)
 {
     nsSinceEpoch nsTime = 0;
 
-    if (self->refrTm != NULL)
+    if (self->refrTm)
         nsTime = decodeUtcTimeToNsTime(self->refrTm, NULL);
 
     return nsTime;
@@ -1035,100 +1099,3 @@ SVSubscriber_ASDU_getDataSize(SVSubscriber_ASDU self)
 {
     return self->dataBufferLength;
 }
-
-uint16_t
-SVClientASDU_getSmpCnt(SVSubscriber_ASDU self)
-{
-    return SVSubscriber_ASDU_getSmpCnt(self);
-}
-
-const char*
-SVClientASDU_getSvId(SVSubscriber_ASDU self)
-{
-    return SVSubscriber_ASDU_getSvId(self);
-}
-
-uint32_t
-SVClientASDU_getConfRev(SVSubscriber_ASDU self)
-{
-    return SVSubscriber_ASDU_getConfRev(self);
-}
-
-bool
-SVClientASDU_hasRefrTm(SVSubscriber_ASDU self)
-{
-    return SVSubscriber_ASDU_hasRefrTm(self);
-}
-
-uint64_t
-SVClientASDU_getRefrTmAsMs(SVSubscriber_ASDU self)
-{
-    return SVSubscriber_ASDU_getRefrTmAsMs(self);
-}
-
-int8_t
-SVClientASDU_getINT8(SVSubscriber_ASDU self, int index)
-{
-    return SVSubscriber_ASDU_getINT8(self, index);
-}
-
-int16_t
-SVClientASDU_getINT16(SVSubscriber_ASDU self, int index)
-{
-    return SVSubscriber_ASDU_getINT16(self, index);
-}
-
-int32_t
-SVClientASDU_getINT32(SVSubscriber_ASDU self, int index)
-{
-    return SVSubscriber_ASDU_getINT32(self, index);
-}
-
-int64_t
-SVClientASDU_getINT64(SVSubscriber_ASDU self, int index)
-{
-    return SVSubscriber_ASDU_getINT64(self, index);
-}
-
-uint8_t
-SVClientASDU_getINT8U(SVSubscriber_ASDU self, int index)
-{
-    return SVSubscriber_ASDU_getINT8U(self, index);
-}
-
-uint16_t
-SVClientASDU_getINT16U(SVSubscriber_ASDU self, int index)
-{
-    return SVSubscriber_ASDU_getINT16U(self, index);
-}
-
-uint32_t
-SVClientASDU_getINT32U(SVSubscriber_ASDU self, int index)
-{
-    return SVSubscriber_ASDU_getINT32U(self, index);
-}
-
-uint64_t
-SVClientASDU_getINT64U(SVSubscriber_ASDU self, int index)
-{
-    return SVSubscriber_ASDU_getINT64U(self, index);
-}
-
-float
-SVClientASDU_getFLOAT32(SVSubscriber_ASDU self, int index)
-{
-    return SVSubscriber_ASDU_getFLOAT32(self, index);
-}
-
-double
-SVClientASDU_getFLOAT64(SVSubscriber_ASDU self, int index)
-{
-    return SVSubscriber_ASDU_getFLOAT64(self, index);
-}
-
-int
-SVClientASDU_getDataSize(SVSubscriber_ASDU self)
-{
-    return SVSubscriber_ASDU_getDataSize(self);
-}
-

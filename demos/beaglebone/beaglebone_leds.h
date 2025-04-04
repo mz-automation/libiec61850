@@ -6,9 +6,8 @@
 #define BEAGLEBONE_LEDS_H_
 
 
-/* set to 1 if you want to run the demo on a PC */
-//#define SIMULATED
-
+/* define SIMULATED if you want to run the demo on a PC */
+#define SIMULATED
 
 
 /* select correct file paths to access LEDs - depends on beaglebones linux distro/version */

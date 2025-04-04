@@ -3,22 +3,22 @@
  *
  *  Copyright 2013 Michael Zillgith
  *
- *	This file is part of libIEC61850.
+ *  This file is part of libIEC61850.
  *
- *	libIEC61850 is free software: you can redistribute it and/or modify
- *	it under the terms of the GNU General Public License as published by
- *	the Free Software Foundation, either version 3 of the License, or
- *	(at your option) any later version.
+ *  libIEC61850 is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
  *
- *	libIEC61850 is distributed in the hope that it will be useful,
- *	but WITHOUT ANY WARRANTY; without even the implied warranty of
- *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *	GNU General Public License for more details.
+ *  libIEC61850 is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
  *
- *	You should have received a copy of the GNU General Public License
- *	along with libIEC61850.  If not, see <http://www.gnu.org/licenses/>.
+ *  You should have received a copy of the GNU General Public License
+ *  along with libIEC61850.  If not, see <http://www.gnu.org/licenses/>.
  *
- *	See COPYING file for the complete license text.
+ *  See COPYING file for the complete license text.
  */
 
 #include "libiec61850_platform_includes.h"
@@ -28,29 +28,36 @@
 MmsNamedVariableListEntry
 MmsNamedVariableListEntry_create(MmsAccessSpecifier accessSpecifier)
 {
-	MmsNamedVariableListEntry listEntry = (MmsNamedVariableListEntry) GLOBAL_MALLOC(sizeof(MmsAccessSpecifier));
+	MmsNamedVariableListEntry self = (MmsNamedVariableListEntry) GLOBAL_MALLOC(sizeof(MmsAccessSpecifier));
 
-	listEntry->domain = accessSpecifier.domain;
-	listEntry->variableName = StringUtils_copyString(accessSpecifier.variableName);
-	listEntry->arrayIndex = accessSpecifier.arrayIndex;
+	if (self)
+	{
+		self->domain = accessSpecifier.domain;
+		self->variableName = StringUtils_copyString(accessSpecifier.variableName);
+		self->arrayIndex = accessSpecifier.arrayIndex;
 
-	if (accessSpecifier.componentName != NULL)
-		listEntry->componentName = StringUtils_copyString(accessSpecifier.componentName);
-	else
-		listEntry->componentName = NULL;
+		if (accessSpecifier.componentName)
+			self->componentName = StringUtils_copyString(accessSpecifier.componentName);
+		else
+			self->componentName = NULL;
+	}
 
-	return listEntry;
+	return self;
 }
 
 void
 MmsNamedVariableListEntry_destroy(MmsNamedVariableListEntry self)
 {
-	GLOBAL_FREEMEM(self->variableName);
-	if (self->componentName)
-	    GLOBAL_FREEMEM(self->componentName);
-	GLOBAL_FREEMEM(self);
-}
+	if (self)
+	{
+		GLOBAL_FREEMEM(self->variableName);
 
+		if (self->componentName)
+			GLOBAL_FREEMEM(self->componentName);
+
+		GLOBAL_FREEMEM(self);
+	}
+}
 
 MmsDomain*
 MmsNamedVariableListEntry_getDomain(MmsNamedVariableListEntry self)
@@ -59,7 +66,8 @@ MmsNamedVariableListEntry_getDomain(MmsNamedVariableListEntry self)
 }
 
 char*
-MmsNamedVariableListEntry_getVariableName(MmsNamedVariableListEntry self) {
+MmsNamedVariableListEntry_getVariableName(MmsNamedVariableListEntry self)
+{
 	return self->variableName;
 }
 
@@ -68,10 +76,13 @@ MmsNamedVariableList_create(MmsDomain* domain, char* name, bool deletable)
 {
 	MmsNamedVariableList self = (MmsNamedVariableList) GLOBAL_MALLOC(sizeof(struct sMmsNamedVariableList));
 
-	self->deletable = deletable;
-	self->name = StringUtils_copyString(name);
-	self->listOfVariables = LinkedList_create();
-	self->domain = domain;
+	if (self)
+	{
+		self->deletable = deletable;
+		self->name = StringUtils_copyString(name);
+		self->listOfVariables = LinkedList_create();
+		self->domain = domain;
+	}
 
 	return self;
 }
@@ -116,9 +127,10 @@ deleteVariableListEntry(void* listEntry)
 void
 MmsNamedVariableList_destroy(MmsNamedVariableList self)
 {
-	LinkedList_destroyDeep(self->listOfVariables, deleteVariableListEntry);
-	GLOBAL_FREEMEM(self->name);
-	GLOBAL_FREEMEM(self);
+	if (self)
+	{
+		LinkedList_destroyDeep(self->listOfVariables, deleteVariableListEntry);
+		GLOBAL_FREEMEM(self->name);
+		GLOBAL_FREEMEM(self);
+	}
 }
-
-

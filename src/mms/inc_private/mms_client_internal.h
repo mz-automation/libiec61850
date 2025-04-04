@@ -95,6 +95,8 @@ struct sMmsConnection {
 
     Semaphore outstandingCallsLock;
     MmsOutstandingCall outstandingCalls;
+    int maxOutstandingCalled;
+    int maxOutstandingCalling;
 
     uint32_t requestTimeout;
     uint32_t connectTimeout;
@@ -271,6 +273,11 @@ LIB61850_INTERNAL int
 mmsClient_createWriteRequestArray(uint32_t invokeId, const char* domainId, const char* itemId,
         int startIndex, int elementCount,
         MmsValue* value, ByteBuffer* writeBuffer);
+
+LIB61850_INTERNAL int
+mmsClient_createWriteRequestComponent(uint32_t invokeId, const char* domainId, const char* itemId, const char* component,
+        MmsValue* value,
+        ByteBuffer* writeBuffer);
 
 LIB61850_INTERNAL int
 mmsClient_createWriteRequestAlternateAccessSingleIndexComponent(uint32_t invokeId, const char* domainId, const char* itemId,

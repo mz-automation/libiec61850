@@ -6,7 +6,7 @@ import traceback
 import signal
 import sys
 sys.path.append('.')
-import iec61850
+import pyiec61850 as iec61850
 def signal_handler(signal, frame):
 	global running
 	running =0

@@ -498,11 +498,29 @@ MmsValue_getUtcTimeInMsWithUs(const MmsValue* self, uint32_t* usec);
  * bit 0-4 = subsecond time accuracy (number of significant bits of subsecond time)
  *
  * \param self MmsValue instance to operate on. Has to be of a type MMS_UTCTIME.
- *
  * \param timeQuality the byte representing the time quality
  */
 LIB61850_API void
 MmsValue_setUtcTimeQuality(MmsValue* self, uint8_t timeQuality);
+
+/**
+ * \brief Update an MmsValue object of type MMS_UTCTIME with a millisecond time.
+ * 
+ * Meaning of the bits in the timeQuality byte:
+ *
+ * bit 7 = leapSecondsKnown
+ * bit 6 = clockFailure
+ * bit 5 = clockNotSynchronized
+ * bit 0-4 = subsecond time accuracy (number of significant bits of subsecond time)
+ *
+ * \param self MmsValue instance to operate on. Has to be of a type MMS_UTCTIME.
+ * \param timeval the new value in milliseconds since epoch (1970/01/01 00:00 UTC)
+ * \param timeQuality the byte representing the time quality
+ * 
+ * \return the updated MmsValue instance
+ */
+LIB61850_API MmsValue*
+MmsValue_setUtcTimeMsEx(MmsValue* self, uint64_t timeval, uint8_t timeQuality);
 
 /**
  * \brief get the TimeQuality byte of the UtcTime
@@ -999,6 +1017,20 @@ MmsValue_printToBuffer(const MmsValue* self, char* buffer, int bufferSize);
  */
 LIB61850_API MmsValue*
 MmsValue_decodeMmsData(uint8_t* buffer, int bufPos, int bufferLength, int* endBufPos);
+
+/**
+ * \brief create a new MmsValue instance from a BER encoded MMS Data element (deserialize) with a defined maximum recursion depth
+ *
+ * \param buffer the buffer to read from
+ * \param bufPos the start position of the mms value data in the buffer
+ * \param bufferLength the length of the buffer
+ * \param endBufPos the position in the buffer after the read MMS data element (NULL if not required)
+ * \param maxDepth the maximum recursion depth
+ *
+ * \return the MmsValue instance created from the buffer
+ */
+LIB61850_API MmsValue*
+MmsValue_decodeMmsDataMaxRecursion(uint8_t* buffer, int bufPos, int bufferLength, int* endBufPos, int maxDepth);
 
 /**
  * \brief Serialize the MmsValue instance as BER encoded MMS Data element

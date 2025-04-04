@@ -21,10 +21,10 @@ main(int argc, char** argv)
 {
     RSession rSession = RSession_create();
 
-    if (rSession) {
-
-        //RSession_setRemoteAddress(sessionP, "192.168.56.101", 102);
-        //RSession_setRemoteAddress(rSession, "192.168.2.227", 102);
+    if (rSession)
+    {
+        /* Call RSession_setLocalAddress to use a particular interface to send the R-GOOSE messages */
+        //RSession_setLocalAddress(rSession, "169.254.110.126", -1);
         RSession_setRemoteAddress(rSession, "230.0.10.10", 102);
 
         SVPublisher svPublisher = SVPublisher_createRemote(rSession, 0x4000);
@@ -32,8 +32,8 @@ main(int argc, char** argv)
         uint32_t activeKeyId = 1;
         uint64_t nextKeyChangeTime = Hal_getTimeInMs() + 5000;
 
-        if (svPublisher) {
-
+        if (svPublisher)
+        {
             signal(SIGINT, sigint_handler);
 
             char* key1 = "0123456789ABCDEF";
@@ -61,7 +61,10 @@ main(int argc, char** argv)
             float fVal1 = 1234.5678f;
             float fVal2 = 0.12345f;
 
-            while (running) {
+            RSession_start(rSession);
+
+            while (running)
+            {
                 Timestamp ts;
                 Timestamp_clearFlags(&ts);
                 Timestamp_setTimeInMilliseconds(&ts, Hal_getTimeInMs());
@@ -82,7 +85,8 @@ main(int argc, char** argv)
 
                 SVPublisher_publish(svPublisher);
 
-                if (Hal_getTimeInMs() >= nextKeyChangeTime) {
+                if (Hal_getTimeInMs() >= nextKeyChangeTime)
+                {
                     /* change key */
 
                     if (activeKeyId == 1)
@@ -99,14 +103,15 @@ main(int argc, char** argv)
 
             SVPublisher_destroy(svPublisher);
         }
-        else {
+        else
+        {
             printf("Failed to create SV publisher\n");
         }
 
         RSession_destroy(rSession);
     }
-    else {
+    else
+    {
         printf("Failed to create remote session instance\n");
     }
-
 }

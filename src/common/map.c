@@ -73,10 +73,12 @@ Map_removeEntry(Map map, void* key, bool deleteKey)
     MapEntry* entry;
     void* value = NULL;
 
-    while ((element = LinkedList_getNext(element)) != NULL) {
+    while ((element = LinkedList_getNext(element)) != NULL)
+    {
         entry = (MapEntry*) element->data;
 
-        if (map->compareKeys(key, entry->key) == 0) {
+        if (map->compareKeys(key, entry->key) == 0)
+        {
             lastElement->next = element->next;
             value = entry->value;
 
@@ -99,11 +101,13 @@ Map_getEntry(Map map, void* key)
 {
     LinkedList element = map->entries;
 
-    while ((element = LinkedList_getNext(element)) != NULL) {
+    while ((element = LinkedList_getNext(element)) != NULL)
+    {
         MapEntry* entry = (MapEntry*) element->data;
+
         if (map->compareKeys(key, entry->key) == 0) {
             return entry->value;
-        };
+        }
     }
 
     return NULL;
@@ -114,10 +118,13 @@ Map_delete(Map map, bool deleteKey)
 {
     LinkedList element = map->entries;
 
-    while ((element = LinkedList_getNext(element)) != NULL) {
+    while ((element = LinkedList_getNext(element)) != NULL)
+    {
         MapEntry* entry = (MapEntry*) element->data;
+
         if (deleteKey == true)
             GLOBAL_FREEMEM(entry->key);
+
         GLOBAL_FREEMEM(entry->value);
     }
 
@@ -130,8 +137,10 @@ Map_deleteStatic(Map map, bool deleteKey)
 {
     LinkedList element = map->entries;
 
-    if (deleteKey == true) {
-        while ((element = LinkedList_getNext(element)) != NULL) {
+    if (deleteKey == true)
+    {
+        while ((element = LinkedList_getNext(element)) != NULL)
+        {
             MapEntry* entry = (MapEntry*) element->data;
             GLOBAL_FREEMEM(entry->key);
         }
@@ -144,13 +153,17 @@ Map_deleteStatic(Map map, bool deleteKey)
 void
 Map_deleteDeep(Map map, bool deleteKey, void (*valueDeleteFunction)(void*))
 {
-    if (map) {
+    if (map)
+    {
         LinkedList element = map->entries;
 
-        while ((element = LinkedList_getNext(element)) != NULL) {
+        while ((element = LinkedList_getNext(element)) != NULL)
+        {
             MapEntry* entry = (MapEntry*) element->data;
+
             if (deleteKey == true)
                 GLOBAL_FREEMEM(entry->key);
+
             valueDeleteFunction(entry->value);
         }
 

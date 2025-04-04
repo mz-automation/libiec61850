@@ -11,6 +11,8 @@
 
 #include "asn_application.h"	/* Application-visible API */
 
+#define EMIT_ASN_DEBUG 0
+
 #include "lib_memory.h"
 
 #ifndef	__NO_ASSERT_H__		/* Include assert.h only for internal use. */
@@ -98,20 +100,39 @@ static inline void ASN_DEBUG(const char *fmt, ...) { (void)fmt; }
 		if(cb("    ", 4, app_key) < 0) return -1;		\
 } while(0)
 
+#if defined(__SANITIZE_ADDRESS__)
+	#define ASN_DISABLE_STACK_OVERFLOW_CHECK 1
+#elif defined(__has_feature)
+#if __has_feature(address_sanitizer)
+	#define ASN_DISABLE_STACK_OVERFLOW_CHECK 1
+#endif
+#endif
+
 /*
  * Check stack against overflow, if limit is set.
  */
 #define	_ASN_DEFAULT_STACK_MAX	(30000)
-static inline int
-_ASN_STACK_OVERFLOW_CHECK(asn_codec_ctx_t *ctx) {
-	if(ctx && ctx->max_stack_size) {
 
+#if defined(ASN_DISABLE_STACK_OVERFLOW_CHECK)
+static inline int
+_ASN_STACK_OVERFLOW_CHECK(asn_codec_ctx_t *ctx)
+{
+	(void)ctx;
+	return 0;
+}
+#else
+static inline int
+_ASN_STACK_OVERFLOW_CHECK(asn_codec_ctx_t *ctx)
+{
+	if(ctx && ctx->max_stack_size)
+	{
 		/* ctx MUST be allocated on the stack */
 		ptrdiff_t usedstack = ((char *)ctx - (char *)&ctx);
 		if(usedstack > 0) usedstack = -usedstack; /* grows up! */
 
 		/* double negative required to avoid int wrap-around */
-		if(usedstack < -(ptrdiff_t)ctx->max_stack_size) {
+		if(usedstack < -(ptrdiff_t)ctx->max_stack_size)
+		{
 			ASN_DEBUG("Stack limit %ld reached",
 				(long)ctx->max_stack_size);
 			return -1;
@@ -119,6 +140,7 @@ _ASN_STACK_OVERFLOW_CHECK(asn_codec_ctx_t *ctx) {
 	}
 	return 0;
 }
+#endif /* defined(ASN_DISABLE_STACK_OVERFLOW_CHECK) */
 
 #ifdef	__cplusplus
 }

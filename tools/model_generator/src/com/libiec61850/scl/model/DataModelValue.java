@@ -188,19 +188,35 @@ public class DataModelValue {
         	
         case TIMESTAMP:
         case ENTRY_TIME:
-            try {
+            {
                 String modValueString = value.replace(',', '.');
                 
-                SimpleDateFormat parser = new SimpleDateFormat("yyyy-MM-d'T'HH:mm:ss.SSS");
-                parser.setTimeZone(TimeZone.getTimeZone("UTC"));
+                try {
+                    SimpleDateFormat parser = new SimpleDateFormat("yyyy-MM-d'T'HH:mm:ss.SSS");
+                    parser.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+                    Date date = parser.parse(modValueString);
                 
-                Date date = parser.parse(modValueString);
+                    this.value = new Long(date.toInstant().toEpochMilli());
+
+                    break;
+                }
+                catch (java.text.ParseException e) {};
+
+                try {
+                    SimpleDateFormat parser = new SimpleDateFormat("yyyy-MM-d'T'HH:mm:ss");
+                    parser.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+                    Date date = parser.parse(modValueString);
                 
-                this.value = new Long(date.toInstant().toEpochMilli());
-            }
-            catch (java.text.ParseException e) {
+                    this.value = new Long(date.toInstant().toEpochMilli());
+
+                    break;
+                }
+                catch (java.text.ParseException e) {};
+
                 this.value = null;
-                System.out.println("Warning: Val element does not contain a valid time stamp: " + e.getMessage()); 
+                System.out.println("Warning: Val element does not contain a valid time stamp: " + value); 
             }
         
             break;

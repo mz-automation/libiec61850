@@ -1,7 +1,7 @@
 ﻿/*
  *  IEC61850ServerAPI.cs
  *
- *  Copyright 2016-2022 Michael Zillgith
+ *  Copyright 2016-2024 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -1866,6 +1866,17 @@ namespace IEC61850
             [return: MarshalAs(UnmanagedType.I1)]
             static extern bool ControlAction_isSelect(IntPtr self);
 
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
+            static extern bool ControlAction_getSynchroCheck(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
+            static extern bool ControlAction_getInterlockCheck(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr ControlAction_getT(IntPtr self);
+
             private IntPtr self;
             private IedServer.ControlHandlerInfo info;
             private IedServer iedServer;
@@ -1984,6 +1995,28 @@ namespace IEC61850
             public bool IsSelect()
             {
                 return ControlAction_isSelect(self);
+            }
+
+            public bool GetSynchroCheck()
+            {
+                return ControlAction_getSynchroCheck(self);
+            }
+
+            public bool GetInterlockCheck()
+            {
+                return ControlAction_getInterlockCheck(self);
+            }
+
+            /// <summary>
+            /// Gets the time (paramter T) of the control action
+            /// </summary>
+            public Timestamp GetT()
+            {
+                IntPtr tPtr = ControlAction_getT(self);
+
+                Timestamp t = new Timestamp(tPtr, false);
+
+                return new Timestamp(t);
             }
         }
 
@@ -2121,6 +2154,97 @@ namespace IEC61850
 
         public delegate CheckHandlerResult CheckHandler (ControlAction action, object parameter, MmsValue ctlVal, bool test, bool interlockCheck);
 
+        public static class SqliteLogStorage
+        {
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr SqliteLogStorage_createInstance(string filename);
+
+            public static LogStorage CreateLogStorage(string filename)
+            {
+                try
+                {
+                    IntPtr nativeInstance = SqliteLogStorage_createInstance(filename);
+
+                    if (nativeInstance != IntPtr.Zero)
+                        return new LogStorage(nativeInstance);
+                    else
+                        return null;
+                }
+                catch (EntryPointNotFoundException ex)
+                {
+                    Console.WriteLine(ex.Message + " Make sure that the libiec61850.dll was built with sqLite!");
+                    return null;
+                }
+            }
+        }
+
+        public class LogStorage : IDisposable
+        {
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void LogStorage_setMaxLogEntries(IntPtr self, int maxEntries);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern int LogStorage_getMaxLogEntries(IntPtr self);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void LogStorage_destroy(IntPtr self);
+
+            private IntPtr self = IntPtr.Zero;
+
+            internal IntPtr GetNativeInstance()
+            {
+                return self;
+            }
+
+            internal LogStorage(IntPtr self)
+            {
+                this.self = self;
+            }
+
+            private void SetMaxLogEntries(int maxEntries)
+            {
+                LogStorage_setMaxLogEntries(self, maxEntries);
+            }
+
+            private int GetMaxLogEntries()
+            {
+                return LogStorage_getMaxLogEntries(self);
+            }
+
+            /// <summary>
+            /// The maximum allowed number of log entries in the log storage
+            /// </summary>
+            public int MaxLogEntries
+            {
+                get
+                {
+                    return GetMaxLogEntries();
+                }
+
+                set
+                {
+                    SetMaxLogEntries(value);
+                }
+            }
+
+            public void Dispose()
+            {
+                lock (this)
+                {
+                    if (self != IntPtr.Zero)
+                    {
+                        LogStorage_destroy(self);
+                        self = IntPtr.Zero;
+                    }
+                }
+            }
+
+            ~LogStorage()
+            {
+                Dispose();
+            }
+        }
+
         /// <summary>
         /// This class acts as the entry point for the IEC 61850 client API. It represents a single
         /// (MMS) connection to a server.
@@ -2229,6 +2353,10 @@ namespace IEC61850
             static extern void IedServer_handleWriteAccessForComplexAttribute(IntPtr self, IntPtr dataAttribute,
                 InternalWriteAccessHandler handler, IntPtr parameter);
 
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedServer_handleWriteAccessForDataObject(IntPtr self, IntPtr dataObject, int fc,
+                InternalWriteAccessHandler handler, IntPtr parameter);
+
             public delegate void ConnectionIndicationHandler(IedServer iedServer, ClientConnection clientConnection, bool connected, object parameter);
 
             private ConnectionIndicationHandler connectionHandler = null;
@@ -2273,12 +2401,18 @@ namespace IEC61850
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern void IedServer_setRCBEventHandler(IntPtr self, InternalRCBEventHandler handler, IntPtr parameter);
 
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedServer_setTimeQuality(IntPtr self, [MarshalAs(UnmanagedType.I1)] bool leapSecondKnown, [MarshalAs(UnmanagedType.I1)] bool clockFailure, [MarshalAs(UnmanagedType.I1)] bool clockNotSynchronized, int subsecondPrecision);
+
             private IntPtr self = IntPtr.Zero;
 
             private InternalControlHandler internalControlHandlerRef = null;
             private InternalControlPerformCheckHandler internalControlPerformCheckHandlerRef = null;
             private InternalControlWaitForExecutionHandler internalControlWaitForExecutionHandlerRef = null;
             private InternalSelectStateChangedHandler internalSelectedStateChangedHandlerRef = null;
+
+            // hold references to managed LogStorage instances to avoid problems with GC
+            private Dictionary<string, LogStorage> logStorages = new Dictionary<string, LogStorage>();
 
             internal class ControlHandlerInfo {
                 public DataObject controlObject = null;
@@ -2435,6 +2569,9 @@ namespace IEC61850
             /* store IedModel instance to prevent garbage collector */
             private IedModel iedModel = null;
 
+            /* store TLSConfiguration instance to prevent garbage collector */
+            private TLSConfiguration tlsConfiguration = null;
+
             public IedServer(IedModel iedModel, IedServerConfig config = null)
             {
                 this.iedModel = iedModel;
@@ -2450,6 +2587,7 @@ namespace IEC61850
             public IedServer(IedModel iedModel, TLSConfiguration tlsConfig, IedServerConfig config = null)
             {
                 this.iedModel = iedModel;
+                this.tlsConfiguration = tlsConfig;
 
                 IntPtr nativeConfig = IntPtr.Zero;
                 IntPtr nativeTLSConfig = IntPtr.Zero;
@@ -2539,6 +2677,7 @@ namespace IEC61850
                         self = IntPtr.Zero;
                         internalConnectionHandler = null;
                         this.iedModel = null;
+                        this.tlsConfiguration = null;
                     }
                 }
             }
@@ -2687,12 +2826,27 @@ namespace IEC61850
                 }
             }
 
+            private void AddHandlerInfoForDataObjectRecursive(DataObject dataObject, FunctionalConstraint fc, WriteAccessHandler handler, object parameter, InternalWriteAccessHandler internalHandler)
+            {
+                foreach (ModelNode child in dataObject.GetChildren())
+                {
+                    if (child is DataAttribute && (child as DataAttribute).FC == fc)
+                    {
+                        AddHandlerInfoForDataAttributeRecursive(child as DataAttribute, handler, parameter, internalHandler);
+                    }
+                    else if (child is DataObject)
+                    {
+                        AddHandlerInfoForDataObjectRecursive(child as DataObject, fc, handler, parameter, internalHandler);
+                    }
+                }
+            }
+
             /// <summary>
             /// Install a WriteAccessHandler for a data attribute and for all sub data attributes
             /// </summary>
             /// This instructs the server to monitor write attempts by MMS clients to specific
-            /// data attributes.If a client tries to write to the monitored data attribute the
-            /// handler is invoked.The handler can decide if the write access will be allowed
+            /// data attributes. If a client tries to write to the monitored data attribute the
+            /// handler is invoked. The handler can decide if the write access will be allowed
             /// or denied.If a WriteAccessHandler is set for a specific data attribute - the
             /// default write access policy will not be performed for that data attribute.
             /// <remarks>
@@ -2710,6 +2864,27 @@ namespace IEC61850
                 AddHandlerInfoForDataAttributeRecursive(dataAttr, handler, parameter, internalHandler);
 
                 IedServer_handleWriteAccessForComplexAttribute(self, dataAttr.self, internalHandler, IntPtr.Zero);
+            }
+
+            /// <summary>
+            /// Install a WriteAccessHandler for a data object and for all sub data objects and sub data attributes that have the same functional constraint
+            /// </summary>
+            /// This instructs the server to monitor write attempts by MMS clients to specific
+            /// data attributes. If a client tries to write to the monitored data attribute the
+            /// handler is invoked. The handler can decide if the write access will be allowed
+            /// or denied. If a WriteAccessHandler is set the
+            /// default write access policy will not be performed for the matching data attributes.
+            /// <param name="dataObject">the data object to monitor</param>
+            /// <param name="fc">the functional constraint (FC) to monitor</param>
+            /// <param name="handler">the callback function that is invoked if a client tries to write to a monitored data attribute that is a child of the data object.</param>
+            /// <param name="parameter">a user provided parameter that is passed to the WriteAccessHandler when called.</param>
+            public void HandleWriteAccessForDataObject(DataObject dataObj, FunctionalConstraint fc, WriteAccessHandler handler, object parameter)
+            {
+                InternalWriteAccessHandler internalHandler = new InternalWriteAccessHandler(WriteAccessHandlerImpl);
+
+                AddHandlerInfoForDataObjectRecursive(dataObj, fc, handler, parameter, internalHandler);
+
+                IedServer_handleWriteAccessForDataObject(self, dataObj.self, (int)fc, internalHandler, IntPtr.Zero);
             }
 
             /// <summary>
@@ -2996,7 +3171,29 @@ namespace IEC61850
                 }
             }
 
-        }
+            /// <summary>
+            /// Set the time quality for all timestamps internally generated by this IedServer instance
+            /// </summary>
+            /// <param name="leapSecondKnown">set/unset leap seconds known flag</param>
+            /// <param name="clockFailure">set/unset clock failure flag</param>
+            /// <param name="clockNotSynchronized">set/unset clock not synchronized flag</param>
+            /// <param name="subsecondPrecision">set the subsecond precision (number of significant bits of the fractionOfSecond part of the time stamp)</param>
+            public void SetTimeQuality(bool leapSecondKnown, bool clockFailure, bool clockNotSynchronized, int subsecondPrecision)
+            {
+                IedServer_setTimeQuality(self, leapSecondKnown, clockFailure, clockNotSynchronized, subsecondPrecision);
+            }
 
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedServer_setLogStorage(IntPtr self, string logRef, IntPtr logStorage);
+
+            public void SetLogStorage(string logRef, LogStorage logStorage)
+            {
+                if (logStorage != null)
+                {
+                    logStorages.Add(logRef, logStorage);
+                    IedServer_setLogStorage(self, logRef, logStorage.GetNativeInstance());
+                }
+            }
+        }
     }
 }

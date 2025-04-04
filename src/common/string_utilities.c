@@ -1,7 +1,7 @@
 /*
  *  string_utilities.c
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013-2023 Michael Zillgith
  *
  *	This file is part of libIEC61850.
  *
@@ -65,23 +65,56 @@ StringUtils_copyStringToBuffer(const char* string, char* buffer)
     return buffer;
 }
 
+char*
+StringUtils_copyStringToBufferAndReplace(const char* str, char* buffer, char oldChar, char newChar)
+{
+    int i = 0;
+
+    while (true)
+    {
+        if (str[i] == oldChar)
+            buffer[i] = newChar;
+        else
+            buffer[i] = str[i];
+
+        if (str[i] == 0)
+            break;
+
+        i++;
+    }
+
+    return buffer;
+}
+
 
 char*
 StringUtils_createStringFromBuffer(const uint8_t* buf, int size)
 {
-	char* newStr = (char*) GLOBAL_MALLOC(size + 1);
+    char* newStr = (char*) GLOBAL_MALLOC(size + 1);
 
-	if (newStr) {
-	    memcpy(newStr, buf, size);
-	    newStr[size] = 0;
-	}
+    if (newStr) {
+        memcpy(newStr, buf, size);
+        newStr[size] = 0;
+    }
 
-	return newStr;
+    return newStr;
 }
 
 char*
 StringUtils_createStringFromBufferInBuffer(char* newString, const uint8_t* buf, int size)
 {
+    memcpy(newString, buf, size);
+    newString[size] = 0;
+
+    return newString;
+}
+
+char*
+StringUtils_createStringFromBufferInBufferMax(char* newString, const uint8_t* buf, int size, int maxBufSize)
+{
+    if (size >= maxBufSize)
+        size = maxBufSize - 1;
+
     memcpy(newString, buf, size);
     newString[size] = 0;
 
@@ -196,6 +229,9 @@ char*
 StringUtils_copyStringMax(char* dest, int maxBufferSize, const char* str1)
 {
     char* res = dest;
+
+    if (maxBufferSize < 1)
+        return NULL;
 
     if (dest == NULL)
         res = (char*)GLOBAL_MALLOC(maxBufferSize);
@@ -405,11 +441,11 @@ getCharWeight(int c)
 {
 	static bool initialized = false;
 	static char lookupTable[LT_MAX_CHARS + 1];
+	static const char* charOrder = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz$_0123456789";
 
 	if (!initialized) {
 		int ltIndex;
 		int weight = 1;
-	    const char* charOrder = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz$_0123456789";
 
 		for (ltIndex = 1;  ltIndex < LT_MAX_CHARS; ltIndex++) {
 			if (strchr(charOrder, ltIndex)) continue;

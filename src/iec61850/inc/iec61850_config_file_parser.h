@@ -37,6 +37,8 @@ extern "C" {
 /**
  * @defgroup CONFIG_FILE_PARSER Create data models by configuration files
  *
+ * \brief Functions to create data models from simple text configuration files create with the configuration file tool.
+ *
  * @{
  */
 

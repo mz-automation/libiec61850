@@ -29,7 +29,7 @@
 #include "mms_client_connection.h"
 #include "ied_connection_private.h"
 
-#if _MSC_VER
+#ifdef _MSC_VER
 #define snprintf _snprintf
 #endif
 

@@ -126,7 +126,7 @@ LIB61850_INTERNAL void
 ReportControl_valueUpdated(ReportControl* self, int dataSetEntryIndex, int flag, bool modelLocked);
 
 LIB61850_INTERNAL MmsValue*
-ReportControl_getRCBValue(ReportControl* rc, char* elementName);
+ReportControl_getRCBValue(ReportControl* rc, const char* elementName);
 
 LIB61850_INTERNAL MmsVariableSpecification*
 Reporting_createMmsBufferedRCBs(MmsMapping* self, MmsDomain* domain,
@@ -137,10 +137,10 @@ Reporting_createMmsUnbufferedRCBs(MmsMapping* self, MmsDomain* domain,
         LogicalNode* logicalNode, int reportsCount);
 
 LIB61850_INTERNAL MmsDataAccessError
-Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, char* elementName, MmsValue* value,
+Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, const char* elementName, MmsValue* value,
         MmsServerConnection connection);
 
-LIB61850_INTERNAL void
+LIB61850_INTERNAL bool
 ReportControl_readAccess(ReportControl* rc, MmsMapping* mmsMapping, MmsServerConnection connection, char* elementName);
 
 LIB61850_INTERNAL void

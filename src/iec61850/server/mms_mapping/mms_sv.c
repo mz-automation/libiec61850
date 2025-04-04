@@ -1,7 +1,7 @@
 /*
  *  mms_sv.c
  *
- *  Copyright 2015-2022 Michael Zillgith
+ *  Copyright 2015-2023 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -32,6 +32,8 @@
 #include "mms_sv.h"
 
 #include "mms_mapping_internal.h"
+#include "ied_server_private.h"
+#include "mms_value_internal.h"
 
 struct sMmsSampledValueControlBlock {
     SVControlBlock* svcb;
@@ -50,10 +52,11 @@ struct sMmsSampledValueControlBlock {
     MmsValue* svEnaValue;
     MmsValue* resvValue;
 
-
     SVCBEventHandler eventHandler;
     void* eventHandlerParameter;
 };
+
+static MmsValue objectAccessDenied = {MMS_DATA_ACCESS_ERROR, false, {DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED}};
 
 MmsSampledValueControlBlock
 MmsSampledValueControlBlock_create()
@@ -62,7 +65,6 @@ MmsSampledValueControlBlock_create()
 
     return self;
 }
-
 
 void
 MmsSampledValueControlBlock_destroy(MmsSampledValueControlBlock self)
@@ -105,7 +107,8 @@ MmsSampledValueControlBlock_enable(MmsSampledValueControlBlock self)
     if (DEBUG_IED_SERVER)
         printf("IED_SERVER: enable SVCB %s\n", self->svcb->name);
 
-    self->eventHandler(self->svcb, IEC61850_SVCB_EVENT_ENABLE, self->eventHandlerParameter);
+    if (self->eventHandler)
+        self->eventHandler(self->svcb, IEC61850_SVCB_EVENT_ENABLE, self->eventHandlerParameter);
 }
 
 static void
@@ -117,7 +120,8 @@ MmsSampledValueControlBlock_disable(MmsSampledValueControlBlock self)
     if (DEBUG_IED_SERVER)
         printf("IED_SERVER: disable SVCB %s\n", self->svcb->name);
 
-    self->eventHandler(self->svcb, IEC61850_SVCB_EVENT_DISABLE, self->eventHandlerParameter);
+    if (self->eventHandler)
+        self->eventHandler(self->svcb, IEC61850_SVCB_EVENT_DISABLE, self->eventHandlerParameter);
 }
 
 static bool
@@ -127,7 +131,7 @@ MmsSampledValueControlBlock_isEnabled(MmsSampledValueControlBlock self)
 }
 
 MmsDataAccessError
-LIBIEC61850_SV_writeAccessSVControlBlock(MmsMapping* self, MmsDomain* domain, char* variableIdOrig,
+LIBIEC61850_SV_writeAccessSVControlBlock(MmsMapping* self, MmsDomain* domain, const char* variableIdOrig,
         MmsValue* value, MmsServerConnection connection)
 {
     char variableId[130];
@@ -150,7 +154,7 @@ LIBIEC61850_SV_writeAccessSVControlBlock(MmsMapping* self, MmsDomain* domain, ch
 
     char* varName = MmsMapping_getNextNameElement(objectName);
 
-    if (varName != NULL)
+    if (varName)
         *(varName - 1) = 0;
     else
        return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
@@ -160,7 +164,28 @@ LIBIEC61850_SV_writeAccessSVControlBlock(MmsMapping* self, MmsDomain* domain, ch
     if (mmsSVCB == NULL)
         return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
 
-    if (mmsSVCB->reservedByClient != NULL) {
+    /* check if write access to SVCB is allowed on this connection */
+    if (self->controlBlockAccessHandler)
+    {
+        ACSIClass acsiClass;
+
+        if (mmsSVCB->svcb->isUnicast)
+            acsiClass = ACSI_CLASS_USVCB;
+        else
+            acsiClass = ACSI_CLASS_MSVCB;
+
+        LogicalNode* ln = mmsSVCB->logicalNode;
+
+        LogicalDevice* ld = (LogicalDevice*)ln->parent;
+
+        ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer, connection);
+
+        if (self->controlBlockAccessHandler(self->controlBlockAccessHandlerParameter, clientConnection, acsiClass, ld, ln, mmsSVCB->svcb->name, varName, IEC61850_CB_ACCESS_TYPE_WRITE) == false) {
+            return DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+        }
+    }
+
+    if (mmsSVCB->reservedByClient) {
         if (mmsSVCB->reservedByClient != connection)
             return DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
     }
@@ -209,7 +234,7 @@ LIBIEC61850_SV_writeAccessSVControlBlock(MmsMapping* self, MmsDomain* domain, ch
 }
 
 MmsValue*
-LIBIEC61850_SV_readAccessSampledValueControlBlock(MmsMapping* self, MmsDomain* domain, char* variableIdOrig)
+LIBIEC61850_SV_readAccessSampledValueControlBlock(MmsMapping* self, MmsDomain* domain, char* variableIdOrig,  MmsServerConnection connection)
 {
     MmsValue* value = NULL;
 
@@ -233,13 +258,35 @@ LIBIEC61850_SV_readAccessSampledValueControlBlock(MmsMapping* self, MmsDomain* d
 
     char* varName = MmsMapping_getNextNameElement(objectName);
 
-    if (varName != NULL)
+    if (varName)
         *(varName - 1) = 0;
 
     MmsSampledValueControlBlock mmsSVCB = lookupSVCB(self, domain, lnName, objectName);
 
-    if (mmsSVCB != NULL) {
-        if (varName != NULL) {
+    if (mmsSVCB) {
+
+        /* check if read access to SVCB is allowed on this connection */
+        if (self->controlBlockAccessHandler)
+        {
+            ACSIClass acsiClass;
+
+            if (mmsSVCB->svcb->isUnicast)
+                acsiClass = ACSI_CLASS_USVCB;
+            else
+                acsiClass = ACSI_CLASS_MSVCB;
+
+            LogicalNode* ln = mmsSVCB->logicalNode;
+
+            LogicalDevice* ld = (LogicalDevice*)ln->parent;
+
+            ClientConnection clientConnection = private_IedServer_getClientConnectionByHandle(self->iedServer, connection);
+
+            if (self->controlBlockAccessHandler(self->controlBlockAccessHandlerParameter, clientConnection, acsiClass, ld, ln, mmsSVCB->svcb->name, varName, IEC61850_CB_ACCESS_TYPE_READ) == false) {
+                return &objectAccessDenied;
+            }
+        }
+
+        if (varName) {
             value = MmsValue_getSubElement(mmsSVCB->mmsValue, mmsSVCB->mmsType, varName);
         }
         else {

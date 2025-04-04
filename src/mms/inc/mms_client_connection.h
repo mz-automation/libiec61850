@@ -161,6 +161,16 @@ LIB61850_API void
 MmsConnection_setRequestTimeout(MmsConnection self, uint32_t timeoutInMs);
 
 /**
+ * \brief Set the maximum number outstanding calls allowed for this connection
+ *
+ * \param self MmsConnection instance to operate on
+ * \param calling the maximum outstanding calls allowed by the caller (client)
+ * \param called the maximum outstanding calls allowed by the called endpoint (server)
+ */
+LIB61850_API void
+MmsConnnection_setMaxOutstandingCalls(MmsConnection self, int calling, int called);
+
+/**
  * \brief Get the request timeout in ms for this connection
  *
  * \param self MmsConnection instance to operate on
@@ -270,6 +280,8 @@ MmsConnection_destroy(MmsConnection self);
  */
 LIB61850_API bool
 MmsConnection_connect(MmsConnection self, MmsError* mmsError, const char* serverName, int serverPort);
+
+
 
 LIB61850_API void
 MmsConnection_connectAsync(MmsConnection self, MmsError* mmsError, const char* serverName, int serverPort);
@@ -649,6 +661,23 @@ MmsConnection_writeVariableAsync(MmsConnection self, uint32_t* usedInvokeId, Mms
 
 
 /**
+ * \brief Write a single variable to the server (using component alternate access)
+ *
+ * \param self MmsConnection instance to operate on
+ * \param mmsError user provided variable to store error code
+ * \param domainId the domain name of the variable to be written
+ * \param itemId name of the variable to be written
+ * \param componentId the name of the variable component
+ * \param value value of the variable to be written
+ *
+ * \return when successful, the data access error value returned by the server
+ */
+LIB61850_API MmsDataAccessError
+MmsConnection_writeVariableComponent(MmsConnection self, MmsError* mmsError,
+        const char* domainId, const char* itemId,
+        const char* componentId, MmsValue* value);
+
+/**
  * \brief Write a single array element with a component to an array type variable
  *
  * \param self MmsConnection instance to operate on
@@ -670,6 +699,11 @@ LIB61850_API void
 MmsConnection_writeSingleArrayElementWithComponentAsync(MmsConnection self, uint32_t* usedInvokeId, MmsError* mmsError,
         const char* domainId, const char* itemId,
         uint32_t arrayIndex, const char* componentId, MmsValue* value,
+        MmsConnection_WriteVariableHandler handler, void* parameter);
+
+LIB61850_API void
+MmsConnection_writeVariableComponentAsync(MmsConnection self, uint32_t* usedInvokeId, MmsError* mmsError,
+        const char* domainId, const char* itemId, const char* componentId, MmsValue* value,
         MmsConnection_WriteVariableHandler handler, void* parameter);
 
 /**

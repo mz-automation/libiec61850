@@ -120,11 +120,20 @@ struct sMmsServer {
     MmsWriteVariableHandler writeHandler;
     void* writeHandlerParameter;
 
+    MmsListAccessHandler listAccessHandler;
+    void* listAccessHandlerParameter;
+
     MmsConnectionHandler connectionHandler;
     void* connectionHandlerParameter;
 
-    MmsNamedVariableListChangedHandler variableListChangedHandler; /* TODO this is only required if dynamic data sets are supported! */
-    void* variableListChangedHandlerParameter;
+    MmsNamedVariableListAccessHandler variableListAccessHandler;
+    void* variableListAccessHandlerParameter;
+
+    MmsReadJournalHandler readJournalHandler;
+    void* readJournalHandlerParameter;
+
+    MmsGetNameListHandler getNameListHandler;
+    void* getNameListHandlerParameter;
 
     AcseAuthenticator authenticator;
     void* authenticatorParameter;
@@ -135,7 +144,8 @@ struct sMmsServer {
 
     Map openConnections;
     Map valueCaches;
-    bool isLocked;
+
+    bool blockRequests;
 
     ByteBuffer* transmitBuffer; /* global buffer for encoding reports, delayed responses... */
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
@@ -389,7 +399,7 @@ mmsServer_isAccessToArrayComponent(AlternateAccess_t* alternateAccess);
 
 LIB61850_INTERNAL MmsValue*
 mmsServer_getComponentOfArrayElement(AlternateAccess_t* alternateAccess, MmsVariableSpecification* namedVariable,
-        MmsValue* structuredValue);
+        MmsValue* structuredValue, char* componentId);
 
 LIB61850_INTERNAL int
 mmsServer_getLowIndex(AlternateAccess_t* alternateAccess);
@@ -407,6 +417,10 @@ LIB61850_INTERNAL MmsDataAccessError
 mmsServer_setValue(MmsServer self, MmsDomain* domain, char* itemId, MmsValue* value,
         MmsServerConnection connection);
 
+LIB61850_INTERNAL MmsDataAccessError
+mmsServer_setValueEx(MmsServer self, MmsDomain* domain, char* itemId, MmsValue* value,
+        MmsServerConnection connection, int arrayIdx, const char* componentId);
+
 /**
  * \brief Get the current value of a variable in the server data model
  *
@@ -415,12 +429,15 @@ mmsServer_setValue(MmsServer self, MmsDomain* domain, char* itemId, MmsValue* va
 LIB61850_INTERNAL MmsValue*
 mmsServer_getValue(MmsServer self, MmsDomain* domain, char* itemId, MmsServerConnection connection, bool isDirectAccess);
 
+LIB61850_INTERNAL bool
+mmsServer_checkListAccess(MmsServer self, MmsGetNameListType listType, MmsDomain* domain, char* itemId, MmsServerConnection connection);
+
 LIB61850_INTERNAL void
 mmsServer_createMmsWriteResponse(MmsServerConnection connection,
         uint32_t invokeId, ByteBuffer* response, int numberOfItems, MmsDataAccessError* accessResults);
 
 LIB61850_INTERNAL MmsError
-mmsServer_callVariableListChangedHandler(bool create, MmsVariableListType listType, MmsDomain* domain,
+mmsServer_callVariableListChangedHandler(MmsVariableListAccessType accessType, MmsVariableListType listType, MmsDomain* domain,
         char* listName, MmsServerConnection connection);
 
 #endif /* MMS_SERVER_INTERNAL_H_ */

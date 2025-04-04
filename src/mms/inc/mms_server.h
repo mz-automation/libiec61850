@@ -1,7 +1,7 @@
 /*
  *  mms_server.h
  *
- *  Copyright 2013-2018 Michael Zillgith
+ *  Copyright 2013-2023 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -57,30 +57,70 @@ MmsServer_setLocalIpAddress(MmsServer self, const char* localIpAddress);
 LIB61850_INTERNAL bool
 MmsServer_isRunning(MmsServer self);
 
+typedef enum {
+    MMS_VARLIST_CREATE,
+    MMS_VARLIST_DELETE,
+    MMS_VARLIST_READ,
+    MMS_VARLIST_WRITE,
+    MMS_VARLIST_GET_DIRECTORY
+} MmsVariableListAccessType;
+
 /**
- * \brief callback handler that is called whenever a named variable list changes
+ * \brief callback handler that is called for each named variable list access
  *
  * \param parameter a user provided parameter
- * \param create if true the the request if a request to create a new variable list, false is a delete request
+ * \param accessType the kind of access (create, delete, read, write, get directory)
  * \param listType the type (scope) of the named variable list (either domain, association or VMD specific)
  * \param domain the MMS domain the list is belonging to (is NULL for association or VMD specific lists!)
  * \param listName the name
- * \param connection client connection that requests the creation of deletion of the variable list
+ * \param connection client connection that is accessing the named variable list
  *
  * \return MMS_ERROR_NONE if the request is accepted, otherwise the MmsError value that has to be sent back to the client
  */
-typedef MmsError (*MmsNamedVariableListChangedHandler)(void* parameter, bool create, MmsVariableListType listType, MmsDomain* domain,
+typedef MmsError (*MmsNamedVariableListAccessHandler)(void* parameter, MmsVariableListAccessType accessType, MmsVariableListType listType, MmsDomain* domain,
         char* listName, MmsServerConnection connection);
 
 /**
- * \brief Install callback handler that is called when a named variable list changes (is created or deleted)
+ * \brief Install callback handler that is called when a named variable list is accessed by a client
  *
  * \param self the MmsServer instance to operate on
  * \param handler the callback handler function
  * \param parameter user provided parameter that is passed to the callback handler
  */
 LIB61850_INTERNAL void
-MmsServer_installVariableListChangedHandler(MmsServer self, MmsNamedVariableListChangedHandler handler, void* parameter);
+MmsServer_installVariableListAccessHandler(MmsServer self, MmsNamedVariableListAccessHandler handler, void* parameter);
+
+/**
+ * \brief callback handler that is called for each received read journal request
+ * 
+ * \param parameter a user provided parameter
+ * \param domain the MMS domain the journal is belonging to
+ * \param logName the name of the journal
+ * \param connection client connection that is accessing the journal
+ */
+typedef bool (*MmsReadJournalHandler)(void* parameter, MmsDomain* domain, const char* logName, MmsServerConnection connection);
+
+/**
+ * \brief Install callback handler that is called when a journal is accessed by a client
+ *
+ * \param self the MmsServer instance to operate on
+ * \param handler the callback handler function
+ * \param parameter user provided parameter that is passed to the callback handler
+ */
+LIB61850_INTERNAL void
+MmsServer_installReadJournalHandler(MmsServer self, MmsReadJournalHandler handler, void* parameter);
+
+typedef enum {
+    MMS_GETNAMELIST_DOMAINS,
+    MMS_GETNAMELIST_JOURNALS,
+    MMS_GETNAMELIST_DATASETS,
+    MMS_GETNAMELIST_DATA
+} MmsGetNameListType;
+
+typedef bool (*MmsGetNameListHandler)(void* parameter, MmsGetNameListType nameListType, MmsDomain* domain, MmsServerConnection connection);
+
+LIB61850_INTERNAL void
+MmsServer_installGetNameListHandler(MmsServer self, MmsGetNameListHandler handler, void* parameter);
 
 /**
  * \brief ObtainFile service callback handler
@@ -369,6 +409,9 @@ MmsServerConnection_getLocalAddress(MmsServerConnection self);
 
 LIB61850_INTERNAL void*
 MmsServerConnection_getSecurityToken(MmsServerConnection self);
+
+LIB61850_INTERNAL void
+MmsServer_ignoreClientRequests(MmsServer self, bool enable);;
 
 /**@}*/
 

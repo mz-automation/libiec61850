@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.779
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.35004.147
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IEC61850.NET", "IEC61850forCSharp\IEC61850.NET.csproj", "{C35D624E-5506-4560-8074-1728F1FA1A4D}"
 EndProject
@@ -49,6 +49,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "client_example_async", "client_example_async\client_example_async.csproj", "{71902641-776A-47D8-9C0E-9ACBBEAC1370}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "server_goose_publisher", "server_goose_publisher\server_goose_publisher.csproj", "{C14BB883-86B8-401C-B3D6-B655F55F3298}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "log_server", "log_server\log_server.csproj", "{96124F40-D38E-499B-9968-674E0D32F933}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -140,6 +142,10 @@ Global
 		{C14BB883-86B8-401C-B3D6-B655F55F3298}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C14BB883-86B8-401C-B3D6-B655F55F3298}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C14BB883-86B8-401C-B3D6-B655F55F3298}.Release|Any CPU.Build.0 = Release|Any CPU
+		{96124F40-D38E-499B-9968-674E0D32F933}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{96124F40-D38E-499B-9968-674E0D32F933}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{96124F40-D38E-499B-9968-674E0D32F933}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{96124F40-D38E-499B-9968-674E0D32F933}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

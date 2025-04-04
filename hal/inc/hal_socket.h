@@ -1,7 +1,7 @@
 /*
  *  socket_hal.h
  *
- *  Copyright 2013-2022 Michael Zillgith
+ *  Copyright 2013-2024 Michael Zillgith
  *
  *  This file is part of Platform Abstraction Layer (libpal)
  *  for libiec61850, libmms, and lib60870.
@@ -357,7 +357,7 @@ Socket_getPeerAddress(Socket self);
  *
  * The peer address has to be returned as null terminated string
  *
- * Implementation of this function is MANDATORY (lib60870)
+ * Implementation of this function is MANDATORY (lib60870 and libiec61850)
  *
  * \param self the client, connection or server socket instance
  * \param peerAddressString a string to store the peer address (the string should have space

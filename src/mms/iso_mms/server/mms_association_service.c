@@ -330,9 +330,9 @@ parseInitiateRequestPdu(MmsServerConnection self, uint8_t* buffer, int bufPos, i
     self->dataStructureNestingLevel =
                     DEFAULT_DATA_STRUCTURE_NESTING_LEVEL;
 
-    self->maxServOutstandingCalled = DEFAULT_MAX_SERV_OUTSTANDING_CALLED;
+    self->maxServOutstandingCalled = CONFIG_DEFAULT_MAX_SERV_OUTSTANDING_CALLED;
 
-    self->maxServOutstandingCalling = DEFAULT_MAX_SERV_OUTSTANDING_CALLING;
+    self->maxServOutstandingCalling = CONFIG_DEFAULT_MAX_SERV_OUTSTANDING_CALLING;
 
     self->negotiatedParameterCBC[0] = 0;
     self->negotiatedParameterCBC[1] = 0;
@@ -367,16 +367,16 @@ parseInitiateRequestPdu(MmsServerConnection self, uint8_t* buffer, int bufPos, i
         case 0x81:  /* proposed-max-serv-outstanding-calling */
             self->maxServOutstandingCalling = BerDecoder_decodeUint32(buffer, length, bufPos);
 
-            if (self->maxServOutstandingCalling > DEFAULT_MAX_SERV_OUTSTANDING_CALLING)
-                self->maxServOutstandingCalling = DEFAULT_MAX_SERV_OUTSTANDING_CALLING;
+            if (self->maxServOutstandingCalling > CONFIG_DEFAULT_MAX_SERV_OUTSTANDING_CALLING)
+                self->maxServOutstandingCalling = CONFIG_DEFAULT_MAX_SERV_OUTSTANDING_CALLING;
 
             break;
 
         case 0x82:  /* proposed-max-serv-outstanding-called */
             self->maxServOutstandingCalled = BerDecoder_decodeUint32(buffer, length, bufPos);
 
-            if (self->maxServOutstandingCalled > DEFAULT_MAX_SERV_OUTSTANDING_CALLED)
-                self->maxServOutstandingCalled = DEFAULT_MAX_SERV_OUTSTANDING_CALLED;
+            if (self->maxServOutstandingCalled > CONFIG_DEFAULT_MAX_SERV_OUTSTANDING_CALLED)
+                self->maxServOutstandingCalled = CONFIG_DEFAULT_MAX_SERV_OUTSTANDING_CALLED;
 
             break;
         case 0x83: /* proposed-data-structure-nesting-level */

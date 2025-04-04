@@ -28,12 +28,14 @@ printValue(char* name, MmsValue* value)
 static void
 readObjectHandler (uint32_t invokeId, void* parameter, IedClientError err, MmsValue* value)
 {
-    if (err == IED_ERROR_OK) {
+    if (err == IED_ERROR_OK)
+    {
         printValue((char*) parameter, value);
 
         MmsValue_delete(value);
     }
-    else {
+    else
+    {
         printf("Failed to read object %s (err=%i)\n", (char*) parameter, err);
     }
 }
@@ -41,22 +43,26 @@ readObjectHandler (uint32_t invokeId, void* parameter, IedClientError err, MmsVa
 static void
 readDataSetHandler(uint32_t invokeId, void* parameter, IedClientError err, ClientDataSet dataSet)
 {
-    if (err == IED_ERROR_OK) {
+    if (err == IED_ERROR_OK)
+    {
         clientDataSet = dataSet;
 
         printf("Data set has %d entries\n", ClientDataSet_getDataSetSize(dataSet));
 
         MmsValue* values = ClientDataSet_getValues(dataSet);
 
-        if (MmsValue_getType(values) == MMS_ARRAY) {
+        if (MmsValue_getType(values) == MMS_ARRAY)
+        {
             int i;
-            for (i = 0; i < MmsValue_getArraySize(values); i++) {
+            for (i = 0; i < MmsValue_getArraySize(values); i++)
+            {
                 printf("  [%i]", i);
                 printValue("", MmsValue_getElement(values, i));
             }
         }
     }
-    else {
+    else
+    {
         printf("Failed to read data set (err=%i)\n", err);
     }
 }
@@ -64,15 +70,16 @@ readDataSetHandler(uint32_t invokeId, void* parameter, IedClientError err, Clien
 static void
 writeDataSetHandler(uint32_t invokeId, void* parameter, IedClientError err, LinkedList /* <MmsValue*> */accessResults)
 {
-    if (err == IED_ERROR_OK) {
-
-        if (accessResults) {
-
+    if (err == IED_ERROR_OK)
+    {
+        if (accessResults)
+        {
             int i = 0;
 
             LinkedList element = LinkedList_getNext(accessResults);
 
-            while (element) {
+            while (element)
+            {
                 MmsValue* accessResultValue = (MmsValue*) LinkedList_getData(element);
 
                 printf("  access-result[%i]", i);
@@ -84,10 +91,10 @@ writeDataSetHandler(uint32_t invokeId, void* parameter, IedClientError err, Link
             }
 
             LinkedList_destroyDeep(accessResults, (LinkedListValueDeleteFunction) MmsValue_delete);
-
         }
     }
-    else {
+    else
+    {
         printf("Failed to write data set (err=%i)\n", err);
     }
 }
@@ -100,10 +107,12 @@ reportCallbackFunction(void* parameter, ClientReport report)
     printf("received report for %s\n", ClientReport_getRcbReference(report));
 
     int i;
-    for (i = 0; i < 4; i++) {
+    for (i = 0; i < 4; i++)
+    {
         ReasonForInclusion reason = ClientReport_getReasonForInclusion(report, i);
 
-        if (reason != IEC61850_REASON_NOT_INCLUDED) {
+        if (reason != IEC61850_REASON_NOT_INCLUDED)
+        {
             printf("  GGIO1.SPCSO%i.stVal: %i (included for reason %i)\n", i,
                     MmsValue_getBoolean(MmsValue_getElement(dataSetValues, i)), reason);
         }
@@ -113,12 +122,14 @@ reportCallbackFunction(void* parameter, ClientReport report)
 static void
 getVarSpecHandler (uint32_t invokeId, void* parameter, IedClientError err, MmsVariableSpecification* spec)
 {
-    if (err == IED_ERROR_OK) {
+    if (err == IED_ERROR_OK)
+    {
         printf("variable: %s has type %d\n", (char*) parameter, MmsVariableSpecification_getType(spec));
 
         MmsVariableSpecification_destroy(spec);
     }
-    else {
+    else
+    {
         printf("Failed to get variable specification for object %s (err=%i)\n", (char*) parameter, err);
     }
 }
@@ -126,17 +137,18 @@ getVarSpecHandler (uint32_t invokeId, void* parameter, IedClientError err, MmsVa
 static void
 getNameListHandler(uint32_t invokeId, void* parameter, IedClientError err, LinkedList nameList, bool moreFollows)
 {
-    if (err != IED_ERROR_OK) {
+    if (err != IED_ERROR_OK)
+    {
         printf("Get name list error: %d\n", err);
     }
-    else {
-
+    else
+    {
         char* ldName = (char*) parameter;
 
         LinkedList element = LinkedList_getNext(nameList);
 
-        while (element) {
-
+        while (element)
+        {
             char* variableName = (char*) LinkedList_getData(element);
 
             printf("  %s/%s\n", ldName, variableName);
@@ -155,15 +167,17 @@ getServerDirectoryHandler(uint32_t invokeId, void* parameter, IedClientError err
 {
     IedConnection con = (IedConnection) parameter;
 
-    if (err != IED_ERROR_OK) {
+    if (err != IED_ERROR_OK)
+    {
         printf("Get server directory error: %d\n", err);
     }
-    else {
+    else
+    {
         LinkedList element = LinkedList_getNext(nameList);
 
         /* Call logical device variables for each logical node */
-        while (element) {
-
+        while (element)
+        {
             char* ldName = (char*) LinkedList_getData(element);
 
             IedClientError cerr;
@@ -189,8 +203,8 @@ controlActionHandler(uint32_t invokeId, void* parameter, IedClientError err, Con
     printf("control: ID: %d type: %i err: %d success: %i\n", invokeId, type, err, success);
 }
 
-int main(int argc, char** argv) {
-
+int main(int argc, char** argv)
+{
     char* hostname;
     int tcpPort = 102;
 
@@ -208,13 +222,14 @@ int main(int argc, char** argv) {
 
     IedConnection_connectAsync(con, &error, hostname, tcpPort);
 
-    if (error == IED_ERROR_OK) {
-
+    if (error == IED_ERROR_OK)
+    {
         bool success = true;
 
-        while (IedConnection_getState(con) != IED_STATE_CONNECTED) {
-
-            if (IedConnection_getState(con) == IED_STATE_CLOSED) {
+        while (IedConnection_getState(con) != IED_STATE_CONNECTED)
+        {
+            if (IedConnection_getState(con) == IED_STATE_CLOSED)
+            {
                 success = false;
                 break;
             }
@@ -222,38 +237,42 @@ int main(int argc, char** argv) {
             Thread_sleep(10);
         }
 
-        if (success) {
-
+        if (success)
+        {
             IedConnection_getServerDirectoryAsync(con, &error, NULL, NULL, getServerDirectoryHandler, con);
 
-            if (error != IED_ERROR_OK) {
+            if (error != IED_ERROR_OK)
+            {
                 printf("read server directory error %i\n", error);
             }
 
             Thread_sleep(1000);
 
-
             IedConnection_readObjectAsync(con, &error, "simpleIOGenericIO/GGIO1.AnIn1.mag.f", IEC61850_FC_MX, readObjectHandler, "simpleIOGenericIO/GGIO1.AnIn1.mag.f");
 
-            if (error != IED_ERROR_OK) {
+            if (error != IED_ERROR_OK)
+            {
                 printf("read object error %i\n", error);
             }
 
             IedConnection_readObjectAsync(con, &error, "simpleIOGenericIO/GGIO1.AnIn2.mag.f", IEC61850_FC_MX, readObjectHandler, "simpleIOGenericIO/GGIO1.AnIn2.mag.f");
 
-            if (error != IED_ERROR_OK) {
+            if (error != IED_ERROR_OK)
+            {
                 printf("read object error %i\n", error);
             }
 
             IedConnection_getVariableSpecificationAsync(con, &error, "simpleIOGenericIO/GGIO1.AnIn1", IEC61850_FC_MX, getVarSpecHandler, "simpleIOGenericIO/GGIO1.AnIn1");
 
-            if (error != IED_ERROR_OK) {
+            if (error != IED_ERROR_OK)
+            {
                 printf("get variable specification error %i\n", error);
             }
 
             IedConnection_readDataSetValuesAsync(con, &error, "simpleIOGenericIO/LLN0.Events", NULL, readDataSetHandler, NULL);
 
-            if (error != IED_ERROR_OK) {
+            if (error != IED_ERROR_OK)
+            {
                 printf("read data set error %i\n", error);
             }
 
@@ -265,7 +284,8 @@ int main(int argc, char** argv) {
 
             IedConnection_writeDataSetValuesAsync(con, &error, "simpleIOGenericIO/LLN0.Events", values, writeDataSetHandler, NULL);
 
-            if (error != IED_ERROR_OK) {
+            if (error != IED_ERROR_OK)
+            {
                 printf("write data set error %i\n", error);
             }
 
@@ -275,40 +295,44 @@ int main(int argc, char** argv) {
 
             ControlObjectClient controlClient = ControlObjectClient_create("simpleIOGenericIO/GGIO1.SPCSO1", con);
 
-            if (controlClient != NULL) {
-
+            if (controlClient != NULL)
+            {
                 ControlObjectClient_setOrigin(controlClient, "test1", CONTROL_ORCAT_AUTOMATIC_REMOTE);
 
                 MmsValue* ctlVal = MmsValue_newBoolean(true);
 
                 ControlObjectClient_operateAsync(controlClient, &error, ctlVal, 0, controlActionHandler, NULL);
 
-                if (error != IED_ERROR_OK) {
+                if (error != IED_ERROR_OK)
+                {
                     printf("Failed to send operate %i\n", error);
                 }
 
             }
-            else {
+            else
+            {
                 printf("Failed to connect to control object\n");
             }
-
         }
 
         Thread_sleep(1000);
 
         IedConnection_releaseAsync(con, &error);
 
-        if (error != IED_ERROR_OK) {
+        if (error != IED_ERROR_OK)
+        {
             printf("Release returned error: %d\n", error);
         }
-        else {
-
-            while (IedConnection_getState(con) != IED_STATE_CLOSED) {
+        else
+        {
+            while (IedConnection_getState(con) != IED_STATE_CLOSED)
+            {
                 Thread_sleep(10);
             }
         }
     }
-    else {
+    else
+    {
         printf("Failed to connect to %s:%i\n", hostname, tcpPort);
     }
 
@@ -318,5 +342,3 @@ int main(int argc, char** argv) {
     IedConnection_destroy(con);
     return 0;
 }
-
-

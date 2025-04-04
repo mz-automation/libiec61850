@@ -12,10 +12,10 @@
 
 #include "iec61850_client.h"
 
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #ifdef _WIN32
-#include <Windows.h>
+#include <windows.h>
 #else
 #include <libgen.h>
 #endif
@@ -31,14 +31,16 @@ dirname(char* path)
     int len = strlen(path);
     int i = 0;
 
-    while (i < len) {
+    while (i < len)
+    {
         if (path[i] == '/' || path[i] == ':' || path[i] == '\\')
             lastSep = path + i;
 
         i++;
     }
 
-    if (lastSep) {
+    if (lastSep)
+    {
         strcpy(_dirname, path);
         _dirname[lastSep - path] = 0;
     }
@@ -47,7 +49,6 @@ dirname(char* path)
 
     return _dirname;
 }
-
 
 static char _basename[1000];
 
@@ -59,7 +60,8 @@ basename(char* path)
     int len = strlen(path);
     int i = 0;
 
-    while (i < len) {
+    while (i < len)
+    {
         if (path[i] == '/' || path[i] == ':' || path[i] == '\\')
             lastSep = path + i;
 
@@ -81,7 +83,8 @@ static int tcpPort = 102;
 static char* filename = NULL;
 static bool singleRequest = false;
 
-typedef enum {
+typedef enum
+{
     FileOperationType_None = 0,
     FileOperationType_Dir,
     FileOperationType_Info,
@@ -92,17 +95,17 @@ typedef enum {
 
 static FileOperationType operation = FileOperationType_None;
 
-
-
 static bool
 downloadHandler(void* parameter, uint8_t* buffer, uint32_t bytesRead)
 {
-    FILE* fp = (FILE*) parameter;
+    FILE* fp = (FILE*)parameter;
 
     printf("received %i bytes\n", bytesRead);
 
-    if (bytesRead > 0) {
-        if (fwrite(buffer, bytesRead, 1, fp) != 1) {
+    if (bytesRead > 0)
+    {
+        if (fwrite(buffer, bytesRead, 1, fp) != 1)
+        {
             printf("Failed to write local file!\n");
             return false;
         }
@@ -128,7 +131,6 @@ printHelp()
     printf("     set <filename> - set file\n");
 }
 
-
 static int
 parseOptions(int argc, char** argv)
 {
@@ -136,40 +138,51 @@ parseOptions(int argc, char** argv)
 
     int retVal = 0;
 
-    while (currentArgc < argc) {
-        if (strcmp(argv[currentArgc], "-h") == 0) {
+    while (currentArgc < argc)
+    {
+        if (strcmp(argv[currentArgc], "-h") == 0)
+        {
             hostname = argv[++currentArgc];
         }
-        else if (strcmp(argv[currentArgc], "-p") == 0) {
+        else if (strcmp(argv[currentArgc], "-p") == 0)
+        {
             tcpPort = atoi(argv[++currentArgc]);
         }
-        else if (strcmp(argv[currentArgc], "-s") == 0) {
+        else if (strcmp(argv[currentArgc], "-s") == 0)
+        {
             singleRequest = true;
         }
-        else if (strcmp(argv[currentArgc], "del") == 0) {
+        else if (strcmp(argv[currentArgc], "del") == 0)
+        {
             operation = FileOperationType_Del;
             filename = argv[++currentArgc];
         }
-        else if (strcmp(argv[currentArgc], "dir") == 0) {
+        else if (strcmp(argv[currentArgc], "dir") == 0)
+        {
             operation = FileOperationType_Dir;
         }
-        else if (strcmp(argv[currentArgc], "subdir") == 0) {
+        else if (strcmp(argv[currentArgc], "subdir") == 0)
+        {
             operation = FileOperationType_Dir;
             filename = argv[++currentArgc];
         }
-        else if (strcmp(argv[currentArgc], "info") == 0) {
+        else if (strcmp(argv[currentArgc], "info") == 0)
+        {
             operation = FileOperationType_Info;
             filename = argv[++currentArgc];
         }
-        else if (strcmp(argv[currentArgc], "get") == 0) {
+        else if (strcmp(argv[currentArgc], "get") == 0)
+        {
             operation = FileOperationType_Get;
             filename = argv[++currentArgc];
         }
-        else if (strcmp(argv[currentArgc], "set") == 0) {
+        else if (strcmp(argv[currentArgc], "set") == 0)
+        {
             operation = FileOperationType_Set;
             filename = argv[++currentArgc];
         }
-        else {
+        else
+        {
             printf("Unknown operation!\n");
             return 1;
         }
@@ -195,22 +208,25 @@ showDirectory(IedConnection con)
     else
         rootDirectory = IedConnection_getFileDirectory(con, &error, filename);
 
-    if (error != IED_ERROR_OK) {
+    if (error != IED_ERROR_OK)
+    {
         printf("Error retrieving file directory\n");
     }
-    else {
+    else
+    {
         LinkedList directoryEntry = LinkedList_getNext(rootDirectory);
 
-        while (directoryEntry != NULL) {
+        while (directoryEntry != NULL)
+        {
 
-            FileDirectoryEntry entry = (FileDirectoryEntry) directoryEntry->data;
+            FileDirectoryEntry entry = (FileDirectoryEntry)directoryEntry->data;
 
             printf("%s %i\n", FileDirectoryEntry_getFileName(entry), FileDirectoryEntry_getFileSize(entry));
 
             directoryEntry = LinkedList_getNext(directoryEntry);
         }
 
-        LinkedList_destroyDeep(rootDirectory, (LinkedListValueDeleteFunction) FileDirectoryEntry_destroy);
+        LinkedList_destroyDeep(rootDirectory, (LinkedListValueDeleteFunction)FileDirectoryEntry_destroy);
     }
 
     if (moreFollows)
@@ -228,10 +244,11 @@ getFile(IedConnection con)
 
     FILE* fp = fopen(localFilename, "wb");
 
-    if (fp != NULL) {
+    if (fp != NULL)
+    {
 
         /* Download a file from the server */
-        IedConnection_getFile(con, &error, filename, downloadHandler, (void*) fp);
+        IedConnection_getFile(con, &error, filename, downloadHandler, (void*)fp);
 
         if (error != IED_ERROR_OK)
             printf("Failed to get file!\n");
@@ -290,14 +307,16 @@ deleteFile(IedConnection con)
 int
 main(int argc, char** argv)
 {
-    if (argc < 2) {
+    if (argc < 2)
+    {
         printHelp();
         return 0;
     }
 
     parseOptions(argc, argv);
 
-    if (operation == FileOperationType_None) {
+    if (operation == FileOperationType_None)
+    {
         printHelp();
         return 0;
     }
@@ -308,10 +327,10 @@ main(int argc, char** argv)
 
     IedConnection_connect(con, &error, hostname, tcpPort);
 
-    if (error == IED_ERROR_OK) {
-
-
-        switch (operation) {
+    if (error == IED_ERROR_OK)
+    {
+        switch (operation)
+        {
         case FileOperationType_Dir:
             showDirectory(con);
             break;
@@ -330,15 +349,13 @@ main(int argc, char** argv)
             break;
         }
 
-
         IedConnection_abort(con, &error);
     }
-    else {
+    else
+    {
         printf("Failed to connect to %s:%i\n", hostname, tcpPort);
     }
 
     IedConnection_destroy(con);
     return 0;
 }
-
-

@@ -1,9 +1,33 @@
 README
 ------
 
-For TLS support with mbedtls download the source tarball of version 2.16.x and extract here in the subfolder
+At the moment libiec61850 provides support for two versions of mbedtls (2.28 and 3.6).
 
-mbedtls-2.16
+mbedtls version 2.28 support different TLS versions up to TLS 1.2.
 
-After extracting of the archive you may have to rename the folder to match the exact name "mbedtls-2.16". Otherwise the build system will not find the library.
+mbedtls version 3.6 only support TLS 1.2 and TLS 1.3. Older versions are not supported.
+
+It is recommended that you use version 3.6 unless you need support for older versions of TLS.
+
+mbedtls-2.28
+------------
+
+Download the latest source tarball from version 2.27.x and extract it here in the subfolder mbedtls-2.28
+
+After extracting of the archive you may have to rename the folder to match the exact name "mbedtls-2.28". Otherwise the build system will not find the library.
+
+  wget https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v2.28.8.tar.gz
+
+  tar xzf v2.28.8.tar.gz
+
+  mv mbedtls-2.28.8 mbedtls-2.28
+
+mbedtls-3.6.0
+-------------
+
+You just have to download the archive and extract it in this folder.
+
+  wget https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v3.6.0.tar.gz
+
+  tar xzf v3.6.0.tar.gz
 

@@ -36,6 +36,8 @@ extern "C" {
 /**
  * @defgroup COMMON_DATA_CLASSES Helper functions to create common data classes (CDC) using the dynamic model API
  *
+ * \brief Helper functions to create compliant common data classes (CDC) using the dynamic model API.
+ *
  * Currently supports CDCs from IEC 61850-7-3:2010 (Edition 2)
  *
  * @{

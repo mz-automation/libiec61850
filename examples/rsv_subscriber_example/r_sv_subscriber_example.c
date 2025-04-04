@@ -50,8 +50,8 @@ main(int argc, char** argv)
 {
     RSession rSession = RSession_create();
 
-    if (rSession) {
-
+    if (rSession)
+    {
         RSession_setLocalAddress(rSession, "0.0.0.0", 102);
 
         RSession_addMulticastGroup(rSession, "230.0.10.10");
@@ -64,7 +64,8 @@ main(int argc, char** argv)
 
         SVReceiver receiver = SVReceiver_createRemote(rSession);
 
-        if (receiver) {
+        if (receiver)
+        {
             /* Create a subscriber listening to SV messages with APPID 4000h */
             SVSubscriber subscriber = SVSubscriber_create(NULL, 0x4000);
 
@@ -77,7 +78,8 @@ main(int argc, char** argv)
             /* Start listening to SV messages - starts a new receiver background thread */
             SVReceiver_start(receiver);
 
-            if (SVReceiver_isRunning(receiver)) {
+            if (SVReceiver_isRunning(receiver))
+            {
                 signal(SIGINT, sigint_handler);
 
                 while (running)
@@ -86,21 +88,23 @@ main(int argc, char** argv)
                 /* Stop listening to SV messages */
                 SVReceiver_stop(receiver);
             }
-            else {
+            else
+            {
                 printf("Failed to start SV subscriber. Reason can be that the Ethernet interface doesn't exist or root permission are required.\n");
             }
 
             /* Cleanup and free resources */
             SVReceiver_destroy(receiver);
         }
-        else {
+        else
+        {
             printf("Failed to create SV receiver\n");
         }
 
         RSession_destroy(rSession);
     }
-    else {
+    else
+    {
         printf("Failed to create remote session protocol\n");
     }
-
 }

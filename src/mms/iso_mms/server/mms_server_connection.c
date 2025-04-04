@@ -73,7 +73,8 @@ mmsMsg_encodeMmsRejectPdu(uint32_t* invokeId, int rejectType, int rejectReason, 
 
     uint32_t rejectPduLength = 3;
 
-    if (invokeId != NULL) {
+    if (invokeId)
+    {
         invokeIdLength = BerEncoder_UInt32determineEncodedSize(*invokeId);
         rejectPduLength += 2 + invokeIdLength;
     }
@@ -81,7 +82,8 @@ mmsMsg_encodeMmsRejectPdu(uint32_t* invokeId, int rejectType, int rejectReason, 
     /* Encode reject PDU */
     bufPos = BerEncoder_encodeTL(0xa4, rejectPduLength, buffer, bufPos);
 
-    if (invokeId != NULL) {
+    if (invokeId)
+    {
         /* original invokeId */
         bufPos = BerEncoder_encodeTL(0x80, invokeIdLength, buffer, bufPos);
         bufPos = BerEncoder_encodeUInt32(*invokeId, buffer, bufPos);
@@ -143,30 +145,33 @@ handleConfirmedRequestPdu(
 {
     uint32_t invokeId = 0;
 
-    while (bufPos < maxBufPos) {
+    while (bufPos < maxBufPos)
+    {
         uint8_t tag = buffer[bufPos++];
         int length;
 
         bool extendedTag = false;
 
-        if ((tag & 0x1f) == 0x1f) {
+        if ((tag & 0x1f) == 0x1f)
+        {
             extendedTag = true;
             tag = buffer[bufPos++];
         }
 
         bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
 
-        if (bufPos < 0) {
+        if (bufPos < 0)
+        {
             mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
             return;
         }
 
-        if (extendedTag) {
+        if (extendedTag)
+        {
             switch (tag)
             {
 
 #if (MMS_OBTAIN_FILE_SERVICE == 1)
-
 
 #if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
             case 0x2e: /* obtain-file */
@@ -300,7 +305,8 @@ handleConfirmedRequestPdu(
                 break;
             }
         }
-        else {
+        else
+        {
             switch (tag)
             {
             case 0x02: /* invoke Id */
@@ -424,24 +430,25 @@ handleConfirmedErrorPdu(
     bool hasInvokeId = false;
     MmsServiceError serviceError;
 
-    if (mmsMsg_parseConfirmedErrorPDU(buffer, bufPos, maxBufPos, &invokeId, &hasInvokeId, &serviceError)) {
-
+    if (mmsMsg_parseConfirmedErrorPDU(buffer, bufPos, maxBufPos, &invokeId, &hasInvokeId, &serviceError))
+    {
         if (DEBUG_MMS_SERVER)
             printf("MMS_SERVER: Handle confirmed error PDU: invokeID: %u\n", invokeId);
 
-        if (hasInvokeId) {
+        if (hasInvokeId)
+        {
             /* check if message is related to an existing file upload task */
             int i;
-            for (i = 0; i < CONFIG_MMS_SERVER_MAX_GET_FILE_TASKS; i++) {
-
+            for (i = 0; i < CONFIG_MMS_SERVER_MAX_GET_FILE_TASKS; i++)
+            {
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
                 Semaphore_wait(self->server->fileUploadTasks[i].taskLock);
 #endif
 
-                if (self->server->fileUploadTasks[i].state != MMS_FILE_UPLOAD_STATE_NOT_USED) {
-
-                    if (self->server->fileUploadTasks[i].lastRequestInvokeId == invokeId) {
-
+                if (self->server->fileUploadTasks[i].state != MMS_FILE_UPLOAD_STATE_NOT_USED)
+                {
+                    if (self->server->fileUploadTasks[i].lastRequestInvokeId == invokeId)
+                    {
                         self->server->fileUploadTasks[i].state = MMS_FILE_UPLOAD_STATE_SEND_OBTAIN_FILE_ERROR_SOURCE;
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
@@ -449,7 +456,6 @@ handleConfirmedErrorPdu(
 #endif
                         return;
                     }
-
                 }
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
@@ -457,9 +463,9 @@ handleConfirmedErrorPdu(
 #endif
             }
         }
-
     }
-    else {
+    else
+    {
         if (DEBUG_MMS_SERVER)
             printf("MMS_SERVER: error parsing confirmed error PDU\n");
     }
@@ -469,7 +475,8 @@ static MmsObtainFileTask
 getUploadTaskByInvokeId(MmsServer mmsServer, uint32_t invokeId)
 {
     int i;
-    for (i = 0; i < CONFIG_MMS_SERVER_MAX_GET_FILE_TASKS; i++) {
+    for (i = 0; i < CONFIG_MMS_SERVER_MAX_GET_FILE_TASKS; i++)
+    {
         if ((mmsServer->fileUploadTasks[i].state != 0) && (mmsServer->fileUploadTasks[i].lastRequestInvokeId == invokeId))
             return &(mmsServer->fileUploadTasks[i]);
     }
@@ -486,19 +493,23 @@ mmsFileReadHandler(uint32_t invokeId, void* parameter, MmsError mmsError, int32_
 
     MmsObtainFileTask task = (MmsObtainFileTask) parameter;
 
-    if (mmsError == MMS_ERROR_NONE) {
+    if (mmsError == MMS_ERROR_NONE)
+    {
         if (DEBUG_MMS_SERVER)
             printf("MMS_SERVER:  file %i received %u bytes\n", task->frmsId, bytesReceived);
 
-        if(task->fileHandle){
+        if(task->fileHandle)
+        {
             FileSystem_writeFile(task->fileHandle, buffer, bytesReceived);
         }
-        else{
+        else
+        {
             if (DEBUG_MMS_SERVER)
                 printf("MMS_SERVER: problem reading file %i file already closed\n", task->frmsId);
         }
     }
-    else {
+    else
+    {
         if (DEBUG_MMS_SERVER)
             printf("MMS_SERVER:  problem reading file %i (error code: %i)\n", task->frmsId, mmsError);
     }
@@ -512,7 +523,8 @@ handleConfirmedResponsePdu(
 {
     uint32_t invokeId = 0;
 
-    while (bufPos < maxBufPos) {
+    while (bufPos < maxBufPos)
+    {
         int startBufPos = bufPos;
 
         uint8_t tag = buffer[bufPos++];
@@ -520,19 +532,22 @@ handleConfirmedResponsePdu(
 
         bool extendedTag = false;
 
-        if ((tag & 0x1f) == 0x1f) {
+        if ((tag & 0x1f) == 0x1f)
+        {
             extendedTag = true;
             tag = buffer[bufPos++];
         }
 
         bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
 
-        if (bufPos < 0) {
+        if (bufPos < 0)
+        {
             mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE, response);
             return;
         }
 
-        if (extendedTag) {
+        if (extendedTag)
+        {
             switch (tag)
             {
 
@@ -545,15 +560,17 @@ handleConfirmedResponsePdu(
                 {
                     MmsObtainFileTask fileTask = getUploadTaskByInvokeId(self->server, invokeId);
 
-                    if (fileTask != NULL) {
-
+                    if (fileTask)
+                    {
                         int32_t frmsId;
 
-                        if (mmsMsg_parseFileOpenResponse(buffer, startBufPos, maxBufPos, &frmsId, NULL, NULL)) {
+                        if (mmsMsg_parseFileOpenResponse(buffer, startBufPos, maxBufPos, &frmsId, NULL, NULL))
+                        {
                             fileTask->frmsId = frmsId;
                             fileTask->state = MMS_FILE_UPLOAD_STATE_SEND_FILE_READ;
                         }
-                        else {
+                        else
+                        {
                             if (DEBUG_MMS_SERVER)
                                 printf("MMS_SERVER: error parsing file-open-response\n");
                             fileTask->state = MMS_FILE_UPLOAD_STATE_SEND_OBTAIN_FILE_ERROR_SOURCE;
@@ -576,24 +593,29 @@ handleConfirmedResponsePdu(
 
                     MmsObtainFileTask fileTask = getUploadTaskByInvokeId(self->server, invokeId);
 
-                    if (fileTask != NULL) {
-
+                    if (fileTask)
+                    {
                         bool moreFollows;
 
-                        if(fileTask->fileHandle == NULL){
+                        if(fileTask->fileHandle == NULL)
+                        {
                             fileTask->state = MMS_FILE_UPLOAD_STATE_SEND_OBTAIN_FILE_ERROR_DESTINATION;
                         }
-                        else{
-                            if (mmsMsg_parseFileReadResponse(buffer, startBufPos, maxBufPos, invokeId, fileTask->frmsId, &moreFollows, mmsFileReadHandler, (void*) fileTask)) {
-
-                                if (moreFollows) {
+                        else
+                        {
+                            if (mmsMsg_parseFileReadResponse(buffer, startBufPos, maxBufPos, invokeId, fileTask->frmsId, &moreFollows, mmsFileReadHandler, (void*) fileTask))
+                            {
+                                if (moreFollows)
+                                {
                                     fileTask->state = MMS_FILE_UPLOAD_STATE_SEND_FILE_READ;
                                 }
-                                else {
+                                else
+                                {
                                     fileTask->state = MMS_FILE_UPLOAD_STATE_SEND_FILE_CLOSE;
                                 }
                             }
-                            else {
+                            else
+                            {
                                 fileTask->state = MMS_FILE_UPLOAD_STATE_SEND_OBTAIN_FILE_ERROR_SOURCE;
 
                                 if (DEBUG_MMS_SERVER)
@@ -601,7 +623,8 @@ handleConfirmedResponsePdu(
                             }
                         }
                     }
-                    else {
+                    else
+                    {
                         /* ignore */
 
                         if (DEBUG_MMS_SERVER)
@@ -618,13 +641,17 @@ handleConfirmedResponsePdu(
 
                     MmsObtainFileTask fileTask = getUploadTaskByInvokeId(self->server, invokeId);
 
-                    if (fileTask != NULL) {
-                        if(fileTask->fileHandle){
+                    if (fileTask)
+                    {
+                        if(fileTask->fileHandle)
+                        {
                             FileSystem_closeFile(fileTask->fileHandle);
                         }
+
                         fileTask->state = MMS_FILE_UPLOAD_STATE_SEND_OBTAIN_FILE_RESPONSE;
                     }
-                    else {
+                    else
+                    {
                         /* ignore */
 
                         if (DEBUG_MMS_SERVER)
@@ -640,7 +667,8 @@ handleConfirmedResponsePdu(
                 break;
             }
         }
-        else {
+        else
+        {
             switch (tag)
             {
             case 0x02: /* invoke Id */
@@ -665,6 +693,9 @@ handleConfirmedResponsePdu(
 static inline void
 MmsServerConnection_parseMessage(MmsServerConnection self, ByteBuffer* message, ByteBuffer* response)
 {
+    if (self->server->blockRequests)
+        return;
+
     uint8_t* buffer = message->buffer;
 
     if (message->size < 2)
@@ -759,24 +790,27 @@ MmsServerConnection_init(MmsServerConnection connection, MmsServer server, IsoCo
     else
         self = connection;
 
-    self->maxServOutstandingCalled = 0;
-    self->maxServOutstandingCalling = 0;
-    self->maxPduSize = CONFIG_MMS_MAXIMUM_PDU_SIZE;
-    self->dataStructureNestingLevel = 0;
-    self->server = server;
-    self->isoConnection = isoCon;
+    if (self)
+    {
+        self->maxServOutstandingCalled = 0;
+        self->maxServOutstandingCalling = 0;
+        self->maxPduSize = CONFIG_MMS_MAXIMUM_PDU_SIZE;
+        self->dataStructureNestingLevel = 0;
+        self->server = server;
+        self->isoConnection = isoCon;
 
 #if (MMS_DYNAMIC_DATA_SETS == 1)
-    self->namedVariableLists = LinkedList_create();
+        self->namedVariableLists = LinkedList_create();
 #endif
 
 #if (MMS_OBTAIN_FILE_SERVICE == 1)
-    self->lastRequestInvokeId = 0;
+        self->lastRequestInvokeId = 0;
 #endif
 
-    IsoConnection_installListener(isoCon, messageReceived,
-            (UserLayerTickHandler) connectionTickHandler,
-            (void*) self);
+        IsoConnection_installListener(isoCon, messageReceived,
+                (UserLayerTickHandler) connectionTickHandler,
+                (void*) self);
+    }
 
     return self;
 }
@@ -891,6 +925,3 @@ MmsServerConnection_getFilesystemBasepath(MmsServerConnection self)
     return CONFIG_VIRTUAL_FILESTORE_BASEPATH;
 #endif
 }
-
-
-

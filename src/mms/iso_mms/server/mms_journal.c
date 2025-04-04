@@ -1,7 +1,7 @@
 /*
  *  mms_journal.c
  *
- *  Copyright 2016 Michael Zillgith
+ *  Copyright 2016-2024 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -33,7 +33,11 @@ MmsJournal_create(const char* name)
 
     MmsJournal self = (MmsJournal) GLOBAL_MALLOC(sizeof(struct sMmsJournal));
 
-    self->name = StringUtils_copyString(name);
+    if (self)
+    {
+        self->name = StringUtils_copyString(name);
+        self->logStorage = NULL;
+    }
 
     return self;
 }
@@ -41,6 +45,9 @@ MmsJournal_create(const char* name)
 void
 MmsJournal_destroy(MmsJournal self)
 {
-    GLOBAL_FREEMEM(self->name);
-    GLOBAL_FREEMEM(self);
+    if (self)
+    {
+        GLOBAL_FREEMEM(self->name);
+        GLOBAL_FREEMEM(self);
+    }
 }

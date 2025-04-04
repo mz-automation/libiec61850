@@ -45,8 +45,10 @@ int main(int argc, char** argv) {
 
     IedConnection_connect(con, &error, hostname, tcpPort);
 
-    if (error == IED_ERROR_OK) {
-
+    if (error == IED_ERROR_OK)
+    {
+        MmsValue* ctlVal = NULL;
+        MmsValue* stVal = NULL;
 
         /************************
          * Direct control
@@ -55,35 +57,41 @@ int main(int argc, char** argv) {
         ControlObjectClient control
             = ControlObjectClient_create("simpleIOGenericIO/GGIO1.SPCSO1", con);
 
-        MmsValue* ctlVal = MmsValue_newBoolean(true);
+        if (control)
+        {
+            ctlVal = MmsValue_newBoolean(true);
 
-        ControlObjectClient_setOrigin(control, NULL, 3);
+            ControlObjectClient_setOrigin(control, NULL, 3);
 
-        if (ControlObjectClient_operate(control, ctlVal, 0 /* operate now */)) {
-            printf("simpleIOGenericIO/GGIO1.SPCSO1 operated successfully\n");
+            if (ControlObjectClient_operate(control, ctlVal, 0 /* operate now */)) {
+                printf("simpleIOGenericIO/GGIO1.SPCSO1 operated successfully\n");
+            }
+            else {
+                printf("failed to operate simpleIOGenericIO/GGIO1.SPCSO1\n");
+            }
+
+            MmsValue_delete(ctlVal);
+
+            ControlObjectClient_destroy(control);
+
+            /* Check if status value has changed */
+
+            stVal = IedConnection_readObject(con, &error, "simpleIOGenericIO/GGIO1.SPCSO1.stVal", IEC61850_FC_ST);
+
+            if (error == IED_ERROR_OK) {
+                bool state = MmsValue_getBoolean(stVal);
+                MmsValue_delete(stVal);
+
+                printf("New status of simpleIOGenericIO/GGIO1.SPCSO1.stVal: %i\n", state);
+            }
+            else {
+                printf("Reading status for simpleIOGenericIO/GGIO1.SPCSO1 failed!\n");
+            }
+
         }
         else {
-            printf("failed to operate simpleIOGenericIO/GGIO1.SPCSO1\n");
+            printf("Control object simpleIOGenericIO/GGIO1.SPCSO1 not found in server\n");
         }
-
-        MmsValue_delete(ctlVal);
-
-        ControlObjectClient_destroy(control);
-
-        /* Check if status value has changed */
-
-        MmsValue* stVal = IedConnection_readObject(con, &error, "simpleIOGenericIO/GGIO1.SPCSO1.stVal", IEC61850_FC_ST);
-
-        if (error == IED_ERROR_OK) {
-            bool state = MmsValue_getBoolean(stVal);
-            MmsValue_delete(stVal);
-
-            printf("New status of simpleIOGenericIO/GGIO1.SPCSO1.stVal: %i\n", state);
-        }
-        else {
-            printf("Reading status for simpleIOGenericIO/GGIO1.SPCSO1 failed!\n");
-        }
-
 
         /************************
          * Select before operate
@@ -91,25 +99,30 @@ int main(int argc, char** argv) {
 
         control = ControlObjectClient_create("simpleIOGenericIO/GGIO1.SPCSO2", con);
 
-        if (ControlObjectClient_select(control)) {
+        if (control)
+        {
+            if (ControlObjectClient_select(control)) {
 
-            ctlVal = MmsValue_newBoolean(true);
+                ctlVal = MmsValue_newBoolean(true);
 
-            if (ControlObjectClient_operate(control, ctlVal, 0 /* operate now */)) {
-                printf("simpleIOGenericIO/GGIO1.SPCSO2 operated successfully\n");
+                if (ControlObjectClient_operate(control, ctlVal, 0 /* operate now */)) {
+                    printf("simpleIOGenericIO/GGIO1.SPCSO2 operated successfully\n");
+                }
+                else {
+                    printf("failed to operate simpleIOGenericIO/GGIO1.SPCSO2!\n");
+                }
+
+                MmsValue_delete(ctlVal);
             }
             else {
-                printf("failed to operate simpleIOGenericIO/GGIO1.SPCSO2!\n");
+                printf("failed to select simpleIOGenericIO/GGIO1.SPCSO2!\n");
             }
 
-            MmsValue_delete(ctlVal);
+            ControlObjectClient_destroy(control);
         }
         else {
-            printf("failed to select simpleIOGenericIO/GGIO1.SPCSO2!\n");
+            printf("Control object simpleIOGenericIO/GGIO1.SPCSO2 not found in server\n");
         }
-
-        ControlObjectClient_destroy(control);
-
 
         /****************************************
          * Direct control with enhanced security
@@ -117,37 +130,43 @@ int main(int argc, char** argv) {
 
         control = ControlObjectClient_create("simpleIOGenericIO/GGIO1.SPCSO3", con);
 
-        ControlObjectClient_setCommandTerminationHandler(control, commandTerminationHandler, NULL);
+        if (control)
+        {
+            ControlObjectClient_setCommandTerminationHandler(control, commandTerminationHandler, NULL);
 
-        ctlVal = MmsValue_newBoolean(true);
+            ctlVal = MmsValue_newBoolean(true);
 
-        if (ControlObjectClient_operate(control, ctlVal, 0 /* operate now */)) {
-            printf("simpleIOGenericIO/GGIO1.SPCSO3 operated successfully\n");
+            if (ControlObjectClient_operate(control, ctlVal, 0 /* operate now */)) {
+                printf("simpleIOGenericIO/GGIO1.SPCSO3 operated successfully\n");
+            }
+            else {
+                printf("failed to operate simpleIOGenericIO/GGIO1.SPCSO3\n");
+            }
+
+            MmsValue_delete(ctlVal);
+
+            /* Wait for command termination message */
+            Thread_sleep(1000);
+
+            ControlObjectClient_destroy(control);
+
+            /* Check if status value has changed */
+
+            stVal = IedConnection_readObject(con, &error, "simpleIOGenericIO/GGIO1.SPCSO3.stVal", IEC61850_FC_ST);
+
+            if (error == IED_ERROR_OK) {
+                bool state = MmsValue_getBoolean(stVal);
+
+                printf("New status of simpleIOGenericIO/GGIO1.SPCSO3.stVal: %i\n", state);
+
+                MmsValue_delete(stVal);
+            }
+            else {
+                printf("Reading status for simpleIOGenericIO/GGIO1.SPCSO3 failed!\n");
+            }
         }
         else {
-            printf("failed to operate simpleIOGenericIO/GGIO1.SPCSO3\n");
-        }
-
-        MmsValue_delete(ctlVal);
-
-        /* Wait for command termination message */
-        Thread_sleep(1000);
-
-        ControlObjectClient_destroy(control);
-
-        /* Check if status value has changed */
-
-       stVal = IedConnection_readObject(con, &error, "simpleIOGenericIO/GGIO1.SPCSO3.stVal", IEC61850_FC_ST);
-
-        if (error == IED_ERROR_OK) {
-            bool state = MmsValue_getBoolean(stVal);
-
-            printf("New status of simpleIOGenericIO/GGIO1.SPCSO3.stVal: %i\n", state);
-
-            MmsValue_delete(stVal);
-        }
-        else {
-            printf("Reading status for simpleIOGenericIO/GGIO1.SPCSO3 failed!\n");
+            printf("Control object simpleIOGenericIO/GGIO1.SPCSO3 not found in server\n");
         }
 
         /***********************************************
@@ -156,31 +175,36 @@ int main(int argc, char** argv) {
 
         control = ControlObjectClient_create("simpleIOGenericIO/GGIO1.SPCSO4", con);
 
-        ControlObjectClient_setCommandTerminationHandler(control, commandTerminationHandler, NULL);
+        if (control)
+        {
+            ControlObjectClient_setCommandTerminationHandler(control, commandTerminationHandler, NULL);
 
-        ctlVal = MmsValue_newBoolean(true);
+            ctlVal = MmsValue_newBoolean(true);
 
-        if (ControlObjectClient_selectWithValue(control, ctlVal)) {
+            if (ControlObjectClient_selectWithValue(control, ctlVal)) {
 
-            if (ControlObjectClient_operate(control, ctlVal, 0 /* operate now */)) {
-                printf("simpleIOGenericIO/GGIO1.SPCSO4 operated successfully\n");
+                if (ControlObjectClient_operate(control, ctlVal, 0 /* operate now */)) {
+                    printf("simpleIOGenericIO/GGIO1.SPCSO4 operated successfully\n");
+                }
+                else {
+                    printf("failed to operate simpleIOGenericIO/GGIO1.SPCSO4!\n");
+                }
+
             }
             else {
-                printf("failed to operate simpleIOGenericIO/GGIO1.SPCSO4!\n");
+                printf("failed to select simpleIOGenericIO/GGIO1.SPCSO4!\n");
             }
 
+            MmsValue_delete(ctlVal);
+
+            /* Wait for command termination message */
+            Thread_sleep(1000);
+
+            ControlObjectClient_destroy(control);
         }
         else {
-            printf("failed to select simpleIOGenericIO/GGIO1.SPCSO4!\n");
+            printf("Control object simpleIOGenericIO/GGIO1.SPCSO4 not found in server\n");
         }
-
-        MmsValue_delete(ctlVal);
-
-        /* Wait for command termination message */
-        Thread_sleep(1000);
-
-        ControlObjectClient_destroy(control);
-
 
         /*********************************************************************
          * Direct control with enhanced security (expect CommandTermination-)
@@ -188,24 +212,29 @@ int main(int argc, char** argv) {
 
         control = ControlObjectClient_create("simpleIOGenericIO/GGIO1.SPCSO9", con);
 
-        ControlObjectClient_setCommandTerminationHandler(control, commandTerminationHandler, NULL);
+        if (control)
+        {
+            ControlObjectClient_setCommandTerminationHandler(control, commandTerminationHandler, NULL);
 
-        ctlVal = MmsValue_newBoolean(true);
+            ctlVal = MmsValue_newBoolean(true);
 
-        if (ControlObjectClient_operate(control, ctlVal, 0 /* operate now */)) {
-            printf("simpleIOGenericIO/GGIO1.SPCSO9 operated successfully\n");
+            if (ControlObjectClient_operate(control, ctlVal, 0 /* operate now */)) {
+                printf("simpleIOGenericIO/GGIO1.SPCSO9 operated successfully\n");
+            }
+            else {
+                printf("failed to operate simpleIOGenericIO/GGIO1.SPCSO9\n");
+            }
+
+            MmsValue_delete(ctlVal);
+
+            /* Wait for command termination message */
+            Thread_sleep(1000);
+
+            ControlObjectClient_destroy(control);
         }
         else {
-            printf("failed to operate simpleIOGenericIO/GGIO1.SPCSO9\n");
+            printf("Control object simpleIOGenericIO/GGIO1.SPCSO9 not found in server\n");
         }
-
-        MmsValue_delete(ctlVal);
-
-        /* Wait for command termination message */
-        Thread_sleep(1000);
-
-        ControlObjectClient_destroy(control);
-
 
         IedConnection_close(con);
     }

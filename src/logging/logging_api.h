@@ -30,7 +30,6 @@ extern "C" {
 
 #include "libiec61850_common_api.h"
 
-
 /** \addtogroup server_api_group
  *  @{
  */
@@ -75,8 +74,8 @@ typedef bool (*LogEntryCallback) (void* parameter, uint64_t timestamp, uint64_t 
  */
 typedef bool (*LogEntryDataCallback) (void* parameter, const char* dataRef, uint8_t* data, int dataSize, uint8_t reasonCode, bool moreFollow);
 
-struct sLogStorage {
-
+struct sLogStorage
+{
     void* instanceData;
 
     int maxLogEntries;
@@ -97,7 +96,6 @@ struct sLogStorage {
     void (*destroy) (LogStorage self);
 };
 
-
 /**
  * \brief Set the maximum number of log entries for this log
  *
@@ -106,6 +104,18 @@ struct sLogStorage {
  */
 LIB61850_API void
 LogStorage_setMaxLogEntries(LogStorage self, int maxEntries);
+
+/**
+ * \brief Create a new LogStorage instance using embedded sqlite
+ *
+ * \note library has to be compiled with sqlite support
+ *
+ * \param filename name of the sqlite database file to be used
+ *
+ * \return new LogStorage instance
+ */
+LIB61850_API LogStorage
+SqliteLogStorage_createInstance(const char* filename);
 
 /**
  * \brief Get the maximum allowed number of log entries for this log

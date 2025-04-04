@@ -101,4 +101,3 @@ MmsServer_getRevision(MmsServer self)
 }
 
 #endif /* MMS_IDENTIFY_SERVICE == 1 */
-

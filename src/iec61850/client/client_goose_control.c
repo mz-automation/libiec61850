@@ -3,7 +3,7 @@
  *
  *  Implementation of the ClientReportControlBlock class
  *
- *  Copyright 2014 Michael Zillgith
+ *  Copyright 2014-2024 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -31,7 +31,8 @@
 
 #include "libiec61850_platform_includes.h"
 
-struct sClientGooseControlBlock {
+struct sClientGooseControlBlock
+{
     char* objectReference;
     MmsValue* goEna;
     MmsValue* goID;
@@ -49,7 +50,10 @@ ClientGooseControlBlock_create(const char* objectReference)
 {
     ClientGooseControlBlock self = (ClientGooseControlBlock) GLOBAL_CALLOC(1, sizeof(struct sClientGooseControlBlock));
 
-    self->objectReference = StringUtils_copyString(objectReference);
+    if (self)
+    {
+        self->objectReference = StringUtils_copyString(objectReference);
+    }
 
     return self;
 }
@@ -57,19 +61,22 @@ ClientGooseControlBlock_create(const char* objectReference)
 void
 ClientGooseControlBlock_destroy(ClientGooseControlBlock self)
 {
-    GLOBAL_FREEMEM(self->objectReference);
+    if (self)
+    {
+        GLOBAL_FREEMEM(self->objectReference);
 
-    MmsValue_delete(self->goEna);
-    MmsValue_delete(self->goID);
-    MmsValue_delete(self->datSet);
-    MmsValue_delete(self->confRev);
-    MmsValue_delete(self->ndsCom);
-    MmsValue_delete(self->dstAddress);
-    MmsValue_delete(self->minTime);
-    MmsValue_delete(self->maxTime);
-    MmsValue_delete(self->fixedOffs);
+        MmsValue_delete(self->goEna);
+        MmsValue_delete(self->goID);
+        MmsValue_delete(self->datSet);
+        MmsValue_delete(self->confRev);
+        MmsValue_delete(self->ndsCom);
+        MmsValue_delete(self->dstAddress);
+        MmsValue_delete(self->minTime);
+        MmsValue_delete(self->maxTime);
+        MmsValue_delete(self->fixedOffs);
 
-    GLOBAL_FREEMEM(self);
+        GLOBAL_FREEMEM(self);
+    }
 }
 
 bool
@@ -172,13 +179,17 @@ ClientGooseControlBlock_getFixedOffs(ClientGooseControlBlock self)
 }
 
 static MmsValue*
-newEmptyPhyCommAddress(void) {
+newEmptyPhyCommAddress(void)
+{
     MmsValue* self = MmsValue_createEmptyStructure(4);
 
-    MmsValue_setElement(self, 0, MmsValue_newOctetString(6, 6));
-    MmsValue_setElement(self, 1, MmsValue_newUnsigned(8));
-    MmsValue_setElement(self, 2, MmsValue_newUnsigned(16));
-    MmsValue_setElement(self, 3, MmsValue_newUnsigned(16));
+    if (self)
+    {
+        MmsValue_setElement(self, 0, MmsValue_newOctetString(6, 6));
+        MmsValue_setElement(self, 1, MmsValue_newUnsigned(8));
+        MmsValue_setElement(self, 2, MmsValue_newUnsigned(16));
+        MmsValue_setElement(self, 3, MmsValue_newUnsigned(16));
+    }
 
     return self;
 }
@@ -191,24 +202,28 @@ ClientGooseControlBlock_getDstAddress(ClientGooseControlBlock self)
 
     if (self->dstAddress == NULL) goto exit_error;
 
-    if (MmsValue_getType(self->dstAddress) != MMS_STRUCTURE) {
+    if (MmsValue_getType(self->dstAddress) != MMS_STRUCTURE)
+    {
         if (DEBUG_IED_CLIENT) printf("IED_CLIENT: GoCB - addr has wrong type\n");
         goto exit_error;
     }
 
-    if (MmsValue_getArraySize(self->dstAddress) != 4) {
+    if (MmsValue_getArraySize(self->dstAddress) != 4)
+    {
         if (DEBUG_IED_CLIENT) printf("IED_CLIENT: GoCB - addr has wrong type\n");
         goto exit_error;
     }
 
     MmsValue* addr = MmsValue_getElement(self->dstAddress, 0);
 
-    if (MmsValue_getType(addr) != MMS_OCTET_STRING) {
+    if (MmsValue_getType(addr) != MMS_OCTET_STRING)
+    {
         if (DEBUG_IED_CLIENT) printf("IED_CLIENT: GoCB - addr has wrong type\n");
         goto exit_error;
     }
 
-    if (MmsValue_getOctetStringSize(addr) != 6) {
+    if (MmsValue_getOctetStringSize(addr) != 6)
+    {
         if (DEBUG_IED_CLIENT) printf("IED_CLIENT: GoCB - addr has wrong size\n");
         goto exit_error;
     }
@@ -219,7 +234,8 @@ ClientGooseControlBlock_getDstAddress(ClientGooseControlBlock self)
 
     MmsValue* prio = MmsValue_getElement(self->dstAddress, 1);
 
-    if (MmsValue_getType(prio) != MMS_UNSIGNED) {
+    if (MmsValue_getType(prio) != MMS_UNSIGNED)
+    {
         if (DEBUG_IED_CLIENT) printf("IED_CLIENT: GoCB - prio has wrong type\n");
         goto exit_error;
     }
@@ -228,7 +244,8 @@ ClientGooseControlBlock_getDstAddress(ClientGooseControlBlock self)
 
     MmsValue* vid = MmsValue_getElement(self->dstAddress, 2);
 
-    if (MmsValue_getType(vid) != MMS_UNSIGNED) {
+    if (MmsValue_getType(vid) != MMS_UNSIGNED)
+    {
         if (DEBUG_IED_CLIENT) printf("IED_CLIENT: GoCB - vid has wrong type\n");
         goto exit_error;
     }
@@ -237,7 +254,8 @@ ClientGooseControlBlock_getDstAddress(ClientGooseControlBlock self)
 
     MmsValue* appID = MmsValue_getElement(self->dstAddress, 3);
 
-    if (MmsValue_getType(appID) != MMS_UNSIGNED) {
+    if (MmsValue_getType(appID) != MMS_UNSIGNED)
+    {
         if (DEBUG_IED_CLIENT) printf("IED_CLIENT: GoCB - appID has wrong type\n");
         goto exit_error;
     }
@@ -254,8 +272,8 @@ ClientGooseControlBlock_setDstAddress(ClientGooseControlBlock self, PhyComAddres
     if (self->dstAddress == NULL)
         self->dstAddress = newEmptyPhyCommAddress();
 
-    if (self->dstAddress) {
-
+    if (self->dstAddress)
+    {
         MmsValue* addr = MmsValue_getElement(self->dstAddress, 0);
 
         MmsValue_setOctetString(addr, value.dstAddress, 6);
@@ -364,7 +382,8 @@ private_ClientGooseControlBlock_updateValues(ClientGooseControlBlock self, MmsVa
 {
     int elementCount = MmsValue_getArraySize(values);
 
-    if (elementCount > 5) {
+    if (elementCount > 5)
+    {
         updateOrClone(&(self->goEna), values, 0);
         updateOrClone(&(self->goID), values, 1);
         updateOrClone(&(self->datSet), values, 2);
@@ -398,7 +417,8 @@ IedConnection_getGoCBValues(IedConnection self, IedClientError* error, const cha
     char domainId[65];
     char itemId[130];
 
-    if (MmsMapping_getMmsDomainFromObjectReference(goCBReference, domainId) == NULL) {
+    if (MmsMapping_getMmsDomainFromObjectReference(goCBReference, domainId) == NULL)
+    {
         *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
         return NULL;
     }
@@ -409,7 +429,8 @@ IedConnection_getGoCBValues(IedConnection self, IedClientError* error, const cha
 
     const char* separator = strchr(itemIdStart, '.');
 
-    if (separator == NULL) {
+    if (separator == NULL)
+    {
         *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
         return NULL;
     }
@@ -431,18 +452,21 @@ IedConnection_getGoCBValues(IedConnection self, IedClientError* error, const cha
 
     MmsValue* goCB = MmsConnection_readVariable(self->connection, &mmsError, domainId, itemId);
 
-    if (mmsError != MMS_ERROR_NONE) {
+    if (mmsError != MMS_ERROR_NONE)
+    {
         *error = iedConnection_mapMmsErrorToIedError(mmsError);
 
         return NULL;
     }
 
-    if (goCB == NULL) {
+    if (goCB == NULL)
+    {
         *error = IED_ERROR_OBJECT_DOES_NOT_EXIST;
         return NULL;
     }
 
-    if (MmsValue_getType(goCB) != MMS_STRUCTURE) {
+    if (MmsValue_getType(goCB) != MMS_STRUCTURE)
+    {
         if (DEBUG_IED_CLIENT)
             printf("DEBUG_IED_CLIENT: getRCBValues returned wrong type!\n");
 
@@ -465,6 +489,147 @@ IedConnection_getGoCBValues(IedConnection self, IedClientError* error, const cha
     return returnGoCB;
 }
 
+static void
+readObjectHandlerInternal(uint32_t invokeId, void* parameter, MmsError err, MmsValue* value)
+{
+    IedConnection self = (IedConnection) parameter;
+
+    IedConnectionOutstandingCall call = iedConnection_lookupOutstandingCall(self, invokeId);
+
+    if (call)
+    {
+        IedConnection_GetGoCBValuesHandler handler = (IedConnection_GetGoCBValuesHandler) call->callback;
+        ClientGooseControlBlock updateGoCB = (ClientGooseControlBlock) call->specificParameter;
+        char* goCBReference = (char*) call->specificParameter2.pointer;
+
+        if (err != MMS_ERROR_NONE)
+        {
+            handler(invokeId, call->callbackParameter, iedConnection_mapMmsErrorToIedError(err), NULL);
+        }
+        else
+        {    
+            if (value == NULL)
+            {
+                handler(invokeId, call->callbackParameter, IED_ERROR_OBJECT_DOES_NOT_EXIST, NULL);
+            }
+            else
+            {
+                if (MmsValue_getType(value) == MMS_DATA_ACCESS_ERROR)
+                {
+                    if (DEBUG_IED_CLIENT)
+                        printf("DEBUG_IED_CLIENT: getGoCBValues returned data-access-error!\n");
+
+                    handler(invokeId, call->callbackParameter, iedConnection_mapDataAccessErrorToIedError(MmsValue_getDataAccessError(value)), NULL);
+                }
+                else
+                {
+                    ClientGooseControlBlock returnGoCB = updateGoCB;
+
+                    if (returnGoCB == NULL)
+                        returnGoCB = ClientGooseControlBlock_create(goCBReference);
+
+                    if (private_ClientGooseControlBlock_updateValues(returnGoCB, value))
+                    {
+                        handler(invokeId, call->callbackParameter, IED_ERROR_OK, returnGoCB);
+                    }
+                    else
+                    {
+                        if (DEBUG_IED_CLIENT)
+                            printf("DEBUG_IED_CLIENT: getGoCBValues returned wrong type!\n");
+
+                        handler(invokeId, call->callbackParameter, IED_ERROR_TYPE_INCONSISTENT, NULL);
+
+                        if (updateGoCB == NULL)
+                            ClientGooseControlBlock_destroy(returnGoCB);
+                    }
+                }
+
+                MmsValue_delete(value);
+            }
+        }
+
+        GLOBAL_FREEMEM(goCBReference);
+
+        iedConnection_releaseOutstandingCall(self, call);
+    }
+    else 
+    {
+        if (DEBUG_IED_CLIENT)
+            printf("IED_CLIENT: internal error - no matching outstanding call!\n");
+    }
+}
+
+uint32_t
+IedConnection_getGoCBValuesAsync(IedConnection self, IedClientError* error, const char* goCBReference, ClientGooseControlBlock updateGoCB,
+    IedConnection_GetGoCBValuesHandler handler, void* parameter)
+{
+    *error = IED_ERROR_OK;
+
+    char domainId[65];
+    char itemId[130];
+
+    if (MmsMapping_getMmsDomainFromObjectReference(goCBReference, domainId) == NULL)
+    {
+        *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
+        return 0;
+    }
+
+    int domainIdSize = strlen(domainId);
+
+    const char* itemIdStart = goCBReference + domainIdSize + 1;
+
+    const char* separator = strchr(itemIdStart, '.');
+
+    if (separator == NULL)
+    {
+        *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
+        return 0;
+    }
+
+    int separatorOffset = separator - itemIdStart;
+
+    memcpy(itemId, itemIdStart, separatorOffset);
+
+    itemId[separatorOffset] = '$';
+    itemId[separatorOffset + 1] = 'G';
+    itemId[separatorOffset + 2] = 'O';
+    itemId[separatorOffset + 3] = '$';
+    itemId[separatorOffset + 4] = 0;
+
+    StringUtils_appendString(itemId, 130, separator + 1);
+
+    IedConnectionOutstandingCall call = iedConnection_allocateOutstandingCall(self);
+
+    if (call == NULL)
+    {
+        *error = IED_ERROR_OUTSTANDING_CALL_LIMIT_REACHED;
+        return 0;
+    }
+
+    call->callback = handler;
+    call->callbackParameter = parameter;
+    call->specificParameter = updateGoCB;
+    call->specificParameter2.pointer = StringUtils_copyString(goCBReference);
+
+    if (DEBUG_IED_CLIENT)
+        printf("DEBUG_IED_CLIENT: readGoCBValues for %s\n", goCBReference);
+
+    MmsError err = MMS_ERROR_NONE;
+
+    MmsConnection_readVariableAsync(self->connection, &(call->invokeId), &err, domainId, itemId, readObjectHandlerInternal, self);
+
+    *error = iedConnection_mapMmsErrorToIedError(err);
+
+    if (err != MMS_ERROR_NONE)
+    {
+        GLOBAL_FREEMEM(call->specificParameter2.pointer);
+        iedConnection_releaseOutstandingCall(self, call);
+        return 0;
+    }
+
+    return call->invokeId;
+}
+
 void
 IedConnection_setGoCBValues(IedConnection self, IedClientError* error, ClientGooseControlBlock goCB,
         uint32_t parametersMask, bool singleRequest)
@@ -476,7 +641,8 @@ IedConnection_setGoCBValues(IedConnection self, IedClientError* error, ClientGoo
     char domainId[65];
     char itemId[130];
 
-    if (MmsMapping_getMmsDomainFromObjectReference(goCB->objectReference, domainId) == NULL) {
+    if (MmsMapping_getMmsDomainFromObjectReference(goCB->objectReference, domainId) == NULL)
+    {
         *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
         return;
     }
@@ -485,7 +651,8 @@ IedConnection_setGoCBValues(IedConnection self, IedClientError* error, ClientGoo
 
     char* separator = strchr(itemIdStart, '.');
 
-    if (separator == NULL) {
+    if (separator == NULL)
+    {
         *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
         return;
     }
@@ -512,7 +679,8 @@ IedConnection_setGoCBValues(IedConnection self, IedClientError* error, ClientGoo
     LinkedList values = LinkedList_create();
 
     /* add rGoEna as last element */
-    if (parametersMask & GOCB_ELEMENT_GO_ID) {
+    if (parametersMask & GOCB_ELEMENT_GO_ID)
+    {
         StringUtils_appendString(itemId, 130, "$GoID");
 
         LinkedList_add(itemIds, StringUtils_copyString(itemId));
@@ -521,7 +689,8 @@ IedConnection_setGoCBValues(IedConnection self, IedClientError* error, ClientGoo
         itemId[itemIdLen] = 0;
     }
 
-    if (parametersMask & GOCB_ELEMENT_DATSET) {
+    if (parametersMask & GOCB_ELEMENT_DATSET)
+    {
         StringUtils_appendString(itemId, 130, "$DatSet");
 
         LinkedList_add(itemIds, StringUtils_copyString(itemId));
@@ -530,7 +699,8 @@ IedConnection_setGoCBValues(IedConnection self, IedClientError* error, ClientGoo
         itemId[itemIdLen] = 0;
     }
 
-    if (parametersMask & GOCB_ELEMENT_CONF_REV) {
+    if (parametersMask & GOCB_ELEMENT_CONF_REV)
+    {
         StringUtils_appendString(itemId, 130, "$ConfRev");
 
         LinkedList_add(itemIds, StringUtils_copyString(itemId));
@@ -539,7 +709,8 @@ IedConnection_setGoCBValues(IedConnection self, IedClientError* error, ClientGoo
         itemId[itemIdLen] = 0;
     }
 
-    if (parametersMask & GOCB_ELEMENT_NDS_COMM) {
+    if (parametersMask & GOCB_ELEMENT_NDS_COMM)
+    {
         StringUtils_appendString(itemId, 130, "$NdsCom");
 
         LinkedList_add(itemIds, StringUtils_copyString(itemId));
@@ -548,7 +719,8 @@ IedConnection_setGoCBValues(IedConnection self, IedClientError* error, ClientGoo
         itemId[itemIdLen] = 0;
     }
 
-    if (parametersMask & GOCB_ELEMENT_DST_ADDRESS) {
+    if (parametersMask & GOCB_ELEMENT_DST_ADDRESS)
+    {
         StringUtils_appendString(itemId, 130, "$DstAddress");
 
         LinkedList_add(itemIds, StringUtils_copyString(itemId));
@@ -557,7 +729,8 @@ IedConnection_setGoCBValues(IedConnection self, IedClientError* error, ClientGoo
         itemId[itemIdLen] = 0;
     }
 
-    if (parametersMask & GOCB_ELEMENT_MIN_TIME) {
+    if (parametersMask & GOCB_ELEMENT_MIN_TIME)
+    {
         StringUtils_appendString(itemId, 130, "$MinTime");
 
         LinkedList_add(itemIds, StringUtils_copyString(itemId));
@@ -566,7 +739,8 @@ IedConnection_setGoCBValues(IedConnection self, IedClientError* error, ClientGoo
         itemId[itemIdLen] = 0;
     }
 
-    if (parametersMask & GOCB_ELEMENT_MAX_TIME) {
+    if (parametersMask & GOCB_ELEMENT_MAX_TIME)
+    {
         StringUtils_appendString(itemId, 130, "$MaxTime");
 
         LinkedList_add(itemIds, StringUtils_copyString(itemId));
@@ -575,7 +749,8 @@ IedConnection_setGoCBValues(IedConnection self, IedClientError* error, ClientGoo
         itemId[itemIdLen] = 0;
     }
 
-    if (parametersMask & GOCB_ELEMENT_FIXED_OFFS) {
+    if (parametersMask & GOCB_ELEMENT_FIXED_OFFS)
+    {
         StringUtils_appendString(itemId, 130, "$FixedOffs");
 
         LinkedList_add(itemIds, StringUtils_copyString(itemId));
@@ -584,7 +759,8 @@ IedConnection_setGoCBValues(IedConnection self, IedClientError* error, ClientGoo
         itemId[itemIdLen] = 0;
     }
 
-    if (parametersMask & GOCB_ELEMENT_GO_ENA) {
+    if (parametersMask & GOCB_ELEMENT_GO_ENA)
+    {
         StringUtils_appendString(itemId, 130, "$GoEna");
 
         LinkedList_add(itemIds, StringUtils_copyString(itemId));
@@ -593,23 +769,26 @@ IedConnection_setGoCBValues(IedConnection self, IedClientError* error, ClientGoo
         itemId[itemIdLen] = 0;
     }
 
-    if (singleRequest) {
+    if (singleRequest)
+    {
         LinkedList accessResults = NULL;
 
         *error = IED_ERROR_OK;
 
         MmsConnection_writeMultipleVariables(self->connection, &mmsError, domainId, itemIds, values, &accessResults);
 
-        if (accessResults != NULL) {
+        if (accessResults)
+        {
             LinkedList element = LinkedList_getNext(accessResults);
 
-            while (element != NULL) {
+            while (element)
+            {
                 MmsValue* accessResult = (MmsValue*) element->data;
 
                 MmsDataAccessError resErr = MmsValue_getDataAccessError(accessResult);
 
-                if (MmsValue_getDataAccessError(accessResult) != DATA_ACCESS_ERROR_SUCCESS) {
-
+                if (MmsValue_getDataAccessError(accessResult) != DATA_ACCESS_ERROR_SUCCESS)
+                {
                     *error = iedConnection_mapDataAccessErrorToIedError(resErr);
 
                     break;
@@ -623,11 +802,13 @@ IedConnection_setGoCBValues(IedConnection self, IedClientError* error, ClientGoo
 
         goto exit_function;
     }
-    else {
+    else
+    {
         LinkedList itemIdElement = LinkedList_getNext(itemIds);
         LinkedList valueElement = LinkedList_getNext(values);
 
-        while (itemIdElement != NULL) {
+        while (itemIdElement)
+        {
             char* rcbItemId = (char*) itemIdElement->data;
             MmsValue* value = (MmsValue*) valueElement->data;
 
@@ -649,3 +830,355 @@ exit_function:
     LinkedList_destroyStatic(values);
 }
 
+static void
+writeMultipleVariablesHandler(uint32_t invokeId, void* parameter, MmsError mmsError, LinkedList /* <MmsValue*> */ accessResults)
+{
+    IedConnection self = (IedConnection)parameter;
+
+    IedConnectionOutstandingCall call = iedConnection_lookupOutstandingCall(self, invokeId);
+
+    if (call)
+    {
+        IedConnection_GenericServiceHandler handler = (IedConnection_GenericServiceHandler) call->callback;
+
+        if (accessResults)
+        {
+            IedClientError error = IED_ERROR_OK;
+
+            LinkedList accessResult = LinkedList_getNext(accessResults);
+
+            while (accessResult)
+            {
+                MmsValue* dataAccessError = (MmsValue*) accessResult->data;
+
+                if (MmsValue_getDataAccessError(dataAccessError) != DATA_ACCESS_ERROR_SUCCESS)
+                {
+                    error = iedConnection_mapDataAccessErrorToIedError(MmsValue_getDataAccessError(dataAccessError));
+                    break;
+                }
+
+                accessResult = LinkedList_getNext(accessResult);
+            }
+
+            LinkedList_destroyDeep(accessResults, (LinkedListValueDeleteFunction)MmsValue_delete);
+
+            handler(invokeId, call->callbackParameter, error);
+        }
+        else
+        {
+            handler(invokeId, call->callbackParameter, iedConnection_mapMmsErrorToIedError(mmsError));
+        }
+
+        iedConnection_releaseOutstandingCall(self, call);
+    }
+    else
+    {
+        if (DEBUG_IED_CLIENT)
+            printf("IED_CLIENT: internal error - no matching outstanding call with invoke ID: %u!\n", invokeId);
+    }
+}
+
+struct sWriteGoCBVariablesParameter
+{
+    LinkedList itemIds;
+    LinkedList values;
+    LinkedList currentItemId;
+    LinkedList currentValue;
+    char* domainId;
+    uint32_t originalInvokeId;
+};
+
+static void
+releaseWriteCall(IedConnection self, IedConnectionOutstandingCall call, struct sWriteGoCBVariablesParameter* param)
+{
+    GLOBAL_FREEMEM(param->domainId);
+
+    LinkedList_destroy(param->itemIds);
+    LinkedList_destroyStatic(param->values);
+
+    GLOBAL_FREEMEM(param);
+
+    iedConnection_releaseOutstandingCall(self, call);
+}
+
+static void
+writeVariableHandler(uint32_t invokeId, void* parameter, MmsError mmsError, MmsDataAccessError accessError)
+{
+    IedConnection self = (IedConnection) parameter;
+    
+    IedConnectionOutstandingCall call = iedConnection_lookupOutstandingCall(self, invokeId);
+
+    if (call)
+    {
+        IedConnection_GenericServiceHandler handler = (IedConnection_GenericServiceHandler) call->callback;
+
+        struct sWriteGoCBVariablesParameter* param = (struct sWriteGoCBVariablesParameter*) call->specificParameter2.pointer;
+
+        if (param == NULL)
+        {
+            if (DEBUG_IED_CLIENT)
+                printf("IED_CLIENT: internal error - no parameter for GoCB call!\n");
+
+            return;
+        }
+
+        if ((mmsError != MMS_ERROR_NONE) || (accessError != DATA_ACCESS_ERROR_SUCCESS))
+        {
+            IedClientError err;
+
+            if (mmsError != MMS_ERROR_NONE)
+                err = iedConnection_mapMmsErrorToIedError(mmsError);
+            else
+                err = iedConnection_mapDataAccessErrorToIedError(accessError);
+
+            handler(param->originalInvokeId, call->callbackParameter, err);
+
+            releaseWriteCall(self, call, param);
+
+            return;
+        }
+
+        param->currentItemId = LinkedList_getNext(param->currentItemId);
+
+        if (param->currentItemId == NULL)
+        {
+            handler(param->originalInvokeId, call->callbackParameter, IED_ERROR_OK);
+
+            releaseWriteCall(self, call, param);
+        }
+        else
+        {
+            param->currentValue = LinkedList_getNext(param->currentValue);
+
+            char* itemId = (char*) LinkedList_getData(param->currentItemId);
+            MmsValue* value = (MmsValue*)LinkedList_getData(param->currentValue);
+
+            MmsError writeError;
+
+            MmsConnection_writeVariableAsync(self->connection, &(call->invokeId), &writeError, param->domainId, itemId, value, writeVariableHandler, self);
+
+            if (writeError != MMS_ERROR_NONE)
+            {
+                handler(param->originalInvokeId, call->callbackParameter, iedConnection_mapMmsErrorToIedError(writeError));
+
+                releaseWriteCall(self, call, param);
+            }
+        }
+    }
+    else
+    {
+        if (DEBUG_IED_CLIENT)
+            printf("IED_CLIENT: internal error - no matching outstanding call!\n");
+    }
+}
+
+uint32_t
+IedConnection_setGoCBValuesAsync(IedConnection self, IedClientError* error, ClientGooseControlBlock goCB,
+    uint32_t parametersMask, bool singleRequest, IedConnection_GenericServiceHandler handler, void* parameter) 
+{
+    *error = IED_ERROR_OK;
+
+    uint32_t invokeId = 0;
+
+    char domainId[65];
+    char itemId[130];
+
+    if (MmsMapping_getMmsDomainFromObjectReference(goCB->objectReference, domainId) == NULL)
+    {
+        *error = IED_ERROR_OBJECT_REFERENCE_INVALID;;
+    }
+
+    char* itemIdStart = goCB->objectReference + strlen(domainId) + 1;
+
+    char* separator = strchr(itemIdStart, '.');
+
+    if (separator == NULL)
+    {
+        *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
+        goto exit_function;
+    }
+
+    int separatorOffset = separator - itemIdStart;
+
+    memcpy(itemId, itemIdStart, separatorOffset);
+
+    itemId[separatorOffset] = '$';
+    itemId[separatorOffset + 1] = 'G';
+    itemId[separatorOffset + 2] = 'O';
+    itemId[separatorOffset + 3] = '$';
+    itemId[separatorOffset + 4] = 0;
+
+    StringUtils_appendString(itemId, 130, separator + 1);
+
+    if (DEBUG_IED_CLIENT)
+        printf("DEBUG_IED_CLIENT: setGoCBValues for %s\n", goCB->objectReference);
+
+    int itemIdLen = strlen(itemId);
+
+    /* create the list of requested itemIds references */
+    LinkedList itemIds = LinkedList_create();
+    LinkedList values = LinkedList_create();
+
+    /* add rGoEna as last element */
+    if (parametersMask & GOCB_ELEMENT_GO_ID)
+    {
+        StringUtils_appendString(itemId, 130, "$GoID");
+
+        LinkedList_add(itemIds, StringUtils_copyString(itemId));
+        LinkedList_add(values, goCB->goID);
+
+        itemId[itemIdLen] = 0;
+    }
+
+    if (parametersMask & GOCB_ELEMENT_DATSET)
+    {
+        StringUtils_appendString(itemId, 130, "$DatSet");
+
+        LinkedList_add(itemIds, StringUtils_copyString(itemId));
+        LinkedList_add(values, goCB->datSet);
+
+        itemId[itemIdLen] = 0;
+    }
+
+    if (parametersMask & GOCB_ELEMENT_CONF_REV)
+    {
+        StringUtils_appendString(itemId, 130, "$ConfRev");
+
+        LinkedList_add(itemIds, StringUtils_copyString(itemId));
+        LinkedList_add(values, goCB->confRev);
+
+        itemId[itemIdLen] = 0;
+    }
+
+    if (parametersMask & GOCB_ELEMENT_NDS_COMM)
+    {
+        StringUtils_appendString(itemId, 130, "$NdsCom");
+
+        LinkedList_add(itemIds, StringUtils_copyString(itemId));
+        LinkedList_add(values, goCB->ndsCom);
+
+        itemId[itemIdLen] = 0;
+    }
+
+    if (parametersMask & GOCB_ELEMENT_DST_ADDRESS)
+    {
+        StringUtils_appendString(itemId, 130, "$DstAddress");
+
+        LinkedList_add(itemIds, StringUtils_copyString(itemId));
+        LinkedList_add(values, goCB->dstAddress);
+
+        itemId[itemIdLen] = 0;
+    }
+
+    if (parametersMask & GOCB_ELEMENT_MIN_TIME)
+    {
+        StringUtils_appendString(itemId, 130, "$MinTime");
+
+        LinkedList_add(itemIds, StringUtils_copyString(itemId));
+        LinkedList_add(values, goCB->minTime);
+
+        itemId[itemIdLen] = 0;
+    }
+
+    if (parametersMask & GOCB_ELEMENT_MAX_TIME)
+    {
+        StringUtils_appendString(itemId, 130, "$MaxTime");
+
+        LinkedList_add(itemIds, StringUtils_copyString(itemId));
+        LinkedList_add(values, goCB->maxTime);
+
+        itemId[itemIdLen] = 0;
+    }
+
+    if (parametersMask & GOCB_ELEMENT_FIXED_OFFS)
+    {
+        StringUtils_appendString(itemId, 130, "$FixedOffs");
+
+        LinkedList_add(itemIds, StringUtils_copyString(itemId));
+        LinkedList_add(values, goCB->fixedOffs);
+
+        itemId[itemIdLen] = 0;
+    }
+
+    if (parametersMask & GOCB_ELEMENT_GO_ENA)
+    {
+        StringUtils_appendString(itemId, 130, "$GoEna");
+
+        LinkedList_add(itemIds, StringUtils_copyString(itemId));
+        LinkedList_add(values, goCB->goEna);
+
+        itemId[itemIdLen] = 0;
+    }
+
+    IedConnectionOutstandingCall call = iedConnection_allocateOutstandingCall(self);
+
+    if (call == NULL)
+    {
+        *error = IED_ERROR_OUTSTANDING_CALL_LIMIT_REACHED;
+        goto exit_function;
+    }
+
+    call->callback = handler;
+    call->callbackParameter = parameter;
+    call->specificParameter = goCB;
+
+    MmsError err;
+
+    if (singleRequest)
+    {
+        MmsConnection_writeMultipleVariablesAsync(self->connection, &(call->invokeId), &err, domainId, itemIds, values, writeMultipleVariablesHandler, self);
+
+        *error = iedConnection_mapMmsErrorToIedError(err);
+
+        if (err != MMS_ERROR_NONE)
+        {
+            iedConnection_releaseOutstandingCall(self, call);
+        }
+        else
+        {
+            invokeId = call->invokeId;
+        }
+
+        goto exit_function;
+    }
+    else
+    {
+        struct sWriteGoCBVariablesParameter* param = (struct sWriteGoCBVariablesParameter*) GLOBAL_MALLOC(sizeof(struct sWriteGoCBVariablesParameter));
+
+        call->specificParameter2.pointer = param;
+
+        param->itemIds = itemIds;
+        param->values = values;
+
+        param->currentItemId = LinkedList_getNext(itemIds);
+        param->currentValue = LinkedList_getNext(values);
+        param->domainId = StringUtils_copyString(domainId);
+
+        char* variableId = (char*)LinkedList_getData(param->currentItemId);
+        MmsValue* value = (MmsValue*)LinkedList_getData(param->currentValue);
+
+        MmsConnection_writeVariableAsync(self->connection, &(call->invokeId), &err, domainId, variableId, value, writeVariableHandler, self);
+
+        param->originalInvokeId = call->invokeId;
+
+        invokeId = call->invokeId;
+
+        *error = iedConnection_mapMmsErrorToIedError(err);
+
+        if (err != MMS_ERROR_NONE)
+        {
+            iedConnection_releaseOutstandingCall(self, call);
+            GLOBAL_FREEMEM(param->domainId);
+            GLOBAL_FREEMEM(param);
+            goto exit_function;
+        }
+        else
+            return invokeId;
+    }
+
+exit_function:
+    LinkedList_destroy(itemIds);
+    LinkedList_destroyStatic(values);
+
+    return invokeId;
+}

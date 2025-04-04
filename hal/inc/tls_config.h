@@ -3,7 +3,7 @@
  *
  * TLS Configuration API for protocol stacks using TCP/IP
  *
- * Copyright 2017-2021 Michael Zillgith
+ * Copyright 2017-2024 Michael Zillgith
  *
  * Abstraction layer for configuration of different TLS implementations
  *
@@ -17,6 +17,7 @@ extern "C" {
 #endif
 
 #include "hal_base.h"
+#include "tls_ciphers.h"
 
 /**
  * \file tls_config.h
@@ -51,10 +52,29 @@ PAL_API void
 TLSConfiguration_setClientMode(TLSConfiguration self);
 
 typedef enum {
+   TLS_VERSION_NOT_SELECTED = 0,
+   TLS_VERSION_SSL_3_0 = 3,
+   TLS_VERSION_TLS_1_0 = 4,
+   TLS_VERSION_TLS_1_1 = 5,
+   TLS_VERSION_TLS_1_2 = 6,
+   TLS_VERSION_TLS_1_3 = 7
+} TLSConfigVersion;
+
+/**
+ * \brief Convert TLS version number to string
+ * 
+ * \param version TLS version number
+ * 
+ * \return the TLS version as null terminated string 
+ */
+PAL_API const char*
+TLSConfigVersion_toString(TLSConfigVersion version);
+
+typedef enum {
     TLS_SEC_EVT_INFO = 0,
     TLS_SEC_EVT_WARNING = 1,
     TLS_SEC_EVT_INCIDENT = 2
-} TLSConfiguration_EventLevel;
+} TLSEventLevel;
 
 #define TLS_EVENT_CODE_ALM_ALGO_NOT_SUPPORTED 1
 #define TLS_EVENT_CODE_ALM_UNSECURE_COMMUNICATION 2
@@ -69,12 +89,55 @@ typedef enum {
 #define TLS_EVENT_CODE_ALM_CERT_EXPIRED 11
 #define TLS_EVENT_CODE_ALM_CERT_REVOKED 12
 #define TLS_EVENT_CODE_ALM_CERT_NOT_CONFIGURED 13
-#define TLS_EVENT_CODE_ALM_CERT_NOT_TRUSTED 12
+#define TLS_EVENT_CODE_ALM_CERT_NOT_TRUSTED 14
+#define TLS_EVENT_CODE_ALM_NO_CIPHER 15
+#define TLS_EVENT_CODE_INF_SESSION_ESTABLISHED 16
+#define TLS_EVENT_CODE_WRN_CERT_EXPIRED 17
+#define TLS_EVENT_CODE_WRN_CERT_NOT_YET_VALID 18
+#define TLS_EVENT_CODE_WRN_CRL_EXPIRED 19
+#define TLS_EVENT_CODE_WRN_CRL_NOT_YET_VALID 20
 
-typedef void (*TLSConfiguration_EventHandler)(void* parameter, TLSConfiguration_EventLevel eventLevel, int eventCode, const char* message);
+typedef struct sTLSConnection* TLSConnection;
+
+/**
+ * \brief Get the peer address of the TLS connection
+ * 
+ * \param self the TLS connection instance
+ * \param peerAddrBuf user provided buffer that can hold at least 60 characters, or NULL to allow the function to allocate the memory for the buffer
+ * 
+ * \returns peer address:port as null terminated string 
+ */
+PAL_API char*
+TLSConnection_getPeerAddress(TLSConnection self, char* peerAddrBuf);
+
+/**
+ * \brief Get the TLS certificate used by the peer
+ * 
+ * \param self the TLS connection instance
+ * \param certSize[OUT] the certificate size in bytes
+ * 
+ * \return address of the certificate buffer 
+ */
+PAL_API uint8_t*
+TLSConnection_getPeerCertificate(TLSConnection self, int* certSize);
+
+/**
+ * \brief Get the TLS version used by the connection
+ * 
+ * \param self the TLS connection instance
+ * 
+ * \return TLS version
+ */
+PAL_API TLSConfigVersion
+TLSConnection_getTLSVersion(TLSConnection self);
+
+typedef void (*TLSConfiguration_EventHandler)(void* parameter, TLSEventLevel eventLevel, int eventCode, const char* message, TLSConnection con);
 
 /**
  * \brief Set the security event handler
+ * 
+ * \param handler the security event callback handler
+ * \param parameter user provided parameter to be passed to the callback handler
  */
 PAL_API void
 TLSConfiguration_setEventHandler(TLSConfiguration self, TLSConfiguration_EventHandler handler, void* parameter);
@@ -105,6 +168,14 @@ TLSConfiguration_setSessionResumptionInterval(TLSConfiguration self, int interva
  */
 PAL_API void
 TLSConfiguration_setChainValidation(TLSConfiguration self, bool value);
+
+/**
+ * \brief Enabled or disables the verification of validity times for certificates and CRLs
+ *
+ * \param value true to enable time validation, false to disable (enabled by default)
+ */
+PAL_API void
+TLSConfiguration_setTimeValidation(TLSConfiguration self, bool value);
 
 /**
  * \brief Set if only known certificates are accepted.
@@ -209,15 +280,6 @@ TLSConfiguration_addCACertificateFromFile(TLSConfiguration self, const char* fil
 PAL_API void
 TLSConfiguration_setRenegotiationTime(TLSConfiguration self, int timeInMs);
 
-typedef enum {
-   TLS_VERSION_NOT_SELECTED = 0,
-   TLS_VERSION_SSL_3_0 = 3,
-   TLS_VERSION_TLS_1_0 = 4,
-   TLS_VERSION_TLS_1_1 = 5,
-   TLS_VERSION_TLS_1_2 = 6,
-   TLS_VERSION_TLS_1_3 = 7
-} TLSConfigVersion;
-
 /**
  * \brief Set minimal allowed TLS version to use
  */
@@ -248,6 +310,29 @@ TLSConfiguration_addCRL(TLSConfiguration self, uint8_t* crl, int crlLen);
  */
 PAL_API bool
 TLSConfiguration_addCRLFromFile(TLSConfiguration self, const char* filename);
+
+/**
+ * \brief Removes any CRL (certificate revocation list) currently in use
+ */
+PAL_API void
+TLSConfiguration_resetCRL(TLSConfiguration self);
+
+/**
+ * \brief Add an allowed ciphersuite to the list of allowed ciphersuites
+ *
+ * \param self the TLS configuration instance
+ * \param ciphersuite the ciphersuite to add (IANA cipher suite ID)
+ */
+PAL_API void
+TLSConfiguration_addCipherSuite(TLSConfiguration self, int ciphersuite);
+
+/**
+ * \brief Clear the list of allowed ciphersuites
+ *
+ * \param self the TLS configuration instance
+ */
+PAL_API void
+TLSConfiguration_clearCipherSuiteList(TLSConfiguration self);
 
 /**
  * Release all resource allocated by the TLSConfiguration instance

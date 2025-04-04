@@ -1,7 +1,7 @@
 /*
  *  mms_common_internal.h
  *
- *  Copyright 2013-2019 Michael Zillgith
+ *  Copyright 2013-2024 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -30,9 +30,9 @@
 #include "byte_buffer.h"
 #include "mms_server.h"
 
-#define DEFAULT_MAX_SERV_OUTSTANDING_CALLING 5
-#define DEFAULT_MAX_SERV_OUTSTANDING_CALLED 5
 #define DEFAULT_DATA_STRUCTURE_NESTING_LEVEL 10
+
+typedef struct sMmsOutstandingCall* MmsOutstandingCall;
 
 #if (MMS_FILE_SERVICE == 1)
 
@@ -41,8 +41,6 @@
 #endif
 
 #include "hal_filesystem.h"
-
-typedef struct sMmsOutstandingCall* MmsOutstandingCall;
 
 typedef struct {
         int32_t frsmId;

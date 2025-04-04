@@ -291,6 +291,25 @@ public class SclParser
         SclParser sclParser = new SclParser(stream);
     }
 
+    public List<ConnectedAP> getConnectedAPs()
+    {
+        List<ConnectedAP> aps = new LinkedList<ConnectedAP>();
+
+        if (communication != null) {
+            List<SubNetwork> subNetworks = communication.getSubNetworks();
+
+            for (SubNetwork subNetwork : subNetworks) {
+                List<ConnectedAP> connectedAPs = subNetwork.getConnectedAPs();
+
+                for (ConnectedAP connectedAP : connectedAPs) {
+                    aps.add(connectedAP);
+                }
+            }
+        }
+
+        return aps;
+    }
+
     public ConnectedAP getConnectedAP(IED ied, String accessPointName) {
         communication = this.getCommunication();
 

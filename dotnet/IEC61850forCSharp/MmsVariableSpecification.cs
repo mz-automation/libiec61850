@@ -1,7 +1,7 @@
 /*
  *  MmsVariableSpecification.cs
  *
- *  Copyright 2014 Michael Zillgith
+ *  Copyright 2014-2024 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -30,58 +30,58 @@ using System.Text;
 
 namespace IEC61850
 {
-	namespace Common
-	{
+    namespace Common
+    {
         /// <summary>
         /// MMS variable specification. This class is used to represent an MMS variable type definition.
         /// </summary>
-		public class MmsVariableSpecification : IEnumerable 
-		{
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern void MmsVariableSpecification_destroy(IntPtr self);
+        public class MmsVariableSpecification : IEnumerable
+        {
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void MmsVariableSpecification_destroy(IntPtr self);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr MmsVariableSpecification_getNamedVariableRecursive(IntPtr variable, string nameId);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr MmsVariableSpecification_getNamedVariableRecursive(IntPtr variable, string nameId);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern int MmsVariableSpecification_getType(IntPtr self);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern int MmsVariableSpecification_getType(IntPtr self);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr MmsVariableSpecification_getName(IntPtr self);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr MmsVariableSpecification_getName(IntPtr self);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern int MmsVariableSpecification_getSize(IntPtr self);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern int MmsVariableSpecification_getSize(IntPtr self);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr MmsVariableSpecification_getChildSpecificationByIndex(IntPtr self, int index);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr MmsVariableSpecification_getChildSpecificationByIndex(IntPtr self, int index);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern IntPtr MmsVariableSpecification_getArrayElementSpecification(IntPtr self);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern IntPtr MmsVariableSpecification_getArrayElementSpecification(IntPtr self);
 
-			[DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
-			static extern int MmsVariableSpecification_getExponentWidth(IntPtr self);
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern int MmsVariableSpecification_getExponentWidth(IntPtr self);
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern bool MmsVariableSpecification_isValueOfType(IntPtr self, IntPtr value);
 
-			internal IntPtr self;
-			private bool responsableForDeletion;
+            internal IntPtr self;
+            private bool responsableForDeletion;
 
             /* only to prevent garbage collector to destroy parent element */
             internal MmsVariableSpecification parent = null;
 
-            internal MmsVariableSpecification (IntPtr self, MmsVariableSpecification parent)
-			{
-				this.self = self;
-				this.responsableForDeletion = false;
+            internal MmsVariableSpecification(IntPtr self, MmsVariableSpecification parent)
+            {
+                this.self = self;
+                this.responsableForDeletion = false;
                 this.parent = parent;
-			}
+            }
 
-			internal MmsVariableSpecification (IntPtr self, bool responsableForDeletion)
-			{
-				this.self = self;
-				this.responsableForDeletion = responsableForDeletion;
-			}
+            internal MmsVariableSpecification(IntPtr self, bool responsableForDeletion)
+            {
+                this.self = self;
+                this.responsableForDeletion = responsableForDeletion;
+            }
 
             /// <summary>
             /// Get a child variable specification by its name
@@ -104,11 +104,11 @@ namespace IEC61850
                     return null;
             }
 
-			~MmsVariableSpecification ()
-			{
-				if (responsableForDeletion)
-					MmsVariableSpecification_destroy(self);
-			}
+            ~MmsVariableSpecification()
+            {
+                if (responsableForDeletion)
+                    MmsVariableSpecification_destroy(self);
+            }
 
             /// <summary>
             /// Gets the MmsValue type of the variable
@@ -116,10 +116,18 @@ namespace IEC61850
             /// <returns>
             /// The MmsType of the variable
             /// </returns>
-			public new MmsType GetType ()
-			{
-				return (MmsType) MmsVariableSpecification_getType(self);
-			}
+            public new MmsType GetType()
+            {
+                return (MmsType)MmsVariableSpecification_getType(self);
+            }
+
+            /// <summary>
+            /// The MmsValue type of the variable
+            /// </summary>
+            public MmsType MmsType
+            {
+                get { return (MmsType)MmsVariableSpecification_getType(self); }
+            }
 
             /// <summary>
             /// Gets the type of the array elements.
@@ -128,15 +136,33 @@ namespace IEC61850
             /// The array element type.
             /// </returns>
             /// <exception cref="MmsValueException">This exception is thrown if the value is not of type MMS_ARRAY</exception>
-			public MmsVariableSpecification getArrayElementType ()
-			{
-				if (GetType() == MmsType.MMS_ARRAY) {
-					IntPtr varSpecPtr = MmsVariableSpecification.MmsVariableSpecification_getArrayElementSpecification(self);
-					return new MmsVariableSpecification(varSpecPtr, this);
-				}
-				else
-					throw new  MmsValueException ("specification is of wrong type"); 
-			}
+			public MmsVariableSpecification getArrayElementType()
+            {
+                if (GetType() == MmsType.MMS_ARRAY)
+                {
+                    IntPtr varSpecPtr = MmsVariableSpecification.MmsVariableSpecification_getArrayElementSpecification(self);
+                    return new MmsVariableSpecification(varSpecPtr, this);
+                }
+                else
+                    throw new MmsValueException("specification is of wrong type");
+            }
+
+            /// <summary>
+            /// The type of array elements (when the variable is of type MMS_ARRAY)
+            /// </summary>
+            public MmsVariableSpecification ArrayElementType
+            {
+                get
+                {
+                    if (GetType() == MmsType.MMS_ARRAY)
+                    {
+                        IntPtr varSpecPtr = MmsVariableSpecification.MmsVariableSpecification_getArrayElementSpecification(self);
+                        return new MmsVariableSpecification(varSpecPtr, this);
+                    }
+                    else
+                        return null;
+                }
+            }
 
             /// <summary>
             /// Gets the element specification of a structure element
@@ -147,41 +173,86 @@ namespace IEC61850
             /// <param name='index'>
             /// Index.
             /// </param>
-			public MmsVariableSpecification GetElement (int index)
-			{
-				if (GetType () == MmsType.MMS_STRUCTURE) {
+			public MmsVariableSpecification GetElement(int index)
+            {
+                if (GetType() == MmsType.MMS_STRUCTURE)
+                {
 
-					if ((index >= 0) && (index < Size ())) {
-						IntPtr varSpecPtr = MmsVariableSpecification_getChildSpecificationByIndex(self, index);
-						return new MmsVariableSpecification(varSpecPtr, this);
-					} 
-					else
-						throw new MmsValueException ("Index out of bounds");
-				} 
-				else
-					throw new  MmsValueException ("specification is of wrong type"); 
-			}
+                    if ((index >= 0) && (index < Size()))
+                    {
+                        IntPtr varSpecPtr = MmsVariableSpecification_getChildSpecificationByIndex(self, index);
+                        return new MmsVariableSpecification(varSpecPtr, this);
+                    }
+                    else
+                        throw new MmsValueException("Index out of bounds");
+                }
+                else
+                    throw new MmsValueException("specification is of wrong type");
+            }
 
             /// <summary>
-            /// Gets the name of the variable
+            /// The element types for complex variables (MMS_STRUCTURE)
+            /// </summary>
+            public MmsVariableSpecification[] Elements
+            {
+                get
+                {
+                    if (GetType() != MmsType.MMS_STRUCTURE)
+                        return null;
+
+                    List<MmsVariableSpecification> elements = new List<MmsVariableSpecification>();
+
+                    for (int i = 0; i < Size(); i++)
+                    {
+                        elements.Add(GetElement(i));
+                    }
+
+                    return elements.ToArray();
+                }
+            }
+
+            /// <summary>
+            /// Gets the name of the variable (relative to the parent)
             /// </summary>
             /// <returns>
             /// The name.
             /// </returns>
-			public string GetName ()
-			{
-				IntPtr namePtr = MmsVariableSpecification_getName(self);
+			public string GetName()
+            {
+                IntPtr namePtr = MmsVariableSpecification_getName(self);
 
-				return Marshal.PtrToStringAnsi (namePtr);
-			}
+                return Marshal.PtrToStringAnsi(namePtr);
+            }
+
+            /// <summary>
+            /// The name of the variable (relative to the parent)
+            /// </summary>
+            public string Name
+            {
+                get
+                {
+                    return GetName();
+                }
+            }
 
             /// <summary>
             /// Get the "size" of the variable (array size, number of structure elements ...)
             /// </summary>
-			public int Size ()
-			{
-				return MmsVariableSpecification_getSize(self);
-			}
+			public int Size()
+            {
+                return MmsVariableSpecification_getSize(self);
+            }
+
+            /// <summary>
+            /// The "size" of the variable (array size, number of structure elements ...)
+            /// </summary>
+            public int size
+            {
+                get
+                {
+                    return MmsVariableSpecification_getSize(self);
+                }
+            }
 
             /// <summary>
             /// Determines whether the given value object matches this type
@@ -193,45 +264,46 @@ namespace IEC61850
                 return MmsVariableSpecification_isValueOfType(self, value.valueReference);
             }
 
-			IEnumerator IEnumerable.GetEnumerator ()
-			{
-				return new MmsVariableSpecificationEnumerator (this);
-			}
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return new MmsVariableSpecificationEnumerator(this);
+            }
 
-			private class MmsVariableSpecificationEnumerator : IEnumerator
-			{
-				private MmsVariableSpecification value;
-				private int index = -1;
+            private class MmsVariableSpecificationEnumerator : IEnumerator
+            {
+                private MmsVariableSpecification value;
+                private int index = -1;
 
-				public MmsVariableSpecificationEnumerator (MmsVariableSpecification value)
-				{
-					this.value = value;
-				}
+                public MmsVariableSpecificationEnumerator(MmsVariableSpecification value)
+                {
+                    this.value = value;
+                }
 
-			#region IEnumerator Members
-				public void Reset ()
-				{
-					index = -1;
-				}
+                #region IEnumerator Members
+                public void Reset()
+                {
+                    index = -1;
+                }
 
-				public object Current {
+                public object Current
+                {
 
-					get { return value.GetElement (index);}
-				}
+                    get { return value.GetElement(index); }
+                }
 
-				public bool MoveNext ()
-				{
-					index++;
+                public bool MoveNext()
+                {
+                    index++;
 
-					if (index >= value.Size ())
-						return false;
-					else
-						return true;
-				}
+                    if (index >= value.Size())
+                        return false;
+                    else
+                        return true;
+                }
 
-			#endregion
-			}
+                #endregion
+            }
 
-		}
-	}
+        }
+    }
 }

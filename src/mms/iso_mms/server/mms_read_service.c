@@ -1,7 +1,7 @@
 /*
  *  mms_read_service.c
  *
- *  Copyright 2013-2022 Michael Zillgith
+ *  Copyright 2013-2024 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -49,14 +49,14 @@ addNamedVariableValue(MmsVariableSpecification* namedVariable, MmsServerConnecti
 {
     MmsValue* value = NULL;
 
-    if (namedVariable->type == MMS_STRUCTURE) {
-
+    if (namedVariable->type == MMS_STRUCTURE)
+    {
         value = mmsServer_getValue(connection->server, domain, itemId, connection, false);
 
-        if (value != NULL)
+        if (value)
             goto exit_function;
-        else {
-
+        else
+        {
             int componentCount = namedVariable->typeSpec.structure.elementCount;
 
             value = MmsValue_createEmptyStructure(componentCount);
@@ -65,7 +65,8 @@ addNamedVariableValue(MmsVariableSpecification* namedVariable, MmsServerConnecti
 
             int i;
 
-            for (i = 0; i < componentCount; i++) {
+            for (i = 0; i < componentCount; i++) 
+            {
                 char newNameIdStr[65];
 
                 StringUtils_createStringInBuffer(newNameIdStr, 65, 3, itemId, "$",
@@ -75,7 +76,8 @@ addNamedVariableValue(MmsVariableSpecification* namedVariable, MmsServerConnecti
                         addNamedVariableValue(namedVariable->typeSpec.structure.elements[i],
                                 connection, domain, newNameIdStr);
 
-                if (element == NULL) {
+                if (element == NULL)
+                {
                     MmsValue_delete(value);
                     value = NULL;
                     break;
@@ -85,7 +87,8 @@ addNamedVariableValue(MmsVariableSpecification* namedVariable, MmsServerConnecti
             }
         }
     }
-    else {
+    else
+    {
         value = mmsServer_getValue(connection->server, domain, itemId, connection, false);
     }
 
@@ -104,7 +107,6 @@ addComplexValueToResultList(MmsVariableSpecification* namedVariable,
         LinkedList_add(typedValues, value);
 }
 
-
 static void
 appendValueToResultList(MmsValue* value, LinkedList values)
 {
@@ -113,7 +115,8 @@ appendValueToResultList(MmsValue* value, LinkedList values)
 }
 
 static void
-appendErrorToResultList(LinkedList values, MmsDataAccessError errorType) {
+appendErrorToResultList(LinkedList values, MmsDataAccessError errorType)
+{
     MmsValue* value = MmsValue_newDataAccessError(errorType);
     MmsValue_setDeletable(value);
     appendValueToResultList(value, values);
@@ -124,7 +127,8 @@ deleteValueList(LinkedList values)
 {
     LinkedList value = LinkedList_getNext(values);
 
-    while (value) {
+    while (value)
+    {
         MmsValue* typedValue = (MmsValue*) (value->data);
 
         MmsValue_deleteConditional(typedValue);
@@ -140,40 +144,43 @@ getComponent(MmsServerConnection connection, MmsDomain* domain, AlternateAccess_
 {
     MmsValue* retValue = NULL;
 
-    if (mmsServer_isComponentAccess(alternateAccess)) {
+    if (mmsServer_isComponentAccess(alternateAccess))
+    {
         Identifier_t component =
                 alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.choice.component;
 
         if (component.size > 129)
             goto exit_function;
 
-        if (namedVariable->type == MMS_STRUCTURE) {
-
+        if (namedVariable->type == MMS_STRUCTURE)
+        {
             int i;
 
-            for (i = 0; i < namedVariable->typeSpec.structure.elementCount; i++) {
-
+            for (i = 0; i < namedVariable->typeSpec.structure.elementCount; i++)
+            {
                 if ((int) strlen(namedVariable->typeSpec.structure.elements[i]->name)
-                        == component.size) {
+                        == component.size)
+                {
                     if (!strncmp(namedVariable->typeSpec.structure.elements[i]->name,
                             (char*) component.buf, component.size))
                     {
-                        if (strlen(variableName) + component.size < 199) {
-
+                        if (strlen(variableName) + component.size < 199)
+                        {
                             StringUtils_appendString(variableName, 200, "$");
 
                             /* here we need strncat because component.buf is not null terminated! */
                             strncat(variableName, (const char*)component.buf, (size_t)component.size);
 
-                            if (alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess
-                                    != NULL) {
+                            if (alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess)
+                            {
                                 retValue =
                                         getComponent(connection, domain,
                                                 alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess,
                                                 namedVariable->typeSpec.structure.elements[i],
                                                 variableName);
                             }
-                            else {
+                            else
+                            {
                                 retValue = mmsServer_getValue(connection->server, domain, variableName, connection, false);
                             }
                         }
@@ -202,35 +209,43 @@ alternateArrayAccess(MmsServerConnection connection,
 
 		MmsValue* arrayValue = mmsServer_getValue(connection->server, domain, itemId, connection, false);
 
-		if (arrayValue != NULL) {
-
+		if (arrayValue != NULL)
+        {
 	        MmsValue* value = NULL;
 
 			if (numberOfElements == 0)
-			    if (mmsServer_isAccessToArrayComponent(alternateAccess)) {
-			        if (namedVariable->typeSpec.array.elementTypeSpec->type == MMS_STRUCTURE) {
+            {
+			    if (mmsServer_isAccessToArrayComponent(alternateAccess))
+                {
+			        if (namedVariable->typeSpec.array.elementTypeSpec->type == MMS_STRUCTURE)
+                    {
 			            MmsValue* structValue = MmsValue_getElement(arrayValue, index);
 
 			            if (structValue != NULL)
 			                value = mmsServer_getComponentOfArrayElement(alternateAccess,
-			                        namedVariable, structValue);
+			                        namedVariable, structValue, NULL);
 			        }
 			    }
-			    else {
+			    else
+                {
 			        value = MmsValue_getElement(arrayValue, index);
 			    }
-			else {
+            }
+			else
+            {
 				value = MmsValue_createEmptyArray(numberOfElements);
 
 				MmsValue_setDeletable(value);
 
 				int resultIndex = 0;
-				while (index < lowIndex + numberOfElements) {
+				while (index < lowIndex + numberOfElements)
+                {
 					MmsValue* elementValue = NULL;
 
 					elementValue = MmsValue_getElement(arrayValue, index);
 
-					if (!MmsValue_isDeletable(elementValue)) {
+					if (!MmsValue_isDeletable(elementValue))
+                    {
 						elementValue = MmsValue_clone(elementValue);
 						elementValue->deleteValue = 1;
 					}
@@ -251,7 +266,9 @@ alternateArrayAccess(MmsServerConnection connection,
 			appendErrorToResultList(values, DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT);
 
 	}
-	else { /* invalid access */
+	else
+    {
+        /* invalid access */
 		if (DEBUG_MMS_SERVER) printf("Invalid alternate access\n");
 
         appendErrorToResultList(values, DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT);
@@ -262,8 +279,8 @@ static void
 addNamedVariableToResultList(MmsVariableSpecification* namedVariable, MmsDomain* domain, char* nameIdStr,
 		LinkedList /*<MmsValue>*/ values, MmsServerConnection connection, AlternateAccess_t* alternateAccess, bool isAccessToSingleVariable)
 {
-    if (namedVariable) {
-
+    if (namedVariable)
+    {
         if (DEBUG_MMS_SERVER)
             printf("MMS read: found named variable %s with search string %s\n",
                     namedVariable->name, nameIdStr);
@@ -278,45 +295,56 @@ addNamedVariableToResultList(MmsVariableSpecification* namedVariable, MmsDomain*
 
                 MmsValue* value = getComponent(connection, domain, alternateAccess, namedVariable, variableName);
 
-                if (value) {
+                if (value)
+                {
                     appendValueToResultList(value, values);
                 }
-                else {
+                else
+                {
                     appendErrorToResultList(values, DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT);
                 }
             }
-            else {
+            else
+            {
                 MmsValue* value = mmsServer_getValue(connection->server, domain, nameIdStr, connection, isAccessToSingleVariable);
 
-                if (value) {
+                if (value)
+                {
                     appendValueToResultList(value, values);
                 }
-                else {
+                else
+                {
                     addComplexValueToResultList(namedVariable,
                             values, connection, domain, nameIdStr);
                 }
             }
         }
-        else if (namedVariable->type == MMS_ARRAY) {
-
-            if (alternateAccess) {
+        else if (namedVariable->type == MMS_ARRAY)
+        {
+            if (alternateAccess)
+            {
                 alternateArrayAccess(connection, alternateAccess, domain,
                         nameIdStr, values, namedVariable);
             }
-            else { /* return complete array */
+            else
+            {
+                /* return complete array */
                 MmsValue* value = mmsServer_getValue(connection->server, domain, nameIdStr, connection, isAccessToSingleVariable);
                 appendValueToResultList(value, values);
             }
         }
-        else {
-
-            if (alternateAccess) {
+        else
+        {
+            if (alternateAccess)
+            {
                 appendErrorToResultList(values, DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT);
             }
-            else {
+            else
+            {
                 MmsValue* value = mmsServer_getValue(connection->server, domain, nameIdStr, connection, isAccessToSingleVariable);
 
-                if (value == NULL) {
+                if (value == NULL)
+                {
                     if (DEBUG_MMS_SERVER)
                         printf("MMS read: value of known variable is not found. Maybe illegal access to array element!\n");
 
@@ -330,7 +358,6 @@ addNamedVariableToResultList(MmsVariableSpecification* namedVariable, MmsDomain*
     else
         appendErrorToResultList(values, DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT);
 }
-
 
 static bool
 isSpecWithResult(ReadRequest_t* read)
@@ -352,7 +379,8 @@ encodeVariableAccessSpecification(VarAccessSpec* accessSpec, uint8_t* buffer, in
 
 	varAccessSpecSize += itemIdLen + BerEncoder_determineLengthSize(itemIdLen) + 1;
 
-	if (accessSpec->domainId != NULL) {
+	if (accessSpec->domainId != NULL)
+    {
 	    uint32_t domainIdLen = strlen(accessSpec->domainId);
 
 		varAccessSpecSize += domainIdLen + BerEncoder_determineLengthSize(domainIdLen) + 1;
@@ -370,7 +398,8 @@ encodeVariableAccessSpecification(VarAccessSpec* accessSpec, uint8_t* buffer, in
 
 	varAccessSpecSize += 1 + BerEncoder_determineLengthSize(varAccessSpecLength);
 
-	if (encode == false) {
+	if (encode == false)
+    {
 	    bufPos = varAccessSpecSize;
 	    goto exit_function;
 	}
@@ -378,8 +407,8 @@ encodeVariableAccessSpecification(VarAccessSpec* accessSpec, uint8_t* buffer, in
 	/* encode to buffer */
 	bufPos = BerEncoder_encodeTL(0xa0, varAccessSpecLength, buffer, bufPos);
 
-	if (accessSpec->isNamedVariableList == true) {
-
+	if (accessSpec->isNamedVariableList == true)
+    {
 		bufPos = BerEncoder_encodeTL(0xa1, variableListNameLength, buffer, bufPos);
 
 		if (accessSpec->specific == 0) { /* vmd-specific */
@@ -387,12 +416,10 @@ encodeVariableAccessSpecification(VarAccessSpec* accessSpec, uint8_t* buffer, in
 		}
 		else if (accessSpec->specific == 1) { /* domain-specific */
 			bufPos = BerEncoder_encodeTL(0xa1, specificityLength, buffer, bufPos);
-
 		}
 		else { /* association-specific */
 			bufPos = BerEncoder_encodeTL(0xa2, specificityLength, buffer, bufPos);
 		}
-
 
 		if (accessSpec->domainId != NULL)
 			bufPos = BerEncoder_encodeStringWithTag(0x1a, accessSpec->domainId, buffer, bufPos);
@@ -415,9 +442,8 @@ encodeReadResponse(MmsServerConnection connection,
 
     uint32_t varAccessSpecSize = 0;
 
-    if (accessSpec != NULL) {
+    if (accessSpec)
         varAccessSpecSize = encodeVariableAccessSpecification(accessSpec, NULL, 0, false);
-    }
 
     /* determine BER encoded message sizes */
     uint32_t accessResultSize = 0;
@@ -425,8 +451,8 @@ encodeReadResponse(MmsServerConnection connection,
     /* iterate values list to determine encoded size  */
     LinkedList value = LinkedList_getNext(values);
 
-    for (i = 0; i < variableCount; i++) {
-
+    for (i = 0; i < variableCount; i++)
+    {
         MmsValue* data = (MmsValue*) value->data;
 
         accessResultSize += MmsValue_encodeMmsData(data, NULL, 0, false);
@@ -452,12 +478,13 @@ encodeReadResponse(MmsServerConnection connection,
             confirmedResponseContentSize;
 
     /* Check if message would fit in the MMS PDU */
-    if (mmsPduSize > connection->maxPduSize) {
+    if (mmsPduSize > connection->maxPduSize)
+    {
         if (DEBUG_MMS_SERVER)
             printf("MMS read: message to large! send error PDU!\n");
 
         mmsMsg_createServiceErrorPdu(invokeId, response,
-                MMS_ERROR_SERVICE_OTHER);
+                MMS_ERROR_RESOURCE_OTHER);
 
         goto exit_function;
     }
@@ -487,7 +514,8 @@ encodeReadResponse(MmsServerConnection connection,
     /* encode access results */
     value = LinkedList_getNext(values);
 
-    for (i = 0; i < variableCount; i++) {
+    for (i = 0; i < variableCount; i++)
+    {
         MmsValue* data = (MmsValue*) value->data;
 
         bufPos = MmsValue_encodeMmsData(data, buffer, bufPos, true);
@@ -529,16 +557,18 @@ handleReadListOfVariablesRequest(
 
 	int i;
 
-	for (i = 0; i < variableCount; i++) {
+	for (i = 0; i < variableCount; i++)
+    {
 		VariableSpecification_t varSpec =
 			read->variableAccessSpecification.choice.listOfVariable.list.array[i]->variableSpecification;
 
 		AlternateAccess_t* alternateAccess =
 			read->variableAccessSpecification.choice.listOfVariable.list.array[i]->alternateAccess;
 
-		if (varSpec.present == VariableSpecification_PR_name) {
-
-			if (varSpec.choice.name.present == ObjectName_PR_domainspecific) {
+		if (varSpec.present == VariableSpecification_PR_name)
+        {
+			if (varSpec.choice.name.present == ObjectName_PR_domainspecific)
+            {
 				char domainIdStr[65];
 				char nameIdStr[65];
 
@@ -553,13 +583,15 @@ handleReadListOfVariablesRequest(
 				if (DEBUG_MMS_SERVER)
 				    printf("MMS_SERVER: READ domainId: (%s) nameId: (%s)\n", domainIdStr, nameIdStr);
 
-				if (domain == NULL) {
+				if (domain == NULL)
+                {
 					if (DEBUG_MMS_SERVER)
 					    printf("MMS_SERVER: READ domain %s not found!\n", domainIdStr);
 
 					appendErrorToResultList(values, DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT);
 				}
-				else {
+				else
+                {
                     MmsVariableSpecification* namedVariable = MmsDomain_getNamedVariable(domain, nameIdStr);
 
                     if (namedVariable == NULL)
@@ -571,7 +603,8 @@ handleReadListOfVariablesRequest(
 			}
 #if (CONFIG_MMS_SUPPORT_VMD_SCOPE_NAMED_VARIABLES == 1)
 
-			else if (varSpec.choice.name.present == ObjectName_PR_vmdspecific) {
+			else if (varSpec.choice.name.present == ObjectName_PR_vmdspecific)
+            {
 			    char nameIdStr[65];
 
 			    mmsMsg_copyAsn1IdentifierToStringBuffer(varSpec.choice.name.choice.vmdspecific, nameIdStr, 65);
@@ -590,13 +623,15 @@ handleReadListOfVariablesRequest(
 			}
 #endif /* (CONFIG_MMS_SUPPORT_VMD_SCOPE_NAMED_VARIABLES == 1) */
 
-			else {
+			else
+            {
                 appendErrorToResultList(values, DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT);
 
 				if (DEBUG_MMS_SERVER) printf("MMS_SERVER: READ object name type not supported!\n");
 			}
 		}
-		else {
+		else
+        {
 			if (DEBUG_MMS_SERVER) printf("MMS_SERVER: READ varspec type not supported!\n");
 			mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_REQUEST_INVALID_ARGUMENT, response);
 			goto exit;
@@ -607,13 +642,16 @@ handleReadListOfVariablesRequest(
 
 	LinkedList valueElement = LinkedList_getNext(values);
 
-	while (valueElement) {
-
+	while (valueElement)
+    {
 	    MmsValue* value = (MmsValue*) LinkedList_getData(valueElement);
 
-	    if (value) {
-	        if (MmsValue_getType(value) == MMS_DATA_ACCESS_ERROR) {
-	            if (MmsValue_getDataAccessError(value) == DATA_ACCESS_ERROR_NO_RESPONSE) {
+	    if (value)
+        {
+	        if (MmsValue_getType(value) == MMS_DATA_ACCESS_ERROR)
+            {
+	            if (MmsValue_getDataAccessError(value) == DATA_ACCESS_ERROR_NO_RESPONSE)
+                {
 	                sendResponse = false;
 	                break;
 	            }
@@ -637,29 +675,34 @@ static void
 addNamedVariableToNamedVariableListResultList(MmsVariableSpecification* namedVariable, MmsDomain* domain, char* nameIdStr,
         LinkedList /*<MmsValue>*/ values, MmsServerConnection connection, MmsNamedVariableListEntry listEntry)
 {
-    if (namedVariable != NULL) {
-
+    if (namedVariable != NULL)
+    {
         if (DEBUG_MMS_SERVER)
             printf("MMS read: found named variable %s with search string %s\n",
                     namedVariable->name, nameIdStr);
 
         MmsValue* value = mmsServer_getValue(connection->server, domain, nameIdStr, connection, false);
 
-        if (value) {
-            if (listEntry->arrayIndex != -1) {
-                if (MmsValue_getType(value) == MMS_ARRAY) {
-
+        if (value)
+        {
+            if (listEntry->arrayIndex != -1)
+            {
+                if (MmsValue_getType(value) == MMS_ARRAY)
+                {
                     MmsValue* elementValue = MmsValue_getElement(value, listEntry->arrayIndex);
 
-                    if (listEntry->componentName) {
+                    if (listEntry->componentName)
+                    {
                         MmsVariableSpecification* elementType = namedVariable->typeSpec.array.elementTypeSpec;
 
                         MmsValue* subElementValue = MmsVariableSpecification_getChildValue(elementType, elementValue, listEntry->componentName);
 
-                        if (subElementValue) {
+                        if (subElementValue)
+                        {
                             appendValueToResultList(subElementValue, values);
                         }
-                        else {
+                        else
+                        {
                             if (DEBUG_IED_SERVER)
                                 printf("IED_SERVER: ERROR - component %s of array element not found\n", listEntry->componentName);
                         }
@@ -667,20 +710,22 @@ addNamedVariableToNamedVariableListResultList(MmsVariableSpecification* namedVar
                     else {
                         appendValueToResultList(elementValue, values);
                     }
-
                 }
-                else {
+                else
+                {
                     if (DEBUG_MMS_SERVER)
                         printf("MMS_SERVER: data set entry of unexpected type!\n");
 
                     appendErrorToResultList(values, DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT);
                 }
             }
-            else {
+            else
+            {
                 appendValueToResultList(value, values);
             }
         }
-        else {
+        else
+        {
             appendErrorToResultList(values, DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT);
         }
     }
@@ -695,14 +740,10 @@ createNamedVariableListResponse(MmsServerConnection connection, MmsNamedVariable
 	LinkedList /*<MmsValue>*/ values = LinkedList_create();
 	LinkedList variables = MmsNamedVariableList_getVariableList(namedList);
 
-	int variableCount = LinkedList_size(variables);
-
-	int i;
-
 	LinkedList variable = LinkedList_getNext(variables);
 
-	for (i = 0; i < variableCount; i++) {
-
+	while (variable)
+    {
 		MmsNamedVariableListEntry variableListEntry = (MmsNamedVariableListEntry) variable->data;
 
 		MmsDomain* variableDomain = MmsNamedVariableListEntry_getDomain(variableListEntry);
@@ -761,18 +802,33 @@ handleReadNamedVariableListRequest(
 
 		MmsDomain* domain = MmsDevice_getDomain(MmsServer_getDevice(connection->server), domainIdStr);
 
-		if (domain == NULL) {
+		if (domain == NULL)
+        {
 			if (DEBUG_MMS_SERVER) printf("MMS read: domain %s not found!\n", domainIdStr);
 			mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
 		}
-		else {
+		else
+        {
 			MmsNamedVariableList namedList = MmsDomain_getNamedVariableList(domain, nameIdStr);
 
-			if (namedList != NULL) {
-				createNamedVariableListResponse(connection, namedList, invokeId, response, isSpecWithResult(read),
-						&accessSpec);
+			if (namedList)
+            {
+                MmsError accessError = mmsServer_callVariableListChangedHandler(MMS_VARLIST_READ, MMS_DOMAIN_SPECIFIC, domain, namedList->name, connection);
+
+                if (accessError == MMS_ERROR_NONE)
+                {
+                    createNamedVariableListResponse(connection, namedList, invokeId, response, isSpecWithResult(read),
+                            &accessSpec);
+                }
+                else
+                {
+                    if (DEBUG_MMS_SERVER) printf("MMS read: named variable list %s access error: %i\n", nameIdStr, accessError);
+
+                    mmsMsg_createServiceErrorPdu(invokeId, response, accessError);
+                }
 			}
-			else {
+			else
+            {
 				if (DEBUG_MMS_SERVER) printf("MMS read: named variable list %s not found!\n", nameIdStr);
 				mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
 			}
@@ -788,17 +844,30 @@ handleReadNamedVariableListRequest(
         MmsNamedVariableList namedList = mmsServer_getNamedVariableListWithName(connection->server->device->namedVariableLists, listName);
 
         if (namedList == NULL)
+        {
             mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
-        else {
+        }
+        else
+        {
+            MmsError accessError = mmsServer_callVariableListChangedHandler(MMS_VARLIST_READ, MMS_VMD_SPECIFIC, NULL, namedList->name, connection);
 
-            VarAccessSpec accessSpec;
+            if (accessError == MMS_ERROR_NONE)
+            {
+                VarAccessSpec accessSpec;
 
-            accessSpec.isNamedVariableList = true;
-            accessSpec.specific = 0;
-            accessSpec.domainId = NULL;
-            accessSpec.itemId = listName;
+                accessSpec.isNamedVariableList = true;
+                accessSpec.specific = 0;
+                accessSpec.domainId = NULL;
+                accessSpec.itemId = listName;
 
-            createNamedVariableListResponse(connection, namedList, invokeId, response, isSpecWithResult(read), &accessSpec);
+                createNamedVariableListResponse(connection, namedList, invokeId, response, isSpecWithResult(read), &accessSpec);
+            }
+            else
+            {
+                if (DEBUG_MMS_SERVER) printf("MMS read: VMD specific named variable list %s access error: %i\n", listName, accessError);
+
+                mmsMsg_createServiceErrorPdu(invokeId, response, accessError);
+            }
         }
 	}
 #if (MMS_DYNAMIC_DATA_SETS == 1)
@@ -813,16 +882,30 @@ handleReadNamedVariableListRequest(
 		MmsNamedVariableList namedList = MmsServerConnection_getNamedVariableList(connection, listName);
 
 		if (namedList == NULL)
+        {
 			mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_NON_EXISTENT);
-		else {
-            VarAccessSpec accessSpec;
+        }
+		else
+        {
+            MmsError accessError = mmsServer_callVariableListChangedHandler(MMS_VARLIST_READ, MMS_ASSOCIATION_SPECIFIC, NULL, namedList->name, connection);
 
-            accessSpec.isNamedVariableList = true;
-            accessSpec.specific = 2;
-            accessSpec.domainId = NULL;
-            accessSpec.itemId = listName;
+            if (accessError == MMS_ERROR_NONE)
+            {
+                VarAccessSpec accessSpec;
 
-			createNamedVariableListResponse(connection, namedList, invokeId, response, isSpecWithResult(read), &accessSpec);
+                accessSpec.isNamedVariableList = true;
+                accessSpec.specific = 2;
+                accessSpec.domainId = NULL;
+                accessSpec.itemId = listName;
+
+                createNamedVariableListResponse(connection, namedList, invokeId, response, isSpecWithResult(read), &accessSpec);
+            }
+            else
+            {
+                if (DEBUG_MMS_SERVER) printf("MMS read: association specific named variable list %s access error: %i\n", listName, accessError);
+
+                mmsMsg_createServiceErrorPdu(invokeId, response, accessError);
+            }
 		}
 	}
 #endif /* (MMS_DYNAMIC_DATA_SETS == 1) */
@@ -846,7 +929,8 @@ mmsServer_handleReadRequest(
 
     asn_dec_rval_t rval = ber_decode(NULL, &asn_DEF_MmsPdu, (void**) &mmsPdu, buffer, maxBufPos);
 
-    if (rval.code != RC_OK) {
+    if (rval.code != RC_OK)
+    {
         mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
         goto exit_function;
     }
@@ -857,12 +941,14 @@ mmsServer_handleReadRequest(
     {
         request = &(mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.choice.read);
     }
-    else {
+    else
+    {
         mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
 	    goto exit_function;
     }
 
-    if (request->variableAccessSpecification.present == VariableAccessSpecification_PR_listOfVariable) {
+    if (request->variableAccessSpecification.present == VariableAccessSpecification_PR_listOfVariable)
+    {
         MmsServer_lockModel(connection->server);
 
         handleReadListOfVariablesRequest(connection, request, invokeId, response);
@@ -870,7 +956,8 @@ mmsServer_handleReadRequest(
         MmsServer_unlockModel(connection->server);
     }
 #if (MMS_DATA_SET_SERVICE == 1)
-    else if (request->variableAccessSpecification.present == VariableAccessSpecification_PR_variableListName) {
+    else if (request->variableAccessSpecification.present == VariableAccessSpecification_PR_variableListName)
+    {
         MmsServer_lockModel(connection->server);
 
         handleReadNamedVariableListRequest(connection, request, invokeId, response);
@@ -878,8 +965,15 @@ mmsServer_handleReadRequest(
         MmsServer_unlockModel(connection->server);
     }
 #endif
-    else {
+    else
+    {
         mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_ACCESS_OBJECT_ACCESS_UNSUPPORTED);   
+    }
+
+    if (ByteBuffer_getSize(response) > connection->maxPduSize)
+    {
+        ByteBuffer_setSize(response, 0);
+        mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_RESOURCE_OTHER);
     }
 
 exit_function:	
@@ -905,4 +999,3 @@ MmsServerConnection_sendReadResponse(MmsServerConnection self, uint32_t invokeId
     if (handlerMode == false)
         IsoConnection_unlock(self->isoConnection);
 }
-
