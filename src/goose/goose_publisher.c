@@ -332,6 +332,8 @@ prepareGooseBuffer(GoosePublisher self, CommParameters* parameters, const char* 
             }
 
             /* EtherType GOOSE */
+            self->gooseStart = bufPos;
+
             self->buffer[bufPos++] = 0x88;
             self->buffer[bufPos++] = 0xB8;
 
@@ -538,7 +540,8 @@ GoosePublisher_publish(GoosePublisher self, LinkedList dataSet)
             secExtLength = L2Security_addSecurityExtension(self->l2Security, self->buffer,
                 self->gooseStart, self->payloadStart + self->payloadLength - self->gooseStart, GOOSE_MAX_MESSAGE_SIZE, false);
 
-            self->buffer[self->gooseStart + 6] = (uint8_t)((secExtLength >> 8) & 0x0f);
+            /* encode security extension length and keep simulation flag when present */
+            self->buffer[self->gooseStart + 6] += (uint8_t)((secExtLength >> 8) & 0x0f);
             self->buffer[self->gooseStart + 7] = (uint8_t)(secExtLength & 0xff);
 
             /* calculate crc */
