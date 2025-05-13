@@ -89,7 +89,6 @@ set (lib_common_SRCS
 ./iec61850/server/mms_mapping/mms_goose.c
 ./iec61850/server/mms_mapping/mms_sv.c
 ./iec61850/server/mms_mapping/logging.c
-./r_session/r_session_crypto_mbedtls.c
 ./logging/log_storage.c
 )
 
@@ -208,10 +207,21 @@ set (lib_sv_SRCS
 )
 
 if((WITH_MBEDTLS OR WITH_MBEDTLS3) AND (CONFIG_IEC61850_R_GOOSE OR CONFIG_IEC61850_R_SMV))
+
+if (WITH_MBEDTLS)
 set (lib_rsession_SRCS
 ./r_session/r_session.c
 ./r_session/r_session_crypto_mbedtls.c
 )
+endif (WITH_MBEDTLS)
+
+if (WITH_MBEDTLS3)
+set (lib_rsession_SRCS
+./r_session/r_session.c
+./r_session/r_session_crypto_mbedtls3.c
+)
+endif (WITH_MBEDTLS3)
+
 else()
 set (lib_rsession_SRCS
 )

@@ -1,7 +1,7 @@
 /*
- *  r_session_crpyto_mbedtls.c
+ *  r_session_crpyto_mbedtls3.c
  *
- *  Implementation of RSessionCrypto interface using mbedtls 2.28
+ *  Implementation of RSessionCrypto interface using mbedtls 3.6
  *
  *  Copyright 2013-2025 Michael Zillgith
  *
@@ -92,14 +92,23 @@ RSessionCrypto_createAES_GMAC(uint8_t* key, int keySize, uint8_t* iv, int ivSize
         return false;
     }
 
-    if (mbedtls_gcm_starts(&gcmCtx, MBEDTLS_GCM_ENCRYPT, iv, ivSize, addData, addDataSize))
+    if (mbedtls_gcm_starts(&gcmCtx, MBEDTLS_GCM_ENCRYPT, iv, ivSize))
     {
         printf("AES-GCM: Failed to start tag calculation\n");
         mbedtls_gcm_free(&gcmCtx);
         return false;
     }
 
-    if (mbedtls_gcm_finish(&gcmCtx, tag, tagSize))
+    if (mbedtls_gcm_update_ad(&gcmCtx, addData, addDataSize))
+    {
+        printf("AES-GCM: Failed to add authenticated data\n");
+        mbedtls_gcm_free(&gcmCtx);
+        return false;
+    }
+    
+    size_t outLen = 0;
+
+    if (mbedtls_gcm_finish(&gcmCtx, NULL, 0, &outLen, tag, tagSize))
     {
         printf("AES-GCM: Failed to finish tag calculation\n");
         mbedtls_gcm_free(&gcmCtx);
