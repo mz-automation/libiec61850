@@ -408,9 +408,9 @@ namespace IEC61850.Server
         /// <note>Can be used to implement some of Services\ReportSettings options</note>
         /// <param name="settings">the settings that should be configured writeable or read-only</param>
         /// <param name="isDyn">true, settings are writeable, false, settings are read-only</param>
-        public void SetReportSetting(ReportSettings settings)
+        public void SetReportSetting(ReportSettings settings, bool isDyn = true)
         {
-            IedServerConfig_setReportSetting(self, (byte)settings, true);
+            IedServerConfig_setReportSetting(self, (byte)settings, isDyn);
         }
 
         /// <summary>

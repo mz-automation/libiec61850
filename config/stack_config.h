@@ -164,10 +164,10 @@
 #define CONFIG_IEC61850_R_SMV 0
 
 /* compile with support for L2 GOOSE */
-#define CONFIG_IEC61850_L2_GOOSE 0
+#define CONFIG_IEC61850_L2_GOOSE 1
 
 /* compile with support for L2 SMV */
-#define CONFIG_IEC61850_L2_SMV 0
+#define CONFIG_IEC61850_L2_SMV 1
 
 /* compile SNTP client code */
 #define CONFIG_IEC61850_SNTP_CLIENT 0
