@@ -5,6 +5,7 @@
  */
 
 #include "iec61850_client.h"
+#include "hal_thread.h"
 
 #include <stdlib.h>
 #include <stdio.h>
