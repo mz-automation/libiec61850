@@ -223,6 +223,10 @@ exit_error:
 IedModel*
 ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
 {
+    IedModel* model = NULL;
+    int indendation = 0;
+    int currentLine = 0;
+
     uint8_t* lineBuffer = (uint8_t*)GLOBAL_MALLOC(READ_BUFFER_MAX_SIZE);
 
     if (lineBuffer == NULL)
@@ -231,11 +235,9 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
     int bytesRead = 1;
 
     bool stateInModel = false;
-    int indendation = 0;
     bool inArray = false;
     bool inArrayElement = false;
 
-    IedModel* model = NULL;
     LogicalDevice* currentLD = NULL;
     LogicalNode* currentLN = NULL;
     ModelNode* currentModelNode = NULL;
@@ -248,7 +250,6 @@ ConfigFileParser_createModelFromConfigFile(FileHandle fileHandle)
     char nameString2[130];
     char nameString3[130];
 
-    int currentLine = 0;
 
     while (bytesRead > 0)
     {
