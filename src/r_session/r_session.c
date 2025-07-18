@@ -89,7 +89,7 @@ struct sRSession
     int timeToNextKey;
 };
 
-#ifdef DEBUG_RSESSION
+#if (DEBUG_RSESSION == 1)
 static void
 printBuffer(uint8_t* buffer, int bufSize)
 {
@@ -1000,7 +1000,7 @@ encodePacket(RSession self, uint8_t payloadType, uint8_t* buffer, int bufPos, RS
         int addPartSize = encryptedPartStartPos - startPos;
         int encryptedPartSize = payloadEndPos - encryptedPartStartPos;
 
-#ifdef DEBUG_RSESSION
+#if (DEBUG_RSESSION == 1)
         printBuffer(buffer + startPos, bufPos - startPos);
 #endif
 
@@ -1053,7 +1053,7 @@ RSession_sendMessage(RSession self, RSessionProtocol_SPDU_ID spduId, bool simula
 
         int msgSize = encodePacket(self, (uint8_t) spduId, self->sendBuffer, 0, &element);
 
-#ifdef DEBUG_RSESSION
+#if (DEBUG_RSESSION == 1)
         printBuffer(self->sendBuffer, msgSize);
 #endif
 
