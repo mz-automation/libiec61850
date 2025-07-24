@@ -1111,8 +1111,6 @@ parseGooseMessage(GooseReceiver self, uint8_t* buffer, int numbytes)
 
     int apduLength = length - 8;
 
-    printf("length: %i apduLength: %i numBytes: %i secExtLength: %i\n", length, apduLength, numbytes, secExtLength);
-
     if (apduLength < 0)
     {
         if (DEBUG_GOOSE_SUBSCRIBER)
@@ -1149,11 +1147,11 @@ parseGooseMessage(GooseReceiver self, uint8_t* buffer, int numbytes)
 
         if (secExtCrc == crc)
         {
-            printf("CRC check - OK\n");
+            printf("GOOSE_SUBSCRIBER: CRC check - OK\n");
         }
         else
         {
-            printf("CRC check - FAILED (expected: %04x actual: %04x)\n", secExtCrc, crc);
+            printf("GOOSE_SUBSCRIBER: CRC check - FAILED (expected: %04x actual: %04x)\n", secExtCrc, crc);
         }
 
         /* verify correct length of message including security extension */
@@ -1172,7 +1170,13 @@ parseGooseMessage(GooseReceiver self, uint8_t* buffer, int numbytes)
             //secCheckPassed = L2Security_checkSecurityExtension(self->l2Security, buffer, 16, 182, secExtLength);
 
 
-            printf("Security check - %s\n", secCheckPassed ? "OK" : "FAILED");
+            printf("GOOSE_SUBSCRIBER: Security check - %s\n", secCheckPassed ? "OK" : "FAILED");
+
+            if (secCheckPassed == false)
+            {
+                printf("GOOSE_SUBSCRIBER: security check failed -> ignore message\n");
+                return;
+            }
         }
         else
         {
@@ -1180,6 +1184,14 @@ parseGooseMessage(GooseReceiver self, uint8_t* buffer, int numbytes)
             printf("GOOSE_SUBSCRIBER: ERROR - No security layer specified -> cannot check security extension!\n");
 
             secCheckPassed = false;
+        }
+    }
+    else
+    {
+        if (self->l2Security)
+        {
+            printf("GOOSE SUBSCRIBER: ERROR - no security extension\n");
+            return;
         }
     }
 
