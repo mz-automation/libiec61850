@@ -25,6 +25,7 @@
 #define GOOSE_SUBSCRIBER_H_
 
 #include "libiec61850_common_api.h"
+#include "l2_security.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -128,6 +129,15 @@ GooseSubscriber_setDstMac(GooseSubscriber self, uint8_t dstMac[6]);
  */
 LIB61850_API void
 GooseSubscriber_setAppId(GooseSubscriber self, uint16_t appId);
+
+/**
+ * \brief Optionally set L2Security instance when L2 authentication or encryption should be used
+ *
+ * \param self GooseSubscriber instance to operate on.
+ * \param l2Security the L2Security instance to use with this subscriber
+ */
+LIB61850_API void
+GooseSubscriber_setL2Security(GooseSubscriber self, L2Security l2Security);
 
 /**
  * \brief Check if subscriber state is valid
@@ -311,7 +321,6 @@ GooseSubscriber_setObserver(GooseSubscriber self);
 #ifdef __cplusplus
 }
 #endif
-
 
 /**@}*/
 

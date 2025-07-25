@@ -1,7 +1,7 @@
 /*
  *  goose_receiver_internal.h
  *
- *  Copyright 2014 Michael Zillgith
+ *  Copyright 2014-2025 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -24,7 +24,6 @@
 #ifndef GOOSE_RECEIVER_INTERNAL_H_
 #define GOOSE_RECEIVER_INTERNAL_H_
 
-
 #define ETH_BUFFER_LENGTH 1518
 
 #define ETH_P_GOOSE 0x88b8
@@ -33,8 +32,14 @@
 #define DEBUG_GOOSE_SUBSCRIBER 0
 #endif
 
+#define CONFIG_GOOSE_L2_SECURITY 1
 
-struct sGooseSubscriber {
+#if (CONFIG_GOOSE_L2_SECURITY == 1)
+#include "l2_security.h"
+#endif /* (CONFIG_GOOSE_L2_SECURITY == 1) */
+
+struct sGooseSubscriber
+{
     char goCBRef[130];
     char datSet[130];
     char goId[130];
@@ -65,8 +70,10 @@ struct sGooseSubscriber {
 
     GooseListener listener;
     void* listenerParameter;
+
+#if (CONFIG_GOOSE_L2_SECURITY == 1)
+    L2Security l2Security;
+#endif /* (CONFIG_GOOSE_L2_SECURITY == 1) */
 };
-
-
 
 #endif /* GOOSE_RECEIVER_INTERNAL_H_ */

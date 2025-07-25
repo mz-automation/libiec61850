@@ -1,7 +1,7 @@
 /*
  *  goose_receiver.c
  *
- *  Copyright 2014-2024 Michael Zillgith
+ *  Copyright 2014-2025 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -43,12 +43,6 @@
 #define DEBUG_GOOSE_SUBSCRIBER 0
 #endif
 
-#define CONFIG_GOOSE_L2_SECURITY 1
-
-#if (CONFIG_GOOSE_L2_SECURITY == 1)
-#include "l2_security.h"
-#endif /* (CONFIG_GOOSE_L2_SECURITY == 1) */
-
 #ifdef DEBUG_GOOSE_SUBSCRIBER
 #undef DEBUG_GOOSE_SUBSCRIBER
 #define DEBUG_GOOSE_SUBSCRIBER 1
@@ -77,10 +71,6 @@ struct sGooseReceiver
 #if (CONFIG_MMS_THREADLESS_STACK == 0)
     Thread thread;
 #endif
-
-#if (CONFIG_GOOSE_L2_SECURITY == 1)
-    L2Security l2Security;
-#endif /* (CONFIG_GOOSE_L2_SECURITY == 1) */
 };
 
 GooseReceiver
@@ -102,10 +92,6 @@ GooseReceiver_createEx(uint8_t* buffer)
 #if (CONFIG_MMS_THREADLESS_STACK == 0)
         self->thread = NULL;
 #endif
-
-#if (CONFIG_GOOSE_L2_SECURITY == 1)
-        self->l2Security = NULL;
-#endif /* (CONFIG_GOOSE_L2_SECURITY == 1) */
     }
 
     return self;
@@ -168,14 +154,6 @@ GooseReceiver_getInterfaceId(GooseReceiver self)
     else
         return CONFIG_ETHERNET_INTERFACE_ID;
 }
-
-#if (CONFIG_GOOSE_L2_SECURITY == 1)
-void
-GooseReceiver_setL2Security(GooseReceiver self, L2Security l2Security)
-{
-    self->l2Security = l2Security;
-}
-#endif /* (CONFIG_GOOSE_L2_SECURITY == 1) */
 
 static void
 createNewStringFromBufferElement(MmsValue* value, uint8_t* bufferSrc, int elementLength)
@@ -1140,61 +1118,6 @@ parseGooseMessage(GooseReceiver self, uint8_t* buffer, int numbytes)
         }
     }
 
-    if (secExtLength > 0)
-    {
-        /* calculate crc */
-        uint16_t crc = L2Security_calculateCRC16(buffer + gooseStart, 8);
-
-        if (secExtCrc == crc)
-        {
-            printf("GOOSE_SUBSCRIBER: CRC check - OK\n");
-        }
-        else
-        {
-            printf("GOOSE_SUBSCRIBER: CRC check - FAILED (expected: %04x actual: %04x)\n", secExtCrc, crc);
-        }
-
-        /* verify correct length of message including security extension */
-        if (numbytes < length + headerLength + secExtLength) {
-            //if (DEBUG_GOOSE_SUBSCRIBER)
-                printf("GOOSE_SUBSCRIBER: Invalid PDU size (security extension is missing)\n");
-            return;
-        }
-
-        /* check security extension */
-        bool secCheckPassed = false;
-
-        if (self->l2Security)
-        {
-            secCheckPassed = L2Security_checkSecurityExtension(self->l2Security, buffer, gooseStart + 2, length, secExtLength);
-            //secCheckPassed = L2Security_checkSecurityExtension(self->l2Security, buffer, 16, 182, secExtLength);
-
-
-            printf("GOOSE_SUBSCRIBER: Security check - %s\n", secCheckPassed ? "OK" : "FAILED");
-
-            if (secCheckPassed == false)
-            {
-                printf("GOOSE_SUBSCRIBER: security check failed -> ignore message\n");
-                return;
-            }
-        }
-        else
-        {
-            //if (DEBUG_GOOSE_SUBSCRIBER)
-            printf("GOOSE_SUBSCRIBER: ERROR - No security layer specified -> cannot check security extension!\n");
-
-            secCheckPassed = false;
-        }
-    }
-    else
-    {
-        if (self->l2Security)
-        {
-            printf("GOOSE SUBSCRIBER: ERROR - no security extension\n");
-            return;
-        }
-    }
-
     /* check if there is an interested subscriber */
     LinkedList element = LinkedList_getNext(self->subscriberList);
 
@@ -1218,6 +1141,60 @@ parseGooseMessage(GooseReceiver self, uint8_t* buffer, int numbytes)
                 (!subscriber->dstMacSet || (memcmp(subscriber->dstMac, dstMac,6) == 0)))
         {
             subscriberFound = true;
+
+                if (secExtLength > 0)
+                {
+                    /* calculate crc */
+                    uint16_t crc = L2Security_calculateCRC16(buffer + gooseStart, 8);
+
+                    if (secExtCrc == crc)
+                    {
+                        printf("GOOSE_SUBSCRIBER: CRC check - OK\n");
+                    }
+                    else
+                    {
+                        printf("GOOSE_SUBSCRIBER: CRC check - FAILED (expected: %04x actual: %04x)\n", secExtCrc, crc);
+                    }
+
+                    /* verify correct length of message including security extension */
+                    if (numbytes < length + headerLength + secExtLength) {
+                        //if (DEBUG_GOOSE_SUBSCRIBER)
+                            printf("GOOSE_SUBSCRIBER: Invalid PDU size (security extension is missing)\n");
+                        return;
+                    }
+
+                    /* check security extension */
+                    bool secCheckPassed = false;
+
+                    if (subscriber->l2Security)
+                    {
+                        secCheckPassed = L2Security_checkSecurityExtension(subscriber->l2Security, buffer, gooseStart + 2, length, secExtLength);
+
+                        printf("GOOSE_SUBSCRIBER: Security check - %s\n", secCheckPassed ? "OK" : "FAILED");
+
+                        if (secCheckPassed == false)
+                        {
+                            printf("GOOSE_SUBSCRIBER: security check failed -> ignore message\n");
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        //if (DEBUG_GOOSE_SUBSCRIBER)
+                        printf("GOOSE_SUBSCRIBER: ERROR - No security layer specified -> cannot check security extension!\n");
+
+                        secCheckPassed = false;
+                    }
+                }
+                else
+                {
+                    if (subscriber->l2Security)
+                    {
+                        printf("GOOSE SUBSCRIBER: ERROR - no security extension\n");
+                        return;
+                    }
+                }
+
             break;
         }
 

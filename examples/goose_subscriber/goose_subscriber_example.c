@@ -66,19 +66,37 @@ main(int argc, char** argv)
     GooseSubscriber_setAppId(subscriber, 1000);
 
     char* key = "0123456789ABCDEF";
-    //char* key = "0123456789ABCDEG";
 
     L2Security l2Sec = L2Security_create();
 
     //L2Security_addKey(l2Sec, 0x12345678, (uint8_t*)key, 16, MC_SEC_SEC_ALGO_NONE, MC_SEC_SIG_ALGO_HMAC_SHA256_256);
-    L2Security_addKey(l2Sec, 0x12345678, (uint8_t*)key, 16, MC_SEC_SEC_ALGO_NONE, MC_SEC_SIG_ALGO_AES_GMAC_128);
+    L2Security_addKey(l2Sec, 1, (uint8_t*)key, 16, MC_SEC_SEC_ALGO_NONE, MC_SEC_SIG_ALGO_AES_GMAC_128);
     L2Security_setActiveKey(l2Sec, 1);
 
-    GooseReceiver_setL2Security(receiver, l2Sec);
-
+    GooseSubscriber_setL2Security(subscriber, l2Sec);
     GooseSubscriber_setListener(subscriber, gooseListener, NULL);
 
     GooseReceiver_addSubscriber(receiver, subscriber);
+
+    GooseSubscriber subscriber2 = GooseSubscriber_create("simpleIOGenericIO/LLN0$GO$gcbAnalogValues2", NULL);
+
+    uint8_t dstMac2[6] = {0x01,0x0c,0xcd,0x01,0x00,0x02};
+    GooseSubscriber_setDstMac(subscriber2, dstMac2);
+    GooseSubscriber_setAppId(subscriber2, 1001);
+
+    char* key2 = "ABCDEF0123456789";
+
+    L2Security l2Sec2 = L2Security_create();
+
+    //L2Security_addKey(l2Sec, 0x12345678, (uint8_t*)key, 16, MC_SEC_SEC_ALGO_NONE, MC_SEC_SIG_ALGO_HMAC_SHA256_256);
+    L2Security_addKey(l2Sec2, 1, (uint8_t*)key2, 16, MC_SEC_SEC_ALGO_NONE, MC_SEC_SIG_ALGO_AES_GMAC_128);
+    L2Security_setActiveKey(l2Sec2, 1);
+
+    GooseSubscriber_setL2Security(subscriber2, l2Sec2);
+    GooseSubscriber_setListener(subscriber2, gooseListener, NULL);
+
+    GooseReceiver_addSubscriber(receiver, subscriber2);
+
 
     GooseReceiver_start(receiver);
 

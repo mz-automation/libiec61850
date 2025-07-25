@@ -59,6 +59,10 @@ GooseSubscriber_create(char* goCbRef, MmsValue* dataSetValues)
         self->isObserver = false;
         self->vlanSet = false;
         self->parseError = GOOSE_PARSE_ERROR_NO_ERROR;
+
+#if (CONFIG_GOOSE_L2_SECURITY == 1)
+        self->l2Security = NULL;
+#endif /* (CONFIG_GOOSE_L2_SECURITY == 1) */
     }
 
     return self;
@@ -94,6 +98,14 @@ GooseSubscriber_setAppId(GooseSubscriber self, uint16_t appId)
 {
     self->appId = (int32_t) appId;
 }
+
+#if (CONFIG_GOOSE_L2_SECURITY == 1)
+void
+GooseSubscriber_setL2Security(GooseSubscriber self, L2Security l2Security)
+{
+    self->l2Security = l2Security;
+}
+#endif /* (CONFIG_GOOSE_L2_SECURITY == 1) */
 
 void
 GooseSubscriber_destroy(GooseSubscriber self)
