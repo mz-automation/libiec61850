@@ -983,6 +983,9 @@ IedConnection_setGoCBValuesAsync(IedConnection self, IedClientError* error, Clie
     char domainId[65];
     char itemId[130];
 
+    LinkedList itemIds = NULL;
+    LinkedList values = NULL;
+
     if (MmsMapping_getMmsDomainFromObjectReference(goCB->objectReference, domainId) == NULL)
     {
         *error = IED_ERROR_OBJECT_REFERENCE_INVALID;
@@ -1017,8 +1020,8 @@ IedConnection_setGoCBValuesAsync(IedConnection self, IedClientError* error, Clie
     int itemIdLen = strlen(itemId);
 
     /* create the list of requested itemIds references */
-    LinkedList itemIds = LinkedList_create();
-    LinkedList values = LinkedList_create();
+    itemIds = LinkedList_create();
+    values = LinkedList_create();
 
     /* add rGoEna as last element */
     if (parametersMask & GOCB_ELEMENT_GO_ID)
