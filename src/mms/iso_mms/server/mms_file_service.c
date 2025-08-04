@@ -826,22 +826,14 @@ void
 mmsMsg_createFileReadResponse(int maxPduSize, uint32_t invokeId,
         ByteBuffer* response,  MmsFileReadStateMachine* frsm)
 {
-     /* determine remaining bytes in file */
-     uint32_t bytesLeft = frsm->fileSize - frsm->readPosition;
-
-     uint32_t fileChunkSize = 0;
-
      uint32_t maxFileChunkSize = maxPduSize - 20;
 
      uint32_t fileReadResponseSize = 1; /* for tag */
 
      bool moreFollows = true;
 
-     if (bytesLeft > maxFileChunkSize) {
-         fileChunkSize = maxFileChunkSize;
-     }
-     else {
-         fileChunkSize = bytesLeft;
+     uint32_t fileChunkSize = FileSystem_readFile(frsm->fileHandle, response->buffer + 20, maxFileChunkSize);
+     if (fileChunkSize != maxFileChunkSize) {
          moreFollows = false;
          fileReadResponseSize += 3; /* for moreFollows */
      }
@@ -869,7 +861,7 @@ mmsMsg_createFileReadResponse(int maxPduSize, uint32_t invokeId,
      bufPos = BerEncoder_encodeTL(0x49, fileReadResponseSize, buffer, bufPos);
 
      bufPos = BerEncoder_encodeTL(0x80, fileChunkSize, buffer, bufPos);
-     FileSystem_readFile(frsm->fileHandle, buffer + bufPos, fileChunkSize);
+     memmove(buffer + bufPos, buffer + 20, fileChunkSize);
      bufPos += fileChunkSize;
 
      if (!moreFollows)

@@ -174,7 +174,7 @@ Ethernet_createSocket(const char* interfaceId, uint8_t* destAddress)
 
     if (self)
     {
-        self->rawSocket = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
+        self->rawSocket = socket(AF_PACKET, SOCK_RAW, 0);
 
         if (self->rawSocket == -1)
         {
