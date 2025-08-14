@@ -4345,18 +4345,7 @@ MmsMapping_triggerGooseObservers(MmsMapping* self, MmsValue* value)
             {
                 MmsGooseControlBlock_setStateChangePending(gcb);
 
-#if (CONFIG_MMS_THREADLESS_STACK != 1)
-                Semaphore_wait(self->isModelLockedMutex);
-#endif
-
-                if (self->isModelLocked == false)
-                {
-                    MmsGooseControlBlock_publishNewState(gcb);
-                }
-
-#if (CONFIG_MMS_THREADLESS_STACK != 1)
-                Semaphore_post(self->isModelLockedMutex);
-#endif
+                MmsGooseControlBlock_publishNewState(gcb);
             }
         }
     }
