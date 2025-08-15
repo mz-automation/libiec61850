@@ -203,6 +203,7 @@ ENDIF(UNIX)
 
 IF(CONFIG_USE_EXTERNAL_MBEDTLS_DYNLIB)
   target_link_libraries(hal mbedcrypto mbedx509 mbedtls)
+  target_link_libraries(hal-shared mbedcrypto mbedx509 mbedtls)
 ENDIF(CONFIG_USE_EXTERNAL_MBEDTLS_DYNLIB)
 
 IF(MINGW)
