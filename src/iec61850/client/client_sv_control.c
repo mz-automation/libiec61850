@@ -132,7 +132,7 @@ bool
 ClientSVControlBlock_setResv(ClientSVControlBlock self, bool value)
 {
     if (self->isMulticast == false)
-        return setBooleanVariable(self, "SvEna", value);
+        return setBooleanVariable(self, "Resv", value);
     else
         return false;
 }
