@@ -210,7 +210,7 @@ ClientGooseControlBlock_getDstAddress(ClientGooseControlBlock self)
 
     if (MmsValue_getArraySize(self->dstAddress) != 4)
     {
-        if (DEBUG_IED_CLIENT) printf("IED_CLIENT: GoCB - addr has wrong type\n");
+        if (DEBUG_IED_CLIENT) printf("IED_CLIENT: GoCB - addr has wrong size\n");
         goto exit_error;
     }
 
