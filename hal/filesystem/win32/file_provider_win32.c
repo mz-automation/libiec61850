@@ -47,7 +47,7 @@ struct sDirectoryHandle {
 
 
 FileHandle
-FileSystem_openFile(char* fileName, bool readWrite)
+FileSystem_openFile(const char* fileName, bool readWrite)
 {
     FileHandle newHandle = NULL;
 
@@ -66,7 +66,7 @@ FileSystem_readFile(FileHandle handle, uint8_t* buffer, int maxSize)
 }
 
 int
-FileSystem_writeFile(FileHandle handle, uint8_t* buffer, int size)
+FileSystem_writeFile(FileHandle handle, const uint8_t* buffer, int size)
 {
     return fwrite(buffer, 1, size, (FILE*) handle);
 }
@@ -78,7 +78,7 @@ FileSystem_closeFile(FileHandle handle)
 }
 
 bool
-FileSystem_getFileInfo(char* filename, uint32_t* fileSize, uint64_t* lastModificationTimestamp)
+FileSystem_getFileInfo(const char* filename, uint32_t* fileSize, uint64_t* lastModificationTimestamp)
 {
     WIN32_FILE_ATTRIBUTE_DATA fad;
 
@@ -104,7 +104,7 @@ FileSystem_getFileInfo(char* filename, uint32_t* fileSize, uint64_t* lastModific
 }
 
 DirectoryHandle
-FileSystem_openDirectory(char* directoryName)
+FileSystem_openDirectory(const char* directoryName)
 {
     DirectoryHandle dirHandle = (DirectoryHandle) GLOBAL_CALLOC(1, sizeof(struct sDirectoryHandle));
 
@@ -168,7 +168,7 @@ getNextDirectoryEntry(DirectoryHandle directory, bool* isDirectory)
 
 
 bool
-FileSystem_deleteFile(char* filename)
+FileSystem_deleteFile(const char* filename)
 {
     if (remove(filename) == 0)
         return true;
@@ -177,7 +177,7 @@ FileSystem_deleteFile(char* filename)
 }
 
 bool
-FileSystem_renameFile(char* oldFilename, char* newFilename)
+FileSystem_renameFile(const char* oldFilename, const char* newFilename)
 {
     if (rename(oldFilename, newFilename) == 0)
         return true;
@@ -186,7 +186,7 @@ FileSystem_renameFile(char* oldFilename, char* newFilename)
 }
 
 
-char*
+const char*
 FileSystem_readDirectory(DirectoryHandle directory, bool* isDirectory)
 {
     char* fileName = getNextDirectoryEntry(directory, isDirectory);

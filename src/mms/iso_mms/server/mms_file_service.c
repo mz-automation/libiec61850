@@ -960,7 +960,7 @@ addFileEntriesToResponse(const char* basepath, uint8_t* buffer, int bufPos, int 
     if (directory != NULL) {
 
         bool isDirectory;
-        char* fileName = FileSystem_readDirectory(directory, &isDirectory);
+        const char* fileName = FileSystem_readDirectory(directory, &isDirectory);
 
         while (fileName != NULL) {
         	directoryName[directoryNameLength] = 0;

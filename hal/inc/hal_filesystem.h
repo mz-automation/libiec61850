@@ -44,7 +44,7 @@ typedef struct sDirectoryHandle* DirectoryHandle;
  *         NULL if opening fails
  */
 PAL_API FileHandle
-FileSystem_openFile(char* pathName, bool readWrite);
+FileSystem_openFile(const char* pathName, bool readWrite);
 
 /**
  * \brief read from an open file
@@ -73,7 +73,7 @@ FileSystem_readFile(FileHandle handle, uint8_t* buffer, int maxSize);
  * \return the number of bytes actually written
  */
 PAL_API int
-FileSystem_writeFile(FileHandle handle, uint8_t* buffer, int size);
+FileSystem_writeFile(FileHandle handle, const uint8_t* buffer, int size);
 
 /**
  * \brief close an open file
@@ -97,7 +97,7 @@ FileSystem_closeFile(FileHandle handle);
  * \return true if file exists, false if not
  */
 PAL_API bool
-FileSystem_getFileInfo(char* filename, uint32_t* fileSize, uint64_t* lastModificationTimestamp);
+FileSystem_getFileInfo(const char* filename, uint32_t* fileSize, uint64_t* lastModificationTimestamp);
 
 /**
  * \brief delete a file
@@ -107,7 +107,7 @@ FileSystem_getFileInfo(char* filename, uint32_t* fileSize, uint64_t* lastModific
  * \return true on success, false on error
  */
 PAL_API bool
-FileSystem_deleteFile(char* filename);
+FileSystem_deleteFile(const char* filename);
 
 /**
  * \brief rename a file
@@ -118,7 +118,7 @@ FileSystem_deleteFile(char* filename);
  * \return true on success, false on error
  */
 PAL_API bool
-FileSystem_renameFile(char* oldFilename, char* newFilename);
+FileSystem_renameFile(const char* oldFilename, const char* newFilename);
 
 /**
  * \brief open the directoy with the specified name
@@ -128,7 +128,7 @@ FileSystem_renameFile(char* oldFilename, char* newFilename);
  * \return a handle for the opened directory to be used in subsequent calls to identify the directory
  */
 PAL_API DirectoryHandle
-FileSystem_openDirectory(char* directoryName);
+FileSystem_openDirectory(const char* directoryName);
 
 /**
  * \brief read the next directory entry
@@ -142,7 +142,7 @@ FileSystem_openDirectory(char* directoryName);
  *
  * \return the name of the directory entry
  */
-PAL_API char*
+PAL_API const char*
 FileSystem_readDirectory(DirectoryHandle directory, bool* isDirectory);
 
 
