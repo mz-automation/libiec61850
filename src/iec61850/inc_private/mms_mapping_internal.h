@@ -287,7 +287,10 @@ struct sMmsMapping {
     LinkedList controlObjects;
     uint64_t nextControlTimeout; /* next timeout in one of the control state machines */
 
-    LinkedList attributeAccessHandlers;
+    LinkedList attributeAccessHandlers; /* write access handlers for individual data attribtues */
+
+    WriteAccessHandler writeAccessHandler; /* global write access handler */
+    void* writeAccessHandlerParam;
 
 #if (CONFIG_IEC61850_SUPPORT_USER_READ_ACCESS_CONTROL == 1)
     ReadAccessHandler readAccessHandler;

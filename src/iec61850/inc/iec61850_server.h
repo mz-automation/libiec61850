@@ -1955,6 +1955,9 @@ IedServer_handleWriteAccessForComplexAttribute(IedServer self, DataAttribute* da
 LIB61850_API void
 IedServer_handleWriteAccessForDataObject(IedServer self, DataObject* dataObject, FunctionalConstraint fc, WriteAccessHandler handler, void* parameter);
 
+LIB61850_API void
+IedServer_handleWriteAccessGlobally(IedServer self, WriteAccessHandler handler, void* parameter);
+
 typedef enum {
     ACCESS_POLICY_ALLOW,
     ACCESS_POLICY_DENY

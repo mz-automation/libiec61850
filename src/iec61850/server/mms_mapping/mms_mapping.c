@@ -3273,6 +3273,93 @@ mmsWriteHandler(void* parameter, MmsDomain* domain, const char* variableId, int 
                 writeHandlerListElement = LinkedList_getNext(writeHandlerListElement);
             }
 
+            /* Call global write access handler */
+            if (self->writeAccessHandler)
+            {
+                /* lookup data attribute */
+                IedModel* model = self->iedServer->model;
+
+                ModelNode* ld = IedModel_getModelNodeByObjectReference(model, domain->domainName);
+
+                if (ld)
+                {
+                    *separator = 0;
+
+                    ModelNode* ln = ModelNode_getChild(ld, variableId);
+
+                    if (ln)
+                    {
+                        char* daRef = separator + 4;
+
+                        /* replace "$" with "."*/
+
+                        StringUtils_replace(daRef, '$', '.');
+
+                        ModelNode* da = ModelNode_getChild(ln, daRef);
+
+                        if (da)
+                        {
+                            if (arrayIdx != -1)
+                            {
+                                da = ModelNode_getChildWithIdx(da, arrayIdx);
+
+                                if (da == NULL)
+                                {
+                                    printf("array idx not found\n");
+                                }
+
+                                if (componentId)
+                                {
+                                    StringUtils_replace(componentId, '$', '.');
+
+                                    da = ModelNode_getChild(da, componentId);
+
+                                    if (da == NULL)
+                                    {
+                                        printf("component %s not found\n", componentId);
+                                    }
+                                }
+                            }
+
+                            if (da)
+                            {
+                                if (da->modelType != DataAttributeModelType)
+                                {
+                                    printf("model node not a data attribute!\n");
+                                }
+                                else
+                                {
+                                    ClientConnection clientConnection =
+                                        private_IedServer_getClientConnectionByHandle(self->iedServer, connection);
+
+                                    MmsDataAccessError handlerResult =
+                                        self->writeAccessHandler((DataAttribute*)da, value, clientConnection, self->writeAccessHandlerParam);
+
+                                    if ((handlerResult == DATA_ACCESS_ERROR_SUCCESS) ||
+                                        (handlerResult == DATA_ACCESS_ERROR_SUCCESS_NO_UPDATE))
+                                    {
+                                        handlerFound = true;
+
+                                        if (handlerResult == DATA_ACCESS_ERROR_SUCCESS_NO_UPDATE)
+                                            updateValue = false;
+                                    }
+                                    else
+                                        return handlerResult;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            printf("da %s no found\n", daRef);
+                        }
+                    }
+                    else
+                    {
+                        printf("ln %s not found\n", variableId);
+                    }
+                }
+            }
+
             /* DENY access if no handler is found and default policy is DENY */
             if (!handlerFound)
             {
@@ -3315,6 +3402,13 @@ getAccessHandlerForAttribute(MmsMapping* self, DataAttribute* dataAttribute)
     }
 
     return NULL;
+}
+
+void
+MmsMapping_installGlobalWriteAccessHandler(MmsMapping* self, WriteAccessHandler handler, void* parameter)
+{
+    self->writeAccessHandler = handler;
+    self->writeAccessHandlerParam = parameter;
 }
 
 void
