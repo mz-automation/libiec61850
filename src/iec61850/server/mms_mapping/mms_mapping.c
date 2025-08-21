@@ -2877,7 +2877,6 @@ mmsWriteHandler(void* parameter, MmsDomain* domain, const char* variableId, int 
     /* Report control blocks - BR, RP */
     if (isReportControlBlock(separator))
     {
-
         char* reportName = MmsMapping_getNextNameElement(separator + 1);
 
         if (reportName == NULL)
@@ -2900,7 +2899,6 @@ mmsWriteHandler(void* parameter, MmsDomain* domain, const char* variableId, int 
 
             if (rc->domain == domain)
             {
-
                 int parentLNNameStrLen = strlen(rc->parentLN->name);
 
                 if (parentLNNameStrLen != lnNameLength)
@@ -2913,7 +2911,6 @@ mmsWriteHandler(void* parameter, MmsDomain* domain, const char* variableId, int 
 
                 if (rcNameLen == variableIdLen)
                 {
-
                     if (strncmp(variableId, rc->name, variableIdLen) == 0)
                     {
                         const char* elementName = variableId + rcNameLen + 1;
