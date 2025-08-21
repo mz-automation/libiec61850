@@ -1813,6 +1813,15 @@ IedServer_setWriteAccessPolicy(IedServer self, FunctionalConstraint fc, AccessPo
 }
 
 void
+IedServer_handleWriteAccessGlobally(IedServer self, WriteAccessHandler handler, void* parameter)
+{
+    if (self && self->mmsMapping)
+    {
+        MmsMapping_installGlobalWriteAccessHandler(self->mmsMapping, handler, parameter);
+    }
+}
+
+void
 IedServer_handleWriteAccess(IedServer self, DataAttribute* dataAttribute, WriteAccessHandler handler, void* parameter)
 {
     if (dataAttribute == NULL)
