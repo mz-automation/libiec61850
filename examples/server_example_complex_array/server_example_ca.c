@@ -27,32 +27,46 @@ updateCMVArrayElement(IedServer server, DataObject* phsAHar, int idx, float magn
 {
     DataObject* phsAHarArrayElem = (DataObject*)ModelNode_getChildWithIdx((ModelNode*)phsAHar, idx);
 
-    if (phsAHarArrayElem) {
-
+    if (phsAHarArrayElem)
+    {
         DataAttribute* mag = (DataAttribute*)ModelNode_getChild((ModelNode*)phsAHarArrayElem, "cVal.mag.f");
         DataAttribute* ang = (DataAttribute*)ModelNode_getChild((ModelNode*)phsAHarArrayElem, "cVal.ang.f");
         DataAttribute* q = (DataAttribute*)ModelNode_getChild((ModelNode*)phsAHarArrayElem, "q");
         DataAttribute* t = (DataAttribute*)ModelNode_getChild((ModelNode*)phsAHarArrayElem, "t");
 
-        if (mag && ang && q && t) {
+        if (mag && ang && q && t)
+        {
             IedServer_updateQuality(server, q, quality);
             IedServer_updateTimestampAttributeValue(server, t, &timestamp);
             IedServer_updateFloatAttributeValue(server, mag, magnitude);
             IedServer_updateFloatAttributeValue(server, ang, angle);
         }
-        else {
+        else
+        {
             printf("one of mag, ang, q, t not found\n");
         }
     }
-    else {
+    else
+    {
         printf("Element with index %i not found\n", idx);
     }
+}
+
+static MmsDataAccessError
+writeAccessHandler(DataAttribute* dataAttribute, MmsValue* value, ClientConnection connection, void* parameter)
+{
+    char objRef[200];
+    char valueBuf[200];
+
+    ModelNode_getObjectReference((ModelNode*)dataAttribute, objRef);
+    printf("Write access - %s: %s\n", objRef, MmsValue_printToBuffer(value, valueBuf, sizeof(valueBuf)));
+
+    return DATA_ACCESS_ERROR_SUCCESS;
 }
 
 int
 main(int argc, char **argv)
 {
-
     int tcpPort = 102;
 
     if (argc > 1) {
@@ -60,6 +74,8 @@ main(int argc, char **argv)
     }
 
     IedServer iedServer = IedServer_create(&iedModel);
+
+    IedServer_handleWriteAccessGlobally(iedServer, writeAccessHandler, NULL);
 
     /* Get access to the MHAI1.HA data object handle - for static and dynamic model*/
     DataObject* mhai1_ha_phsAHar = (DataObject*)
@@ -75,7 +91,8 @@ main(int argc, char **argv)
     Timestamp_setTimeInMilliseconds(&timestamp, Hal_getTimeInMs());
 
     int i;
-    for (i = 0; i < 16; i++) {
+    for (i = 0; i < 16; i++)
+    {
         updateCMVArrayElement(iedServer, mhai1_ha_phsAHar, i, mag, angle, quality, timestamp);
         mag += 1.f;
         angle += 0.01f;
@@ -84,7 +101,8 @@ main(int argc, char **argv)
     /* MMS server will be instructed to start listening to client connections. */
     IedServer_start(iedServer, tcpPort);
 
-    if (!IedServer_isRunning(iedServer)) {
+    if (!IedServer_isRunning(iedServer))
+    {
         printf("Starting server failed! Exit.\n");
         IedServer_destroy(iedServer);
         exit(-1);
@@ -96,14 +114,16 @@ main(int argc, char **argv)
 
     int counter = 0;
 
-    while (running) {
+    while (running)
+    {
         Thread_sleep(1000);
 
         Timestamp_setTimeInMilliseconds(&timestamp, Hal_getTimeInMs());
 
         IedServer_lockDataModel(iedServer);
 
-        for (i = 0; i < 16; i++) {
+        for (i = 0; i < 16; i++)
+        {
             updateCMVArrayElement(iedServer, mhai1_ha_phsAHar, i, mag, angle, quality, timestamp);
             mag += 0.1f;
             angle += 0.05f;
@@ -126,4 +146,4 @@ main(int argc, char **argv)
     IedServer_destroy(iedServer);
 
     return 0;
-} /* main() */
+}

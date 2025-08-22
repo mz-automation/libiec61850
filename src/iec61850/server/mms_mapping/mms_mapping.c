@@ -3291,8 +3291,6 @@ mmsWriteHandler(void* parameter, MmsDomain* domain, const char* variableId, int 
                     {
                         char* daRef = separator + 4;
 
-                        /* replace "$" with "."*/
-
                         StringUtils_replace(daRef, '$', '.');
 
                         ModelNode* da = ModelNode_getChild(ln, daRef);
@@ -3303,31 +3301,21 @@ mmsWriteHandler(void* parameter, MmsDomain* domain, const char* variableId, int 
                             {
                                 da = ModelNode_getChildWithIdx(da, arrayIdx);
 
-                                if (da == NULL)
+                                if (da && componentId)
                                 {
-                                    printf("array idx not found\n");
-                                }
+                                    char compIdBuf[65];
 
-                                if (componentId)
-                                {
-                                    StringUtils_replace(componentId, '$', '.');
+                                    StringUtils_copyStringMax(compIdBuf, sizeof(compIdBuf), componentId);
 
-                                    da = ModelNode_getChild(da, componentId);
+                                    StringUtils_replace(compIdBuf, '$', '.');
 
-                                    if (da == NULL)
-                                    {
-                                        printf("component %s not found\n", componentId);
-                                    }
+                                    da = ModelNode_getChild(da, compIdBuf);
                                 }
                             }
 
                             if (da)
                             {
-                                if (da->modelType != DataAttributeModelType)
-                                {
-                                    printf("model node not a data attribute!\n");
-                                }
-                                else
+                                if (da->modelType == DataAttributeModelType)
                                 {
                                     ClientConnection clientConnection =
                                         private_IedServer_getClientConnectionByHandle(self->iedServer, connection);
@@ -3348,14 +3336,6 @@ mmsWriteHandler(void* parameter, MmsDomain* domain, const char* variableId, int 
                                 }
                             }
                         }
-                        else
-                        {
-                            printf("da %s no found\n", daRef);
-                        }
-                    }
-                    else
-                    {
-                        printf("ln %s not found\n", variableId);
                     }
                 }
             }
