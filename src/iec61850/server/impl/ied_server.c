@@ -948,7 +948,6 @@ IedServer_setLocalIpAddress(IedServer self, const char* localIpAddress)
     MmsServer_setLocalIpAddress(self->mmsServer, self->localIpAddress);
 }
 
-
 void
 IedServer_startThreadless(IedServer self, int tcpPort)
 {
