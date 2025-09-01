@@ -2808,6 +2808,71 @@ getAccessPolicyForFC(MmsMapping* self, FunctionalConstraint fc)
 }
 
 static MmsDataAccessError
+getWriteAccessResultForFCDO(MmsMapping* self, DataObject* dataObject, FunctionalConstraint fc, MmsValue* value, ClientConnection clientConnection)
+{
+    MmsDataAccessError result = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+
+    ModelNode* child = dataObject->firstChild;
+
+    int idx = 0;
+
+    while (child)
+    {
+        if (child->modelType == DataAttributeModelType)
+        {
+            DataAttribute* da = (DataAttribute*)child;
+
+            if (da->fc == fc)
+            {
+                MmsValue* subValue = MmsValue_getElement(value, idx);
+
+                if (subValue)
+                {
+                    if (self->writeAccessHandler)
+                    {
+                        result = self->writeAccessHandler(da, subValue, clientConnection, self->writeAccessHandlerParam);
+
+                        if (result == DATA_ACCESS_ERROR_SUCCESS)
+                        {
+                            IedServer_updateAttributeValue(self->iedServer, da, subValue);
+                        }
+
+                        if ((result != DATA_ACCESS_ERROR_SUCCESS) && (result != DATA_ACCESS_ERROR_SUCCESS))
+                        {
+                            return result;
+                        }
+                    }
+                }
+
+                idx++;
+            }
+        }
+        else if (child->modelType == DataObjectModelType)
+        {
+            DataObject* subDataObject = (DataObject*)child;
+
+            if (DataObject_hasFCData(subDataObject, fc))
+            {
+                MmsValue* subValue = MmsValue_getElement(value, idx);
+
+                result = getWriteAccessResultForFCDO(self, subDataObject, fc, subValue, clientConnection);
+
+                if ((result != DATA_ACCESS_ERROR_SUCCESS) && (result != DATA_ACCESS_ERROR_SUCCESS))
+                {
+                    return result;
+                }
+
+                idx++;
+            }
+        }
+
+        child = child->sibling;
+    }
+
+    return result;
+}
+
+static MmsDataAccessError
 mmsWriteHandler(void* parameter, MmsDomain* domain, const char* variableId, int arrayIdx, const char* componentId,
                 MmsValue* value, MmsServerConnection connection)
 {
@@ -3274,7 +3339,7 @@ mmsWriteHandler(void* parameter, MmsDomain* domain, const char* variableId, int 
             }
 
             /* Call global write access handler */
-            if (self->writeAccessHandler)
+            if (self->writeAccessHandler && (handlerFound == false))
             {
                 /* lookup data attribute */
                 IedModel* model = self->iedServer->model;
@@ -3313,27 +3378,24 @@ mmsWriteHandler(void* parameter, MmsDomain* domain, const char* variableId, int 
                                 }
                             }
 
+                            MmsDataAccessError handlerResult = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+
                             if (da)
                             {
+                                ClientConnection clientConnection =
+                                    private_IedServer_getClientConnectionByHandle(self->iedServer, connection);
+
                                 if (da->modelType == DataAttributeModelType)
                                 {
-                                    ClientConnection clientConnection =
-                                        private_IedServer_getClientConnectionByHandle(self->iedServer, connection);
-
-                                    MmsDataAccessError handlerResult =
+                                    handlerResult =
                                         self->writeAccessHandler((DataAttribute*)da, value, clientConnection, self->writeAccessHandlerParam);
-
-                                    if ((handlerResult == DATA_ACCESS_ERROR_SUCCESS) ||
-                                        (handlerResult == DATA_ACCESS_ERROR_SUCCESS_NO_UPDATE))
-                                    {
-                                        handlerFound = true;
-
-                                        if (handlerResult == DATA_ACCESS_ERROR_SUCCESS_NO_UPDATE)
-                                            updateValue = false;
-                                    }
-                                    else
-                                        return handlerResult;
                                 }
+                                else if (da->modelType == DataObjectModelType)
+                                {
+                                    handlerResult = getWriteAccessResultForFCDO(self, (DataObject*)da, fc, value, clientConnection);
+                                }
+
+                                return handlerResult;
                             }
                         }
                     }
