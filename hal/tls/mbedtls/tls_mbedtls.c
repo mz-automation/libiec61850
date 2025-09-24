@@ -3,7 +3,7 @@
  *
  * TLS API for TCP/IP protocol stacks
  *
- * Copyright 2017-2024 Michael Zillgith
+ * Copyright 2017-2025 Michael Zillgith
  *
  * Implementation of the TLS abstraction layer for mbedtls
  *
@@ -942,6 +942,8 @@ TLSSocket_create(Socket socket, TLSConfiguration configuration, bool storeClient
                 }
             }
         }
+
+        mbedtls_ssl_set_hostname(&(self->ssl), NULL);
 
         while( (ret = mbedtls_ssl_handshake(&(self->ssl)) ) != 0 )
         {
