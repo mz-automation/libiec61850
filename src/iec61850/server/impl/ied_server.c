@@ -1351,6 +1351,8 @@ IedServer_updateAttributeValue(IedServer self, DataAttribute* dataAttribute, Mms
         {
             /* Special treatment because of transient option */
             IedServer_updateBooleanAttributeValue(self, dataAttribute, MmsValue_getBoolean(value));
+
+            return;
         }
         else
         {
