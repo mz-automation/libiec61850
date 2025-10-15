@@ -103,7 +103,7 @@ struct sSVPublisher
 
 #if (CONFIG_IEC61850_L2_SMV == 1)
 static bool
-preparePacketBuffer(SVPublisher self, CommParameters* parameters, const char* interfaceId, bool useVlanTags)
+preparePacketBuffer(SVPublisher self, CommParameters* parameters, const char* interfaceId, bool useVlanTags, bool Simulation)
 {
     uint8_t defaultDstAddr[] = CONFIG_SV_DEFAULT_DST_ADDRESS;
 
@@ -186,7 +186,12 @@ preparePacketBuffer(SVPublisher self, CommParameters* parameters, const char* in
         self->buffer[bufPos++] = 0x08;
 
         /* Reserved1 */
-        self->buffer[bufPos++] = 0x00;
+        if (Simulation){
+            self->buffer[bufPos++] = 0x80;
+        }
+        else{            
+            self->buffer[bufPos++] = 0x00;
+        }
         self->buffer[bufPos++] = 0x00;
 
         /* Reserved2 */
@@ -314,7 +319,7 @@ SVPublisher_createRemote(RSession session, uint16_t appId)
 
 #if (CONFIG_IEC61850_L2_SMV == 1)
 SVPublisher
-SVPublisher_createEx(CommParameters* parameters, const char* interfaceId, bool useVlanTag)
+SVPublisher_createEx(CommParameters* parameters, const char* interfaceId, bool useVlanTag, bool useSimulation)
 {
     SVPublisher self = (SVPublisher)GLOBAL_CALLOC(1, sizeof(struct sSVPublisher));
 
@@ -323,7 +328,7 @@ SVPublisher_createEx(CommParameters* parameters, const char* interfaceId, bool u
         self->asduList = NULL;
         self->lengthField = 0;
 
-        if (preparePacketBuffer(self, parameters, interfaceId, useVlanTag) == false)
+        if (preparePacketBuffer(self, parameters, interfaceId, useVlanTag, useSimulation) == false)
         {
             SVPublisher_destroy(self);
             self = NULL;
