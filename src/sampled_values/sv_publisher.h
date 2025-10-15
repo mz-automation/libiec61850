@@ -89,11 +89,12 @@ SVPublisher_create(CommParameters* parameters, const char* interfaceId);
  * \param[in] parameters optional parameters for setting VLAN options and destination MAC address. Use NULL for default
  * values.
  * \param[in] useVlanTags enable(true)/disable(false) VLAN tagging
+ * \param[in] useSimulation enable(true)/disable(false) Simulation bit
  *
  * \return the new SV publisher instance.
  */
 LIB61850_API SVPublisher
-SVPublisher_createEx(CommParameters* parameters, const char* interfaceId, bool useVlanTag);
+SVPublisher_createEx(CommParameters* parameters, const char* interfaceId, bool useVlanTag, bool useSimulation);
 
 /**
  * \brief Create a new SVPublisher instance for R-SMV
