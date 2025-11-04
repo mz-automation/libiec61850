@@ -482,7 +482,7 @@ mmsServer_fileUploadTask(MmsServer self, MmsObtainFileTask task, int taskState)
                     task->state = MMS_FILE_UPLOAD_STATE_FILE_READ_SENT;
                     IsoConnection_sendMessage(task->connection->isoConnection, message);
 
-                    task->nextTimeout = Hal_getTimeInMs() + 2000; /* timeout 2000 ms */
+                    task->nextTimeout = Hal_getTimeInMs() + self->requestTimeoutMs;
                 }
 
                 break;
@@ -515,7 +515,7 @@ mmsServer_fileUploadTask(MmsServer self, MmsObtainFileTask task, int taskState)
 
                     IsoConnection_sendMessage(task->connection->isoConnection, message);
 
-                    task->nextTimeout = Hal_getTimeInMs() + 2000; /* timeout 2000 ms */
+                    task->nextTimeout = Hal_getTimeInMs() + self->requestTimeoutMs;
 
                 }
                 break;
@@ -783,7 +783,7 @@ mmsServer_handleObtainFileRequest(
 
                 MmsServer_releaseTransmitBuffer(connection->server);
 
-                task->nextTimeout = Hal_getTimeInMs() + 2000; /* timeout 2000 ms */
+                task->nextTimeout = Hal_getTimeInMs() + connection->server->requestTimeoutMs;
 
                 task->state = MMS_FILE_UPLOAD_STATE_FILE_OPEN_SENT;
             }

@@ -219,6 +219,9 @@
 /* maximum number of contemporary file upload tasks (obtainFile) per server instance */
 #define CONFIG_MMS_SERVER_MAX_GET_FILE_TASKS 5
 
+/* server side request timeout for file upload tasks (in milliseconds) */
+#define CONFIG_MMS_SERVER_REQUEST_TIMEOUT_MS 2000
+
 /* Definition of supported services */
 #define MMS_DEFAULT_PROFILE 1
 

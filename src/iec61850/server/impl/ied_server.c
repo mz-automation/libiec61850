@@ -938,6 +938,12 @@ IedServer_setFilestoreBasepath(IedServer self, const char* basepath)
 }
 
 void
+IedServer_setRequestTimeout(IedServer self, int32_t timeoutMs)
+{
+    MmsServer_setRequestTimeout(self->mmsServer, timeoutMs);
+}
+
+void
 IedServer_setLocalIpAddress(IedServer self, const char* localIpAddress)
 {
     if (self->localIpAddress)

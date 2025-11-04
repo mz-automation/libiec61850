@@ -105,8 +105,8 @@ struct sMmsObtainFileTask {
 
 #endif /* (MMS_OBTAIN_FILE_SERVICE == 1) */
 
-struct sMmsServer {
-
+struct sMmsServer
+{
     LinkedList /*<IsoServer>*/ isoServerList;
 
     MmsDevice* device;
@@ -177,6 +177,8 @@ struct sMmsServer {
     void* getFileCompleteHandlerParameter;
 
     struct sMmsObtainFileTask fileUploadTasks[CONFIG_MMS_SERVER_MAX_GET_FILE_TASKS];
+
+    int32_t requestTimeoutMs; /* request timeout in milliseconds */
 #endif
 
 #if (MMS_FILE_SERVICE == 1)

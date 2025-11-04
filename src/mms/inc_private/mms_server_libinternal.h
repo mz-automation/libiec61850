@@ -205,4 +205,13 @@ MmsServer_stopListeningThreadless(MmsServer self);
 LIB61850_INTERNAL const char*
 MmsServer_getFilesystemBasepath(MmsServer self);
 
+/**
+ * \brief Set the request timeout for the server (used for obtain file service)
+ *
+ * \param self the MmsServer instance to operate on
+ * \param timeoutMs the timeout value in milliseconds
+ */
+LIB61850_INTERNAL void
+MmsServer_setRequestTimeout(MmsServer self, int32_t timeoutMs);
+
 #endif /* MMS_SERVER_LIBINTERNAL_H_ */

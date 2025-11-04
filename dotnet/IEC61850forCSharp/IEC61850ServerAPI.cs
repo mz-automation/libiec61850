@@ -2558,6 +2558,9 @@ namespace IEC61850
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern void IedServer_setListObjectsAccessHandler(IntPtr self, IedServer_ListObjectsAccessHandler handler, IntPtr parameter);
 
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedServer_setRequestTimeout(IntPtr self, Int32 timeoutMs);
+
             /// <summary>
             /// Set a handler to control read and write access to control blocks and logs
             /// </summary>
@@ -3541,6 +3544,15 @@ namespace IEC61850
             public int GetNumberOfOpenConnections()
             {
                 return IedServer_getNumberOfOpenConnections(self);
+            }
+
+            /// <summary>
+            /// Set the request timeout for the server (used for obtain file service)
+            /// </summary>
+            /// <param name="timeoutMs">request timeout in milliseconds</param>
+            public void SetRequestTimeout(int timeoutMs)
+            {
+                IedServer_setRequestTimeout(self, timeoutMs);
             }
 
             private ControlHandlerInfo GetControlHandlerInfo(DataObject controlObject)

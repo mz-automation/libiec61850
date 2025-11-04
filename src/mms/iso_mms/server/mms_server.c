@@ -28,6 +28,10 @@
 #include "mms_server_internal.h"
 #include "iso_server_private.h"
 
+#ifndef CONFIG_MMS_SERVER_REQUEST_TIMEOUT_MS
+#define CONFIG_MMS_SERVER_REQUEST_TIMEOUT_MS 2000
+#endif
+
 static Map
 createValueCaches(MmsDevice* device)
 {
@@ -116,6 +120,8 @@ MmsServer_create(MmsDevice* device, TLSConfiguration tlsConfiguration)
 
 #if (MMS_OBTAIN_FILE_SERVICE == 1)
         {
+            self->requestTimeoutMs = CONFIG_MMS_SERVER_REQUEST_TIMEOUT_MS;
+
             int i;
 
             for (i = 0; i < CONFIG_MMS_SERVER_MAX_GET_FILE_TASKS; i++)
@@ -918,6 +924,14 @@ MmsServer_getFilesystemBasepath(MmsServer self)
         return CONFIG_VIRTUAL_FILESTORE_BASEPATH;
 #else
     return CONFIG_VIRTUAL_FILESTORE_BASEPATH;
+#endif
+}
+
+void
+MmsServer_setRequestTimeout(MmsServer self, int32_t timeoutMs)
+{
+#if (MMS_OBTAIN_FILE_SERVICE == 1)
+    self->requestTimeoutMs = timeoutMs;
 #endif
 }
 

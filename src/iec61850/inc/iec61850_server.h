@@ -3,7 +3,7 @@
  *
  *  IEC 61850 server API for libiec61850.
  *
- *  Copyright 2013-2024 Michael Zillgith
+ *  Copyright 2013-2025 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -539,6 +539,15 @@ IedServer_setServerIdentity(IedServer self, const char* vendor, const char* mode
  */
 LIB61850_API void
 IedServer_setFilestoreBasepath(IedServer self, const char* basepath);
+
+/**
+ * \brief Set the request timeout for the server (used for obtain file service)
+ *
+ * \param self the IedServer instance to operate on
+ * \param timeoutMs the timeout value in milliseconds
+ */
+LIB61850_API void
+IedServer_setRequestTimeout(IedServer self, int32_t timeoutMs);
 
 /**
  * \brief Assign a \ref LogStorage instance to a log reference

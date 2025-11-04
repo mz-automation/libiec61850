@@ -5,12 +5,12 @@
  *  - How to control how files file services can be used
  */
 
-#include "iec61850_server.h"
 #include "hal_thread.h"
-#include <signal.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include "iec61850_server.h"
 #include <math.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "static_model.h"
 
@@ -24,7 +24,7 @@ sigint_handler(int signalId)
 }
 
 static void
-connectionHandler (IedServer self, ClientConnection connection, bool connected, void* parameter)
+connectionHandler(IedServer self, ClientConnection connection, bool connected, void* parameter)
 {
     if (connected)
         printf("Connection opened\n");
@@ -33,8 +33,8 @@ connectionHandler (IedServer self, ClientConnection connection, bool connected, 
 }
 
 static MmsError
-fileAccessHandler (void* parameter, MmsServerConnection connection, MmsFileServiceType service,
-                                          const char* localFilename, const char* otherFilename)
+fileAccessHandler(void* parameter, MmsServerConnection connection, MmsFileServiceType service,
+                  const char* localFilename, const char* otherFilename)
 {
     printf("fileAccessHandler: service = %i, local-file: %s other-file: %s\n", service, localFilename, otherFilename);
 
@@ -43,7 +43,8 @@ fileAccessHandler (void* parameter, MmsServerConnection connection, MmsFileServi
         return MMS_ERROR_FILE_FILE_ACCESS_DENIED;
 
     /* Don't allow client to delete file "IEDSERVER.BIN" */
-    if (service == MMS_FILE_ACCESS_TYPE_DELETE) {
+    if (service == MMS_FILE_ACCESS_TYPE_DELETE)
+    {
         if (strcmp(localFilename, "IEDSERVER.BIN") == 0)
             return MMS_ERROR_FILE_FILE_ACCESS_DENIED;
     }
@@ -57,7 +58,8 @@ main(int argc, char** argv)
 {
     int tcpPort = 102;
 
-    if (argc > 1) {
+    if (argc > 1)
+    {
         tcpPort = atoi(argv[1]);
     }
 
@@ -70,15 +72,18 @@ main(int argc, char** argv)
 
     IedServer_setFilestoreBasepath(iedServer, "./vmd-filestore/");
 
+    IedServer_setRequestTimeout(iedServer, 5000);
+
     /* Set a callback handler to control file accesses */
     MmsServer_installFileAccessHandler(mmsServer, fileAccessHandler, NULL);
 
-    IedServer_setConnectionIndicationHandler(iedServer, (IedConnectionIndicationHandler) connectionHandler, NULL);
+    IedServer_setConnectionIndicationHandler(iedServer, (IedConnectionIndicationHandler)connectionHandler, NULL);
 
     /* MMS server will be instructed to start listening to client connections. */
     IedServer_start(iedServer, tcpPort);
 
-    if (!IedServer_isRunning(iedServer)) {
+    if (!IedServer_isRunning(iedServer))
+    {
         printf("Starting server failed! Exit.\n");
         IedServer_destroy(iedServer);
         exit(-1);
@@ -88,16 +93,14 @@ main(int argc, char** argv)
 
     signal(SIGINT, sigint_handler);
 
-
     while (running)
         Thread_sleep(100);
-
 
     /* stop MMS server - close TCP server socket and all client sockets */
     IedServer_stop(iedServer);
 
     /* Cleanup - free all resources */
     IedServer_destroy(iedServer);
-    return 0;
 
+    return 0;
 } /* main() */
