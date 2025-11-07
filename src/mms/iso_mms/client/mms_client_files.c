@@ -21,18 +21,18 @@
  *  See COPYING file for the complete license text.
  */
 
-#include "libiec61850_platform_includes.h"
-#include "stack_config.h"
-#include "mms_common.h"
-#include "mms_client_connection.h"
-#include "hal_thread.h"
 #include "byte_buffer.h"
+#include "hal_thread.h"
+#include "libiec61850_platform_includes.h"
+#include "mms_client_connection.h"
+#include "mms_common.h"
+#include "stack_config.h"
 
-#include "mms_client_internal.h"
-#include "ber_encoder.h"
 #include "ber_decode.h"
+#include "ber_encoder.h"
 #include "ber_integer.h"
 #include "conversions.h"
+#include "mms_client_internal.h"
 
 #if (MMS_OBTAIN_FILE_SERVICE == 1)
 
@@ -43,8 +43,10 @@ getFreeFrsm(MmsConnection connection)
 
     MmsFileReadStateMachine* freeFrsm = NULL;
 
-    for (i = 0; i < CONFIG_MMS_MAX_NUMBER_OF_OPEN_FILES_PER_CONNECTION; i++) {
-        if (connection->frsms[i].fileHandle == NULL) {
+    for (i = 0; i < CONFIG_MMS_MAX_NUMBER_OF_OPEN_FILES_PER_CONNECTION; i++)
+    {
+        if (connection->frsms[i].fileHandle == NULL)
+        {
             freeFrsm = &(connection->frsms[i]);
             break;
         }
@@ -60,9 +62,12 @@ getFrsm(MmsConnection connection, int32_t frsmId)
 
     MmsFileReadStateMachine* frsm = NULL;
 
-    for (i = 0; i < CONFIG_MMS_MAX_NUMBER_OF_OPEN_FILES_PER_CONNECTION; i++) {
-        if (connection->frsms[i].fileHandle != NULL) {
-            if (connection->frsms[i].frsmId == frsmId) {
+    for (i = 0; i < CONFIG_MMS_MAX_NUMBER_OF_OPEN_FILES_PER_CONNECTION; i++)
+    {
+        if (connection->frsms[i].fileHandle != NULL)
+        {
+            if (connection->frsms[i].frsmId == frsmId)
+            {
                 frsm = &(connection->frsms[i]);
                 break;
             }
@@ -82,24 +87,25 @@ getNextFrsmId(MmsConnection connection)
 }
 
 void
-mmsClient_handleFileOpenRequest(
-    MmsConnection connection,
-    uint8_t* buffer, int bufPos, int maxBufPos,
-    uint32_t invokeId, ByteBuffer* response)
+mmsClient_handleFileOpenRequest(MmsConnection connection, uint8_t* buffer, int bufPos, int maxBufPos, uint32_t invokeId,
+                                ByteBuffer* response)
 {
     char filename[256];
     bool hasFileName = false;
     uint32_t filePosition = 0;
 
-    while (bufPos < maxBufPos) {
+    while (bufPos < maxBufPos)
+    {
         uint8_t tag = buffer[bufPos++];
         int length;
 
         bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
 
-        if (bufPos < 0) goto exit_reject_invalid_pdu;
+        if (bufPos < 0)
+            goto exit_reject_invalid_pdu;
 
-        switch(tag) {
+        switch (tag)
+        {
         case 0xa0: /* filename */
 
             if (!mmsMsg_parseFileName(filename, buffer, &bufPos, bufPos + length, invokeId, response))
@@ -123,24 +129,29 @@ mmsClient_handleFileOpenRequest(
         }
     }
 
-    if (hasFileName) {
+    if (hasFileName)
+    {
 
-        if (mmsMsg_isFilenameSave(filename) == false) {
+        if (mmsMsg_isFilenameSave(filename) == false)
+        {
             /* potential attack */
 
             if (DEBUG_MMS_CLIENT)
                 printf("MMS_CLIENT: client provided unsave filename -> rejected\n");
 
-             mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_FILE_NON_EXISTENT);
+            mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_FILE_NON_EXISTENT);
         }
-        else {
+        else
+        {
             MmsFileReadStateMachine* frsm = getFreeFrsm(connection);
 
-            if (frsm != NULL) {
+            if (frsm != NULL)
+            {
 
                 MmsOutstandingCall obtainFileCall = mmsClient_getMatchingObtainFileRequest(connection, filename);
 
-                if (obtainFileCall) {
+                if (obtainFileCall)
+                {
 
                     if (DEBUG_MMS_CLIENT)
                         printf("MMS_CLIENT: file open is matching obtain file request for file %s\n", filename);
@@ -148,21 +159,22 @@ mmsClient_handleFileOpenRequest(
                     obtainFileCall->timeout = Hal_getTimeInMs() + connection->requestTimeout;
                 }
 
-                FileHandle fileHandle = mmsMsg_openFile(MmsConnection_getFilestoreBasepath(connection), filename, false);
+                FileHandle fileHandle =
+                    mmsMsg_openFile(MmsConnection_getFilestoreBasepath(connection), filename, false);
 
-                if (fileHandle != NULL) {
+                if (fileHandle != NULL)
+                {
 
                     frsm->fileHandle = fileHandle;
                     frsm->readPosition = filePosition;
                     frsm->frsmId = getNextFrsmId(connection);
                     frsm->obtainRequest = obtainFileCall;
 
-                    mmsMsg_createFileOpenResponse(MmsConnection_getFilestoreBasepath(connection),
-                            invokeId, response, filename, frsm);
+                    mmsMsg_createFileOpenResponse(MmsConnection_getFilestoreBasepath(connection), invokeId, response,
+                                                  filename, frsm);
                 }
                 else
                     mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_FILE_NON_EXISTENT);
-
             }
             else
                 mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_RESOURCE_OTHER);
@@ -182,11 +194,8 @@ exit_reject_invalid_pdu:
 }
 
 void
-mmsClient_handleFileReadRequest(
-    MmsConnection connection,
-    uint8_t* buffer, int bufPos, int maxBufPos,
-    uint32_t invokeId,
-    ByteBuffer* response)
+mmsClient_handleFileReadRequest(MmsConnection connection, uint8_t* buffer, int bufPos, int maxBufPos, uint32_t invokeId,
+                                ByteBuffer* response)
 {
     int32_t frsmId = BerDecoder_decodeInt32(buffer, maxBufPos - bufPos, bufPos);
 
@@ -195,7 +204,8 @@ mmsClient_handleFileReadRequest(
 
     MmsFileReadStateMachine* frsm = getFrsm(connection, frsmId);
 
-    if (frsm) {
+    if (frsm)
+    {
         if (frsm->obtainRequest)
             frsm->obtainRequest->timeout = Hal_getTimeInMs() + connection->requestTimeout;
 
@@ -211,21 +221,20 @@ mmsClient_handleFileReadRequest(
 }
 
 void
-mmsClient_handleFileCloseRequest(
-    MmsConnection connection,
-    uint8_t* buffer, int bufPos, int maxBufPos,
-    uint32_t invokeId,
-    ByteBuffer* response)
+mmsClient_handleFileCloseRequest(MmsConnection connection, uint8_t* buffer, int bufPos, int maxBufPos,
+                                 uint32_t invokeId, ByteBuffer* response)
 {
     int32_t frsmId = BerDecoder_decodeInt32(buffer, maxBufPos - bufPos, bufPos);
 
     MmsFileReadStateMachine* frsm = getFrsm(connection, frsmId);
 
-    if (frsm) {
+    if (frsm)
+    {
         if (frsm->obtainRequest)
             frsm->obtainRequest->timeout = Hal_getTimeInMs() + connection->requestTimeout;
 
-        if(frsm->fileHandle){
+        if (frsm->fileHandle)
+        {
             FileSystem_closeFile(frsm->fileHandle);
             frsm->fileHandle = NULL;
         }
@@ -243,14 +252,15 @@ mmsClient_closeOutstandingOpenFiles(MmsConnection connection)
 {
     int i;
 
-    for (i = 0; i < CONFIG_MMS_MAX_NUMBER_OF_OPEN_FILES_PER_CONNECTION; i++) {
-        if (connection->frsms[i].fileHandle != NULL) {
+    for (i = 0; i < CONFIG_MMS_MAX_NUMBER_OF_OPEN_FILES_PER_CONNECTION; i++)
+    {
+        if (connection->frsms[i].fileHandle != NULL)
+        {
             FileSystem_closeFile(connection->frsms[i].fileHandle);
             connection->frsms[i].fileHandle = NULL;
         }
     }
 }
-
 
 #endif /* (MMS_OBTAIN_FILE_SERVICE == 1) */
 
@@ -266,9 +276,11 @@ mmsClient_createFileOpenRequest(uint32_t invokeId, ByteBuffer* request, const ch
 
     uint32_t fileNameSeqSize = fileNameSize;
 
-    uint32_t fileOpenRequestSize = 1 + BerEncoder_determineLengthSize(fileNameSeqSize) + fileNameSeqSize + 2 + BerEncoder_UInt32determineEncodedSize(initialPosition);
+    uint32_t fileOpenRequestSize = 1 + BerEncoder_determineLengthSize(fileNameSeqSize) + fileNameSeqSize + 2 +
+                                   BerEncoder_UInt32determineEncodedSize(initialPosition);
 
-    uint32_t confirmedRequestPduSize = 2  + invokeIdSize + 2 + BerEncoder_determineLengthSize(fileOpenRequestSize) + fileOpenRequestSize;
+    uint32_t confirmedRequestPduSize =
+        2 + invokeIdSize + 2 + BerEncoder_determineLengthSize(fileOpenRequestSize) + fileOpenRequestSize;
 
     int bufPos = 0;
     uint8_t* buffer = request->buffer;
@@ -283,7 +295,7 @@ mmsClient_createFileOpenRequest(uint32_t invokeId, ByteBuffer* request, const ch
     bufPos = BerEncoder_encodeLength(fileOpenRequestSize, buffer, bufPos);
 
     bufPos = BerEncoder_encodeTL(0xa0, fileNameSeqSize, buffer, bufPos);
-    bufPos = BerEncoder_encodeOctetString(0x19, (uint8_t*) fileName, fileNameStringSize, buffer, bufPos);
+    bufPos = BerEncoder_encodeOctetString(0x19, (uint8_t*)fileName, fileNameStringSize, buffer, bufPos);
 
     bufPos = BerEncoder_encodeUInt32WithTL(0x81, initialPosition, buffer, bufPos);
 
@@ -300,7 +312,8 @@ mmsClient_createFileDeleteRequest(uint32_t invokeId, ByteBuffer* request, const 
 
     uint32_t fileDeleteRequestSize = fileNameSize;
 
-    uint32_t confirmedRequestPduSize = 1 + 2 + invokeIdSize + 1 + BerEncoder_determineLengthSize(fileDeleteRequestSize) + fileDeleteRequestSize;
+    uint32_t confirmedRequestPduSize =
+        1 + 2 + invokeIdSize + 1 + BerEncoder_determineLengthSize(fileDeleteRequestSize) + fileDeleteRequestSize;
 
     int bufPos = 0;
     uint8_t* buffer = request->buffer;
@@ -314,7 +327,7 @@ mmsClient_createFileDeleteRequest(uint32_t invokeId, ByteBuffer* request, const 
     buffer[bufPos++] = 0x4c;
 
     bufPos = BerEncoder_encodeLength(fileDeleteRequestSize, buffer, bufPos);
-    bufPos = BerEncoder_encodeOctetString(0x19, (uint8_t*) fileName, fileNameStringSize, buffer, bufPos);
+    bufPos = BerEncoder_encodeOctetString(0x19, (uint8_t*)fileName, fileNameStringSize, buffer, bufPos);
 
     request->size = bufPos;
 }
@@ -334,7 +347,7 @@ mmsClient_createFileReadRequest(uint32_t invokeId, ByteBuffer* request, int32_t 
 
     uint32_t frsmIdSize = frsmIdBer.size;
 
-    uint32_t confirmedRequestPduSize = 1 + 2 + 2  + invokeIdSize + frsmIdSize;
+    uint32_t confirmedRequestPduSize = 1 + 2 + 2 + invokeIdSize + frsmIdSize;
 
     int bufPos = 0;
     uint8_t* buffer = request->buffer;
@@ -356,24 +369,27 @@ encodeFileSpecification(uint8_t tag, const char* fileSpecification, uint8_t* buf
     uint32_t fileNameStringSize = strlen(fileSpecification);
     uint32_t fileNameSeqSize = 1 + BerEncoder_determineLengthSize(fileNameStringSize) + fileNameStringSize;
 
-    if (buffer != NULL) {
+    if (buffer != NULL)
+    {
 
         bufPos = BerEncoder_encodeTL(tag, fileNameSeqSize, buffer, bufPos);
-        bufPos = BerEncoder_encodeOctetString(0x19, (uint8_t*) fileSpecification, fileNameStringSize, buffer, bufPos);
+        bufPos = BerEncoder_encodeOctetString(0x19, (uint8_t*)fileSpecification, fileNameStringSize, buffer, bufPos);
 
         return bufPos;
     }
-    else {
+    else
+    {
         return fileNameSeqSize + 1 + BerEncoder_determineLengthSize(fileNameSeqSize);
     }
 }
 
 void
-mmsClient_createFileDirectoryRequest(uint32_t invokeId, ByteBuffer* request, const char* fileSpecification, const char* continueAfter)
+mmsClient_createFileDirectoryRequest(uint32_t invokeId, ByteBuffer* request, const char* fileSpecification,
+                                     const char* continueAfter)
 {
     uint32_t invokeIdSize = BerEncoder_UInt32determineEncodedSize(invokeId);
 
-    uint32_t confirmedRequestPduSize = 1 + 2 + 1  + invokeIdSize;
+    uint32_t confirmedRequestPduSize = 1 + 2 + 1 + invokeIdSize;
 
     uint32_t parameterSize = 0;
 
@@ -407,7 +423,8 @@ mmsClient_createFileDirectoryRequest(uint32_t invokeId, ByteBuffer* request, con
 }
 
 void
-mmsClient_createFileRenameRequest(uint32_t invokeId, ByteBuffer* request, const char* currentFileName, const char* newFileName)
+mmsClient_createFileRenameRequest(uint32_t invokeId, ByteBuffer* request, const char* currentFileName,
+                                  const char* newFileName)
 {
     uint32_t invokeIdSize = BerEncoder_UInt32determineEncodedSize(invokeId);
 
@@ -417,7 +434,8 @@ mmsClient_createFileRenameRequest(uint32_t invokeId, ByteBuffer* request, const 
 
     parameterSize += encodeFileSpecification(0xa1, newFileName, NULL, 0);
 
-    uint32_t confirmedRequestPduSize = 2  + invokeIdSize + 2 + BerEncoder_determineLengthSize(parameterSize) + parameterSize;
+    uint32_t confirmedRequestPduSize =
+        2 + invokeIdSize + 2 + BerEncoder_determineLengthSize(parameterSize) + parameterSize;
 
     int bufPos = 0;
     uint8_t* buffer = request->buffer;
@@ -439,7 +457,8 @@ mmsClient_createFileRenameRequest(uint32_t invokeId, ByteBuffer* request, const 
 }
 
 void
-mmsClient_createObtainFileRequest(uint32_t invokeId, ByteBuffer* request, const char* sourceFile, const char* destinationFile)
+mmsClient_createObtainFileRequest(uint32_t invokeId, ByteBuffer* request, const char* sourceFile,
+                                  const char* destinationFile)
 {
     uint32_t invokeIdSize = BerEncoder_UInt32determineEncodedSize(invokeId);
 
@@ -449,7 +468,8 @@ mmsClient_createObtainFileRequest(uint32_t invokeId, ByteBuffer* request, const 
 
     parameterSize += encodeFileSpecification(0xa1, destinationFile, NULL, 0);
 
-    uint32_t confirmedRequestPduSize = 2  + invokeIdSize + 2 + BerEncoder_determineLengthSize(parameterSize) + parameterSize;
+    uint32_t confirmedRequestPduSize =
+        2 + invokeIdSize + 2 + BerEncoder_determineLengthSize(parameterSize) + parameterSize;
 
     int bufPos = 0;
     uint8_t* buffer = request->buffer;
@@ -475,7 +495,8 @@ parseFileAttributes(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t* fileSi
 {
     int endPos = maxBufPos;
 
-    while (bufPos < endPos) {
+    while (bufPos < endPos)
+    {
         uint8_t tag = buffer[bufPos++];
         int length;
 
@@ -483,26 +504,27 @@ parseFileAttributes(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t* fileSi
         if (bufPos < 0)
             return false;
 
-        switch (tag) {
+        switch (tag)
+        {
         case 0x80: /* sizeOfFile */
             if (fileSize != NULL)
                 *fileSize = BerDecoder_decodeUint32(buffer, length, bufPos);
             break;
         case 0x81: /* lastModified */
+        {
+            if (lastModified != NULL)
             {
-                if (lastModified != NULL)
-                {
-                    char gtString[40];
+                char gtString[40];
 
-                    if (length > sizeof(gtString) - 1)
-                        return false; /* lastModified string too long */
+                if (length > sizeof(gtString) - 1)
+                    return false; /* lastModified string too long */
 
-                    memcpy(gtString, buffer + bufPos, length);
-                    gtString[length] = 0;
-                    *lastModified = Conversions_generalizedTimeToMsTime(gtString);
-                }
+                memcpy(gtString, buffer + bufPos, length);
+                gtString[length] = 0;
+                *lastModified = Conversions_generalizedTimeToMsTime(gtString);
             }
-            break;
+        }
+        break;
         case 0x00: /* indefinite length end tag -> ignore */
             break;
         default:
@@ -516,7 +538,8 @@ parseFileAttributes(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t* fileSi
 }
 
 static bool
-parseDirectoryEntry(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t invokeId, MmsConnection_FileDirectoryHandler handler, void* parameter)
+parseDirectoryEntry(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t invokeId,
+                    MmsConnection_FileDirectoryHandler handler, void* parameter)
 {
     char fileNameMemory[400];
     char* filename = NULL;
@@ -536,7 +559,8 @@ parseDirectoryEntry(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t invokeI
             return false;
         }
 
-        switch (tag) {
+        switch (tag)
+        {
         case 0xa0: /* file-name */
 
             filename = fileNameMemory;
@@ -589,7 +613,7 @@ parseDirectoryEntry(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t invokeI
 
 static bool
 parseListOfDirectoryEntries(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t invokeId,
-        MmsConnection_FileDirectoryHandler handler, void* parameter)
+                            MmsConnection_FileDirectoryHandler handler, void* parameter)
 {
     uint8_t tag = buffer[bufPos++];
 
@@ -600,17 +624,21 @@ parseListOfDirectoryEntries(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t
 
     bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
 
-    if (bufPos < 0) return false;
+    if (bufPos < 0)
+        return false;
 
     int endPos = bufPos + length;
 
-    while (bufPos < endPos) {
+    while (bufPos < endPos)
+    {
         tag = buffer[bufPos++];
 
         bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
-        if (bufPos < 0) return false;
+        if (bufPos < 0)
+            return false;
 
-        switch (tag) {
+        switch (tag)
+        {
         case 0x30: /* Sequence */
             parseDirectoryEntry(buffer, bufPos, bufPos + length, invokeId, handler, parameter);
             bufPos += length;
@@ -629,7 +657,8 @@ parseListOfDirectoryEntries(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t
 }
 
 bool
-mmsClient_parseFileDirectoryResponse(ByteBuffer* response, int bufPos, uint32_t invokeId, MmsConnection_FileDirectoryHandler handler, void* parameter)
+mmsClient_parseFileDirectoryResponse(ByteBuffer* response, int bufPos, uint32_t invokeId,
+                                     MmsConnection_FileDirectoryHandler handler, void* parameter)
 {
     uint8_t* buffer = response->buffer;
     int maxBufPos = response->size;
@@ -637,7 +666,8 @@ mmsClient_parseFileDirectoryResponse(ByteBuffer* response, int bufPos, uint32_t 
 
     uint8_t tag = buffer[bufPos++];
 
-    if (tag != 0xbf) {
+    if (tag != 0xbf)
+    {
         if (DEBUG_MMS_CLIENT)
             printf("mmsClient_parseFileDirectoryResponse: unknown tag %02x\n", tag);
         return false;
@@ -645,26 +675,31 @@ mmsClient_parseFileDirectoryResponse(ByteBuffer* response, int bufPos, uint32_t 
 
     tag = buffer[bufPos++];
 
-    if (tag != 0x4d) {
+    if (tag != 0x4d)
+    {
         if (DEBUG_MMS_CLIENT)
             printf("mmsClient_parseFileDirectoryResponse: unknown tag %02x\n", tag);
         return false;
     }
 
     bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
-    if (bufPos < 0) return false;
+    if (bufPos < 0)
+        return false;
 
     int endPos = bufPos + length;
 
     bool moreFollows = false;
 
-    while (bufPos < endPos) {
+    while (bufPos < endPos)
+    {
         tag = buffer[bufPos++];
 
         bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
-        if (bufPos < 0) return false;
+        if (bufPos < 0)
+            return false;
 
-        switch (tag) {
+        switch (tag)
+        {
         case 0xa0: /* listOfDirectoryEntries */
             parseListOfDirectoryEntries(buffer, bufPos, bufPos + length, invokeId, handler, parameter);
 
@@ -690,13 +725,15 @@ mmsClient_parseFileDirectoryResponse(ByteBuffer* response, int bufPos, uint32_t 
 }
 
 bool
-mmsMsg_parseFileOpenResponse(uint8_t* buffer, int bufPos, int maxBufPos, int32_t* frsmId, uint32_t* fileSize, uint64_t* lastModified)
+mmsMsg_parseFileOpenResponse(uint8_t* buffer, int bufPos, int maxBufPos, int32_t* frsmId, uint32_t* fileSize,
+                             uint64_t* lastModified)
 {
     int length;
 
     uint8_t tag = buffer[bufPos++];
 
-    if (tag != 0xbf) {
+    if (tag != 0xbf)
+    {
         if (DEBUG_MMS_CLIENT)
             printf("MMS: mmsClient_parseFileOpenResponse: unknown tag %02x\n", tag);
         return false;
@@ -704,7 +741,8 @@ mmsMsg_parseFileOpenResponse(uint8_t* buffer, int bufPos, int maxBufPos, int32_t
 
     tag = buffer[bufPos++];
 
-    if (tag != 0x48) {
+    if (tag != 0x48)
+    {
         if (DEBUG_MMS_CLIENT)
             printf("MMS_CLIENT: mmsClient_parseFileOpenResponse: unknown tag %02x\n", tag);
         return false;
@@ -716,14 +754,16 @@ mmsMsg_parseFileOpenResponse(uint8_t* buffer, int bufPos, int maxBufPos, int32_t
 
     int endPos = bufPos + length;
 
-    while (bufPos < endPos) {
+    while (bufPos < endPos)
+    {
         tag = buffer[bufPos++];
 
         bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
         if (bufPos < 0)
             return false;
 
-        switch (tag) {
+        switch (tag)
+        {
         case 0x80: /* frsmId */
             *frsmId = BerDecoder_decodeInt32(buffer, length, bufPos);
 
@@ -748,7 +788,8 @@ mmsMsg_parseFileOpenResponse(uint8_t* buffer, int bufPos, int maxBufPos, int32_t
 }
 
 bool
-mmsMsg_parseFileReadResponse(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t invokeId, int32_t frsmId, bool* moreFollows, MmsConnection_FileReadHandler handler, void* handlerParameter)
+mmsMsg_parseFileReadResponse(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t invokeId, int32_t frsmId,
+                             bool* moreFollows, MmsConnection_FileReadHandler handler, void* handlerParameter)
 {
     int length;
     uint8_t* data = NULL;
@@ -756,7 +797,8 @@ mmsMsg_parseFileReadResponse(uint8_t* buffer, int bufPos, int maxBufPos, uint32_
 
     uint8_t tag = buffer[bufPos++];
 
-    if (tag != 0xbf) {
+    if (tag != 0xbf)
+    {
         if (DEBUG_MMS_CLIENT)
             printf("MMS_CLIENT/SERVER: mmsClient_parseFileReadResponse: unknown tag %02x\n", tag);
         return false;
@@ -766,7 +808,8 @@ mmsMsg_parseFileReadResponse(uint8_t* buffer, int bufPos, int maxBufPos, uint32_
 
     *moreFollows = true;
 
-    if (tag != 0x49) {
+    if (tag != 0x49)
+    {
         if (DEBUG_MMS_CLIENT)
             printf("MMS_CLIENT/SERVER: mmsClient_parseFileReadResponse: unknown tag %02x\n", tag);
         return false;
@@ -778,14 +821,16 @@ mmsMsg_parseFileReadResponse(uint8_t* buffer, int bufPos, int maxBufPos, uint32_
 
     int endPos = bufPos + length;
 
-    while (bufPos < endPos) {
+    while (bufPos < endPos)
+    {
         tag = buffer[bufPos++];
 
         bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
         if (bufPos < 0)
             return false;
 
-        switch (tag) {
+        switch (tag)
+        {
         case 0x80: /* fileData */
             data = buffer + bufPos;
             dataLen = length;
@@ -828,7 +873,7 @@ mmsClient_createFileCloseRequest(uint32_t invokeId, ByteBuffer* request, int32_t
 
     BerInteger_setInt32(&frsmIdBer, frsmId);
 
-    uint32_t confirmedRequestPduSize = 1 + 2 + 2  + invokeIdSize + frsmIdBer.size;
+    uint32_t confirmedRequestPduSize = 1 + 2 + 2 + invokeIdSize + frsmIdBer.size;
 
     int bufPos = 0;
     uint8_t* buffer = request->buffer;
