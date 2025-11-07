@@ -151,6 +151,24 @@ MmsConnection_setRawMessageHandler(MmsConnection self, MmsRawMessageHandler hand
 LIB61850_API void
 MmsConnection_setFilestoreBasepath(MmsConnection self, const char* basepath);
 
+/* Test-only API: available only when LIB61850_ENABLE_TEST_API is defined at build time */
+#ifdef LIB61850_ENABLE_TEST_API
+/**
+ * \brief (TEST ONLY) Set an artificial delay (in ms) for sending file-read responses (OBTAIN-FILE upload path)
+ *
+ * This is intended for testing timeout behavior. When set > 0 the client waits the specified
+ * time before replying to a file-read-request from the server, potentially triggering the server's
+ * request timeout.
+ *
+ * Requires CMake option LIB61850_ENABLE_TEST_API=ON.
+ *
+ * \param self MmsConnection instance to operate on
+ * \param delayMs delay in milliseconds (0 disables)
+ */
+LIB61850_TEST_API void
+MmsConnection_setFileReadArtificialDelay(MmsConnection self, uint32_t delayMs);
+#endif
+
 /**
  * \brief Set the request timeout in ms for this connection
  *

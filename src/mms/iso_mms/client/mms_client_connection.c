@@ -1649,6 +1649,10 @@ MmsConnection_createInternal(TLSConfiguration tlsConfig, bool createThread)
         self->connectionHandlingThread = NULL;
         self->connectionThreadRunning = false;
 #endif
+
+#if defined(LIB61850_ENABLE_TEST_API)
+        self->fileReadArtificialDelayMs = 0; /* default no artificial delay */
+#endif
     }
 
     return self;
@@ -1736,6 +1740,19 @@ MmsConnection_setFilestoreBasepath(MmsConnection self, const char* basepath)
 #endif
 #endif
 }
+
+#if defined(LIB61850_ENABLE_TEST_API)
+void
+MmsConnection_setFileReadArtificialDelay(MmsConnection self, uint32_t delayMs)
+{
+#if (MMS_OBTAIN_FILE_SERVICE == 1)
+    self->fileReadArtificialDelayMs = delayMs;
+#else
+    (void)self;
+    (void)delayMs;
+#endif
+}
+#endif
 
 char*
 MmsConnection_getFilestoreBasepath(MmsConnection self)

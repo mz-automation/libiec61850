@@ -1,3 +1,9 @@
+Unreleased
+---------
+
+New features and improvements:
+
+- Added optional test-only instrumentation build option `LIB61850_ENABLE_TEST_API` (OFF by default). When enabled exports `MmsConnection_setFileReadArtificialDelay` (marked with `LIB61850_TEST_API`) to inject artificial delays before MMS file read responses for deterministic ObtainFile request timeout testing. Production builds remain unaffected when disabled.
 
 Changes to version 1.6.1
 ------------------------

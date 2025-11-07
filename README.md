@@ -168,6 +168,29 @@ Optionally execute the following stop to install the library and header files in
 
 `sudo make install`
 
+### Optional test-only instrumentation
+
+For deterministic testing (e.g. of MMS file ObtainFile request timeout behavior) the library provides a test-only instrumentation API that can be used to modify the standard behavior. This is disabled by default and excluded from production builds.
+
+Enable it via CMake:
+
+```
+cmake -DLIB61850_ENABLE_TEST_API=ON ..
+```
+
+When enabled some test specific API functions are available (exported with the `LIB61850_TEST_API` attribute).
+
+Usage example:
+
+```c
+#ifdef LIB61850_ENABLE_TEST_API
+  /* Introduce 250 ms delay before each FileRead response */
+  MmsConnection_setFileReadArtificialDelay(conn, 250);
+#endif
+```
+
+If the option is OFF the symbols and related code are omitted entirely and have zero impact on runtime behavior or memory footprint.
+
 
 ### Build on Windows with Visual Studio
 
@@ -229,6 +252,9 @@ Support and commercial license options are provided by MZ Automation GmbH. Pleas
 
 ## Contributing
 
-If you want to contribute to the improvement and development of the library please send me comments, feature requests, bug reports, or patches. For more than trivial contributions I require you to sign a Contributor License Agreement. Please contact info@libiec61850.com.
+If you want to contribute to the improvement and development of the library please send comments, feature requests, bug reports, or patches.
 
-Please don't send pull requests before signing the Contributor License Agreement! Such pull requests may be silently ignored.
+More than trivial contributions require you to sign a Contributor License Agreement. Please contact info@libiec61850.com before you plan such a contribution.
+
+Please note: pull requests to the github repository (https://github.com/mz-automation/libiec61850) are not accepted. The github repository serves as a read-only archive.
+

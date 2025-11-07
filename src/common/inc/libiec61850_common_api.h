@@ -28,6 +28,7 @@
 #if defined _WIN32 || defined __CYGWIN__
     #ifdef EXPORT_FUNCTIONS_FOR_DLL
         #define LIB61850_API __declspec(dllexport)
+        #define LIB61850_TEST_API __declspec(dllexport)
     #else
         #define LIB61850_API
     #endif
@@ -36,10 +37,12 @@
 #else
     #if __GNUC__ >= 4
         #define LIB61850_API __attribute__ ((visibility ("default")))
+        #define LIB61850_TEST_API __attribute__ ((visibility ("default")))
         #define LIB61850_INTERNAL  __attribute__ ((visibility ("hidden")))
     #else
         #define LIB61850_API
         #define LIB61850_INTERNAL
+        #define LIB61850_TEST_API
     #endif
 #endif
 

@@ -25,6 +25,7 @@
 #include "stack_config.h"
 #include "mms_common.h"
 #include "mms_client_connection.h"
+#include "hal_thread.h"
 #include "byte_buffer.h"
 
 #include "mms_client_internal.h"
@@ -197,6 +198,11 @@ mmsClient_handleFileReadRequest(
     if (frsm) {
         if (frsm->obtainRequest)
             frsm->obtainRequest->timeout = Hal_getTimeInMs() + connection->requestTimeout;
+
+#if defined(LIB61850_ENABLE_TEST_API)
+        if (connection->fileReadArtificialDelayMs > 0)
+            Thread_sleep(connection->fileReadArtificialDelayMs);
+#endif
 
         mmsMsg_createFileReadResponse(connection->parameters.maxPduSize, invokeId, response, frsm);
     }

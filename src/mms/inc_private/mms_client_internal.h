@@ -141,6 +141,10 @@ struct sMmsConnection {
     char* filestoreBasepath;
 #endif
 
+#if defined(LIB61850_ENABLE_TEST_API)
+    /* TEST ONLY: Artificial delay (ms) before sending file-read responses (instrumentation) */
+    uint32_t fileReadArtificialDelayMs;
+#endif
 #endif /* (MMS_OBTAIN_FILE_SERVICE == 1) */
 };
 

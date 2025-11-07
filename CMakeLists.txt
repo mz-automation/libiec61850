@@ -58,6 +58,12 @@ option(CONFIG_IEC61850_R_GOOSE "Build with support for R-GOOSE (mbedtls required
 option(CONFIG_IEC61850_R_SMV "Build with support for R-SMV (mbedtls required)" ON)
 option(CONFIG_IEC61850_SNTP_CLIENT "Build with SNTP client code" ON)
 
+# Option to enable test-only instrumentation APIs (artificial delays, etc.)
+option(LIB61850_ENABLE_TEST_API "Enable test-only instrumentation APIs (e.g. artificial delays)" OFF)
+if(LIB61850_ENABLE_TEST_API)
+    add_compile_definitions(LIB61850_ENABLE_TEST_API)
+endif()
+
 set(CONFIG_IEC61850_SG_RESVTMS 300 CACHE STRING "Configure the maximum number of SG RESVTMS")
 
 set(CONFIG_REPORTING_DEFAULT_REPORT_BUFFER_SIZE "65536" CACHE STRING "Default buffer size for buffered reports in byte" )
@@ -229,6 +235,12 @@ if(BUILD_EXAMPLES)
 endif(BUILD_EXAMPLES)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/src)
+
+# Build tests if requested
+option(BUILD_TESTS "Build unit tests" ON)
+if(BUILD_TESTS)
+    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/tests)
+endif(BUILD_TESTS)
 
 install(FILES ${API_HEADERS} DESTINATION include/libiec61850 COMPONENT Development)
 
