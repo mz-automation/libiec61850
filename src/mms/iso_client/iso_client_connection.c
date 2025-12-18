@@ -353,7 +353,7 @@ IsoClientConnection_handleConnection(IsoClientConnection self)
             {
                 if (sendConnectionRequestMessage(self))
                 {
-                    self->nextReadTimeout = Hal_getTimeInMs() + self->readTimeoutInMs;
+                    self->nextReadTimeout = Hal_getMonotonicTimeInMs() + self->readTimeoutInMs;
                     nextState = INT_STATE_WAIT_FOR_COTP_CONNECT_RESP;
                 }
                 else
@@ -373,7 +373,7 @@ IsoClientConnection_handleConnection(IsoClientConnection self)
             {
                 /* check connect timeout */
 
-                uint64_t currentTime = Hal_getTimeInMs();
+                uint64_t currentTime = Hal_getMonotonicTimeInMs();
 
                 if (currentTime > self->nextReadTimeout)
                 {
@@ -392,7 +392,7 @@ IsoClientConnection_handleConnection(IsoClientConnection self)
 
     case INT_STATE_WAIT_FOR_COTP_CONNECT_RESP:
         {
-            uint64_t currentTime = Hal_getTimeInMs();
+            uint64_t currentTime = Hal_getMonotonicTimeInMs();
 
             if (currentTime > self->nextReadTimeout)
             {
@@ -428,7 +428,7 @@ IsoClientConnection_handleConnection(IsoClientConnection self)
                     {
                         sendAcseInitiateRequest(self);
 
-                        self->nextReadTimeout = Hal_getTimeInMs() + self->readTimeoutInMs;
+                        self->nextReadTimeout = Hal_getMonotonicTimeInMs() + self->readTimeoutInMs;
 
                         nextState = INT_STATE_WAIT_FOR_ACSE_RESP;
                     }
@@ -453,7 +453,7 @@ IsoClientConnection_handleConnection(IsoClientConnection self)
 
     case INT_STATE_WAIT_FOR_ACSE_RESP:
         {
-            uint64_t currentTime = Hal_getTimeInMs();
+            uint64_t currentTime = Hal_getMonotonicTimeInMs();
 
             if (currentTime > self->nextReadTimeout)
             {
@@ -706,13 +706,13 @@ IsoClientConnection_associateAsync(IsoClientConnection self, uint32_t connectTim
     self->readTimeoutInMs = readTimeoutInMs;
 
     /* set timeout for connect */
-    self->nextReadTimeout = Hal_getTimeInMs() + connectTimeoutInMs;
+    self->nextReadTimeout = Hal_getMonotonicTimeInMs() + connectTimeoutInMs;
 
     /* Connect to Local Ip Address*/
     if (self->parameters->localIpAddress) {
         Socket_bind(self->socket, self->parameters->localIpAddress, self->parameters->localTcpPort);
     }
-    
+
     if (Socket_connectAsync(self->socket, self->parameters->hostname, self->parameters->tcpPort) == false)
     {
         Socket_destroy(self->socket);
@@ -725,9 +725,9 @@ IsoClientConnection_associateAsync(IsoClientConnection self, uint32_t connectTim
 
         success = false;
     }
-    
+
     Semaphore_post(self->tickMutex);
-    
+
     return success;
 }
 

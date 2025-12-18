@@ -147,16 +147,14 @@ mmsClient_handleFileOpenRequest(MmsConnection connection, uint8_t* buffer, int b
 
             if (frsm != NULL)
             {
-
                 MmsOutstandingCall obtainFileCall = mmsClient_getMatchingObtainFileRequest(connection, filename);
 
                 if (obtainFileCall)
                 {
-
                     if (DEBUG_MMS_CLIENT)
                         printf("MMS_CLIENT: file open is matching obtain file request for file %s\n", filename);
 
-                    obtainFileCall->timeout = Hal_getTimeInMs() + connection->requestTimeout;
+                    obtainFileCall->timeout = Hal_getMonotonicTimeInMs() + connection->requestTimeout;
                 }
 
                 FileHandle fileHandle =
@@ -164,7 +162,6 @@ mmsClient_handleFileOpenRequest(MmsConnection connection, uint8_t* buffer, int b
 
                 if (fileHandle != NULL)
                 {
-
                     frsm->fileHandle = fileHandle;
                     frsm->readPosition = filePosition;
                     frsm->frsmId = getNextFrsmId(connection);
@@ -207,7 +204,7 @@ mmsClient_handleFileReadRequest(MmsConnection connection, uint8_t* buffer, int b
     if (frsm)
     {
         if (frsm->obtainRequest)
-            frsm->obtainRequest->timeout = Hal_getTimeInMs() + connection->requestTimeout;
+            frsm->obtainRequest->timeout = Hal_getMonotonicTimeInMs() + connection->requestTimeout;
 
 #if defined(LIB61850_ENABLE_TEST_API)
         if (connection->fileReadArtificialDelayMs > 0)
@@ -231,7 +228,7 @@ mmsClient_handleFileCloseRequest(MmsConnection connection, uint8_t* buffer, int 
     if (frsm)
     {
         if (frsm->obtainRequest)
-            frsm->obtainRequest->timeout = Hal_getTimeInMs() + connection->requestTimeout;
+            frsm->obtainRequest->timeout = Hal_getMonotonicTimeInMs() + connection->requestTimeout;
 
         if (frsm->fileHandle)
         {

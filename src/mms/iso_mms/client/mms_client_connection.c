@@ -296,7 +296,7 @@ addToOutstandingCalls(MmsConnection self, uint32_t invokeId, eMmsOutstandingCall
         {
             self->outstandingCalls[i].isUsed = true;
             self->outstandingCalls[i].invokeId = invokeId;
-            self->outstandingCalls[i].timeout = Hal_getTimeInMs() + self->requestTimeout;
+            self->outstandingCalls[i].timeout = Hal_getMonotonicTimeInMs() + self->requestTimeout;
             self->outstandingCalls[i].type = type;
             self->outstandingCalls[i].userCallback = userCallback;
             self->outstandingCalls[i].userParameter = userParameter;
@@ -1083,7 +1083,7 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
     {
         /* check timeouts */
 
-        uint64_t currentTime = Hal_getTimeInMs();
+        uint64_t currentTime = Hal_getMonotonicTimeInMs();
 
         int i = 0;
 
@@ -1171,7 +1171,7 @@ mmsIsoCallback(IsoIndication indication, void* parameter, ByteBuffer* payload)
         return false;
     }
 
-    if (payload != NULL) 
+    if (payload != NULL)
     {
         if (ByteBuffer_getSize(payload) < 1) {
             return false;
@@ -2030,9 +2030,9 @@ MmsConnection_abort(MmsConnection self, MmsError* mmsError)
     {
         IsoClientConnection_abortAsync(self->isoClient);
 
-        uint64_t timeout = Hal_getTimeInMs() + self->requestTimeout;
+        uint64_t timeout = Hal_getMonotonicTimeInMs() + self->requestTimeout;
 
-        while (Hal_getTimeInMs() < timeout)
+        while (Hal_getMonotonicTimeInMs() < timeout)
         {
             if (getConnectionState(self) == MMS_CONNECTION_STATE_CLOSED)
             {
@@ -2044,7 +2044,7 @@ MmsConnection_abort(MmsConnection self, MmsError* mmsError)
             }
         }
     }
-    
+
     if (success == false)
     {
         IsoClientConnection_close(self->isoClient);
@@ -2117,7 +2117,7 @@ MmsConnection_concludeAsync(MmsConnection self, MmsError* mmsError, MmsConnectio
 
     self->concludeHandler = handler;
     self->concludeHandlerParameter = parameter;
-    self->concludeTimeout = Hal_getTimeInMs() + self->requestTimeout;
+    self->concludeTimeout = Hal_getMonotonicTimeInMs() + self->requestTimeout;
 
     IsoClientConnection_sendMessage(self->isoClient, concludeMessage);
 
