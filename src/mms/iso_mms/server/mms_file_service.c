@@ -477,7 +477,7 @@ mmsServer_fileUploadTask(MmsServer self, MmsObtainFileTask task, int taskState)
             break;
 
         case MMS_FILE_UPLOAD_STATE_FILE_OPEN_SENT: {
-            if (Hal_getTimeInMs() > task->nextTimeout)
+            if (Hal_getMonotonicTimeInMs() > task->nextTimeout)
             {
                 if (DEBUG_MMS_SERVER)
                     printf("MMS_SERVER: file open timeout!\n");
@@ -489,6 +489,7 @@ mmsServer_fileUploadTask(MmsServer self, MmsObtainFileTask task, int taskState)
                     FileSystem_closeFile(task->fileHandle);
                     task->fileHandle = NULL;
                 }
+
                 deleteFile(MmsServer_getFilesystemBasepath(self), task->destinationFilename);
             }
         }
@@ -502,14 +503,14 @@ mmsServer_fileUploadTask(MmsServer self, MmsObtainFileTask task, int taskState)
             task->state = MMS_FILE_UPLOAD_STATE_FILE_READ_SENT;
             IsoConnection_sendMessage(task->connection->isoConnection, message);
 
-            task->nextTimeout = Hal_getTimeInMs() + self->requestTimeoutMs;
+            task->nextTimeout = Hal_getMonotonicTimeInMs() + self->requestTimeoutMs;
         }
 
         break;
 
         case MMS_FILE_UPLOAD_STATE_FILE_READ_SENT:
 
-            if (Hal_getTimeInMs() > task->nextTimeout)
+            if (Hal_getMonotonicTimeInMs() > task->nextTimeout)
             {
                 if (DEBUG_MMS_SERVER)
                     printf("MMS_SERVER: file read timeout!\n");
@@ -521,6 +522,7 @@ mmsServer_fileUploadTask(MmsServer self, MmsObtainFileTask task, int taskState)
                     FileSystem_closeFile(task->fileHandle);
                     task->fileHandle = NULL;
                 }
+
                 deleteFile(MmsServer_getFilesystemBasepath(self), task->destinationFilename);
             }
 
@@ -535,13 +537,13 @@ mmsServer_fileUploadTask(MmsServer self, MmsObtainFileTask task, int taskState)
 
             IsoConnection_sendMessage(task->connection->isoConnection, message);
 
-            task->nextTimeout = Hal_getTimeInMs() + self->requestTimeoutMs;
+            task->nextTimeout = Hal_getMonotonicTimeInMs() + self->requestTimeoutMs;
         }
         break;
 
         case MMS_FILE_UPLOAD_STATE_FILE_CLOSE_SENT:
 
-            if (Hal_getTimeInMs() > task->nextTimeout)
+            if (Hal_getMonotonicTimeInMs() > task->nextTimeout)
             {
                 if (DEBUG_MMS_SERVER)
                     printf("MMS_SERVER: file close timeout!\n");
@@ -813,7 +815,7 @@ mmsServer_handleObtainFileRequest(MmsServerConnection connection, uint8_t* buffe
 
                 MmsServer_releaseTransmitBuffer(connection->server);
 
-                task->nextTimeout = Hal_getTimeInMs() + connection->server->requestTimeoutMs;
+                task->nextTimeout = Hal_getMonotonicTimeInMs() + connection->server->requestTimeoutMs;
 
                 task->state = MMS_FILE_UPLOAD_STATE_FILE_OPEN_SENT;
             }

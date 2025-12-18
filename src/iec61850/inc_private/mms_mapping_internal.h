@@ -285,7 +285,8 @@ struct sMmsMapping {
 #endif
 
     LinkedList controlObjects;
-    uint64_t nextControlTimeout; /* next timeout in one of the control state machines */
+    uint64_t nextControlTimeout; /* next monotonic time timeout in one of the control state machines (e.g. for select timeout) */
+    uint64_t nextRealTimeControlTimeout; /* next real time clock based timeout in one of the control state machines (e.g. for operTm)*/
 
     LinkedList attributeAccessHandlers;
 

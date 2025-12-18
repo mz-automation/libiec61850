@@ -2269,6 +2269,7 @@ MmsMapping_create(IedModel* model, IedServer iedServer)
 #if (CONFIG_IEC61850_CONTROL_SERVICE == 1)
     self->controlObjects = LinkedList_create();
     self->nextControlTimeout = 0xffffffffffffffffLLU;
+    self->nextRealTimeControlTimeout = 0xffffffffffffffffLLU;
 #endif
 
 #if (CONFIG_IEC61850_SETTING_GROUPS == 1)
@@ -3077,7 +3078,7 @@ mmsWriteHandler(void* parameter, MmsDomain* domain, const char* variableId, int 
                                             sg->sgcb->editSG = val;
                                             sg->editingClient = connection;
 
-                                            sg->reservationTimeout = Hal_getTimeInMs() + (sg->sgcb->resvTms * 1000);
+                                            sg->reservationTimeout = Hal_getMonotonicTimeInMs() + (sg->sgcb->resvTms * 1000);
 
                                             MmsValue* editSg = MmsValue_getElement(sg->sgcbMmsValues, 2);
 
@@ -4822,27 +4823,27 @@ GOOSE_processGooseEvents(MmsMapping* self, uint64_t currentTimeInMs)
 static void
 processPeriodicTasks(MmsMapping* self)
 {
-    uint64_t currentTimeInMs = Hal_getTimeInMs();
+    uint64_t currentMonotonicTimeInMs = Hal_getMonotonicTimeInMs();
 
 #if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
     if (self->useIntegratedPublisher)
-        GOOSE_processGooseEvents(self, currentTimeInMs);
+        GOOSE_processGooseEvents(self, currentMonotonicTimeInMs);
 #endif
 
 #if (CONFIG_IEC61850_CONTROL_SERVICE == 1)
-    Control_processControlActions(self, currentTimeInMs);
+    Control_processControlActions(self, currentMonotonicTimeInMs);
 #endif
 
 #if (CONFIG_IEC61850_REPORT_SERVICE == 1)
-    Reporting_processReportEvents(self, currentTimeInMs);
+    Reporting_processReportEvents(self, Hal_getTimeInMs());
 #endif
 
 #if (CONFIG_IEC61850_SETTING_GROUPS == 1)
-    MmsMapping_checkForSettingGroupReservationTimeouts(self, currentTimeInMs);
+    MmsMapping_checkForSettingGroupReservationTimeouts(self, currentMonotonicTimeInMs);
 #endif
 
 #if (CONFIG_IEC61850_LOG_SERVICE == 1)
-    Logging_processIntegrityLogs(self, currentTimeInMs);
+    Logging_processIntegrityLogs(self, currentMonotonicTimeInMs);
 #endif
 
     /* handle low priority MMS backgound tasks (like file upload...) */
@@ -4883,8 +4884,12 @@ MmsMapping_startEventWorkerThread(MmsMapping* self)
     self->reportThreadRunning = true;
 
     Thread thread = Thread_create((ThreadExecutionFunction)eventWorkerThread, self, false);
-    self->reportWorkerThread = thread;
-    Thread_start(thread);
+
+    if (thread)
+    {
+        self->reportWorkerThread = thread;
+        Thread_start(thread);
+    }
 }
 
 void
@@ -4934,7 +4939,7 @@ MmsMapping_createDataSetByNamedVariableList(MmsMapping* self, MmsNamedVariableLi
 
         DataSetEntry* lastDataSetEntry = NULL;
 
-        while (element != NULL)
+        while (element)
         {
             MmsAccessSpecifier* listEntry = (MmsAccessSpecifier*)element->data;
 

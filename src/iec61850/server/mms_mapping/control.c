@@ -1,7 +1,7 @@
 /*
  *  control.c
  *
- *  Copyright 2013-2022 Michael Zillgith
+ *  Copyright 2013-2025 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -437,6 +437,13 @@ updateNextControlTimeout(MmsMapping* self, uint64_t timeout)
 }
 
 static void
+updateNextRealTimeControlTimeout(MmsMapping* self, uint64_t timeout)
+{
+    if (timeout < self->nextRealTimeControlTimeout)
+        self->nextRealTimeControlTimeout = timeout;
+}
+
+static void
 setState(ControlObject* self, int newState)
 {
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
@@ -554,7 +561,7 @@ unselectObject(ControlObject* self, SelectStateChangedReason reason, MmsMapping*
 }
 
 static void
-checkSelectTimeout(ControlObject* self, uint64_t currentTime, MmsMapping* mmsMapping)
+checkSelectTimeout(ControlObject* self, uint64_t currentMonotonicTimeInMs, MmsMapping* mmsMapping)
 {
     if ((self->ctlModel == 2) || (self->ctlModel == 4))
     {
@@ -562,7 +569,7 @@ checkSelectTimeout(ControlObject* self, uint64_t currentTime, MmsMapping* mmsMap
         {
             if (self->selectTimeout > 0)
             {
-                if (currentTime > (self->selectTime + self->selectTimeout))
+                if (currentMonotonicTimeInMs > (self->selectTime + self->selectTimeout))
                 {
                     if (DEBUG_IED_SERVER)
                         printf("IED_SERVER: select-timeout (timeout-val = %u) for control %s/%s.%s\n",
@@ -729,7 +736,7 @@ resetAddCause(ControlObject* self)
 }
 
 static void
-executeControlTask(MmsMapping* self, ControlObject* controlObject, uint64_t currentTimeInMs)
+executeControlTask(MmsMapping* self, ControlObject* controlObject, uint64_t currentMonotonicTimeInMs)
 {
     int state;
 
@@ -761,7 +768,7 @@ executeStateMachine:
                 {
                     LinkedList_add(values, controlObject->sbo);
 
-                    selectObject(controlObject, Hal_getTimeInMs(), controlObject->mmsConnection, self);
+                    selectObject(controlObject, currentMonotonicTimeInMs, controlObject->mmsConnection, self);
 
 #if (CONFIG_IEC61850_SERVICE_TRACKING == 1)
                     updateGenericTrackingObjectValues(self, controlObject, IEC61850_SERVICE_TYPE_SELECT, IEC61850_SERVICE_ERROR_NO_ERROR);
@@ -787,7 +794,7 @@ executeStateMachine:
             {
                 if (checkHandlerResult == CONTROL_ACCEPTED)
                 {
-                    selectObject(controlObject, Hal_getTimeInMs(), controlObject->mmsConnection, self);
+                    selectObject(controlObject, currentMonotonicTimeInMs, controlObject->mmsConnection, self);
 
                     if (controlObject->ctlNumSt)
                         MmsValue_update(controlObject->ctlNumSt, controlObject->ctlNum);
@@ -833,7 +840,7 @@ executeStateMachine:
         }
         else
         {
-            updateNextControlTimeout(self, Hal_getTimeInMs() + 100);
+            updateNextControlTimeout(self, currentMonotonicTimeInMs + 100);
         }
 
     }
@@ -914,22 +921,20 @@ executeStateMachine:
 
             setState(controlObject, STATE_OPERATE);
 
-            setOpOk(controlObject, true, currentTimeInMs);
+            setOpOk(controlObject, true, Hal_getTimeInMs());
 
             goto executeStateMachine;
         }
         else
         {
-            updateNextControlTimeout(self, Hal_getTimeInMs() + 10);
+            updateNextControlTimeout(self, currentMonotonicTimeInMs + 10);
         }
     }
     break;
 
     case STATE_OPERATE:
     {
-        uint64_t currentTime = Hal_getTimeInMs();
-
-        ControlHandlerResult result = operateControl(controlObject, controlObject->ctlVal, currentTime, controlObject->testMode);
+        ControlHandlerResult result = operateControl(controlObject, controlObject->ctlVal, currentMonotonicTimeInMs, controlObject->testMode);
 
         if (result != CONTROL_RESULT_WAITING)
         {
@@ -965,13 +970,13 @@ executeStateMachine:
 
             exitControlTask(controlObject);
 
-            setOpOk(controlObject, false, currentTimeInMs);
+            setOpOk(controlObject, false, Hal_getTimeInMs());
 
             resetAddCause(controlObject);
         }
         else
         {
-            updateNextControlTimeout(self, currentTimeInMs + 10);
+            updateNextControlTimeout(self, currentMonotonicTimeInMs + 10);
         }
     }
     break;
@@ -1481,16 +1486,21 @@ ControlObject_updateControlModel(ControlObject* self, ControlModel value, DataOb
 }
 
 void
-Control_processControlActions(MmsMapping* self, uint64_t currentTimeInMs)
+Control_processControlActions(MmsMapping* self, uint64_t currentMonotonicTimeInMs)
 {
-    if (currentTimeInMs >= self->nextControlTimeout)
+    uint64_t currentRealTimeInMs = Hal_getTimeInMs();
+
+    if ((currentMonotonicTimeInMs >= self->nextControlTimeout) || (currentRealTimeInMs >= self->nextRealTimeControlTimeout))
     {
         /* invalidate nextControlTimeout */
         self->nextControlTimeout = (uint64_t) 0xFFFFFFFFFFFFFFFFLLU;
 
+        /* invalidate nextRealTimeControlTimeout */
+        self->nextRealTimeControlTimeout = (uint64_t) 0xFFFFFFFFFFFFFFFFLLU;
+
         LinkedList element = LinkedList_getNext(self->controlObjects);
 
-        while (element != NULL)
+        while (element)
         {
             ControlObject* controlObject = (ControlObject*) element->data;
 
@@ -1507,7 +1517,7 @@ Control_processControlActions(MmsMapping* self, uint64_t currentTimeInMs)
 
                 if (controlObject->state == STATE_WAIT_FOR_ACTIVATION_TIME)
                 {
-                    if (controlObject->operateTime <= currentTimeInMs)
+                    if (controlObject->operateTime <= Hal_getTimeInMs())
                     {
                         /* enter state Perform Test */
                         setOpRcvd(controlObject, true);
@@ -1539,7 +1549,7 @@ Control_processControlActions(MmsMapping* self, uint64_t currentTimeInMs)
                             /* leave state Perform Test */
                             setOpRcvd(controlObject, false);
 
-                            executeControlTask(self, controlObject, currentTimeInMs);
+                            executeControlTask(self, controlObject, currentMonotonicTimeInMs);
                         }
                         else
                         {
@@ -1560,18 +1570,21 @@ Control_processControlActions(MmsMapping* self, uint64_t currentTimeInMs)
                             resetAddCause(controlObject);
                         }
                     }
-                    else {
-                        updateNextControlTimeout(self, controlObject->operateTime);
+                    else
+                    {
+                        updateNextRealTimeControlTimeout(self, controlObject->operateTime);
                     }
 
                 } /* if (controlObject->state == STATE_WAIT_FOR_ACTICATION_TIME) */
-                else if (!((controlObject->state == STATE_UNSELECTED) || (controlObject->state == STATE_READY))) {
-                    executeControlTask(self, controlObject, currentTimeInMs);
+                else if (!((controlObject->state == STATE_UNSELECTED) || (controlObject->state == STATE_READY)))
+                {
+                    executeControlTask(self, controlObject, currentMonotonicTimeInMs);
                 }
-                else if (controlObject->state == STATE_READY) {
-                    checkSelectTimeout(controlObject, currentTimeInMs, self);
+                else if (controlObject->state == STATE_READY)
+                {
+                    checkSelectTimeout(controlObject, currentMonotonicTimeInMs, self);
                 }
-                }
+            }
 
             ControlObject_handlePendingEvents(controlObject);
 
@@ -1900,13 +1913,13 @@ Control_readAccessControlObject(MmsMapping* self, MmsDomain* domain, char* varia
             {
                 if (controlObject->ctlModel == 2)
                 {
-                    uint64_t currentTime = Hal_getTimeInMs();
+                    uint64_t currentMonotonicTime = Hal_getMonotonicTimeInMs();
 
                     value = &emptyString;
 
                     if (isDirectAccess == true)
                     {
-                        checkSelectTimeout(controlObject, currentTime, self);
+                        checkSelectTimeout(controlObject, currentMonotonicTime, self);
 
                         if (getState(controlObject) == STATE_UNSELECTED)
                         {
@@ -1931,7 +1944,7 @@ Control_readAccessControlObject(MmsMapping* self, MmsDomain* domain, char* varia
 
                             if (checkResult == CONTROL_ACCEPTED)
                             {
-                                selectObject(controlObject, currentTime, connection, self);
+                                selectObject(controlObject, currentMonotonicTime, connection, self);
                                 value = controlObject->sbo;
 
 #if (CONFIG_IEC61850_SERVICE_TRACKING == 1)
@@ -2148,9 +2161,9 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, const char
 
                 int state = getState(controlObject);
 
-                uint64_t currentTime = Hal_getTimeInMs();
+                uint64_t currentMonotonicTime = Hal_getMonotonicTimeInMs();
 
-                checkSelectTimeout(controlObject, currentTime, self);
+                checkSelectTimeout(controlObject, currentMonotonicTime, self);
 
                 if (state != STATE_UNSELECTED)
                 {
@@ -2212,7 +2225,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, const char
 
                     if (checkResult == CONTROL_ACCEPTED)
                     {
-                        selectObject(controlObject, currentTime, connection, self);
+                        selectObject(controlObject, currentMonotonicTime, connection, self);
 
                         indication = DATA_ACCESS_ERROR_SUCCESS;
 
@@ -2230,7 +2243,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, const char
 
                         setState(controlObject, STATE_WAIT_FOR_SELECT);
 
-                        updateNextControlTimeout(self, Hal_getTimeInMs() + 100);
+                        updateNextControlTimeout(self, Hal_getMonotonicTimeInMs() + 100);
 
                         indication = DATA_ACCESS_ERROR_NO_RESPONSE;
                     }
@@ -2295,9 +2308,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, const char
             goto free_and_return;
         }
 
-        uint64_t currentTime = Hal_getTimeInMs();
-
-        checkSelectTimeout(controlObject, currentTime, self);
+        checkSelectTimeout(controlObject, Hal_getMonotonicTimeInMs(), self);
 
         int state = getState(controlObject);
 
@@ -2361,11 +2372,11 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, const char
 
             MmsValue* operTm = getOperParameterOperTime(value);
 
-            if (operTm != NULL)
+            if (operTm)
             {
                 controlObject->operateTime = MmsValue_getUtcTimeInMs(operTm);
 
-                if (controlObject->operateTime > currentTime)
+                if (controlObject->operateTime > Hal_getTimeInMs())
                 {
                     controlObject->timeActivatedOperate = true;
                     controlObject->synchroCheck = synchroCheck;
@@ -2373,7 +2384,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, const char
                     controlObject->mmsConnection = connection;
 
                     CheckHandlerResult checkResult = CONTROL_ACCEPTED;
-                    if (controlObject->checkHandler != NULL) 
+                    if (controlObject->checkHandler) 
                     {
                         /* perform operative tests */
 
@@ -2387,7 +2398,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, const char
 
                         setState(controlObject, STATE_WAIT_FOR_ACTIVATION_TIME);
 
-                        updateNextControlTimeout(self, controlObject->operateTime);
+                        updateNextRealTimeControlTimeout(self, controlObject->operateTime);
 
                         if (DEBUG_IED_SERVER)
                             printf("IED_SERVER: Oper - activate time activated control\n");
@@ -2441,7 +2452,7 @@ Control_writeAccessControlObject(MmsMapping* self, MmsDomain* domain, const char
 
                     initiateControlTask(controlObject);
 
-                    updateNextControlTimeout(self, currentTime);
+                    updateNextControlTimeout(self, Hal_getMonotonicTimeInMs());
                 }
                 else
                 {

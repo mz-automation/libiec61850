@@ -47,7 +47,7 @@ struct sGooseSubscriber {
     bool simulation;
     bool ndsCom;
 
-    uint64_t invalidityTime;
+    uint64_t invalidityTime; /* time when the data became invalid as monotonic time in milliseconds */
     bool stateValid;
     GooseParseError parseError;
 

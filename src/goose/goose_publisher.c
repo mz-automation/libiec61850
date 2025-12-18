@@ -1,7 +1,7 @@
 /*
  *  goose_publisher.c
  *
- *  Copyright 2013-2024 Michael Zillgith
+ *  Copyright 2013-2025 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -79,7 +79,8 @@ GoosePublisher_createRemote(RSession session, uint16_t appId)
 {
     GoosePublisher self = (GoosePublisher) GLOBAL_CALLOC(1, sizeof(struct sGoosePublisher));
 
-    if (self) {
+    if (self)
+    {
         self->remoteSession = session;
 
         self->buffer = (uint8_t*) GLOBAL_MALLOC(GOOSE_MAX_MESSAGE_SIZE);
@@ -139,7 +140,8 @@ GoosePublisher_destroy(GoosePublisher self)
     if (self)
     {
 #if (CONFIG_IEC61850_L2_GOOSE == 1)
-        if (self->ethernetSocket) {
+        if (self->ethernetSocket)
+        {
             Ethernet_destroySocket(self->ethernetSocket);
         }
 #endif /* (CONFIG_IEC61850_L2_GOOSE == 1) */
@@ -298,7 +300,7 @@ prepareGooseBuffer(GoosePublisher self, CommParameters* parameters, const char* 
 
             int bufPos = 12;
 
-            if (useVlanTags) 
+            if (useVlanTags)
             {
                 /* Priority tag - IEEE 802.1Q */
                 self->buffer[bufPos++] = 0x81;

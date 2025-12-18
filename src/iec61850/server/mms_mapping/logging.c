@@ -275,7 +275,7 @@ enableLogging(LogControl* self)
         self->enabled = true;
 
         if ((self->triggerOps & TRG_OPT_INTEGRITY) && (self->intgPd != 0))
-            self->nextIntegrityScan = Hal_getTimeInMs();
+            self->nextIntegrityScan = Hal_getMonotonicTimeInMs();
         else
             self->nextIntegrityScan = 0;
 
@@ -545,7 +545,7 @@ LIBIEC61850_LOG_SVC_writeAccessLogControlBlock(MmsMapping* self, MmsDomain* doma
     {
         return DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT;
     }
-    else 
+    else
     {
         if (self->controlBlockAccessHandler)
         {
@@ -811,7 +811,7 @@ LIBIEC61850_LOG_SVC_readAccessControlBlock(MmsMapping* self, MmsDomain* domain, 
 
     LogControl* logControl = lookupLogControl(self, domain, lnName, objectName);
 
-    if (logControl) 
+    if (logControl)
     {
         bool allowAccess = true;
 
@@ -901,7 +901,7 @@ createLogControlBlock(MmsMapping* self, LogControlBlock* logControlBlock,
         LogControl* logControl)
 {
     MmsVariableSpecification* lcb = (MmsVariableSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableSpecification));
-    
+
     if (lcb)
     {
         lcb->name = StringUtils_copyString(logControlBlock->name);

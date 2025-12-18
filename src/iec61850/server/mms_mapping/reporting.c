@@ -1844,7 +1844,7 @@ checkReservationTimeout(MmsMapping* self, ReportControl* rc)
     {
         if (rc->reservationTimeout > 0)
         {
-            if (Hal_getTimeInMs() > rc->reservationTimeout)
+            if (Hal_getMonotonicTimeInMs() > rc->reservationTimeout)
             {
                 if (rc->resvTms != -1)
                     rc->resvTms = 0;
@@ -2123,7 +2123,7 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, const char*
                 {
                     rc->reserved = true;
                     rc->clientConnection = connection;
-                    rc->reservationTimeout = Hal_getTimeInMs() + (rc->resvTms * 1000);
+                    rc->reservationTimeout = Hal_getMonotonicTimeInMs() + (rc->resvTms * 1000);
 
                     if (self->rcbEventHandler)
                     {
@@ -2141,7 +2141,7 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, const char*
             {
                 if (rc->clientConnection == connection)
                 {
-                    rc->reservationTimeout = Hal_getTimeInMs() + (rc->resvTms * 1000);
+                    rc->reservationTimeout = Hal_getMonotonicTimeInMs() + (rc->resvTms * 1000);
                 }
             }
         }
@@ -2726,7 +2726,7 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, const char*
                         }
                         else
                         {
-                            rc->reservationTimeout = Hal_getTimeInMs() + (rc->resvTms * 1000);
+                            rc->reservationTimeout = Hal_getMonotonicTimeInMs() + (rc->resvTms * 1000);
 
                             reserveRcb(rc, connection);
 
@@ -2755,7 +2755,7 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, const char*
                     }
                     else
                     {
-                        rc->reservationTimeout = Hal_getTimeInMs() + (RESV_TMS_IMPLICIT_VALUE * 1000);
+                        rc->reservationTimeout = Hal_getMonotonicTimeInMs() + (RESV_TMS_IMPLICIT_VALUE * 1000);
 
                         reserveRcb(rc, connection);
 
@@ -2845,7 +2845,7 @@ exit_function:
     {
         if (rc->buffered)
         {
-            rc->reservationTimeout = Hal_getTimeInMs() + (RESV_TMS_IMPLICIT_VALUE * 1000);
+            rc->reservationTimeout = Hal_getMonotonicTimeInMs() + (RESV_TMS_IMPLICIT_VALUE * 1000);
 
             if (rc->resvTms == 0)
             {
@@ -2989,7 +2989,7 @@ Reporting_disableReportControlInstance(MmsMapping* self, ReportControl* rc)
             updateOwner(rc, NULL);
         else if (rc->resvTms > 0)
         {
-            rc->reservationTimeout = Hal_getTimeInMs() + (rc->resvTms * 1000);
+            rc->reservationTimeout = Hal_getMonotonicTimeInMs() + (rc->resvTms * 1000);
         }
     }
 
@@ -4360,7 +4360,7 @@ Reporting_activateBufferedReports(MmsMapping* self)
 }
 
 static void
-processEventsForReport(ReportControl* rc, uint64_t currentTimeInMs)
+processEventsForReport(ReportControl* rc, uint64_t currentRealTimeInMs)
 {
     if ((rc->enabled) || (rc->isBuffering))
     {
@@ -4372,10 +4372,10 @@ processEventsForReport(ReportControl* rc, uint64_t currentTimeInMs)
                 if (rc->triggered)
                 {
                     rc->triggered = false;
-                    enqueueReport(rc, false, false, currentTimeInMs);
+                    enqueueReport(rc, false, false, currentRealTimeInMs);
                 }
 
-                enqueueReport(rc, false, true, currentTimeInMs);
+                enqueueReport(rc, false, true, currentRealTimeInMs);
 
                 rc->gi = false;
 
@@ -4387,18 +4387,18 @@ processEventsForReport(ReportControl* rc, uint64_t currentTimeInMs)
         {
             if (rc->intgPd > 0)
             {
-                if (currentTimeInMs >= rc->nextIntgReportTime)
+                if (currentRealTimeInMs >= rc->nextIntgReportTime)
                 {
                     /* send current events in event buffer before integrity report */
                     if (rc->triggered)
                     {
-                        enqueueReport(rc, false, false, currentTimeInMs);
+                        enqueueReport(rc, false, false, currentRealTimeInMs);
                         rc->triggered = false;
                     }
 
                     if (rc->server->syncIntegrityReportTimes)
                     {
-                        rc->nextIntgReportTime = getNextRoundedStartTime(currentTimeInMs, rc->intgPd);
+                        rc->nextIntgReportTime = getNextRoundedStartTime(currentRealTimeInMs, rc->intgPd);
                     }
                     else
                     {
@@ -4406,36 +4406,36 @@ processEventsForReport(ReportControl* rc, uint64_t currentTimeInMs)
                     }
 
                     /* check for system time change effects */
-                    if ((rc->nextIntgReportTime < currentTimeInMs) ||
-                        (rc->nextIntgReportTime > currentTimeInMs + rc->intgPd))
+                    if ((rc->nextIntgReportTime < currentRealTimeInMs) ||
+                        (rc->nextIntgReportTime > currentRealTimeInMs + rc->intgPd))
                     {
                         if (rc->server->syncIntegrityReportTimes)
                         {
-                            rc->nextIntgReportTime = getNextRoundedStartTime(currentTimeInMs, rc->intgPd);
+                            rc->nextIntgReportTime = getNextRoundedStartTime(currentRealTimeInMs, rc->intgPd);
                         }
                         else
                         {
-                            rc->nextIntgReportTime = currentTimeInMs + rc->intgPd;
+                            rc->nextIntgReportTime = currentRealTimeInMs + rc->intgPd;
                         }
                     }
 
-                    enqueueReport(rc, true, false, currentTimeInMs);
+                    enqueueReport(rc, true, false, currentRealTimeInMs);
 
                     rc->triggered = false;
                 }
                 else
                 {
                     /* check for system time change effects */
-                    if ((rc->nextIntgReportTime < currentTimeInMs) ||
-                        (rc->nextIntgReportTime > currentTimeInMs + rc->intgPd))
+                    if ((rc->nextIntgReportTime < currentRealTimeInMs) ||
+                        (rc->nextIntgReportTime > currentRealTimeInMs + rc->intgPd))
                     {
                         if (rc->server->syncIntegrityReportTimes)
                         {
-                            rc->nextIntgReportTime = getNextRoundedStartTime(currentTimeInMs, rc->intgPd);
+                            rc->nextIntgReportTime = getNextRoundedStartTime(currentRealTimeInMs, rc->intgPd);
                         }
                         else
                         {
-                            rc->nextIntgReportTime = currentTimeInMs + rc->intgPd;
+                            rc->nextIntgReportTime = currentRealTimeInMs + rc->intgPd;
                         }
                     }
                 }
@@ -4444,9 +4444,9 @@ processEventsForReport(ReportControl* rc, uint64_t currentTimeInMs)
 
         if (rc->triggered)
         {
-            if (currentTimeInMs >= rc->reportTime)
+            if (Hal_getMonotonicTimeInMs() >= rc->reportTime)
             {
-                enqueueReport(rc, false, false, currentTimeInMs);
+                enqueueReport(rc, false, false, currentRealTimeInMs);
 
                 rc->triggered = false;
             }
@@ -4571,7 +4571,7 @@ ReportControl_valueUpdated(ReportControl* self, int dataSetEntryIndex, int flag,
     if (self->inclusionFlags[dataSetEntryIndex] & flag)
     {
         /* report for this data set entry is already pending (bypass BufTm and send report immediately) */
-        self->reportTime = Hal_getTimeInMs();
+        self->reportTime = Hal_getMonotonicTimeInMs();
 
         if (modelLocked)
         {
@@ -4579,7 +4579,7 @@ ReportControl_valueUpdated(ReportControl* self, int dataSetEntryIndex, int flag,
             copyValuesToReportBuffer(self);
         }
 
-        processEventsForReport(self, self->reportTime);
+        processEventsForReport(self, Hal_getTimeInMs());
     }
 
     if (modelLocked)
@@ -4598,11 +4598,9 @@ ReportControl_valueUpdated(ReportControl* self, int dataSetEntryIndex, int flag,
 
     if (self->triggered == false)
     {
-        uint64_t currentTime = Hal_getTimeInMs();
+        MmsValue_setBinaryTime(self->timeOfEntry, Hal_getTimeInMs());
 
-        MmsValue_setBinaryTime(self->timeOfEntry, currentTime);
-
-        self->reportTime = currentTime + self->bufTm;
+        self->reportTime = Hal_getMonotonicTimeInMs() + self->bufTm;
     }
 
     self->triggered = true;

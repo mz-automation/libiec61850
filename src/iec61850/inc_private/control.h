@@ -111,8 +111,8 @@ struct sControlObject
     MmsValue* error;
     MmsValue* addCause;
 
-    uint64_t selectTime;
-    uint32_t selectTimeout;
+    uint64_t selectTime; /* select time of a control as monotonic time in ms */
+    uint32_t selectTimeout; /* select timeout period in ms */
     MmsValue* sboClass;
     MmsValue* sboTimeout;
 

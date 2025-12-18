@@ -1,7 +1,7 @@
 /*
  *  goose_receiver.c
  *
- *  Copyright 2014-2024 Michael Zillgith
+ *  Copyright 2014-2025 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -100,6 +100,12 @@ GooseReceiver_create()
     if (self)
     {
         self->buffer = (uint8_t*) GLOBAL_MALLOC(ETH_BUFFER_LENGTH);
+
+        if (self->buffer == NULL)
+        {
+            GooseReceiver_destroy(self);
+            return NULL;
+        }
     }
 
     return self;
@@ -165,7 +171,7 @@ createNewStringFromBufferElement(MmsValue* value, uint8_t* bufferSrc, int elemen
     {
         if (DEBUG_GOOSE_SUBSCRIBER)
             printf("GOOSE_SUBSCRIBER: failed to allocate memory for visible string\n");
-    
+
         value->value.visibleString.size = 0;
     }
 }
@@ -612,7 +618,7 @@ parseAllDataUnknownValue(GooseSubscriber self, uint8_t* buffer, int allDataLengt
 
                         goto exit_with_error;
                     }
-                    else 
+                    else
                     {
                         value = MmsValue_newBitString(rawBitLength - padding);
                         memcpy(value->value.bitString.buf, buffer + bufPos + 1, elementLength - 1);
@@ -956,7 +962,7 @@ parseGoosePayload(GooseReceiver self, uint8_t* buffer, int apduLength)
 
                 MmsValue_setUtcTime(matchingSubscriber->timestamp, 0);
             }
-            
+
             if (matchingSubscriber->isObserver && matchingSubscriber->dataSetValues != NULL)
             {
                 MmsValue_delete(matchingSubscriber->dataSetValues);
@@ -990,7 +996,7 @@ parseGoosePayload(GooseReceiver self, uint8_t* buffer, int apduLength)
             matchingSubscriber->stNum = stNum;
             matchingSubscriber->sqNum = sqNum;
 
-            matchingSubscriber->invalidityTime = Hal_getTimeInMs() + timeAllowedToLive;
+            matchingSubscriber->invalidityTime = Hal_getMonotonicTimeInMs() + timeAllowedToLive;
 
             if (matchingSubscriber->listener != NULL)
                 matchingSubscriber->listener(matchingSubscriber, matchingSubscriber->listenerParameter);
@@ -1042,7 +1048,7 @@ parseGooseMessage(GooseReceiver self, uint8_t* buffer, int numbytes)
         return;
     if (buffer[bufPos++] != 0xb8)
         return;
-    
+
     uint8_t srcMac[6];
     memcpy(srcMac,&buffer[6],6);
 
@@ -1094,7 +1100,7 @@ parseGooseMessage(GooseReceiver self, uint8_t* buffer, int numbytes)
     while (element)
     {
         GooseSubscriber subscriber = (GooseSubscriber) LinkedList_getData(element);
-        
+
         if (subscriber->isObserver)
         {
             subscriber->appId = appId;

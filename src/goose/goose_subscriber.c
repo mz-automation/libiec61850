@@ -70,7 +70,7 @@ GooseSubscriber_isValid(GooseSubscriber self)
     if (self->stateValid == false)
         return false;
 
-    if (Hal_getTimeInMs() > self->invalidityTime)
+    if (Hal_getMonotonicTimeInMs() > self->invalidityTime)
         return false;
 
     return true;
