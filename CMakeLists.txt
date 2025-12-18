@@ -238,9 +238,9 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/src)
 
 # Build tests if requested
 option(BUILD_TESTS "Build unit tests" ON)
-if(BUILD_TESTS)
+if(BUILD_TESTS AND EXISTS ${CMAKE_CURRENT_LIST_DIR}/tests)
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/tests)
-endif(BUILD_TESTS)
+endif(BUILD_TESTS AND EXISTS ${CMAKE_CURRENT_LIST_DIR}/tests)
 
 install(FILES ${API_HEADERS} DESTINATION include/libiec61850 COMPONENT Development)
 
