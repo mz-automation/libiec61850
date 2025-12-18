@@ -2809,6 +2809,71 @@ getAccessPolicyForFC(MmsMapping* self, FunctionalConstraint fc)
 }
 
 static MmsDataAccessError
+getWriteAccessResultForFCDO(MmsMapping* self, DataObject* dataObject, FunctionalConstraint fc, MmsValue* value, ClientConnection clientConnection)
+{
+    MmsDataAccessError result = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+
+    ModelNode* child = dataObject->firstChild;
+
+    int idx = 0;
+
+    while (child)
+    {
+        if (child->modelType == DataAttributeModelType)
+        {
+            DataAttribute* da = (DataAttribute*)child;
+
+            if (da->fc == fc)
+            {
+                MmsValue* subValue = MmsValue_getElement(value, idx);
+
+                if (subValue)
+                {
+                    if (self->writeAccessHandler)
+                    {
+                        result = self->writeAccessHandler(da, subValue, clientConnection, self->writeAccessHandlerParam);
+
+                        if (result == DATA_ACCESS_ERROR_SUCCESS)
+                        {
+                            IedServer_updateAttributeValue(self->iedServer, da, subValue);
+                        }
+
+                        if ((result != DATA_ACCESS_ERROR_SUCCESS) && (result != DATA_ACCESS_ERROR_SUCCESS))
+                        {
+                            return result;
+                        }
+                    }
+                }
+
+                idx++;
+            }
+        }
+        else if (child->modelType == DataObjectModelType)
+        {
+            DataObject* subDataObject = (DataObject*)child;
+
+            if (DataObject_hasFCData(subDataObject, fc))
+            {
+                MmsValue* subValue = MmsValue_getElement(value, idx);
+
+                result = getWriteAccessResultForFCDO(self, subDataObject, fc, subValue, clientConnection);
+
+                if ((result != DATA_ACCESS_ERROR_SUCCESS) && (result != DATA_ACCESS_ERROR_SUCCESS))
+                {
+                    return result;
+                }
+
+                idx++;
+            }
+        }
+
+        child = child->sibling;
+    }
+
+    return result;
+}
+
+static MmsDataAccessError
 mmsWriteHandler(void* parameter, MmsDomain* domain, const char* variableId, int arrayIdx, const char* componentId,
                 MmsValue* value, MmsServerConnection connection)
 {
@@ -3274,6 +3339,70 @@ mmsWriteHandler(void* parameter, MmsDomain* domain, const char* variableId, int 
                 writeHandlerListElement = LinkedList_getNext(writeHandlerListElement);
             }
 
+            /* Call global write access handler */
+            if (self->writeAccessHandler && (handlerFound == false))
+            {
+                /* lookup data attribute */
+                IedModel* model = self->iedServer->model;
+
+                ModelNode* ld = IedModel_getModelNodeByObjectReference(model, domain->domainName);
+
+                if (ld)
+                {
+                    *separator = 0;
+
+                    ModelNode* ln = ModelNode_getChild(ld, variableId);
+
+                    if (ln)
+                    {
+                        char* daRef = separator + 4;
+
+                        StringUtils_replace(daRef, '$', '.');
+
+                        ModelNode* da = ModelNode_getChild(ln, daRef);
+
+                        if (da)
+                        {
+                            if (arrayIdx != -1)
+                            {
+                                da = ModelNode_getChildWithIdx(da, arrayIdx);
+
+                                if (da && componentId)
+                                {
+                                    char compIdBuf[65];
+
+                                    StringUtils_copyStringMax(compIdBuf, sizeof(compIdBuf), componentId);
+
+                                    StringUtils_replace(compIdBuf, '$', '.');
+
+                                    da = ModelNode_getChild(da, compIdBuf);
+                                }
+                            }
+
+                            MmsDataAccessError handlerResult = DATA_ACCESS_ERROR_OBJECT_ACCESS_DENIED;
+
+                            if (da)
+                            {
+                                ClientConnection clientConnection =
+                                    private_IedServer_getClientConnectionByHandle(self->iedServer, connection);
+
+                                if (da->modelType == DataAttributeModelType)
+                                {
+                                    handlerResult =
+                                        self->writeAccessHandler((DataAttribute*)da, value, clientConnection, self->writeAccessHandlerParam);
+                                }
+                                else if (da->modelType == DataObjectModelType)
+                                {
+                                    handlerResult = getWriteAccessResultForFCDO(self, (DataObject*)da, fc, value, clientConnection);
+                                }
+
+                                return handlerResult;
+                            }
+                        }
+                    }
+                }
+            }
+
             /* DENY access if no handler is found and default policy is DENY */
             if (!handlerFound)
             {
@@ -3316,6 +3445,13 @@ getAccessHandlerForAttribute(MmsMapping* self, DataAttribute* dataAttribute)
     }
 
     return NULL;
+}
+
+void
+MmsMapping_installGlobalWriteAccessHandler(MmsMapping* self, WriteAccessHandler handler, void* parameter)
+{
+    self->writeAccessHandler = handler;
+    self->writeAccessHandlerParam = parameter;
 }
 
 void

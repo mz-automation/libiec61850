@@ -143,6 +143,9 @@ LIB61850_INTERNAL void
 MmsMapping_setLogStorage(MmsMapping* self, const char* logRef, LogStorage logStorage);
 
 LIB61850_INTERNAL void
+MmsMapping_installGlobalWriteAccessHandler(MmsMapping* self, WriteAccessHandler handler, void* parameter);
+
+LIB61850_INTERNAL void
 MmsMapping_installWriteAccessHandler(MmsMapping* self, DataAttribute* dataAttribute, WriteAccessHandler handler, void* parameter);
 
 LIB61850_INTERNAL void

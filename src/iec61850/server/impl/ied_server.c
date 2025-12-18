@@ -954,7 +954,6 @@ IedServer_setLocalIpAddress(IedServer self, const char* localIpAddress)
     MmsServer_setLocalIpAddress(self->mmsServer, self->localIpAddress);
 }
 
-
 void
 IedServer_startThreadless(IedServer self, int tcpPort)
 {
@@ -1817,6 +1816,15 @@ IedServer_setWriteAccessPolicy(IedServer self, FunctionalConstraint fc, AccessPo
         default: /* ignore - request is invalid */
             break;
         }
+    }
+}
+
+void
+IedServer_handleWriteAccessGlobally(IedServer self, WriteAccessHandler handler, void* parameter)
+{
+    if (self && self->mmsMapping)
+    {
+        MmsMapping_installGlobalWriteAccessHandler(self->mmsMapping, handler, parameter);
     }
 }
 
