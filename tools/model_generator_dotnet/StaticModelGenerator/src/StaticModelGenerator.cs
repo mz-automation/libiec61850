@@ -316,6 +316,9 @@ namespace StaticModelGenerator
 
         private static string toMmsString(string iecString)
         {
+            if (string.IsNullOrEmpty(iecString)) {
+                return string.Empty;
+            }
             return iecString.Replace('.', '$');
         }
 
