@@ -104,6 +104,9 @@ StringUtils_createStringFromBuffer(const uint8_t* buf, int size)
 char*
 StringUtils_createStringFromBufferInBuffer(char* newString, const uint8_t* buf, int size)
 {
+    if (size < 0)
+        size = 0;
+
     memcpy(newString, buf, size);
     newString[size] = 0;
 
@@ -113,6 +116,9 @@ StringUtils_createStringFromBufferInBuffer(char* newString, const uint8_t* buf, 
 char*
 StringUtils_createStringFromBufferInBufferMax(char* newString, const uint8_t* buf, int size, int maxBufSize)
 {
+    if (size < 0)
+        size = 0;
+
     if (size >= maxBufSize)
         size = maxBufSize - 1;
 
