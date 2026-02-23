@@ -223,6 +223,7 @@ Ethernet_setMode(EthernetSocket self, EthernetSocketMode mode)
         if (mode == ETHERNET_SOCKET_MODE_PROMISC)
         {
             struct ifreq ifr;
+            memset(&ifr, 0, sizeof(struct ifreq));
 
             if (ioctl (self->rawSocket, SIOCGIFFLAGS, &ifr) == -1)
             {
@@ -242,6 +243,7 @@ Ethernet_setMode(EthernetSocket self, EthernetSocketMode mode)
         else if (mode == ETHERNET_SOCKET_MODE_ALL_MULTICAST)
         {
             struct ifreq ifr;
+            memset(&ifr, 0, sizeof(struct ifreq));
 
             if (ioctl (self->rawSocket, SIOCGIFFLAGS, &ifr) == -1)
             {

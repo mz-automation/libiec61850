@@ -209,6 +209,8 @@ Ethernet_createSocket(const char* interfaceId, uint8_t* destAddress)
     char bpfFileStringBuffer[11] = { 0 };
     int i;
     struct ifreq ifr;
+    memset(&ifr, 0, sizeof(struct ifreq));
+
     int optval;
     struct bpf_insn destAddrFiltCode[] =
     {
