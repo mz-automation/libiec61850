@@ -1,7 +1,7 @@
 /*
  *  r_session.c
  *
- *  Copyright 2013-2022 Michael Zillgith
+ *  Copyright 2013-2026 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -31,7 +31,7 @@
 #include "r_session_internal.h"
 
 #ifndef DEBUG_RSESSION
-#define DEBUG_RSESSION 0
+#define DEBUG_RSESSION 1
 #endif
 
 #if (DEBUG_RSESSION == 1)
@@ -461,6 +461,12 @@ parseSessionMessage(RSession self, uint8_t* buffer, int msgSize, RSessionPayload
         goto exit_error;
     }
 
+    if (msgSize < (commonSessionHeaderLength + bufPos))
+    {
+        DEBUG_PRINTF("message too small for common session header");
+        goto exit_error;
+    }
+
     /* SPDU length */
     uint32_t spduLength = 0;
     bufPos = decodeUInt32FixedSize(&spduLength, buffer, bufPos);
@@ -476,6 +482,15 @@ parseSessionMessage(RSession self, uint8_t* buffer, int msgSize, RSessionPayload
     if (protocolVersion == 1)
     {
         /* parse version 1 common header parts */
+
+        /* Protocol v1 requires 14 bytes of protocol specific header minimum
+           (4 for timeOfCurrentKey + 2 for timeToNextKey + 2 for algos)
+           + 4 for keyId + 4 for payloadLength */
+        if (msgSize < bufPos + 14)
+        {
+            DEBUG_PRINTF("ERROR - insufficient header length for protocol v1");
+            goto exit_error;
+        }
 
         /* TimeOfCurrentKey */
         uint32_t timeOfCurrentKey;
@@ -609,6 +624,13 @@ parseSessionMessage(RSession self, uint8_t* buffer, int msgSize, RSessionPayload
 
             DEBUG_PRINTF("ASDU %02x sim: %i APPID: %04x length: %i", payloadElementType, simulation, appId, asduLength);
 
+            /* verify ASDU length field */
+            if (asduLength + bufPos - 2 > payloadEnd)
+            {
+                DEBUG_PRINTF("ERROR - ASDU length too large: %i", asduLength);
+                goto exit_error;
+            }
+
             if (payloadElementType == 0x81 ||
                 payloadElementType == 0x82)
             {
@@ -627,6 +649,18 @@ parseSessionMessage(RSession self, uint8_t* buffer, int msgSize, RSessionPayload
     else if (protocolVersion == 2)
     {
         /* parse version 2 common header parts */
+
+        /* Protocol v2 requires minimum bytes to read up to ivLen field:
+            - timeOfCurrentKey (4 bytes)
+            - timeToNextKey (2 bytes)
+            - keyId (4 bytes)
+            - ivLen (1 byte)
+            Total: 11 bytes */
+        if (msgSize < bufPos + 11)
+        {
+            DEBUG_PRINTF("ERROR - insufficient header length for protocol v2 (%i)", commonSessionHeaderLength);
+            goto exit_error;
+        }
 
         /* TimeOfCurrentKey */
         uint32_t timeOfCurrentKey;
@@ -673,6 +707,13 @@ parseSessionMessage(RSession self, uint8_t* buffer, int msgSize, RSessionPayload
 
         if (ivLen > 0)
         {
+            /* Check that IV data fits within msgSize */
+            if (bufPos + ivLen > (uint32_t)msgSize)
+            {
+                DEBUG_PRINTF("ERROR - IV length field invalid");
+                goto exit_error;
+            }
+
             iv = buffer + bufPos;
             bufPos += ivLen;
         }
@@ -794,6 +835,13 @@ parseSessionMessage(RSession self, uint8_t* buffer, int msgSize, RSessionPayload
             bufPos = decodeUInt16FixedSize(&asduLength, buffer, bufPos);
 
             DEBUG_PRINTF("ASDU %02x sim: %i APPID: %04x length: %i", payloadElementType, simulation, appId, asduLength);
+
+            /* verify ASDU length field */
+            if (asduLength + bufPos - 2 > payloadEnd)
+            {
+                DEBUG_PRINTF("ERROR - ASDU length too large: %i", asduLength);
+                goto exit_error;
+            }
 
             if (payloadElementType == 0x81 ||
                 payloadElementType == 0x82)
@@ -1114,8 +1162,6 @@ RSession_receiveMessage(RSession self, RSessionPayloadElementHandler handler, vo
 
         if (msgSize < 1)
         {
-            DEBUG_PRINTF("RESSSION: Failed to receive message");
-
             return R_SESSION_ERROR_FAILED_TO_RECEIVE;
         }
         else
