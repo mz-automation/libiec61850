@@ -162,8 +162,14 @@ RSessionCrypto_createRandomData(uint8_t* data, int dataSize)
         if (DEBUG_RSESSION_CRYPTO)
             printf("RSESSION_CRYPTO:  failed! mbedtls_ctr_drbg_random returned -0x%04x\n", -ret);
 
+        mbedtls_ctr_drbg_free( &ctr_drbg );
+        mbedtls_entropy_free( &entropy );
+
         return false;
     }
+
+    mbedtls_ctr_drbg_free( &ctr_drbg );
+    mbedtls_entropy_free( &entropy );
 
     return true;
 }
