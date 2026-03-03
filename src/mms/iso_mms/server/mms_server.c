@@ -1,7 +1,7 @@
 /*
  *  mms_server.c
  *
- *  Copyright 2013-2025 Michael Zillgith
+ *  Copyright 2013-2026 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -24,8 +24,8 @@
 #include "libiec61850_platform_includes.h"
 #include "mms_server.h"
 #include "mms_server_connection.h"
-#include "mms_value_cache.h"
 #include "mms_server_internal.h"
+#include "mms_value_cache.h"
 #include "iso_server_private.h"
 
 #ifndef CONFIG_MMS_SERVER_REQUEST_TIMEOUT_MS
@@ -45,8 +45,8 @@ createValueCaches(MmsDevice* device)
     }
 
 #if (CONFIG_MMS_SUPPORT_VMD_SCOPE_NAMED_VARIABLES == 1)
-    MmsValueCache valueCache = MmsValueCache_create((MmsDomain*) device);
-    Map_addEntry(valueCaches, (MmsDomain*) device, valueCache);
+    MmsValueCache valueCache = MmsValueCache_create((MmsDomain*)device);
+    Map_addEntry(valueCaches, (MmsDomain*)device, valueCache);
 #endif
 
     return valueCaches;
@@ -55,7 +55,7 @@ createValueCaches(MmsDevice* device)
 MmsServer
 MmsServer_create(MmsDevice* device, TLSConfiguration tlsConfiguration)
 {
-    MmsServer self = (MmsServer) GLOBAL_CALLOC(1, sizeof(struct sMmsServer));
+    MmsServer self = (MmsServer)GLOBAL_CALLOC(1, sizeof(struct sMmsServer));
 
     if (self)
     {
@@ -131,7 +131,7 @@ MmsServer_create(MmsDevice* device, TLSConfiguration tlsConfiguration)
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
                 self->fileUploadTasks[i].taskLock = Semaphore_create(1);
 #endif /* (CONFIG_MMS_THREADLESS_STACK != 1) */
-            }   
+            }
         }
 #endif /* (MMS_OBTAIN_FILE_SERVICE == 1) */
     }
@@ -180,7 +180,7 @@ MmsServer_setLocalIpAddress(MmsServer self, const char* localIpAddress)
 
     if (elem)
     {
-        IsoServer isoServer = (IsoServer) LinkedList_getData(elem);
+        IsoServer isoServer = (IsoServer)LinkedList_getData(elem);
 
         IsoServer_setLocalIpAddress(isoServer, localIpAddress);
     }
@@ -193,7 +193,7 @@ MmsServer_isRunning(MmsServer self)
 
     if (elem)
     {
-        IsoServer isoServer = (IsoServer) LinkedList_getData(elem);
+        IsoServer isoServer = (IsoServer)LinkedList_getData(elem);
 
         if (IsoServer_getState(isoServer) == ISO_SVR_STATE_RUNNING)
             return true;
@@ -233,7 +233,7 @@ MmsServer_setMaxConnections(MmsServer self, int maxConnections)
 
         while (elem)
         {
-            IsoServer isoServer = (IsoServer) LinkedList_getData(elem);
+            IsoServer isoServer = (IsoServer)LinkedList_getData(elem);
 
             IsoServer_setMaxConnections(isoServer, maxConnections);
 
@@ -414,7 +414,7 @@ MmsServer_setClientAuthenticator(MmsServer self, AcseAuthenticator authenticator
 
         while (elem)
         {
-            IsoServer isoServer = (IsoServer) LinkedList_getData(elem);
+            IsoServer isoServer = (IsoServer)LinkedList_getData(elem);
 
             IsoServer_setAuthenticator(isoServer, authenticator, authenticatorParameter);
 
@@ -451,7 +451,7 @@ MmsServer_installGetFileCompleteHandler(MmsServer self, MmsGetFileCompleteHandle
 static void
 closeConnection(void* con)
 {
-    MmsServerConnection connection = (MmsServerConnection) con;
+    MmsServerConnection connection = (MmsServerConnection)con;
 
     MmsServerConnection_destroy(connection);
 }
@@ -467,10 +467,10 @@ MmsServer_destroy(MmsServer self)
 {
     if (self)
     {
-        LinkedList_destroyDeep(self->isoServerList, (LinkedListValueDeleteFunction) IsoServer_destroy);
+        LinkedList_destroyDeep(self->isoServerList, (LinkedListValueDeleteFunction)IsoServer_destroy);
 
         Map_deleteDeep(self->openConnections, false, closeConnection);
-        Map_deleteDeep(self->valueCaches, false, (void (*) (void*)) deleteSingleCache);
+        Map_deleteDeep(self->valueCaches, false, (void (*)(void*))deleteSingleCache);
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
         if (self->openConnectionsLock)
@@ -509,7 +509,7 @@ MmsServer_destroy(MmsServer self)
 MmsValue*
 MmsServer_getValueFromCache(MmsServer self, MmsDomain* domain, const char* itemId)
 {
-    MmsValueCache cache = (MmsValueCache) Map_getEntry(self->valueCaches, domain);
+    MmsValueCache cache = (MmsValueCache)Map_getEntry(self->valueCaches, domain);
 
     if (cache)
         return MmsValueCache_lookupValue(cache, itemId, NULL);
@@ -518,9 +518,10 @@ MmsServer_getValueFromCache(MmsServer self, MmsDomain* domain, const char* itemI
 }
 
 MmsValue*
-MmsServer_getValueFromCacheEx(MmsServer self, MmsDomain* domain, const char* itemId, MmsVariableSpecification** typeSpec)
+MmsServer_getValueFromCacheEx(MmsServer self, MmsDomain* domain, const char* itemId,
+                              MmsVariableSpecification** typeSpec)
 {
-    MmsValueCache cache = (MmsValueCache) Map_getEntry(self->valueCaches, domain);
+    MmsValueCache cache = (MmsValueCache)Map_getEntry(self->valueCaches, domain);
 
     if (cache)
         return MmsValueCache_lookupValue(cache, itemId, typeSpec);
@@ -531,7 +532,7 @@ MmsServer_getValueFromCacheEx(MmsServer self, MmsDomain* domain, const char* ite
 MmsValue*
 MmsServer_getValueFromCacheEx2(MmsServer self, MmsDomain* domain, const char* itemId, int idx, const char* componentId)
 {
-    MmsValueCache cache = (MmsValueCache) Map_getEntry(self->valueCaches, domain);
+    MmsValueCache cache = (MmsValueCache)Map_getEntry(self->valueCaches, domain);
 
     if (cache)
         return MmsValueCache_lookupValueEx(cache, itemId, idx, componentId, NULL);
@@ -542,29 +543,27 @@ MmsServer_getValueFromCacheEx2(MmsServer self, MmsDomain* domain, const char* it
 void
 MmsServer_insertIntoCache(MmsServer self, MmsDomain* domain, char* itemId, MmsValue* value)
 {
-    MmsValueCache cache = (MmsValueCache) Map_getEntry(self->valueCaches, domain);
+    MmsValueCache cache = (MmsValueCache)Map_getEntry(self->valueCaches, domain);
 
     if (cache)
         MmsValueCache_insertValue(cache, itemId, value);
 }
 
 MmsDataAccessError
-mmsServer_setValue(MmsServer self, MmsDomain* domain, char* itemId, MmsValue* value,
-        MmsServerConnection connection)
+mmsServer_setValue(MmsServer self, MmsDomain* domain, char* itemId, MmsValue* value, MmsServerConnection connection)
 {
     MmsDataAccessError indication;
 
     if (self->writeHandler)
     {
-        indication = self->writeHandler(self->writeHandlerParameter, domain,
-                itemId, -1, NULL, value, connection);
+        indication = self->writeHandler(self->writeHandlerParameter, domain, itemId, -1, NULL, value, connection);
     }
     else
     {
         MmsValue* cachedValue;
 
         if (domain == NULL)
-            domain = (MmsDomain*) self->device;
+            domain = (MmsDomain*)self->device;
 
         cachedValue = MmsServer_getValueFromCache(self, domain, itemId);
 
@@ -581,22 +580,22 @@ mmsServer_setValue(MmsServer self, MmsDomain* domain, char* itemId, MmsValue* va
 }
 
 MmsDataAccessError
-mmsServer_setValueEx(MmsServer self, MmsDomain* domain, char* itemId, MmsValue* value,
-        MmsServerConnection connection, int arrayIdx, const char* componentId)
+mmsServer_setValueEx(MmsServer self, MmsDomain* domain, char* itemId, MmsValue* value, MmsServerConnection connection,
+                     int arrayIdx, const char* componentId)
 {
     MmsDataAccessError indication;
 
     if (self->writeHandler)
     {
-        indication = self->writeHandler(self->writeHandlerParameter, domain,
-                itemId, arrayIdx, componentId, value, connection);
+        indication =
+            self->writeHandler(self->writeHandlerParameter, domain, itemId, arrayIdx, componentId, value, connection);
     }
     else
     {
         MmsValue* cachedValue = NULL;
 
         if (domain == NULL)
-            domain = (MmsDomain*) self->device;
+            domain = (MmsDomain*)self->device;
 
         cachedValue = MmsServer_getValueFromCacheEx2(self, domain, itemId, arrayIdx, componentId);
 
@@ -619,9 +618,9 @@ mmsServer_getValue(MmsServer self, MmsDomain* domain, char* itemId, MmsServerCon
 
     if (self->readAccessHandler != NULL)
     {
-        MmsDataAccessError accessError =
-                self->readAccessHandler(self->readAccessHandlerParameter, (domain == (MmsDomain*) self->device) ? NULL : domain,
-                        itemId, connection, isDirectAccess);
+        MmsDataAccessError accessError = self->readAccessHandler(self->readAccessHandlerParameter,
+                                                                 (domain == (MmsDomain*)self->device) ? NULL : domain,
+                                                                 itemId, connection, isDirectAccess);
 
         if (accessError != DATA_ACCESS_ERROR_SUCCESS)
         {
@@ -635,15 +634,16 @@ mmsServer_getValue(MmsServer self, MmsDomain* domain, char* itemId, MmsServerCon
 
     if (value == NULL)
         if (self->readHandler != NULL)
-            value = self->readHandler(self->readHandlerParameter, (domain == (MmsDomain*) self->device) ? NULL : domain,
-                    itemId, connection, isDirectAccess);
+            value = self->readHandler(self->readHandlerParameter, (domain == (MmsDomain*)self->device) ? NULL : domain,
+                                      itemId, connection, isDirectAccess);
 
 exit_function:
     return value;
 }
 
 bool
-mmsServer_checkListAccess(MmsServer self, MmsGetNameListType listType, MmsDomain* domain, char* itemId, MmsServerConnection connection)
+mmsServer_checkListAccess(MmsServer self, MmsGetNameListType listType, MmsDomain* domain, char* itemId,
+                          MmsServerConnection connection)
 {
     bool allowAccess = true;
 
@@ -662,10 +662,9 @@ MmsServer_getDevice(MmsServer self)
 }
 
 static void /* will be called by ISO server stack */
-isoConnectionIndicationHandler(IsoConnectionIndication indication,
-		void* parameter, IsoConnection connection)
+isoConnectionIndicationHandler(IsoConnectionIndication indication, void* parameter, IsoConnection connection)
 {
-    MmsServer self = (MmsServer) parameter;
+    MmsServer self = (MmsServer)parameter;
 
     if (indication == ISO_CONNECTION_OPENED)
     {
@@ -682,8 +681,7 @@ isoConnectionIndicationHandler(IsoConnectionIndication indication,
 #endif
 
         if (self->connectionHandler != NULL)
-            self->connectionHandler(self->connectionHandlerParameter,
-                    mmsCon, MMS_SERVER_NEW_CONNECTION);
+            self->connectionHandler(self->connectionHandlerParameter, mmsCon, MMS_SERVER_NEW_CONNECTION);
     }
     else if (indication == ISO_CONNECTION_CLOSED)
     {
@@ -691,16 +689,14 @@ isoConnectionIndicationHandler(IsoConnectionIndication indication,
         Semaphore_wait(self->openConnectionsLock);
 #endif
 
-        MmsServerConnection mmsCon = (MmsServerConnection)
-                Map_removeEntry(self->openConnections, connection, false);
+        MmsServerConnection mmsCon = (MmsServerConnection)Map_removeEntry(self->openConnections, connection, false);
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
         Semaphore_post(self->openConnectionsLock);
 #endif
 
         if (self->connectionHandler != NULL)
-            self->connectionHandler(self->connectionHandlerParameter,
-                    mmsCon, MMS_SERVER_CONNECTION_CLOSED);
+            self->connectionHandler(self->connectionHandlerParameter, mmsCon, MMS_SERVER_CONNECTION_CLOSED);
 
         if (mmsCon != NULL)
             MmsServerConnection_destroy(mmsCon);
@@ -722,9 +718,9 @@ MmsServer_startListening(MmsServer self, int tcpPort)
 
         while (elem)
         {
-            IsoServer isoServer = (IsoServer) LinkedList_getData(elem);
+            IsoServer isoServer = (IsoServer)LinkedList_getData(elem);
 
-            IsoServer_setConnectionHandler(isoServer, isoConnectionIndicationHandler, (void*) self);
+            IsoServer_setConnectionHandler(isoServer, isoConnectionIndicationHandler, (void*)self);
 
             if (tcpPort != -1)
                 IsoServer_setTcpPort(isoServer, tcpPort);
@@ -745,7 +741,7 @@ MmsServer_stopListening(MmsServer self)
 
         while (elem)
         {
-            IsoServer isoServer = (IsoServer) LinkedList_getData(elem);
+            IsoServer isoServer = (IsoServer)LinkedList_getData(elem);
 
             IsoServer_stopListening(isoServer);
 
@@ -769,9 +765,9 @@ MmsServer_startListeningThreadless(MmsServer self, int tcpPort)
 
         while (elem)
         {
-            IsoServer isoServer = (IsoServer) LinkedList_getData(elem);
+            IsoServer isoServer = (IsoServer)LinkedList_getData(elem);
 
-            IsoServer_setConnectionHandler(isoServer, isoConnectionIndicationHandler, (void*) self);
+            IsoServer_setConnectionHandler(isoServer, isoConnectionIndicationHandler, (void*)self);
 
             if (tcpPort != -1)
                 IsoServer_setTcpPort(isoServer, tcpPort);
@@ -796,7 +792,7 @@ MmsServer_waitReady(MmsServer self, unsigned int timeoutMs)
 
         while (elem)
         {
-            IsoServer isoServer = (IsoServer) LinkedList_getData(elem);
+            IsoServer isoServer = (IsoServer)LinkedList_getData(elem);
 
             int serverResult;
 
@@ -829,7 +825,7 @@ MmsServer_handleIncomingMessages(MmsServer self)
 
         while (elem)
         {
-            IsoServer isoServer = (IsoServer) LinkedList_getData(elem);
+            IsoServer isoServer = (IsoServer)LinkedList_getData(elem);
 
             IsoServer_processIncomingMessages(isoServer);
 
@@ -857,7 +853,8 @@ MmsServer_handleBackgroundTasks(MmsServer self)
         Semaphore_post(self->fileUploadTasks[i].taskLock);
 #endif
 
-        if (taskState != 0) {
+        if (taskState != 0)
+        {
             mmsServer_fileUploadTask(self, &(self->fileUploadTasks[i]), taskState);
         }
     }
@@ -876,7 +873,7 @@ MmsServer_getConnectionCounter(MmsServer self)
 
         while (elem)
         {
-            IsoServer isoServer = (IsoServer) LinkedList_getData(elem);
+            IsoServer isoServer = (IsoServer)LinkedList_getData(elem);
 
             count += IsoServer_getConnectionCounter(isoServer);
 
@@ -905,7 +902,7 @@ MmsServer_stopListeningThreadless(MmsServer self)
 
         while (elem)
         {
-            IsoServer isoServer = (IsoServer) LinkedList_getData(elem);
+            IsoServer isoServer = (IsoServer)LinkedList_getData(elem);
 
             IsoServer_stopListeningThreadless(isoServer);
 
@@ -950,7 +947,7 @@ MmsServer_abortConnection(MmsServer self, MmsServerConnection con)
 
         while (elem)
         {
-            IsoServer isoServer = (IsoServer) LinkedList_getData(elem);
+            IsoServer isoServer = (IsoServer)LinkedList_getData(elem);
 
             if (IsoServer_closeConnection(isoServer, con->isoConnection))
             {
