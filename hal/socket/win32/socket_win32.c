@@ -10,11 +10,11 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
 
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#include <windows.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <windows.h>
+#include <winsock2.h>
+#include <ws2tcpip.h>
 
 #pragma comment(lib, "Ws2_32.lib")
 
@@ -86,7 +86,6 @@ Handleset_addSocket(HandleSet self, const Socket sock)
 {
     if (self != NULL && sock != NULL && sock->fd != INVALID_SOCKET)
     {
-
         FD_SET(sock->fd, &self->handles);
 
         if ((sock->fd > self->maxHandle) || (self->maxHandle == INVALID_SOCKET))
@@ -119,7 +118,7 @@ Handleset_waitReady(HandleSet self, unsigned int timeoutMs)
 
         memcpy((void*)&handles, &(self->handles), sizeof(fd_set));
 
-        result = select(self->maxHandle + 1, &handles, NULL, NULL, &timeout);
+        result = select(0, &handles, NULL, NULL, &timeout);
     }
     else
     {
@@ -162,6 +161,7 @@ static void
 setSocketNonBlocking(Socket self)
 {
     unsigned long mode = 1;
+
     if (ioctlsocket(self->fd, FIONBIO, &mode) != 0)
     {
         if (DEBUG_SOCKET)
@@ -463,11 +463,10 @@ Socket_checkAsyncConnectState(Socket self)
     FD_ZERO(&fdSet);
     FD_SET(self->fd, &fdSet);
 
-    int selectVal = select(self->fd + 1, NULL, &fdSet, NULL, &timeout);
+    int selectVal = select(0, NULL, &fdSet, NULL, &timeout);
 
     if (selectVal == 1)
     {
-
         /* Check if connection is established */
 
         int so_error;
@@ -477,7 +476,6 @@ Socket_checkAsyncConnectState(Socket self)
         {
             if (so_error == 0)
             {
-
                 int recvRes = recv(self->fd, NULL, 0, 0);
 
                 if (recvRes == SOCKET_ERROR)
@@ -521,9 +519,8 @@ Socket_connect(Socket self, const char* address, int port)
     FD_ZERO(&fdSet);
     FD_SET(self->fd, &fdSet);
 
-    if (select(self->fd + 1, NULL, &fdSet, NULL, &timeout) == 1)
+    if (select(0, NULL, &fdSet, NULL, &timeout) == 1)
     {
-
         /* Check if connection is established */
 
         int so_error;
@@ -870,7 +867,6 @@ UdpSocket_sendTo(UdpSocket self, const char* address, int port, uint8_t* msg, in
 
     if (!prepareAddress(address, port, &remoteAddress))
     {
-
         if (DEBUG_SOCKET)
             printf("SOCKET: failed to lookup remote address %s\n", address);
 
