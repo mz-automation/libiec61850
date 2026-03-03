@@ -38,7 +38,7 @@ extern "C" {
 typedef struct sTLSConfiguration* TLSConfiguration;
 
 /**
- * \brief Create a new \ref TLSConfiguration object to represent TLS configuration and certificates
+ * \brief Create a new \ref TLSConfiguration object to represent TLS configuration and certificates and set owner count to 1
  *
  * WARNING: Configuration cannot be changed after using for the first time.
  *
@@ -46,6 +46,17 @@ typedef struct sTLSConfiguration* TLSConfiguration;
  */
 PAL_API TLSConfiguration
 TLSConfiguration_create(void);
+
+/**
+ * \brief Increase the owner count
+ *
+ * \note Every owner has to call \ref TLSConfiguration_destroy separately.
+ *
+ * \param self the TLSConfiguration instance
+ */
+PAL_API TLSConfiguration
+TLSConfiguration_claimOwnership(TLSConfiguration self);
+
 
 /* will be called by stack automatically when appropriate */
 PAL_API void
@@ -364,9 +375,11 @@ PAL_API void
 TLSConfiguration_clearCipherSuiteList(TLSConfiguration self);
 
 /**
- * Release all resource allocated by the TLSConfiguration instance
+ * \brief Release all resource allocated by the TLSConfiguration instance or decrease owner count
  *
  * NOTE: Do not use the object after calling this function!
+ *
+ * \param self the TLS configuration instance
  */
 PAL_API void
 TLSConfiguration_destroy(TLSConfiguration self);

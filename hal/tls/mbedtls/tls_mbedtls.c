@@ -78,6 +78,13 @@ tlsFormatTimestamp(char* buffer, size_t bufferSize)
 #define DEBUG_PRINT(appId, fmt, ...) do {} while(0)
 #endif
 
+#if __STDC_VERSION__ >= 201112L
+#include <stdatomic.h>
+#else
+#include "hal_thread.h"
+#define _TLS_OWN_CNT_SEM 1
+#endif
+
 typedef struct TLSCacheEntry
 {
     uint64_t timestamp;
@@ -154,6 +161,11 @@ struct sTLSConfiguration
     bool useSessionResumption;
     int sessionResumptionInterval; /* session resumption interval in milliseconds */
 
+#ifdef _TLS_OWN_CNT_SEM
+    Semaphore ownerCountMutex;
+#endif /* _TLS_OWN_CNT_SEM */
+
+    int ownerCount;
     int* ciphersuites;
     int maxCiphersuites;
 };
@@ -875,6 +887,12 @@ TLSConfiguration_create()
 
     if (self)
     {
+         self->ownerCount = 1;
+
+#ifdef _TLS_OWN_CNT_SEM
+        self->ownerCountMutex = Semaphore_create(1);
+#endif /* TLS_OWN_CNT_SEM */
+
         mbedtls_ssl_config_init( &(self->conf) );
         mbedtls_x509_crt_init( &(self->ownCertificate) );
         mbedtls_x509_crt_init( &(self->cacerts) );
@@ -1203,49 +1221,74 @@ TLSConfiguration_setRenegotiationTimeout(TLSConfiguration self, int timeoutInMs)
         self->renegotiationTimeoutInMs = timeoutInMs;
 }
 
+static void
+destroy(TLSConfiguration self)
+{
+    if (self->useSessionResumption)
+    {
+        if (self->conf.endpoint == MBEDTLS_SSL_IS_CLIENT)
+        {
+            if (self->savedSession)
+            {
+                mbedtls_ssl_session_free(self->savedSession);
+                GLOBAL_FREEMEM(self->savedSession);
+            }
+        }
+        else
+        {
+            tlsVersionedCacheFree(&(self->serverSessionCache));
+        }
+    }
+
+    mbedtls_x509_crt_free(&(self->ownCertificate));
+    mbedtls_x509_crt_free(&(self->cacerts));
+    mbedtls_x509_crl_free(&(self->crl));
+    mbedtls_pk_free(&(self->ownKey));
+    mbedtls_ssl_config_free(&(self->conf));
+
+    LinkedList certElem = LinkedList_getNext(self->allowedCertificates);
+
+    while (certElem)
+    {
+        mbedtls_x509_crt* cert = (mbedtls_x509_crt*) LinkedList_getData(certElem);
+
+        mbedtls_x509_crt_free(cert);
+
+        certElem = LinkedList_getNext(certElem);
+    }
+
+    LinkedList_destroy(self->allowedCertificates);
+
+    GLOBAL_FREEMEM(self->ciphersuites);
+
+    GLOBAL_FREEMEM(self);
+}
+
 void
 TLSConfiguration_destroy(TLSConfiguration self)
 {
     if (self)
     {
-        if (self->useSessionResumption)
-        {
-            if ((self->conf.endpoint == MBEDTLS_SSL_IS_CLIENT) && (self->savedSession != NULL))
-            {
-                if (self->savedSession)
-                {
-                    mbedtls_ssl_session_free(self->savedSession);
-                    GLOBAL_FREEMEM(self->savedSession);
-                }
-            }
-            else
-            {
-                tlsVersionedCacheFree(&(self->serverSessionCache));
-            }
+#ifdef _TLS_OWN_CNT_SEM
+
+        int cnt;
+
+        Semaphore_wait(self->ownerCountMutex);
+
+        cnt = self->ownerCount;
+        self->ownerCount--;
+
+        Semaphore_post(self->ownerCountMutex);
+
+        if (cnt == 1) {
+            destroy(self);
         }
-
-        mbedtls_x509_crt_free(&(self->ownCertificate));
-        mbedtls_x509_crt_free(&(self->cacerts));
-        mbedtls_x509_crl_free(&(self->crl));
-        mbedtls_pk_free(&(self->ownKey));
-        mbedtls_ssl_config_free(&(self->conf));
-
-        LinkedList certElem = LinkedList_getNext(self->allowedCertificates);
-
-        while (certElem)
+#else
+        if (atomic_fetch_sub(&(self->ownerCount), 1) == 1)
         {
-            mbedtls_x509_crt* cert = (mbedtls_x509_crt*)LinkedList_getData(certElem);
-
-            mbedtls_x509_crt_free(cert);
-
-            certElem = LinkedList_getNext(certElem);
+            destroy(self);
         }
-
-        LinkedList_destroy(self->allowedCertificates);
-
-        GLOBAL_FREEMEM(self->ciphersuites);
-
-        GLOBAL_FREEMEM(self);
+#endif /* #ifdef _TLS_OWN_CNT_SEM */
     }
 }
 
@@ -2259,4 +2302,18 @@ TLSConfigVersion_toString(TLSConfigVersion version)
         default:
             return "unknown TLS version";
     }
+}
+
+TLSConfiguration
+TLSConfiguration_claimOwnership(TLSConfiguration self)
+{
+#ifdef _TLS_OWN_CNT_SEM
+    Semaphore_wait(self->ownerCountMutex);
+    self->ownerCount++;
+    Semaphore_post(self->ownerCountMutex);
+#else
+    atomic_fetch_add(&(self->ownerCount), 1);
+#endif
+
+    return self;
 }
