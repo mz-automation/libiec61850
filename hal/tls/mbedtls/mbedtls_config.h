@@ -32,9 +32,11 @@
 #define MBEDTLS_CTR_DRBG_C
 /* #define MBEDTLS_DES_C */
 #define MBEDTLS_ENTROPY_C
+#define MBEDTLS_ERROR_C
 #define MBEDTLS_MD_C
 #define MBEDTLS_MD5_C
 #define MBEDTLS_NET_C
+#define MBEDTLS_NIST_KW_C
 #define MBEDTLS_OID_C
 #define MBEDTLS_PK_C
 #define MBEDTLS_PK_PARSE_C

@@ -15,7 +15,6 @@ set(LIBHAL_VERSION_PATCH "0")
 
 # feature checks
 include(CheckLibraryExists)
-check_library_exists(rt clock_gettime "time.h" CONFIG_SYSTEM_HAS_CLOCK_GETTIME)
 
 # check if we are on a little or a big endian
 include (TestBigEndian)
@@ -189,16 +188,10 @@ SET_TARGET_PROPERTIES(hal-shared PROPERTIES
 )
 
 IF(UNIX)
-  IF (CONFIG_SYSTEM_HAS_CLOCK_GETTIME)
-     target_link_libraries (hal
-         -lpthread
-         -lrt
-     )
-  ELSE ()
-     target_link_libraries (hal
-         -lpthread
-     )
-  ENDIF (CONFIG_SYSTEM_HAS_CLOCK_GETTIME)
+    target_link_libraries (hal
+        -lpthread
+        -lrt
+    )
 ENDIF(UNIX)
 
 IF(CONFIG_USE_EXTERNAL_MBEDTLS_DYNLIB)
