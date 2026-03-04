@@ -1,7 +1,7 @@
 /*
  *  iso_server.h
  *
- *  Copyright 2013 Michael Zillgith
+ *  Copyright 2013-2026 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -131,6 +131,9 @@ IsoServer_getAuthenticatorParameter(IsoServer self);
 
 LIB61850_INTERNAL TLSConfiguration
 IsoServer_getTLSConfiguration(IsoServer self);
+
+LIB61850_INTERNAL void
+IsoServer_setTLSConfiguration(IsoServer self, TLSConfiguration tlsConfig);
 
 LIB61850_INTERNAL void
 IsoServer_startListening(IsoServer self);

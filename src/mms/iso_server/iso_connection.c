@@ -69,6 +69,7 @@ struct sIsoConnection
     Socket socket;
 
 #if (CONFIG_MMS_SUPPORT_TLS == 1)
+    TLSConfiguration tlsConfiguration;
     TLSSocket tlsSocket;
 #endif
 
@@ -100,7 +101,17 @@ finalizeIsoConnection(IsoConnection self)
 
 #if (CONFIG_MMS_SUPPORT_TLS == 1)
     if (self->tlsSocket)
+    {
         TLSSocket_close(self->tlsSocket);
+
+        self->tlsSocket = NULL;
+    }
+
+    if (self->tlsConfiguration)
+    {
+        TLSConfiguration_destroy(self->tlsConfiguration);
+        self->tlsConfiguration = NULL;
+    }
 #endif
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
@@ -506,14 +517,20 @@ IsoConnection_create(Socket socket, IsoServer isoServer, bool isSingleThread)
         self->socket = socket;
 
 #if (CONFIG_MMS_SUPPORT_TLS == 1)
-        if (IsoServer_getTLSConfiguration(isoServer) != NULL)
+        TLSConfiguration tlsConfig = IsoServer_getTLSConfiguration(isoServer);
+
+        if (tlsConfig)
         {
+            self->tlsConfiguration = TLSConfiguration_claimOwnership(tlsConfig);
             self->tlsSocket = TLSSocket_create(socket, IsoServer_getTLSConfiguration(isoServer), true);
 
             if (self->tlsSocket == NULL)
             {
                 if (DEBUG_ISO_SERVER)
-                    printf("ISO_SERVER: IsoConnection - TLS initialization failed\n");
+                    printf("ISO_SERVER: connection - TLS initialization failed\n");
+
+                TLSConfiguration_destroy(self->tlsConfiguration);
+                self->tlsConfiguration = NULL;
 
                 GLOBAL_FREEMEM(self);
 

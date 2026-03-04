@@ -630,7 +630,14 @@ IsoServer_create(TLSConfiguration tlsConfiguration)
         else
             self->tcpPort = SECURE_TCP_PORT;
 
-        self->tlsConfiguration = tlsConfiguration;
+        if (tlsConfiguration == NULL)
+        {
+            self->tlsConfiguration = NULL;
+        }
+        else
+        {
+            self->tlsConfiguration = TLSConfiguration_claimOwnership(tlsConfiguration);
+        }
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
         self->stateLock = Semaphore_create(1);
@@ -709,6 +716,24 @@ TLSConfiguration
 IsoServer_getTLSConfiguration(IsoServer self)
 {
     return self->tlsConfiguration;
+}
+
+void
+IsoServer_setTLSConfiguration(IsoServer self, TLSConfiguration tlsConfig)
+{
+    if (self->tlsConfiguration)
+    {
+        TLSConfiguration_destroy(self->tlsConfiguration);
+    }
+
+    if (tlsConfig == NULL)
+    {
+        self->tlsConfiguration = NULL;
+    }
+    else
+    {
+        self->tlsConfiguration = TLSConfiguration_claimOwnership(tlsConfig);
+    }
 }
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1) && (CONFIG_MMS_SINGLE_THREADED != 1)
@@ -916,6 +941,9 @@ IsoServer_destroy(IsoServer self)
 #endif
 
         GLOBAL_FREEMEM(self->localIpAddress);
+
+        if (self->tlsConfiguration)
+            TLSConfiguration_destroy(self->tlsConfiguration);
 
         GLOBAL_FREEMEM(self);
     }
