@@ -169,6 +169,22 @@ MmsServer_addAP(MmsServer self, const char* ipAddr, int tcpPort, TLSConfiguratio
 }
 
 void
+MmsServer_setTLSConfiguration(MmsServer self, TLSConfiguration tlsConfiguration)
+{
+    if (LinkedList_size(self->isoServerList) == 0)
+    {
+        MmsServer_addAP(self, NULL, -1, NULL);
+    }
+
+    LinkedList elem = LinkedList_get(self->isoServerList, 0);
+
+    if (elem)
+    {
+        IsoServer_setTLSConfiguration((IsoServer)LinkedList_getData(elem), tlsConfiguration);
+    }
+}
+
+void
 MmsServer_setLocalIpAddress(MmsServer self, const char* localIpAddress)
 {
     if (LinkedList_size(self->isoServerList) == 0)

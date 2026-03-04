@@ -515,6 +515,17 @@ LIB61850_API void
 IedServer_setLocalIpAddress(IedServer self, const char* localIpAddress);
 
 /**
+ * \brief Update the TLS configuration for the server.
+ *
+ * \note This will be applied to all new connections. Already established connections will not be affected.
+ *
+ * \param self the IedServer instance
+ * \param tlsConfiguration the new TLS configuration to use for new connections (or NULL to disable TLS for new connections)
+ */
+LIB61850_API void
+IedServer_setTLSConfiguration(IedServer self, TLSConfiguration tlsConfiguration);
+
+/**
  * \brief Set the identify for the MMS identify service
  *
  * CONFIG_IEC61850_SUPPORT_SERVER_IDENTITY required

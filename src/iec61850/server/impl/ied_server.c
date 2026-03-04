@@ -955,6 +955,12 @@ IedServer_setLocalIpAddress(IedServer self, const char* localIpAddress)
 }
 
 void
+IedServer_setTLSConfiguration(IedServer self, TLSConfiguration tlsConfiguration)
+{
+    MmsServer_setTLSConfiguration(self->mmsServer, tlsConfiguration);
+}
+
+void
 IedServer_startThreadless(IedServer self, int tcpPort)
 {
     if (self->running == false)

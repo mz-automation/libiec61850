@@ -1,7 +1,7 @@
 /*
  *  mms_server.h
  *
- *  Copyright 2013-2023 Michael Zillgith
+ *  Copyright 2013-2026 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -50,6 +50,12 @@ typedef enum {
     MMS_ASSOCIATION_SPECIFIC,
     MMS_VMD_SPECIFIC
 } MmsVariableListType;
+
+/**
+ * \brief Update the TLS configuration for the server. This will be applied to all new connections. Already established connections will not be affected.
+ */
+LIB61850_INTERNAL void
+MmsServer_setTLSConfiguration(MmsServer self, TLSConfiguration tlsConfiguration);
 
 LIB61850_INTERNAL void
 MmsServer_setLocalIpAddress(MmsServer self, const char* localIpAddress);
