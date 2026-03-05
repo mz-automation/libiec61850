@@ -5,6 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\..\IEC61850forCSharp\IEC61850Model\SVControlBlock.cs" Link="SVControlBlock.cs" />
+    <Compile Include="..\..\..\IEC61850forCSharp\AcseAuthenticationParameter.cs" Link="AcseAuthenticationParameter.cs" />
     <Compile Include="..\..\..\IEC61850forCSharp\Control.cs" Link="Control.cs" />
     <Compile Include="..\..\..\IEC61850forCSharp\DataSet.cs" Link="DataSet.cs" />
     <Compile Include="..\..\..\IEC61850forCSharp\GooseControlBlock.cs" Link="GooseControlBlock.cs" />

@@ -66,7 +66,19 @@ namespace IEC61850
             ALM_CERT_NOT_CONFIGURED = 13,
             ALM_CERT_NOT_TRUSTED = 14,
             ALM_NO_CIPHER = 15,
-            INF_SESSION_ESTABLISHED = 16
+            INF_SESSION_ESTABLISHED = 16,
+            WRN_CERT_EXPIRED = 17,
+            WRN_CERT_NOT_YET_VALID = 18,
+            WRN_CRL_EXPIRED = 19,
+            WRN_CRL_NOT_YET_VALID = 20,
+            ALM_TLS_VERSION_CHANGE = 21,
+            WRN_MIN_KEY_LENGTH = 22,
+            ALM_INSUFFICIENT_KEY_LENGTH = 23,
+            WRN_CRL_NOT_ACCESSIBLE = 24,
+            ALM_CA_CERT_NOT_AVAILABLE = 25,
+            ALM_RENEGOTIATION_TIMEOUT = 26,
+            INF_SESSION_RESUMED = 27,
+            INF_SESSION_EXPIRED = 28
         }
 
         public class TLSConnection
@@ -280,6 +292,9 @@ namespace IEC61850
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern void TLSConfiguration_setMaxTlsVersion(IntPtr self, int version);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void TLSConfiguration_setMinimumKeyLength(IntPtr self, int keyLengthInBits);
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern void TLSConfiguration_addCipherSuite(IntPtr self, int ciphersuite);
@@ -546,6 +561,16 @@ namespace IEC61850
             public void SetMinTlsVersion(TLSConfigVersion version)
             {
                 TLSConfiguration_setMinTlsVersion(self, (int)version);
+            }
+
+            /// <summary>
+            /// Set minimal allowed public key length in bits (e.g. 2048).
+            /// Connections with shorter public keys will be rejected.
+            /// </summary>
+            /// <param name="keyLengthInBits">minimal allowed public key length in bits</param>
+            public void SetMinimumKeyLength(int keyLengthInBits)
+            {
+                TLSConfiguration_setMinimumKeyLength(self, keyLengthInBits);
             }
 
             /// <summary>
