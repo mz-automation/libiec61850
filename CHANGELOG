@@ -3,7 +3,19 @@ Unreleased
 
 New features and improvements:
 
+
+- TLS: integrations for mbedtls 2.28 and 3.6 are improved to be able to create more standard compliant events
+- TLS: IedServer and IedConnection now support to update the TLS configuration while running (the new config applies only to new connections)
+- removed function IsoConnectionParameters_setTlsConfiguration as TLSConfiguration is no longer stored in IsoConnectionParameters
 - Added optional test-only instrumentation build option `LIB61850_ENABLE_TEST_API` (OFF by default). When enabled exports `MmsConnection_setFileReadArtificialDelay` (marked with `LIB61850_TEST_API`) to inject artificial delays before MMS file read responses for deterministic ObtainFile request timeout testing. Production builds remain unaffected when disabled.
+- fixed - memory leak in RSessionCrypto_createRandomData
+- R-SESSION: fixed some missing length checks and message validations
+- changed server side and GOOSE pub/sub timeout handling from real time clock to use monotonic clock (LIB61850-535)
+- IedServer: added support for request timeout configuration for obtain file service (LIB61850-534)
+- IedServer: fixed IedServer_updateAttributeValue to avoid that boolean data updates trigger two dupd reports (LIB61850-532)
+- IED server: allow write access to FCD with global write access handler (LIB61850-531)
+- IedServer: Publish GOOSE data immediately instead of waiting for the application calling IedServer_unlockDataModel
+
 
 Changes to version 1.6.1
 ------------------------
