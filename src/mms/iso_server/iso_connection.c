@@ -521,8 +521,8 @@ IsoConnection_create(Socket socket, IsoServer isoServer, bool isSingleThread)
 
         if (tlsConfig)
         {
-            self->tlsConfiguration = TLSConfiguration_claimOwnership(tlsConfig);
-            self->tlsSocket = TLSSocket_create(socket, IsoServer_getTLSConfiguration(isoServer), true);
+            self->tlsConfiguration = tlsConfig;
+            self->tlsSocket = TLSSocket_create(socket, tlsConfig, true);
 
             if (self->tlsSocket == NULL)
             {

@@ -74,6 +74,9 @@ struct sIsoServer
     char* localIpAddress;
 
     TLSConfiguration tlsConfiguration;
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore tlsConfigMutex; /* mutex to synchronize access to TLSConfiguration */
+#endif
 
 #if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
     int maxConnections;
@@ -641,6 +644,7 @@ IsoServer_create(TLSConfiguration tlsConfiguration)
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
         self->stateLock = Semaphore_create(1);
+        self->tlsConfigMutex = Semaphore_create(1);
 #endif
 
 #if (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS == -1)
@@ -715,12 +719,30 @@ IsoServer_getAuthenticatorParameter(IsoServer self)
 TLSConfiguration
 IsoServer_getTLSConfiguration(IsoServer self)
 {
-    return self->tlsConfiguration;
+    TLSConfiguration tlsConfig = NULL;
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_wait(self->tlsConfigMutex);
+#endif
+
+    if (self->tlsConfiguration)
+        tlsConfig = TLSConfiguration_claimOwnership(self->tlsConfiguration);
+
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_post(self->tlsConfigMutex);
+#endif
+
+    return tlsConfig;
 }
 
 void
 IsoServer_setTLSConfiguration(IsoServer self, TLSConfiguration tlsConfig)
 {
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_wait(self->tlsConfigMutex);
+#endif
+
     if (self->tlsConfiguration)
     {
         TLSConfiguration_destroy(self->tlsConfiguration);
@@ -734,6 +756,10 @@ IsoServer_setTLSConfiguration(IsoServer self, TLSConfiguration tlsConfig)
     {
         self->tlsConfiguration = TLSConfiguration_claimOwnership(tlsConfig);
     }
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_post(self->tlsConfigMutex);
+#endif
 }
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1) && (CONFIG_MMS_SINGLE_THREADED != 1)
@@ -938,6 +964,7 @@ IsoServer_destroy(IsoServer self)
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
         Semaphore_destroy(self->stateLock);
+        Semaphore_destroy(self->tlsConfigMutex);
 #endif
 
         GLOBAL_FREEMEM(self->localIpAddress);
