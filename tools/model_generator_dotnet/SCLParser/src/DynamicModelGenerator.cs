@@ -173,12 +173,15 @@ namespace IEC61850.SCL
             }
             else
             {
+                int appID_decimal = Convert.ToInt32(gseAddress.AppId, 16);
+                int vlanID_decimal = Convert.ToInt32(gseAddress.VlanId, 16);
+
                 output.WriteLine("){");
 
                 output.Write("PA(");
                 output.Write(gseAddress.VlanPriority + " ");
-                output.Write(gseAddress.VlanId + " ");
-                output.Write(gseAddress.AppId + " ");
+                output.Write(vlanID_decimal.ToString() + " ");
+                output.Write(appID_decimal.ToString() + " ");
 
                 for (int i = 0; i < 6; i++)
                 {
@@ -223,7 +226,16 @@ namespace IEC61850.SCL
                 output.Write("0 ");
 
             if (smv.SclSMVControl.SmpMod != null)
-                output.Write(smv.SclSMVControl.SmpMod + " ");
+            {
+                int smp_val = -1;
+                if (smv.SclSMVControl.SmpMod == "SmpPerPeriod")
+                    smp_val = 0;
+                else if (smv.SclSMVControl.SmpMod == "SmpPerSec")
+                    smp_val = 1;
+                else if (smv.SclSMVControl.SmpMod == "SmpPerSamp")
+                    smp_val = 2;
+                output.Write(smp_val + " ");
+            }
             else
                 output.Write("0 ");
 
@@ -252,12 +264,14 @@ namespace IEC61850.SCL
             }
             else
             {
+                int appID_decimal = Convert.ToInt32(smvAddress.AppId, 16);
+                int vlanID_decimal = Convert.ToInt32(smvAddress.VlanId, 16);
                 output.WriteLine("){");
 
                 output.Write("PA(");
                 output.Write(smvAddress.VlanPriority + " ");
-                output.Write(smvAddress.VlanId + " ");
-                output.Write(smvAddress.AppId + " ");
+                output.Write(vlanID_decimal + " ");
+                output.Write(appID_decimal + " ");
 
                 for (int i = 0; i < 6; i++)
                 {
