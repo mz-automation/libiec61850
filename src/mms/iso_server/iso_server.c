@@ -73,10 +73,12 @@ struct sIsoServer
     int tcpPort;
     char* localIpAddress;
 
+#if (CONFIG_MMS_SUPPORT_TLS == 1)
     TLSConfiguration tlsConfiguration;
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore tlsConfigMutex; /* mutex to synchronize access to TLSConfiguration */
 #endif
+#endif /* (CONFIG_MMS_SUPPORT_TLS == 1) */
 
 #if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
     int maxConnections;
@@ -633,6 +635,7 @@ IsoServer_create(TLSConfiguration tlsConfiguration)
         else
             self->tcpPort = SECURE_TCP_PORT;
 
+#if (CONFIG_MMS_SUPPORT_TLS == 1)
         if (tlsConfiguration == NULL)
         {
             self->tlsConfiguration = NULL;
@@ -643,8 +646,13 @@ IsoServer_create(TLSConfiguration tlsConfiguration)
         }
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
-        self->stateLock = Semaphore_create(1);
         self->tlsConfigMutex = Semaphore_create(1);
+#endif
+
+#endif /* (CONFIG_MMS_SUPPORT_TLS == 1) */
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        self->stateLock = Semaphore_create(1);
 #endif
 
 #if (CONFIG_MAXIMUM_TCP_CLIENT_CONNECTIONS == -1)
@@ -719,6 +727,8 @@ IsoServer_getAuthenticatorParameter(IsoServer self)
 TLSConfiguration
 IsoServer_getTLSConfiguration(IsoServer self)
 {
+#if (CONFIG_MMS_SUPPORT_TLS == 1)
+
     TLSConfiguration tlsConfig = NULL;
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
@@ -734,11 +744,17 @@ IsoServer_getTLSConfiguration(IsoServer self)
 #endif
 
     return tlsConfig;
+
+#else
+    return NULL;
+#endif /* (CONFIG_MMS_SUPPORT_TLS == 1) */
 }
 
 void
 IsoServer_setTLSConfiguration(IsoServer self, TLSConfiguration tlsConfig)
 {
+#if (CONFIG_MMS_SUPPORT_TLS == 1)
+
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_wait(self->tlsConfigMutex);
 #endif
@@ -760,6 +776,8 @@ IsoServer_setTLSConfiguration(IsoServer self, TLSConfiguration tlsConfig)
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_post(self->tlsConfigMutex);
 #endif
+
+#endif /* (CONFIG_MMS_SUPPORT_TLS == 1) */
 }
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1) && (CONFIG_MMS_SINGLE_THREADED != 1)
@@ -964,13 +982,19 @@ IsoServer_destroy(IsoServer self)
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
         Semaphore_destroy(self->stateLock);
-        Semaphore_destroy(self->tlsConfigMutex);
 #endif
 
         GLOBAL_FREEMEM(self->localIpAddress);
 
+#if (CONFIG_MMS_SUPPORT_TLS == 1)
         if (self->tlsConfiguration)
             TLSConfiguration_destroy(self->tlsConfiguration);
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_destroy(self->tlsConfigMutex);
+#endif
+
+#endif /* (CONFIG_MMS_SUPPORT_TLS == 1) */
 
         GLOBAL_FREEMEM(self);
     }
