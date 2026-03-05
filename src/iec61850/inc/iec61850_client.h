@@ -277,6 +277,15 @@ LIB61850_API void
 IedConnection_setMaxOutstandingCalls(IedConnection self, int calling, int called);
 
 /**
+ * \brief Set or update the TLS configuration for an IedConnection instance
+ *
+ * \param self IedConnection instance to operate on
+ * \param tlsConfig the TLS configuration to use
+ */
+LIB61850_API void
+IedConnection_setTLSConfiguration(IedConnection self, TLSConfiguration tlsConfig);
+
+/**
  * \brief set the request timeout in ms
  *
  * Set the request timeout for this connection. You can call this function any time to adjust

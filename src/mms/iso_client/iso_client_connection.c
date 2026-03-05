@@ -3,7 +3,7 @@
  *
  *  Client side representation of the ISO stack (COTP, session, presentation, ACSE)
  *
- *  Copyright 2013-2024 Michael Zillgith
+ *  Copyright 2013-2026 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -44,7 +44,7 @@
 #else
 #define DEBUG_ISO_CLIENT 0
 #endif /*DEBUG */
-#endif /* DEBUG_ISO_SERVER */
+#endif /* DEBUG_ISO_CLIENT */
 
 #define STATE_IDLE 0
 #define STATE_CONNECTED 1
@@ -83,6 +83,8 @@ struct sIsoClientConnection
     Socket socket;
 
 #if (CONFIG_MMS_SUPPORT_TLS == 1)
+    TLSConfiguration tlsConfiguration;     /* the last TLS configuration that has been provided by the user */
+    TLSConfiguration usedTlsConfiguration; /* TLS configuration that is used for the current connection */
     TLSSocket tlsSocket;
 #endif
 
@@ -142,13 +144,21 @@ getIntState(IsoClientConnection self)
 }
 
 IsoClientConnection
-IsoClientConnection_create(IsoConnectionParameters parameters, IsoIndicationCallback callback, void* callbackParameter)
+IsoClientConnection_create(TLSConfiguration tlsConfiguration, IsoConnectionParameters parameters, IsoIndicationCallback callback, void* callbackParameter)
 {
     IsoClientConnection self = (IsoClientConnection) GLOBAL_CALLOC(1, sizeof(struct sIsoClientConnection));
 
     if (self)
     {
         self->parameters = parameters;
+
+#if (CONFIG_MMS_SUPPORT_TLS == 1)
+        if (tlsConfiguration == NULL)
+            self->tlsConfiguration = NULL;
+        else
+            self->tlsConfiguration = TLSConfiguration_claimOwnership(tlsConfiguration);
+#endif /* (CONFIG_MMS_SUPPORT_TLS == 1) */
+
         self->callback = callback;
         self->callbackParameter = callbackParameter;
 
@@ -191,6 +201,33 @@ IsoClientConnection_create(IsoConnectionParameters parameters, IsoIndicationCall
     return self;
 }
 
+void
+IsoClientConnection_setTLSConfiguration(IsoClientConnection self, TLSConfiguration tlsConfig)
+{
+    printf("IsoClientConnection_setTLSConfiguration called %p %p\n", self, tlsConfig);
+#if (CONFIG_MMS_SUPPORT_TLS == 1)
+    if (tlsConfig == NULL)
+        return;
+
+    if (self->tlsConfiguration)
+    {
+        TLSConfiguration_destroy(self->tlsConfiguration);
+    }
+
+    self->tlsConfiguration = TLSConfiguration_claimOwnership(tlsConfig);
+#endif /* (CONFIG_MMS_SUPPORT_TLS == 1) */
+}
+
+TLSConfiguration
+IsoClientConnection_getTLSConfiguration(IsoClientConnection self)
+{
+#if (CONFIG_MMS_SUPPORT_TLS == 1)
+    return self->tlsConfiguration;
+#else
+    return NULL;
+#endif /* (CONFIG_MMS_SUPPORT_TLS == 1) */
+}
+
 static bool
 sendConnectionRequestMessage(IsoClientConnection self)
 {
@@ -219,12 +256,12 @@ sendConnectionRequestMessage(IsoClientConnection self)
                 socketExtensionBuffer, socketExtensionBufferSize);
 
 #if (CONFIG_MMS_SUPPORT_TLS == 1)
-        if (self->parameters->tlsConfiguration)
+        if (self->usedTlsConfiguration)
         {
-            TLSConfiguration_setClientMode(self->parameters->tlsConfiguration);
+            TLSConfiguration_setClientMode(self->usedTlsConfiguration);
 
             /* create TLSSocket and start TLS authentication */
-            TLSSocket tlsSocket = TLSSocket_create(self->socket, self->parameters->tlsConfiguration, false);
+            TLSSocket tlsSocket = TLSSocket_create(self->socket, self->usedTlsConfiguration, false);
 
             if (tlsSocket)
                 self->cotpConnection->tlsSocket = tlsSocket;
@@ -312,6 +349,12 @@ releaseSocket(IsoClientConnection self)
         {
             TLSSocket_close(self->cotpConnection->tlsSocket);
             self->cotpConnection->tlsSocket = NULL;
+        }
+
+        if (self->usedTlsConfiguration)
+        {
+            TLSConfiguration_destroy(self->usedTlsConfiguration);
+            self->usedTlsConfiguration = NULL;
         }
 #endif
 
@@ -709,11 +752,32 @@ IsoClientConnection_associateAsync(IsoClientConnection self, uint32_t connectTim
     self->nextReadTimeout = Hal_getMonotonicTimeInMs() + connectTimeoutInMs;
 
     /* Connect to Local Ip Address*/
-    if (self->parameters->localIpAddress) {
-        Socket_bind(self->socket, self->parameters->localIpAddress, self->parameters->localTcpPort);
+    if (self->parameters->localIpAddress)
+    {
+        if (Socket_bind(self->socket, self->parameters->localIpAddress, self->parameters->localTcpPort))
+        {
+            if (DEBUG_ISO_CLIENT)
+                printf("ISO_CLIENT: Socket bound to local IP address %s and port %i\n", self->parameters->localIpAddress, self->parameters->localTcpPort);
+        }
+        else
+        {
+            if (DEBUG_ISO_CLIENT)
+                printf("ISO_CLIENT: Failed to bind socket to local IP address %s and port %i\n", self->parameters->localIpAddress, self->parameters->localTcpPort);
+
+            success = false;
+
+            goto exit_function;
+        }
     }
 
     if (Socket_connectAsync(self->socket, self->parameters->hostname, self->parameters->tcpPort) == false)
+    {
+        success = false;
+    }
+
+exit_function:
+
+    if (!success)
     {
         Socket_destroy(self->socket);
         self->socket = NULL;
@@ -722,8 +786,21 @@ IsoClientConnection_associateAsync(IsoClientConnection self, uint32_t connectTim
         setState(self, STATE_ERROR);
 
         IsoClientConnection_releaseTransmitBuffer(self);
+    }
+    else
+    {
+        if (DEBUG_ISO_CLIENT)
+            printf("ISO_CLIENT: Started async connect to %s:%i\n", self->parameters->hostname, self->parameters->tcpPort);
 
-        success = false;
+#if (CONFIG_MMS_SUPPORT_TLS == 1)
+        if (self->tlsConfiguration)
+        {
+            if (self->usedTlsConfiguration)
+                TLSConfiguration_destroy(self->usedTlsConfiguration);
+
+            self->usedTlsConfiguration = TLSConfiguration_claimOwnership(self->tlsConfiguration);
+        }
+#endif /* (CONFIG_MMS_SUPPORT_TLS == 1) */
     }
 
     Semaphore_post(self->tickMutex);
@@ -851,6 +928,19 @@ IsoClientConnection_destroy(IsoClientConnection self)
     Semaphore_destroy(self->transmitBufferMutex);
     Semaphore_destroy(self->stateMutex);
     Semaphore_destroy(self->tickMutex);
+
+#if (CONFIG_MMS_SUPPORT_TLS == 1)
+    if (self->tlsConfiguration)
+    {
+        TLSConfiguration_destroy(self->tlsConfiguration);
+    }
+
+    if (self->usedTlsConfiguration)
+    {
+        TLSConfiguration_destroy(self->usedTlsConfiguration);
+        self->usedTlsConfiguration = NULL;
+    }
+#endif /* (CONFIG_MMS_SUPPORT_TLS == 1) */
 
     GLOBAL_FREEMEM(self->sendBuffer);
     GLOBAL_FREEMEM(self);

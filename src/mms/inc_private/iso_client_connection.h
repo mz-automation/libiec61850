@@ -5,7 +5,7 @@
  *  protocol stack. It is used as an abstraction layer to isolate the MMS code from the lower
  *  protocol layers.
  *
- *  Copyright 2013-2018 Michael Zillgith
+ *  Copyright 2013-2026 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -53,7 +53,7 @@ typedef bool
 typedef struct sIsoClientConnection* IsoClientConnection;
 
 LIB61850_INTERNAL IsoClientConnection
-IsoClientConnection_create(IsoConnectionParameters parameters, IsoIndicationCallback callback, void* callbackParameter);
+IsoClientConnection_create(TLSConfiguration tlsConfig, IsoConnectionParameters parameters, IsoIndicationCallback callback, void* callbackParameter);
 
 LIB61850_INTERNAL void
 IsoClientConnection_destroy(IsoClientConnection self);
@@ -105,6 +105,12 @@ IsoClientConnection_allocateTransmitBuffer(IsoClientConnection self);
  */
 LIB61850_INTERNAL void
 IsoClientConnection_releaseTransmitBuffer(IsoClientConnection self);
+
+LIB61850_INTERNAL void
+IsoClientConnection_setTLSConfiguration(IsoClientConnection self, TLSConfiguration tlsConfig);
+
+LIB61850_INTERNAL TLSConfiguration
+IsoClientConnection_getTLSConfiguration(IsoClientConnection self);
 
 
 #ifdef __cplusplus

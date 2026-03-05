@@ -828,6 +828,15 @@ IedConnection_setMaxOutstandingCalls(IedConnection self, int calling, int called
 }
 
 void
+IedConnection_setTLSConfiguration(IedConnection self, TLSConfiguration tlsConfig)
+{
+    if (self->connection)
+    {
+        MmsConnection_setTLSConfiguration(self->connection, tlsConfig);
+    }
+}
+
+void
 IedConnection_setConnectTimeout(IedConnection self, uint32_t timeoutInMs)
 {
     self->connectionTimeout = timeoutInMs;

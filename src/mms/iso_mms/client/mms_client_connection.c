@@ -1634,15 +1634,7 @@ MmsConnection_createInternal(TLSConfiguration tlsConfig, bool createThread)
 
         self->connectTimeout = CONFIG_MMS_CONNECTION_DEFAULT_CONNECT_TIMEOUT;
 
-        self->isoClient = IsoClientConnection_create(self->isoParameters, (IsoIndicationCallback) mmsIsoCallback, (void*) self);
-
-#if (CONFIG_MMS_SUPPORT_TLS == 1)
-        if (tlsConfig) {
-            IsoConnectionParameters_setTlsConfiguration(self->isoParameters, tlsConfig);
-        }
-#else
-        (void)tlsConfig;
-#endif /* (CONFIG_MMS_SUPPORT_TLS == 1) */
+        self->isoClient = IsoClientConnection_create(tlsConfig, self->isoParameters, (IsoIndicationCallback) mmsIsoCallback, (void*) self);
 
 #if (CONFIG_MMS_THREADLESS_STACK == 0)
         self->createThread = createThread;
@@ -1856,6 +1848,12 @@ MmsConnection_getMmsConnectionParameters(MmsConnection self)
     return self->parameters;
 }
 
+void
+MmsConnection_setTLSConfiguration(MmsConnection self, TLSConfiguration tlsConfig)
+{
+    IsoClientConnection_setTLSConfiguration(self->isoClient, tlsConfig);
+}
+
 struct connectParameters
 {
     Semaphore sem;
@@ -1939,7 +1937,7 @@ MmsConnection_connectAsync(MmsConnection self, MmsError* mmsError, const char* s
     if (serverPort == -1)
     {
 #if (CONFIG_MMS_SUPPORT_TLS == 1)
-        if (self->isoParameters->tlsConfiguration)
+        if (IsoClientConnection_getTLSConfiguration(self->isoClient))
             serverPort = 3782;
         else
             serverPort = 102;

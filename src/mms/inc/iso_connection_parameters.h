@@ -1,7 +1,7 @@
 /*
  *  iso_connection_parameters.h
  *
- *  Copyright 2013-2023 Michael Zillgith
+ *  Copyright 2013-2026 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -162,10 +162,6 @@ struct sIsoConnectionParameters
 {
     AcseAuthenticationParameter acseAuthParameter;
 
-#if (CONFIG_MMS_SUPPORT_TLS == 1)
-    TLSConfiguration tlsConfiguration;
-#endif
-
     const char* hostname;
     int tcpPort;
 
@@ -186,7 +182,6 @@ struct sIsoConnectionParameters
     PSelector localPSelector;
     SSelector localSSelector;
     TSelector localTSelector;
-
 };
 
 typedef struct sIsoConnectionParameters* IsoConnectionParameters;
@@ -212,10 +207,6 @@ IsoConnectionParameters_create(void);
  */
 LIB61850_API void
 IsoConnectionParameters_destroy(IsoConnectionParameters self);
-
-
-LIB61850_API void
-IsoConnectionParameters_setTlsConfiguration(IsoConnectionParameters self, TLSConfiguration tlsConfig);
 
 /**
  * \brief set the authentication parameter

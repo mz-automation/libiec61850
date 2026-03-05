@@ -232,6 +232,15 @@ LIB61850_API IsoConnectionParameters
 MmsConnection_getIsoConnectionParameters(MmsConnection self);
 
 /**
+ * \brief Set or update the TLS configuration for an MmsConnection instance
+ *
+ * \param self MmsConnection instance to operate on
+ * \param tlsConfig the TLS configuration to use
+ */
+LIB61850_API void
+MmsConnection_setTLSConfiguration(MmsConnection self, TLSConfiguration tlsConfig);
+
+/**
  * \brief Get the MMS specific connection parameters for an MmsConnection instance
  *
  * \param self MmsConnection instance to operate on

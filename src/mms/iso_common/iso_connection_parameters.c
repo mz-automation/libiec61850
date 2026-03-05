@@ -3,7 +3,7 @@
  *
  *  IsoConnectionParameters abstract data type to represent the configurable parameters of the ISO protocol stack.
  *
- *  Copyright 2013-2024 Michael Zillgith
+ *  Copyright 2013-2026 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -146,17 +146,6 @@ IsoConnectionParameters_destroy(IsoConnectionParameters self)
 
         GLOBAL_FREEMEM(self);
     }
-}
-
-void
-IsoConnectionParameters_setTlsConfiguration(IsoConnectionParameters self, TLSConfiguration tlsConfig)
-{
-#if (CONFIG_MMS_SUPPORT_TLS == 1)
-    self->tlsConfiguration = tlsConfig;
-#else
-    (void)self;
-    (void)tlsConfig;
-#endif
 }
 
 void
