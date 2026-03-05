@@ -88,7 +88,10 @@ struct sIsoClientConnection
     TLSConfiguration tlsConfiguration;     /* the last TLS configuration that has been provided by the user */
     TLSConfiguration usedTlsConfiguration; /* TLS configuration that is used for the current connection */
     TLSSocket tlsSocket;
-#endif
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore tlsConfigMutex; /* mutex to synchronize access to TLSConfiguration */
+#endif /* (CONFIG_MMS_THREADLESS_STACK != 1) */
+#endif /* (CONFIG_MMS_SUPPORT_TLS == 1) */
 
     CotpConnection* cotpConnection;
     IsoPresentation* presentation;
@@ -187,6 +190,9 @@ IsoClientConnection_create(TLSConfiguration tlsConfiguration, IsoConnectionParam
         self->stateMutex = Semaphore_create(1);
         self->transmitBufferMutex = Semaphore_create(1);
         self->tickMutex = Semaphore_create(1);
+#if (CONFIG_MMS_SUPPORT_TLS == 1)
+        self->tlsConfigMutex = Semaphore_create(1);
+#endif /* (CONFIG_MMS_SUPPORT_TLS == 1) */
 #endif /* (CONFIG_MMS_THREADLESS_STACK != 1) */
 
         self->sendBuffer = (uint8_t*) GLOBAL_MALLOC(ISO_CLIENT_BUFFER_SIZE);
@@ -223,10 +229,13 @@ IsoClientConnection_create(TLSConfiguration tlsConfiguration, IsoConnectionParam
 void
 IsoClientConnection_setTLSConfiguration(IsoClientConnection self, TLSConfiguration tlsConfig)
 {
-    printf("IsoClientConnection_setTLSConfiguration called %p %p\n", self, tlsConfig);
 #if (CONFIG_MMS_SUPPORT_TLS == 1)
     if (tlsConfig == NULL)
         return;
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_wait(self->tlsConfigMutex);
+#endif
 
     if (self->tlsConfiguration)
     {
@@ -234,6 +243,11 @@ IsoClientConnection_setTLSConfiguration(IsoClientConnection self, TLSConfigurati
     }
 
     self->tlsConfiguration = TLSConfiguration_claimOwnership(tlsConfig);
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_post(self->tlsConfigMutex);
+#endif
+
 #endif /* (CONFIG_MMS_SUPPORT_TLS == 1) */
 }
 
@@ -822,6 +836,11 @@ exit_function:
             printf("ISO_CLIENT: Started async connect to %s:%i\n", self->parameters->hostname, self->parameters->tcpPort);
 
 #if (CONFIG_MMS_SUPPORT_TLS == 1)
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_wait(self->tlsConfigMutex);
+#endif
+
         if (self->tlsConfiguration)
         {
             if (self->usedTlsConfiguration)
@@ -829,6 +848,11 @@ exit_function:
 
             self->usedTlsConfiguration = TLSConfiguration_claimOwnership(self->tlsConfiguration);
         }
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+        Semaphore_post(self->tlsConfigMutex);
+#endif
+
 #endif /* (CONFIG_MMS_SUPPORT_TLS == 1) */
     }
 
@@ -968,6 +992,10 @@ IsoClientConnection_destroy(IsoClientConnection self)
     Semaphore_destroy(self->transmitBufferMutex);
     Semaphore_destroy(self->stateMutex);
     Semaphore_destroy(self->tickMutex);
+#if (CONFIG_MMS_SUPPORT_TLS == 1)
+    Semaphore_destroy(self->tlsConfigMutex);
+#endif
+
 #endif /* (CONFIG_MMS_THREADLESS_STACK != 1) */
 
 #if (CONFIG_MMS_SUPPORT_TLS == 1)
