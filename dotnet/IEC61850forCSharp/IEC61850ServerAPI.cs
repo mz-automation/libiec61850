@@ -2303,7 +2303,7 @@ namespace IEC61850
             /// </summary>
             OBJECT_ACCESS_DENIED = 3,
             /// <summary>
-            /// object not visible in this security context ??? 
+            /// object not visible in this security context ???
             /// </summary>
             OBJECT_UNDEFINED = 4
         }
@@ -2496,6 +2496,9 @@ namespace IEC61850
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern void IedServer_setLocalIpAddress(IntPtr self, string localIpAddress);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedServer_setTLSConfiguration(IntPtr self, IntPtr tlsConfiguration);
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern void IedServer_start(IntPtr self, int tcpPort);
@@ -3443,6 +3446,22 @@ namespace IEC61850
             }
 
             /// <summary>
+            /// Set or update the TLS configuration for the server.
+            /// </summary>
+            /// <param name="tlsConfig">TLS configuration instance.</param>
+            public void SetTLSConfiguration(TLSConfiguration tlsConfig)
+            {
+                tlsConfiguration = tlsConfig;
+
+                IntPtr nativeTLSConfig = IntPtr.Zero;
+
+                if (tlsConfig != null)
+                    nativeTLSConfig = tlsConfig.GetNativeInstance();
+
+                IedServer_setTLSConfiguration(self, nativeTLSConfig);
+            }
+
+            /// <summary>
             /// Start MMS server
             /// </summary>
             /// <param name="localIpAddress">Local IP address.</param>
@@ -3742,7 +3761,7 @@ namespace IEC61850
             /// </summary>
             /// This function should be called before the data model is updated.
             /// After updating the data model the function <see cref="UnlockDataModel"/> should be called.
-            /// 
+            ///
             /// <remarks>
             /// his method should never be called inside of a library callback function. In the context of
             /// a library callback the data model is always already locked! Calling this function inside of a
@@ -3756,7 +3775,7 @@ namespace IEC61850
             /// <summary>
             /// Unlocks the data model and process pending client requests.
             /// </summary>
-            /// 
+            ///
             /// <remarks>
             /// This method should never be called inside of a library callback function. In the context of
             /// a library callback the data model is always already locked!
@@ -3868,11 +3887,11 @@ namespace IEC61850
             /// <summary>
             /// Set the Ethernet interface to be used by GOOSE publishing
             /// </summary>
-            /// 
+            ///
             /// This function can be used to set the GOOSE interface ID. If not used or set to null the
             /// default interface ID from stack_config.h is used.Note the interface ID is operating system
             /// specific!
-            /// 
+            ///
             /// <param name="interfaceId">the ID of the ethernet interface to be used for GOOSE publishing</param>
             public void SetGooseInterfaceId(string interfaceId)
             {
@@ -3882,10 +3901,10 @@ namespace IEC61850
             /// <summary>
             /// Set the Ethernet interface to be used by GOOSE publishing
             /// </summary>
-            /// 
+            ///
             /// This function can be used to set the GOOSE interface ID for all GCBs (parameter ln = null) or for
             /// a specific GCB specified by the logical node instance and the GCB name.
-            /// 
+            ///
             /// <param name="ln">ln the logical node that contains the GCB or null to set the ethernet interface ID for all GCBs</param>
             /// <param name="gcbName">the name (not object reference!) of the GCB</param>
             /// <param name="interfaceId">the ID of the ethernet interface to be used for GOOSE publishing</param>
@@ -3900,10 +3919,10 @@ namespace IEC61850
             /// <summary>
             /// Enable/disable the use of VLAN tags in GOOSE messages
             /// </summary>
-            /// 
+            ///
             /// This function can be used to enable/disable VLAN tagging for all GCBs (parameter ln = null) or for
             /// a specific GCB specified by the logical node instance and the GCB name.
-            /// 
+            ///
             /// <param name="ln">the logical node that contains the GCB or null to enable/disable VLAN tagging for all GCBs</param>
             /// <param name="gcbName">the name (not object reference!) of the GCB</param>
             /// <param name="useVlanTag">true to enable VLAN tagging, false otherwise</param>

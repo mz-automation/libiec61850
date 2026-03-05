@@ -426,6 +426,9 @@ namespace IEC61850
             static extern void IedConnection_setRequestTimeout(IntPtr self, UInt32 timeoutInMs);
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedConnection_setTLSConfiguration(IntPtr self, IntPtr tlsConfig);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern UInt32 IedConnection_getRequestTimeout(IntPtr self);
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
@@ -818,6 +821,18 @@ namespace IEC61850
                 set
                 {
                     IedConnection_setRequestTimeout(connection, value);
+                }
+            }
+
+            /// <summary>
+            /// Set or update the TLS configuration for the connection.
+            /// </summary>
+            /// <param name="tlsConfig">TLS configuration instance.</param>
+            public TLSConfiguration TLSConfiguration
+            {
+                set
+                {
+                    IedConnection_setTLSConfiguration(connection, value.GetNativeInstance());
                 }
             }
 
@@ -2475,8 +2490,8 @@ namespace IEC61850
             /// <summary>
             /// Read the values of a data set (GetDataSetValues service) - asynchronous version
             /// </summary>
-            /// <description>This function will invoke a readDataSetValues service and in case of success returns a new DataSet value 
-            /// containing the received values by the callback function. If an existing instance of DataSet is provided to the 
+            /// <description>This function will invoke a readDataSetValues service and in case of success returns a new DataSet value
+            /// containing the received values by the callback function. If an existing instance of DataSet is provided to the
             ///  function the existing instance will be updated by the new values.
             /// </description>
             /// <param name="dataSetReference">The object reference of the data set</param>
