@@ -216,7 +216,7 @@ namespace IEC61850
 
             internal IntPtr valueReference; /* reference to native MmsValue instance */
 
-            private bool responsableForDeletion = false; /* if .NET wrapper is responsable for the deletion of the native MmsValue instance */
+            private bool responsableForDeletion = true; /* if .NET wrapper is responsable for the deletion of the native MmsValue instance */
 
             internal MmsValue(IntPtr value)
             {
