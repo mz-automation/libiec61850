@@ -98,16 +98,16 @@ namespace IEC61850.SCL
 
             foreach (GSEControl gcb in logicalNode.GSEControls)
             {
-                PrintGSEControl(output, gcb);
+                PrintGSEControl(output, gcb, logicalDevice);
             }
 
             foreach (SMVControl smv in logicalNode.SMVControls)
             {
-                PrintSMVControl(output, smv);
+                PrintSMVControl(output, smv, logicalDevice);
             }
         }
 
-        private void PrintGSEControl(StreamWriter output, GSEControl gcb)
+        private void PrintGSEControl(StreamWriter output, GSEControl gcb, LogicalDevice ld)
         {
             SclGSE gse = null;
             SclAddress gseAddress = null;
@@ -115,7 +115,21 @@ namespace IEC61850.SCL
             if (connectedAP != null)
             {
                 gse = connectedAP.GSEs.Find(x => x.CbName == gcb.Name);
+                if (gse == null)
+                {
+                    foreach (SclConnectedAP ap in sclDocument.GetConnectedAPs())
+                    {
+                        foreach (SclGSE sclGSE in ap.GSEs)
+                        {
+                            if (sclGSE.CbName == gcb.Name && sclGSE.LdInst == ld.Inst)
+                            {
+                                gse = sclGSE;
+                                break;
+                            }
+                        }
 
+                    }
+                }
                 if (gse != null)
                     gseAddress = gse.SclAddress;
             }
@@ -195,7 +209,7 @@ namespace IEC61850.SCL
             }
         }
 
-        private void PrintSMVControl(StreamWriter output, SMVControl smv)
+        private void PrintSMVControl(StreamWriter output, SMVControl smv, LogicalDevice ld)
         {
             SclSMV sclsmv = null;
             SclAddress smvAddress = null;
@@ -203,6 +217,21 @@ namespace IEC61850.SCL
             if (connectedAP != null)
             {
                 sclsmv = connectedAP.SMVs.Find(x => x.CbName == smv.Name);
+                if(sclsmv == null)
+                {
+                    foreach(SclConnectedAP ap in sclDocument.GetConnectedAPs())
+                    {
+                        foreach(SclSMV sclSMV in ap.SMVs)
+                        {
+                            if(sclSMV.CbName == smv.Name && sclSMV.LdInst == ld.Inst)
+                            {
+                                sclsmv = sclSMV;
+                                break;
+                            }
+                        }
+
+                    }
+                }
 
                 if (sclsmv != null)
                     smvAddress = sclsmv.SclAddress;
