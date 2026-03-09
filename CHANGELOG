@@ -25,6 +25,7 @@ New features and improvements:
 - SCLParser: also available on tools, you can load your SCL model and use it with our library
 - added function MmsError_toString (LIB61850-423)
 - SV Publisher: added support for optional gmIdentity field
+- Converted VlanId and AppId in SMV and GSE to decimal when creating the dynamic model
 
 Bug and Vulnerability fixes:
 
