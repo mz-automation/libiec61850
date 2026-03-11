@@ -407,7 +407,7 @@ tlsVersionedCacheSet(TLSVersionedCache *cache, const mbedtls_ssl_session *sessio
         }
         else
         {
-            cur = GLOBAL_CALLOC(1, sizeof(TLSCacheEntry));
+            cur = (TLSCacheEntry*)GLOBAL_CALLOC(1, sizeof(TLSCacheEntry));
             if (cur == NULL)
             {
                 ret = 1;
@@ -437,7 +437,7 @@ tlsVersionedCacheSet(TLSVersionedCache *cache, const mbedtls_ssl_session *sessio
         goto exit;
     }
 
-    unsigned char *buffer = GLOBAL_CALLOC(1, requiredLength);
+    unsigned char* buffer = (unsigned char*)GLOBAL_CALLOC(1, requiredLength);
     if (buffer == NULL)
     {
         ret = 1;
