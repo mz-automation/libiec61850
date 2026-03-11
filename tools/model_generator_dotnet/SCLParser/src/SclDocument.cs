@@ -2014,6 +2014,20 @@ namespace IEC61850.SCL
             else
                 return null;
         }
+        public List<SclConnectedAP> GetConnectedAPs()
+        {
+            List<SclConnectedAP>  ca_list = new List<SclConnectedAP>();
+            if (Communication != null)
+            {
+                foreach (SclSubNetwork sclSub in Communication.GetSubNetworks())
+                {
+                    ca_list.AddRange(sclSub.GetConnectedAPs());
+                }
+                return ca_list;
+            }
+            else
+                return null;
+        }
     }
 
     public class PositionXmlDocument : XmlDocument
