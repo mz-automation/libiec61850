@@ -24,6 +24,7 @@
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <poll.h>
+#include <net/if.h>
 #include <linux/filter.h>
 #include <linux/if_packet.h>
 #include <linux/if_ether.h>
@@ -225,10 +226,17 @@ Ethernet_setMode(EthernetSocket self, EthernetSocketMode mode)
             struct ifreq ifr;
             memset(&ifr, 0, sizeof(struct ifreq));
 
+            if (if_indextoname(self->socketAddress.sll_ifindex, ifr.ifr_name) == NULL)
+            {
+                if (DEBUG_SOCKET)
+                    printf("ETHERNET_LINUX: Problem getting device name\n");
+                return;
+            }
+
             if (ioctl (self->rawSocket, SIOCGIFFLAGS, &ifr) == -1)
             {
                 if (DEBUG_SOCKET)
-                    printf("ETHERNET_LINUX: Problem getting device flags");
+                    printf("ETHERNET_LINUX: Problem getting device flags\n");
                 return;
             }
 
@@ -236,7 +244,7 @@ Ethernet_setMode(EthernetSocket self, EthernetSocketMode mode)
             if (ioctl (self->rawSocket, SIOCSIFFLAGS, &ifr) == -1)
             {
                 if (DEBUG_SOCKET)
-                    printf("ETHERNET_LINUX: Setting device to promiscuous mode failed");
+                    printf("ETHERNET_LINUX: Setting device to promiscuous mode failed\n");
                 return;
             }
         }
@@ -245,10 +253,17 @@ Ethernet_setMode(EthernetSocket self, EthernetSocketMode mode)
             struct ifreq ifr;
             memset(&ifr, 0, sizeof(struct ifreq));
 
+            if (if_indextoname(self->socketAddress.sll_ifindex, ifr.ifr_name) == NULL)
+            {
+                if (DEBUG_SOCKET)
+                    printf("ETHERNET_LINUX: Problem getting device name\n");
+                return;
+            }
+
             if (ioctl (self->rawSocket, SIOCGIFFLAGS, &ifr) == -1)
             {
                 if (DEBUG_SOCKET)
-                    printf("ETHERNET_LINUX: Problem getting device flags");
+                    printf("ETHERNET_LINUX: Problem getting device flags\n");
                 return;
             }
 
@@ -256,7 +271,7 @@ Ethernet_setMode(EthernetSocket self, EthernetSocketMode mode)
             if (ioctl (self->rawSocket, SIOCSIFFLAGS, &ifr) == -1)
             {
                 if (DEBUG_SOCKET)
-                    printf("ETHERNET_LINUX: Setting device to promiscuous mode failed");
+                    printf("ETHERNET_LINUX: Setting device to promiscuous mode failed\n");
                 return;
             }
         }
@@ -292,7 +307,7 @@ Ethernet_addMulticastAddress(EthernetSocket self, const uint8_t* multicastAddres
     if (res != 0)
     {
         if (DEBUG_SOCKET)
-            printf("ETHERNET_LINUX: Setting multicast address failed");
+            printf("ETHERNET_LINUX: Setting multicast address failed\n");
     }
 }
 
