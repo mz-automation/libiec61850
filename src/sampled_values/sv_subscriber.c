@@ -329,7 +329,8 @@ SVReceiver_destroy(SVReceiver self)
         GLOBAL_FREEMEM(self->interfaceId);
 
 #if (CONFIG_MMS_THREADLESS_STACK == 0)
-    if (self->thread) {
+    if (self->thread)
+    {
         Thread_destroy(self->thread);
         self->thread = NULL;
     }
