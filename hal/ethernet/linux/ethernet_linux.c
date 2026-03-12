@@ -1,7 +1,7 @@
 /*
  *  ethernet_linux.c
  *
- *  Copyright 2013-2024 Michael Zillgith
+ *  Copyright 2013-2026 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -21,34 +21,36 @@
  *  See COPYING file for the complete license text.
  */
 
-#include <sys/socket.h>
-#include <sys/ioctl.h>
-#include <poll.h>
+#include <arpa/inet.h>
 #include <net/if.h>
 #include <linux/filter.h>
-#include <linux/if_packet.h>
-#include <linux/if_ether.h>
 #include <linux/if_arp.h>
-#include <arpa/inet.h>
-#include <unistd.h>
+#include <linux/if_ether.h>
+#include <linux/if_packet.h>
+#include <poll.h>
 #include <stdio.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
+#include <unistd.h>
 
 #include <string.h>
 
-#include "lib_memory.h"
 #include "hal_ethernet.h"
+#include "lib_memory.h"
 
 #ifndef DEBUG_SOCKET
 #define DEBUG_SOCKET 0
 #endif
 
-struct sEthernetSocket {
+struct sEthernetSocket
+{
     int rawSocket;
     bool isBind;
     struct sockaddr_ll socketAddress;
 };
 
-struct sEthernetHandleSet {
+struct sEthernetHandleSet
+{
     struct pollfd* handles;
     int nhandles;
 };
@@ -56,15 +58,15 @@ struct sEthernetHandleSet {
 EthernetHandleSet
 EthernetHandleSet_new(void)
 {
-    EthernetHandleSet result = (EthernetHandleSet) GLOBAL_MALLOC(sizeof(struct sEthernetHandleSet));
+    EthernetHandleSet self = (EthernetHandleSet)GLOBAL_MALLOC(sizeof(struct sEthernetHandleSet));
 
-    if (result != NULL)
+    if (self != NULL)
     {
-        result->handles = NULL;
-        result->nhandles = 0;
+        self->handles = NULL;
+        self->nhandles = 0;
     }
 
-    return result;
+    return self;
 }
 
 void
@@ -72,9 +74,14 @@ EthernetHandleSet_addSocket(EthernetHandleSet self, const EthernetSocket sock)
 {
     if (self != NULL && sock != NULL)
     {
-        int i = self->nhandles++;
+        int i = self->nhandles;
+        struct pollfd* newHandles = realloc(self->handles, (i + 1) * sizeof(struct pollfd));
 
-        self->handles = realloc(self->handles, self->nhandles * sizeof(struct pollfd));
+        if (newHandles == NULL)
+            return;
+
+        self->handles = newHandles;
+        self->nhandles++;
 
         self->handles[i].fd = sock->rawSocket;
         self->handles[i].events = POLLIN;
@@ -92,7 +99,7 @@ EthernetHandleSet_removeSocket(EthernetHandleSet self, const EthernetSocket sock
         {
             if (self->handles[i].fd == sock->rawSocket)
             {
-                memmove(&self->handles[i], &self->handles[i+1], sizeof(struct pollfd) * (self->nhandles - i - 1));
+                memmove(&self->handles[i], &self->handles[i + 1], sizeof(struct pollfd) * (self->nhandles - i - 1));
                 self->nhandles--;
                 return;
             }
@@ -105,11 +112,13 @@ EthernetHandleSet_waitReady(EthernetHandleSet self, unsigned int timeoutMs)
 {
     int result;
 
-    if ((self != NULL) && (self->nhandles >= 0)) {
+    if ((self != NULL) && (self->nhandles >= 0))
+    {
         result = poll(self->handles, self->nhandles, timeoutMs);
     }
-    else {
-       result = -1;
+    else
+    {
+        result = -1;
     }
 
     return result;
@@ -118,10 +127,13 @@ EthernetHandleSet_waitReady(EthernetHandleSet self, unsigned int timeoutMs)
 void
 EthernetHandleSet_destroy(EthernetHandleSet self)
 {
-    if (self->nhandles)
-        free(self->handles);
+    if (self != NULL)
+    {
+        if (self->nhandles)
+            free(self->handles);
 
-    GLOBAL_FREEMEM(self);
+        GLOBAL_FREEMEM(self);
+    }
 }
 
 static int
@@ -135,7 +147,7 @@ getInterfaceIndex(int sock, const char* deviceName)
     if (ioctl(sock, SIOCGIFINDEX, &ifr) == -1)
     {
         if (DEBUG_SOCKET)
-            printf("ETHERNET_LINUX: Failed to get interface index");
+            printf("ETHERNET_LINUX: Failed to get interface index\n");
         return -1;
     }
 
@@ -143,7 +155,6 @@ getInterfaceIndex(int sock, const char* deviceName)
 
     return interfaceIndex;
 }
-
 
 void
 Ethernet_getInterfaceMACAddress(const char* interfaceId, uint8_t* addr)
@@ -162,7 +173,7 @@ Ethernet_getInterfaceMACAddress(const char* interfaceId, uint8_t* addr)
 
     int i;
 
-    for (i = 0; i < 6; i++ )
+    for (i = 0; i < 6; i++)
     {
         addr[i] = (unsigned char)buffer.ifr_hwaddr.sa_data[i];
     }
@@ -188,7 +199,7 @@ Ethernet_createSocket(const char* interfaceId, uint8_t* destAddress)
         self->socketAddress.sll_family = PF_PACKET;
         self->socketAddress.sll_protocol = htons(ETH_P_ALL);
 
-        int ifcIdx =  getInterfaceIndex(self->rawSocket, interfaceId);
+        int ifcIdx = getInterfaceIndex(self->rawSocket, interfaceId);
 
         if (ifcIdx == -1)
         {
@@ -198,7 +209,7 @@ Ethernet_createSocket(const char* interfaceId, uint8_t* destAddress)
 
         self->socketAddress.sll_ifindex = ifcIdx;
 
-        self->socketAddress.sll_hatype =  ARPHRD_ETHER;
+        self->socketAddress.sll_hatype = ARPHRD_ETHER;
         self->socketAddress.sll_pkttype = PACKET_HOST | PACKET_MULTICAST;
 
         self->socketAddress.sll_halen = ETH_ALEN;
@@ -233,7 +244,7 @@ Ethernet_setMode(EthernetSocket self, EthernetSocketMode mode)
                 return;
             }
 
-            if (ioctl (self->rawSocket, SIOCGIFFLAGS, &ifr) == -1)
+            if (ioctl(self->rawSocket, SIOCGIFFLAGS, &ifr) == -1)
             {
                 if (DEBUG_SOCKET)
                     printf("ETHERNET_LINUX: Problem getting device flags\n");
@@ -241,7 +252,7 @@ Ethernet_setMode(EthernetSocket self, EthernetSocketMode mode)
             }
 
             ifr.ifr_flags |= IFF_PROMISC;
-            if (ioctl (self->rawSocket, SIOCSIFFLAGS, &ifr) == -1)
+            if (ioctl(self->rawSocket, SIOCSIFFLAGS, &ifr) == -1)
             {
                 if (DEBUG_SOCKET)
                     printf("ETHERNET_LINUX: Setting device to promiscuous mode failed\n");
@@ -260,7 +271,7 @@ Ethernet_setMode(EthernetSocket self, EthernetSocketMode mode)
                 return;
             }
 
-            if (ioctl (self->rawSocket, SIOCGIFFLAGS, &ifr) == -1)
+            if (ioctl(self->rawSocket, SIOCGIFFLAGS, &ifr) == -1)
             {
                 if (DEBUG_SOCKET)
                     printf("ETHERNET_LINUX: Problem getting device flags\n");
@@ -268,7 +279,7 @@ Ethernet_setMode(EthernetSocket self, EthernetSocketMode mode)
             }
 
             ifr.ifr_flags |= IFF_ALLMULTI;
-            if (ioctl (self->rawSocket, SIOCSIFFLAGS, &ifr) == -1)
+            if (ioctl(self->rawSocket, SIOCSIFFLAGS, &ifr) == -1)
             {
                 if (DEBUG_SOCKET)
                     printf("ETHERNET_LINUX: Setting device to promiscuous mode failed\n");
@@ -319,20 +330,18 @@ Ethernet_setProtocolFilter(EthernetSocket self, uint16_t etherType)
         /* enable linux kernel filtering for GOOSE */
 
         struct sock_fprog fprog;
-        struct sock_filter filter[] = {
-            /* sudo tcpdump -i enx88d7f6377223 '(ether proto 0x88b8)' -dd */
-            { 0x28, 0, 0, 0x0000000c },
-            { 0x15, 0, 1, 0x000088b8 },
-            { 0x6, 0, 0, 0x00040000 },
-            { 0x6, 0, 0, 0x00000000 }
-        };
+        struct sock_filter filter[] = {/* sudo tcpdump -i enx88d7f6377223 '(ether proto 0x88b8)' -dd */
+                                       {0x28, 0, 0, 0x0000000c},
+                                       {0x15, 0, 1, 0x000088b8},
+                                       {0x6, 0, 0, 0x00040000},
+                                       {0x6, 0, 0, 0x00000000}};
 
         fprog.len = sizeof(filter) / sizeof(*filter);
         fprog.filter = filter;
 
         if (setsockopt(self->rawSocket, SOL_SOCKET, SO_ATTACH_FILTER, &fprog, sizeof(fprog)) == -1)
             if (DEBUG_SOCKET)
-                printf("ETHERNET_LINUX: Applying filter failed");
+                printf("ETHERNET_LINUX: Applying filter failed\n");
     }
     else
     {
@@ -346,7 +355,7 @@ Ethernet_receivePacket(EthernetSocket self, uint8_t* buffer, int bufferSize)
 {
     if (self->isBind == false)
     {
-        if (bind(self->rawSocket, (struct sockaddr*) &self->socketAddress, sizeof(self->socketAddress)) == 0)
+        if (bind(self->rawSocket, (struct sockaddr*)&self->socketAddress, sizeof(self->socketAddress)) == 0)
             self->isBind = true;
         else
             return 0;
@@ -358,8 +367,8 @@ Ethernet_receivePacket(EthernetSocket self, uint8_t* buffer, int bufferSize)
 void
 Ethernet_sendPacket(EthernetSocket self, uint8_t* buffer, int packetSize)
 {
-    sendto(self->rawSocket, buffer, packetSize,
-                0, (struct sockaddr*) &(self->socketAddress), sizeof(self->socketAddress));
+    sendto(self->rawSocket, buffer, packetSize, 0, (struct sockaddr*)&(self->socketAddress),
+           sizeof(self->socketAddress));
 }
 
 void
