@@ -781,7 +781,7 @@ IedServer_destroy(IedServer self)
 {
     if (self)
     {
-    /* Stop server if running */
+        /* Stop server if running */
         if (self->running)
         {
 #if (CONFIG_MMS_THREADLESS_STACK == 1)
@@ -897,7 +897,13 @@ IedServer_start(IedServer self, int tcpPort)
 bool
 IedServer_isRunning(IedServer self)
 {
-    return MmsServer_isRunning(self->mmsServer);
+    if (self->running)
+        return true;
+
+    if (self->mmsServer)
+        return MmsServer_isRunning(self->mmsServer);
+
+    return false;
 }
 
 IedModel*
@@ -1773,6 +1779,40 @@ IedServer_disableGoosePublishing(IedServer self)
     MmsMapping_disableGoosePublishing(self->mmsMapping);
 #endif /* (CONFIG_INCLUDE_GOOSE_SUPPORT == 1) */
 }
+
+#if (CONFIG_INCLUDE_GOOSE_SUPPORT == 1)
+
+void
+IedServer_startGoosePublishing(IedServer self)
+{
+    if (self->running)
+        return;
+
+    MmsMapping_enableGoosePublishing(self->mmsMapping);
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    MmsMapping_startEventWorkerThread(self->mmsMapping);
+#endif
+
+    self->running = true;
+}
+
+void
+IedServer_stopGoosePublishing(IedServer self)
+{
+    if (!self->running)
+        return;
+
+    self->running = false;
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    MmsMapping_stopEventWorkerThread(self->mmsMapping);
+#endif
+
+    MmsMapping_disableGoosePublishing(self->mmsMapping);
+}
+
+#endif /* (CONFIG_INCLUDE_GOOSE_SUPPORT == 1) */
 
 void
 IedServer_setWriteAccessPolicy(IedServer self, FunctionalConstraint fc, AccessPolicy policy)

@@ -4983,7 +4983,8 @@ processPeriodicTasks(MmsMapping* self)
 #endif
 
     /* handle low priority MMS backgound tasks (like file upload...) */
-    MmsServer_handleBackgroundTasks(self->mmsServer);
+    if (self->mmsServer)
+        MmsServer_handleBackgroundTasks(self->mmsServer);
 }
 
 void

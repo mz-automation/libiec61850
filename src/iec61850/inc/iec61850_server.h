@@ -721,6 +721,38 @@ LIB61850_API void
 IedServer_disableGoosePublishing(IedServer self);
 
 /**
+ * \brief Enable GOOSE publishing and start the event worker thread without starting the MMS server.
+ *
+ * This allows the integrated GOOSE publisher to operate in a standalone mode where no
+ * MMS/TCP server is required. All configured GOOSE control blocks are enabled and a
+ * background thread is started to drive periodic GOOSE retransmissions.
+ *
+ * Call \ref IedServer_stopGoosePublishing to stop GOOSE operation and release the thread.
+ *
+ * \note This function has no effect when CONFIG_INCLUDE_GOOSE_SUPPORT is not set.
+ * \note This function has no effect when CONFIG_MMS_THREADLESS_STACK is set; in that case
+ *       call \ref IedServer_enableGoosePublishing and drive the periodic tasks manually via
+ *       \ref IedServer_performPeriodicTasks.
+ *
+ * \param self the instance of IedServer to operate on.
+ */
+LIB61850_API void
+IedServer_startGoosePublishing(IedServer self);
+
+/**
+ * \brief Stop GOOSE-only publishing and disable all GOOSE control blocks.
+ *
+ * Stops the event worker thread that was started by \ref IedServer_startGoosePublishing
+ * and disables all configured GOOSE control blocks.
+ *
+ * \note This function has no effect when CONFIG_INCLUDE_GOOSE_SUPPORT is not set.
+ *
+ * \param self the instance of IedServer to operate on.
+ */
+LIB61850_API void
+IedServer_stopGoosePublishing(IedServer self);
+
+/**
  * \brief Set the Ethernet interface to be used by GOOSE publishing
  *
  * This function can be used to set the GOOSE interface ID. If not used or set to NULL the

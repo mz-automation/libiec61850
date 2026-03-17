@@ -15,6 +15,7 @@ New features and improvements:
 - IedServer: fixed IedServer_updateAttributeValue to avoid that boolean data updates trigger two dupd reports (LIB61850-532)
 - IED server: allow write access to FCD with global write access handler (LIB61850-531)
 - IedServer: Publish GOOSE data immediately instead of waiting for the application calling IedServer_unlockDataModel
+- IedServer: added functions IedServer_enableGoosePublishing/IedServer_stopGoosePublishing allow GOOSE publisher to be used without starting MMS server (LIB61850-542)
 
 
 Changes to version 1.6.1
