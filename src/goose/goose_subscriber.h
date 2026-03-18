@@ -305,6 +305,10 @@ GooseSubscriber_getVlanPrio(GooseSubscriber self);
  *
  * NOTE: When the observer flag is set the subscriber also has access to the
  * goCbRef, goId, and datSet values of the received GOOSE message
+ *
+ * IMPORTANT: This is for debugging and testing purposes only. A GOOSE subscriber configured as observer
+ * will receive all GOOSE messages. Message validation is not done for observer subscribers and they
+ * will not be marked as valid or invalid.
  */
 LIB61850_API void
 GooseSubscriber_setObserver(GooseSubscriber self);
