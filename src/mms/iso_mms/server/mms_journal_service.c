@@ -1,7 +1,7 @@
 /*
  *  mms_journal_service.c
  *
- *  Copyright 2016-2021 Michael Zillgith
+ *  Copyright 2016-2026 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -266,8 +266,15 @@ mmsServer_handleReadJournalRequest(
         {
         case 0xa0: /* journalName */
             {
+                int outerEndBufPos = bufPos + length;
+
+                if (length < 2 || outerEndBufPos > maxBufPos) {
+                    mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
+                    return;
+                }
+
                 uint8_t objectIdTag = requestBuffer[bufPos++];
-                bufPos = BerDecoder_decodeLength(requestBuffer, &length, bufPos, maxBufPos);
+                bufPos = BerDecoder_decodeLength(requestBuffer, &length, bufPos, outerEndBufPos);
 
                 if (bufPos < 0)
                 {
@@ -302,6 +309,13 @@ mmsServer_handleReadJournalRequest(
 
         case 0xa1: /* rangeStartSpecification */
             {
+                int outerEndBufPos = bufPos + length;
+
+                if (length < 2 || outerEndBufPos > maxBufPos) {
+                    mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
+                    return;
+                }
+
                 uint8_t subTag = requestBuffer[bufPos++];
 
                 if (subTag != 0x80)
@@ -310,7 +324,7 @@ mmsServer_handleReadJournalRequest(
                     return;
                 }
 
-                bufPos = BerDecoder_decodeLength(requestBuffer, &length, bufPos, maxBufPos);
+                bufPos = BerDecoder_decodeLength(requestBuffer, &length, bufPos, outerEndBufPos);
 
                 if (bufPos < 0) 
                 {
@@ -340,6 +354,13 @@ mmsServer_handleReadJournalRequest(
 
         case 0xa2: /* rangeStopSpecification */
             {
+                int outerEndBufPos = bufPos + length;
+
+                if (length < 2 || outerEndBufPos > maxBufPos) {
+                    mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
+                    return;
+                }
+
                 uint8_t subTag = requestBuffer[bufPos++];
 
                 if (subTag != 0x80)
@@ -348,7 +369,7 @@ mmsServer_handleReadJournalRequest(
                     return;
                 }
 
-                bufPos = BerDecoder_decodeLength(requestBuffer, &length, bufPos, maxBufPos);
+                bufPos = BerDecoder_decodeLength(requestBuffer, &length, bufPos, outerEndBufPos);
 
                 if (bufPos < 0)
                 {
@@ -384,7 +405,7 @@ mmsServer_handleReadJournalRequest(
                 {
                     uint8_t subTag = requestBuffer[bufPos++];
 
-                    bufPos = BerDecoder_decodeLength(requestBuffer, &length, bufPos, maxBufPos);
+                    bufPos = BerDecoder_decodeLength(requestBuffer, &length, bufPos, maxSubBufPos);
 
                     if (bufPos < 0) 
                     {
