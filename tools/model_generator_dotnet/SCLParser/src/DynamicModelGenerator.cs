@@ -117,6 +117,7 @@ namespace IEC61850.SCL
                 gse = connectedAP.GSEs.Find(x => x.CbName == gcb.Name);
                 if (gse == null)
                 {
+                    bool found = false;
                     foreach (SclConnectedAP ap in sclDocument.GetConnectedAPs())
                     {
                         foreach (SclGSE sclGSE in ap.GSEs)
@@ -124,10 +125,12 @@ namespace IEC61850.SCL
                             if (sclGSE.CbName == gcb.Name && sclGSE.LdInst == ld.Inst)
                             {
                                 gse = sclGSE;
+                                found = true;
                                 break;
                             }
                         }
-
+                        if (found)
+                            break;
                     }
                 }
                 if (gse != null)
@@ -219,16 +222,20 @@ namespace IEC61850.SCL
                 sclsmv = connectedAP.SMVs.Find(x => x.CbName == smv.Name);
                 if(sclsmv == null)
                 {
-                    foreach(SclConnectedAP ap in sclDocument.GetConnectedAPs())
+                    bool found = false;
+                    foreach (SclConnectedAP ap in sclDocument.GetConnectedAPs())
                     {
                         foreach(SclSMV sclSMV in ap.SMVs)
                         {
                             if(sclSMV.CbName == smv.Name && sclSMV.LdInst == ld.Inst)
                             {
                                 sclsmv = sclSMV;
+                                found = true;
                                 break;
                             }
                         }
+                        if (found)
+                            break;  
 
                     }
                 }
