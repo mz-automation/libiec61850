@@ -11,13 +11,13 @@
     <ProjectReference Include="..\IEC61850forCSharp\IEC61850.NET.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <None Update="client1.cer">
+    <None Update="client.crt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="client1-key.pem">
+    <None Update="client.key">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="root.cer">
+    <None Update="root_CA1.pem">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

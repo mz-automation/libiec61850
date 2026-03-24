@@ -11,13 +11,13 @@
     <ProjectReference Include="..\IEC61850forCSharp\IEC61850.NET.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <None Update="server-key.pem">
+    <None Update="server.crt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="server.cer">
+    <None Update="server.key">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="root.cer">
+    <None Update="root_CA1.pem">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="model.cfg">
