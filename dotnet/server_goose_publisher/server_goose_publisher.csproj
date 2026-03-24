@@ -6,8 +6,7 @@
     <Product>server_goose_publisher</Product>
     <Copyright>Copyright ©  2021</Copyright>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <FileVersion>1.0.0.0</FileVersion>
-	  <Deterministic>false</Deterministic>
+	<Deterministic>false</Deterministic>
   </PropertyGroup>
   <ItemGroup>
     <None Update="simpleIO_direct_control_goose.cfg">

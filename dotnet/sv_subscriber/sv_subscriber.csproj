@@ -7,15 +7,6 @@
     <AssemblyVersion>1.0.%2a</AssemblyVersion>
 	  <Deterministic>false</Deterministic>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <OutputPath>bin\Debug</OutputPath>
-    <DefineConstants>DEBUG;</DefineConstants>
-    <Externalconsole>true</Externalconsole>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <OutputPath>bin\Release</OutputPath>
-    <Externalconsole>true</Externalconsole>
-  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\IEC61850forCSharp\IEC61850.NET.csproj" />
   </ItemGroup>
