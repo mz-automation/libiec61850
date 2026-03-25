@@ -1576,7 +1576,7 @@ ControlAction_getControlObject(ControlAction self);
  *
  * \param self the control action instance
  *
- * \return the controllable data object instance
+ * \return the execution time of the control action in ms since Epoch or 0 if it's not a time activated control
  */
 LIB61850_API uint64_t
 ControlAction_getControlTime(ControlAction self);
@@ -1586,7 +1586,7 @@ ControlAction_getControlTime(ControlAction self);
  *
  * \param self the control action instance
  *
- * \return the time of the last received control action
+ * \return the time of the last received control action in ms since Epoch
  */
 LIB61850_API Timestamp*
 ControlAction_getT(ControlAction self);
