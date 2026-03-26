@@ -16,7 +16,7 @@ namespace tests
 		{
 			var val = new MmsValue (10.0f);
 
-			Assert.AreEqual (10.0f, val.ToFloat ());
+			Assert.That(val.ToFloat(), Is.EqualTo(10.0f));
 		}
 
 		[Test ()]
@@ -24,51 +24,51 @@ namespace tests
 		{
 			var val = MmsValue.NewBitString(10);
 
-			Assert.AreEqual (MmsType.MMS_BIT_STRING, val.GetType());
-			Assert.AreEqual (10, val.Size());
+			Assert.That(val.GetType(), Is.EqualTo(MmsType.MMS_BIT_STRING));
+			Assert.That(val.Size(), Is.EqualTo(10));
 
 			val.BitStringFromUInt32(7);
 
-			Assert.AreEqual(7, val.BitStringToUInt32());
+			Assert.That(val.BitStringToUInt32(), Is.EqualTo(7));
 
-			Assert.AreEqual(true, val.GetBit(0));
-			Assert.AreEqual(true, val.GetBit(1));
-			Assert.AreEqual(true, val.GetBit(2));
-			Assert.AreEqual(false, val.GetBit(3));
+			Assert.That(val.GetBit(0), Is.True);
+			Assert.That(val.GetBit(1), Is.True);
+			Assert.That(val.GetBit(2), Is.True);
+			Assert.That(val.GetBit(3), Is.False);
 
-			Assert.AreEqual(false, val.GetBit(9));
+			Assert.That(val.GetBit(9), Is.False);
 
-			Assert.AreEqual(false, val.GetBit(10));
+			Assert.That(val.GetBit(10), Is.False);
 
 			val.SetBit(3, true);
-			Assert.AreEqual(true, val.GetBit(3));
+			Assert.That(val.GetBit(3), Is.True);
 
-			Assert.AreEqual(15, val.BitStringToUInt32());
+			Assert.That(val.BitStringToUInt32(), Is.EqualTo(15));
 
 			val.SetBit(3, false);
-			Assert.AreEqual(7, val.BitStringToUInt32());
+			Assert.That(val.BitStringToUInt32(), Is.EqualTo(7));
 		}
 
-        [Test ()]
-        public void MmsValueUtcTime ()
-        {
-            var val = MmsValue.NewUtcTime (100000);
-            val.GetUtcTimeInMs ();
+		[Test ()]
+		public void MmsValueUtcTime ()
+		{
+			var val = MmsValue.NewUtcTime (100000);
+			val.GetUtcTimeInMs ();
 
-            Assert.AreEqual (val.GetUtcTimeInMs (), 100000);
-        }
+			Assert.That(val.GetUtcTimeInMs(), Is.EqualTo(100000));
+		}
 
 		[Test()]
 		public void MmsValueOctetString ()
 		{
 			var val = MmsValue.NewOctetString(20);
 
-			Assert.AreEqual (0, val.Size());
-			Assert.AreEqual (20, val.MaxSize());
+			Assert.That(val.Size(), Is.EqualTo(0));
+			Assert.That(val.MaxSize(), Is.EqualTo(20));
 
 			byte[] octetString = val.getOctetString();
 
-			Assert.AreEqual (0, octetString.Length);
+			Assert.That(octetString.Length, Is.EqualTo(0));
 
 			octetString = new byte[5];
 			octetString[0] = 0x11;
@@ -79,11 +79,11 @@ namespace tests
 
 			val.setOctetString(octetString);
 
-			Assert.AreEqual(5, val.Size());
+			Assert.That(val.Size(), Is.EqualTo(5));
 
 			byte[] secondOctetString = val.getOctetString();
 
-			Assert.AreEqual(octetString, secondOctetString);
+			Assert.That(secondOctetString, Is.EqualTo(octetString));
 		}
 
 		[Test ()]
@@ -91,13 +91,13 @@ namespace tests
 		{
 			var val = new MmsValue ((float) 1234.5678);
 
-			Assert.AreEqual (val.ToFloat (), (float)1234.5678);
+			Assert.That(val.ToFloat(), Is.EqualTo((float)1234.5678));
 
 			val.SetFloat ((float) 0.1234);
 
-			Assert.AreEqual (val.ToFloat (), (float) 0.1234);
+			Assert.That(val.ToFloat(), Is.EqualTo((float)0.1234));
 
-			Assert.AreEqual (val.ToDouble (), (double) 0.1234, (double) 0.0001);
+			Assert.That(val.ToDouble(), Is.EqualTo((double)0.1234).Within((double)0.0001));
 		}
 
 		[Test ()]
@@ -105,13 +105,13 @@ namespace tests
 		{
 			var val = new MmsValue ((double) 1234.5678);
 
-			Assert.AreEqual (val.ToDouble (), (double)1234.5678);
+			Assert.That(val.ToDouble(), Is.EqualTo((double)1234.5678));
 
 			val.SetDouble ((double) 0.1234);
 
-			Assert.AreEqual (val.ToDouble (), (double) 0.1234);
+			Assert.That(val.ToDouble(), Is.EqualTo((double)0.1234));
 
-			Assert.AreEqual (val.ToFloat (), (float)0.1234);
+			Assert.That(val.ToFloat(), Is.EqualTo((float)0.1234));
 		}
 
 		[Test()]
@@ -123,23 +123,23 @@ namespace tests
 			val.SetElement (1, new MmsValue (2));
 			val.SetElement (2, new MmsValue (3));
 
-			Assert.AreEqual (val.GetType (), MmsType.MMS_ARRAY);
-			Assert.AreEqual (val.Size (), 3);
+			Assert.That(val.GetType(), Is.EqualTo(MmsType.MMS_ARRAY));
+			Assert.That(val.Size(), Is.EqualTo(3));
 
 			MmsValue elem0 = val.GetElement (0);
 
-			Assert.AreEqual (elem0.GetType (), MmsType.MMS_INTEGER);
-			Assert.AreEqual (elem0.ToInt32 (), 1);
+			Assert.That(elem0.GetType(), Is.EqualTo(MmsType.MMS_INTEGER));
+			Assert.That(elem0.ToInt32(), Is.EqualTo(1));
 
 			MmsValue elem2 = val.GetElement (2);
 
-			Assert.AreEqual (elem2.GetType (), MmsType.MMS_INTEGER);
-			Assert.AreEqual (elem2.ToInt32 (), 3);
+			Assert.That(elem2.GetType(), Is.EqualTo(MmsType.MMS_INTEGER));
+			Assert.That(elem2.ToInt32(), Is.EqualTo(3));
 
-            val.SetElement (0, null);
-            val.SetElement (1, null);
-            val.SetElement (2, null);
-        }
+			val.SetElement (0, null);
+			val.SetElement (1, null);
+			val.SetElement (2, null);
+		}
 
 		[Test()]
 		public void MmsValueStructure()
@@ -149,20 +149,20 @@ namespace tests
 			val.SetElement (0, new MmsValue(true));
 			val.SetElement (1, MmsValue.NewBitString (10));
 
-			Assert.AreEqual (val.GetType (), MmsType.MMS_STRUCTURE);
-			Assert.AreEqual (val.Size (), 2);
+			Assert.That(val.GetType(), Is.EqualTo(MmsType.MMS_STRUCTURE));
+			Assert.That(val.Size(), Is.EqualTo(2));
 
 			MmsValue elem0 = val.GetElement (0);
 
-			Assert.AreEqual (elem0.GetType (), MmsType.MMS_BOOLEAN);
-			Assert.AreEqual (elem0.GetBoolean(), true);
+			Assert.That(elem0.GetType(), Is.EqualTo(MmsType.MMS_BOOLEAN));
+			Assert.That(elem0.GetBoolean(), Is.True);
 
 			MmsValue elem1 = val.GetElement (1);
 
-			Assert.AreEqual (elem1.GetType (), MmsType.MMS_BIT_STRING);
+			Assert.That(elem1.GetType(), Is.EqualTo(MmsType.MMS_BIT_STRING));
 
-            val.SetElement (0, null);
-            val.SetElement (1, null);
+			val.SetElement (0, null);
+			val.SetElement (1, null);
 		}
 
 		[Test ()]
@@ -170,23 +170,23 @@ namespace tests
 		{
 			Timestamp timestamp = new Timestamp ();
 
-			Assert.IsTrue (timestamp.LeapSecondKnown);
-			Assert.IsFalse (timestamp.ClockFailure);
-			Assert.IsFalse (timestamp.ClockNotSynchronized);
+			Assert.That(timestamp.LeapSecondKnown, Is.True);
+			Assert.That(timestamp.ClockFailure, Is.False);
+			Assert.That(timestamp.ClockNotSynchronized, Is.False);
 
 			timestamp.LeapSecondKnown = false;
-			Assert.IsFalse (timestamp.LeapSecondKnown);
+			Assert.That(timestamp.LeapSecondKnown, Is.False);
 
 			timestamp.ClockFailure = true;
-			Assert.IsTrue (timestamp.ClockFailure);
+			Assert.That(timestamp.ClockFailure, Is.True);
 
 			timestamp.ClockNotSynchronized = true;
-			Assert.IsTrue (timestamp.ClockNotSynchronized);
+			Assert.That(timestamp.ClockNotSynchronized, Is.True);
 
-			Assert.AreEqual (0, timestamp.SubsecondPrecision);
+			Assert.That(timestamp.SubsecondPrecision, Is.EqualTo(0));
 
 			timestamp.SubsecondPrecision = 10;
-			Assert.AreEqual (10, timestamp.SubsecondPrecision);
+			Assert.That(timestamp.SubsecondPrecision, Is.EqualTo(10));
 		}
 
 		[Test ()]
@@ -194,33 +194,33 @@ namespace tests
 		{
 			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("test.cfg");
 
-			Assert.IsNull (iedModel);
+			Assert.That(iedModel, Is.Null);
 		}
 
 		[Test ()]
 		public void CreateModelFromFile()
 		{			
-			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../model.cfg");
+			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../../model.cfg");
 
-			Assert.NotNull (iedModel);
+			Assert.That(iedModel, Is.Not.Null);
 		}
 
 		[Test ()]
 		public void StartStopSimpleServer()
 		{	
-			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../model.cfg");
+			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../../model.cfg");
 
 			IedServer iedServer = new IedServer (iedModel);
 
-			Assert.NotNull (iedServer);
+			Assert.That(iedServer, Is.Not.Null);
 
 			iedServer.Start (10002);
 
-			Assert.IsTrue (iedServer.IsRunning ());
+			Assert.That(iedServer.IsRunning(), Is.True);
 
 			iedServer.Stop ();
 
-			Assert.IsFalse (iedServer.IsRunning ());
+			Assert.That(iedServer.IsRunning(), Is.False);
 
 			iedServer.Destroy ();
 		}
@@ -228,7 +228,7 @@ namespace tests
 		[Test ()]
 		public void ConnectToServer()
 		{	
-			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../model.cfg");
+			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../../model.cfg");
 
 			IedServer iedServer = new IedServer (iedModel);
 
@@ -240,13 +240,13 @@ namespace tests
 
 			List<string> list = connection.GetServerDirectory ();
 
-			Assert.IsNotEmpty (list);
+			Assert.That(list, Is.Not.Empty);
 
-			Assert.AreEqual (list.ToArray () [0], "simpleIOGenericIO");
+			Assert.That(list.ToArray()[0], Is.EqualTo("simpleIOGenericIO"));
 
-            Assert.IsTrue(iedServer.IsRunning());
+			Assert.That(iedServer.IsRunning(), Is.True);
 
-            iedServer.Stop ();
+			iedServer.Stop ();
 
 			iedServer.Destroy ();
 		}
@@ -254,7 +254,7 @@ namespace tests
 		[Test ()]
 		public void ReadNonExistingObject()
 		{	
-			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../model.cfg");
+			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../../model.cfg");
 
 			IedServer iedServer = new IedServer (iedModel);
 
@@ -266,9 +266,9 @@ namespace tests
 
 			MmsValue value = connection.ReadValue ("simpleIOGenericIO/GGIO1.SPCSO1.stVal", FunctionalConstraint.MX);
 
-			Assert.IsNotNull (value);
+			Assert.That(value, Is.Not.Null);
 
-			Assert.AreEqual (MmsType.MMS_DATA_ACCESS_ERROR, value.GetType ());
+			Assert.That(value.GetType(), Is.EqualTo(MmsType.MMS_DATA_ACCESS_ERROR));
 
 			iedServer.Stop ();
 
@@ -278,55 +278,55 @@ namespace tests
 		[Test ()]
 		public void AccessDataModelServerSide()
 		{
-			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../model.cfg");
+			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../../model.cfg");
 
 			ModelNode modelNode = iedModel.GetModelNodeByShortObjectReference ("GenericIO/GGIO1.AnIn1");
 
-			Assert.IsTrue (modelNode.GetType ().Equals (typeof(DataObject)));
+			Assert.That(modelNode.GetType().Equals(typeof(DataObject)), Is.True);
 
 			modelNode = iedModel.GetModelNodeByShortObjectReference ("GenericIO/GGIO1.AnIn1.mag.f");
 
-			Assert.IsTrue (modelNode.GetType ().Equals (typeof(IEC61850.Server.DataAttribute)));
+			Assert.That(modelNode.GetType().Equals(typeof(IEC61850.Server.DataAttribute)), Is.True);
 
-			Assert.IsNotNull (modelNode);
+			Assert.That(modelNode, Is.Not.Null);
 		}
 
-        [Test()]
-        public void AccessDataModelServerSideNavigateModelNode()
-        {
-            IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile("../../model.cfg");
+		[Test()]
+		public void AccessDataModelServerSideNavigateModelNode()
+		{
+			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile("../../../model.cfg");
 
-            ModelNode modelNode = iedModel.GetModelNodeByShortObjectReference("GenericIO/GGIO1.AnIn1");
+			ModelNode modelNode = iedModel.GetModelNodeByShortObjectReference("GenericIO/GGIO1.AnIn1");
 
-            Assert.IsNotNull(modelNode);
+			Assert.That(modelNode, Is.Not.Null);
 
-            Assert.IsTrue(modelNode.GetType().Equals(typeof(DataObject)));
+			Assert.That(modelNode.GetType().Equals(typeof(DataObject)), Is.True);
 
-            var children = modelNode.GetChildren();
+			var children = modelNode.GetChildren();
 
-            Assert.AreEqual(3, children.Count);
+			Assert.That(children.Count, Is.EqualTo(3));
 
-            ModelNode mag = children.First.Value;
+			ModelNode mag = children.First.Value;
 
-            Assert.AreEqual("mag", mag.GetName());
+			Assert.That(mag.GetName(), Is.EqualTo("mag"));
 
-            ModelNode t = children.Last.Value;
+			ModelNode t = children.Last.Value;
 
-            Assert.AreEqual("t", t.GetName());
+			Assert.That(t.GetName(), Is.EqualTo("t"));
 
-            //modelNode = iedModel.GetModelNodeByShortObjectReference("GenericIO/GGIO1.AnIn1.mag.f");
+			//modelNode = iedModel.GetModelNodeByShortObjectReference("GenericIO/GGIO1.AnIn1.mag.f");
 
-            //Assert.IsTrue(modelNode.GetType().Equals(typeof(IEC61850.Server.DataAttribute)));
-        }
+			//Assert.That(modelNode.GetType().Equals(typeof(IEC61850.Server.DataAttribute)), Is.True);
+		}
 
-        [Test ()]
+		[Test ()]
 		public void AccessDataModelClientServer()
 		{
-            IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile("../../model.cfg");
+			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile("../../../model.cfg");
 
 			ModelNode ind1 = iedModel.GetModelNodeByShortObjectReference ("GenericIO/GGIO1.Ind1.stVal");
 
-			Assert.IsTrue (ind1.GetType ().Equals (typeof(IEC61850.Server.DataAttribute)));
+			Assert.That(ind1.GetType().Equals(typeof(IEC61850.Server.DataAttribute)), Is.True);
 
 			IedServer iedServer = new IedServer (iedModel);
 
@@ -340,13 +340,13 @@ namespace tests
 
 			bool stVal = connection.ReadBooleanValue ("simpleIOGenericIO/GGIO1.Ind1.stVal", FunctionalConstraint.ST);
 
-			Assert.IsTrue (stVal);
+			Assert.That(stVal, Is.True);
 
 			iedServer.UpdateBooleanAttributeValue((IEC61850.Server.DataAttribute) ind1, false);
 
 			stVal = connection.ReadBooleanValue ("simpleIOGenericIO/GGIO1.Ind1.stVal", FunctionalConstraint.ST);
 
-			Assert.IsFalse (stVal);
+			Assert.That(stVal, Is.False);
 
 			connection.Abort ();
 
@@ -360,7 +360,7 @@ namespace tests
 		public void ControlWriteAccessToServer()
 		{
 
-			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../model.cfg");
+			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../../model.cfg");
 
 			IEC61850.Server.DataAttribute opDlTmms = (IEC61850.Server.DataAttribute) iedModel.GetModelNodeByShortObjectReference("GenericIO/PDUP1.OpDlTmms.setVal");
 			IEC61850.Server.DataAttribute rsDlTmms = (IEC61850.Server.DataAttribute)iedModel.GetModelNodeByShortObjectReference ("GenericIO/PDUP1.RsDlTmms.setVal");
@@ -394,20 +394,20 @@ namespace tests
 				connection.WriteValue ("simpleIOGenericIO/PDUP1.RsDlTmms.setVal", FunctionalConstraint.SP, new MmsValue ((int)1234));
 			}
 			catch (IedConnectionException e) {
-				Assert.AreEqual (IedClientError.IED_ERROR_OBJECT_VALUE_INVALID, e.GetIedClientError());
+				Assert.That(e.GetIedClientError(), Is.EqualTo(IedClientError.IED_ERROR_OBJECT_VALUE_INVALID));
 			}
 
 			connection.WriteValue ("simpleIOGenericIO/PDUP1.RsDlTmms.setVal", FunctionalConstraint.SP, new MmsValue ((int)999));
 
 			MmsValue rsDlTmmsValue = iedServer.GetAttributeValue (rsDlTmms);
 
-			Assert.AreEqual (999, rsDlTmmsValue.ToInt32 ());
+			Assert.That(rsDlTmmsValue.ToInt32(), Is.EqualTo(999));
 
 			connection.Abort ();
 
 			iedServer.Stop ();
 
-			Assert.AreEqual ((int) 1234, opDlTmmsValue);
+			Assert.That(opDlTmmsValue, Is.EqualTo((int)1234));
 
 			iedServer.Destroy ();
 		}
@@ -415,7 +415,7 @@ namespace tests
         [Test()]
         public void ControlWriteAccessComplexDAToServer()
         {
-            IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile("../../model2.cfg");
+            IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile("../../../model2.cfg");
 
             IEC61850.Server.DataAttribute setAnVal_setMag = (IEC61850.Server.DataAttribute)iedModel.GetModelNodeByShortObjectReference("GenericIO/LLN0.SetAnVal.setMag");
 
@@ -442,21 +442,21 @@ namespace tests
             MmsValue complexValue = MmsValue.NewEmptyStructure(1);
             complexValue.SetElement(0, new MmsValue((float)1.0));
 
-            connection.WriteValue("simpleIOGenericIO/LLN0.SetAnVal.setMag", FunctionalConstraint.SP, complexValue);
+			connection.WriteValue("simpleIOGenericIO/LLN0.SetAnVal.setMag", FunctionalConstraint.SP, complexValue);
 
-            Assert.NotNull(receivedValue);
-            Assert.AreEqual(MmsType.MMS_STRUCTURE, receivedValue.GetType());
-            Assert.AreEqual(1.0, receivedValue.GetElement(0).ToFloat());
+			Assert.That(receivedValue, Is.Not.Null);
+			Assert.That(receivedValue.GetType(), Is.EqualTo(MmsType.MMS_STRUCTURE));
+			Assert.That(receivedValue.GetElement(0).ToFloat(), Is.EqualTo(1.0));
 
-            receivedValue.Dispose();
+			receivedValue.Dispose();
 
-            receivedValue = null;
+			receivedValue = null;
 
-            connection.WriteValue("simpleIOGenericIO/LLN0.SetAnVal.setMag.f", FunctionalConstraint.SP, new MmsValue((float)2.0));
+			connection.WriteValue("simpleIOGenericIO/LLN0.SetAnVal.setMag.f", FunctionalConstraint.SP, new MmsValue((float)2.0));
 
-            Assert.NotNull(receivedValue);
-            Assert.AreEqual(MmsType.MMS_FLOAT, receivedValue.GetType());
-            Assert.AreEqual(2.0, receivedValue.ToFloat());
+			Assert.That(receivedValue, Is.Not.Null);
+			Assert.That(receivedValue.GetType(), Is.EqualTo(MmsType.MMS_FLOAT));
+			Assert.That(receivedValue.ToFloat(), Is.EqualTo(2.0));
 
             connection.Abort();
 
@@ -468,7 +468,7 @@ namespace tests
         [Test()]
 		public void WriteAccessPolicy()
 		{
-			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../model.cfg");
+			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../../model.cfg");
 
 			IEC61850.Server.DataAttribute opDlTmms = (IEC61850.Server.DataAttribute) iedModel.GetModelNodeByShortObjectReference("GenericIO/PDUP1.OpDlTmms.setVal");
             IEC61850.Server.DataAttribute rsDlTmms = (IEC61850.Server.DataAttribute)iedModel.GetModelNodeByShortObjectReference("GenericIO/PDUP1.RsDlTmms.setVal");
@@ -498,12 +498,12 @@ namespace tests
 				connection.WriteValue ("simpleIOGenericIO/PDUP1.RsDlTmms.setVal", FunctionalConstraint.SP, new MmsValue ((int)999));
 			}
 			catch (IedConnectionException e) {
-				Assert.AreEqual (IedClientError.IED_ERROR_ACCESS_DENIED, e.GetIedClientError());
+				Assert.That(e.GetIedClientError(), Is.EqualTo(IedClientError.IED_ERROR_ACCESS_DENIED));
 			}
 
 			MmsValue rsDlTmmsValue = iedServer.GetAttributeValue (rsDlTmms);
 
-			Assert.AreEqual (1234, rsDlTmmsValue.ToInt32 ());
+			Assert.That(rsDlTmmsValue.ToInt32(), Is.EqualTo(1234));
 
 			connection.Abort ();
 
@@ -515,11 +515,11 @@ namespace tests
 		[Test()]
 		public void ControlHandler()
 		{
-			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../model.cfg");
+			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../../model.cfg");
 
 			DataObject spcso1 = (DataObject)iedModel.GetModelNodeByShortObjectReference ("GenericIO/GGIO1.SPCSO1");
 
-			Assert.IsNotNull (spcso1);
+			Assert.That(spcso1, Is.Not.Null);
 
 			int handlerCalled = 0;
 
@@ -527,14 +527,14 @@ namespace tests
 
 			iedServer.SetControlHandler (spcso1, delegate(ControlAction action, object parameter, MmsValue ctlVal, bool test) {
 
-                byte [] orIdent = action.GetOrIdent ();
+				byte [] orIdent = action.GetOrIdent ();
 
-                string orIdentStr = System.Text.Encoding.UTF8.GetString (orIdent, 0, orIdent.Length);
+				string orIdentStr = System.Text.Encoding.UTF8.GetString (orIdent, 0, orIdent.Length);
 
-                Assert.AreEqual ("TEST1234", orIdentStr);
-                Assert.AreEqual (OrCat.MAINTENANCE, action.GetOrCat ());
+				Assert.That(orIdentStr, Is.EqualTo("TEST1234"));
+				Assert.That(action.GetOrCat(), Is.EqualTo(OrCat.MAINTENANCE));
 
-                Assert.AreSame (spcso1, action.GetControlObject ());
+				Assert.That(action.GetControlObject(), Is.SameAs(spcso1));
 
 				handlerCalled++;
 				return ControlHandlerResult.OK;
@@ -547,15 +547,15 @@ namespace tests
 			connection.Connect ("localhost", 10002);
 
 			ControlObject controlClient = connection.CreateControlObject ("simpleIOGenericIO/GGIO1.SPCSO1");
-            controlClient.SetOrigin ("TEST1234", OrCat.MAINTENANCE);
+			controlClient.SetOrigin ("TEST1234", OrCat.MAINTENANCE);
 
-			Assert.IsNotNull (controlClient);
+			Assert.That(controlClient, Is.Not.Null);
 
 			controlClient.Operate (true);
-		
+
 			connection.Abort ();
 
-			Assert.AreEqual (1, handlerCalled);
+			Assert.That(handlerCalled, Is.EqualTo(1));
 
 			iedServer.Stop ();
 
@@ -566,7 +566,7 @@ namespace tests
 		[Test()]
 		public void ConnectionHandler()
 		{
-			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../model.cfg");
+			IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile ("../../../model.cfg");
 
 			int handlerCalled = 0;
 			int connectionCount = 0;
@@ -590,22 +590,22 @@ namespace tests
 			IedConnection con1 = new IedConnection ();
 			con1.Connect ("localhost", 10002);
 
-			Assert.AreEqual (1, handlerCalled);
-			Assert.AreEqual (1, connectionCount);
+			Assert.That(handlerCalled, Is.EqualTo(1));
+			Assert.That(connectionCount, Is.EqualTo(1));
 
 			IedConnection con2 = new IedConnection ();
 			con2.Connect ("localhost", 10002);
 
-			Assert.AreEqual (2, handlerCalled);
-			Assert.AreEqual (2, connectionCount);
+			Assert.That(handlerCalled, Is.EqualTo(2));
+			Assert.That(connectionCount, Is.EqualTo(2));
 
 			con1.Abort ();
 			con2.Abort ();
 
-			Assert.AreEqual (4, handlerCalled);
-			Assert.AreEqual (0, connectionCount);
+			Assert.That(handlerCalled, Is.EqualTo(4));
+			Assert.That(connectionCount, Is.EqualTo(0));
 
-			Assert.AreEqual ("127.0.0.1:", ipAddress.Substring (0, 10));
+			Assert.That(ipAddress.Substring(0, 10), Is.EqualTo("127.0.0.1:"));
 
 			iedServer.Stop ();
 
@@ -617,26 +617,26 @@ namespace tests
 		{
 			Quality q = new Quality ();
 
-			Assert.AreEqual (false, q.Overflow);
+			Assert.That(q.Overflow, Is.False);
 
 			q.Overflow = true;
 
-			Assert.AreEqual (true, q.Overflow);
+			Assert.That(q.Overflow, Is.True);
 
 			q.Overflow = false;
 
-			Assert.AreEqual (false, q.Overflow);
+			Assert.That(q.Overflow, Is.False);
 
-			Assert.AreEqual (Validity.GOOD, q.Validity);
+			Assert.That(q.Validity, Is.EqualTo(Validity.GOOD));
 
 			q.Substituted = true;
 
-			Assert.AreEqual (true, q.Substituted);
-			Assert.AreEqual (false, q.Overflow);
+			Assert.That(q.Substituted, Is.True);
+			Assert.That(q.Overflow, Is.False);
 
 			q.Validity = Validity.QUESTIONABLE;
 
-			Assert.AreEqual (Validity.QUESTIONABLE, q.Validity);
+			Assert.That(q.Validity, Is.EqualTo(Validity.QUESTIONABLE));
 		}
 
         [Test()]
@@ -654,11 +654,11 @@ namespace tests
 
             element.Dispose();
 
-            structure1.Dispose();
-            structure2.Dispose();
+			structure1.Dispose();
+			structure2.Dispose();
 
-            Assert.AreEqual(true, true);
-        }
+			Assert.That(true, Is.True);
+		}
 
         [Test()]
         public void MmsValueClone()
