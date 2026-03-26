@@ -8,16 +8,6 @@
     <Company>MZ Automation GmbH</Company>
     <Copyright>Michael Zillgith</Copyright>
     <AssemblyVersion>1.0.%2a</AssemblyVersion>
-	  <Deterministic>false</Deterministic>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <OutputPath>bin\Debug</OutputPath>
-    <DefineConstants>DEBUG;</DefineConstants>
-    <ConsolePause>false</ConsolePause>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>none</DebugType>
-    <OutputPath>bin\Release</OutputPath>
-    <ConsolePause>false</ConsolePause>
+	<Deterministic>false</Deterministic>
   </PropertyGroup>
 </Project>
