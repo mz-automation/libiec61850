@@ -14,12 +14,12 @@ namespace tls_client_example
 		{
 			TLSConfiguration tlsConfig = new TLSConfiguration ();
 
-			tlsConfig.SetOwnCertificate (new X509Certificate2 ("client1.cer"));
+			tlsConfig.SetOwnCertificate (new X509Certificate2 ("client.crt"));
 
-			tlsConfig.SetOwnKey ("client1-key.pem", null);
+			tlsConfig.SetOwnKey ("client.key", null);
 
 			// Add a CA certificate to check the certificate provided by the server - not required when ChainValidation == false
-			tlsConfig.AddCACertificate (new X509Certificate2 ("root.cer"));
+			tlsConfig.AddCACertificate (new X509Certificate2 ("root_CA1.pem"));
 
 			// Check if the certificate is signed by a provided CA
 			tlsConfig.ChainValidation = true;

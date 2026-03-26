@@ -5,28 +5,19 @@
     <AssemblyTitle>tls_client_example</AssemblyTitle>
     <Copyright>mzillgit</Copyright>
     <AssemblyVersion>1.0.%2a</AssemblyVersion>
-	  <Deterministic>false</Deterministic>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <OutputPath>bin\Debug</OutputPath>
-    <DefineConstants>DEBUG;</DefineConstants>
-    <Externalconsole>true</Externalconsole>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <OutputPath>bin\Release</OutputPath>
-    <Externalconsole>true</Externalconsole>
+	<Deterministic>false</Deterministic>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\IEC61850forCSharp\IEC61850.NET.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <None Update="client1.cer">
+    <None Update="client.crt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="client1-key.pem">
+    <None Update="client.key">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="root.cer">
+    <None Update="root_CA1.pem">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

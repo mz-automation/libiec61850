@@ -4,7 +4,7 @@
     <OutputType>Exe</OutputType>
     <AssemblyTitle>authenticate</AssemblyTitle>
     <Copyright>mzillgit</Copyright>
-	  <Deterministic>false</Deterministic>
+	<Deterministic>false</Deterministic>
     <AssemblyVersion>1.0.%2a</AssemblyVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">

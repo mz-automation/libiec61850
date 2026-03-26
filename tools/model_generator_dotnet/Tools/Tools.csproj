@@ -8,69 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="ICDFiles\cid_example_deadband.cid" />
-    <None Remove="ICDFiles\complexModel.icd" />
-    <None Remove="ICDFiles\genericIO.icd" />
-    <None Remove="ICDFiles\inverter3ph.icd" />
-    <None Remove="ICDFiles\inverter_with_report.icd" />
-    <None Remove="ICDFiles\sampleModel.icd" />
-    <None Remove="ICDFiles\sampleModel_errors.icd" />
-    <None Remove="ICDFiles\sampleModel_with_dataset.icd" />
-    <None Remove="ICDFiles\simpleIO_access_control.icd" />
-    <None Remove="ICDFiles\simpleIO_control_tests.cid" />
-    <None Remove="ICDFiles\simpleIO_direct_control.cid" />
-    <None Remove="ICDFiles\simpleIO_direct_control.icd" />
-    <None Remove="ICDFiles\simpleIO_direct_control_goose.cid" />
-    <None Remove="ICDFiles\simpleIO_direct_control_goose.scd" />
-    <None Remove="ICDFiles\simpleIO_ltrk_tests.icd" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="ICDFiles\cid_example_deadband.cid">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ICDFiles\complexModel.icd">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ICDFiles\genericIO.icd">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ICDFiles\inverter3ph.icd">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ICDFiles\inverter_with_report.icd">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ICDFiles\sampleModel.icd">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ICDFiles\sampleModel_errors.icd">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ICDFiles\sampleModel_with_dataset.icd">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ICDFiles\simpleIO_access_control.icd">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ICDFiles\simpleIO_control_tests.cid">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ICDFiles\simpleIO_direct_control.cid">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ICDFiles\simpleIO_direct_control.icd">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ICDFiles\simpleIO_direct_control_goose.cid">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ICDFiles\simpleIO_direct_control_goose.scd">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ICDFiles\simpleIO_ltrk_tests.icd">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
+	  <EmbeddedResource Include="ICDFiles\*.cid" CopyToOutputDirectory="PreserveNewest" />
+	  <EmbeddedResource Include="ICDFiles\*.icd" CopyToOutputDirectory="PreserveNewest" />
+	  <EmbeddedResource Include="ICDFiles\*.scd" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
