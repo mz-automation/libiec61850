@@ -8,6 +8,6 @@
     <Company>MZ Automation GmbH</Company>
     <Copyright>Michael Zillgith</Copyright>
     <AssemblyVersion>1.0.%2a</AssemblyVersion>
-	<Deterministic>false</Deterministic>
+	  <Deterministic>false</Deterministic>
   </PropertyGroup>
 </Project>
