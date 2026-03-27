@@ -878,6 +878,13 @@ parseGoosePayload(GooseReceiver self, uint8_t* buffer, int apduLength)
                 break;
 
             case 0x84:
+                if (elementLength < 8)
+                {
+                    if (DEBUG_GOOSE_SUBSCRIBER)
+                        printf("GOOSE_SUBSCRIBER:   timestamp too short!\n");
+                    break;
+                }
+
                 timestampBufPos = buffer + bufPos;
                 if (DEBUG_GOOSE_SUBSCRIBER)
                     printf("GOOSE_SUBSCRIBER:   Found timestamp\n");
