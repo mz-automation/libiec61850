@@ -21,9 +21,9 @@
  *  See COPYING file for the complete license text.
  */
 
+#include "mms_value.h"
 #include "libiec61850_platform_includes.h"
 #include "mms_common.h"
-#include "mms_value.h"
 #include "mms_type_spec.h"
 
 #include "mms_common_internal.h"
@@ -62,7 +62,8 @@ updateStructuredComponent(MmsValue* self, const MmsValue* update)
     updateValues = update->value.structure.components;
 
     int i;
-    for (i = 0; i < self->value.structure.size; i++) {
+    for (i = 0; i < self->value.structure.size; i++)
+    {
         if (MmsValue_update(selfValues[i], updateValues[i]) == false)
             return false;
     }
@@ -73,7 +74,7 @@ updateStructuredComponent(MmsValue* self, const MmsValue* update)
 MmsValue*
 MmsValue_newIntegerFromBerInteger(Asn1PrimitiveValue* berInteger)
 {
-    MmsValue* self = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
+    MmsValue* self = (MmsValue*)GLOBAL_CALLOC(1, sizeof(MmsValue));
 
     if (self == NULL)
         return NULL;
@@ -87,7 +88,7 @@ MmsValue_newIntegerFromBerInteger(Asn1PrimitiveValue* berInteger)
 MmsValue*
 MmsValue_newUnsignedFromBerInteger(Asn1PrimitiveValue* berInteger)
 {
-    MmsValue* self = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
+    MmsValue* self = (MmsValue*)GLOBAL_CALLOC(1, sizeof(MmsValue));
 
     if (self == NULL)
         return NULL;
@@ -104,18 +105,21 @@ MmsValue_equals(const MmsValue* self, const MmsValue* otherValue)
     if ((self == NULL) || (otherValue == NULL))
         return false;
 
-    if (self->type == otherValue->type) {
+    if (self->type == otherValue->type)
+    {
         switch (self->type)
         {
         case MMS_ARRAY:
         case MMS_STRUCTURE:
-            if (self->value.structure.size == otherValue->value.structure.size) {
+            if (self->value.structure.size == otherValue->value.structure.size)
+            {
                 int componentCount = self->value.structure.size;
 
                 int i;
-                for (i = 0; i < componentCount; i++) {
+                for (i = 0; i < componentCount; i++)
+                {
                     if (!MmsValue_equals(self->value.structure.components[i],
-                            otherValue->value.structure.components[i]))
+                                         otherValue->value.structure.components[i]))
                         return false;
                 }
 
@@ -129,7 +133,7 @@ MmsValue_equals(const MmsValue* self, const MmsValue* otherValue)
             break;
         case MMS_FLOAT:
             if (memcmp(self->value.floatingPoint.buf, otherValue->value.floatingPoint.buf,
-                    self->value.floatingPoint.formatWidth / 8) == 0)
+                       self->value.floatingPoint.formatWidth / 8) == 0)
                 return true;
             break;
         case MMS_INTEGER:
@@ -141,38 +145,42 @@ MmsValue_equals(const MmsValue* self, const MmsValue* otherValue)
                 return true;
             break;
         case MMS_BIT_STRING:
-            if (self->value.bitString.size == otherValue->value.bitString.size) {
-                if (memcmp(self->value.bitString.buf, otherValue->value.bitString.buf,
-                        bitStringByteSize(self)) == 0)
+            if (self->value.bitString.size == otherValue->value.bitString.size)
+            {
+                if (memcmp(self->value.bitString.buf, otherValue->value.bitString.buf, bitStringByteSize(self)) == 0)
                     return true;
-
             }
             break;
         case MMS_BINARY_TIME:
-            if (self->value.binaryTime.size == otherValue->value.binaryTime.size) {
-                if (memcmp(self->value.binaryTime.buf, otherValue->value.binaryTime.buf,
-                        self->value.binaryTime.size) == 0)
+            if (self->value.binaryTime.size == otherValue->value.binaryTime.size)
+            {
+                if (memcmp(self->value.binaryTime.buf, otherValue->value.binaryTime.buf, self->value.binaryTime.size) ==
+                    0)
                     return true;
             }
             break;
 
         case MMS_OCTET_STRING:
-            if (self->value.octetString.size == otherValue->value.octetString.size) {
+            if (self->value.octetString.size == otherValue->value.octetString.size)
+            {
                 if (memcmp(self->value.octetString.buf, otherValue->value.octetString.buf,
-                        self->value.octetString.size) == 0)
+                           self->value.octetString.size) == 0)
                     return true;
             }
             break;
 
         case MMS_VISIBLE_STRING:
         case MMS_STRING:
-            if (self->value.visibleString.buf != NULL) {
-                if (otherValue->value.visibleString.buf != NULL) {
+            if (self->value.visibleString.buf != NULL)
+            {
+                if (otherValue->value.visibleString.buf != NULL)
+                {
                     if (strcmp(self->value.visibleString.buf, otherValue->value.visibleString.buf) == 0)
                         return true;
                 }
             }
-            else {
+            else
+            {
                 if (otherValue->value.visibleString.buf == NULL)
                     return true;
             }
@@ -187,7 +195,6 @@ MmsValue_equals(const MmsValue* self, const MmsValue* otherValue)
             break;
         }
         return false;
-
     }
     else
         return false;
@@ -199,18 +206,21 @@ MmsValue_equalTypes(const MmsValue* self, const MmsValue* otherValue)
     if ((self == NULL) || (otherValue == NULL))
         return false;
 
-    if (self->type == otherValue->type) {
+    if (self->type == otherValue->type)
+    {
         switch (self->type)
         {
         case MMS_ARRAY:
         case MMS_STRUCTURE:
-            if (self->value.structure.size == otherValue->value.structure.size) {
+            if (self->value.structure.size == otherValue->value.structure.size)
+            {
                 int componentCount = self->value.structure.size;
 
                 int i;
-                for (i = 0; i < componentCount; i++) {
+                for (i = 0; i < componentCount; i++)
+                {
                     if (!MmsValue_equalTypes(self->value.structure.components[i],
-                            otherValue->value.structure.components[i]))
+                                             otherValue->value.structure.components[i]))
                         return false;
                 }
 
@@ -231,12 +241,14 @@ MmsValue_equalTypes(const MmsValue* self, const MmsValue* otherValue)
 bool
 MmsValue_update(MmsValue* self, const MmsValue* update)
 {
-    if (self && update) {
-        if (self->type == update->type) {
+    if (self && update)
+    {
+        if (self->type == update->type)
+        {
             switch (self->type)
             {
             case MMS_STRUCTURE:
-                case MMS_ARRAY:
+            case MMS_ARRAY:
                 if (updateStructuredComponent(self, update) == false)
                     return false;
                 break;
@@ -246,10 +258,11 @@ MmsValue_update(MmsValue* self, const MmsValue* update)
                 break;
 
             case MMS_FLOAT:
-                if (self->value.floatingPoint.formatWidth == update->value.floatingPoint.formatWidth) {
+                if (self->value.floatingPoint.formatWidth == update->value.floatingPoint.formatWidth)
+                {
                     self->value.floatingPoint.exponentWidth = update->value.floatingPoint.exponentWidth;
                     memcpy(self->value.floatingPoint.buf, update->value.floatingPoint.buf,
-                            self->value.floatingPoint.formatWidth / 8);
+                           self->value.floatingPoint.formatWidth / 8);
                 }
                 else
                     return false;
@@ -270,10 +283,12 @@ MmsValue_update(MmsValue* self, const MmsValue* update)
             case MMS_BIT_STRING:
                 if (self->value.bitString.size == update->value.bitString.size)
                     memcpy(self->value.bitString.buf, update->value.bitString.buf, bitStringByteSize(self));
-                else {
+                else
+                {
                     int i;
 
-                    for (i = 0; i < update->value.bitString.size; i++) {
+                    for (i = 0; i < update->value.bitString.size; i++)
+                    {
                         if (i < self->value.bitString.size)
                             MmsValue_setBitStringBit(self, i, MmsValue_getBitStringBit(update, i));
                         else
@@ -283,34 +298,36 @@ MmsValue_update(MmsValue* self, const MmsValue* update)
 
                 break;
 
-            case MMS_OCTET_STRING:
+            case MMS_OCTET_STRING: {
+                int size = update->value.octetString.size;
+
+                if ((self->value.octetString.maxSize < 0) && (size > abs(self->value.octetString.maxSize)))
                 {
-                    int size = update->value.octetString.size;
 
-                    if ((self->value.octetString.maxSize < 0) && (size > abs(self->value.octetString.maxSize))) {
+                    GLOBAL_FREEMEM(self->value.octetString.buf);
+                    self->value.octetString.buf = (uint8_t*)GLOBAL_MALLOC(size);
 
-                        GLOBAL_FREEMEM(self->value.octetString.buf);
-                        self->value.octetString.buf = (uint8_t*) GLOBAL_MALLOC(size);
-
-                        if (self->value.octetString.buf == NULL)
-                            return false;
-
-                        if (self->value.octetString.maxSize < 0)
-                            self->value.octetString.maxSize = -size;
-                        else
-                            self->value.octetString.maxSize = size;
-                    }
-
-                    if (size <= abs(self->value.octetString.maxSize)) {
-                        memcpy(self->value.octetString.buf, update->value.octetString.buf, size);
-
-                        self->value.octetString.size = size;
-                    }
-                    else {
+                    if (self->value.octetString.buf == NULL)
                         return false;
-                    }
+
+                    if (self->value.octetString.maxSize < 0)
+                        self->value.octetString.maxSize = -size;
+                    else
+                        self->value.octetString.maxSize = size;
                 }
-                break;
+
+                if (size <= abs(self->value.octetString.maxSize))
+                {
+                    memcpy(self->value.octetString.buf, update->value.octetString.buf, size);
+
+                    self->value.octetString.size = size;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            break;
 
             case MMS_VISIBLE_STRING:
                 MmsValue_setVisibleString(self, update->value.visibleString.buf);
@@ -322,8 +339,7 @@ MmsValue_update(MmsValue* self, const MmsValue* update)
 
             case MMS_BINARY_TIME:
                 self->value.binaryTime.size = update->value.binaryTime.size;
-                memcpy(self->value.binaryTime.buf, update->value.binaryTime.buf,
-                        update->value.binaryTime.size);
+                memcpy(self->value.binaryTime.buf, update->value.binaryTime.buf, update->value.binaryTime.size);
                 break;
 
             default:
@@ -343,7 +359,7 @@ MmsValue_update(MmsValue* self, const MmsValue* update)
 MmsValue*
 MmsValue_newDataAccessError(MmsDataAccessError accessError)
 {
-    MmsValue* self = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
+    MmsValue* self = (MmsValue*)GLOBAL_CALLOC(1, sizeof(MmsValue));
 
     if (self == NULL)
         return NULL;
@@ -357,16 +373,17 @@ MmsValue_newDataAccessError(MmsDataAccessError accessError)
 MmsValue*
 MmsValue_newBitString(int bitSize)
 {
-    MmsValue* self = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
+    MmsValue* self = (MmsValue*)GLOBAL_CALLOC(1, sizeof(MmsValue));
 
     if (self == NULL)
         return NULL;
 
     self->type = MMS_BIT_STRING;
     self->value.bitString.size = abs(bitSize);
-    self->value.bitString.buf = (uint8_t*) GLOBAL_CALLOC(bitStringByteSize(self), 1);
+    self->value.bitString.buf = (uint8_t*)GLOBAL_CALLOC(bitStringByteSize(self), 1);
 
-    if (self->value.bitString.buf == NULL) {
+    if (self->value.bitString.buf == NULL)
+    {
         GLOBAL_FREEMEM(self);
         self = NULL;
     }
@@ -393,7 +410,8 @@ MmsValue_deleteAllBitStringBits(MmsValue* self)
     int byteSize = getBitStringByteSize(self);
 
     int i;
-    for (i = 0; i < byteSize; i++) {
+    for (i = 0; i < byteSize; i++)
+    {
         self->value.bitString.buf[i] = 0;
     }
 }
@@ -404,7 +422,8 @@ MmsValue_setAllBitStringBits(MmsValue* self)
     int byteSize = getBitStringByteSize(self);
 
     int i;
-    for (i = 0; i < byteSize; i++) {
+    for (i = 0; i < byteSize; i++)
+    {
         self->value.bitString.buf[i] = 0xff;
     }
 
@@ -412,7 +431,8 @@ MmsValue_setAllBitStringBits(MmsValue* self)
 
     uint8_t paddingMask = 0;
 
-    for (i = 0; i < padding; i++) {
+    for (i = 0; i < padding; i++)
+    {
         paddingMask += (1 << i);
     }
 
@@ -435,10 +455,12 @@ MmsValue_getNumberOfSetBits(const MmsValue* self)
     int byteSize = getBitStringByteSize(self);
 
     int i;
-    for (i = 0; i < byteSize; i++) {
+    for (i = 0; i < byteSize; i++)
+    {
 
         /* deal with wrong padding */
-        if (i == (byteSize - 1)) {
+        if (i == (byteSize - 1))
+        {
             int paddingSize = (byteSize * 8) - self->value.bitString.size;
 
             uint8_t mask = 0;
@@ -455,7 +477,8 @@ MmsValue_getNumberOfSetBits(const MmsValue* self)
 
         uint8_t currentByte = self->value.bitString.buf[i];
 
-        while (currentByte != 0) {
+        while (currentByte != 0)
+        {
             if ((currentByte & 1) == 1)
                 setBitsCount++;
             currentByte >>= 1;
@@ -468,7 +491,8 @@ MmsValue_getNumberOfSetBits(const MmsValue* self)
 void
 MmsValue_setBitStringBit(MmsValue* self, int bitPos, bool value)
 {
-    if (bitPos < self->value.bitString.size) {
+    if (bitPos < self->value.bitString.size)
+    {
         int bytePos = bitPos / 8;
         int bitPosInByte = 7 - (bitPos % 8);
 
@@ -484,7 +508,8 @@ MmsValue_setBitStringBit(MmsValue* self, int bitPos, bool value)
 bool
 MmsValue_getBitStringBit(const MmsValue* self, int bitPos)
 {
-    if (bitPos < self->value.bitString.size) {
+    if (bitPos < self->value.bitString.size)
+    {
         int bytePos = bitPos / 8;
 
         int bitPosInByte = 7 - (bitPos % 8);
@@ -495,7 +520,6 @@ MmsValue_getBitStringBit(const MmsValue* self, int bitPos)
             return true;
         else
             return false;
-
     }
     else
         return false; /* out of range bits are always zero */
@@ -508,8 +532,10 @@ MmsValue_getBitStringAsInteger(const MmsValue* self)
 
     int bitPos;
 
-    for (bitPos = 0; bitPos < self->value.bitString.size; bitPos++) {
-        if (MmsValue_getBitStringBit(self, bitPos)) {
+    for (bitPos = 0; bitPos < self->value.bitString.size; bitPos++)
+    {
+        if (MmsValue_getBitStringBit(self, bitPos))
+        {
             value += (1 << bitPos);
         }
     }
@@ -522,7 +548,8 @@ MmsValue_setBitStringFromInteger(MmsValue* self, uint32_t intValue)
 {
     int bitPos;
 
-    for (bitPos = 0; bitPos < self->value.bitString.size; bitPos++) {
+    for (bitPos = 0; bitPos < self->value.bitString.size; bitPos++)
+    {
         if ((intValue & 1) == 1)
             MmsValue_setBitStringBit(self, bitPos, true);
         else
@@ -540,9 +567,11 @@ MmsValue_getBitStringAsIntegerBigEndian(const MmsValue* self)
     int bitPos;
     int i = 0;
 
-    for (bitPos = (self->value.bitString.size - 1); bitPos >= 0; bitPos--) {
+    for (bitPos = (self->value.bitString.size - 1); bitPos >= 0; bitPos--)
+    {
 
-        if (MmsValue_getBitStringBit(self, bitPos)) {
+        if (MmsValue_getBitStringBit(self, bitPos))
+        {
             value += (1 << i);
         }
 
@@ -557,7 +586,8 @@ MmsValue_setBitStringFromIntegerBigEndian(MmsValue* self, uint32_t intValue)
 {
     int bitPos;
 
-    for (bitPos = (self->value.bitString.size - 1); bitPos >= 0; bitPos--) {
+    for (bitPos = (self->value.bitString.size - 1); bitPos >= 0; bitPos--)
+    {
         if ((intValue & 1) == 1)
             MmsValue_setBitStringBit(self, bitPos, true);
         else
@@ -570,9 +600,10 @@ MmsValue_setBitStringFromIntegerBigEndian(MmsValue* self, uint32_t intValue)
 MmsValue*
 MmsValue_newFloat(float value)
 {
-    MmsValue* self = (MmsValue*) GLOBAL_MALLOC(sizeof(MmsValue));
+    MmsValue* self = (MmsValue*)GLOBAL_MALLOC(sizeof(MmsValue));
 
-    if (self) {
+    if (self)
+    {
         self->type = MMS_FLOAT;
         self->value.floatingPoint.formatWidth = 32;
         self->value.floatingPoint.exponentWidth = 8;
@@ -586,12 +617,15 @@ MmsValue_newFloat(float value)
 void
 MmsValue_setFloat(MmsValue* self, float newFloatValue)
 {
-    if (self->type == MMS_FLOAT) {
-        if (self->value.floatingPoint.formatWidth == 32) {
+    if (self->type == MMS_FLOAT)
+    {
+        if (self->value.floatingPoint.formatWidth == 32)
+        {
             memcpy(self->value.floatingPoint.buf, &newFloatValue, sizeof(float));
         }
-        else if (self->value.floatingPoint.formatWidth == 64) {
-            double newDoubleValue = (double) newFloatValue;
+        else if (self->value.floatingPoint.formatWidth == 64)
+        {
+            double newDoubleValue = (double)newFloatValue;
 
             memcpy(self->value.floatingPoint.buf, &newDoubleValue, sizeof(double));
         }
@@ -601,13 +635,16 @@ MmsValue_setFloat(MmsValue* self, float newFloatValue)
 void
 MmsValue_setDouble(MmsValue* self, double newDoubleValue)
 {
-    if (self->type == MMS_FLOAT) {
-        if (self->value.floatingPoint.formatWidth == 32) {
-            float newFloatValue = (float) newDoubleValue;
+    if (self->type == MMS_FLOAT)
+    {
+        if (self->value.floatingPoint.formatWidth == 32)
+        {
+            float newFloatValue = (float)newDoubleValue;
 
             memcpy(self->value.floatingPoint.buf, &newFloatValue, sizeof(float));
         }
-        else if (self->value.floatingPoint.formatWidth == 64) {
+        else if (self->value.floatingPoint.formatWidth == 64)
+        {
             memcpy(self->value.floatingPoint.buf, &newDoubleValue, sizeof(double));
         }
     }
@@ -616,9 +653,10 @@ MmsValue_setDouble(MmsValue* self, double newDoubleValue)
 MmsValue*
 MmsValue_newDouble(double value)
 {
-    MmsValue* self = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
+    MmsValue* self = (MmsValue*)GLOBAL_CALLOC(1, sizeof(MmsValue));
 
-    if (self) {
+    if (self)
+    {
         self->type = MMS_FLOAT;
         self->value.floatingPoint.formatWidth = 64;
         self->value.floatingPoint.exponentWidth = 11;
@@ -632,13 +670,15 @@ MmsValue_newDouble(double value)
 MmsValue*
 MmsValue_newIntegerFromInt8(int8_t integer)
 {
-    MmsValue* self = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
+    MmsValue* self = (MmsValue*)GLOBAL_CALLOC(1, sizeof(MmsValue));
 
-    if (self) {
+    if (self)
+    {
         self->type = MMS_INTEGER;
-        self->value.integer = BerInteger_createFromInt32((int32_t) integer);
+        self->value.integer = BerInteger_createFromInt32((int32_t)integer);
 
-        if (self->value.integer == NULL) {
+        if (self->value.integer == NULL)
+        {
             GLOBAL_FREEMEM(self);
             self = NULL;
         }
@@ -650,13 +690,15 @@ MmsValue_newIntegerFromInt8(int8_t integer)
 MmsValue*
 MmsValue_newIntegerFromInt16(int16_t integer)
 {
-    MmsValue* self = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
+    MmsValue* self = (MmsValue*)GLOBAL_CALLOC(1, sizeof(MmsValue));
 
-    if (self) {
+    if (self)
+    {
         self->type = MMS_INTEGER;
-        self->value.integer = BerInteger_createFromInt32((int32_t) integer);
+        self->value.integer = BerInteger_createFromInt32((int32_t)integer);
 
-        if (self->value.integer == NULL) {
+        if (self->value.integer == NULL)
+        {
             GLOBAL_FREEMEM(self);
             self = NULL;
         }
@@ -668,9 +710,11 @@ MmsValue_newIntegerFromInt16(int16_t integer)
 void
 MmsValue_setInt8(MmsValue* self, int8_t integer)
 {
-    if (self->type == MMS_INTEGER) {
-        if (Asn1PrimitiveValue_getMaxSize(self->value.integer) >= 1) {
-            BerInteger_setInt32(self->value.integer, (int32_t) integer);
+    if (self->type == MMS_INTEGER)
+    {
+        if (Asn1PrimitiveValue_getMaxSize(self->value.integer) >= 1)
+        {
+            BerInteger_setInt32(self->value.integer, (int32_t)integer);
         }
     }
 }
@@ -678,9 +722,11 @@ MmsValue_setInt8(MmsValue* self, int8_t integer)
 void
 MmsValue_setInt16(MmsValue* self, int16_t integer)
 {
-    if (self->type == MMS_INTEGER) {
-        if (Asn1PrimitiveValue_getMaxSize(self->value.integer) >= 2) {
-            BerInteger_setInt32(self->value.integer, (int32_t) integer);
+    if (self->type == MMS_INTEGER)
+    {
+        if (Asn1PrimitiveValue_getMaxSize(self->value.integer) >= 2)
+        {
+            BerInteger_setInt32(self->value.integer, (int32_t)integer);
         }
     }
 }
@@ -688,8 +734,10 @@ MmsValue_setInt16(MmsValue* self, int16_t integer)
 void
 MmsValue_setInt32(MmsValue* self, int32_t integer)
 {
-    if (self->type == MMS_INTEGER) {
-        if (Asn1PrimitiveValue_getMaxSize(self->value.integer) >= 4) {
+    if (self->type == MMS_INTEGER)
+    {
+        if (Asn1PrimitiveValue_getMaxSize(self->value.integer) >= 4)
+        {
             BerInteger_setInt32(self->value.integer, integer);
         }
     }
@@ -698,8 +746,10 @@ MmsValue_setInt32(MmsValue* self, int32_t integer)
 void
 MmsValue_setInt64(MmsValue* self, int64_t integer)
 {
-    if (self->type == MMS_INTEGER) {
-        if (Asn1PrimitiveValue_getMaxSize(self->value.integer) >= 8) {
+    if (self->type == MMS_INTEGER)
+    {
+        if (Asn1PrimitiveValue_getMaxSize(self->value.integer) >= 8)
+        {
             BerInteger_setInt64(self->value.integer, integer);
         }
     }
@@ -708,8 +758,10 @@ MmsValue_setInt64(MmsValue* self, int64_t integer)
 void
 MmsValue_setUint32(MmsValue* self, uint32_t integer)
 {
-    if (self->type == MMS_UNSIGNED) {
-        if (Asn1PrimitiveValue_getMaxSize(self->value.integer) >= 4) {
+    if (self->type == MMS_UNSIGNED)
+    {
+        if (Asn1PrimitiveValue_getMaxSize(self->value.integer) >= 4)
+        {
             BerInteger_setUint32(self->value.integer, integer);
         }
     }
@@ -718,8 +770,10 @@ MmsValue_setUint32(MmsValue* self, uint32_t integer)
 void
 MmsValue_setUint16(MmsValue* self, uint16_t integer)
 {
-    if (self->type == MMS_UNSIGNED) {
-        if (Asn1PrimitiveValue_getMaxSize(self->value.integer) >= 2) {
+    if (self->type == MMS_UNSIGNED)
+    {
+        if (Asn1PrimitiveValue_getMaxSize(self->value.integer) >= 2)
+        {
             BerInteger_setUint16(self->value.integer, integer);
         }
     }
@@ -728,12 +782,13 @@ MmsValue_setUint16(MmsValue* self, uint16_t integer)
 void
 MmsValue_setUint8(MmsValue* self, uint8_t integer)
 {
-    if (self->type == MMS_UNSIGNED) {
-        if (Asn1PrimitiveValue_getMaxSize(self->value.integer) >= 1) {
+    if (self->type == MMS_UNSIGNED)
+    {
+        if (Asn1PrimitiveValue_getMaxSize(self->value.integer) >= 1)
+        {
             BerInteger_setUint8(self->value.integer, integer);
         }
     }
-
 }
 
 void
@@ -751,7 +806,7 @@ MmsValue_getBoolean(const MmsValue* self)
 MmsValue*
 MmsValue_setUtcTime(MmsValue* self, uint32_t timeval)
 {
-    uint8_t* timeArray = (uint8_t*) &timeval;
+    uint8_t* timeArray = (uint8_t*)&timeval;
     uint8_t* valueArray = self->value.utcTime;
 
 #if (ORDER_LITTLE_ENDIAN == 1)
@@ -768,7 +823,7 @@ setUtcTimeMs(MmsValue* self, uint64_t timeval, uint8_t timeQuality)
 {
     uint32_t timeval32 = (timeval / 1000LL);
 
-    uint8_t* timeArray = (uint8_t*) &timeval32;
+    uint8_t* timeArray = (uint8_t*)&timeval32;
     uint8_t* valueArray = self->value.utcTime;
 
 #if (ORDER_LITTLE_ENDIAN == 1)
@@ -820,11 +875,13 @@ MmsValue_getUtcTimeQuality(const MmsValue* self)
 void
 MmsValue_setUtcTimeByBuffer(MmsValue* self, const uint8_t* buffer)
 {
-    if (buffer) {
+    if (buffer)
+    {
         uint8_t* valueArray = self->value.utcTime;
 
         int i;
-        for (i = 0; i < 8; i++) {
+        for (i = 0; i < 8; i++)
+        {
             valueArray[i] = buffer[i];
         }
     }
@@ -843,9 +900,9 @@ MmsValue_getUtcTimeInMs(const MmsValue* self)
     const uint8_t* valueArray = self->value.utcTime;
 
 #if (ORDER_LITTLE_ENDIAN == 1)
-    memcpyReverseByteOrder((uint8_t*) &timeval32, valueArray, 4);
+    memcpyReverseByteOrder((uint8_t*)&timeval32, valueArray, 4);
 #else
-    memcpy((uint8_t*) &timeval32, valueArray, 4);
+    memcpy((uint8_t*)&timeval32, valueArray, 4);
 #endif
 
     uint32_t fractionOfSecond = 0;
@@ -868,7 +925,7 @@ MmsValue_getUtcTimeInMsWithUs(const MmsValue* self, uint32_t* usec)
     const uint8_t* valueArray = self->value.utcTime;
 
 #if (ORDER_LITTLE_ENDIAN == 1)
-    memcpyReverseByteOrder((uint8_t*) &timeval32, valueArray, 4);
+    memcpyReverseByteOrder((uint8_t*)&timeval32, valueArray, 4);
 #else
     memcpy((uint8_t*)&timeval32, valueArray, 4);
 #endif
@@ -892,13 +949,15 @@ MmsValue_getUtcTimeInMsWithUs(const MmsValue* self, uint32_t* usec)
 MmsValue*
 MmsValue_newIntegerFromInt32(int32_t integer)
 {
-    MmsValue* self = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
+    MmsValue* self = (MmsValue*)GLOBAL_CALLOC(1, sizeof(MmsValue));
 
-    if (self) {
+    if (self)
+    {
         self->type = MMS_INTEGER;
         self->value.integer = BerInteger_createFromInt32(integer);
 
-        if (self->value.integer == NULL) {
+        if (self->value.integer == NULL)
+        {
             GLOBAL_FREEMEM(self);
             self = NULL;
         }
@@ -910,13 +969,15 @@ MmsValue_newIntegerFromInt32(int32_t integer)
 MmsValue*
 MmsValue_newUnsignedFromUint32(uint32_t integer)
 {
-    MmsValue* self = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
+    MmsValue* self = (MmsValue*)GLOBAL_CALLOC(1, sizeof(MmsValue));
 
-    if (self) {
+    if (self)
+    {
         self->type = MMS_UNSIGNED;
         self->value.integer = BerInteger_createFromUint32(integer);
 
-        if (self->value.integer == NULL) {
+        if (self->value.integer == NULL)
+        {
             GLOBAL_FREEMEM(self);
             self = NULL;
         }
@@ -928,13 +989,15 @@ MmsValue_newUnsignedFromUint32(uint32_t integer)
 MmsValue*
 MmsValue_newIntegerFromInt64(int64_t integer)
 {
-    MmsValue* self = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
+    MmsValue* self = (MmsValue*)GLOBAL_CALLOC(1, sizeof(MmsValue));
 
-    if (self) {
+    if (self)
+    {
         self->type = MMS_INTEGER;
         self->value.integer = BerInteger_createFromInt64(integer);
 
-        if (self->value.integer == NULL) {
+        if (self->value.integer == NULL)
+        {
             GLOBAL_FREEMEM(self);
             self = NULL;
         }
@@ -985,20 +1048,23 @@ MmsValue_toInt64(const MmsValue* self)
 float
 MmsValue_toFloat(const MmsValue* self)
 {
-    if (self->type == MMS_FLOAT) {
-        if (self->value.floatingPoint.formatWidth == 32) {
+    if (self->type == MMS_FLOAT)
+    {
+        if (self->value.floatingPoint.formatWidth == 32)
+        {
             float val;
 
             memcpy(&val, self->value.floatingPoint.buf, sizeof(float));
 
             return val;
         }
-        else if (self->value.floatingPoint.formatWidth == 64) {
+        else if (self->value.floatingPoint.formatWidth == 64)
+        {
             double val;
 
             memcpy(&val, self->value.floatingPoint.buf, sizeof(double));
 
-            return (float) val;
+            return (float)val;
         }
     }
 
@@ -1008,16 +1074,19 @@ MmsValue_toFloat(const MmsValue* self)
 double
 MmsValue_toDouble(const MmsValue* self)
 {
-    if (self->type == MMS_FLOAT) {
+    if (self->type == MMS_FLOAT)
+    {
 
-        if (self->value.floatingPoint.formatWidth == 32) {
+        if (self->value.floatingPoint.formatWidth == 32)
+        {
             float val;
 
             memcpy(&val, self->value.floatingPoint.buf, sizeof(float));
 
-            return (double) val;
+            return (double)val;
         }
-        if (self->value.floatingPoint.formatWidth == 64) {
+        if (self->value.floatingPoint.formatWidth == 64)
+        {
             double val;
 
             memcpy(&val, self->value.floatingPoint.buf, sizeof(double));
@@ -1026,14 +1095,14 @@ MmsValue_toDouble(const MmsValue* self)
         }
     }
 
-    return (double) 0.f;
+    return (double)0.f;
 }
 
 uint32_t
 MmsValue_toUnixTimestamp(const MmsValue* self)
 {
     uint32_t timestamp;
-    uint8_t* timeArray = (uint8_t*) &timestamp;
+    uint8_t* timeArray = (uint8_t*)&timestamp;
 
 #if (ORDER_LITTLE_ENDIAN == 1)
     timeArray[0] = self->value.utcTime[3];
@@ -1058,15 +1127,14 @@ MmsValue_getSizeInMemory(const MmsValue* self)
     switch (self->type)
     {
     case MMS_ARRAY:
-    case MMS_STRUCTURE:
-        {
-            memorySize += (MemoryAllocator_getAlignedSize(sizeof(MmsValue*)) * self->value.structure.size);
+    case MMS_STRUCTURE: {
+        memorySize += (MemoryAllocator_getAlignedSize(sizeof(MmsValue*)) * self->value.structure.size);
 
-            int i;
-            for (i = 0; i < self->value.structure.size; i++)
-                memorySize += MmsValue_getSizeInMemory(self->value.structure.components[i]);
-        }
-        break;
+        int i;
+        for (i = 0; i < self->value.structure.size; i++)
+            memorySize += MmsValue_getSizeInMemory(self->value.structure.components[i]);
+    }
+    break;
 
     case MMS_BIT_STRING:
         memorySize += MemoryAllocator_getAlignedSize(bitStringByteSize(self));
@@ -1083,8 +1151,9 @@ MmsValue_getSizeInMemory(const MmsValue* self)
         break;
 
     case MMS_STRING:
-        case MMS_VISIBLE_STRING:
-        memorySize += MemoryAllocator_getAlignedSize(strlen(self->value.visibleString.buf) + 1); /* add space for 0 character */
+    case MMS_VISIBLE_STRING:
+        memorySize +=
+            MemoryAllocator_getAlignedSize(strlen(self->value.visibleString.buf) + 1); /* add space for 0 character */
         break;
 
     default:
@@ -1097,7 +1166,7 @@ MmsValue_getSizeInMemory(const MmsValue* self)
 uint8_t*
 MmsValue_cloneToBuffer(const MmsValue* self, uint8_t* destinationAddress)
 {
-    MmsValue* newValue = (MmsValue*) destinationAddress;
+    MmsValue* newValue = (MmsValue*)destinationAddress;
 
     memcpy(destinationAddress, self, sizeof(MmsValue));
     destinationAddress += MemoryAllocator_getAlignedSize(sizeof(MmsValue));
@@ -1105,18 +1174,18 @@ MmsValue_cloneToBuffer(const MmsValue* self, uint8_t* destinationAddress)
     switch (self->type)
     {
     case MMS_ARRAY:
-    case MMS_STRUCTURE:
-        {
-            newValue->value.structure.components = (MmsValue**) destinationAddress;
-            destinationAddress += (sizeof(MmsValue*) * self->value.structure.size);
+    case MMS_STRUCTURE: {
+        newValue->value.structure.components = (MmsValue**)destinationAddress;
+        destinationAddress += (sizeof(MmsValue*) * self->value.structure.size);
 
-            int i;
-            for (i = 0; i < self->value.structure.size; i++) {
-                memcpy(&(newValue->value.structure.components[i]), &(destinationAddress), sizeof(MmsValue*));
-                destinationAddress = MmsValue_cloneToBuffer(self->value.structure.components[i], destinationAddress);
-            }
+        int i;
+        for (i = 0; i < self->value.structure.size; i++)
+        {
+            memcpy(&(newValue->value.structure.components[i]), &(destinationAddress), sizeof(MmsValue*));
+            destinationAddress = MmsValue_cloneToBuffer(self->value.structure.components[i], destinationAddress);
         }
-        break;
+    }
+    break;
 
     case MMS_BIT_STRING:
         memcpy(destinationAddress, self->value.bitString.buf, bitStringByteSize(self));
@@ -1125,17 +1194,16 @@ MmsValue_cloneToBuffer(const MmsValue* self, uint8_t* destinationAddress)
         break;
 
     case MMS_INTEGER:
-    case MMS_UNSIGNED:
-        {
-            newValue->value.integer = (Asn1PrimitiveValue*) destinationAddress;
-            Asn1PrimitiveValue* newAsn1Value = (Asn1PrimitiveValue*) destinationAddress;
-            memcpy(destinationAddress, self->value.integer, sizeof(Asn1PrimitiveValue));
-            destinationAddress += MemoryAllocator_getAlignedSize(sizeof(Asn1PrimitiveValue));
-            newAsn1Value->octets = destinationAddress;
-            memcpy(destinationAddress, self->value.integer->octets, self->value.integer->maxSize);
-            destinationAddress += MemoryAllocator_getAlignedSize(self->value.integer->maxSize);
-        }
-        break;
+    case MMS_UNSIGNED: {
+        newValue->value.integer = (Asn1PrimitiveValue*)destinationAddress;
+        Asn1PrimitiveValue* newAsn1Value = (Asn1PrimitiveValue*)destinationAddress;
+        memcpy(destinationAddress, self->value.integer, sizeof(Asn1PrimitiveValue));
+        destinationAddress += MemoryAllocator_getAlignedSize(sizeof(Asn1PrimitiveValue));
+        newAsn1Value->octets = destinationAddress;
+        memcpy(destinationAddress, self->value.integer->octets, self->value.integer->maxSize);
+        destinationAddress += MemoryAllocator_getAlignedSize(self->value.integer->maxSize);
+    }
+    break;
 
     case MMS_OCTET_STRING:
         newValue->value.octetString.buf = destinationAddress;
@@ -1145,9 +1213,10 @@ MmsValue_cloneToBuffer(const MmsValue* self, uint8_t* destinationAddress)
 
     case MMS_STRING:
     case MMS_VISIBLE_STRING:
-        newValue->value.visibleString.buf = (char*) destinationAddress;
+        newValue->value.visibleString.buf = (char*)destinationAddress;
         newValue->value.visibleString.size = self->value.visibleString.size;
-        StringUtils_copyStringMax((char*)destinationAddress, self->value.visibleString.size + 1, self->value.visibleString.buf);
+        StringUtils_copyStringMax((char*)destinationAddress, self->value.visibleString.size + 1,
+                                  self->value.visibleString.buf);
         destinationAddress += MemoryAllocator_getAlignedSize(strlen(self->value.visibleString.buf) + 1);
         break;
 
@@ -1164,7 +1233,7 @@ MmsValue_clone(const MmsValue* self)
     if (self == NULL)
         return NULL;
 
-    MmsValue* newValue = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
+    MmsValue* newValue = (MmsValue*)GLOBAL_CALLOC(1, sizeof(MmsValue));
 
     if (newValue == NULL)
         goto exit_function;
@@ -1177,51 +1246,53 @@ MmsValue_clone(const MmsValue* self)
     {
 
     case MMS_ARRAY:
-    case MMS_STRUCTURE:
+    case MMS_STRUCTURE: {
+        int componentCount = self->value.structure.size;
+        newValue->value.structure.size = componentCount;
+        newValue->value.structure.components = (MmsValue**)GLOBAL_CALLOC(componentCount, sizeof(MmsValue*));
+
+        if (newValue->value.structure.components)
         {
-            int componentCount = self->value.structure.size;
-            newValue->value.structure.size = componentCount;
-            newValue->value.structure.components = (MmsValue**) GLOBAL_CALLOC(componentCount, sizeof(MmsValue*));
+            int i;
+            for (i = 0; i < componentCount; i++)
+            {
 
-            if (newValue->value.structure.components) {
-                int i;
-                for (i = 0; i < componentCount; i++) {
+                if (self->value.structure.components[i])
+                {
+                    newValue->value.structure.components[i] = MmsValue_clone(self->value.structure.components[i]);
 
-                    if (self->value.structure.components[i]) {
-                        newValue->value.structure.components[i] =
-                                MmsValue_clone(self->value.structure.components[i]);
-
-                        if (newValue->value.structure.components[i] == NULL) {
-                            MmsValue_delete(newValue);
-                            newValue = NULL;
-                            break;
-                        }
+                    if (newValue->value.structure.components[i] == NULL)
+                    {
+                        MmsValue_delete(newValue);
+                        newValue = NULL;
+                        break;
                     }
-                    else {
-                        newValue->value.structure.components[i] = NULL;
-                    }
-
+                }
+                else
+                {
+                    newValue->value.structure.components[i] = NULL;
                 }
             }
-            else {
-                GLOBAL_FREEMEM(newValue);
-                newValue = NULL;
-            }
-
         }
-        break;
+        else
+        {
+            GLOBAL_FREEMEM(newValue);
+            newValue = NULL;
+        }
+    }
+    break;
 
     case MMS_INTEGER:
-    case MMS_UNSIGNED:
-        {
-            newValue->value.integer = Asn1PrimitiveValue_clone(self->value.integer);
+    case MMS_UNSIGNED: {
+        newValue->value.integer = Asn1PrimitiveValue_clone(self->value.integer);
 
-            if (newValue->value.integer == NULL) {
-                GLOBAL_FREEMEM(newValue);
-                newValue = NULL;
-            }
+        if (newValue->value.integer == NULL)
+        {
+            GLOBAL_FREEMEM(newValue);
+            newValue = NULL;
         }
-        break;
+    }
+    break;
 
     case MMS_FLOAT:
         newValue->value.floatingPoint.formatWidth = self->value.floatingPoint.formatWidth;
@@ -1233,12 +1304,14 @@ MmsValue_clone(const MmsValue* self)
     case MMS_BIT_STRING:
         newValue->value.bitString.size = self->value.bitString.size;
         size = bitStringByteSize(self);
-        newValue->value.bitString.buf = (uint8_t*) GLOBAL_MALLOC(size);
+        newValue->value.bitString.buf = (uint8_t*)GLOBAL_MALLOC(size);
 
-        if (newValue->value.bitString.buf) {
+        if (newValue->value.bitString.buf)
+        {
             memcpy(newValue->value.bitString.buf, self->value.bitString.buf, size);
         }
-        else {
+        else
+        {
             GLOBAL_FREEMEM(newValue);
             newValue = NULL;
         }
@@ -1253,12 +1326,14 @@ MmsValue_clone(const MmsValue* self)
         size = self->value.octetString.size;
         newValue->value.octetString.size = size;
         newValue->value.octetString.maxSize = self->value.octetString.maxSize;
-        newValue->value.octetString.buf = (uint8_t*) GLOBAL_MALLOC(abs(self->value.octetString.maxSize));
+        newValue->value.octetString.buf = (uint8_t*)GLOBAL_MALLOC(abs(self->value.octetString.maxSize));
 
-        if (newValue->value.octetString.buf) {
+        if (newValue->value.octetString.buf)
+        {
             memcpy(newValue->value.octetString.buf, self->value.octetString.buf, size);
         }
-        else {
+        else
+        {
             GLOBAL_FREEMEM(newValue);
             newValue = NULL;
         }
@@ -1277,14 +1352,16 @@ MmsValue_clone(const MmsValue* self)
     case MMS_VISIBLE_STRING:
     case MMS_STRING:
         size = self->value.visibleString.size;
-        newValue->value.visibleString.buf = (char*) GLOBAL_MALLOC(size + 1);
+        newValue->value.visibleString.buf = (char*)GLOBAL_MALLOC(size + 1);
 
-        if (newValue->value.visibleString.buf) {
+        if (newValue->value.visibleString.buf)
+        {
             newValue->value.visibleString.size = size;
 
             StringUtils_copyStringMax(newValue->value.visibleString.buf, size + 1, self->value.visibleString.buf);
         }
-        else {
+        else
+        {
             GLOBAL_FREEMEM(newValue);
             newValue = NULL;
         }
@@ -1334,16 +1411,16 @@ MmsValue_delete(MmsValue* self)
             GLOBAL_FREEMEM(self->value.visibleString.buf);
         break;
     case MMS_ARRAY:
-    case MMS_STRUCTURE:
-        {
-            int componentCount = self->value.structure.size;
-            int i;
+    case MMS_STRUCTURE: {
+        int componentCount = self->value.structure.size;
+        int i;
 
-            for (i = 0; i < componentCount; i++) {
-                if (self->value.structure.components[i] != NULL)
-                    MmsValue_delete(self->value.structure.components[i]);
-            }
+        for (i = 0; i < componentCount; i++)
+        {
+            if (self->value.structure.components[i] != NULL)
+                MmsValue_delete(self->value.structure.components[i]);
         }
+    }
         GLOBAL_FREEMEM(self->value.structure.components);
         break;
     default:
@@ -1357,7 +1434,8 @@ MmsValue_delete(MmsValue* self)
 void
 MmsValue_deleteConditional(MmsValue* self)
 {
-    if (self->deleteValue == 1) {
+    if (self->deleteValue == 1)
+    {
 
         switch (self->type)
         {
@@ -1377,16 +1455,16 @@ MmsValue_deleteConditional(MmsValue* self)
                 GLOBAL_FREEMEM(self->value.visibleString.buf);
             break;
         case MMS_ARRAY:
-        case MMS_STRUCTURE:
-            {
-                int componentCount = self->value.structure.size;
-                int i;
+        case MMS_STRUCTURE: {
+            int componentCount = self->value.structure.size;
+            int i;
 
-                for (i = 0; i < componentCount; i++) {
-                    if (self->value.structure.components[i] != NULL)
-                        MmsValue_deleteConditional(self->value.structure.components[i]);
-                }
+            for (i = 0; i < componentCount; i++)
+            {
+                if (self->value.structure.components[i] != NULL)
+                    MmsValue_deleteConditional(self->value.structure.components[i]);
             }
+        }
             GLOBAL_FREEMEM(self->value.structure.components);
             break;
         default:
@@ -1400,9 +1478,10 @@ MmsValue_deleteConditional(MmsValue* self)
 MmsValue*
 MmsValue_newInteger(int size /*integer size in bits*/)
 {
-    MmsValue* self = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
+    MmsValue* self = (MmsValue*)GLOBAL_CALLOC(1, sizeof(MmsValue));
 
-    if (self) {
+    if (self)
+    {
         self->type = MMS_INTEGER;
 
         if (size <= 32)
@@ -1410,7 +1489,8 @@ MmsValue_newInteger(int size /*integer size in bits*/)
         else
             self->value.integer = BerInteger_createInt64();
 
-        if (self->value.integer == NULL) {
+        if (self->value.integer == NULL)
+        {
             GLOBAL_FREEMEM(self);
             self = NULL;
         }
@@ -1422,9 +1502,10 @@ MmsValue_newInteger(int size /*integer size in bits*/)
 MmsValue*
 MmsValue_newUnsigned(int size /*integer size in bits*/)
 {
-    MmsValue* self = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
+    MmsValue* self = (MmsValue*)GLOBAL_CALLOC(1, sizeof(MmsValue));
 
-    if (self) {
+    if (self)
+    {
         self->type = MMS_UNSIGNED;
 
         if (size <= 32)
@@ -1432,7 +1513,8 @@ MmsValue_newUnsigned(int size /*integer size in bits*/)
         else
             self->value.integer = BerInteger_createInt64();
 
-        if (self->value.integer == NULL) {
+        if (self->value.integer == NULL)
+        {
             GLOBAL_FREEMEM(self);
             self = NULL;
         }
@@ -1444,9 +1526,10 @@ MmsValue_newUnsigned(int size /*integer size in bits*/)
 MmsValue*
 MmsValue_newBoolean(bool boolean)
 {
-    MmsValue* self = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
+    MmsValue* self = (MmsValue*)GLOBAL_CALLOC(1, sizeof(MmsValue));
 
-    if (self) {
+    if (self)
+    {
         self->type = MMS_BOOLEAN;
 
         if (boolean)
@@ -1461,14 +1544,14 @@ MmsValue_newBoolean(bool boolean)
 MmsValue*
 MmsValue_newOctetString(int size, int maxSize)
 {
-    MmsValue* self = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
+    MmsValue* self = (MmsValue*)GLOBAL_CALLOC(1, sizeof(MmsValue));
 
     if (self)
     {
         self->type = MMS_OCTET_STRING;
         self->value.octetString.size = size;
         self->value.octetString.maxSize = maxSize;
-        self->value.octetString.buf = (uint8_t*) GLOBAL_CALLOC(1, abs(maxSize));
+        self->value.octetString.buf = (uint8_t*)GLOBAL_CALLOC(1, abs(maxSize));
 
         if ((maxSize != 0) && (self->value.octetString.buf == NULL))
         {
@@ -1483,7 +1566,8 @@ MmsValue_newOctetString(int size, int maxSize)
 void
 MmsValue_setOctetString(MmsValue* self, const uint8_t* buf, int size)
 {
-    if (size <= abs(self->value.octetString.maxSize)) {
+    if (size <= abs(self->value.octetString.maxSize))
+    {
         memcpy(self->value.octetString.buf, buf, size);
         self->value.octetString.size = size;
     }
@@ -1492,10 +1576,12 @@ MmsValue_setOctetString(MmsValue* self, const uint8_t* buf, int size)
 void
 MmsValue_setOctetStringOctet(MmsValue* self, int octetPos, uint8_t value)
 {
-    if ((octetPos >= 0) && (octetPos < abs(self->value.octetString.maxSize))) {
+    if ((octetPos >= 0) && (octetPos < abs(self->value.octetString.maxSize)))
+    {
         self->value.octetString.buf[octetPos] = value;
 
-        if (octetPos >= self->value.octetString.size) {
+        if (octetPos >= self->value.octetString.size)
+        {
             self->value.octetString.size = octetPos + 1;
         }
     }
@@ -1524,7 +1610,8 @@ MmsValue_getOctetStringOctet(MmsValue* self, int octetPos)
 {
     uint8_t octet = 0x00; /* default value, for out of range request */
 
-    if ((octetPos >= 0) && (octetPos < self->value.octetString.size)) {
+    if ((octetPos >= 0) && (octetPos < self->value.octetString.size))
+    {
         octet = self->value.octetString.buf[octetPos];
     }
 
@@ -1534,28 +1621,33 @@ MmsValue_getOctetStringOctet(MmsValue* self, int octetPos)
 MmsValue*
 MmsValue_newStructure(const MmsVariableSpecification* typeSpec)
 {
-    MmsValue* self = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
+    MmsValue* self = (MmsValue*)GLOBAL_CALLOC(1, sizeof(MmsValue));
 
-    if (self) {
+    if (self)
+    {
         self->type = MMS_STRUCTURE;
         int componentCount = typeSpec->typeSpec.structure.elementCount;
         self->value.structure.size = componentCount;
-        self->value.structure.components = (MmsValue**) GLOBAL_CALLOC(componentCount, sizeof(MmsValue*));
+        self->value.structure.components = (MmsValue**)GLOBAL_CALLOC(componentCount, sizeof(MmsValue*));
 
-        if (self->value.structure.components) {
+        if (self->value.structure.components)
+        {
             int i;
-            for (i = 0; i < componentCount; i++) {
+            for (i = 0; i < componentCount; i++)
+            {
                 self->value.structure.components[i] =
-                        MmsValue_newDefaultValue(typeSpec->typeSpec.structure.elements[i]);
+                    MmsValue_newDefaultValue(typeSpec->typeSpec.structure.elements[i]);
 
-                if (self->value.structure.components[i] == NULL) {
+                if (self->value.structure.components[i] == NULL)
+                {
                     MmsValue_delete(self);
                     self = NULL;
                     break;
                 }
             }
         }
-        else {
+        else
+        {
             GLOBAL_FREEMEM(self);
             self = NULL;
         }
@@ -1580,7 +1672,7 @@ MmsValue_newDefaultValue(const MmsVariableSpecification* typeSpec)
         break;
 
     case MMS_FLOAT:
-        self = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
+        self = (MmsValue*)GLOBAL_CALLOC(1, sizeof(MmsValue));
 
         if (self == NULL)
             goto exit_function;
@@ -1592,7 +1684,7 @@ MmsValue_newDefaultValue(const MmsVariableSpecification* typeSpec)
         break;
 
     case MMS_BIT_STRING:
-        self = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
+        self = (MmsValue*)GLOBAL_CALLOC(1, sizeof(MmsValue));
 
         if (self == NULL)
             goto exit_function;
@@ -1602,12 +1694,12 @@ MmsValue_newDefaultValue(const MmsVariableSpecification* typeSpec)
             int bitSize = abs(typeSpec->typeSpec.bitString);
             self->value.bitString.size = bitSize;
             int size = (bitSize / 8) + ((bitSize % 8) > 0);
-            self->value.bitString.buf = (uint8_t*) GLOBAL_CALLOC(1, size);
+            self->value.bitString.buf = (uint8_t*)GLOBAL_CALLOC(1, size);
         }
         break;
 
     case MMS_OCTET_STRING:
-        self = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
+        self = (MmsValue*)GLOBAL_CALLOC(1, sizeof(MmsValue));
 
         if (self == NULL)
             goto exit_function;
@@ -1620,9 +1712,10 @@ MmsValue_newDefaultValue(const MmsVariableSpecification* typeSpec)
             self->value.octetString.size = typeSpec->typeSpec.octetString;
 
         self->value.octetString.maxSize = abs(typeSpec->typeSpec.octetString);
-        self->value.octetString.buf = (uint8_t*) GLOBAL_CALLOC(1, abs(typeSpec->typeSpec.octetString));
+        self->value.octetString.buf = (uint8_t*)GLOBAL_CALLOC(1, abs(typeSpec->typeSpec.octetString));
 
-        if (self->value.octetString.buf == NULL) {
+        if (self->value.octetString.buf == NULL)
+        {
             GLOBAL_FREEMEM(self);
             self = NULL;
             goto exit_function;
@@ -1639,7 +1732,7 @@ MmsValue_newDefaultValue(const MmsVariableSpecification* typeSpec)
         break;
 
     case MMS_UTC_TIME:
-        self = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
+        self = (MmsValue*)GLOBAL_CALLOC(1, sizeof(MmsValue));
 
         if (self == NULL)
             goto exit_function;
@@ -1648,8 +1741,7 @@ MmsValue_newDefaultValue(const MmsVariableSpecification* typeSpec)
         break;
 
     case MMS_ARRAY:
-        self = MmsValue_createArray(typeSpec->typeSpec.array.elementTypeSpec,
-                typeSpec->typeSpec.array.elementCount);
+        self = MmsValue_createArray(typeSpec->typeSpec.array.elementTypeSpec, typeSpec->typeSpec.array.elementCount);
         break;
 
     case MMS_STRUCTURE:
@@ -1690,7 +1782,7 @@ setVisibleStringValue(MmsValue* self, const char* value)
             if (newStringSize > self->value.visibleString.size)
             {
                 GLOBAL_FREEMEM(self->value.visibleString.buf);
-                self->value.visibleString.buf = (char*) GLOBAL_MALLOC(newStringSize + 1);
+                self->value.visibleString.buf = (char*)GLOBAL_MALLOC(newStringSize + 1);
 
                 if (self->value.visibleString.buf == NULL)
                     goto exit_function;
@@ -1711,24 +1803,27 @@ exit_function:
 static MmsValue*
 MmsValue_newString(const char* string, MmsType type)
 {
-    MmsValue* self = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
+    MmsValue* self = (MmsValue*)GLOBAL_CALLOC(1, sizeof(MmsValue));
 
     if (self == NULL)
         goto exit_function;
 
     self->type = type;
 
-    if (string == NULL) {
+    if (string == NULL)
+    {
         self->value.visibleString.size = 0;
         self->value.visibleString.buf = NULL;
     }
-    else {
+    else
+    {
         int stringSize = strlen(string);
 
         self->value.visibleString.size = stringSize;
-        self->value.visibleString.buf = (char*) GLOBAL_MALLOC(stringSize + 1);
+        self->value.visibleString.buf = (char*)GLOBAL_MALLOC(stringSize + 1);
 
-        if (self->value.visibleString.buf == NULL) {
+        if (self->value.visibleString.buf == NULL)
+        {
             GLOBAL_FREEMEM(self);
             self = NULL;
             goto exit_function;
@@ -1750,7 +1845,7 @@ MmsValue_newVisibleString(const char* string)
 static MmsValue*
 MmsValue_newStringWithSize(int size, MmsType type)
 {
-    MmsValue* self = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
+    MmsValue* self = (MmsValue*)GLOBAL_CALLOC(1, sizeof(MmsValue));
 
     if (self == NULL)
         goto exit_function;
@@ -1758,9 +1853,10 @@ MmsValue_newStringWithSize(int size, MmsType type)
     self->type = type;
 
     self->value.visibleString.size = size;
-    self->value.visibleString.buf = (char*) GLOBAL_MALLOC(size + 1);
+    self->value.visibleString.buf = (char*)GLOBAL_MALLOC(size + 1);
 
-    if (self->value.visibleString.buf == NULL) {
+    if (self->value.visibleString.buf == NULL)
+    {
         GLOBAL_FREEMEM(self);
         self = NULL;
         goto exit_function;
@@ -1793,9 +1889,10 @@ MmsValue_newMmsStringWithSize(int size)
 MmsValue*
 MmsValue_newBinaryTime(bool timeOfDay)
 {
-    MmsValue* self = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
+    MmsValue* self = (MmsValue*)GLOBAL_CALLOC(1, sizeof(MmsValue));
 
-    if (self) {
+    if (self)
+    {
         self->type = MMS_BINARY_TIME;
 
         if (timeOfDay == true)
@@ -1819,9 +1916,10 @@ MmsValue_setBinaryTime(MmsValue* self, uint64_t timestamp)
 
     uint8_t* binaryTimeBuf = self->value.binaryTime.buf;
 
-    if (self->value.binaryTime.size == 6) {
+    if (self->value.binaryTime.size == 6)
+    {
         uint16_t daysDiff = mmsTime / (86400000LL);
-        uint8_t* daysDiffBuf = (uint8_t*) &daysDiff;
+        uint8_t* daysDiffBuf = (uint8_t*)&daysDiff;
 
 #if (ORDER_LITTLE_ENDIAN == 1)
         binaryTimeBuf[4] = daysDiffBuf[1];
@@ -1830,11 +1928,10 @@ MmsValue_setBinaryTime(MmsValue* self, uint64_t timestamp)
         binaryTimeBuf[4] = daysDiffBuf[0];
         binaryTimeBuf[5] = daysDiffBuf[1];
 #endif
-
     }
 
     uint32_t msSinceMidnight = mmsTime % (86400000LL);
-    uint8_t* msSinceMidnightBuf = (uint8_t*) &msSinceMidnight;
+    uint8_t* msSinceMidnightBuf = (uint8_t*)&msSinceMidnight;
 
 #if (ORDER_LITTLE_ENDIAN == 1)
     binaryTimeBuf[0] = msSinceMidnightBuf[3];
@@ -1856,7 +1953,8 @@ MmsValue_getBinaryTimeAsUtcMs(const MmsValue* self)
 
     const uint8_t* binaryTimeBuf = self->value.binaryTime.buf;
 
-    if (self->value.binaryTime.size == 6) {
+    if (self->value.binaryTime.size == 6)
+    {
 
         uint16_t daysDiff;
 
@@ -1891,7 +1989,8 @@ MmsValue_getDataAccessError(const MmsValue* self)
 void
 MmsValue_setMmsString(MmsValue* self, const char* string)
 {
-    if (self->type == MMS_STRING) {
+    if (self->type == MMS_STRING)
+    {
         setVisibleStringValue(self, string);
     }
 }
@@ -1899,7 +1998,7 @@ MmsValue_setMmsString(MmsValue* self, const char* string)
 static MmsValue*
 MmsValue_newStringFromByteArray(const uint8_t* byteArray, int size, MmsType type)
 {
-    MmsValue* self = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
+    MmsValue* self = (MmsValue*)GLOBAL_CALLOC(1, sizeof(MmsValue));
 
     if (self == NULL)
         goto exit_function;
@@ -1935,7 +2034,8 @@ MmsValue_newMmsStringFromByteArray(const uint8_t* byteArray, int size)
 void
 MmsValue_setVisibleString(MmsValue* self, const char* string)
 {
-    if (self->type == MMS_VISIBLE_STRING) {
+    if (self->type == MMS_VISIBLE_STRING)
+    {
         setVisibleStringValue(self, string);
     }
 }
@@ -1961,14 +2061,14 @@ MmsValue_getStringSize(MmsValue* self)
 MmsValue*
 MmsValue_newUtcTime(uint32_t timeval)
 {
-    MmsValue* self = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
+    MmsValue* self = (MmsValue*)GLOBAL_CALLOC(1, sizeof(MmsValue));
 
     if (self == NULL)
         goto exit_function;
 
     self->type = MMS_UTC_TIME;
 
-    uint8_t* timeArray = (uint8_t*) &timeval;
+    uint8_t* timeArray = (uint8_t*)&timeval;
     uint8_t* valueArray = self->value.utcTime;
 
 #if (ORDER_LITTLE_ENDIAN == 1)
@@ -1990,7 +2090,7 @@ exit_function:
 MmsValue*
 MmsValue_newUtcTimeByMsTime(uint64_t timeval)
 {
-    MmsValue* self = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
+    MmsValue* self = (MmsValue*)GLOBAL_CALLOC(1, sizeof(MmsValue));
 
     if (self == NULL)
         return NULL;
@@ -2004,14 +2104,14 @@ MmsValue_newUtcTimeByMsTime(uint64_t timeval)
 MmsValue*
 MmsValue_createArray(const MmsVariableSpecification* elementType, int size)
 {
-    MmsValue* self = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
+    MmsValue* self = (MmsValue*)GLOBAL_CALLOC(1, sizeof(MmsValue));
 
     if (self == NULL)
         goto exit_function;
 
     self->type = MMS_ARRAY;
     self->value.structure.size = size;
-    self->value.structure.components = (MmsValue**) GLOBAL_CALLOC(size, sizeof(MmsValue*));
+    self->value.structure.components = (MmsValue**)GLOBAL_CALLOC(size, sizeof(MmsValue*));
 
     if (self->value.structure.components == NULL)
     {
@@ -2040,23 +2140,25 @@ exit_function:
 MmsValue*
 MmsValue_createEmptyArray(int size)
 {
-    MmsValue* self = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
+    MmsValue* self = (MmsValue*)GLOBAL_CALLOC(1, sizeof(MmsValue));
 
     if (self == NULL)
         goto exit_function;
 
     self->type = MMS_ARRAY;
     self->value.structure.size = size;
-    self->value.structure.components = (MmsValue**) GLOBAL_CALLOC(size, sizeof(MmsValue*));
+    self->value.structure.components = (MmsValue**)GLOBAL_CALLOC(size, sizeof(MmsValue*));
 
-    if (self->value.structure.components == NULL) {
+    if (self->value.structure.components == NULL)
+    {
         GLOBAL_FREEMEM(self);
         self = NULL;
         goto exit_function;
     }
 
     int i;
-    for (i = 0; i < size; i++) {
+    for (i = 0; i < size; i++)
+    {
         self->value.structure.components[i] = NULL;
     }
 
@@ -2201,76 +2303,76 @@ MmsValue_printToBuffer(const MmsValue* self, char* buffer, int bufferSize)
     switch (MmsValue_getType(self))
     {
     case MMS_STRUCTURE:
-    case MMS_ARRAY:
+    case MMS_ARRAY: {
+        if (bufferSize == 0)
+            break;
+        buffer[0] = '{';
+
+        int bufPos = 1;
+
+        int arraySize = MmsValue_getArraySize(self);
+        int i;
+        for (i = 0; i < arraySize; i++)
         {
-            if (bufferSize == 0)
+
+            const char* currentStr = MmsValue_printToBuffer((const MmsValue*)MmsValue_getElement(self, i),
+                                                            buffer + bufPos, bufferSize - bufPos);
+
+            bufPos += strnlen(currentStr, bufferSize - bufPos);
+
+            if (bufPos >= bufferSize)
                 break;
-            buffer[0] = '{';
 
-            int bufPos = 1;
-
-            int arraySize = MmsValue_getArraySize(self);
-            int i;
-            for (i = 0; i < arraySize; i++) {
-
-                const char* currentStr = MmsValue_printToBuffer((const MmsValue*) MmsValue_getElement(self, i), buffer + bufPos, bufferSize - bufPos);
-
-                bufPos += strnlen(currentStr, bufferSize - bufPos);
-
-                if (bufPos >= bufferSize)
-                    break;
-
-                if (i != (arraySize - 1)) {
-                    buffer[bufPos++] = ',';
-                }
-            }
-
-            if (bufPos < (bufferSize - 1)) {
-                buffer[bufPos++] = '}';
-                buffer[bufPos] = 0;
-            }
-            else
-                buffer[bufferSize - 1] = 0;
-
-        }
-        break;
-
-    case MMS_BINARY_TIME:
-        {
-            uint8_t tempBuf[20];
-            Conversions_msTimeToGeneralizedTime(MmsValue_getBinaryTimeAsUtcMs(self), tempBuf);
-            snprintf(buffer, bufferSize, "%s", tempBuf);
-        }
-        break;
-
-    case MMS_BIT_STRING:
-        {
-            int bufPos = 0;
-
-            int size = MmsValue_getBitStringSize(self);
-
-            /* fill buffer with zeros */
-            if (size + 1 > bufferSize)
+            if (i != (arraySize - 1))
             {
-                memset(buffer, 0, bufferSize);
-
-                size = bufferSize - 1;
-
-                if (size < 1)
-                    break;
+                buffer[bufPos++] = ',';
             }
+        }
 
-            int i;
-            for (i = 0; i < size; i++)
-            {
-                if (MmsValue_getBitStringBit(self, i))
-                    buffer[bufPos++] = '1';
-                else
-                    buffer[bufPos++] = '0';
-            }
+        if (bufPos < (bufferSize - 1))
+        {
+            buffer[bufPos++] = '}';
             buffer[bufPos] = 0;
         }
-        break;
+        else
+            buffer[bufferSize - 1] = 0;
+    }
+    break;
+
+    case MMS_BINARY_TIME: {
+        uint8_t tempBuf[20];
+        Conversions_msTimeToGeneralizedTime(MmsValue_getBinaryTimeAsUtcMs(self), tempBuf);
+        snprintf(buffer, bufferSize, "%s", tempBuf);
+    }
+    break;
+
+    case MMS_BIT_STRING: {
+        int bufPos = 0;
+
+        int size = MmsValue_getBitStringSize(self);
+
+        /* fill buffer with zeros */
+        if (size + 1 > bufferSize)
+        {
+            memset(buffer, 0, bufferSize);
+
+            size = bufferSize - 1;
+
+            if (size < 1)
+                break;
+        }
+
+        int i;
+        for (i = 0; i < size; i++)
+        {
+            if (MmsValue_getBitStringBit(self, i))
+                buffer[bufPos++] = '1';
+            else
+                buffer[bufPos++] = '0';
+        }
+        buffer[bufPos] = 0;
+    }
+    break;
 
     case MMS_BOOLEAN:
         if (MmsValue_getBoolean(self))
@@ -2294,40 +2396,38 @@ MmsValue_printToBuffer(const MmsValue* self, char* buffer, int bufferSize)
         break;
 
     case MMS_INTEGER:
-        snprintf(buffer, bufferSize, "%lld", (long long) MmsValue_toInt64(self));
+        snprintf(buffer, bufferSize, "%lld", (long long)MmsValue_toInt64(self));
         break;
 
-    case MMS_OCTET_STRING:
+    case MMS_OCTET_STRING: {
+        int size = MmsValue_getOctetStringSize(self);
+        int bufPos = 0;
+        int i;
+        for (i = 0; i < size; i++)
         {
-            int size = MmsValue_getOctetStringSize(self);
-            int bufPos = 0;
-            int i;
-            for (i = 0; i < size; i++)
-            {
-                snprintf(buffer + bufPos, bufferSize - bufPos, "%02x", self->value.octetString.buf[i]);
-                bufPos += 2;
+            snprintf(buffer + bufPos, bufferSize - bufPos, "%02x", self->value.octetString.buf[i]);
+            bufPos += 2;
 
-                if (bufPos >= bufferSize)
-                    break;
-            }
+            if (bufPos >= bufferSize)
+                break;
         }
-        break;
+    }
+    break;
 
     case MMS_UNSIGNED:
         snprintf(buffer, bufferSize, "%u", MmsValue_toUint32(self));
         break;
 
-    case MMS_UTC_TIME:
-        {
-            uint8_t tempBuf[20];
-            Conversions_msTimeToGeneralizedTime(MmsValue_getUtcTimeInMs(self), tempBuf);
-            snprintf(buffer, bufferSize, "%s", tempBuf);
-        }
-        break;
+    case MMS_UTC_TIME: {
+        uint8_t tempBuf[20];
+        Conversions_msTimeToGeneralizedTime(MmsValue_getUtcTimeInMs(self), tempBuf);
+        snprintf(buffer, bufferSize, "%s", tempBuf);
+    }
+    break;
 
     case MMS_STRING:
     case MMS_VISIBLE_STRING:
-        StringUtils_copyStringMax(buffer, bufferSize, MmsValue_toString((MmsValue*) self));
+        StringUtils_copyStringMax(buffer, bufferSize, MmsValue_toString((MmsValue*)self));
 
         break;
 
