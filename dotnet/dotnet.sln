@@ -54,6 +54,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "log_server", "log_server\lo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "server_example_access_control", "server_example_access_control\server_example_access_control.csproj", "{304D9146-1490-46EF-B771-20B0603084F5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "server_example_dynamic", "server_example_dynamic\server_example_dynamic.csproj", "{F7F5091E-C373-4969-8F8A-7E957731CA55}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -152,6 +154,10 @@ Global
 		{304D9146-1490-46EF-B771-20B0603084F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{304D9146-1490-46EF-B771-20B0603084F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{304D9146-1490-46EF-B771-20B0603084F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F7F5091E-C373-4969-8F8A-7E957731CA55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F7F5091E-C373-4969-8F8A-7E957731CA55}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F7F5091E-C373-4969-8F8A-7E957731CA55}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F7F5091E-C373-4969-8F8A-7E957731CA55}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
