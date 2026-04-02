@@ -67,7 +67,6 @@ namespace server_example_dynamic
                 ReportOptions.REASON_FOR_INCLUSION
             );
 
-
             ReportControlBlock rcb1 = new ReportControlBlock(
                 "events01",           // RCB name
                 lln0,                 // parent logical node
