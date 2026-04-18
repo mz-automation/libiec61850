@@ -770,7 +770,7 @@ parseGoosePayload(GooseReceiver self, uint8_t* buffer, int apduLength)
             int elementLength;
 
             uint8_t tag = buffer[bufPos++];
-            bufPos = BerDecoder_decodeLength(buffer, &elementLength, bufPos, apduLength);
+            bufPos = BerDecoder_decodeLength(buffer, &elementLength, bufPos, gooseEnd);
 
             if (bufPos < 0)
             {
