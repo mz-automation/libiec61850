@@ -740,7 +740,7 @@ IsoPresentation_parseUserData(IsoPresentation* self, ByteBuffer* readBuffer)
         case 0x06: /* transfer-syntax-name */
             {
                 /* check if basic-encoding (2.1.1 - 51 01) */
-                if ((buffer[bufPos] != 0x51) || (buffer[bufPos + 1] != 0x01))
+                if (len < 2 || (buffer[bufPos] != 0x51) || (buffer[bufPos + 1] != 0x01))
                 {
                     if (DEBUG_PRES)
                     {
@@ -829,7 +829,7 @@ IsoPresentation_parseConnect(IsoPresentation* self, ByteBuffer* byteBuffer)
         {
         case 0xa0: /* mode-selection */
             {
-                if (buffer[bufPos++] != 0x80)
+                if (len < 1 || buffer[bufPos++] != 0x80)
                 {
                     if (DEBUG_PRES)
                         printf("PRES: mode-value of wrong type!\n");
