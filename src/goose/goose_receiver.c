@@ -770,7 +770,7 @@ parseGoosePayload(GooseReceiver self, uint8_t* buffer, int apduLength)
             int elementLength;
 
             uint8_t tag = buffer[bufPos++];
-            bufPos = BerDecoder_decodeLength(buffer, &elementLength, bufPos, apduLength);
+            bufPos = BerDecoder_decodeLength(buffer, &elementLength, bufPos, gooseEnd);
 
             if (bufPos < 0)
             {
@@ -878,6 +878,13 @@ parseGoosePayload(GooseReceiver self, uint8_t* buffer, int apduLength)
                 break;
 
             case 0x84:
+                if (elementLength < 8)
+                {
+                    if (DEBUG_GOOSE_SUBSCRIBER)
+                        printf("GOOSE_SUBSCRIBER:   timestamp too short!\n");
+                    break;
+                }
+
                 timestampBufPos = buffer + bufPos;
                 if (DEBUG_GOOSE_SUBSCRIBER)
                     printf("GOOSE_SUBSCRIBER:   Found timestamp\n");
@@ -1077,7 +1084,7 @@ parseGooseMessage(GooseReceiver self, uint8_t* buffer, int numbytes)
         return;
     }
 
-    if (numbytes < length + headerLength)
+    if (numbytes <= length + headerLength)
     {
         if (DEBUG_GOOSE_SUBSCRIBER)
             printf("GOOSE_SUBSCRIBER: Invalid PDU size\n");

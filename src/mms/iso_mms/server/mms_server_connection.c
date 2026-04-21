@@ -1,7 +1,7 @@
 /*
  *  mms_server_connection.c
  *
- *  Copyright 2013-2022 Michael Zillgith
+ *  Copyright 2013-2026 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -137,7 +137,7 @@ mmsMsg_createMmsRejectPdu(uint32_t* invokeId, int reason, ByteBuffer* response)
  * MMS General service handling functions
  *********************************************************************************************/
 
-static void
+void
 handleConfirmedRequestPdu(
         MmsServerConnection self,
         uint8_t* buffer, int bufPos, int maxBufPos,
@@ -154,6 +154,12 @@ handleConfirmedRequestPdu(
 
         if ((tag & 0x1f) == 0x1f)
         {
+            if (bufPos >= maxBufPos)
+            {
+                mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
+                return; /* malformed message */
+            }
+
             extendedTag = true;
             tag = buffer[bufPos++];
         }
@@ -318,7 +324,7 @@ handleConfirmedRequestPdu(
 
 #if (MMS_STATUS_SERVICE == 1)
             case 0x80: /* status-request */
-                mmsServer_handleStatusRequest(self, buffer, bufPos, invokeId, response);
+                mmsServer_handleStatusRequest(self, buffer, bufPos, bufPos + length, invokeId, response);
                 break;
 #endif /* MMS_STATUS_SERVICE == 1 */
 
@@ -534,6 +540,12 @@ handleConfirmedResponsePdu(
 
         if ((tag & 0x1f) == 0x1f)
         {
+            if (bufPos >= maxBufPos)
+            {
+                mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
+                return; /* malformed message */
+            }
+
             extendedTag = true;
             tag = buffer[bufPos++];
         }

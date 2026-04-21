@@ -326,7 +326,7 @@ LIB61850_INTERNAL void
 mmsServer_handleStatusRequest(
         MmsServerConnection connection,
         uint8_t* requestBuffer,
-        int bufPos,
+        int bufPos, int maxBufPos,
         uint32_t invokeId,
         ByteBuffer* response);
 
