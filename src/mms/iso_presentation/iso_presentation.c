@@ -196,7 +196,7 @@ parseFullyEncodedData(IsoPresentation* self, uint8_t* buffer, int len, int bufPo
 
     int endPos = bufPos + len;
 
-    if (buffer[bufPos++] != 0x30)
+    if (len < 1 || buffer[bufPos++] != 0x30)
     {
         if (DEBUG_PRES)
             printf("PRES: user-data parse error\n");
