@@ -329,13 +329,13 @@ parseAarqPdu(AcseConnection* self, uint8_t* buffer, int bufPos, int maxBufPos)
 
         case 0xa6: /* calling AP title */
             {
-                if (buffer[bufPos] == 0x06)
+                if (len >= 2 && buffer[bufPos] == 0x06)
                 {
                     /* ap-title-form2 */
 
                     int innerLength = buffer[bufPos + 1];
 
-                    if (innerLength == len - 2)
+                    if ((innerLength >= 0) && (innerLength == len - 2))
                         BerDecoder_decodeOID(buffer, bufPos + 2, innerLength, &(self->applicationReference.apTitle));
                 }
             }
@@ -344,14 +344,14 @@ parseAarqPdu(AcseConnection* self, uint8_t* buffer, int bufPos, int maxBufPos)
 
         case 0xa7: /* calling AE qualifier */
             {
-                if (buffer[bufPos] == 0x02)
+                if (len >= 2 && buffer[bufPos] == 0x02)
                 {
                     /* ae-qualifier-form2 */
 
                     int innerLength = buffer[bufPos + 1];
 
-                    if (innerLength == len - 2)
-                        self->applicationReference.aeQualifier = BerDecoder_decodeInt32(buffer + 2, buffer[bufPos + 1], bufPos);
+                    if ((innerLength >= 0) && (innerLength == len - 2))
+                        self->applicationReference.aeQualifier = BerDecoder_decodeInt32(buffer, innerLength, bufPos + 2);
                 }
             }
             bufPos += len;
