@@ -545,17 +545,25 @@ mmsServer_handleGetNameListRequest(
 
         case 0xa0: /* objectClass */
             {
-                int outerLength = length;
-                int outerEndBufPos = bufPos + outerLength;
+                int outerEndBufPos = bufPos + length;
 
-                if (outerLength < 3 || outerEndBufPos > maxBufPos) {
+                if (length < 3 || outerEndBufPos > maxBufPos)
+                {
                     mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
                     return;
                 }
 
                 bufPos++;  /* skip inner tag */
-                length = buffer[bufPos++];  /* read inner length */
+                bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, outerEndBufPos);
+
+                if (bufPos < 0)
+                {
+                    mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
+                    return;
+                }
+
                 objectClass = BerDecoder_decodeUint32(buffer, length, bufPos);
+
                 break;
             }
 
@@ -563,7 +571,8 @@ mmsServer_handleGetNameListRequest(
             {
                 int outerEndBufPos = bufPos + length;
 
-                if (length < 2 || outerEndBufPos > maxBufPos) {
+                if (length < 2 || outerEndBufPos > maxBufPos)
+                {
                     mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
                     return;
                 }
@@ -846,7 +855,8 @@ mmsServer_handleGetNameListRequest(
 #endif /* (MMS_DYNAMIC_DATA_SETS == 1) */
 #endif /* (MMS_DATA_SET_SERVICE == 1) */
 
-    else {
+    else
+    {
         if (DEBUG_MMS_SERVER)
             printf("MMS_SERVER:  getNameList(%i) not supported!\n", objectScope);
 
