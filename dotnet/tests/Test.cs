@@ -1,10 +1,11 @@
-﻿using NUnit.Framework;
-using System;
+﻿using IEC61850.Client;
 using IEC61850.Common;
-using IEC61850.Client;
 using IEC61850.Server;
+using NUnit.Framework;
+using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Xml;
 
 namespace tests
 {
@@ -713,6 +714,49 @@ namespace tests
             return wr;
         }
 
+        [Test()]
+		public void UpdateValuesOnServer()
+		{
+            IedModel iedModel = ConfigFileParser.CreateModelFromConfigFile("../../../new_types_test.cfg");
+            IedServer iedServer = new IedServer(iedModel);
+            iedServer.Start(10002);
+
+            //Testing Dbpos attribute update
+            DataAttribute dbposAttr = (DataAttribute)iedModel.GetModelNodeByShortObjectReference("GenericIO/LPHD1.PhyNam.NewAttributeType");
+
+            MmsValue initial_val = iedServer.GetAttributeValue(dbposAttr);
+            Assert.That(initial_val.BitStringToUInt32(), Is.EqualTo((uint)Dbpos.DBPOS_INTERMEDIATE_STATE));
+
+            Dbpos dbpos = Dbpos.DBPOS_BAD_STATE;
+            iedServer.UpdateDbposAttributeValue(dbposAttr, dbpos);
+			MmsValue final_val = iedServer.GetAttributeValue(dbposAttr);
+            Assert.That(final_val.BitStringToUInt32(), Is.EqualTo((uint)Dbpos.DBPOS_BAD_STATE));
+
+            //Testing unsigned attribute update
+            DataAttribute unsignedAttr = (DataAttribute)iedModel.GetModelNodeByShortObjectReference("GenericIO/LPHD1.PhyNam.NewAttributeType2");
+
+			MmsValue unsignedInitialVal = iedServer.GetAttributeValue(unsignedAttr);
+			Assert.That(unsignedInitialVal.ToUint32(), Is.EqualTo(0));
+
+			iedServer.UpdateUnsignedAttributeValue(unsignedAttr, 1234);
+			MmsValue unsignedFinalVal = iedServer.GetAttributeValue(unsignedAttr);
+			Assert.That(unsignedFinalVal.ToUint32(), Is.EqualTo(1234));
+
+            //Testing bitstring attribute update
+            DataAttribute bitstringAttr = (DataAttribute)iedModel.GetModelNodeByShortObjectReference("GenericIO/LPHD1.Proxy.q");
+            MmsValue newbs = MmsValue.NewBitString(13);
+            newbs.BitStringFromUInt32(362);
+
+            MmsValue bitstringInitialValue = iedServer.GetAttributeValue(bitstringAttr);
+			Assert.That(bitstringInitialValue.BitStringToUInt32(), Is.EqualTo(0));
+
+            iedServer.UpdateBitStringAttributeValue(bitstringAttr, newbs.BitStringToUInt32());
+			MmsValue bitstringFinalValue = iedServer.GetAttributeValue(bitstringAttr);
+			Assert.That(bitstringFinalValue.BitStringToUInt32(), Is.EqualTo(362));
+
+            iedServer.Stop();
+			iedServer.Dispose();
+        }
     }
 }
 

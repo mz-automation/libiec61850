@@ -67,6 +67,15 @@ namespace IEC61850
             static extern void IedServer_updateVisibleStringAttributeValue(IntPtr self, IntPtr dataAttribute, string value);
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedServer_updateBitStringAttributeValue(IntPtr self, IntPtr dataAttribute, UInt32 value);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedServer_updateUnsignedAttributeValue(IntPtr self, IntPtr dataAttribute, UInt32 value);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
+            static extern void IedServer_updateDbposValue(IntPtr self, IntPtr dataAttribute, Dbpos value);
+
+            [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
             static extern void IedServer_updateUTCTimeAttributeValue(IntPtr self, IntPtr dataAttribute, ulong value);
 
             [DllImport("iec61850", CallingConvention = CallingConvention.Cdecl)]
@@ -1341,6 +1350,20 @@ namespace IEC61850
                 IedServer_updateVisibleStringAttributeValue(self, dataAttr.self, value);
             }
 
+            public void UpdateBitStringAttributeValue(DataAttribute dataAttr, UInt32 value)
+            {
+                IedServer_updateBitStringAttributeValue(self, dataAttr.self, value);
+            }
+
+            public void UpdateUnsignedAttributeValue(DataAttribute dataAttr, UInt32 value)
+            {
+                IedServer_updateUnsignedAttributeValue(self, dataAttr.self, value);
+            }
+
+            public void UpdateDbposAttributeValue(DataAttribute dataAttr, Dbpos value)
+            {
+                IedServer_updateDbposValue(self, dataAttr.self, value);
+            }
             public void UpdateUTCTimeAttributeValue(DataAttribute dataAttr, DateTime timestamp)
             {
                 DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
