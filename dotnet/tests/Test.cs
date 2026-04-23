@@ -678,6 +678,42 @@ namespace tests
             structureClone.Dispose();
         }
 
+        [Test]
+        public void MmsValue_NoMemoryLeak_WithWeakReference()
+        {
+            WeakReference wr_stringVal = CreateStringMmsValue();
+            WeakReference wr_structure = CreateStructureMmsValue();
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+
+            Assert.That(wr_stringVal.IsAlive, Is.False, "String MmsValue was not collected");
+            Assert.That(wr_structure.IsAlive, Is.False, "Structure MmsValue was not collected");
+        }
+
+        private WeakReference CreateStringMmsValue()
+        {
+            var value = MmsValue.NewVisibleString(10);
+
+            var wr = new WeakReference(value);
+
+            value.Dispose();
+
+            return wr;
+        }
+
+        private WeakReference CreateStructureMmsValue()
+        {
+            var structure = MmsValue.NewEmptyStructure(1);
+
+            var wr = new WeakReference(structure);
+
+            structure.Dispose();
+
+            return wr;
+        }
+
         [Test()]
 		public void UpdateValuesOnServer()
 		{

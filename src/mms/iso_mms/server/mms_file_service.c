@@ -1,7 +1,7 @@
 /*
  *  mms_file_service.c
  *
- *  Copyright 2013-2025 Michael Zillgith
+ *  Copyright 2013-2026 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -254,6 +254,9 @@ void
 mmsServer_handleFileDeleteRequest(MmsServerConnection connection, uint8_t* buffer, int bufPos, int maxBufPos,
                                   uint32_t invokeId, ByteBuffer* response)
 {
+    if (bufPos >= maxBufPos)
+        goto exit_reject_invalid_pdu;
+
     if (buffer[bufPos++] != 0x19)
         goto exit_reject_invalid_pdu;
 

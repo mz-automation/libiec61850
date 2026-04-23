@@ -30,12 +30,22 @@ void
 mmsServer_handleStatusRequest(
         MmsServerConnection connection,
         uint8_t* requestBuffer,
-        int bufPos,
+        int bufPos, int maxBufPos,
         uint32_t invokeId,
         ByteBuffer* response)
 {
     /* check for extended derivation */
-    bool extendedDerivation = BerDecoder_decodeBoolean(requestBuffer, bufPos);
+    bool extendedDerivation = false;
+
+    if (bufPos < maxBufPos)
+    {
+        extendedDerivation = BerDecoder_decodeBoolean(requestBuffer, bufPos);
+    }
+    else
+    {
+        if (DEBUG_MMS_SERVER)
+            printf("mms_status_service.c: statusRequest: message too small for extended derivation\n");
+    }
 
     if (DEBUG_MMS_SERVER)
         printf("mms_status_service.c: statusRequest (extendedDerivation: %i)\n", extendedDerivation);
