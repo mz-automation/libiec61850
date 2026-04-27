@@ -8,6 +8,7 @@
 
 using IEC61850.SCL.DataModel;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
 
@@ -576,28 +577,33 @@ namespace IEC61850.SCL
 
                 string value = null;
 
+                SclDataAttributeDefinition definition = dataAttribute.Definition;
+                List<SclVal> predefined_vals = definition.GetValues();
+                if (predefined_vals != null)
+                {
+                    value = predefined_vals[0].Value;
+                }
+
+
+
                 SclDOI sclDOI = logicalNode.SclElement.DOIs.Find(x => x.Name == dataObject.Name);
 
-                if(sclDOI == null)
+                if (sclDOI !=null)
                 {
-                    output.WriteLine(";");
-                    return;
+                    SclDAI sclDAI = sclDOI.SclDAIs.Find(x => x.Name == dataAttribute.Name);
+                    if (sclDAI != null && dataAttribute.ObjRef == logicalDevice.Name + "/" + logicalNode.Name + "." + sclDOI.Name + "." + sclDAI.Name)
+                    {
+                        value = sclDAI.Val;
+                    }
 
+                    else
+                    {
+                        string strippedObjRef = getStippedObjRef(dataAttribute.ObjRef);
+                        sclDAI = getNestedDAI(sclDOI, strippedObjRef);
+                        value = sclDAI?.Val;
+                    }
                 }
-                SclDAI sclDAI = sclDOI.SclDAIs.Find(x => x.Name == dataAttribute.Name);
-                if (sclDAI != null && dataAttribute.ObjRef == logicalDevice.Name + "/" + logicalNode.Name + "." + sclDOI.Name + "." + sclDAI.Name)
-                {
-                    value = sclDAI.Val;   
-                }
-
-                else
-                {
-                    string strippedObjRef = getStippedObjRef(dataAttribute.ObjRef);
-                    sclDAI = getNestedDAI(sclDOI, strippedObjRef);
-                    value = sclDAI?.Val;
-                }
-
-
+                
                 if (value != null)
                 {
                     switch (dataAttribute.AttributeType)
