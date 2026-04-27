@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
+using System.Linq;
 
 namespace IEC61850.SCL
 {
@@ -566,7 +567,7 @@ namespace IEC61850.SCL
         }
 
 
-        void printDataAttributes(StreamWriter output, DataAttribute dataAttribute, bool isTransient)
+        void printDataAttributes(StreamWriter output, DataAttribute dataAttribute, bool isTransient, int arrayIndex=-1)
         {
             if (dataAttribute.AttributeType != AttributeType.CONSTRUCTED)
             {
@@ -581,10 +582,19 @@ namespace IEC61850.SCL
                 List<SclVal> predefined_vals = definition.GetValues();
                 if (predefined_vals != null)
                 {
-                    value = predefined_vals[0].Value;
+                    if(arrayIndex >= 0)
+                    {
+                        if (predefined_vals.Count > arrayIndex)
+                        {
+                            value = predefined_vals[arrayIndex].Value;
+                        }
+                    }
+                    else
+                    {
+                        value = predefined_vals[0].Value;
+                    }
+
                 }
-
-
 
                 SclDOI sclDOI = logicalNode.SclElement.DOIs.Find(x => x.Name == dataObject.Name);
 
@@ -724,7 +734,7 @@ namespace IEC61850.SCL
                 {
                     output.Write("[" + i + "]");
 
-                    printDataAttributes(output, dataAttribute, isTransient);
+                    printDataAttributes(output, dataAttribute, isTransient, i);
                 }
 
                 output.WriteLine("}");
