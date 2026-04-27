@@ -17,6 +17,7 @@ New features and improvements:
 - IedServer: Publish GOOSE data immediately instead of waiting for the application calling IedServer_unlockDataModel
 - IedServer: added functions IedServer_enableGoosePublishing/IedServer_stopGoosePublishing allow GOOSE publisher to be used without starting MMS server (LIB61850-542)
 - Added .NET dynamic server example that shows how to use the library without static model and config file
+- Fixed bug in loading the values of DataTypeTemplates in Dynamic Model Generator
 
 
 Changes to version 1.6.1
