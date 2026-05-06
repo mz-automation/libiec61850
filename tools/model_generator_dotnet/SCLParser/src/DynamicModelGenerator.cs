@@ -8,8 +8,10 @@
 
 using IEC61850.SCL.DataModel;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
+using System.Linq;
 
 namespace IEC61850.SCL
 {
@@ -565,7 +567,7 @@ namespace IEC61850.SCL
         }
 
 
-        void printDataAttributes(StreamWriter output, DataAttribute dataAttribute, bool isTransient)
+        void printDataAttributes(StreamWriter output, DataAttribute dataAttribute, bool isTransient, int arrayIndex=-1)
         {
             if (dataAttribute.AttributeType != AttributeType.CONSTRUCTED)
             {
@@ -576,28 +578,42 @@ namespace IEC61850.SCL
 
                 string value = null;
 
+                SclDataAttributeDefinition definition = dataAttribute.Definition;
+                List<SclVal> predefined_vals = definition.GetValues();
+                if (predefined_vals != null)
+                {
+                    if(arrayIndex >= 0)
+                    {
+                        if (predefined_vals.Count > arrayIndex)
+                        {
+                            value = predefined_vals[arrayIndex].Value;
+                        }
+                    }
+                    else
+                    {
+                        value = predefined_vals[0].Value;
+                    }
+
+                }
+
                 SclDOI sclDOI = logicalNode.SclElement.DOIs.Find(x => x.Name == dataObject.Name);
 
-                if(sclDOI == null)
+                if (sclDOI !=null)
                 {
-                    output.WriteLine(";");
-                    return;
+                    SclDAI sclDAI = sclDOI.SclDAIs.Find(x => x.Name == dataAttribute.Name);
+                    if (sclDAI != null && dataAttribute.ObjRef == logicalDevice.Name + "/" + logicalNode.Name + "." + sclDOI.Name + "." + sclDAI.Name)
+                    {
+                        value = sclDAI.Val;
+                    }
 
+                    else
+                    {
+                        string strippedObjRef = getStippedObjRef(dataAttribute.ObjRef);
+                        sclDAI = getNestedDAI(sclDOI, strippedObjRef);
+                        value = sclDAI?.Val;
+                    }
                 }
-                SclDAI sclDAI = sclDOI.SclDAIs.Find(x => x.Name == dataAttribute.Name);
-                if (sclDAI != null && dataAttribute.ObjRef == logicalDevice.Name + "/" + logicalNode.Name + "." + sclDOI.Name + "." + sclDAI.Name)
-                {
-                    value = sclDAI.Val;   
-                }
-
-                else
-                {
-                    string strippedObjRef = getStippedObjRef(dataAttribute.ObjRef);
-                    sclDAI = getNestedDAI(sclDOI, strippedObjRef);
-                    value = sclDAI?.Val;
-                }
-
-
+                
                 if (value != null)
                 {
                     switch (dataAttribute.AttributeType)
@@ -718,7 +734,7 @@ namespace IEC61850.SCL
                 {
                     output.Write("[" + i + "]");
 
-                    printDataAttributes(output, dataAttribute, isTransient);
+                    printDataAttributes(output, dataAttribute, isTransient, i);
                 }
 
                 output.WriteLine("}");
