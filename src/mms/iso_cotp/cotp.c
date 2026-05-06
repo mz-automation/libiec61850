@@ -476,17 +476,27 @@ parseOptions(CotpConnection* self, uint8_t* buffer, int bufLen)
 
         switch (optionType) {
         case 0xc0:
-			if (optionLen == 1)
+            if (optionLen == 1)
             {
-				int requestedTpduSize = (1 << buffer[bufPos++]);
+                uint8_t rawRequestedTpduSize = buffer[bufPos++];
+
+                if (rawRequestedTpduSize < 7 || rawRequestedTpduSize > 13)
+                {
+                    if (DEBUG_COTP)
+                        printf("COTP: invalid TPDU size requested: %i\n", (int)rawRequestedTpduSize);
+
+                    goto cpo_error;
+                }
+
+                int requestedTpduSize = (1 << rawRequestedTpduSize);
 
                 CotpConnection_setTpduSize(self, requestedTpduSize);
 
-				if (DEBUG_COTP)
-				    printf("COTP: requested TPDU size: %i\n", requestedTpduSize);
-			}
-			else
-			    goto cpo_error;
+                if (DEBUG_COTP)
+                    printf("COTP: requested TPDU size: %i\n", requestedTpduSize);
+            }
+            else
+                goto cpo_error;
             break;
 
         case 0xc1: /* remote T-selector */
