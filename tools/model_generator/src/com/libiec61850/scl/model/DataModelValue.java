@@ -100,10 +100,15 @@ public class DataModelValue {
         		System.out.println("WARNING: value initializer contains leading or trailing whitespace");
         	}
         	
-            if (trimmedValue.toLowerCase().equals("true"))
+            String lowerValue = trimmedValue.toLowerCase();
+            if (lowerValue.equals("true") || lowerValue.equals("1"))
                 this.value = new Boolean(true);
-            else
+            else if (lowerValue.equals("false") || lowerValue.equals("0"))
                 this.value = new Boolean(false);
+            else {
+                System.out.println("WARNING: Invalid boolean value '" + trimmedValue + "'. Expected 'true', 'false', '1', or '0'. Defaulting to false.");
+                this.value = new Boolean(false);
+            }
             break;
         case FLOAT32:
 
