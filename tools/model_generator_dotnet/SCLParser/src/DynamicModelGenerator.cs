@@ -647,7 +647,7 @@ namespace IEC61850.SCL
                             break;
 
                         case AttributeType.BOOLEAN:
-                            if (value == "true")
+                            if (value == "true" || value == "1")
                                 output.Write("=1");
                             else
                                 output.Write("=0");
