@@ -27,6 +27,9 @@
 #define DEBUG_SV_PUBLISHER 0
 #define DEBUG_HAL_ETHERNET 0
 
+/* Minimum MMS PDU SIZE - default is 128 - when value is smaller than this, the connection is rejected */
+#define CONFIG_MMS_MINIMUM_PDU_SIZE 128
+
 /* Maximum MMS PDU SIZE - default is 65000 */
 #define CONFIG_MMS_MAXIMUM_PDU_SIZE 65000
 

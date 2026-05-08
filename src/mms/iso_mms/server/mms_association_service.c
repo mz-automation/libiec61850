@@ -24,6 +24,8 @@
 #include "libiec61850_platform_includes.h"
 #include "mms_server_internal.h"
 
+#define MMS_MIN_MAX_PDU_SIZE 128
+
 /**********************************************************************************************
  * MMS Server Capabilities
  *********************************************************************************************/
@@ -340,6 +342,24 @@ parseInitiateRequestPdu(MmsServerConnection self, uint8_t* buffer, int bufPos, i
         {
         case 0x80: /* local-detail-calling */
             self->maxPduSize = BerDecoder_decodeUint32(buffer, length, bufPos);
+
+            if (self->maxPduSize < MMS_MIN_MAX_PDU_SIZE)
+            {
+                if (DEBUG_MMS_SERVER)
+                    printf("MMS_SERVER: proposed max PDU size too small, reject connection\n");
+
+                return false;
+            }
+
+#ifdef CONFIG_MMS_MINIMUM_PDU_SIZE
+            if (self->maxPduSize < CONFIG_MMS_MINIMUM_PDU_SIZE)
+            {
+                if (DEBUG_MMS_SERVER)
+                    printf("MMS_SERVER: proposed max PDU size too small, reject connection\n");
+
+                return false;
+            }
+#endif
 
             if (self->maxPduSize > CONFIG_MMS_MAXIMUM_PDU_SIZE)
                 self->maxPduSize = CONFIG_MMS_MAXIMUM_PDU_SIZE;
