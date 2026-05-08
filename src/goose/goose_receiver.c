@@ -546,6 +546,9 @@ parseAllDataUnknownValue(GooseSubscriber self, uint8_t* buffer, int allDataLengt
     else
         dataSetValues = MmsValue_createEmptyArray(elementIndex);
 
+    if (dataSetValues == NULL)
+        return NULL;
+
     elementIndex = 0;
     bufPos = 0;
 
@@ -621,6 +624,8 @@ parseAllDataUnknownValue(GooseSubscriber self, uint8_t* buffer, int allDataLengt
                     else
                     {
                         value = MmsValue_newBitString(rawBitLength - padding);
+                        if (value == NULL)
+                            goto exit_with_error;
                         memcpy(value->value.bitString.buf, buffer + bufPos + 1, elementLength - 1);
                     }
                 }
@@ -635,7 +640,7 @@ parseAllDataUnknownValue(GooseSubscriber self, uint8_t* buffer, int allDataLengt
             break;
 
         case 0x85: /* integer */
-            if (elementLength > 8)
+            if (elementLength == 0 || elementLength > 8)
             {
                 if (DEBUG_GOOSE_SUBSCRIBER)
                     printf("GOOSE_SUBSCRIBER:      unsupported integer size(%i)\n", elementLength);
@@ -645,6 +650,8 @@ parseAllDataUnknownValue(GooseSubscriber self, uint8_t* buffer, int allDataLengt
             else
             {
                 value = MmsValue_newInteger(elementLength * 8);
+                if (value == NULL)
+                    goto exit_with_error;
                 memcpy(value->value.integer->octets, buffer + bufPos, elementLength);
                 value->value.integer->size = elementLength;
             }
@@ -652,7 +659,7 @@ parseAllDataUnknownValue(GooseSubscriber self, uint8_t* buffer, int allDataLengt
             break;
 
         case 0x86: /* unsigned integer */
-            if (elementLength > 8)
+            if (elementLength == 0 || elementLength > 8)
             {
                 if (DEBUG_GOOSE_SUBSCRIBER)
                     printf("GOOSE_SUBSCRIBER:      unsupported unsigned size(%i)\n", elementLength);
@@ -662,6 +669,8 @@ parseAllDataUnknownValue(GooseSubscriber self, uint8_t* buffer, int allDataLengt
             else
             {
                 value = MmsValue_newUnsigned(elementLength * 8);
+                if (value == NULL)
+                    goto exit_with_error;
                 memcpy(value->value.integer->octets, buffer + bufPos, elementLength);
                 value->value.integer->size = elementLength;
             }
@@ -684,6 +693,8 @@ parseAllDataUnknownValue(GooseSubscriber self, uint8_t* buffer, int allDataLengt
 
         case 0x89: /* octet string */
             value = MmsValue_newOctetString(elementLength, elementLength);
+            if (value == NULL)
+                goto exit_with_error;
             memcpy(value->value.octetString.buf, buffer + bufPos, elementLength);
             break;
 
@@ -696,9 +707,6 @@ parseAllDataUnknownValue(GooseSubscriber self, uint8_t* buffer, int allDataLengt
                 value = MmsValue_newBinaryTime(true);
             else if (elementLength == 6)
                 value = MmsValue_newBinaryTime(false);
-
-            if ((elementLength == 4) || (elementLength == 6))
-                memcpy(value->value.binaryTime.buf, buffer + bufPos, elementLength);
             else
             {
                 if (DEBUG_GOOSE_SUBSCRIBER)
@@ -706,12 +714,17 @@ parseAllDataUnknownValue(GooseSubscriber self, uint8_t* buffer, int allDataLengt
                 goto exit_with_error;
             }
 
+            if (value == NULL)
+                goto exit_with_error;
+            memcpy(value->value.binaryTime.buf, buffer + bufPos, elementLength);
             break;
 
         case 0x91: /* Utctime */
             if (elementLength == 8)
             {
                 value = MmsValue_newUtcTime(0);
+                if (value == NULL)
+                    goto exit_with_error;
                 MmsValue_setUtcTimeByBuffer(value, buffer + bufPos);
             }
             else
