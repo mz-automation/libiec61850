@@ -356,6 +356,12 @@ createWriteNamedVariableListResponse(MmsServerConnection connection, WriteReques
         return;
     }
 
+    /* verify that the number of data elements matches the number of write items */
+    if (writeRequest->listOfData.list.count != numberOfWriteItems)
+    {
+        mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_INVALID_PDU, response);
+        return;
+    }
 
     /* write variables and send response */
 
