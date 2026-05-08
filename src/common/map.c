@@ -62,6 +62,9 @@ Map_size(Map map)
 void*
 Map_addEntry(Map map, void* key, void* value)
 {
+    if (map == NULL || key == NULL || value == NULL)
+        return NULL;
+
     MapEntry* entry = (MapEntry*) GLOBAL_MALLOC(sizeof(MapEntry));
 
     if (entry)
@@ -81,6 +84,9 @@ Map_addEntry(Map map, void* key, void* value)
 void*
 Map_removeEntry(Map map, void* key, bool deleteKey)
 {
+    if (map == NULL || key == NULL)
+        return NULL;
+
     LinkedList element = map->entries;
     LinkedList lastElement = element;
     MapEntry* entry;

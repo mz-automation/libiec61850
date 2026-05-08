@@ -60,10 +60,13 @@ MmsValueCache_insertValue(MmsValueCache self, char* itemId, MmsValue* value)
     {
         MmsValueCacheEntry* cacheEntry = (MmsValueCacheEntry*) GLOBAL_MALLOC(sizeof(MmsValueCacheEntry));
 
-        cacheEntry->value = value;
-        cacheEntry->typeSpec = typeSpec;
+        if (cacheEntry)
+        {
+            cacheEntry->value = value;
+            cacheEntry->typeSpec = typeSpec;
 
-        Map_addEntry(self->map, StringUtils_copyString(itemId), cacheEntry);
+            Map_addEntry(self->map, StringUtils_copyString(itemId), cacheEntry);
+        }
     }
     else
         if (DEBUG)
@@ -147,7 +150,7 @@ MmsValueCache_lookupValue(MmsValueCache self, const char* itemId, MmsVariableSpe
     else
     {
         char itemIdCopy[65];
-        StringUtils_copyStringToBuffer(itemId, itemIdCopy);
+        StringUtils_copyStringMax(itemIdCopy, sizeof(itemIdCopy), itemId);
 
         char* parentItemId = getParentSubString(itemIdCopy);
 
