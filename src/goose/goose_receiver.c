@@ -673,6 +673,13 @@ parseAllDataUnknownValue(GooseSubscriber self, uint8_t* buffer, int allDataLengt
                 value = MmsValue_newDouble(BerDecoder_decodeDouble(buffer, bufPos));
             else if (elementLength == 5)
                 value = MmsValue_newFloat(BerDecoder_decodeFloat(buffer, bufPos));
+            else
+            {
+                if (DEBUG_GOOSE_SUBSCRIBER)
+                    printf("GOOSE_SUBSCRIBER:      unsupported float size(%i)\n", elementLength);
+                goto exit_with_error;
+            }
+
             break;
 
         case 0x89: /* octet string */
@@ -692,6 +699,12 @@ parseAllDataUnknownValue(GooseSubscriber self, uint8_t* buffer, int allDataLengt
 
             if ((elementLength == 4) || (elementLength == 6))
                 memcpy(value->value.binaryTime.buf, buffer + bufPos, elementLength);
+            else
+            {
+                if (DEBUG_GOOSE_SUBSCRIBER)
+                    printf("GOOSE_SUBSCRIBER:      BinaryTime element is of wrong size!\n");
+                goto exit_with_error;
+            }
 
             break;
 
@@ -705,6 +718,7 @@ parseAllDataUnknownValue(GooseSubscriber self, uint8_t* buffer, int allDataLengt
             {
                 if (DEBUG_GOOSE_SUBSCRIBER)
                     printf("GOOSE_SUBSCRIBER:      UTCTime element is of wrong size!\n");
+                goto exit_with_error;
             }
             break;
 
