@@ -203,6 +203,7 @@ alternateArrayAccess(MmsServerConnection connection,
 	if (mmsServer_isIndexAccess(alternateAccess))
 	{
 		int lowIndex = mmsServer_getLowIndex(alternateAccess);
+
 		int numberOfElements = mmsServer_getNumberOfElements(alternateAccess);
 
 		int index = lowIndex;
@@ -233,28 +234,40 @@ alternateArrayAccess(MmsServerConnection connection,
             }
 			else
             {
-				value = MmsValue_createEmptyArray(numberOfElements);
-
-				MmsValue_setDeletable(value);
-
-				int resultIndex = 0;
-				while (index < lowIndex + numberOfElements)
+                /* Validate that the requested range is within the array bounds */
+                if (lowIndex < 0 || numberOfElements < 0 ||
+                    (uint32_t)lowIndex + (uint32_t)numberOfElements > (uint32_t)MmsValue_getArraySize(arrayValue))
                 {
-					MmsValue* elementValue = NULL;
+                    /* value stays NULL and error is appended below */
+                }
+                else
+                {
+                    value = MmsValue_createEmptyArray(numberOfElements);
 
-					elementValue = MmsValue_getElement(arrayValue, index);
-
-					if (!MmsValue_isDeletable(elementValue))
+                    if (value)
                     {
-						elementValue = MmsValue_clone(elementValue);
-						elementValue->deleteValue = 1;
-					}
+                        MmsValue_setDeletable(value);
 
-					MmsValue_setElement(value, resultIndex, elementValue);
+                        int resultIndex = 0;
+                        while (index < lowIndex + numberOfElements)
+                        {
+                            MmsValue* elementValue = NULL;
 
-					index++;
-					resultIndex++;
-				}
+                            elementValue = MmsValue_getElement(arrayValue, index);
+
+                            if (!MmsValue_isDeletable(elementValue))
+                            {
+                                elementValue = MmsValue_clone(elementValue);
+                                elementValue->deleteValue = 1;
+                            }
+
+                            MmsValue_setElement(value, resultIndex, elementValue);
+
+                            index++;
+                            resultIndex++;
+                        }
+                    }
+                }
 			}
 
 			if (value)
@@ -691,7 +704,11 @@ addNamedVariableToNamedVariableListResultList(MmsVariableSpecification* namedVar
                 {
                     MmsValue* elementValue = MmsValue_getElement(value, listEntry->arrayIndex);
 
-                    if (listEntry->componentName)
+                    if (elementValue == NULL)
+                    {
+                        appendErrorToResultList(values, DATA_ACCESS_ERROR_OBJECT_NONE_EXISTENT);
+                    }
+                    else if (listEntry->componentName)
                     {
                         MmsVariableSpecification* elementType = namedVariable->typeSpec.array.elementTypeSpec;
 
