@@ -509,9 +509,9 @@ IedConnection_installConnectionClosedHandler(IedConnection self, IedConnectionCl
  * \note This callback is invoked while an internal state mutex is held. Do NOT call
  *       \ref IedConnection_getState from within this callback as it will deadlock.
  *
- * \note In multi-threaded mode, do NOT call synchronous (blocking) IedConnection API functions
- *       from within this callback. The reception thread is blocked while this callback runs,
- *       so any call waiting for a server response will deadlock.
+ * \note In multi-threaded mode, do NOT call synchronous (blocking) IedConnection API
+ *       functions from within this callback. The connection thread is blocked executing
+ *       this callback, so any call waiting for a server response will deadlock.
  *
  * \param user provided parameter
  * \param connection the related connection

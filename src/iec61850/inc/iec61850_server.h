@@ -1865,15 +1865,21 @@ typedef enum {
 /**
  * \brief Callback that is called in case of RCB event
  *
- * \note This callback has a mixed invocation context depending on the event type:
- *       - Write-triggered events (RCB_EVENT_SET_PARAMETER, RCB_EVENT_ENABLE,
- *         RCB_EVENT_DISABLE, RCB_EVENT_RESERVED, RCB_EVENT_GI, RCB_EVENT_PURGEBUF,
- *         RCB_EVENT_OVERFLOW, RCB_EVENT_REPORT_CREATED): the internal MMS model lock
- *         IS held when this callback is invoked.
- *       - Timer-triggered event (RCB_EVENT_UNRESERVED): invoked from the event worker
- *         thread without the MMS model lock.
- *       The safest rule is to never call \ref IedServer_lockDataModel from this handler,
- *       regardless of the event type. The IedServer_update* functions are safe in all cases.
+ * \note This callback can be invoked from multiple different threading contexts:
+ *       - Most write/read-triggered events (RCB_EVENT_GET_PARAMETER,
+ *         RCB_EVENT_SET_PARAMETER, RCB_EVENT_RESERVED, RCB_EVENT_ENABLE,
+ *         RCB_EVENT_GI, RCB_EVENT_PURGEBUF) are invoked from the MMS connection
+ *         handling thread while the internal MMS model lock IS held.
+ *       - RCB_EVENT_DISABLE may be invoked either from the write handler (model lock
+ *         held) or from the client-disconnect path (no model lock).
+ *       - RCB_EVENT_UNRESERVED is invoked from the event worker thread without
+ *         the MMS model lock.
+ *       - RCB_EVENT_OVERFLOW and RCB_EVENT_REPORT_CREATED are invoked from the
+ *         event worker thread or from within \ref IedServer_unlockDataModel; the
+ *         model lock may or may not be held.
+ *       Due to this mixed context, the safest rule is to never call
+ *       \ref IedServer_lockDataModel from this handler, regardless of the event type.
+ *       The IedServer_update* functions are safe to call in all contexts.
  *
  * \note Do NOT call \ref IedServer_stop from within this handler.
  *
@@ -1923,8 +1929,8 @@ IedServer_setRCBEventHandler(IedServer self, IedServer_RCBEventHandler handler, 
  * \note Do NOT call \ref IedServer_stop from within this handler.
  *
  * \param svcb the related SVCB instance
- * \param the event type
- * \param user defined parameter
+ * \param event the event type (IEC61850_SVCB_EVENT_ENABLE or IEC61850_SVCB_EVENT_DISABLE)
+ * \param parameter user provided parameter
  */
 typedef void (*SVCBEventHandler) (SVControlBlock* svcb, int event, void* parameter);
 
@@ -2034,7 +2040,7 @@ MmsGooseControlBlock_getNdsCom(MmsGooseControlBlock self);
  * User provided callback function to intercept/control MMS client access to
  * IEC 61850 data attributes. The application can install the same handler
  * multiple times and distinguish data attributes by the dataAttribute parameter.
- * This handler can be used to perform write access control do data attributes.
+ * This handler can be used to perform write access control of data attributes.
  * One application can be to allow write access only from a specific client. Another
  * application could be to check if the value is in the allowed range before the write
  * is accepted.
@@ -2050,8 +2056,8 @@ MmsGooseControlBlock_getNdsCom(MmsGooseControlBlock self);
  *
  * \note Do NOT call \ref IedServer_stop from within this handler.
  *
- * \param the data attribute that has been written by an MMS client.
- * \param the value the client want to write to the data attribute
+ * \param dataAttribute the data attribute that has been written by an MMS client.
+ * \param value the value the client wants to write to the data attribute
  * \param connection the connection object of the client connection that invoked the write operation
  * \param parameter the user provided parameter
  *
