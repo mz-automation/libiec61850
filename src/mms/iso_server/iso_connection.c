@@ -539,8 +539,9 @@ IsoConnection_create(Socket socket, IsoServer isoServer, bool isSingleThread)
         }
 #endif /* (CONFIG_MMS_SUPPORT_TLS == 1) */
 
-        self->receiveBuffer = (uint8_t*)GLOBAL_MALLOC(RECEIVE_BUF_SIZE);
-        self->sendBuffer = (uint8_t*)GLOBAL_MALLOC(SEND_BUF_SIZE);
+        /* zero initialize buffers to prevent accidental data leakage */
+        self->receiveBuffer = (uint8_t*)GLOBAL_CALLOC(RECEIVE_BUF_SIZE, 1);
+        self->sendBuffer = (uint8_t*)GLOBAL_CALLOC(SEND_BUF_SIZE, 1);
         self->msgRcvdHandler = NULL;
         self->tickHandler = NULL;
         self->handlerParameter = NULL;
@@ -555,8 +556,8 @@ IsoConnection_create(Socket socket, IsoServer isoServer, bool isSingleThread)
 
         ByteBuffer_wrap(&(self->rcvBuffer), self->receiveBuffer, 0, RECEIVE_BUF_SIZE);
 
-        self->cotpReadBuf = (uint8_t*)GLOBAL_MALLOC(CONFIG_COTP_MAX_TPDU_SIZE + TPKT_RFC1006_HEADER_SIZE);
-        self->cotpWriteBuf = (uint8_t*)GLOBAL_MALLOC(CONFIG_COTP_MAX_TPDU_SIZE + TPKT_RFC1006_HEADER_SIZE);
+        self->cotpReadBuf = (uint8_t*)GLOBAL_CALLOC(CONFIG_COTP_MAX_TPDU_SIZE + TPKT_RFC1006_HEADER_SIZE, 1);
+        self->cotpWriteBuf = (uint8_t*)GLOBAL_CALLOC(CONFIG_COTP_MAX_TPDU_SIZE + TPKT_RFC1006_HEADER_SIZE, 1);
 
         ByteBuffer_wrap(&(self->cotpReadBuffer), self->cotpReadBuf, 0,
                         CONFIG_COTP_MAX_TPDU_SIZE + TPKT_RFC1006_HEADER_SIZE);
@@ -565,7 +566,7 @@ IsoConnection_create(Socket socket, IsoServer isoServer, bool isSingleThread)
 
         self->cotpConnection = (CotpConnection*)GLOBAL_CALLOC(1, sizeof(CotpConnection));
         int socketExtensionBufferSize = CONFIG_MMS_MAXIMUM_PDU_SIZE + 1000;
-        uint8_t* socketExtensionBuffer = (uint8_t*)GLOBAL_MALLOC(socketExtensionBufferSize);
+        uint8_t* socketExtensionBuffer = (uint8_t*)GLOBAL_CALLOC(socketExtensionBufferSize, 1);
         CotpConnection_init(self->cotpConnection, self->socket, &(self->rcvBuffer), &(self->cotpReadBuffer),
                             &(self->cotpWriteBuffer), socketExtensionBuffer, socketExtensionBufferSize);
 

@@ -217,6 +217,16 @@ mmsMsg_createFileOpenResponse(const char* basepath, uint32_t invokeId, ByteBuffe
 
     getFileInfo(basepath, filename, &(frsm->fileSize), &msTime);
 
+    if (frsm->readPosition >= frsm->fileSize)
+    {
+        if (DEBUG_MMS_SERVER)
+            printf("MMS_SERVER: file-open with read position %u after EOF for file (%s)\n", frsm->readPosition, filename);
+
+        mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_POSITION_INVALID);
+
+        return;
+    }
+
     char gtString[30];
 
     Conversions_msTimeToGeneralizedTime(msTime, (uint8_t*)gtString);
@@ -861,7 +871,7 @@ void
 mmsMsg_createFileReadResponse(int maxPduSize, uint32_t invokeId, ByteBuffer* response, MmsFileReadStateMachine* frsm)
 {
     /* determine remaining bytes in file */
-    uint32_t bytesLeft = frsm->fileSize - frsm->readPosition;
+    uint32_t bytesLeft = (frsm->readPosition > frsm->fileSize) ? 0 : frsm->fileSize - frsm->readPosition;
 
     uint32_t fileChunkSize = 0;
 
@@ -905,8 +915,22 @@ mmsMsg_createFileReadResponse(int maxPduSize, uint32_t invokeId, ByteBuffer* res
     bufPos = BerEncoder_encodeTL(0x49, fileReadResponseSize, buffer, bufPos);
 
     bufPos = BerEncoder_encodeTL(0x80, fileChunkSize, buffer, bufPos);
-    FileSystem_readFile(frsm->fileHandle, buffer + bufPos, fileChunkSize);
-    bufPos += fileChunkSize;
+
+
+    int readSize = FileSystem_readFile(frsm->fileHandle, buffer + bufPos, fileChunkSize);
+
+    if (readSize != fileChunkSize)
+    {
+        if (DEBUG_MMS_SERVER)
+            printf("MMS_SERVER: Warning: file read size %i does not match expected chunk size %u\n", readSize,
+                   fileChunkSize);
+
+        mmsMsg_createServiceErrorPdu(invokeId, response, MMS_ERROR_FILE_OTHER);
+
+        return;
+    }
+
+    bufPos += readSize;
 
     if (!moreFollows)
         bufPos = BerEncoder_encodeBoolean(0x81, false, buffer, bufPos);
