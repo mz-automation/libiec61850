@@ -658,6 +658,7 @@ handleConfirmedResponsePdu(
                         if(fileTask->fileHandle)
                         {
                             FileSystem_closeFile(fileTask->fileHandle);
+                            fileTask->fileHandle = NULL;
                         }
 
                         fileTask->state = MMS_FILE_UPLOAD_STATE_SEND_OBTAIN_FILE_RESPONSE;
