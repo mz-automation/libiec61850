@@ -481,9 +481,23 @@ parseAllData(uint8_t* buffer, int allDataLength, MmsValue* dataSetValues)
     return pe;
 }
 
+#ifndef CONFIG_GOOSE_PARSE_MAX_DEPTH
+#define GOOSE_PARSE_MAX_DEPTH 10
+#else
+#define GOOSE_PARSE_MAX_DEPTH CONFIG_GOOSE_PARSE_MAX_DEPTH
+#endif
+
 static MmsValue*
-parseAllDataUnknownValue(GooseSubscriber self, uint8_t* buffer, int allDataLength, bool isStructure)
+parseAllDataUnknownValue(GooseSubscriber self, uint8_t* buffer, int allDataLength, bool isStructure, int depth)
 {
+    if (depth > GOOSE_PARSE_MAX_DEPTH)
+    {
+        if (DEBUG_GOOSE_SUBSCRIBER)
+            printf("GOOSE_SUBSCRIBER: maximum nesting depth exceeded\n");
+
+        return NULL;
+    }
+
     int bufPos = 0;
     int elementLength = 0;
 
@@ -575,7 +589,7 @@ parseAllDataUnknownValue(GooseSubscriber self, uint8_t* buffer, int allDataLengt
             if (DEBUG_GOOSE_SUBSCRIBER)
                 printf("GOOSE_SUBSCRIBER:    found array\n");
 
-            value = parseAllDataUnknownValue(self, buffer + bufPos, elementLength, false);
+            value = parseAllDataUnknownValue(self, buffer + bufPos, elementLength, false, depth + 1);
 
             if (value == NULL)
                 goto exit_with_error;
@@ -586,7 +600,7 @@ parseAllDataUnknownValue(GooseSubscriber self, uint8_t* buffer, int allDataLengt
             if (DEBUG_GOOSE_SUBSCRIBER)
                 printf("GOOSE_SUBSCRIBER:    found structure\n");
 
-            value = parseAllDataUnknownValue(self, buffer + bufPos, elementLength, true);
+            value = parseAllDataUnknownValue(self, buffer + bufPos, elementLength, true, depth + 1);
 
             if (value == NULL)
                 goto exit_with_error;
@@ -1008,7 +1022,7 @@ parseGoosePayload(GooseReceiver self, uint8_t* buffer, int apduLength)
             bool isValid = true;
 
             if (matchingSubscriber->dataSetValues == NULL)
-                matchingSubscriber->dataSetValues = parseAllDataUnknownValue(matchingSubscriber, dataSetBufferAddress, dataSetBufferLength, false);
+                matchingSubscriber->dataSetValues = parseAllDataUnknownValue(matchingSubscriber, dataSetBufferAddress, dataSetBufferLength, false, 0);
             else
             {
                 GooseParseError parseError = parseAllData(dataSetBufferAddress, dataSetBufferLength, matchingSubscriber->dataSetValues);
