@@ -159,6 +159,9 @@ BerDecoder_decodeUint32(uint8_t* buffer, int intLen, int bufPos)
 int32_t
 BerDecoder_decodeInt32(uint8_t* buffer, int intlen, int bufPos)
 {
+    if (intlen <= 0)
+        return 0;
+
     int32_t value;
     int i;
 
@@ -229,8 +232,11 @@ BerDecoder_decodeDouble(uint8_t* buffer, int bufPos)
 }
 
 bool
-BerDecoder_decodeBoolean(uint8_t* buffer, int bufPos)
+BerDecoder_decodeBoolean(uint8_t* buffer, int length, int bufPos)
 {
+    if (length < 1)
+        return false;
+
     if (buffer[bufPos] != 0)
         return true;
     else

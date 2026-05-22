@@ -38,14 +38,20 @@ BerDecoder_decodeUint32(uint8_t* buffer, int intlen, int bufPos);
 LIB61850_INTERNAL int32_t
 BerDecoder_decodeInt32(uint8_t* buffer, int intlen, int bufPos);
 
+/**
+ * \note Caller must validate that the length of the float value is correct (5 bytes)
+ */
 LIB61850_INTERNAL float
 BerDecoder_decodeFloat(uint8_t* buffer, int bufPos);
 
+/**
+ * \note Caller must validate that the length of the double value is correct (9 bytes)
+ */
 LIB61850_INTERNAL double
 BerDecoder_decodeDouble(uint8_t* buffer, int bufPos);
 
 LIB61850_INTERNAL bool
-BerDecoder_decodeBoolean(uint8_t* buffer, int bufPos);
+BerDecoder_decodeBoolean(uint8_t* buffer, int length, int bufPos);
 
 LIB61850_INTERNAL void
 BerDecoder_decodeOID(uint8_t* buffer, int bufPos, int length, ItuObjectIdentifier* oid);

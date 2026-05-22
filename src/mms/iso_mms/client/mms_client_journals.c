@@ -486,7 +486,7 @@ mmsClient_parseReadJournalResponse(ByteBuffer* response, int respBufPos, bool* m
 
         case 0x81: /* moreFollows */
             if (moreFollows)
-                *moreFollows = BerDecoder_decodeBoolean(buffer, bufPos);
+                *moreFollows = BerDecoder_decodeBoolean(buffer, length, bufPos);
             break;
 
         case 0x00: /* indefinite length end tag -> ignore */

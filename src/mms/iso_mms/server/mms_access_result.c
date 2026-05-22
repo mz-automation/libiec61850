@@ -233,7 +233,7 @@ MmsValue_decodeMmsDataRecursive(uint8_t* buffer, int bufPos, int bufferLength, i
         break;
 
     case 0x83: /* MMS_BOOLEAN */
-        value = MmsValue_newBoolean(BerDecoder_decodeBoolean(buffer, bufPos));
+        value = MmsValue_newBoolean(BerDecoder_decodeBoolean(buffer, dataLength, bufPos));
         bufPos += dataLength;
         break;
 

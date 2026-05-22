@@ -703,7 +703,7 @@ mmsClient_parseFileDirectoryResponse(ByteBuffer* response, int bufPos, uint32_t 
             bufPos += length;
             break;
         case 0x81: /* moreFollows */
-            moreFollows = BerDecoder_decodeBoolean(buffer, bufPos);
+            moreFollows = BerDecoder_decodeBoolean(buffer, length, bufPos);
             bufPos += length;
             break;
         case 0x00: /* indefinite length end tag -> ignore */
@@ -836,7 +836,7 @@ mmsMsg_parseFileReadResponse(uint8_t* buffer, int bufPos, int maxBufPos, uint32_
             break;
 
         case 0x81: /* moreFollows */
-            *moreFollows = BerDecoder_decodeBoolean(buffer, bufPos);
+            *moreFollows = BerDecoder_decodeBoolean(buffer, length, bufPos);
             bufPos += length;
             break;
 

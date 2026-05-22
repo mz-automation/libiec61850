@@ -39,7 +39,7 @@ mmsServer_handleStatusRequest(
 
     if (bufPos < maxBufPos)
     {
-        extendedDerivation = BerDecoder_decodeBoolean(requestBuffer, bufPos);
+        extendedDerivation = BerDecoder_decodeBoolean(requestBuffer, maxBufPos - bufPos, bufPos);
     }
     else
     {
