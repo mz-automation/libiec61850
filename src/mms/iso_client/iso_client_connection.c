@@ -169,6 +169,10 @@ IsoClientConnection_create(TLSConfiguration tlsConfiguration, IsoConnectionParam
 {
     IsoClientConnection self = (IsoClientConnection) GLOBAL_CALLOC(1, sizeof(struct sIsoClientConnection));
 
+#if (CONFIG_MMS_SUPPORT_TLS != 1)
+    (void)tlsConfiguration; /* unused when compiled without TLS support */
+#endif
+
     if (self)
     {
         self->parameters = parameters;
@@ -248,6 +252,9 @@ IsoClientConnection_setTLSConfiguration(IsoClientConnection self, TLSConfigurati
     Semaphore_post(self->tlsConfigMutex);
 #endif
 
+#else
+    (void)self;
+    (void)tlsConfig;
 #endif /* (CONFIG_MMS_SUPPORT_TLS == 1) */
 }
 
@@ -257,6 +264,8 @@ IsoClientConnection_getTLSConfiguration(IsoClientConnection self)
 #if (CONFIG_MMS_SUPPORT_TLS == 1)
     return self->tlsConfiguration;
 #else
+    (void)self;
+
     return NULL;
 #endif /* (CONFIG_MMS_SUPPORT_TLS == 1) */
 }

@@ -137,7 +137,7 @@ mmsMsg_createMmsRejectPdu(uint32_t* invokeId, int reason, ByteBuffer* response)
  * MMS General service handling functions
  *********************************************************************************************/
 
-void
+static void
 handleConfirmedRequestPdu(
         MmsServerConnection self,
         uint8_t* buffer, int bufPos, int maxBufPos,

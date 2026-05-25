@@ -746,6 +746,8 @@ IsoServer_getTLSConfiguration(IsoServer self)
     return tlsConfig;
 
 #else
+    (void)self;
+
     return NULL;
 #endif /* (CONFIG_MMS_SUPPORT_TLS == 1) */
 }
@@ -776,7 +778,9 @@ IsoServer_setTLSConfiguration(IsoServer self, TLSConfiguration tlsConfig)
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_post(self->tlsConfigMutex);
 #endif
-
+#else
+    (void)self;
+    (void)tlsConfig;
 #endif /* (CONFIG_MMS_SUPPORT_TLS == 1) */
 }
 
