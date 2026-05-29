@@ -30,6 +30,89 @@ definitions:
           - build-wrapper-linux-x86-64 --out-dir $BW_OUTPUT cmake --build build
           - sonar-scanner -Dsonar.cfamily.build-wrapper-output=$BW_OUTPUT
 
+    - step: &java-model-gen
+        name: Build Java model generator and run on example CID files
+        image: eclipse-temurin:17
+        script:
+          - mkdir -p tools/model_generator/build
+          - find tools/model_generator/src/ -name "*.java" > listFile.tmp
+          - javac -d tools/model_generator/build @listFile.tmp
+          - jar cfm tools/model_generator/genmodel.jar tools/model_generator/manifest.mf -C tools/model_generator/build/ com/
+          - jar cfm tools/model_generator/genconfig.jar tools/model_generator/manifest-dynamic.mf -C tools/model_generator/build/ com/
+          - rm listFile.tmp && rm -rf tools/model_generator/build
+          - mkdir -p java_outputs
+          - java -jar tools/model_generator/genmodel.jar examples/server_example_goose/simpleIO_direct_control_goose.cid -out java_outputs/goose
+          - java -jar tools/model_generator/genmodel.jar examples/server_example_basic_io/simpleIO_direct_control.cid -out java_outputs/basic_io
+          - java -jar tools/model_generator/genmodel.jar examples/server_example_write_handler/complexModel.cid -out java_outputs/complex
+          - java -jar tools/model_generator/genconfig.jar examples/server_example_goose/simpleIO_direct_control_goose.cid java_outputs/goose.cfg
+          - java -jar tools/model_generator/genconfig.jar examples/server_example_basic_io/simpleIO_direct_control.cid java_outputs/basic_io.cfg
+          - java -jar tools/model_generator/genconfig.jar examples/server_example_write_handler/complexModel.cid java_outputs/complex.cfg
+        artifacts:
+          - java_outputs/**
+
+    - step: &dotnet-model-gen-compare
+        name: Build .NET model generator, run on example CID files, compare with Java output
+        image: mcr.microsoft.com/dotnet/sdk:8.0
+        script:
+          - dotnet build tools/model_generator_dotnet/Tools_ModelGenerator.sln
+          - mkdir -p dotnet_outputs
+          - dotnet tools/model_generator_dotnet/Tools/bin/Debug/net8.0/Tools.dll 1 examples/server_example_goose/simpleIO_direct_control_goose.cid -out dotnet_outputs/goose
+          - dotnet tools/model_generator_dotnet/Tools/bin/Debug/net8.0/Tools.dll 1 examples/server_example_basic_io/simpleIO_direct_control.cid -out dotnet_outputs/basic_io
+          - dotnet tools/model_generator_dotnet/Tools/bin/Debug/net8.0/Tools.dll 1 examples/server_example_write_handler/complexModel.cid -out dotnet_outputs/complex
+          - dotnet tools/model_generator_dotnet/Tools/bin/Debug/net8.0/Tools.dll 2 examples/server_example_goose/simpleIO_direct_control_goose.cid -out dotnet_outputs/goose
+          - dotnet tools/model_generator_dotnet/Tools/bin/Debug/net8.0/Tools.dll 2 examples/server_example_basic_io/simpleIO_direct_control.cid -out dotnet_outputs/basic_io
+          - dotnet tools/model_generator_dotnet/Tools/bin/Debug/net8.0/Tools.dll 2 examples/server_example_write_handler/complexModel.cid -out dotnet_outputs/complex
+          - |
+            compare_outputs() {
+              local java_file="$1"
+              local dotnet_file="$2"
+              # Strip line 2 (the output-path comment line) so java_outputs/ vs dotnet_outputs/ paths don't cause a false mismatch
+              if ! diff -q <(sed '2d' "$java_file" | tr -d '[:space:]') <(sed '2d' "$dotnet_file" | tr -d '[:space:]') > /dev/null; then
+                echo "MISMATCH: $java_file vs $dotnet_file"
+                diff -u -w -B "$java_file" "$dotnet_file" || true
+                return 1
+              fi
+              echo "OK: $java_file"
+            }
+            failed=0
+            compare_outputs java_outputs/goose.c      dotnet_outputs/goose.c      || failed=1
+            compare_outputs java_outputs/goose.h      dotnet_outputs/goose.h      || failed=1
+            compare_outputs java_outputs/basic_io.c   dotnet_outputs/basic_io.c   || failed=1
+            compare_outputs java_outputs/basic_io.h   dotnet_outputs/basic_io.h   || failed=1
+            compare_outputs java_outputs/complex.c    dotnet_outputs/complex.c    || failed=1
+            compare_outputs java_outputs/complex.h    dotnet_outputs/complex.h    || failed=1
+            compare_outputs java_outputs/goose.cfg    dotnet_outputs/goose.cfg    || failed=1
+            compare_outputs java_outputs/basic_io.cfg dotnet_outputs/basic_io.cfg || failed=1
+            compare_outputs java_outputs/complex.cfg  dotnet_outputs/complex.cfg  || failed=1
+            [ $failed -eq 0 ] && echo "All model generator outputs match!" || exit 1
+
+    - step: &compile-check
+        name: Compile generated static models together with example applications
+        image: mcr.microsoft.com/dotnet/sdk:8.0
+        script:
+          - apt-get update -qq && apt-get install -y --no-install-recommends gcc libc6-dev
+          - dotnet build tools/model_generator_dotnet/Tools_ModelGenerator.sln
+          # Regenerate static models directly into each example directory so the
+          # generated static_model.c includes static_model.h (matching the example's expectation)
+          - dotnet tools/model_generator_dotnet/Tools/bin/Debug/net8.0/Tools.dll 1 examples/server_example_goose/simpleIO_direct_control_goose.cid -out examples/server_example_goose/static_model
+          - dotnet tools/model_generator_dotnet/Tools/bin/Debug/net8.0/Tools.dll 1 examples/server_example_basic_io/simpleIO_direct_control.cid -out examples/server_example_basic_io/static_model
+          - dotnet tools/model_generator_dotnet/Tools/bin/Debug/net8.0/Tools.dll 1 examples/server_example_write_handler/complexModel.cid -out examples/server_example_write_handler/static_model
+          - |
+            INCLUDES="-Iconfig -Ihal/inc -Isrc/common/inc -Isrc/mms/inc -Isrc/mms/inc_private -Isrc/mms/asn1 -Isrc/iec61850/inc -Isrc/iec61850/inc_private -Isrc/goose -Isrc/sampled_values -Isrc/logging -Isrc/tls -Isrc/r_session"
+            compile_example() {
+              local example_dir="$1"
+              local server_src="$2"
+              echo "Compiling $example_dir ..."
+              gcc -c -o /dev/null $INCLUDES -I"$example_dir" "$example_dir/static_model.c" || { echo "FAIL: $example_dir/static_model.c"; return 1; }
+              gcc -c -o /dev/null $INCLUDES -I"$example_dir" "$example_dir/$server_src"    || { echo "FAIL: $example_dir/$server_src"; return 1; }
+              echo "OK: $example_dir"
+            }
+            failed=0
+            compile_example examples/server_example_goose        server_example_goose.c        || failed=1
+            compile_example examples/server_example_basic_io     server_example_basic_io.c     || failed=1
+            compile_example examples/server_example_write_handler server_example_write_handler.c || failed=1
+            [ $failed -eq 0 ] && echo "All examples compiled successfully!" || exit 1
+
 pipelines:                 # More info here: https://confluence.atlassian.com/bitbucket/configure-bitbucket-pipelines-yml-792298910.html
   branches:
     master:
@@ -37,3 +120,8 @@ pipelines:                 # More info here: https://confluence.atlassian.com/bi
   pull-requests:
     '**':
       - step: *build-test-sonarcloud
+  custom:
+    compare-model-generators:
+      - step: *java-model-gen
+      - step: *dotnet-model-gen-compare
+      - step: *compile-check

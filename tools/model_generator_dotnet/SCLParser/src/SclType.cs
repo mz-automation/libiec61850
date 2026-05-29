@@ -518,13 +518,13 @@ namespace IEC61850
                     throw new SclParserException(xmlNode, "Illegal value for boolean attribute \"" + attrName + "\"");
             }
 
-            public SclTriggerOptions(XmlNode xmlNode)
+            public SclTriggerOptions(XmlNode xmlNode, bool defaultGi = true)
             {
                 dchg = ParseBooleanAttribute(xmlNode, "dchg", false);
                 qchg = ParseBooleanAttribute(xmlNode, "qchg", false);
                 dupd = ParseBooleanAttribute(xmlNode, "dupd", false);
                 period = ParseBooleanAttribute(xmlNode, "period", false);
-                gi = ParseBooleanAttribute(xmlNode, "gi", true);
+                gi = ParseBooleanAttribute(xmlNode, "gi", defaultGi);
             }
 
             public int GetIntValue()
@@ -829,7 +829,7 @@ namespace IEC61850
                 if (typeAttr != null)
                     type = typeAttr.Value;
 
-                triggerOptions = new SclTriggerOptions(xmlNode);
+                triggerOptions = new SclTriggerOptions(xmlNode, false);
 
                 XmlAttribute countAttr = xmlNode.Attributes["count"];
 

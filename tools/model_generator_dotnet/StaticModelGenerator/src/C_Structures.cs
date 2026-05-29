@@ -223,18 +223,28 @@ namespace StaticModelGenerator.C_Structures
             }
         }
 
+        private static SclTriggerOptions GetEffectiveTriggerOptions(DataAttribute da)
+        {
+            if (da.Parent is DataAttribute parentDA)
+                return GetEffectiveTriggerOptions(parentDA);
+            return da.Definition?.triggerOptions;
+        }
+
         private string TrgOrtTotring(SclTriggerOptions trgOps)
         {
             string text = "0";
 
-            if (trgOps.Dchg)
-                text += " + TRG_OPT_DATA_CHANGED";
+            if (trgOps != null)
+            {
+                if (trgOps.Dchg)
+                    text += " + TRG_OPT_DATA_CHANGED";
 
-            if (trgOps.Dchg)
-                text += " + TRG_OPT_DATA_UPDATE";
+                if (trgOps.Dupd)
+                    text += " + TRG_OPT_DATA_UPDATE";
 
-            if (trgOps.Dchg)
-                text += " + TRG_OPT_QUALITY_CHANGED";
+                if (trgOps.Qchg)
+                    text += " + TRG_OPT_QUALITY_CHANGED";
+            }
 
             if (isTransient)
                 text += " + TRG_OPT_TRANSIENT";
@@ -273,7 +283,7 @@ namespace StaticModelGenerator.C_Structures
             cText += "  " + arrayIndex + ",\n";
             cText += "  " + ConvertToFunctionalConstraint(sclFC).ToString() + ",\n";
             cText += "  " + ConvertToDataAttributeType(DataAttribute.AttributeType).ToString() + ",\n";
-            cText += "  " + TrgOrtTotring(DataAttribute.Definition.triggerOptions) + ",\n";
+            cText += "  " + TrgOrtTotring(GetEffectiveTriggerOptions(DataAttribute)) + ",\n";
             cText += "  " + mmsValue + ",\n";
 
             //TODO -> Shot address -> ataAttribute.getShortAddress()
@@ -380,9 +390,9 @@ namespace StaticModelGenerator.C_Structures
                 cText += "  (ModelNode*) &" + parent + "_" + sibling + ",\n";
 
             if (firstChild == "NULL")
-                cText += "  " + firstChild + "\n";
+                cText += "  " + firstChild + ",\n";
             else
-                cText += "  (ModelNode*) &" + parent + "_" + name + "_" + firstChild + "\n";
+                cText += "  (ModelNode*) &" + parent + "_" + name + "_" + firstChild + ",\n";
 
             cText += "};";
 
@@ -647,8 +657,8 @@ namespace StaticModelGenerator.C_Structures
 
                     gseString += "\nstatic PhyComAddress " + phyComAddrName + " = {\n";
                     gseString += "  " + SclGSE.SclAddress.VlanPriority + ",\n";
-                    gseString += "  " + SclGSE.SclAddress.VlanId + ",\n";
-                    gseString += "  " + SclGSE.SclAddress.AppId + ",\n";
+                    gseString += "  " + Convert.ToInt32(SclGSE.SclAddress.VlanId, 16) + ",\n";
+                    gseString += "  " + Convert.ToInt32(SclGSE.SclAddress.AppId, 16) + ",\n";
                     gseString += "  {";
 
                     for (int i = 0; i < 6; i++)
@@ -670,37 +680,35 @@ namespace StaticModelGenerator.C_Structures
             LoadPhyComAddrName();
 
             string cText = gseString;
-            cText += "GSEControlBlock " + externName + " = {\n";
-            cText += "  &" + parent + ",\n";
-            cText += "  \"" + GSEControl.Name + index + "\",\n";
+            cText += "GSEControlBlock " + externName + " = {";
+            cText += "&" + parent + ", ";
+            cText += "\"" + GSEControl.Name + index + "\", ";
 
             if (GSEControl.SclGSEControl.AppID != null)
-                cText += "  \"" + GSEControl.SclGSEControl.AppID + "\",\n";
+                cText += "\"" + GSEControl.SclGSEControl.AppID + "\", ";
             else
-                cText += "  NULL,\n";
-
+                cText += "NULL, ";
 
             if (GSEControl.SclGSEControl.DatSet != null)
-                cText += "  \"" + GSEControl.SclGSEControl.DatSet + "\",\n";
+                cText += "\"" + GSEControl.SclGSEControl.DatSet + "\", ";
             else
-                cText += "  NULL,\n";
+                cText += "NULL, ";
 
-            cText += "  " + GSEControl.SclGSEControl.ConfRev + ",\n";
-            cText += "  " + GSEControl.SclGSEControl.FixedOffs.ToString().ToLower() + ",\n";
+            cText += GSEControl.SclGSEControl.ConfRev + ", ";
+            cText += GSEControl.SclGSEControl.FixedOffs.ToString().ToLower() + ", ";
 
             if (phyComAddrName == "NULL")
-                cText += "  " + phyComAddrName + ",\n";
+                cText += phyComAddrName + ", ";
             else
-                cText += "  &" + phyComAddrName + ",\n";
+                cText += "&" + phyComAddrName + ", ";
 
-            cText += "  " + min + ",\n";
-            cText += "  " + max + ",\n";
-
+            cText += min + ", ";
+            cText += max + ", ";
 
             if (sibling == "NULL")
-                cText += "  " + sibling + "\n";
+                cText += sibling;
             else
-                cText += "  &" + sibling + "\n";
+                cText += "&" + sibling;
 
             cText += "};";
 
@@ -742,8 +750,8 @@ namespace StaticModelGenerator.C_Structures
 
                     smvString += "\nstatic PhyComAddress " + phyComAddrName + " = {\n";
                     smvString += "  " + SclSMV.SclAddress.VlanPriority + ",\n";
-                    smvString += "  " + SclSMV.SclAddress.VlanId + ",\n";
-                    smvString += "  " + SclSMV.SclAddress.AppId + ",\n";
+                    smvString += "  " + Convert.ToInt32(SclSMV.SclAddress.VlanId, 16) + ",\n";
+                    smvString += "  " + Convert.ToInt32(SclSMV.SclAddress.AppId, 16) + ",\n";
                     smvString += "  {";
 
                     for (int i = 0; i < 6; i++)
@@ -902,12 +910,12 @@ namespace StaticModelGenerator.C_Structures
 
         private string clientIpAddrConvert()
         {
-            string value = "  {";
+            string value = "{";
             for (int i = 0; i < 17; i++)
             {
-                value += "0x" + (clientIpAddr[i] & 0xff).ToString("X1");
+                value += "0x" + (clientIpAddr[i] & 0xff).ToString("x1");
                 if (i == 16)
-                    value += "},\n";
+                    value += "}, ";
                 else
                     value += ", ";
             }
@@ -917,46 +925,46 @@ namespace StaticModelGenerator.C_Structures
 
         public override string ToString()
         {
-            string cText = "ReportControlBlock " + externName + " = {\n";
-            cText += "  &" + parent + ",\n";
-            cText += "  \"" + ReportControl.Name + index + "\",\n";
+            string cText = "ReportControlBlock " + externName + " = {";
+            cText += "&" + parent + ", ";
+            cText += "\"" + ReportControl.Name + index + "\", ";
 
             if (ReportControl.SclReportControl.RptID != null)
-                cText += "  \"" + ReportControl.SclReportControl.RptID + "\",\n";
+                cText += "\"" + ReportControl.SclReportControl.RptID + "\", ";
             else
-                cText += "  NULL,\n";
+                cText += "NULL, ";
 
-            cText += "  " + ReportControl.SclReportControl.Buffered.ToString().ToLower() + ",\n";
+            cText += ReportControl.SclReportControl.Buffered.ToString().ToLower() + ", ";
 
             if (ReportControl.SclReportControl.DatSet != null)
-                cText += "  \"" + ReportControl.SclReportControl.DatSet + "\",\n";
+                cText += "\"" + ReportControl.SclReportControl.DatSet + "\", ";
             else
-                cText += "  NULL,\n";
+                cText += "NULL, ";
 
             if (ReportControl.SclReportControl.ConfRev != null)
-                cText += "  " + ReportControl.SclReportControl.ConfRev + ",\n";
+                cText += ReportControl.SclReportControl.ConfRev + ", ";
             else
-                cText += "  NULL,\n";
+                cText += "0, ";
 
-            cText += "  " + TrgOpsConvert(ReportControl.SclReportControl.TrgOps) + ",\n";
-            cText += "  " + OptFieldsConvert(ReportControl.SclReportControl.OptFields) + ",\n";
+            cText += TrgOpsConvert(ReportControl.SclReportControl.TrgOps) + ", ";
+            cText += OptFieldsConvert(ReportControl.SclReportControl.OptFields) + ", ";
 
             if (ReportControl.SclReportControl.BufTime != null)
-                cText += "  " + ReportControl.SclReportControl.BufTime + ",\n";
+                cText += ReportControl.SclReportControl.BufTime + ", ";
             else
-                cText += "  NULL,\n";
+                cText += "NULL, ";
 
             if (ReportControl.SclReportControl.IntgPd != null)
-                cText += "  " + ReportControl.SclReportControl.IntgPd + ",\n";
+                cText += ReportControl.SclReportControl.IntgPd + ", ";
             else
-                cText += "  0,\n";
+                cText += "0, ";
 
             cText += clientIpAddrConvert();
 
             if (sibling == "NULL")
-                cText += "  " + sibling + "\n";
+                cText += sibling;
             else
-                cText += "  &" + sibling + "\n";
+                cText += "&" + sibling;
 
             cText += "};";
 

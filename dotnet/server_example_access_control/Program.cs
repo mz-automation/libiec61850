@@ -50,7 +50,7 @@ namespace server_access_control
             config.ReportBufferSize = 200000;
 
             /* Set stack compliance to a specific edition of the standard (WARNING: data model has also to be checked for compliance) */
-           config.Edition = Iec61850Edition.EDITION_2;
+            config.Edition = Iec61850Edition.EDITION_2;
 
             /* Set the base path for the MMS file services */
             config.FileServiceBasePath = "./vmd-filestore/";

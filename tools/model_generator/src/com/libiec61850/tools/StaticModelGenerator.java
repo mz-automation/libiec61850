@@ -213,20 +213,10 @@ public class StaticModelGenerator {
     }
 
     public static void main(String[] args) throws FileNotFoundException  {
-        args = new String[6];
-    	
     	if (args.length < 1) {
             System.out.println("Usage: genmodel <ICD file>  [-ied  <ied-name>] [-ap <access-point-name>] [-out <output-name>] [-modelprefix <model-prefix>]");
             System.exit(1);
         }
-
-
-        args[0] = "array.icd";
-        args[1] = "-ied";
-        args[2] = "TEMPLATE";
-        args[3] = "-ap";
-        args[4] = "NewAccessPoint";
-        args[5] = "model_rr";
         
         
         String icdFile = args[0];

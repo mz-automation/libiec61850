@@ -434,15 +434,8 @@ namespace StaticModelGenerator
 
                     if (dataObject.DataObjectsAndAttributes.Count > 0)
                     {
-                        string firstDataAttributeName = "NULL";
-
-                        DataObjectOrAttribute dataObjectOrAttribute1 = dataObject.DataObjectsAndAttributes.First();
-                        if (dataObjectOrAttribute1 is DataAttribute da)
-                            firstDataAttributeName = da.Name;
-                        else
-                        {
-                            firstDataAttributeName = lnRef;
-                        }
+                        DataAttribute firstDA = dataObject.DataObjectsAndAttributes.OfType<DataAttribute>().FirstOrDefault();
+                        string firstDataAttributeName = firstDA?.Name;
 
                         c_ArrayDataObjectStructure.child = c_ArrayDataObjectStructure.objRef + "_" + dataObject.DataObjectsAndAttributes.First().Name;
 
@@ -451,17 +444,11 @@ namespace StaticModelGenerator
                             if (dataObjectOrAttribute is DataObject doObj)
                             {
                                 SclSDI sclSDO = getSDI(sclDOI, dataObject.Name);
-                            
-                                firstDataAttributeName += "_" + dataObject.Name;
-
-                                createDataObjectCStructure(c_DO_DA_Structures, c_DataObjectStructure.objRef, firstDataAttributeName, doObj, dataObject, isDoTransient, sclSDO, -1);
-
+                                createDataObjectCStructure(c_DO_DA_Structures, firstDataAttributeName, c_ArrayDataObjectStructure.objRef, doObj, dataObject, isDoTransient, sclSDO, -1);
                             }
                             else
                             {
-
-                                createDataAttributeCStructure(c_DO_DA_Structures, c_DataObjectStructure.objRef, dataObjectOrAttribute as DataAttribute, dataObject, isDoTransient, sclDOI, -1);
-
+                                createDataAttributeCStructure(c_DO_DA_Structures, c_ArrayDataObjectStructure.objRef, dataObjectOrAttribute as DataAttribute, dataObject, isDoTransient, sclDOI, -1);
                             }
                         }
                     }
@@ -471,32 +458,22 @@ namespace StaticModelGenerator
             {
                 c_DataObjectStructure.arrayIndex = arrayIdx;
 
-                string firstDataAttributeName = "NULL";
-
-                DataObjectOrAttribute dataObjectOrAttribute1 = dataObject.DataObjectsAndAttributes.First();
-                if (dataObjectOrAttribute1 is DataAttribute da)
-                    firstDataAttributeName = da.Name;
-                else
+                if (dataObject.DataObjectsAndAttributes.Count > 0)
                 {
-                    firstDataAttributeName = lnRef;
-                }
+                    DataAttribute firstDA = dataObject.DataObjectsAndAttributes.OfType<DataAttribute>().FirstOrDefault();
+                    string firstDataAttributeName = firstDA?.Name;
 
-                foreach (DataObjectOrAttribute dataObjectOrAttribute in dataObject.DataObjectsAndAttributes)
-                {
-                    if (dataObjectOrAttribute is DataObject doObj)
+                    foreach (DataObjectOrAttribute dataObjectOrAttribute in dataObject.DataObjectsAndAttributes)
                     {
-                        firstDataAttributeName += "_" + dataObject.Name;
-
-                        SclSDI sclSDO = getSDI(sclDOI, dataObject.Name);
-
-                        createDataObjectCStructure(c_DO_DA_Structures, c_DataObjectStructure.objRef, firstDataAttributeName, doObj, dataObject, isDoTransient, sclSDO, -1);
-
-                    }
-                    else
-                    {
-
-                        createDataAttributeCStructure(c_DO_DA_Structures, c_DataObjectStructure.objRef, dataObjectOrAttribute as DataAttribute, dataObject, isDoTransient, sclDOI, -1);
-
+                        if (dataObjectOrAttribute is DataObject doObj)
+                        {
+                            SclSDI sclSDO = getSDI(sclDOI, dataObject.Name);
+                            createDataObjectCStructure(c_DO_DA_Structures, firstDataAttributeName, c_DataObjectStructure.objRef, doObj, dataObject, isDoTransient, sclSDO, -1);
+                        }
+                        else
+                        {
+                            createDataAttributeCStructure(c_DO_DA_Structures, c_DataObjectStructure.objRef, dataObjectOrAttribute as DataAttribute, dataObject, isDoTransient, sclDOI, -1);
+                        }
                     }
                 }
 
@@ -984,12 +961,13 @@ namespace StaticModelGenerator
                 c_LogicalDeviceStructure.name = logicalDevice.Inst;
                 c_LogicalDeviceStructure.objRef = modelPrefix + "_" + logicalDevice.Inst;
 
-                c_IEDModelStructure.firstChild = c_LogicalDeviceStructure.objRef;
+                if (iedModel.LogicalDevices.First() == logicalDevice)
+                    c_IEDModelStructure.firstChild = c_LogicalDeviceStructure.objRef;
 
                 if (iedModel.LogicalDevices.Last() != logicalDevice)
                 {
                     LogicalDevice sibling = iedModel.LogicalDevices[iedModel.LogicalDevices.IndexOf(logicalDevice) + 1];
-                    c_LogicalDeviceStructure.sibling = sibling.Inst;
+                    c_LogicalDeviceStructure.sibling = modelPrefix + "_" + sibling.Inst;
                 }
 
                 c_LogicalDeviceStructure.firstChild = logicalDevice.LogicalNodes.First().Name;
@@ -1185,19 +1163,22 @@ namespace StaticModelGenerator
 
                                             string ipAddress = getIpAddressByIedName(iedName, apRef);
 
-                                            IPAddress iPAddress = IPAddress.Parse(ipAddress);
+                                            if (ipAddress != null)
+                                            {
+                                                IPAddress iPAddress = IPAddress.Parse(ipAddress);
 
-                                            if (iPAddress.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
-                                            {
-                                                clientAddress[0] = 4;
-                                                for (int j = 0; j < 4; j++)
-                                                    clientAddress[j + 1] = iPAddress.GetAddressBytes()[j];
-                                            }
-                                            else if (iPAddress.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)
-                                            {
-                                                clientAddress[0] = 6;
-                                                for (int j = 0; j < 16; j++)
-                                                    clientAddress[j + 1] = iPAddress.GetAddressBytes()[j];
+                                                if (iPAddress.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                                                {
+                                                    clientAddress[0] = 4;
+                                                    for (int j = 0; j < 4; j++)
+                                                        clientAddress[j + 1] = iPAddress.GetAddressBytes()[j];
+                                                }
+                                                else if (iPAddress.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)
+                                                {
+                                                    clientAddress[0] = 6;
+                                                    for (int j = 0; j < 16; j++)
+                                                        clientAddress[j + 1] = iPAddress.GetAddressBytes()[j];
+                                                }
                                             }
                                         }
                                     }
@@ -1262,7 +1243,7 @@ namespace StaticModelGenerator
                             if (fcdaCount + 1 < dataSet.SclDataSet.Fcdas.Count)
                                 c_DatasetEntry.sibling = c_DataSetStructure.externDataSetName + "_fcda" + (fcdaCount + 1).ToString();
 
-                            c_DatasetEntry.logicalDeviceName = logicalDevice.Inst;
+                            c_DatasetEntry.logicalDeviceName = sclFCDA.LdInst ?? logicalDevice.Inst;
                             c_DatasetEntry.isLDNameDynamicallyAllocated = false;
 
                             if (sclFCDA.Prefix != null)
@@ -1330,21 +1311,23 @@ namespace StaticModelGenerator
         {
             if (sclParser.Communication != null)
             {
-                SclSubNetwork sclSubNetwork = sclParser.Communication.GetSubNetwork(apName, iedName);
-
-                if (sclSubNetwork != null)
+                foreach (SclSubNetwork sclSubNetwork in sclParser.Communication.GetSubNetworks())
                 {
-                    SclConnectedAP ap = sclSubNetwork.GetConnectedAPs().Find(x => x.IedName == iedName && x.ApName == apName);
-
-                    if (ap != null)
+                    foreach (SclConnectedAP ap in sclSubNetwork.GetConnectedAPs())
                     {
-                        SclAddress sclAddress = ap.Address;
+                        // When apName is specified, filter by AP name; otherwise match any AP for the IED
+                        if (apName != null && !apName.Equals(ap.ApName))
+                            continue;
 
-                        if (sclAddress != null)
+                        if (iedName.Equals(ap.IedName))
                         {
-                            SclP ip = sclAddress.SclPs.Find(x => x.Type == "IP");
-                            if (ip != null)
-                                return ip.Text;
+                            SclAddress sclAddress = ap.Address;
+                            if (sclAddress != null)
+                            {
+                                SclP ip = sclAddress.SclPs.Find(x => x.Type == "IP");
+                                if (ip != null)
+                                    return ip.Text;
+                            }
                         }
                     }
                 }
