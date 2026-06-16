@@ -4284,11 +4284,11 @@ checkDataSetAccess(MmsMapping* self, MmsServerConnection connection, MmsVariable
         if (listType == MMS_ASSOCIATION_SPECIFIC)
         {
             dataSetRef[0] = '@';
-            StringUtils_copyStringToBuffer(dataSetRef + 1, listName);
+            StringUtils_copyStringMax(dataSetRef + 1, 129, listName);
         }
         else if (listType == MMS_VMD_SPECIFIC)
         {
-            StringUtils_copyStringToBuffer(dataSetRef, listName);
+            StringUtils_copyStringMax(dataSetRef, 129, listName);
         }
         else if (listType == MMS_DOMAIN_SPECIFIC)
         {
