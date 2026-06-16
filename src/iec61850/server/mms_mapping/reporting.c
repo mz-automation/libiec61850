@@ -557,7 +557,6 @@ updateSingleTrackingValue(MmsMapping* self, ReportControl* rc, const char* name,
                 attributeToUpdate = trkInst->resv;
             else if (!strcmp(name, "DatSet"))
             {
-
                 char datSet[130];
                 const char* datSetStr = MmsValue_toString(newValue);
 
@@ -2664,6 +2663,12 @@ Reporting_RCBWriteAccessHandler(MmsMapping* self, ReportControl* rc, const char*
                 goto exit_function;
             }
 
+            if (MmsValue_getStringSize(value) > 129)
+            {
+                retVal = DATA_ACCESS_ERROR_OBJECT_VALUE_INVALID;
+                goto exit_function;
+            }
+
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
             Semaphore_wait(rc->rcbValuesLock);
 #endif
@@ -3677,7 +3682,7 @@ sendNextReportEntrySegment(ReportControl* self)
 
     const char* rptIdStr = MmsValue_toString(rptIdFromRcb);
 
-    if (rptIdStr[0] == 0)
+    if (rptIdStr[0] == 0 || MmsValue_getStringSize(rptIdFromRcb) > 129)
     {
         /* use default rptId when RptID is empty in RCB */
         updateWithDefaultRptId(self, &rptId);
