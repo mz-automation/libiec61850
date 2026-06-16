@@ -130,14 +130,14 @@ parseUserInformation(AcseConnection* self, uint8_t* buffer, int bufPos, int maxB
 
         bufPos = BerDecoder_decodeLength(buffer, &len, bufPos, maxBufPos);
 
-        if (len == 0)
-            continue;
-
         if ((bufPos < 0) || (bufPos + len > maxBufPos))
         {
             *userInfoValid = false;
             return -1;
         }
+
+        if (len == 0)
+            continue;
 
         switch (tag)
         {
