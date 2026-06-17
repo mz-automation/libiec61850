@@ -501,10 +501,10 @@ AcseConnection_parseMessage(AcseConnection* self, ByteBuffer* message)
     switch (messageType)
     {
     case 0x60:
-        indication = parseAarqPdu(self, buffer, bufPos, messageSize);
+        indication = parseAarqPdu(self, buffer, bufPos, bufPos + len);
         break;
     case 0x61:
-        indication = parseAarePdu(self, buffer, bufPos, messageSize);
+        indication = parseAarePdu(self, buffer, bufPos, bufPos + len);
         break;
     case 0x62: /* A_RELEASE.request RLRQ-apdu */
         indication = ACSE_RELEASE_REQUEST;
