@@ -81,8 +81,12 @@ struct sSVSubscriber
 
 struct sSVSubscriber_ASDU
 {
-    char* svId;
-    char* datSet;
+    char svIdBuf[130];   /* copy of svId - only copied when the user requests the svId */
+    char datSetBuf[130]; /* copy of datSet - only copied when the user requests the datSet */
+    char* svId;          /* pointer to the start of the svId in the ASDU buffer */
+    char* datSet;        /* pointer to the start of the datSet in the ASDU buffer */
+    uint8_t svIdSize;    /* size of the svId in the ASDU buffer */
+    uint8_t datSetSize;  /* size of the datSet in the ASDU buffer */
 
     uint8_t* smpCnt;
     uint8_t* confRev;
@@ -433,15 +437,27 @@ parseASDU(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, int length)
         switch (tag)
         {
         case 0x80:
-            asdu.svId = (char*) (buffer + bufPos);
-            svIdLength = elementLength;
-            asdu.svId[svIdLength] = 0;
+            if (elementLength > 129)
+            {
+                if (DEBUG_SV_SUBSCRIBER) printf("SV_SUBSCRIBER: svId too long!\n");
+            }
+            else
+            {
+                asdu.svId = (char*) (buffer + bufPos);
+                asdu.svIdSize = elementLength;
+            }
             break;
 
         case 0x81:
-            asdu.datSet = (char*) (buffer + bufPos);
-            datSetLength = elementLength;
-            asdu.datSet[datSetLength] = 0;
+            if (elementLength > 129)
+            {
+                if (DEBUG_SV_SUBSCRIBER) printf("SV_SUBSCRIBER: datSet too long!\n");
+            }
+            else
+            {
+                asdu.datSet = (char*) (buffer + bufPos);
+                asdu.datSetSize = elementLength;
+            }
             break;
 
         case 0x82:
@@ -480,17 +496,17 @@ parseASDU(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, int length)
 
         bufPos += elementLength;
     }
-    
+
     if (DEBUG_SV_SUBSCRIBER)
     {
         printf("SV_SUBSCRIBER:   SV ASDU: ----------------\n");
         printf("SV_SUBSCRIBER:     DataLength: %d\n", asdu.dataBufferLength);
-        printf("SV_SUBSCRIBER:     SvId: %s\n", asdu.svId ? asdu.svId : "(empty)");
+        printf("SV_SUBSCRIBER:     SvId: %s\n", SVSubscriber_ASDU_getSvId(&asdu));
         printf("SV_SUBSCRIBER:     SmpCnt: %u\n", SVSubscriber_ASDU_getSmpCnt(&asdu));
         printf("SV_SUBSCRIBER:     ConfRev: %u\n", SVSubscriber_ASDU_getConfRev(&asdu));
-        
+
         if (SVSubscriber_ASDU_hasDatSet(&asdu))
-            printf("SV_SUBSCRIBER:     DatSet: %s\n", asdu.datSet ? asdu.datSet : "(empty)");
+            printf("SV_SUBSCRIBER:     DatSet: %s\n", SVSubscriber_ASDU_getDatSet(&asdu));
 
         if (SVSubscriber_ASDU_hasRefrTm(&asdu))
 #ifndef _MSC_VER
@@ -900,13 +916,25 @@ SVSubscriber_ASDU_hasSmpMod(SVSubscriber_ASDU self)
 const char*
 SVSubscriber_ASDU_getSvId(SVSubscriber_ASDU self)
 {
-    return self->svId;
+    if (self->svId == NULL)
+        return NULL;
+
+    memcpy(self->svIdBuf, self->svId, self->svIdSize);
+    self->svIdBuf[self->svIdSize] = 0; /* ensure null termination */
+
+    return self->svIdBuf;
 }
 
 const char*
 SVSubscriber_ASDU_getDatSet(SVSubscriber_ASDU self)
 {
-    return self->datSet;
+    if (self->datSet == NULL)
+        return NULL;
+
+    memcpy(self->datSetBuf, self->datSet, self->datSetSize);
+    self->datSetBuf[self->datSetSize] = 0; /* ensure null termination */
+
+    return self->datSetBuf;
 }
 
 static inline void

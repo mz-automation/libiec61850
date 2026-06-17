@@ -30,6 +30,10 @@ svUpdateListener (SVSubscriber subscriber, void* parameter, SVSubscriber_ASDU as
     if (svID != NULL)
         printf("  svID=(%s)\n", svID);
 
+    const char* dataSet = SVSubscriber_ASDU_getDatSet(asdu);
+    if (dataSet != NULL)
+        printf("  dataSet=(%s)\n", dataSet);
+
     printf("  smpCnt: %i\n", SVSubscriber_ASDU_getSmpCnt(asdu));
     printf("  confRev: %u\n", SVSubscriber_ASDU_getConfRev(asdu));
 
