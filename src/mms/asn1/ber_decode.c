@@ -86,7 +86,7 @@ BerDecoder_decodeLengthRecursive(uint8_t* buffer, int* length, int bufPos, int m
         { /* indefinite length form */
             *length = getIndefiniteLength(buffer, bufPos, maxBufPos, depth, maxDepth);
         }
-        else
+        else if (lenLength < 4)
         {
             *length = 0;
 
@@ -102,6 +102,11 @@ BerDecoder_decodeLengthRecursive(uint8_t* buffer, int* length, int bufPos, int m
                 *length <<= 8;
                 *length += buffer[bufPos++];
             }
+        }
+        else
+        {
+            /* only accept a maximum of 3 length bytes*/
+            return -1;
         }
     }
     else
@@ -151,6 +156,9 @@ BerDecoder_decodeUint32(uint8_t* buffer, int intLen, int bufPos)
     {
         value <<= 8;
         value += buffer[bufPos + i];
+
+        if (i == 3)
+            break; /* only accept up to 4 bytes for uint32 */
     }
 
     return value;
@@ -159,16 +167,16 @@ BerDecoder_decodeUint32(uint8_t* buffer, int intLen, int bufPos)
 int32_t
 BerDecoder_decodeInt32(uint8_t* buffer, int intlen, int bufPos)
 {
-    if (intlen <= 0)
+    if ((intlen <= 0) || (intlen > 4))
         return 0;
 
-    int32_t value;
+    uint32_t value;
     int i;
 
     bool isNegative = ((buffer[bufPos] & 0x80) == 0x80);
 
     if (isNegative)
-        value = -1;
+        value = -0xffffffff; /* initialize to all 1s for -1 */
     else
         value = 0;
 
@@ -178,7 +186,7 @@ BerDecoder_decodeInt32(uint8_t* buffer, int intlen, int bufPos)
         value += buffer[bufPos + i];
     }
 
-    return value;
+    return (int32_t)value;
 }
 
 float

@@ -26,15 +26,37 @@
 
 #include "libiec61850_platform_includes.h"
 
+/**
+ * \brief Decode the length field of a BER encoded element.
+ *
+ * The length is stored in the variable pointed to by length.
+ * The function returns the new buffer position after decoding the length field,
+ * or -1 if an error occurred (e.g., invalid length encoding, length exceeds maxBufPos, etc.).
+ *
+ * \note This function handles both definite and indefinite length forms, but only accepts a maximum of 3 length bytes for the definite form.
+ *
+ * \param buffer The buffer containing the BER encoded data.
+ * \param length Pointer to an integer where the decoded length will be stored.
+ * \param bufPos The current position in the buffer from where to start decoding.
+ * \param maxBufPos The maximum valid position in the buffer (i.e., buffer size).
+ *
+ * \return The new buffer position after decoding the length field, or -1 on error.
+ */
 LIB61850_INTERNAL int
 BerDecoder_decodeLength(uint8_t* buffer, int* length, int bufPos, int maxBufPos);
 
 LIB61850_INTERNAL char*
 BerDecoder_decodeString(uint8_t* buffer, int strlen, int bufPos, int maxBufPos);
 
+/**
+ * \note Caller must validate that the length of the uint32 value does not exceed the buffer size.
+ */
 LIB61850_INTERNAL uint32_t
 BerDecoder_decodeUint32(uint8_t* buffer, int intlen, int bufPos);
 
+/**
+ * \note Caller must validate that the length of the uint32 value does not exceed the buffer size.
+ */
 LIB61850_INTERNAL int32_t
 BerDecoder_decodeInt32(uint8_t* buffer, int intlen, int bufPos);
 
