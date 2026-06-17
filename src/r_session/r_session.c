@@ -1084,6 +1084,12 @@ RSession_sendMessage(RSession self, RSessionProtocol_SPDU_ID spduId, bool simula
             return R_SESSION_ERROR_OUT_OF_MEMORY;
     }
 
+    /* Reject payloads that cannot fit within the send buffer (header overhead is ~128 bytes) */
+    if (payloadSize < 0 || payloadSize > (int)(self->bufferSize) - 128)
+    {
+        return R_SESSION_ERROR_INVALID_MESSAGE;
+    }
+
     if (self->socket)
     {
         struct sRSessionPayloadElement element;
