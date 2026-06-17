@@ -409,8 +409,6 @@ parseASDU(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, int length)
     (void)self;
 
     int bufPos = 0;
-    int svIdLength = 0;
-    int datSetLength = 0;
 
     struct sSVSubscriber_ASDU asdu;
     memset(&asdu, 0, sizeof(struct sSVSubscriber_ASDU));
