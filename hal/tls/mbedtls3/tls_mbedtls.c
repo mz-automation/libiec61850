@@ -767,7 +767,7 @@ TLSConfiguration_addCipherSuite(TLSConfiguration self, int ciphersuite)
         }
     }
 
-    if (nextIndex == self->maxCiphersuites)
+    if ((i == self->maxCiphersuites) || (nextIndex == self->maxCiphersuites - 1))
     {
         /* reallocate space for ciphersuites list */
         int newMaxCiphersuites = self->maxCiphersuites + 10;
