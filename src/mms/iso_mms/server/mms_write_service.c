@@ -546,7 +546,7 @@ handleWriteNamedVariableListRequest(MmsServerConnection connection, WriteRequest
 
 static MmsVariableSpecification*
 getComponent(MmsServerConnection connection, MmsDomain* domain, AlternateAccess_t* alternateAccess,
-             MmsVariableSpecification* namedVariable, char* variableName)
+             MmsVariableSpecification* namedVariable, char* variableName, size_t variableNameSize)
 {
     MmsVariableSpecification* retValue = NULL;
 
@@ -568,9 +568,9 @@ getComponent(MmsServerConnection connection, MmsDomain* domain, AlternateAccess_
                     if (!strncmp(namedVariable->typeSpec.structure.elements[i]->name, (char*)component.buf,
                                  component.size))
                     {
-                        if (strlen(variableName) + component.size < 199)
+                        if (strlen(variableName) + component.size + 1 < variableNameSize)
                         {
-                            StringUtils_appendString(variableName, 200, "$");
+                            StringUtils_appendString(variableName, variableNameSize, "$");
 
                             /* here we need strncat because component.buf is not null terminated! */
                             strncat(variableName, (const char*)component.buf, (size_t)component.size);
@@ -582,7 +582,7 @@ getComponent(MmsServerConnection connection, MmsDomain* domain, AlternateAccess_
                                     getComponent(connection, domain,
                                                  alternateAccess->list.array[0]
                                                      ->choice.unnamed->choice.selectAlternateAccess.alternateAccess,
-                                                 namedVariable->typeSpec.structure.elements[i], variableName);
+                                                 namedVariable->typeSpec.structure.elements[i], variableName, variableNameSize);
                             }
                             else
                             {
@@ -682,7 +682,8 @@ mmsServer_handleWriteRequest(MmsServerConnection connection, uint8_t* buffer, in
 
             MmsDomain* domain = NULL;
 
-            char nameIdStr[65];
+            /* reserved 200 byte to hold the variable name (64 byte) + component name parts */
+            char nameIdStr[200];
 
             if (varSpec->variableSpecification.choice.name.present == ObjectName_PR_domainspecific)
             {
@@ -857,7 +858,7 @@ mmsServer_handleWriteRequest(MmsServerConnection connection, uint8_t* buffer, in
                 }
                 else if (mmsServer_isComponentAccess(alternateAccess))
                 {
-                    variable = getComponent(connection, domain, alternateAccess, variable, nameIdStr);
+                    variable = getComponent(connection, domain, alternateAccess, variable, nameIdStr, sizeof(nameIdStr));
 
                     if (variable == NULL)
                     {
