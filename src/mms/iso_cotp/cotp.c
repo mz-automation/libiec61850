@@ -461,6 +461,11 @@ parseOptions(CotpConnection* self, uint8_t* buffer, int bufLen)
 
     while (bufPos < bufLen)
     {
+        if (bufPos + 2 > bufLen)
+        {
+            goto cpo_error;
+        }
+
         uint8_t optionType = buffer[bufPos++];
         uint8_t optionLen = buffer[bufPos++];
 
