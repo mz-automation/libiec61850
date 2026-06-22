@@ -187,7 +187,6 @@ IsoConnection_handleTcpConnection(IsoConnection self, bool isSingleThread)
 #if (CONFIG_MMS_SINGLE_THREADED != 1)
     if (isSingleThread == false)
     {
-
         IsoConnection_callTickHandler(self);
 
         if (Handleset_waitReady(self->handleSet, 10) < 1)
