@@ -1,7 +1,7 @@
 /*
  *  iso_session.c
  *
- *  Copyright 2013-2024 Michael Zillgith
+ *  Copyright 2013-2026 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -43,10 +43,17 @@ parseAcceptParameters(IsoSession* session, ByteBuffer* message, int startOffset,
     int offset = startOffset;
     int maxOffset = offset + parameterLength;
 
-    while (offset < maxOffset)
+    while (offset + 2 < maxOffset)
     {
         pi = message->buffer[offset++];
         param_len = message->buffer[offset++];
+
+        if (offset + param_len > maxOffset)
+        {
+            if (DEBUG_SESSION)
+                printf("SESSION: invalid parameter length\n");
+            return -1;
+        }
 
         switch (pi)
         {
@@ -58,11 +65,13 @@ parseAcceptParameters(IsoSession* session, ByteBuffer* message, int startOffset,
                 printf("SESSION: Param - Protocol Options: %02x\n", session->protocolOptions);
             hasProtocolOptions = 1;
             break;
+
         case 21: /* TSDU Maximum Size */
             if (DEBUG_SESSION)
                 printf("SESSION: Param - TODO TSDU Maximum Size\n");
             offset += 4;
             break;
+
         case 22: /* Version Number */
             param_val = message->buffer[offset++];
             if (DEBUG_SESSION)
@@ -78,43 +87,54 @@ parseAcceptParameters(IsoSession* session, ByteBuffer* message, int startOffset,
 
             hasProtocolVersion = 1;
             break;
+
         case 23: /* Initial Serial Number */
             if (DEBUG_SESSION)
                 printf("SESSION: Param - TODO Initial Serial Number\n");
             offset += param_len;
             break;
+
         case 26: /* Token Setting Item */
+            if (param_len != 1)
+                return -1;
             param_val = message->buffer[offset++];
             if (DEBUG_SESSION)
                 printf("SESSION: Param - Token Setting Item: %02x\n", param_val);
             break;
+
         case 55: /* Second Initial Serial Number */
             if (DEBUG_SESSION)
                 printf("SESSION: Param - TODO Second Initial Serial Number\n");
             offset += param_len;
             break;
+
         case 56: /* Upper Limit Serial Number */
             if (DEBUG_SESSION)
                 printf("SESSION: Param - TODO Upper Limit Serial Number\n");
             offset += param_len;
             break;
+
         case 57: /* Large Initial Serial Number */
             if (DEBUG_SESSION)
                 printf("SESSION: Param - TODO Large Initial Serial Number\n");
             offset += param_len;
             break;
+
         case 58: /* Large Second Initial Serial Number */
             if (DEBUG_SESSION)
                 printf("SESSION: Param - TODO Large Second Initial Serial Number\n");
             offset += param_len;
             break;
+
         default:
             if (DEBUG_SESSION)
                 printf("SESSION: Param - Invalid Parameter with ID %02x\n", pi);
+            offset += param_len;
             break;
         }
     }
 
+    /* check if required parameters are present */
     if (hasProtocolOptions && hasProtocolVersion)
         return offset - startOffset;
     else
@@ -127,11 +147,19 @@ parseSessionHeaderParameters(IsoSession* session, ByteBuffer* message, int param
     int offset = 2;
     uint8_t pgi;
     uint8_t parameterLength;
+    int maxOffset = offset + parametersOctets;
 
-    while (offset < (parametersOctets + 2))
+    while (offset + 2 < maxOffset)
     {
         pgi = message->buffer[offset++];
         parameterLength = message->buffer[offset++];
+
+        if (offset + parameterLength > maxOffset)
+        {
+            if (DEBUG_SESSION)
+                printf("SESSION: invalid parameter length\n");
+            return SESSION_ERROR;
+        }
 
         switch (pgi)
         {
