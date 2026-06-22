@@ -588,6 +588,11 @@ parseSessionMessage(RSession self, uint8_t* buffer, int msgSize, RSessionPayload
                                 goto exit_error;
                             }
                         }
+                        else
+                        {
+                            DEBUG_PRINTF("ERROR - unsupported signature algorithm");
+                            goto exit_error;
+                        }
                     }
                 }
                 else
@@ -763,6 +768,11 @@ parseSessionMessage(RSession self, uint8_t* buffer, int msgSize, RSessionPayload
                                 DEBUG_PRINTF("ERROR - signature not matching!");
                                 goto exit_error;
                             }
+                        }
+                        else
+                        {
+                            DEBUG_PRINTF("ERROR - unsupported signature algorithm");
+                            goto exit_error;
                         }
                     }
                 }
