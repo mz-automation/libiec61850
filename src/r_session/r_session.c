@@ -504,6 +504,13 @@ parseSessionMessage(RSession self, uint8_t* buffer, int msgSize, RSessionPayload
 
         RSignatureAlgorithm sigAlgo = (RSignatureAlgorithm) buffer[bufPos++];
 
+        /* Protocol v1 does not support encryption - reject any non-NONE secAlgo */
+        if (secAlgo != R_SESSION_SEC_ALGO_NONE)
+        {
+            DEBUG_PRINTF("ERROR - protocol version 1 does not support encryption");
+            goto exit_error;
+        }
+
         /* Check if algorithms match the configured algorithms */
         if (secAlgo != self->secAlgo)
         {
