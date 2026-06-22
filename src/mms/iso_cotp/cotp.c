@@ -5,7 +5,7 @@
  *
  *  Partial implementation of the ISO 8073 COTP (ISO TP0) protocol for MMS.
  *
- *  Copyright 2013-2024 Michael Zillgith
+ *  Copyright 2013-2026 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -341,6 +341,10 @@ CotpConnection_sendDataMessage(CotpConnection* self, BufferChain payload)
             if (currentChainIndex >= currentChain->partLength)
             {
                 currentChain = currentChain->nextPart;
+
+                if (currentChain == NULL)
+                    goto exit_function;
+
                 if (DEBUG_COTP)
                     printf("COTP: nextBufferPart: len:%i partLen:%i\n", currentChain->length, currentChain->partLength);
                 currentChainIndex = 0;
@@ -441,6 +445,9 @@ CotpConnection_sendConnectionResponseMessage(CotpConnection* self)
 
     int optionsLength = getOptionsLength(self);
     int messageLength = 11 + optionsLength;
+
+    if(self->writeBuffer->maxSize < messageLength)
+        return COTP_ERROR;
 
     writeRfc1006Header(self, messageLength);
 
@@ -760,7 +767,6 @@ parseCotpMessage(CotpConnection* self)
     default:
         return COTP_ERROR;
     }
-
 }
 
 CotpIndication
