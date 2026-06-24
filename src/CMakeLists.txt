@@ -359,18 +359,25 @@ target_link_libraries(iec61850
 )
 
 IF(UNIX)
-  IF (CONFIG_SYSTEM_HAS_CLOCK_GETTIME)
-     target_link_libraries (iec61850
-         -lpthread
-         -lm
-         -lrt
-     )
-  ELSE ()
-     target_link_libraries (iec61850
-         -lpthread
-         -lm
-     )
-  ENDIF (CONFIG_SYSTEM_HAS_CLOCK_GETTIME)
+  IF (NOT APPLE)
+    IF (CONFIG_SYSTEM_HAS_CLOCK_GETTIME)
+        target_link_libraries (iec61850
+            -lpthread
+            -lm
+            -lrt
+        )
+    ELSE ()
+        target_link_libraries (iec61850
+            -lpthread
+            -lm
+        )
+    ENDIF (CONFIG_SYSTEM_HAS_CLOCK_GETTIME)
+  ELSE()
+        target_link_libraries (iec61850
+            -lpthread
+            -lm
+        )
+  ENDIF(NOT APPLE)
 ENDIF(UNIX)
 IF(MINGW)
   target_link_libraries(iec61850-shared ws2_32 iphlpapi bcrypt)
