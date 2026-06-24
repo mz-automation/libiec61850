@@ -241,6 +241,12 @@ mmsMsg_createInitiateErrorPdu(ByteBuffer* response, uint8_t initiateErrorCode)
 bool
 mmsServer_isIndexAccess(AlternateAccess_t* alternateAccess)
 {
+    if (alternateAccess == NULL)
+        return false;
+
+    if (alternateAccess->list.count == 0)
+        return false;
+
     if (alternateAccess->list.array[0]->present == AlternateAccess__Member_PR_unnamed)
     {
         if ((alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.present
@@ -258,6 +264,12 @@ mmsServer_isIndexAccess(AlternateAccess_t* alternateAccess)
 bool
 mmsServer_isComponentAccess(AlternateAccess_t* alternateAccess)
 {
+    if (alternateAccess == NULL)
+        return false;
+
+    if (alternateAccess->list.count == 0)
+        return false;
+
     if (alternateAccess->list.array[0]->present == AlternateAccess__Member_PR_unnamed)
     {
         if (alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.present
@@ -273,6 +285,12 @@ mmsServer_isComponentAccess(AlternateAccess_t* alternateAccess)
 bool
 mmsServer_isAccessToArrayComponent(AlternateAccess_t* alternateAccess)
 {
+    if (alternateAccess == NULL)
+        return false;
+
+    if (alternateAccess->list.count == 0)
+        return false;
+
     if (alternateAccess->list.array[0]->choice.unnamed->choice.selectAlternateAccess.alternateAccess != NULL)
     {
         if (alternateAccess->list.array[0]->choice.unnamed->
@@ -363,6 +381,12 @@ exit_function:
 int
 mmsServer_getLowIndex(AlternateAccess_t* alternateAccess)
 {
+    if (alternateAccess == NULL)
+        return -1;
+
+    if (alternateAccess->list.count == 0)
+        return -1;
+
     if (alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.present ==
         AlternateAccessSelection__selectAccess_PR_index)
     {
@@ -388,6 +412,12 @@ mmsServer_getLowIndex(AlternateAccess_t* alternateAccess)
 int
 mmsServer_getNumberOfElements(AlternateAccess_t* alternateAccess)
 {
+    if (alternateAccess == NULL)
+        return 0;
+
+    if (alternateAccess->list.count == 0)
+        return 0;
+
     if (alternateAccess->list.array[0]->choice.unnamed->choice.selectAccess.present ==
         AlternateAccessSelection__selectAccess_PR_indexRange)
     {
