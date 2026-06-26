@@ -483,10 +483,10 @@ parseSessionMessage(RSession self, uint8_t* buffer, int msgSize, RSessionPayload
     {
         /* parse version 1 common header parts */
 
-        /* Protocol v1 requires 14 bytes of protocol specific header minimum
+        /* Protocol v1 requires 16 bytes of protocol specific header minimum
            (4 for timeOfCurrentKey + 2 for timeToNextKey + 2 for algos)
            + 4 for keyId + 4 for payloadLength */
-        if (msgSize < bufPos + 14)
+        if (msgSize < bufPos + 16)
         {
             DEBUG_PRINTF("ERROR - insufficient header length for protocol v1");
             goto exit_error;
@@ -768,6 +768,13 @@ parseSessionMessage(RSession self, uint8_t* buffer, int msgSize, RSessionPayload
 
             iv = buffer + bufPos;
             bufPos += ivLen;
+        }
+
+        /* Check we have space for payload length field */
+        if (bufPos + 4 > (uint32_t)msgSize)
+        {
+            DEBUG_PRINTF("ERROR - insufficient space for payload length field");
+            goto exit_error;
         }
 
         uint32_t payloadLength;
