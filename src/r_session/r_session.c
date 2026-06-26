@@ -557,7 +557,7 @@ parseSessionMessage(RSession self, uint8_t* buffer, int msgSize, RSessionPayload
         /* parse payload elements */
         uint32_t payloadEnd = bufPos + payloadLength;
 
-        if (payloadEnd > (uint32_t)msgSize)
+        if (payloadEnd < (uint32_t)bufPos || payloadEnd > (uint32_t)msgSize)
         {
             DEBUG_PRINTF("ERROR - payload size field invalid");
             goto exit_error;
@@ -738,7 +738,7 @@ parseSessionMessage(RSession self, uint8_t* buffer, int msgSize, RSessionPayload
         /* parse payload elements */
         uint32_t payloadEnd = bufPos + payloadLength;
 
-        if (payloadEnd > (uint32_t)msgSize)
+        if (payloadEnd < (uint32_t)bufPos || payloadEnd > (uint32_t)msgSize)
         {
             DEBUG_PRINTF("ERROR - payload size field invalid");
             goto exit_error;
