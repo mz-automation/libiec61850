@@ -404,6 +404,20 @@ SVReceiver_stopThreadless(SVReceiver self)
 }
 
 static void
+invalidFieldSize(const char* fieldName, int expectedSize, int actualSize)
+{
+    if (DEBUG_SV_SUBSCRIBER)
+        printf("SV_SUBSCRIBER: Invalid %s size: expected %d, got %d\n", fieldName, expectedSize, actualSize);
+}
+
+static void
+fieldTooLong(const char* fieldName, int maxSize, int actualSize)
+{
+    if (DEBUG_SV_SUBSCRIBER)
+        printf("SV_SUBSCRIBER: %s too long: max %d, got %d\n", fieldName, maxSize, actualSize);
+}
+
+static void
 parseASDU(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, int length)
 {
     (void)self;
@@ -437,7 +451,7 @@ parseASDU(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, int length)
         case 0x80:
             if (elementLength > 129)
             {
-                if (DEBUG_SV_SUBSCRIBER) printf("SV_SUBSCRIBER: svId too long!\n");
+                return fieldTooLong("svId", 129, elementLength);
             }
             else
             {
@@ -449,7 +463,7 @@ parseASDU(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, int length)
         case 0x81:
             if (elementLength > 129)
             {
-                if (DEBUG_SV_SUBSCRIBER) printf("SV_SUBSCRIBER: datSet too long!\n");
+                return fieldTooLong("datSet", 129, elementLength);
             }
             else
             {
@@ -459,23 +473,38 @@ parseASDU(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, int length)
             break;
 
         case 0x82:
-            asdu.smpCnt = buffer + bufPos;
+            if (elementLength != 2)
+                return invalidFieldSize("SmpCnt", 2, elementLength);
+            else
+                asdu.smpCnt = buffer + bufPos;
             break;
 
         case 0x83:
-            asdu.confRev = buffer + bufPos;
+            if (elementLength != 4)
+                return invalidFieldSize("ConfRev", 4, elementLength);
+            else
+                asdu.confRev = buffer + bufPos;
             break;
 
         case 0x84:
-            asdu.refrTm = buffer + bufPos;
+            if (elementLength != 8)
+                return invalidFieldSize("RefrTm", 8, elementLength);
+            else
+                asdu.refrTm = buffer + bufPos;
             break;
 
         case 0x85:
-            asdu.smpSynch = buffer + bufPos;
+            if (elementLength != 1)
+                return invalidFieldSize("SmpSynch", 1, elementLength);
+            else
+                asdu.smpSynch = buffer + bufPos;
             break;
 
         case 0x86:
-            asdu.smpRate = buffer + bufPos;
+            if (elementLength != 2)
+                return invalidFieldSize("SmpRate", 2, elementLength);
+            else
+                asdu.smpRate = buffer + bufPos;
             break;
 
         case 0x87:
@@ -484,7 +513,10 @@ parseASDU(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, int length)
             break;
 
         case 0x88:
-            asdu.smpMod = buffer + bufPos;
+            if (elementLength != 1)
+                return invalidFieldSize("SmpMod", 1, elementLength);
+            else
+                asdu.smpMod = buffer + bufPos;
             break;
 
         default: /* ignore unknown tag */
