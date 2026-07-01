@@ -321,6 +321,15 @@ SVReceiver_stop(SVReceiver self)
     }
 }
 
+static void
+parseSVMessage(SVReceiver self, uint8_t* buffer, int numbytes);
+
+void
+SVReceiver_handleL2Message(SVReceiver self, uint8_t* buffer, int size)
+{
+    parseSVMessage(self, buffer, size);
+}
+
 void
 SVReceiver_destroy(SVReceiver self)
 {
@@ -719,10 +728,9 @@ handleSVApdu(SVReceiver self, uint16_t appId, uint8_t* apdu, int apduLength, uin
 }
 
 static void
-parseSVMessage(SVReceiver self, int numbytes)
+parseSVMessage(SVReceiver self, uint8_t* buffer, int numbytes)
 {
     int bufPos;
-    uint8_t* buffer = self->buffer;
 
     if (numbytes < 22) return;
 
@@ -792,7 +800,7 @@ SVReceiver_tick(SVReceiver self)
 
         if (packetSize > 0)
         {
-            parseSVMessage(self, packetSize);
+            parseSVMessage(self, self->buffer, packetSize);
             return true;
         }
     }

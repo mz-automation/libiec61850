@@ -257,6 +257,19 @@ SVReceiver_stopThreadless(SVReceiver self);
 LIB61850_API bool
 SVReceiver_tick(SVReceiver self);
 
+/**
+ * \brief Handle a raw L2 (Ethernet) SV message directly.
+ *
+ * This function allows to directly pass a raw Ethernet frame to the SV receiver for parsing.
+ * This is also useful for unit testing and debugging.
+ *
+ * \param self the receiver object
+ * \param buffer the raw message buffer (L2 Ethernet frame)
+ * \param size the size of the buffer in bytes
+ */
+LIB61850_API void
+SVReceiver_handleL2Message(SVReceiver self, uint8_t* buffer, int size);
+
 /*
  * \brief Create a new SV subscriber instance
  *
