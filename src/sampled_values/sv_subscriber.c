@@ -540,7 +540,10 @@ parseASDU(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, int length)
     {
         printf("SV_SUBSCRIBER:   SV ASDU: ----------------\n");
         printf("SV_SUBSCRIBER:     DataLength: %d\n", asdu.dataBufferLength);
-        printf("SV_SUBSCRIBER:     SvId: %s\n", SVSubscriber_ASDU_getSvId(&asdu));
+        {
+            const char* svIdStr = SVSubscriber_ASDU_getSvId(&asdu);
+            printf("SV_SUBSCRIBER:     SvId: %s\n", svIdStr ? svIdStr : "(null)");
+        }
         printf("SV_SUBSCRIBER:     SmpCnt: %u\n", SVSubscriber_ASDU_getSmpCnt(&asdu));
         printf("SV_SUBSCRIBER:     ConfRev: %u\n", SVSubscriber_ASDU_getConfRev(&asdu));
 
@@ -585,6 +588,12 @@ parseSequenceOfASDU(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, i
             return;
         }
 
+        if (bufPos + elementLength > length)
+        {
+            /* defensive addition: already checked in BerDecoder_decodeLength */
+            return;
+        }
+
         switch (tag)
         {
         case 0x30:
@@ -603,6 +612,12 @@ parseSequenceOfASDU(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, i
 static void
 parseSVPayload(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, int apduLength)
 {
+    if (apduLength < 1)
+    {
+        if (DEBUG_SV_SUBSCRIBER) printf("SV_SUBSCRIBER: Invalid APDU length!\n");
+        return;
+    }
+
     int bufPos = 0;
 
     if (buffer[bufPos++] == 0x60)
@@ -617,6 +632,12 @@ parseSVPayload(SVReceiver self, SVSubscriber subscriber, uint8_t* buffer, int ap
         }
 
         int svEnd = bufPos + elementLength;
+
+        if (svEnd > apduLength)
+        {
+            /* defensive addition: already checked in BerDecoder_decodeLength */
+            return;
+        }
 
         while (bufPos < svEnd)
         {
@@ -746,6 +767,8 @@ parseSVMessage(SVReceiver self, uint8_t* buffer, int numbytes)
     {
         bufPos += 4; /* skip VLAN tag */
         headerLength += 4;
+
+        if (numbytes < 26) return;
     }
 
     /* check for SV Ethertype */
@@ -763,6 +786,13 @@ parseSVMessage(SVReceiver self, uint8_t* buffer, int numbytes)
 
     length = buffer[bufPos++] * 0x100;
     length += buffer[bufPos++];
+
+    if (length < 8)
+    {
+        if (DEBUG_SV_SUBSCRIBER)
+            printf("SV_SUBSCRIBER: Invalid length field\n");
+        return;
+    }
 
     /* skip reserved fields */
     bufPos += 4;
@@ -1032,6 +1062,9 @@ SVSubscriber_ASDU_getSmpRate(SVSubscriber_ASDU self)
 int8_t
 SVSubscriber_ASDU_getINT8(SVSubscriber_ASDU self, int index)
 {
+    if (index < 0 || (self->dataBufferLength - index) < (int)sizeof(int8_t))
+        return 0;
+
     int8_t retVal = *((int8_t*) (self->dataBuffer + index));
 
     return retVal;
@@ -1040,6 +1073,9 @@ SVSubscriber_ASDU_getINT8(SVSubscriber_ASDU self, int index)
 int16_t
 SVSubscriber_ASDU_getINT16(SVSubscriber_ASDU self, int index)
 {
+    if (index < 0 || (self->dataBufferLength - index) < (int)sizeof(int16_t))
+        return 0;
+
     int16_t retVal;
 
 #if (ORDER_LITTLE_ENDIAN == 1)
@@ -1054,6 +1090,9 @@ SVSubscriber_ASDU_getINT16(SVSubscriber_ASDU self, int index)
 int32_t
 SVSubscriber_ASDU_getINT32(SVSubscriber_ASDU self, int index)
 {
+    if (index < 0 || (self->dataBufferLength - index) < (int)sizeof(int32_t))
+        return 0;
+
     int32_t retVal;
 
 #if (ORDER_LITTLE_ENDIAN == 1)
@@ -1068,6 +1107,9 @@ SVSubscriber_ASDU_getINT32(SVSubscriber_ASDU self, int index)
 int64_t
 SVSubscriber_ASDU_getINT64(SVSubscriber_ASDU self, int index)
 {
+    if (index < 0 || (self->dataBufferLength - index) < (int)sizeof(int64_t))
+        return 0;
+
     int64_t retVal;
 
 #if (ORDER_LITTLE_ENDIAN == 1)
@@ -1082,6 +1124,9 @@ SVSubscriber_ASDU_getINT64(SVSubscriber_ASDU self, int index)
 uint8_t
 SVSubscriber_ASDU_getINT8U(SVSubscriber_ASDU self, int index)
 {
+    if (index < 0 || (self->dataBufferLength - index) < (int)sizeof(uint8_t))
+        return 0;
+
     uint8_t retVal = *((uint8_t*) (self->dataBuffer + index));
 
     return retVal;
@@ -1090,6 +1135,9 @@ SVSubscriber_ASDU_getINT8U(SVSubscriber_ASDU self, int index)
 uint16_t
 SVSubscriber_ASDU_getINT16U(SVSubscriber_ASDU self, int index)
 {
+    if (index < 0 || (self->dataBufferLength - index) < (int)sizeof(uint16_t))
+        return 0;
+
     uint16_t retVal;
 
 #if (ORDER_LITTLE_ENDIAN == 1)
@@ -1104,6 +1152,9 @@ SVSubscriber_ASDU_getINT16U(SVSubscriber_ASDU self, int index)
 uint32_t
 SVSubscriber_ASDU_getINT32U(SVSubscriber_ASDU self, int index)
 {
+    if (index < 0 || (self->dataBufferLength - index) < (int)sizeof(uint32_t))
+        return 0;
+
     uint32_t retVal;
 
 #if (ORDER_LITTLE_ENDIAN == 1)
@@ -1118,6 +1169,9 @@ SVSubscriber_ASDU_getINT32U(SVSubscriber_ASDU self, int index)
 uint64_t
 SVSubscriber_ASDU_getINT64U(SVSubscriber_ASDU self, int index)
 {
+    if (index < 0 || (self->dataBufferLength - index) < (int)sizeof(uint64_t))
+        return 0;
+
     uint64_t retVal;
 
 #if (ORDER_LITTLE_ENDIAN == 1)
@@ -1132,6 +1186,9 @@ SVSubscriber_ASDU_getINT64U(SVSubscriber_ASDU self, int index)
 float
 SVSubscriber_ASDU_getFLOAT32(SVSubscriber_ASDU self, int index)
 {
+    if (index < 0 || (self->dataBufferLength - index) < (int)sizeof(float))
+        return 0.0f;
+
     float retVal;
 
 #if (ORDER_LITTLE_ENDIAN == 1)
@@ -1146,6 +1203,9 @@ SVSubscriber_ASDU_getFLOAT32(SVSubscriber_ASDU self, int index)
 double
 SVSubscriber_ASDU_getFLOAT64(SVSubscriber_ASDU self, int index)
 {
+    if (index < 0 || (self->dataBufferLength - index) < (int)sizeof(double))
+        return 0.0;
+
     double retVal;
 
 #if (ORDER_LITTLE_ENDIAN == 1)
@@ -1161,6 +1221,10 @@ Timestamp
 SVSubscriber_ASDU_getTimestamp(SVSubscriber_ASDU self, int index)
 {
     Timestamp retVal;
+    memset(&retVal, 0, sizeof(Timestamp));
+
+    if (index < 0 || (self->dataBufferLength - index) < (int)sizeof(retVal.val))
+        return retVal;
 
     memcpy(retVal.val, self->dataBuffer + index, sizeof(retVal.val));
 
@@ -1170,6 +1234,9 @@ SVSubscriber_ASDU_getTimestamp(SVSubscriber_ASDU self, int index)
 Quality
 SVSubscriber_ASDU_getQuality(SVSubscriber_ASDU self, int index)
 {
+    if (index < 0 || (self->dataBufferLength - index) < 4)
+        return 0;
+
     Quality retVal;
 
     uint8_t* buffer = self->dataBuffer + index;
