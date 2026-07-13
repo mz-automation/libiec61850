@@ -906,10 +906,16 @@ parseSessionMessage(RSession self, uint8_t* buffer, int msgSize, RSessionPayload
                 goto exit_error;
             }
 
-            int payloadSize = payloadEnd - payloadStartPos;
+            uint32_t payloadSize = payloadEnd - payloadStartPos;
+
+            if (payloadSize > self->bufferSize)
+            {
+                DEBUG_PRINTF("ERROR - payload size exceeds buffer size");
+                goto exit_error;
+            }
 
             if (self->payloadBuffer == NULL)
-                self->payloadBuffer = (uint8_t*)GLOBAL_MALLOC(65000);
+                self->payloadBuffer = (uint8_t*)GLOBAL_MALLOC(self->bufferSize);
 
             if (self->payloadBuffer)
             {
@@ -1256,6 +1262,12 @@ RSession_sendMessage(RSession self, RSessionProtocol_SPDU_ID spduId, bool simula
 void
 RSession_setBufferSize(RSession self, uint16_t bufferSize)
 {
+    if (self->payloadBuffer)
+    {
+        /* size cannot be changed while a payload buffer is allocated */
+        return;
+    }
+
     if (bufferSize > 127)
     {
         self->bufferSize = bufferSize;

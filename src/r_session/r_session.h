@@ -86,6 +86,8 @@ RSession_create(void);
 /**
  * \brief Set the maximum buffer size for session messages (range: 128 - 65535)
  *
+ * \note The buffer size cannot be changed while a payload buffer is allocated (e.g. when the publisher/subscriber is started)
+ *
  * \param self the RSession instance
  * \param bufferSize the size of the buffer for RSession UDP messages (range: 128 - 65535)
  */
