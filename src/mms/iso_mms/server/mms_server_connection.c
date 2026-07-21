@@ -842,6 +842,25 @@ MmsServerConnection_destroy(MmsServerConnection self)
 #endif
 
 #if (MMS_DYNAMIC_DATA_SETS == 1)
+    /* notify IEC 61850 layer BEFORE destroying named variable lists */
+    if (self->namedVariableLists)
+    {
+        LinkedList element = LinkedList_getNext(self->namedVariableLists);
+
+        while (element)
+        {
+            MmsNamedVariableList variableList = (MmsNamedVariableList)element->data;
+
+            if (variableList && variableList->name)
+            {
+                mmsServer_callVariableListChangedHandler(MMS_VARLIST_DELETE, MMS_ASSOCIATION_SPECIFIC,
+                                                            NULL, /* domain (NULL for aa-specific) */
+                                                            variableList->name, self);
+            }
+            element = LinkedList_getNext(element);
+        }
+    }
+
     LinkedList_destroyDeep(self->namedVariableLists, (LinkedListValueDeleteFunction) MmsNamedVariableList_destroy);
 #endif
 

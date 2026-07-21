@@ -67,6 +67,7 @@ typedef struct {
     bool buffered; /* true if report is a buffered report */
 
     MmsValue** bufferedDataSetValues; /* used to buffer values during bufTm time */
+    int bufferedDataSetValuesSize; /* number of dataset entries */
 
     MmsValue** valueReferences; /* array to store value references for fast access */
 

@@ -193,13 +193,9 @@ deleteDataSetValuesShadowBuffer(ReportControl* self)
 {
     if (self->bufferedDataSetValues != NULL)
     {
-        assert(self->dataSet != NULL);
-
-        int dataSetSize = DataSet_getSize(self->dataSet);
-
         int i;
 
-        for (i = 0; i < dataSetSize; i++)
+        for (i = 0; i < self->bufferedDataSetValuesSize; i++)
         {
             if (self->bufferedDataSetValues[i] != NULL)
                 MmsValue_delete(self->bufferedDataSetValues[i]);
@@ -698,12 +694,23 @@ static void
 createDataSetValuesShadowBuffer(ReportControl* rc)
 {
     int dataSetSize = DataSet_getSize(rc->dataSet);
+    rc->bufferedDataSetValuesSize = dataSetSize;
 
     MmsValue** dataSetValues = (MmsValue**)GLOBAL_CALLOC(dataSetSize, sizeof(MmsValue*));
+
+    if (dataSetValues == NULL)
+        return;
 
     rc->bufferedDataSetValues = dataSetValues;
 
     rc->valueReferences = (MmsValue**)GLOBAL_MALLOC(dataSetSize * sizeof(MmsValue*));
+
+    if (rc->valueReferences == NULL)
+    {
+        GLOBAL_FREEMEM(dataSetValues);
+        rc->bufferedDataSetValues = NULL;
+        return;
+    }
 
     DataSetEntry* dataSetEntry = rc->dataSet->fcdas;
 

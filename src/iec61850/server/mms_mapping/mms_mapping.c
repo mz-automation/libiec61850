@@ -4392,6 +4392,10 @@ variableListAccessHandler(void* parameter, MmsVariableListAccessType accessType,
             {
                 ReportControl* rc = (ReportControl*)rcElement->data;
 
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+                Semaphore_wait(rc->rcbValuesLock);
+#endif
+
                 if (rc->isDynamicDataSet)
                 {
                     if (rc->dataSet != NULL)
@@ -4405,6 +4409,11 @@ variableListAccessHandler(void* parameter, MmsVariableListAccessType accessType,
                                     if (strcmp(rc->dataSet->logicalDeviceName,
                                                MmsDomain_getName(domain) + strlen(self->model->name)) == 0)
                                     {
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+                                        Semaphore_post(rc->rcbValuesLock);
+#endif
+
+                                        /* dataset is in use and cannot be deleted */
                                         allow = MMS_ERROR_SERVICE_OBJECT_CONSTRAINT_CONFLICT;
                                         break;
                                     }
@@ -4417,6 +4426,10 @@ variableListAccessHandler(void* parameter, MmsVariableListAccessType accessType,
                             {
                                 if (strcmp(rc->dataSet->name, listName) == 0)
                                 {
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+                                    Semaphore_post(rc->rcbValuesLock);
+#endif
+                                    /* dataset is in use and cannot be deleted */
                                     allow = MMS_ERROR_SERVICE_OBJECT_CONSTRAINT_CONFLICT;
                                     break;
                                 }
@@ -4428,13 +4441,22 @@ variableListAccessHandler(void* parameter, MmsVariableListAccessType accessType,
                             {
                                 if (strcmp(rc->dataSet->name, listName) == 0)
                                 {
-                                    allow = MMS_ERROR_SERVICE_OBJECT_CONSTRAINT_CONFLICT;
-                                    break;
+                                    /* this is usually called when the connection is closed -> RCB has already been disabled by connection handler */
+
+                                    MmsMapping_freeDynamicallyCreatedDataSet(rc->dataSet);
+
+                                    /* cleanup dataset information in RCB instance */
+                                    rc->dataSet = NULL;
+                                    rc->isDynamicDataSet = false;
                                 }
                             }
                         }
                     }
                 }
+
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+                Semaphore_post(rc->rcbValuesLock);
+#endif
             }
 
 #if (CONFIG_IEC61850_LOG_SERVICE == 1)
@@ -5217,6 +5239,9 @@ MmsMapping_getDomainSpecificDataSet(MmsMapping* self, const char* dataSetName)
 void
 MmsMapping_freeDynamicallyCreatedDataSet(DataSet* dataSet)
 {
+    if (dataSet == NULL)
+        return;
+
     DataSetEntry* dataSetEntry = dataSet->fcdas;
 
     while (dataSetEntry)
