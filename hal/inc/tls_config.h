@@ -333,6 +333,14 @@ PAL_API void
 TLSConfiguration_setMinimumKeyLength(TLSConfiguration self, int keyLengthInBits);
 
 /**
+ * \brief Set the maximum allowed certificate size in bytes (larger certificates will cause certificate validation to fail)
+ *
+ * \param maxSizeInBytes maximum certificate size in bytes (default: 8192, value of 0 will reset to default, value < 0 will disable the check)
+ */
+PAL_API void
+TLSConfiguration_setMaxCertificateSize(TLSConfiguration self, int maxSizeInBytes);
+
+/**
  * \brief Add a CRL (certificate revocation list) from buffer
  *
  * \param crl the buffer containing the CRL

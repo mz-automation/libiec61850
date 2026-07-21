@@ -3,7 +3,7 @@
  *
  * TLS socket API for protocol libraries using TCP/IP
  *
- * Copyright 2017-2021 Michael Zillgith, MZ Automation GmbH
+ * Copyright 2017-2026 Michael Zillgith, MZ Automation GmbH
  *
  * Abstraction layer for different TLS implementations
  *
@@ -64,9 +64,27 @@ TLSSocket_create(Socket socket, TLSConfiguration configuration, bool storeClient
 
 /**
  * \brief Perform a new TLS handshake/session renegotiation
+ *
+ * NOTE: Calling this function is usually not required, as the implementation should
+ *        automatically trigger renegotiation when needed.
+ *
+ * \return true if handshake completed successfully or is in progress, false if handshake failed
  */
 PAL_API bool
 TLSSocket_performHandshake(TLSSocket self);
+
+/**
+ * \brief Perform TLS connection related housekeeping tasks, including renegotiation scheduling and timeout enforcement.
+ *
+ * Must be called periodically (e.g. every 100 ms) from the connection loop
+ * even when no application data is flowing, so that renegotiation is
+ * initiated and progressed without depending on TLSSocket_read/write calls.
+ *
+ * \return false when the TLS connection must be closed (renegotiation failed
+ *         or timed out), true otherwise.
+ */
+PAL_API bool
+TLSSocket_tick(TLSSocket self);
 
 /**
  * \brief Access the certificate used by the peer
