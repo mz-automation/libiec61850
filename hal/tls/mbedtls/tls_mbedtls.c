@@ -1259,7 +1259,7 @@ TLSConfiguration_addCACertificateFromFile(TLSConfiguration self, const char* fil
 }
 
 static void
-updatedCRL_internal(TLSConfiguration self)
+updateCRL(TLSConfiguration self)
 {
     self->crlUpdated = Hal_getMonotonicTimeInMs();
 
@@ -1287,18 +1287,6 @@ updatedCRL_internal(TLSConfiguration self)
     }
 }
 
-static void
-updatedCRL(TLSConfiguration self)
-{
-    if (self->configMutex)
-        Semaphore_wait(self->configMutex);
-
-    updatedCRL_internal(self);
-
-    if (self->configMutex)
-        Semaphore_post(self->configMutex);
-}
-
 bool
 TLSConfiguration_addCRL(TLSConfiguration self, uint8_t* crl, int crlLen)
 {
@@ -1313,7 +1301,7 @@ TLSConfiguration_addCRL(TLSConfiguration self, uint8_t* crl, int crlLen)
     }
     else
     {
-        updatedCRL_internal(self);
+        updateCRL(self);
     }
 
     if (self->configMutex)
@@ -1337,7 +1325,7 @@ TLSConfiguration_addCRLFromFile(TLSConfiguration self, const char* filename)
     }
     else
     {
-        updatedCRL_internal(self);
+        updateCRL(self);
     }
 
     if (self->configMutex)
