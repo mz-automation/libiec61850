@@ -33,8 +33,15 @@ typedef struct sSNTPClient* SNTPClient;
 
 typedef void (*SNTPClient_UserCallback)(void* parameter, bool isSynced);
 
+/**
+ * Create a new SNTP client instance.
+ *
+ * \warning This code is for testing purposes only. It is not intended for production use!
+ *
+ * \return A new SNTP client instance or NULL if the instance could not be created.
+ */
 LIB61850_API SNTPClient
-SNTPClient_create();
+SNTPClient_create(void);
 
 LIB61850_API void
 SNTPClient_setLocalAddress(SNTPClient self, const char* localAddress);

@@ -24,6 +24,7 @@
 #include "hal_thread.h"
 #include "libiec61850_platform_includes.h"
 #include "sntp_client.h"
+#include <string.h>
 #include <time.h>
 #include <errno.h>
 
@@ -66,9 +67,11 @@ struct sSNTPClient
 
     char* serverAddr;
     int serverPort;
+
+    Semaphore lock; /* mutex for thread-safe access to shared state */
 };
 
-msSinceEpoch
+static msSinceEpoch
 nsTimeToMsTime(nsSinceEpoch nsTime)
 {
     return nsTime / 1000000UL;
@@ -82,9 +85,17 @@ ntpTimeToNsTime(uint32_t coarse, uint32_t fine)
     if ((coarse == 0) && (fine == 0))
         return 0;
 
-    uint64_t nsTime = (coarse - UNIX_EPOCH_OFFSET) * 1000000000UL;
+    /* Use signed arithmetic to properly handle pre-1970 dates (coarse < UNIX_EPOCH_OFFSET) */
+    int64_t seconds = (int64_t)coarse - UNIX_EPOCH_OFFSET;
+    if (seconds < 0) {
+        if (SNTP_DEBUG)
+            printf("SNTP: pre-1970 timestamp not supported (coarse=%u)\n", coarse);
+        return 0;
+    }
 
-    uint64_t nsPart = fine * 1000000000UL;
+    uint64_t nsTime = (uint64_t)seconds * 1000000000UL;
+
+    uint64_t nsPart = (uint64_t)fine * 1000000000UL;
     nsPart = nsPart >> 32;
     nsTime += nsPart;
 
@@ -152,6 +163,14 @@ decodeUint32(uint8_t* buffer, int bufPos, uint32_t* value)
 static void
 parseResponseMessage(SNTPClient self, uint8_t* buffer, int bufSize)
 {
+    /* Minimum SNTP packet size is 48 bytes (header + 4 timestamps * 8 bytes each) */
+    if (bufSize < 48)
+    {
+        if (SNTP_DEBUG)
+            printf("SNTP: invalid packet size %d (expected >= 48)\n", bufSize);
+        return;
+    }
+
     self->lastReceivedMessage = Hal_getTimeInNs();
 
     int bufPos = 0;
@@ -161,7 +180,23 @@ parseResponseMessage(SNTPClient self, uint8_t* buffer, int bufSize)
     int8_t poll = (int8_t) buffer[bufPos++];
     int8_t precision = (int8_t) buffer[bufPos++];
 
-    int li = (header & 0xc0)>> 6;
+    /* Validate stratum (0-15) */
+    if (stratum < 0 || stratum > 15)
+    {
+        if (SNTP_DEBUG)
+            printf("SNTP: invalid stratum %d\n", stratum);
+        return;
+    }
+
+    /* Validate precision (typically -6 to 0) */
+    if (precision < -127 || precision > 0)
+    {
+        if (SNTP_DEBUG)
+            printf("SNTP: invalid precision %d\n", precision);
+        return;
+    }
+
+    int li = (header & 0xc0) >> 6;
 
     /* check for "clock-not-synchronized" */
     if (li == 3)
@@ -170,8 +205,6 @@ parseResponseMessage(SNTPClient self, uint8_t* buffer, int bufSize)
         if (SNTP_DEBUG)
             printf("WARNING: received clock-not-synchronized from server\n");
 
-        /* TODO call user callback? */
-
         return;
     }
 
@@ -179,7 +212,29 @@ parseResponseMessage(SNTPClient self, uint8_t* buffer, int bufSize)
 
     int mode = (header & 0x7);
 
-    /* TODO: expect mode 4 - server */
+    /* Validate SNTP version (3 or 4) */
+    if (version != 3 && version != 4)
+    {
+        if (SNTP_DEBUG)
+            printf("SNTP: unsupported version %d\n", version);
+        return;
+    }
+
+    /* Validate mode (expect 4 for server responses) */
+    if (mode != 4)
+    {
+        if (SNTP_DEBUG)
+            printf("SNTP: unexpected mode %d (expected 4 for server)\n", mode);
+        return;
+    }
+
+    /* Validate poll interval bounds (0-14 are typical) */
+    if (poll < 0 || poll > 14)
+    {
+        if (SNTP_DEBUG)
+            printf("SNTP: invalid poll interval %d\n", poll);
+        return;
+    }
 
     int timeoutInSeconds = 1 << poll;
 
@@ -232,12 +287,16 @@ parseResponseMessage(SNTPClient self, uint8_t* buffer, int bufSize)
             printf("SNTP: failed to set system clock!\n");
     }
 
+    Semaphore_wait(self->lock);
     self->clockSynced = true;
     self->outStandingRequest = false;
+    SNTPClient_UserCallback callback = self->userCallback;
+    void* callbackParam = self->userCallbackParameter;
+    Semaphore_post(self->lock);
 
-    if (self->userCallback)
+    if (callback)
     {
-        self->userCallback(self->userCallbackParameter, true);
+        callback(callbackParam, true);
     }
 
     if (SNTP_DEBUG)
@@ -304,8 +363,10 @@ sendRequestMessage(SNTPClient self, const char* serverAddr, int serverPort)
     if (SNTP_DEBUG)
         printf("SNTP: sent request to %s:%i\n", serverAddr, serverPort);
 
+    Semaphore_wait(self->lock);
     self->lastRequestTimestamp = nsTime;
     self->outStandingRequest = true;
+    Semaphore_post(self->lock);
 }
 
 SNTPClient
@@ -324,8 +385,25 @@ SNTPClient_create()
         }
         else
         {
+            self->lock = Semaphore_create(1); /* Binary semaphore (mutex) */
+            if (self->lock == NULL)
+            {
+                Socket_destroy((Socket)self->socket);
+                GLOBAL_FREEMEM(self);
+                return NULL;
+            }
+
             self->handleSet = Handleset_new();
+            if (self->handleSet == NULL)
+            {
+                Semaphore_destroy(self->lock);
+                Socket_destroy((Socket)self->socket);
+                GLOBAL_FREEMEM(self);
+                return NULL;
+            }
+
             Handleset_addSocket(self->handleSet, (Socket) self->socket);
+
             self->pollInterval = 30000000000UL; /* 30 s */
         }
     }
@@ -342,16 +420,29 @@ SNTPClient_getHandleSet(SNTPClient self)
 void
 SNTPClient_addServer(SNTPClient self, const char* serverAddr, int serverPort)
 {
-    if (self) {
+    if (self)
+    {
+        Semaphore_wait(self->lock);
+        if (self->serverAddr)
+        {
+            GLOBAL_FREEMEM(self->serverAddr);
+        }
         self->serverAddr = StringUtils_copyString(serverAddr);
         self->serverPort = serverPort;
+        Semaphore_post(self->lock);
     }
 }
 
 bool
 SNTPClient_isSynchronized(SNTPClient self)
 {
-    return self->clockSynced;
+    if (!self)
+        return false;
+
+    Semaphore_wait(self->lock);
+    bool synced = self->clockSynced;
+    Semaphore_post(self->lock);
+    return synced;
 }
 
 void
@@ -359,8 +450,10 @@ SNTPClient_setUserCallback(SNTPClient self, SNTPClient_UserCallback callback, vo
 {
     if (self)
     {
+        Semaphore_wait(self->lock);
         self->userCallback = callback;
         self->userCallbackParameter = parameter;
+        Semaphore_post(self->lock);
     }
 }
 
@@ -368,13 +461,28 @@ void
 SNTPClient_setPollInterval(SNTPClient self, uint32_t intervalInSeconds)
 {
     if (self)
-        self->pollInterval = intervalInSeconds * 1000000000UL;
+    {
+        Semaphore_wait(self->lock);
+        self->pollInterval = (uint64_t)intervalInSeconds * 1000000000UL;
+        Semaphore_post(self->lock);
+    }
 }
 
-void
+static void
 SNTPClient_tick(SNTPClient self)
 {
     nsSinceEpoch now = Hal_getTimeInNs();
+    bool needToSend = false;
+    char* serverAddr = NULL;
+    int serverPort = 0;
+    uint64_t pollInterval = 0;
+    nsSinceEpoch lastRequestTimestamp = 0;
+    nsSinceEpoch lastReceivedMessage = 0;
+    bool clockSynced = false;
+    SNTPClient_UserCallback callback = NULL;
+    void* callbackParam = NULL;
+
+    Semaphore_wait(self->lock);
 
     if (self->lastReceivedMessage > now)
         self->lastReceivedMessage = now;
@@ -382,34 +490,53 @@ SNTPClient_tick(SNTPClient self)
     if (self->lastRequestTimestamp > now)
         self->lastRequestTimestamp = now;
 
-    if (self->lastRequestTimestamp > 0)
+    lastReceivedMessage = self->lastReceivedMessage;
+    lastRequestTimestamp = self->lastRequestTimestamp;
+    clockSynced = self->clockSynced;
+    callback = self->userCallback;
+    callbackParam = self->userCallbackParameter;
+
+    if (self->serverAddr)
+    {
+        serverAddr = self->serverAddr;
+        serverPort = self->serverPort;
+        pollInterval = self->pollInterval;
+    }
+
+    Semaphore_post(self->lock);
+
+    if (lastRequestTimestamp > 0)
     {
         /* check for timeout */
-        if ((now - self->lastReceivedMessage) > 300000000000UL)
+        if ((now - lastReceivedMessage) > 300000000000UL)
         {
-            if (self->clockSynced)
+            if (clockSynced)
             {
+                Semaphore_wait(self->lock);
                 self->clockSynced = false;
+                Semaphore_post(self->lock);
                 printf("SNTP: request timeout\n");
 
-                if (self->userCallback)
+                if (callback)
                 {
-                    self->userCallback(self->userCallbackParameter, false);
+                    callback(callbackParam, false);
                 }
             }
         }
     }
 
-    if (self->serverAddr)
+    if (serverAddr && (now - lastRequestTimestamp) > pollInterval)
     {
-        if ((now - self->lastRequestTimestamp) > self->pollInterval)
-        {
-            sendRequestMessage(self, self->serverAddr, self->serverPort);
-        }
+        needToSend = true;
+    }
+
+    if (needToSend)
+    {
+        sendRequestMessage(self, serverAddr, serverPort);
     }
 }
 
-void
+static void
 SNTPClient_handleIncomingMessage(SNTPClient self)
 {
     char ipAddress[200];
@@ -422,7 +549,27 @@ SNTPClient_handleIncomingMessage(SNTPClient self)
         if (SNTP_DEBUG)
             printf("SNTP: received response from %s\n", ipAddress);
 
-        parseResponseMessage(self, buffer, rcvdBytes);
+        /* Validate source address if server is configured */
+        Semaphore_wait(self->lock);
+        bool addressValid = true;
+
+        if (self->serverAddr)
+        {
+            /* Check if the response comes from the expected server */
+            if (strcmp(ipAddress, self->serverAddr) != 0)
+            {
+                if (SNTP_DEBUG)
+                    printf("SNTP: ignoring response from unexpected source %s (expected %s)\n", ipAddress,
+                           self->serverAddr);
+                addressValid = false;
+            }
+        }
+
+        Semaphore_post(self->lock);
+
+        if (addressValid) {
+            parseResponseMessage(self, buffer, rcvdBytes);
+        }
     }
     else if (rcvdBytes == -1)
     {
@@ -439,13 +586,25 @@ handleThread(void* parameter)
 {
     SNTPClient self = (SNTPClient) parameter;
 
+    Semaphore_wait(self->lock);
     self->running = true;
+    Semaphore_post(self->lock);
 
-    while (self->running) {
+    while (1)
+    {
+        bool shouldRun;
+
+        Semaphore_wait(self->lock);
+        shouldRun = self->running;
+        Semaphore_post(self->lock);
+
+        if (!shouldRun)
+            break;
 
         SNTPClient_tick(self);
 
-        if (Handleset_waitReady(self->handleSet, 1000) > 0) {
+        if (Handleset_waitReady(self->handleSet, 1000) > 0)
+        {
             SNTPClient_handleIncomingMessage(self);
         }
     }
@@ -458,9 +617,9 @@ SNTPClient_start(SNTPClient self)
 {
     if (self)
     {
-        int sntpPoirt = SNTP_DEFAULT_PORT;
+        int sntpPort = 0; /* Use ephemeral port instead of privileged port 123 */
 
-        if (UdpSocket_bind(self->socket, "0.0.0.0", SNTP_DEFAULT_PORT))
+        if (UdpSocket_bind(self->socket, "0.0.0.0", sntpPort))
         {
             printf("Start NTP thread\n");
 
@@ -472,7 +631,7 @@ SNTPClient_start(SNTPClient self)
         else
         {
             if (SNTP_DEBUG)
-                printf("SNTP: Failed to bind to port %i\n", sntpPoirt);
+                printf("SNTP: Failed to bind to port %i\n", sntpPort);
         }
     }
 }
@@ -482,9 +641,13 @@ SNTPClient_stop(SNTPClient self)
 {
     if (self->thread)
     {
+        Semaphore_wait(self->lock);
         self->running = false;
+        Semaphore_post(self->lock);
         Thread_destroy(self->thread);
+        Semaphore_wait(self->lock);
         self->thread = NULL;
+        Semaphore_post(self->lock);
     }
 }
 
@@ -495,11 +658,20 @@ SNTPClient_destroy(SNTPClient self)
     {
         SNTPClient_stop(self);
 
+        Semaphore_wait(self->lock);
         if (self->serverAddr)
             GLOBAL_FREEMEM(self->serverAddr);
+        self->serverAddr = NULL;
+        Semaphore_post(self->lock);
 
         if (self->socket)
             Socket_destroy((Socket) self->socket);
+
+        if (self->handleSet)
+            Handleset_destroy(self->handleSet);
+
+        if (self->lock)
+            Semaphore_destroy(self->lock);
 
         GLOBAL_FREEMEM(self);
     }
