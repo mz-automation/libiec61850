@@ -2112,6 +2112,8 @@ IedConnection_getFileDirectory(IedConnection self, IedClientError* error, const 
 
     do
     {
+        LinkedList lastElement = LinkedList_getLastElement(fileNames);
+
         moreFollows =
                 MmsConnection_getFileDirectory(self->connection, &mmsError, directoryName, continueAfter,
                         mmsFileDirectoryHandler, fileNames);
@@ -2126,10 +2128,25 @@ IedConnection_getFileDirectory(IedConnection self, IedClientError* error, const 
 
         if (moreFollows)
         {
-            FileDirectoryEntry lastDirectoryEntry = (FileDirectoryEntry)
-                    LinkedList_getData(LinkedList_getLastElement(fileNames));
+            if (lastElement == LinkedList_getLastElement(fileNames))
+            {
+                /* no additional filenames received */
 
-            continueAfter = lastDirectoryEntry->fileName;
+                if (DEBUG_IED_CLIENT)
+                    printf("IED_CLIENT: error - moreFollows is true but no file names received!\n");
+
+                *error = IED_ERROR_UNKNOWN;
+                LinkedList_destroyDeep(fileNames, (LinkedListValueDeleteFunction) FileDirectoryEntry_destroy);
+
+                return NULL;
+            }
+            else
+            {
+                FileDirectoryEntry lastDirectoryEntry = (FileDirectoryEntry)
+                        LinkedList_getData(LinkedList_getLastElement(fileNames));
+
+                continueAfter = lastDirectoryEntry->fileName;
+            }
         }
 
     } while (moreFollows == true);
