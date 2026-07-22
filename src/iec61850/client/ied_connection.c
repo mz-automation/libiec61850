@@ -418,6 +418,9 @@ ClientDataSet_getDataSetSize(ClientDataSet self)
 bool
 iedConnection_doesControlObjectMatch(const char* objRef, const char* cntrlObj)
 {
+    if ((objRef == NULL) || (cntrlObj == NULL))
+        return false;
+
     int i = 0;
 
     while (objRef[i] != '/')
@@ -489,6 +492,9 @@ iedConnection_doesControlObjectMatch(const char* objRef, const char* cntrlObj)
 static bool
 doesReportMatchControlObject(const char* domainName, const char* itemName, const char* objectRef)
 {
+    if (domainName == NULL || itemName == NULL || objectRef == NULL)
+        return false;
+
     int i = 0;
 
     while (domainName[i] != 0)
@@ -589,6 +595,16 @@ handleLastApplErrorMessage(IedConnection self, MmsValue* lastApplError)
     /* MmsValue* origin = MmsValue_getElement(lastApplError, 2); */
     MmsValue* ctlNum = MmsValue_getElement(lastApplError, 3);
     MmsValue* addCause = MmsValue_getElement(lastApplError, 4);
+
+    if (MmsValue_getType(cntrlObj) != MMS_VISIBLE_STRING || MmsValue_getType(error) != MMS_INTEGER || MmsValue_getType(ctlNum) != MMS_UNSIGNED
+        || MmsValue_getType(addCause) != MMS_INTEGER)
+    {
+        if (DEBUG_IED_CLIENT)
+            printf("IED_CLIENT: LastApplError has wrong type!\n");
+
+        return;
+    }
+
     if (DEBUG_IED_CLIENT)
         printf("IED_CLIENT:  CntrlObj: %s\n", MmsValue_toString(cntrlObj));
 
