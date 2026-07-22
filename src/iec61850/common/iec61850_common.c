@@ -63,21 +63,22 @@ Quality_unsetFlag(Quality* self, int flag)
     *self = *self & (~flag);
 }
 
-
 Quality
 Quality_fromMmsValue(const MmsValue* mmsValue)
 {
-    return (Quality) MmsValue_getBitStringAsInteger(mmsValue);
+    return (Quality)MmsValue_getBitStringAsInteger(mmsValue);
 }
 
 MmsValue*
 Quality_toMmsValue(Quality* self, MmsValue* mmsValue)
 {
-    if (mmsValue == NULL) {
+    if (mmsValue == NULL)
+    {
         mmsValue = MmsValue_newBitString(13);
     }
 
-    if (mmsValue) {
+    if (mmsValue)
+    {
         MmsValue_setBitStringFromInteger(mmsValue, *self);
     }
 
@@ -87,16 +88,18 @@ Quality_toMmsValue(Quality* self, MmsValue* mmsValue)
 Dbpos
 Dbpos_fromMmsValue(const MmsValue* mmsValue)
 {
-    return (Dbpos) MmsValue_getBitStringAsIntegerBigEndian(mmsValue);
+    return (Dbpos)MmsValue_getBitStringAsIntegerBigEndian(mmsValue);
 }
 
 MmsValue*
 Dbpos_toMmsValue(MmsValue* mmsValue, Dbpos dbpos)
 {
-    if (mmsValue == NULL) {
+    if (mmsValue == NULL)
+    {
         mmsValue = MmsValue_newBitString(2);
     }
-    else {
+    else
+    {
         if (MmsValue_getType(mmsValue) != MMS_BIT_STRING)
             return NULL;
 
@@ -104,8 +107,8 @@ Dbpos_toMmsValue(MmsValue* mmsValue, Dbpos dbpos)
             return NULL;
     }
 
-    assert((int) dbpos >= 0);
-    assert((int) dbpos < 4);
+    assert((int)dbpos >= 0);
+    assert((int)dbpos < 4);
 
     MmsValue_setBitStringFromIntegerBigEndian(mmsValue, dbpos);
 
@@ -113,8 +116,10 @@ Dbpos_toMmsValue(MmsValue* mmsValue, Dbpos dbpos)
 }
 
 char*
-FunctionalConstraint_toString(FunctionalConstraint fc) {
-    switch (fc) {
+FunctionalConstraint_toString(FunctionalConstraint fc)
+{
+    switch (fc)
+    {
     case IEC61850_FC_ST:
         return "ST";
     case IEC61850_FC_MX:
@@ -161,7 +166,8 @@ FunctionalConstraint_toString(FunctionalConstraint fc) {
 FunctionalConstraint
 FunctionalConstraint_fromString(const char* fcString)
 {
-    if (fcString[0] == 'S') {
+    if (fcString[0] == 'S')
+    {
         if (fcString[1] == 'T')
             return IEC61850_FC_ST;
         if (fcString[1] == 'P')
@@ -178,7 +184,8 @@ FunctionalConstraint_fromString(const char* fcString)
         return IEC61850_FC_NONE;
     }
 
-    if (fcString[0] == 'M') {
+    if (fcString[0] == 'M')
+    {
         if (fcString[1] == 'X')
             return IEC61850_FC_MX;
         if (fcString[1] == 'S')
@@ -186,7 +193,8 @@ FunctionalConstraint_fromString(const char* fcString)
         return IEC61850_FC_NONE;
     }
 
-    if (fcString[0] == 'C') {
+    if (fcString[0] == 'C')
+    {
         if (fcString[1] == 'F')
             return IEC61850_FC_CF;
         if (fcString[1] == 'O')
@@ -194,19 +202,22 @@ FunctionalConstraint_fromString(const char* fcString)
         return IEC61850_FC_NONE;
     }
 
-    if (fcString[0] == 'D') {
+    if (fcString[0] == 'D')
+    {
         if (fcString[1] == 'C')
             return IEC61850_FC_DC;
         return IEC61850_FC_NONE;
     }
 
-    if (fcString[0] == 'O') {
+    if (fcString[0] == 'O')
+    {
         if (fcString[1] == 'R')
             return IEC61850_FC_OR;
         return IEC61850_FC_NONE;
     }
 
-    if (fcString[0] == 'B') {
+    if (fcString[0] == 'B')
+    {
         if (fcString[1] == 'L')
             return IEC61850_FC_BL;
         if (fcString[1] == 'R')
@@ -214,31 +225,36 @@ FunctionalConstraint_fromString(const char* fcString)
         return IEC61850_FC_NONE;
     }
 
-    if (fcString[0] == 'E') {
+    if (fcString[0] == 'E')
+    {
         if (fcString[1] == 'X')
             return IEC61850_FC_EX;
         return IEC61850_FC_NONE;
     }
 
-    if (fcString[0] == 'U') {
+    if (fcString[0] == 'U')
+    {
         if (fcString[1] == 'S')
             return IEC61850_FC_US;
         return IEC61850_FC_NONE;
     }
 
-    if (fcString[0] == 'R') {
+    if (fcString[0] == 'R')
+    {
         if (fcString[1] == 'P')
             return IEC61850_FC_RP;
         return IEC61850_FC_NONE;
     }
 
-    if (fcString[0] == 'L') {
+    if (fcString[0] == 'L')
+    {
         if (fcString[1] == 'G')
             return IEC61850_FC_LG;
         return IEC61850_FC_NONE;
     }
 
-    if (fcString[0] == 'G') {
+    if (fcString[0] == 'G')
+    {
         if (fcString[1] == 'O')
             return IEC61850_FC_GO;
         return IEC61850_FC_NONE;
@@ -250,7 +266,7 @@ FunctionalConstraint_fromString(const char* fcString)
 Timestamp*
 Timestamp_create()
 {
-    Timestamp* self = (Timestamp*) GLOBAL_CALLOC(1, sizeof(Timestamp));
+    Timestamp* self = (Timestamp*)GLOBAL_CALLOC(1, sizeof(Timestamp));
 
     return self;
 }
@@ -260,7 +276,8 @@ Timestamp_createFromByteArray(const uint8_t* byteArray)
 {
     Timestamp* self = Timestamp_create();
 
-    if (self) {
+    if (self)
+    {
         int i;
 
         for (i = 0; i < 8; i++)
@@ -340,7 +357,7 @@ Timestamp_setClockNotSynchronized(Timestamp* self, bool value)
 int
 Timestamp_getSubsecondPrecision(Timestamp* self)
 {
-    return (int) (self->val[7] & 0x1f);
+    return (int)(self->val[7] & 0x1f);
 }
 
 void
@@ -355,7 +372,7 @@ Timestamp_setSubsecondPrecision(Timestamp* self, int subsecondPrecision)
 void
 Timestamp_setTimeInSeconds(Timestamp* self, uint32_t secondsSinceEpoch)
 {
-    uint8_t* valueArray =  self->val;
+    uint8_t* valueArray = self->val;
 
     valueArray[0] = (secondsSinceEpoch / 0x1000000 & 0xff);
     valueArray[1] = (secondsSinceEpoch / 0x10000 & 0xff);
@@ -372,7 +389,7 @@ Timestamp_setTimeInSeconds(Timestamp* self, uint32_t secondsSinceEpoch)
 void
 Timestamp_setTimeInMilliseconds(Timestamp* self, msSinceEpoch millisSinceEpoch)
 {
-    uint32_t timeval32 = (uint32_t) (millisSinceEpoch / 1000LL);
+    uint32_t timeval32 = (uint32_t)(millisSinceEpoch / 1000LL);
 
     uint8_t* valueArray = self->val;
 
@@ -409,7 +426,7 @@ Timestamp_setTimeInNanoseconds(Timestamp* self, nsSinceEpoch nsTime)
     remainder = remainder << 24;
     remainder = remainder / 1000000000UL;
 
-    uint32_t fractionOfSecond = (uint32_t) remainder;
+    uint32_t fractionOfSecond = (uint32_t)remainder;
 
     /* encode fraction of second */
     valueArray[4] = ((fractionOfSecond >> 16) & 0xff);
@@ -483,7 +500,7 @@ Timestamp_getTimeInMs(Timestamp* self)
 
     uint64_t msVal = (timeval32 * 1000LL) + remainder;
 
-    return (uint64_t) msVal;
+    return (uint64_t)msVal;
 }
 
 nsSinceEpoch
@@ -508,7 +525,7 @@ Timestamp_getTimeInNs(Timestamp* self)
     nsVal = nsVal * 1000000000UL;
     nsVal = nsVal >> 24;
 
-    uint64_t timeval64 = (uint64_t) timeval32 * 1000000000ULL + nsVal;
+    uint64_t timeval64 = (uint64_t)timeval32 * 1000000000ULL + nsVal;
 
     return timeval64;
 }
@@ -537,18 +554,18 @@ Timestamp_toMmsValue(Timestamp* self, MmsValue* mmsValue)
 Timestamp*
 Timestamp_fromMmsValue(Timestamp* self, MmsValue* mmsValue)
 {
-    if (mmsValue->type == MMS_UTC_TIME) {
-
+    if (mmsValue->type == MMS_UTC_TIME)
+    {
         if (self == NULL)
             self = Timestamp_create();
 
-        if (self) {
+        if (self)
             memcpy(self->val, mmsValue->value.utcTime, 8);
-        }
 
         return self;
     }
-    else {
+    else
+    {
         return NULL;
     }
 }
@@ -565,8 +582,10 @@ MmsMapping_getMmsDomainFromObjectReference(const char* objectReference, char* bu
 
     /* check if LD name is present */
     int i;
-    for (i = 0; i < objRefLength; i++) {
-        if (objectReference[i] == '/') {
+    for (i = 0; i < objRefLength; i++)
+    {
+        if (objectReference[i] == '/')
+        {
             break;
         }
     }
@@ -579,14 +598,13 @@ MmsMapping_getMmsDomainFromObjectReference(const char* objectReference, char* bu
         goto exit_function;
 
     if (buffer == NULL)
-        domainName = (char*) GLOBAL_MALLOC(i + 1);
+        domainName = (char*)GLOBAL_MALLOC(i + 1);
     else
         domainName = buffer;
 
     int j;
-    for (j = 0; j < i; j++) {
+    for (j = 0; j < i; j++)
         domainName[j] = objectReference[j];
-    }
 
     domainName[j] = 0;
 
@@ -595,8 +613,7 @@ exit_function:
 }
 
 char*
-MmsMapping_createMmsVariableNameFromObjectReference(const char* objectReference,
-        FunctionalConstraint fc, char* buffer)
+MmsMapping_createMmsVariableNameFromObjectReference(const char* objectReference, FunctionalConstraint fc, char* buffer)
 {
     int objRefLength = strlen(objectReference);
 
@@ -606,8 +623,10 @@ MmsMapping_createMmsVariableNameFromObjectReference(const char* objectReference,
 
     /* check if LD name is present */
     int i;
-    for (i = 0; i < objRefLength; i++) {
-        if (objectReference[i] == '/') {
+    for (i = 0; i < objRefLength; i++)
+    {
+        if (objectReference[i] == '/')
+        {
             break;
         }
     }
@@ -621,12 +640,12 @@ MmsMapping_createMmsVariableNameFromObjectReference(const char* objectReference,
     else
         i++;
 
-    if (fc == IEC61850_FC_NONE) {
-
+    if (fc == IEC61850_FC_NONE)
+    {
         char* mmsVariableName;
 
         if (buffer == NULL)
-            mmsVariableName = (char*) GLOBAL_MALLOC(65);
+            mmsVariableName = (char*)GLOBAL_MALLOC(65);
         else
             mmsVariableName = buffer;
 
@@ -649,7 +668,7 @@ MmsMapping_createMmsVariableNameFromObjectReference(const char* objectReference,
     char* mmsVariableName;
 
     if (buffer == NULL)
-        mmsVariableName = (char*) GLOBAL_MALLOC(namePartLength + 5);
+        mmsVariableName = (char*)GLOBAL_MALLOC(namePartLength + 5);
     else
         mmsVariableName = buffer;
 
@@ -658,13 +677,15 @@ MmsMapping_createMmsVariableNameFromObjectReference(const char* objectReference,
 
     bool fcAdded = false;
 
-    while (sourceIndex < objRefLength) {
-
+    while (sourceIndex < objRefLength)
+    {
         if (objectReference[sourceIndex] != '.')
             mmsVariableName[destIndex++] = objectReference[sourceIndex++];
-        else {
+        else
+        {
 
-            if (!fcAdded) {
+            if (!fcAdded)
+            {
                 mmsVariableName[destIndex++] = '$';
                 mmsVariableName[destIndex++] = fcString[0];
                 mmsVariableName[destIndex++] = fcString[1];
@@ -679,7 +700,8 @@ MmsMapping_createMmsVariableNameFromObjectReference(const char* objectReference,
         }
     }
 
-    if (!fcAdded) {
+    if (!fcAdded)
+    {
         mmsVariableName[destIndex++] = '$';
         mmsVariableName[destIndex++] = fcString[0];
         mmsVariableName[destIndex++] = fcString[1];
@@ -719,9 +741,9 @@ MmsMapping_ObjectReferenceToVariableAccessSpec(char* objectReference)
     FunctionalConstraint fc = FunctionalConstraint_fromString(fcStart + 1);
 
     MmsVariableAccessSpecification* accessSpec =
-            (MmsVariableAccessSpecification*) GLOBAL_CALLOC(1, sizeof(MmsVariableAccessSpecification));
+        (MmsVariableAccessSpecification*)GLOBAL_CALLOC(1, sizeof(MmsVariableAccessSpecification));
 
-    accessSpec->domainId = StringUtils_createStringFromBuffer((uint8_t*) objectReference, domainIdLen);
+    accessSpec->domainId = StringUtils_createStringFromBuffer((uint8_t*)objectReference, domainIdLen);
 
     char* indexBrace = strchr(domainIdEnd, '(');
 
@@ -734,7 +756,8 @@ MmsMapping_ObjectReferenceToVariableAccessSpec(char* objectReference)
 
     accessSpec->arrayIndex = -1; /* -1 --> not present */
 
-    if (itemIdEnd != NULL) {
+    if (itemIdEnd != NULL)
+    {
         int itemIdLen = itemIdEnd - domainIdEnd - 1;
 
         char itemIdStr[129];
@@ -744,8 +767,8 @@ MmsMapping_ObjectReferenceToVariableAccessSpec(char* objectReference)
 
         accessSpec->itemId = MmsMapping_createMmsVariableNameFromObjectReference(itemIdStr, fc, NULL);
 
-        if (indexBrace != NULL) {
-
+        if (indexBrace != NULL)
+        {
             char* indexStart = itemIdEnd + 1;
 
             char* indexEnd = strchr(indexStart, ')');
@@ -754,12 +777,14 @@ MmsMapping_ObjectReferenceToVariableAccessSpec(char* objectReference)
 
             int index = StringUtils_digitsToInt(indexStart, indexLen);
 
-            accessSpec->arrayIndex = (int32_t) index;
+            accessSpec->arrayIndex = (int32_t)index;
 
             int componentNameLen = objRefLen - ((indexEnd + 2) - objectReference) - 4;
 
-            if (componentNameLen > 0) {
-                accessSpec->componentName = StringUtils_createStringFromBuffer((uint8_t*) (indexEnd + 2), componentNameLen);
+            if (componentNameLen > 0)
+            {
+                accessSpec->componentName =
+                    StringUtils_createStringFromBuffer((uint8_t*)(indexEnd + 2), componentNameLen);
                 StringUtils_replace(accessSpec->componentName, '.', '$');
             }
         }
@@ -773,7 +798,8 @@ getNumberOfDigits(int value)
 {
     int numberOfDigits = 1;
 
-    while (value > 9) {
+    while (value > 9)
+    {
         numberOfDigits++;
         value /= 10;
     }
@@ -785,14 +811,19 @@ char*
 MmsMapping_varAccessSpecToObjectReference(MmsVariableAccessSpecification* varAccessSpec)
 {
     char* domainId = varAccessSpec->domainId;
-
     int domainIdLen = strlen(domainId);
 
     char* itemId = varAccessSpec->itemId;
+    int itemIdLen = strlen(itemId);
 
     char* separator = strchr(itemId, '$');
 
-    int itemIdLen = strlen(itemId);
+    /* expected format: <name>$<FC><FC>$... */
+    if ((separator == NULL) || ((separator - itemId) >= itemIdLen) || ((separator + 3) >= (itemId + itemIdLen)) ||
+        (separator[1] == '\0') || (separator[2] == '\0') || (separator[3] != '$'))
+    {
+        return NULL;
+    }
 
     int arrayIndexLen = 0;
 
@@ -804,16 +835,17 @@ MmsMapping_varAccessSpecToObjectReference(MmsVariableAccessSpecification* varAcc
     if (varAccessSpec->arrayIndex > -1)
         arrayIndexLen = 2 + getNumberOfDigits(varAccessSpec->arrayIndex);
 
-    int newStringLen = (domainIdLen + 1) + (itemIdLen - 2) + arrayIndexLen + 4 /* for FC */+ componentPartLen + 1;
+    int newStringLen = (domainIdLen + 1) + (itemIdLen - 2) + arrayIndexLen + 4 /* for FC */ + componentPartLen + 1;
 
-    char* newString = (char*) GLOBAL_MALLOC(newStringLen);
+    char* newString = (char*)GLOBAL_MALLOC(newStringLen);
 
     char* targetPos = newString;
 
     /* Copy domain id part */
     char* currentPos = domainId;
 
-    while (currentPos < (domainId + domainIdLen)) {
+    while (currentPos < (domainId + domainIdLen))
+    {
         *targetPos = *currentPos;
         targetPos++;
         currentPos++;
@@ -825,7 +857,8 @@ MmsMapping_varAccessSpecToObjectReference(MmsVariableAccessSpecification* varAcc
     /* Copy item id parts */
     currentPos = itemId;
 
-    while (currentPos < separator) {
+    while (currentPos < separator)
+    {
         *targetPos = *currentPos;
         targetPos++;
         currentPos++;
@@ -836,7 +869,8 @@ MmsMapping_varAccessSpecToObjectReference(MmsVariableAccessSpecification* varAcc
 
     currentPos = separator + 4;
 
-    while (currentPos < (itemId + itemIdLen)) {
+    while (currentPos < (itemId + itemIdLen))
+    {
         if (*currentPos == '$')
             *targetPos = '.';
         else
@@ -847,18 +881,21 @@ MmsMapping_varAccessSpecToObjectReference(MmsVariableAccessSpecification* varAcc
     }
 
     /* Add array index part */
-    if (varAccessSpec->arrayIndex > -1) {
+    if (varAccessSpec->arrayIndex > -1)
+    {
         sprintf(targetPos, "(%i)", varAccessSpec->arrayIndex);
         targetPos += arrayIndexLen;
     }
 
     /* Add component part */
-    if (varAccessSpec->componentName != NULL) {
+    if (varAccessSpec->componentName != NULL)
+    {
         *targetPos = '.';
         targetPos++;
 
         int i;
-        for (i = 0; i < componentPartLen; i++) {
+        for (i = 0; i < componentPartLen; i++)
+        {
             if (varAccessSpec->componentName[i] == '$')
                 *targetPos = '.';
             else
