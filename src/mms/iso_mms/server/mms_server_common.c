@@ -329,6 +329,10 @@ mmsServer_getComponentOfArrayElement(AlternateAccess_t* alternateAccess, MmsVari
         else
             goto exit_function;
 
+        /* array element type must be structured */
+        if (structSpec->type != MMS_STRUCTURE)
+            goto exit_function;
+
         int i;
         for (i = 0; i < structSpec->typeSpec.structure.elementCount; i++)
         {
