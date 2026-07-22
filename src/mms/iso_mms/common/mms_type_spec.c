@@ -203,19 +203,17 @@ MmsVariableSpecification_getStructureElements(MmsVariableSpecification* self)
 MmsVariableSpecification*
 MmsVariableSpecification_getNamedVariableRecursive(MmsVariableSpecification* variable, const char* nameId)
 {
-    if (variable->type == MMS_ARRAY) {
+    if (variable->type == MMS_ARRAY)
         return MmsVariableSpecification_getNamedVariableRecursive(variable->typeSpec.array.elementTypeSpec, nameId);
-    }
 
     const char* separator = strchr(nameId, '$');
-    int i;
 
     if (separator == NULL)
     {
-        i = 0;
-
         if (variable->type == MMS_STRUCTURE)
         {
+            int i = 0;
+
             for (i = 0; i < variable->typeSpec.structure.elementCount; i++)
             {
                 if (strcmp(variable->typeSpec.structure.elements[i]->name, nameId) == 0) {
@@ -229,34 +227,38 @@ MmsVariableSpecification_getNamedVariableRecursive(MmsVariableSpecification* var
     else
     {
         MmsVariableSpecification* namedVariable = NULL;
-        i = 0;
 
-        for (i = 0; i < variable->typeSpec.structure.elementCount; i++)
+        if (variable->type == MMS_STRUCTURE)
         {
-            if (strlen(variable->typeSpec.structure.elements[i]->name) == (unsigned) (separator - nameId))
+            int i = 0;
+
+            for (i = 0; i < variable->typeSpec.structure.elementCount; i++)
             {
-                if (strncmp(variable->typeSpec.structure.elements[i]->name, nameId, separator - nameId) == 0)
+                if (strlen(variable->typeSpec.structure.elements[i]->name) == (unsigned) (separator - nameId))
                 {
-                    namedVariable = variable->typeSpec.structure.elements[i];
-                    break;
+                    if (strncmp(variable->typeSpec.structure.elements[i]->name, nameId, separator - nameId) == 0)
+                    {
+                        namedVariable = variable->typeSpec.structure.elements[i];
+                        break;
+                    }
                 }
             }
-        }
 
-        if (namedVariable != NULL)
-        {
-            if (namedVariable->type == MMS_STRUCTURE)
+            if (namedVariable != NULL)
             {
-                namedVariable = MmsVariableSpecification_getNamedVariableRecursive(namedVariable, separator + 1);
-            }
-            else if (namedVariable->type == MMS_ARRAY)
-            {
-                namedVariable = namedVariable->typeSpec.array.elementTypeSpec;
+                if (namedVariable->type == MMS_STRUCTURE)
+                {
+                    namedVariable = MmsVariableSpecification_getNamedVariableRecursive(namedVariable, separator + 1);
+                }
+                else if (namedVariable->type == MMS_ARRAY)
+                {
+                    namedVariable = namedVariable->typeSpec.array.elementTypeSpec;
 
-                namedVariable = MmsVariableSpecification_getNamedVariableRecursive(namedVariable, separator + 1);
+                    namedVariable = MmsVariableSpecification_getNamedVariableRecursive(namedVariable, separator + 1);
+                }
+                else /* ERROR: request for a child element of a simple (leaf-node) variable */
+                    return NULL;
             }
-            else /* ERROR: request for a child element of a simple (leaf-node) variable */
-                return NULL;
         }
 
         return namedVariable;
