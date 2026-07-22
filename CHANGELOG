@@ -1,16 +1,52 @@
-Unreleased
----------
+Changes to version 1.6.2
+------------------------
 
 New features and improvements:
 
-
 - TLS: integrations for mbedtls 2.28 and 3.6 are improved to be able to create more standard compliant events
 - TLS: IedServer and IedConnection now support to update the TLS configuration while running (the new config applies only to new connections)
+- TLS: merged latest TLS improvements from lib60870
 - removed function IsoConnectionParameters_setTlsConfiguration as TLSConfiguration is no longer stored in IsoConnectionParameters
 - Added optional test-only instrumentation build option `LIB61850_ENABLE_TEST_API` (OFF by default). When enabled exports `MmsConnection_setFileReadArtificialDelay` (marked with `LIB61850_TEST_API`) to inject artificial delays before MMS file read responses for deterministic ObtainFile request timeout testing. Production builds remain unaffected when disabled.
+- SV subscriber: added API function SVReceiver_handleL2Message to feed raw Ethernet frames directly to the library with using the Ethernet HAL
+- IED server: allow write access to FCD with global write access handler (LIB61850-531)
+- IedServer: Publish GOOSE data immediately instead of waiting for the application calling IedServer_unlockDataModel
+- IedServer: added functions IedServer_enableGoosePublishing/IedServer_stopGoosePublishing allow GOOSE publisher to be used without starting MMS server (LIB61850-542)
+- Added .NET dynamic server example that shows how to use the library without static model and config file
 
 Bug and Vulnerability fixes:
 
+- MMS server: fixed - NULL pointer derefence when the client tries to write into an array element component of an array of basic/lead element type (LIB61850-581)(GHSA-2mcv-r97v-47h5)
+- fixed - NULL pointer dereference in MmsVariableSpecification_getNamedVariableRecursive with basic array and structured sub access path (LIB61850-580)(GHSA-jwf2-xfgw-mqc2)
+- IED connection: fixed - NULL pointer dereference in IedConnection_getFileDirectory when server returns moreFollows=true with no directory entries (LIB61850-579)(GHSA-jgvw-86xw-hxc2)
+- IED connection: fixed - potential NULL pointer derefence when a server sends a malformed LastApplError message(LIB61850-578)(GHSA-v49h-g2wp-wvph)
+- TLS: fixed - TLSConfiguration_addCiphersuite overwrites first ciphersuite when list is full (LIB61850-565)
+- MMS server: fixed - Update URCB that used an association specific dataset of another connection can cause heap-use-after-free (LIB61850-577)
+- MMS server: fixed - empty alternate access in read/write services can cause NULL pointer dereference (LIB61850-572)
+- MMS server: fixed - write request with component alternate access can overflow the stack allocated nameIdStr variable (LIB61850-566)
+- MMS server: fixed - possible infinite loop in ACSE parseUserInformation when parsing malformed AARE PDU (LIB61850-562)(GHSA-f7xm-q62q-22cx)
+- MMS server: fixed - oversized RptID written to RCB can trigger invalid free when reports are sent later (LIB61850-561)(GHSA-7qg8-hm25-rv5v)
+- MMS server: fixed - potential crash in access control check handler for association and vmd specific data sets (LIB61850-560)(GHSA-7v2x-39mw-2979)
+- MMS server: fixed - server-side double free MMS ObtainFile service due to reuse of stale file handle (LIB61850-558)
+- MMS server: fixed - MMS file service initialPosition is accepted without validation against file size (LIB61850-557)
+- ACSE: fixed wrong message bounds when calling parseAarqPdu and parseAarePdu
+- SV subscriber: fixed some minor OOB read problems (LIB61850-576)
+- SV subscriber: fixed - null terminator for svId and datSet overwrites tag and can cause OOB write (LIB61850-563)
+- SV subscriber: fixed missing length validation of some ASDU elements that can cause OOB reads when these fields are later used by the application (LIB61850-574)
+- R-Session: fixed - configured payload buffer sizes > 65000 byte (which is the default) can cause OOB writes when encryption/authentication is enabled (LIB61850-575)
+- R-Session: added checks to prevent wrap-around of payloadEnd field when the message contains a very large payload length field (LIB61850-564)
+- R-Session: fixed bug in signature verification
+- R-Session: fixed - if user configures an unimplemented signature algorithm the signature check is skipped and no message authentication is done (LIB61850-567)
+- R-session: adding additional length checks when parsing v1 and v2 messages (LIB61850-573)
+- R-session: fixed - missing length validations when parsing v1 and v2 session protocol messages (LIB61850-573)
+- R-session: for protocol version 1 reject when encryption is enabled in the message
+- R-session: add guard to prevent sending messages that exceed the configured buffer size
+- ISO presentation: fixed - missing length field validations that can cause OOB reads (LIB61850-568)
+- ISO session: fixed wrong buffer position validation checks that can cause OOB reads (LIB61850-568)
+- COTP: added NULL pointer and parameter size plausibility check (LIB61850-568)
+- COTP: fixed - potential OOB in parseOptions called from CR/CR parsing code (LIB61850-568)
+- BerDecoder: avoid integer and shift operation overflows
+- fixed - unbounded recursion in GOOSE subscriber parseAllDataUnknownValue can cause a stack overflow (LIB61850-559)
 - fixed - memory leak in RSessionCrypto_createRandomData
 - Fixed boolean value handling in Java and .NET Dynamic Model Generators (I6PLLCV-183):
   * Java DynamicModelGenerator: Added missing else clause to output '=0' for false boolean values
@@ -20,10 +56,6 @@ Bug and Vulnerability fixes:
 - changed server side and GOOSE pub/sub timeout handling from real time clock to use monotonic clock (LIB61850-535)
 - IedServer: added support for request timeout configuration for obtain file service (LIB61850-534)
 - IedServer: fixed IedServer_updateAttributeValue to avoid that boolean data updates trigger two dupd reports (LIB61850-532)
-- IED server: allow write access to FCD with global write access handler (LIB61850-531)
-- IedServer: Publish GOOSE data immediately instead of waiting for the application calling IedServer_unlockDataModel
-- IedServer: added functions IedServer_enableGoosePublishing/IedServer_stopGoosePublishing allow GOOSE publisher to be used without starting MMS server (LIB61850-542)
-- Added .NET dynamic server example that shows how to use the library without static model and config file
 - Fixed bug in loading the values of DataTypeTemplates in Dynamic Model Generator
 
 
