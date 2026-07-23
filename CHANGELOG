@@ -16,6 +16,7 @@ New features and improvements:
 
 Bug and Vulnerability fixes:
 
+- MMS connection: fixed - missing checks in MmsMapping_varAccessSpecToObjectReference can cause OOB reads (LIB61850-582)(#599)
 - MMS server: fixed - NULL pointer derefence when the client tries to write into an array element component of an array of basic/lead element type (LIB61850-581)(GHSA-2mcv-r97v-47h5)
 - fixed - NULL pointer dereference in MmsVariableSpecification_getNamedVariableRecursive with basic array and structured sub access path (LIB61850-580)(GHSA-jwf2-xfgw-mqc2)
 - IED connection: fixed - NULL pointer dereference in IedConnection_getFileDirectory when server returns moreFollows=true with no directory entries (LIB61850-579)(GHSA-jgvw-86xw-hxc2)
