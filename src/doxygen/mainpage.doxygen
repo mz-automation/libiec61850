@@ -2,54 +2,56 @@
  *
  * \section intro_sec Introduction
  *
- * This is the reference manual of libIEC61850.  
- * 
- * libiec61850 is an open-source (GPLv3) implementation of an IEC 61850 client and server library implementing 
- * the protocols MMS, GOOSE and SV. It is implemented in C (according to the C99 standard) 
- * to be portable to a large number of platforms. It can be used to implement IEC 61850 compliant client and server applications on embedded systems and PCs running Linux, Windows, and MacOS. 
+ * This is the reference manual of libIEC61850 (version 1.6.2).
+ *
+ * libiec61850 is an open-source (GPLv3) implementation of an IEC 61850 client and server library implementing
+ * the protocols MMS, GOOSE, SV, and R-Session. It is implemented in C (according to the C99 standard)
+ * to be portable to a large number of platforms. It can be used to implement IEC 61850 compliant client and server applications on embedded systems and PCs running Linux, Windows, and MacOS.
  * Included is a set of simple example applications that can be used as a starting point to implement own IEC 61850 compliant devices or to communicate with IEC 61850 devices.
  * The library has been successfully used in many commercial software products and devices. Various of these devices have been successfully certified for standard compliance.
  *
- * The library implements the most important parts of IEC 61850 on top of the MMS mapping. It provides the MMS protocol stack 
- * on top of TCP/IP as well as GOOSE and sampled measured values (SMV) for real-time data transfer inside of substations.
+ * The library implements the most important parts of IEC 61850 on top of the MMS mapping. It provides the MMS protocol stack
+ * on top of TCP/IP as well as GOOSE, Sampled Values (SMV), and R-Session for real-time data transfer inside of substations.
  *
  * \section features Library features
- * 
- * The library support the following IEC 61850 protocol features:
  *
- * - MMS client/server, GOOSE publisher/subscriber(IEC 61850-8-1)
+ * The library supports the following IEC 61850 protocol features:
+ *
+ * - MMS client/server, GOOSE publisher/subscriber (IEC 61850-8-1)
  * - Sampled Values publisher/subscriber (SV - IEC 61850-9-2)
  * - Support for buffered and unbuffered reports
  * - Online report control block configuration
  * - Data access service (get data, set data)
- * - online data model discovery and browsing
- * - all data set services (get values, set values, browse)
- * - dynamic data set services (create and delete)
- * - log service
- *  - flexible API to connect custom data bases
- *  - comes with ready-to-use sqlite implementation
+ * - Online data model discovery and browsing
+ * - All data set services (get values, set values, browse)
+ * - Dynamic data set services (create and delete)
+ * - Log service
+ *   - Flexible API to connect custom databases
+ *   - Comes with ready-to-use SQLite implementation
  * - MMS file services (browse, get file, set file, delete/rename file)
- *  - required to download COMTRADE files
+ *   - Required to download COMTRADE files
  * - Setting group handling
  * - Support for service tracking
  * - GOOSE and SV control block handling
- * - TLS support
- * - C and C#/.NET API
+ * - TLS support (IEC 62351-3/4)
+ * - R-Session protocol support (R-GOOSE/R-SMV - IEC 61850-8-1)
+ * - Simple SNTP client (IEC 61850-5) for testing purposes
+ * - C, C#/.NET, and experimental Python APIs
  *
  * \section api API for application programming
  *
- * The API of libIEC61850 can be divided into a client, server, publisher, and subscriber parts. 
+ * The API of libIEC61850 can be divided into client, server, publisher, and subscriber parts.
  * These parts also share common elements. For client and server there exist two different APIs. There is a
  * "low-level" MMS API and the more high-level IEC 61850 API. It is always recommended to use the IEC 61850 API
- * to be compliant with the standard. In some cases in can also be beneficial to use the lower-level MMS API.
+ * to be compliant with the standard. In some cases it can also be beneficial to use the lower-level MMS API.
  *
  * \section iec_client_api IEC 61850 client API
  *
  * The IEC 61850 client API is a high-level API to access IEC 61850 compliant devices. The API provides
- * access to MMS services that are supported by IEC 61850. It also contains a GOOSE subscriber.
+ * access to MMS services that are supported by IEC 61850. It also contains GOOSE and SV subscribers.
  *
  * \section client_api MMS client API
- * 
+ *
  * This client API is not IEC 61850 specific but is a generic MMS client API that provides
  * only the features required by the IEC 61850 MMS Mapping. This API can be used if low-level access
  * to MMS services is required.
@@ -57,11 +59,11 @@
  * \section server_api IEC 61850 Server API
  *
  * Server support for IEC 61850 includes the generation of the MMS device model out of the static IEC 61850
- * data model and the generation of reports. Also the IEC 61850 server API provides support for the
+ * data model and the generation of reports. The IEC 61850 server API also provides support for the
  * IEC 61850 control model. The server API is designed to add very low overhead and can be used to create very
  * small IEC 61850 compliant MMS server applications. The server does not parse the SCD(XML) file
- * at runtime. The SCD file will be parsed at build time by a tool that generates C code for the
- * definition of the IEC 61850 data model and other settings of the SCD file. This will free the 
+ * at runtime. The SCD file is parsed at build time by a tool that generates C code for the
+ * definition of the IEC 61850 data model and other settings of the SCD file. This frees the
  * server code from the burden of an XML file parser. Also the target system does not require a
  * file system to store the SCD file. This design simplifies the usage of the server on very
  * small embedded systems.
@@ -75,55 +77,111 @@
  * \section hal Hardware/OS abstraction layer
  *
  * libIEC61850 provides a hardware/OS abstraction layer (HAL) to hide the dependencies to the
- * underlying platform. Currently this layer consists of thread, socket, filesystem, Ethernet and time abstractions. If 
- * you want to port the library to a new platform you need to implement the functions defined
- * by this API. At the moment implementations for Linux, BSD, Windows and MacOS exists. This API
- * consists of header files starting with <code>hal_</code> in the <code>hal/inc</code> folder. 
+ * underlying platform. Currently this layer consists of thread, socket, filesystem, Ethernet, time,
+ * serial, and memory abstractions. If you want to port the library to a new platform you need to implement
+ * the functions defined by this API. Implementations for Linux, BSD, Windows, and MacOS are provided.
+ * This API consists of header files starting with <code>hal_</code> in the <code>hal/inc</code> folder.
  *
  * \section tls TLS support
  *
- * The library can also be compiled with TLS support. The library is using an abstraction layer for 
- * TLS libraries. Currently the only supported implementation of this abstraction layer is for mbedtls.
+ * The library can be compiled with TLS support. The library uses an abstraction layer for
+ * TLS implementations. Currently supported implementations include mbedtls 2.28 LTS (TLS 1.0-1.2)
+ * and mbedtls 3.6 (TLS 1.2-1.3). The library supports IEC 62351-3/4 standard compliant TLS configurations.
+ *
+ * Key TLS features include:
+ * - Certificate validation with CRL support
+ * - Configurable cipher suites
+ * - Support for both TLS 1.2 and TLS 1.3 (with mbedtls 3.6)
+ * - TLS configuration can be updated at runtime for IedServer and IedConnection
+ *
+ * \section r_session R-Session Protocol Support
+ *
+ * The library includes support for the R-Session protocol (IEC 61850-8-1) which enables:
+ * - R-GOOSE (Routable GOOSE) messaging
+ * - R-SV (Routable Sampled Values) messaging
+ * - Encryption and authentication for R-Session messages
+ * - Integration with GOOSE and SV publishers/subscribers
+ *
+ * The R-Session implementation provides a transport layer for routable IEC 61850 messages over IP networks.
+ *
+ * \section sntp SNTP Client
+ *
+ * The library includes a simple SNTP client implementation for time synchronization according to IEC 61850-5.
+ * The SNTP client is supposed to be used for test purposes only. It is not intended to be used in production.
+ * The SNTP client supports:
+ * - Multiple SNTP server configuration
+ * - Configurable poll intervals
+ * - Synchronization status callbacks
+ * - IPv4 and IPv6 support
+ *
+ * \section python Python Bindings
+ *
+ * Experimental Python bindings are available through SWIG. These bindings allow Python applications
+ * to use the library's C API. The Python bindings are experimental and community-supported.
+ * This experimental Python bindings will be replaced by a ctypes based Python API in the future.
+ *
+ * \section dotnet .NET API
+ *
+ * A comprehensive C#/.NET wrapper API is available in the <code>dotnet</code> folder. The .NET API provides:
+ * - Full access to IEC 61850 client and server functionality
+ * - Static and dynamic model generation tools
+ * - SQL logging database support
+ * - TLS support
+ * - Event-based programming model
+ *
+ * The .NET API allows development of IEC 61850 applications using C# and .NET frameworks on Windows and Linux.
  *
  * \section building Building the library and examples with cmake
  *
- * With the help of the cmake build script it is possible to create platform independent project descriptions and let cmake create specific project or build files for other tools like Make or Visual Studio.
- * 
- * If you have cmake installed fire up a command line (cmd.exe) and create a new subdirectory in the libiec61850 folder. Change to this subdirectory. Then you can invoke cmake. As an command line argument you have to supply a "generator" that is used by cmake to create the project file for the actual build tool (in our case Visual Studio 2015).
- * 
- * For Visual Studio 2017:
+ * With the help of the CMake build script it is possible to create platform independent project descriptions
+ * and let CMake generate specific project or build files for other tools like Make or Visual Studio.
+ *
+ * If you have CMake installed, create a new subdirectory in the libiec61850 folder, change to this subdirectory,
+ * then invoke CMake. As a command line argument you have to supply a "generator" that is used by CMake to create
+ * the project file for the actual build tool.
+ *
+ * For Visual Studio 2017 (64-bit):
  *
  *   <code>cmake -G "Visual Studio 15 2017 Win64" ..</code>
- * 
- * For Visual Studio 2019 (new way to specify the x64 platform):
- * 
+ *
+ * For Visual Studio 2019 (64-bit):
+ *
  *   <code>cmake -G "Visual Studio 16 2019" .. -A x64</code>
+ *
+ * For Visual Studio 2022 (64-bit):
+ *
+ *   <code>cmake -G "Visual Studio 17 2022" .. -A x64</code>
+ *
+ * For Unix Makefiles:
+ *
+ *   <code>cmake -G "Unix Makefiles" ..</code>
  *
  * \section examples Building the library and examples with gcc/make
  *
  * To build the library you can simply execute <code>make</code> in the main folder of the
- * source distribution. It is assumed that a GCC toolchain and the Make tool is installed.
- * To cross-compile for another platform you can specify the TARGET variable when executing 
+ * source distribution. It is assumed that a GCC toolchain and the Make tool are installed.
+ * To cross-compile for another platform you can specify the TARGET variable when executing
  * make. To cross-compile for Windows you can call <code>make TARGET=WIN32</code>. To cross-compile
  * for ARM Linux you can call <code>make TARGET=LINUX-ARM</code>. It is assumed that a proper
  * GCC cross-compiler toolchain (like MinGW or arm-linux-gcc) is installed. Probably you
  * need to adjust the toolchain prefix variables at the beginning of the Makefile.
  *
- * To build the examples change to the main directory of the source distribution. On the command line type
+ * To build the examples change to the main directory of the source distribution. On the command line type:
  * <br>
  * <code>make examples</code>
  *
- * This will build the examples for the host environment (currently Linux and Windows with MinGW are
+ * This will build the examples for the host environment (currently Linux, Windows with MinGW, and ARM are
  * supported). You can also cross-compile if the target system is different from the host system.
  * To test the server examples you can use the <code>mms_client_example</code> binary. You can
- * also use third-party tools like Omicron IEDScout or the openIEC61850 client example to
+ * also use third-party tools like Omicron IEDScout or other IEC 61850 client tools to
  * test the examples.
  *
  * \section Licenses
  *
- * libIEC61850 itself is released under the GPLv3. The asn1 code parts contain code of asn1c that is
- * under a BSD style license (see http://lionet.info/asn1c/blog/). 
+ * libIEC61850 itself is released under the GPLv3. The ASN.1 code parts contain code from asn1c that is
+ * under a BSD style license (see http://lionet.info/asn1c/blog/).
  *
- * You can contact the author via <a href="mailto:info@libiec61850.com">info@libiec61850.com</a> 
+ * Commercial licenses and support are available from MZ Automation GmbH.
+ *
+ * You can contact the author via <a href="mailto:info@libiec61850.com">info@libiec61850.com</a>
  */
-
