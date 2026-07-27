@@ -180,7 +180,7 @@ BerEncoder_determineEncodedBitStringSize(int bitStringSize)
     if (bitStringSize % 8)
         byteSize++;
 
-    size += BerEncoder_determineLengthSize(byteSize);
+    size += BerEncoder_determineLengthSize(byteSize + 1);
 
     size += byteSize;
 
