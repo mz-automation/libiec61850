@@ -836,6 +836,13 @@ parseGoosePayload(GooseReceiver self, uint8_t* buffer, int apduLength)
 
     uint32_t numberOfDatSetEntries = 0;
 
+    if (apduLength < 1)
+    {
+        if (DEBUG_GOOSE_SUBSCRIBER)
+            printf("GOOSE_SUBSCRIBER: Malformed message: no payload!\n");
+        return 0;
+    }
+
     if (buffer[bufPos++] == 0x61)
     {
         int gooseLength;
@@ -1199,7 +1206,7 @@ parseGooseMessage(GooseReceiver self, uint8_t* buffer, int numbytes)
         if (subscriber->isObserver)
         {
             subscriber->appId = appId;
-            memcpy(subscriber->srcMac, srcMac,6);
+            memcpy(subscriber->srcMac, srcMac, 6);
             memcpy(subscriber->dstMac, dstMac, 6);
             subscriberFound = true;
             subscriber->vlanSet = vlanSet;
