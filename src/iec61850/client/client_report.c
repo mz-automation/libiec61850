@@ -335,11 +335,16 @@ IedConnection_installReportHandler(IedConnection self, const char* rcbReference,
 
         LinkedList_add(self->enabledReports, report);
 
-        Semaphore_post(self->reportHandlerMutex);
-
         if (DEBUG_IED_CLIENT)
-            printf("DEBUG_IED_CLIENT: Installed new report callback handler for %s\n", rcbReference);
+            printf("DEBUG_IED_CLIENT: Installed new report callback handler for %s (rptId=%s)\n", rcbReference, rptId ? rptId : "(null)");
     }
+    else
+    {
+        if (DEBUG_IED_CLIENT)
+            printf("DEBUG_IED_CLIENT: Failed to install report callback handler for %s\n", rcbReference);
+    }
+
+    Semaphore_post(self->reportHandlerMutex);
 }
 
 void
@@ -848,7 +853,9 @@ iedConnection_handleReport(IedConnection self, MmsValue* value)
     }
 
     if (matchingReport->callback)
+    {
         matchingReport->callback(matchingReport->callbackParameter, matchingReport);
+    }
 
 exit_function:
 
