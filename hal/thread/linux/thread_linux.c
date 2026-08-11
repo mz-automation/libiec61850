@@ -9,7 +9,8 @@
 
 #include <pthread.h>
 #include <semaphore.h>
-#include <unistd.h>
+#include <time.h>
+#include <errno.h>
 #include "hal_thread.h"
 #include "lib_memory.h"
 
@@ -104,6 +105,22 @@ Thread_destroy(Thread thread)
 void
 Thread_sleep(int millies)
 {
-    usleep(millies * 1000);
-}
+    struct timespec duration;
+    struct timespec remaining;
 
+    duration.tv_sec = millies / 1000;
+    duration.tv_nsec = (millies % 1000) * 1000000;
+
+    while (nanosleep(&duration, &remaining) == -1)
+    {
+        if (errno == EINTR)
+        {
+            /* continue when interrupted by signal */
+            duration = remaining;
+        }
+        else
+        {
+            break;
+        }
+    }
+}
