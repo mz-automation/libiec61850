@@ -49,6 +49,9 @@
 #define SECURE_TCP_PORT 3782
 #define BACKLOG 10
 
+/* Poll timeout used by the server worker loop. Higher values reduce idle CPU load. */
+#define ISO_SERVER_POLL_TIMEOUT_MS 10
+
 struct sIsoServer
 {
     IsoServerState state;
@@ -521,7 +524,7 @@ handleIsoConnections(IsoServer self, bool isSingleThread)
         callTickHandlerForClientConnections(self);
     }
 
-    if (Handleset_waitReady(self->handleset, 1) < 1)
+    if (Handleset_waitReady(self->handleset, ISO_SERVER_POLL_TIMEOUT_MS) < 1)
         return;
 
     Socket connectionSocket;
