@@ -912,15 +912,15 @@ decodeUtcTimeToNsTime(uint8_t* buffer, uint8_t* timeQuality)
     uint32_t timeval32;
 
     timeval32 = buffer[3];
-    timeval32 += buffer[2] * 0x100;
-    timeval32 += buffer[1] * 0x10000;
-    timeval32 += buffer[0] * 0x1000000;
+    timeval32 += buffer[2] * 0x100U;
+    timeval32 += buffer[1] * 0x10000U;
+    timeval32 += buffer[0] * 0x1000000U;
 
     uint32_t fractionOfSecond;
 
     fractionOfSecond = buffer[6];
-    fractionOfSecond += buffer[5] * 0x100;
-    fractionOfSecond += buffer[4] * 0x10000;
+    fractionOfSecond += buffer[5] * 0x100U;
+    fractionOfSecond += buffer[4] * 0x10000U;
 
     uint64_t nsVal = fractionOfSecond;
 
