@@ -36,7 +36,7 @@ BerEncoder_encodeLength(uint32_t length, uint8_t* buffer, int bufPos)
         buffer[bufPos++] = 0x81;
         buffer[bufPos++] = (uint8_t)length;
     }
-    else if (length < 65535)
+    else if (length < 65536)
     {
         buffer[bufPos++] = 0x82;
 
