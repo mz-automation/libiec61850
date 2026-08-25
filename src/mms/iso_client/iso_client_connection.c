@@ -386,8 +386,23 @@ sendAcseInitiateRequest(IsoClientConnection self)
 static void
 releaseSocket(IsoClientConnection self)
 {
-    if (self->socket)
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+    Semaphore_wait(self->stateMutex);
+
+    Socket socket = self->socket;
+    self->socket = NULL;
+
+    Semaphore_post(self->stateMutex);
+
+    if (socket)
     {
+#else
+    Socket socket = self->socket;
+    self->socket = NULL;
+
+    if (socket)
+    {
+#endif
 #if (CONFIG_MMS_SUPPORT_TLS == 1)
         if (self->cotpConnection->tlsSocket)
         {
@@ -402,8 +417,7 @@ releaseSocket(IsoClientConnection self)
         }
 #endif
 
-        Socket_destroy(self->socket);
-        self->socket = NULL;
+        Socket_destroy(socket);
     }
 }
 
@@ -831,8 +845,7 @@ exit_function:
 
     if (!success)
     {
-        Socket_destroy(self->socket);
-        self->socket = NULL;
+        releaseSocket(self);
 
         setIntState(self, INT_STATE_ERROR);
         setState(self, STATE_ERROR);
