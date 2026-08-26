@@ -1955,11 +1955,10 @@ MmsValue_getBinaryTimeAsUtcMs(const MmsValue* self)
 
     if (self->value.binaryTime.size == 6)
     {
-
         uint16_t daysDiff;
 
-        daysDiff = binaryTimeBuf[4] * 256;
-        daysDiff += binaryTimeBuf[5];
+        daysDiff =  (uint16_t)binaryTimeBuf[4] * 256U;
+        daysDiff += (uint16_t)binaryTimeBuf[5];
 
         uint64_t mmsTime;
 
@@ -1970,10 +1969,10 @@ MmsValue_getBinaryTimeAsUtcMs(const MmsValue* self)
 
     uint32_t msSinceMidnight = 0;
 
-    msSinceMidnight = binaryTimeBuf[0] << 24;
-    msSinceMidnight += binaryTimeBuf[1] << 16;
-    msSinceMidnight += binaryTimeBuf[2] << 8;
-    msSinceMidnight += binaryTimeBuf[3];
+    msSinceMidnight =  (uint32_t)binaryTimeBuf[0] << 24U;
+    msSinceMidnight += (uint32_t)binaryTimeBuf[1] << 16U;
+    msSinceMidnight += (uint32_t)binaryTimeBuf[2] << 8U;
+    msSinceMidnight += (uint32_t)binaryTimeBuf[3];
 
     timestamp += msSinceMidnight;
 
