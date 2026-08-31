@@ -214,15 +214,20 @@ void
 BerInteger_toInt32(Asn1PrimitiveValue* self, int32_t* nativeValue)
 {
     uint8_t* buf = self->octets;
+    uint32_t tmpValue = 0;
     int i;
 
-    if (buf[0] & 0x80) /* sign extension */
-        *nativeValue = 0xffffffff;
-    else
-        *nativeValue = 0;
-
     for (i = 0; i < self->size; i++)
-        *nativeValue = (*nativeValue << 8) | buf[i];
+        tmpValue = (tmpValue << 8) | buf[i];
+
+    /* sign-extend if needed */
+    if (self->size > 0 && (buf[0] & 0x80) && self->size < 4)
+    {
+        uint32_t mask = ~((1UL << (self->size * 8)) - 1);
+        tmpValue |= mask;
+    }
+
+    *nativeValue = (int32_t)tmpValue;
 }
 
 void
@@ -241,13 +246,18 @@ void
 BerInteger_toInt64(Asn1PrimitiveValue* self, int64_t* nativeValue)
 {
     uint8_t* buf = self->octets;
+    uint64_t tmpValue = 0;
     int i;
 
-    if (buf[0] & 0x80) /* sign extension */
-        *nativeValue = 0xffffffffffffffff;
-    else
-        *nativeValue = 0;
-
     for (i = 0; i < self->size; i++)
-        *nativeValue = (*nativeValue << 8) | buf[i];
+        tmpValue = (tmpValue << 8) | buf[i];
+
+    /* sign-extend if needed */
+    if (self->size > 0 && (buf[0] & 0x80) && self->size < 8)
+    {
+        uint64_t mask = ~((1ULL << (self->size * 8)) - 1);
+        tmpValue |= mask;
+    }
+
+    *nativeValue = (int64_t) tmpValue;
 }
