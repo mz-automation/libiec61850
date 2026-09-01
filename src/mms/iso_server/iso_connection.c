@@ -599,7 +599,6 @@ IsoConnection_create(Socket socket, IsoServer isoServer, bool isSingleThread)
         {
             self->handleSet = Handleset_new();
             Handleset_addSocket(self->handleSet, self->socket);
-            self->thread = Thread_create((ThreadExecutionFunction)handleTcpConnection, self, false);
         }
 #endif
 #endif
@@ -619,6 +618,10 @@ IsoConnection_start(IsoConnection self)
 {
 #if (CONFIG_MMS_SINGLE_THREADED == 0)
 #if (CONFIG_MMS_THREADLESS_STACK == 0)
+    if (self->thread == NULL)
+    {
+        self->thread = Thread_create((ThreadExecutionFunction)handleTcpConnection, self, false);
+    }
     Thread_start(self->thread);
 #endif
 #endif
@@ -632,6 +635,7 @@ IsoConnection_destroy(IsoConnection self)
         Thread_destroy(self->thread);
 #endif
 
+    /* Close socket if not already closed by IsoConnection_close() */
     if (self->socket != NULL)
         Socket_destroy(self->socket);
 
@@ -739,6 +743,14 @@ IsoConnection_close(IsoConnection self)
         self->state = ISO_CON_STATE_STOPPED;
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1) && (CONFIG_MMS_SINGLE_THREADED != 1)
+        /* For multi-threaded mode: close the socket to wake up the connection thread
+         * if it's blocked in Handleset_waitReady, then wait for the thread to finish. */
+        if (self->socket != NULL)
+        {
+            Socket_destroy(self->socket);
+            self->socket = NULL;
+        }
+
         /* wait for connection thread to terminate */
         if (self->thread)
         {
@@ -751,6 +763,13 @@ IsoConnection_close(IsoConnection self)
             self->state = ISO_CON_STATE_TERMINATED;
         }
 #else
+        /* For single-threaded mode: close the socket before finalizing */
+        if (self->socket != NULL)
+        {
+            Socket_destroy(self->socket);
+            self->socket = NULL;
+        }
+
         finalizeIsoConnection(self);
         self->state = ISO_CON_STATE_TERMINATED;
 #endif

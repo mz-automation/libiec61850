@@ -248,6 +248,8 @@ bool
 ClientConnection_abort(ClientConnection self)
 {
     bool aborted = false;
+    MmsServerConnection mmsConnection = NULL;
+    MmsServer mmsServer = NULL;
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_wait(self->accessMutex);
@@ -255,25 +257,34 @@ ClientConnection_abort(ClientConnection self)
 
     if (self->serverConnectionHandle)
     {
-        MmsServerConnection mmsConnection = (MmsServerConnection) self->serverConnectionHandle;
+        mmsConnection = (MmsServerConnection) self->serverConnectionHandle;
 
         if (mmsConnection)
         {
-            MmsServer mmsServer = MmsServerConnection_getServer(mmsConnection);
-
-            aborted = MmsServer_abortConnection(mmsServer, mmsConnection);
-
-            if (aborted)
-            {
-                /* remove reference to underlying connection. Instance cannot be used any longer */
-                self->serverConnectionHandle = NULL;
-            }
+            mmsServer = MmsServerConnection_getServer(mmsConnection);
         }
     }
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     Semaphore_post(self->accessMutex);
 #endif
+
+    if (mmsConnection)
+    {
+        aborted = MmsServer_abortConnection(mmsServer, mmsConnection);
+
+        /* Connection has been aborted - invalidate our reference to it */
+        if (aborted)
+        {
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+            Semaphore_wait(self->accessMutex);
+#endif
+            self->serverConnectionHandle = NULL;
+#if (CONFIG_MMS_THREADLESS_STACK != 1)
+            Semaphore_post(self->accessMutex);
+#endif
+        }
+    }
 
     return aborted;
 }
