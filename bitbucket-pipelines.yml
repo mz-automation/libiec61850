@@ -121,7 +121,43 @@ definitions:
           - apt-get install -y --no-install-recommends cmake build-essential git
           - git clone --branch v1.6 --single-branch git@bitbucket.org:mz-automation/libiec61850-tests.git libiec61850-tests
           - chmod +x libiec61850-tests/scripts/run-native-tests.sh
-          - LIBIEC61850_SOURCE_DIR="$BITBUCKET_CLONE_DIR" libiec61850-tests/scripts/run-native-tests.sh
+          - TEST_PROFILE=native LIBIEC61850_SOURCE_DIR="$BITBUCKET_CLONE_DIR" libiec61850-tests/scripts/run-native-tests.sh
+        artifacts:
+          - libiec61850-tests/test-results/**
+
+    - step: &external-mbedtls-228-tests
+        name: Run libiec61850-tests/v1.6 with mbedTLS 2.28
+        script:
+          - apt-get update -qq
+          - apt-get install -y --no-install-recommends cmake build-essential git curl python3 ca-certificates bzip2
+          - git clone --branch v1.6 --single-branch git@bitbucket.org:mz-automation/libiec61850-tests.git libiec61850-tests
+          - chmod +x libiec61850-tests/scripts/prepare-test-dependency.sh libiec61850-tests/scripts/run-native-tests.sh
+          - libiec61850-tests/scripts/prepare-test-dependency.sh "$BITBUCKET_CLONE_DIR" mbedtls-2.28
+          - TEST_PROFILE=tls BUILD_DIR="$BITBUCKET_CLONE_DIR/build-mbedtls-2.28" RESULTS_DIR="$BITBUCKET_CLONE_DIR/libiec61850-tests/test-results/mbedtls-2.28" LIBIEC61850_SOURCE_DIR="$BITBUCKET_CLONE_DIR" libiec61850-tests/scripts/run-native-tests.sh
+        artifacts:
+          - libiec61850-tests/test-results/**
+
+    - step: &external-mbedtls-36-tests
+        name: Run libiec61850-tests/v1.6 with mbedTLS 3.6
+        script:
+          - apt-get update -qq
+          - apt-get install -y --no-install-recommends cmake build-essential git curl python3 ca-certificates bzip2
+          - git clone --branch v1.6 --single-branch git@bitbucket.org:mz-automation/libiec61850-tests.git libiec61850-tests
+          - chmod +x libiec61850-tests/scripts/prepare-test-dependency.sh libiec61850-tests/scripts/run-native-tests.sh
+          - libiec61850-tests/scripts/prepare-test-dependency.sh "$BITBUCKET_CLONE_DIR" mbedtls-3.6
+          - TEST_PROFILE=tls BUILD_DIR="$BITBUCKET_CLONE_DIR/build-mbedtls-3.6" RESULTS_DIR="$BITBUCKET_CLONE_DIR/libiec61850-tests/test-results/mbedtls-3.6" LIBIEC61850_SOURCE_DIR="$BITBUCKET_CLONE_DIR" libiec61850-tests/scripts/run-native-tests.sh
+        artifacts:
+          - libiec61850-tests/test-results/**
+
+    - step: &external-sqlite-tests
+        name: Run libiec61850-tests/v1.6 with SQLite
+        script:
+          - apt-get update -qq
+          - apt-get install -y --no-install-recommends cmake build-essential git curl python3 ca-certificates
+          - git clone --branch v1.6 --single-branch git@bitbucket.org:mz-automation/libiec61850-tests.git libiec61850-tests
+          - chmod +x libiec61850-tests/scripts/prepare-test-dependency.sh libiec61850-tests/scripts/run-native-tests.sh
+          - libiec61850-tests/scripts/prepare-test-dependency.sh "$BITBUCKET_CLONE_DIR" sqlite
+          - TEST_PROFILE=sqlite BUILD_DIR="$BITBUCKET_CLONE_DIR/build-sqlite" RESULTS_DIR="$BITBUCKET_CLONE_DIR/libiec61850-tests/test-results/sqlite" LIBIEC61850_SOURCE_DIR="$BITBUCKET_CLONE_DIR" libiec61850-tests/scripts/run-native-tests.sh
         artifacts:
           - libiec61850-tests/test-results/**
 
@@ -145,12 +181,20 @@ pipelines:                 # More info here: https://confluence.atlassian.com/bi
       - step: *build-test-sonarcloud
     v1.6_develop:
       - step: *build-test-sonarcloud
-      - step: *external-native-tests
+      - parallel:
+          - step: *external-native-tests
+          - step: *external-mbedtls-228-tests
+          - step: *external-mbedtls-36-tests
+          - step: *external-sqlite-tests
       - step: *dotnet-wrapper-tests
   pull-requests:
     '**':
       - step: *build-test-sonarcloud
-      - step: *external-native-tests
+      - parallel:
+          - step: *external-native-tests
+          - step: *external-mbedtls-228-tests
+          - step: *external-mbedtls-36-tests
+          - step: *external-sqlite-tests
       - step: *dotnet-wrapper-tests
   custom:
     compare-model-generators:
@@ -159,5 +203,11 @@ pipelines:                 # More info here: https://confluence.atlassian.com/bi
       - step: *compile-check
     external-native-tests:
       - step: *external-native-tests
+    external-mbedtls-2.28-tests:
+      - step: *external-mbedtls-228-tests
+    external-mbedtls-3.6-tests:
+      - step: *external-mbedtls-36-tests
+    external-sqlite-tests:
+      - step: *external-sqlite-tests
     dotnet-wrapper-tests:
       - step: *dotnet-wrapper-tests
