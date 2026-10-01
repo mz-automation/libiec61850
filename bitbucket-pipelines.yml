@@ -214,7 +214,6 @@ definitions:
             fi
         artifacts:
           - coverage/html/**
-          - coverage/libiec61850.info
           - libiec61850-tests/test-results/coverage/**
 
     - step: &dotnet-wrapper-tests
