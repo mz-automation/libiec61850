@@ -260,7 +260,8 @@ parseEntryContent(uint8_t* buffer, int bufPos, int maxLength, MmsJournalEntry jo
                 else
                     break;
 
-                memcpy(journalEntry->occurenceTime->value.binaryTime.buf, buffer + bufPos, length);
+                if (journalEntry->occurenceTime)
+                    memcpy(journalEntry->occurenceTime->value.binaryTime.buf, buffer + bufPos, length);
             }
 
            break;
@@ -417,6 +418,9 @@ mmsClient_parseReadJournalResponse(ByteBuffer* response, int respBufPos, bool* m
     int bufPos = respBufPos;
     int length;
 
+    if (maxBufPos - respBufPos < 2)
+        return false;
+
     uint8_t tag = buffer[bufPos++];
 
     if (tag != 0xbf)
@@ -449,7 +453,13 @@ mmsClient_parseReadJournalResponse(ByteBuffer* response, int respBufPos, bool* m
     {
         tag = buffer[bufPos++];
         bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
-        if (bufPos < 0) return false;
+        if (bufPos < 0)
+        {
+            if (journalEntries)
+                LinkedList_destroyDeep(journalEntries, (LinkedListValueDeleteFunction) MmsJournalEntry_destroy);
+
+            return false;
+        }
 
         switch (tag) {
         case 0xa0: /* listOfJournalEntry */
