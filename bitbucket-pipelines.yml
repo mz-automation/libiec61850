@@ -256,26 +256,26 @@ pipelines:                 # More info here: https://confluence.atlassian.com/bi
     master:
       - step: *build-test-sonarcloud
     v1.6_develop:
-      - step: *build-test-sonarcloud
       - parallel:
+          - step: *build-test-sonarcloud
           - step: *external-native-tests
           - step: *external-mbedtls-228-tests
           - step: *external-mbedtls-36-tests
           - step: *external-sqlite-tests
           - step: *native-coverage
           - step: *native-asan
-      - step: *dotnet-wrapper-tests
+          - step: *dotnet-wrapper-tests
   pull-requests:
     '**':
-      - step: *build-test-sonarcloud
       - parallel:
+          - step: *build-test-sonarcloud
           - step: *external-native-tests
           - step: *external-mbedtls-228-tests
           - step: *external-mbedtls-36-tests
           - step: *external-sqlite-tests
           - step: *native-coverage
           - step: *native-asan
-      - step: *dotnet-wrapper-tests
+          - step: *dotnet-wrapper-tests
   custom:
     compare-model-generators:
       - step: *java-model-gen
