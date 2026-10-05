@@ -203,7 +203,8 @@ parseData(uint8_t* buffer, int bufPos, int maxLength, MmsJournalEntry journalEnt
                 }
                 else
                 {
-                    parseJournalVariables(buffer, bufPos, length, journalEntry);
+                    if (!parseJournalVariables(buffer, bufPos, length, journalEntry))
+                        return false;
                 }
             }
 
@@ -268,7 +269,8 @@ parseEntryContent(uint8_t* buffer, int bufPos, int maxLength, MmsJournalEntry jo
 
        case 0xa2: /* data */
 
-           parseData(buffer, bufPos, length, journalEntry);
+           if (!parseData(buffer, bufPos, length, journalEntry))
+               return false;
 
            break;
 
@@ -452,7 +454,7 @@ mmsClient_parseReadJournalResponse(ByteBuffer* response, int respBufPos, bool* m
     while (bufPos < endPos)
     {
         tag = buffer[bufPos++];
-        bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
+        bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, endPos);
         if (bufPos < 0)
         {
             if (journalEntries)
