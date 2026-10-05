@@ -1122,6 +1122,28 @@ IedModel_destroy(IedModel* model)
             gcb = nextGcb;
         }
 
+        /* delete all SVCBs */
+
+        SVControlBlock* svcb = model->svCBs;
+
+        while (svcb)
+        {
+            SVControlBlock* nextSvcb = svcb->sibling;
+
+            GLOBAL_FREEMEM(svcb->name);
+            GLOBAL_FREEMEM(svcb->svId);
+
+            if (svcb->dataSetName)
+                GLOBAL_FREEMEM(svcb->dataSetName);
+
+            if (svcb->dstAddress)
+                GLOBAL_FREEMEM(svcb->dstAddress);
+
+            GLOBAL_FREEMEM(svcb);
+
+            svcb = nextSvcb;
+        }
+
         /* delete setting group controls */
 
         SettingGroupControlBlock* sgcb = model->sgcbs;
