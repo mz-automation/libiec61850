@@ -161,6 +161,61 @@ definitions:
         artifacts:
           - libiec61850-tests/test-results/**
 
+    - step: &native-coverage
+        name: Generate native C coverage report
+        script:
+          - apt-get update -qq
+          - apt-get install -y --no-install-recommends cmake build-essential git lcov
+          - git clone --branch v1.6 --single-branch git@bitbucket.org:mz-automation/libiec61850-tests.git libiec61850-tests
+          - chmod +x libiec61850-tests/scripts/run-native-tests.sh
+          - mkdir -p coverage/html
+          - |
+            set +e
+            TEST_PROFILE=native \
+              BUILD_DIR="$BITBUCKET_CLONE_DIR/build-coverage" \
+              RESULTS_DIR="$BITBUCKET_CLONE_DIR/libiec61850-tests/test-results/coverage" \
+              LIBIEC61850_SOURCE_DIR="$BITBUCKET_CLONE_DIR" \
+              CFLAGS="--coverage -fprofile-update=atomic -O0 -g" \
+              CXXFLAGS="--coverage -fprofile-update=atomic -O0 -g" \
+              LDFLAGS="--coverage" \
+              libiec61850-tests/scripts/run-native-tests.sh
+            test_status=$?
+            set -e
+
+            coverage_status=0
+            lcov --capture \
+              --directory build-coverage \
+              --output-file coverage/raw.info \
+              --rc branch_coverage=1 || coverage_status=$?
+
+            if [ "$coverage_status" -eq 0 ]; then
+              lcov --extract coverage/raw.info \
+                "$BITBUCKET_CLONE_DIR/src/*" \
+                "$BITBUCKET_CLONE_DIR/hal/*" \
+                --output-file coverage/libiec61850.info \
+                --rc branch_coverage=1 || coverage_status=$?
+            fi
+
+            if [ "$coverage_status" -eq 0 ]; then
+              genhtml coverage/libiec61850.info \
+                --output-directory coverage/html \
+                --branch-coverage \
+                --title "libiec61850 native test coverage" || coverage_status=$?
+            fi
+
+            if [ "$test_status" -ne 0 ]; then
+              echo "Native tests failed with exit code $test_status"
+              exit "$test_status"
+            fi
+
+            if [ "$coverage_status" -ne 0 ]; then
+              echo "Coverage report generation failed with exit code $coverage_status"
+              exit "$coverage_status"
+            fi
+        artifacts:
+          - coverage/html/**
+          - libiec61850-tests/test-results/coverage/**
+
     - step: &dotnet-wrapper-tests
         name: Run .NET wrapper tests
         image: mcr.microsoft.com/dotnet/sdk:8.0
@@ -186,6 +241,7 @@ pipelines:                 # More info here: https://confluence.atlassian.com/bi
           - step: *external-mbedtls-228-tests
           - step: *external-mbedtls-36-tests
           - step: *external-sqlite-tests
+          - step: *native-coverage
       - step: *dotnet-wrapper-tests
   pull-requests:
     '**':
@@ -195,6 +251,7 @@ pipelines:                 # More info here: https://confluence.atlassian.com/bi
           - step: *external-mbedtls-228-tests
           - step: *external-mbedtls-36-tests
           - step: *external-sqlite-tests
+          - step: *native-coverage
       - step: *dotnet-wrapper-tests
   custom:
     compare-model-generators:
@@ -209,5 +266,7 @@ pipelines:                 # More info here: https://confluence.atlassian.com/bi
       - step: *external-mbedtls-36-tests
     external-sqlite-tests:
       - step: *external-sqlite-tests
+    native-coverage:
+      - step: *native-coverage
     dotnet-wrapper-tests:
       - step: *dotnet-wrapper-tests
