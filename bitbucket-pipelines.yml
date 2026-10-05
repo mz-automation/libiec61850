@@ -216,6 +216,27 @@ definitions:
           - coverage/html/**
           - libiec61850-tests/test-results/coverage/**
 
+    - step: &native-asan
+        name: Run native tests with AddressSanitizer
+        script:
+          - apt-get update -qq
+          - apt-get install -y --no-install-recommends cmake build-essential git
+          - git clone --branch v1.6 --single-branch git@bitbucket.org:mz-automation/libiec61850-tests.git libiec61850-tests
+          - chmod +x libiec61850-tests/scripts/run-native-tests.sh
+          - |
+            TEST_PROFILE=native \
+              BUILD_DIR="$BITBUCKET_CLONE_DIR/build-asan" \
+              RESULTS_DIR="$BITBUCKET_CLONE_DIR/libiec61850-tests/test-results/asan" \
+              LIBIEC61850_SOURCE_DIR="$BITBUCKET_CLONE_DIR" \
+              CFLAGS="-fsanitize=address -fno-omit-frame-pointer -O1 -g" \
+              CXXFLAGS="-fsanitize=address -fno-omit-frame-pointer -O1 -g" \
+              LDFLAGS="-fsanitize=address" \
+              ASAN_OPTIONS="detect_leaks=1:halt_on_error=1:abort_on_error=1" \
+              LSAN_OPTIONS="exitcode=23" \
+              libiec61850-tests/scripts/run-native-tests.sh
+        artifacts:
+          - libiec61850-tests/test-results/asan/**
+
     - step: &dotnet-wrapper-tests
         name: Run .NET wrapper tests
         image: mcr.microsoft.com/dotnet/sdk:8.0
@@ -242,6 +263,7 @@ pipelines:                 # More info here: https://confluence.atlassian.com/bi
           - step: *external-mbedtls-36-tests
           - step: *external-sqlite-tests
           - step: *native-coverage
+          - step: *native-asan
       - step: *dotnet-wrapper-tests
   pull-requests:
     '**':
@@ -252,6 +274,7 @@ pipelines:                 # More info here: https://confluence.atlassian.com/bi
           - step: *external-mbedtls-36-tests
           - step: *external-sqlite-tests
           - step: *native-coverage
+          - step: *native-asan
       - step: *dotnet-wrapper-tests
   custom:
     compare-model-generators:
@@ -268,5 +291,7 @@ pipelines:                 # More info here: https://confluence.atlassian.com/bi
       - step: *external-sqlite-tests
     native-coverage:
       - step: *native-coverage
+    native-asan:
+      - step: *native-asan
     dotnet-wrapper-tests:
       - step: *dotnet-wrapper-tests
