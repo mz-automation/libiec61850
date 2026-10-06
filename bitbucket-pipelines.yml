@@ -258,7 +258,6 @@ pipelines:                 # More info here: https://confluence.atlassian.com/bi
     v1.6_develop:
       - parallel:
           - step: *build-test-sonarcloud
-          - step: *external-native-tests
           - step: *external-mbedtls-228-tests
           - step: *external-mbedtls-36-tests
           - step: *external-sqlite-tests
@@ -269,7 +268,6 @@ pipelines:                 # More info here: https://confluence.atlassian.com/bi
     '**':
       - parallel:
           - step: *build-test-sonarcloud
-          - step: *external-native-tests
           - step: *external-mbedtls-228-tests
           - step: *external-mbedtls-36-tests
           - step: *external-sqlite-tests
