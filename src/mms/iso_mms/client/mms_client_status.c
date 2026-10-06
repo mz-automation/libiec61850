@@ -58,9 +58,13 @@ mmsClient_parseStatusResponse(MmsConnection self, ByteBuffer* response, int bufP
     int maxBufPos = ByteBuffer_getSize(response);
     int length;
 
+    if ((bufPos >= maxBufPos) || (bufPos < 0))
+        return false;
+
     uint8_t tag = buffer[bufPos++];
 
-    if (tag != 0xa0) {
+    if (tag != 0xa0)
+    {
         if (DEBUG_MMS_CLIENT)
             printf("mmsClient_parseStatusResponse: unknown tag %02x\n", tag);
         goto exit_error;
@@ -74,9 +78,10 @@ mmsClient_parseStatusResponse(MmsConnection self, ByteBuffer* response, int bufP
     bool hasPhysicalStatus = false;
     bool hasLogicalStatus = false;
 
-    while (bufPos < endPos) {
+    while (bufPos < endPos)
+    {
         tag = buffer[bufPos++];
-        bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
+        bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, endPos);
         if (bufPos < 0) goto exit_error;
 
         switch (tag) {

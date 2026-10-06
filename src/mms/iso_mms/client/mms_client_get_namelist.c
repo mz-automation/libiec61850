@@ -21,98 +21,94 @@
  *  See COPYING file for the complete license text.
  */
 
-#include "libiec61850_platform_includes.h"
-#include <MmsPdu.h>
-#include "stack_config.h"
-#include "mms_common.h"
-#include "mms_client_connection.h"
 #include "byte_buffer.h"
+#include "libiec61850_platform_includes.h"
+#include "mms_client_connection.h"
 #include "mms_client_internal.h"
+#include "mms_common.h"
+#include "stack_config.h"
+#include <MmsPdu.h>
 
 #include "ber_decode.h"
 
 int
-mmsClient_createMmsGetNameListRequestVMDspecific(long invokeId, ByteBuffer* writeBuffer,
-		const char* continueAfter)
+mmsClient_createMmsGetNameListRequestVMDspecific(long invokeId, ByteBuffer* writeBuffer, const char* continueAfter)
 {
-	MmsPdu_t* mmsPdu = mmsClient_createConfirmedRequestPdu(invokeId);
+    MmsPdu_t* mmsPdu = mmsClient_createConfirmedRequestPdu(invokeId);
 
-	mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.present =
-				ConfirmedServiceRequest_PR_getNameList;
+    mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.present = ConfirmedServiceRequest_PR_getNameList;
 
-	GetNameListRequest_t* request;
+    GetNameListRequest_t* request;
 
-	request = &(mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.choice.getNameList);
+    request = &(mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.choice.getNameList);
 
-	if (continueAfter != NULL) {
-		request->continueAfter = (Identifier_t*) GLOBAL_CALLOC(1, sizeof(Identifier_t));
-		request->continueAfter->buf = (uint8_t*) StringUtils_copyString(continueAfter);
-		request->continueAfter->size = strlen(continueAfter);
-	}
-	else
-		request->continueAfter = NULL;
+    if (continueAfter)
+    {
+        request->continueAfter = (Identifier_t*)GLOBAL_CALLOC(1, sizeof(Identifier_t));
 
-	request->objectScope.present = GetNameListRequest__objectScope_PR_vmdSpecific;
-	request->objectClass.present = ObjectClass_PR_basicObjectClass;
+        if (request->continueAfter)
+        {
+            request->continueAfter->buf = (uint8_t*)StringUtils_copyString(continueAfter);
+            request->continueAfter->size = strlen(continueAfter);
+        }
+    }
+    else
+        request->continueAfter = NULL;
 
-	asn_long2INTEGER(&request->objectClass.choice.basicObjectClass,
-			ObjectClass__basicObjectClass_domain);
+    request->objectScope.present = GetNameListRequest__objectScope_PR_vmdSpecific;
+    request->objectClass.present = ObjectClass_PR_basicObjectClass;
 
-	asn_enc_rval_t rval;
+    asn_long2INTEGER(&request->objectClass.choice.basicObjectClass, ObjectClass__basicObjectClass_domain);
 
-	rval = der_encode(&asn_DEF_MmsPdu, mmsPdu,
-		(asn_app_consume_bytes_f*) mmsClient_write_out, (void*) writeBuffer);
+    asn_enc_rval_t rval;
 
-	asn_DEF_MmsPdu.free_struct(&asn_DEF_MmsPdu, mmsPdu, 0);
+    rval = der_encode(&asn_DEF_MmsPdu, mmsPdu, (asn_app_consume_bytes_f*)mmsClient_write_out, (void*)writeBuffer);
 
-	return rval.encoded;
+    asn_DEF_MmsPdu.free_struct(&asn_DEF_MmsPdu, mmsPdu, 0);
+
+    return rval.encoded;
 }
 
 int
 mmsClient_createMmsGetNameListRequestAssociationSpecific(long invokeId, ByteBuffer* writeBuffer,
-		const char* continueAfter)
+                                                         const char* continueAfter)
 {
-	MmsPdu_t* mmsPdu = mmsClient_createConfirmedRequestPdu(invokeId);
+    MmsPdu_t* mmsPdu = mmsClient_createConfirmedRequestPdu(invokeId);
 
-	if (mmsPdu == NULL)
-		return 0;
+    if (mmsPdu == NULL)
+        return 0;
 
-	mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.present =
-				ConfirmedServiceRequest_PR_getNameList;
+    mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.present = ConfirmedServiceRequest_PR_getNameList;
 
-	GetNameListRequest_t* request;
+    GetNameListRequest_t* request;
 
-	request = &(mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.choice.getNameList);
+    request = &(mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.choice.getNameList);
 
+    if (continueAfter)
+    {
+        request->continueAfter = (Identifier_t*)GLOBAL_CALLOC(1, sizeof(Identifier_t));
 
-	if (continueAfter != NULL)
-	{
-		request->continueAfter = (Identifier_t*) GLOBAL_CALLOC(1, sizeof(Identifier_t));
+        if (request->continueAfter)
+        {
+            request->continueAfter->buf = (uint8_t*)StringUtils_copyString(continueAfter);
+            request->continueAfter->size = strlen(continueAfter);
+        }
+    }
+    else
+        request->continueAfter = NULL;
 
-		if (request->continueAfter)
-		{
-			request->continueAfter->buf = (uint8_t*) StringUtils_copyString(continueAfter);
-			request->continueAfter->size = strlen(continueAfter);
-		}
-	}
-	else
-		request->continueAfter = NULL;
+    request->objectScope.present = GetNameListRequest__objectScope_PR_aaSpecific;
+    request->objectClass.present = ObjectClass_PR_basicObjectClass;
 
+    asn_long2INTEGER(&request->objectClass.choice.basicObjectClass, ObjectClass__basicObjectClass_namedVariableList);
 
-	request->objectScope.present = GetNameListRequest__objectScope_PR_aaSpecific;
-	request->objectClass.present = ObjectClass_PR_basicObjectClass;
+    asn_enc_rval_t rval;
 
-	asn_long2INTEGER(&request->objectClass.choice.basicObjectClass,
-				ObjectClass__basicObjectClass_namedVariableList);
+    rval = der_encode(&asn_DEF_MmsPdu, mmsPdu, (asn_app_consume_bytes_f*)mmsClient_write_out, (void*)writeBuffer);
 
-	asn_enc_rval_t rval;
+    asn_DEF_MmsPdu.free_struct(&asn_DEF_MmsPdu, mmsPdu, 0);
 
-	rval = der_encode(&asn_DEF_MmsPdu, mmsPdu,
-		(asn_app_consume_bytes_f*) mmsClient_write_out, (void*) writeBuffer);
-
-	asn_DEF_MmsPdu.free_struct(&asn_DEF_MmsPdu, mmsPdu, 0);
-
-	return rval.encoded;
+    return rval.encoded;
 }
 
 bool
@@ -125,109 +121,141 @@ mmsClient_parseGetNameListResponse(LinkedList* nameList, ByteBuffer* message)
     int bufPos = 0;
     int length;
 
-	if (bufPos >= maxBufPos)
-		goto exit_error;
+    if (bufPos >= maxBufPos)
+        goto exit_error;
 
     uint8_t tag = buffer[bufPos++];
 
-	if (tag == 0xa2)
-	{
+    if (tag == 0xa2)
+    {
         /* TODO parse confirmed error PDU */
         goto exit_error;
     }
 
-    if (tag != 0xa1) goto exit_error;
+    if (tag != 0xa1)
+        goto exit_error;
 
     bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
-    if (bufPos < 0) goto exit_error;
+    if (bufPos < 0)
+        goto exit_error;
+
+    int responseEndPos = bufPos + length;
 
     /* get invokeId */
-	if (bufPos >= maxBufPos)
-		goto exit_error;
+    if (bufPos >= responseEndPos)
+        goto exit_error;
 
     tag = buffer[bufPos++];
-    if (tag != 0x02) goto exit_error;
+    if (tag != 0x02)
+        goto exit_error;
 
-    bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
-    if (bufPos < 0) goto exit_error;
+    bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, responseEndPos);
+    if (bufPos < 0)
+        goto exit_error;
 
     bufPos += length;
 
-	if (bufPos >= maxBufPos)
-		goto exit_error;
+    if (bufPos >= responseEndPos)
+        goto exit_error;
 
-	tag = buffer[bufPos++];
-    if (tag != 0xa1) goto exit_error;
-
-    bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
-    if (bufPos < 0) goto exit_error;
-
-	if (bufPos >= maxBufPos)
-		goto exit_error;
+    if (bufPos >= maxBufPos)
+        goto exit_error;
 
     tag = buffer[bufPos++];
-    if (tag != 0xa0) goto exit_error;
+    if (tag != 0xa1)
+        goto exit_error;
 
-    bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
-    if (bufPos < 0) goto exit_error;
+    bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, responseEndPos);
+    if (bufPos < 0)
+        goto exit_error;
+
+    int serviceResponseEndPos = bufPos + length;
+
+    if (bufPos >= serviceResponseEndPos)
+        goto exit_error;
+
+    tag = buffer[bufPos++];
+    if (tag != 0xa0)
+        goto exit_error;
+
+    bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, serviceResponseEndPos);
+    if (bufPos < 0)
+        goto exit_error;
 
     int listEndPos = bufPos + length;
 
     if (*nameList == NULL)
         *nameList = LinkedList_create();
 
+    if (*nameList == NULL)
+        goto exit_error;
+
     LinkedList element = LinkedList_getLastElement(*nameList);
 
     while (bufPos < listEndPos)
-	{
-		if (bufPos >= maxBufPos)
-			goto exit_error;
+    {
+        if (bufPos >= maxBufPos)
+            goto exit_error;
 
         tag = buffer[bufPos++];
-        if (tag != 0x1a) goto exit_error;
+        if (tag != 0x1a)
+            goto exit_error;
 
-        bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
-        if (bufPos < 0) goto exit_error;
+        bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, listEndPos);
+        if (bufPos < 0)
+            goto exit_error;
 
         char* variableName = StringUtils_createStringFromBuffer(buffer + bufPos, length);
 
+        if (variableName == NULL)
+            goto exit_error;
+
         element = LinkedList_insertAfter(element, variableName);
+
+		if (element == NULL)
+		{
+			GLOBAL_FREEMEM(variableName);
+			goto exit_error;
+		}
 
         bufPos += length;
     }
 
-    if (bufPos < maxBufPos)
-	{
-		tag = buffer[bufPos++];
+    if (bufPos < serviceResponseEndPos)
+    {
+        tag = buffer[bufPos++];
 
-		if (tag != 0x81) goto exit_error;
+        if (tag != 0x81)
+            goto exit_error;
 
-		bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
+        bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, serviceResponseEndPos);
 
-		if (bufPos < 0) goto exit_error;
+        if (bufPos < 0)
+            goto exit_error;
 
-		if (length != 1) goto exit_error;
+        if (length != 1)
+            goto exit_error;
 
-		if (buffer[bufPos++] > 0)
-			moreFollows = true;
-		else
-			moreFollows = false;
+        if (buffer[bufPos++] > 0)
+            moreFollows = true;
+        else
+            moreFollows = false;
     }
 
-	return moreFollows;
+    return moreFollows;
 
 exit_error:
 
-	if (*nameList != NULL)
-	{
+    if (*nameList != NULL)
+    {
         LinkedList_destroy(*nameList);
         *nameList = NULL;
     }
 
     if (DEBUG_MMS_CLIENT)
-		printf("MMS client: error parsing get-name-list response.\n");
+        printf("MMS client: error parsing get-name-list response.\n");
 
-	return false;
+    return false;
 }
 
 int
@@ -236,8 +264,8 @@ mmsClient_createGetNameListRequestDomainOrVMDSpecific(long invokeId, const char*
 {
     MmsPdu_t* mmsPdu = mmsClient_createConfirmedRequestPdu(invokeId);
 
-	if (mmsPdu == NULL)
-		return 0;
+    if (mmsPdu == NULL)
+        return 0;
 
     mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.present = ConfirmedServiceRequest_PR_getNameList;
 
@@ -245,16 +273,20 @@ mmsClient_createGetNameListRequestDomainOrVMDSpecific(long invokeId, const char*
 
     request = &(mmsPdu->choice.confirmedRequestPdu.confirmedServiceRequest.choice.getNameList);
 
-    if (continueAfter != NULL)
+    if (continueAfter)
     {
         request->continueAfter = (Identifier_t*)GLOBAL_CALLOC(1, sizeof(Identifier_t));
-        request->continueAfter->buf = (uint8_t*)StringUtils_copyString(continueAfter);
-        request->continueAfter->size = strlen(continueAfter);
+
+        if (request->continueAfter)
+        {
+            request->continueAfter->buf = (uint8_t*)StringUtils_copyString(continueAfter);
+            request->continueAfter->size = strlen(continueAfter);
+        }
     }
     else
         request->continueAfter = NULL;
 
-    if (domainName != NULL)
+    if (domainName)
     {
         request->objectScope.present = GetNameListRequest__objectScope_PR_domainSpecific;
         request->objectScope.choice.domainSpecific.buf = (uint8_t*)domainName;

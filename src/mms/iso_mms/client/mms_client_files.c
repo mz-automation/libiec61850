@@ -1,7 +1,7 @@
 /*
  *  mms_client_files.c
  *
- *  Copyright 2013 - 2022 Michael Zillgith
+ *  Copyright 2013-2026 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -131,7 +131,6 @@ mmsClient_handleFileOpenRequest(MmsConnection connection, uint8_t* buffer, int b
 
     if (hasFileName)
     {
-
         if (mmsMsg_isFilenameSave(filename) == false)
         {
             /* potential attack */
@@ -573,15 +572,20 @@ parseDirectoryEntry(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t invokeI
             return false;
         }
 
+        int endPos = bufPos + length;
+
         switch (tag)
         {
         case 0xa0: /* file-name */
+
+            if (length < 1)
+                return false;
 
             filename = fileNameMemory;
 
             tag = buffer[bufPos++];
 
-            bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
+            bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, endPos);
             if (bufPos < 0)
             {
                 if (DEBUG_MMS_CLIENT)
@@ -650,18 +654,21 @@ parseListOfDirectoryEntries(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t
     {
         tag = buffer[bufPos++];
 
-        bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
+        bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, endPos);
         if (bufPos < 0)
             return false;
 
         switch (tag)
         {
         case 0x30: /* Sequence */
-            parseDirectoryEntry(buffer, bufPos, bufPos + length, invokeId, handler, parameter);
+            if (parseDirectoryEntry(buffer, bufPos, bufPos + length, invokeId, handler, parameter) == false)
+                return false;
             bufPos += length;
             break;
+
         case 0x00: /* indefinite length end tag -> ignore */
             break;
+
         default:
             bufPos += length;
             if (DEBUG_MMS_CLIENT)
@@ -717,14 +724,15 @@ mmsClient_parseFileDirectoryResponse(ByteBuffer* response, int bufPos, uint32_t 
     {
         tag = buffer[bufPos++];
 
-        bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
+        bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, endPos);
         if (bufPos < 0)
             return false;
 
         switch (tag)
         {
         case 0xa0: /* listOfDirectoryEntries */
-            parseListOfDirectoryEntries(buffer, bufPos, bufPos + length, invokeId, handler, parameter);
+            if (parseListOfDirectoryEntries(buffer, bufPos, bufPos + length, invokeId, handler, parameter) == false)
+                return false;
 
             bufPos += length;
             break;
@@ -787,7 +795,7 @@ mmsMsg_parseFileOpenResponse(uint8_t* buffer, int bufPos, int maxBufPos, int32_t
     {
         tag = buffer[bufPos++];
 
-        bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
+        bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, endPos);
         if (bufPos < 0)
             return false;
 
@@ -860,7 +868,7 @@ mmsMsg_parseFileReadResponse(uint8_t* buffer, int bufPos, int maxBufPos, uint32_
     {
         tag = buffer[bufPos++];
 
-        bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
+        bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, endPos);
         if (bufPos < 0)
             return false;
 

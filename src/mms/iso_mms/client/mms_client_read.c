@@ -41,7 +41,12 @@ mmsClient_parseListOfAccessResults(AccessResult_t** accessResultList, int listSi
     int elementCount = listSize;
 
     if ((elementCount > 1) || createArray)
+    {
         valueList = MmsValue_createEmptyArray(elementCount);
+
+        if (valueList == NULL)
+            return NULL;
+    }
 
     int i = 0;
 
@@ -78,28 +83,37 @@ mmsClient_parseListOfAccessResults(AccessResult_t** accessResultList, int listSi
             if (arrayElementCount > 0)
             {
                 value = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
-                value->type = MMS_ARRAY;
-                value->value.structure.size = arrayElementCount;
-                value->value.structure.components = (MmsValue**) GLOBAL_CALLOC(arrayElementCount, sizeof(MmsValue*));
 
-                if (value->value.structure.components)
+                if (value)
                 {
-                    int j;
+                    value->type = MMS_ARRAY;
+                    value->value.structure.size = arrayElementCount;
+                    value->value.structure.components = (MmsValue**) GLOBAL_CALLOC(arrayElementCount, sizeof(MmsValue*));
 
-                    for (j = 0; j < arrayElementCount; j++)
+                    if (value->value.structure.components)
                     {
-                        value->value.structure.components[j] = mmsMsg_parseDataElement(
-                                accessResultList[i]->choice.array.list.array[j]);
+                        int j;
 
-                        if (value->value.structure.components[j] == NULL)
+                        for (j = 0; j < arrayElementCount; j++)
                         {
-                            if (DEBUG_MMS_CLIENT)
-                                printf("MMS CLIENT: failed to parse array element %i\n", j);
+                            value->value.structure.components[j] = mmsMsg_parseDataElement(
+                                    accessResultList[i]->choice.array.list.array[j]);
 
-                            MmsValue_delete(value);
-                            value = NULL;
-                            break;
+                            if (value->value.structure.components[j] == NULL)
+                            {
+                                if (DEBUG_MMS_CLIENT)
+                                    printf("MMS CLIENT: failed to parse array element %i\n", j);
+
+                                MmsValue_delete(value);
+                                value = NULL;
+                                break;
+                            }
                         }
+                    }
+                    else
+                    {
+                        GLOBAL_FREEMEM(value);
+                        value = NULL;
                     }
                 }
             }
@@ -143,6 +157,11 @@ mmsClient_parseListOfAccessResults(AccessResult_t** accessResultList, int listSi
                             }
                         }
                     }
+                    else
+                    {
+                        GLOBAL_FREEMEM(value);
+                        value = NULL;
+                    }
                 }
             }
             else
@@ -172,8 +191,17 @@ mmsClient_parseListOfAccessResults(AccessResult_t** accessResultList, int listSi
                                 - accessResultList[i]->choice.bitstring.bits_unused;
 
                         value->value.bitString.buf = (uint8_t*) GLOBAL_MALLOC(size);
-                        memcpy(value->value.bitString.buf,
-                                accessResultList[i]->choice.bitstring.buf, size);
+
+                        if (value->value.bitString.buf)
+                        {
+                            memcpy(value->value.bitString.buf,
+                                    accessResultList[i]->choice.bitstring.buf, size);
+                        }
+                        else
+                        {
+                            GLOBAL_FREEMEM(value);
+                            value = NULL;
+                        }
                     }
                 }
                 else
@@ -228,7 +256,7 @@ mmsClient_parseListOfAccessResults(AccessResult_t** accessResultList, int listSi
             int size = accessResultList[i]->choice.floatingpoint.size;
 
             if (size == 5) /* FLOAT32 */
-            { 
+            {
                 value = (MmsValue*) GLOBAL_CALLOC(1, sizeof(MmsValue));
 
                 if (value)
@@ -285,13 +313,22 @@ mmsClient_parseListOfAccessResults(AccessResult_t** accessResultList, int listSi
                 {
                     value->type = MMS_VISIBLE_STRING;
                     value->value.visibleString.buf = (char*) GLOBAL_MALLOC(strSize + 1);
-                    value->value.visibleString.size = strSize;
 
-                    memcpy(value->value.visibleString.buf,
-                            accessResultList[i]->choice.visiblestring.buf,
-                            strSize);
+                    if (value->value.visibleString.buf)
+                    {
+                        value->value.visibleString.size = strSize;
 
-                    value->value.visibleString.buf[strSize] = 0;
+                        memcpy(value->value.visibleString.buf,
+                                accessResultList[i]->choice.visiblestring.buf,
+                                strSize);
+
+                        value->value.visibleString.buf[strSize] = 0;
+                    }
+                    else
+                    {
+                        GLOBAL_FREEMEM(value);
+                        value = NULL;
+                    }
                 }
             }
             else
@@ -312,12 +349,21 @@ mmsClient_parseListOfAccessResults(AccessResult_t** accessResultList, int listSi
                 {
                     value->type = MMS_STRING;
                     value->value.visibleString.buf = (char*) GLOBAL_MALLOC(strSize + 1);
-                    value->value.visibleString.size = strSize;
 
-                    memcpy(value->value.visibleString.buf,
-                            accessResultList[i]->choice.mMSString.buf, strSize);
+                    if (value->value.visibleString.buf)
+                    {
+                        value->value.visibleString.size = strSize;
 
-                    value->value.visibleString.buf[strSize] = 0;
+                        memcpy(value->value.visibleString.buf,
+                                accessResultList[i]->choice.mMSString.buf, strSize);
+
+                        value->value.visibleString.buf[strSize] = 0;
+                    }
+                    else
+                    {
+                        GLOBAL_FREEMEM(value);
+                        value = NULL;
+                    }
                 }
             }
             else
@@ -385,7 +431,16 @@ mmsClient_parseListOfAccessResults(AccessResult_t** accessResultList, int listSi
                     value->value.octetString.maxSize = -size;
                     value->value.octetString.size = size;
                     value->value.octetString.buf = (uint8_t*) GLOBAL_MALLOC(size);
-                    memcpy(value->value.octetString.buf, accessResultList[i]->choice.octetstring.buf, size);
+
+                    if (value->value.octetString.buf)
+                    {
+                        memcpy(value->value.octetString.buf, accessResultList[i]->choice.octetstring.buf, size);
+                    }
+                    else
+                    {
+                        GLOBAL_FREEMEM(value);
+                        value = NULL;
+                    }
                 }
             }
             else

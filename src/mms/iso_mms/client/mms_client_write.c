@@ -76,6 +76,9 @@ mmsClient_parseWriteMultipleItemsResponse(ByteBuffer* message, int32_t bufPos, M
 
     *mmsError = MMS_ERROR_NONE;
 
+    if (accessResults)
+        *accessResults = NULL;
+
     if (bufPos >= size)
     {
         *mmsError = MMS_ERROR_PARSING_RESPONSE;
@@ -95,7 +98,15 @@ mmsClient_parseWriteMultipleItemsResponse(ByteBuffer* message, int32_t bufPos, M
        }
 
        if (accessResults)
+       {
            *accessResults = LinkedList_create();
+
+           if (*accessResults == NULL)
+           {
+               *mmsError = MMS_ERROR_PARSING_RESPONSE;
+               return;
+           }
+       }
 
        int endPos = bufPos + length;
 
@@ -104,14 +115,28 @@ mmsClient_parseWriteMultipleItemsResponse(ByteBuffer* message, int32_t bufPos, M
        while (bufPos < endPos)
        {
            tag = buf[bufPos++];
-           bufPos = BerDecoder_decodeLength(buf, &length, bufPos, size);
+           bufPos = BerDecoder_decodeLength(buf, &length, bufPos, endPos);
 
            if (bufPos == -1) goto exit_with_error;
 
            if (tag == 0x81)
            {
                if (accessResults)
-                   LinkedList_add(*accessResults, (void*) MmsValue_newDataAccessError(DATA_ACCESS_ERROR_SUCCESS));
+               {
+                   MmsValue* resultValue = MmsValue_newDataAccessError(DATA_ACCESS_ERROR_SUCCESS);
+                   LinkedList resultNode = NULL;
+
+                   if (resultValue)
+                       resultNode = LinkedList_insertAfter(LinkedList_getLastElement(*accessResults), resultValue);
+
+                   if (resultNode == NULL)
+                   {
+                       if (resultValue)
+                           MmsValue_delete(resultValue);
+
+                       goto exit_with_error;
+                   }
+               }
            }
 
            if (tag == 0x80)
@@ -120,7 +145,21 @@ mmsClient_parseWriteMultipleItemsResponse(ByteBuffer* message, int32_t bufPos, M
                        BerDecoder_decodeUint32(buf, length, bufPos);
 
                if (accessResults)
-                   LinkedList_add(*accessResults, (void*) MmsValue_newDataAccessError((MmsDataAccessError) dataAccessErrorCode));
+               {
+                   MmsValue* resultValue = MmsValue_newDataAccessError((MmsDataAccessError) dataAccessErrorCode);
+                   LinkedList resultNode = NULL;
+
+                   if (resultValue)
+                       resultNode = LinkedList_insertAfter(LinkedList_getLastElement(*accessResults), resultValue);
+
+                   if (resultNode == NULL)
+                   {
+                       if (resultValue)
+                           MmsValue_delete(resultValue);
+
+                       goto exit_with_error;
+                   }
+               }
            }
 
            bufPos += length;
@@ -186,6 +225,8 @@ mmsClient_parseWriteResponse(ByteBuffer* message, int32_t bufPos, MmsError* mmsE
             goto exit_function;
         }
 
+        int endPos = bufPos + length;
+
         tag = buf[bufPos++];
 
         if (tag == 0x81)
@@ -196,7 +237,7 @@ mmsClient_parseWriteResponse(ByteBuffer* message, int32_t bufPos, MmsError* mmsE
 
         if (tag == 0x80)
         {
-            bufPos = BerDecoder_decodeLength(buf, &length, bufPos, size);
+            bufPos = BerDecoder_decodeLength(buf, &length, bufPos, endPos);
 
             if (bufPos < 0)
             {

@@ -621,7 +621,7 @@ mmsMsg_parseConfirmedErrorPDU(uint8_t* buffer, int bufPos, int maxBufPos, uint32
     {
         tag = buffer[bufPos++];
 
-        bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
+        bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, endPos);
 
         if (bufPos < 0)
             goto exit_error;
@@ -686,7 +686,7 @@ mmsMsg_parseRejectPDU(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t* invo
     {
         tag = buffer[bufPos++];
 
-        bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
+        bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, endPos);
 
         if (bufPos < 0)
             goto exit_error;
@@ -915,8 +915,8 @@ handleAsyncResponse(MmsConnection self, ByteBuffer* response, uint32_t bufPos, M
         }
         else
         {
-            int vmdLogicalStatus;
-            int vmdPhysicalStatus;
+            int vmdLogicalStatus = 0;
+            int vmdPhysicalStatus = 0;
 
             if (mmsClient_parseStatusResponse(self, response, bufPos, &vmdLogicalStatus, &vmdPhysicalStatus) == false)
                 err = MMS_ERROR_PARSING_RESPONSE;
