@@ -915,8 +915,8 @@ handleAsyncResponse(MmsConnection self, ByteBuffer* response, uint32_t bufPos, M
         }
         else
         {
-            int vmdLogicalStatus;
-            int vmdPhysicalStatus;
+            int vmdLogicalStatus = 0;
+            int vmdPhysicalStatus = 0;
 
             if (mmsClient_parseStatusResponse(self, response, bufPos, &vmdLogicalStatus, &vmdPhysicalStatus) == false)
                 err = MMS_ERROR_PARSING_RESPONSE;
