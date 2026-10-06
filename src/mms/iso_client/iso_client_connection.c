@@ -811,6 +811,8 @@ IsoClientConnection_associateAsync(IsoClientConnection self, uint32_t connectTim
 
     /* Create socket and start connect */
 
+    releaseSocket(self);
+
     self->socket = TcpSocket_create();
 
     if (self->socket == NULL)
