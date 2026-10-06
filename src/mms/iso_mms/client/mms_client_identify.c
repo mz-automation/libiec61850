@@ -1,7 +1,7 @@
 /*
  *  mms_client_identify.c
  *
- *  Copyright 2013-2018 Michael Zillgith
+ *  Copyright 2013-2026 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -60,6 +60,9 @@ mmsClient_parseIdentifyResponse(MmsConnection self, ByteBuffer* response, uint32
     int length;
     int bufPos = (int)respBufPos;
 
+    if ((bufPos >= maxBufPos) || (bufPos < 0))
+        return false;
+
     uint8_t tag = buffer[bufPos++];
     if (tag != 0xa2)
         goto exit_error;
@@ -82,7 +85,7 @@ mmsClient_parseIdentifyResponse(MmsConnection self, ByteBuffer* response, uint32
     {
         tag = buffer[bufPos++];
 
-        bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, maxBufPos);
+        bufPos = BerDecoder_decodeLength(buffer, &length, bufPos, endPos);
         if (bufPos < 0)
             goto exit_error;
 
