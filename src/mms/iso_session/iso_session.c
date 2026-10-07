@@ -299,11 +299,12 @@ encodeConnectAcceptItem(uint8_t* buf, int offset, uint8_t options)
     return offset;
 }
 
+#if 0 /* code not used by the library */
 static int
 encodeConnectionIdentifier(uint8_t* buf, int offset, uint8_t reasonCode)
 {
     buf[offset++] = 1;  /* Connection Identifier */
-    buf[offset++] = 2;  /* LEN */
+    buf[offset++] = 6;  /* LEN */
     buf[offset++] = 17; /* Transport Disconnect */
     buf[offset++] = 1;  /* L=1 */
     buf[offset++] = 1;  /* VALUE = release transport connection */
@@ -313,6 +314,7 @@ encodeConnectionIdentifier(uint8_t* buf, int offset, uint8_t reasonCode)
 
     return offset;
 }
+#endif
 
 static int
 encodeSessionRequirement(IsoSession* self, uint8_t* buf, int offset)
@@ -483,6 +485,7 @@ IsoSession_createAcceptSpdu(IsoSession* self, BufferChain buffer, BufferChain pa
     buffer->nextPart = payload;
 }
 
+#if 0 /* code not used by the library */
 void
 IsoSession_createRefuseSpdu(IsoSession* self, BufferChain buffer, BufferChain payload, uint8_t reasonCode)
 {
@@ -497,6 +500,7 @@ IsoSession_createRefuseSpdu(IsoSession* self, BufferChain buffer, BufferChain pa
 
     offset = encodeConnectionIdentifier(buf, offset, reasonCode);
 }
+#endif
 
 void
 IsoSession_init(IsoSession* session)

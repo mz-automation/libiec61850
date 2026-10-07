@@ -66,8 +66,10 @@ IsoSession_createDataSpdu(IsoSession* self, BufferChain buffer, BufferChain payl
 LIB61850_INTERNAL void
 IsoSession_createAcceptSpdu(IsoSession* self, BufferChain buffer, BufferChain payload);
 
+#if 0 /* code not used by the library */
 LIB61850_INTERNAL void
 IsoSession_createRefuseSpdu(IsoSession* self, BufferChain buffer, BufferChain payload, uint8_t reasonCode);
+#endif
 
 LIB61850_INTERNAL void
 IsoSession_createAbortSpdu(IsoSession* self, BufferChain buffer, BufferChain payload);
