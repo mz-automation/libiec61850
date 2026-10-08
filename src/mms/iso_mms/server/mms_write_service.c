@@ -826,7 +826,17 @@ mmsServer_handleWriteRequest(MmsServerConnection connection, uint8_t* buffer, in
                     }
                     else /* select sub-array with start-index and number-of-elements */
                     {
-                        if (MmsValue_getType(value) != MMS_ARRAY)
+                        int arraySize = (int) MmsValue_getArraySize(cachedArray);
+
+                        if (index < 0 || numberOfElements <= 0 || index > arraySize ||
+                            numberOfElements > arraySize - index)
+                        {
+                            accessResults[i] = DATA_ACCESS_ERROR_OBJECT_ATTRIBUTE_INCONSISTENT;
+                            goto end_of_main_loop;
+                        }
+
+                        if ((MmsValue_getType(value) != MMS_ARRAY) ||
+                            (MmsValue_getArraySize(value) != (uint32_t) numberOfElements))
                         {
                             accessResults[i] = DATA_ACCESS_ERROR_TYPE_INCONSISTENT;
                             goto end_of_main_loop;
@@ -837,17 +847,21 @@ mmsServer_handleWriteRequest(MmsServerConnection connection, uint8_t* buffer, in
                         for (elementNo = 0; elementNo < numberOfElements; elementNo++)
                         {
                             MmsValue* newElement = MmsValue_getElement(value, elementNo);
-                            MmsValue* elementValue = MmsValue_getElement(cachedArray, index++);
+                            MmsValue* elementValue = MmsValue_getElement(cachedArray, index + elementNo);
 
-                            if ((elementValue == NULL) || (newElement == NULL))
+                            if ((elementValue == NULL) || (newElement == NULL) ||
+                                (MmsValue_equalTypes(elementValue, newElement) == false))
                             {
                                 accessResults[i] = DATA_ACCESS_ERROR_TYPE_INCONSISTENT;
                                 goto end_of_main_loop;
                             }
 
-                            if (MmsValue_update(elementValue, newElement) == false)
+                            accessResults[i] = mmsServer_setValueEx(connection->server, domain, nameIdStr,
+                                    newElement, connection, index + elementNo, NULL);
+
+                            if ((accessResults[i] != DATA_ACCESS_ERROR_SUCCESS) &&
+                                (accessResults[i] != DATA_ACCESS_ERROR_SUCCESS_NO_UPDATE))
                             {
-                                accessResults[i] = DATA_ACCESS_ERROR_TYPE_INCONSISTENT;
                                 goto end_of_main_loop;
                             }
                         }
