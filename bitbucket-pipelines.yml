@@ -118,10 +118,24 @@ definitions:
         name: Run libiec61850-tests/v1.6
         script:
           - apt-get update -qq
-          - apt-get install -y --no-install-recommends cmake build-essential git
+          - apt-get install -y --no-install-recommends cmake build-essential git python3
           - git clone --branch v1.6 --single-branch git@bitbucket.org:mz-automation/libiec61850-tests.git libiec61850-tests
           - chmod +x libiec61850-tests/scripts/run-native-tests.sh
-          - TEST_PROFILE=native LIBIEC61850_SOURCE_DIR="$BITBUCKET_CLONE_DIR" libiec61850-tests/scripts/run-native-tests.sh
+          - python3 libiec61850-tests/scripts/test_unity_to_junit.py
+          - |
+            set +e
+            TEST_PROFILE=native TEST_CONFIGURATION=native LIBIEC61850_SOURCE_DIR="$BITBUCKET_CLONE_DIR" libiec61850-tests/scripts/run-native-tests.sh
+            test_status=$?
+            python3 libiec61850-tests/scripts/publish_test_insights.py \
+              --results-dir "$BITBUCKET_CLONE_DIR/libiec61850-tests/test-results/native" \
+              --report-id "libiec61850-tests-native" \
+              --title "Native tests" \
+              --configuration "Native, no TLS or SQLite" \
+              --test-exit-code "$test_status"
+            insights_status=$?
+            set -e
+            [ "$test_status" -eq 0 ] || exit "$test_status"
+            exit "$insights_status"
         artifacts:
           - libiec61850-tests/test-results/**
 
@@ -133,7 +147,22 @@ definitions:
           - git clone --branch v1.6 --single-branch git@bitbucket.org:mz-automation/libiec61850-tests.git libiec61850-tests
           - chmod +x libiec61850-tests/scripts/prepare-test-dependency.sh libiec61850-tests/scripts/run-native-tests.sh
           - libiec61850-tests/scripts/prepare-test-dependency.sh "$BITBUCKET_CLONE_DIR" mbedtls-2.28
-          - TEST_PROFILE=tls BUILD_DIR="$BITBUCKET_CLONE_DIR/build-mbedtls-2.28" RESULTS_DIR="$BITBUCKET_CLONE_DIR/libiec61850-tests/test-results/mbedtls-2.28" LIBIEC61850_SOURCE_DIR="$BITBUCKET_CLONE_DIR" libiec61850-tests/scripts/run-native-tests.sh
+          - |
+            set +e
+            TEST_PROFILE=tls TEST_CONFIGURATION=mbedtls-2.28 BUILD_DIR="$BITBUCKET_CLONE_DIR/build-mbedtls-2.28" RESULTS_DIR="$BITBUCKET_CLONE_DIR/libiec61850-tests/test-results/mbedtls-2.28" LIBIEC61850_SOURCE_DIR="$BITBUCKET_CLONE_DIR" libiec61850-tests/scripts/run-native-tests.sh
+            test_status=$?
+            dependency_version=$(sed -n 's/^#define MBEDTLS_VERSION_STRING_FULL[[:space:]]*"\(.*\)"/\1/p' "$BITBUCKET_CLONE_DIR/third_party/mbedtls/mbedtls-2.28/include/mbedtls/version.h" | head -n 1)
+            python3 libiec61850-tests/scripts/publish_test_insights.py \
+              --results-dir "$BITBUCKET_CLONE_DIR/libiec61850-tests/test-results/mbedtls-2.28" \
+              --report-id "libiec61850-tests-mbedtls-228" \
+              --title "TLS tests (mbedTLS 2.28)" \
+              --configuration "TLS-specific test suites" \
+              --dependency "$dependency_version" \
+              --test-exit-code "$test_status"
+            insights_status=$?
+            set -e
+            [ "$test_status" -eq 0 ] || exit "$test_status"
+            exit "$insights_status"
         artifacts:
           - libiec61850-tests/test-results/**
 
@@ -145,7 +174,22 @@ definitions:
           - git clone --branch v1.6 --single-branch git@bitbucket.org:mz-automation/libiec61850-tests.git libiec61850-tests
           - chmod +x libiec61850-tests/scripts/prepare-test-dependency.sh libiec61850-tests/scripts/run-native-tests.sh
           - libiec61850-tests/scripts/prepare-test-dependency.sh "$BITBUCKET_CLONE_DIR" mbedtls-3.6
-          - TEST_PROFILE=tls BUILD_DIR="$BITBUCKET_CLONE_DIR/build-mbedtls-3.6" RESULTS_DIR="$BITBUCKET_CLONE_DIR/libiec61850-tests/test-results/mbedtls-3.6" LIBIEC61850_SOURCE_DIR="$BITBUCKET_CLONE_DIR" libiec61850-tests/scripts/run-native-tests.sh
+          - |
+            set +e
+            TEST_PROFILE=tls TEST_CONFIGURATION=mbedtls-3.6 BUILD_DIR="$BITBUCKET_CLONE_DIR/build-mbedtls-3.6" RESULTS_DIR="$BITBUCKET_CLONE_DIR/libiec61850-tests/test-results/mbedtls-3.6" LIBIEC61850_SOURCE_DIR="$BITBUCKET_CLONE_DIR" libiec61850-tests/scripts/run-native-tests.sh
+            test_status=$?
+            dependency_version=$(sed -n 's/^#define MBEDTLS_VERSION_STRING_FULL[[:space:]]*"\(.*\)"/\1/p' "$BITBUCKET_CLONE_DIR/third_party/mbedtls/mbedtls-3.6.0/include/mbedtls/version.h" | head -n 1)
+            python3 libiec61850-tests/scripts/publish_test_insights.py \
+              --results-dir "$BITBUCKET_CLONE_DIR/libiec61850-tests/test-results/mbedtls-3.6" \
+              --report-id "libiec61850-tests-mbedtls-36" \
+              --title "TLS tests (mbedTLS 3.6)" \
+              --configuration "TLS-specific test suites" \
+              --dependency "$dependency_version" \
+              --test-exit-code "$test_status"
+            insights_status=$?
+            set -e
+            [ "$test_status" -eq 0 ] || exit "$test_status"
+            exit "$insights_status"
         artifacts:
           - libiec61850-tests/test-results/**
 
@@ -157,7 +201,22 @@ definitions:
           - git clone --branch v1.6 --single-branch git@bitbucket.org:mz-automation/libiec61850-tests.git libiec61850-tests
           - chmod +x libiec61850-tests/scripts/prepare-test-dependency.sh libiec61850-tests/scripts/run-native-tests.sh
           - libiec61850-tests/scripts/prepare-test-dependency.sh "$BITBUCKET_CLONE_DIR" sqlite
-          - TEST_PROFILE=sqlite BUILD_DIR="$BITBUCKET_CLONE_DIR/build-sqlite" RESULTS_DIR="$BITBUCKET_CLONE_DIR/libiec61850-tests/test-results/sqlite" LIBIEC61850_SOURCE_DIR="$BITBUCKET_CLONE_DIR" libiec61850-tests/scripts/run-native-tests.sh
+          - |
+            set +e
+            TEST_PROFILE=sqlite TEST_CONFIGURATION=sqlite BUILD_DIR="$BITBUCKET_CLONE_DIR/build-sqlite" RESULTS_DIR="$BITBUCKET_CLONE_DIR/libiec61850-tests/test-results/sqlite" LIBIEC61850_SOURCE_DIR="$BITBUCKET_CLONE_DIR" libiec61850-tests/scripts/run-native-tests.sh
+            test_status=$?
+            dependency_version=$(sed -n 's/^#define SQLITE_VERSION[[:space:]]*"\(.*\)"/\1/p' "$BITBUCKET_CLONE_DIR/third_party/sqlite/sqlite3.h" | head -n 1)
+            python3 libiec61850-tests/scripts/publish_test_insights.py \
+              --results-dir "$BITBUCKET_CLONE_DIR/libiec61850-tests/test-results/sqlite" \
+              --report-id "libiec61850-tests-sqlite" \
+              --title "Log service tests (SQLite)" \
+              --configuration "SQLite log-service test suites" \
+              --dependency "SQLite $dependency_version" \
+              --test-exit-code "$test_status"
+            insights_status=$?
+            set -e
+            [ "$test_status" -eq 0 ] || exit "$test_status"
+            exit "$insights_status"
         artifacts:
           - libiec61850-tests/test-results/**
 
@@ -165,13 +224,15 @@ definitions:
         name: Generate native C coverage report
         script:
           - apt-get update -qq
-          - apt-get install -y --no-install-recommends cmake build-essential git lcov
+          - apt-get install -y --no-install-recommends cmake build-essential git lcov python3
           - git clone --branch v1.6 --single-branch git@bitbucket.org:mz-automation/libiec61850-tests.git libiec61850-tests
           - chmod +x libiec61850-tests/scripts/run-native-tests.sh
+          - python3 libiec61850-tests/scripts/test_publish_test_insights.py
           - mkdir -p coverage/html
           - |
             set +e
             TEST_PROFILE=native \
+              TEST_CONFIGURATION=coverage \
               BUILD_DIR="$BITBUCKET_CLONE_DIR/build-coverage" \
               RESULTS_DIR="$BITBUCKET_CLONE_DIR/libiec61850-tests/test-results/coverage" \
               LIBIEC61850_SOURCE_DIR="$BITBUCKET_CLONE_DIR" \
@@ -203,6 +264,16 @@ definitions:
                 --title "libiec61850 native test coverage" || coverage_status=$?
             fi
 
+            insights_status=0
+            python3 libiec61850-tests/scripts/publish_test_insights.py \
+              --results-dir "$BITBUCKET_CLONE_DIR/libiec61850-tests/test-results/coverage" \
+              --report-id "libiec61850-tests-coverage" \
+              --title "Native tests (coverage build)" \
+              --configuration "Native GCC coverage instrumentation" \
+              --coverage-info "$BITBUCKET_CLONE_DIR/coverage/libiec61850.info" \
+              --report-type COVERAGE \
+              --test-exit-code "$test_status" || insights_status=$?
+
             if [ "$test_status" -ne 0 ]; then
               echo "Native tests failed with exit code $test_status"
               exit "$test_status"
@@ -212,6 +283,8 @@ definitions:
               echo "Coverage report generation failed with exit code $coverage_status"
               exit "$coverage_status"
             fi
+
+            exit "$insights_status"
         artifacts:
           - coverage/html/**
           - libiec61850-tests/test-results/coverage/**
@@ -220,11 +293,13 @@ definitions:
         name: Run native tests with AddressSanitizer
         script:
           - apt-get update -qq
-          - apt-get install -y --no-install-recommends cmake build-essential git
+          - apt-get install -y --no-install-recommends cmake build-essential git python3
           - git clone --branch v1.6 --single-branch git@bitbucket.org:mz-automation/libiec61850-tests.git libiec61850-tests
           - chmod +x libiec61850-tests/scripts/run-native-tests.sh
           - |
+            set +e
             TEST_PROFILE=native \
+              TEST_CONFIGURATION=asan \
               BUILD_DIR="$BITBUCKET_CLONE_DIR/build-asan" \
               RESULTS_DIR="$BITBUCKET_CLONE_DIR/libiec61850-tests/test-results/asan" \
               LIBIEC61850_SOURCE_DIR="$BITBUCKET_CLONE_DIR" \
@@ -234,6 +309,17 @@ definitions:
               ASAN_OPTIONS="detect_leaks=1:halt_on_error=1:abort_on_error=1" \
               LSAN_OPTIONS="exitcode=23" \
               libiec61850-tests/scripts/run-native-tests.sh
+            test_status=$?
+            python3 libiec61850-tests/scripts/publish_test_insights.py \
+              --results-dir "$BITBUCKET_CLONE_DIR/libiec61850-tests/test-results/asan" \
+              --report-id "libiec61850-tests-asan" \
+              --title "Native tests (AddressSanitizer)" \
+              --configuration "GCC AddressSanitizer and LeakSanitizer" \
+              --test-exit-code "$test_status"
+            insights_status=$?
+            set -e
+            [ "$test_status" -eq 0 ] || exit "$test_status"
+            exit "$insights_status"
         artifacts:
           - libiec61850-tests/test-results/asan/**
 
