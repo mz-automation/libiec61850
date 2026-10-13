@@ -74,6 +74,7 @@ struct sIsoConnection
 #endif
 
     int state;
+    bool acseAssociationAccepted;
     bool mmsAssociationEstablished;
     IsoSession* session;
     IsoPresentation* presentation;
@@ -223,6 +224,9 @@ handleSessionConnect(IsoConnection self, ByteBuffer* sessionUserData)
     if (DEBUG_ISO_SERVER)
         printf("ISO_SERVER: iso_connection: session connect indication\n");
 
+    self->acseAssociationAccepted = false;
+    self->mmsAssociationEstablished = false;
+
     if (!IsoPresentation_parseConnect(self->presentation, sessionUserData))
     {
         self->state = ISO_CON_STATE_STOPPED;
@@ -242,6 +246,8 @@ handleSessionConnect(IsoConnection self, ByteBuffer* sessionUserData)
         self->state = ISO_CON_STATE_STOPPED;
         return;
     }
+
+    self->acseAssociationAccepted = true;
 
 #if (CONFIG_MMS_THREADLESS_STACK != 1)
     IsoConnection_lock(self);
@@ -312,7 +318,7 @@ handleSessionData(IsoConnection self, ByteBuffer* sessionUserData)
     if (DEBUG_ISO_SERVER)
         printf("ISO_SERVER: iso_connection: session data indication\n");
 
-    if (self->mmsAssociationEstablished == false)
+    if ((self->acseAssociationAccepted == false) || (self->mmsAssociationEstablished == false))
     {
         self->state = ISO_CON_STATE_STOPPED;
         return;
@@ -563,6 +569,7 @@ IsoConnection_create(Socket socket, IsoServer isoServer, bool isSingleThread)
         self->handlerParameter = NULL;
         self->isoServer = isoServer;
         self->state = ISO_CON_STATE_RUNNING;
+        self->acseAssociationAccepted = false;
         self->mmsAssociationEstablished = false;
         self->clientAddress = Socket_getPeerAddress(self->socket);
         self->localAddress = Socket_getLocalAddress(self->socket);
