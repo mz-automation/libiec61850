@@ -74,6 +74,7 @@ struct sIsoConnection
 #endif
 
     int state;
+    bool mmsAssociationEstablished;
     IsoSession* session;
     IsoPresentation* presentation;
     CotpConnection* cotpConnection;
@@ -266,10 +267,13 @@ IsoConnection_handleTcpConnection(IsoConnection self, bool isSingleThread)
 
                     ByteBuffer_wrap(&mmsResponseBuffer, self->sendBuffer, 0, SEND_BUF_SIZE);
 
-                    if (self->msgRcvdHandler != NULL)
+                    if ((mmsRequest.size > 0) && (mmsRequest.buffer[0] == 0xa8) && (self->msgRcvdHandler != NULL))
                     {
                         self->msgRcvdHandler(self->handlerParameter, &mmsRequest, &mmsResponseBuffer);
                     }
+
+                    if ((mmsResponseBuffer.size > 0) && (mmsResponseBuffer.buffer[0] == 0xa9))
+                        self->mmsAssociationEstablished = true;
 
                     struct sBufferChain mmsBufferPartStruct;
                     BufferChain mmsBufferPart = &mmsBufferPartStruct;
@@ -335,6 +339,12 @@ IsoConnection_handleTcpConnection(IsoConnection self, bool isSingleThread)
         case SESSION_DATA:
             if (DEBUG_ISO_SERVER)
                 printf("ISO_SERVER: iso_connection: session data indication\n");
+
+            if (self->mmsAssociationEstablished == false)
+            {
+                self->state = ISO_CON_STATE_STOPPED;
+                break;
+            }
 
             if (!IsoPresentation_parseUserData(self->presentation, sessionUserData))
             {
@@ -546,6 +556,7 @@ IsoConnection_create(Socket socket, IsoServer isoServer, bool isSingleThread)
         self->handlerParameter = NULL;
         self->isoServer = isoServer;
         self->state = ISO_CON_STATE_RUNNING;
+        self->mmsAssociationEstablished = false;
         self->clientAddress = Socket_getPeerAddress(self->socket);
         self->localAddress = Socket_getLocalAddress(self->socket);
 
