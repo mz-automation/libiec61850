@@ -183,7 +183,7 @@ IsoConnection_callTickHandler(IsoConnection self)
 }
 
 static void
-sendAssociateResponse(IsoConnection self, ByteBuffer* mmsResponse)
+sendAssociateResponse(IsoConnection self, const ByteBuffer* mmsResponse)
 {
     struct sBufferChain mmsBufferPartStruct;
     BufferChain mmsBufferPart = &mmsBufferPartStruct;
@@ -282,7 +282,7 @@ handleSessionConnect(IsoConnection self, ByteBuffer* sessionUserData)
 }
 
 static void
-sendSessionDataResponse(IsoConnection self, ByteBuffer* mmsResponse)
+sendSessionDataResponse(IsoConnection self, const ByteBuffer* mmsResponse)
 {
     struct sBufferChain mmsBufferPartStruct;
     BufferChain mmsBufferPart = &mmsBufferPartStruct;
@@ -455,6 +455,8 @@ IsoConnection_handleTcpConnection(IsoConnection self, bool isSingleThread)
         if (Handleset_waitReady(self->handleSet, 10) < 1)
             return;
     }
+#else
+    (void)isSingleThread;
 #endif
 
     TpktState tpktState = CotpConnection_readToTpktBuffer(self->cotpConnection);
