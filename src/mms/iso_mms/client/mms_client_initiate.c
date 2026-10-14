@@ -1,7 +1,7 @@
 /*
  *  mms_client_initiate.c
  *
- *  Copyright 2013-2020 Michael Zillgith
+ *  Copyright 2013-2026 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -32,6 +32,8 @@
 #include "mms_client_internal.h"
 
 #include "ber_encoder.h"
+
+#define MMS_MIN_MAX_PDU_SIZE 128
 
 /* servicesSupported = {GetNameList} - required by initiate request, other services are required by some servers to work properly */
 static uint8_t servicesSupported[] = { 0xee, 0x1c, 0x00, 0x00, 0x04, 0x08, 0x00, 0x00, 0x79, 0xef, 0x18 };
@@ -210,6 +212,24 @@ mmsClient_parseInitiateResponse(MmsConnection self, ByteBuffer* response)
         switch (tag) {
         case 0x80: /* local-detail-calling */
             self->parameters.maxPduSize = BerDecoder_decodeUint32(buffer, length, bufPos);
+
+            if (self->parameters.maxPduSize < MMS_MIN_MAX_PDU_SIZE)
+            {
+                if (DEBUG_MMS_CLIENT)
+                    printf("MMS_CLIENT: proposed max PDU size too small, close connection\n");
+
+                return false;
+            }
+
+#ifdef CONFIG_MMS_MINIMUM_PDU_SIZE
+            if (self->parameters.maxPduSize < CONFIG_MMS_MINIMUM_PDU_SIZE)
+            {
+                if (DEBUG_MMS_CLIENT)
+                    printf("MMS_CLIENT: proposed max PDU size too small, close connection\n");
+
+                return false;
+            }
+#endif
 
             if (self->parameters.maxPduSize > CONFIG_MMS_MAXIMUM_PDU_SIZE)
                 self->parameters.maxPduSize = CONFIG_MMS_MAXIMUM_PDU_SIZE;
