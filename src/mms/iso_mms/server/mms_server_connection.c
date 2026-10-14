@@ -144,6 +144,7 @@ handleConfirmedRequestPdu(
         ByteBuffer* response)
 {
     uint32_t invokeId = 0;
+    bool foundRequest = false;
 
     while (bufPos < maxBufPos)
     {
@@ -181,6 +182,7 @@ handleConfirmedRequestPdu(
 
 #if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
             case 0x2e: /* obtain-file */
+                foundRequest = true;
                 if (self->server->fileServiceEnabled)
                     mmsServer_handleObtainFileRequest(self, buffer, bufPos, bufPos + length, invokeId, response);
                 else
@@ -188,6 +190,7 @@ handleConfirmedRequestPdu(
                 break;
 #else
             case 0x2e: /* obtain-file */
+                foundRequest = true;
                 mmsServer_handleObtainFileRequest(self, buffer, bufPos, bufPos + length, invokeId, response);
                 break;
 #endif /* (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1) */
@@ -199,14 +202,15 @@ handleConfirmedRequestPdu(
 
 #if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
             case 0x41: /* read-journal */
+                foundRequest = true;
                 if (self->server->journalServiceEnabled)
                     mmsServer_handleReadJournalRequest(self, buffer, bufPos, bufPos + length, invokeId, response);
                 else
                     mmsMsg_createMmsRejectPdu(&invokeId, MMS_ERROR_REJECT_UNRECOGNIZED_SERVICE, response);
                 break;
-
 #else
             case 0x41: /* read-journal */
+                foundRequest = true;
                 mmsServer_handleReadJournalRequest(self, buffer, bufPos, bufPos + length, invokeId, response);
                 break;
 #endif /* (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1) */
@@ -217,6 +221,7 @@ handleConfirmedRequestPdu(
 
 #if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
             case 0x48: /* file-open-request */
+                foundRequest = true;
                 if (self->server->fileServiceEnabled)
                     mmsServer_handleFileOpenRequest(self, buffer, bufPos, bufPos + length, invokeId, response);
                 else
@@ -225,12 +230,14 @@ handleConfirmedRequestPdu(
 
 #else
             case 0x48: /* file-open-request */
+                foundRequest = true;
                 mmsServer_handleFileOpenRequest(self, buffer, bufPos, bufPos + length, invokeId, response);
                 break;
 #endif /* (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1) */
 
 #if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
             case 0x49: /* file-read-request */
+                foundRequest = true;
                 if (self->server->fileServiceEnabled)
                     mmsServer_handleFileReadRequest(self, buffer, bufPos, bufPos + length, invokeId, response);
                 else
@@ -238,12 +245,14 @@ handleConfirmedRequestPdu(
                 break;
 #else
             case 0x49: /* file-read-request */
+                foundRequest = true;
                 mmsServer_handleFileReadRequest(self, buffer, bufPos, bufPos + length, invokeId, response);
                 break;
 #endif /* (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1) */
 
 #if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
             case 0x4a: /* file-close-request */
+                foundRequest = true;
                 if (self->server->fileServiceEnabled)
                     mmsServer_handleFileCloseRequest(self, buffer, bufPos, bufPos + length, invokeId, response);
                 else
@@ -251,6 +260,7 @@ handleConfirmedRequestPdu(
                 break;
 #else
             case 0x4a: /* file-close-request */
+                foundRequest = true;
                 mmsServer_handleFileCloseRequest(self, buffer, bufPos, bufPos + length, invokeId, response);
                 break;
 #endif /* (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1) */
@@ -259,6 +269,7 @@ handleConfirmedRequestPdu(
 
 #if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
             case 0x4b: /* file-rename-request */
+                foundRequest = true;
                 if (self->server->fileServiceEnabled)
                     mmsServer_handleFileRenameRequest(self, buffer, bufPos, bufPos + length, invokeId, response);
                 else
@@ -266,6 +277,7 @@ handleConfirmedRequestPdu(
                 break;
 #else
             case 0x4b: /* file-rename-request */
+                foundRequest = true;
                 mmsServer_handleFileRenameRequest(self, buffer, bufPos, bufPos + length, invokeId, response);
                 break;
 #endif /* (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1) */
@@ -277,6 +289,7 @@ handleConfirmedRequestPdu(
 
 #if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
             case 0x4c: /* file-delete-request */
+                foundRequest = true;
                 if (self->server->fileServiceEnabled)
                     mmsServer_handleFileDeleteRequest(self, buffer, bufPos, bufPos + length, invokeId, response);
                 else
@@ -284,6 +297,7 @@ handleConfirmedRequestPdu(
                 break;
 #else
             case 0x4c: /* file-delete-request */
+                foundRequest = true;
                 mmsServer_handleFileDeleteRequest(self, buffer, bufPos, bufPos + length, invokeId, response);
                 break;
 #endif /* (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1) */
@@ -292,6 +306,7 @@ handleConfirmedRequestPdu(
 
 #if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
             case 0x4d: /* file-directory-request */
+                foundRequest = true;
                 if (self->server->fileServiceEnabled)
                     mmsServer_handleFileDirectoryRequest(self, buffer, bufPos, bufPos + length, invokeId, response);
                 else
@@ -299,6 +314,7 @@ handleConfirmedRequestPdu(
                 break;
 #else
             case 0x4d: /* file-directory-request */
+                foundRequest = true;
                 mmsServer_handleFileDirectoryRequest(self, buffer, bufPos, bufPos + length, invokeId, response);
                 break;
 #endif /* (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1) */
@@ -324,12 +340,14 @@ handleConfirmedRequestPdu(
 
 #if (MMS_STATUS_SERVICE == 1)
             case 0x80: /* status-request */
+                foundRequest = true;
                 mmsServer_handleStatusRequest(self, buffer, bufPos, bufPos + length, invokeId, response);
                 break;
 #endif /* MMS_STATUS_SERVICE == 1 */
 
 #if (MMS_GET_NAME_LIST == 1)
             case 0xa1: /* get-name-list-request */
+                foundRequest = true;
                 mmsServer_handleGetNameListRequest(self, buffer, bufPos, bufPos + length,
                         invokeId, response);
                 break;
@@ -337,17 +355,20 @@ handleConfirmedRequestPdu(
 
 #if (MMS_IDENTIFY_SERVICE == 1)
             case 0x82: /* identify */
+                foundRequest = true;
                 mmsServer_handleIdentifyRequest(self, invokeId, response);
                 break;
 #endif /* MMS_IDENTIFY_SERVICE == 1 */
 
             case 0xa4: /* read-request */
+                foundRequest = true;
                 mmsServer_handleReadRequest(self, buffer, bufPos, bufPos + length,
                         invokeId, response);
                 break;
 
 #if (MMS_WRITE_SERVICE == 1)
             case 0xa5: /* write-request */
+                foundRequest = true;
                 mmsServer_handleWriteRequest(self, buffer, bufPos, bufPos + length,
                         invokeId, response);
                 break;
@@ -355,6 +376,7 @@ handleConfirmedRequestPdu(
 
 #if (MMS_GET_VARIABLE_ACCESS_ATTRIBUTES == 1)
             case 0xa6: /* get-variable-access-attributes-request */
+                foundRequest = true;
                 mmsServer_handleGetVariableAccessAttributesRequest(self,
                         buffer, bufPos, bufPos + length,
                         invokeId, response);
@@ -366,6 +388,7 @@ handleConfirmedRequestPdu(
 #if (CONFIG_MMS_SERVER_CONFIG_SERVICES_AT_RUNTIME == 1)
 
             case 0xab: /* define-named-variable-list */
+                foundRequest = true;
                 if (self->server->dynamicVariableListServiceEnabled)
                     mmsServer_handleDefineNamedVariableListRequest(self,
                             buffer, bufPos, bufPos + length,
@@ -375,6 +398,7 @@ handleConfirmedRequestPdu(
                 break;
 
             case 0xad: /* delete-named-variable-list-request */
+                foundRequest = true;
                 if (self->server->dynamicVariableListServiceEnabled)
                     mmsServer_handleDeleteNamedVariableListRequest(self,
                             buffer, bufPos, bufPos + length,
@@ -385,12 +409,14 @@ handleConfirmedRequestPdu(
 
 #else
             case 0xab: /* define-named-variable-list */
+                foundRequest = true;
                 mmsServer_handleDefineNamedVariableListRequest(self,
                         buffer, bufPos, bufPos + length,
                         invokeId, response);
                 break;
 
             case 0xad: /* delete-named-variable-list-request */
+                foundRequest = true;
                 mmsServer_handleDeleteNamedVariableListRequest(self,
                         buffer, bufPos, bufPos + length,
                         invokeId, response);
@@ -402,6 +428,7 @@ handleConfirmedRequestPdu(
 
 #if (MMS_GET_DATA_SET_ATTRIBUTES == 1)
             case 0xac: /* get-named-variable-list-attributes-request */
+                foundRequest = true;
                 mmsServer_handleGetNamedVariableListAttributesRequest(self,
                         buffer, bufPos, bufPos + length,
                         invokeId, response);
@@ -417,6 +444,9 @@ handleConfirmedRequestPdu(
                 break;
             }
         }
+
+        if (foundRequest)
+            return;
 
         bufPos += length;
     }
