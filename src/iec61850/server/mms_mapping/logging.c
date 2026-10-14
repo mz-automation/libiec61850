@@ -415,11 +415,10 @@ freeDynamicDataSet(LogControl* self)
     if (self->isDynamicDataSet)
     {
         if (self->dataSet)
-        {
             MmsMapping_freeDynamicallyCreatedDataSet(self->dataSet);
-            self->isDynamicDataSet = false;
-            self->dataSet = NULL;
-        }
+
+        self->isDynamicDataSet = false;
+        self->dataSet = NULL;
     }
 }
 
@@ -655,7 +654,8 @@ LIBIEC61850_LOG_SVC_writeAccessLogControlBlock(MmsMapping* self, MmsDomain* doma
                }
             }
         }
-        else {
+        else
+        {
             retVal = DATA_ACCESS_ERROR_TEMPORARILY_UNAVAILABLE;
             goto exit_function;
         }
@@ -669,6 +669,7 @@ LIBIEC61850_LOG_SVC_writeAccessLogControlBlock(MmsMapping* self, MmsDomain* doma
 
             if (strlen(dataSetRef) == 0)
             {
+                freeDynamicDataSet(logControl);
                 logControl->dataSet = NULL;
                 updateValue = true;
             }
