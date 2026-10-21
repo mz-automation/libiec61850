@@ -231,6 +231,9 @@ LogControl_destroy(LogControl* self)
 {
     if (self)
     {
+        if (self->isDynamicDataSet && self->dataSet)
+            MmsMapping_freeDynamicallyCreatedDataSet(self->dataSet);
+
         MmsValue_delete(self->mmsValue);
         GLOBAL_FREEMEM(self->name);
 
@@ -1256,4 +1259,3 @@ MmsMapping_setLogStorage(MmsMapping* self, const char* logRef, LogStorage logSto
 }
 
 #endif /* (CONFIG_IEC61850_LOG_SERVICE == 1) */
-
