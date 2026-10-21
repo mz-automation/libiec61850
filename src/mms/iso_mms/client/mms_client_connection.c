@@ -150,7 +150,7 @@ handleUnconfirmedMmsPdu(MmsConnection self, ByteBuffer* message)
                         {
                             if (DEBUG_MMS_CLIENT)
                                 printf("report contains wrong number of access results\n");
-                            return;
+                            goto cleanup;
                         }
 
                         MmsValue* values = mmsClient_parseListOfAccessResults(
@@ -262,6 +262,7 @@ handleUnconfirmedMmsPdu(MmsConnection self, ByteBuffer* message)
                 printf("handleUnconfirmedMmsPdu: error parsing PDU at %u\n", (uint32_t) rval.consumed);
         }
 
+cleanup:
         asn_DEF_MmsPdu.free_struct(&asn_DEF_MmsPdu, mmsPdu, 0);
     }
 }
