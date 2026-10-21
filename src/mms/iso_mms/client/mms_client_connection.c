@@ -41,12 +41,36 @@
 static void
 setConnectionState(MmsConnection self, MmsConnectionState newState)
 {
+    MmsConnectionStateChangedHandler handler;
+    void* handlerParameter;
+
     Semaphore_wait(self->associationStateLock);
     self->connectionState = newState;
+
+    if (self->connectWaitLock)
+    {
+        if ((newState == MMS_CONNECTION_STATE_CLOSED) || (newState == MMS_CONNECTION_STATE_CONNECTED))
+        {
+            Semaphore_post(self->connectWaitLock);
+            handler = NULL;
+            handlerParameter = NULL;
+        }
+        else
+        {
+            handler = self->connectWaitHandler;
+            handlerParameter = self->connectWaitHandlerParameter;
+        }
+    }
+    else
+    {
+        handler = self->stateChangedHandler;
+        handlerParameter = self->stateChangedHandlerParameter;
+    }
+
     Semaphore_post(self->associationStateLock);
 
-    if (self->stateChangedHandler)
-        self->stateChangedHandler(self, self->stateChangedHandlerParameter, newState);
+    if (handler)
+        handler(self, handlerParameter, newState);
 }
 
 static MmsConnectionState
@@ -1593,8 +1617,15 @@ connectionHandlingThread(void* parameter)
 {
     MmsConnection self = (MmsConnection) parameter;
 
-    while (self->connectionThreadRunning)
+    while (true)
     {
+        Semaphore_wait(self->associationStateLock);
+        bool running = self->connectionThreadRunning;
+        Semaphore_post(self->associationStateLock);
+
+        if (running == false)
+            break;
+
         if (MmsConnection_tick(self))
             Thread_sleep(10);
     }
@@ -1692,14 +1723,23 @@ MmsConnection_destroy(MmsConnection self)
 #if (CONFIG_MMS_THREADLESS_STACK == 0)
         if (self->createThread)
         {
-            if (self->connectionHandlingThread)
+            Semaphore_wait(self->associationStateLock);
+            Thread connectionHandlingThread = self->connectionHandlingThread;
+
+            if (connectionHandlingThread)
             {
-                if (self->connectionThreadRunning)
-                {
-                    self->connectionThreadRunning = false;
-                    Thread_destroy(self->connectionHandlingThread);
-                    self->connectionHandlingThread = NULL;
-                }
+                self->connectionThreadRunning = false;
+            }
+
+            Semaphore_post(self->associationStateLock);
+
+            if (connectionHandlingThread)
+            {
+                Thread_destroy(connectionHandlingThread);
+
+                Semaphore_wait(self->associationStateLock);
+                self->connectionHandlingThread = NULL;
+                Semaphore_post(self->associationStateLock);
             }
         }
 #endif
@@ -1799,8 +1839,10 @@ MmsConnection_setConnectionLostHandler(MmsConnection self, MmsConnectionLostHand
 void
 MmsConnection_setConnectionStateChangedHandler(MmsConnection self, MmsConnectionStateChangedHandler handler, void* parameter)
 {
+    Semaphore_wait(self->associationStateLock);
     self->stateChangedHandler = handler;
     self->stateChangedHandlerParameter = parameter;
+    Semaphore_post(self->associationStateLock);
 }
 
 void
@@ -1870,56 +1912,37 @@ MmsConnection_setTLSConfiguration(MmsConnection self, TLSConfiguration tlsConfig
     IsoClientConnection_setTLSConfiguration(self->isoClient, tlsConfig);
 }
 
-struct connectParameters
-{
-    Semaphore sem;
-    MmsConnectionState state;
-    MmsConnectionStateChangedHandler originalHandler;
-    void* originalParameter;
-};
-
-static void
-internalConnectionStateChangedHandler (MmsConnection connection, void* parameter, MmsConnectionState newState)
-{
-    struct connectParameters* conParams = (struct connectParameters*) parameter;
-
-    if ((newState == MMS_CONNECTION_STATE_CLOSED) || (newState == MMS_CONNECTION_STATE_CONNECTED))
-    {
-        conParams->state = newState;
-
-        /* unblock user thread */
-        Semaphore_post(conParams->sem);
-    }
-    else
-    {
-        if (conParams->originalHandler)
-            conParams->originalHandler(connection, conParams->originalParameter, newState);
-    }
-}
-
 bool
 MmsConnection_connect(MmsConnection self, MmsError* mmsError, const char* serverName, int serverPort)
 {
     bool success = false;
 
-    struct connectParameters conParams;
+    Semaphore connectWaitSemaphore = Semaphore_create(0);
 
-    conParams.sem = Semaphore_create(1);
-
-    if (conParams.sem == NULL)
+    if (connectWaitSemaphore == NULL)
     {
         *mmsError = MMS_ERROR_RESOURCE_OTHER;
         return false;
     }
 
-    conParams.state = MMS_CONNECTION_STATE_CONNECTING;
-    conParams.originalHandler = self->stateChangedHandler;
-    conParams.originalParameter = self->stateChangedHandlerParameter;
+    Semaphore_wait(self->associationStateLock);
 
-    Semaphore_wait(conParams.sem);
+    if (self->connectWaitLock)
+    {
+        Semaphore_post(self->associationStateLock);
+        Semaphore_destroy(connectWaitSemaphore);
+        *mmsError = MMS_ERROR_OTHER;
+        return false;
+    }
 
-    self->stateChangedHandler = internalConnectionStateChangedHandler;
-    self->stateChangedHandlerParameter = &conParams;
+    MmsConnectionStateChangedHandler originalHandler = self->stateChangedHandler;
+    void* originalParameter = self->stateChangedHandlerParameter;
+
+    self->connectWaitLock = connectWaitSemaphore;
+    self->connectWaitHandler = originalHandler;
+    self->connectWaitHandlerParameter = originalParameter;
+
+    Semaphore_post(self->associationStateLock);
 
     MmsError err;
 
@@ -1927,9 +1950,16 @@ MmsConnection_connect(MmsConnection self, MmsError* mmsError, const char* server
 
     if (err == MMS_ERROR_NONE)
     {
-        Semaphore_wait(conParams.sem);
+        Semaphore_wait(connectWaitSemaphore);
 
-        if (conParams.state == MMS_CONNECTION_STATE_CONNECTED)
+        Semaphore_wait(self->associationStateLock);
+        MmsConnectionState state = self->connectionState;
+        self->connectWaitLock = NULL;
+        self->connectWaitHandler = NULL;
+        self->connectWaitHandlerParameter = NULL;
+        Semaphore_post(self->associationStateLock);
+
+        if (state == MMS_CONNECTION_STATE_CONNECTED)
         {
             *mmsError = MMS_ERROR_NONE;
             success = true;
@@ -1939,18 +1969,21 @@ MmsConnection_connect(MmsConnection self, MmsError* mmsError, const char* server
             *mmsError = MMS_ERROR_CONNECTION_REJECTED;
         }
 
-        if (conParams.originalHandler)
-            conParams.originalHandler(self, conParams.originalParameter, conParams.state);
+        if (originalHandler)
+            originalHandler(self, originalParameter, state);
     }
     else
     {
         *mmsError = err;
+
+        Semaphore_wait(self->associationStateLock);
+        self->connectWaitLock = NULL;
+        self->connectWaitHandler = NULL;
+        self->connectWaitHandlerParameter = NULL;
+        Semaphore_post(self->associationStateLock);
     }
 
-    Semaphore_destroy(conParams.sem);
-
-    self->stateChangedHandler = conParams.originalHandler;
-    self->stateChangedHandlerParameter = conParams.originalParameter;
+    Semaphore_destroy(connectWaitSemaphore);
 
     return success;
 }
@@ -1973,11 +2006,27 @@ MmsConnection_connectAsync(MmsConnection self, MmsError* mmsError, const char* s
 #if (CONFIG_MMS_THREADLESS_STACK == 0)
     if (self->createThread)
     {
+        Semaphore_wait(self->associationStateLock);
+
         if (self->connectionHandlingThread == NULL)
         {
             self->connectionHandlingThread = Thread_create(connectionHandlingThread, self, false);
-            self->connectionThreadRunning = true;
-            Thread_start(self->connectionHandlingThread);
+
+            if (self->connectionHandlingThread)
+            {
+                self->connectionThreadRunning = true;
+                Thread_start(self->connectionHandlingThread);
+            }
+        }
+
+        bool threadAvailable = (self->connectionHandlingThread != NULL);
+
+        Semaphore_post(self->associationStateLock);
+
+        if (threadAvailable == false)
+        {
+            *mmsError = MMS_ERROR_RESOURCE_OTHER;
+            return;
         }
     }
 #endif

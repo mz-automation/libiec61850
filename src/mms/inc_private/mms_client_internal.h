@@ -1,7 +1,7 @@
 /*
  *  mms_msg_internal.h
  *
- *  Copyright 2013-2018 Michael Zillgith
+ *  Copyright 2013-2026 Michael Zillgith
  *
  *  This file is part of libIEC61850.
  *
@@ -117,6 +117,9 @@ struct sMmsConnection {
 
     MmsConnectionStateChangedHandler stateChangedHandler;
     void* stateChangedHandlerParameter;
+    Semaphore connectWaitLock;
+    MmsConnectionStateChangedHandler connectWaitHandler;
+    void* connectWaitHandlerParameter;
 
     MmsInformationReportHandler reportHandler;
     void* reportHandlerParameter;
